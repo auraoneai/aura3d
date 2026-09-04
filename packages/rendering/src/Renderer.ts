@@ -2431,7 +2431,9 @@ function createPostprocessDiagnostics(
       sourceTargetFormat: targetFormat,
       targetFormat,
       nativeLdrPostprocess: context.nativeLdrPostprocess,
-      rendererDepthAvailable: context.rendererDepthAvailable
+      rendererDepthAvailable: context.rendererDepthAvailable,
+      width,
+      height
     })
   };
 }

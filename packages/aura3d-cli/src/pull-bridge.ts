@@ -25,6 +25,8 @@ import type {
   FederatedResolver as FederatedResolverType,
   SourceAdapter,
 } from "@aura3d/asset-index";
+import { admitAssetForRole } from "./asset-role-admission.js";
+import type { AssetAdmissionRole } from "./asset-role-admission.js";
 import { addAsset, inspectAsset } from "./index.js";
 import type {
   AssetCliResult,
@@ -46,6 +48,7 @@ import {
 } from "./pull-bridge/provenance.js";
 import { selectPullable } from "./pull-bridge/pullable.js";
 import {
+  inferQueryRole,
   rankResolveCandidates,
   scoreResolveCandidate,
 } from "./pull-bridge/scoring.js";
@@ -62,12 +65,38 @@ import type {
 
 export {
   defaultDownloadFile,
+  inferQueryRole,
+  rankForProfile,
   rankResolveCandidates,
   runSearch,
   selectPullable,
   scoreResolveCandidate,
   toResolveConstraints,
 };
+export {
+  createPostDownloadCandidateBlockingWarnings,
+  createPreDownloadCandidateBlockingWarnings,
+} from "./pull-bridge/provenance.js";
+/**
+ * The role-aware admission role a resolve query asks for, if any.
+ *
+ * Explicit character profiles always mean `playable-character`; otherwise the
+ * shared query-role inference decides: a `vehicle` reading means
+ * `hero-vehicle`, a `character` reading means `playable-character`, and any
+ * other query means no admission role (the resolve stays a general fetch).
+ * Exported so the refusal-with-fallback behavior is unit-testable.
+ */
+export function resolveAdmissionRole(
+  query: string,
+  profile: CliAssetSearchProfile,
+): AssetAdmissionRole | undefined {
+  if (profile === "fighting-character" || profile === "animation-character") return "playable-character";
+  const inferred = inferQueryRole(query, profile);
+  if (inferred === "vehicle") return "hero-vehicle";
+  if (inferred === "character") return "playable-character";
+  return undefined;
+}
+
 export type { DownloadFile, DownloadResult } from "./pull-bridge/download.js";
 export type { PullableRefusal, PullableSelection } from "./pull-bridge/pullable.js";
 export type { AssetResolveCandidateScore } from "./pull-bridge/scoring.js";
@@ -190,11 +219,15 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
 
   // Constrain the resolve to redistributable, directly-downloadable assets up
   // front, then apply the pure selection seam as a belt-and-suspenders refusal.
-  const constraints = toResolveConstraints(options.constraints ?? {}, true);
+  // The query travels into the constraints and the rank so a character/vehicle
+  // query resolves under its role budget and role-first order instead of the
+  // unfiltered `general` path.
+  const constraints = toResolveConstraints(options.constraints ?? {}, true, options.query);
   const profile = options.constraints?.profile ?? "general";
+  const admissionRole = resolveAdmissionRole(options.query, profile);
   const result = await resolver.resolve({ text: options.query, constraints });
 
-  const ranked = rankResolveCandidates(rankForProfile(result.candidates, profile), {
+  const ranked = rankResolveCandidates(rankForProfile(result.candidates, profile, options.query), {
     query: options.query,
     profile,
   });
@@ -233,7 +266,7 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
   for (const candidateChoice of selectedPullable) {
     const asset = candidateChoice.asset;
     try {
-      const preDownloadWarnings = createPreDownloadCandidateBlockingWarnings(asset);
+      const preDownloadWarnings = createPreDownloadCandidateBlockingWarnings(asset, profile);
       if (preDownloadWarnings.length > 0) {
         throw new Error(`pre-download candidate quality blocked: ${preDownloadWarnings.join("; ")}`);
       }
@@ -263,6 +296,44 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
       const postDownloadWarnings = createPostDownloadCandidateBlockingWarnings(asset, inspection, profile);
       if (postDownloadWarnings.length > 0) {
         throw new Error(`post-download inspection blocked candidate: ${postDownloadWarnings.join("; ")}`);
+      }
+      // Role-aware admission closes the no-key bad-hero gap: a character/
+      // vehicle query refuses a structurally unfit GLB (hard blockers skip to
+      // the next ranked candidate with reasons retained) while `unproven`
+      // checks only warn -- without a browser probe there is no rendered
+      // evidence to decide them, and warn-only keeps the refusal rate to
+      // measured-and-wrong assets.
+      if (admissionRole !== undefined) {
+        const bounds = inspection.bounds ?? asset.bounds?.size ?? asset.dimensions;
+        const admission = admitAssetForRole({
+          assetId: asset.id,
+          // No explicit `minTriangles`: the admission hero floor applies only
+          // to a measured count, so a 792-triangle shell fails while absent
+          // catalog metadata stays `unproven` (warn-only) instead of being
+          // misreported as a distant-prop shell.
+          requirement: { role: admissionRole },
+          geometry: {
+            partCount: Math.max(1, asset.meshCount ?? inspection.nodeNames?.length ?? 1),
+            triangles: asset.triangleCount ?? asset.triangles ?? 0,
+            bounds: bounds ?? [0, 0, 0],
+            materialCount: inspection.materials.length,
+            textureCount: inspection.textures.length,
+            ...(inspection.boundsMetadata?.min?.[1] !== undefined
+              ? { minY: Number(inspection.boundsMetadata.min[1]) }
+              : {}),
+          },
+          provenance: {
+            ...(asset.license.spdx ? { license: asset.license.spdx } : {}),
+            ...(asset.author ?? asset.attribution ? { author: asset.author ?? asset.attribution } : {}),
+            ...(asset.sourcePage ? { sourcePage: asset.sourcePage } : {}),
+          },
+        });
+        if (admission.blockers.length > 0) {
+          throw new Error(`role admission refused ${asset.id} for ${admissionRole}: ${admission.blockers.join("; ")}`);
+        }
+        if (admission.unproven.length > 0) {
+          attemptWarnings.push(`Admission unproven for ${asset.id} (${admissionRole}): ${admission.unproven.join("; ")}`);
+        }
       }
       const candidateScore = scoreResolveCandidate(candidateChoice, {
         query: options.query,

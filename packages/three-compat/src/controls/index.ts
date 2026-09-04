@@ -1,4 +1,5 @@
 export {
+  ArcballControls,
   DragControls,
   FirstPersonControls,
   FlyControls,
@@ -10,4 +11,4 @@ export {
   TrackballControls,
   TransformControls
 } from "@aura3d/controls";
-export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "@aura3d/controls";
+export type { ArcballCameraLike, ArcballControlsOptions, TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "@aura3d/controls";

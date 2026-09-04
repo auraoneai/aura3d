@@ -3066,8 +3066,8 @@ function collectFighterFlashMaterials(actor: TypedGLBActor, owner: FighterId): F
 /**
  * Apply a confirmed-hit victim flash to the fighter rig's own materials.
  *
- * This is a renderer material change (base color brightened toward white and, when the material has an
- * emissive channel, an emissive pulse) on the real skinned-GLB draws -- not a DOM/CSS overlay pretending
+ * This is a renderer material change (base color and emissive driven toward hot impact orange) on the
+ * real skinned-GLB draws -- not a DOM/CSS overlay pretending
  * to be light. Strength is scaled by the defender's remaining flash timer so it returns to the authored
  * look as it fades. Reduced motion lowers the flash amplitude; the decay itself is presentation-only and
  * never touches combat state or the deterministic replay.
@@ -3089,22 +3089,27 @@ function applyFighterHitFlash(fighter: RuntimeFighter, reducedMotion: boolean): 
     const amplitude = reducedMotion ? 0.35 : 1;
     const flashAmount = intensity * amplitude;
     const base = flash.baseColor;
-    // Brighten toward white; keeps the fighter's tint so it reads as *that fighter* flashing, not a
-    // neutral overlay.
+    // Drive the defender toward hot impact orange on contact so a landed hit
+    // reads instantly; the pulse decays back to the authored look as the
+    // timer runs out, so identity is only borrowed for the contact instant.
+    const pull = Math.min(1, flashAmount * 0.9);
     const pulsed = [
-      Math.min(1, base[0]! + flashAmount * 0.6),
-      Math.min(1, base[1]! + flashAmount * 0.6),
-      Math.min(1, base[2]! + flashAmount * 0.6),
+      Math.min(1, base[0]! + (1 - base[0]!) * pull + flashAmount * 0.15),
+      Math.min(1, base[1]! + (0.42 - base[1]!) * pull + flashAmount * 0.1),
+      Math.min(1, base[2]! + (0.12 - base[2]!) * pull),
       base[3] ?? 1
     ];
     flash.material.setParameter("u_baseColor", pulsed);
     flash.material.setParameter("u_environmentIntensity", flash.baseEnvironmentIntensity + flashAmount * 1.1);
     if (flash.hasEmissive) {
-      // Preserve each fighter's cyan/orange material identity through the hit
-      // flash; only intensity changes, so the defender remains distinguishable
-      // instead of turning into an unowned white silhouette.
-      flash.material.setParameter("u_emissiveColor", [...flash.baseEmissive]);
-      flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength + flashAmount * 0.8);
+      // The emissive channel carries the same orange contact read, layered
+      // over each fighter's own cyan/orange base emissive.
+      flash.material.setParameter("u_emissiveColor", [
+        Math.min(1, flash.baseEmissive[0]! + (1 - flash.baseEmissive[0]!) * pull),
+        Math.min(1, flash.baseEmissive[1]! + (0.36 - flash.baseEmissive[1]!) * pull),
+        Math.min(1, flash.baseEmissive[2]! + (0.08 - flash.baseEmissive[2]!) * pull)
+      ]);
+      flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength + flashAmount * 1.6);
     }
   }
 }

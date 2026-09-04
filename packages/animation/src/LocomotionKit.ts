@@ -24,6 +24,12 @@ export interface LocomotionKitOptions<TClipId extends string = string> {
   readonly runningThreshold?: number;
   /** Optional foot-IK rig so locomotion can ground feet on uneven terrain (no foot sliding). */
   readonly footIkRig?: FootIkRig;
+  /**
+   * Half-life (seconds) of the inertialized idle↔walk↔run transition blend. Defaults to the
+   * state machine's critically-damped default — locomotion transitions are inertialized,
+   * never snapped or linearly ramped.
+   */
+  readonly transitionHalfLife?: number;
 }
 
 export interface LocomotionKitSample<TClipId extends string = string> {
@@ -62,6 +68,12 @@ export function createLocomotionKit<TClipId extends string = string>(options: Lo
     { value: options.runClip, threshold: runSpeed }
   ]);
   const graph = createLocomotionAnimationStateGraph();
+  if (options.transitionHalfLife !== undefined) {
+    if (!Number.isFinite(options.transitionHalfLife) || options.transitionHalfLife <= 0) {
+      throw new Error("LocomotionKit transitionHalfLife must be a finite positive number.");
+    }
+    graph.transitionHalfLife = options.transitionHalfLife;
+  }
 
   return {
     graph,

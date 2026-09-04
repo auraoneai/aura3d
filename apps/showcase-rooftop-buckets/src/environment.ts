@@ -265,22 +265,21 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       .toJSON()
   );
 
-  // Parapet safety ledge around rooftop
-  const ledgeWalls = [
-    { x: 0, z: -5.8, sx: 18.4, sz: 0.6 },  // North ledge
-    { x: 0, z: 13.8, sx: 18.4, sz: 0.6 },  // South ledge
-    { x: -8.8, z: 4.0, sx: 0.6, sz: 19.2 }, // West ledge
-    { x: 8.8, z: 4.0, sx: 0.6, sz: 19.2 }   // East ledge
-  ];
-  ledgeWalls.forEach((w, idx) => {
-    nodes.push(
-      primitives
-        .box({ name: `parapet-wall-${idx}`, material: parapetMat })
-        .position(w.x, 0.45, w.z)
-        .scale([w.sx, 0.9, w.sz])
-        .toJSON()
-    );
-  });
+  // Parapet safety ledge around rooftop. The four walls share one material
+  // and never move, so they submit as a single instanced family instead of
+  // four independent draws.
+  nodes.push(
+    instances.box({
+      name: "rooftop parapet wall family",
+      material: parapetMat,
+      transforms: [
+        { position: [0, 0.45, -5.8], scale: [18.4, 0.9, 0.6] }, // North ledge
+        { position: [0, 0.45, 13.8], scale: [18.4, 0.9, 0.6] }, // South ledge
+        { position: [-8.8, 0.45, 4.0], scale: [0.6, 0.9, 19.2] }, // West ledge
+        { position: [8.8, 0.45, 4.0], scale: [0.6, 0.9, 19.2] } // East ledge
+      ]
+    }).toJSON()
+  );
 
   // Chainlink safety fence posts & top rails
   const fenceMat = material.pbr({
@@ -340,6 +339,10 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   const keyCenterZ = options.reviewCapture ? 2.08 : 2.4;
 
   // Key Area Box Outline & Fill
+  const keyEdgeWidth = options.reviewCapture ? 0.055 : 0.08;
+  const lineY = 0.03;
+  const freeThrowZ = options.reviewCapture ? 4.15 : 4.8;
+  const baselineZ = options.reviewCapture ? -0.72 : -0.2;
   nodes.push(
     // Key center colored paint zone
     primitives
@@ -350,24 +353,24 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       .position(0, 0.02, keyCenterZ)
       .scale([keyWidth, 0.02, keyDepth])
       .toJSON(),
-    // Key Left Border
-    primitives
-      .box({ name: "court-key-left", material: paintCyanMat })
-      .position(-keyWidth / 2, 0.03, keyCenterZ)
-      .scale([options.reviewCapture ? 0.055 : 0.08, 0.02, keyDepth])
-      .toJSON(),
-    // Key Right Border
-    primitives
-      .box({ name: "court-key-right", material: paintCyanMat })
-      .position(keyWidth / 2, 0.03, keyCenterZ)
-      .scale([options.reviewCapture ? 0.055 : 0.08, 0.02, keyDepth])
-      .toJSON(),
-    // Free Throw Line
-    primitives
-      .box({ name: "court-free-throw-line", material: paintLineMat })
-      .position(0, 0.03, options.reviewCapture ? 4.15 : 4.8)
-      .scale([keyWidth, 0.02, options.reviewCapture ? 0.065 : 0.1])
-      .toJSON(),
+    // Key borders share one material and never move: one submission.
+    instances.box({
+      name: "court key edge family",
+      material: paintCyanMat,
+      transforms: [
+        { position: [-keyWidth / 2, lineY, keyCenterZ], scale: [keyEdgeWidth, 0.02, keyDepth] },
+        { position: [keyWidth / 2, lineY, keyCenterZ], scale: [keyEdgeWidth, 0.02, keyDepth] }
+      ]
+    }).toJSON(),
+    // Free-throw and baseline share the line material: one submission.
+    instances.box({
+      name: "court line family",
+      material: paintLineMat,
+      transforms: [
+        { position: [0, lineY, freeThrowZ], scale: [keyWidth, 0.02, options.reviewCapture ? 0.065 : 0.1] },
+        { position: [0, lineY, baselineZ], scale: [options.reviewCapture ? 4.4 : 14.0, 0.02, options.reviewCapture ? 0.055 : 0.1] }
+      ]
+    }).toJSON(),
     // The playable court retains its regulation free-throw circle. The review
     // action frame omits that redundant ring so its diagonals do not knot with
     // the pressure aura, key, and stanchion under the live shot.
@@ -391,13 +394,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       .position(0, 0.03, 0)
       .rotate(-Math.PI / 2, 0, 0)
       .scale(options.reviewCapture ? [4.85, 4.85, 0.032] : [6.75, 6.75, 0.05])
-      .toJSON(),
-    // Baseline Line
-    primitives
-      .box({ name: "court-baseline", material: paintLineMat })
-      .position(0, 0.03, options.reviewCapture ? -0.72 : -0.2)
-      .scale(options.reviewCapture ? [4.4, 0.02, 0.055] : [14.0, 0.02, 0.1])
       .toJSON()
+    // Baseline rides in the shared court-line family above.
   );
 
   // 4. Rooftop Props (HVAC AC units, access door penthouse)
@@ -407,17 +405,16 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     roughness: 0.5,
     metallic: 0.7
   });
+  // The two chillers share one material and never move: one submission.
   nodes.push(
-    primitives
-      .box({ name: "hvac-chiller-1", material: hvacMat })
-      .position(-6.5, 1.0, 11.0)
-      .scale([2.4, 1.8, 2.0])
-      .toJSON(),
-    primitives
-      .box({ name: "hvac-chiller-2", material: hvacMat })
-      .position(6.5, 0.8, 11.2)
-      .scale([2.0, 1.4, 1.8])
-      .toJSON()
+    instances.box({
+      name: "rooftop hvac chiller family",
+      material: hvacMat,
+      transforms: [
+        { position: [-6.5, 1.0, 11.0], scale: [2.4, 1.8, 2.0] },
+        { position: [6.5, 0.8, 11.2], scale: [2.0, 1.4, 1.8] }
+      ]
+    }).toJSON()
   );
   if (!options.reviewCapture) nodes.push(
     primitives
@@ -441,47 +438,30 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     metallic: 0.02,
     clearcoat: 0.12
   });
+  // The mast, boom, bracket, and twin braces share one steel material and
+  // never move. They submit as a single instanced cylinder family with the
+  // exact authored orientations preserved per transform.
   nodes.push(
-    // Vertical Main Mast
-    primitives
-      .cylinder({ name: "stanchion-main-mast", material: stanchionMat })
-      .position(0, 2.15, -1.62)
-      .scale([0.15, 3.7, 0.15])
-      .toJSON(),
+    instances.cylinder({
+      name: "stanchion steel mast family",
+      material: stanchionMat,
+      transforms: [
+        // Vertical Main Mast
+        { position: [0, 2.15, -1.62], scale: [0.15, 3.7, 0.15] },
+        // Angled Gooseneck Boom Arm
+        { position: [0, 3.28, -1.05], rotation: [Math.PI / 3.7, 0, 0], scale: [0.13, 1.5, 0.13] },
+        // Horizontal Backboard Mount Extension
+        { position: [0, 3.35, -0.72], rotation: [Math.PI / 2, 0, 0], scale: [0.12, 0.72, 0.12] },
+        // Twin diagonal braces transfer the board load into the mast.
+        { position: [-0.46, 3.18, -0.72], rotation: [Math.PI / 2.9, 0, -Math.PI / 9], scale: [0.075, 0.82, 0.075] },
+        { position: [0.46, 3.18, -0.72], rotation: [Math.PI / 2.9, 0, Math.PI / 9], scale: [0.075, 0.82, 0.075] }
+      ]
+    }).toJSON(),
     // Padded Base Protector
     primitives
       .box({ name: "stanchion-base-padding", material: stanchionPadMat })
       .position(0, 0.62, -1.62)
       .scale(options.reviewCapture ? [0.44, 0.84, 0.58] : [0.58, 1.12, 0.72])
-      .toJSON(),
-    // Angled Gooseneck Boom Arm
-    primitives
-      .cylinder({ name: "stanchion-boom-arm", material: stanchionMat })
-      .position(0, 3.28, -1.05)
-      .rotate(Math.PI / 3.7, 0, 0)
-      .scale([0.13, 1.5, 0.13])
-      .toJSON(),
-    // Horizontal Backboard Mount Extension
-    primitives
-      .cylinder({ name: "stanchion-mount-bracket", material: stanchionMat })
-      .position(0, 3.35, -0.72)
-      .rotate(Math.PI / 2, 0, 0)
-      .scale([0.12, 0.72, 0.12])
-      .toJSON(),
-    // Twin diagonal braces visually transfer the board load into the mast.
-    // They are venue construction only; route-local board/rim regions remain
-    // the sole gameplay authority.
-    primitives
-      .cylinder({ name: "stanchion west board brace", material: stanchionMat })
-      .position(-0.46, 3.18, -0.72)
-      .rotate(Math.PI / 2.9, 0, -Math.PI / 9)
-      .scale([0.075, 0.82, 0.075])
-      .toJSON(),
-    primitives
-      .cylinder({ name: "stanchion east board brace", material: stanchionMat })
-      .position(0.46, 3.18, -0.72)
-      .rotate(Math.PI / 2.9, 0, Math.PI / 9)
-      .scale([0.075, 0.82, 0.075])
       .toJSON()
   );
 
@@ -651,28 +631,56 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   // live hoop, not UI or composited evidence: masonry bays, lit glass, and
   // metal mullions give the action a designed architectural backdrop while
   // the open sides retain the rooftop/skyline identity.
+  // Pavilion bays use shared geometry/material families.  Their individual
+  // offsets remain authored in the instance transforms, but the production
+  // renderer now submits one draw per family rather than one per window,
+  // mullion, and pier. Review-only court furniture that shares these exact
+  // materials (scorer table, seat tiers, edge curbs) rides in the same
+  // families so no duplicate submission is added for the action lens.
+  const masonryTransforms = [
+    { position: [0, 4.15, -6.65] as const, scale: [16.5, 8.1, 0.42] as const }, // back wall
+    ...[-8.05, -2.62, 2.62, 8.05].map((x) => ({ position: [x, 4.2, -6.12] as const, scale: [0.74, 7.85, 0.72] as const })),
+    ...(options.reviewCapture ? [
+      { position: [-5.55, 0.76, -3.44] as const, scale: [3.4, 1.08, 0.62] as const }, // scorer table
+      { position: [-4.85, 1.05, -5.13] as const, scale: [4.05, 0.42, 0.48] as const }, // west seat tier
+      { position: [4.85, 1.05, -5.13] as const, scale: [4.05, 0.42, 0.48] as const } // east seat tier
+    ] : [])
+  ];
+  const pavilionTrimTransforms = [
+    ...[-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.27] as const, scale: [0.1, 4.35, 0.12] as const })), // bay mullions
+    // The center bay is already divided by its full-height mullion and the
+    // warm interior band. Omitting its redundant horizontal trim preserves
+    // the prior authored silhouette.
+    ...[-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.2] as const, scale: [3.56, 0.09, 0.13] as const })), // horizontal mullions
+    { position: [0, 8.15, -6.2] as const, scale: [17.2, 0.28, 0.55] as const }, // cornice
+    ...(options.reviewCapture ? [
+      { position: [-8.05, 0.13, 4.0] as const, scale: [0.11, 0.2, 9.45] as const }, // west court edge curb
+      { position: [8.05, 0.13, 4.0] as const, scale: [0.11, 0.2, 9.45] as const }, // east court edge curb
+      { position: [0, 0.13, -5.42] as const, scale: [8.15, 0.2, 0.11] as const } // north court edge curb
+    ] : [])
+  ];
   nodes.push(
-    primitives.box({ name: "pavilion back wall", material: pavilionBrick })
-      .position(0, 4.15, -6.65)
-      .scale([16.5, 8.1, 0.42])
-      .toJSON(),
+    instances.box({
+      name: "pavilion masonry family",
+      material: pavilionBrick,
+      transforms: masonryTransforms
+    }).toJSON(),
     primitives.box({ name: "pavilion teal wainscot", material: material.pbr({ name: "pavilion teal tile", color: "#164e63", roughness: 0.4, metallic: 0.12, clearcoat: 0.3 }) })
       .position(0, 1.05, -6.39)
       .scale([16.2, 1.65, 0.08])
       .toJSON(),
-    // Pavilion bays use shared geometry/material families.  Their individual
-    // offsets remain authored in the instance transforms, but the production
-    // renderer now submits one draw per family rather than one per window,
-    // mullion, and pier.
     instances.box({
-      name: "pavilion occupied room family",
+      name: "pavilion occupied interior family",
       material: pavilionInterior,
       // Leave the center bay as a dark glass recess behind the typed hoop.
       // The previous warm center panel projected as a solid orange card over
       // the rim in the sideline camera, making the goal unreadable in both
       // normal and backboard-suppressed composition captures. Side bays keep
       // the occupied-venue rhythm without occluding the gameplay target.
-      transforms: [-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.54], scale: [3.35, 3.95, 0.06] }))
+      transforms: [
+        ...[-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.54] as const, scale: [3.35, 3.95, 0.06] as const })),
+        ...[-5.25, 0, 5.25].map((x) => ({ position: [x, 4.42, -6.24] as const, scale: [3.12, 0.28, 0.1] as const }))
+      ]
     }).toJSON(),
     instances.box({
       name: "pavilion glass bay family",
@@ -680,32 +688,10 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.38], scale: [3.65, 4.45, 0.08] }))
     }).toJSON(),
     instances.box({
-      name: "pavilion bay mullion family",
+      name: "pavilion brass trim family",
       material: pavilionTrim,
-      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.27], scale: [0.1, 4.35, 0.12] }))
-    }).toJSON(),
-    instances.box({
-      name: "pavilion warm interior band family",
-      material: pavilionInterior,
-      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.42, -6.24], scale: [3.12, 0.28, 0.1] }))
-    }).toJSON(),
-    // The center bay is already divided by its full-height mullion and the
-    // warm interior band. Omitting its redundant horizontal trim preserves
-    // the prior authored silhouette and saves one more route-owned draw.
-    instances.box({
-      name: "pavilion horizontal mullion family",
-      material: pavilionTrim,
-      transforms: [-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.2], scale: [3.56, 0.09, 0.13] }))
-    }).toJSON(),
-    instances.box({
-      name: "pavilion masonry pier family",
-      material: pavilionBrick,
-      transforms: [-8.05, -2.62, 2.62, 8.05].map((x) => ({ position: [x, 4.2, -6.12], scale: [0.74, 7.85, 0.72] }))
-    }).toJSON(),
-    primitives.box({ name: "pavilion cornice", material: pavilionTrim })
-      .position(0, 8.15, -6.2)
-      .scale([17.2, 0.28, 0.55])
-      .toJSON()
+      transforms: pavilionTrimTransforms
+    }).toJSON()
   );
 
   if (options.reviewCapture) {
@@ -762,10 +748,18 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         .position(0, 8.58, -5.95)
         .scale([17.55, 0.42, 1.72])
         .toJSON(),
-      primitives.box({ name: "sky club canopy light slot", material: terraceGlow })
-        .position(0, 8.31, -5.08)
-        .scale([15.9, 0.055, 0.06])
-        .toJSON(),
+      // All warm under-rail practicals share one emissive material and never
+      // move: canopy slot, scorer display, and both rail lights submit once.
+      instances.box({
+        name: "sky club warm light family",
+        material: terraceGlow,
+        transforms: [
+          { position: [0, 8.31, -5.08], scale: [15.9, 0.055, 0.06] }, // canopy light slot
+          { position: [-5.55, 1.03, -3.08], scale: [2.92, 0.34, 0.035] }, // scorer display
+          { position: [-4.85, 1.34, -3.96], scale: [4.05, 0.045, 0.035] }, // west rail light
+          { position: [4.85, 1.34, -3.96], scale: [4.05, 0.045, 0.035] } // east rail light
+        ]
+      }).toJSON(),
       // Slightly irregular sealed lanes catch the key lights and break up the
       // single-color court slab. They are surface finish only, below every
       // route-owned ball, player, and collider region.
@@ -780,74 +774,36 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       }).toJSON(),
       // Inlaid sideline accents give the court a manufactured, league-owned
       // finish while leaving the playable key and physics regions untouched.
-      primitives.box({ name: "west court brass inlay", material: courtInlay })
-        .position(-7.72, 0.035, 4.0)
-        .scale([0.045, 0.018, 8.92])
-        .toJSON(),
-      primitives.box({ name: "east court brass inlay", material: courtInlay })
-        .position(7.72, 0.035, 4.0)
-        .scale([0.045, 0.018, 8.92])
-        .toJSON(),
-      // A bounded court frame and scorer's table make the playing rectangle
-      // read as a real rooftop venue instead of paint floating on an infinite
-      // slab. These remain subordinate set dressing outside collision truth.
-      primitives.box({ name: "west court edge curb", material: pavilionTrim })
-        .position(-8.05, 0.13, 4.0)
-        .scale([0.11, 0.2, 9.45])
-        .toJSON(),
-      primitives.box({ name: "east court edge curb", material: pavilionTrim })
-        .position(8.05, 0.13, 4.0)
-        .scale([0.11, 0.2, 9.45])
-        .toJSON(),
-      primitives.box({ name: "north court edge curb", material: pavilionTrim })
-        .position(0, 0.13, -5.42)
-        .scale([8.15, 0.2, 0.11])
-        .toJSON(),
-      primitives.box({ name: "sky club scorer table", material: pavilionBrick })
-        .position(-5.55, 0.76, -3.44)
-        .scale([3.4, 1.08, 0.62])
-        .toJSON(),
-      primitives.box({ name: "sky club scorer display", material: terraceGlow })
-        .position(-5.55, 1.03, -3.08)
-        .scale([2.92, 0.34, 0.035])
-        .toJSON(),
+      // The scorer table, seat tiers, and edge curbs below now ride in the
+      // shared pavilion masonry/trim families above (same materials), and the
+      // scorer display plus rail lights ride in the warm-light family.
+      instances.box({
+        name: "court brass inlay family",
+        material: courtInlay,
+        transforms: [
+          { position: [-7.72, 0.035, 4.0], scale: [0.045, 0.018, 8.92] },
+          { position: [7.72, 0.035, 4.0], scale: [0.045, 0.018, 8.92] }
+        ]
+      }).toJSON(),
       // Two stepped terraces sit between the live hoop and pavilion glazing.
       // They create real parallax, seating scale, and warm material response
       // without becoming gameplay collision or a primitive primary subject.
-      primitives.box({ name: "sky club west terrace", material: terraceDeck })
-        .position(-4.85, 0.72, -4.58)
-        .scale([4.45, 0.36, 1.22])
-        .toJSON(),
-      primitives.box({ name: "sky club east terrace", material: terraceDeck })
-        .position(4.85, 0.72, -4.58)
-        .scale([4.45, 0.36, 1.22])
-        .toJSON(),
-      primitives.box({ name: "sky club west seat tier", material: pavilionBrick })
-        .position(-4.85, 1.05, -5.13)
-        .scale([4.05, 0.42, 0.48])
-        .toJSON(),
-      primitives.box({ name: "sky club east seat tier", material: pavilionBrick })
-        .position(4.85, 1.05, -5.13)
-        .scale([4.05, 0.42, 0.48])
-        .toJSON(),
-      primitives.cylinder({ name: "sky club west rail", material: terraceRail })
-        .position(-4.85, 1.42, -3.98)
-        .rotate(0, 0, Math.PI / 2)
-        .scale([0.055, 4.25, 0.055])
-        .toJSON(),
-      primitives.cylinder({ name: "sky club east rail", material: terraceRail })
-        .position(4.85, 1.42, -3.98)
-        .rotate(0, 0, Math.PI / 2)
-        .scale([0.055, 4.25, 0.055])
-        .toJSON(),
-      primitives.box({ name: "sky club west rail light", material: terraceGlow })
-        .position(-4.85, 1.34, -3.96)
-        .scale([4.05, 0.045, 0.035])
-        .toJSON(),
-      primitives.box({ name: "sky club east rail light", material: terraceGlow })
-        .position(4.85, 1.34, -3.96)
-        .scale([4.05, 0.045, 0.035])
-        .toJSON(),
+      instances.box({
+        name: "sky club terrace deck family",
+        material: terraceDeck,
+        transforms: [
+          { position: [-4.85, 0.72, -4.58], scale: [4.45, 0.36, 1.22] },
+          { position: [4.85, 0.72, -4.58], scale: [4.45, 0.36, 1.22] }
+        ]
+      }).toJSON(),
+      instances.cylinder({
+        name: "sky club rail family",
+        material: terraceRail,
+        transforms: [
+          { position: [-4.85, 1.42, -3.98], rotation: [0, 0, Math.PI / 2], scale: [0.055, 4.25, 0.055] },
+          { position: [4.85, 1.42, -3.98], rotation: [0, 0, Math.PI / 2], scale: [0.055, 4.25, 0.055] }
+        ]
+      }).toJSON(),
       text3D("NIGHT LEAGUE", {
         name: "night league pavilion sign",
         size: 0.34,
@@ -1070,14 +1026,15 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       .position(2.2, 5.05, -0.86)
       .scale([2.7, 0.72, 0.14])
       .toJSON(),
-    primitives.box({ name: "night league scoreboard upper trim", material: scoreboardTrim })
-      .position(2.2, 5.74, -0.67)
-      .scale([2.78, 0.045, 0.045])
-      .toJSON(),
-    primitives.box({ name: "night league scoreboard lower trim", material: scoreboardTrim })
-      .position(2.2, 4.36, -0.67)
-      .scale([2.78, 0.045, 0.045])
-      .toJSON(),
+    // Upper and lower trims share one emissive material: one submission.
+    instances.box({
+      name: "night league scoreboard trim family",
+      material: scoreboardTrim,
+      transforms: [
+        { position: [2.2, 5.74, -0.67], scale: [2.78, 0.045, 0.045] },
+        { position: [2.2, 4.36, -0.67], scale: [2.78, 0.045, 0.045] }
+      ]
+    }).toJSON(),
     text3D("COURT 07", {
       name: "night league scoreboard identity",
       size: 0.3,

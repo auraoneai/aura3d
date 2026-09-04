@@ -54,6 +54,17 @@ export type PhysicsWorldDescriptor = {
   readonly fixedDelta?: number;
   readonly solverIterations?: number;
   readonly enableSleeping?: boolean;
+  /**
+   * Repeatability seed (H1 promotion).
+   *
+   * Rapier stepping is deterministic for an identical descriptor + fixed-dt call
+   * sequence, so the seed carries no hidden RNG branch: it is recorded provenance,
+   * reported in every snapshot backend selection, and the repeatability contract is
+   * "same seed + same descriptors + same step calls ⇒ identical snapshots", pinned
+   * by `h1-root-promotions.test.ts`. Pass a seed whenever a test or replay needs to
+   * name the run it is reproducing.
+   */
+  readonly seed?: number;
   /** @deprecated Rapier owns its native sleep thresholds. Retained for source compatibility. */
   readonly sleepVelocityThreshold?: number;
   /** @deprecated Rapier owns its native sleep delay. Retained for source compatibility. */
@@ -83,6 +94,8 @@ export type PhysicsBackendSelection = {
   readonly active: PhysicsBackend;
   readonly deterministic: boolean;
   readonly continuousCollision: PhysicsContinuousCollisionSelection;
+  /** The repeatability seed from the world descriptor, when one was supplied. */
+  readonly seed?: number;
 };
 
 export type PhysicsStepStats = {
@@ -124,6 +137,8 @@ export class PhysicsWorld {
   private readonly requestedBackend: PhysicsBackendPreference;
   private backendSelection: PhysicsBackendSelection;
   private readonly rapierWorld: RapierPhysicsWorld;
+  /** Repeatability seed from the descriptor. Recorded provenance; see the field docs. */
+  readonly seed?: number;
   private readonly rapierBodiesByAuraId = new Map<number, RapierBodyHandle>();
   private readonly rapierCollidersByAuraId = new Map<number, RapierColliderHandle>();
   private readonly rapierJointsByConstraint = new Map<Constraint, RapierJointHandle>();
@@ -155,6 +170,10 @@ export class PhysicsWorld {
     if (descriptor.sleepDelay !== undefined && (!Number.isFinite(descriptor.sleepDelay) || descriptor.sleepDelay < 0)) {
       throw new Error("sleepDelay must be finite and non-negative.");
     }
+    if (descriptor.seed !== undefined && (!Number.isFinite(descriptor.seed) || !Number.isInteger(descriptor.seed))) {
+      throw new Error("seed must be a finite integer when supplied.");
+    }
+    this.seed = descriptor.seed;
     if (this.requestedBackend !== "auto" && this.requestedBackend !== "rapier") {
       // Reached from JavaScript callers and from code compiled against 1.5.x, where
       // `"aura-js"` was a selectable backend. Failing loudly is the point: the previous
@@ -170,7 +189,8 @@ export class PhysicsWorld {
       requested: this.requestedBackend,
       active: "rapier",
       deterministic: true,
-      continuousCollision: this.continuousCollisionSelection(true)
+      continuousCollision: this.continuousCollisionSelection(true),
+      ...(this.seed === undefined ? {} : { seed: this.seed })
     };
     this.rapierWorld = createRapierPhysicsSync({ gravity: this.gravity });
     this.rapierWorld.unsafeRapierWorld().integrationParameters.numSolverIterations = this.solverIterations;

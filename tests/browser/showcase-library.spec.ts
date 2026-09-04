@@ -1082,8 +1082,12 @@ test.describe("showcase library", () => {
     expect(skylineIdle.animation?.activeClip, "Skyline should publish the idle embedded GLB motion state").toBe("idle");
     expect(skylineIdle.animation?.runtimeClip, "Skyline should claim runtime playback of the embedded idle clip").toBe("idle");
     expect(skylineIdle.animation?.missingClips ?? [], "Skyline embedded motion state map should resolve").toEqual([]);
-    expect(skylineIdle.animation?.availableClips ?? [], "Skyline should prove embedded sprint motion exists").toContain("sprint");
-    expect(Number(skylineIdle.animation?.importedClipCount), "Skyline runner should publish imported skinned clips").toBeGreaterThan(0);
+    // The Meshy hero card ships no embedded clips (0 animations in the GLB;
+    // the retired 25-name list described a legacy binding the shipped card
+    // never contained). The route publishes the honest empty embedded list,
+    // the kit resolves zero missing, and visible motion stays procedural.
+    expect(skylineIdle.animation?.availableClips ?? ["non-empty"], "Skyline hero card ships no embedded clips").toEqual([]);
+    expect(Number(skylineIdle.animation?.importedClipCount), "Skyline hero card ships no imported clips").toBe(0);
     expect(Number(skylineIdle.animation?.sampleTick), "Skyline idle procedural motion sample should advance").toBeGreaterThan(Number(skylineBefore.animation?.sampleTick));
     // Whole-canvas idle delta is small by design: the corrected side-scroller
     // framing makes the hero roughly one-seventh of frame height, so the

@@ -18,38 +18,38 @@ pnpm verify:api-docs
 | `@aura3d/asset-index` | `2.0.4` | `packages/asset-index/src/index.ts` | 32 |
 | `@aura3d/assets` | `2.0.4` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `2.0.4` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `2.0.4` | `packages/audio/src/index.ts` | 25 |
+| `@aura3d/audio` | `2.0.4` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `2.0.4` | `packages/aura3d-cli/src/index.ts` | 36 |
-| `@aura3d/controls` | `2.0.4` | `packages/controls/src/index.ts` | 25 |
+| `@aura3d/controls` | `2.0.4` | `packages/controls/src/index.ts` | 31 |
 | `@aura3d/core` | `2.0.4` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `2.0.4` | `packages/create-aura3d/src/index.ts` | 10 |
 | `@aura3d/debug` | `2.0.4` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `2.0.4` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor` | `2.0.4` | `packages/editor/src/index.ts` | 1 |
-| `@aura3d/editor-runtime` | `2.0.4` | `packages/editor-runtime/src/index.ts` | 80 |
+| `@aura3d/editor-runtime` | `2.0.4` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `2.0.4` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `2.0.4` | `packages/environments/src/index.ts` | 5 |
 | `@aura3d/environments/node` | `2.0.4` | `packages/environments/src/node.ts` | 6 |
-| `@aura3d/input` | `2.0.4` | `packages/input/src/index.ts` | 42 |
+| `@aura3d/input` | `2.0.4` | `packages/input/src/index.ts` | 48 |
 | `@aura3d/lean` | `2.0.4` | `packages/lean/src/index.ts` | 2 |
-| `@aura3d/lean/game` | `2.0.4` | `packages/lean/src/game.ts` | 5 |
+| `@aura3d/lean/game` | `2.0.4` | `packages/lean/src/game.ts` | 20 |
 | `@aura3d/lean/product` | `2.0.4` | `packages/lean/src/product.ts` | 2 |
 | `@aura3d/materials` | `2.0.4` | `packages/materials/src/index.ts` | 1 |
 | `@aura3d/materials/node` | `2.0.4` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `2.0.4` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/navigation-recast` | `2.0.4` | `packages/navigation-recast/src/index.ts` | 15 |
+| `@aura3d/navigation-recast` | `2.0.4` | `packages/navigation-recast/src/index.ts` | 16 |
 | `@aura3d/physics` | `2.0.4` | `packages/physics/src/index.ts` | 22 |
 | `@aura3d/physics-rapier` | `2.0.4` | `packages/physics-rapier/src/index.ts` | 18 |
 | `@aura3d/physics/solverless` | `2.0.4` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `2.0.4` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `2.0.4` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `2.0.4` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `2.0.4` | `packages/rendering/src/index.ts` | 266 |
+| `@aura3d/react` | `2.0.4` | `packages/react/src/index.ts` | 37 |
+| `@aura3d/rendering` | `2.0.4` | `packages/rendering/src/index.ts` | 304 |
 | `@aura3d/rendering/lean-runtime` | `2.0.4` | `packages/rendering/src/lean-runtime.ts` | 10 |
 | `@aura3d/rendering/webgpu` | `2.0.4` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `2.0.4` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `2.0.4` | `packages/scripting/src/index.ts` | 37 |
-| `@aura3d/three-compat` | `2.0.4` | `packages/three-compat/src/index.ts` | 29 |
+| `@aura3d/scripting` | `2.0.4` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/three-compat` | `2.0.4` | `packages/three-compat/src/index.ts` | 33 |
 | `@aura3d/workflows` | `2.0.4` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
@@ -142,7 +142,7 @@ export type { AuraCanonicalAsset, AuraAssetLicense, AuraAssetLicenseSpdx, AuraAs
 export { isAutoPullable, normalizeLicense } from "./CanonicalAsset.js";
 export type { SourceAdapter, AdapterContext, AdapterRefreshResult, FetchJson, ResolveQuery, ResolveConstraints, } from "./SourceAdapter.js";
 export { defaultFetchJson } from "./SourceAdapter.js";
-export { scoreAsset, matchesConstraints } from "./ranking.js";
+export { scoreAsset, matchesConstraints, SCREENED_HERO_RANK_BONUS } from "./ranking.js";
 export { evaluateGameAssetProfile, gameAssetProfileDefinitions, getGameAssetProfileDefinition } from "./game-profile.js";
 export type { GameAssetProfile, GameAssetProfileDefinition, GameAssetProfileEvaluation, GameAssetProfileScoringRules } from "./game-profile.js";
 export { animationAssetProfiles, evaluateAnimationAssetProfile, isAnimationAssetProfile, } from "./animation-profile.js";
@@ -189,7 +189,7 @@ export type { GLTFAnimationInspection, GLTFAssetInspectionReport, GLTFDependency
 export { GLTF_DECODER_REQUIRED_EXTENSION_NAMES, GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES, GLTF_EXTENSION_SUPPORT_MATRIX, GLTF_PARSED_WITH_LIMITS_EXTENSION_NAMES, GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES, GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES, GLTF_SUPPORTED_EXTENSION_NAMES, evaluateGLTFExtensionSupport, getGLTFExtensionSupport } from "./GLTFExtensionSupport";
 export type { GLTFExtensionSupportEntry, GLTFExtensionSupportEvaluation, GLTFExtensionSupportFamily, GLTFExtensionSupportStatus } from "./GLTFExtensionSupport";
 export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController, resolveGLTFClipName } from "./GLTFAnimationRuntime";
-export type { GLTFImportedSkeletonIKControllerOptions, GLTFImportedSkeletonIKControllerSnapshot, GLTFImportedSkeletonIKOptions, GLTFImportedSkeletonIKResult, GLTFSceneAnimationApplyResult, GLTFSceneAnimationClipSample, GLTFSceneAnimationClipBoneMask, GLTFSceneAnimationActionSnapshot, GLTFSceneAnimationCloneSample, GLTFSceneAnimationCloneSampleResult, GLTFSceneAnimationCloneSamplerSnapshot, GLTFSceneAnimationClipBindingDiagnostics, GLTFSceneAnimationMixerOptions, GLTFSceneAnimationPlayOptions, GLTFSceneAnimationMixerSnapshot, GLTFSceneAnimationMixerUpdateResult, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFSceneMorphTargetControllerOptions, GLTFSceneMorphTargetControllerSnapshot, GLTFScenePose, GLTFScenePoseBoneTransform } from "./GLTFAnimationRuntime";
+export type { GLTFImportedSkeletonIKControllerOptions, GLTFImportedSkeletonIKControllerSnapshot, GLTFImportedSkeletonIKOptions, GLTFImportedSkeletonIKResult, GLTFSceneAnimationApplyResult, GLTFSceneAnimationClipSample, GLTFSceneAnimationClipBoneMask, GLTFSceneAnimationActionSnapshot, GLTFSceneAnimationCloneSample, GLTFSceneAnimationCloneSampleResult, GLTFSceneAnimationCloneSamplerSnapshot, GLTFSceneAnimationClipBindingDiagnostics, GLTFootPlantingApplyResult, GLTFootPlantingConfig, GLTFootPlantingLegConfig, GLTFSceneAnimationMaterialSink, GLTFSceneAnimationMixerOptions, GLTFSceneAnimationPlayOptions, GLTFSceneAnimationMixerSnapshot, GLTFSceneAnimationMixerUpdateResult, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFSceneMorphTargetControllerOptions, GLTFSceneMorphTargetControllerSnapshot, GLTFScenePose, GLTFScenePoseBoneTransform } from "./GLTFAnimationRuntime";
 export { AssetHandle } from "./AssetHandle";
 export type { AssetHandleOptions, AssetHandleStatus } from "./AssetHandle";
 export { AssetLoadError } from "./AssetLoader";
@@ -224,10 +224,10 @@ export { applyCarConceptMaterialStability, carConceptMaterialVisualRole, carConc
 export type { CarConceptMaterialBaseline, CarConceptMaterialVisualRole, CarConceptMaterialStabilityOptions, CarConceptMaterialStabilityProfile } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
-export type { GLTFAsset, GLTFCameraAsset, GLTFClearcoatMaterialExtension, GLTFDracoDecodeDescriptor, GLTFDracoDecodedPrimitive, GLTFDracoDecoder, GLTFGeometryAsset, GLTFImageAsset, GLTFLightAsset, GLTFLoaderOptions, GLTFLoaderDiagnostics, SkinWeightNormalizationStats, GLTFMaterialAsset, GLTFMaterialVariantAsset, GLTFMaterialVariantMappingAsset, GLTFMeshAsset, GLTFMeshoptDecodeDescriptor, GLTFMeshoptDecoder, GLTFPBRSpecularGlossinessMaterialExtension, GLTFResolvedTextureInfo, GLTFSamplerAsset, GLTFSceneAsset, GLTFSceneCreateOptions, GLTFSheenMaterialExtension, GLTFSkinAsset, GLTFSpecularMaterialExtension, GLTFTextureAsset, GLTFTransmissionMaterialExtension, GLTFVolumeMaterialExtension, SerializedGLTFAsset } from "./GLTFLoader";
+export type { GLTFAsset, GLTFAnimationPointerBinding, GLTFCameraAsset, GLTFClearcoatMaterialExtension, GLTFDracoDecodeDescriptor, GLTFDracoDecodedPrimitive, GLTFDracoDecoder, GLTFGeometryAsset, GLTFImageAsset, GLTFLightAsset, GLTFJson, GLTFLoaderOptions, GLTFLoaderDiagnostics, GLTFMaterialVariantSceneState, SkinWeightNormalizationStats, GLTFMaterialAsset, GLTFMaterialVariantAsset, GLTFMaterialVariantMappingAsset, GLTFMeshAsset, GLTFMeshoptDecodeDescriptor, GLTFMeshoptDecoder, GLTFPBRSpecularGlossinessMaterialExtension, GLTFResolvedTextureInfo, GLTFSamplerAsset, GLTFSceneAsset, GLTFSceneCreateOptions, GLTFSheenMaterialExtension, GLTFSkinAsset, GLTFSpecularMaterialExtension, GLTFTextureAsset, GLTFTransmissionMaterialExtension, GLTFVolumeMaterialExtension, SerializedGLTFAsset } from "./GLTFLoader";
 export { OBJLoader } from "./OBJLoader";
 export { DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS, DEFAULT_GLTF_STUDIO_PREVIEW_FRAME, DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS, createDefaultGLTFHdrStudioPreviewEnvironmentLighting, createGLTFRenderResourceDiagnostics, createGLTFRenderResources, createGLTFRenderSource, renderStateForGLTFMaterial } from "./GLTFRenderResources";
 export type { DecodedGLTFImage, GLTFImageDecoder, GLTFMaterialRenderStateOverride, GLTFMaterialOverrideQuery, GLTFMaterialOverrideTarget, GLTFRenderableBinding, GLTFRenderResourceDiagnostics, GLTFRenderResourceDiagnosticsOptions, GLTFRenderResourceTextureSlotDiagnostic, GLTFRenderQualityPreset, GLTFRendererInput, GLTFRendererInputOptions, GLTFRenderResourceOptions, GLTFRenderSourceOptions, GLTFRenderResources } from "./GLTFRenderResources";
@@ -237,8 +237,8 @@ export { loadRenderableAsset } from "./loadRenderableAsset";
 export type { LoadRenderableAssetOptions, RenderableAsset, RenderableAssetKind } from "./loadRenderableAsset";
 export { createRenderableScene } from "./createRenderableScene";
 export type { CreateRenderableSceneOptions, RenderableScene } from "./createRenderableScene";
-export { transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
-export type { KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
+export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
+export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 export { ImportPipeline, ImportPipelineError } from "./ImportPipeline";
 export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportStage } from "./ImportPipeline";
 export { LoadContext } from "./LoadContext";
@@ -251,8 +251,8 @@ export { SceneLoader } from "./SceneLoader";
 export type { NativeSceneAsset, NativeSceneNodeDescriptor } from "./SceneLoader";
 export { ShaderLoader } from "./ShaderLoader";
 export type { ShaderSourceAsset } from "./ShaderLoader";
-export { createTextureMipGenerationStage, generateTextureMipChain } from "./TexturePipeline";
-export type { TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
+export { createTextureMipGenerationStage, generateTextureMipChain, resolveAnisotropyRequest } from "./TexturePipeline";
+export type { AnisotropyRequest, AnisotropyResolution, TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
@@ -271,7 +271,7 @@ export * from "./TextureStreaming.js";
 
 ```ts
 export { createGLTFSceneAnimationRuntime } from "./GLTFAnimationRuntime.js";
-export type { GLTFSceneAnimationApplyResult, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
+export type { GLTFootPlantingApplyResult, GLTFootPlantingConfig, GLTFootPlantingLegConfig, GLTFSceneAnimationApplyResult, GLTFSceneAnimationMaterialSink, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
 export { loadProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 ```
@@ -303,6 +303,12 @@ export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from 
 export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
+export { PositionalEmitter, applyOcclusionToGain, computeDistanceAttenuation, computeDopplerShift, occlusionLowpassFrequency, resolveOcclusion } from "./PositionalEmitter";
+export type { DistanceAttenuationModel, DistanceAttenuationOptions, DopplerOptions, OcclusionHook, PositionalEmitterEvidence, PositionalEmitterOptions } from "./PositionalEmitter";
+export { attachFocusPolicy, createGameMixer, focusHandlersForMixer } from "./GameMixer";
+export type { FocusEventTargetLike, FocusMutePolicy, FocusPolicyHandlers, GameMixer, GameMixerBusLevel, GameMixerEvidence, GameMixerOptions } from "./GameMixer";
+export { FootstepPlayer } from "./Footsteps";
+export type { FootId, FootPlantEvent, FootstepEvidence, FootstepPlayerOptions } from "./Footsteps";
 export { AudioSystem } from "./AudioSystem";
 export { SceneAudioBridge } from "./SceneAudioBridge";
 export type { SceneAudioSourceBinding } from "./SceneAudioBridge";
@@ -370,6 +376,8 @@ export function initAgentFiles(options: { readonly projectDir?: string; readonly
 ```ts
 export { OrbitControls } from "./OrbitControls";
 export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
+export { ArcballControls } from "./ArcballControls";
+export type { ArcballCameraLike, ArcballControlsOptions } from "./ArcballControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
 export type { FlyCameraLike, FlyControlsOptions } from "./FlyControls";
@@ -383,6 +391,10 @@ export { TransformControls } from "./TransformControls";
 export type { TransformControlDragUpdate, TransformControlHandle, TransformControlHandleGeometry, TransformControlMode, TransformControlPick, TransformControlRay, TransformControlSnapSettings, TransformControlSpace, TransformControlsOptions } from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
 export type { SelectionManagerChange, SelectionManagerListener } from "./SelectionManager";
+export { HoverOutline } from "./HoverOutline";
+export type { HoverOutlineEntry, HoverOutlineOptions, HoverOutlineStyle, HoverOutlineTone } from "./HoverOutline";
+export { frameSelection, frameTarget } from "./FocusFrame";
+export type { FocusFrameOptions, FocusFrameResult, FocusFrameTarget } from "./FocusFrame";
 export { InteractionControls } from "./InteractionControls";
 export type { HotspotHandler, InteractionControlMode, InteractionControlsEvent, InteractionControlsEventType, InteractionControlsListener, InteractionControlsOptions, InteractionControlsUpdate, InteractionRay, InteractionRayProvider, InteractionRootProvider } from "./InteractionControls";
 export { Picking } from "./Picking";
@@ -612,6 +624,8 @@ export { TimelineUI, renderTimelineUI } from "./TimelineUI";
 export type { TimelineUIOptions, TimelineUIRenderResult } from "./TimelineUI";
 export { VisualReviewDashboard, createVisualReviewDashboard } from "./VisualReviewDashboard";
 export type { VisualReviewDashboardPackage, VisualReviewDashboardSnapshot } from "./VisualReviewDashboard";
+export { createRootEditorSurface } from "./RootEditorSurface";
+export type { RootEditorGizmoHandle, RootEditorGizmoKind, RootEditorSurface, RootEditorSurfaceOptions } from "./RootEditorSurface";
 export { CreateNodeCommand } from "./commands/CreateNodeCommand";
 export type { NodeContainer } from "./commands/CreateNodeCommand";
 export { DeleteNodeCommand } from "./commands/DeleteNodeCommand";
@@ -714,7 +728,13 @@ export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvir
 
 ```ts
 export { ActionMap } from "./ActionMap";
-export type { ActionBinding, AxisBinding } from "./ActionMap";
+export type { ActionBinding, ActionConflict, AxisBinding, SerializedActionBindings } from "./ActionMap";
+export { ComboDetector } from "./ComboDetector";
+export type { ComboDefinition, ComboEvent, ComboFrameInput } from "./ComboDetector";
+export { playHaptic, probeHaptics } from "./Haptics";
+export type { GamepadRumbleActuatorLike, HapticRequest, HapticResult, HapticsCapability, HapticProbeInput, NavigatorVibrateLike } from "./Haptics";
+export { TOUCH_LAYOUT_GENRES, createTouchLayoutPreset } from "./TouchLayouts";
+export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions } from "./TouchLayouts";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
 export { GestureRecognizer } from "./GestureRecognizer";
@@ -738,7 +758,7 @@ export type { PointerEventLike, WheelEventLike } from "./PointerDevice";
 export { VirtualTouchJoystick, sampleVirtualTouchJoystickFixture } from "./VirtualTouchControls";
 export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchPoint } from "./VirtualTouchControls";
 export { WebXRSessionController } from "./WebXRSessionController";
-export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
+export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHandLike, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRJointSample, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, A3DXRViewerPoseLike, WebXRCameraSample, WebXRCapabilityReport, WebXRControllerSample, WebXRFrameSample, WebXRHandSample, WebXRHitTestSample, WebXRJointSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
 export * from "./GamepadInput.js";
 export * from "./GestureControls.js";
 export * from "./controls/PointerLockControls.js";
@@ -783,7 +803,22 @@ export * from "./product.js";
 export type * from "./ArcadeRuntime.js";
 export interface AuraLeanGameApp extends AuraLeanApp { input(options: LeanGameInputOptions): LeanGameInputController;
 export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanGameApp { const base = createProductApp(target, options);
-export const game = { input: createLeanGameInput, platformer: createLeanPlatformer, runtime: "lean-deterministic-arcade" } as const;
+export type LeanCameraRigKind = "side-view-follow" | "top-down-follow";
+export interface LeanCameraRigOptions { readonly kind?: LeanCameraRigKind;
+export interface LeanCameraRig { readonly kind: LeanCameraRigKind;
+export function createLeanCameraRig(options: LeanCameraRigOptions = {}): LeanCameraRig { const kind = options.kind ?? "side-view-follow";
+export interface LeanGameFeelOptions { /** Trauma decay per second (default 1.6). */ readonly traumaDecay?: number;
+export interface LeanGameFeel { addTrauma(amount: number): number;
+export function createLeanGameFeel(options: LeanGameFeelOptions = {}): LeanGameFeel { const traumaDecay = Math.max(0.1, options.traumaDecay ?? 1.6);
+export interface LeanDebugDraw { readonly enabled: boolean;
+export function createLeanDebugDraw(initial = false): LeanDebugDraw { let enabled = initial;
+export type LeanPerformanceGovernorMode = "off" | "conservative" | "aggressive";
+export interface LeanPerformanceGovernorSettings { readonly resolutionScale: number;
+export function createLeanPerformanceGovernor(mode: LeanPerformanceGovernorMode = "conservative") { const resolutions = [1, 0.85, 0.7, 0.5];
+export interface LeanTextOptions { readonly atlas?: SdfFontAtlasOptions;
+export interface LeanText { readonly atlas: SdfFontAtlas;
+export function createLeanText(options: LeanTextOptions = {}): LeanText { const atlas = createSdfFontAtlas(options.atlas);
+export const game = { input: createLeanGameInput, platformer: createLeanPlatformer, cameraRig: createLeanCameraRig, gameFeel: createLeanGameFeel, debugDraw: createLeanDebugDraw, performanceGovernor: createLeanPerformanceGovernor, text: createLeanText, runtime: "lean-deterministic-arcade" } as const;
 ```
 
 ## @aura3d/lean/product
@@ -821,8 +856,8 @@ export * from "./browser-index.js";
 
 ```ts
 export * from "./browser-index.js";
-export { summarizeThreeCompatMaterialLibrary } from "./MaterialValidation.js";
-export type { ThreeCompatMaterialLibrarySummary } from "./MaterialValidation.js";
+export { summarizeThreeCompatMaterialLibrary, validateGameReadyMaterialLibrary, validateGameReadyMaterialPreset } from "./MaterialValidation.js";
+export type { GameReadyMaterialLibraryValidation, GameReadyMaterialValidationResult, ThreeCompatMaterialLibrarySummary } from "./MaterialValidation.js";
 ```
 
 ## @aura3d/math
@@ -874,10 +909,11 @@ export interface NavigationAssetFetchResponse { readonly ok: boolean;
 export interface ImportNavigationAssetOptions { readonly fetch?: (url: string) => Promise<NavigationAssetFetchResponse>;
 export interface NavigationCrowdAgentOptions { readonly radius?: number;
 export class RecastNavMeshHandle { readonly #module: RecastModule;
+export interface RecastCrowdAgentState { readonly position: NavigationVec3;
 export class RecastCrowdHandle { readonly #crowd: Recast.Crowd;
 export class RecastTileCacheHandle { readonly navMesh: RecastNavMeshHandle;
 export class RecastNavigation { readonly #module: RecastModule;
-export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> { const module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
+export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> { let module: RecastModule;
 ```
 
 ## @aura3d/physics
@@ -928,7 +964,7 @@ export type RapierShapeSpec =
 export interface RapierRigidBodySpec { readonly type?: "dynamic" | "fixed" | "kinematic-position" | "kinematic-velocity";
 export interface RapierColliderSpec { readonly shape: RapierShapeSpec;
 export interface RapierBodySpec extends RapierRigidBodySpec, RapierColliderSpec {}
-export type RapierJointSpec = { readonly type: "fixed" | "hinge" | "slider" | "spring" | "ball-socket" | "motorised-hinge";
+export type RapierJointSpec = { /** * `revolute` is the Rapier-native name for `hinge`; `prismatic` is the * Rapier-native name for `slider`. Both spellings are accepted and build the * same native joint — the alias exists so H1's fixed/revolute/prismatic * promotion reads identically at the adapter and at root. */ readonly type: "fixed" | "hinge" | "revolute" | "slider" | "prismatic" | "spring" | "ball-socket" | "motorised-hinge";
 export interface RapierPhysicsOptions { readonly gravity?: PhysicsVec3;
 export class RapierBodyHandle { readonly #body: Rapier.RigidBody;
 export class RapierColliderHandle { readonly #collider: Rapier.Collider;
@@ -959,7 +995,7 @@ export type { PhysicsStepperResult } from "./PhysicsStepper.js";
 export { ScenePhysicsBridge } from "./ScenePhysicsBridge.js";
 export type { ScenePhysicsBinding, ScenePhysicsNode } from "./ScenePhysicsBridge.js";
 export { PhysicsDebugDraw } from "./PhysicsDebugDraw.js";
-export type { DebugLine } from "./PhysicsDebugDraw.js";
+export type { DebugLine, DebugLineCategory, PhysicsDebugDrawBudgetedResult, PhysicsDebugDrawOptions, PhysicsDebugDrawTelemetry } from "./PhysicsDebugDraw.js";
 export { buildMeshBVH, raycastMesh, raycastMeshBruteForce } from "./MeshBVH.js";
 export type { MeshBVH, MeshBVHBuildOptions, MeshRayHit, RaycastMeshOptions } from "./MeshBVH.js";
 export { createMeshSurfaceQuery } from "./SurfaceQuery.js";
@@ -1017,12 +1053,35 @@ export interface ModelProps extends AuraModelOptions { readonly asset: AuraAsset
 export interface CameraProps extends Omit<AuraCameraSpec, "mode"> { readonly mode?: AuraCameraSpec["mode"];
 export interface LightsProps { readonly preset?: "studio";
 export interface EffectProps extends Omit<AuraEffectNode, "kind" | "effect"> { readonly type: AuraEffectNode["effect"];
+export const AuraAppContext = createContext<AuraApp | undefined>(undefined);
+export function useAuraApp(): AuraApp | undefined { return useContext(AuraAppContext);
+export interface FrameSubscriberHost { onFrame(callback: AuraFrameCallback): () => void;
+export interface FrameScheduler { subscribe(callback: AuraFrameCallback, priority?: number): () => void;
+export function createFrameScheduler(host: FrameSubscriberHost): FrameScheduler { const entries: { readonly callback: AuraFrameCallback; readonly priority: number; readonly order: number }[] = [];
+export type { AuraFrameCallback, AuraFrameInfo } from "@aura3d/engine";
+export function useAuraFrame(callback: AuraFrameCallback, priority = 0): void { const app = useAuraApp();
+export interface AuraCanvasEventHandlers { readonly onPointerDown?: (event: PointerEvent) => void;
+export function eventInteractionNodes(target?: string) { return [ interactions.pointer(target ? { target } : {}), interactions.hover(target ? { target } : {}) ] as const;
 export function AuraCanvas(props: AuraCanvasProps): ReactElement { const ref = useRef<HTMLCanvasElement | null>(null);
 export function Scene(_props: SceneProps): null { return null;
-export function Model(_props: ModelProps): null { return null;
+export function Model(props: ModelProps): ReactElement | null { if (!props.suspendOnLoad || props.suspendOnLoad.length === 0) return null;
 export function Camera(_props: CameraProps): null { return null;
 export function Lights(_props: LightsProps): null { return null;
 export function Effect(_props: EffectProps): null { return null;
+export interface AuraAssetDescriptor { readonly id: string;
+export interface AuraAssetPreloadEvidence { readonly ok: boolean;
+export type AuraAssetPreloadFn = (
+export interface AuraAssetResource { preload(): Promise<AuraAssetPreloadEvidence>;
+export function createAuraAssetResource(
+export function resourceForDescriptors(
+export function useAuraAsset(resource: AuraAssetResource): AuraAssetPreloadEvidence { return resource.read();
+export type SceneRecipe = (builder: AuraSceneBuilder) => AuraSceneBuilder;
+export function cameraControlsRecipe(options: { readonly distance?: number; readonly target?: string } = {}): SceneRecipe { return (builder) => builder .camera(camera.orbit(options.distance !== undefined ? { distance: options.distance } : {})) .add(interactions.orbit(options.target ? { target: options.target } : {}));
+export function environmentPresetRecipe(
+export function transformGizmoRecipe(target: string): SceneRecipe { if (!target) throw new Error("Aura3D transform gizmo recipe requires a target node name.");
+export interface R3FMigrationRow { /** The idiomatic R3F / drei surface. */ readonly r3f: string;
+export const R3F_TO_AURA_MIGRATION_TABLE: readonly R3FMigrationRow[] = [
+export const R3F_MIGRATION_NOT_PARITY =
 export function buildSceneFromChildren(children: ReactNode): AuraSceneBuilder { let builder = scene();
 export function productViewerScene(asset: AuraAssetRef<"model">, material?: AuraMaterialSpec): AuraSceneBuilder { return scene() .background("#08111f") .add(model(asset, { material }).position(0, 0, 0).scale(1)) .add(lights.studio({ intensity: 1.1 })) .camera(camera.orbit({ distance: 4 })) .diagnostics(true);
 ```
@@ -1038,13 +1097,16 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 ```ts
 export type { BufferUsage, DrawCommand, IndexType, PrimitiveTopology, RenderBackendKind, RenderBuffer, RenderDeviceCapability, RenderDevice, RenderDeviceDiagnostics, RenderDeviceInfo, RenderTarget, RenderTargetDescriptor, RenderShaderProgram, ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection, ShaderSources, UniformValue } from "./RenderDevice";
 export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export { buildGpuTargetInventory, GPU_TARGET_BUDGET_BYTES, resolveGpuTargetOwner, spreadGpuTargetInventory } from "./RenderDevice";
+export type { GpuTargetInventory, GpuTargetInventoryEntry, GpuTargetKind, GpuTargetOwner } from "./RenderDevice";
 export { createRenderDevice } from "./RenderBackend";
 export type { RenderBackendOptions } from "./RenderBackend";
 export { WebGL2Device } from "./WebGL2Device";
-export type { WebGL2DeviceOptions } from "./WebGL2Device";
+export type { WebGL2BloomDiagnostics, WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
-export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
+export { MAX_WEBGPU_SKINNING_JOINTS, decideSkinningPalettePath } from "./WebGPUSkinningLimits";
+export type { SkinningCpuFallbackReason, SkinningPaletteDecision } from "./WebGPUSkinningLimits";
 export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, WebGPUDeviceLike, WebGPUDeviceOptions, WebGPULike, WebGPUQueueLike, WebGPUSamplerDescriptorLike } from "./WebGPUDevice";
 export { isWebGPURenderTarget, runWebGPURenderToTextureProof } from "./WebGPURenderToTextureProof";
 export type { WebGPURenderToTextureProof, WebGPURenderToTextureProofOptions } from "./WebGPURenderToTextureProof";
@@ -1058,7 +1120,7 @@ export { Geometry, computeBounds } from "./Geometry";
 export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
-export { computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
+export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 export type { SkinningBoundsPalette } from "./SkinningBounds";
 export { Texture, bytesPerPixel, compressedBlockByteLength, compressedTextureByteLength, isCompressedTextureFormat } from "./Texture";
 export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
@@ -1087,6 +1149,8 @@ export { createExternalParityBrdfLut } from "./BRDFLut";
 export type { ExternalParityBrdfLut } from "./BRDFLut";
 export { createExternalParityPmrem } from "./PMREM";
 export type { ExternalParityPmrem, ExternalParityPmremLevel } from "./PMREM";
+export { resolveVolumetricFog, resolveVolumetricQuality, selectVolumetricLight, volumetricLightDirection } from "./VolumetricFog";
+export type { VolumetricFogEffectParams, VolumetricFogQuality, VolumetricFogResolution, VolumetricQualityResolution } from "./VolumetricFog";
 export { createExternalParityIblResources } from "./IBL";
 export type { ExternalParityIblOptions, ExternalParityIblResourceSet } from "./IBL";
 export { createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "./EnvironmentPipeline";
@@ -1112,6 +1176,8 @@ export { runExternalParityDepthOfField } from "./postprocess/DepthOfFieldPass";
 export { runExternalParityColorGrade } from "./postprocess/ColorGradingPass";
 export type { ExternalParityColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
+export { bloomPyramidCompositeGain, normalizeBloomQualityPreset, resolveBloomPyramidPlan, } from "./postprocess/NativeBloomPyramid";
+export type { BloomPyramidMip, BloomPyramidPlan, BloomQualityPreset, } from "./postprocess/NativeBloomPyramid";
 export type { PostProcessCapabilityReport, PostProcessComposerDiagnostics, PostProcessComposerOptions, PostProcessComposerPass, PostProcessComposerRenderOptions, PostProcessUnsupportedEffect } from "./postprocess/EffectComposer";
 export { CINEMATIC_POSTPROCESS_EFFECT_IDS, analyzeCinematicPostprocessClarity, createCinematicDiagnosticsReport } from "./postprocess/CinematicDiagnostics";
 export type { CinematicCapabilityArea, CinematicCapabilityEntry, CinematicCapabilityStatus, CinematicDiagnosticId, CinematicDiagnosticsBackendInfo, CinematicDiagnosticsReport, CinematicPostprocessClarityFinding, CinematicPostprocessClarityFindingId, CinematicPostprocessClarityInput, CinematicPostprocessClarityReport, CinematicPostprocessClaritySeverity, CinematicPostprocessClarityStatus, CinematicPostprocessFrameMetrics, CinematicPostprocessPipelineDescriptor, CinematicPostProcessEffectId } from "./postprocess/CinematicDiagnostics";
@@ -1124,14 +1190,14 @@ export type { SortableRenderItem, RenderQueueBucket, RenderQueuePlan, RenderQueu
 export { createDefaultPerformanceLodLevels, selectPerformanceLodLevel } from "./performance/LOD";
 export type { PerformanceLodLevel } from "./performance/LOD";
 export type { BrdfLutDescriptor, DiffuseIrradianceGenerationOptions, EnvironmentColorSpace, EnvironmentHdrEncodeOptions, EnvironmentInputEncoding, EnvironmentMapResourceInput, EnvironmentMapResourceSet, EnvironmentMipGenerationOptions, EnvironmentResourceSetOptions, EnvironmentToneMappingOperator, LinearHdrEnvironmentMapSource, Rgba8EnvironmentMapSource, RgbeEnvironmentMapSource } from "./EnvironmentMapResources";
-export { Sampler } from "./Sampler";
-export type { SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
+export { DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler } from "./Sampler";
+export type { SamplerAnisotropyRequest, SamplerAnisotropyResolution, SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { isTextureBinding, TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
-export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
+export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, describeWebGPULostDevice, resolveProductionRuntimeRendererBackend, screenWebGPURenderBundlePrototype, WEBGPU_PARITY_PLAN, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
+export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, DualProbeEnvironmentLightingOptions, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, WebGPULostDeviceReport, WebGPUParityFeatureId, WebGPUParityFeatureRow, WebGPUParityFeatureStatus, WebGPURenderBundlePrototype, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
 export type { PortableShaderCompilationResult, PortableShaderMaterialOptions, PortableShaderSources, PortableShaderStagePair, PortableShaderUniform } from "./PortableShaderMaterial";
@@ -1186,17 +1252,35 @@ export { buildRenderDebugOverlaySnapshot, captureRenderDebugIssue, formatRenderD
 export type { RenderDebugIssue, RenderDebugIssueKind, RenderDebugOverlaySnapshot } from "./RendererDebugOverlay";
 export { RendererTimingCollector, createCpuFallbackGpuTimingBackend, createImmediateGpuTimingBackend, createWebGL2GpuTimingBackend } from "./RendererTiming";
 export type { RendererGpuTimingBackend, RendererGpuTimingResult, RendererGpuTimingToken, RendererTimingCollectorOptions, RendererTimingSample, RendererTimingSampleSource, RendererTimingSnapshot } from "./RendererTiming";
-export { ForwardPass } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
-export { createMorphTargetPlan, planMorphTargets, DEFAULT_MORPH_DEVICE_LIMITS, MORPH_UNIFORM_MAX_TARGETS, MORPH_UNIFORM_MAX_VERTICES } from "./MorphTargetPlan";
-export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan } from "./MorphTargetPlan";
-export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding, SkinningPaletteDiagnostics, SkinningPalettePath } from "./ForwardPass";
+export { createSpotShadowProjection, defaultSpotShadowKernel, projectSpotShadowUv, resolveSpotShadowFactor, selectSpotShadowAtlasTier, } from "./shadows/SpotShadowMaps";
+export type { ForwardSpotShadowMapOptions, SpotShadowAtlasTier, SpotShadowFactorInput, SpotShadowProjection } from "./shadows/SpotShadowMaps";
+export { computeShimmerScore, createCascadeBiasTable, selectCascadeWithHysteresis, } from "./shadows/CascadeHysteresis";
+export type { CascadeBiasTableEntry, CascadeHysteresisInput, HysteresisCascadeSplit, ShimmerSample, ShimmerScore } from "./shadows/CascadeHysteresis";
+export { createShadowAtlasPlan } from "./ShadowMap";
+export type { ShadowAtlasFallback, ShadowAtlasPlan, ShadowAtlasPlanRequest } from "./ShadowMap";
+export { createContactTelemetryFrame, resolveContactDarkening, resolveDepthAwareContactRadius, } from "./shadows/ContactShadows";
+export type { ContactDarkeningSample, ContactOccluder, ContactReceiverSample, ContactTelemetryFrame } from "./shadows/ContactShadows";
+export { computeObliqueClipProjection, computePlanarMirrorCamera, computePlanarViewMatrix, createPlanarProjectionMatrix, createSsrPassDescriptor, GlassRefractionCapture, multiplyPlanarMatrices, PlanarReflectionCapture, resolveGlassRefractionParams, resolveWaterReflectionRefraction, } from "./PlanarReflection";
+export type { GlassRefractionCaptureOptions, GlassRefractionCaptureResult, GlassRefractionParams, GlassRefractionSceneRenderer, ObliqueClipProjection, PlanarMirrorCamera, PlanarReflectionCaptureOptions, PlanarReflectionCaptureResult, PlanarReflectionFrame, PlanarReflectionSceneRenderer, SsrPassDescriptor, WaterReflectionRefractionParams } from "./PlanarReflection";
+export { consolidateBatchedMeshes, instancingPathMatrix, resetInstancingFallbackWarnings, warnOnInstancingFallback, } from "./InstancingDiagnostics";
+export type { BatchedMeshResult, BatchedMeshTelemetry, InstancingFallbackReason, InstancingFallbackReport, InstancingPathEntry, InstancingPathSupport } from "./InstancingDiagnostics";
+export { auditRenderOrder, createTerrainTileGrid, enforceFrameBudget, planScatterInstances, queryTerrainHeight, resolveTerrainSlopeBlend, scatterWindOffset, } from "./TerrainTiles";
+export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
+export { createBeamDescriptor, resolveBillboardCorners, resolveFlipbookUv, } from "./SpriteFlipbook";
+export type { BeamDescriptor, BillboardCorners, BillboardMode, BillboardOptions, FlipbookFrame } from "./SpriteFlipbook";
+export { createMorphTargetPlan, planMorphTargets, resolveWrinkleMapStrength, DEFAULT_MORPH_DEVICE_LIMITS, MORPH_UNIFORM_MAX_TARGETS, MORPH_UNIFORM_MAX_VERTICES } from "./MorphTargetPlan";
+export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan, WrinkleMapBinding, WrinkleMapHook } from "./MorphTargetPlan";
+export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding, SkinningPaletteDecisionRecord, SkinningPaletteDiagnostics, SkinningPalettePath } from "./ForwardPass";
 export { batchStaticRenderItems, buildStaticBoundsBvh, queryStaticBoundsBvh, raycastStaticBoundsBvh, selectLodLevel, updateStaticBoundsBvh } from "./SceneOptimization";
-export { consolidateStaticMeshes } from "./MeshConsolidation";
+export { consolidateStaticMeshes, deindexGeometryToNonIndexed } from "./MeshConsolidation";
 export type { MeshConsolidationInput, MeshConsolidationOptions, MeshConsolidationResult } from "./MeshConsolidation";
 export type { LodLevel, LodSelection, LodSelectionInput, StaticBatchInput, StaticBatchOptions, StaticBatchResult, StaticBoundsBvh, StaticBoundsBvhBuildDiagnostics, StaticBoundsBvhNode, StaticBoundsBvhOptions, StaticBoundsBvhQueryOptions, StaticBoundsBvhQueryResult, StaticBoundsBvhRaycastDiagnostics, StaticBoundsBvhRaycastHit, StaticBoundsBvhRaycastResult, StaticBoundsBvhTraversalDiagnostics, StaticBoundsBvhUpdateResult, StaticBoundsIntersector, StaticSpatialBounds, StaticSpatialItem } from "./SceneOptimization";
 export { computeOrthographicCameraFrame, computeOrthographicCameraView, computePerspectiveCameraFrame } from "./CameraFraming";
 export type { CameraFrameBounds, CameraFrameViewport, OrthographicCameraFrame, OrthographicCameraFrameFitMode, OrthographicCameraFrameOptions, OrthographicCameraViewOptions, PerspectiveCameraFrame, PerspectiveCameraFrameOptions } from "./CameraFraming";
+export { SDF_FONT_SCOPE_NOTE, SDF_OCCLUDED_OPACITY, SDF_SUPPORTED_GLYPHS, applySdfTextOcclusion, createSdfFontAtlas, createSdfTextQuadMesh, describeSdfTextPixelBacking, layoutSdfText, rasterizeSdfTextLabelImage, resolveSdfTextFrameOpacity, sampleSdfCoverage, sdfTextLodFade, summarizeTextSurfaces } from "./SdfText";
+export type { SdfFontAtlas, SdfFontAtlasOptions, SdfGlyphMetrics, SdfPixelBacking, SdfPixelBackingInput, SdfTextFrameOpacity, SdfTextFrameOpacityInput, SdfTextLayout, SdfTextLayoutOptions, SdfTextOcclusionPolicy, SdfTextQuad, SdfTextQuadMesh, SdfTextRasterImage, SdfTextRasterOptions, SdfTextResolvedStyle, SdfTextRgba, SdfTextStyle, TextSurfaceSummary } from "./SdfText";
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
@@ -1208,8 +1292,8 @@ export { LightCollector } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
-export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting } from "./ClusteredForwardLighting";
-export type { ClusteredForwardLightingDiagnostics, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting, resetClusteredForwardLightingWarnings } from "./ClusteredForwardLighting";
+export type { ClusteredForwardFallbackPolicy, ClusteredForwardLightingDiagnostics, ClusteredForwardLightingOptions, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 export { DepthMaterial, DepthPass } from "./DepthPass";
 export type { DepthPassOptions } from "./DepthPass";
 export { ShadowMap, computeShadowDepthBias, createPoissonDiskShadowKernel, createShadowAtlasLayout, createShadowFilterKernel } from "./ShadowMap";
@@ -1236,7 +1320,7 @@ export { createLightingDefault } from "./LightingDefaults";
 export type { LightingDefault, LightingDefaultPreset } from "./LightingDefaults";
 export { auditPrimitiveSubmission, formatPrimitiveSubmissionAudit } from "./PrimitiveSubmissionAudit";
 export type { PrimitiveFrustumVerdict, PrimitiveSubmissionAudit, PrimitiveSubmissionAuditOptions, PrimitiveSubmissionBlocker, PrimitiveSubmissionRecord } from "./PrimitiveSubmissionAudit";
-export { createLightingRig, listLightingRigPresets, resolveSubjectRimPlacement } from "./LightingRig";
+export { arenaShowdown, cinematicNight, createLightingRig, listLightingRigPresets, productHero, resolveSubjectRimPlacement } from "./LightingRig";
 export type { LightingRig, LightingRigDiagnostics, LightingRigSubject, SubjectRimPlacement, SubjectRimPlacementOptions, LightingRigLightDescriptor, LightingRigOptions, LightingRigPreset, LightingRigUnsupportedFeature } from "./LightingRig";
 export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainHeightfield";
 export type { TerrainFixtureBiome, TerrainHeightfieldColliderDescriptor, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldGeometry, TerrainHeightfieldGeometryOptions, TerrainHeightfieldSample } from "./TerrainHeightfield";
@@ -1247,7 +1331,14 @@ export type { VegetationFixtureInstance, VegetationFixtureLayer, VegetationFixtu
 export { createVoxelWorld } from "./VoxelWorld";
 export type { VoxelBlockDescriptor, VoxelBlockType, VoxelLod, VoxelWorldOptions, VoxelVisibleBlock, VoxelWorldState } from "./VoxelWorld";
 export { sampleOceanFixture } from "./OceanSurface";
-export type { OceanBuoyancySample, OceanFixtureOptions, OceanFixturePreset, OceanFixtureSample, OceanFoamPatch, OceanWaveDescriptor, OceanWaveSample } from "./OceanSurface";
+export { createDayNightSky, sampleCloudNoise, DAY_NIGHT_SKY_CLAIM_BOUNDARY } from "./DayNightSky";
+export type { DayNightSkyCloudCell, DayNightSkyDisc, DayNightSkyOptions, DayNightSkyStar, DayNightSkyState } from "./DayNightSky";
+export { applyWetnessToColor, applyWetnessToRoughness, describeWetMaterial, sampleLightningFlash, samplePuddleMask } from "./AtmosphereWetness";
+export type { LightningFlashSample, WetnessMaterialResponse, WetnessProbe } from "./AtmosphereWetness";
+export { createWaterSurface, WATER_SURFACE_CLAIM_BOUNDARY, WATER_SURFACE_PLANAR_DEPENDENCY } from "./WaterSurface";
+export type { WaterDepthBand, WaterFoamMask, WaterSurfaceBoat, WaterSurfaceOptions, WaterSurfacePreset, WaterSurfaceState, WaterWakeSegment } from "./WaterSurface";
+export { WaterReflectionRefractionCapture } from "./OceanSurface";
+export type { OceanBuoyancySample, OceanFixtureOptions, OceanFixturePreset, OceanFixtureSample, OceanFoamPatch, OceanWaveDescriptor, OceanWaveSample, WaterCaptureFrame, WaterReflectionRefractionOptions, WaterReflectionRefractionResult, WaterReflectionSceneRenderer, WaterRefractionSceneRenderer } from "./OceanSurface";
 export { createSpaceEnvironment } from "./SpaceEnvironment";
 export type { SpaceEnvironmentDustParticle, SpaceEnvironmentState, SpaceEnvironmentNebula, SpaceEnvironmentStar } from "./SpaceEnvironment";
 export { LightingDebug } from "./LightingDebug";
@@ -1258,13 +1349,15 @@ export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, 
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
 export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
-export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
+export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
 export type { RendererFeature, RendererFeatureReport, RendererFeatureStatus } from "./RendererFeatureGates";
 export { createExternalParityEnvironmentLighting, createExternalParityDirectionalShadowEvidence, createExternalParityFlagshipRenderPresetEvidence, createExternalParityGeneratedEnvironmentMapSource, createExternalParityGeneratedHdrEnvironmentMapSource, createExternalParityRenderPresetEvidence, sampleExternalParityLdrPostprocessReadback, externalParityActiveFeature, externalParityBlockedFeature, externalParityUnsupportedFeature } from "./ExternalParityRenderPreset";
+export { AURA_INDOOR_OUTDOOR_NIGHT_PRESET_PACK, applyPresetPackExposure, meanLinearLuma } from "./EnvironmentPresetPack";
+export type { EnvironmentPresetPack, EnvironmentPresetPackEntry, EnvironmentPresetPackSlot } from "./EnvironmentPresetPack";
 export type { ExternalParityEnvironmentLightingBundle, ExternalParityEnvironmentPreset, ExternalParityDirectionalShadowEvidence, ExternalParityLdrPostprocessSummary, ExternalParityReadbackDevice, ExternalParityRenderPresetEvidence, ExternalParityRenderPresetEvidenceOptions, ExternalParityRenderPresetFeature, ExternalParityRenderPresetFeatureStatus } from "./ExternalParityRenderPreset";
-export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEnvironmentLight, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
-export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
+export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrAnisotropicDistribution, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrCharlieSheen, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEncodeOutput, pbrEnvironmentFogFactor, pbrEnvironmentLight, pbrEnvironmentLightSplitSum, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrIridescenceColor, pbrLinearToSrgbChannel, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
+export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrFogFactorInput, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrSplitSumEnvironmentInput, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
 export * from "./production-runtime/geometry/ProjectedDecalGeometry";
 export * from "./DecalGeometry.js";
 export * from "./GeometryPrimitives.js";
@@ -1295,6 +1388,10 @@ export * from "./effects/SizeModule.js";
 export * from "./effects/ForceModule.js";
 export * from "./effects/CollisionModule.js";
 export * from "./effects/TrailModule.js";
+export * from "./effects/TurbulenceModule.js";
+export * from "./effects/HeightfieldModule.js";
+export * from "./effects/LightingModule.js";
+export * from "./effects/SubEmitterModule.js";
 export * from "./effects/ParticleRenderer.js";
 export * from "./effects/ParticleRenderPass.js";
 export * from "./effects/GPUParticleBackend.js";
@@ -1408,9 +1505,11 @@ export { deserializeGraph, serializeGraph, validateGraph } from "./VisualGraph";
 export type { SerializedVisualGraph, VisualEdge, VisualGraph } from "./VisualGraph";
 export { VisualGraphExecutor } from "./VisualGraphExecutor";
 export type { VisualExecutionResult } from "./VisualGraphExecutor";
-export type { VisualAnimationControllerState, VisualAnimationEvent, VisualCameraState, VisualCollisionEvent, VisualCombatEvent, VisualGraphDiagnostic, VisualGraphExecutionContext, VisualGraphSideEffect, VisualGraphValidationOptions, VisualInputSet, VisualInputSnapshot, VisualOverlapResult, VisualPhysicsBodyState, VisualRaycastHit, VisualRuntimeNodeState, VisualStateCollection, VisualVector3 } from "./VisualGraphContext";
+export type { VisualAnimationControllerState, VisualAnimationEvent, VisualCameraState, VisualCollisionEvent, VisualCombatEvent, VisualAiPlanner, VisualAiSnapshot, VisualGameScoreState, VisualGraphDiagnostic, VisualGraphExecutionContext, VisualGraphSideEffect, VisualGraphValidationOptions, VisualObjectiveState, VisualStateMachineState, VisualTimerState, VisualInputSet, VisualInputSnapshot, VisualOverlapResult, VisualPhysicsBodyState, VisualRaycastHit, VisualRuntimeNodeState, VisualStateCollection, VisualVector3 } from "./VisualGraphContext";
 export { createVisualNode, getVisualNodeDefinition, listVisualNodeDefinitions } from "./VisualNodeCatalog";
 export type { VisualNodeCategory, VisualNodeDefinition } from "./VisualNodeCatalog";
+export { applyVisualGameplaySideEffects, attachVisualScriptingGraph, createVisualGameplayState, createVisualNodeForGraph, createVisualScriptingGraph, listVisualScriptingNodeCatalog, roundTripVisualScriptingGraph, serializeVisualNodeCatalog } from "./VisualScriptingRoot";
+export type { SerializedVisualNodeCatalog, SerializedVisualNodeCatalogEntry, VisualGameplayState, VisualGameplayTimer, VisualScriptingCatalogGroup, VisualScriptingGraphHandle, VisualScriptingGraphSpec, VisualScriptingRoundTrip } from "./VisualScriptingRoot";
 export { animationNodeCategories } from "./AnimationNodeCategories";
 export type { AnimationNodeCategory } from "./AnimationNodeCategories";
 export { animationVisualNodeDefinitions } from "./AnimationVisualNodes";
@@ -1443,14 +1542,18 @@ export { TextureCompat, TextureLoaderCompat, THREE_COMPAT_COMPAT_TEXTURE_SETTING
 export type { TextureFilterCompat, TextureWrapCompat } from "./textures";
 export { WebGLMultipleRenderTargetsCompat, WebGLRenderTargetCompat } from "./render-targets";
 export { CubeTextureLoaderCompat, EXRLoaderCompat, GLTFLoaderCompat, HDRLoaderCompat, KTX2LoaderCompat, MTLLoaderCompat, OBJLoaderCompat, ThreeCompatTextureLoader } from "./loaders";
-export { DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
-export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
+export { ArcballControls, DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
+export type { ArcballCameraLike, ArcballControlsOptions, TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
+export { APPROXIMATION_LEDGER, assertLedgerCovers, getApproximationLedgerRow, listApproximationShims } from "./ApproximationLedger";
+export type { ApproximationLedgerFidelity, ApproximationLedgerRow } from "./ApproximationLedger";
 export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "./animation";
 export { THREE_COMPAT_THREE_IMPORT_MAP, THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
 export type { ThreeCompatCompatibilityWarning } from "./migration/CompatibilityWarnings";
+export { CSS2D_CSS3D_MANUAL_MAP, R3F_MIGRATION_TABLE_POINTER, createR3fMigrationWarnings } from "./migration/R3fMigration";
+export type { Css2DCss3DManualMapping } from "./migration/R3fMigration";
 export { AmbientLightCompat, DirectionalLightCompat, HemisphereLightCompat, LightCompat, PointLightCompat, RectAreaLightCompat, SpotLightCompat } from "./lights";
 export { AxesHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, GridHelperCompat, HelperLineSegmentsCompat, SkeletonHelperCompat } from "./helpers";
 export { THREE_COMPAT_COMPATIBILITY_THRESHOLDS, buildInitialCompatibilityMatrix, supportedOrPartial } from "./ThreeCompatibilityMatrix";

@@ -17,6 +17,13 @@ import {
   type FrameLoopOptions,
   type FrameLoopSnapshot
 } from "./FrameLoop";
+import {
+  createPerformanceGovernor,
+  type GamePerFramePerfTelemetry,
+  type GamePerformanceGovernorMode,
+  type GamePerformanceGovernorSettings,
+  type SideViewGamePerformanceBudget
+} from "../production-runtime/GameRenderPreset.js";
 
 export type GameAppRuntimeStatus = "idle" | "running" | "paused" | "disposed";
 
@@ -49,6 +56,23 @@ export interface GameAppRuntimeEvidence {
   readonly lastResize?: GameAppRuntimeResize;
   readonly loop: FrameLoopSnapshot;
   readonly app: GameRuntimeEvidence;
+  readonly perf?: GameAppRuntimePerformanceSnapshot;
+}
+
+export interface GameAppRuntimePerformanceSnapshot {
+  readonly mode: GamePerformanceGovernorMode;
+  readonly telemetry: GamePerFramePerfTelemetry;
+  readonly settings: GamePerformanceGovernorSettings;
+  readonly degraded: readonly string[];
+  readonly polls: number;
+}
+
+export interface GameAppRuntimePerformanceBudgetOptions {
+  readonly mode: GamePerformanceGovernorMode;
+  readonly budget: SideViewGamePerformanceBudget;
+  readonly sample?: () => GamePerFramePerfTelemetry;
+  readonly apply?: (settings: GamePerformanceGovernorSettings) => void;
+  readonly initial?: GamePerformanceGovernorSettings;
 }
 
 export interface GameAppRuntimeOptions {
@@ -56,6 +80,7 @@ export interface GameAppRuntimeOptions {
   readonly loop?: GameAppRuntimeLoopOptions;
   readonly input?: GameInputOptions | readonly GameInputOptions[];
   readonly evidence?: GameRuntimeEvidenceOptions;
+  readonly performanceBudget?: GameAppRuntimePerformanceBudgetOptions;
 }
 
 export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
@@ -67,10 +92,12 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
   readonly paused: boolean;
   readonly disposed: boolean;
   readonly evidence: GameAppRuntimeEvidence;
+  readonly perf: GameAppRuntimePerformanceSnapshot | undefined;
   start(): GameAppRuntimeEvidence;
   pause(): GameAppRuntimeEvidence;
   resume(): GameAppRuntimeEvidence;
   step(dt?: number): GameAppRuntimeEvidence;
+  pollPerformance(telemetry?: GamePerFramePerfTelemetry): GameAppRuntimePerformanceSnapshot | undefined;
   resize(width: number, height: number, pixelRatio?: number): GameAppRuntimeEvidence;
   onFrame(callback: AuraAppFrameCallback): () => void;
   offFrame(callback: AuraAppFrameCallback): void;
@@ -96,6 +123,30 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   let resizeCount = 0;
   let disposeCount = 0;
   let lastResize: GameAppRuntimeResize | undefined;
+  const perfGovernorOptions = options.performanceBudget;
+  let governor = perfGovernorOptions
+    ? createPerformanceGovernor(perfGovernorOptions.mode, perfGovernorOptions.initial)
+    : undefined;
+  let lastPerf: GameAppRuntimePerformanceSnapshot | undefined;
+  let perfPolls = 0;
+
+  const pollPerformance = (telemetry?: GamePerFramePerfTelemetry): GameAppRuntimePerformanceSnapshot | undefined => {
+    const governorOptions = perfGovernorOptions;
+    if (!governorOptions || !governor) return undefined;
+    const sample = telemetry ?? governorOptions.sample?.();
+    if (!sample) return lastPerf;
+    governor = governor.step(sample, governorOptions.budget);
+    governorOptions.apply?.(governor.settings);
+    perfPolls += 1;
+    lastPerf = {
+      mode: governor.mode,
+      telemetry: sample,
+      settings: governor.settings,
+      degraded: governor.degraded,
+      polls: perfPolls
+    };
+    return lastPerf;
+  };
 
   const loopFrameUnsubscribe = loop.onFrame((frame) => {
     app.step(frame.dt);
@@ -147,7 +198,8 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       activeInputControllers,
       ...(lastResize ? { lastResize } : {}),
       loop: loopSnapshot,
-      app: app.evidence(evidenceOptions())
+      app: app.evidence(evidenceOptions()),
+      ...(lastPerf ? { perf: lastPerf } : {})
     };
   };
 
@@ -177,6 +229,9 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     },
     get evidence() {
       return snapshotEvidence();
+    },
+    get perf() {
+      return lastPerf;
     },
     start() {
       assertAlive("start");
@@ -212,7 +267,12 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       assertAlive("step");
       stepCount += 1;
       loop.step(Math.max(0, dt));
+      if (perfGovernorOptions?.sample) pollPerformance();
       return snapshotEvidence();
+    },
+    pollPerformance(telemetry?: GamePerFramePerfTelemetry) {
+      assertAlive("pollPerformance");
+      return pollPerformance(telemetry);
     },
     resize(width, height, pixelRatio = 1) {
       assertAlive("resize");

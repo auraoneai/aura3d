@@ -24,6 +24,9 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
     if (descriptor.target.trim().length === 0) {
       throw new Error("AnimationTrack target cannot be empty.");
     }
+    if (!ANIMATION_TRACK_VALUE_TYPES.has(descriptor.valueType)) {
+      throw new Error(`AnimationTrack: unknown valueType "${String(descriptor.valueType)}" for target "${descriptor.target}".`);
+    }
     validateKeyframes(descriptor.keyframes);
     this.target = descriptor.target;
     this.valueType = descriptor.valueType;
@@ -165,8 +168,19 @@ function interpolate(type: TrackValueType, a: AnimationValue, b: AnimationValue,
     case "boolean":
     case "string":
       return t < 1 ? a : b;
+    default:
+      throw new Error(`AnimationTrack.sample: cannot interpolate unknown value type "${String(type)}".`);
   }
 }
+
+const ANIMATION_TRACK_VALUE_TYPES: ReadonlySet<string> = new Set([
+  "scalar",
+  "vector3",
+  "quaternion",
+  "number-array",
+  "boolean",
+  "string"
+]);
 
 function interpolateNumberArray(a: readonly number[], b: readonly number[], t: number): readonly number[] {
   if (a.length !== b.length) {

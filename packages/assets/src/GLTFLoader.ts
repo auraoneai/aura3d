@@ -330,7 +330,7 @@ interface GLTFLight {
   };
 }
 
-interface GLTFJson {
+export interface GLTFJson {
   readonly asset?: { readonly version?: string };
   readonly extensionsUsed?: readonly string[];
   readonly extensionsRequired?: readonly string[];
@@ -1876,6 +1876,59 @@ function usesGLTFExtension(json: GLTFJson, extension: string): boolean {
   return Boolean(json.extensionsRequired?.includes(extension) || json.extensionsUsed?.includes(extension));
 }
 
+/**
+ * Authoring/persistence workflow for `KHR_materials_variants` (M1): switch → save → reload
+ * round-trip via scene-state JSON — NOT glTF export (there is no exporter in any
+ * package source tree, so persistence means scene-state JSON the loader's scene options can
+ * consume back).
+ */
+export interface GLTFMaterialVariantSceneState {
+  readonly schemaVersion: "gltf-material-variant-state";
+  /** Selected variant name, or `undefined` for the default (unmapped) materials. */
+  readonly selectedVariant?: string;
+}
+
+/**
+ * Save step: validate a variant switch against the loaded variant list and produce the
+ * persisted scene-state JSON value. Throws naming the variant when it is not defined —
+ * no silent no-ops.
+ */
+export function serializeMaterialVariantSelection(
+  selectedVariant: string | undefined,
+  materialVariants: readonly GLTFMaterialVariantAsset[]
+): GLTFMaterialVariantSceneState {
+  if (selectedVariant !== undefined) {
+    validateSceneMaterialVariant(materialVariants, selectedVariant);
+  }
+  return selectedVariant === undefined
+    ? { schemaVersion: "gltf-material-variant-state" }
+    : { schemaVersion: "gltf-material-variant-state", selectedVariant };
+}
+
+/**
+ * Reload step: parse persisted scene-state JSON back into a selection the loader's scene
+ * options (`selectedVariant`) accept. Throws on schema mismatch or unknown variant names.
+ */
+export function parseMaterialVariantSelection(
+  state: unknown,
+  materialVariants: readonly GLTFMaterialVariantAsset[]
+): string | undefined {
+  if (typeof state !== "object" || state === null) {
+    throw new Error("glTF material variant scene state must be an object.");
+  }
+  const record = state as Record<string, unknown>;
+  if (record.schemaVersion !== "gltf-material-variant-state") {
+    throw new Error("glTF material variant scene state has an unsupported schemaVersion.");
+  }
+  const selectedVariant = record.selectedVariant;
+  if (selectedVariant === undefined) return undefined;
+  if (typeof selectedVariant !== "string") {
+    throw new Error("glTF material variant scene state selectedVariant must be a string.");
+  }
+  validateSceneMaterialVariant(materialVariants, selectedVariant);
+  return selectedVariant;
+}
+
 function usesGLTFMeshoptExtension(json: GLTFJson): boolean {
   return GLTF_MESHOPT_EXTENSION_NAMES.some((extension) => usesGLTFExtension(json, extension));
 }
@@ -2633,7 +2686,22 @@ function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[], a
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing sampler ${channel.sampler}`);
       }
       if (isOptionalAnimationPointerChannel(json, channel)) {
-        return [];
+        const pointer = channel.target.extensions?.KHR_animation_pointer?.pointer ?? "";
+        const resolved = resolveAnimationPointerBinding(json, pointer);
+        if (!resolved) {
+          // Unsupported pointer shape: preserve the previous diagnose-and-drop behavior
+          // rather than failing the whole asset. Supported shapes are bound below.
+          return [];
+        }
+        const interpolation = resolveAnimationInterpolation(sampler.interpolation, animationIndex, channelIndex);
+        const times = readAccessor(json, buffers, sampler.input, accessorCache).map((row) => row[0] ?? 0);
+        const output = readAccessor(json, buffers, sampler.output, accessorCache);
+        const values = animationPointerKeyframesForSampler(resolved.valueType, times, output, interpolation, animationIndex, channelIndex);
+        return [new AnimationTrack({
+          target: resolved.target,
+          valueType: resolved.valueType,
+          keyframes: values
+        })];
       }
       if (channel.target.node === undefined || !json.nodes?.[channel.target.node]) {
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing target node ${channel.target.node ?? "undefined"}`);
@@ -2659,6 +2727,185 @@ function isOptionalAnimationPointerChannel(json: GLTFJson, channel: GLTFAnimatio
     json.extensionsUsed?.includes("KHR_animation_pointer") === true &&
     json.extensionsRequired?.includes("KHR_animation_pointer") !== true &&
     typeof channel.target.extensions?.KHR_animation_pointer?.pointer === "string";
+}
+
+/**
+ * Runtime binding for one `KHR_animation_pointer` channel (M1): maps the JSON-pointer
+ * string onto an `AnimationTrack` target + value type so pointer channels drive runtime
+ * property tracks instead of being diagnosed and dropped.
+ *
+ * Supported subset (explicit — anything else returns `undefined` and keeps the previous
+ * diagnose-and-drop behavior):
+ * - `/nodes/{i}/translation|rotation|scale` → `<nodeName>.<path>` (vector3/quaternion)
+ * - `/nodes/{i}/weights`, `/meshes/{i}/weights` → `<name>.weights` (number-array)
+ * - `/materials/{i}/<property…>` → `material:<name>.<property…>` (scalar/vector3/number-array by leaf)
+ * - `/extensions/KHR_lights_punctual/lights/{i}/intensity|color|range` and the short
+ *   `/lights/{i}/…` form → `light:<name>.<property>` (scalar/vector3)
+ *
+ * three.js r185 resolves the full pointer grammar (including camera and extension-object
+ * leaves); leaves outside this subset remain diagnostic-only here and are listed in
+ * `GLTFExtensionSupport.ts` limits.
+ */
+export interface GLTFAnimationPointerBinding {
+  readonly pointer: string;
+  readonly target: string;
+  readonly valueType: TrackValueType;
+}
+
+export function resolveAnimationPointerBinding(json: GLTFJson, pointer: string): GLTFAnimationPointerBinding | undefined {
+  const segments = pointer.split("/").filter((segment) => segment.length > 0);
+  if (segments.length < 3) return undefined;
+  // Full extension-object form first: it carries no bare index in segment 2.
+  if (segments[0] === "extensions" && segments[1] === "KHR_lights_punctual" && segments[2] === "lights") {
+    return resolvePunctualLightPointer(json, pointer, segments.slice(3));
+  }
+  const [root, indexRaw, ...rest] = segments as [string, string, ...string[]];
+  const index = Number(indexRaw);
+  if (!Number.isInteger(index) || index < 0) return undefined;
+
+  if (root === "nodes") {
+    const node = json.nodes?.[index];
+    if (!node) return undefined;
+    const name = typeof node.name === "string" && node.name.trim().length > 0 ? node.name : `node-${index}`;
+    const [leaf] = rest;
+    if (leaf === "translation" || leaf === "scale") {
+      return { pointer, target: `${name}.${leaf}`, valueType: "vector3" };
+    }
+    if (leaf === "rotation") {
+      return { pointer, target: `${name}.${leaf}`, valueType: "quaternion" };
+    }
+    if (leaf === "weights" && rest.length === 1) {
+      return { pointer, target: `${name}.weights`, valueType: "number-array" };
+    }
+    return undefined;
+  }
+
+  if (root === "meshes") {
+    const mesh = json.meshes?.[index];
+    if (!mesh) return undefined;
+    const meshName = typeof (mesh as { name?: unknown }).name === "string" && ((mesh as { name?: string }).name?.trim().length ?? 0) > 0
+      ? (mesh as { name?: string }).name as string
+      : `mesh-${index}`;
+    if (rest.length === 1 && rest[0] === "weights") {
+      return { pointer, target: `${meshName}.weights`, valueType: "number-array" };
+    }
+    return undefined;
+  }
+
+  if (root === "materials") {
+    const material = json.materials?.[index];
+    if (!material) return undefined;
+    const materialName = typeof material.name === "string" && material.name.trim().length > 0 ? material.name : `material-${index}`;
+    if (rest.length === 0) return undefined;
+    const leaf = rest[rest.length - 1] ?? "";
+    return { pointer, target: `material:${materialName}.${rest.join(".")}`, valueType: pointerLeafValueType(leaf) };
+  }
+
+  if (root === "lights") {
+    return resolvePunctualLightPointer(json, pointer, segments.slice(1));
+  }
+
+  return undefined;
+}
+
+function resolvePunctualLightPointer(json: GLTFJson, pointer: string, lightSegments: readonly string[]): GLTFAnimationPointerBinding | undefined {
+  const [lightIndexRaw, ...lightRest] = lightSegments;
+  const lightIndex = Number(lightIndexRaw);
+  if (!Number.isInteger(lightIndex) || lightIndex < 0 || lightRest.length === 0) return undefined;
+  const light = json.extensions?.KHR_lights_punctual?.lights?.[lightIndex];
+  if (!light) return undefined;
+  const lightName = typeof light.name === "string" && light.name.trim().length > 0 ? light.name : `light-${lightIndex}`;
+  const leaf = lightRest[lightRest.length - 1] ?? "";
+  if (leaf !== "intensity" && leaf !== "color" && leaf !== "range") return undefined;
+  return { pointer, target: `light:${lightName}.${lightRest.join(".")}`, valueType: leaf === "color" ? "vector3" : "scalar" };
+}
+
+const POINTER_SCALAR_LEAVES = new Set([
+  "intensity",
+  "range",
+  "alphaCutoff",
+  "metallicFactor",
+  "roughnessFactor",
+  "normalScale",
+  "occlusionStrength",
+  "emissiveStrength",
+  "clearcoatFactor",
+  "clearcoatRoughnessFactor",
+  "transmissionFactor",
+  "thicknessFactor",
+  "attenuationDistance",
+  "ior",
+  "specularFactor",
+  "sheenRoughnessFactor",
+  "iridescenceFactor",
+  "iridescenceIor",
+  "dispersion"
+]);
+
+const POINTER_VEC3_LEAVES = new Set([
+  "translation",
+  "scale",
+  "color",
+  "emissiveFactor",
+  "attenuationColor",
+  "specularColorFactor",
+  "sheenColorFactor"
+]);
+
+function pointerLeafValueType(leaf: string): TrackValueType {
+  if (POINTER_SCALAR_LEAVES.has(leaf)) return "scalar";
+  if (POINTER_VEC3_LEAVES.has(leaf)) return "vector3";
+  if (leaf === "rotation") return "quaternion";
+  // baseColorFactor (vec4), packed factors, and unknown leaves interpolate elementwise.
+  return "number-array";
+}
+
+function animationPointerKeyframesForSampler(
+  valueType: TrackValueType,
+  times: readonly number[],
+  output: readonly (readonly number[])[],
+  interpolation: "LINEAR" | "STEP" | "CUBICSPLINE",
+  animationIndex: number,
+  channelIndex: number
+): readonly {
+  readonly time: number;
+  readonly value: number | Vec3 | Quat | readonly number[];
+  readonly interpolation: "step" | "linear" | "cubicspline";
+  readonly inTangent?: number | Vec3 | Quat | readonly number[];
+  readonly outTangent?: number | Vec3 | Quat | readonly number[];
+}[] {
+  const convert = (row: readonly number[]): number | Vec3 | Quat | readonly number[] => {
+    if (valueType === "scalar") return row[0] ?? 0;
+    if (valueType === "vector3") return toVec3(row);
+    if (valueType === "quaternion") return toQuat(row);
+    return [...row];
+  };
+  if (interpolation !== "CUBICSPLINE") {
+    if (times.length !== output.length) {
+      throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} input/output count mismatch`);
+    }
+    const samples = sanitizeAnimationSamples(times, output, 1);
+    const mode = interpolation === "STEP" ? "step" : "linear";
+    return samples.times.map((time, index) => ({
+      time,
+      value: convert(samples.output[index]!),
+      interpolation: mode
+    }));
+  }
+  if (output.length !== times.length * 3) {
+    throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} CUBICSPLINE output count must be three times input count`);
+  }
+  const samples = sanitizeAnimationSamples(times, output, 3);
+  return samples.times.map((time, index) => {
+    const offset = index * 3;
+    return {
+      time,
+      inTangent: convert(samples.output[offset]!),
+      value: convert(samples.output[offset + 1]!),
+      outTangent: convert(samples.output[offset + 2]!),
+      interpolation: "cubicspline"
+    };
+  });
 }
 
 function resolveAnimationInterpolation(

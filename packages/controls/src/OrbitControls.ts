@@ -42,6 +42,7 @@ export class OrbitControls {
 
   private readonly engine: OrbitControlsEngine | undefined;
   private attachedCamera: OrbitCameraLike | undefined;
+  private disposed = false;
 
   constructor(camera?: OrbitCameraLike, options: OrbitControlsOptions = {}) {
     if (!camera) return;
@@ -54,7 +55,12 @@ export class OrbitControls {
 
   /** True when a camera is attached and motion is delegated to the real engine. */
   get isCameraAttached(): boolean {
-    return this.engine !== undefined;
+    return this.engine !== undefined && !this.disposed;
+  }
+
+  /** True after `dispose()`; every mutator is a no-op past this point. */
+  get isDisposed(): boolean {
+    return this.disposed;
   }
 
   /**
@@ -66,14 +72,14 @@ export class OrbitControls {
    */
   applyInput(snapshot: InputSnapshot): void {
     const engine = this.engine;
-    if (!engine) return;
+    if (!engine || this.disposed || !this.state.enabled) return;
     this.pushFlags(engine);
     engine.update(snapshot);
     this.syncState();
   }
 
   rotate(deltaX: number, deltaY: number): void {
-    if (!this.enableRotate) return;
+    if (this.disposed || !this.enableRotate) return;
     if (this.engine) {
       this.pushFlags(this.engine);
       this.engine.update(pointerDrag(0, deltaX, deltaY));
@@ -85,7 +91,7 @@ export class OrbitControls {
   }
 
   pan(deltaX: number, deltaY: number): void {
-    if (!this.enablePan) return;
+    if (this.disposed || !this.enablePan) return;
     if (this.engine) {
       this.pushFlags(this.engine);
       this.engine.update(pointerDrag(2, deltaX, deltaY));
@@ -97,7 +103,7 @@ export class OrbitControls {
   }
 
   dolly(scale: number): void {
-    if (!this.enableZoom) return;
+    if (this.disposed || !this.enableZoom) return;
     if (this.engine) {
       this.pushFlags(this.engine);
       this.engine.update(new InputSnapshot({ pointer: { wheelY: scale < 1 ? -100 : 100 } }));
@@ -124,17 +130,28 @@ export class OrbitControls {
 
   /** Camera-attached only; no-op when detached. */
   saveState(): void {
+    if (this.disposed) return;
     this.engine?.saveState();
   }
 
   /** Camera-attached only; no-op when detached. */
   reset(): void {
-    if (!this.engine) return;
+    if (!this.engine || this.disposed) return;
     this.engine.reset();
     this.syncState();
   }
 
+  /**
+   * F1-standard disposal: disables the instance, detaches the camera so no
+   * further mutation is possible, and delegates to the input engine (which
+   * owns zero DOM listeners — input arrives via snapshots — so nothing can
+   * leak). Idempotent.
+   */
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.state.enabled = false;
+    this.attachedCamera = undefined;
     this.engine?.dispose();
   }
 
@@ -144,6 +161,7 @@ export class OrbitControls {
    * update `state.target` bookkeeping.
    */
   protected truckTarget(deltaX: number, deltaZ: number): void {
+    if (this.disposed) return;
     const engine = this.engine;
     if (!engine) {
       this.state.target.x += deltaX;

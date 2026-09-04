@@ -159,11 +159,15 @@ export function localOffsetForPart(scaled: ScaledPartPlacement, all: readonly Sc
         (chassis?.scaledSize[2] ?? 1) * 0.06
       ];
     case "weapon":
-      // The weapon receiver lands inside the arm module's wrist envelope. Keep
-      // the grip just above the lower chest seam and derive its y from the
-      // selected chassis/legs extrema so weapon swaps cannot float or sink.
+      // The weapon receiver hangs off the end of the arm bar, not inside it.
+      // The earlier arms-width*0.27 rule (≈0.58 m) buried every catalog gun
+      // inside the 2.2 m arm mass, leaving the collar/lock/accent rings
+      // floating with no visible tool. Mounting just past the arm tip keeps
+      // the metal collar against the wingtip so the rings read as the gun's
+      // receiver, lock, and muzzle chain. Y still derives from the
+      // chassis/legs extrema so swaps cannot float or sink.
       return [
-        Math.min(0.58, Math.max(0.48, (arms?.scaledSize[0] ?? 1.8) * 0.27)),
+        (arms?.scaledSize[0] ?? 1.8) * 0.5 + 0.12,
         chassisBottom + (chassis?.scaledSize[1] ?? 1) * 0.30 - scaled.scaledMin[1],
         (chassis?.scaledSize[2] ?? 0.65) * 0.12
       ];

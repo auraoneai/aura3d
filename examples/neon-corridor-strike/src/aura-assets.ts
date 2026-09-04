@@ -15,11 +15,13 @@ type AuraGeneratedAssetDefinitions = {
   readonly "corridorPickupSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorReloadDoneSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorReloadStartSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "corridorWardenMeshyV1": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "corridorWarnSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorWinSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "impA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "impB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "medkit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonArena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonContainmentPulseRifle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonContainmentWardenA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonContainmentWardenB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -1526,6 +1528,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "corridorWardenMeshyV1": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+    hash: "sha256-53557aeb64825a1982182fdc19d7d8acbddf09171318645a828b4577663bfc77",
+    bounds: [
+      1.28,
+      1.904,
+      0.729
+    ],
+    sizeBytes: 10828272,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use as the Neon Corridor warden in the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-04T14:06:33.854Z",
+        "evidence": [
+          "aura-evidence/meshy/corridorWardenMeshyV1.rights.c3191f650b37.json",
+          "aura-evidence/meshy/corridorWardenMeshyV1.metadata.8e1640353879.json",
+          "public/aura-assets/corridorWardenMeshyV1.meshy-candidate.0da064c7.png"
+        ],
+        "checkedAt": "2026-09-04T14:06:33.854Z"
+      },
+      "sourcePath": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+      "outputPath": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.64,
+          -0.953,
+          -0.366
+        ],
+        "max": [
+          0.639,
+          0.951,
+          0.363
+        ],
+        "size": [
+          1.28,
+          1.904,
+          0.729
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.meshy-candidate.0da064c7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-0da064c739fdd6fb51ca728d6937cd53ce404ba7ac07b6a0fb253e0c29dbe8f6",
+        "checkedAt": "2026-09-04T14:20:59.417Z"
+      }
+    },
+  },
   "corridorWarnSfx": {
     type: "audio",
     format: "wav",
@@ -2960,6 +3098,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "width": 485,
           "height": 340
         }
+      }
+    },
+  },
+  "neonArena": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/neonArena.7327d83f.glb",
+    hash: "sha256-7327d83f8c49650515e6f23ef4a2e8a857415001e37a469dcf5407adaa96dd15",
+    bounds: [
+      1.904,
+      1.169,
+      0.244
+    ],
+    sizeBytes: 33052244,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/neonArena.7327d83f.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Neon Corridor Strike arena lane under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:43.073Z",
+        "evidence": [
+          "aura-evidence/meshy/neonArena.rights.9cd065c2f367.json",
+          "aura-evidence/meshy/neonArena.metadata.59e1573ccbd5.json",
+          "public/aura-assets/neonArena.meshy-candidate.ec181805.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:43.073Z"
+      },
+      "sourcePath": "public/aura-assets/neonArena.7327d83f.glb",
+      "outputPath": "public/aura-assets/neonArena.7327d83f.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.577,
+          -0.122
+        ],
+        "max": [
+          0.952,
+          0.592,
+          0.121
+        ],
+        "size": [
+          1.904,
+          1.169,
+          0.244
+        ],
+        "center": [
+          0,
+          0.007,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonArena.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/examples/neon-corridor-strike/public/aura-assets/neonArena.meshy-candidate.ec181805.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ec18180570967458bc3f4187e371f0571adb79f4e651d35bcb6f393e57dce11d",
+        "checkedAt": "2026-09-03T08:08:20.627Z"
       }
     },
   },

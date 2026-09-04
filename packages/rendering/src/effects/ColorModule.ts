@@ -45,8 +45,29 @@ export function sampleColorGradient(keyframes: readonly ColorKeyframe[], time: n
   return { ...keyframes[keyframes.length - 1].color };
 }
 
+/**
+ * Pack a color/alpha-over-life gradient into a fixed-stop RGBA LUT for the
+ * compute kernel. Alpha-over-life travels in the fourth channel.
+ */
+export function encodeColorGradientLUT(keyframes: readonly ColorKeyframe[], stops = 16): Float32Array {
+  validateGradient(keyframes);
+  if (!Number.isInteger(stops) || stops < 2 || stops > 64) {
+    throw new RangeError("Color gradient LUT stops must be an integer in [2, 64].");
+  }
+  const lut = new Float32Array(stops * 4);
+  for (let index = 0; index < stops; index += 1) {
+    const color = sampleColorGradient(keyframes, stops === 1 ? 0 : index / (stops - 1));
+    lut[index * 4] = color.r;
+    lut[index * 4 + 1] = color.g;
+    lut[index * 4 + 2] = color.b;
+    lut[index * 4 + 3] = color.a;
+  }
+  return lut;
+}
+
 export class ColorModule implements ParticleModule {
   readonly name = "ColorModule";
+  readonly supportsGPU = true;
   readonly gradient: readonly ColorKeyframe[];
 
   constructor(gradient: readonly ColorKeyframe[]) {
@@ -56,5 +77,9 @@ export class ColorModule implements ParticleModule {
 
   update(particle: Particle, context: ParticleUpdateContext): void {
     particle.color = sampleColorGradient(this.gradient, context.normalizedAge);
+  }
+
+  toGPUColorGradient(stops = 16): Float32Array {
+    return encodeColorGradientLUT(this.gradient, stops);
   }
 }

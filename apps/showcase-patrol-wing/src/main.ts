@@ -77,7 +77,7 @@ const visualReviewCapture = new URLSearchParams(window.location.search).get("cap
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-patrol-wing";
-const PRIMARY_ASSET_REFS = [assets.patrolWingPlane, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
+const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
 
 Object.defineProperty(window, "__AURA3D_SHOWCASE_PATROL_WING__", {
   configurable: true,
@@ -227,54 +227,22 @@ function cueReady(name: string, gapFrames: number): boolean {
 function heroNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
   nodes.push(
-    model(assets.patrolWingPlane, {
+    model(assets.patrolAircraftMeshy, {
       name: "patrol-plane",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 4.8 : 4.2
+      targetMaxDimension: visualReviewCapture ? 5.6 : 4.2
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
       .rotate(0, PAD_HEADING_YAW, 0)
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
-  // Route-owned hardpoints reinforce the typed aircraft silhouette at chase
-  // distance. They are attached to the live flight axes below, so the canopy,
-  // engines, and wingtip livery bank with the model instead of reading as
-  // unrelated HUD geometry.
+  // The Meshy patrol aircraft is a complete silhouette (canopy, prop, gear,
+  // patrol livery), so the old primitive hardpoints are retired. Wingtip
+  // navigation lights stay: small emissive markers that bank with the live
+  // flight axes and read at chase distance.
   nodes.push(
-    primitives.sphere({
-      name: "aircraft canopy",
-      material: material.pbr({ name: "aircraft canopy glass", color: "#102b46", roughness: 0.2, metallic: 0.45, emissive: "#153e5b", emissiveIntensity: 0.12 })
-    })
-      .position(0, -70, 0)
-      .scale([0.42, 0.22, 0.32])
-      .runtime({ id: "plane-canopy", tags: ["aircraft-identity", "renderer-owned"] })
-      .toJSON(),
-    primitives.box({
-      name: "aircraft dorsal spine",
-      material: material.pbr({ name: "aircraft dorsal spine", color: "#17324a", roughness: 0.4, metallic: 0.72 })
-    })
-      .position(0, -70, 0)
-      .scale([0.52, 0.08, 0.1])
-      .runtime({ id: "plane-dorsal-spine", tags: ["aircraft-identity", "renderer-owned"] })
-      .toJSON(),
-    primitives.box({
-      name: "aircraft engine nacelle left",
-      material: material.pbr({ name: "aircraft engine nacelle", color: "#273a4b", roughness: 0.52, metallic: 0.78 })
-    })
-      .position(0, -70, 0)
-      .scale([0.36, 0.11, 0.12])
-      .runtime({ id: "plane-engine-left", tags: ["aircraft-identity", "renderer-owned"] })
-      .toJSON(),
-    primitives.box({
-      name: "aircraft engine nacelle right",
-      material: material.pbr({ name: "aircraft engine nacelle", color: "#273a4b", roughness: 0.52, metallic: 0.78 })
-    })
-      .position(0, -70, 0)
-      .scale([0.36, 0.11, 0.12])
-      .runtime({ id: "plane-engine-right", tags: ["aircraft-identity", "renderer-owned"] })
-      .toJSON(),
     primitives.box({
       name: "aircraft left wingtip livery",
       material: material.emissive({ name: "aircraft coral livery", color: "#ff718b", emissive: "#ff3d70", emissiveIntensity: 1.35 })
@@ -293,7 +261,7 @@ function heroNodes(): AuraSceneNode[] {
       .toJSON()
   );
   nodes.push(
-    model(assets.patrolWingPlane, {
+    model(assets.patrolAircraftMeshy, {
       name: "ghost-plane",
       role: "setDressing",
       scaleMode: "fit",
@@ -628,6 +596,7 @@ for (const gate of RING_GATES) {
   const handle = app.nodes.get(`ring-${gate.index}`);
   if (handle) ringHandles.set(gate.index, handle as AuraRuntimeNodeHandle);
 }
+const nextRingBeaconHandle = app.nodes.get("next-ring-beacon") as AuraRuntimeNodeHandle | null;
 setArenaTimeOfDay(app.nodes, patrolValue);
 
 // ---------------------------------------------------------------- HUD ---------
@@ -725,11 +694,29 @@ function applyRingMaterials(): void {
     const handle = ringHandles.get(gate.index);
     if (!handle) continue;
     const passed = gate.index < rings.nextRing;
+    // The next gate is the objective anchor: 1.25x in-plane scale plus a hot
+    // emissive so it reads at island distance; upcoming gates stay dim. On
+    // the preflight pad the full boost would loom over the parked plane, so
+    // the gate stays at authored scale until takeoff.
+    const isNext = gate.index === rings.nextRing && stateValue !== "preflight";
     handle.setMaterial(
       passed
-        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#0f3a30", emissive: RING_PASSED_COLOR, roughness: 0.35, opacity: 0.9 })
-        : material.emissive({ name: `ring-${gate.index} active`, color: "#20323a", emissive: RING_ACTIVE_COLOR, roughness: 0.35, opacity: 0.92 })
+        ? material.emissive({ name: `ring-${gate.index} passed`, color: "#0f3a30", emissive: RING_PASSED_COLOR, emissiveIntensity: 0.9, roughness: 0.35, opacity: 0.9 })
+        : material.emissive({ name: `ring-${gate.index} active`, color: "#20323a", emissive: RING_ACTIVE_COLOR, emissiveIntensity: isNext ? 2.4 : 1.1, roughness: 0.35, opacity: 0.92 })
     );
+    const s = isNext ? 1.25 : 1;
+    handle.setScale([gate.radius * 2 * s, gate.radius * 2 * s, gate.radius * 0.9]);
+  }
+  // The beacon shaft always marks the next gate once airborne, and hides
+  // with the course (and on the preflight pad).
+  const nextGate = stateValue === "preflight" ? undefined : RING_GATES[rings.nextRing];
+  if (nextRingBeaconHandle) {
+    if (nextGate) {
+      nextRingBeaconHandle.setPosition(nextGate.position[0], nextGate.position[1] + 5, nextGate.position[2]);
+      nextRingBeaconHandle.setVisible(true);
+    } else {
+      nextRingBeaconHandle.setVisible(false);
+    }
   }
 }
 
@@ -816,7 +803,6 @@ function resetToPad(nextPatrol?: number): void {
   for (const handle of combatFxHandles) handle.setPosition(0, -70, 0);
   for (const handle of droneWakeHandles) handle?.setPosition(0, -70, 0).setVisible(false);
   leadDroneLockHandle?.setPosition(0, -70, 0).setVisible(false);
-  applyRingMaterials();
   hullValue = 100;
   timeInPatrolValue = 0;
   padSensorLatched = false;
@@ -826,6 +812,8 @@ function resetToPad(nextPatrol?: number): void {
   failTimer = 0;
   gradeTimer = 0;
   stateValue = "preflight";
+  // Refresh after the state flip so the anchor disengages for the parked framing.
+  applyRingMaterials();
   ghostPlayer?.stop();
   ghostHandle?.setPosition(0, -60, 0);
   planeHandle.setPosition(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]);
@@ -942,7 +930,7 @@ function publishEvidence(): void {
     renderer: app.diagnostics().renderer,
     runtimeNodeCount: app.nodes.ids().length,
     renderSize: [app.canvas?.width ?? 0, app.canvas?.height ?? 0] as const,
-    primaryAssets: ["assets.patrolWingPlane", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"],
+    primaryAssets: ["assets.patrolAircraftMeshy", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"],
     primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
     reducedMotion,
     frameCount,
@@ -1496,6 +1484,9 @@ gameApp.onFrame(({ dt }) => {
     if (stateValue === "preflight" && flight.grounded === "airborne") {
       stateValue = "patrol";
       timeInPatrolValue = 0;
+      // Engage the next-gate anchor (scale + beacon) now that the parked
+      // framing no longer applies.
+      applyRingMaterials();
       ghostRecorder.begin();
       if (bestRun && bestRun.script.length > 0 && patrolValue > 1) {
         ghostPlayer = new GhostPlayer(bestRun.script, {

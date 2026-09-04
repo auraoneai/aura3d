@@ -17,11 +17,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: min(1180px, 100%);
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   padding: 16px;
   font-family: "Segoe UI", system-ui, sans-serif;
   color: #d7f5ff;
+  position: relative;
 }
 
 .pulse-viewport {
@@ -35,7 +37,7 @@ body {
 .pulse-stage {
   width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 420px;
+  min-height: min(68vh, 720px);
 }
 
 .pulse-stage canvas {
@@ -48,6 +50,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Live HUD overlays the stage like the review lens: in normal flow the
+  panel sat below the 16/9 viewport, so gameplay screenshots (and first
+  impressions) showed no shields, style, distance, or score context. */
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  right: 28px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.pulse-panel .pulse-touch-pad,
+.pulse-panel .pulse-touch-wide {
+  pointer-events: auto;
 }
 
 .pulse-hud {

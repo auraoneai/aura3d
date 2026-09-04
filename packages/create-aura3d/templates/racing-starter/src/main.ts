@@ -174,6 +174,7 @@ function buildScene() {
       .scale(0.18)
       .runtime(game.runtimeNode("race-car", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
     ...routeRibbonNodes(),
+    ...paintAndGlassGantryNodes(),
     primitives.box({ name: "checkpoint marker", material: material.neon({ color: "#7ff0c5", emissive: "#7ff0c5", emissiveIntensity: 0.7 }) })
       .position(0.06, 0.18, 0.2)
       .scale([0.16, 0.28, 0.95])
@@ -197,6 +198,36 @@ function routeRibbonNodes(): AuraNodeInput[] {
   return routeRibbonSegments.map(([name, position, scale]) =>
     primitives.box({ name, material: asphalt }).position(position[0], position[1], position[2]).scale(scale)
   );
+}
+
+// PART C2 game-ready adoption: a static paint-and-glass gantry south of the
+// start straight wearing the @aura3d/materials "carPaint" preset (clearcoat
+// shell + flake normal) on the showcase shell and the "glassThin" preset
+// (thin-walled transmission) on the canopy panel.
+function paintAndGlassGantryNodes(): AuraNodeInput[] {
+  const carPaintShell = material.clearcoatPaint({
+    color: "#c1121f",
+    roughness: 0.32,
+    metallic: 0.65,
+    clearcoat: 1,
+    clearcoatRoughness: 0.06,
+    normalScale: 0.35,
+    envMapIntensity: 1.4
+  });
+  const glassThinCanopy = material.glass({
+    color: "#bfe6f2",
+    opacity: 0.35,
+    transmission: 0.9,
+    thickness: 0.02,
+    roughness: 0.05
+  });
+  const post = material.pbr({ color: "#1c2530", roughness: 0.6, metallic: 0.4 });
+  return [
+    primitives.box({ name: "carPaint showcase shell", material: carPaintShell }).position(2.7, 0.3, -1.7).scale([1.5, 0.55, 0.75]),
+    primitives.box({ name: "glassThin canopy", material: glassThinCanopy }).position(2.7, 1.5, -1.7).scale([1.7, 0.06, 0.95]),
+    primitives.box({ name: "gantry post west", material: post }).position(1.95, 0.75, -1.7).scale([0.08, 1.5, 0.08]),
+    primitives.box({ name: "gantry post east", material: post }).position(3.45, 0.75, -1.7).scale([0.08, 1.5, 0.08])
+  ];
 }
 
 function createHud(): HTMLElement {

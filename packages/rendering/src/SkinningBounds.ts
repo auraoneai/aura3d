@@ -28,6 +28,36 @@ export function computeSkinnedGeometryBounds(geometry: Geometry, skinning: Skinn
   return { min, max };
 }
 
+/**
+ * Auto-recompute culling-correct bounds for an animated skinned mesh.
+ *
+ * A single-frame skinned bound is only valid for that frame: as joints move, vertices can
+ * leave the bound and the mesh gets frustum-culled while still visible ("disappearing
+ * heroes"). This unions the skinned bounds across per-frame joint palettes (e.g. sampled
+ * clip keyframes), producing one conservative bound that stays valid for the whole motion.
+ * Pure and deterministic. Returns the rest-pose geometry bounds when `palettes` is empty.
+ */
+export function computeAnimatedSkinnedBoundsUnion(
+  geometry: Geometry,
+  palettes: readonly (SkinningBoundsPalette | undefined)[]
+): Bounds3 {
+  let min: [number, number, number] | undefined;
+  let max: [number, number, number] | undefined;
+  for (const palette of palettes) {
+    const bounds = computeSkinnedGeometryBounds(geometry, palette);
+    if (!min || !max) {
+      min = [...bounds.min] as [number, number, number];
+      max = [...bounds.max] as [number, number, number];
+    } else {
+      for (let axis = 0; axis < 3; axis += 1) {
+        min[axis] = Math.min(min[axis], bounds.min[axis] ?? min[axis]);
+        max[axis] = Math.max(max[axis], bounds.max[axis] ?? max[axis]);
+      }
+    }
+  }
+  return min && max ? { min, max } : geometry.bounds;
+}
+
 export function computeSkinnedMorphTargetWeightedBounds(
   geometry: Geometry,
   skinning: SkinningBoundsPalette | undefined,

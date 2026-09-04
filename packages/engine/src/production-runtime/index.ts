@@ -70,14 +70,22 @@ import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "
 
 export {
   collectTypedGLBActorRenderItems,
+  createGLBActorAnimationMaterialResolver,
   createTypedGLBActor,
   createTypedGLBActorEvidence
 } from "./TypedGLBActor.js";
+import { createGLBActorAnimationMaterialResolver } from "./TypedGLBActor.js";
 export {
   createGameAppRuntime
 } from "./GameAppRuntime.js";
 export {
-  createSideViewGameRenderPreset
+  createPerformanceGovernor,
+  createSideViewGameRenderPreset,
+  createTopDownGameRenderPreset,
+  estimateGamePerPassCostTotal,
+  gamePresetMeasuredPasses,
+  DEFAULT_GAME_GOVERNOR_SETTINGS,
+  DEFAULT_GAME_PER_PASS_COST_MODEL
 } from "./GameRenderPreset.js";
 export type {
   TypedGLBActor,
@@ -92,12 +100,24 @@ export type {
   GameAppRuntimeEvidence,
   GameAppRuntimeLoopOptions,
   GameAppRuntimeOptions,
+  GameAppRuntimePerformanceBudgetOptions,
+  GameAppRuntimePerformanceSnapshot,
   GameAppRuntimeResize,
   GameAppRuntimeStatus
 } from "./GameAppRuntime.js";
 export type {
+  GamePerFramePerfTelemetry,
+  GamePerformanceGovernor,
+  GamePerformanceGovernorMode,
+  GamePerformanceGovernorSettings,
+  GamePerPassCostModel,
+  GameRenderPreset,
+  SideViewGameBudgetedFeature,
+  SideViewGamePerformanceBudget,
   SideViewGameRenderPreset,
-  SideViewGameRenderPresetOptions
+  SideViewGameRenderPresetOptions,
+  TopDownGameRenderPreset,
+  TopDownGameRenderPresetOptions
 } from "./GameRenderPreset.js";
 
 export * as productionRendering from "@aura3d/rendering";
@@ -592,7 +612,8 @@ export function createImportedAnimationRuntime(scene: A3DGltfScene): A3DImported
   const runtime = createGLTFSceneAnimationRuntime({
     scene: scene.resources.scene,
     clips: scene.asset.animations,
-    asset: scene.asset
+    asset: scene.asset,
+    resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(scene.resources)
   });
   return {
     scene,

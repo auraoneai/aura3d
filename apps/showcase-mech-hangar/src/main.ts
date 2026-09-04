@@ -41,6 +41,10 @@ import { MECH_SLOTS, PART_OPTIONS, catalogReady, resolvePartAsset, selectedParts
 import { PART_CURATION_VERDICT } from "./parts-generated";
 import { buildMechAssemblyPlan, mountTransformForPart, validationSummary } from "./assembly";
 import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } from "./arena/mech-fight";
+// Meshy hero mech: the admitted typed decimated body (root assets map) mounted
+// as the visible hero silhouette for both fighters. Hangar staging, the live
+// MH-2M swappable assembly, and route-local combat are unchanged.
+import { assets as rootAssets } from "../../../src/aura-assets";
 
 declare global {
   interface Window {
@@ -186,6 +190,31 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
   return builders;
 }
 
+// Meshy hero mech (typed assets.mechHeroDecimated): the visible hero body for
+// both fighters. The validated MH-2M family stays live as the swappable
+// socketed assembly around this body, so part swaps keep moving pixels/stats
+// while the dominant silhouette is the coherent admitted hero.
+const HERO_FEET_LIFT = 0.953; // -boundsMin.y of the hero asset: feet land on the deck plane.
+// The authored family mounts around the fighter root, so a co-located hero
+// would be swallowed by the chassis box. Landing the hero just ahead of the
+// root (+Z local, yaw-rotated) keeps the hero's back in contact with the
+// socketed armor face: one connected machine with the coherent hero torso
+// leading and every selected family part visible and swappable around it. The
+// earlier 0.55 m step opened a daylight gap that read as two separate robots.
+const HERO_FORWARD = 0.32;
+function heroNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
+  return [
+    model(rootAssets.mechHeroDecimated, {
+      name: "mech-hero-" + side,
+      role: "primaryCharacter",
+      castShadow: true,
+      receiveShadow: true
+    }).position(HANGAR_CENTER[0], -60 + HERO_FEET_LIFT, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-hero-" + side, {
+      tags: ["mech-hero", side, "typed-primary-asset"]
+    }))
+  ];
+}
+
 const camAnchorBuilder = primitives.sphere({
   name: "mech cam anchor",
   material: material.emissive({ name: "cam anchor mat", color: "#101418", emissive: "#000000", emissiveIntensity: 0 })
@@ -240,46 +269,6 @@ const teamMarkerBuilders = (["player", "rival"] as const).flatMap((side) => [
     .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
     .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("mech-" + side + "-identity-chevron", { tags: ["team-marker", side, "renderer-owned"] }))
-]);
-
-// A compact, authored chest plate makes the MH-2M family identity readable at
-// the review camera's distance without replacing any typed GLB geometry. The
-// plate is a presentation cue only: the four selected GLBs remain the named
-// primary subject and the cue is hidden by the same suppression hook used for
-// subject-isolation evidence.
-const mechIdentityMaterials = {
-  plate: material.pbr({
-    name: "mh-2m chest identity plate",
-    color: "#18394b",
-    roughness: 0.3,
-    metallic: 0.82,
-    clearcoat: 0.4,
-    clearcoatRoughness: 0.2
-  }),
-  player: material.emissive({
-    name: "mh-2m player chest visor",
-    color: "#8beaff",
-    emissive: "#28d7ff",
-    emissiveIntensity: 1.7,
-    opacity: 0.96
-  }),
-  rival: material.emissive({
-    name: "mh-2m rival chest visor",
-    color: "#ff9fbe",
-    emissive: "#ff467f",
-    emissiveIntensity: 1.55,
-    opacity: 0.96
-  })
-} as const;
-const mechIdentityBuilders = (["player", "rival"] as const).flatMap((side) => [
-  primitives.box({ name: "mech-" + side + "-mh2m-chest-plate", material: mechIdentityMaterials.plate })
-    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
-    .scale([0.28, 0.18, 0.04])
-    .runtime(game.runtimeNode("mech-" + side + "-mh2m-chest-plate", { tags: ["mech-identity", "mh-2m", side, "renderer-owned"] })),
-  primitives.box({ name: "mech-" + side + "-mh2m-chest-visor", material: mechIdentityMaterials[side] })
-    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
-    .scale([0.17, 0.052, 0.022])
-    .runtime(game.runtimeNode("mech-" + side + "-mh2m-chest-visor", { tags: ["mech-identity", "mh-2m", side, "renderer-owned"] }))
 ]);
 
 // One ring per typed weapon option gives each hardpoint a compact, readable
@@ -357,6 +346,23 @@ const footContactSealMaterials = {
   player: material.emissive({ name: "player foot contact seal", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 0.95, opacity: 0.86 }),
   rival: material.emissive({ name: "rival foot contact seal", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 0.9, opacity: 0.86 })
 } as const;
+// A broad soft contact shadow grounds each fighter's whole silhouette on the
+// deck. The per-foot receivers above are small inspectable cups; from the
+// review distance the mech still read as floating without this dark disc.
+const contactShadowMaterial = material.emissive({
+  name: "mech contact shadow",
+  color: "#05090e",
+  emissive: "#000000",
+  emissiveIntensity: 0,
+  roughness: 1,
+  opacity: 0.55
+});
+const contactShadowBuilders = (["player", "rival"] as const).map((side) =>
+  primitives.cylinder({ name: "mech-" + side + "-contact-shadow", material: contactShadowMaterial })
+    .position(HANGAR_CENTER[0], 0.115, HANGAR_CENTER[2])
+    .scale([1.6, 0.012, 1.6])
+    .runtime(game.runtimeNode("mech-" + side + "-contact-shadow", { tags: ["ground-contact-shadow", side, "renderer-owned"] }))
+);
 const footContactBuilders = (["player", "rival"] as const).flatMap((side) => [
   primitives.cylinder({ name: "mech-" + side + "-left-foot-receiver", material: footContactMaterial })
     .position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2])
@@ -425,7 +431,7 @@ const hangarBeamBuilder = primitives.box({ name: "hangar upper beam", material: 
   .scale([8.7, 0.14, 0.18]);
 const hangarBeamLightBuilder = primitives.box({
   name: "hangar upper light",
-  material: material.emissive({ name: "hangar upper light material", color: "#76426d", emissive: "#ff8ecf", emissiveIntensity: 0.72 })
+  material: material.emissive({ name: "hangar upper light material", color: "#1c4c5e", emissive: "#6fdcff", emissiveIntensity: 0.72 })
 }).position(HANGAR_CENTER[0], 5.38, HANGAR_CENTER[2] - 5.72).scale([6.8, 0.055, 0.035]);
 
 const hangarBaySignMaterial = material.emissive({
@@ -448,20 +454,20 @@ const hangarBaySignBuilders = [
   }).position(-2.65, 3.92, HANGAR_CENTER[2] - 5.69),
   text3D("AEGIS // ASSEMBLY DECK", {
     name: "hangar assembly deck sign",
-    size: 0.18,
-    depth: 0.03,
-    letterSpacing: 0.024,
-    material: material.emissive({ name: "hangar deck sign material", color: "#5c315f", emissive: "#ff99c8", emissiveIntensity: 0.78 })
-  }).position(-0.6, 3.88, HANGAR_CENTER[2] - 5.68)
+    size: 0.24,
+    depth: 0.04,
+    letterSpacing: 0.03,
+    material: hangarBaySignMaterial
+  }).position(-2.65, 3.28, HANGAR_CENTER[2] - 5.69)
 ];
 const hangarFloorInsetBuilder = primitives.box({
   name: "hangar floor presentation inset",
-  material: material.pbr({ name: "hangar floor presentation steel", color: "#243a50", roughness: 0.42, metallic: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.24 })
+  material: material.pbr({ name: "hangar floor presentation steel", color: "#243a50", roughness: 0.74, metallic: 0.30, clearcoat: 0.12, clearcoatRoughness: 0.42 })
 }).position(HANGAR_CENTER[0], 0.008, HANGAR_CENTER[2] + 0.35).scale([5.8, 0.02, 4.2]);
 const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
   primitives.box({ name: `hangar floor cyan edge ${side}`, material: hangarStripMaterial })
     .position(side * 5.55, 0.035, HANGAR_CENTER[2] + 0.35).scale([0.035, 0.025, 3.8]),
-  primitives.box({ name: `hangar floor warm edge ${side}`, material: material.emissive({ name: `hangar floor warm edge material ${side}`, color: "#6c3a55", emissive: "#ff91bf", emissiveIntensity: 0.58 }) })
+  primitives.box({ name: `hangar floor warm edge ${side}`, material: hangarStripMaterial })
     .position(side * 4.75, 0.035, HANGAR_CENTER[2] - 3.42).scale([0.75, 0.025, 0.028])
 ]);
 
@@ -670,10 +676,10 @@ const app = createAuraApp("#app", {
     .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 2.25, color: "#d7ebff" }),
+      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.55, color: "#d7ebff" }),
       lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
       lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),
-      lights.point({ name: "workshop frontal fill", position: [0, 3.4, 3.6], intensity: 3.75, color: "#a9e1ff" }),
+      lights.point({ name: "workshop frontal fill", position: [-2.9, 3.2, 3.4], intensity: 3.75, color: "#a9e1ff" }),
       lights.ambient({ name: "global fill", intensity: 1.22, color: "#89a9c4" }),
       // Arena floodlights over the pit.
       lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: visualReviewCapture ? 2.05 : 2.65, color: "#eaf4ff" }),
@@ -712,8 +718,10 @@ const app = createAuraApp("#app", {
       ...impactRingBuilders,
       ...teamMarkerBuilders,
       ...weaponAccentBuilders,
-      ...mechIdentityBuilders,
+      ...heroNodeBuilders("player"),
+      ...heroNodeBuilders("rival"),
       ...hardpointCollarBuilders,
+      ...contactShadowBuilders,
       ...footContactBuilders,
       ...partNodeBuilders("player"),
       ...partNodeBuilders("rival")
@@ -758,11 +766,8 @@ const teamMarkerNodes = new Map<"player" | "rival", { ring: RuntimeNodeHandleLik
     chevron: app.nodes.require("mech-" + side + "-identity-chevron") as RuntimeNodeHandleLike
   }])
 );
-const mechIdentityNodes = new Map<"player" | "rival", { plate: RuntimeNodeHandleLike; visor: RuntimeNodeHandleLike }>(
-  (["player", "rival"] as const).map((side) => [side, {
-    plate: app.nodes.require("mech-" + side + "-mh2m-chest-plate") as RuntimeNodeHandleLike,
-    visor: app.nodes.require("mech-" + side + "-mh2m-chest-visor") as RuntimeNodeHandleLike
-  }])
+const heroNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>(
+  (["player", "rival"] as const).map((side) => [side, app.nodes.require("mech-hero-" + side) as RuntimeNodeHandleLike])
 );
 const weaponAccentNodes = new Map<string, RuntimeNodeHandleLike>();
 for (const side of ["player", "rival"] as const) {
@@ -789,6 +794,9 @@ const footContactNodes = new Map<"player" | "rival", {
     rightSeal: app.nodes.require("mech-" + side + "-right-foot-seal") as RuntimeNodeHandleLike
   }])
 );
+const contactShadowNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>(
+  (["player", "rival"] as const).map((side) => [side, app.nodes.require("mech-" + side + "-contact-shadow") as RuntimeNodeHandleLike])
+);
 
 // The route-primary visual probe isolates the same typed modular assembly that
 // human reviewers see. Keep suppression state in the route so the regular mount
@@ -804,9 +812,15 @@ function mountSide(
   selection: BuildSelection,
   rootPosition: readonly [number, number, number],
   yaw: number,
-  nodes: Map<string, RuntimeNodeHandleLike>
+  nodes: Map<string, RuntimeNodeHandleLike>,
+  // Hangar-only display spread: pushes the swappable family shell backward
+  // along facing so the Meshy hero stands clear ahead of it instead of
+  // fusing into one kitbash read. Arena calls keep 0 (combat truth).
+  familyBack = 0
 ): void {
   const parts = selectedParts(selection);
+  const familyBackX = Math.sin(yaw) * familyBack;
+  const familyBackZ = Math.cos(yaw) * familyBack;
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
       const handle = nodes.get(def.assetKey);
@@ -826,7 +840,7 @@ function mountSide(
       }
       const t = mountTransformForPart(def, parts, rootPosition, yaw);
       handle.setVisible(true);
-      handle.setPosition(t.position[0], t.position[1], t.position[2]);
+      handle.setPosition(t.position[0] - familyBackX, t.position[1], t.position[2] - familyBackZ);
       handle.setRotation(0, t.yaw, 0);
     }
   }
@@ -845,8 +859,10 @@ function mountSide(
     marker.ring.setScale([markerRadius, markerRadius, 0.032]);
     marker.chevron.setVisible(!compositionSubjectSuppressed);
     // Keep the badge on the chest plane rather than floating above the head;
-    // the silhouette stays dominant while the color key remains visible.
-    const chevronFront = 0.58;
+    // the silhouette stays dominant while the color key remains visible. The
+    // Meshy hero chest now leads the family core, so the badge rides ahead of
+    // the hero torso instead of sinking into it.
+    const chevronFront = 0.76;
     marker.chevron.setPosition(
       rootPosition[0] + Math.sin(yaw) * chevronFront,
       rootPosition[1] + 1.56,
@@ -856,29 +872,23 @@ function mountSide(
     marker.chevron.setScale([0.115, 0.115, 0.032]);
   }
 
-  const identity = mechIdentityNodes.get(side);
-  if (identity) {
-    const visible = !compositionSubjectSuppressed;
-    identity.plate.setVisible(visible);
-    identity.visor.setVisible(visible);
-    // Front-of-chest offsets are expressed in the same +Z local space as the
-    // authored MH-2M socket contract, then rotated with the fighter root. This
-    // keeps the plate attached in the hangar turntable and arena exchange.
-    const localY = 1.43;
-    const localZ = 0.36;
-    const frontX = rootPosition[0] + Math.sin(yaw) * localZ;
-    const frontZ = rootPosition[2] + Math.cos(yaw) * localZ;
-    identity.plate.setPosition(frontX, rootPosition[1] + localY, frontZ);
-    identity.plate.setRotation(0, yaw, 0);
-    identity.plate.setScale([0.28, 0.18, 0.04]);
-    const visorZ = localZ + 0.044;
-    identity.visor.setPosition(
-      rootPosition[0] + Math.sin(yaw) * visorZ,
-      rootPosition[1] + localY,
-      rootPosition[2] + Math.cos(yaw) * visorZ
-    );
-    identity.visor.setRotation(0, yaw, 0);
-    identity.visor.setScale([0.17, 0.052, 0.022]);
+  // The Meshy hero body is the fighter's coherent silhouette; the typed family
+  // above stays the live swappable assembly around it. The hero follows the
+  // fighter root (turntable yaw in the hangar, facing yaw in the arena) with
+  // feet on the deck plane, and hides with the subject for isolation evidence.
+  const hero = heroNodes.get(side);
+  if (hero) {
+    if (compositionSubjectSuppressed) {
+      hero.setVisible(false);
+    } else {
+      hero.setVisible(true);
+      hero.setPosition(
+        rootPosition[0] + Math.sin(yaw) * HERO_FORWARD,
+        rootPosition[1] + HERO_FEET_LIFT,
+        rootPosition[2] + Math.cos(yaw) * HERO_FORWARD
+      );
+      hero.setRotation(0, yaw, 0);
+    }
   }
 
   const selectedWeapon = parts.find((part) => part.slot === "weapon");
@@ -891,7 +901,7 @@ function mountSide(
       accent.setScale([0.001, 0.001, 0.001]);
       continue;
     }
-    const weaponTransform = mountTransformForPart(weaponDef, parts, rootPosition, yaw);
+    const weaponTransform = mountTransformForPart(weaponDef, parts, [rootPosition[0] - familyBackX, rootPosition[1], rootPosition[2] - familyBackZ], yaw);
     // Catalog weapons are +Z-forward and part-centred.  A 0.30 m forward
     // offset lands this compact muzzle halo just beyond the fitted 0.68 m
     // hardpoint, making the attachment read as a held tool rather than a pink
@@ -915,7 +925,7 @@ function mountSide(
   const hardpoint = hardpointCollarNodes.get(side);
   if (hardpoint) {
     const selectedWeaponTransform = selectedWeapon
-      ? mountTransformForPart(selectedWeapon, parts, rootPosition, yaw)
+      ? mountTransformForPart(selectedWeapon, parts, [rootPosition[0] - familyBackX, rootPosition[1], rootPosition[2] - familyBackZ], yaw)
       : undefined;
     const visible = Boolean(selectedWeaponTransform) && !compositionSubjectSuppressed;
     hardpoint.metal.setVisible(visible);
@@ -971,11 +981,42 @@ function mountSide(
       seal.setScale([0.19, 0.13, 0.018]);
     }
   }
+  // The contact shadow tracks the fighter root on the deck plane like the
+  // receivers, and hides with the subject for isolation evidence.
+  const shadow = contactShadowNodes.get(side);
+  if (shadow) {
+    const visible = !compositionSubjectSuppressed;
+    shadow.setVisible(visible);
+    shadow.setPosition(rootPosition[0], 0.115, rootPosition[2]);
+    shadow.setScale([1.6, 0.012, 1.6]);
+  }
+}
+
+function concealRivalHangarContacts(): void {
+  // Rival nodes are never mounted in hangar mode, but the foot receivers,
+  // seals, and contact shadow park at the podium (not underground like the
+  // parts/accents). Without an explicit hide, the rival's pink foot seals and
+  // dark receiver discs sit at the turntable centre through every hangar
+  // capture. The bout remount shows them again via mountSide, so this only
+  // applies to the hangar presentation.
+  const contacts = footContactNodes.get("rival");
+  if (contacts) {
+    for (const handle of [contacts.leftReceiver, contacts.rightReceiver, contacts.leftSeal, contacts.rightSeal]) {
+      handle.setVisible(false);
+      handle.setScale([0.001, 0.001, 0.001]);
+    }
+  }
+  const shadow = contactShadowNodes.get("rival");
+  if (shadow) {
+    shadow.setVisible(false);
+    shadow.setScale([0.001, 0.001, 0.001]);
+  }
 }
 
 function remountPreview(): void {
   if (mode !== "hangar") return;
   mountSide("player", hangar.selection, HANGAR_CENTER, hangar.snapshot().turntableYaw, playerNodes);
+  concealRivalHangarContacts();
 }
 
 // ---- bout wiring ------------------------------------------------------------
@@ -1180,6 +1221,7 @@ interface MechHangarEvidence {
   fighterPositions: { playerX: number; rivalX: number };
   fighterVitals: { playerHp: number; rivalHp: number; playerGuard: number; playerPower: number };
   feel: unknown;
+  heroAsset: { ref: "assets.mechHeroDecimated"; url: string; hash: string; bounds: readonly [number, number, number]; quality: "candidate" };
 }
 
 let lastBoutState = "idle";
@@ -1303,7 +1345,14 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     },
     fighterPositions: lastFighterPositions,
     fighterVitals: lastFighterVitals,
-    feel: feel.snapshot()
+    feel: feel.snapshot(),
+    heroAsset: {
+      ref: "assets.mechHeroDecimated",
+      url: rootAssets.mechHeroDecimated.url,
+      hash: rootAssets.mechHeroDecimated.hash,
+      bounds: rootAssets.mechHeroDecimated.bounds,
+      quality: "candidate"
+    }
   };
   // PRD 07 evidence contract name plus the showcase-registry canonical name
   // point at the same live object.
@@ -1314,8 +1363,9 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
 // Bind the shared image-QA contract to the actual visible review hero. This is
 // intentionally an application-category subject: Mech Hangar has no
 // route-primary play-space projection requirement, but it still needs an honest
-// full modular assembly isolation check. Suppression hides every selected typed
-// slot and presentation cue, never a hidden whole-body proxy.
+// full hero-plus-assembly isolation check. Suppression hides the Meshy hero
+// body with every selected typed slot and presentation cue, never a hidden
+// whole-body proxy.
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {

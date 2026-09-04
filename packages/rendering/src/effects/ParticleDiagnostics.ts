@@ -55,6 +55,14 @@ export interface ParticleLayerBudget {
 export interface LayeredParticleBudgetPlan<TMode extends string = string> {
   readonly requestedParticles: number;
   readonly effectiveParticles: number;
+  /**
+   * True when the request exceeded the budget and was clamped. The clamp is
+   * never silent: consumers must surface this flag (telemetry, HUD, logs)
+   * instead of rendering fewer particles without explanation.
+   */
+  readonly overBudget: boolean;
+  /** Particles dropped by the clamp (0 when within budget). */
+  readonly droppedParticles: number;
   readonly densityTier: string;
   readonly mode: TMode;
   readonly layers: readonly ParticleLayerBudget[];
@@ -139,10 +147,13 @@ export function createLayeredParticleBudgetPlan<TMode extends string>(
   const densityTier = [...options.densityTiers]
     .sort((a, b) => b.threshold - a.threshold)
     .find((tier) => effectiveParticles >= tier.threshold) ?? options.densityTiers[options.densityTiers.length - 1]!;
+  const overBudget = requestedParticles > effectiveParticles;
 
   return {
     requestedParticles,
     effectiveParticles,
+    overBudget,
+    droppedParticles: overBudget ? requestedParticles - effectiveParticles : 0,
     densityTier: densityTier.label,
     mode: densityTier.mode,
     layers,

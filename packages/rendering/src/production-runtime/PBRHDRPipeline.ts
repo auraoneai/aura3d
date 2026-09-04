@@ -303,6 +303,148 @@ export function createProductionEnvironmentLightingResources(
   };
 }
 
+export interface DualProbeEnvironmentLightingOptions {
+  /** Diffuse/illumination source: owns the roughest cubemap mip the diffuse term samples. */
+  readonly illumination: ProductionPbrHdrPipeline;
+  /** Reflection source: owns the sharper mips the roughness-scaled specular term samples. */
+  readonly reflection: ProductionPbrHdrPipeline;
+  /** Diffuse probe gain; defaults to the illumination pipeline intensity. */
+  readonly illuminationIntensity?: number;
+  /** Specular probe gain; defaults to the reflection pipeline intensity. */
+  readonly reflectionIntensity?: number;
+  readonly id?: string;
+}
+
+/**
+ * B3 dual-probe composition (muse3jsparity-PRD). The shader exposes a single
+ * cube sampler whose diffuse term reads the roughest mip and whose specular
+ * term reads roughness-scaled sharper mips — so reflection≠illumination is
+ * composed at the resource level: the roughest level comes from the
+ * illumination probe, every sharper level from the reflection probe. Both
+ * pyramids must share face size and mip count; mismatches throw instead of
+ * silently resampling. The BRDF LUT is material-side and probe-independent
+ * (reflection pipeline's copy is bound and documented as such).
+ */
+export function createDualProbeEnvironmentLightingResources(
+  options: DualProbeEnvironmentLightingOptions
+): ProductionEnvironmentLightingResources {
+  const illuminationPmrem = options.illumination.cubemapPMREM;
+  const reflectionPmrem = options.reflection.cubemapPMREM;
+  if (illuminationPmrem.faceSize !== reflectionPmrem.faceSize) {
+    throw new Error(`Dual-probe cubemap face sizes differ (illumination ${illuminationPmrem.faceSize}, reflection ${reflectionPmrem.faceSize}); build both pipelines with the same cubemapFaceSize.`);
+  }
+  if (illuminationPmrem.mipCount !== reflectionPmrem.mipCount) {
+    throw new Error(`Dual-probe cubemap mip counts differ (illumination ${illuminationPmrem.mipCount}, reflection ${reflectionPmrem.mipCount}); build both pipelines with the same cubemapMipCount.`);
+  }
+  if (illuminationPmrem.levels.length !== reflectionPmrem.levels.length) {
+    throw new Error(`Dual-probe cubemap level counts differ (illumination ${illuminationPmrem.levels.length}, reflection ${reflectionPmrem.levels.length}).`);
+  }
+  const roughestMip = reflectionPmrem.mipCount - 1;
+  const composedLevels = reflectionPmrem.levels.map((level) =>
+    level.mip === roughestMip
+      ? { ...illuminationPmrem.levels[level.mip]!, mip: level.mip, roughness: level.roughness, faceSize: level.faceSize }
+      : level
+  );
+  const composedPmrem: CubemapPMREMResources = {
+    faceSize: reflectionPmrem.faceSize,
+    mipCount: reflectionPmrem.mipCount,
+    levels: composedLevels,
+    diagnostics: {
+      ...reflectionPmrem.diagnostics,
+      maxLinearValue: Math.max(illuminationPmrem.diagnostics.maxLinearValue, reflectionPmrem.diagnostics.maxLinearValue)
+    }
+  };
+  const id = options.id ?? `dual-probe-${options.illumination.id}-illumination-${options.reflection.id}-reflection`;
+  const illuminationIntensity = options.illuminationIntensity ?? options.illumination.intensity;
+  const reflectionIntensity = options.reflectionIntensity ?? options.reflection.intensity;
+  const reflectionResources = options.reflection.resources;
+  const environmentTexture = new Texture({
+    width: reflectionResources.base.width,
+    height: reflectionResources.base.height,
+    format: "rgba16f",
+    colorSpace: "linear",
+    label: `production-runtime-${id}-pmrem`,
+    mipLevels: options.reflection.environmentMipLevels
+  });
+  const brdfLutTexture = new Texture({
+    width: reflectionResources.brdfLut.width,
+    height: reflectionResources.brdfLut.height,
+    colorSpace: "linear",
+    label: `production-runtime-${id}-brdf-lut`,
+    data: reflectionResources.brdfLut.data
+  });
+  const environmentCubeTexture = new Texture({
+    width: composedPmrem.faceSize,
+    height: composedPmrem.faceSize,
+    dimension: "cube",
+    format: "rgba16f",
+    colorSpace: "linear",
+    label: `production-runtime-${id}-cubemap-pmrem`,
+    cubeFaces: CUBE_TEXTURE_FACES.map((face) => ({
+      face,
+      mipLevels: composedPmrem.levels.map((level) => {
+        const faceLevel = level.faces.find((candidate) => candidate.face === face);
+        if (!faceLevel) {
+          throw new Error(`Missing dual-probe cubemap PMREM face ${face} at mip ${level.mip}`);
+        }
+        return {
+          width: faceLevel.width,
+          height: faceLevel.height,
+          data: faceLevel.data
+        };
+      })
+    }))
+  });
+  return {
+    environmentTexture,
+    environmentCubeTexture,
+    brdfLutTexture,
+    lighting: {
+      color: [1, 1, 1],
+      intensity: 0.08,
+      proceduralMap: {
+        skyColor: [0.2, 0.24, 0.32],
+        horizonColor: [0.22, 0.2, 0.18],
+        groundColor: [0.03, 0.035, 0.045],
+        specularColor: [1, 1, 1],
+        intensity: 0.06,
+        specularIntensity: 0.1
+      },
+      environmentMapTexture: new TextureBinding({
+        name: "u_environmentMapTexture",
+        texture: environmentTexture,
+        sampler: new Sampler({ minFilter: "linear-mipmap-linear", magFilter: "linear", addressU: "repeat", addressV: "clamp-to-edge" }),
+        expectedColorSpace: "linear"
+      }),
+      environmentCubeMapTexture: new TextureBinding({
+        name: "u_environmentCubeMapTexture",
+        texture: environmentCubeTexture,
+        sampler: new Sampler({ minFilter: "linear-mipmap-linear", magFilter: "linear", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
+        expectedColorSpace: "linear"
+      }),
+      // The public environment intensity is the IBL contract split per probe:
+      // diffuse follows illumination, specular follows reflection (same 1.1
+      // three.js parity factor as the single-probe path).
+      environmentMapIntensity: illuminationIntensity,
+      environmentMapSpecularIntensity: reflectionIntensity * 1.1,
+      environmentMapRotation: options.reflection.rotation,
+      environmentMapMipCount: composedPmrem.mipCount,
+      environmentMapEncoding: "linear",
+      environmentBrdfLutTexture: new TextureBinding({
+        name: "u_environmentBrdfLutTexture",
+        texture: brdfLutTexture,
+        sampler: new Sampler({ minFilter: "linear", magFilter: "linear", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
+        expectedColorSpace: "linear"
+      })
+    },
+    dispose: () => {
+      environmentTexture.dispose();
+      environmentCubeTexture.dispose();
+      brdfLutTexture.dispose();
+    }
+  };
+}
+
 export function createProductionToneMappingPolicy(overrides: Partial<ProductionToneMappingPolicy> = {}): ProductionToneMappingPolicy {
   const policy = { ...DEFAULT_TONE_MAPPING, ...overrides };
   if (!Number.isFinite(policy.exposure) || policy.exposure < 0) {

@@ -11,7 +11,7 @@ interface MutableNode {
 export interface EnemySpec {
   readonly id: string;
   /** Every hostile belongs to the route's authored containment asset family. */
-  readonly asset: "neonContainmentWardenA" | "neonContainmentWardenB";
+  readonly asset: "neonContainmentWardenA" | "neonContainmentWardenB" | "corridorWardenMeshyV1";
   readonly x: number;
   readonly z: number;
   readonly patrol: readonly [number, number];
@@ -21,9 +21,9 @@ export const ENEMIES: readonly EnemySpec[] = [
   // The opening read is one central combat target framed by the engagement
   // bay.  Supporting hostiles stage deeper in the same lane rather than
   // forming a huge, disconnected cluster against the right wall.
-  { id: "e1", asset: "neonContainmentWardenA", x: 0, z: 0.56, patrol: [-1.05, 0.56] },
+  { id: "e1", asset: "corridorWardenMeshyV1", x: 0, z: 0.56, patrol: [-1.05, 0.56] },
   { id: "e2", asset: "neonContainmentWardenB", x: 1.72, z: -4.9, patrol: [1.05, -4.9] },
-  { id: "e3", asset: "neonContainmentWardenA", x: -1.72, z: -6.15, patrol: [-1.05, -6.15] },
+  { id: "e3", asset: "corridorWardenMeshyV1", x: -1.72, z: -6.15, patrol: [-1.05, -6.15] },
   { id: "e4", asset: "neonContainmentWardenB", x: 2.1, z: -6.4, patrol: [1.2, -6.4] }
 ];
 

@@ -13,12 +13,10 @@ declare global {
       readonly ssaoMaxChannelDelta?: number;
       readonly ssaoChangedChannelCount?: number;
       readonly ssaoEffectChangedChannelCount?: number;
-      readonly ssrMaxChannelDelta?: number;
-      readonly ssrChangedChannelCount?: number;
-      readonly ssrEffectChangedChannelCount?: number;
-      readonly depthOfFieldMaxChannelDelta?: number;
-      readonly depthOfFieldChangedChannelCount?: number;
-      readonly depthOfFieldEffectChangedChannelCount?: number;
+      readonly ssrGlDepthNativeEffectChanged?: number;
+      readonly ssrGlDepthCpuEffectChanged?: number;
+      readonly depthOfFieldGlDepthNativeEffectChanged?: number;
+      readonly depthOfFieldGlDepthCpuEffectChanged?: number;
       readonly motionBlurMaxChannelDelta?: number;
       readonly motionBlurChangedChannelCount?: number;
       readonly motionBlurEffectChangedChannelCount?: number;
@@ -104,10 +102,27 @@ async function run(): Promise<void> {
     const ssaoComparison = comparePixels(actualSsao, expectedSsao);
     const ssaoEffect = comparePixels(expectedSsao, sourcePixels);
 
+    // GL-depth contract (muse3jsparity-PRD A3): the native SSR/DOF programs
+    // linearize sampleable GL depth, while the CPU byte kernels keep
+    // fixture-unit depth semantics. Native-vs-CPU equality is therefore only
+    // meaningful on fixture depth for passes without depth gates; on
+    // GL-realistic depth the native pass must move pixels (proving the
+    // linearization) while the CPU reference stays blind (documented, not a
+    // failure). The uploaded depth below mimics a real forward target
+    // (subject ~0.97, background ~0.985) instead of the 0.22/0.72 fixture.
+    const glDepth = createGlDepthFixture(width, height);
+    uploadDepthFixture(
+      canvas,
+      (source as unknown as { readonly depthTextureHandle: WebGLTexture }).depthTextureHandle,
+      glDepth
+    );
+    const glDepthBinding = (label: string): ReturnType<typeof createDepthTextureBinding> =>
+      createDepthTextureBinding({ label, width, height, data: glDepth });
+
     const ssrOptions = { intensity: 0.6, maxDistance: 4 };
-    const expectedSsr = ssrPixels(sourcePixels, width, height, {
+    const cpuSsr = ssrPixels(sourcePixels, width, height, {
       ...ssrOptions,
-      depth: createDepthTextureBinding({ label: "native-ssr-depth-fixture", width, height, data: depth })
+      depth: glDepthBinding("native-ssr-gl-depth")
     }).pixels;
     device.writeRenderTargetPixels(source, sourcePixels);
     device.presentLdrPostprocess(source, {
@@ -116,13 +131,18 @@ async function run(): Promise<void> {
     });
     device.setRenderTarget(output);
     const actualSsr = device.readPixels(0, 0, width, height);
-    const ssrComparison = comparePixels(actualSsr, expectedSsr);
-    const ssrEffect = comparePixels(expectedSsr, sourcePixels);
+    const ssrNativeEffect = comparePixels(actualSsr, sourcePixels);
+    const ssrCpuEffect = comparePixels(cpuSsr, sourcePixels);
 
-    const depthOfFieldOptions = { focusDepth: 0.5, focusRange: 0.1, maxRadius: 3 };
-    const expectedDepthOfField = depthOfFieldPixels(sourcePixels, width, height, {
-      ...depthOfFieldOptions,
-      depth: createDepthTextureBinding({ label: "native-dof-depth-fixture", width, height, data: depth })
+    // DOF focus is a linear-distance fraction on the native path (0 = near,
+    // 1 = far) but buffer units on the CPU path: both move pixels on GL
+    // depth, with no equality claim between them.
+    const depthOfFieldOptions = { focusDepth: 0.05, focusRange: 0.01, maxRadius: 3 };
+    const cpuDepthOfField = depthOfFieldPixels(sourcePixels, width, height, {
+      focusDepth: 0.5,
+      focusRange: 0.1,
+      maxRadius: 3,
+      depth: glDepthBinding("native-dof-gl-depth")
     }).pixels;
     device.writeRenderTargetPixels(source, sourcePixels);
     device.presentLdrPostprocess(source, {
@@ -131,8 +151,8 @@ async function run(): Promise<void> {
     });
     device.setRenderTarget(output);
     const actualDepthOfField = device.readPixels(0, 0, width, height);
-    const depthOfFieldComparison = comparePixels(actualDepthOfField, expectedDepthOfField);
-    const depthOfFieldEffect = comparePixels(expectedDepthOfField, sourcePixels);
+    const depthOfFieldNativeEffect = comparePixels(actualDepthOfField, sourcePixels);
+    const depthOfFieldCpuEffect = comparePixels(cpuDepthOfField, sourcePixels);
 
     const velocity = createVelocityFixture(width, height);
     const motionBlurOptions = { velocity, samples: 5, scale: 1 };
@@ -172,12 +192,10 @@ async function run(): Promise<void> {
       ssaoMaxChannelDelta: ssaoComparison.maxChannelDelta,
       ssaoChangedChannelCount: ssaoComparison.changedChannelCount,
       ssaoEffectChangedChannelCount: ssaoEffect.changedChannelCount,
-      ssrMaxChannelDelta: ssrComparison.maxChannelDelta,
-      ssrChangedChannelCount: ssrComparison.changedChannelCount,
-      ssrEffectChangedChannelCount: ssrEffect.changedChannelCount,
-      depthOfFieldMaxChannelDelta: depthOfFieldComparison.maxChannelDelta,
-      depthOfFieldChangedChannelCount: depthOfFieldComparison.changedChannelCount,
-      depthOfFieldEffectChangedChannelCount: depthOfFieldEffect.changedChannelCount,
+      ssrGlDepthNativeEffectChanged: ssrNativeEffect.changedChannelCount,
+      ssrGlDepthCpuEffectChanged: ssrCpuEffect.changedChannelCount,
+      depthOfFieldGlDepthNativeEffectChanged: depthOfFieldNativeEffect.changedChannelCount,
+      depthOfFieldGlDepthCpuEffectChanged: depthOfFieldCpuEffect.changedChannelCount,
       motionBlurMaxChannelDelta: motionBlurComparison.maxChannelDelta,
       motionBlurChangedChannelCount: motionBlurComparison.changedChannelCount,
       motionBlurEffectChangedChannelCount: motionBlurEffect.changedChannelCount,
@@ -250,6 +268,17 @@ function createDepthFixture(width: number, height: number): Float32Array {
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       depth[y * width + x] = x >= 3 && x <= 5 && y >= 2 && y <= 4 ? 0.72 : 0.22;
+    }
+  }
+  return depth;
+}
+
+/** GL-realistic depth for the SSR/DOF contract: nonlinear buffer values as a real forward target produces them. */
+function createGlDepthFixture(width: number, height: number): Float32Array {
+  const depth = new Float32Array(width * height);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      depth[y * width + x] = x >= 3 && x <= 5 && y >= 2 && y <= 4 ? 0.97 : 0.985;
     }
   }
   return depth;

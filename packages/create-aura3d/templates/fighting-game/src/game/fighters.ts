@@ -9,7 +9,20 @@ import {
 } from "@aura3d/engine";
 
 export type FighterId = "player" | "rival";
-export type FighterAssetKey = "playerFighter" | "rivalFighter";
+/**
+ * Certified E1 hero rigs mounted as the two fighters. The asset keys ARE the
+ * certification roster ids (docs/rendering/skinning-and-morphs.md), so the
+ * mounted asset id asserts directly against the roster:
+ * - player: showcaseWalkAnimatedGirl (humanoid-a) / "Take 001"
+ * - rival: showcaseRunnerRobot (creature) / "WALK"
+ */
+export const PLAYER_FIGHTER_ASSET = "showcaseWalkAnimatedGirl" as const;
+export const RIVAL_FIGHTER_ASSET = "showcaseRunnerRobot" as const;
+export type FighterAssetKey = typeof PLAYER_FIGHTER_ASSET | typeof RIVAL_FIGHTER_ASSET;
+export const FIGHTER_CERTIFIED_CLIP: Record<FighterId, string> = {
+  player: "Take 001",
+  rival: "WALK"
+};
 export type FighterClip = "idle" | "walk" | "jump" | "dash" | "guard" | "light" | "heavy" | "special" | "hitstun";
 
 export type TypedFighterAssets = Partial<Record<FighterAssetKey, AuraAssetRef<"model">>>;
@@ -20,7 +33,7 @@ export interface ResolvedFighterAssets {
   readonly typedFighterAssetCount: number;
 }
 
-export const REQUIRED_FIGHTER_ASSETS: readonly FighterAssetKey[] = ["playerFighter", "rivalFighter"];
+export const REQUIRED_FIGHTER_ASSETS: readonly FighterAssetKey[] = [PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET];
 export const REQUIRED_FIGHTER_CLIPS: readonly FighterClip[] = [
   "idle",
   "walk",
@@ -34,9 +47,10 @@ export const REQUIRED_FIGHTER_CLIPS: readonly FighterClip[] = [
 ];
 
 export const publicAssetInstructions = [
+  "certified default heroes: showcaseWalkAnimatedGirl (player) + showcaseRunnerRobot (rival)",
   "npx @aura3d/cli@latest assets search \"animated humanoid fighting character\" --profile fighting-character --json",
-  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name playerFighter --profile fighting-character",
-  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name rivalFighter --profile fighting-character",
+  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name showcaseWalkAnimatedGirl --profile fighting-character",
+  "npx @aura3d/cli@latest assets resolve \"animated creature fighting character\" --name showcaseRunnerRobot --profile fighting-character",
   "npx @aura3d/cli@latest assets validate-game --profile fighting-character --json"
 ] as const;
 
@@ -66,8 +80,8 @@ export const fighterAnimationClips: readonly AuraNamedAnimationClipDefinition<Fi
 
 export function resolveTypedFighterAssets(assetManifest: TypedFighterAssets): ResolvedFighterAssets {
   const typedFighterAssets: TypedFighterAssets = {
-    playerFighter: assetManifest.playerFighter,
-    rivalFighter: assetManifest.rivalFighter
+    [PLAYER_FIGHTER_ASSET]: assetManifest[PLAYER_FIGHTER_ASSET],
+    [RIVAL_FIGHTER_ASSET]: assetManifest[RIVAL_FIGHTER_ASSET]
   };
   const missingFighterAssets = REQUIRED_FIGHTER_ASSETS.filter((key) => !typedFighterAssets[key]);
   return {
@@ -112,7 +126,8 @@ export function createFighterNode(
   position: readonly [number, number, number],
   facing: 1 | -1,
   color: string,
-  typedFighterAssets: TypedFighterAssets
+  typedFighterAssets: TypedFighterAssets,
+  visualScale = 1
 ) {
   const asset = typedFighterAssets[assetKey];
   const runtime = game.runtimeNode(id, {
@@ -123,7 +138,7 @@ export function createFighterNode(
     return model(asset, { name: label })
       .position(position[0], position[1], position[2])
       .rotate(0, facing < 0 ? Math.PI : 0, 0)
-      .scale(0.72)
+      .scale(visualScale)
       .runtime(runtime);
   }
 

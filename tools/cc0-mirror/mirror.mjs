@@ -17,7 +17,7 @@
 // Usage: node tools/cc0-mirror/mirror.mjs
 
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, cpSync, existsSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -197,7 +197,76 @@ function extractQuaternius(limit) {
 }
 
 // ---- manifest ---------------------------------------------------------------
+
+// Curated hero shortlist, checked in next to this pipeline.
+//
+// Populated from a one-time `screen:assets` pass: run
+// `node tools/asset-screening/screen.mjs --intent <intent> --rank-all` against
+// mirror candidates, take the selected (admitted) manifest ids, and list them
+// here with the screening report path as provenance. `buildManifest` merges
+// this into `manifest.json` as per-asset `heroCandidate`/`qualityScore` plus a
+// top-level `heroCandidates` list, which the jsDelivr adapter carries through
+// `rawCatalogMetadata` so ranking boosts proven picks with no key and no
+// browser. An empty list is valid: it means no mirror asset has been
+// screen-admitted yet, and ranking falls back to plain keyword order.
+const HERO_CANDIDATES_PATH = join(
+  new URL(".", import.meta.url).pathname,
+  "hero-candidates.json",
+);
+
+function readHeroCandidates() {
+  try {
+    const raw = JSON.parse(readFileSync(HERO_CANDIDATES_PATH, "utf8"));
+    const candidates = Array.isArray(raw?.candidates) ? raw.candidates : [];
+    const byId = new Map();
+    for (const entry of candidates) {
+      if (entry && typeof entry.id === "string") byId.set(entry.id, entry);
+    }
+    return { byId, report: typeof raw?.report === "string" ? raw.report : undefined };
+  } catch {
+    return { byId: new Map(), report: undefined };
+  }
+}
+
+// Structural triangle count read straight from the GLB JSON chunk (no new
+// services, no browser). Returns undefined for glTF files or unreadable
+// headers; a missing count never blocks, it just omits `qualityScore`.
+function measureGlbTriangles(file) {
+  try {
+    const fd = openSync(file, "r");
+    try {
+      const header = Buffer.alloc(20);
+      if (readSync(fd, header, 0, 20, 0) !== 20) return undefined;
+      if (header.toString("ascii", 0, 4) !== "glTF") return undefined;
+      const jsonLength = header.readUInt32LE(12);
+      const jsonBytes = Buffer.alloc(jsonLength);
+      if (readSync(fd, jsonBytes, 0, jsonLength, 20) !== jsonLength) return undefined;
+      const json = JSON.parse(jsonBytes.toString("utf8").trim());
+      let triangles = 0;
+      for (const mesh of json.meshes ?? []) {
+        for (const primitive of mesh.primitives ?? []) {
+          const indexAccessor = json.accessors?.[primitive.indices];
+          if (indexAccessor && typeof indexAccessor.count === "number") {
+            triangles += Math.floor(indexAccessor.count / 3);
+          } else if (primitive.attributes?.POSITION !== undefined) {
+            const positionAccessor = json.accessors?.[primitive.attributes.POSITION];
+            if (positionAccessor && typeof positionAccessor.count === "number") {
+              triangles += Math.floor(positionAccessor.count / 3);
+            }
+          }
+        }
+      }
+      return triangles > 0 ? triangles : undefined;
+    } finally {
+      closeSync(fd);
+    }
+  } catch {
+    return undefined;
+  }
+}
+
 function buildManifest() {
+  const { byId: heroes, report: screeningReport } = readHeroCandidates();
   const assets = [];
   for (const source of ["kenney", "quaternius"]) {
     const base = join(DIR, source);
@@ -209,20 +278,42 @@ function buildManifest() {
         if (!/\.(glb|gltf)$/i.test(file)) continue;
         const name = file.replace(/\.(glb|gltf)$/i, "");
         const title = titleFromFile(file);
+        const id = `${source}:${pack}:${name}`;
+        const hero = heroes.get(id);
+        const triangles = /\.glb$/i.test(file) ? measureGlbTriangles(join(packDir, file)) : undefined;
         assets.push({
-          id: `${source}:${pack}:${name}`,
+          id,
           source,
           pack,
           title,
           path: `${source}/${pack}/${file}`,
           license: "CC0",
           tags: [...new Set([...title.toLowerCase().split(/\s+/), ...pack.split("-")])].filter((t) => t.length > 1),
+          ...(triangles !== undefined ? { triangles } : {}),
+          // Measured structural curation: a counted triangle floor keeps
+          // distant-prop shells from ranking as heroes. Curated heroes keep
+          // the screening score; everything else reports the measured floor
+          // signal so ranking prefers counted-over-unknown geometry.
+          ...(hero && typeof hero.qualityScore === "number"
+            ? { qualityScore: hero.qualityScore, heroCandidate: true }
+            : triangles !== undefined
+              ? { qualityScore: triangles >= 3_000 ? 0.8 : 0.2 }
+              : {}),
+          ...(hero && typeof hero.qualityScore !== "number" ? { heroCandidate: true } : {}),
         });
       }
     }
   }
   assets.sort((a, b) => a.id.localeCompare(b.id));
-  const manifest = { schema: "aura3d-cc0-mirror/1", cdnBase: CDN_BASE, count: assets.length, assets };
+  const heroCandidates = assets.filter((asset) => asset.heroCandidate === true).map((asset) => asset.id);
+  const manifest = {
+    schema: "aura3d-cc0-mirror/1",
+    cdnBase: CDN_BASE,
+    count: assets.length,
+    ...(heroCandidates.length > 0 ? { heroCandidates } : {}),
+    ...(screeningReport ? { screening: { report: screeningReport, generatedAt: new Date().toISOString() } } : {}),
+    assets,
+  };
   writeFileSync(join(DIR, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   return assets.length;
 }

@@ -1,5 +1,6 @@
 import {
   bindGameTouchControls,
+  camera,
   createAuraApp,
   createVehicleChassis,
   createVehicleDriverAi,
@@ -8,6 +9,7 @@ import {
   effects,
   geometry,
   game,
+  gameFeel,
   groundedFittedModelPosition,
   instances,
   lights,
@@ -22,7 +24,9 @@ import {
   type AuraVec3,
   type DriverRoute,
   type VehicleChassis,
-  type VehicleSurface
+  type VehiclePose,
+  type VehicleSurface,
+  type VehicleVec3
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
@@ -236,6 +240,27 @@ const TRACK_REFERENCE_Y = -0.12;
  * authoritative below it.
  */
 const ROAD_DETAIL_SURFACE_LIFT = 0.075;
+/**
+ * Seat a rendered car on the visible asphalt skin.
+ *
+ * The chassis reports the certified contact plane, but the route-bound asphalt
+ * ribbon the camera sees is built `ROAD_DETAIL_SURFACE_LIFT` above it (the
+ * contact shadows, tyre shadows and drift particles already render on that
+ * shell). Seating the fitted model on the contact plane therefore buries the
+ * tyres ~0.069 scene units deep in the visible road -- about two thirds of the
+ * hero's fitted wheel radius. This lift is presentation-only: suspension,
+ * telemetry and Rapier contact keep reporting the mesh contact plane below it.
+ */
+function seatCarOnVisibleAsphalt(
+  pose: Pick<VehiclePose, "groundedPosition" | "rotation">,
+  fittedSize: VehicleVec3,
+  wheelRadius: number
+): VehicleVec3 {
+  const seated = groundedFittedModelPosition(pose, fittedSize, {
+    contactClearance: wheelRadius * 0.06
+  });
+  return [seated[0], seated[1] + ROAD_DETAIL_SURFACE_LIFT, seated[2]];
+}
 // Renderer-owned drift feedback tuning. This is a visual particle parameter,
 // not a gameplay/world-physics gravity constant; keep it explicit so the
 // particle material can rise and dissipate without changing vehicle contact.
@@ -578,6 +603,74 @@ let visualCaptureHeld = false;
 let collisionReviewContactHeld = collisionReviewCamera;
 let collisionReviewReactionHeld = false;
 let collisionReviewReactionReleased = false;
+/*
+ * PART F2/F3 adoption: root trauma shake + punch-in + generalized game feel,
+ * layered onto the existing follow rig. The chase follow itself stays owned by
+ * `game.racingCameraRig` (existing follow adoption); the root kit contributes
+ * the juice: drift/contact/nitro/finish trauma, impact punch-in framing, and
+ * node-backed feel effects (damage flash, nitro speed lines, verge dust) with
+ * per-frame evidence in `mountedEvidence.gameFeel`.
+ */
+const turboJuiceProbeEnabled = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("juiceProbe") === "1";
+const turboTraumaShake = camera.shake({ decay: 1.6, maxOffset: 0.14 });
+const turboPunchIn = camera.punchIn({ fovKick: 6, distanceKick: 0.45 });
+const turboFeel = gameFeel.create({ effects: runtimeEffects, budgetMs: 2 });
+const turboJuice = {
+  shakeOffset: [0, 0, 0] as [number, number, number],
+  punchFovOffset: 0,
+  punchDistanceOffset: 0,
+  maxTrauma: 0,
+  maxShakeOffset: 0,
+  punchSeen: false,
+  contactJuiceSeen: false,
+  driftRumbleSeen: false,
+  nitroJuiceSeen: false,
+  finishJuiceSeen: false,
+  probeFired: false
+};
+/** Certified captures keep exact framing: juice triggers are gameplay-only. */
+const turboJuiceTriggersAllowed = !collisionReviewCamera && !visualCaptureCamera;
+function turboPlayerSceneAnchor(): [number, number, number] {
+  const anchor = playerCar.position;
+  return [anchor[0], anchor[1], anchor[2]];
+}
+function turboFireContactJuice(directRearImpact: boolean): void {
+  if (!turboJuiceTriggersAllowed) return;
+  if (!reducedMotion) {
+    turboTraumaShake.addTrauma(directRearImpact ? 0.8 : 0.4);
+    turboPunchIn.punch(directRearImpact ? 1 : 0.6);
+  }
+  turboFeel.damageFlash("#ff3b30", turboPlayerSceneAnchor());
+  turboJuice.contactJuiceSeen = true;
+}
+function turboFireNitroJuice(): void {
+  if (!turboJuiceTriggersAllowed) return;
+  if (!reducedMotion) turboPunchIn.punch(0.8);
+  turboFeel.speedLines(0.9, turboPlayerSceneAnchor());
+  turboJuice.nitroJuiceSeen = true;
+}
+function turboFireFinishJuice(): void {
+  if (!turboJuiceTriggersAllowed) return;
+  if (!reducedMotion) {
+    turboTraumaShake.addTrauma(0.5);
+    turboPunchIn.punch(1);
+  }
+  turboJuice.finishJuiceSeen = true;
+}
+/** Deterministic test hook: fires the full juice chain once via `?juiceProbe=1`. */
+function turboMaybeFireJuiceProbe(): void {
+  if (!turboJuiceProbeEnabled || turboJuice.probeFired) return;
+  turboJuice.probeFired = true;
+  if (!reducedMotion) {
+    turboTraumaShake.addTrauma(0.8);
+    turboPunchIn.punch(1);
+  }
+  const anchor = turboPlayerSceneAnchor();
+  turboFeel.damageFlash("#ff3b30", anchor);
+  turboFeel.speedLines(0.9, anchor);
+  turboFeel.landingDust(anchor);
+}
 // The evidence-only side view starts the rival nearer on the same opening straight,
 // making first contact deterministic before barriers or later circuit branches can
 // obscure either silhouette. Normal gameplay retains the authored 0.032 head start.
@@ -1143,7 +1236,7 @@ function buildTurboSceneryNodes() {
       name: "outfield cut log bundles (instanced)",
       castShadow: false,
       receiveShadow: true,
-      material: material.pbr({ name: "weathered cut logs", color: "#8e5a3e", roughness: 0.9, metallic: 0.01 }),
+      material: material.pbr({ name: "weathered cut logs", color: "#ffffff", roughness: 0.9, metallic: 0.01 }),
       instanceColors: outfieldLogColors,
       transforms: outfieldLogTransforms
     }),
@@ -1151,7 +1244,7 @@ function buildTurboSceneryNodes() {
       name: "outfield weathered boulders (instanced)",
       castShadow: false,
       receiveShadow: true,
-      material: material.pbr({ name: "weathered roadside stone", color: "#7b6f61", roughness: 0.96, metallic: 0.01 }),
+      material: material.pbr({ name: "weathered roadside stone", color: "#d8cfc2", roughness: 0.96, metallic: 0.01 }),
       instanceColors: outfieldBoulderColors,
       transforms: outfieldBoulderTransforms
     }),
@@ -1374,7 +1467,7 @@ function buildTurboTracksideIdentityNodes() {
     }),
     instances.box({
       name: "opening hairpin apex chevrons (instanced)",
-      material: material.emissive({ name: "hairpin apex chevron paint", color: "#f3b968", emissive: "#df7e4d", emissiveIntensity: 0.32, roughness: 0.52 }),
+      material: material.emissive({ name: "hairpin apex chevron paint", color: "#ff00ff", emissive: "#ff00ff", emissiveIntensity: 0.9, roughness: 0.52 }),
       instanceColors: cornerChevronColors,
       castShadow: false,
       receiveShadow: false,
@@ -1482,7 +1575,7 @@ function buildTurboRallySetNodes() {
     }),
     instances.box({
       name: "rally apex reflector plates (instanced)",
-      material: material.emissive({ name: "rally apex reflector", color: "#f6c56d", emissive: "#d9873e", emissiveIntensity: 0.52, roughness: 0.4 }),
+      material: material.emissive({ name: "rally apex reflector", color: "#00ffff", emissive: "#00ffff", emissiveIntensity: 0.9, roughness: 0.4 }),
       instanceColors: apexMarkerColors,
       castShadow: false,
       receiveShadow: false,
@@ -1883,7 +1976,7 @@ function buildTurboRoadDetailNodes() {
     }),
     instances.box({
       name: "route-bound alternating kerbs (instanced)",
-      material: material.pbr({ name: "route kerb paint", color: "#ef6a4f", roughness: 0.68, metallic: 0 }),
+      material: material.pbr({ name: "route kerb paint", color: "#ffff00", roughness: 0.68, metallic: 0 }),
       instanceColors: curbColors,
       castShadow: false,
       receiveShadow: false,
@@ -2423,7 +2516,7 @@ const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), oppon
 const driftParticleCloud = effects.particles({
   name: "typed drift dust cloud",
   emitter: "fountain",
-  color: "#d8c7b5",
+  color: "#c3cbce",
   // The WebGL particle backend keeps fountain billboards at a small fixed
   // base size. The former 0.22/0.34 volume therefore collapsed to a few
   // sub-pixel flecks beside a full-size Formula car. A wider, lower plume
@@ -2481,13 +2574,23 @@ const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
 // firmer frame-rate-independent response keeps the hero in the lower third while
 // retaining enough damping to avoid horizon snap through bends and recovery.
 const chaseSmoothing = 0.18;
-type MutableChaseCamera = { distance: number; height: number; sideOffset: number };
+// Keep the complete near-circuit decision space inside the chase frame. At 52°
+// the player still read well, but the projected track occupied 83.7% of the
+// viewport and correctly failed the public composition gate as a proof-harness
+// view. Sixty-two degrees retains a genre-appropriate ~19% hero height while
+// restoring visible road context around the subject.
+const chaseFov = 62;
+type MutableChaseCamera = { distance: number; height: number; sideOffset: number; fov: number };
+function turboChaseBaseFov(): number {
+  return collisionReviewCamera ? 48 : visualCaptureCamera ? VISUAL_CAPTURE_CAMERA.fov : chaseFov;
+}
 const chaseCameraTuning: MutableChaseCamera = {
   distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier : chaseDistance,
   height: collisionReviewCamera ? chaseHeight * 1.3 : visualCaptureCamera ? chaseHeight * VISUAL_CAPTURE_CAMERA.heightMultiplier : chaseHeight,
-  sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : visualCaptureCamera ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier : heroFraming.sideOffset
+  sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : visualCaptureCamera ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier : heroFraming.sideOffset,
+  fov: turboChaseBaseFov()
 };
-function syncChaseCamera(finishBlend = 0, offTrackNudge = 0): void {
+function syncChaseCamera(finishBlend = 0, offTrackNudge = 0, step = 1 / 60): void {
   // Keep the finish ceremony close enough to read the car, track, and live HUD
   // together; the wider lateral swing still gives a clear 3/4 presentation.
   const heroDistance = chaseDistance * (1 + finishBlend * 0.18);
@@ -2513,14 +2616,50 @@ function syncChaseCamera(finishBlend = 0, offTrackNudge = 0): void {
     : visualCaptureCamera
     ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier
     : (finishBlend > 0.001 ? heroSide : heroFraming.sideOffset) + nudgeSide;
+  // PART F2/F3 juice: advance root trauma + punch-in + feel budgets, then fold
+  // the live offsets into the submitted chase tuning. Certified captures keep
+  // exact framing; gameplay gets lens displacement (shake) and impact framing
+  // (punch-in fov + distance kick). Reduced motion suppresses camera motion but
+  // still advances (and evidences) the settled state.
+  const shakeSnap = turboTraumaShake.update(step);
+  const punchSnap = turboPunchIn.update(step);
+  const feelSnap = turboFeel.update(step * 1000);
+  const juiceCameraAllowed = turboJuiceTriggersAllowed && !reducedMotion;
+  turboJuice.shakeOffset = [shakeSnap.offset[0], shakeSnap.offset[1], shakeSnap.offset[2]];
+  turboJuice.punchFovOffset = punchSnap.fovOffset;
+  turboJuice.punchDistanceOffset = punchSnap.distanceOffset;
+  turboJuice.maxTrauma = Math.max(turboJuice.maxTrauma, shakeSnap.trauma);
+  turboJuice.maxShakeOffset = Math.max(
+    turboJuice.maxShakeOffset,
+    Math.hypot(shakeSnap.offset[0], shakeSnap.offset[1], shakeSnap.offset[2])
+  );
+  turboJuice.punchSeen ||= punchSnap.active;
+  chaseCameraTuning.distance += juiceCameraAllowed ? shakeSnap.offset[2] + punchSnap.distanceOffset : 0;
+  chaseCameraTuning.height += juiceCameraAllowed ? shakeSnap.offset[1] : 0;
+  chaseCameraTuning.sideOffset += juiceCameraAllowed ? shakeSnap.offset[0] : 0;
+  chaseCameraTuning.fov = turboChaseBaseFov() + (juiceCameraAllowed ? punchSnap.fovOffset : 0);
   Object.assign(racingCamera as unknown as MutableChaseCamera, chaseCameraTuning);
+  const gameFeelEvidence = mountedEvidence.gameFeel;
+  gameFeelEvidence.trauma = shakeSnap.trauma;
+  gameFeelEvidence.shakeEnergy = shakeSnap.energy;
+  gameFeelEvidence.shakeOffset = [...turboJuice.shakeOffset];
+  gameFeelEvidence.punchActive = punchSnap.active;
+  gameFeelEvidence.punchFovOffset = turboJuice.punchFovOffset;
+  gameFeelEvidence.cameraFov = chaseCameraTuning.fov;
+  gameFeelEvidence.cameraDistance = chaseCameraTuning.distance;
+  gameFeelEvidence.cameraHeight = chaseCameraTuning.height;
+  gameFeelEvidence.effectsSpawned = feelSnap.effectsSpawned;
+  gameFeelEvidence.effectsActive = feelSnap.effectsActive;
+  gameFeelEvidence.overBudget = feelSnap.budget.overBudget;
+  gameFeelEvidence.maxTrauma = turboJuice.maxTrauma;
+  gameFeelEvidence.maxShakeOffset = turboJuice.maxShakeOffset;
+  gameFeelEvidence.punchSeen = turboJuice.punchSeen;
+  gameFeelEvidence.contactJuiceSeen = turboJuice.contactJuiceSeen;
+  gameFeelEvidence.driftRumbleSeen = turboJuice.driftRumbleSeen;
+  gameFeelEvidence.nitroJuiceSeen = turboJuice.nitroJuiceSeen;
+  gameFeelEvidence.finishJuiceSeen = turboJuice.finishJuiceSeen;
+  gameFeelEvidence.probeFired = turboJuice.probeFired;
 }
-// Keep the complete near-circuit decision space inside the chase frame. At 52°
-// the player still read well, but the projected track occupied 83.7% of the
-// viewport and correctly failed the public composition gate as a proof-harness
-// view. Sixty-two degrees retains a genre-appropriate ~19% hero height while
-// restoring visible road context around the subject.
-const chaseFov = 62;
 // Evidence-only camera selection. The public route keeps its genre chase framing;
 // `?collisionReview=side` widens and moves laterally so a retained screenshot can
 // prove the two vehicle silhouettes are separate at the contact plane.
@@ -2885,7 +3024,13 @@ const app = createAuraApp("#app", {
         // giant foreground silhouette instead of readable safety detail. The
         // typed hairpin kit and route-owned barrier/stand meshes retain the
         // venue depth after this material group is suppressed.
-        "TDCE horizontal tyre walls"
+        "TDCE horizontal tyre walls",
+        // The V2 autumn foliage mass crosses the start/finish vista exactly on
+        // the chase vanishing point, where its single orange slab reads as a
+        // giant trackside pyramid over the hero frame. The route-owned
+        // roadside forest and warm accents retain the autumn venue identity
+        // at measured offsets without blocking either car.
+        "TDCE autumn foliage"
       ]
     }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
       tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
@@ -2928,9 +3073,7 @@ const app = createAuraApp("#app", {
       targetMaxDimension: CAR_TARGET_MAX_DIMENSION,
       castShadow: true,
       receiveShadow: true
-    }).position(...groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
-      contactClearance: carChassisSpec.wheelRadius * 0.06
-    })).rotate(playerChassisPose.rotation[0], initialPlayerPose.rotation[1], playerChassisPose.rotation[2]).runtime(game.runtimeNode("racing-player-car", {
+    }).position(...seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius)).rotate(playerChassisPose.rotation[0], initialPlayerPose.rotation[1], playerChassisPose.rotation[2]).runtime(game.runtimeNode("racing-player-car", {
       tags: ["player", "vehicle", "typed-primary-asset"]
     })))
     .add(model(assets.showcaseCcByFormulaOpponent, {
@@ -2940,9 +3083,7 @@ const app = createAuraApp("#app", {
       targetMaxDimension: opponentTargetMaxDimension,
       castShadow: true,
       receiveShadow: true
-    }).position(...groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
-      contactClearance: opponentChassisSpec.wheelRadius * 0.06
-    })).rotate(opponentChassisPose.rotation[0], opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2]).runtime(game.runtimeNode("racing-opponent-car", {
+    }).position(...seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius)).rotate(opponentChassisPose.rotation[0], opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2]).runtime(game.runtimeNode("racing-opponent-car", {
       tags: ["opponent", "vehicle", "typed-secondary-asset", "route-local-ai"]
     })))
     // A pair of tiny renderer-owned livery lights make the typed rival read as
@@ -3006,7 +3147,11 @@ const app = createAuraApp("#app", {
     })))
     .add(instances.box({
       name: "player car contact shadow",
-      material: material.pbr({ name: "player contact shadow", color: "#0e0d0c", roughness: 1, metallic: 0, opacity: 0.52 }),
+      // Solid dark graphite, not black: the primitive path carries no alpha,
+      // so the old near-black box rendered as a harsh slab that fused with
+      // the tyres and made the car read as sunken. This stays strictly inside
+      // the body footprint as ambient occlusion.
+      material: material.pbr({ name: "player contact shadow", color: "#1e2126", roughness: 1, metallic: 0, opacity: 0.52 }),
       castShadow: false,
       receiveShadow: false,
       transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
@@ -3018,7 +3163,7 @@ const app = createAuraApp("#app", {
         name: `player tyre contact shadow ${index + 1}`,
         material: material.pbr({
           name: `player tyre contact shadow material ${index + 1}`,
-          color: "#171411",
+          color: "#1a1d20",
           roughness: 1,
           metallic: 0,
           opacity: 0.46
@@ -3202,15 +3347,18 @@ const app = createAuraApp("#app", {
       geometry.custom(TURBO_DRIFT_BILLOW_GEOMETRY, {
         name: `drift dust history ${index + 1}`,
         material: material.pbr({
-          name: `warm drift dust ${index + 1}`,
-          color: index % 3 === 0 ? "#e0c1a5" : index % 3 === 1 ? "#b9957b" : "#866d5e",
-          roughness: 0.84,
+          // Cool tyre-smoke grays, deliberately opaque-friendly: the primitive
+          // path drops alpha, so the old warm tans rendered as muddy beige
+          // marbles. Solid stylized smoke reads correctly with or without it.
+          name: `cool drift smoke ${index + 1}`,
+          color: index % 3 === 0 ? "#ccd4d8" : index % 3 === 1 ? "#a7b1b6" : "#79838a",
+          roughness: 0.9,
           metallic: 0,
           opacity: visualCaptureCamera
             ? Math.max(0.12, 0.34 - index * 0.013)
             : Math.max(0.08, 0.22 - index * 0.009),
-          emissive: "#d39267",
-          emissiveIntensity: 0.08,
+          emissive: "#46545c",
+          emissiveIntensity: 0.06,
           normal: material.proceduralTexture("plastic-micro-scratch", { scale: 20, strength: 0.16, contrast: 0.5 })
         })
       })
@@ -3676,6 +3824,35 @@ const mountedEvidence = {
     offTrack: false,
     recoveryVisible: false
   },
+  /**
+   * PART F2/F3 adoption evidence. Follow stays on `game.racingCameraRig`
+   * chase; shake/punch-in come from root `camera.shake`/`camera.punchIn` and
+   * node-backed feel effects from root `gameFeel`. Cumulative maxima prove the
+   * juice fired during a real session; per-frame fields prove decay/settle.
+   */
+  gameFeel: {
+    source: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel over game.racingCameraRig chase follow",
+    follow: "game.racingCameraRig chase (existing)",
+    trauma: 0,
+    shakeEnergy: 0,
+    shakeOffset: [0, 0, 0],
+    punchActive: false,
+    punchFovOffset: 0,
+    cameraFov: 62,
+    cameraDistance: 0,
+    cameraHeight: 0,
+    effectsSpawned: 0,
+    effectsActive: 0,
+    overBudget: false,
+    maxTrauma: 0,
+    maxShakeOffset: 0,
+    punchSeen: false,
+    contactJuiceSeen: false,
+    driftRumbleSeen: false,
+    nitroJuiceSeen: false,
+    finishJuiceSeen: false,
+    probeFired: false
+  },
   observedRenderedFeedback: { ...observedRenderedFeedback },
   /**
    * Opponent distinction evidence, reported truthfully rather than favourably.
@@ -3818,6 +3995,9 @@ app.onFrame(({ dt }) => {
   // captures first contact. Continuing to advance Rapier beneath a held camera could
   // briefly clear and re-enter the manifold, manufacturing a second impact on release.
   if ((collisionReviewContactHeld && vehicleImpactResponses > 0) || collisionReviewReactionHeld) return;
+  // Deterministic `?juiceProbe=1` hook for the F2/F3 adoption spec. Gameplay-only
+  // by construction: certified captures never set the flag.
+  if (turboJuiceTriggersAllowed) turboMaybeFireJuiceProbe();
   // Once the exact review state has been solved, keep the gameplay transforms
   // fixed while allowing the renderer and its chase rig to run for subsequent
   // frames. Pausing the whole app from a nested rAF stopped the renderer before
@@ -3909,7 +4089,7 @@ app.onFrame(({ dt }) => {
       // continue. Apply the session blend to the mounted camera, HUD, and proof
       // surface instead of freezing them on the final racing frame.
       const finishBlend = raceSession.finishCameraBlend;
-      syncChaseCamera(finishBlend);
+      syncChaseCamera(finishBlend, 0, step);
       mountedEvidence.renderedFeedback.finishCameraBlend = round(finishBlend);
       mountedEvidence.gameplay.resultCardAfterFinish ||= finishBlend > 0.35;
       mountedEvidence.gameplay.finishCamera3Quarter ||= finishBlend > 0.35;
@@ -3948,6 +4128,7 @@ app.onFrame(({ dt }) => {
     raceSnapshot = racingState.reset(0);
     raceSession = resetRaceSession(raceSession);
     runtimeEffects.clear();
+    turboFeel.clear();
     playCue("ui-confirm");
     // Restore audio cue edge-trackers to the pre-race state so a reset race
     // replays the countdown/go/checkpoint/finish ceremony.
@@ -4012,13 +4193,9 @@ app.onFrame(({ dt }) => {
     opponentChassisPose = opponentChassis.reset({
       x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponent.heading, speed: 0, steer: 0
     });
-    playerCar.setPosition(...groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
-      contactClearance: carChassisSpec.wheelRadius * 0.06
-    }));
+    playerCar.setPosition(...seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius));
     playerCar.setRotation(playerChassisPose.rotation[0], resetPose.rotation[1], playerChassisPose.rotation[2]);
-    opponentCar.setPosition(...groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
-      contactClearance: opponentChassisSpec.wheelRadius * 0.06
-    }));
+    opponentCar.setPosition(...seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius));
     opponentCar.setRotation(opponentChassisPose.rotation[0], resetOpponentPose.rotation[1], opponentChassisPose.rotation[2]);
     playerContactBody.setPosition([resetPose.position[0], 0, resetPose.position[2]]);
     playerContactBody.setRotation(yawQuaternion(resetPose.rotation[1]));
@@ -4037,7 +4214,7 @@ app.onFrame(({ dt }) => {
       handle.setVelocity([0, 0, 0]);
       trackPropNodes[propIndex]?.setPosition(rest[0], rest[1], rest[2]);
     }
-    syncChaseCamera(0);
+    syncChaseCamera(0, 0, step);
     const resetOpponentAsphalt = asphaltAlignment(resetOpponent.signedTrackOffset, opponentBodyHalfWidth);
     mountedEvidence.opponent = {
       ...opponentAi.evidence(raceSnapshot.progress),
@@ -4350,6 +4527,7 @@ app.onFrame(({ dt }) => {
     );
   }
   if (vehicleContactBegan && activeVehicleContact) {
+    turboFireContactJuice(directRearImpact);
     vehicleImpactRecoverySeconds = directRearImpact ? 0.2 : 0.1;
     vehicleImpactResponses += 1;
     // A brief physical hit-stop holds the exact solved bumper-contact pose long
@@ -4385,6 +4563,8 @@ app.onFrame(({ dt }) => {
     if (!offTrackCueSuppressed) {
       playCue("off-track");
       offTrackCueSuppressed = true;
+      // PART F3 verge dust: a real ground-dust node at the excursion point.
+      if (turboJuiceTriggersAllowed) turboFeel.landingDust(turboPlayerSceneAnchor());
     }
   } else {
     offTrackCueSuppressed = false;
@@ -4417,9 +4597,7 @@ app.onFrame(({ dt }) => {
    * lifted the whole car by its ride height, which renders as a car hovering above the
    * tarmac -- the sinking defect's mirror image.
    */
-  const playerGroundedVisual = groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
-    contactClearance: carChassisSpec.wheelRadius * 0.06
-  });
+  const playerGroundedVisual = seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius);
   const reviewSlipYaw = visualCaptureCamera ? raceSnapshot.drift * 0.5 : 0;
   playerCar.setPosition(
     playerGroundedVisual[0],
@@ -4486,7 +4664,7 @@ app.onFrame(({ dt }) => {
     )
     .setRotation(0, playerPose.rotation[1] + reviewSlipYaw, 0)
     .setScale(visualCaptureCamera
-      ? [0.19 + contactCompression * 0.035, 0.004, 0.32 + contactCompression * 0.045]
+      ? [0.165 + contactCompression * 0.03, 0.004, 0.29 + contactCompression * 0.04]
       : [0.13, 0.002, 0.23])
     .setVisible(contactStrength > 0.24);
   if (visualCaptureCamera) {
@@ -4501,9 +4679,9 @@ app.onFrame(({ dt }) => {
         )
         .setRotation(0, playerPose.rotation[1] + reviewSlipYaw, 0)
         .setScale([
-          0.043 + wheel.compression * 0.014,
+          0.037 + wheel.compression * 0.012,
           0.004,
-          0.072 + wheel.compression * 0.018
+          0.062 + wheel.compression * 0.016
         ])
         .setVisible(wheel.grounded);
     });
@@ -4513,6 +4691,12 @@ app.onFrame(({ dt }) => {
   const driftAmount = Math.min(1, Math.abs(raceSnapshot.drift));
   const speedFraction = Math.min(1, Math.abs(raceSnapshot.speed) / Math.max(gameplayMaxSpeed, 0.001));
   const driftVisible = driftAmount > 0.12 && speedFraction > 0.18;
+  // PART F2 drift rumble: sustained slip holds trauma while the slide lasts and
+  // releases on grip, so the chase lens trembles through a real drift only.
+  if (driftVisible && turboJuiceTriggersAllowed && !reducedMotion) {
+    turboTraumaShake.addTrauma(Math.min(0.35, step * 2));
+    turboJuice.driftRumbleSeen = true;
+  }
   // Keep the live feedback local to the rear contact patches. The former 1.15-unit
   // multiplier produced two long, blunt black rails that visually fused with the tyres.
   // A retained skid history can be segmented later; these nodes show the current slip only.
@@ -4628,8 +4812,16 @@ app.onFrame(({ dt }) => {
     const historyAge = index / Math.max(1, visualDriftPlumes.length - 1);
     const reviewPuffIndex = Math.floor(index / 2);
     const reviewSide = reviewPuffIndex % 2 === 0 ? -1 : 1;
-    const reviewWakeDistance = 0.16 + historyAge * 0.42;
-    const reviewLaneSpread = reviewSide * (0.07 + historyAge * 0.06)
+    // Start the solved wake a tyre-diameter behind the rear axle, not at or
+    // under the car: any nearer origin tucks the newest puffs against the
+    // glossy blackwalls, erasing the contact read and making the car look
+    // sunken. Matches the live-game trail, which starts at the axle plus
+    // the tyre exit gap plus its own margin.
+    const reviewWakeDistance = rearAxleOffset + 0.14 + historyAge * 0.42;
+    // Keep the young puffs outside the rear-tyre silhouettes and slightly
+    // above their midline: centered puffs overlapped the glossy blackwalls,
+    // erasing the contact read and making the car look sunken.
+    const reviewLaneSpread = reviewSide * (0.11 + historyAge * 0.06)
       + reviewTrailCurveSign * historyAge * historyAge * 0.08;
     // Give the billow enough scene-space volume to read beside a full-size
     // Formula car while keeping the newest contact puffs tighter than the
@@ -4650,7 +4842,7 @@ app.onFrame(({ dt }) => {
         reviewPuffVisible
           ? playerPose.position[0] - reviewTrailForwardX * reviewWakeDistance + reviewTrailSideX * reviewLaneSpread
           : playerPose.position[0] - Math.cos(heading) * distance + sideX * spread,
-        playerChassisPose.groundedPosition[1] + (reviewPuffVisible ? 0.055 + historyAge * 0.04 : 0.035 + radius * (0.38 + index * 0.015)),
+        playerChassisPose.groundedPosition[1] + (reviewPuffVisible ? 0.075 + historyAge * 0.04 : 0.035 + radius * (0.38 + index * 0.015)),
         reviewPuffVisible
           ? playerPose.position[2] - reviewTrailForwardZ * reviewWakeDistance + reviewTrailSideZ * reviewLaneSpread
           : playerPose.position[2] - Math.sin(heading) * distance + sideZ * spread
@@ -4681,7 +4873,9 @@ app.onFrame(({ dt }) => {
         const rearZ = playerPose.position[2] - Math.sin(heading) * (rearAxleOffset + tireExitGap * 0.35);
         runtimeEffects.groundDust(
           [rearX + sideX * side, playerPresentationRoadY + 0.018, rearZ + sideZ * side],
-          { ownerId: "racing-player-car", intensity: 0.4 + driftAmount * 0.4, duration: 0.24, color: "#d69a76" }
+          // Cool gray and compact: the old tan decal rendered as an opaque
+          // beige rectangle in the primitive path. Smaller, shorter, dimmer.
+          { ownerId: "racing-player-car", intensity: 0.3 + driftAmount * 0.3, duration: 0.18, radius: 0.32, color: "#0000ff" }
         );
       }
     }
@@ -4740,6 +4934,7 @@ app.onFrame(({ dt }) => {
   } // end half-rate props world block
   trackPropsScatteredCount = Math.max(trackPropsScatteredCount, trackPropsDisplaced.size);
   const surfaceSample = racingLine.query(raceSnapshot.position);
+  const nitroSecondsBeforeAward = raceSession.nitroSeconds;
   raceSession = maybeAwardHairpinNitro({
     session: raceSession,
     driftVisible,
@@ -4747,10 +4942,11 @@ app.onFrame(({ dt }) => {
     progress: raceSnapshot.progress,
     curvature: surfaceSample.curvature
   });
+  if (raceSession.nitroSeconds > 0 && nitroSecondsBeforeAward <= 0) turboFireNitroJuice();
   const finishBlend = raceSession.finishCameraBlend;
   // Off-track camera nudge uses the decaying recovery window so the shake fades
   // as the car returns to the road (hidden under reduced motion).
-  syncChaseCamera(finishBlend, edgeRecoverySeconds > 0 ? edgeRecoverySeconds / 0.45 : 0);
+  syncChaseCamera(finishBlend, edgeRecoverySeconds > 0 ? edgeRecoverySeconds / 0.45 : 0, step);
   const opponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
   opponentChassisPose = opponentChassis.step(step, {
@@ -4763,12 +4959,13 @@ app.onFrame(({ dt }) => {
     brake: opponentDriverInput.brake ? 1 : 0,
     slip: Math.min(1, Math.abs(opponent.drift))
   });
-  const opponentGroundedVisual = groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
-    contactClearance: opponentChassisSpec.wheelRadius * 0.06
-  });
+  // Both cars seat on the same visible shell: the former capture-only
+  // `-wheelRadius * 0.32` drop had no justifying contact reason and pushed the
+  // rival back under the asphalt ribbon in exactly the thumbnail path.
+  const opponentGroundedVisual = seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius);
   opponentCar.setPosition(
     opponentGroundedVisual[0],
-    opponentGroundedVisual[1] - (visualCaptureCamera ? opponentChassisSpec.wheelRadius * 0.32 : 0),
+    opponentGroundedVisual[1],
     opponentGroundedVisual[2]
   );
   opponentCar.setRotation(opponentChassisPose.rotation[0], opponentPose.rotation[1], opponentChassisPose.rotation[2]);
@@ -4867,7 +5064,9 @@ app.onFrame(({ dt }) => {
   if (ghostReplayActive && ghostReplayPlayer) {
     const ghostPose = ghostReplayPlayer.advance(step);
     const ghostScenePose = racingScene.toScenePose({ position: { x: ghostPose.x, y: ghostPose.y }, heading: ghostPose.heading });
-    ghostCarNode.setPosition(ghostScenePose.position[0], CAR_REFERENCE_Y, ghostScenePose.position[2]);
+    // The replay ghost is a third rendered car: seat it on the same visible
+    // shell as the live cars, not on the contact plane below it.
+    ghostCarNode.setPosition(ghostScenePose.position[0], sampleTurboRoadHeight(ghostScenePose.position[0], ghostScenePose.position[2]) + ROAD_DETAIL_SURFACE_LIFT, ghostScenePose.position[2]);
     ghostCarNode.setRotation(0, ghostScenePose.rotation[1], 0);
     ghostCarNode.setVisible(true);
   } else {
@@ -5061,6 +5260,7 @@ app.onFrame(({ dt }) => {
       turboAudio.setMusicDucked(true);
       playCue("finish-fanfare");
       finishCueFired = true;
+      turboFireFinishJuice();
     }
   }
   // Ordered checkpoints chime on each gate credit (checkpoint wraps to 0 at a lap
@@ -5083,6 +5283,9 @@ app.onFrame(({ dt }) => {
     && driftVisible
     && driftAmount > 0.35
     && speedFraction >= 0.6
+    // 0.17: freeze at the first genuine bend slide (duel + smoke). Later
+    // floors landed the freeze on empty straights; earlier floors caught the
+    // dirt excursion. This is the dramatic two-car moment - keep it.
     && raceSnapshot.progress >= 0.17
     // Manual capture freezes in the opening right-bend interval. The
     // deterministic route driver can reach its first genuine handbrake slip

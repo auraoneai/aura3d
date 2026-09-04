@@ -55,16 +55,17 @@ button { font: inherit; }
 
 .runner-shell::before {
   inset: 0;
+  /* Side-only grade: the old bottom-up wash stacked over the dark foreground
+   * ridge and rendered as an unexplained black shelf across the lower frame. */
   background:
-    linear-gradient(90deg, rgba(3, 5, 18, 0.42), transparent 25%, transparent 70%, rgba(3, 5, 18, 0.18)),
-    linear-gradient(0deg, rgba(3, 5, 18, 0.26), transparent 24%, transparent 78%, rgba(6, 7, 24, 0.14));
+    linear-gradient(90deg, rgba(3, 5, 18, 0.30), transparent 22%, transparent 74%, rgba(3, 5, 18, 0.14)),
+    linear-gradient(180deg, rgba(6, 7, 24, 0.10), transparent 18%);
 }
 
 .runner-shell::after {
-  inset: 10px;
-  border: 1px solid rgba(129, 207, 255, 0.18);
-  border-radius: 20px;
-  box-shadow: inset 0 0 70px rgba(3, 5, 18, 0.24);
+  /* Removed: the inset rounded frame made the finished game read as a small
+   * preview card nested on a page. The scene must reach the viewport edge. */
+  display: none;
 }
 
 /* The review frame is a presentation of the game world, not a dark vignette
@@ -149,14 +150,14 @@ button { font: inherit; }
   position: absolute;
   top: 22px;
   right: 22px;
-  width: min(472px, calc(100vw - 330px));
+  width: min(520px, calc(100vw - 330px));
   display: grid;
   gap: 8px;
 }
 
 .metrics-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(82px, 1fr));
+  grid-template-columns: repeat(4, minmax(72px, 1fr)) minmax(140px, 1.5fr);
   gap: 6px;
   padding: 6px;
   border: 1px solid rgba(132, 233, 255, 0.34);
@@ -195,7 +196,8 @@ button { font: inherit; }
 .metric--flow strong { color: #ffd278; }
 .metric--checkpoint strong { color: #72f4e5; }
 .metric--lives strong { color: #ff849d; }
-.metric--act strong { color: #c4adff; font-size: 15px; }
+.metric--act strong { color: #c4adff; font-size: 14px; letter-spacing: 0.01em; }
+.metrics-row .metric--act { padding-left: 6px; padding-right: 6px; }
 
 .checkpoint-row {
   display: flex;

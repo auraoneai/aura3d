@@ -95,8 +95,13 @@ export class InteractionControls {
     return this.controlMode;
   }
 
+  /** True after `dispose()`; `update`/`setMode` stay silent past this point. */
+  get isDisposed(): boolean {
+    return this.disposed;
+  }
+
   setMode(mode: InteractionControlMode, snapshot = new InputSnapshot()): void {
-    if (this.controlMode === mode) return;
+    if (this.disposed || this.controlMode === mode) return;
     this.controlMode = mode;
     this.emit({ type: "mode-change", mode, snapshot });
   }
@@ -151,7 +156,13 @@ export class InteractionControls {
     return this.picking.report(root, ray.origin, ray.direction, this.pickOptions);
   }
 
+  /**
+   * F1-standard disposal: marks the instance disposed, drops every listener
+   * and hotspot handler, and clears hover state so `update()` stays silent.
+   * Idempotent. Owns zero DOM listeners, so nothing can leak.
+   */
   dispose(): void {
+    if (this.disposed) return;
     this.disposed = true;
     this.listeners.clear();
     this.hotspotHandlers.clear();

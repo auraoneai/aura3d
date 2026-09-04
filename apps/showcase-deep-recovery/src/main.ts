@@ -81,6 +81,25 @@ export interface DeepRecoveryEvidence {
   readonly claimBoundary: string;
   readonly primaryAssets: readonly string[];
   readonly primaryAssetHashes: readonly string[];
+  readonly recoveryInventory: {
+    readonly backend: string | undefined;
+    readonly drawCalls: number;
+    readonly readyAssets: number;
+    readonly renderSize: readonly number[] | undefined;
+    readonly recoveryContract: "app-owned-pause_explicit-remount";
+    /** U2: per-class re-creation state (post targets, B1 shadows, A1 bloom bytes, atlases, G1 text, A5 fog, animation). */
+    readonly runtimeBackend: string;
+    readonly postPasses: readonly string[];
+    readonly postTargetFormat: string | undefined;
+    readonly shadowTargetsAllocated: number;
+    readonly shadowMapRendered: boolean;
+    readonly bloomTargetBytes: number;
+    readonly textureResidentEntries: number;
+    readonly sdfTexts: number;
+    readonly textQuadCount: number;
+    readonly fogPreset: string;
+    readonly animatedNodes: number;
+  };
   readonly renderer: unknown;
 }
 
@@ -264,7 +283,7 @@ const sceneDef = scene()
       // The route's evidence harness captures within a bounded frame window; interpolation
       // otherwise leaves depth-aligned landmarks outside the capture frustum.
       smoothing: 0,
-      fov: visualReviewCapture ? 47 : 68
+      fov: visualReviewCapture ? 47 : 62
     })
   )
   .addMany([
@@ -305,7 +324,7 @@ const sceneDef = scene()
       name: "sub-root",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 3.55 : 8.4,
+      targetMaxDimension: visualReviewCapture ? 5.0 : 8.4,
       // The typed source is a deep-navy vehicle that disappears against the
       // trench walls in the sonar frame. Keep its geometry and provenance,
       // but give the hero a cool teal PBR finish so the hull, nose lamps, and
@@ -314,7 +333,7 @@ const sceneDef = scene()
         name: "deep recovery sub teal hull",
         color: "#2ab0c0",
         emissive: "#1596a8",
-        emissiveIntensity: visualReviewCapture ? 0.82 : 0.92,
+        emissiveIntensity: visualReviewCapture ? 0.5 : 0.55,
         roughness: 0.3,
         metallic: 0.46,
         clearcoat: 0.2,
@@ -856,7 +875,26 @@ function updateEvidence(): void {
   const currentZone = getDepthZone(subState.y);
   const cargoVal = tetheredCrates.reduce((sum, c) => sum + Math.round(c.baseValue * currentZone.valueMultiplier), 0);
 
-  const diagnostics = app.diagnostics() as { readonly drawCalls?: number; readonly renderSize?: readonly number[]; readonly runtimeBackend?: string };
+  const diagnostics = app.diagnostics() as {
+    readonly backend?: string;
+    readonly drawCalls?: number;
+    readonly renderSize?: readonly number[];
+    readonly runtimeBackend?: string;
+    readonly assets?: readonly { readonly status?: string }[];
+    readonly evidence?: { readonly animation?: { readonly animatedNodes?: number } };
+    readonly renderer?: {
+      readonly runtime?: {
+        readonly backend?: string;
+        readonly mounted?: boolean;
+        readonly bloom?: { readonly targetBytes?: number } | null;
+      };
+      readonly postprocess?: { readonly actualPasses?: readonly string[]; readonly targetFormat?: string };
+      readonly shadows?: { readonly shadowRenderTargetsAllocated?: number; readonly mapRendered?: boolean };
+      readonly textures?: { readonly residentEntries?: number };
+      readonly text?: { readonly sdfTexts?: number; readonly quadCount?: number };
+      readonly fog?: { readonly preset?: string };
+    };
+  };
   const tetheredMass = tetheredCrates.reduce((sum, crate) => sum + crate.mass, 0);
   window.__DEEP_RECOVERY_EVIDENCE__ = {
     mounted: true,
@@ -909,6 +947,27 @@ function updateEvidence(): void {
       "assets.deepRecoveryBuoyBeacon"
     ],
     primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
+    // U2: allocated-class inventory (post targets, particle layers, typed-asset
+    // residency) sampled every evidence publish so a post-loss remount can be
+    // diffed against it. Recovery stays app-owned pause + explicit remount.
+    recoveryInventory: {
+      backend: diagnostics.backend ?? diagnostics.runtimeBackend,
+      drawCalls: Number(diagnostics.drawCalls ?? 0),
+      readyAssets: (diagnostics.assets ?? []).filter((asset) => asset.status === "ready").length,
+      renderSize: diagnostics.renderSize,
+      recoveryContract: "app-owned-pause_explicit-remount" as const,
+      runtimeBackend: diagnostics.renderer?.runtime?.backend ?? diagnostics.runtimeBackend ?? "unknown",
+      postPasses: [...(diagnostics.renderer?.postprocess?.actualPasses ?? [])],
+      postTargetFormat: diagnostics.renderer?.postprocess?.targetFormat,
+      shadowTargetsAllocated: diagnostics.renderer?.shadows?.shadowRenderTargetsAllocated ?? 0,
+      shadowMapRendered: diagnostics.renderer?.shadows?.mapRendered ?? false,
+      bloomTargetBytes: diagnostics.renderer?.runtime?.bloom?.targetBytes ?? 0,
+      textureResidentEntries: diagnostics.renderer?.textures?.residentEntries ?? 0,
+      sdfTexts: diagnostics.renderer?.text?.sdfTexts ?? 0,
+      textQuadCount: diagnostics.renderer?.text?.quadCount ?? 0,
+      fogPreset: diagnostics.renderer?.fog?.preset ?? "none",
+      animatedNodes: diagnostics.evidence?.animation?.animatedNodes ?? 0
+    },
     renderer: diagnostics
   };
 }

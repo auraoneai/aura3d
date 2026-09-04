@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.gallery-shift.deploy/1.0",
-  "generatedAt": "2026-09-02T20:52:05.673Z",
+  "generatedAt": "2026-09-03T08:42:08.059Z",
   "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "d8a3141b2d8dcfa31d9482cc7adb7e7df0b86979eddc20f0f223fc6b25356d71",
   "cli": "packages/aura3d-cli/dist/cli.js",
-  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "83bd179f82dfe5ecbcbed9cc6e41783069a4bc2a9d4bf7e1860348cd667e314f",
-  "sourceTreeSha256": "bb69394f8bf07f5122dbffbf44929161a91d5d25694e79b9b6aafd0af0671aa2",
+  "cliSourceSha256": "a13fa894bcf87d629e33e1fd3c57ba8600296e99f323818532a2016bc54602ec",
+  "distTreeSha256": "75c5c940c4ebf48969384d937346bf5a3e4e9b14ca5f7b32c16325b851db13f4",
+  "sourceTreeSha256": "c88c965c2da7c2ab7e4519e4a0f3be68aa8fe5ac52c1e7e16558f46251a8fcaa",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",

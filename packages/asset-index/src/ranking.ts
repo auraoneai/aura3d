@@ -26,6 +26,16 @@ function scoreSignal(value: number | undefined, scale: number): number {
   return scale;
 }
 
+/**
+ * Rank bonus for a pre-screened mirror hero candidate.
+ *
+ * Calibrated against the keyword scale above (title +5, tag +3, description
+ * +1, coverage +2/term): 12 points outweighs a one-term near-match lead but
+ * not a multi-term exact-title sweep, so curation boosts proven picks without
+ * making screening an unoverridable trump.
+ */
+export const SCREENED_HERO_RANK_BONUS = 12;
+
 export function scoreAsset(asset: AuraCanonicalAsset, text: string): number {
   const terms = queryTerms(text);
   if (terms.length === 0) return 0;
@@ -49,7 +59,17 @@ export function scoreAsset(asset: AuraCanonicalAsset, text: string): number {
     scoreSignal(asset.semanticScore, 20) +
     scoreSignal(asset.workerScore, 12) +
     scoreSignal(asset.qualityScore, 8);
-  return score + covered * 2 + catalogSignals;
+  // Pre-screened heroes outrank unscreened keyword matches: a one-time
+  // `screen:assets` pass curates mirror `heroCandidates`, the jsDelivr adapter
+  // carries that verdict in `rawCatalogMetadata`, and this bonus applies it at
+  // rank time -- no key, no browser, no new services. The bonus is deliberately
+  // smaller than a full exact-title sweep so an unscreened exact match can
+  // still win on strong catalog signals; the proof is that a shortlisted hero
+  // outranks an unscreened *near* match.
+  const screenedHero =
+    (asset.rawCatalogMetadata as Record<string, unknown> | undefined)?.["heroCandidate"] === true ||
+    (asset.rawCatalogMetadata as Record<string, unknown> | undefined)?.["screenedHero"] === true;
+  return score + covered * 2 + catalogSignals + (screenedHero ? SCREENED_HERO_RANK_BONUS : 0);
 }
 
 /** True when an asset satisfies every supplied constraint. */

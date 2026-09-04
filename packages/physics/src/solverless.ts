@@ -29,7 +29,13 @@ export type { PhysicsStepperResult } from "./PhysicsStepper.js";
 export { ScenePhysicsBridge } from "./ScenePhysicsBridge.js";
 export type { ScenePhysicsBinding, ScenePhysicsNode } from "./ScenePhysicsBridge.js";
 export { PhysicsDebugDraw } from "./PhysicsDebugDraw.js";
-export type { DebugLine } from "./PhysicsDebugDraw.js";
+export type {
+  DebugLine,
+  DebugLineCategory,
+  PhysicsDebugDrawBudgetedResult,
+  PhysicsDebugDrawOptions,
+  PhysicsDebugDrawTelemetry
+} from "./PhysicsDebugDraw.js";
 /*
  * Mesh queries are geometry, not simulation. `MeshBVH` and `SurfaceQuery` import only `Shape`'s
  * types, so grounding a vehicle or a character on a real mesh needs no solver — which is also WS-4.5's

@@ -1,11 +1,69 @@
-import { AnimationAction, AnimationClip, AnimationMixer, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
-import { invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
+import { AnimationAction, AnimationClip, AnimationMixer, createFootIkRig, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
+
+/**
+ * Structural material sink for `material:<name>.<leaf>` animation-pointer tracks. Kept
+ * structural (instead of importing the rendering `Material`) so the animation runtime stays
+ * decoupled from the renderer; the production bridge adapts the live material library.
+ */
+export interface GLTFSceneAnimationMaterialSink {
+  readonly name: string;
+  setAnimationParameter(parameter: string, value: number | readonly number[]): void;
+}
 
 export interface GLTFSceneAnimationRuntimeOptions {
   readonly scene: Scene;
   readonly clips: readonly AnimationClip[];
   readonly asset?: Pick<GLTFAsset, "meshes" | "skins">;
+  /**
+   * Resolves a glTF material name to its live material sink. When absent, every
+   * `material:*` track is reported as a missing target (diagnosed, never silent).
+   */
+  readonly resolveAnimationMaterial?: (name: string) => GLTFSceneAnimationMaterialSink | undefined;
+  /**
+   * Optional foot-planting post-pass (E2): after clip/pose tracks are applied, leg chains
+   * are solved against `ground` (heightfield, moving-platform adapter, …) and written back
+   * with `setFootPlanting`. Legs whose nodes are missing are reported, never faked.
+   */
+  readonly footPlanting?: GLTFootPlantingConfig;
+}
+
+/** One leg chain for the foot-planting post-pass, addressed by glTF node names. */
+export interface GLTFootPlantingLegConfig {
+  readonly side: "left" | "right";
+  readonly hip: string;
+  readonly knee: string;
+  readonly ankle: string;
+  readonly pole?: readonly [number, number, number];
+}
+
+export interface GLTFootPlantingConfig {
+  readonly legs: readonly GLTFootPlantingLegConfig[];
+  readonly ground: GroundRaycaster;
+  readonly ankleHeight?: number;
+  readonly rayStartHeight?: number;
+  readonly maxRayDistance?: number;
+  readonly plantThreshold?: number;
+  readonly hipDropFactor?: number;
+  /**
+   * Actor-local → world matrix (column-major 16). The runtime skeleton usually lives in
+   * import units (the certified walk girl is centimeter-scale) while `ground` speaks world
+   * meters (the engine auto-normalizes model nodes for display). With this matrix the
+   * post-pass raycasts and solves in world space — the same space the renderer draws — and
+   * maps solved targets back to actor-local for write-back. Solved errors stay in world
+   * units. Omit only when the runtime scene already is the world scene (identity).
+   */
+  readonly worldFromLocal?: Mat4;
+}
+
+export interface GLTFootPlantingApplyResult {
+  readonly groundedFeet: number;
+  readonly averageTargetError: number;
+  readonly lockedSides: readonly ("left" | "right")[];
+  readonly missingLegNodes: readonly string[];
+  /** Pelvis drop applied to hips this solve (≤ 0) so over-extended legs can reach. */
+  readonly hipOffset: number;
 }
 
 /**
@@ -125,6 +183,9 @@ export interface GLTFSceneAnimationApplyResult {
   readonly tracksApplied: number;
   readonly transformTracksApplied: number;
   readonly morphWeightTracksApplied: number;
+  readonly materialTracksApplied: number;
+  readonly lightTracksApplied: number;
+  readonly footPlanting?: GLTFootPlantingApplyResult;
   readonly skinningPalettesUpdated: number;
   readonly missingTargets: readonly string[];
   readonly unsupportedTracks: readonly string[];
@@ -146,6 +207,10 @@ export interface GLTFSceneAnimationClipBindingDiagnostics {
   readonly boundTrackCount: number;
   readonly transformTrackCount: number;
   readonly morphWeightTrackCount: number;
+  readonly materialTrackCount: number;
+  readonly lightTrackCount: number;
+  readonly boundMaterialNames: readonly string[];
+  readonly boundLightNames: readonly string[];
   readonly missingTargetCount: number;
   readonly unsupportedTrackCount: number;
   readonly skinningBindingCount: number;
@@ -489,6 +554,8 @@ export class GLTFSceneAnimationRuntime {
   private readonly nodesByName = new Map<string, SceneNode[]>();
   private readonly morphRenderablesByNodeName = new Map<string, Renderable[]>();
   private readonly skinningBindings: RuntimeSkinningBinding[] = [];
+  private footPlanting: GLTFootPlantingConfig | undefined;
+  private footRig: FootIkRig | undefined;
   private lastApply?: GLTFSceneAnimationApplyResult;
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
@@ -496,6 +563,24 @@ export class GLTFSceneAnimationRuntime {
       this.clipsByName.set(clip.name, clip);
     }
     this.reindexScene();
+    if (options.footPlanting) this.setFootPlanting(options.footPlanting);
+  }
+
+  /**
+   * Enable, replace, or clear (undefined) the foot-planting post-pass. Replacing the leg
+   * set, ground, or solve parameters resets foot-lock state so a stale lock can never drag
+   * a foot after retargeting. A matrix-only refresh (same shape, new `worldFromLocal`)
+   * keeps locks: the engine re-sends the model matrix every frame because time-animated
+   * model nodes move, and world-space locks stay valid across that refresh.
+   */
+  setFootPlanting(config: GLTFootPlantingConfig | undefined): void {
+    if (config !== undefined && config.legs.length === 0) {
+      throw new Error("glTF foot planting requires at least one leg.");
+    }
+    if (!sameFootPlantingShape(this.footPlanting, config)) {
+      this.footRig = undefined;
+    }
+    this.footPlanting = config;
   }
 
   applyClipByName(name: string, time: number): GLTFSceneAnimationApplyResult {
@@ -573,7 +658,8 @@ export class GLTFSceneAnimationRuntime {
           unsupportedTracks.push(track.target);
           continue;
         }
-        if (!clipMaskAllowsNode(sample.mask, target.nodeName)) continue;
+        // Bone masks filter node tracks only; material/light property tracks always apply.
+        if (target.kind === "node" && !clipMaskAllowsNode(sample.mask, target.nodeName)) continue;
         blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
       }
     }
@@ -789,6 +875,144 @@ export class GLTFSceneAnimationRuntime {
     }
   }
 
+  private findSceneLight(name: string): Light | undefined {
+    return this.options.scene.collectLights().find((light) => light.name === name);
+  }
+
+  /**
+   * Foot-planting post-pass (E2): solves the configured leg chains against the ground and
+   * writes the solved hip/knee/ankle world positions back onto the skeleton. Position-only
+   * write-back (rotations stay as animated); missing leg nodes are reported in
+   * `missingLegNodes` and skipped, never faked. Returns undefined when unconfigured.
+   */
+  private applyFootPlanting(): GLTFootPlantingApplyResult | undefined {
+    const config = this.footPlanting;
+    if (!config) return undefined;
+    this.options.scene.updateWorldTransforms();
+    // Actor-local → world for the solve, world → actor-local for write-back. The rig and
+    // the ground both speak world space (meters); the skeleton may live in import units
+    // (centimeters). Points convert through the matrix pair; hipOffset rides along inside
+    // the converted hip target point so any affine (scale, rotation, centering) is exact.
+    const toWorld = config.worldFromLocal;
+    const toLocal = toWorld ? invertMat4(toWorld) : undefined;
+    const solvePoint = (point: Vec3): Vec3 => (toWorld ? transformPoint(toWorld, point) : point);
+    // Solved legs arrive as readonly tuples; copy into mutable points for the transform.
+    const actorPoint = (point: readonly [number, number, number]): Vec3 => {
+      const mutable: Vec3 = [point[0], point[1], point[2]];
+      return toLocal ? transformPoint(toLocal, mutable) : mutable;
+    };
+    const missingLegNodes: string[] = [];
+    const resolved: { readonly side: "left" | "right"; readonly hip: SceneNode; readonly knee: SceneNode; readonly ankle: SceneNode; readonly pole: readonly [number, number, number] | undefined }[] = [];
+    for (const leg of config.legs) {
+      const hip = this.nodesByName.get(leg.hip)?.[0];
+      const knee = this.nodesByName.get(leg.knee)?.[0];
+      const ankle = this.nodesByName.get(leg.ankle)?.[0];
+      if (!hip) missingLegNodes.push(`${leg.side}:hip:${leg.hip}`);
+      if (!knee) missingLegNodes.push(`${leg.side}:knee:${leg.knee}`);
+      if (!ankle) missingLegNodes.push(`${leg.side}:ankle:${leg.ankle}`);
+      if (!hip || !knee || !ankle) continue;
+      resolved.push({ side: leg.side, hip, knee, ankle, pole: leg.pole });
+    }
+    if (resolved.length === 0) {
+      return { groundedFeet: 0, averageTargetError: 0, lockedSides: [], missingLegNodes, hipOffset: 0 };
+    }
+    if (!this.footRig) {
+      this.footRig = createFootIkRig({
+        legs: resolved.map((entry) => ({
+          side: entry.side,
+          hip: solvePoint(worldPosition(entry.hip)),
+          knee: solvePoint(worldPosition(entry.knee)),
+          ankle: solvePoint(worldPosition(entry.ankle)),
+          ...(entry.pole ? { pole: entry.pole } : {})
+        })),
+        raycaster: config.ground,
+        ...(config.ankleHeight !== undefined ? { ankleHeight: config.ankleHeight } : {}),
+        ...(config.rayStartHeight !== undefined ? { rayStartHeight: config.rayStartHeight } : {}),
+        ...(config.maxRayDistance !== undefined ? { maxRayDistance: config.maxRayDistance } : {}),
+        ...(config.plantThreshold !== undefined ? { plantThreshold: config.plantThreshold } : {}),
+        ...(config.hipDropFactor !== undefined ? { hipDropFactor: config.hipDropFactor } : {})
+      });
+    }
+    const solved = this.footRig.solveFootPlacement({
+      legs: resolved.map((entry) => ({
+        side: entry.side,
+        hip: solvePoint(worldPosition(entry.hip)),
+        knee: solvePoint(worldPosition(entry.knee)),
+        ankle: solvePoint(worldPosition(entry.ankle)),
+        ...(entry.pole ? { pole: entry.pole } : {})
+      }))
+    });
+    for (const foot of solved.feet) {
+      const entry = resolved.find((candidate) => candidate.side === foot.side);
+      if (!entry) continue;
+      // The rig returns the pelvis drop separately: apply it to the hip so an over-extended
+      // leg can reach its planted foot. Solved knee/ankle targets already account for the
+      // drop — the rig re-solves over-extended legs from the dropped hip — so they write
+      // back directly; a leg that needed no drop keeps phase-one targets and lets its knee
+      // absorb the pelvis motion by bending, the natural single-pelvis compromise.
+      // Refresh down the chain after each write: setWorldPosition reads the parent's world
+      // matrix, so the knee must see the new hip world before its own write (same for ankle).
+      // Solved targets are world-space; convert to actor-local for the write-back.
+      const hipTarget = actorPoint([foot.hip[0], foot.hip[1] + solved.hipOffset, foot.hip[2]]);
+      setWorldPosition(entry.hip, [hipTarget[0], hipTarget[1], hipTarget[2]]);
+      entry.hip.updateWorldTransform();
+      const kneeTarget = actorPoint(foot.knee);
+      setWorldPosition(entry.knee, [kneeTarget[0], kneeTarget[1], kneeTarget[2]]);
+      entry.knee.updateWorldTransform();
+      const ankleTarget = actorPoint(foot.ankle);
+      setWorldPosition(entry.ankle, [ankleTarget[0], ankleTarget[1], ankleTarget[2]]);
+    }
+    this.options.scene.updateWorldTransforms();
+    return {
+      groundedFeet: solved.groundedFeet,
+      averageTargetError: solved.averageTargetError,
+      lockedSides: solved.feet.filter((foot) => foot.locked).map((foot) => foot.side),
+      missingLegNodes,
+      hipOffset: solved.hipOffset
+    };
+  }
+
+  /**
+   * Applies one sampled `material:<name>.<leaf-path>` value to the live material sink.
+   * Returns false (→ missing target, diagnosed) when no sink resolves, the leaf maps to no
+   * renderer uniform, or the value shape is wrong. Throws on a sampled value that is not
+   * finite, matching the node-path converters below.
+   */
+  private applyMaterialTrackValue(materialName: string, leafPath: string, value: AnimationValue, trackTarget: string): boolean {
+    const parameters = materialParametersForLeaf(leafPath);
+    const sink = this.options.resolveAnimationMaterial?.(materialName);
+    if (parameters === undefined || sink === undefined) return false;
+    const numeric = asMaterialLeafValue(value, trackTarget);
+    for (const parameter of parameters) {
+      sink.setAnimationParameter(parameter, numeric);
+    }
+    return true;
+  }
+
+  /**
+   * Applies one sampled `light:<name>.<leaf>` value to the live scene light of that name.
+   * The loader instantiates each node-referenced `KHR_lights_punctual` light as a scene light
+   * carrying its node's name; extension-defined lights no node references have no scene object,
+   * so a light track matching no scene light is reported missing (diagnosed, never silent).
+   */
+  private applyLightTrackValue(lightName: string, leaf: string, value: AnimationValue, trackTarget: string): boolean {
+    if (lightLeafApplies(leaf) === false) return false;
+    const light = this.findSceneLight(lightName);
+    if (!light) return false;
+    if (leaf === "intensity") {
+      light.intensity = asScalar(value, trackTarget);
+      return true;
+    }
+    if (leaf === "color") {
+      light.color = asVec3(value, trackTarget);
+      return true;
+    }
+    const rangeHolder = light as unknown as { readonly range?: unknown };
+    if (typeof rangeHolder.range !== "number") return false;
+    (light as unknown as { range: number }).range = asPositiveScalar(value, trackTarget);
+    return true;
+  }
+
   private refreshSkinningPalettes(): { readonly updated: number; readonly missingTargets: readonly string[] } {
     if (this.skinningBindings.length === 0) {
       return { updated: 0, missingTargets: [] };
@@ -826,6 +1050,10 @@ export class GLTFSceneAnimationRuntime {
     let boundTrackCount = 0;
     let transformTrackCount = 0;
     let morphWeightTrackCount = 0;
+    let materialTrackCount = 0;
+    let lightTrackCount = 0;
+    const boundMaterialNames = new Set<string>();
+    const boundLightNames = new Set<string>();
     const boundNodeNames = new Set<string>();
     const missingTargets = new Set<string>();
     const unsupportedTracks = new Set<string>();
@@ -837,6 +1065,26 @@ export class GLTFSceneAnimationRuntime {
         continue;
       }
       supportedTrackCount += 1;
+      if (target.kind === "material") {
+        materialTrackCount += 1;
+        if (materialParametersForLeaf(target.leaf) === undefined || this.options.resolveAnimationMaterial?.(target.materialName) === undefined) {
+          missingTargets.add(track.target);
+          continue;
+        }
+        boundTrackCount += 1;
+        boundMaterialNames.add(target.materialName);
+        continue;
+      }
+      if (target.kind === "light") {
+        lightTrackCount += 1;
+        if (lightLeafApplies(target.leaf) === false || this.findSceneLight(target.lightName) === undefined) {
+          missingTargets.add(track.target);
+          continue;
+        }
+        boundTrackCount += 1;
+        boundLightNames.add(target.lightName);
+        continue;
+      }
       if (target.path === "weights") {
         morphWeightTrackCount += 1;
         const renderables = this.morphRenderablesByNodeName.get(target.nodeName) ?? [];
@@ -866,6 +1114,10 @@ export class GLTFSceneAnimationRuntime {
       boundTrackCount,
       transformTrackCount,
       morphWeightTrackCount,
+      materialTrackCount,
+      lightTrackCount,
+      boundMaterialNames: [...boundMaterialNames].sort(),
+      boundLightNames: [...boundLightNames].sort(),
       missingTargetCount: missingTargets.size,
       unsupportedTrackCount: unsupportedTracks.size,
       skinningBindingCount: this.skinningBindings.length,
@@ -884,11 +1136,29 @@ export class GLTFSceneAnimationRuntime {
   ): GLTFSceneAnimationApplyResult {
     let transformTracksApplied = 0;
     let morphWeightTracksApplied = 0;
+    let materialTracksApplied = 0;
+    let lightTracksApplied = 0;
     const missingTargets: string[] = [];
 
     for (const [trackTarget, value] of sampled.sampledTargets) {
       const target = parseAnimationTarget(trackTarget);
       if (!target) {
+        continue;
+      }
+      if (target.kind === "material") {
+        if (this.applyMaterialTrackValue(target.materialName, target.leaf, value, trackTarget)) {
+          materialTracksApplied += 1;
+        } else {
+          missingTargets.push(trackTarget);
+        }
+        continue;
+      }
+      if (target.kind === "light") {
+        if (this.applyLightTrackValue(target.lightName, target.leaf, value, trackTarget)) {
+          lightTracksApplied += 1;
+        } else {
+          missingTargets.push(trackTarget);
+        }
         continue;
       }
       if (target.path === "weights") {
@@ -917,14 +1187,18 @@ export class GLTFSceneAnimationRuntime {
     }
 
     this.options.scene.updateWorldTransforms();
+    const footPlanting = this.applyFootPlanting();
     const skinning = this.refreshSkinningPalettes();
     return {
       clipName,
       time,
       ...(blendedClipCount === undefined ? {} : { blendedClipCount }),
-      tracksApplied: transformTracksApplied + morphWeightTracksApplied,
+      tracksApplied: transformTracksApplied + morphWeightTracksApplied + materialTracksApplied + lightTracksApplied,
       transformTracksApplied,
       morphWeightTracksApplied,
+      materialTracksApplied,
+      lightTracksApplied,
+      ...(footPlanting === undefined ? {} : { footPlanting }),
       skinningPalettesUpdated: skinning.updated,
       missingTargets: [...missingTargets, ...skinning.missingTargets],
       unsupportedTracks: sampled.unsupportedTracks
@@ -1160,7 +1434,31 @@ export function createGLTFSceneAnimationMixer(options: GLTFSceneAnimationMixerOp
   return new GLTFSceneAnimationMixerBinding(options);
 }
 
-function parseAnimationTarget(target: string): { readonly nodeName: string; readonly path: "translation" | "rotation" | "scale" | "weights" } | undefined {
+type GLTFAnimationTarget =
+  | { readonly kind: "node"; readonly nodeName: string; readonly path: "translation" | "rotation" | "scale" | "weights" }
+  | { readonly kind: "material"; readonly materialName: string; readonly leaf: string }
+  | { readonly kind: "light"; readonly lightName: string; readonly leaf: string };
+
+/**
+ * Pointer-bound leaf paths (`material:`/`light:`) use the FIRST dot as the name/leaf split:
+ * the binding emits `material:<name>.<property-path…>` where the property path itself may
+ * contain dots (`pbrMetallicRoughness.baseColorFactor`), while glTF material/light names with
+ * dots are rare. Names containing "." therefore resolve by first segment and are documented
+ * as unsupported in the animation-pointer limits.
+ */
+function parseAnimationTarget(target: string): GLTFAnimationTarget | undefined {
+  for (const prefix of ["material:", "light:"] as const) {
+    if (target.startsWith(prefix)) {
+      const rest = target.slice(prefix.length);
+      const separator = rest.indexOf(".");
+      if (separator <= 0 || separator === rest.length - 1) return undefined;
+      const name = rest.slice(0, separator);
+      const leaf = rest.slice(separator + 1);
+      return prefix === "material:"
+        ? { kind: "material", materialName: name, leaf }
+        : { kind: "light", lightName: name, leaf };
+    }
+  }
   const separator = target.lastIndexOf(".");
   if (separator <= 0 || separator === target.length - 1) {
     return undefined;
@@ -1170,9 +1468,45 @@ function parseAnimationTarget(target: string): { readonly nodeName: string; read
     return undefined;
   }
   return {
+    kind: "node",
     nodeName: target.slice(0, separator),
     path
   };
+}
+
+/**
+ * Maps an animation-pointer material leaf path to the renderer uniform parameters it drives.
+ * Only leaves with uniforms the production bridge provably writes (see TypedGLBActor tint
+ * path: `u_baseColor`, `u_baseColorFactor`, `u_emissiveColor`, `u_emissiveFactor`,
+ * `u_emissiveStrength`, `u_metallic`, `u_roughness`) are supported; every other leaf stays
+ * diagnostic-only, preserving diagnose-and-drop for the unmapped remainder. Matches on the
+ * last path segment so `pbrMetallicRoughness.baseColorFactor` and `baseColorFactor` agree.
+ */
+function materialParametersForLeaf(leafPath: string): readonly string[] | undefined {
+  const leaf = leafPath.slice(leafPath.lastIndexOf(".") + 1);
+  switch (leaf) {
+    case "baseColorFactor":
+      return ["u_baseColorFactor", "u_baseColor"];
+    case "emissiveFactor":
+      return ["u_emissiveFactor", "u_emissiveColor"];
+    case "metallicFactor":
+      return ["u_metallic"];
+    case "roughnessFactor":
+      return ["u_roughness"];
+    case "emissiveStrength":
+      return ["u_emissiveStrength"];
+    case "clearcoatFactor":
+      return ["u_clearcoatFactor"];
+    case "clearcoatRoughnessFactor":
+      return ["u_clearcoatRoughnessFactor"];
+    default:
+      return undefined;
+  }
+}
+
+/** Light leaves the runtime can drive on a live scene light. Anything else stays diagnostic-only. */
+function lightLeafApplies(leaf: string): boolean {
+  return leaf === "intensity" || leaf === "color" || leaf === "range";
 }
 
 function resolveIKSkin(skins: readonly GLTFSkinAsset[], skinName: string | undefined): GLTFSkinAsset {
@@ -1201,6 +1535,35 @@ function firstTwoBoneJointChain(skin: GLTFSkinAsset): readonly [string, string, 
     throw new Error(`glTF imported skeleton IK skin "${skin.name}" does not contain a two-bone chain.`);
   }
   return [root, mid, end];
+}
+
+/**
+ * True when two foot-planting configs solve the same rig the same way. The world matrix is
+ * deliberately excluded: the engine refreshes `worldFromLocal` every frame (time-animated
+ * model nodes move) and that refresh must not reset world-space foot locks.
+ */
+function sameFootPlantingShape(
+  previous: GLTFootPlantingConfig | undefined,
+  next: GLTFootPlantingConfig | undefined
+): boolean {
+  if (previous === next) return true;
+  if (!previous || !next) return false;
+  if (previous.ground !== next.ground) return false;
+  if (previous.ankleHeight !== next.ankleHeight) return false;
+  if (previous.rayStartHeight !== next.rayStartHeight) return false;
+  if (previous.maxRayDistance !== next.maxRayDistance) return false;
+  if (previous.plantThreshold !== next.plantThreshold) return false;
+  if (previous.hipDropFactor !== next.hipDropFactor) return false;
+  if (previous.legs.length !== next.legs.length) return false;
+  return previous.legs.every((leg, index) => {
+    const other = next.legs[index];
+    return other !== undefined
+      && leg.side === other.side
+      && leg.hip === other.hip
+      && leg.knee === other.knee
+      && leg.ankle === other.ankle
+      && (leg.pole ?? []).join(",") === (other.pole ?? []).join(",");
+  });
 }
 
 function worldPosition(node: SceneNode): Vec3 {
@@ -1275,6 +1638,27 @@ function asNumberArray(value: AnimationValue): number[] {
     throw new Error("glTF morph-weight animation sampled an invalid number array.");
   }
   return [...value];
+}
+
+function asScalar(value: AnimationValue, target: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`glTF animation track "${target}" sampled an invalid scalar.`);
+  }
+  return value;
+}
+
+function asPositiveScalar(value: AnimationValue, target: string): number {
+  const scalar = asScalar(value, target);
+  if (!(scalar > 0)) {
+    throw new Error(`glTF animation track "${target}" sampled a non-positive range.`);
+  }
+  return scalar;
+}
+
+function asMaterialLeafValue(value: AnimationValue, target: string): number | readonly number[] {
+  if (typeof value === "number") return asScalar(value, target);
+  if (Array.isArray(value)) return asNumberArray(value);
+  throw new Error(`glTF animation track "${target}" sampled an invalid material value.`);
 }
 
 function sampleClipTracks(

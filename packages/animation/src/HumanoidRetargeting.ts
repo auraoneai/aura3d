@@ -101,6 +101,77 @@ export interface HumanoidRetargetingOptions {
   readonly expectedUnits?: HumanoidRigUnits;
   readonly requireRestPose?: boolean;
   readonly requireToes?: boolean;
+  /** Optional per-rig correction profile (shoulder/hip + per-bone scale). */
+  readonly profile?: HumanoidRetargetingProfile;
+}
+
+/**
+ * Per-certified-rig correction profile (E2): per-bone scale multipliers plus shoulder and
+ * hip corrections for rigs whose proportions deviate from the reference humanoid (wide
+ * shoulders, long legs, …). Profiles are keyed by rig id and land with rig certification —
+ * see `docs/rendering/animation.md` for the certified roster. The base length-ratio scale
+ * from `createHumanoidRetargetingMap` is multiplied by these corrections, never replaced,
+ * so an unprofiled rig behaves exactly as before.
+ */
+export interface HumanoidRetargetingProfile {
+  /** Rig id this profile corrects (`source` or `target` side — matched against either). */
+  readonly rigId: string;
+  /** Per-bone scale multipliers applied on top of the length-ratio scale. */
+  readonly perBoneScale?: Partial<Record<HumanoidBoneName, number>>;
+  /**
+   * Shoulder-width correction applied to shoulder + upper-arm bindings (e.g. 1.1 widens
+   * the retargeted shoulder line by 10%).
+   */
+  readonly shoulderWidthCorrection?: number;
+  /** Hip correction applied to hips + upper-leg bindings (leg-length / pelvis-width tweak). */
+  readonly hipCorrection?: number;
+}
+
+/**
+ * Registry of certified-rig correction profiles, keyed by rig id. Empty until rigs are
+ * certified with pixel proof — do not add entries for uncertified rigs.
+ */
+export const HUMANOID_RETARGETING_PROFILES: Record<string, HumanoidRetargetingProfile> = {};
+
+export function registerHumanoidRetargetingProfile(profile: HumanoidRetargetingProfile): void {
+  if (!profile.rigId) throw new Error("Humanoid retargeting profiles must have a rig id.");
+  HUMANOID_RETARGETING_PROFILES[profile.rigId] = profile;
+}
+
+const SHOULDER_PROFILE_BONES: readonly HumanoidBoneName[] = [
+  "leftShoulder",
+  "rightShoulder",
+  "leftUpperArm",
+  "rightUpperArm"
+];
+
+const HIP_PROFILE_BONES: readonly HumanoidBoneName[] = [
+  "hips",
+  "leftUpperLeg",
+  "rightUpperLeg"
+];
+
+function applyRetargetingProfileScale(
+  bone: HumanoidBoneName,
+  baseScale: number,
+  profile: HumanoidRetargetingProfile | undefined
+): number {
+  if (!profile) return baseScale;
+  let scale = baseScale;
+  const perBone = profile.perBoneScale?.[bone];
+  if (perBone !== undefined) {
+    if (!Number.isFinite(perBone) || perBone <= 0) {
+      throw new Error(`Retargeting profile "${profile.rigId}" has an invalid scale for bone "${bone}".`);
+    }
+    scale *= perBone;
+  }
+  if (profile.shoulderWidthCorrection !== undefined && SHOULDER_PROFILE_BONES.includes(bone)) {
+    scale *= profile.shoulderWidthCorrection;
+  }
+  if (profile.hipCorrection !== undefined && HIP_PROFILE_BONES.includes(bone)) {
+    scale *= profile.hipCorrection;
+  }
+  return scale;
 }
 
 export interface HumanoidBoneRetargetBinding {
@@ -339,7 +410,11 @@ export function createHumanoidRetargetingMap(
       bone,
       source: sourceBinding,
       target: targetBinding,
-      scale: estimateBoneScale(sourceBinding, targetBinding, source.scale, target.scale),
+      scale: applyRetargetingProfileScale(
+        bone,
+        estimateBoneScale(sourceBinding, targetBinding, source.scale, target.scale),
+        options.profile
+      ),
       sourceRest: restRotationFor(source, bone, sourceBinding),
       targetRest: restRotationFor(target, bone, targetBinding)
     };

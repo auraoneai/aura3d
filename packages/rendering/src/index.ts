@@ -19,6 +19,13 @@ export type {
   UniformValue
 } from "./RenderDevice";
 export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export {
+  buildGpuTargetInventory,
+  GPU_TARGET_BUDGET_BYTES,
+  resolveGpuTargetOwner,
+  spreadGpuTargetInventory
+} from "./RenderDevice";
+export type { GpuTargetInventory, GpuTargetInventoryEntry, GpuTargetKind, GpuTargetOwner } from "./RenderDevice";
 export { createRenderDevice } from "./RenderBackend";
 export type { RenderBackendOptions } from "./RenderBackend";
 export { WebGL2Device } from "./WebGL2Device";
@@ -687,8 +694,9 @@ export {
   planScatterInstances,
   queryTerrainHeight,
   resolveTerrainSlopeBlend,
+  scatterWindOffset,
 } from "./TerrainTiles";
-export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
+export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, ScatterWindOffset, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
 export {
   createBeamDescriptor,
   resolveBillboardCorners,
@@ -738,8 +746,11 @@ export {
   SDF_SUPPORTED_GLYPHS,
   applySdfTextOcclusion,
   createSdfFontAtlas,
+  createSdfTextQuadMesh,
   describeSdfTextPixelBacking,
   layoutSdfText,
+  rasterizeSdfTextLabelImage,
+  resolveSdfTextFrameOpacity,
   sampleSdfCoverage,
   sdfTextLodFade,
   summarizeTextSurfaces
@@ -750,11 +761,17 @@ export type {
   SdfGlyphMetrics,
   SdfPixelBacking,
   SdfPixelBackingInput,
+  SdfTextFrameOpacity,
+  SdfTextFrameOpacityInput,
   SdfTextLayout,
   SdfTextLayoutOptions,
   SdfTextOcclusionPolicy,
   SdfTextQuad,
+  SdfTextQuadMesh,
+  SdfTextRasterImage,
+  SdfTextRasterOptions,
   SdfTextResolvedStyle,
+  SdfTextRgba,
   SdfTextStyle,
   TextSurfaceSummary
 } from "./SdfText";
@@ -1160,6 +1177,10 @@ export * from "./effects/SizeModule.js";
 export * from "./effects/ForceModule.js";
 export * from "./effects/CollisionModule.js";
 export * from "./effects/TrailModule.js";
+export * from "./effects/TurbulenceModule.js";
+export * from "./effects/HeightfieldModule.js";
+export * from "./effects/LightingModule.js";
+export * from "./effects/SubEmitterModule.js";
 export * from "./effects/ParticleRenderer.js";
 export * from "./effects/ParticleRenderPass.js";
 export * from "./effects/GPUParticleBackend.js";

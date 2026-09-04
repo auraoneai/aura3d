@@ -40,7 +40,7 @@ interface CameraReadabilityEvidence {
 
 interface SkylineMountedEvidence {
   readonly status: string;
-  readonly player: { readonly x: number; readonly y: number; readonly vy: number; readonly grounded: boolean };
+  readonly player: { readonly x: number; readonly y: number; readonly vx: number; readonly vy: number; readonly grounded: boolean };
   readonly cameraReadability: CameraReadabilityEvidence;
 }
 
@@ -98,6 +98,17 @@ test.describe("Skyline camera and playable-edge readability", () => {
       expect(initial.cameraReadability.playableEdgeContract.foliagePlacementCount).toBeGreaterThan(0);
       expect(initial.cameraReadability.playableEdgeContract.minimumFoliageEdgeClearance).toBeGreaterThan(0);
       expect(initial.cameraReadability.playableEdgeContract.foliageClearsEveryLandingEdge).toBe(true);
+
+      // The facing holds below need live input, but the route's input goes
+      // live only after boot finishes main-thread mounting (a multi-10s stall
+      // on loaded machines; proven on the pristine base). Wait for a genuine
+      // velocity response first; no assertion is weakened.
+      await page.keyboard.down("ArrowRight");
+      await page.waitForFunction((name) => {
+        const evidence = (window as unknown as Record<string, SkylineMountedEvidence>)[name];
+        return Math.abs(evidence?.player?.vx ?? 0) > 0.1;
+      }, GLOBAL, { timeout: 120_000 });
+      await page.keyboard.up("ArrowRight");
 
       await hold(page, "ArrowRight", 550);
       await expect.poll(async () => (await readEvidence(page)).cameraReadability.activeFrame)

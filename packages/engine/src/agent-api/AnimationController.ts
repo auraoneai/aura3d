@@ -18,6 +18,11 @@ import type {
   RuntimeNodeAnimationSpecLike,
   RuntimeNodeHandleLike
 } from "./RuntimeNodeHandle";
+import {
+  resolveFootPlanting,
+  type AuraFootPlantingOptions,
+  type AuraResolvedFootPlanting
+} from "./FootPlanting.js";
 
 export type {
   AnimationClipEvent,
@@ -29,7 +34,9 @@ export type {
   AnimationPoseTransform,
   AnimationQuaternion,
   AnimationRootMotion,
-  AnimationTrack,
+  // NOTE: AnimationTrack intentionally NOT re-exported here as type-only —
+  // AnimationMixerBuilders.ts exports the real class (value + type). A duplicate
+  // `export type` entry shadows the value under verbatimModuleSyntax (TS1485/TS1362).
   AnimationVector3,
   RegisteredAnimationClip
 } from "@aura3d/animation";
@@ -443,6 +450,12 @@ export interface AuraAnimationRuntimeNodeBindingOptions<TClipId extends string =
   readonly syncSpeed?: boolean;
   readonly syncLoop?: boolean;
   readonly syncCaptureTime?: boolean;
+  /**
+   * Foot planting (E2): leg chains + ground solved against the typed GLB skeleton after
+   * clip application. Resolved once at bind; carried in-memory to the actor (ground
+   * functions never serialize).
+   */
+  readonly footPlanting?: AuraFootPlantingOptions;
   readonly metadata?: Record<string, unknown>;
 }
 
@@ -502,6 +515,7 @@ export interface AuraAnimationRuntimeNodeBindingSnapshot<TClipId extends string 
   readonly retargeted: boolean;
   readonly sourceAssetId?: string;
   readonly sourceAssetName?: string;
+  readonly footPlanting?: AuraResolvedFootPlanting;
   readonly metadata?: Record<string, unknown>;
 }
 
@@ -646,6 +660,7 @@ interface InternalRuntimeNodeBinding<TClipId extends string> {
   readonly id: string;
   readonly node: RuntimeNodeHandleLike;
   readonly options: AuraAnimationRuntimeNodeBindingOptions<TClipId>;
+  readonly resolvedFootPlanting?: AuraResolvedFootPlanting;
   snapshot?: AuraAnimationRuntimeNodeBindingSnapshot<TClipId>;
 }
 
@@ -846,7 +861,8 @@ export class AnimationController<
         syncSpeed: true,
         ...options,
         id
-      }
+      },
+      ...(options.footPlanting ? { resolvedFootPlanting: resolveFootPlanting(options.footPlanting) } : {})
     };
     this.runtimeNodeBindings.set(id, binding);
     binding.snapshot = this.applyRuntimeNodeBinding(binding);
@@ -1853,6 +1869,7 @@ export class AnimationController<
       retargeted,
       sourceAssetId: clip?.metadata?.assetId ?? this.embeddedGLB?.assetId,
       sourceAssetName: clip?.metadata?.assetName ?? this.embeddedGLB?.assetName,
+      ...(binding.resolvedFootPlanting ? { footPlanting: binding.resolvedFootPlanting } : {}),
       metadata: {
         ...binding.options.metadata,
         eventSource: state?.eventSource ?? clip?.eventSource,
@@ -2307,6 +2324,7 @@ function createRuntimeNodeAnimationBindingMetadata<TClipId extends string>(
     poseBakedFallback: snapshot.poseBakedFallback,
     sourceAssetId: snapshot.sourceAssetId,
     sourceAssetName: snapshot.sourceAssetName,
+    ...(snapshot.footPlanting ? { footPlanting: snapshot.footPlanting } : {}),
     metadata: snapshot.metadata
   }) as AuraRuntimeNodeAnimationBindingMetadata;
 }

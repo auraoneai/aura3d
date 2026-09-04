@@ -33,12 +33,20 @@ export class AnimationAction {
   }
 
   play(): this {
+    if (this.clip.duration === 0) {
+      console.warn(`AnimationAction.play: clip "${this.clip.name}" has zero duration; update will emit no samples or events.`);
+    } else if (this.clip.tracks.length === 0) {
+      console.warn(`AnimationAction.play: clip "${this.clip.name}" has no tracks; update will emit events but apply no values.`);
+    }
     this.playing = true;
     this.paused = false;
     return this;
   }
 
   pause(): this {
+    if (!this.playing) {
+      console.warn(`AnimationAction.pause: action for clip "${this.clip.name}" is not playing; nothing to pause.`);
+    }
     this.paused = true;
     return this;
   }
@@ -79,7 +87,10 @@ export class AnimationAction {
 
   seek(time: number): this {
     if (!Number.isFinite(time) || time < 0) {
-      throw new Error("AnimationAction seek time must be finite and non-negative.");
+      throw new Error("AnimationAction.seek: time must be finite and non-negative.");
+    }
+    if (this.clip.duration > 0 && time > this.clip.duration) {
+      console.warn(`AnimationAction.seek: time ${time} exceeds clip "${this.clip.name}" duration ${this.clip.duration}; clamped to the duration.`);
     }
     this.time = this.clip.duration > 0 ? Math.min(time, this.clip.duration) : 0;
     return this;
@@ -101,7 +112,13 @@ export class AnimationAction {
 
   update(delta: number): readonly AnimationEvent[] {
     if (!Number.isFinite(delta) || delta < 0) {
-      throw new Error("AnimationAction delta must be finite and non-negative.");
+      throw new Error("AnimationAction.update: delta must be finite and non-negative.");
+    }
+    if (!Number.isFinite(this.weight) || this.weight < 0) {
+      throw new Error("AnimationAction.update: weight must be finite and non-negative; call AnimationAction.setWeight with a valid value.");
+    }
+    if (!Number.isFinite(this.timeScale) || this.timeScale < 0) {
+      throw new Error("AnimationAction.update: timeScale must be finite and non-negative; call AnimationAction.setTimeScale with a valid value.");
     }
     if (this.fadeDuration > 0) {
       this.fadeElapsed = Math.min(this.fadeDuration, this.fadeElapsed + delta);

@@ -300,6 +300,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -382,6 +383,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -531,10 +535,16 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+vec3 a3dLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
@@ -581,7 +591,7 @@ void main() {
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledDiffuse = a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(normal, diffuseEnvironmentLod));
-  environmentDiffuse = mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight);
+  environmentDiffuse = mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight);
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float roughness = clamp(u_roughness, 0.0, 1.0);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, roughness));
@@ -593,11 +603,11 @@ void main() {
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, roughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, roughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
   float clearcoatEnvironmentRoughness = clamp(u_clearcoatRoughnessFactor, 0.04, 1.0);
   float clearcoatEnvironmentLod = clearcoatEnvironmentRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 clearcoatSampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, clearcoatEnvironmentLod)));
-  clearcoatSampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, clearcoatEnvironmentRoughness);
+  clearcoatSampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, clearcoatEnvironmentRoughness);
   vec3 extensionSpecular = proceduralSpecular + mix(sampledSpecular, clearcoatSampledSpecular, clamp(u_clearcoatFactor, 0.0, 1.0));
   vec3 shaded = a3dPbrEnvironmentLightSplitSum(
     normal,
@@ -807,10 +817,16 @@ vec3 a3dBackgroundDecode(vec4 encodedSample) {
   if (u_environmentBackgroundEncoding > 1.5) return a3dBackgroundDecodeRgbe(encodedSample);
   return max(encodedSample.rgb, vec3(0.0));
 }
+vec3 a3dBackgroundEncodeLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dBackgroundEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dBackgroundEncodeLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {

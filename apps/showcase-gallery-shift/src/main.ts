@@ -139,14 +139,14 @@ const THIEF_VISOR_MATERIAL = material.emissive({
 const ALERT_WEDGE_GEOMETRY = geometry.define({
   // One flat, camera-facing triangle in local +Z. Runtime guard yaw rotates it
   // with the same authored pose used by the real LOS query.
-  // Keep the alert readable as a sightline, not a room-sized red carpet: the
-  // exact review moment already proves the real LOS interception through the
-  // evidence binding, so this renderer-owned feedback only needs to connect
-  // observer and target without obscuring the museum plan beneath it.
-  positions: [[0, 0, 0], [-0.96, 0, 4.6], [0.96, 0, 4.6]],
+  // Half-width 1.6m over 4.6m reads the guard's real vision cone instead of a
+  // laser line, while staying short of the room-sized carpet that would hide
+  // the museum plan. Detection and occlusion remain physics truth in
+  // vision.ts; this is feedback scale only.
+  positions: [[0, 0, 0], [-1.6, 0, 4.6], [1.6, 0, 4.6]],
   normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0]],
   indices: [0, 1, 2],
-  bounds: { min: [-0.96, 0, 0], max: [0.96, 0, 4.6] }
+  bounds: { min: [-1.6, 0, 0], max: [1.6, 0, 4.6] }
 });
 const ALERT_BEAM_GEOMETRY = geometry.define({
   // The alert centerline is a narrow vertical scanner rail rather than a
@@ -259,6 +259,7 @@ const APP_ID = "showcase-gallery-shift";
 const COMPOSITION_SUBJECT_NODE = "museum-interior";
 const PRIMARY_ASSET_REFS = [
   galleryShiftCutawayMuseumWorld,
+  assets.galleryThief,
   assets.showcaseRunnerGirl,
   assets.showcaseExpressiveRobot,
   assets.robotcand,
@@ -791,7 +792,7 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.48, opacity: 0.68 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.9, opacity: 0.8 });
   const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
   const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1, opacity: 0.94 });
   const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05, opacity: 0.94 });
@@ -840,7 +841,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.68, depth: 0.055, letterSpacing: 0.035, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
       .toJSON(),
@@ -850,11 +851,11 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .scale([1.5, 1.5, 0.12])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.76, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.76, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
@@ -876,7 +877,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         .scale([0.82, 0.82, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.66, depth: 0.055, letterSpacing: 0.035, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
         .toJSON()
@@ -925,6 +926,32 @@ function debugOverlayNodes(): AuraSceneNode[] {
   return nodes;
 }
 
+function meshyThiefCandidateNodes(): AuraSceneNode[] {
+  // Meshy candidate museum thief (galleryThief, quality: candidate).
+  // Review-composition only: one grounded identity study beside the thief
+  // spawn so the capture shows the candidate's material break at action
+  // distance. Non-colliding set dressing; movement, sensors, scoring, clips,
+  // and the default composition are untouched. The candidate exceeds the
+  // humanoid triangle budget (1.93M vs 150k) and carries no skeleton, so it
+  // stays out of the default route and never replaces the animated infiltrator.
+  if (!visualReviewCapture) return [];
+  const spawn = FLOOR_LAYOUTS[0]!.thiefSpawn;
+  return [
+    model(assets.galleryThief, {
+      name: "Meshy museum thief candidate",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.8
+    })
+      .position(spawn.x + 2.2, 0, spawn.z + 0.6)
+      .rotate(0, -0.5, 0)
+      .runtime(game.runtimeNode("gallery-meshy-thief-candidate", {
+        tags: ["typed-asset", "thief-identity", "meshy-candidate", "review-set-dressing", "non-colliding"]
+      }))
+      .toJSON()
+  ];
+}
+
 function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
@@ -936,8 +963,12 @@ function buildScene(): ReturnType<typeof scene> {
         // The registered Kenney Runner Girl is the route's adult infiltrator
         // asset (idle/walk/sprint/lift/carry clips, +Z orientation, grounded
         // bounds).  Fit it to its authored 2.7m maximum so the complete body
-        // remains legible without dominating the tactical museum plan.
-        targetMaxDimension: 2.7
+        // remains legible without dominating the tactical museum plan. The
+        // review lens reads the 20m plan from near-top-down, where a 2.7m
+        // actor collapses to a few pixels beside the guards; the review-only
+        // 3.3m fit restores actor parity without touching movement, collision,
+        // clips, or the default gameplay camera.
+        targetMaxDimension: visualReviewCapture ? 3.3 : 2.7
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -1011,6 +1042,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(museumDisplaySuiteNodes())
     .addMany(floor2WallNodes())
     .addMany(lightPoolNodes())
+    .addMany(meshyThiefCandidateNodes())
     .addMany(exitNodes())
     .add(
       primitives.cylinder({
@@ -1031,8 +1063,8 @@ function buildScene(): ReturnType<typeof scene> {
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
       effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.6 : 0.38 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 1.7 : 1.05 }),
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
       lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
       lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
       lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
@@ -1064,12 +1096,16 @@ function buildScene(): ReturnType<typeof scene> {
       // two live patrol silhouettes into the same diagonal lane.  This is a
       // camera-only presentation change: FloorLayout, LOS, patrol positions,
       // and the staged encounter remain unchanged.
-      position: visualReviewCapture ? [0, 18.2, 10.9] : [0, 13.4, 13.8],
+      position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
-      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 47 : 40
+      // The review lens is deliberately near-top-down: tall perimeter walls
+      // occlude sightlines and patrol paths in oblique review framings, so
+      // the blueprint read (flat light-vs-dark threat legibility) needs
+      // height over angle. Gameplay camera below is unchanged.
+      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],
+      fov: visualReviewCapture ? 38 : 43
     }));
 }
 
@@ -1578,11 +1614,18 @@ function publishEvidence(): void {
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
     primaryAssets: [
-      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
+      "assets.galleryShiftCutawayMuseumWorld", "assets.galleryThief", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
       "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",
       "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
     ],
     primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
+    meshyThief: {
+      ref: "assets.galleryThief",
+      url: assets.galleryThief.url,
+      hash: assets.galleryThief.hash,
+      bounds: assets.galleryThief.bounds,
+      quality: "candidate"
+    },
     backend: runtime.world.backend(),
     phase,
     frameCount,

@@ -35,11 +35,13 @@ function packageVersionFromSource(relativePath, expression) {
 
 function npmLatest() {
   if (!online) return null;
-  const raw = JSON.parse(execFileSync("npm", ["view", "three@latest", "version", "dist.integrity", "gitHead", "time", "--json"], {
+  const parsed = JSON.parse(execFileSync("npm", ["view", "three@latest", "version", "dist.integrity", "gitHead", "time", "--json"], {
     cwd: repoRoot,
     encoding: "utf8",
     maxBuffer: 8 * 1024 * 1024
   }));
+  // Newer npm majors wrap multi-field `npm view --json` in a one-element array; older ones return the object.
+  const raw = Array.isArray(parsed) ? parsed[0] ?? {} : parsed;
   return {
     version: raw.version,
     "dist.integrity": raw["dist.integrity"],

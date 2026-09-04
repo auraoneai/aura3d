@@ -37,12 +37,30 @@ interface MirrorAsset {
   readonly tags?: readonly string[];
   readonly triangles?: number;
   readonly animated?: boolean;
+  /**
+   * Curation score from a one-time `screen:assets` pass (0..1). Written by the
+   * mirror pipeline from retained screening verdicts; feeds `qualityScore` so
+   * ranking boosts proven picks with no key and no browser.
+   */
+  readonly qualityScore?: number;
+  /** True when the asset is a curated hero shortlist pick. */
+  readonly heroCandidate?: boolean;
 }
 
 interface MirrorManifest {
   readonly schema?: string;
   readonly cdnBase?: string;
   readonly assets?: readonly MirrorAsset[];
+  /**
+   * Curated hero shortlist: manifest ids promoted by a `screen:assets` pass.
+   * Kept top-level so curation survives per-asset rewrites; entries also carry
+   * `heroCandidate: true` individually.
+   */
+  readonly heroCandidates?: readonly string[];
+  readonly screening?: {
+    readonly report?: string;
+    readonly generatedAt?: string;
+  };
 }
 
 function tokenize(text: string): string[] {
@@ -53,7 +71,7 @@ function tokenize(text: string): string[] {
     .filter((t) => t.length > 1);
 }
 
-function toCanonical(asset: MirrorAsset, cdnBase: string): AuraCanonicalAsset | null {
+function toCanonical(asset: MirrorAsset, cdnBase: string, heroIds: ReadonlySet<string>): AuraCanonicalAsset | null {
   if (!asset.path || typeof asset.id !== "string") return null;
   const title = asset.title ?? asset.id;
   const provenance = asset.source ?? "mirror";
@@ -66,6 +84,10 @@ function toCanonical(asset: MirrorAsset, cdnBase: string): AuraCanonicalAsset | 
       ...tokenize(asset.pack ?? ""),
     ]),
   );
+  const heroCandidate = asset.heroCandidate === true || heroIds.has(asset.id);
+  const qualityScore = typeof asset.qualityScore === "number" && Number.isFinite(asset.qualityScore)
+    ? asset.qualityScore
+    : heroCandidate ? 0.9 : undefined;
   return {
     id: asset.id,
     source: `mirror:${provenance}`,
@@ -79,12 +101,13 @@ function toCanonical(asset: MirrorAsset, cdnBase: string): AuraCanonicalAsset | 
     triangles: asset.triangles,
     triangleCount: asset.triangles,
     hasAnimations: asset.animated,
+    ...(qualityScore !== undefined ? { qualityScore } : {}),
     tags,
     sourcePage,
     sourceFamily: provenance,
     author: provenance,
     attribution: provenance,
-    rawCatalogMetadata: { ...asset },
+    rawCatalogMetadata: { ...asset, ...(heroCandidate ? { heroCandidate: true } : {}) },
   };
 }
 
@@ -108,9 +131,10 @@ export function createJsDelivrMirrorAdapter(
       cache = [];
       return cache;
     }
+    const heroIds = new Set(Array.isArray(manifest.heroCandidates) ? manifest.heroCandidates : []);
     const out: AuraCanonicalAsset[] = [];
     for (const asset of assets) {
-      const canonical = toCanonical(asset, cdnBase);
+      const canonical = toCanonical(asset, cdnBase, heroIds);
       if (canonical) out.push(canonical);
     }
     cache = out;

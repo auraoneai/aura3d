@@ -52,7 +52,10 @@ describe("createAuraApp production bridge boundary", () => {
     expect(inputBuilder).toContain("applyProductionActorAnimation");
     expect(inputBuilder).toContain("attachProductionActorEvidence");
     expect(inputBuilder).toContain("collectedLights,");
-    expect(inputBuilder).toContain("createProductionRuntimePostprocess(snapshot)");
+    // muse3jsparity-PRD A5 task 2: the postprocess builder takes the collected
+    // light list + render size so the volumetric quality scaler can reuse the
+    // dominant light and drop step count with resolution scale.
+    expect(inputBuilder).toContain("createProductionRuntimePostprocess(snapshot, collectedLights,");
     expect(inputBuilder).toContain("createProductionRuntimeShadowOptions(snapshot, collectedLights)");
 
     expect(collectedLights).toContain("groups.flatten(snapshot.nodes)");
@@ -63,8 +66,20 @@ describe("createAuraApp production bridge boundary", () => {
     expect(postprocess).toContain("authoredBloom");
     expect(postprocess).toContain("bloomRequested");
     expect(postprocess).toContain('operator: "aces"');
-    expect(postprocess).not.toContain("colorGrade");
-    expect(postprocess).not.toContain("fxaa");
+    // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / depth-of-field
+    // submit real native options; motion-blur and taa are withheld (no
+    // velocity/history binding at root) and must never be submitted.
+    expect(postprocess).toContain("authoredColorGrade");
+    expect(postprocess).toContain("authoredOutline");
+    expect(postprocess).toContain("fxaaRequested");
+    expect(postprocess).toContain("authoredSsr");
+    expect(postprocess).toContain("authoredDof");
+    expect(postprocess).toContain("colorGrade: {");
+    expect(postprocess).toContain("outline: {");
+    expect(postprocess).toContain("ssr: {");
+    expect(postprocess).toContain("depthOfField: {");
+    expect(postprocess).not.toContain("motionBlur: {");
+    expect(postprocess).not.toContain("taa: {");
     expect(shadows).toContain("resolveRendererSceneCategory(snapshot, names)");
     expect(shadows).toContain("sceneRadius");
     expect(shadows).toContain("collectedLights.find");

@@ -1,5 +1,7 @@
 export { OrbitControls } from "./OrbitControls";
 export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
+export { ArcballControls } from "./ArcballControls";
+export type { ArcballCameraLike, ArcballControlsOptions } from "./ArcballControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
 export type { FlyCameraLike, FlyControlsOptions } from "./FlyControls";
@@ -23,6 +25,10 @@ export type {
 } from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
 export type { SelectionManagerChange, SelectionManagerListener } from "./SelectionManager";
+export { HoverOutline } from "./HoverOutline";
+export type { HoverOutlineEntry, HoverOutlineOptions, HoverOutlineStyle, HoverOutlineTone } from "./HoverOutline";
+export { frameSelection, frameTarget } from "./FocusFrame";
+export type { FocusFrameOptions, FocusFrameResult, FocusFrameTarget } from "./FocusFrame";
 export { InteractionControls } from "./InteractionControls";
 export type {
   HotspotHandler,

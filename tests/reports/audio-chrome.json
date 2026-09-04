@@ -87,12 +87,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1361,
+                      "duration": 1538,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-10T17:19:07.484Z",
+                      "startTime": "2026-09-03T22:47:50.760Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -104,6 +104,40 @@
               "file": "tests/browser/audio-browser.spec.ts",
               "line": 15,
               "column": 3
+            },
+            {
+              "title": "I1: positional emitter, mixer ducking, and footstep hooks run on the real graph",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 881,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-03T22:47:52.698Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d911c27d20a636dd1294-dee7bf22e3b07764eefd",
+              "file": "tests/browser/audio-browser.spec.ts",
+              "line": 36,
+              "column": 3
             }
           ]
         }
@@ -112,9 +146,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-08-10T17:19:04.340Z",
-    "duration": 5028.906,
-    "expected": 1,
+    "startTime": "2026-09-03T22:47:46.429Z",
+    "duration": 25687.088,
+    "expected": 2,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

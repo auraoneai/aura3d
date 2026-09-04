@@ -227,6 +227,56 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/**
+ * Tuned spring-bone preset library (E2). Stiffness/damping pairs below were chosen for
+ * visibly different secondary-motion reads at 60 Hz with the default 2 substeps:
+ * hair swings freely, coats lag heavily, antennae wobble fast, tails sway slow.
+ */
+export interface SpringBonePreset {
+  readonly name: "hair" | "coat" | "antenna" | "tail";
+  /** Spring stiffness pulling each particle to its rest pose. */
+  readonly stiffness: number;
+  /** Velocity damping. Higher = settles faster. */
+  readonly damping: number;
+  /** Gravity scale applied to the default [0,-9.81,0] (antennae mostly ignore gravity). */
+  readonly gravityScale: number;
+  /** Integration substeps per `integrate` call for stiffness stability. */
+  readonly substeps: number;
+}
+
+export const SPRING_BONE_PRESETS: Record<SpringBonePreset["name"], SpringBonePreset> = {
+  hair: { name: "hair", stiffness: 28, damping: 2.6, gravityScale: 1, substeps: 2 },
+  coat: { name: "coat", stiffness: 55, damping: 6.5, gravityScale: 1, substeps: 2 },
+  antenna: { name: "antenna", stiffness: 90, damping: 3.2, gravityScale: 0.15, substeps: 3 },
+  tail: { name: "tail", stiffness: 18, damping: 2.2, gravityScale: 0.6, substeps: 2 }
+};
+
+/**
+ * Create a spring-bone chain from a named preset. `bones`/`colliders`/`name` still come from
+ * the caller (they describe the rig); the preset supplies the dynamics tuning. Per-field
+ * overrides win over the preset.
+ */
+export function createSpringChainFromPreset(
+  preset: SpringBonePreset["name"],
+  options: Omit<SpringChainOptions, "stiffness" | "damping" | "substeps" | "gravity"> & {
+    readonly stiffness?: number;
+    readonly damping?: number;
+    readonly substeps?: number;
+    readonly gravityScale?: number;
+  }
+): SpringChain {
+  const table = SPRING_BONE_PRESETS[preset];
+  if (!table) throw new Error(`Unknown spring-bone preset "${preset}".`);
+  const gravityScale = options.gravityScale ?? table.gravityScale;
+  return createSpringChain({
+    ...options,
+    stiffness: options.stiffness ?? table.stiffness,
+    damping: options.damping ?? table.damping,
+    substeps: options.substeps ?? table.substeps,
+    gravity: [0, -9.81 * gravityScale, 0]
+  });
+}
+
 function rotateVec3(v: Vec3, q: Quat): Vec3 {
   // v' = q * v * q⁻¹ (unit quaternion).
   const [x, y, z, w] = q;

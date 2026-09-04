@@ -33,6 +33,11 @@ test("input replay produces runtime evidence and a hit declaration", async ({ pa
   expect(evidence.systems.cameraPlan).toBeTruthy();
   expect(evidence.systems.stagePlan).toBeTruthy();
   expect(replay.hitCount).toBeGreaterThan(0);
-  expect(source.readiness.sourceOnly).toBe(true);
+  // Certified heroes ship as typed fighter assets (humanoid-a + creature), so
+  // the route runs in typed-assets proof mode instead of source placeholders.
+  expect(source.readiness.sourceOnly).toBe(false);
+  expect(source.readiness.placeholderMode).toBe(false);
+  expect(source.readiness.proofMode).toBe("typed-assets");
+  expect(source.readiness.missingTypedAssets ?? []).toEqual([]);
   expect(source.readiness.publicEngineApis).toContain("games.fighting.stagePreset");
 });

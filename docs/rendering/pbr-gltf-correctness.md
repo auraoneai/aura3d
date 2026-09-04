@@ -101,6 +101,82 @@ cannot rescue a frame that fails those validity conditions.
   “universal Three.js replacement,” “full glTF parity,” or a universal quality
   or performance score.
 
+## Q0 shader deviation register (muse3jsparity-PRD Part Q, box 2)
+
+Rule: any future deviation from the references below requires a documented
+reason in this register AND an updated reference vector in
+`tests/unit/rendering/shader-core-brdf-reference.test.ts` (or the sibling
+`shader-brdf-reference` / `parity-deviations-q1` suites). The policy test
+`tests/unit/rendering/shader-deviation-policy.test.ts` fails if an entry is
+missing its reason or its pinning test. Audit basis: installed
+`three@0.185.1` sources (`lights_physical_pars_fragment`,
+`common`, `bsdfs` chunks), Disney 2012 BRDF notes, Heitz 2014 anisotropic
+NDF, Estevez-Kulla 2017 sheen, Narkowicz ACES fit, sRGB specification.
+
+- DIFFUSE-BURLEY — Status: intentional difference. Ours: Disney Burley with
+  1/1.51 energy compensation (`a3dDiffuseBurley`). three r185 direct diffuse
+  is bare `BRDF_Lambert` (`RECIPROCAL_PI * diffuse`, `RE_Direct_Physical`).
+  Reason: Burley captures roughness-dependent retroreflection that Lambert
+  misses; the 1/1.51 factor bounds diffuse energy at high roughness. Bound:
+  at roughness 1 the response is exactly Disney Burley scaled by 1/1.51
+  (pinned). Pinning test: shader-core-brdf-reference (Burley).
+- GGX-DISTRIBUTION — Status: match. `a3dDistributionGGX` reproduces three
+  `D_GGX` wherever the documented 0.045 floor and the shared EPSILON guard do
+  not bind. Pinning test: shader-core-brdf-reference (GGX).
+- SMITH-CORRELATED — Status: match. The lambdaV/lambdaL formulation is
+  algebraically identical to three `V_GGX_SmithCorrelated` (gv/gl form);
+  verified term-by-term against the installed source. Pinning test:
+  shader-core-brdf-reference (Smith).
+- FRESNEL-EXP2 — Status: intentional difference. Ours: original Schlick'94
+  `pow(1-x, 5)`. three r185 `F_Schlick` evaluates the Epic `exp2`
+  approximation (`common.glsl.js`). Reason: the pow form IS the reference
+  approximation; the exp2 form is the optimization. Bound: max |pow5 - exp2|
+  over dotVH in [0, 1] is 0.00377 < 0.004 (oracle scan, pinned).
+  Pinning test: shader-core-brdf-reference (Schlick).
+- CLEARCOAT-LOBE — Status: match. `F_Schlick(0.04) * D_GGX * V_SmithCorrelated`
+  per three `BRDF_GGX_Clearcoat`, pinned term-by-term. Pinning test:
+  shader-core-brdf-reference (clearcoat).
+- ANISO-NDF — Status: match of form. Both the primitive
+  (`a3dPbrAnisotropicDistribution`) and textured
+  (`a3dTexturedPbrAnisotropicDistribution`) paths implement the aspect-ratio
+  anisotropic-GGX NDF, algebraically identical to three
+  `D_GGX_Anisotropic` (Heitz 2014 vector form); worst relative difference
+  1.2e-15 over 200 randomized configurations (oracle scan). Difference that
+  remains: the primitive path evaluates the lobe over the procedural XY
+  frame (primitives carry no authored tangent attribute); the textured path
+  uses the authored TBN. Pinning test: shader-brdf-reference (lobe vectors)
+  + anisotropic-rotation-q1 browser spec (rotation response).
+- ROUGHNESS-FLOOR-0.045 — Status: intentional difference, DECISION KEEP.
+  three's unfloored form divides by zero at roughness 0 + nDotH 1; ours stays
+  finite. Binds only below roughness 0.045. Pinning test:
+  parity-deviations-q1 (roughness floor).
+- SRGB-EXACT — Status: ours more exact than reference. Exact OETF in all 6
+  encode sites; three r185 evaluates `pow(c, 0.41666)` (truncated 1/2.4) and
+  trails the spec by ~4e-6. Bound: three-agreement within three's own
+  precision (1e-5); gate not weakened. Pinning test:
+  parity-deviations-q1 (0-255 sweep).
+- IRIDESCENCE-COSINE — Status: bounded approximation. Cosine thin-film
+  without Fresnel-weighted spectral integration (three `evalIridescence`).
+  Reason: keep the cheap cosine form until a same-scene proof earns spectral
+  integration (M1). Pinning test: shader-brdf-reference (iridescence).
+- TRANSMISSION-TINT — Status: bounded, diagnosed. Forward-shader
+  transmission is an albedo tint (no scene-color refraction); real
+  transmission lives in `TransmissionPass`. Root marks `transmission`
+  `rootSafeApi: "partial"` and `capabilityDiagnostics` warns. Reason: honest
+  partial labeling beats a silent tint; the diagnostic retires only when B4
+  lands with pixels. Pinning test: agent-api suite (diagnostic contract).
+- RECT-QUADRATURE — Status: intentional difference. DECISION: LTC stays OUT
+  for 2.1 — 2-point Gauss-Legendre quadrature, not LTC
+  (`RectAreaLightUniformsLib`); bounded pixel proof recorded (25.026-degree
+  orientation range, 3.776 elongation). Pinning test: shader-brdf-reference
+  (quadrature offset constant).
+- SHADOW-BIAS-DISCIPLINE — Status: superiority to protect. Per-PCF-sample
+  tangent-scaled slope bias (not centre-only, not `(1 - NdotL)`-linear),
+  clamped at 8. Reason: per-sample tangent scaling is the documented
+  acne-free policy; regressing to centre-only bias reintroduces
+  self-shadowing on wide kernels. Exceeds three's single-bias approach.
+  Pinning test: shader-core-brdf-reference (shadow bias).
+
 ## Evidence map
 
 - aggregate: `tests/reports/pbr-gltf-correctness/report.json`;

@@ -52,6 +52,44 @@ export function createTextureMipGenerationStage(options: TextureMipGenerationSta
   };
 }
 
+export interface AnisotropyRequest {
+  /** Desired anisotropy (4 is the default where supported; 8/16 are opt-in). */
+  readonly desired?: number;
+  /**
+   * Capability-probe result: maximum anisotropy the device supports.
+   * Values <= 1 (or absent) mean unsupported — the request safely folds to 1.
+   */
+  readonly maxSupported?: number;
+}
+
+export interface AnisotropyResolution {
+  readonly applied: 1 | 2 | 4 | 8 | 16;
+  readonly capped: boolean;
+  readonly detail: string;
+}
+
+const ANISOTROPY_STEPS = [1, 2, 4, 8, 16] as const;
+
+/**
+ * M2 root-requestable anisotropy with capability gating. The renderer already
+ * honors `maxAnisotropy`; this is the requesting side the root material
+ * builders will call (root wiring is a reported bridge hunk).
+ */
+export function resolveAnisotropyRequest(request: AnisotropyRequest = {}): AnisotropyResolution {
+  const desired = Number.isFinite(request.desired) ? Math.max(1, request.desired as number) : 4;
+  const maxSupported = Number.isFinite(request.maxSupported) ? Math.max(1, request.maxSupported as number) : 1;
+  const allowed = Math.min(desired, maxSupported);
+  const applied = [...ANISOTROPY_STEPS].reverse().find((step) => step <= allowed) ?? 1;
+  const capped = applied < desired;
+  return {
+    applied,
+    capped,
+    detail: capped
+      ? `Anisotropy ${desired}x requested but device supports ${maxSupported}x — applied ${applied}x.`
+      : `Anisotropy ${applied}x applied (requested ${desired}x, device ${maxSupported}x).`
+  };
+}
+
 function validateTextureMipInput(input: TextureMipGenerationInput): void {
   if (!Number.isInteger(input.width) || input.width <= 0) {
     throw new Error("Texture mip generation width must be a positive integer");

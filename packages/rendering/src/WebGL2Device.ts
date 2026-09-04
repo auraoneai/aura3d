@@ -1,6 +1,7 @@
 import {
   type BufferUsage,
   type DrawCommand,
+  type GpuTargetInventoryEntry,
   type InstanceVertexAttribute,
   type LdrPostprocessPassDescriptor,
   type LdrPostprocessPresentationOptions,
@@ -14,6 +15,8 @@ import {
   type RenderTargetDescriptor,
   type ShaderReflection,
   type ShaderSources,
+  resolveGpuTargetOwner,
+  spreadGpuTargetInventory,
 } from "./RenderDevice";
 import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TexturePixelData } from "./Texture";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
@@ -31,6 +34,12 @@ import {
   createBloomBrightThresholdLut,
   createBloomCompositeLut
 } from "./postprocess/NativeLdrEffectLuts";
+import {
+  normalizeBloomQualityPreset,
+  resolveBloomPyramidPlan,
+  type BloomPyramidPlan,
+  type BloomQualityPreset,
+} from "./postprocess/NativeBloomPyramid";
 
 interface TextureFilterAnisotropicExtension {
   readonly TEXTURE_MAX_ANISOTROPY_EXT: GLenum;
@@ -168,10 +177,37 @@ interface WebGL2BloomPingPongResources {
   readonly framebuffers: readonly [WebGLFramebuffer, WebGLFramebuffer];
 }
 
+interface WebGL2BloomPyramidResources {
+  readonly plan: BloomPyramidPlan;
+  readonly hdr: boolean;
+  readonly textures: readonly WebGLTexture[];
+  readonly framebuffers: readonly WebGLFramebuffer[];
+  readonly accumulatorTextureA: WebGLTexture;
+  readonly accumulatorFramebufferA: WebGLFramebuffer;
+  readonly accumulatorTextureB: WebGLTexture;
+  readonly accumulatorFramebufferB: WebGLFramebuffer;
+}
+
 interface NativeBloomOptions {
   readonly threshold: number;
   readonly intensity: number;
   readonly radius: number;
+  readonly quality: BloomQualityPreset;
+  readonly softKnee: number;
+  readonly shoulder: number;
+}
+
+export interface WebGL2BloomDiagnostics {
+  readonly quality: BloomQualityPreset;
+  readonly mipCount: number;
+  readonly targetCount: number;
+  readonly targetBytes: number;
+  readonly compositeGain: number;
+  readonly threshold: number;
+  readonly intensity: number;
+  readonly softKnee: number;
+  readonly shoulder: number;
+  readonly halfFloat: boolean;
 }
 
 interface NativeOutlineOptions {
@@ -231,19 +267,26 @@ export class WebGL2Device implements RenderDevice {
   private bloomBrightExtractProgram: WebGLProgram | null = null;
   private bloomBlurProgram: WebGLProgram | null = null;
   private bloomCompositeProgram: WebGLProgram | null = null;
+  private bloomDownsampleProgram: WebGLProgram | null = null;
+  private bloomAccumulateProgram: WebGLProgram | null = null;
+  private bloomPyramidResources: WebGL2BloomPyramidResources | null = null;
   private outlineProgram: WebGLProgram | null = null;
   private ssaoProgram: WebGLProgram | null = null;
   private ssrProgram: WebGLProgram | null = null;
   private depthOfFieldProgram: WebGLProgram | null = null;
   private motionBlurProgram: WebGLProgram | null = null;
   private motionBlurVelocityTexture: WebGLTexture | null = null;
+  private motionBlurVelocitySize: { readonly width: number; readonly height: number } | null = null;
   private taaProgram: WebGLProgram | null = null;
   private taaHistoryTexture: WebGLTexture | null = null;
+  private taaHistorySize: { readonly width: number; readonly height: number } | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
   private bloomCompositeLutTexture: WebGLTexture | null = null;
   private bloomCompositeLutIntensity: number | null = null;
+  private bloomCompositeLutShoulder: number | null = null;
+  private lastBloomDiagnostics: WebGL2BloomDiagnostics | null = null;
   private outlineBlendLutTexture: WebGLTexture | null = null;
   private outlineBlendLutKey: string | null = null;
   private depthReadbackProgram: WebGLProgram | null = null;
@@ -818,6 +861,10 @@ export class WebGL2Device implements RenderDevice {
         pass: depthOfFieldPass ? "depth-of-field" : ssaoPass ? "ssao" : "ssr"
       });
     }
+    // Raw GL depth is nonlinear (0.1/1000 defaults park the play area past
+    // 0.97), which blinded every depth-gated native pass. SSR and DOF compare
+    // linearized depth; SSAO keeps its legacy response (documented partial).
+    const depthRange = normalizeLdrDepthRange(options.depthRange);
     const outputTarget = options.outputTarget;
     if (outputTarget && (!(outputTarget instanceof WebGL2RenderTarget) || !this.renderTargets.has(outputTarget) || outputTarget.disposed)) {
       throw new RenderDeviceError("Output render target is not a live WebGL2 resource owned by this device", "INVALID_RESOURCE", {
@@ -876,8 +923,50 @@ export class WebGL2Device implements RenderDevice {
       let ldrSourceHandle = source.colorHandle;
       let temporarySourceIndex: -1 | 0 | 1 = -1;
       if (bloomOptions && bloomResources) {
-        ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray, sourceIsHdr);
-        temporarySourceIndex = 1;
+        if (bloomOptions.quality === "performance") {
+          ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray, sourceIsHdr);
+          temporarySourceIndex = 1;
+          this.recordBloomDiagnostics(bloomOptions, source.width, source.height, sourceIsHdr, 1);
+        } else {
+          const plan = resolveBloomPyramidPlan(source.width, source.height, bloomOptions.quality, sourceIsHdr);
+          const pyramid = this.ensureBloomPyramidResources(plan, sourceIsHdr);
+          const pyramidResult = this.executeNativeBloomPyramidPasses(
+            ldrSourceHandle,
+            source.width,
+            source.height,
+            pyramid,
+            {
+              textureA: bloomResources.textures[0],
+              framebufferA: bloomResources.framebuffers[0],
+              textureB: bloomResources.textures[1],
+              framebufferB: bloomResources.framebuffers[1]
+            },
+            bloomOptions,
+            vertexArray,
+            sourceIsHdr
+          );
+          // The pyramid sum lands in ping-pong texture A; composite it with the
+          // source through the proven single-scale composite program.
+          this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, bloomResources.framebuffers[1]);
+          this.gl.viewport(0, 0, source.width, source.height);
+          const pyramidComposite = this.ensureBloomCompositeProgram();
+          this.gl.useProgram(pyramidComposite);
+          this.gl.bindVertexArray(vertexArray);
+          this.bindFullscreenTexture(0, ldrSourceHandle);
+          this.bindFullscreenTexture(1, pyramidResult);
+          if (this.bloomCompositeLutTexture) this.bindFullscreenTexture(2, this.bloomCompositeLutTexture);
+          this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_source"), 0);
+          this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_blurred"), 1);
+          this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_compositeLut"), 2);
+          this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_hdr"), sourceIsHdr ? 1 : 0);
+          this.gl.uniform1f(this.gl.getUniformLocation(pyramidComposite, "u_intensity"), bloomOptions.intensity);
+          this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+          ldrSourceHandle = bloomResources.textures[1];
+          // The composited result lives in texture B, so subsequent passes
+          // must write texture A (index 0) to avoid sampling a bound target.
+          temporarySourceIndex = 0;
+          this.recordBloomDiagnostics(bloomOptions, source.width, source.height, sourceIsHdr, plan.mipCount);
+        }
       }
       if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions) && bloomResources) {
         if (tonePass || colorPass) {
@@ -905,7 +994,8 @@ export class WebGL2Device implements RenderDevice {
             bloomResources,
             depthOfFieldOptions,
             vertexArray,
-            depthOfFieldTargetIndex
+            depthOfFieldTargetIndex,
+            depthRange
           );
           temporarySourceIndex = depthOfFieldTargetIndex;
         }
@@ -940,7 +1030,8 @@ export class WebGL2Device implements RenderDevice {
             bloomResources,
             ssrOptions,
             vertexArray,
-            ssrTargetIndex
+            ssrTargetIndex,
+            depthRange
           );
           temporarySourceIndex = ssrTargetIndex;
         }
@@ -1261,6 +1352,7 @@ export class WebGL2Device implements RenderDevice {
     const stateCacheStats = this.stateCache.stats();
     const bufferBytes = [...this.buffers].filter((buffer) => !buffer.disposed).reduce((total, buffer) => total + buffer.byteLength, 0);
     const textureBytes = liveTextureList.reduce((total, texture) => total + texture.byteLength, 0);
+    const gpuTargetEntries = this.describeGpuTargetInventory(liveRenderTargets);
     return {
       drawCalls: this.drawCalls,
       buffers: [...this.buffers].filter((buffer) => !buffer.disposed).length,
@@ -1279,6 +1371,7 @@ export class WebGL2Device implements RenderDevice {
       nativeShadowMapBindings: this.nativeShadowMapBindings,
       shadowRenderTargetsAllocated: this.shadowRenderTargetsAllocated,
       nativeInstancedSubmissions: this.nativeInstancedSubmissions,
+      bloom: this.lastBloomDiagnostics,
       samplerAnisotropyUploads: this.samplerAnisotropyUploadCount,
       maxTextureAnisotropy: this.maxTextureAnisotropy,
       stateCacheIssued: stateCacheStats.issued,
@@ -1292,6 +1385,7 @@ export class WebGL2Device implements RenderDevice {
       disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].filter((target) => target.colorTexture.disposed).length + this.releasedTextureHandles,
+      ...spreadGpuTargetInventory(gpuTargetEntries),
       lastError: this.lastError,
       contextLost: this.contextLost
     };
@@ -1353,6 +1447,14 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteProgram(this.bloomCompositeProgram);
       this.bloomCompositeProgram = null;
     }
+    if (this.bloomDownsampleProgram) {
+      this.gl.deleteProgram(this.bloomDownsampleProgram);
+      this.bloomDownsampleProgram = null;
+    }
+    if (this.bloomAccumulateProgram) {
+      this.gl.deleteProgram(this.bloomAccumulateProgram);
+      this.bloomAccumulateProgram = null;
+    }
     if (this.outlineProgram) {
       this.gl.deleteProgram(this.outlineProgram);
       this.outlineProgram = null;
@@ -1376,6 +1478,7 @@ export class WebGL2Device implements RenderDevice {
     if (this.motionBlurVelocityTexture) {
       this.gl.deleteTexture(this.motionBlurVelocityTexture);
       this.motionBlurVelocityTexture = null;
+      this.motionBlurVelocitySize = null;
     }
     if (this.taaProgram) {
       this.gl.deleteProgram(this.taaProgram);
@@ -1384,8 +1487,10 @@ export class WebGL2Device implements RenderDevice {
     if (this.taaHistoryTexture) {
       this.gl.deleteTexture(this.taaHistoryTexture);
       this.taaHistoryTexture = null;
+      this.taaHistorySize = null;
     }
     this.disposeBloomPingPongResources();
+    this.disposeBloomPyramidResources();
     if (this.bloomBrightLutTexture) {
       this.gl.deleteTexture(this.bloomBrightLutTexture);
       this.bloomBrightLutTexture = null;
@@ -1395,6 +1500,7 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteTexture(this.bloomCompositeLutTexture);
       this.bloomCompositeLutTexture = null;
       this.bloomCompositeLutIntensity = null;
+      this.bloomCompositeLutShoulder = null;
     }
     if (this.outlineBlendLutTexture) {
       this.gl.deleteTexture(this.outlineBlendLutTexture);
@@ -1513,6 +1619,7 @@ export class WebGL2Device implements RenderDevice {
       return current;
     }
     this.disposeBloomPingPongResources();
+    this.disposeBloomPyramidResources();
 
     const textureUnit0 = this.captureTextureUnit0();
     const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
@@ -1573,7 +1680,9 @@ export class WebGL2Device implements RenderDevice {
 
   private ensureBloomLutTextures(options: NativeBloomOptions): void {
     const updateBright = this.bloomBrightLutThreshold !== options.threshold;
-    const updateComposite = this.bloomCompositeLutIntensity !== options.intensity;
+    const updateComposite =
+      this.bloomCompositeLutIntensity !== options.intensity ||
+      this.bloomCompositeLutShoulder !== options.shoulder;
     if (this.bloomBrightLutTexture && this.bloomCompositeLutTexture && !updateBright && !updateComposite) {
       return;
     }
@@ -1604,7 +1713,7 @@ export class WebGL2Device implements RenderDevice {
         this.bloomCompositeLutTexture = this.createNativeBloomDataTexture();
       }
       if (updateComposite) {
-        const pixels = createBloomCompositeLut(options.intensity);
+        const pixels = createBloomCompositeLut(options.intensity, { shoulder: options.shoulder });
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.bloomCompositeLutTexture);
         this.gl.texImage2D(
           this.gl.TEXTURE_2D,
@@ -1618,6 +1727,7 @@ export class WebGL2Device implements RenderDevice {
           pixels
         );
         this.bloomCompositeLutIntensity = options.intensity;
+        this.bloomCompositeLutShoulder = options.shoulder;
       }
     } finally {
       this.restoreTextureUnit0(textureUnit0);
@@ -1673,6 +1783,7 @@ export class WebGL2Device implements RenderDevice {
       if (!this.motionBlurVelocityTexture) {
         this.motionBlurVelocityTexture = this.createNativeBloomDataTexture();
       }
+      this.motionBlurVelocitySize = { width, height };
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.motionBlurVelocityTexture);
       this.gl.texImage2D(
         this.gl.TEXTURE_2D,
@@ -1697,6 +1808,7 @@ export class WebGL2Device implements RenderDevice {
       if (!this.taaHistoryTexture) {
         this.taaHistoryTexture = this.createNativeBloomDataTexture();
       }
+      this.taaHistorySize = { width, height };
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.taaHistoryTexture);
       this.gl.texImage2D(
         this.gl.TEXTURE_2D,
@@ -1784,6 +1896,7 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
     this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
     this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
+    this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
 
     const blurProgram = this.ensureBloomBlurProgram();
@@ -1815,6 +1928,178 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1f(this.gl.getUniformLocation(compositeProgram, "u_intensity"), options.intensity);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return textureB;
+  }
+
+  /**
+   * Balanced/cinematic bloom: bright-extract once, then a half-resolution mip
+   * chain where every level is downsampled, separably blurred, and accumulated
+   * with its energy-preserving weight. Returns a full-resolution bloom texture
+   * holding the weighted sum, ready for the existing composite program.
+   */
+  private executeNativeBloomPyramidPasses(
+    sourceTexture: WebGLTexture,
+    sourceWidth: number,
+    sourceHeight: number,
+    resources: WebGL2BloomPyramidResources,
+    fullResStaging: {
+      textureA: WebGLTexture;
+      framebufferA: WebGLFramebuffer;
+      textureB: WebGLTexture;
+      framebufferB: WebGLFramebuffer;
+    },
+    options: NativeBloomOptions,
+    vertexArray: WebGLVertexArrayObject,
+    hdr: boolean
+  ): WebGLTexture {
+    const plan = resources.plan;
+    const mipCount = plan.mips.length;
+    const downsampleProgram = this.ensureBloomDownsampleProgram();
+    const brightProgram = this.ensureBloomBrightExtractProgram();
+    const blurProgram = this.ensureBloomBlurProgram();
+    const accumulateProgram = this.ensureBloomAccumulateProgram();
+    const brightLut = this.bloomBrightLutTexture;
+
+    const mipTexture = (level: number, slot: 0 | 1): WebGLTexture => resources.textures[level * 2 + slot]!;
+    const mipFramebuffer = (level: number, slot: 0 | 1): WebGLFramebuffer => resources.framebuffers[level * 2 + slot]!;
+    const mipSize = (level: number): { width: number; height: number } => plan.mips[level]!;
+    // Blurred result settles in slot 1 for level 0, slot 0 for levels >= 1.
+    const blurredSlot = (level: number): 0 | 1 => (level === 0 ? 1 : 0);
+
+    const drawDownsample = (
+      fromTexture: WebGLTexture,
+      fromWidth: number,
+      fromHeight: number,
+      toFramebuffer: WebGLFramebuffer,
+      toWidth: number,
+      toHeight: number
+    ): void => {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, toFramebuffer);
+      this.gl.viewport(0, 0, toWidth, toHeight);
+      this.gl.useProgram(downsampleProgram);
+      this.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, fromTexture);
+      this.gl.uniform1i(this.gl.getUniformLocation(downsampleProgram, "u_source"), 0);
+      this.gl.uniform2f(
+        this.gl.getUniformLocation(downsampleProgram, "u_texelSize"),
+        1 / fromWidth,
+        1 / fromHeight
+      );
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    };
+
+    const drawBrightExtract = (fromTexture: WebGLTexture, toFramebuffer: WebGLFramebuffer, size: { width: number; height: number }): void => {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, toFramebuffer);
+      this.gl.viewport(0, 0, size.width, size.height);
+      this.gl.useProgram(brightProgram);
+      this.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, fromTexture);
+      if (brightLut) this.bindFullscreenTexture(1, brightLut);
+      this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_source"), 0);
+      this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+      this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
+      this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
+      this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    };
+
+    const drawSeparableBlur = (
+      readTexture: WebGLTexture,
+      tmpTexture: WebGLTexture,
+      tmpFramebuffer: WebGLFramebuffer,
+      outFramebuffer: WebGLFramebuffer,
+      size: { width: number; height: number }
+    ): void => {
+      // Horizontal into the temp target, vertical back into the output target.
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, tmpFramebuffer);
+      this.gl.viewport(0, 0, size.width, size.height);
+      this.gl.useProgram(blurProgram);
+      this.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, readTexture);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_source"), 0);
+      this.gl.uniform2i(this.gl.getUniformLocation(blurProgram, "u_size"), size.width, size.height);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_radius"), options.radius);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 1);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_hdr"), hdr ? 1 : 0);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, outFramebuffer);
+      this.bindFullscreenTexture(0, tmpTexture);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 0);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    };
+
+    // Level 0: downsample, bright-extract into slot 1, blur H into slot 0 and
+    // V back into slot 1. Blurred result settles in slot 1.
+    const level0 = mipSize(0);
+    drawDownsample(sourceTexture, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
+    drawBrightExtract(mipTexture(0, 0), mipFramebuffer(0, 1), level0);
+    drawSeparableBlur(mipTexture(0, 1), mipTexture(0, 0), mipFramebuffer(0, 0), mipFramebuffer(0, 1), level0);
+
+    for (let level = 1; level < mipCount; level += 1) {
+      const size = mipSize(level);
+      const previous = mipSize(level - 1);
+      drawDownsample(mipTexture(level - 1, blurredSlot(level - 1)), previous.width, previous.height, mipFramebuffer(level, 0), size.width, size.height);
+      // H into slot 1, V back into slot 0: blurred result settles in slot 0.
+      drawSeparableBlur(mipTexture(level, 0), mipTexture(level, 1), mipFramebuffer(level, 1), mipFramebuffer(level, 0), size);
+    }
+
+    // Accumulate smallest-to-largest, ping-ponging between the two
+    // accumulators (a pass must never sample its own bound target).
+    const weights = plan.weights;
+    let readAccumulator = { texture: resources.accumulatorTextureA, framebuffer: resources.accumulatorFramebufferA };
+    let writeAccumulator = { texture: resources.accumulatorTextureB, framebuffer: resources.accumulatorFramebufferB };
+    // Clear both accumulators; the seed reads the cleared sibling, never the
+    // bound target (feedback loop).
+    for (const acc of [readAccumulator, writeAccumulator]) {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, acc.framebuffer);
+      this.gl.viewport(0, 0, level0.width, level0.height);
+      this.gl.clearColor(0, 0, 0, 0);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    }
+    // Seed: smallest mip onto the cleared sibling accumulator.
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, writeAccumulator.framebuffer);
+    this.gl.viewport(0, 0, level0.width, level0.height);
+    this.gl.useProgram(accumulateProgram);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, readAccumulator.texture);
+    this.bindFullscreenTexture(1, mipTexture(mipCount - 1, blurredSlot(mipCount - 1)));
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_base"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_bloom"), 1);
+    this.gl.uniform1f(this.gl.getUniformLocation(accumulateProgram, "u_weight"), weights[mipCount - 1]!);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    for (let level = mipCount - 2; level >= 0; level -= 1) {
+      const nextRead = writeAccumulator;
+      const nextWrite = readAccumulator;
+      readAccumulator = nextRead;
+      writeAccumulator = nextWrite;
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, writeAccumulator.framebuffer);
+      this.gl.viewport(0, 0, level0.width, level0.height);
+      this.gl.useProgram(accumulateProgram);
+      this.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, readAccumulator.texture);
+      this.bindFullscreenTexture(1, mipTexture(level, blurredSlot(level)));
+      this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_base"), 0);
+      this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_bloom"), 1);
+      this.gl.uniform1f(this.gl.getUniformLocation(accumulateProgram, "u_weight"), weights[level]!);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    }
+    // Upsample the weighted sum onto full-resolution staging target A, using
+    // the cleared staging target B as the zero base (never sample A while
+    // rendering into it).
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fullResStaging.framebufferB);
+    this.gl.viewport(0, 0, sourceWidth, sourceHeight);
+    this.gl.clearColor(0, 0, 0, 0);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fullResStaging.framebufferA);
+    this.gl.viewport(0, 0, sourceWidth, sourceHeight);
+    this.gl.useProgram(accumulateProgram);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, fullResStaging.textureB);
+    this.bindFullscreenTexture(1, writeAccumulator.texture);
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_base"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulateProgram, "u_bloom"), 1);
+    this.gl.uniform1f(this.gl.getUniformLocation(accumulateProgram, "u_weight"), 1);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return fullResStaging.textureA;
   }
 
   private executeNativeOutlinePasses(
@@ -1880,7 +2165,8 @@ export class WebGL2Device implements RenderDevice {
     resources: WebGL2BloomPingPongResources,
     options: NativeSsrOptions,
     vertexArray: WebGLVertexArrayObject,
-    targetIndex: 0 | 1
+    targetIndex: 0 | 1,
+    depthRange: { readonly near: number; readonly far: number }
   ): WebGLTexture {
     const program = this.ensureSsrProgram();
     const targetTexture = resources.textures[targetIndex];
@@ -1895,6 +2181,8 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_intensity"), options.intensity);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxDistance"), options.maxDistance);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthNear"), depthRange.near);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthFar"), depthRange.far);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -1905,7 +2193,8 @@ export class WebGL2Device implements RenderDevice {
     resources: WebGL2BloomPingPongResources,
     options: NativeDepthOfFieldOptions,
     vertexArray: WebGLVertexArrayObject,
-    targetIndex: 0 | 1
+    targetIndex: 0 | 1,
+    depthRange: { readonly near: number; readonly far: number }
   ): WebGLTexture {
     const program = this.ensureDepthOfFieldProgram();
     const targetTexture = resources.textures[targetIndex];
@@ -1921,6 +2210,8 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusDepth"), options.focusDepth);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusRange"), options.focusRange);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxRadius"), options.maxRadius);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthNear"), depthRange.near);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthFar"), depthRange.far);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -1990,6 +2281,228 @@ export class WebGL2Device implements RenderDevice {
     for (const texture of this.bloomPingPongResources.textures) this.gl.deleteTexture(texture);
     for (const framebuffer of this.bloomPingPongResources.framebuffers) this.gl.deleteFramebuffer(framebuffer);
     this.bloomPingPongResources = null;
+  }
+
+  /**
+   * Diagnostics for the most recent native bloom execution (muse3jsparity-PRD
+   * A1). Null when no native bloom pass has run yet on this device.
+   */
+  getBloomDiagnostics(): WebGL2BloomDiagnostics | null {
+    return this.lastBloomDiagnostics;
+  }
+
+  private recordBloomDiagnostics(
+    options: NativeBloomOptions,
+    sourceWidth: number,
+    sourceHeight: number,
+    hdr: boolean,
+    mipCount: number
+  ): void {
+    const plan = resolveBloomPyramidPlan(sourceWidth, sourceHeight, options.quality, hdr);
+    const pingPongBytes = sourceWidth * sourceHeight * 4 * (hdr ? 2 : 1) * 2;
+    const bytesPerChannel = plan.halfFloat ? 2 : 1;
+    const level0 = plan.mips[0]!;
+    const accumulatorBytes = level0.width * level0.height * 4 * bytesPerChannel;
+    this.lastBloomDiagnostics = {
+      quality: options.quality,
+      mipCount,
+      targetCount: options.quality === "performance" ? 2 : plan.mips.length * 2 + 1,
+      targetBytes: (options.quality === "performance" ? pingPongBytes : plan.targetBytes + accumulatorBytes + pingPongBytes),
+      compositeGain: options.intensity,
+      threshold: options.threshold,
+      intensity: options.intensity,
+      softKnee: options.softKnee,
+      shoulder: options.shoulder,
+      halfFloat: hdr || plan.halfFloat,
+    };
+  }
+
+  /**
+   * PART U: every live GPU allocation with bytes + lane owner — registry
+   * render targets (B1 shadow maps arrive labeled, B4 captures arrive as
+   * `-mirror-target`/`-scene-color-target`) plus the raw-handle residents the
+   * registry set cannot see: the A1 bloom pyramid (two targets per mip plus
+   * two level-0 accumulators), the legacy bloom ping-pong pair, the A1/A3
+   * lookup textures, and the motion-blur/taa history textures. The
+   * depth-readback scratch pair is intentionally absent: it is allocated and
+   * deleted inside one synchronous call, so it is never live at a diagnostics
+   * boundary. A5 volumetric light, C4 decals, and the G1 SDF atlas own no GPU
+   * target (forward uniforms + CPU kernel, CPU geometry, CPU atlas data), so
+   * no entry is emitted for them; a target appearing under their owner would
+   * be the signal that the lane grew one.
+   */
+  private describeGpuTargetInventory(liveRenderTargets: readonly WebGL2RenderTarget[]): GpuTargetInventoryEntry[] {
+    const entries: GpuTargetInventoryEntry[] = liveRenderTargets.map((target) => ({
+      label: target.label,
+      kind: "render-target" as const,
+      bytes: target.colorTexture.byteLength + (target.depthTexture?.byteLength ?? 0),
+      owner: resolveGpuTargetOwner(target.label)
+    }));
+    const pyramid = this.bloomPyramidResources;
+    if (pyramid) {
+      const bytesPerPixel = pyramid.hdr ? 8 : 4;
+      pyramid.plan.mips.forEach((mip, index) => {
+        for (const side of ["a", "b"] as const) {
+          entries.push({
+            label: `bloom-pyramid-mip${index}${side}`,
+            kind: "pyramid-mip",
+            bytes: mip.width * mip.height * bytesPerPixel,
+            owner: "a1-bloom"
+          });
+        }
+      });
+      const level0 = pyramid.plan.mips[0];
+      if (level0) {
+        for (const side of ["a", "b"] as const) {
+          entries.push({
+            label: `bloom-pyramid-accumulator-${side}`,
+            kind: "pyramid-accumulator",
+            bytes: level0.width * level0.height * bytesPerPixel,
+            owner: "a1-bloom"
+          });
+        }
+      }
+    }
+    const pingPong = this.bloomPingPongResources;
+    if (pingPong) {
+      const bytesPerPixel = pingPong.hdr ? 8 : 4;
+      for (const side of ["a", "b"] as const) {
+        entries.push({
+          label: `bloom-ping-pong-${side}`,
+          kind: "ping-pong",
+          bytes: pingPong.width * pingPong.height * bytesPerPixel,
+          owner: "a1-bloom"
+        });
+      }
+    }
+    if (this.bloomBrightLutTexture) {
+      entries.push({
+        label: "bloom-bright-lut",
+        kind: "lut",
+        bytes: BLOOM_BRIGHT_LUT_WIDTH * BLOOM_BRIGHT_LUT_HEIGHT * 4,
+        owner: "a1-bloom"
+      });
+    }
+    if (this.bloomCompositeLutTexture) {
+      entries.push({
+        label: "bloom-composite-lut",
+        kind: "lut",
+        bytes: BLOOM_COMPOSITE_LUT_SIZE * BLOOM_COMPOSITE_LUT_SIZE * 4,
+        owner: "a1-bloom"
+      });
+    }
+    if (this.outlineBlendLutTexture) {
+      entries.push({ label: "outline-blend-lut", kind: "lut", bytes: OUTLINE_BLEND_LUT_WIDTH * 4, owner: "post" });
+    }
+    if (this.motionBlurVelocityTexture && this.motionBlurVelocitySize) {
+      entries.push({
+        label: "motion-blur-velocity",
+        kind: "history",
+        bytes: this.motionBlurVelocitySize.width * this.motionBlurVelocitySize.height * 8,
+        owner: "post"
+      });
+    }
+    if (this.taaHistoryTexture && this.taaHistorySize) {
+      entries.push({
+        label: "taa-history",
+        kind: "history",
+        bytes: this.taaHistorySize.width * this.taaHistorySize.height * 4,
+        owner: "post"
+      });
+    }
+    return entries;
+  }
+
+  private disposeBloomPyramidResources(): void {
+    if (!this.bloomPyramidResources) return;
+    for (const texture of this.bloomPyramidResources.textures) this.gl.deleteTexture(texture);
+    for (const framebuffer of this.bloomPyramidResources.framebuffers) this.gl.deleteFramebuffer(framebuffer);
+    this.gl.deleteTexture(this.bloomPyramidResources.accumulatorTextureA);
+    this.gl.deleteFramebuffer(this.bloomPyramidResources.accumulatorFramebufferA);
+    this.gl.deleteTexture(this.bloomPyramidResources.accumulatorTextureB);
+    this.gl.deleteFramebuffer(this.bloomPyramidResources.accumulatorFramebufferB);
+    this.bloomPyramidResources = null;
+  }
+
+  /**
+   * Mip-chain targets for the balanced/cinematic bloom pyramid. Each level is a
+   * single texture+framebuffer at the planned size with linear filtering so the
+   * downsample and accumulate passes can sample across levels. Half-float backs
+   * the chain when the source is HDR or the cinematic preset requests it.
+   */
+  private ensureBloomPyramidResources(plan: BloomPyramidPlan, hdr: boolean): WebGL2BloomPyramidResources {
+    const current = this.bloomPyramidResources;
+    if (
+      current && current.plan.quality === plan.quality && current.hdr === (hdr || plan.halfFloat) &&
+      current.plan.mips.length === plan.mips.length &&
+      current.plan.mips.every((mip, index) => mip.width === plan.mips[index]!.width && mip.height === plan.mips[index]!.height)
+    ) {
+      return current;
+    }
+    this.disposeBloomPyramidResources();
+
+    const textureUnit0 = this.captureTextureUnit0();
+    const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const textures: WebGLTexture[] = [];
+    const framebuffers: WebGLFramebuffer[] = [];
+    const useHalfFloat = hdr || plan.halfFloat;
+    const allocateTarget = (width: number, height: number, label: string): { texture: WebGLTexture; framebuffer: WebGLFramebuffer } => {
+      const texture = this.gl.createTexture();
+      const framebuffer = this.gl.createFramebuffer();
+      if (!texture || !framebuffer) {
+        if (texture) this.gl.deleteTexture(texture);
+        if (framebuffer) this.gl.deleteFramebuffer(framebuffer);
+        throw new RenderDeviceError(`Failed to allocate WebGL2 bloom pyramid ${label}`, "WEBGL_ALLOCATION_FAILED", { width, height });
+      }
+      textures.push(texture);
+      framebuffers.push(framebuffer);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+      this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, useHalfFloat ? this.gl.RGBA16F : this.gl.RGBA8, width, height, 0, this.gl.RGBA, useHalfFloat ? this.gl.HALF_FLOAT : this.gl.UNSIGNED_BYTE, null);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+      this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, texture, 0);
+      const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+      if (status !== this.gl.FRAMEBUFFER_COMPLETE) {
+        throw new RenderDeviceError("WebGL2 bloom pyramid framebuffer status is invalid", "FRAMEBUFFER_INVALID", { width, height, status });
+      }
+      return { texture, framebuffer };
+    };
+    try {
+      // Two ping-pong targets per mip (separable blur needs distinct read/write
+      // targets at the same size), plus two level-0-sized accumulators: the
+      // weighted sum ping-pongs between them so no pass ever samples the
+      // texture of its own bound framebuffer (feedback loop).
+      for (const mip of plan.mips) {
+        allocateTarget(mip.width, mip.height, "mip");
+        allocateTarget(mip.width, mip.height, "mip");
+      }
+      const level0 = plan.mips[0]!;
+      const accumulatorA = allocateTarget(level0.width, level0.height, "accumulator-a");
+      const accumulatorB = allocateTarget(level0.width, level0.height, "accumulator-b");
+      const finalResources: WebGL2BloomPyramidResources = {
+        plan,
+        hdr: useHalfFloat,
+        textures,
+        framebuffers,
+        accumulatorTextureA: accumulatorA.texture,
+        accumulatorFramebufferA: accumulatorA.framebuffer,
+        accumulatorTextureB: accumulatorB.texture,
+        accumulatorFramebufferB: accumulatorB.framebuffer
+      };
+      this.bloomPyramidResources = finalResources;
+      return finalResources;
+    } catch (error) {
+      for (const texture of textures) this.gl.deleteTexture(texture);
+      for (const framebuffer of framebuffers) this.gl.deleteFramebuffer(framebuffer);
+      throw error;
+    } finally {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, previousFramebuffer);
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
   }
 
   private captureTextureUnit0(): WebGL2TextureUnit0Snapshot {
@@ -2196,6 +2709,7 @@ uniform sampler2D u_source;
 uniform sampler2D u_brightLut;
 uniform int u_hdr;
 uniform float u_threshold;
+uniform float u_softKnee;
 out vec4 outColor;
 
 uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
@@ -2207,7 +2721,12 @@ void main() {
   if (u_hdr == 1) {
     vec4 source = texelFetch(u_source, pixel, 0);
     float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
-    outColor = luma >= u_threshold ? source : vec4(0.0);
+    float kneeLow = max(u_threshold - u_softKnee, 0.0);
+    float kneeHigh = min(u_threshold + u_softKnee, 1.0);
+    float weight = u_softKnee <= 0.0
+      ? (luma >= u_threshold ? 1.0 : 0.0)
+      : smoothstep(kneeLow, kneeHigh, luma);
+    outColor = source * weight;
     return;
   }
   uvec4 source = byteTexel(u_source, pixel);
@@ -2326,6 +2845,43 @@ void main() {
 }
 `, "webgl2-bloom-composite");
     return this.bloomCompositeProgram;
+  }
+
+  private ensureBloomDownsampleProgram(): WebGLProgram {
+    if (this.bloomDownsampleProgram) return this.bloomDownsampleProgram;
+    this.bloomDownsampleProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+uniform sampler2D u_source;
+uniform vec2 u_texelSize;
+out vec4 outColor;
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5) * u_texelSize;
+  vec2 e = u_texelSize * 0.5;
+  vec4 sum = texture(u_source, uv - e) + texture(u_source, uv + vec2(e.x, -e.y))
+    + texture(u_source, uv + vec2(-e.x, e.y)) + texture(u_source, uv + e);
+  outColor = sum * 0.25;
+}
+`, "webgl2-bloom-downsample");
+    return this.bloomDownsampleProgram;
+  }
+
+  private ensureBloomAccumulateProgram(): WebGLProgram {
+    if (this.bloomAccumulateProgram) return this.bloomAccumulateProgram;
+    this.bloomAccumulateProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+uniform sampler2D u_base;
+uniform sampler2D u_bloom;
+uniform float u_weight;
+out vec4 outColor;
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  vec4 base = texelFetch(u_base, pixel, 0);
+  vec2 uv = (vec2(pixel) + 0.5) / vec2(textureSize(u_base, 0));
+  vec3 bloom = texture(u_bloom, uv).rgb;
+  outColor = vec4(base.rgb + bloom * u_weight, base.a);
+}
+`, "webgl2-bloom-accumulate");
+    return this.bloomAccumulateProgram;
   }
 
   private ensureOutlineProgram(): WebGLProgram {
@@ -2469,13 +3025,24 @@ uniform sampler2D u_depth;
 uniform ivec2 u_size;
 uniform float u_intensity;
 uniform int u_maxDistance;
+uniform float u_depthNear;
+uniform float u_depthFar;
 out vec4 outColor;
+
+// Raw GL depth is nonlinear (0.1/1000 defaults park the play area past 0.97),
+// so every depth-gated comparison below runs on linearized depth. The CPU
+// byte kernel keeps fixture-unit semantics; the divergence is documented at
+// normalizeLdrDepthRange.
+float a3dSsrLinearDepth(float depth) {
+  float viewZ = u_depthNear * u_depthFar / max(u_depthFar - depth * (u_depthFar - u_depthNear), 0.0001);
+  return clamp((viewZ - u_depthNear) / max(u_depthFar - u_depthNear, 0.0001), 0.0, 1.0);
+}
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
   vec4 target = texelFetch(u_source, pixel, 0);
-  float depth = texelFetch(u_depth, pixel, 0).r;
-  int rayDistance = max(1, int(round((1.0 - depth) * float(u_maxDistance))));
+  float linearDepth = a3dSsrLinearDepth(texelFetch(u_depth, pixel, 0).r);
+  int rayDistance = max(1, int(round((1.0 - linearDepth) * float(u_maxDistance))));
   int direction = pixel.x < u_size.x / 2 ? 1 : -1;
   ivec2 samplePixel = ivec2(
     clamp(pixel.x + direction * rayDistance, 0, u_size.x - 1),
@@ -2483,11 +3050,11 @@ void main() {
   );
   vec3 reflected = texelFetch(u_source, samplePixel, 0).rgb;
   float sourceLuma = (reflected.r + reflected.g + reflected.b) / 3.0;
-  if (sourceLuma < 0.18 || depth > 0.92) {
+  if (sourceLuma < 0.18 || linearDepth > 0.995) {
     outColor = target;
     return;
   }
-  float boost = sourceLuma * u_intensity * (1.0 - depth);
+  float boost = sourceLuma * u_intensity * (1.0 - linearDepth);
   outColor = vec4(clamp(target.rgb + reflected * boost, 0.0, 1.0), target.a);
 }
 `, "webgl2-ssr");
@@ -2505,13 +3072,26 @@ uniform ivec2 u_size;
 uniform float u_focusDepth;
 uniform float u_focusRange;
 uniform int u_maxRadius;
+uniform float u_depthNear;
+uniform float u_depthFar;
 out vec4 outColor;
+
+// Same linearization contract as the SSR program, except focus is authored
+// directly as a linear-distance fraction (0 = near plane, 1 = far plane):
+// buffer-unit focus values are unusable once depth is linearized, because the
+// projection curve parks the whole play area inside a sliver of buffer units.
+// The CPU byte kernel keeps buffer-unit semantics; the divergence is
+// documented at normalizeLdrDepthRange.
+float a3dDofLinearDepth(float depth) {
+  float viewZ = u_depthNear * u_depthFar / max(u_depthFar - depth * (u_depthFar - u_depthNear), 0.0001);
+  return clamp((viewZ - u_depthNear) / max(u_depthFar - u_depthNear, 0.0001), 0.0, 1.0);
+}
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
   vec4 source = texelFetch(u_source, pixel, 0);
-  float depth = texelFetch(u_depth, pixel, 0).r;
-  float normalizedBlur = max(0.0, abs(depth - u_focusDepth) - u_focusRange)
+  float linearDepth = a3dDofLinearDepth(texelFetch(u_depth, pixel, 0).r);
+  float normalizedBlur = max(0.0, abs(linearDepth - u_focusDepth) - u_focusRange)
     / max(u_focusRange, 0.001) * float(u_maxRadius);
   int radius = min(u_maxRadius, int(round(normalizedBlur)));
   if (radius == 0) {
@@ -3670,7 +4250,21 @@ function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>)
   if (!Number.isInteger(radius) || radius < 0 || radius > 16) {
     throw new RenderDeviceError("Bloom radius must be an integer in [0, 16].", "INVALID_POSTPROCESS_OPTIONS", { radius });
   }
-  return { threshold, intensity, radius };
+  const softKnee = bloomNumberOption(options, "softKnee", 0);
+  if (!(softKnee >= 0) || softKnee > 0.5) {
+    throw new RenderDeviceError("Bloom softKnee must be finite and in [0, 0.5].", "INVALID_POSTPROCESS_OPTIONS", { softKnee });
+  }
+  const shoulder = bloomNumberOption(options, "shoulder", 0);
+  if (!(shoulder >= 0) || shoulder > 1) {
+    throw new RenderDeviceError("Bloom shoulder must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { shoulder });
+  }
+  let quality: BloomQualityPreset;
+  try {
+    quality = normalizeBloomQualityPreset(options.quality);
+  } catch {
+    throw new RenderDeviceError("Bloom quality must be one of performance|balanced|cinematic.", "INVALID_POSTPROCESS_OPTIONS", { quality: options.quality });
+  }
+  return { threshold, intensity, radius, quality, softKnee, shoulder };
 }
 
 function normalizeNativeOutlineOptions(options: Readonly<Record<string, unknown>>): NativeOutlineOptions {
@@ -3718,6 +4312,24 @@ function normalizeNativeSsaoOptions(options: Readonly<Record<string, unknown>>):
     throw new RenderDeviceError("SSAO bias must be finite and in [0, 0.25].", "INVALID_POSTPROCESS_OPTIONS", { bias });
   }
   return { radius, intensity, bias };
+}
+
+/**
+ * Camera depth range for linearizing sampleable GL depth in the native
+ * SSR/depth-of-field programs (muse3jsparity-PRD A3). Missing or invalid
+ * ranges fall back to the engine perspective defaults (0.1/1000) rather than
+ * failing the frame: the range is a calibration hint, and every engine camera
+ * builder defaults to exactly 0.1/1000. The CPU byte kernels intentionally
+ * keep fixture-unit depth semantics (deterministic reference); the native
+ * programs document their GL-depth contract in-shader.
+ */
+function normalizeLdrDepthRange(range: { readonly near: number; readonly far: number } | undefined): {
+  readonly near: number;
+  readonly far: number;
+} {
+  const near = range && Number.isFinite(range.near) && range.near > 0 ? range.near : 0.1;
+  const far = range && Number.isFinite(range.far) && range.far > near ? range.far : 1000;
+  return { near, far };
 }
 
 function normalizeNativeSsrOptions(options: Readonly<Record<string, unknown>>): NativeSsrOptions {

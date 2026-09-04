@@ -93,6 +93,7 @@ export class TransformControls {
   private dragStartValue = 0;
   private accumulated = 0;
   private dragging = false;
+  private disposed = false;
 
   constructor(options: TransformControlsOptions = {}) {
     this.mode = options.mode ?? "translate";
@@ -282,7 +283,7 @@ export class TransformControls {
    * selection instead of swallowing the pointer.
    */
   pointerDown(ray: TransformControlRay): boolean {
-    if (!this.enabled || this.dragging) return false;
+    if (this.disposed || !this.enabled || this.dragging) return false;
     const picked = this.pick(ray);
     if (!picked) return false;
     const value = this.measure(ray, picked.handle);
@@ -335,17 +336,29 @@ export class TransformControls {
     this.accumulated = 0;
   }
 
+  /** True after `dispose()`; pointer and delta entry points are no-ops past this point. */
+  get isDisposed(): boolean {
+    return this.disposed;
+  }
+
   /** Explicit-delta mutation, retained unchanged for source compatibility. */
   apply(delta: Vector3Like): void {
     validateDelta(delta);
     const object = this.object;
-    if (!this.enabled || !object) return;
+    if (this.disposed || !this.enabled || !object) return;
     if (this.mode === "translate") add(object.position, delta);
     if (this.mode === "rotate" && object.rotation) add(object.rotation, delta);
     if (this.mode === "scale" && object.scale) add(object.scale, delta);
   }
 
+  /**
+   * F1-standard disposal: disables the instance, clears hover/drag state,
+   * detaches the object, and owns zero DOM listeners so nothing can leak.
+   * Idempotent.
+   */
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.enabled = false;
     this.hovered = undefined;
     this.detach();

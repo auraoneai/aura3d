@@ -50,6 +50,35 @@ export function createHeightFieldGround(heightAt: (x: number, z: number) => { he
   };
 }
 
+/**
+ * Moving-platform ground adapter (E2): wraps any base `GroundRaycaster` (terrain heightfield,
+ * physics raycaster, …) and adds the platform's current vertical offset under feet standing
+ * on it. `platformHeightAt` returns the platform top height at (x, z), or `undefined` when no
+ * platform is under the query point — in which case the base ground answer is used unchanged.
+ * The platform offset is also reported so callers can carry a locked foot with the platform.
+ */
+export function createMovingPlatformGround(
+  base: GroundRaycaster,
+  platformHeightAt: (x: number, z: number) => number | undefined
+): GroundRaycaster & { platformOffsetAt(x: number, z: number): number | undefined } {
+  return {
+    raycastDown(origin: Vec3, maxDistance: number): GroundSample | undefined {
+      const platformHeight = platformHeightAt(origin[0], origin[2]);
+      const baseHit = base.raycastDown(origin, maxDistance);
+      if (platformHeight === undefined) return baseHit;
+      const platformDistance = origin[1] - platformHeight;
+      if (platformDistance < 0 || platformDistance > maxDistance) return baseHit;
+      if (!baseHit || platformDistance <= baseHit.distance) {
+        return { point: [origin[0], platformHeight, origin[2]], normal: [0, 1, 0], distance: platformDistance };
+      }
+      return baseHit;
+    },
+    platformOffsetAt(x: number, z: number): number | undefined {
+      return platformHeightAt(x, z);
+    }
+  };
+}
+
 /** One leg: the hip (root), knee (mid), ankle (end), and an optional pole/knee hint. */
 export interface FootLegInput {
   readonly side: "left" | "right";
@@ -97,6 +126,15 @@ export interface FootIkSolveResult {
 interface LegLockState {
   locked: boolean;
   lockedPosition: Vec3;
+  /** Whether the lock sits on a moving platform (carried each solve). */
+  onPlatform: boolean;
+}
+
+/** Platform-top height under the foot when the ground query is a platform adapter. */
+function readPlatformTop(raycaster: GroundRaycaster, foot: Vec3): number | undefined {
+  const maybe = raycaster as Partial<{ platformOffsetAt(x: number, z: number): number | undefined }>;
+  if (typeof maybe.platformOffsetAt !== "function") return undefined;
+  return maybe.platformOffsetAt(foot[0], foot[2]);
 }
 
 export interface FootIkRig {
@@ -125,7 +163,7 @@ export function createFootIkRig(options: FootIkRigOptions): FootIkRig {
   function lockFor(side: "left" | "right"): LegLockState {
     let state = locks.get(side);
     if (!state) {
-      state = { locked: false, lockedPosition: [0, 0, 0] };
+      state = { locked: false, lockedPosition: [0, 0, 0], onPlatform: false };
       locks.set(side, state);
     }
     return state;
@@ -141,9 +179,14 @@ export function createFootIkRig(options: FootIkRigOptions): FootIkRig {
         const lock = lockFor(leg.side);
         const result = solveLeg(leg, lock, raycaster, { ankleHeight, rayStartHeight, maxRayDistance, plantThreshold });
         solved.push(result);
-        deepestCorrection = Math.max(deepestCorrection, Math.max(0, result.sample.verticalCorrection));
+        // Stance legs only: a swing foot hangs above its ground target by design, and its
+        // "correction" would inflate the pelvis drop and bury the planted feet.
+        if (result.sample.grounded) {
+          deepestCorrection = Math.max(deepestCorrection, Math.max(0, result.sample.verticalCorrection));
+        }
       }
       const hipOffset = round(-deepestCorrection * hipDropFactor);
+      refineOverExtendedLegs(legs, solved, hipOffset);
       const groundedFeet = solved.filter((leg) => leg.sample.grounded).length;
       const averageTargetError = solved.length === 0
         ? 0
@@ -198,6 +241,9 @@ function solveLeg(leg: FootLegInput, lock: LegLockState, raycaster: GroundRaycas
   const groundTargetY = ground.point[1] + params.ankleHeight;
   const heightAboveGround = sourceAnkle[1] - groundTargetY;
   const inStance = heightAboveGround <= params.plantThreshold;
+  const platformTop = readPlatformTop(raycaster, sourceAnkle);
+  // The winning surface is the platform exactly when its top matches the raycast hit.
+  const overPlatform = platformTop !== undefined && platformTop >= ground.point[1] - 1e-6;
 
   let target: Vec3;
   if (inStance) {
@@ -205,9 +251,19 @@ function solveLeg(leg: FootLegInput, lock: LegLockState, raycaster: GroundRaycas
       // Just entered stance: plant the foot at the ground point under it.
       lock.locked = true;
       lock.lockedPosition = [sourceAnkle[0], groundTargetY, sourceAnkle[2]];
+      lock.onPlatform = overPlatform;
+    } else if (lock.onPlatform) {
+      if (overPlatform && platformTop !== undefined) {
+        // Carry a platform-locked foot with the platform top (E2 moving platforms).
+        lock.lockedPosition = [lock.lockedPosition[0], platformTop + params.ankleHeight, lock.lockedPosition[2]];
+      } else {
+        // The platform left from under the foot: release so the foot is not dragged through air.
+        lock.locked = false;
+        lock.onPlatform = false;
+      }
     }
     // Hold the locked world position so the foot does not slide while it should be stationary.
-    target = lock.lockedPosition;
+    target = lock.locked ? lock.lockedPosition : [sourceAnkle[0], groundTargetY, sourceAnkle[2]];
   } else {
     // Swing phase: release the lock; the foot follows above the ground under it.
     lock.locked = false;
@@ -244,6 +300,43 @@ function solveLeg(leg: FootLegInput, lock: LegLockState, raycaster: GroundRaycas
     locked: lock.locked,
     reached: solved.reached
   };
+}
+
+/**
+ * Second IK pass for legs the pelvis drop serves. Phase one solves from the animated hip
+ * and reports its miss; the drop then lowers the pelvis, and re-solving from the dropped
+ * hip lands the foot measurably closer this frame instead of chasing the ground over
+ * several. Only legs that needed the drop (positive vertical correction) refine; the rest
+ * keep phase-one targets and let their knees absorb the pelvis motion by bending. The
+ * whole leg translates rigidly (root, mid, end all shift by the drop) so the solver
+ * derives the true bone lengths — dropping only the root would shorten the implied reach
+ * by exactly the drop and gain nothing. `hip` stays pre-drop — the caller applies
+ * `hipOffset` to the hip write-back — so only knee/ankle/reached/error refresh here.
+ * Lock state is untouched: this is pure IK.
+ */
+function refineOverExtendedLegs(legs: readonly FootLegInput[], solved: SolvedLeg[], hipOffset: number): void {
+  if (hipOffset >= 0) return;
+  for (let index = 0; index < solved.length; index += 1) {
+    const result = solved[index];
+    const leg = legs[index];
+    if (!result || !leg || result.sample.verticalCorrection <= 0) continue;
+    const drop = (value: Vec3): Vec3 => [value[0], value[1] + hipOffset, value[2]];
+    const refined = solveTwoBoneIk({
+      root: drop(leg.hip),
+      mid: drop(leg.knee),
+      end: drop(leg.ankle),
+      target: result.sample.plantedFoot,
+      pole: leg.pole,
+      weight: 1
+    });
+    solved[index] = {
+      ...result,
+      knee: roundVec(refined.mid),
+      ankle: roundVec(refined.end),
+      reached: refined.reached,
+      sample: { ...result.sample, targetError: round(refined.endDistanceToTarget) }
+    };
+  }
 }
 
 function clamp(value: number, min: number, max: number): number {

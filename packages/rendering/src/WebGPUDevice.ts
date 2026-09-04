@@ -14,7 +14,9 @@ import {
   type ShaderCompilationDiagnostic,
   type ShaderSources,
   type UniformValue,
-  viewBytes
+  viewBytes,
+  resolveGpuTargetOwner,
+  spreadGpuTargetInventory
 } from "./RenderDevice";
 import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
 import { reflectShaderSources } from "./ShaderReflection";
@@ -1143,6 +1145,14 @@ export class WebGPUDevice implements RenderDevice {
       disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].reduce((total, target) => total + (target.colorTexture.disposed ? 1 : 0) + (target.depthTexture?.disposed ? 1 : 0), 0),
+      ...spreadGpuTargetInventory(
+        liveRenderTargets.map((target) => ({
+          label: target.label,
+          kind: "render-target" as const,
+          bytes: target.colorTexture.byteLength + (target.depthTexture?.byteLength ?? 0),
+          owner: resolveGpuTargetOwner(target.label)
+        }))
+      ),
       nativeSubmissions: this.nativeSubmissions,
       nativeRenderPipelinesCreated: this.nativeRenderPipelinesCreated,
       nativeRenderPasses: this.nativeRenderPasses,

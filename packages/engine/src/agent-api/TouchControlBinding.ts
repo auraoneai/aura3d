@@ -78,6 +78,74 @@ export interface GameControlBindingResult {
   dispose(): void;
 }
 
+/**
+ * Genre presets for on-screen button bindings (I2).
+ *
+ * These mirror the button maps in the input package's `createTouchLayoutPreset`
+ * (same element-id suffixes and `KeyboardEvent.code`s) so a route can bind the
+ * buttons here and drive the analog stick there with one shared naming scheme.
+ * The maps live in both places because this engine entry cannot depend on
+ * the input package; if either map changes, update the other and the
+ * `touch-layout-preset-parity` unit test will fail until they agree.
+ */
+export type GameTouchLayoutGenre = "fight" | "race" | "platform";
+
+export interface GameTouchLayoutPresetSpec {
+  readonly genre: GameTouchLayoutGenre;
+  /** Prefix for button element ids, e.g. `touch-fight` binds `touch-fight:jump`. */
+  readonly elementIdPrefix?: string;
+  readonly host?: TouchControlHost | undefined;
+  readonly holdMs?: number | undefined;
+}
+
+export interface GameTouchLayoutBindings {
+  readonly genre: GameTouchLayoutGenre;
+  readonly hold: readonly HoldControlBinding[];
+  readonly pulse: readonly PulseControlBinding[];
+}
+
+export const GAME_TOUCH_LAYOUT_GENRES: readonly GameTouchLayoutGenre[] = ["fight", "race", "platform"];
+
+export function touchLayoutBindingsForGenre(
+  genre: GameTouchLayoutGenre,
+  elementIdPrefix = `touch-${genre}`
+): GameTouchLayoutBindings {
+  const hold = (suffix: string, code: string): HoldControlBinding => ({ elementId: `${elementIdPrefix}:${suffix}`, code });
+  const pulse = (suffix: string, code: string): PulseControlBinding => ({ elementId: `${elementIdPrefix}:${suffix}`, code });
+  switch (genre) {
+    case "fight":
+      return {
+        genre,
+        hold: [hold("left", "ArrowLeft"), hold("right", "ArrowRight"), hold("block", "KeyS")],
+        pulse: [pulse("light", "KeyJ"), pulse("heavy", "KeyK"), pulse("special", "KeyL"), pulse("jump", "Space")]
+      };
+    case "race":
+      return {
+        genre,
+        hold: [hold("steer-left", "ArrowLeft"), hold("steer-right", "ArrowRight"), hold("throttle", "ArrowUp"), hold("brake", "ArrowDown")],
+        pulse: [pulse("boost", "ShiftLeft"), pulse("reset", "KeyR")]
+      };
+    case "platform":
+      return {
+        genre,
+        hold: [hold("left", "ArrowLeft"), hold("right", "ArrowRight"), hold("dash", "ShiftLeft")],
+        pulse: [pulse("jump", "Space"), pulse("attack", "KeyJ")]
+      };
+  }
+}
+
+/**
+ * Bind a genre's on-screen buttons through the same synthetic-keyboard path as
+ * `bindGameTouchControls`. Analog sticks are *not* bound here — create them
+ * from the input package's `createTouchLayoutPreset(genre)`, which uses the same
+ * element-id prefix scheme for its buttons.
+ */
+export function bindGameTouchLayoutPreset(spec: GameTouchLayoutPresetSpec): GameControlBindingResult {
+  const bindings = touchLayoutBindingsForGenre(spec.genre, spec.elementIdPrefix ?? `touch-${spec.genre}`);
+  const pulse = spec.holdMs === undefined ? bindings.pulse : bindings.pulse.map((control) => ({ ...control, holdMs: spec.holdMs }));
+  return bindGameTouchControls({ hold: bindings.hold, pulse, host: spec.host });
+}
+
 /** Tracks attached listeners per element id so a re-bind replaces rather than stacks. */
 const attached = new Map<string, () => void>();
 

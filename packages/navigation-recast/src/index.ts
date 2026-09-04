@@ -96,24 +96,48 @@ export class RecastNavMeshHandle {
   #assertAlive(): void { if (this.#disposed) throw new Error("RecastNavMeshHandle is disposed."); }
 }
 
+/** Per-agent crowd telemetry (O1): real Detour agent state for engine crowds. */
+export interface RecastCrowdAgentState {
+  readonly position: NavigationVec3;
+  readonly velocity: NavigationVec3;
+  readonly speed: number;
+}
+
 export class RecastCrowdHandle {
   readonly #crowd: Recast.Crowd;
+  /** Over-budget cap, fixed at construction. Adding past it throws fail-closed. */
+  readonly maxAgents: number;
   #disposed = false;
 
   constructor(module: RecastModule, navMesh: Recast.NavMesh, maxAgents: number, maxAgentRadius: number) {
     if (!Number.isInteger(maxAgents) || maxAgents < 1) throw new RangeError("maxAgents must be an integer >= 1.");
     if (!Number.isFinite(maxAgentRadius) || maxAgentRadius <= 0) throw new RangeError("maxAgentRadius must be positive.");
     this.#crowd = new module.Crowd(navMesh, { maxAgents, maxAgentRadius });
+    this.maxAgents = maxAgents;
+  }
+
+  /** Live agent count against {@link maxAgents}. The root `crowds` builder reports this in diagnostics with a cap warning. */
+  count(): number {
+    this.#assertAlive();
+    return this.#crowd.getAgents().length;
   }
 
   addAgent(position: NavigationVec3, options: NavigationCrowdAgentOptions = {}): Recast.CrowdAgent {
     this.#assertAlive();
+    if (this.#crowd.getAgents().length >= this.maxAgents) {
+      throw new Error(`Recast crowd is at capacity (${this.maxAgents} agents). Create the crowd with a larger maxAgents instead of silently dropping agents.`);
+    }
     return this.#crowd.addAgent(vector(position), options);
   }
 
   requestMoveTarget(agent: Recast.CrowdAgent, target: NavigationVec3): boolean {
     this.#assertAlive();
     return agent.requestMoveTarget(vector(target));
+  }
+
+  /** Root-facing alias for `requestMoveTarget`, matching the O1 `crowds.setTarget` builder name. */
+  setTarget(agent: Recast.CrowdAgent, target: NavigationVec3): boolean {
+    return this.requestMoveTarget(agent, target);
   }
 
   update(dt: number): void {
@@ -125,6 +149,26 @@ export class RecastCrowdHandle {
   positions(): readonly NavigationVec3[] {
     this.#assertAlive();
     return this.#crowd.getAgents().map((agent) => { const point = agent.position(); return [point.x, point.y, point.z] as const; });
+  }
+
+  /**
+   * Per-agent position + velocity + speed from the Detour crowd (O1 task 2).
+   *
+   * This is the data source the root `crowds` builder must feed its agents instead of
+   * the `sampleCrowdAnimation` fixture: the fixture sampler stays as the deterministic
+   * oracle for tests, but engine crowds render from these real positions.
+   */
+  agentStates(): readonly RecastCrowdAgentState[] {
+    this.#assertAlive();
+    return this.#crowd.getAgents().map((agent) => {
+      const point = agent.position();
+      const velocity = agent.velocity();
+      return {
+        position: [point.x, point.y, point.z] as const,
+        velocity: [velocity.x, velocity.y, velocity.z] as const,
+        speed: Math.hypot(velocity.x, velocity.y, velocity.z)
+      };
+    });
   }
 
   /** Stable escape hatch. The handle owns and destroys this crowd. */
@@ -231,9 +275,34 @@ async function verifyNavigationAssetHash(asset: NavigationAssetRef, bytes: Uint8
   if (actual !== expected) throw new Error(`Navigation asset ${asset.id} failed SHA-256 verification.`);
 }
 
+/**
+ * Fail-closed construction for the optional Recast/Detour peer (O1 checklist).
+ *
+ * Recast is optional navigation, never a silent fallback: when the peer module is
+ * absent the error names the missing package and the install step instead of
+ * resolving to a no-op navigator. The root `navigation` builder must surface this
+ * in diagnostics rather than reporting a successful bake.
+ */
 export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> {
-  const module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
-  await module.init();
-  const generators = await (options.generatorLoader ?? (() => import("recast-navigation/generators")))();
+  let module: RecastModule;
+  try {
+    module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
+    await module.init();
+  } catch (error) {
+    throw new Error(
+      "Recast navigation peer unavailable: the optional \"recast-navigation\" package could not be loaded. " +
+      "Install it to enable navmesh baking, or treat navigation as absent — never as silently succeeding. " +
+      `Cause: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+  let generators: RecastGenerators;
+  try {
+    generators = await (options.generatorLoader ?? (() => import("recast-navigation/generators")))();
+  } catch (error) {
+    throw new Error(
+      "Recast navigation generators unavailable: \"recast-navigation/generators\" could not be loaded. " +
+      `Cause: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
   return new RecastNavigation(module, generators);
 }

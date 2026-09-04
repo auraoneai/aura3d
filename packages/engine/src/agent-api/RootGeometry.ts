@@ -1,3 +1,5 @@
+import type { SdfTextStyle } from "@aura3d/rendering";
+
 export type AuraRootVec3 = readonly [number, number, number];
 
 export interface AuraCustomGeometrySpec {
@@ -19,7 +21,21 @@ export interface AuraText3DGeometry {
   readonly text: string;
   readonly glyphCount: number;
   readonly unsupportedCharacters: readonly string[];
-  readonly method: "extruded-bitmap-glyph-mesh";
+  readonly method: "extruded-bitmap-glyph-mesh" | "sdf-atlas-quad";
+  /** SDF backend request (muse3jsparity-PRD G1): validated layout summary; rendering stays extruded until the native SDF sampler lands. */
+  readonly backend?: "extruded-mesh" | "sdf";
+  readonly sdfQuadCount?: number;
+  readonly sdfWidthWorld?: number;
+  readonly sdfHeightWorld?: number;
+  /**
+   * SDF bridge inputs (muse3jsparity-PRD G1): the sampler replays this exact
+   * layout at mount (fail-closed), so the descriptor carries the full author
+   * intent — size, spacing, style, and occlusion policy — not just extents.
+   */
+  readonly sdfSize?: number;
+  readonly sdfLetterSpacing?: number;
+  readonly sdfStyle?: SdfTextStyle;
+  readonly sdfOcclusion?: "dim" | "hide" | "show";
 }
 
 export interface AuraRootLodThreshold {

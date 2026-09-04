@@ -1,4 +1,4 @@
-import { game, type RuntimeNodeHandleLike } from "@aura3d/engine";
+import { camera, game, gameFeel, type RuntimeNodeHandleLike } from "@aura3d/engine";
 import { resolveSkylineActIndex } from "./act-palette";
 import { skylineCameraFrame, type SkylineCameraFrame, type SkylineCameraTuning } from "./camera-readability";
 import { SKYLINE_SENTRY_ENCOUNTERS } from "./level";
@@ -20,6 +20,19 @@ export interface SkylineFeelSnapshot {
   readonly maximumCameraShakeMagnitude: number;
   readonly cameraImpactRequests: number;
   readonly cameraImpactsSuppressed: number;
+  /** PART F2/F3 root-kit adoption: live root trauma/punch state + feel telemetry. */
+  readonly rootTrauma: number;
+  readonly rootShakeEnergy: number;
+  readonly rootPunchActive: boolean;
+  readonly rootPunchFovOffset: number;
+  readonly rootMaxTrauma: number;
+  readonly rootMaxShakeMagnitude: number;
+  readonly rootShakeSeen: boolean;
+  readonly rootPunchSeen: boolean;
+  readonly feelEffectsSpawned: number;
+  readonly feelEffectsActive: number;
+  readonly feelOverBudget: boolean;
+  readonly probeFired: boolean;
 }
 
 export type SkylineRequiredFeedbackEvent =
@@ -92,7 +105,15 @@ export interface SkylineFeelController {
   applyCameraShake(cameraSpec: {
     offset?: readonly [number, number, number];
     targetOffset?: readonly [number, number, number];
+    fov?: number;
   }, playerFacing: number): SkylineCameraFrame;
+  /**
+   * Deterministic `?juiceProbe=1` hook: fires the root-kit juice chain (trauma
+   * + punch-in + node-backed feel effects) without touching event feedback,
+   * audio cues, or the camera-director ceremony, so adoption proof cannot
+   * pollute gameplay gates.
+   */
+  probeJuice(scenePoint: readonly [number, number, number]): void;
   updatePresentation(step: number, input: {
     readonly simTime: number;
     readonly playerX: number;
@@ -125,6 +146,27 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     impactShake: !options.reducedMotion
   });
   const runtimeEffects = game.effects({ poolSize: 64, reducedMotion: options.reducedMotion });
+  /*
+   * PART F2/F3 adoption: root trauma shake + punch-in + generalized game feel.
+   * Follow stays on `game.platformerCameraRig` (existing follow adoption); the
+   * root kit adds trauma displacement (folded into the follow-camera frame),
+   * impact punch-in (folded into the submitted fov), and node-backed feel
+   * effects resolved through the same `game.effects` controller.
+   */
+  const rootShake = camera.shake({ decay: 1.8, maxOffset: 0.09 });
+  const rootPunch = camera.punchIn({ fovKick: 5, distanceKick: 0.3 });
+  const rootFeel = gameFeel.create({ effects: runtimeEffects, budgetMs: 2 });
+  const reducedCameraJuice = options.reducedMotion;
+  let rootShakeOffset: [number, number, number] = [0, 0, 0];
+  let rootShakeEnergy = 0;
+  let rootTrauma = 0;
+  let rootPunchActive = false;
+  let rootPunchFovOffset = 0;
+  let rootMaxTrauma = 0;
+  let rootMaxShakeMagnitude = 0;
+  let rootShakeSeen = false;
+  let rootPunchSeen = false;
+  let probeFired = false;
   // Optional audio wiring: feel handlers remain pure presentation if no controller is supplied.
   const audio = options.audio;
   const playCue = (cueId: SkylineAudioCue): void => {
@@ -232,6 +274,7 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
 
   return {
     snapshot() {
+      const feelSnap = rootFeel.snapshot();
       return {
         paused,
         actIndex,
@@ -240,7 +283,19 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         cameraShakeOffset: [...cameraShakeOffset],
         maximumCameraShakeMagnitude,
         cameraImpactRequests,
-        cameraImpactsSuppressed
+        cameraImpactsSuppressed,
+        rootTrauma,
+        rootShakeEnergy,
+        rootPunchActive,
+        rootPunchFovOffset,
+        rootMaxTrauma,
+        rootMaxShakeMagnitude,
+        rootShakeSeen,
+        rootPunchSeen,
+        feelEffectsSpawned: feelSnap.effectsSpawned,
+        feelEffectsActive: feelSnap.effectsActive,
+        feelOverBudget: feelSnap.budget.overBudget,
+        probeFired
       };
     },
     eventFeedbackProof() {
@@ -276,7 +331,13 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       sentryTelegraph.clear();
       sentriesHaveTelegraphed.clear();
       runtimeEffects.clear();
+      rootFeel.clear();
       cameraShakeOffset = [0, 0, 0];
+      rootShakeOffset = [0, 0, 0];
+      rootShakeEnergy = 0;
+      rootTrauma = 0;
+      rootPunchActive = false;
+      rootPunchFovOffset = 0;
       maximumCameraShakeMagnitude = 0;
       cameraImpactRequests = 0;
       cameraImpactsSuppressed = 0;
@@ -296,6 +357,9 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     onLand(scenePlayerPosition) {
       requestCameraImpact(0.42, 0.12);
       runtimeEffects.groundDust(scenePlayerPosition, { intensity: 0.35, duration: 0.12 });
+      // PART F2/F3: root-kit landing juice on the same event.
+      if (!reducedCameraJuice) rootShake.addTrauma(0.45);
+      rootFeel.landingDust([scenePlayerPosition[0], scenePlayerPosition[1], scenePlayerPosition[2]]);
       playCue("land-dust");
       landDipSeenFlag = true;
       recordEventFeedback("land");
@@ -303,6 +367,9 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     onDash(scenePlayerPosition) {
       requestCameraImpact(0.58, 0.14);
       runtimeEffects.dashTrail(scenePlayerPosition, { intensity: 0.72, duration: 0.16 });
+      // PART F2/F3: root-kit dash punch + speed lines on the same event.
+      if (!reducedCameraJuice) rootPunch.punch(0.85);
+      rootFeel.speedLines(0.85, [scenePlayerPosition[0], scenePlayerPosition[1], scenePlayerPosition[2]]);
       playCue("dash");
       dashPunchSeenFlag = true;
       recordEventFeedback("dash");
@@ -324,6 +391,8 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       recordEventFeedback("relay");
     },
     onSentryDefeat(scenePoint, scoreDelta) {
+      // PART F2/F3: root-kit defeat punch on the same event.
+      if (!reducedCameraJuice) rootPunch.punch(0.5);
       runtimeEffects.auraBurst([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.85, duration: 0.22, color: "#ffb070" });
       runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1], 0.4], { intensity: 0.55, duration: 0.2, color: "#ffd08a" });
       spawnScorePop(scoreDelta);
@@ -351,6 +420,12 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     },
     onHazard(scenePoint) {
       requestCameraImpact(0.86, 0.2);
+      // PART F2/F3: root-kit hazard juice on the same event.
+      if (!reducedCameraJuice) {
+        rootShake.addTrauma(0.9);
+        rootPunch.punch(1);
+      }
+      rootFeel.damageFlash("#f43f5e", [scenePoint[0], scenePoint[1], scenePoint[2]]);
       runtimeEffects.impactFlash([scenePoint[0], scenePoint[1] + 0.12, 0.44], {
         intensity: 0.9,
         duration: 0.2,
@@ -376,6 +451,8 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     },
     onSummit(scenePoint) {
       requestCameraImpact(0.52, 0.3);
+      // PART F2/F3: root-kit summit punch on the same event.
+      if (!reducedCameraJuice) rootPunch.punch(0.7);
       runtimeEffects.auraBurst([scenePoint[0], scenePoint[1] + 0.2, 0.42], {
         intensity: 1,
         duration: 0.72,
@@ -398,7 +475,20 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       const frame = skylineCameraFrame(options.cameraTuning, playerFacing, cameraShakeOffset);
       cameraSpec.offset = frame.offset;
       cameraSpec.targetOffset = frame.targetOffset;
+      // PART F2/F3: root-kit punch-in reframes the submitted follow camera.
+      cameraSpec.fov = options.cameraTuning.fov + (reducedCameraJuice ? 0 : rootPunchFovOffset);
       return frame;
+    },
+    probeJuice(scenePoint) {
+      probeFired = true;
+      if (!reducedCameraJuice) {
+        rootShake.addTrauma(0.8);
+        rootPunch.punch(1);
+      }
+      const anchor: [number, number, number] = [scenePoint[0], scenePoint[1], scenePoint[2]];
+      rootFeel.damageFlash("#f43f5e", anchor);
+      rootFeel.speedLines(0.9, anchor);
+      rootFeel.landingDust(anchor);
     },
     telegraphActive() {
       if (sentryTelegraph.size === 0) return false;
@@ -434,9 +524,28 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         id: "player",
         position: [input.playerX, input.playerY, 0]
       }]);
+      // PART F2/F3: advance the root kit on the same step, then fold root
+      // trauma displacement into the follow-camera shake offset.
+      const shakeSnap = rootShake.update(step);
+      const punchSnap = rootPunch.update(step);
+      rootFeel.update(step * 1000);
+      rootTrauma = shakeSnap.trauma;
+      rootShakeEnergy = shakeSnap.energy;
+      rootPunchActive = punchSnap.active;
+      rootPunchFovOffset = reducedCameraJuice ? 0 : punchSnap.fovOffset;
+      rootMaxTrauma = Math.max(rootMaxTrauma, rootTrauma);
+      rootShakeOffset = reducedCameraJuice
+        ? [0, 0, 0]
+        : [shakeSnap.offset[0], shakeSnap.offset[1], shakeSnap.offset[2]];
+      rootMaxShakeMagnitude = Math.max(
+        rootMaxShakeMagnitude,
+        Math.hypot(rootShakeOffset[0], rootShakeOffset[1], rootShakeOffset[2])
+      );
+      rootShakeSeen ||= rootMaxShakeMagnitude > 0;
+      rootPunchSeen ||= punchSnap.active;
       cameraShakeOffset = cameraFrame.shake > 0
-        ? [cameraFrame.shake * 0.04, -cameraFrame.shake * 0.02, 0]
-        : [0, 0, 0];
+        ? [cameraFrame.shake * 0.04 + rootShakeOffset[0], -cameraFrame.shake * 0.02 + rootShakeOffset[1], rootShakeOffset[2]]
+        : [...rootShakeOffset];
       maximumCameraShakeMagnitude = Math.max(
         maximumCameraShakeMagnitude,
         Math.hypot(cameraShakeOffset[0], cameraShakeOffset[1], cameraShakeOffset[2])

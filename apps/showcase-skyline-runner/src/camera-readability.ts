@@ -36,8 +36,11 @@ export function skylineCameraTuning(compactViewport: boolean): SkylineCameraTuni
       }
     : {
         viewport: "desktop",
-        distance: 3.75,
-        height: 0.52,
+        // 3.55 (from 3.75): the hero sat exactly on the 96px route-primary
+        // width floor; +5% scale buys real margin and a slightly more heroic
+        // frame without returning to the over-zoomed mascot look at 3.2.
+        distance: 3.55,
+        height: 0.6,
         lookAhead: 0.42,
         targetHeight: 0.34,
         fov: 42

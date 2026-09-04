@@ -111,6 +111,13 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
+// PART F2/F3 adoption probe: `?juiceProbe=1` fires the root-kit juice chain once
+// (trauma + punch-in + node-backed feel effects) for the adoption spec. Review
+// captures never set the flag, so certified framing stays exact.
+const skylineJuiceProbeEnabled = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("juiceProbe") === "1"
+  && !visualReviewCapture;
+let skylineJuiceProbeFired = false;
 const input = game.input({
   actions: {
     left: ["KeyA", "ArrowLeft"],
@@ -637,24 +644,14 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
   }
 }
 /**
- * Embedded clip names published by the legacy Oobi gameplay binding. The
- * visible relay runner is the project-original `skylineArcticRunnerHero` card;
- * the certified platformer still retains this clip map as its gameplay
- * locomotion contract while the renderer applies bounded state poses to the
- * non-rigged card. This distinction keeps a static art card from being
- * advertised as a skinned animation asset.
- */
-const HERO_EMBEDDED_CLIPS = [
-  "attack-kick-left", "attack-kick-right", "attack-melee-left", "attack-melee-right",
-  "crouch", "die", "drive", "emote-no", "emote-yes", "fall", "holding-both",
-  "holding-both-shoot", "holding-left", "holding-left-shoot", "holding-right",
-  "holding-right-shoot", "idle", "interact-left", "interact-right", "jump",
-  "pick-up", "sit", "sprint", "static", "walk"
-] as const;
-
-/**
- * Kit locomotion state -> embedded clip. `land` and `hit` have no dedicated
- * embedded clip, so they map to the nearest real clip the asset does contain.
+ * The relay runner is the Meshy hero card (`assets.skylineHeroMeshyV2`): a
+ * static textured mesh with no embedded clips, posed procedurally by the
+ * renderer (bounded idle/run/jump/fall/land silhouettes) exactly like the
+ * project-original card it replaces. The prior 25-name clip list described a
+ * legacy binding the shipped card never contained (0 skins, 0 animations in
+ * the GLB), so it is retired rather than carried over: `availableClips` is
+ * the asset's real embedded clip list, which is empty, and the kit reports
+ * zero missing. Locomotion state names are unchanged.
  */
 const HERO_LOCOMOTION_CLIP_MAP = {
   idle: "idle",
@@ -667,7 +664,7 @@ const HERO_LOCOMOTION_CLIP_MAP = {
 
 const locomotion = game.locomotion({
   clipMap: HERO_LOCOMOTION_CLIP_MAP,
-  availableClips: HERO_EMBEDDED_CLIPS,
+  availableClips: [],
   initialState: "idle"
 });
 /** Effectively-zero scale used to hide a feedback node without removing it. */
@@ -963,13 +960,17 @@ const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop, 
       // more vertical coverage so the authored snowfield reaches the lower frame
       // instead of ending in a dead procedural strip. The review lens keeps its
       // measured 34-unit framing and crops the panoramic edges intentionally.
-  targetMaxDimension: visualReviewCapture ? 34 : 52,
+      // 62 (from 52): the stretched plane's lower edge still sat ~65px above
+      // the frame bottom, leaving a hard shelf against the near-black nadir.
+  targetMaxDimension: visualReviewCapture ? 34 : 62,
   castShadow: false,
   receiveShadow: false
 })
   // Drop the panorama slightly so its authored foreground snow reaches the
   // lower edge of the default follow lens instead of exposing the shell fill.
-  .position(initialPlayerPose.position[0] - 1.5, horizonY - 13.55, farBackgroundDepth + 0.42)
+  // Paired with the larger default-lens plane so the lower edge drops below
+  // the frame instead of drawing a shelf line across it.
+  .position(initialPlayerPose.position[0] - 1.5, visualReviewCapture ? horizonY - 13.55 : horizonY - 27, farBackgroundDepth + 0.42)
   // The source panorama is 16:9 while the route-primary lens is a taller
   // 1440×900 viewport. A restrained vertical stretch keeps the authored
   // snowfield behind the entire play area instead of exposing a hard lower
@@ -1288,8 +1289,11 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
 /**
  * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
  * best finish. It shares no state with the live kit instance (see src/ghost.ts).
+ * The shell binds the decimated Meshy arctic-runner candidate
+ * (`assets.skylineHeroRunner`, 47999 tris, candidate quality) while the live
+ * hero stays the release project-original card (`assets.skylineArcticRunnerHero`).
  */
-const ghostEchoNode = model(assets.skylineArcticRunnerHero, {
+const ghostEchoNode = model(assets.skylineHeroRunner, {
   name: "skyline-ghost-echo",
   role: "primaryCharacter",
   scaleMode: "fit",
@@ -1463,7 +1467,7 @@ function skylineCameraReadabilityEvidence() {
 function skylineMotionPreferenceEvidence() {
   const feel = skylineFeel.snapshot();
   return {
-    source: "prefers-reduced-motion + game.cameraDirector + game.effects + route-local secondary-motion policy",
+    source: "prefers-reduced-motion + game.cameraDirector + game.effects + engine.camera.shake/punchIn + engine.gameFeel + route-local secondary-motion policy",
     reducedMotion,
     gameplayTruthPreserved: true,
     essentialMotionRetained: ["player locomotion", "moving platforms", "sentry hazards", "ghost race reference"],
@@ -1474,7 +1478,21 @@ function skylineMotionPreferenceEvidence() {
       maximumShakeMagnitude: Number(feel.maximumCameraShakeMagnitude.toFixed(6)),
       impulsesRemoved: reducedMotion
         && feel.cameraImpactsSuppressed === feel.cameraImpactRequests
-        && feel.maximumCameraShakeMagnitude === 0
+        && feel.maximumCameraShakeMagnitude === 0,
+      // PART F2/F3 adoption: root-kit juice folded into the platformer follow.
+      rootKit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel over game.platformerCameraRig follow",
+      rootTrauma: feel.rootTrauma,
+      rootShakeEnergy: feel.rootShakeEnergy,
+      rootPunchActive: feel.rootPunchActive,
+      rootPunchFovOffset: feel.rootPunchFovOffset,
+      rootMaxTrauma: feel.rootMaxTrauma,
+      rootMaxShakeMagnitude: feel.rootMaxShakeMagnitude,
+      rootShakeSeen: feel.rootShakeSeen,
+      rootPunchSeen: feel.rootPunchSeen,
+      feelEffectsSpawned: feel.feelEffectsSpawned,
+      feelEffectsActive: feel.feelEffectsActive,
+      feelOverBudget: feel.feelOverBudget,
+      probeFired: feel.probeFired
     },
     secondaryMotion: {
       collectiblePulseAmplitude: reducedMotion ? 0 : 0.18,
@@ -1505,7 +1523,7 @@ setupSkylineGameHud();
 // typed hero across gameplay/review keeps the visual contract honest and gives
 // the actual route a readable runner silhouette.
 const skylinePlayerVisualNode = model(
-  assets.skylineArcticRunnerHero,
+  assets.skylineHeroMeshyV2,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
@@ -2853,13 +2871,30 @@ const mountedEvidence = {
     emberVolleySeen: false,
     paused: false,
     landDipApplied: false,
-    dashPunchApplied: false
+    dashPunchApplied: false,
+    // PART F2/F3 adoption: live root-kit juice, refreshed per frame below.
+    rootJuice: {
+      kit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel",
+      follow: "game.platformerCameraRig follow (existing)",
+      trauma: 0,
+      shakeEnergy: 0,
+      punchActive: false,
+      punchFovOffset: 0,
+      maxTrauma: 0,
+      maxShakeMagnitude: 0,
+      shakeSeen: false,
+      punchSeen: false,
+      effectsSpawned: 0,
+      effectsActive: 0,
+      overBudget: false,
+      probeFired: false
+    }
   },
   eventFeedback: buildSkylineEventFeedbackEvidence(),
-  primaryAssets: ["skylineArcticRunnerHero", "showcaseKenneyVerdantPlatformerWorld"],
+  primaryAssets: ["skylineHeroMeshyV2", "showcaseKenneyVerdantPlatformerWorld"],
   platformer: {
     cameraIntent: "side-scroller",
-    characterAsset: "skylineArcticRunnerHero",
+    characterAsset: "skylineHeroMeshyV2",
     worldAssets: ["showcaseKenneyVerdantPlatformerWorld"],
     gameplayRequirements: ["movement", "jump", "checkpoint", "progression"],
     levelDesign: {
@@ -2990,7 +3025,11 @@ function publishPlatformerEvidence(): void {
   // player moves past the first twelve scene units.
   skylineWinterBackdropHandle.setPosition(
     presentedPlayer.position[0] - 1.5,
-    horizonY - 13.55,
+    // The default lens needs the plane much lower than the review framing:
+    // at far-background depth small offsets move only a few screen pixels,
+    // and the plane's lower edge must sit below the frame to avoid a shelf
+    // line against the near-black nadir. Review keeps its measured value.
+    visualReviewCapture ? horizonY - 13.55 : horizonY - 27,
     farBackgroundDepth + 0.42
   );
   if (!visualReviewCapture) {
@@ -3108,7 +3147,24 @@ function publishPlatformerEvidence(): void {
     emberVolleySeen: mountedEvidence.gameplay.emberVolleyFired,
     paused,
     landDipApplied: skylineFeel.landDipSeen(),
-    dashPunchApplied: skylineFeel.dashPunchSeen()
+    dashPunchApplied: skylineFeel.dashPunchSeen(),
+    // PART F2/F3 adoption: live root-kit juice on the platformer follow rig.
+    rootJuice: {
+      kit: "engine.camera.shake + engine.camera.punchIn + engine.gameFeel",
+      follow: "game.platformerCameraRig follow (existing)",
+      trauma: skylineFeel.snapshot().rootTrauma,
+      shakeEnergy: skylineFeel.snapshot().rootShakeEnergy,
+      punchActive: skylineFeel.snapshot().rootPunchActive,
+      punchFovOffset: skylineFeel.snapshot().rootPunchFovOffset,
+      maxTrauma: skylineFeel.snapshot().rootMaxTrauma,
+      maxShakeMagnitude: skylineFeel.snapshot().rootMaxShakeMagnitude,
+      shakeSeen: skylineFeel.snapshot().rootShakeSeen,
+      punchSeen: skylineFeel.snapshot().rootPunchSeen,
+      effectsSpawned: skylineFeel.snapshot().feelEffectsSpawned,
+      effectsActive: skylineFeel.snapshot().feelEffectsActive,
+      overBudget: skylineFeel.snapshot().feelOverBudget,
+      probeFired: skylineFeel.snapshot().probeFired
+    }
   };
   updatePlatformerHud();
 }
@@ -3132,12 +3188,16 @@ function animationEvidence() {
      * pose. Skinned playback is a root-integration gap, not a route claim.
      */
     skinnedClipPlaybackProvenAtRoot: false,
-    visibleMotionSource: "imported-clip-request-with-bounded-idle-sway-and-restrained-air-impact-pose",
+    visibleMotionSource: "procedural-bounded-pose-with-idle-sway-and-restrained-air-impact-pose",
     loop: locomotionSnapshot.loop,
     oneShot: locomotionSnapshot.oneShot,
     clipMap: { ...HERO_LOCOMOTION_CLIP_MAP },
-    availableClips: [...HERO_EMBEDDED_CLIPS],
-    importedClipCount: HERO_EMBEDDED_CLIPS.length,
+    // The Meshy hero card ships no embedded clips (verified: 0 animations in
+    // the GLB); the prior 25-name list described a legacy binding the shipped
+    // card never contained. Empty is the honest embedded list; locomotion
+    // states and procedural poses are unchanged.
+    availableClips: [],
+    importedClipCount: 0,
     missingClips: [...locomotionSnapshot.missingClips],
     stateHistory: animationStateHistory.slice(),
     sampleFrame: frameCount,
@@ -3370,6 +3430,10 @@ app.onFrame(({ dt }) => {
     // SR-A2 pools + SR-A6 ambience stem follow the same traversal-derived act.
     applySkylineInstancedPoolVisibility(lastActPaletteIndex);
     skylineAudio.setAmbienceAct(lastActPaletteIndex);
+  }
+  if (skylineJuiceProbeEnabled && !skylineJuiceProbeFired) {
+    skylineJuiceProbeFired = true;
+    skylineFeel.probeJuice(platformerScene.toScenePlayer(state.player).position);
   }
   activeCameraFrame = skylineFeel.applyCameraShake(platformerCamera, playerFacing);
   observedCameraFacing.add(activeCameraFrame.leadDirection);

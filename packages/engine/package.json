@@ -15,6 +15,10 @@
     "./animation-studio": {
       "types": "./dist/animation-studio/index.d.ts",
       "import": "./dist/animation-studio/index.js"
+    },
+    "./production-runtime": {
+      "types": "./dist/production-runtime/index.d.ts",
+      "import": "./dist/production-runtime/index.js"
     }
   },
   "main": "./dist/index.js",

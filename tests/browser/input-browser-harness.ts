@@ -1,5 +1,5 @@
 import { FirstPersonControls } from "@aura3d/controls";
-import { InputSystem } from "@aura3d/input";
+import { ActionMap, ComboDetector, InputSystem, createTouchLayoutPreset, playHaptic, probeHaptics } from "@aura3d/input";
 
 interface PointerLockResult {
   readonly available: boolean;
@@ -19,6 +19,15 @@ interface InputBrowserResult {
   readonly gamepadAxis: number;
   readonly gamepadButtonPressed: boolean;
   readonly firstPersonMoved: boolean;
+  readonly remapRestored: boolean;
+  readonly remapConflictCount: number;
+  readonly comboFired: boolean;
+  readonly hapticGateHonest: boolean;
+  readonly hapticVia: string;
+  readonly touchGenres: readonly string[];
+  readonly touchFightButtons: number;
+  readonly touchRaceButtons: number;
+  readonly touchPlatformButtons: number;
   readonly accessibility: {
     readonly focusable: boolean;
     readonly role: string | null;
@@ -89,6 +98,46 @@ try {
     describedBy: surface.getAttribute("aria-describedby")
   };
 
+  // I2: remap round-trip + conflict detection on the real ActionMap.
+  const remappable = new ActionMap();
+  remappable.bind("jump", [{ type: "keyboard", code: "Space" }]);
+  remappable.bind("attack", [{ type: "keyboard", code: "KeyJ" }]);
+  remappable.rebind("attack", [{ type: "keyboard", code: "Space" }]);
+  const remapConflictCount = remappable.findConflicts().length;
+  const remapSnapshot = remappable.serializeBindings();
+  const remapClone = new ActionMap();
+  remapClone.restoreBindings(JSON.parse(JSON.stringify(remapSnapshot)));
+  remapClone.rebind("attack", [{ type: "keyboard", code: "KeyG" }]);
+  remapClone.resetAction("attack");
+  // Reset restores the persisted snapshot value (Space), proving restore→remap→reset.
+  const remapRestored = JSON.stringify(remapClone.getBindings("attack")) === JSON.stringify([{ type: "keyboard", code: "Space" }]);
+
+  // I2: generalized combo detection (fighting-game buffering at the code layer).
+  const combos = new ComboDetector();
+  combos.defineCombo({ id: "fireball", steps: ["ArrowDown", "ArrowRight", "KeyP"], bufferMs: 300 });
+  combos.update({ pressed: ["ArrowDown"], down: ["ArrowDown"], timeMs: 0 });
+  combos.update({ pressed: ["ArrowRight"], down: ["ArrowRight"], timeMs: 100 });
+  const comboFired = combos.update({ pressed: ["KeyP"], down: ["KeyP"], timeMs: 200 }).some((event) => event.comboId === "fireball");
+
+  // I2: haptics capability gate on the real navigator (headless has no vibrate:
+  // the honest outcome there is played:false with a cause, never fake success).
+  const capability = probeHaptics({ navigatorLike: navigator });
+  const hapticResult = await playHaptic({ durationMs: 30 }, capability, { navigatorLike: navigator });
+  // Honest iff success is only ever reported via a real sink, and every refusal carries a cause.
+  const hapticGateHonest =
+    (hapticResult.played && hapticResult.via !== "none") ||
+    (!hapticResult.played && hapticResult.via === "none" && hapticResult.reason.length > 0);
+  const hapticVia = hapticResult.via;
+
+  // I2: analog-stick touch layouts for the three genres.
+  const fightPreset = createTouchLayoutPreset("fight");
+  const racePreset = createTouchLayoutPreset("race");
+  const platformPreset = createTouchLayoutPreset("platform");
+  const touchGenres = [fightPreset.genre, racePreset.genre, platformPreset.genre] as const;
+  const touchFightButtons = fightPreset.hold.length + fightPreset.pulse.length;
+  const touchRaceButtons = racePreset.hold.length + racePreset.pulse.length;
+  const touchPlatformButtons = platformPreset.hold.length + platformPreset.pulse.length;
+
   publish({
     status: "running",
     keyboardBeforeBlur,
@@ -99,6 +148,15 @@ try {
     gamepadAxis,
     gamepadButtonPressed,
     firstPersonMoved,
+    remapRestored,
+    remapConflictCount,
+    comboFired,
+    hapticGateHonest,
+    hapticVia,
+    touchGenres: [...touchGenres],
+    touchFightButtons,
+    touchRaceButtons,
+    touchPlatformButtons,
     accessibility,
     pointerLock: {
       available: typeof surface.requestPointerLock === "function",
@@ -121,6 +179,15 @@ try {
         gamepadAxis,
         gamepadButtonPressed,
         firstPersonMoved,
+        remapRestored,
+        remapConflictCount,
+        comboFired,
+        hapticGateHonest,
+        hapticVia,
+        touchGenres: [...touchGenres],
+        touchFightButtons,
+        touchRaceButtons,
+        touchPlatformButtons,
         accessibility,
         pointerLock: { available, requested: false, settled: true, granted: false }
       });
@@ -143,6 +210,15 @@ try {
         gamepadAxis,
         gamepadButtonPressed,
         firstPersonMoved,
+        remapRestored,
+        remapConflictCount,
+        comboFired,
+        hapticGateHonest,
+        hapticVia,
+        touchGenres: [...touchGenres],
+        touchFightButtons,
+        touchRaceButtons,
+        touchPlatformButtons,
         accessibility,
         pointerLock: {
           available,
@@ -180,6 +256,15 @@ try {
     gamepadAxis: 0,
     gamepadButtonPressed: false,
     firstPersonMoved: false,
+    remapRestored: false,
+    remapConflictCount: 0,
+    comboFired: false,
+    hapticGateHonest: false,
+    hapticVia: "none",
+    touchGenres: [],
+    touchFightButtons: 0,
+    touchRaceButtons: 0,
+    touchPlatformButtons: 0,
     accessibility: { focusable: false, role: null, label: null, describedBy: null },
     pointerLock: { available: false, requested: false, settled: false, granted: false },
     error: error instanceof Error ? error.message : String(error)

@@ -203,19 +203,43 @@ browser editor workflow claim.
 
 ## Visual Node Catalog
 
-The current visual scripting catalog includes these release-relevant categories:
+The machine-readable catalog is `docs/api/visual-scripting-catalog.json`
+(schema `aura3d.visual-scripting-catalog/1.0`, 120 kinds across 19 categories).
+It is generated from source — never hand-edit it; regenerate with
+`pnpm exec tsx --tsconfig tsconfig.base.json packages/scripting/scripts/generate-visual-node-catalog.ts`.
+Every entry names its typed-backend evidence paths (`evidence`).
 
-- Runtime: `onStart`, `onFrame`, `getNode`, `setPosition`, `translate`,
-  `rotate`, `setVisible`, `setMaterial`.
-- Input: `pressed`, `held`, `released`, `axis`, `buffered`, `combo`.
-- Animation: `playClip`, `restartClip`, `crossFade`, `setLayerWeight`,
-  `onAnimationEvent`, `setMorphTarget`, `setMorphTargets`, `getClipTime`.
-- Physics: `setVelocity`, `jump`, `dash`, `onCollisionEnter`,
-  `onCollisionExit`, `raycast`, `overlap`.
-- Combat: `openHitbox`, `closeHitbox`, `setHurtbox`, `onHit`,
-  `applyDamage`, `applyKnockback`.
-- Camera: `follow`, `frameTargets`, `shake`, `cutTo`.
-- Evidence: `captureSnapshot`, `markProof`, `assertState`.
+Game-loop categories (each node carries backend evidence in the JSON):
+
+- Runtime: `getNode`, `onFrame`, `onStart`, `rotate`, `setMaterial`,
+  `setPosition`, `setVisible`, `translate`.
+- Input: `axis`, `buffered`, `combo`, `held`, `pressed`, `released`.
+- Animation: `crossFade`, `getClipTime`, `onAnimationEvent`, `playClip`,
+  `restartClip`, `setLayerWeight`, `setMorphTarget`, `setMorphTargets`.
+- Audio: `playMusic`, `playSfx`, `setVolume`, `stopMusic`.
+- Physics: `dash`, `jump`, `onCollisionEnter`, `onCollisionExit`, `overlap`,
+  `raycast`, `setVelocity`.
+- Combat: `applyDamage`, `applyKnockback`, `closeHitbox`, `onHit`,
+  `openHitbox`, `setHurtbox`.
+- Camera: `animationCutTo`, `cutTo`, `dollyTo`, `follow`, `frameCharacter`,
+  `frameTargets`, `shake`, `shakeCamera`.
+- AI: `evaluateDecision`, `fireWeaponBurst`, `onBehaviorTreeStatus`,
+  `onGoapPlan`, `onHtnPlan`, `planGoap`, `planHtn`, `runBehaviorTree`,
+  `scoreUtility`, `sensePerception`.
+- Game: `addScore`, `despawnCharacter`, `getScore`, `onObjectiveComplete`,
+  `onStateEnter`, `onTimerElapsed`, `setObjective`, `setState`, `spawnWave`,
+  `startTimer`.
+- Evidence: `assertState`, `captureSnapshot`, `markProof`.
+
+Authoring helpers: Value (`const`), Math (`abs`, `add`, `clamp`, `cos`,
+`divide`, `inverseLerp`, `lerp`, `max`, `min`, `multiply`, `power`, `sin`,
+`sqrt`, `subtract`, `tan`), Logic (`and`, `equal`, `greater`,
+`greaterEqual`, `isNull`, `isValid`, `less`, `lessEqual`, `not`, `notEqual`,
+`or`, `select`, `xor`), Flow (`branch`, `forRange`, `gate`, `sequence`,
+`switch`), Debug (`log`), Dialogue (`sayLine`, `setEmotion`, `setGesture`,
+`waitForResponse`), Publishing (`captureThumbnail`, `exportCaption`,
+`markChapter`), Scene (`loadSet`, `setScene`, `spawnCharacter`,
+`transitionTo`), Timing (`delay`, `schedule`, `syncToAudio`, `waitForBeat`).
 
 Agents can inspect the catalog instead of hard-coding it:
 

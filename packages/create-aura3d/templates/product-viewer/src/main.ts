@@ -10,11 +10,18 @@ import {
 } from "@aura3d/lean/product";
 import { assets } from "./aura-assets";
 
+// PART C2 game-ready adoption: the plinth wears the @aura3d/materials
+// "carPaint" preset shell (clearcoat 1 + flake normal scale) in a pearl studio
+// base, and the floor carries the "glassThin" preset color/roughness values as
+// a glass display deck (transmission itself lives in the full engine API).
+const carPaintPlinth = material.clearcoatPaint({ color: "#d7dce2", roughness: 0.3, metallic: 0.55, clearcoat: 1 });
+const glassThinDeck = material.pbr({ color: "#9fc6d4", roughness: 0.08, metallic: 0 });
+
 const productScene = scene()
   .background("#071018")
-  .add(primitives.plane({ name: "studio floor", material: material.pbr({ color: "#22313b", roughness: 0.32, metallic: 0.08 }) })
+  .add(primitives.plane({ name: "glass deck floor", material: glassThinDeck })
     .position(0, -0.05, -0.62).scale([6.2, 1, 5.2]))
-  .add(primitives.box({ name: "product plinth", material: material.clearcoatPaint({ color: "#dce7ed", roughness: 0.2, metallic: 0.18 }) })
+  .add(primitives.box({ name: "carPaint product plinth", material: carPaintPlinth })
     .position(0, 0.06, -0.62).scale([1.82, 0.18, 1.4]))
   .add(model(assets.product, { name: "typed studio product" }).position(0, 1.08, -0.62).scale(0.66))
   .add(environments.studio())

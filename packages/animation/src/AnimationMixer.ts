@@ -45,6 +45,7 @@ export class AnimationMixer {
   private applyErrors: AnimationApplyError[] = [];
   private readonly eventListeners = new Set<(event: AnimationEvent) => void>();
   private disposed = false;
+  private warnedEmptyUpdate = false;
   private inertialTransition: { from: AnimationAction; to: AnimationAction; elapsed: number; halfLife: number } | undefined;
 
   constructor(target?: AnimationTarget, private readonly options: AnimationMixerOptions = {}) {
@@ -55,25 +56,49 @@ export class AnimationMixer {
     this.assertAlive();
     const action = new AnimationAction(clip).play();
     this.actions.push(action);
+    this.warnedEmptyUpdate = false;
     return action;
   }
 
   addAction(action: AnimationAction): void {
     this.assertAlive();
-    if (!this.actions.includes(action)) {
-      this.actions.push(action);
+    if (!(action instanceof AnimationAction)) {
+      throw new Error("AnimationMixer.addAction: action must be an AnimationAction.");
     }
+    if (this.actions.includes(action)) {
+      console.warn(`AnimationMixer.addAction: action for clip "${action.clip.name}" is already registered; ignoring the duplicate.`);
+      return;
+    }
+    this.actions.push(action);
+    this.warnedEmptyUpdate = false;
   }
 
   addLayer(layer: AnimationLayer): void {
     this.assertAlive();
-    if (!this.layers.includes(layer)) {
-      this.layers.push(layer);
+    if (!layer || typeof layer.name !== "string") {
+      throw new Error("AnimationMixer.addLayer: layer must be an AnimationLayer.");
     }
+    if (this.layers.includes(layer)) {
+      console.warn(`AnimationMixer.addLayer: layer "${layer.name}" is already registered; ignoring the duplicate.`);
+      return;
+    }
+    this.layers.push(layer);
+  }
+
+  setTimeScale(timeScale: number): void {
+    this.assertAlive();
+    if (!Number.isFinite(timeScale) || timeScale < 0) {
+      throw new Error("AnimationMixer.setTimeScale: timeScale must be finite and non-negative.");
+    }
+    this.timeScale = timeScale;
   }
 
   stopAll(): void {
     this.assertAlive();
+    if (this.actions.length === 0) {
+      console.warn("AnimationMixer.stopAll: no actions are registered; nothing to stop.");
+      return;
+    }
     for (const action of this.actions) {
       action.stop();
     }
@@ -81,6 +106,13 @@ export class AnimationMixer {
 
   crossFade(from: AnimationAction, to: AnimationAction, duration: number): void {
     this.assertAlive();
+    this.assertCrossFadePair("AnimationMixer.crossFade", from, to);
+    if (!Number.isFinite(duration) || duration < 0) {
+      throw new Error("AnimationMixer.crossFade: duration must be finite and non-negative.");
+    }
+    if (!this.actions.includes(from)) {
+      console.warn(`AnimationMixer.crossFade: "from" action (clip "${from.clip.name}") is not registered on this mixer; its fade-out will not advance.`);
+    }
     from.fadeTo(0, duration);
     to.play().fadeTo(1, duration);
     this.addAction(to);
@@ -95,6 +127,13 @@ export class AnimationMixer {
    */
   inertialCrossFade(from: AnimationAction, to: AnimationAction, halfLife = DEFAULT_INERTIALIZATION_HALF_LIFE): void {
     this.assertAlive();
+    this.assertCrossFadePair("AnimationMixer.inertialCrossFade", from, to);
+    if (!Number.isFinite(halfLife)) {
+      throw new Error("AnimationMixer.inertialCrossFade: halfLife must be finite.");
+    }
+    if (!this.actions.includes(from)) {
+      console.warn(`AnimationMixer.inertialCrossFade: "from" action (clip "${from.clip.name}") is not registered on this mixer; its fade-out will not advance.`);
+    }
     to.play();
     from.weight = 1;
     to.weight = 0;
@@ -105,7 +144,22 @@ export class AnimationMixer {
   update(delta: number): readonly AnimationEvent[] {
     this.assertAlive();
     if (!Number.isFinite(delta) || delta < 0) {
-      throw new Error("AnimationMixer delta must be finite and non-negative.");
+      throw new Error("AnimationMixer.update: delta must be finite and non-negative.");
+    }
+    if (!Number.isFinite(this.timeScale) || this.timeScale < 0) {
+      throw new Error("AnimationMixer.update: timeScale must be finite and non-negative; call AnimationMixer.setTimeScale with a valid value.");
+    }
+    for (const layer of this.layers) {
+      if (!Number.isFinite(layer.weight) || layer.weight < 0) {
+        throw new Error(`AnimationMixer.update: layer "${layer.name}" weight is invalid; call AnimationLayer.setWeight with a finite non-negative value.`);
+      }
+    }
+    if (this.actions.length === 0) {
+      if (!this.warnedEmptyUpdate) {
+        this.warnedEmptyUpdate = true;
+        console.warn("AnimationMixer.update: no actions are registered; returning no events and applying no values.");
+      }
+      return [];
     }
     this.advanceInertialTransition(delta * this.timeScale);
     const events: AnimationEvent[] = [];
@@ -158,6 +212,9 @@ export class AnimationMixer {
 
   onEvent(listener: (event: AnimationEvent) => void): () => void {
     this.assertAlive();
+    if (typeof listener !== "function") {
+      throw new Error("AnimationMixer.onEvent: listener must be a function.");
+    }
     this.eventListeners.add(listener);
     return () => this.eventListeners.delete(listener);
   }
@@ -190,6 +247,15 @@ export class AnimationMixer {
   private assertAlive(): void {
     if (this.disposed) {
       throw new Error("AnimationMixer has been disposed.");
+    }
+  }
+
+  private assertCrossFadePair(api: string, from: AnimationAction, to: AnimationAction): void {
+    if (!(from instanceof AnimationAction) || !(to instanceof AnimationAction)) {
+      throw new Error(`${api}: "from" and "to" must both be AnimationAction instances.`);
+    }
+    if (from === to) {
+      throw new Error(`${api}: "from" and "to" must be different actions; crossfading an action into itself is a no-op.`);
     }
   }
 

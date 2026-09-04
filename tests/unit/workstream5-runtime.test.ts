@@ -3153,7 +3153,7 @@ test("workstream5 GLTFLoader imports multi-target morph weight animation channel
   assert.deepEqual((asset.toJSON().animations[0]?.tracks[0]?.keyframes[1]?.value as readonly number[] | undefined)?.map((value) => Number(value.toFixed(3))), [0.5, 0.7, 0.9]);
 });
 
-test("workstream5 GLTFLoader skips optional KHR_animation_pointer channels without dropping node tracks", async () => {
+test("workstream5 GLTFLoader binds supported KHR_animation_pointer channels alongside node tracks", async () => {
   const times = floatBytes([0, 1]);
   const translations = floatBytes([0, 0, 0, 2, 0, 0]);
   const colors = floatBytes([1, 0, 0, 1, 0, 1, 0, 1]);
@@ -3198,9 +3198,10 @@ test("workstream5 GLTFLoader skips optional KHR_animation_pointer channels witho
     { throwIfAborted: () => undefined } as never
   );
 
-  assert.equal(asset.loaderDiagnostics.unsupportedExtensions.includes("KHR_animation_pointer"), true);
-  assert.equal(asset.animations[0]?.tracks.length, 1);
+  assert.equal(asset.loaderDiagnostics.unsupportedExtensions.includes("KHR_animation_pointer"), false);
+  assert.equal(asset.animations[0]?.tracks.length, 2);
   assert.equal(asset.animations[0]?.tracks[0]?.target, "animated-node.translation");
+  assert.equal(asset.animations[0]?.tracks[1]?.target, "material:animated-material.pbrMetallicRoughness.baseColorFactor");
 });
 
 test("workstream5 GLTFLoader rejects unsupported animation interpolation and target paths", async () => {

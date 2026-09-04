@@ -1,4 +1,4 @@
-import { AudioClip, AudioSource, AudioSystem } from "@aura3d/audio";
+import { AudioClip, AudioSource, AudioSystem, FootstepPlayer, PositionalEmitter, createGameMixer } from "@aura3d/audio";
 
 interface AudioBrowserResult {
   readonly status: "waiting" | "ready" | "error";
@@ -9,6 +9,14 @@ interface AudioBrowserResult {
   readonly sourceStateAfterResume?: string;
   readonly sourceStateAfterStop: string;
   readonly repeatedMounts?: number;
+  readonly positionalConnected: boolean;
+  readonly positionalAttenuation: number;
+  readonly positionalDopplerAboveOne: boolean;
+  readonly positionalOcclusion: number;
+  readonly mixerDuckedMusic: number;
+  readonly mixerRestoredMusic: number;
+  readonly footstepFirst: string | null;
+  readonly footstepFallback: string | null;
   readonly error?: string;
 }
 
@@ -38,7 +46,15 @@ publish({
   contextState: "uncreated",
   clipDuration: 0,
   sourceStateAfterPlay: "idle",
-  sourceStateAfterStop: "idle"
+  sourceStateAfterStop: "idle",
+  positionalConnected: false,
+  positionalAttenuation: 0,
+  positionalDopplerAboveOne: false,
+  positionalOcclusion: 0,
+  mixerDuckedMusic: 0,
+  mixerRestoredMusic: 0,
+  footstepFirst: null,
+  footstepFallback: null
 });
 
 document.querySelector<HTMLButtonElement>("#audio-start")?.addEventListener("click", async () => {
@@ -73,6 +89,36 @@ document.querySelector<HTMLButtonElement>("#audio-start")?.addEventListener("cli
       if (mounted.contextManager.state === "closed") repeatedMounts += 1;
     }
 
+    // I1: positional emitter on the real graph — panner + occlusion filter + doppler rate.
+    const emitter = new PositionalEmitter({
+      context: system.contextManager.context,
+      clip,
+      volume: 0.01,
+      position: { x: 3, y: 0, z: 0 }
+    });
+    const positionalEvidence = emitter.update({ x: 0, y: 0, z: 0 });
+    emitter.setVelocity({ x: -34.3, y: 0, z: 0 });
+    const dopplerEvidence = emitter.update({ x: 0, y: 0, z: 0 });
+    emitter.setOcclusion(0.5);
+    emitter.play();
+    const emitterStateAfterPlay = emitter.source.state;
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    emitter.stop();
+    emitter.dispose();
+    if (emitterStateAfterPlay !== "playing") throw new Error(`positional emitter did not play (state=${emitterStateAfterPlay})`);
+
+    // I1: game mixer buses + dialogue ducking on the real graph.
+    const gameMixer = createGameMixer(system.contextManager.context, { musicVolume: 0.8 });
+    gameMixer.setDialogueActive(true);
+    const mixerDuckedMusic = gameMixer.evidence().music.volume;
+    gameMixer.setDialogueActive(false);
+    const mixerRestoredMusic = gameMixer.evidence().music.volume;
+
+    // I1: footstep surface selection (selection only — sounding stays with GameAudio).
+    const footsteps = new FootstepPlayer({ surfaces: { grass: ["step-grass-a", "step-grass-b"] }, fallback: "step-default" });
+    const footstepFirst = footsteps.onPlant({ foot: "left", surface: "grass" });
+    const footstepFallback = footsteps.onPlant({ foot: "right", surface: "metal" });
+
     publish({
       status: "ready",
       contextState: system.contextManager.state,
@@ -81,7 +127,15 @@ document.querySelector<HTMLButtonElement>("#audio-start")?.addEventListener("cli
       sourceStateAfterPause,
       sourceStateAfterResume,
       sourceStateAfterStop,
-      repeatedMounts
+      repeatedMounts,
+      positionalConnected: positionalEvidence.connected,
+      positionalAttenuation: positionalEvidence.attenuationGain,
+      positionalDopplerAboveOne: dopplerEvidence.dopplerShift > 1,
+      positionalOcclusion: 0.5,
+      mixerDuckedMusic,
+      mixerRestoredMusic,
+      footstepFirst,
+      footstepFallback
     });
     source.dispose();
     await system.dispose();
@@ -92,6 +146,14 @@ document.querySelector<HTMLButtonElement>("#audio-start")?.addEventListener("cli
       clipDuration: 0,
       sourceStateAfterPlay: "idle",
       sourceStateAfterStop: "idle",
+      positionalConnected: false,
+      positionalAttenuation: 0,
+      positionalDopplerAboveOne: false,
+      positionalOcclusion: 0,
+      mixerDuckedMusic: 0,
+      mixerRestoredMusic: 0,
+      footstepFirst: null,
+      footstepFallback: null,
       error: error instanceof Error ? error.message : String(error)
     });
     await system.dispose();

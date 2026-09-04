@@ -21,8 +21,16 @@ function normalize(value: Vector3Like): Vector3Like {
   return { x: value.x / length, y: value.y / length, z: value.z / length };
 }
 
+export interface GPUCollisionPlane {
+  readonly normal: Vector3Like;
+  readonly constant: number;
+  readonly restitution: number;
+  readonly killOnContact: boolean;
+}
+
 export class CollisionModule implements ParticleModule {
   readonly name = "CollisionModule";
+  readonly supportsGPU = true;
   readonly plane: Required<CollisionPlane>;
 
   constructor(plane: CollisionPlane) {
@@ -36,6 +44,16 @@ export class CollisionModule implements ParticleModule {
     if (!Number.isFinite(this.plane.constant) || !Number.isFinite(this.plane.restitution)) {
       throw new RangeError("Collision plane constant and restitution must be finite numbers.");
     }
+  }
+
+  /** Encode this plane for the WGSL compute kernel (analytic-plane slot). */
+  toGPUPlane(): GPUCollisionPlane {
+    return {
+      normal: { ...this.plane.normal },
+      constant: this.plane.constant,
+      restitution: this.plane.restitution,
+      killOnContact: this.plane.mode === "kill",
+    };
   }
 
   afterIntegrate(particle: Particle, _context: ParticleUpdateContext): void {

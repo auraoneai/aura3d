@@ -68,6 +68,7 @@ function authoredMuseumDetails(): {
   readonly artwork: ReturnType<typeof geometry.define>;
   readonly luminous: ReturnType<typeof geometry.define>;
   readonly floorGrid: ReturnType<typeof geometry.define>;
+  readonly floorDark: ReturnType<typeof geometry.define>;
   readonly furniture: ReturnType<typeof geometry.define>;
   readonly cover: ReturnType<typeof geometry.define>;
 } {
@@ -75,6 +76,7 @@ function authoredMuseumDetails(): {
   const artwork = detailMesh();
   const luminous = detailMesh();
   const floorGrid = detailMesh();
+  const floorDark = detailMesh();
   const furniture = detailMesh();
   const cover = detailMesh();
 
@@ -228,6 +230,11 @@ function authoredMuseumDetails(): {
         addDetailBox(floorGrid, [room.x, 0.093, z], [Math.max(0.35, width - 0.28), 0.024, 0.018]);
       }
     }
+    // Dark-floor variant plate: a thin matte slab per room, inset from the
+    // walls, sitting below the brass keylines (top 0.071 vs grid bottom
+    // ~0.08) so the keylines, thresholds, and light pools read against a
+    // Monaco-style dark ground instead of the pale typed GLB floor.
+    addDetailBox(floorDark, [room.x, 0.062, room.z], [Math.max(0.4, width - 0.1), 0.018, Math.max(0.4, depth - 0.1)]);
   }
 
   // Brass threshold inserts bridge the exact FloorLayout door openings. They
@@ -316,6 +323,7 @@ function authoredMuseumDetails(): {
     artwork: geometry.define({ positions: artwork.positions, normals: artwork.normals, indices: artwork.indices }),
     luminous: geometry.define({ positions: luminous.positions, normals: luminous.normals, indices: luminous.indices }),
     floorGrid: geometry.define({ positions: floorGrid.positions, normals: floorGrid.normals, indices: floorGrid.indices }),
+    floorDark: geometry.define({ positions: floorDark.positions, normals: floorDark.normals, indices: floorDark.indices }),
     furniture: geometry.define({ positions: furniture.positions, normals: furniture.normals, indices: furniture.indices }),
     cover: geometry.define({ positions: cover.positions, normals: cover.normals, indices: cover.indices })
   };
@@ -454,6 +462,12 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     roughness: 0.46,
     metallic: 0.28
   });
+  const detailFloorDark = material.metal({
+    name: "museum dark floor finish",
+    color: "#10151c",
+    roughness: 0.42,
+    metallic: 0.32
+  });
   const detailFurniture = material.metal({
     name: "museum furniture graphite",
     color: "#1b2d3b",
@@ -462,9 +476,9 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
   });
   const detailCover = material.metal({
     name: "museum LOS cover plinths",
-    color: "#243949",
-    roughness: 0.3,
-    metallic: 0.64
+    color: "#33506a",
+    roughness: 0.32,
+    metallic: 0.55
   });
   const detailGlow = material.emissive({
     name: "museum detail practical glow",
@@ -502,6 +516,9 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
       .toJSON(),
     geometry.custom(MUSEUM_DETAILS.floorGrid, { name: "museum authored floor inlay grid", material: detailFloor })
       .runtime(game.runtimeNode("museum authored floor inlay grid", { tags: ["typed-set-dressing", "museum-floor-detail", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(MUSEUM_DETAILS.floorDark, { name: "museum authored dark floor finish", material: detailFloorDark })
+      .runtime(game.runtimeNode("museum authored dark floor finish", { tags: ["typed-set-dressing", "museum-floor-detail", "renderer-owned"] }))
       .toJSON(),
     geometry.custom(MUSEUM_DETAILS.furniture, { name: "museum authored furniture and consoles", material: detailFurniture })
       .runtime(game.runtimeNode("museum authored furniture and consoles", { tags: ["typed-set-dressing", "museum-furniture", "renderer-owned"] }))
@@ -562,7 +579,7 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
   // exact same coordinates. That caused dark z-fighting and made the hall
   // read like disconnected blocks. Route geometry below is deliberately only
   // wayfinding and feedback that cannot overlap the typed world.
-  const sightlineWash = material.emissive({ name: "museum guard sightline wash", color: "#143c57", emissive: "#54d8ff", emissiveIntensity: 0.38, opacity: 0.2 });
+  const sightlineWash = material.emissive({ name: "museum guard sightline wash", color: "#143c57", emissive: "#54d8ff", emissiveIntensity: 0.7, opacity: 0.45 });
 
   nodes.push(
     // One tapered renderer wedge per patrol makes the authored facing legible

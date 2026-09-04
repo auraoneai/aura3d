@@ -44,6 +44,21 @@ export interface PickingReport {
   readonly diagnostics: PickingDiagnostics;
 }
 
+/**
+ * Sphere-based picking over `ControlObject3DLike` scene graphs.
+ *
+ * Scope notes (F4):
+ *
+ * - `SkinnedMesh` objects are pickable via the same bind-pose sphere test as
+ *   static meshes (position plus `pickRadius`). Bone-deformed triangles beyond
+ *   that radius are an explicit non-goal: this layer answers "which authored
+ *   object did the pointer hit", not triangle-exact skinning queries.
+ * - `InstancedMesh` objects are pickable per instance: metadata
+ *   `instancePositions` lists world-space instance centers, each tested as
+ *   its own sphere, and a hit reports the nearest entry as
+ *   `metadata.instanceId`. Without `instancePositions` the single object
+ *   sphere is tested, exactly like a static mesh.
+ */
 export class Picking {
   pick(
     root: ControlObject3DLike,
@@ -101,38 +116,42 @@ export class Picking {
         return;
       }
       counters.candidateObjects += 1;
-      const toObject = new ControlVector3(
-        object.position.x - origin.x,
-        object.position.y - origin.y,
-        object.position.z - origin.z
-      );
-      const distanceAlongRay = dot(toObject, normalizedDirection);
-      if (distanceAlongRay < near || distanceAlongRay > far) {
-        counters.skippedOutOfRange += 1;
-        return;
-      }
-      const closestPoint = pointOnRay(origin, normalizedDirection, distanceAlongRay);
-      const perpendicularDistance = new ControlVector3(
-        object.position.x - closestPoint.x,
-        object.position.y - closestPoint.y,
-        object.position.z - closestPoint.z
-      ).length();
       const radius = resolvePickRadius(object, metadata) + tolerance;
-      if (perpendicularDistance > radius) {
-        counters.skippedMissedRadius += 1;
-        nearestMissPerpendicularDistance = Math.min(nearestMissPerpendicularDistance, perpendicularDistance);
-        return;
+      const instances = resolveInstanceCenters(object, metadata);
+      for (let instanceId = 0; instanceId < instances.length; instanceId += 1) {
+        const center = instances[instanceId];
+        const toCenter = new ControlVector3(
+          center.x - origin.x,
+          center.y - origin.y,
+          center.z - origin.z
+        );
+        const distanceAlongRay = dot(toCenter, normalizedDirection);
+        if (distanceAlongRay < near || distanceAlongRay > far) {
+          counters.skippedOutOfRange += 1;
+          continue;
+        }
+        const closestPoint = pointOnRay(origin, normalizedDirection, distanceAlongRay);
+        const perpendicularDistance = new ControlVector3(
+          center.x - closestPoint.x,
+          center.y - closestPoint.y,
+          center.z - closestPoint.z
+        ).length();
+        if (perpendicularDistance > radius) {
+          counters.skippedMissedRadius += 1;
+          nearestMissPerpendicularDistance = Math.min(nearestMissPerpendicularDistance, perpendicularDistance);
+          continue;
+        }
+        const rayEntryDistance = Math.max(near, distanceAlongRay - Math.sqrt(Math.max(0, radius * radius - perpendicularDistance * perpendicularDistance)));
+        hits.push({
+          object,
+          distance: rayEntryDistance,
+          distanceAlongRay,
+          perpendicularDistance,
+          point: pointOnRay(origin, normalizedDirection, rayEntryDistance),
+          radius,
+          metadata: instances.length > 1 ? { ...metadata, instanceId } : metadata
+        });
       }
-      const rayEntryDistance = Math.max(near, distanceAlongRay - Math.sqrt(Math.max(0, radius * radius - perpendicularDistance * perpendicularDistance)));
-      hits.push({
-        object,
-        distance: rayEntryDistance,
-        distanceAlongRay,
-        perpendicularDistance,
-        point: pointOnRay(origin, normalizedDirection, rayEntryDistance),
-        radius,
-        metadata
-      });
     });
 
     hits.sort(compareHits);
@@ -185,7 +204,30 @@ function isPickableObject(
   options: PickingOptions
 ): boolean {
   if (metadata && options.includeNonRenderableMetadata !== false) return true;
-  return object.type === "Mesh" || object.type === "Sprite" || object.type === "Points" || object.type === "LineSegments";
+  return object.type === "Mesh" ||
+    object.type === "SkinnedMesh" ||
+    object.type === "InstancedMesh" ||
+    object.type === "Sprite" ||
+    object.type === "Points" ||
+    object.type === "LineSegments";
+}
+
+function resolveInstanceCenters(
+  object: ControlObject3DLike,
+  metadata: ControlPickMetadata | undefined
+): readonly Vector3Like[] {
+  const positions = metadata?.instancePositions;
+  if (!positions || positions.length === 0) return [object.position];
+  return positions.map((entry): Vector3Like => {
+    if (Array.isArray(entry)) {
+      return {
+        x: Number(entry[0] ?? 0),
+        y: Number(entry[1] ?? 0),
+        z: Number(entry[2] ?? 0)
+      };
+    }
+    return entry as Vector3Like;
+  });
 }
 
 function resolvePickRadius(object: ControlObject3DLike, metadata: ControlPickMetadata | undefined): number {

@@ -149,6 +149,12 @@ claim boundaries.
 
 Stated because a release note that omits this is not useful:
 
+- **Five example routes were unhealthy in the retained tier-12 audit** (`tests/reports/tier12-route-health/report.json`,
+  generated 2026-09-03): `custom-material-lab`, `neon-corridor-strike`, `raycast-ccd-lab`, `recast-crowd-lab`, and
+  `rendering-large-scene` each stayed status-unknown past the 10 s readiness budget (four by under one second, a
+  load-flake signature under the documented host load; two also lacked measurable canvas evidence). They are
+  disclosed here rather than left out, and the audit is re-run before release so this list tracks current truth.
+
 - **The recommended narrow entries now meet all three comparative bundle budgets.** Measured
   2026-08-08 by `tools/bundle-scenarios` against real Three.js builds of the same scene, through
   one shared bundler config. The compatibility-heavy root still exists for upgrades and is not

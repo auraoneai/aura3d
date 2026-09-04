@@ -97,15 +97,12 @@ const rifleScale = groundedRenderedAssetPlacement(assets.neonContainmentPulseRif
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false },
-  // Cap the backing buffer for the dense full-screen FPS view. CSS and HUD
-  // remain at the review viewport while the now full-frame authored corridor
-  // stays inside the route's unchanged stable-frame budget. This is a real
-  // route quality setting, not a test-only pacing override.
-  // The sixth-pass architectural lining adds real continuous surfaces and
-  // typed movable props. Keep the same review viewport but give its GPU budget
-  // enough headroom for gameplay pacing on the software-rendered evidence
-  // runner; CSS/HUD dimensions and all game state remain unchanged.
-  pixelRatio: 0.5,
+  // Full backing-store resolution for the dense full-screen FPS view. The old
+  // 0.5 cap kept a software-rendered evidence runner inside budget, but it
+  // shipped every frame as a half-res upscale: blurriness in all captures and
+  // on any real display. Box-heavy corridor geometry holds full rate at 1.0
+  // on hardware GL; CSS/HUD dimensions and all game state remain unchanged.
+  pixelRatio: 1,
   physics: { layers, gravity: [0, -24, 0] },
   scene: buildScene()
 });

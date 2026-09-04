@@ -92,6 +92,14 @@ export interface LdrPostprocessPresentationOptions {
   readonly passes: readonly LdrPostprocessPassDescriptor[];
   readonly outputTarget?: RenderTarget;
   readonly toneMappingDefaults?: Readonly<Record<string, unknown>>;
+  /**
+   * Camera depth range used to linearize sampleable depth for the native
+   * SSR/depth-of-field programs (muse3jsparity-PRD A3). Raw GL depth is
+   * nonlinear: with the engine default 0.1/1000 range the whole play area
+   * sits past 0.97, which blinded every depth-gated pass. Omitted or invalid
+   * ranges fall back to the engine perspective defaults (0.1/1000).
+   */
+  readonly depthRange?: { readonly near: number; readonly far: number };
 }
 
 export interface DrawCommand {
@@ -220,6 +228,19 @@ export interface RenderDeviceDiagnostics {
   readonly nativeInstancedSubmissions?: number;
   readonly nativeSkinnedSubmissions?: number;
   readonly nativeMorphSubmissions?: number;
+  /** Most recent native bloom execution (muse3jsparity-PRD A1); null until a native bloom pass runs. */
+  readonly bloom?: {
+    readonly quality: "performance" | "balanced" | "cinematic";
+    readonly mipCount: number;
+    readonly targetCount: number;
+    readonly targetBytes: number;
+    readonly compositeGain: number;
+    readonly threshold: number;
+    readonly intensity: number;
+    readonly softKnee: number;
+    readonly shoulder: number;
+    readonly halfFloat: boolean;
+  } | null;
   readonly nativeEnvironmentBindings?: number;
   readonly nativeShadowMapBindings?: number;
   /**
@@ -251,8 +272,148 @@ export interface RenderDeviceDiagnostics {
   readonly postprocessTargetHeight?: number;
   readonly maxRenderTargetSampleCount?: number;
   readonly postprocessPlan?: RendererPostprocessPlanDiagnostics;
+  /**
+   * PART U: live GPU target inventory — every render target, pyramid mip,
+   * ping-pong pair, LUT, and history/scratch texture with bytes + lane owner,
+   * populated by the mock, WebGL2, and WebGPU devices.
+   */
+  readonly gpuTargets?: readonly GpuTargetInventoryEntry[];
+  readonly gpuTargetBytes?: number;
+  readonly gpuTargetOverBudget?: boolean;
+  readonly gpuTargetWarnings?: readonly string[];
   readonly lastError: string | null;
   readonly contextLost: boolean;
+}
+
+/**
+ * PART U (muse3jsparity-PRD): lane owner of a live GPU allocation.
+ *
+ * Every render target, bloom-pyramid mip, ping-pong pair, lookup texture, and
+ * history/scratch texture a lane adds must resolve to exactly one owner so the
+ * lifecycle registry can answer "who allocated this and how many bytes does it
+ * hold?" Labels are the device-side signal; {@link resolveGpuTargetOwner} is
+ * the single mapping from label to owner.
+ */
+export type GpuTargetOwner =
+  | "a1-bloom"
+  | "a5-volumetric"
+  | "b1-shadow"
+  | "b4-reflection"
+  | "c4-decal"
+  | "g1-text"
+  | "post"
+  | "scene"
+  | "unknown";
+
+export type GpuTargetKind =
+  | "render-target"
+  | "pyramid-mip"
+  | "pyramid-accumulator"
+  | "ping-pong"
+  | "lut"
+  | "history"
+  | "scratch";
+
+export interface GpuTargetInventoryEntry {
+  readonly label: string;
+  readonly kind: GpuTargetKind;
+  readonly bytes: number;
+  readonly owner: GpuTargetOwner;
+}
+
+/**
+ * Map a GPU allocation label to its lane owner (case-insensitive substring
+ * match, most-specific first). Labels that carry no lane signal resolve to
+ * `"scene"` when they look like an app/scene target and `"unknown"`
+ * otherwise — never silently to a lane that did not allocate them.
+ */
+export function resolveGpuTargetOwner(label: string): GpuTargetOwner {
+  const text = label.toLowerCase();
+  if (text.includes("bloom")) return "a1-bloom";
+  if (text.includes("volumetric")) return "a5-volumetric";
+  if (text.includes("shadow")) return "b1-shadow";
+  if (
+    text.includes("mirror") ||
+    text.includes("scene-color") ||
+    text.includes("refraction") ||
+    text.includes("reflection") ||
+    text.includes("reflector") ||
+    text.includes("refractor") ||
+    text.includes("glass") ||
+    text.includes("water")
+  ) {
+    return "b4-reflection";
+  }
+  if (text.includes("decal")) return "c4-decal";
+  if (text.includes("sdf") || text.includes("glyph") || text.includes("text-atlas")) return "g1-text";
+  if (
+    text.includes("postprocess") ||
+    text.includes("post-process") ||
+    text.includes("tonemap") ||
+    text.includes("tone-map") ||
+    text.includes("fxaa") ||
+    text.includes("outline") ||
+    text.includes("ldr") ||
+    text.includes("present") ||
+    text.includes("dof") ||
+    text.includes("depth-of-field") ||
+    text.includes("motion-blur") ||
+    text.includes("taa") ||
+    text.includes("ssao") ||
+    text.includes("ssr")
+  ) {
+    return "post";
+  }
+  if (text.includes("render-target") || text.includes("scene")) return "scene";
+  return "unknown";
+}
+
+/**
+ * Over-budget policy (same family as B5/D1 atlas and scatter budgets): warn
+ * through data, never throw. 128 MiB holds a 4K HDR scene target (~66 MiB at
+ * RGBA16F) plus a full cinematic bloom pyramid with headroom; anything past
+ * it is a real excess worth surfacing, not a normal frame.
+ */
+export const GPU_TARGET_BUDGET_BYTES = 128 * 1024 * 1024;
+
+export interface GpuTargetInventory {
+  readonly targets: readonly GpuTargetInventoryEntry[];
+  readonly totalBytes: number;
+  readonly overBudget: boolean;
+  readonly warnings: readonly string[];
+}
+
+/**
+ * Spread a target list into the {@link RenderDeviceDiagnostics} inventory
+ * fields so every device reports the same shape from one call.
+ */
+export function spreadGpuTargetInventory(entries: readonly GpuTargetInventoryEntry[]): {
+  readonly gpuTargets: readonly GpuTargetInventoryEntry[];
+  readonly gpuTargetBytes: number;
+  readonly gpuTargetOverBudget: boolean;
+  readonly gpuTargetWarnings: readonly string[];
+} {
+  const inventory = buildGpuTargetInventory(entries);
+  return {
+    gpuTargets: inventory.targets,
+    gpuTargetBytes: inventory.totalBytes,
+    gpuTargetOverBudget: inventory.overBudget,
+    gpuTargetWarnings: inventory.warnings
+  };
+}
+
+export function buildGpuTargetInventory(entries: readonly GpuTargetInventoryEntry[]): GpuTargetInventory {
+  const targets = [...entries];
+  const totalBytes = targets.reduce((total, entry) => total + entry.bytes, 0);
+  const overBudget = totalBytes > GPU_TARGET_BUDGET_BYTES;
+  const warnings: string[] = [];
+  if (overBudget) {
+    const owners = [...new Set(targets.map((entry) => entry.owner))].sort().join(",");
+    warnings.push(
+      `GPU target budget exceeded: ${totalBytes} bytes across ${targets.length} live targets (owners: ${owners}); budget is ${GPU_TARGET_BUDGET_BYTES}.`
+    );
+  }
+  return { targets, totalBytes, overBudget, warnings };
 }
 
 export interface RenderDevice {
@@ -783,6 +944,14 @@ export class MockRenderDevice implements RenderDevice {
       disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].reduce((total, target) => total + (target.colorTexture.disposed ? 1 : 0) + (target.depthTexture?.disposed ? 1 : 0), 0),
+      ...spreadGpuTargetInventory(
+        liveRenderTargets.map((target) => ({
+          label: target.label,
+          kind: "render-target" as const,
+          bytes: target.colorTexture.byteLength + (target.depthTexture?.byteLength ?? 0),
+          owner: resolveGpuTargetOwner(target.label)
+        }))
+      ),
       lastError: this.lastError,
       contextLost: this.contextLost
     };

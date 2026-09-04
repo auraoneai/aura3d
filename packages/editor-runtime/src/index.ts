@@ -130,6 +130,8 @@ export { TimelineUI, renderTimelineUI } from "./TimelineUI";
 export type { TimelineUIOptions, TimelineUIRenderResult } from "./TimelineUI";
 export { VisualReviewDashboard, createVisualReviewDashboard } from "./VisualReviewDashboard";
 export type { VisualReviewDashboardPackage, VisualReviewDashboardSnapshot } from "./VisualReviewDashboard";
+export { createRootEditorSurface } from "./RootEditorSurface";
+export type { RootEditorGizmoHandle, RootEditorGizmoKind, RootEditorSurface, RootEditorSurfaceOptions } from "./RootEditorSurface";
 export { CreateNodeCommand } from "./commands/CreateNodeCommand";
 export type { NodeContainer } from "./commands/CreateNodeCommand";
 export { DeleteNodeCommand } from "./commands/DeleteNodeCommand";

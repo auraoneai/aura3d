@@ -119,6 +119,22 @@ export class VertexFormat {
     48
   );
 
+  /**
+   * Dual-UV production primitive format with analytic tangents
+   * (muse3jsparity-PRD C1): the second set drives the native texCoord
+   * selector, tangents satisfy the normal-mapped material contract.
+   */
+  static readonly P3N3T4T2T2 = new VertexFormat(
+    [
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "tangent", components: 4, offset: 24 },
+      { semantic: "uv", components: 2, offset: 40 },
+      { semantic: "uv1", components: 2, offset: 48 }
+    ],
+    56
+  );
+
   static readonly P3J4W4 = new VertexFormat(
     [
       { semantic: "position", components: 3, offset: 0 },

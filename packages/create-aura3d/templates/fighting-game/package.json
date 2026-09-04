@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "playwright test tests/route-health.spec.ts tests/gameplay-smoke.spec.ts --workers=1"
+    "test": "playwright test tests/route-health.spec.ts tests/gameplay-smoke.spec.ts tests/certified-rig.spec.ts --workers=1"
   },
   "dependencies": {
     "@aura3d/engine": "2.0.4"

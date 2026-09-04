@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-03T02:37:56.647Z",
+  "generatedAt": "2026-09-03T10:13:56.568Z",
   "appId": "showcase-pulse-tunnel",
   "route": "/apps/showcase-pulse-tunnel/",
   "classification": "prototype-blocked",
@@ -207,7 +207,7 @@
     "fallbackFlip": {
       "proven": true,
       "reason": "drift-tolerance-exceeded",
-      "flippedAtTime": 11.021333333333331,
+      "flippedAtTime": 7.016000000000002,
       "gameplayContinued": true
     },
     "measuredDriftSamples": [
@@ -216,36 +216,20 @@
         "driftMs": 0
       },
       {
-        "t": 1.011,
-        "driftMs": -0.67
+        "t": 1.016,
+        "driftMs": 3.4
       },
       {
-        "t": 2.024,
-        "driftMs": -1.9
+        "t": 2.013,
+        "driftMs": 1.77
       },
       {
-        "t": 3.011,
-        "driftMs": 1.63
+        "t": 3.005,
+        "driftMs": 3.07
       },
       {
-        "t": 4.013,
-        "driftMs": 1.57
-      },
-      {
-        "t": 5.021,
-        "driftMs": 2.77
-      },
-      {
-        "t": 6.013,
-        "driftMs": 0.67
-      },
-      {
-        "t": 7.011,
-        "driftMs": 2.43
-      },
-      {
-        "t": 8.019,
-        "driftMs": -1.17
+        "t": 4.008,
+        "driftMs": 0.4
       }
     ],
     "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
@@ -281,10 +265,10 @@
   },
   "performance": {
     "schema": "aura3d-pulse-tunnel-performance/1.0",
-    "generatedAt": "2026-09-03T02:37:55.380Z",
+    "generatedAt": "2026-09-03T08:27:45.350Z",
     "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
     "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
-    "routeSourceSha256": "6dcd22fd3f211739ca38f506e76409f626bb7a1184eec66176f0eec96bacd317",
+    "routeSourceSha256": "4688a6cecde6b2d06f56935b40b6c18676ceb9215f279ea402c624d148ac7a59",
     "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
     "samples": 12000,
     "fixedStepSeconds": 0.008333333333333333,
@@ -293,9 +277,9 @@
       "fullRunDrawCalls": 600
     },
     "observed": {
-      "simulationP95Ms": 0.0015,
+      "simulationP95Ms": 0.0011,
       "chartEntries": 51,
-      "fullRunDrawCalls": 453
+      "fullRunDrawCalls": 202
     },
     "pass": true
   },
@@ -337,43 +321,43 @@
     "acceptanceArtifacts": [
       {
         "path": "tests/reports/pulse-tunnel/playable-load.png",
-        "sha256": "56c2efe77dd93954179a388a99b8b61d476618ea3930be81ea17290929f52a71"
+        "sha256": "628a1e31412e03bca9b81d042879c24d099ab9496b23de9c9f1a07bec3d9b8af"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-lane-switch.png",
-        "sha256": "b8d1b392d394209687f12395f5cb804504333245e2e31ab8b5cd97e04147c3e3"
+        "sha256": "e15d549a83ae22e8886eba5f79957bec352e9106b69fa6e0a11523062993017c"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-jump.png",
-        "sha256": "9d86e35f78701c52985127d8a531ce04078bf133d3bb76f40f35dc67584b748d"
+        "sha256": "e1cf99ce5c57d2ba93c93b607a18b94be747d39d5719b7209d7f0a3b5ab3c205"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-graze.png",
-        "sha256": "0975f722f75965f01b955ba1ee210b8aad83743e07a9a51a6a388daa1273f9b1"
+        "sha256": "f53379c8c5348f991cd040bbbbf82e0744f0903bb803d2d39c74d38f59692dde"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-drop-section.png",
-        "sha256": "07291ca2e093d710acfb710db1948c2e2df4604635848037858afbf8988d9975"
+        "sha256": "d578f049a93d8df036a72df6d63afcd1e0a4e7ed696cac42be135bb20289f6a7"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-shield-break.png",
-        "sha256": "6c70cfecac8907187219479a40993a2d67e87c53f3ce57a9cbbee384d87a7c4f"
+        "sha256": "1bbeaa723f099b1e616d0395930b066701ea07eb086c6f3cdf1f9359562b773d"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finale.png",
-        "sha256": "9c59b26922b287ef9ca8274dfb30242887bf3aac7fd16a7445044b88ff49cb78"
+        "sha256": "ce5d63d289a04870e6259752c47ff351a4059dad0e3805fcab6bb32194ff8121"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-summary.png",
-        "sha256": "0acd9f25c58d02ce539f7180646d23d4e444e30143d2d1b4fc7cb4e941d3b747"
+        "sha256": "c443ae40b4d382ae70781661344502cdc39e8e5e62328601c070de0fab61a53f"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finished.png",
-        "sha256": "6102bdb4590c908a8f2bc15994ec38d28d7ad1d730e588e6baf811c22aef0768"
+        "sha256": "3dc4f9df5dfb8baa56a0f1a94b07969f4d36001195b69901b816641e9f36aae7"
       },
       {
         "path": "tests/reports/pulse-tunnel/mobile.png",
-        "sha256": "4ae90d91348e1fea2ca3575f24a9bfe2521adcc1455cf2066b60cd1142f60900"
+        "sha256": "ac80e28d0f28432d1d43f328bd58284b2a0dd2a5e89dfdd4b082c434ae0101c1"
       }
     ],
     "performance": "apps/showcase-pulse-tunnel/performance-report.json",

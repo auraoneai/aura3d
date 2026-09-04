@@ -9,6 +9,7 @@ import type {
   CliAssetSearchProfile,
   CliResolveConstraints,
 } from "./types.js";
+import { inferQueryRole } from "./scoring.js";
 
 const {
   evaluateAnimationAssetProfile,
@@ -16,9 +17,21 @@ const {
   isAnimationAssetProfile,
 } = assetIndex;
 
+/**
+ * Triangle budgets applied to inferred character/vehicle queries.
+ *
+ * These mirror the Meshy admission maxima (humanoid 150k, vehicle 250k): a
+ * general-profile query that reads as a character or vehicle stops defaulting
+ * to an unbounded `general` fetch and resolves under the same budget the
+ * quality gates enforce downstream. Explicit caller values always win.
+ */
+export const INFERRED_CHARACTER_MAX_TRIANGLES = 150_000;
+export const INFERRED_VEHICLE_MAX_TRIANGLES = 250_000;
+
 export function toResolveConstraints(
   cli: CliResolveConstraints,
   redistributableOnly: boolean,
+  query?: string,
 ): ResolveConstraints {
   const constraints: {
     license?: readonly ("CC0" | "CC-BY")[];
@@ -27,6 +40,12 @@ export function toResolveConstraints(
     format?: "glb" | "gltf";
     redistributableOnly?: boolean;
   } = {};
+  if (cli.profile === "general" || cli.profile === undefined) {
+    const inferred = typeof query === "string" && query.trim().length > 0 ? inferQueryRole(query) : undefined;
+    if ((inferred === "character" || inferred === "vehicle") && typeof cli.maxTriangles !== "number") {
+      constraints.maxTriangles = inferred === "character" ? INFERRED_CHARACTER_MAX_TRIANGLES : INFERRED_VEHICLE_MAX_TRIANGLES;
+    }
+  }
   if (cli.profile === "fighting-character") {
     constraints.license = cli.license && cli.license.length > 0 ? cli.license : ["CC0", "CC-BY"];
     constraints.animated = true;
@@ -50,8 +69,25 @@ export function toResolveConstraints(
 export function rankForProfile(
   candidates: readonly ResolveCandidate[],
   profile: CliAssetSearchProfile,
+  query?: string,
 ): readonly ResolveCandidate[] {
-  if (profile === "general") return candidates;
+  if (profile === "general") {
+    // A general-profile character/vehicle query stops defaulting to unfiltered
+    // catalog order: candidates whose catalog role matches the inferred query
+    // role rank first (by resolver score, then id), exactly like an explicit
+    // profile's suitability sort. Any other query returns catalog order.
+    const inferred = typeof query === "string" && query.trim().length > 0 ? inferQueryRole(query) : undefined;
+    if (inferred !== "character" && inferred !== "vehicle") return candidates;
+    return [...candidates].sort((a, b) => {
+      const aMatch = a.asset.intendedRole === inferred ? 1 : 0;
+      const bMatch = b.asset.intendedRole === inferred ? 1 : 0;
+      return (
+        bMatch - aMatch ||
+        b.score - a.score ||
+        a.asset.id.localeCompare(b.asset.id)
+      );
+    });
+  }
   return [...candidates].sort((a, b) => {
     const aEval = evaluateAssetProfile(a.asset, profile);
     const bEval = evaluateAssetProfile(b.asset, profile);

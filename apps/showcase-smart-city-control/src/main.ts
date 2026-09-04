@@ -29,6 +29,7 @@ import {
   ui
 } from "@aura3d/engine";
 import type { AuraCameraSpec, AuraNodeInput, AuraSceneNode, AuraSceneSnapshot, FocusResult, SemanticRegion } from "@aura3d/engine";
+import { enforceFrameBudget, planScatterInstances, scatterWindOffset } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
@@ -149,6 +150,158 @@ function districtAnchor(district: SmartCityDistrict): readonly [number, number] 
   return [region.center[0], region.center[2]];
 }
 
+
+/**
+ * Scatter-planned green corridors (PART D2 adoption).
+ *
+ * 168 seeded candidates (west/east avenue strips, south promenade, six
+ * legacy anchors) distance-sorted from the street viewpoint and admitted
+ * through `planScatterInstances` (budget 120). The scatter frame budget
+ * governs this subsystem with exact inputs — every admitted tree renders
+ * two boxes (12 tris each), zero texture maps — and sheds the canopy node
+ * before frames drop. The shed latch persists until reload (no silent
+ * re-adding). Whole-frame GPU triangles are not root-observable, so the
+ * enforcer stays scoped to the subsystem it can measure exactly.
+ */
+const SCATTER_CORRIDOR_BUDGET = 120;
+const SCATTER_TRIS_PER_BOX = 12;
+let scatterShedCanopies = false;
+let lastScatterCorridor: ScatterCorridorReport | undefined;
+
+interface ScatterCorridorTree {
+  readonly x: number;
+  readonly z: number;
+  readonly distance: number;
+  readonly swayX: number;
+  readonly swayZ: number;
+}
+
+interface ScatterCorridorReport {
+  readonly admitted: readonly ScatterCorridorTree[];
+  readonly shedCanopies: boolean;
+  readonly plan: {
+    readonly admittedInstances: number;
+    readonly culledInstances: number;
+    readonly meshInstances: number;
+    readonly impostorInstances: number;
+    readonly shadowCasters: number;
+    readonly windStrength: number;
+    readonly withinBudget: boolean;
+  };
+  readonly admission: {
+    readonly candidates: number;
+    readonly submitted: number;
+    readonly culled: number;
+    readonly maxSubmittedDistance: number;
+    readonly minShedDistance: number;
+    readonly cullDistance: number;
+  };
+  readonly budget: {
+    readonly draws: number;
+    readonly triangles: number;
+    readonly trianglesComputedFrom: string;
+    readonly textures: number;
+    readonly overBudget: boolean;
+    readonly lodBias: number;
+    readonly shedDraws: number;
+    readonly appliedAction: string;
+  };
+}
+
+function scatterCorridorRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state |= 0;
+    state = (state + 0x6d2b79f5) | 0;
+    let mixed = Math.imul(state ^ (state >>> 15), 1 | state);
+    mixed = (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed;
+    return ((mixed ^ (mixed >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function createScatterCorridorPlan(): ScatterCorridorReport {
+  const random = scatterCorridorRandom(20260904);
+  const strips: Array<readonly [number, number]> = [
+    [-4.86, -2.52], [-4.64, 1.72], [4.78, -1.94], [4.62, 2.44],
+    [-2.92, 4.72], [2.18, 4.78]
+  ];
+  for (let i = 0; i < 54; i += 1) {
+    strips.push([-5.1 + random() * 0.8, -5 + random() * 10]);
+    strips.push([4.3 + random() * 0.8, -5 + random() * 10]);
+  }
+  for (let i = 0; i < 54; i += 1) {
+    strips.push([-5 + random() * 10, 4.4 + random() * 0.7]);
+  }
+  // Street viewpoint: the same authored view the route stages at night.
+  const reference = { x: -7.8, z: 8.8 };
+  const sorted = strips
+    .map(([x, z]) => ({ x, z, distance: Math.hypot(x - reference.x, z - reference.z) }))
+    .sort((a, b) => a.distance - b.distance);
+  const plan = planScatterInstances({
+    instanceBudget: SCATTER_CORRIDOR_BUDGET,
+    densityMapMean: 0.6,
+    windStrength: 0.35,
+    cullDistance: 120,
+    shadowCasterFraction: 0.25,
+    candidateInstances: strips.length
+  });
+  const admitted = sorted.slice(0, plan.admittedInstances).map(({ x, z, distance }) => {
+    const sway = scatterWindOffset(x, z, 0.6, plan.windStrength, 1, 2);
+    return { x, z, distance, swayX: sway.x, swayZ: sway.z };
+  });
+  const shed = sorted.slice(plan.admittedInstances);
+  const full = enforceFrameBudget({
+    draws: 2,
+    triangles: admitted.length * 2 * SCATTER_TRIS_PER_BOX,
+    textures: 0,
+    maxDraws: 8,
+    maxTriangles: 50000,
+    maxTextures: 4
+  });
+  if (full.overBudget) scatterShedCanopies = true;
+  const shedCanopies = scatterShedCanopies;
+  const active = shedCanopies
+    ? enforceFrameBudget({
+        draws: 1,
+        triangles: admitted.length * SCATTER_TRIS_PER_BOX,
+        textures: 0,
+        maxDraws: 8,
+        maxTriangles: 50000,
+        maxTextures: 4
+      })
+    : full;
+  return {
+    admitted,
+    shedCanopies,
+    plan: {
+      admittedInstances: plan.admittedInstances,
+      culledInstances: plan.culledInstances,
+      meshInstances: plan.meshInstances,
+      impostorInstances: plan.impostorInstances,
+      shadowCasters: plan.shadowCasters,
+      windStrength: plan.windStrength,
+      withinBudget: plan.withinBudget
+    },
+    admission: {
+      candidates: strips.length,
+      submitted: admitted.length,
+      culled: strips.length - admitted.length,
+      maxSubmittedDistance: Number(admitted[admitted.length - 1]!.distance.toFixed(3)),
+      minShedDistance: Number(shed[0]!.distance.toFixed(3)),
+      cullDistance: 120
+    },
+    budget: {
+      draws: shedCanopies ? 1 : 2,
+      triangles: admitted.length * (shedCanopies ? 1 : 2) * SCATTER_TRIS_PER_BOX,
+      trianglesComputedFrom: "admitted box instances at 12 tris each",
+      textures: 0,
+      overBudget: active.overBudget,
+      lodBias: active.lodBias,
+      shedDraws: active.shedDraws,
+      appliedAction: shedCanopies ? "shed-canopy-instances" : "none"
+    }
+  };
+}
 
 const APP_ID = "showcase-smart-city-control";
 /** Latest spatial invariant report; rebuilt whenever the overlay is composed. */
@@ -387,6 +540,8 @@ function buildSmartCityScene(): SceneBuild {
     "camera and flythrough modes",
     "authored skyline depth and transit spine",
     "bounds-derived road detail and vehicle contact shadow",
+    "scatter-planned green corridors (planScatterInstances + wind pose)",
+    "scatter frame-budget telemetry (enforceFrameBudget with canopy shed)",
     `${controls.timeOfDay} operations lighting`
   ];
   return {
@@ -435,7 +590,16 @@ function buildSmartCityScene(): SceneBuild {
       nodeCount: snapshot.nodes.length,
       visualDepthNodes: depthNodes.length,
       labelCount: snapshot.nodes.filter((node) => node.kind === "label").length,
-      district: controls.district
+      district: controls.district,
+      scatterCorridor: lastScatterCorridor
+        ? {
+            plan: lastScatterCorridor.plan,
+            admission: lastScatterCorridor.admission,
+            budget: lastScatterCorridor.budget,
+            shedCanopies: lastScatterCorridor.shedCanopies,
+            admittedTrees: lastScatterCorridor.admitted.length
+          }
+        : { missing: true }
     }
   };
 }
@@ -574,20 +738,28 @@ function createSmartCityDepthNodes(): AuraNodeInput[] {
     { position: [4.94, 1.18, -3.06] as [number, number, number], rotation: [0, 1.5708, 0] as [number, number, number], scale: [1.18, 0.05, 0.07] as [number, number, number] }
   ];
 
-  const treePositions = [
-    [-4.86, 0.34, -2.52], [-4.64, 0.34, 1.72], [4.78, 0.34, -1.94], [4.62, 0.34, 2.44],
-    [-2.92, 0.34, 4.72], [2.18, 0.34, 4.78]
-  ] as const;
-  const treeTrunks = treePositions.map(([x, y, z], index) => ({
-    position: [x, y, z] as [number, number, number],
+  // Green corridors are scatter-planned (PART D2): seeded candidates along
+  // the avenue strips plus the six legacy anchor trees, distance-sorted from
+  // the street viewpoint, admitted through `planScatterInstances`. All
+  // admitted trees render as boxes (12 tris each), so the scatter
+  // frame-budget triangles are exact, not estimated. Wind is the planner
+  // gust field baked at t=0.6s (static pose; animated sway is proven in the
+  // 50k-instance harness, not streamed per-instance here).
+  const corridor = createScatterCorridorPlan();
+  lastScatterCorridor = corridor;
+  const treeTrunks = corridor.admitted.map(({ x, z, swayX, swayZ }) => ({
+    position: [x + swayX, bounds.floorY + 0.35, z + swayZ] as [number, number, number],
     rotation: [0, 0, 0] as [number, number, number],
-    scale: [0.045, 0.34 + (index % 2) * 0.08, 0.045] as [number, number, number]
+    scale: [0.09, 0.7, 0.09] as [number, number, number]
   }));
-  const treeCanopies = treePositions.map(([x, y, z], index) => ({
-    position: [x, y + 0.56 + (index % 2) * 0.08, z] as [number, number, number],
+  const treeCanopies = corridor.admitted.map(({ x, z, swayX, swayZ }, index) => ({
+    position: [x + swayX, bounds.floorY + 1.02 + (index % 2) * 0.08, z + swayZ] as [number, number, number],
     rotation: [0, index * 0.27, 0] as [number, number, number],
-    scale: [0.32 + (index % 3) * 0.07, 0.45 + (index % 2) * 0.1, 0.32 + (index % 2) * 0.05] as [number, number, number]
+    scale: [0.55 + (index % 3) * 0.07, 0.6 + (index % 2) * 0.1, 0.55 + (index % 2) * 0.05] as [number, number, number]
   }));
+  const canopyColors = corridor.admitted.map(
+    (_, index) => (["#2f6d62", "#3f7861", "#315d68", "#4b7354", "#326f6c", "#56764e"] as const)[index % 6]!
+  );
 
   return [
     instances.box({
@@ -625,17 +797,21 @@ function createSmartCityDepthNodes(): AuraNodeInput[] {
       colors: ["#6be1e8", "#f2c66d", "#67c6dc", "#eea874"],
       material: material.metal({ name: "transit spine metal", color: "#315469", roughness: 0.34, metallic: 0.58 })
     }),
-    instances.cylinder({
+    instances.box({
       name: "smart city green corridor trunks",
       transforms: treeTrunks,
       material: material.pbr({ name: "green corridor trunks", color: "#4a3e36", roughness: 0.9, metallic: 0.02 })
     }),
-    instances.sphere({
-      name: "smart city green corridor canopies",
-      transforms: treeCanopies,
-      colors: ["#2f6d62", "#3f7861", "#315d68", "#4b7354", "#326f6c", "#56764e"],
-      material: material.emissive({ name: "green corridor foliage", color: "#3a887b", emissive: "#1f5c55", emissiveIntensity: 0.34, opacity: 0.94 })
-    })
+    ...(corridor.shedCanopies
+      ? []
+      : [
+          instances.box({
+            name: "smart city green corridor canopies",
+            transforms: treeCanopies,
+            colors: canopyColors,
+            material: material.emissive({ name: "green corridor foliage", color: "#3a887b", emissive: "#1f5c55", emissiveIntensity: 0.34, opacity: 0.94 })
+          })
+        ])
   ];
 }
 
@@ -1038,7 +1214,7 @@ function publishEvidence(status: ShowcaseStatus): void {
     },
     controls: { ...controls },
     systems: activeBuild.systems,
-    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, a typed vehicle asset, native tower instancing, distance LOD, runtime frustum-culling diagnostics, district overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, imported city geometry, GPU occlusion culling, or traffic simulation fidelity.",
+    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, a typed vehicle asset, native tower instancing, distance LOD, runtime frustum-culling diagnostics, district overlays, labels, controls, runtime telemetry, scatter-planned green corridors, and scatter frame-budget telemetry. It does not claim real GIS data, imported city geometry, GPU occlusion culling, traffic simulation fidelity, or simulated ecology.",
     telemetry,
     diagnostics: {
       ...activeBuild.diagnostics,

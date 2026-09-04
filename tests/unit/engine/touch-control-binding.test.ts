@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   bindGameTouchControls,
+  bindGameTouchLayoutPreset,
+  touchLayoutBindingsForGenre,
   type TouchControlElement,
   type TouchControlHost
 } from "../../../packages/engine/src/agent-api/TouchControlBinding";
+import { createTouchLayoutPreset, type TouchLayoutGenre } from "../../../packages/input/src/index";
 
 /**
  * Reusable on-screen control binding, extracted after the replicability metric's repeated-cluster detector
@@ -164,6 +167,39 @@ describe("bindGameTouchControls", () => {
     const result = bindGameTouchControls({ host: dom.host });
     expect(result.bound).toEqual([]);
     expect(result.missing).toEqual([]);
+  });
+});
+
+describe("genre touch-layout presets (I2)", () => {
+  it("engine button maps match the input-package presets per genre", () => {
+    const genres: readonly TouchLayoutGenre[] = ["fight", "race", "platform"];
+    for (const genre of genres) {
+      const engine = touchLayoutBindingsForGenre(genre);
+      const input = createTouchLayoutPreset(genre);
+      const enginePairs = [...engine.hold, ...engine.pulse].map((binding) => `${binding.elementId}=${binding.code}`).sort();
+      const inputPairs = [...input.hold, ...input.pulse].map((binding) => `${binding.elementId}=${binding.code}`).sort();
+      expect(enginePairs, genre).toEqual(inputPairs);
+    }
+  });
+
+  it("bindGameTouchLayoutPreset binds genre buttons through the hold/pulse path", () => {
+    const bindings = touchLayoutBindingsForGenre("platform", "t2-platform");
+    const ids = [...bindings.hold, ...bindings.pulse].map((binding) => binding.elementId);
+    const dom = createHost(ids);
+    const result = bindGameTouchLayoutPreset({ genre: "platform", elementIdPrefix: "t2-platform", host: dom.host });
+    expect(result.missing).toEqual([]);
+    expect([...result.bound].sort()).toEqual([...ids].sort());
+
+    dom.fire("t2-platform:left", "pointerdown");
+    expect(dom.keys).toContainEqual({ type: "keydown", code: "ArrowLeft" });
+    dom.fire("t2-platform:left", "pointerup");
+    expect(dom.keys).toContainEqual({ type: "keyup", code: "ArrowLeft" });
+
+    dom.fire("t2-platform:jump", "click");
+    expect(dom.keys).toContainEqual({ type: "keydown", code: "Space" });
+    dom.advance(40);
+    expect(dom.keys).toContainEqual({ type: "keyup", code: "Space" });
+    result.dispose();
   });
 });
 

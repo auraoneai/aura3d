@@ -32,6 +32,28 @@ test.describe("audio browser runtime", () => {
     expect(result?.sourceStateAfterStop).toBe("stopped");
     expect(result?.repeatedMounts).toBe(10);
   });
+
+  test("I1: positional emitter, mixer ducking, and footstep hooks run on the real graph", async ({ page }) => {
+    await page.goto(`${server.origin}/tests/browser/audio-browser-harness.html`, { waitUntil: "domcontentloaded" });
+    await page.locator("#audio-start").click();
+    await page.waitForFunction(
+      () => window.__AURA3D_AUDIO_BROWSER_TEST__?.status === "ready" || window.__AURA3D_AUDIO_BROWSER_TEST__?.status === "error",
+      undefined,
+      { timeout: 10_000 }
+    );
+
+    const result = await page.evaluate(() => window.__AURA3D_AUDIO_BROWSER_TEST__);
+
+    expect(result?.status, result?.error).toBe("ready");
+    expect(result?.positionalConnected).toBe(true);
+    expect(result?.positionalAttenuation).toBeCloseTo(1 / 3, 5);
+    expect(result?.positionalDopplerAboveOne).toBe(true);
+    expect(result?.positionalOcclusion).toBe(0.5);
+    expect(result?.mixerDuckedMusic).toBeCloseTo(0.8 * 0.35, 5);
+    expect(result?.mixerRestoredMusic).toBeCloseTo(0.8, 5);
+    expect(result?.footstepFirst).toBe("step-grass-a");
+    expect(result?.footstepFallback).toBe("step-default");
+  });
 });
 
 declare global {
@@ -45,6 +67,14 @@ declare global {
       readonly sourceStateAfterResume?: string;
       readonly sourceStateAfterStop: string;
       readonly repeatedMounts?: number;
+      readonly positionalConnected?: boolean;
+      readonly positionalAttenuation?: number;
+      readonly positionalDopplerAboveOne?: boolean;
+      readonly positionalOcclusion?: number;
+      readonly mixerDuckedMusic?: number;
+      readonly mixerRestoredMusic?: number;
+      readonly footstepFirst?: string | null;
+      readonly footstepFallback?: string | null;
       readonly error?: string;
     };
   }

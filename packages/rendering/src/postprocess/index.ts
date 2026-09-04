@@ -1,4 +1,10 @@
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./EffectComposer";
+export {
+  bloomPyramidCompositeGain,
+  normalizeBloomQualityPreset,
+  resolveBloomPyramidPlan,
+} from "./NativeBloomPyramid";
+export type { BloomPyramidMip, BloomPyramidPlan, BloomQualityPreset } from "./NativeBloomPyramid";
 export type {
   PostProcessCapabilityReport,
   PostProcessComposerDiagnostics,

@@ -14,6 +14,7 @@ export interface A3DXRSessionInit {
 
 export interface A3DXRSessionLike {
   readonly inputSources?: readonly A3DXRInputSourceLike[];
+  readonly enabledFeatures?: readonly string[];
   requestReferenceSpace?(type: A3DXRReferenceSpaceType): Promise<A3DXRReferenceSpaceLike>;
   requestAnimationFrame?(callback: (time: number, frame: A3DXRFrameLike) => void): number;
   end?(): Promise<void>;
@@ -25,6 +26,7 @@ export interface A3DXRInputSourceLike {
   readonly profiles?: readonly string[];
   readonly targetRaySpace?: unknown;
   readonly gripSpace?: unknown;
+  readonly hand?: A3DXRHandLike;
   readonly gamepad?: {
     readonly buttons?: readonly { readonly pressed?: boolean; readonly touched?: boolean; readonly value?: number }[];
     readonly axes?: readonly number[];
@@ -32,9 +34,33 @@ export interface A3DXRInputSourceLike {
   };
 }
 
+/** Injected hand-tracking state for one input source (N3). Joint names follow
+ * the WebXR Hand Input `XRHandJoint` identifiers (e.g. "wrist",
+ * "index-finger-tip"); unknown names pass through untouched. */
+export interface A3DXRJointSample {
+  readonly position?: readonly [number, number, number];
+  readonly orientation?: readonly [number, number, number, number];
+  readonly radius?: number;
+}
+
+export interface A3DXRHandLike {
+  readonly handedness?: A3DXRHandedness;
+  readonly trackingState?: "tracked" | "not-tracked" | unknown;
+  readonly joints?: Readonly<Record<string, A3DXRJointSample>>;
+}
+
+export interface A3DXRViewerPoseLike {
+  readonly position?: readonly [number, number, number];
+  readonly orientation?: readonly [number, number, number, number];
+  readonly viewMatrix?: readonly number[];
+  readonly projectionMatrix?: readonly number[];
+}
+
 export interface A3DXRFrameLike {
   getHitTestResults?(source: unknown): readonly A3DXRHitTestResultLike[];
   getPose?(space: unknown, baseSpace: A3DXRReferenceSpaceLike): A3DXRPoseLike | undefined;
+  /** Viewer pose for XR camera handling; absent on sessions without tracking. */
+  getViewerPose?(referenceSpace: A3DXRReferenceSpaceLike): A3DXRViewerPoseLike | undefined;
 }
 
 export interface A3DXRReferenceSpaceLike {
@@ -80,6 +106,37 @@ export interface WebXRHitTestSample {
   readonly normal: readonly [number, number, number];
 }
 
+export interface WebXRJointSample {
+  readonly position: readonly [number, number, number] | null;
+  readonly radius: number;
+}
+
+export interface WebXRHandSample {
+  readonly handedness: A3DXRHandedness;
+  readonly tracked: boolean;
+  readonly jointCount: number;
+  readonly joints: Readonly<Record<string, WebXRJointSample>>;
+}
+
+export interface WebXRCameraSample {
+  readonly tracked: boolean;
+  readonly position: readonly [number, number, number] | null;
+  readonly orientation: readonly [number, number, number, number] | null;
+  readonly viewMatrix: readonly number[] | null;
+  readonly projectionMatrix: readonly number[] | null;
+}
+
+/** Capability report: what THIS injected session actually provided. Every
+ * flag degrades to an explicit false/empty — never a hardware claim. */
+export interface WebXRCapabilityReport {
+  readonly handTracking: boolean;
+  readonly viewerPose: boolean;
+  readonly hitTest: boolean;
+  readonly haptics: boolean;
+  readonly referenceSpace: A3DXRReferenceSpaceType;
+  readonly enabledFeatures: readonly string[];
+}
+
 export interface WebXRFrameSample {
   readonly mode: A3DXRSessionMode;
   readonly referenceSpace: A3DXRReferenceSpaceType;
@@ -88,6 +145,9 @@ export interface WebXRFrameSample {
   readonly controllers: readonly WebXRControllerSample[];
   readonly hitTestCount: number;
   readonly hitTests: readonly WebXRHitTestSample[];
+  readonly hands: readonly WebXRHandSample[];
+  readonly camera: WebXRCameraSample;
+  readonly capabilities: WebXRCapabilityReport;
 }
 
 export interface WebXRSessionStartResult {
@@ -158,10 +218,17 @@ export class WebXRSessionController {
 
   sampleFrame(frame?: A3DXRFrameLike, hitTestSource?: unknown): WebXRFrameSample {
     const referenceSpace = this.referenceSpace ?? { type: this.referenceSpaceType };
-    const controllers = Array.from(this.session?.inputSources ?? []).map((source) => sampleInputSource(source, frame, referenceSpace));
+    const sources = Array.from(this.session?.inputSources ?? []);
+    const controllers = sources.map((source) => sampleInputSource(source, frame, referenceSpace));
+    const hands = sources
+      .filter((source) => source.hand !== undefined)
+      .map((source) => sampleHand(source.handedness ?? "none", source.hand));
     const hitTests = frame?.getHitTestResults && hitTestSource
       ? frame.getHitTestResults(hitTestSource).map(sampleHitTest)
       : [];
+    const camera = sampleViewerPose(frame, referenceSpace);
+    const hitTestCapable = Boolean(frame?.getHitTestResults && hitTestSource);
+    const enabledFeatures = Array.from(this.session?.enabledFeatures ?? []);
     return {
       mode: this.mode,
       referenceSpace: this.referenceSpace?.type ?? this.referenceSpaceType,
@@ -169,7 +236,17 @@ export class WebXRSessionController {
       controllerCount: controllers.length,
       controllers,
       hitTestCount: hitTests.length,
-      hitTests
+      hitTests,
+      hands,
+      camera,
+      capabilities: {
+        handTracking: hands.some((hand) => hand.tracked),
+        viewerPose: camera.tracked,
+        hitTest: hitTestCapable,
+        haptics: controllers.some((controller) => controller.hapticActuatorCount > 0),
+        referenceSpace: this.referenceSpace?.type ?? this.referenceSpaceType,
+        enabledFeatures
+      }
     };
   }
 
@@ -218,6 +295,45 @@ function samplePoseMatrix(frame: A3DXRFrameLike | undefined, space: unknown, ref
   return sanitizeMatrix4(frame.getPose(space, referenceSpace)?.transform?.matrix);
 }
 
+function sampleHand(handedness: A3DXRHandedness, hand: A3DXRHandLike | undefined): WebXRHandSample {
+  const joints: Record<string, WebXRJointSample> = {};
+  const entries = hand?.joints ? Object.entries(hand.joints).slice(0, 64) : [];
+  for (const [name, joint] of entries) {
+    joints[name] = {
+      position: sanitizeVec3OrNull(joint?.position),
+      radius: typeof joint?.radius === "number" && Number.isFinite(joint.radius) ? Math.max(0, joint.radius) : 0
+    };
+  }
+  const jointCount = Object.keys(joints).length;
+  return {
+    handedness,
+    tracked: hand?.trackingState === "tracked" && jointCount > 0,
+    jointCount,
+    joints
+  };
+}
+
+function sampleViewerPose(frame: A3DXRFrameLike | undefined, referenceSpace: A3DXRReferenceSpaceLike): WebXRCameraSample {
+  const untracked: WebXRCameraSample = {
+    tracked: false,
+    position: null,
+    orientation: null,
+    viewMatrix: null,
+    projectionMatrix: null
+  };
+  const pose = frame?.getViewerPose?.(referenceSpace);
+  if (!pose) return untracked;
+  const position = sanitizeVec3OrNull(pose.position);
+  const orientation = sanitizeQuatOrNull(pose.orientation);
+  // Strict: a single non-finite entry invalidates the whole matrix. Zeroing
+  // it (the legacy controller-pose behavior) would silently warp the XR
+  // camera, so the sample degrades to untracked instead.
+  const viewMatrix = sanitizeMatrix4Strict(pose.viewMatrix);
+  const projectionMatrix = sanitizeMatrix4Strict(pose.projectionMatrix);
+  if (!position && !orientation && !viewMatrix && !projectionMatrix) return untracked;
+  return { tracked: true, position, orientation, viewMatrix, projectionMatrix };
+}
+
 function sampleHitTest(result: A3DXRHitTestResultLike): WebXRHitTestSample {
   return {
     position: sanitizeVec3(result.position, [0, 0, 0]),
@@ -231,6 +347,31 @@ function sanitizeVec3(value: readonly number[] | undefined, fallback: readonly [
   const y = finiteOrZero(value[1]);
   const z = finiteOrZero(value[2]);
   return [x, y, z];
+}
+
+function sanitizeVec3OrNull(value: readonly [number, number, number] | readonly number[] | undefined): readonly [number, number, number] | null {
+  if (!value || value.length < 3) return null;
+  const x = value[0];
+  const y = value[1];
+  const z = value[2];
+  if (typeof x !== "number" || typeof y !== "number" || typeof z !== "number") return null;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return null;
+  return [x, y, z];
+}
+
+function sanitizeQuatOrNull(value: readonly [number, number, number, number] | readonly number[] | undefined): readonly [number, number, number, number] | null {
+  if (!value || value.length < 4) return null;
+  const [x, y, z, w] = [value[0], value[1], value[2], value[3]];
+  if (typeof x !== "number" || typeof y !== "number" || typeof z !== "number" || typeof w !== "number") return null;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z) || !Number.isFinite(w)) return null;
+  return [x, y, z, w];
+}
+
+function sanitizeMatrix4Strict(value: readonly number[] | undefined): readonly number[] | null {
+  if (!value || value.length < 16) return null;
+  const matrix = value.slice(0, 16);
+  if (matrix.some((entry) => typeof entry !== "number" || !Number.isFinite(entry))) return null;
+  return Array.from(matrix);
 }
 
 function finiteOrZero(value: unknown): number {

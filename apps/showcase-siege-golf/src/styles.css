@@ -68,7 +68,9 @@ html, body {
    * action row, making a screenshot look like a backend/debug card had won the
    * composition even though the controls were mounted below the fold. */
   max-height: min(520px, calc(100vh - 32px));
-  background: rgba(35, 31, 26, 0.38);
+  /* HUD-contrast pass: near-opaque card so stat text holds contrast against
+   * bright course geometry instead of reading as a translucent debug overlay. */
+  background: rgba(24, 21, 17, 0.88);
   border: 1px solid var(--panel-edge);
   border-radius: 14px;
   padding: 10px 12px;
@@ -84,14 +86,22 @@ html, body {
  * evidence JSON, but removes the side control panel from the comparison frame
  * so the typed ball, collision response, and course set dressing read first.
  * The panel remains mounted and fully available on the public route. */
-.panel[data-capture="review"] {
-  opacity: 0;
+/* The named active-impact frame keeps a compact score bug (brand + stat grid
+ * + hole banner) so the capture still reads as a game with a hole, par, and
+ * strokes. Only the control/evidence sections hide: buttons, dials, key
+ * legends, and backend strips contributed nothing to the comparison while
+ * covering the course. The panel remains fully mounted on the public route. */
+.panel[data-capture="review"] .precision-shot,
+.panel[data-capture="review"] .controls-list,
+.panel[data-capture="review"] .action-row,
+.panel[data-capture="review"] .evidence-strip,
+.panel[data-capture="review"] .power-meter,
+.panel[data-capture="review"] .power-meta {
+  display: none;
 }
 
-/* The named active-impact frame is a renderer-only comparison image. Keep the
- * banner mounted for accessibility and state evidence, but let the course,
- * ball, and collision response own the visual hierarchy in that one capture. */
-body[data-capture="review"] .hole-banner,
+/* Keep the result card out of the comparison frame (it covers the course on
+ * hole complete) while the hole banner stays visible as the state read. */
 body[data-capture="review"] .result-card {
   opacity: 0;
   pointer-events: none;

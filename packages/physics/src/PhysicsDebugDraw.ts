@@ -34,6 +34,12 @@ export type DebugRaycast = {
 };
 
 export type PhysicsDebugDrawOptions = {
+  /**
+   * Master toggle. `false` emits zero lines (the route hides the overlay without
+   * tearing down the world or the draw call that consumes the lines).
+   * Defaults to `true` so the existing single-argument call is unchanged.
+   */
+  readonly enabled?: boolean;
   /** Draw contact points and their normals. */
   readonly contacts?: boolean;
   /** Draw joint anchors and the segment between them. */
@@ -44,6 +50,32 @@ export type PhysicsDebugDrawOptions = {
   readonly raycasts?: readonly DebugRaycast[];
   /** Length of a drawn contact normal, in world units. */
   readonly normalLength?: number;
+  /**
+   * Line budget. When the world would emit more lines than this, the tail is
+   * dropped and counted in telemetry instead of stalling the frame on debug
+   * geometry. Must be a non-negative integer when present.
+   */
+  readonly maxLines?: number;
+};
+
+/** Per-build accounting for a budgeted debug draw, so a route can prove the overlay stayed within budget. */
+export type PhysicsDebugDrawTelemetry = {
+  /** Lines the world would have emitted without a budget. */
+  readonly requested: number;
+  /** Lines actually returned. */
+  readonly emitted: number;
+  /** Lines dropped by the budget (`requested - emitted`). */
+  readonly dropped: number;
+  /** True when a `maxLines` budget was applied. */
+  readonly budgeted: boolean;
+  /** Emitted line counts by category. */
+  readonly byCategory: Readonly<Record<string, number>>;
+};
+
+/** Lines plus the telemetry proving they fit the budget. */
+export type PhysicsDebugDrawBudgetedResult = {
+  readonly lines: readonly DebugLine[];
+  readonly telemetry: PhysicsDebugDrawTelemetry;
 };
 
 type DebugWorld = Pick<PhysicsWorld, "colliders" | "getBody"> &
@@ -60,6 +92,27 @@ export class PhysicsDebugDraw {
    * Options default to off so the existing single-argument call keeps its previous output exactly.
    */
   buildLines(world: DebugWorld, options: PhysicsDebugDrawOptions = {}): readonly DebugLine[] {
+    return this.buildLinesBudgeted(world, options).lines;
+  }
+
+  /**
+   * Build debug geometry with toggle + budget enforcement and telemetry.
+   *
+   * `enabled: false` returns zero lines (toggle off). `maxLines` truncates the
+   * tail and reports the drop count — the overlay degrades instead of the frame.
+   */
+  buildLinesBudgeted(world: DebugWorld, options: PhysicsDebugDrawOptions = {}): PhysicsDebugDrawBudgetedResult {
+    if (options.enabled === false) {
+      return {
+        lines: [],
+        telemetry: { requested: 0, emitted: 0, dropped: 0, budgeted: false, byCategory: {} }
+      };
+    }
+    if (options.maxLines !== undefined) {
+      if (!Number.isInteger(options.maxLines) || options.maxLines < 0) {
+        throw new Error(`PhysicsDebugDraw maxLines must be a non-negative integer, got ${options.maxLines}.`);
+      }
+    }
     const lines: DebugLine[] = [];
     const snapshot = options.contacts || options.sleeping ? world.snapshot?.() : undefined;
     const sleepingIds = new Set<number>();
@@ -128,7 +181,24 @@ export class PhysicsDebugDraw {
       });
     }
 
-    return lines;
+    const requested = lines.length;
+    const budgeted = options.maxLines !== undefined;
+    const emitted = budgeted ? lines.slice(0, options.maxLines) : lines;
+    const byCategory: Record<string, number> = {};
+    for (const line of emitted) {
+      const key = line.category ?? "uncategorized";
+      byCategory[key] = (byCategory[key] ?? 0) + 1;
+    }
+    return {
+      lines: emitted,
+      telemetry: {
+        requested,
+        emitted: emitted.length,
+        dropped: requested - emitted.length,
+        budgeted,
+        byCategory
+      }
+    };
   }
 }
 

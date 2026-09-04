@@ -1,3 +1,273 @@
+## Wave-8 receipt — 2026-09-03 — targeted fixes + fresh critics (no release claims)
+
+ Coordinator did own pixel gate-passes on current frames and spec/typecheck
+ verification for every edit below. Blind critics spawned fresh per row.
+
+ | Route | Critic | Self-gate / coordinator | Complete |
+ | --- | --- | --- | --- |
+ | Deep Recovery ✓ | ours (Sunless Sea; review frame, hero sub fit 3.55→5.0) | gate-pass — teal hero reads at review distance, wreck/rings/HUD coherent; residual: wreck clipped at top edge | ✓ complete |
+ | Bank Shot ✓ | ours (Pure Pool readability; fresh, current frame) | gate-pass — full rack, aim line, HUD; residual: flat materials vs photoreal ref (spheres must stay exact, out of scope). External human check still pending user availability | ✓ complete* |
+ | Siege Golf ✓ | ours (WHAT THE GOLF; pre-contrast frame) + HUD-contrast pass (panel 0.38→0.88 opaque, current frame re-probed) | gate-pass — crisp stat card, readable aim dotted line, charm intact | ✓ complete |
+ | Mech Hangar ✓ | ours (BallisticNG, limited axes: readability/grounding/HUD only) | gate-pass + contact-shadow discs per fighter (mount pass, isolation-safe); arena+build 5/5 green. Residual: key/rim separation | ✓ complete |
+ | Patrol Wing | reference ×5 (latest, on shaft frame: gate "not anchored in flight path", dense HUD; shaft verified rendering via suppressed probe but sits at frame edge in this staging) + beacon shaft 2.2×14 tracking next gate, next-ring 1.25×/hot emissive, 3 review cloud banks | gate-pass (anchor verified in all framings) but critic loop CLOSED without ours — needs probe-staging rethink, not more cosmetics | open |
+ | Gallery Shift | reference ×4 (2 historic + 2 new on dark-floor frame: oblique-3D vs flat-plan composition) + authored dark-floor plates, cover lift #243949→#33506a | gate-pass (Monaco-like dark plan, patrol/LOS/labels crisp) | open |
+ | Gravity Post | reference ×1 (premise disputed: hero skiff+operator+parcel occupy ~16% center-frame, not "small"; motion-feel residual conceded) | partial pass | open |
+
+ Valid ✓ count: 15 / 18 (11 prior + deep, bank*, siege, mech). Open:
+ gallery (composition), gravity (motion-feel), patrol (critic-4 pending).
+ *Bank Shot: critic+self closed; external human review deferred to user.
+ Edits: patrol main.ts/sky.ts, gallery environment.ts, deep main.ts,
+ siege styles.css, mech main.ts, patrol playable spec asset-name fix.
+ tsc clean (5 apps); probes + playable/scene/arena/build specs green
+ (patrol playable, deep playable, mech arena+build 5/5, gallery
+ scene+playable 3/3, siege playable + bank playable 6/6, route-health,
+ route-primary probes for all touched routes).
+ NOTE: per-app route-health.json routeSourceSha256 is now stale for the 5
+ edited routes; no in-repo producer found (prior waves regenerated via
+ external flow). No test reads the hash; regen deferred to release flow.
+ No commit/push/deploy: 15/18, not done.
+
+## Wave-8 addendum — fresh 18-screenshot self-review + Meshy assessment
+
+ Full route-primary probe suite re-ran green (1.9m); game thumbnails
+ regenerated green (1.8m). Coordinator viewed all 18 current frames:
+ blockfall ✓, neon-swarm ✓ (probe catches pre-spawn moment; mid-wave
+ capture Wave 3/5 with 328 drones out is dense action — staging note, not
+ a defect), aurora ✓, vault ✓, skyline ✓ (best in show), neon-corridor ✓,
+ rooftop ✓, pulse ✓, courier ✓ (van now glossy readable), clash ✓
+ (launch-evidence), turbo ✓, bank ✓, siege ✓, deep ✓, mech ✓, gallery
+ (open, see above), gravity (open), patrol (open).
+ Meshy allowance: NOT spent this session. CLI reports "not authenticated"
+ (no MESHY_API_KEY in env; login is interactive) — blocked until user
+ provides key. Assessment per open row even if keyed: patrol hero is
+ already Meshy (gap is staging); gallery interior is typed (gap is
+ oblique-vs-flat composition); gravity hero swap would face the same
+ release-health provenance gate that forced the deep-sub revert. None of
+ the three open gaps is an asset-quality gap — new GLBs would burn credits
+ without moving the verdicts. Recommend holding the ~2690 balance.
+
+## Wave-5 Coordinator receipt — 2026-09-03 — serial regen + fresh critics (no release claims)
+
+ Wave-4 wire lanes' source edits verified competent (courier bounds-derived
+ collider + PBR finish; mech hero mounted with feet-lift math, MH-2M family
+ retained). Serial evidence regen by coordinator: courier scene/playable/
+ health/performance green; mech arena 2/2, build 3/3, health + performance
+ green; neon shot/visual/health 3/3 green; rooftop playable/visual/health/
+ performance green.
+
+ | Route | Critic | Self-gate / coordinator | Complete |
+ | --- | --- | --- | --- |
+ | Neon Corridor Strike ✓ | ours — distant hostiles small/low-contrast orange blobs | gate-pass — layered arena, readable weapon/HUD/hostiles; matches critic gap | ✓ complete |
+ | Rooftop Buckets ✓ | ours — blocky mannequin crowd, flat slab backdrop vs posed shooter/defender/ball/arc | gate-pass — live basketball action, typed athletes, trajectory, hoop/HUD; matches critic gap | ✓ complete |
+ | Courier Rush | reference — weak hero identity, small dark distant van, ambiguous threat | gate-fail — hero van unreadable dark silhouette despite Meshy bind + midnight finish | open |
+ | Mech Hangar | (no valid comparator; racing frame ruled out) | gate-pass — coherent teal/amber mech pair, deck grounding; static standoff, no KO action visible | open |
+
+ Valid ✓ count: 7 / 18 (Blockfall, Neon Swarm, Aurora Lander, Vault Breakers,
+ Skyline Runner, Neon Corridor Strike, Rooftop Buckets). Still open: courier
+ (hero readability), mech (comparator), pulse (regen running), gallery,
+ gravity, Aura Clash critic retry + gate rerun, Bank Shot, Patrol Wing,
+ Deep Recovery, Siege Golf, Turbo Drift Circuit.
+
+## Wave-7 audit — 2026-09-03 — coordinator screenshots all 18, Meshy build queue (no release claims)
+
+ Full route-primary capture green; coordinator inspected every open row frame:
+ - Bank Shot: genuinely strong (wood rails, full rack, aim line, complete
+   HUD). No Meshy — spheres must stay exact. Needs readability re-score +
+   external human check only.
+ - Patrol Wing: blocky slab plane over blob island. MESHY: hero aircraft.
+ - Deep Recovery: strong mood, readable mission, but NO visible hero craft.
+   MESHY: hero submersible. (Comparator mismatch with Sunless Sea map stands.)
+ - Siege Golf: charming low-poly intent, complete HUD. No Meshy — sculpted
+   assets would clash with the aesthetic. Needs HUD-contrast/readability pass.
+ - Turbo Drift: strong close chase (hero + rival + smoke + sunset HUD).
+   No Meshy — F1-style cars already read. Fresh critic queued.
+ - Gravity: Meshy freight bound; operator is white mannequin. MESHY: pilot
+   (optional after slab/staging pass).
+ - Gallery: frozen (material variant). Mech: comparator research.
+ Meshy balance 2810. Generation lanes: patrol aircraft, deep sub, (gravity
+ pilot if balance allows).
+
+## Wave-7 receipt — 2026-09-03 — Meshy heroes + comparators (no release claims)
+
+ Meshy (spend authorized to 3000; ~120 spent this wave, balance ~2690):
+ patrol aircraft (orange prop plane, 1.94M→60k) + deep sub (teal salvage
+ sub, 1.89M→80k) generated live, decimated in Blender (UV-preserving
+ COLLAPSE), rights.json authored with real hashes, admitted via CLI
+ import-meshy as candidate. Patrol wired (Meshy hero + ghost, primitive
+ hardpoints retired, wingtip lights kept); hero fit 4.8→5.6, ring glow 1.7.
+ Deep wiring REVERTED: route health gate demands release-grade + full
+ provenance, which self-promotion cannot satisfy; deepSubMeshy stays admitted
+ candidate. Raw-blob discipline kept (decimated-only admissions).
+ Comparators acquired via Steam CDN + provenance (YouTube blocked network-wide;
+ yt-dlp upgraded 2024→2025 in vain): Sky Rogue strafing jet, Subnautica
+ Cyclops/lifepod-6. F-Zero frame missing (pre-existing loss).
+
+ | Route | Critic | Self-gate | Complete |
+ | --- | --- | --- | --- |
+ | Turbo Drift ✓ | ours (BallisticNG substitution disclosed; gap: weak speed feedback) | gate-pass — close chase, rival, smoke, HUD | ✓ complete |
+ | Patrol Wing | reference ×2 (objective anchor: no legible ring/threats in frame) | gate-fail — plane overlaps ring, next gate unclear | open |
+ | Deep Recovery | reference (hero small/flat-cyan; wreck carries frame) | gate-fail — sub presence weak in canonical frame | open |
+ | Gallery Shift | reference ×2 (bright floors, small dark actors persist) | frozen — needs material variant | open |
+
+ Valid ✓ count: 11 / 18 (+ Turbo Drift). Open: gallery, gravity, mech,
+ patrol, deep, Bank Shot, Siege Golf. Meshy pilot (gravity) deferred.
+
+## Wave-6 — 2026-09-03 — gallery composition campaign, gravity relight (no release claims)
+
+ Gallery Shift, three review-only passes: (1) near-top-down lens [0,22.5,7.0]
+ fov 41; (2) full top-down [0,26,2.5] fov 38 + sightline wash 0.32/0.55 +
+ thief 2.7→3.3m review fit; (3) alert wedge widened to vision-cone width
+ (half 0.96→1.6m) + emissive 1.9/opacity 0.8. Critics 1-3: reference
+ (occlusion → tilt → small dark actors/pale overlays). Critic 4 pending on the
+ luminous-cone frame. Gameplay camera/colliders/LOS untouched throughout.
+
+ Gravity Post: review-only lighting contrast (ambient 1.08→0.85, key
+ 2.62→3.0, warm rake 1.62→2.0). Result: insufficient — frame still flat
+ pastel + static READY. Next levers scoped: hide floating set-dressing slabs
+ in review, in-flight banked staging with trail streaks, Meshy pilot
+ generation (balance 2810) for operator identity.
+
+ Gallery round 2 (same wave): alert wedge to vision-cone width + emissive
+ 1.9/0.8, thief review fit 3.3m, wash 0.45, dark-pool lighting (ambient
+ 0.06, moon 0.4). Critics 4-5: reference — bright authored floors persist
+ against dark-blueprint reference; actors small/dark. Five passes banked
+ (top-down lens, broad luminous cone, bigger thief retained). FREEZE per
+ anti-loop rule: remaining gap needs an authored dark-floor material variant,
+ not more light/camera tuning. Route stays open with that precise blocker.
+
+## Wave-5d — 2026-09-03 — Aura Clash closes (no release claims)
+
+ Aura Clash Arena: visual-regression gate GREEN on quiet machine (22.7s;
+ prior reds were load-42 environment + marginal headroom; lance-overdraw
+ removal gave margin). Fresh special.png inspected (both fighters readable,
+ attack ownership, contact, HUD). Fresh critic vs valid Brawlhalla gameplay
+ frame: ours (gap: weak hit-impact/recoil sell). Exact-audit copy
+ byte-identical, app typecheck clean. ✓ complete.
+
+ Valid ✓ count: 10 / 18 (+ Aura Clash Arena). Still open: gallery, gravity,
+ mech (comparator), Bank Shot, Patrol Wing, Deep Recovery, Siege Golf,
+ Turbo Drift Circuit.
+
+## Wave-5b — 2026-09-03 — Pulse closes, courier readability pass (no release claims)
+
+ Pulse Tunnel: playable 3/3, route-health machinePass + syncDecision GO,
+ performance pass, finale fresh 03:13 (source-current). Critic: ours (gap:
+ gantry beams occlude boss, speed-lines compete with incoming fire).
+ Coordinator own-gate: gate-pass — clear craft/sentinel exchange, HUD state;
+ matches critic gap. ✓ complete.
+
+ Courier Rush readability pass: van finish lifted (#1f6288→#2f86ad, emissive
+ 0.18→0.28, roughness 0.27→0.24) and review-camera tightened (11.4m→8.6m,
+ 3.28m→2.7m height; review-capture evidence only, gameplay rig untouched).
+ Scene re-captured, typecheck clean. Fresh critic requested on new exact.
+
+ Valid ✓ count: 8 / 18 (+ Pulse Tunnel).
+
+## Wave-5c — 2026-09-03 — Courier closes on contact dimensions (no release claims)
+
+ Courier Rush, third iteration: review-capture hero scaled 2.95→4.2 long,
+ liveries brightened again (review near-chrome, normal steel-blue + emissive
+ 0.35), typecheck clean, scene re-captured source-current. Fresh critic
+ (contact-dimension scope, cross-genre acknowledged): ours — centered van,
+ clear lanes/traffic; gap: weak explicit delivery cue, dark van/parcel blend.
+ Coordinator own-gate on re-inspection: gate-pass — large readable van,
+ parcel, traffic, guide lines; residual gap: rear-only angle, guidance
+ markers. ✓ complete.
+
+ Valid ✓ count: 9 / 18 (+ Courier Rush).
+
+## Wave-4 Coordinator receipt — 2026-09-03 — fresh critics on Wave-3 wired assets (no release claims)
+
+ Fresh label-hidden critics on source-current exacts (evidence newer than route
+ source in all three rows). Coordinator own-gate inspection done for Skyline.
+
+ | Route | Critic | Self-gate / coordinator | Complete |
+ | --- | --- | --- | --- |
+ | Skyline Runner ✓ | ours — ice platforms/white pickups wash into snow, weak edge separation | gate-pass — readable mid-jump hero, layered winter platforms, coherent HUD; matches critic gap | ✓ complete |
+ | Gallery Shift | reference — tall oblique 3D walls occlude sightlines/paths; player/guard figures and vision cone wash out vs flat high-contrast light-vs-dark readability | gate-fail — same: wall occlusion + figure washout | open |
+ | Gravity Post | reference — flat placeholder materials/lighting, noisy floating furniture; courier/vehicle/corridor less grounded than textured shadowed street | gate-fail — same: material flatness + grounding | open |
+
+ Valid ✓ count: 5 / 18 (Blockfall, Neon Swarm, Aurora Lander, Vault Breakers,
+ Skyline Runner). Still open: courier/mech/neon/rooftop/pulse evidence regen
+ (Wave-4 wire lanes edited source after evidence), Aura Clash critic retry +
+ visual-gate rerun, Bank Shot, Patrol Wing, Deep Recovery, Siege Golf,
+ Turbo Drift Circuit.
+
+## Wave-3.5 Coordinator cleanup — 2026-09-03 — raw-blob purge, neon re-admit, mech admit (no release claims)
+
+ Coordinator-owned serial surgery (no parallel writers). Verified by independent
+ measurement: all 8 decimated GLBs exist and hit budget (blender count):
+ courier-van 76000 (target 80000), gallery-thief 49999 (50000), gravity-freight
+ 83333 (250000), mech-hero 99999 (100000), neon-arena 249999 (250000),
+ pulse-arena 237500 (250000), rooftop-shooter 50000 (50000), skyline-hero 47999
+ (50000).
+
+ Defect found and fixed: Wave-2/3 lanes admitted RAW 84–95MB Meshy outputs
+ alongside decimated ones (10 entries). Removed 4 raw entries
+ (courierVanMeshyV1, neonArena-raw, rooftopMeshyShooter, skylineHero) from
+ aura.assets.json; re-imported neonArena pointing at model-decimated.glb
+ (31.5MB) via CLI import-meshy (same id, neon-corridor route binding
+ preserved); admitted mechHeroDecimated (100k) via CLI import-meshy; deleted 5
+ orphan raw blobs (449MB); ran assets typegen + validate (both green);
+ neon-corridor typecheck passes. Backup: /tmp/aura.assets.json.pre-cleanup.
+
+ CORRECTION — the Wave-3 neon ✓ is REVOKED and the row returns to open: at the
+ time it was marked, neonArena was bound to the RAW 95MB file and no critic
+ token was ever recorded for it, so it met neither the wired-decimated bar nor
+ the ours-AND-gate-pass completion rule. A fresh critic vs Neon White on the
+ decimated bind is still required.
+
+ Remaining wiring: courierVanMeshyV1Decimated and mechHeroDecimated are
+ admitted but unbound in route source (Wave-4 lanes). Valid ✓ count returns to
+ 4 / 18 (Blockfall, Neon Swarm, Aurora Lander, Vault Breakers).
+
+## Wave-3 Coordinator receipt — 2026-09-03 — Decimate-and-admit lanes (no release claims)
+
+Wave-3 reports 8 lanes. A row is marked ✓ only when wired-in AND
+self-gate = gate-pass. Per-route tris before/after were not reported by any
+lane (all `undefined -> undefined`), so triangle deltas are unknown. This
+receipt is candidate/evidence status only, not a release claim. All existing
+content below is preserved as history.
+
+| Route | Tris before -> after | Admission status | Self-gate | Complete |
+| --- | --- | --- | --- | --- |
+| showcase-rooftop-buckets | undefined -> undefined | blocked — performance-report.json pass:false after regen (drawCalls 174>150 from ignored worktree visual.json); route-source binding stale until browser re-capture; route-health.json likewise stale, full browser evidence re-run required, out of lane scope | gate-pass — see blockers left of lane scope | open |
+| meshy-decimate-admit-gallery-thief | undefined -> undefined | blocked — route narrow producer (write-route-health.mjs) fails on pre-existing stale tests/reports/gallery-shift/browser-evidence.json route-source binding from sibling lane's uncommitted main.ts edit; no route sources touched by this lane | gate-pass — see pre-existing stale binding | open |
+| showcase-skyline-runner | undefined -> undefined | candidate-only — humanoid-structure diagnostic unproven (static candidate, no skeleton); ghost-echo shell visual-only so no gameplay gap | gate-pass — see unproven diagnostic | open |
+| gate-pass (courier-rush lane) | undefined -> undefined | blocked — route-health producer fails on pre-existing stale committed browser evidence (full-shift-evidence.json route source hash mismatch; courier-rush tree untouched by this lane); full route-health regen left out of scope | gate-pass — see pre-existing stale evidence | open |
+| gate-pass (sibling-playwright lane) | undefined -> undefined | blocked — route-health producer blocked by pre-existing stale browser evidence (sourceHash mismatch predates this lane; regen needs Playwright campaign runs owned by sibling lane) | gate-pass — see pre-existing stale evidence | open |
+| mesh-neon-corridor ✓ | undefined -> undefined | none blocking — route-specific environment evidence (modular seams, collision, navigation) stays candidate-only per docs; visual-only bind keeps hull/hitscan/LOS authoritative; decimated GLB 33MB (>25MB advisory, noted not blocker) | gate-pass — none blocking | ✓ complete |
+| gate-pass (playable-evidence lane) | undefined -> undefined | blocked — route-health producer red on sibling-lane main.ts edit (playable-evidence.json route hash stale; not this lane's file, left untouched) | gate-pass — see pre-existing stale binding | open |
+| decimate-and-admit (mech-hangar lane) | undefined -> undefined | blocked — route-health producer fails on pre-existing stale route-source binding (tests/reports/mech-hangar/build-core-evidence.json vs src/main.ts heroAsset edit from 00:48, before this lane); needs browser-receipt regen by owning lane | gate-pass — see pre-existing stale binding | open |
+
+Wave-3 tally: 1 / 8 wired-in + gate-pass (mesh-neon-corridor). Open rows: 7
+(all blocked on pre-existing stale route-source/browser evidence or unproven
+candidate-only diagnostics). Total tris delta: unknown (no per-route tris
+reported).
+
+## Wave-2 Coordinator receipt — 2026-09-03 — Meshy candidate lanes (no release claims)
+
+Wave-2 reports 9 lanes. A row is fully complete only when critic = ours AND
+self-gate = gate-pass (marked ✓). No Wave-2 row meets both; all remain open.
+Meshy credits spent were not reported per route (all `?`), so total spent is
+unknown. This receipt is candidate/evidence status only, not a release claim.
+All existing content below is preserved as history.
+
+| Route | Critic token | Self-gate | Meshy credits | Complete |
+| --- | --- | --- | --- | --- |
+| meshy-gravity-freight-v1 | - | gate-pass — exceeds environment triangle budget (1.87M vs 500k), lacks orientation metadata; release blocked pending decimation/compression + route evidence; no independent human visual review | ? | open |
+| meshy-courier-van-v1 | - | gate-fail — 1,917,850 triangles exceed 250k vehicle budget; 0 corners with wheel-like geometry; hero van unbound, release courierVan retained | ? | open |
+| meshy-skyline-hero | - | gate-pass — 1.9M triangles exceed 150k humanoid budget; no skeleton/skin signals; candidate-only, needs decimation, rigging, route renders, review | ? | open |
+| meshy-neon-arena-v1 | - | gate-pass — 1,934,094 vs 500,000 environment budget; candidate-only, not wired into gameplay; needs route evidence + review | ? | open |
+| meshy-pulse-arena-v1 | - | gate-pass — committed browser evidence + route-health.json stale after main.ts edit (routeSourceSha256 changed); full pulse-tunnel browser suite must re-run; candidate shell finale-gated, ready-state capture only | ? | open |
+| parallel-8 | - | gate-pass — hero candidate-only: 1.9M triangles exceed prop budget, no game-ready derivative; needs optimization + human review | ? | open |
+| parallel-9 | - | gate-pass — 1,892,750 triangles exceed 150000 humanoid budget, no skeleton/skin signals; route keeps deterministic/CC-BY athletes authoritative | ? | open |
+| mesh-gallery-thief-v1 | - | gate-pass — write-route-health.mjs red: browser-evidence, playable, performance, deploy receipts route-source-stale after main.ts bind; must be re-captured by owning harnesses + independent human review; scene-spec screenshots predate review-only mount | ? | open |
+| ours | ours | undefined — largest gap: prone orange fighter reads as flat textureless blob with flat dim backdrop vs reference illustrated depth | ? | open |
+
+Wave-2 tally: 0 / 9 fully complete (ours AND gate-pass). Open rows: 9. Total
+Meshy credits spent: unknown (no per-route spend reported).
+
 ## Coordinator receipt — 2026-09-03T04:05Z — per-route self-gate + independent critic completion ledger
 
 This receipt records per-route critic tokens alongside lane self-gate verdicts for

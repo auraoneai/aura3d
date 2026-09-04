@@ -56,12 +56,12 @@ export const GLTF_EXTENSION_SUPPORT_MATRIX: readonly GLTFExtensionSupportEntry[]
   entry("KHR_materials_ior", "material", "runtime-supported", ["GLTFLoader", "TexturedPBRMaterial"], []),
   entry("KHR_materials_specular", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Specular factors/textures are mapped; full reference BRDF parity still requires visual corpus acceptance."]),
   entry("KHR_materials_sheen", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Sheen factors/textures are mapped; cloth reference parity remains blocked."]),
-  entry("KHR_materials_anisotropy", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Anisotropy factors/textures are mapped; tangent-space visual parity remains under review."]),
+  entry("KHR_materials_anisotropy", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Anisotropy factors/textures are mapped to the aspect-ratio anisotropic-GGX path (authored TBN); same-scene rotation response is browser-proven (tests/browser/anisotropic-rotation-q1.spec.ts, tests/reports/anisotropic-rotation-q1/aniso-rotation.json)."]),
   entry("KHR_materials_iridescence", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Iridescence factors/textures are mapped; thin-film reference parity remains under review."]),
   entry("KHR_materials_dispersion", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Dispersion factor is preserved for material fallback; spectral dispersion rendering remains blocked."]),
   entry("KHR_materials_pbrSpecularGlossiness", "material", "parsed-with-limits", ["GLTFLoader", "TexturedPBRMaterial"], ["Spec/gloss assets are converted into the current metallic-roughness runtime contract."]),
   entry("KHR_materials_variants", "material", "parsed-with-limits", ["GLTFLoader"], ["Variant mappings are loaded; authoring/persistence workflow parity remains blocked."]),
-  entry("KHR_animation_pointer", "animation", "diagnostic-only", ["GLTFLoader"], ["Optional animation pointer channels are reported as unsupported tracks unless promoted into runtime targets."])
+  entry("KHR_animation_pointer", "animation", "parsed-with-limits", ["GLTFLoader", "GLTFSceneAnimationRuntime", "TypedGLBActor"], ["Node TRS/weights, the material uniform allowlist (baseColor/emissive/metallic/roughness/clearcoat leaves), and scene-light intensity/color/range tracks apply at runtime — proven by the animationPointerPanel browser proof. Camera and extension-object leaves, unmapped material leaves, and lights no node references stay diagnostic-only."])
 ];
 
 export const GLTF_SUPPORTED_EXTENSION_NAMES = GLTF_EXTENSION_SUPPORT_MATRIX

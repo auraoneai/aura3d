@@ -1411,7 +1411,13 @@ describe("PBR material and direct light contracts", () => {
       maxIndexedLightsInCluster: 17,
       totalLightReferences: 102,
       culledLightCount: 0,
-      droppedLightCount: 0
+      droppedLightCount: 0,
+      overBudgetClusterCount: 0,
+      maxRequestedLightsInCluster: 17,
+      requestedPerCluster: [17, 17, 17, 17, 17, 17],
+      indexedPerCluster: [17, 17, 17, 17, 17, 17],
+      fallbackPolicy: "none",
+      warnings: []
     });
     expect(clustered.lightData.texture).toMatchObject({ width: 6, height: 17, format: "rgba32f" });
     expect(clustered.lightIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });

@@ -138,6 +138,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -185,6 +186,19 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
 uniform float u_outputColorSpace;
 uniform vec3 u_cameraPosition;
 uniform float u_environmentFogEnabled;
@@ -194,6 +208,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -272,6 +289,50 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  if (u_spotShadowMapEnabled < 0.5) return 1.0;
+  vec3 toFragment = worldPosition - u_spotShadowLightPosition;
+  float distanceToLight = max(length(toFragment), 0.0001);
+  if (distanceToLight > u_spotShadowRange) return 1.0;
+  vec3 coneAxis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  if (dot(toFragment / distanceToLight, coneAxis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 lightPosition = u_spotShadowMatrix * vec4(worldPosition, 1.0);
+  vec3 projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+  vec3 receiverNormal = normalize(normal);
+  vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
+  float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
+  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
+  // taps on sloped receivers, so each tap scales by its own texel distance.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
+  float shadowed = 0.0;
+  float totalWeight = 0.0;
+  int sampleCount = clamp(int(u_spotShadowPcfSampleCount), 1, 32);
+  for (int i = 0; i < 32; ++i) {
+    if (i >= sampleCount) break;
+    vec4 sampleData = u_spotShadowPcfSamples[i];
+    float weight = max(sampleData.z, 0.0);
+    vec2 offset = sampleData.xy * u_spotShadowTexelSize;
+    float storedDepth = texture(u_spotShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_spotShadowBias - slopeTexelBias * sampleTexelDistance;
+    shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
+    totalWeight += weight;
+  }
+  float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
+  return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
+}
+float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
+  // bound. Every gate term is 0 when no spot map is present, so mix() returns
+  // baseFactor exactly and scenes without spot lights render unchanged.
+  float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
+  return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
+}
 vec2 a3dEnvironmentEquirectUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
   float u = atan(d.z, d.x) / 6.28318530718 + 0.5 + rotation;
@@ -326,7 +387,7 @@ vec3 a3dPbrEnvironmentDiffuseInput(vec3 normal) {
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledDiffuse = a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(normal, diffuseEnvironmentLod));
-  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight);
+  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight);
 }
 vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float roughness) {
   float proceduralEnvironmentWeight = step(0.0001, u_environmentMapIntensity);
@@ -348,7 +409,7 @@ vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   vec3 sampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
 vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness) {
@@ -356,10 +417,16 @@ vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness
   vec2 lut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clamp(roughness, 0.0, 1.0))).rg;
   return mix(vec2(1.0, 0.0), lut, step(0.0001, u_environmentBrdfLutEnabled));
 }
+vec3 a3dLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
@@ -420,7 +487,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z));
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection);
     shaded += a3dPbrDirectLight(normal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, base, u_metallic, u_roughness, 1.0, vec3(1.0));
   }
   float alpha = u_baseColor.a * v_instanceColor.a;
@@ -552,6 +619,7 @@ uniform float u_baseColorTextureEnabled;
 uniform sampler2D u_normalTexture;
 uniform float u_normalTextureEnabled;
 uniform float u_normalScale;
+uniform float u_wrinkleStrength;
 uniform sampler2D u_metallicRoughnessTexture;
 uniform float u_metallicRoughnessTextureEnabled;
 uniform sampler2D u_occlusionTexture;
@@ -564,6 +632,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -637,6 +706,19 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
 uniform float u_outputColorSpace;
 uniform vec3 u_cameraPosition;
 uniform float u_environmentFogEnabled;
@@ -646,6 +728,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -692,6 +777,17 @@ vec4 a3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, a3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, a3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
   return mix(equirectSample, cubeSample, step(0.5, u_environmentCubeMapTextureEnabled));
+}
+/**
+ * Procedural wrinkle detail (E1 face-rig demo): high-frequency normal perturbation driven
+ * by u_wrinkleStrength, which the engine resolves per frame from live morph weights
+ * (resolveWrinkleMapStrength). Stable in world space (no time input); strength 0 uploads
+ * 0 and the guarded call site below leaves the normal bit-identical.
+ */
+vec3 a3dWrinkleDetail(vec3 p) {
+  float f = sin(p.x * 230.0) * sin(p.y * 197.0 + 1.7) * sin(p.z * 211.0 + 0.6);
+  float g = sin(p.x * 97.0 + 0.4) * sin(p.y * 113.0 + 2.1) * sin(p.z * 103.0 + 1.2);
+  return vec3(f, g, f * g) * 0.35;
 }
 vec3 a3dSkinnedPbrNormal(vec3 baseNormal, vec4 tangentFrame, vec2 uv) {
   vec3 sampled = texture(u_normalTexture, uv).xyz * 2.0 - 1.0;
@@ -788,15 +884,68 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  if (u_spotShadowMapEnabled < 0.5) return 1.0;
+  vec3 toFragment = worldPosition - u_spotShadowLightPosition;
+  float distanceToLight = max(length(toFragment), 0.0001);
+  if (distanceToLight > u_spotShadowRange) return 1.0;
+  vec3 coneAxis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  if (dot(toFragment / distanceToLight, coneAxis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 lightPosition = u_spotShadowMatrix * vec4(worldPosition, 1.0);
+  vec3 projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+  vec3 receiverNormal = normalize(normal);
+  vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
+  float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
+  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
+  // taps on sloped receivers, so each tap scales by its own texel distance.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
+  float shadowed = 0.0;
+  float totalWeight = 0.0;
+  int sampleCount = clamp(int(u_spotShadowPcfSampleCount), 1, 32);
+  for (int i = 0; i < 32; ++i) {
+    if (i >= sampleCount) break;
+    vec4 sampleData = u_spotShadowPcfSamples[i];
+    float weight = max(sampleData.z, 0.0);
+    vec2 offset = sampleData.xy * u_spotShadowTexelSize;
+    float storedDepth = texture(u_spotShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_spotShadowBias - slopeTexelBias * sampleTexelDistance;
+    shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
+    totalWeight += weight;
+  }
+  float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
+  return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
+}
+float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
+  // bound. Every gate term is 0 when no spot map is present, so mix() returns
+  // baseFactor exactly and scenes without spot lights render unchanged.
+  float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
+  return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
+}
+vec3 a3dLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
   vec3 normal = normalize(v_normal);
   normal = mix(normal, a3dSkinnedPbrNormal(v_normal, v_tangent, v_uv), step(0.5, u_normalTextureEnabled));
+  if (u_wrinkleStrength > 0.0) {
+    normal = normalize(normal + u_wrinkleStrength * a3dWrinkleDetail(v_worldPosition));
+  }
   if (!gl_FrontFacing) normal = -normal;
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec4 sampledBaseColor = texture(u_baseColorTexture, v_uv);
@@ -866,11 +1015,11 @@ void main() {
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
   vec3 shaded = a3dPbrEnvironmentLightSplitSum(
     normal,
     viewDirection,
-    mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight),
+    mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight),
     proceduralSpecular + sampledSpecular,
     mix(vec2(1.0, 0.0), brdfLut, step(0.0001, u_environmentBrdfLutEnabled)),
     materialBase,
@@ -925,7 +1074,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z)),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -1031,6 +1180,7 @@ uniform float u_baseColorTextureEnabled;
 uniform sampler2D u_normalTexture;
 uniform float u_normalTextureEnabled;
 uniform float u_normalScale;
+uniform float u_wrinkleStrength;
 uniform sampler2D u_metallicRoughnessTexture;
 uniform float u_metallicRoughnessTextureEnabled;
 uniform sampler2D u_occlusionTexture;
@@ -1043,6 +1193,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -1116,6 +1267,19 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
 uniform float u_outputColorSpace;
 uniform vec3 u_cameraPosition;
 uniform float u_environmentFogEnabled;
@@ -1125,6 +1289,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -1171,6 +1338,17 @@ vec4 a3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, a3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, a3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
   return mix(equirectSample, cubeSample, step(0.5, u_environmentCubeMapTextureEnabled));
+}
+/**
+ * Procedural wrinkle detail (E1 face-rig demo): high-frequency normal perturbation driven
+ * by u_wrinkleStrength, which the engine resolves per frame from live morph weights
+ * (resolveWrinkleMapStrength). Stable in world space (no time input); strength 0 uploads
+ * 0 and the guarded call site below leaves the normal bit-identical.
+ */
+vec3 a3dWrinkleDetail(vec3 p) {
+  float f = sin(p.x * 230.0) * sin(p.y * 197.0 + 1.7) * sin(p.z * 211.0 + 0.6);
+  float g = sin(p.x * 97.0 + 0.4) * sin(p.y * 113.0 + 2.1) * sin(p.z * 103.0 + 1.2);
+  return vec3(f, g, f * g) * 0.35;
 }
 vec3 a3dSkinnedPbrNormal(vec3 baseNormal, vec4 tangentFrame, vec2 uv) {
   vec3 sampled = texture(u_normalTexture, uv).xyz * 2.0 - 1.0;
@@ -1267,15 +1445,68 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  if (u_spotShadowMapEnabled < 0.5) return 1.0;
+  vec3 toFragment = worldPosition - u_spotShadowLightPosition;
+  float distanceToLight = max(length(toFragment), 0.0001);
+  if (distanceToLight > u_spotShadowRange) return 1.0;
+  vec3 coneAxis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  if (dot(toFragment / distanceToLight, coneAxis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 lightPosition = u_spotShadowMatrix * vec4(worldPosition, 1.0);
+  vec3 projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+  vec3 receiverNormal = normalize(normal);
+  vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
+  float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
+  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
+  // taps on sloped receivers, so each tap scales by its own texel distance.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
+  float shadowed = 0.0;
+  float totalWeight = 0.0;
+  int sampleCount = clamp(int(u_spotShadowPcfSampleCount), 1, 32);
+  for (int i = 0; i < 32; ++i) {
+    if (i >= sampleCount) break;
+    vec4 sampleData = u_spotShadowPcfSamples[i];
+    float weight = max(sampleData.z, 0.0);
+    vec2 offset = sampleData.xy * u_spotShadowTexelSize;
+    float storedDepth = texture(u_spotShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_spotShadowBias - slopeTexelBias * sampleTexelDistance;
+    shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
+    totalWeight += weight;
+  }
+  float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
+  return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
+}
+float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
+  // bound. Every gate term is 0 when no spot map is present, so mix() returns
+  // baseFactor exactly and scenes without spot lights render unchanged.
+  float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
+  return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
+}
+vec3 a3dLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
   vec3 normal = normalize(v_normal);
   normal = mix(normal, a3dSkinnedPbrNormal(v_normal, v_tangent, v_uv), step(0.5, u_normalTextureEnabled));
+  if (u_wrinkleStrength > 0.0) {
+    normal = normalize(normal + u_wrinkleStrength * a3dWrinkleDetail(v_worldPosition));
+  }
   if (!gl_FrontFacing) normal = -normal;
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec4 sampledBaseColor = texture(u_baseColorTexture, v_uv);
@@ -1345,11 +1576,11 @@ void main() {
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
   vec3 shaded = a3dPbrEnvironmentLightSplitSum(
     normal,
     viewDirection,
-    mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight),
+    mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight),
     proceduralSpecular + sampledSpecular,
     mix(vec2(1.0, 0.0), brdfLut, step(0.0001, u_environmentBrdfLutEnabled)),
     materialBase,
@@ -1404,7 +1635,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z)),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -1515,6 +1746,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -1583,6 +1815,19 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
 uniform float u_outputColorSpace;
 uniform vec3 u_cameraPosition;
 uniform float u_environmentFogEnabled;
@@ -1592,6 +1837,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -1679,6 +1927,50 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  if (u_spotShadowMapEnabled < 0.5) return 1.0;
+  vec3 toFragment = worldPosition - u_spotShadowLightPosition;
+  float distanceToLight = max(length(toFragment), 0.0001);
+  if (distanceToLight > u_spotShadowRange) return 1.0;
+  vec3 coneAxis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  if (dot(toFragment / distanceToLight, coneAxis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 lightPosition = u_spotShadowMatrix * vec4(worldPosition, 1.0);
+  vec3 projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+  vec3 receiverNormal = normalize(normal);
+  vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
+  float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
+  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
+  // taps on sloped receivers, so each tap scales by its own texel distance.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
+  float shadowed = 0.0;
+  float totalWeight = 0.0;
+  int sampleCount = clamp(int(u_spotShadowPcfSampleCount), 1, 32);
+  for (int i = 0; i < 32; ++i) {
+    if (i >= sampleCount) break;
+    vec4 sampleData = u_spotShadowPcfSamples[i];
+    float weight = max(sampleData.z, 0.0);
+    vec2 offset = sampleData.xy * u_spotShadowTexelSize;
+    float storedDepth = texture(u_spotShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_spotShadowBias - slopeTexelBias * sampleTexelDistance;
+    shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
+    totalWeight += weight;
+  }
+  float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
+  return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
+}
+float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
+  // bound. Every gate term is 0 when no spot map is present, so mix() returns
+  // baseFactor exactly and scenes without spot lights render unchanged.
+  float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
+  return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
+}
 vec2 a3dEnvironmentEquirectUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
   float u = atan(d.z, d.x) / 6.28318530718 + 0.5 + rotation;
@@ -1733,7 +2025,7 @@ vec3 a3dPbrEnvironmentDiffuseInput(vec3 normal) {
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledDiffuse = a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(normal, diffuseEnvironmentLod));
-  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight);
+  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight);
 }
 vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float roughness) {
   float proceduralEnvironmentWeight = step(0.0001, u_environmentMapIntensity);
@@ -1748,7 +2040,7 @@ vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   vec3 sampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
 vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness) {
@@ -1756,10 +2048,16 @@ vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness
   vec2 lut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clamp(roughness, 0.0, 1.0))).rg;
   return mix(vec2(1.0, 0.0), lut, step(0.0001, u_environmentBrdfLutEnabled));
 }
+vec3 a3dLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
@@ -1820,7 +2118,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection), step(0.5, spotShadowLayer.z));
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
     shaded += a3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor);
   }
   float alpha = u_baseColor.a * v_vertexColor.a;
@@ -1838,9 +2136,9 @@ void main() {
       { name: DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
       { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
       { name: DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
-      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true, A3D_PBR_NO_SPOT_SHADOW: true } },
       { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
-      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } }
+      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true, A3D_PBR_NO_SPOT_SHADOW: true } },
     ],
     vertex: `#version 300 es
 // ${DEFAULT_TEXTURED_PBR_SHADER_MARKER}
@@ -1881,6 +2179,7 @@ uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_environmentColor;
 uniform float u_environmentIntensity;
+uniform float u_materialEnvironmentIntensity;
 uniform vec3 u_environmentSkyColor;
 uniform vec3 u_environmentHorizonColor;
 uniform vec3 u_environmentGroundColor;
@@ -1965,6 +2264,26 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
+// B1 spot path (muse3jsparity-PRD): the two A3D_PBR_NO_SPOT_SHADOW variants
+// (clearcoat-transmission-volume, specular-sheen-anisotropy-iridescence) sit at
+// the 16-sampler WebGL2 minimum without it, so they sample spot lights through
+// the legacy directional factor while every other lit program takes the spot
+// override. ForwardPass binds spot uniforms only when reflection declares them.
+#ifndef A3D_PBR_NO_SPOT_SHADOW
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
+#endif
 uniform sampler2D u_baseColorTexture;
 uniform float u_baseColorTextureEnabled;
 uniform vec2 u_baseColorTextureOffset;
@@ -2120,6 +2439,9 @@ uniform float u_environmentFogNear;
 uniform float u_environmentFogFar;
 uniform float u_environmentFogDensity;
 uniform float u_environmentFogHeightFalloff;
+uniform float u_volumetricIntensity;
+uniform vec3 u_volumetricLightDirection;
+uniform vec3 u_volumetricLightColor;
 uniform float u_environmentFogHeightReference;
 uniform float u_environmentFogMaxOpacity;
 in vec3 v_normal;
@@ -2154,10 +2476,16 @@ vec2 a3dTexturedPbrWrapUv(vec2 uv, vec2 wrapMode) {
     a3dTexturedPbrWrapCoordinate(uv.y, wrapMode.y)
   );
 }
+vec3 a3dTexturedPbrEncodeLinearToSrgb(vec3 linear) {
+  vec3 clamped = max(linear, vec3(0.0));
+  vec3 low = clamped * 12.92;
+  vec3 high = 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055;
+  return mix(low, high, step(vec3(0.0031308), clamped));
+}
 vec3 a3dTexturedPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
   vec3 filmic = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
-  vec3 srgb = pow(filmic, vec3(1.0 / 2.2));
+  vec3 srgb = a3dTexturedPbrEncodeLinearToSrgb(filmic);
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 vec3 a3dTexturedPbrDecodeSrgb(vec3 encodedColor) {
@@ -2264,6 +2592,52 @@ float a3dTexturedPbrPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 ligh
   float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
   return mix(1.0, 1.0 - occlusion, clamp(u_pointShadowStrength, 0.0, 1.0));
 }
+#ifndef A3D_PBR_NO_SPOT_SHADOW
+float a3dTexturedPbrSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  if (u_spotShadowMapEnabled < 0.5) return 1.0;
+  vec3 toFragment = worldPosition - u_spotShadowLightPosition;
+  float distanceToLight = max(length(toFragment), 0.0001);
+  if (distanceToLight > u_spotShadowRange) return 1.0;
+  vec3 coneAxis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  if (dot(toFragment / distanceToLight, coneAxis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 lightPosition = u_spotShadowMatrix * vec4(worldPosition, 1.0);
+  vec3 projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 1.0;
+  vec3 receiverNormal = normalize(normal);
+  vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
+  float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
+  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
+  // taps on sloped receivers, so each tap scales by its own texel distance.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
+  float shadowed = 0.0;
+  float totalWeight = 0.0;
+  int sampleCount = clamp(int(u_spotShadowPcfSampleCount), 1, 32);
+  for (int i = 0; i < 32; ++i) {
+    if (i >= sampleCount) break;
+    vec4 sampleData = u_spotShadowPcfSamples[i];
+    float weight = max(sampleData.z, 0.0);
+    vec2 offset = sampleData.xy * u_spotShadowTexelSize;
+    float storedDepth = texture(u_spotShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_spotShadowBias - slopeTexelBias * sampleTexelDistance;
+    shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
+    totalWeight += weight;
+  }
+  float occlusion = totalWeight > 0.0 ? shadowed / totalWeight : 0.0;
+  return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
+}
+float a3dTexturedPbrResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
+  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
+  // bound. Every gate term is 0 when no spot map is present, so mix() returns
+  // baseFactor exactly and scenes without spot lights render unchanged.
+  float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
+  return mix(baseFactor, a3dTexturedPbrSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
+}
+#endif
 vec2 a3dTexturedPbrEnvironmentUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
   float u = atan(d.z, d.x) / 6.28318530718 + 0.5 + rotation;
@@ -2312,7 +2686,7 @@ vec3 a3dTexturedPbrEnvironmentDiffuseInput(vec3 normal) {
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledDiffuse = a3dTexturedPbrDecodeEnvironmentSample(a3dTexturedPbrEnvironmentSampleRaw(normal, diffuseEnvironmentLod));
-  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight);
+  return mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity * u_materialEnvironmentIntensity, sampledEnvironmentWeight);
 }
 vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float roughness) {
   float materialEnvironmentSpecularScale = clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);
@@ -2341,7 +2715,7 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledSpecular = a3dTexturedPbrBoundHdrSpecularRadiance(a3dTexturedPbrDecodeEnvironmentSample(a3dTexturedPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   sampledSpecular = a3dTexturedPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * u_materialEnvironmentIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, clampedRoughness);
   float proceduralSpecularScale = materialFiniteSpecularScale;
   float sampledSpecularScale = materialEnvironmentSpecularScale;
   return proceduralSpecular * proceduralSpecularScale + sampledSpecular * sampledSpecularScale;
@@ -2764,6 +3138,9 @@ void main() {
       attenuation *= smoothstep(outer, inner, cone);
     }
     float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection), step(0.5, spotShadowLayer.z));
+#ifndef A3D_PBR_NO_SPOT_SHADOW
+    shadowFactor = a3dTexturedPbrResolveSpotShadowOverride(shadowFactor, kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
+#endif
     float directLightIntensity = colorIntensity.a
       * attenuation
       * shadowFactor

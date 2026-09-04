@@ -38,8 +38,21 @@ export class Scene {
     return this.register(new SkinnedMesh(options));
   }
 
-  createInstancedMesh(options: MeshOptions = {}): InstancedMesh {
-    return this.register(new InstancedMesh(options));
+  /**
+   * D1 auto-parent option (muse3jsparity-PRD): `{ attach: true }` parents the
+   * new mesh under the scene root (or `attach.parent`); default behavior
+   * (registered only, unparented) is unchanged for compat.
+   */
+  createInstancedMesh(
+    options: MeshOptions = {},
+    attach: boolean | { readonly parent?: SceneNode } = false
+  ): InstancedMesh {
+    const mesh = this.register(new InstancedMesh(options));
+    if (attach) {
+      const parent = typeof attach === "object" && attach.parent ? attach.parent : this.root;
+      parent.addChild(mesh);
+    }
+    return mesh;
   }
 
   createPerspectiveCamera(options: ConstructorParameters<typeof PerspectiveCamera>[0] = {}): PerspectiveCamera {

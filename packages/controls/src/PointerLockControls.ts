@@ -31,10 +31,12 @@ export class PointerLockControls extends FirstPersonControls {
   }
 
   lock(): void {
+    if (this.isDisposed) return;
     this.pointerLockDelegate.lock();
   }
 
   unlock(): void {
+    if (this.isDisposed) return;
     this.pointerLockDelegate.unlock();
   }
 }

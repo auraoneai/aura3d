@@ -56,6 +56,7 @@ export {
   ThreeCompatTextureLoader
 } from "./loaders";
 export {
+  ArcballControls,
   DragControls,
   FirstPersonControls,
   FlyControls,
@@ -67,7 +68,14 @@ export {
   TrackballControls,
   TransformControls
 } from "./controls";
-export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
+export type { ArcballCameraLike, ArcballControlsOptions, TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
+export {
+  APPROXIMATION_LEDGER,
+  assertLedgerCovers,
+  getApproximationLedgerRow,
+  listApproximationShims
+} from "./ApproximationLedger";
+export type { ApproximationLedgerFidelity, ApproximationLedgerRow } from "./ApproximationLedger";
 export {
   AnimationActionCompat,
   AnimationClipCompat,
@@ -108,6 +116,8 @@ export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
 export type { ThreeCompatCompatibilityWarning } from "./migration/CompatibilityWarnings";
+export { CSS2D_CSS3D_MANUAL_MAP, R3F_MIGRATION_TABLE_POINTER, createR3fMigrationWarnings } from "./migration/R3fMigration";
+export type { Css2DCss3DManualMapping } from "./migration/R3fMigration";
 export {
   AmbientLightCompat,
   DirectionalLightCompat,

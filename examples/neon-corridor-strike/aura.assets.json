@@ -1656,6 +1656,169 @@
       ]
     },
     {
+      "id": "corridorWardenMeshyV1",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+      "outputPath": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+      "hash": "sha256-53557aeb64825a1982182fdc19d7d8acbddf09171318645a828b4577663bfc77",
+      "sizeBytes": 10828272,
+      "bounds": [
+        1.28,
+        1.904,
+        0.729
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.64,
+          -0.953,
+          -0.366
+        ],
+        "max": [
+          0.639,
+          0.951,
+          0.363
+        ],
+        "size": [
+          1.28,
+          1.904,
+          0.729
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materials": [
+        "material"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/corridorWardenMeshyV1.53557aeb.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use as the Neon Corridor warden in the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-04T14:06:33.854Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a06cbb-b228-7290-a5bc-9db8bdd23305",
+          "operation": "text-to-3d-refine",
+          "createdAt": "2026-09-04T14:03:56.384Z",
+          "finishedAt": "2026-09-04T14:06:33.854Z",
+          "localMetadata": "aura-evidence/meshy/corridorWardenMeshyV1.metadata.8e1640353879.json",
+          "rightsEvidence": "aura-evidence/meshy/corridorWardenMeshyV1.rights.c3191f650b37.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/corridorWardenMeshyV1.rights.c3191f650b37.json",
+          "aura-evidence/meshy/corridorWardenMeshyV1.metadata.8e1640353879.json",
+          "public/aura-assets/corridorWardenMeshyV1.meshy-candidate.0da064c7.png"
+        ],
+        "checkedAt": "2026-09-04T14:06:33.854Z"
+      },
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWardenMeshyV1.meshy-candidate.0da064c7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-0da064c739fdd6fb51ca728d6937cd53ce404ba7ac07b6a0fb253e0c29dbe8f6",
+        "checkedAt": "2026-09-04T14:20:59.417Z"
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "corridorWarnSfx",
       "type": "audio",
       "format": "wav",
@@ -3156,6 +3319,172 @@
         }
       },
       "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "neonArena",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/neonArena.7327d83f.glb",
+      "outputPath": "public/aura-assets/neonArena.7327d83f.glb",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/neonArena.7327d83f.glb",
+      "hash": "sha256-7327d83f8c49650515e6f23ef4a2e8a857415001e37a469dcf5407adaa96dd15",
+      "sizeBytes": 33052244,
+      "bounds": [
+        1.904,
+        1.169,
+        0.244
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.577,
+          -0.122
+        ],
+        "max": [
+          0.952,
+          0.592,
+          0.121
+        ],
+        "size": [
+          1.904,
+          1.169,
+          0.244
+        ],
+        "center": [
+          0,
+          0.007,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materials": [
+        "material"
+      ],
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/neonArena.7327d83f.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Neon Corridor Strike arena lane under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:43.073Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a06638-c4bd-72e7-9838-7f54a5dae2f0",
+          "operation": "text-to-3d-refine",
+          "promptHash": "sha256-7e841947671ae12f3a34df1660631fffab2d7ce98879c2d7d2d58a66281f933b",
+          "createdAt": "2026-09-03T07:43:11.563Z",
+          "finishedAt": "2026-09-03T07:45:43.073Z",
+          "consumedCredits": 10,
+          "localMetadata": "aura-evidence/meshy/neonArena.metadata.59e1573ccbd5.json",
+          "rightsEvidence": "aura-evidence/meshy/neonArena.rights.9cd065c2f367.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/neonArena.rights.9cd065c2f367.json",
+          "aura-evidence/meshy/neonArena.metadata.59e1573ccbd5.json",
+          "public/aura-assets/neonArena.meshy-candidate.ec181805.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:43.073Z"
+      },
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonArena.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/examples/neon-corridor-strike/public/aura-assets/neonArena.meshy-candidate.ec181805.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ec18180570967458bc3f4187e371f0571adb79f4e651d35bcb6f393e57dce11d",
+        "checkedAt": "2026-09-03T08:08:20.627Z"
+      },
+      "warnings": [
+        "asset exceeds 25 MB; consider compression before deployment",
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
     },

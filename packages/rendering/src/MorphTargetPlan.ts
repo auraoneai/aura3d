@@ -32,12 +32,51 @@ export interface MorphPlanDecision {
   readonly targetCount: number;
   readonly vertexCount: number;
   readonly morphsNormals: boolean;
-  /** Rows of texels per target in texture mode (1 = positions only, 2 = positions + normals). */
+  /** True when at least one target carries tangent deltas (adds a third texture row per target). */
+  readonly morphsTangents: boolean;
+  /**
+   * Rows of texels per target in texture mode (1 = positions only,
+   * 2 = positions + normals, 3 = positions + normals + tangents).
+   */
   readonly rowsPerTarget: number;
   readonly textureWidth: number;
   readonly textureHeight: number;
   /** Why this mode was chosen (telemetry / gate detail). */
   readonly reason: string;
+}
+
+/**
+ * Wrinkle-map hook for face rigs: binds morph-target weights to a wrinkle/normal-detail
+ * texture blend so expression blendshapes (brow raise, squint, smile) drive skin-detail
+ * intensity without extra shader permutations. The renderer samples the wrinkle texture
+ * with `strength = Σ weight[target] * amount[target]` over the bound targets.
+ */
+export interface WrinkleMapBinding {
+  /** Morph-target name or index this wrinkle contribution follows. */
+  readonly target: string | number;
+  /** Detail amount at full weight (default 1). */
+  readonly amount?: number;
+}
+
+export interface WrinkleMapHook {
+  /** Texture slot / uniform name carrying the wrinkle detail map. */
+  readonly textureUniform?: string;
+  /** Per-target wrinkle contributions. */
+  readonly bindings: readonly WrinkleMapBinding[];
+}
+
+/** Resolve the aggregate wrinkle strength for a set of live morph weights. Pure. */
+export function resolveWrinkleMapStrength(
+  weightsByTarget: Readonly<Record<string | number, number>>,
+  hook: WrinkleMapHook
+): number {
+  let strength = 0;
+  for (const binding of hook.bindings) {
+    const weight = weightsByTarget[binding.target] ?? 0;
+    if (!Number.isFinite(weight) || weight === 0) continue;
+    strength += weight * (binding.amount ?? 1);
+  }
+  return Math.max(0, strength);
 }
 
 export interface MorphTargetPlan extends MorphPlanDecision {
@@ -57,15 +96,18 @@ export function planMorphTargets(
   targetCount: number,
   vertexCount: number,
   morphsNormals: boolean,
-  limits: MorphDeviceLimits = DEFAULT_MORPH_DEVICE_LIMITS
+  limits: MorphDeviceLimits = DEFAULT_MORPH_DEVICE_LIMITS,
+  options: { readonly morphsTangents?: boolean } = {}
 ): MorphPlanDecision {
-  const rowsPerTarget = morphsNormals ? 2 : 1;
+  const morphsTangents = options.morphsTangents ?? false;
+  const rowsPerTarget = morphsTangents ? 3 : morphsNormals ? 2 : 1;
   if (targetCount <= MORPH_UNIFORM_MAX_TARGETS && vertexCount <= MORPH_UNIFORM_MAX_VERTICES) {
     return {
       mode: "uniform",
       targetCount,
       vertexCount,
       morphsNormals,
+      morphsTangents,
       rowsPerTarget,
       textureWidth: 0,
       textureHeight: 0,
@@ -80,6 +122,7 @@ export function planMorphTargets(
       targetCount,
       vertexCount,
       morphsNormals,
+      morphsTangents,
       rowsPerTarget,
       textureWidth,
       textureHeight,
@@ -91,6 +134,7 @@ export function planMorphTargets(
     targetCount,
     vertexCount,
     morphsNormals,
+    morphsTangents,
     rowsPerTarget,
     textureWidth: 0,
     textureHeight: 0,
@@ -113,7 +157,8 @@ export function createMorphTargetPlan(
     throw new Error("Morph target count must match morph weight count.");
   }
   const morphsNormals = targets.some((t) => t.normals && t.normals.length > 0);
-  const decision = planMorphTargets(targets.length, vertexCount, morphsNormals, limits);
+  const morphsTangents = targets.some((t) => t.tangents && t.tangents.length > 0);
+  const decision = planMorphTargets(targets.length, vertexCount, morphsNormals, limits, { morphsTangents });
   const uniformWeights = new Float32Array(Math.max(MORPH_UNIFORM_MAX_TARGETS, targets.length));
   for (let i = 0; i < weights.length; i += 1) uniformWeights[i] = weights[i] ?? 0;
 
@@ -145,8 +190,11 @@ export function createMorphTargetPlan(
       const posRow = t * rowsPerTarget;
       for (let v = 0; v < vertexCount; v += 1) {
         writeVec3(data, (posRow * textureWidth + v) * 4, target.positions?.[v]);
-        if (rowsPerTarget === 2) {
+        if (rowsPerTarget >= 2) {
           writeVec3(data, ((posRow + 1) * textureWidth + v) * 4, target.normals?.[v]);
+        }
+        if (rowsPerTarget >= 3) {
+          writeVec3(data, ((posRow + 2) * textureWidth + v) * 4, target.tangents?.[v]);
         }
       }
     }

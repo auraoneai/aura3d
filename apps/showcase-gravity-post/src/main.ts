@@ -67,7 +67,7 @@ const ORBITAL_DUST_COUNT = 24;
 const TRAIL_STREAK_COUNT = 7;
 const CONTACT_WAKE_COUNT = 6;
 const REVIEW_COURIER_PROGRESS = 0.54;
-const REVIEW_COURIER_LATERAL = 0;
+const REVIEW_COURIER_LATERAL = 0.35;
 // The public route keeps the full orbital board readable for planning. The
 // named visual-review capture is an evidence-only close courier composition:
 // it keeps the live typed pod, destination hardware, and flown path large
@@ -92,13 +92,13 @@ document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 // silhouette while leaving the typed terminal shuttle, route lane, and Gale
 // gate in the same honest frame. This is presentation scale only; authored
 // flight/sensor coordinates are unchanged.
-const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 2.28;
+const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 1.7;
 
 // The parcel prop is a real typed GLB, but its release probe is nearly as tall
 // as it is wide. Keep the review carton compact and seat it on the courier's
 // rear cradle so the package reads as cargo instead of a floating foreground
 // block. The public planning board keeps the larger teaching-scale carton.
-const courierParcelLift = visualReviewCapture ? 0.34 : 0.61;
+const courierParcelLift = visualReviewCapture ? 0.24 : 0.61;
 const courierParcelMaxDimensionBase = visualReviewCapture ? 0.25 : 0.42;
 // A registered, static courier operator gives the skiff a human-scale job
 // read at the same distance as the parcel and landing pods. This is a
@@ -113,7 +113,7 @@ const courierOperatorSeatOffset = visualReviewCapture ? -0.08 : -0.06;
 // Lower the feet into the canopy's actual seat line. The skiff hides the
 // straight mannequin legs at the waist, leaving a connected upper-body read
 // instead of a freestanding statue behind the destination gate.
-const courierOperatorSeatHeight = visualReviewCapture ? 0.34 : 0.34;
+const courierOperatorSeatHeight = visualReviewCapture ? 0.12 : 0.34;
 // Parcel Corps communicates the job through the courier's body and the handoff
 // payload, not only through a vehicle silhouette. Reuse the same hash-bound
 // parcel GLB for one small renderer-owned handoff carton at the operator's
@@ -296,8 +296,9 @@ let sceneBuilder = scene()
   // The review corridor uses a lifted blue-hour sky so the courier's navy
   // hull, amber parcel, and cyan hardware separate from the freightway rather
   // than collapsing into one near-black teal mass. The public planning board
-  // retains its original deep-space backdrop.
-  .background(visualReviewCapture ? "#28546a" : "#061a2a")
+  // keeps a space backdrop, but lifted out of near-black so planets, labels,
+  // and the aim line read in a default screenshot instead of a dark void.
+  .background(visualReviewCapture ? "#28546a" : "#0e3346")
   .addMany(solarKitBackdrop());
 
 const orbitalDustMaterials = [
@@ -686,6 +687,30 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
   }
 }
 
+// Meshy candidate freight canyon (gravityPostMeshyFreight, quality: candidate).
+// Review-composition only: one small grounded sidecar on the opposite shoulder
+// from the CC0 district so the capture shows the candidate's material break at
+// action distance. Non-colliding set dressing; gameplay, sensors, scoring, and
+// the default planning board are untouched. Candidate decimated to 250k tris
+// (from 5.62M); it stays review-only under the candidate-quality gate, so it
+// stays out of the default route.
+if (visualReviewCapture) {
+  const [meshyX, meshyZ] = corridorPoint(0.62, 1.9);
+  sceneBuilder = sceneBuilder.add(
+    model(assets.gravityPostMeshyFreight, {
+      name: "Gravity Post Meshy freight canyon candidate",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.4
+    })
+      .position(meshyX, PLAY_PLANE_Y + 0.1, meshyZ)
+      .rotate(0, approachYaw, 0)
+      .runtime(game.runtimeNode("gravity-post-meshy-freight-canyon", {
+        tags: ["typed-asset", "freight-world", "meshy-candidate", "review-set-dressing", "non-colliding"]
+      }))
+  );
+}
+
 // An existing release-validated catalog craft supplies one non-primitive
 // destination-scale cue that the synthesized skiff cannot provide alone. The
 // MailPod is mounted only in the named review composition beside Gale's apron;
@@ -878,11 +903,13 @@ if (visualReviewCapture) {
 // owner of movement, sensors, collision and scoring.
 sceneBuilder = sceneBuilder
   .add(
-    model(assets.gravityPostCourierSkiff, {
-      name: "mail-pod"
+    model(assets.gravityPodSkiffMeshy, {
+      name: "mail-pod",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: visualReviewCapture ? 1.15 : 2.1
     })
       .position(stations[0]!.x, PLAY_PLANE_Y, stations[0]!.z)
-      .scale(POD_VISUAL_SCALE)
       .runtime(game.runtimeNode("mail-pod"))
   )
   // The typed low-poly courier operator is seated in the skiff's forward
@@ -1152,9 +1179,9 @@ sceneBuilder = sceneBuilder
   // Keep enough cool fill for the board while allowing the freight district's
   // graphite/alloy/rust material groups to retain real value separation in the
   // review lens. A warm opposing directional reveals bevels and parcel edges.
-  .add(lights.ambient({ intensity: visualReviewCapture ? 1.08 : 0.64, color: "#e0f4ff" }))
-  .add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 2.62 : 1.48, color: "#e9f7ff" }))
-  .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 1.62 : 0.42, color: "#ffc58d" }))
+  .add(lights.ambient({ intensity: visualReviewCapture ? 0.85 : 0.64, color: "#e0f4ff" }))
+  .add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: "#e9f7ff" }))
+  .add(lights.directional({ name: "freight material warm rake", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 2.0 : 0.42, color: "#ffc58d" }))
   .add(lights.point({ name: "solar rim", color: "#fb923c", intensity: 1.8 }).position(-2.5, 2.6, 1.5))
   .add(lights.point({ name: "route cyan practical", color: "#38d6ff", intensity: 1.4 }).position(-2.2, 1.15, -1.5))
   .add(lights.point({ name: "route amber practical", color: "#fbbf24", intensity: 1.3 }).position(2.2, 1.0, 1.5))
@@ -1689,7 +1716,9 @@ function syncPodVisual(): void {
   const presentationPitch = Math.max(-0.075, Math.min(0.075,
     (compositionReviewPose ? -0.028 : 0) - accelerationAlong * 0.055
   ));
-  const presentationBank = Math.max(-0.09, Math.min(0.09, accelerationAcross * 0.16));
+  const presentationBank = Math.max(-0.09, Math.min(0.09,
+    (compositionReviewPose ? 0.06 : 0) + accelerationAcross * 0.16
+  ));
   if (!visualVelocityInitialized || reviewPose) {
     previousVisualVelocity = [displayedVelocityX, displayedVelocityZ];
     visualVelocityInitialized = true;
@@ -2164,9 +2193,9 @@ function publishEvidence(): void {
       unlocked: proof.unlocked,
       playedCueCount: proof.playedCueCount
     },
-    primaryAssets: ["gravityPostCourierSkiff", "gravityPostDockBeacon"],
+    primaryAssets: ["gravityPodSkiffMeshy", "gravityPostDockBeacon"],
     typedAssets: [
-      { id: "gravityPostCourierSkiff", typedRef: "assets.gravityPostCourierSkiff", role: "primaryVehicle" },
+      { id: "gravityPodSkiffMeshy", typedRef: "assets.gravityPodSkiffMeshy", role: "primaryVehicle" },
       { id: "neonCourierAvatar", typedRef: "assets.neonCourierAvatar", role: "supportingCourierOperator" },
       { id: "gravityPostDockBeacon", typedRef: "assets.gravityPostDockBeacon", role: "primaryWorld" },
       { id: "courierParcel", typedRef: "assets.courierParcel", role: "supportingCargo" },
@@ -2340,7 +2369,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       paused = true;
       compositionPresentationOverride = visualReviewCapture;
       resetPodForContract(pod, contract());
-      app.nodes.get("mail-pod")?.setScale([POD_VISUAL_SCALE, POD_VISUAL_SCALE, POD_VISUAL_SCALE]).setVisible(!compositionSubjectSuppressed);
+      app.nodes.get("mail-pod")?.setVisible(!compositionSubjectSuppressed);
       syncPodVisual();
       publishEvidence();
     }

@@ -90,10 +90,16 @@ export type {
   VisualCameraState,
   VisualCollisionEvent,
   VisualCombatEvent,
+  VisualAiPlanner,
+  VisualAiSnapshot,
+  VisualGameScoreState,
   VisualGraphDiagnostic,
   VisualGraphExecutionContext,
   VisualGraphSideEffect,
   VisualGraphValidationOptions,
+  VisualObjectiveState,
+  VisualStateMachineState,
+  VisualTimerState,
   VisualInputSet,
   VisualInputSnapshot,
   VisualOverlapResult,
@@ -105,6 +111,26 @@ export type {
 } from "./VisualGraphContext";
 export { createVisualNode, getVisualNodeDefinition, listVisualNodeDefinitions } from "./VisualNodeCatalog";
 export type { VisualNodeCategory, VisualNodeDefinition } from "./VisualNodeCatalog";
+export {
+  applyVisualGameplaySideEffects,
+  attachVisualScriptingGraph,
+  createVisualGameplayState,
+  createVisualNodeForGraph,
+  createVisualScriptingGraph,
+  listVisualScriptingNodeCatalog,
+  roundTripVisualScriptingGraph,
+  serializeVisualNodeCatalog
+} from "./VisualScriptingRoot";
+export type {
+  SerializedVisualNodeCatalog,
+  SerializedVisualNodeCatalogEntry,
+  VisualGameplayState,
+  VisualGameplayTimer,
+  VisualScriptingCatalogGroup,
+  VisualScriptingGraphHandle,
+  VisualScriptingGraphSpec,
+  VisualScriptingRoundTrip
+} from "./VisualScriptingRoot";
 export { animationNodeCategories } from "./AnimationNodeCategories";
 export type { AnimationNodeCategory } from "./AnimationNodeCategories";
 export { animationVisualNodeDefinitions } from "./AnimationVisualNodes";

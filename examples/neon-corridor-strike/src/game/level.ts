@@ -52,6 +52,10 @@ export function buildScene() {
   const crate = groundedRenderedAssetPlacement(assets.ammoCrate, { targetHeight: 0.27, floorY: 0.2 });
   const coverCrate = groundedRenderedAssetPlacement(assets.ammoCrate, { targetHeight: 0.34, floorY: 0 });
   const kit = groundedRenderedAssetPlacement(assets.medkit, { targetHeight: 0.42, floorY: 0.2 });
+  // Meshy neon-arena corridor module (decimated 1934094 -> 249999 tris, PBR
+  // preserved). Visual-only wall dressing; the authored hull, sight lines,
+  // hitscan, and player collision remain authoritative and unchanged.
+  const arenaModule = groundedRenderedAssetPlacement(assets.neonArena, { targetHeight: 1.02, floorY: 0.25, x: -2.8, z: 2.6 });
   // Sixth visual pass: the asset shell is deliberately retained as the typed
   // exterior volume, but its native glossy grate cannot be the primary visual
   // floor. In the previous frame it reflected every practical as a black grid
@@ -166,13 +170,17 @@ export function buildScene() {
     }).position(world.position[0], world.position[1], world.position[2]).scale(world.scale))
     .add(model(assets.neonContainmentPulseRifle, { name: "containment pulse rifle viewmodel" }).position(0.28, 1.18, 5.7).scale(rifle.scale).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
     .addMany(ENEMIES.map((enemy) => {
-      const asset = enemy.asset === "neonContainmentWardenA" ? assets.neonContainmentWardenA : assets.neonContainmentWardenB;
+      // The Meshy warden bot replaces WardenA's blockout breacher with a
+      // textured gunmetal combatant (glowing orange core, joint lights).
+      // Capsules, patrols, collars, and runtimes are unchanged: this is a
+      // visual-model swap on the same combat slots.
+      const asset = enemy.asset === "neonContainmentWardenB" ? assets.neonContainmentWardenB : enemy.asset === "corridorWardenMeshyV1" ? assets.corridorWardenMeshyV1 : assets.neonContainmentWardenA;
       const placed = groundedRenderedAssetPlacement(asset, {
         // Give the typed combatants a little more screen presence at the real
         // review distance. Their physics capsules stay unchanged; this is a
         // visual-scale correction so armour/wing details survive the full
         // 1280x800 gameplay frame instead of collapsing into orange dots.
-        targetHeight: enemy.asset === "neonContainmentWardenA" ? 2.08 : 2.2,
+        targetHeight: enemy.asset === "neonContainmentWardenB" ? 2.2 : 2.08,
         floorY: ENEMY_VISUAL_Y,
         x: enemy.x,
         z: enemy.z
@@ -239,6 +247,20 @@ export function buildScene() {
           tags: ["typed-cover", "set-dressing", "non-colliding"]
         }))
     ))
+    // Admitted Meshy corridor module mounted flush to the port wall field.
+    // Yawed so its thin axis faces the lane; no physics body, no collider.
+    .add(model(assets.neonArena, {
+      name: "meshy neon arena corridor module",
+      role: "setDressing",
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(arenaModule.position[0], arenaModule.position[1], arenaModule.position[2])
+      .rotate(0, Math.PI / 2, 0)
+      .scale(arenaModule.scale)
+      .runtime(game.runtimeNode("meshy-neon-arena-module", {
+        tags: ["typed-cover", "set-dressing", "non-colliding"]
+      })))
     .add(primitives.box({
       name: "look target",
       material: material.pbr({ color: "#05070c", roughness: 1 })

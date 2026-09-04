@@ -37,6 +37,7 @@ import type {
   Contact,
   DebugLine,
   PhysicsBackendSelection,
+  PhysicsContinuousCollisionDescriptor,
   PhysicsShape,
   PhysicsSnapshot,
   PhysicsWorldDescriptor,
@@ -49,25 +50,56 @@ import type {
   SphereCastHit
 } from "@aura3d/physics";
 import {
+  createBeamDescriptor,
+  createDayNightSky,
+  createDualProbeEnvironmentLightingResources,
   createExternalParityEnvironmentLighting,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  createSdfFontAtlas,
+  createSdfTextQuadMesh,
+  createSpotShadowProjection,
+  createWaterSurface,
+  createWeatherState,
+  describeSdfTextPixelBacking,
+  describeWetMaterial,
+  layoutSdfText,
+  rasterizeSdfTextLabelImage,
+  resolveFlipbookUv,
+  resolveSdfTextFrameOpacity,
+  resolveVolumetricFog,
+  selectSpotShadowAtlasTier,
+  type SdfFontAtlas,
+  type SdfTextOcclusionPolicy,
+  type SdfTextStyle,
+  sampleOceanFixture,
   Geometry,
   IndexBuffer,
   InstancedPBRMaterial,
   PBRMaterial,
   ProductionRuntimeRenderer,
+  resolveSamplerAnisotropy,
+  Sampler,
   srgbToLinearChannel,
+  Texture,
+  TexturedPBRMaterial,
   VertexBuffer,
   VertexFormat,
   type CameraLike,
   type CollectedLight,
+  type DayNightSkyOptions,
   type EnvironmentLightingOptions,
   type ForwardEnvironmentFogOptions,
+  type WaterSurfaceBoat,
+  type WaterSurfacePreset,
+  type WeatherType,
   type ProductionImportedAssetRenderMetadata,
   type ProductionRendererFeature,
   type ProductionRendererInput,
   type RenderDeviceDiagnostics,
   type RenderItem,
   type RendererPostProcessOptions,
+  type RendererPostprocessExecutionMode,
   type RendererShadowOptions,
   type RenderSource
 } from "@aura3d/rendering";
@@ -75,7 +107,8 @@ import {
   DirectionalLight,
   PointLight,
   SpotLight,
-  type Light
+  type Light,
+  type Mat4
 } from "@aura3d/scene";
 import { lookAtMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene/math";
 /*
@@ -99,6 +132,12 @@ import {
   boundsMaxDimension,
   boundsSize
 } from "./SceneGroundingUtils.js";
+import {
+  collectLabelTelemetry,
+  summarizeTextBuckets,
+  type LabelTelemetry,
+  type TextBucketSummary
+} from "./LabelTelemetry.js";
 import {
   createWorldLabelLayer,
   type ProjectedLabel,
@@ -145,8 +184,18 @@ export {
   type SurfaceSample
 } from "@aura3d/physics/solverless";
 import { createPhysicsRuntime, type AuraCollisionLayers, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
+import { gameCameraRigs } from "./GameCameraRigs.js";
+import { gameFeelBuilders } from "./GameFeel.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
+export * from "./GameCameraRigs.js";
+export * from "./GameFeel.js";
+export * from "./LabelTelemetry.js";
+export * from "./NavigationCrowds.js";
+export * from "./FootPlanting.js";
+export * from "./Decals.js";
+export * from "./Scatter.js";
+export * from "./AssetDecoders.js";
 export * from "./VehicleChassis.js";
 export * from "./VehicleDriverAi.js";
 /**
@@ -195,6 +244,9 @@ export type {
 import {
   createGameInspector
 } from "./GameInspector";
+import { createPhysicalMaterialSpec } from "../material-physical/PhysicalMaterialSpec.js";
+import { createInstancedModelNode, type InstancedModelVec3 } from "../instances-model/InstancedModel.js";
+import { resolveWrinkleMapStrength, warnOnInstancingFallback, type WrinkleMapHook } from "@aura3d/rendering";
 export {
   createGameAudio
 } from "../game/GameAudio.js";
@@ -208,6 +260,37 @@ export type {
   GameAudioEvidence,
   GameAudioOptions
 } from "../game/GameAudio.js";
+export type {
+  GameAudioBusLevel,
+  GameAudioDuckingOptions,
+  GameAudioFootPlant,
+  GameAudioFootstepOptions,
+  GameAudioPlayingNode,
+  GameAudioPositionalOptions,
+  GameAudioVec3
+} from "../game/GameAudio.js";
+export {
+  PositionalEmitter,
+  FootstepPlayer,
+  createGameMixer,
+  attachFocusPolicy,
+  computeDistanceAttenuation,
+  computeDopplerShift,
+  resolveOcclusion
+} from "@aura3d/audio";
+export { ComboDetector, createTouchLayoutPreset, probeHaptics, playHaptic } from "@aura3d/input";
+export {
+  attachVisualScriptingGraph,
+  createVisualScriptingGraph,
+  listVisualScriptingNodeCatalog
+} from "@aura3d/scripting";
+export { createRootEditorSurface } from "@aura3d/editor-runtime";
+import {
+  attachVisualScriptingGraph as attachVisualScriptingGraphFn,
+  createVisualScriptingGraph as createVisualScriptingGraphFn,
+  listVisualScriptingNodeCatalog as listVisualScriptingNodeCatalogFn
+} from "@aura3d/scripting";
+import { createRootEditorSurface as createRootEditorSurfaceFn } from "@aura3d/editor-runtime";
 export * from "./RenderProgressTracker.js";
 export * from "./AudioVisemeAnalyzer.js";
 export * from "./ExternalPhonemeAnalyzer.js";
@@ -240,8 +323,14 @@ export * from "./AnimationRouteProof.js";
 export * from "./AnimationEpisodePackage.js";
 
 import type {
+  GLTFootPlantingConfig,
   GLTFSceneAnimationRuntime,
   GLTFSceneAnimationRuntimeOptions
+} from "@aura3d/assets/browser";
+import {
+  evaluateDistancePrioritizedMipResidency,
+  type TextureStreamingCandidate,
+  type TextureStreamingResidency
 } from "@aura3d/assets/browser";
 import type { AnimationPose } from "@aura3d/animation";
 import type {
@@ -787,6 +876,8 @@ export * from "./GameAssetValidation.js";
 export * from "./CharacterAssembly.js";
 export * from "./AssetEvidence.js";
 export * from "./AnimationController.js";
+export * from "./AnimationMixerBuilders.js";
+export * from "./AnimationDebugOverlay.js";
 export {
   gameAssetValidation,
   quaterniusGameReadyFighterValidationContract,
@@ -832,6 +923,17 @@ export interface AuraProceduralTextureSpec {
 }
 
 export type AuraMaterialTextureInput = AuraAssetRef<"texture"> | AuraProceduralTextureSpec;
+
+/**
+ * Per-map UV transform for the C1 textured-PBR slots (muse3jsparity-PRD C1).
+ * Offset/scale apply in UV units, rotation in radians, matching the native
+ * per-slot `*TextureTransform` uniforms.
+ */
+export interface AuraTextureTransform {
+  readonly offset?: readonly [number, number];
+  readonly scale?: readonly [number, number];
+  readonly rotation?: number;
+}
 
 export interface AuraAssetDefinition {
   readonly type: AuraAssetType;
@@ -936,14 +1038,46 @@ export interface AuraMaterialSpec {
   readonly iridescenceThicknessRange?: readonly [number, number];
   readonly anisotropy?: number;
   readonly anisotropyRotation?: number;
+  /**
+   * Desired texture sampler anisotropy (muse3jsparity-PRD C3). Defaults to 8;
+   * the request snaps to a device step and the renderer clamps to the device
+   * maximum at upload time, so low-capability devices fold down safely.
+   */
+  readonly textureAnisotropy?: number;
   readonly attenuationColor?: AuraColor;
   readonly attenuationDistance?: number;
+  /** P3 physical-extension bounded warnings, stamped by `material.physical` (muse3jsparity-PRD): surfaced by capability diagnostics, never silent. */
+  readonly physicalWarnings?: readonly string[];
   readonly envMapIntensity?: number;
   readonly normal?: AuraMaterialTextureInput;
   readonly normalScale?: number;
   readonly roughnessMap?: AuraMaterialTextureInput;
   readonly metalnessMap?: AuraMaterialTextureInput;
   readonly texture?: AuraAssetRef<"texture">;
+  /** Occlusion (AO/lightmap) slot: scalar is the strength 0..1, asset ref is the occlusion map. */
+  readonly occlusionMap?: AuraMaterialTextureInput;
+  readonly occlusionStrength?: number;
+  /** Emissive map slot: multiplied by `emissive` (default white when only the map is set) × `emissiveIntensity`. */
+  readonly emissiveMap?: AuraMaterialTextureInput;
+  /**
+   * Per-slot UV set selection for the native texCoord selector (muse3jsparity-PRD C1).
+   * 0 samples the authored unwrap, 1 the procedural 2x tiling unwrap.
+   */
+  readonly texCoords?: {
+    readonly baseColor?: 0 | 1;
+    readonly normal?: 0 | 1;
+    readonly metallicRoughness?: 0 | 1;
+    readonly occlusion?: 0 | 1;
+    readonly emissive?: 0 | 1;
+  };
+  /** Per-slot UV transforms, passed through to the native per-slot transform uniforms. */
+  readonly texTransforms?: {
+    readonly baseColor?: AuraTextureTransform;
+    readonly normal?: AuraTextureTransform;
+    readonly metallicRoughness?: AuraTextureTransform;
+    readonly occlusion?: AuraTextureTransform;
+    readonly emissive?: AuraTextureTransform;
+  };
 }
 
 export interface AuraEditableMaterialParameters {
@@ -1005,6 +1139,7 @@ export type AuraMaterialCapabilityFeatureId =
   | "base-color-texture"
   | "metallic-roughness"
   | "normal-map"
+  | "occlusion-map"
   | "emissive"
   | "alpha"
   | "double-sided"
@@ -1072,6 +1207,14 @@ export interface AuraModelOptions extends AuraTransformSpec {
   readonly physics?: AuraNodePhysicsSpec;
   /** Exact glTF node names to suppress when composing a typed model into a route. */
   readonly hiddenNodeNames?: readonly string[];
+  /**
+   * Wrinkle-detail hook (E1 face-rig demo): per-frame the engine resolves
+   * `resolveWrinkleMapStrength(liveMorphWeights, wrinkle)` and uploads it as
+   * `u_wrinkleStrength` on shaders that declare it (skinned-lit family), modulating
+   * procedural normal detail. No authored wrinkle texture required; strength 0 renders
+   * exactly as without the hook. `textureUniform` is accepted but currently unused.
+   */
+  readonly wrinkle?: WrinkleMapHook;
 }
 
 export interface AuraPrimitiveOptions extends AuraTransformSpec {
@@ -1307,6 +1450,14 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly castShadow: boolean;
   readonly receiveShadow: boolean;
   readonly visible: boolean;
+  /** P2 model instancing (muse3jsparity-PRD): per-instance transforms consumed at mount exactly like primitive nodes. */
+  readonly instances?: readonly AuraTransformSpec[];
+  readonly instanceColors?: readonly AuraColor[];
+  readonly instanceLod?: { readonly levels: readonly { readonly maxDistance: number }[]; readonly hysteresis?: number };
+  /** P2 culling telemetry stamped by `instances.model`: centroid + bounding radius over instance positions. */
+  readonly instanceCulling?: { readonly instanceCount: number; readonly centroid: AuraVec3; readonly boundingRadius: number; readonly cullable: true };
+  /** P2 D1 fallback diagnostic stamped by `instances.model` when the material is not instancing-aware. */
+  readonly instancedModelWarning?: string;
   readonly role?: AuraModelRole;
   readonly scaleMode?: AuraModelScaleMode;
   readonly targetHeight?: number;
@@ -1317,6 +1468,8 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly physics?: AuraNodePhysicsSpec;
   readonly hiddenNodeNames?: readonly string[];
   readonly runtime?: AuraRuntimeNodeSpec;
+  /** Wrinkle-detail hook; see `AuraModelOptions.wrinkle`. */
+  readonly wrinkle?: WrinkleMapHook;
 }
 
 export interface AuraPrimitiveNode extends AuraTransformSpec {
@@ -1347,7 +1500,7 @@ export interface AuraGroupNode extends AuraTransformSpec {
   readonly runtime?: AuraRuntimeNodeSpec;
 }
 
-export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox";
+export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox" | "spot";
 
 export interface AuraLightNode extends AuraTransformSpec {
   readonly kind: "light";
@@ -1357,9 +1510,19 @@ export interface AuraLightNode extends AuraTransformSpec {
   readonly intensity: number;
   readonly width?: number;
   readonly height?: number;
+  readonly target?: AuraVec3;
+  readonly angle?: number;
+  readonly penumbra?: number;
+  readonly distance?: number;
+  readonly decay?: number;
+  readonly shadow?: boolean;
 }
 
-export type AuraEffectType = "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion";
+export type AuraEffectType =
+  | "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion"
+  | "color-grade" | "anti-alias" | "outline"
+  | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow"
+  | "flipbook-sprite" | "light-beam";
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 
 export interface AuraEffectNode extends AuraTransformSpec {
@@ -1379,6 +1542,42 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly threshold?: number;
   readonly antiBlowout?: boolean;
   readonly maxIntensity?: number;
+  /** Native bloom path (muse3jsparity-PRD A1): performance keeps the legacy single-scale ping-pong; balanced/cinematic use the mip pyramid. */
+  readonly quality?: "performance" | "balanced" | "cinematic";
+  /** HDR bright-extract knee width in [0, 0.5]; 0 keeps the hard threshold step. */
+  readonly softKnee?: number;
+  /** LDR composite highlight shoulder in [0, 1]; 0 keeps the legacy clamp. */
+  readonly shoulder?: number;
+  /** Color-grade exposure multiplier (muse3jsparity-PRD A3). */
+  readonly exposure?: number;
+  /** Color-grade contrast around mid-grey (muse3jsparity-PRD A3). */
+  readonly contrast?: number;
+  /** Color-grade saturation multiplier (muse3jsparity-PRD A3). */
+  readonly saturation?: number;
+  /** Recorded color-grade shadow lift: no native grade target yet, warned when set. */
+  readonly shadows?: number;
+  /** Recorded color-grade highlight gain: no native grade target yet, warned when set. */
+  readonly highlights?: number;
+  /** Reserved color-grade LUT asset id: recorded on the node, not yet sampled by the native grade. */
+  readonly lut?: string;
+  /** Anti-alias mode (muse3jsparity-PRD A3): fxaa executes natively; taa/off never submit a pass. */
+  readonly mode?: "fxaa" | "taa" | "off";
+  /** Outline width in pixels, 1-6 (muse3jsparity-PRD A3). */
+  readonly width?: number;
+  /** Depth-of-field focus as a linear-distance fraction, 0 = near, 1 = far (muse3jsparity-PRD A3). */
+  readonly focus?: number;
+  /** Depth-of-field blur-band width derived control in [0, 1] (muse3jsparity-PRD A3). */
+  readonly aperture?: number;
+  /** Depth-of-field maximum blur radius in pixels (muse3jsparity-PRD A3). */
+  readonly maxBlur?: number;
+  /** Volumetric-fog quality (muse3jsparity-PRD A5): "off" keeps forward exp2 fog only, never submits the inscatter pass. */
+  readonly volumetricQuality?: "off" | "balanced" | "quality" | "ultra";
+  /** Volumetric-fog radial anchor override in UV (muse3jsparity-PRD A5); defaults to the upper third. */
+  readonly lightPosition?: readonly [number, number];
+  /** Volumetric height falloff (muse3jsparity-PRD A5); 0 disables the height gate. */
+  readonly heightFalloff?: number;
+  /** Volumetric height reference in world units (muse3jsparity-PRD A5). */
+  readonly heightReference?: number;
   readonly emissionRate?: number;
   readonly gravity?: number;
   readonly groundCollision?: boolean;
@@ -1392,6 +1591,20 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly noise?: number;
   readonly splashes?: boolean;
   readonly mist?: boolean;
+  /** Flipbook sprite sheet columns (muse3jsparity-PRD D4); validated fail-loud by resolveFlipbookUv. */
+  readonly spriteColumns?: number;
+  /** Flipbook sprite sheet rows (muse3jsparity-PRD D4). */
+  readonly spriteRows?: number;
+  /** Flipbook playback rate in frames per second (muse3jsparity-PRD D4). */
+  readonly frameRate?: number;
+  /** Light-beam start point in world units (muse3jsparity-PRD D4). */
+  readonly from?: AuraVec3;
+  /** Light-beam end point in world units (muse3jsparity-PRD D4). */
+  readonly to?: AuraVec3;
+  /** Light-beam width in world units (muse3jsparity-PRD D4). */
+  readonly widthWorld?: number;
+  /** Light-beam quad-strip segment count (muse3jsparity-PRD D4). */
+  readonly segmentCount?: number;
 }
 
 export interface AuraParticleBudgetDiagnostics {
@@ -1435,10 +1648,29 @@ export interface AuraLabelNode extends AuraTransformSpec {
 
 export interface AuraEnvironmentNode {
   readonly kind: "environment";
-  readonly environment: "studio" | "material-lab" | "product-hero" | "night-cinematic" | "metal-studio" | "glass-studio";
+  readonly environment: "studio" | "material-lab" | "product-hero" | "night-cinematic" | "metal-studio" | "glass-studio" | "hdri";
   readonly name?: string;
   readonly intensity: number;
   readonly color?: AuraColor;
+  /**
+   * B3 root HDRI input (muse3jsparity-PRD). Only meaningful with
+   * `environment: "hdri"`: a Radiance `.hdr` asset ref resolved post-mount
+   * through the HDR→cubemap→GGX→BRDF-LUT chain. Scalar/procedural first
+   * frames stay honest; `iblPixelBacked` reports the swap.
+   */
+  readonly texture?: AuraAssetRef<"texture">;
+  /**
+   * B3 second probe slot (muse3jsparity-PRD). Optional reflection `.hdr`:
+   * the diffuse/illumination term keeps sampling `texture` (roughest mip)
+   * while the specular term samples `reflectionTexture` (sharper mips).
+   * Absent, both terms sample `texture` (single probe).
+   */
+  readonly reflectionTexture?: AuraAssetRef<"texture">;
+  /**
+   * M3 HDRI rotation (muse3jsparity-PRD) in radians. Forwards into the
+   * production HDR chain (`environmentMapRotation`); 0 keeps B3 behavior.
+   */
+  readonly rotation?: number;
 }
 
 export type AuraSceneCategory =
@@ -1511,6 +1743,12 @@ export interface AuraCreateAppRendererOptions {
   readonly mode?: AuraRendererMode;
   readonly fallback?: AuraRendererFallbackMode;
   readonly qualityProfile?: AuraRendererQualityProfileId;
+  /**
+   * M2 texture streaming budget in bytes (muse3jsparity-PRD). Funds the
+   * distance-prioritized mip residency; the unfunded tail surfaces as
+   * over-budget telemetry instead of silent thrash. Default 256 MiB.
+   */
+  readonly textureBudgetBytes?: number;
 }
 
 export interface AuraRendererDiagnosticReport {
@@ -1531,6 +1769,7 @@ export interface AuraRendererDiagnosticReport {
     readonly threshold: number;
     readonly radius: number;
     readonly antiBlowout: boolean;
+    readonly quality?: "performance" | "balanced" | "cinematic";
   };
   readonly shadows: {
     /** True only when a mounted runtime actually sampled a shadow map. */
@@ -1547,6 +1786,24 @@ export interface AuraRendererDiagnosticReport {
     readonly shadowRenderTargetsAllocated: number;
     readonly contactShadows: number;
     readonly mapType: "pcf-soft";
+    /**
+     * N1 authored spot shadow state (muse3jsparity-PRD). `requested` is the
+     * author intent (`lights.spot({ shadow: true })` winning the caster
+     * slot); `spotPixelBacked` additionally requires the device-observed
+     * map signals — never declared from intent alone.
+     */
+    readonly spot?: {
+      readonly requested: boolean;
+      readonly casterIsSpot: boolean;
+      readonly casterName?: string;
+      readonly angle?: number;
+      readonly penumbra?: number;
+      readonly range?: number;
+      readonly atlasResolution?: number;
+      readonly atlasReason?: string;
+      readonly spotPixelBacked: boolean;
+      readonly reason: string;
+    };
   };
   readonly occlusion: {
     readonly enabled: boolean;
@@ -1574,6 +1831,8 @@ export interface AuraRendererDiagnosticReport {
     readonly fallbackPasses: readonly string[];
     /** Device-observed render-target format used by the mounted composer. */
     readonly targetFormat?: "rgba8" | "rgba16f" | "rgba32f";
+    /** Device-observed postprocess execution path (muse3jsparity-PRD A1). */
+    readonly executionMode: RendererPostprocessExecutionMode | "unknown";
     readonly evidence: string;
   };
   readonly runtime: {
@@ -1587,10 +1846,24 @@ export interface AuraRendererDiagnosticReport {
     readonly visibleObjects: number;
     readonly culledObjects: number;
     readonly frustumTestedObjects: number;
+    /** Most recent native bloom execution observed on the device (muse3jsparity-PRD A1); null until a native bloom pass runs. */
+    readonly bloom: RenderDeviceDiagnostics["bloom"];
+    /** C3 sampler anisotropy telemetry: uploads issued and device maximum (1 when unsupported). */
+    readonly samplerAnisotropyUploads?: number;
+    readonly maxTextureAnisotropy?: number;
     readonly lodSelections: readonly {
       readonly nodeName: string;
       readonly levelIndex: number;
       readonly levelName: string;
+    }[];
+    /** C1 per-material textured diagnostics; pixelBacked only after the post-mount upgrade swaps materials. */
+    readonly texturedMaterials: readonly {
+      readonly nodeName: string;
+      readonly levelName: string;
+      readonly status: "none" | "pending" | "textured" | "fallback";
+      readonly slots: readonly string[];
+      readonly pixelBacked: boolean;
+      readonly warnings: readonly string[];
     }[];
   };
   readonly environment: {
@@ -1598,6 +1871,36 @@ export interface AuraRendererDiagnosticReport {
     readonly preset?: AuraEnvironmentNode["environment"];
     readonly intensity?: number;
     readonly evidence: string;
+    /** B3: true only after the HDRI chain swaps the live lighting object. */
+    readonly iblPixelBacked: boolean;
+    readonly hdriStatus: "none" | "pending" | "ready" | "fallback";
+    readonly dualProbe?: boolean;
+  };
+  /**
+   * G1 SDF world-text state (muse3jsparity-PRD). `textPixelBacked` is true
+   * only when the atlas-derived label texture uploaded AND SDF quads were
+   * submitted this frame — layout alone never backs pixels.
+   */
+  readonly text: {
+    readonly sdfTexts: number;
+    readonly textPixelBacked: boolean;
+    readonly quadCount: number;
+    readonly lastOpacity: number;
+    readonly reason: string;
+  };
+  /**
+   * M2 texture streaming residency (muse3jsparity-PRD). Funded from the
+   * post-upgrade texture table against `textureBudgetBytes`; the unfunded
+   * tail reports over-budget bytes instead of thrashing silently.
+   */
+  readonly textures: {
+    readonly budgetBytes: number;
+    readonly usedBytes: number;
+    readonly requestedBytes: number;
+    readonly overBudget: boolean;
+    readonly overBudgetBytes: number;
+    readonly residentEntries: number;
+    readonly evictedEntries: readonly string[];
   };
   readonly antialiasing: AuraRendererQualityPreset["antialiasing"];
   readonly screenshotQuality: AuraRendererQualityPreset;
@@ -1750,7 +2053,8 @@ export function model<TAsset extends AuraAssetRef<"model">>(
     targetMaxDimension: options.targetMaxDimension,
     targetLength: options.targetLength,
     physics: options.physics,
-    hiddenNodeNames: options.hiddenNodeNames
+    hiddenNodeNames: options.hiddenNodeNames,
+    wrinkle: options.wrinkle
   });
 }
 
@@ -1864,7 +2168,74 @@ export const instances = {
       readonly transforms: readonly AuraTransformSpec[];
       readonly colors?: readonly AuraColor[];
     }
-  ) => instancedPrimitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) })
+  ) => instancedPrimitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) }),
+  /**
+   * P2 instanced GLB models (muse3jsparity-PRD): one draw class for repeated
+   * static models. Skinned actors fall back with a D1 warning at mount (E1
+   * owns rigs); explicitly unaware materials warn at build.
+   */
+  model: <TAsset extends AuraAssetRef<"model">>(
+    asset: TAsset,
+    options: AuraModelOptions & {
+      readonly transforms: readonly AuraTransformSpec[];
+      readonly colors?: readonly AuraColor[];
+      readonly lod?: { readonly levels: readonly { readonly maxDistance: number }[]; readonly hysteresis?: number };
+      readonly instancingAware?: boolean;
+      readonly maxInstancesPerDraw?: number;
+    }
+  ): AuraNodeBuilder<AuraModelNode> => {
+    const built = createInstancedModelNode({
+      asset,
+      ...(options.name !== undefined ? { name: options.name } : {}),
+      transforms: options.transforms.map((transform) => ({
+        ...(transform.position !== undefined ? { position: [...transform.position] as InstancedModelVec3 } : {}),
+        ...(transform.rotation !== undefined ? { rotation: [...transform.rotation] as InstancedModelVec3 } : {}),
+        ...(transform.scale !== undefined
+          ? { scale: typeof transform.scale === "number" ? transform.scale : [...transform.scale] as InstancedModelVec3 }
+          : {})
+      })),
+      ...(options.colors ? { colors: [...options.colors] } : {}),
+      ...(options.lod ? { lod: options.lod } : {}),
+      materialInstancingAware: options.instancingAware ?? true,
+      ...(options.maxInstancesPerDraw !== undefined ? { maxInstancesPerDraw: options.maxInstancesPerDraw } : {}),
+      ...(options.material?.name !== undefined ? { materialName: options.material.name } : {})
+    });
+    const base = model(asset, options).toJSON();
+    return new AuraNodeBuilder<AuraModelNode>({
+      ...base,
+      instances: built.node.instances.map((transform) => ({
+        ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
+        ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
+        ...(transform.scale !== undefined ? { scale: transform.scale } : {})
+      })),
+      // Safe: the builder only accepts AuraColor strings above, so no RGB tuples reach the node.
+      ...(built.node.instanceColors ? { instanceColors: [...built.node.instanceColors] as AuraColor[] } : {}),
+      ...(built.node.instanceLod ? { instanceLod: built.node.instanceLod } : {}),
+      instanceCulling: {
+        instanceCount: built.node.instanceCulling.instanceCount,
+        centroid: [...built.node.instanceCulling.centroid] as AuraVec3,
+        boundingRadius: built.node.instanceCulling.boundingRadius,
+        cullable: true as const
+      },
+      ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {})
+    });
+  }
+} as const;
+
+export const visualScripting = {
+  graph: createVisualScriptingGraphFn,
+  attach: attachVisualScriptingGraphFn,
+  catalog: listVisualScriptingNodeCatalogFn
+} as const;
+
+const rootEditorSurface = createRootEditorSurfaceFn();
+export const editor = {
+  undo: rootEditorSurface.undo,
+  redo: rootEditorSurface.redo,
+  gizmo: rootEditorSurface.attachGizmo,
+  playMode: { enter: rootEditorSurface.enterPlayMode, exit: rootEditorSurface.exitPlayMode },
+  outliner: rootEditorSurface.describeOutliner,
+  capabilityLabel: "editor" as const
 } as const;
 
 export const geometry = {
@@ -1872,9 +2243,42 @@ export const geometry = {
   custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) })
 } as const;
 
-export function text3D(text: string, options: AuraText3DOptions & Omit<AuraPrimitiveOptions, "geometry" | "text3D"> = {}): AuraNodeBuilder<AuraPrimitiveNode> {
+let cachedSdfFontAtlas: SdfFontAtlas | undefined;
+
+function rootSdfFontAtlas(): SdfFontAtlas {
+  // Baked once per session (~500ms default res); the caller never bakes per frame.
+  cachedSdfFontAtlas ??= createSdfFontAtlas();
+  return cachedSdfFontAtlas;
+}
+
+export function text3D(text: string, options: AuraText3DOptions & Omit<AuraPrimitiveOptions, "geometry" | "text3D"> & { readonly backend?: "extruded-mesh" | "sdf"; readonly sdfStyle?: SdfTextStyle; readonly sdfOcclusion?: SdfTextOcclusionPolicy } = {}): AuraNodeBuilder<AuraPrimitiveNode> {
   const built = createAuraText3DGeometry(text, options);
-  return primitive("custom", { ...options, geometry: built.geometry, text3D: { text: built.text, glyphCount: built.glyphCount, unsupportedCharacters: built.unsupportedCharacters, method: built.method } });
+  if ((options.backend ?? "extruded-mesh") === "extruded-mesh") {
+    return primitive("custom", { ...options, geometry: built.geometry, text3D: { text: built.text, glyphCount: built.glyphCount, unsupportedCharacters: built.unsupportedCharacters, method: built.method } });
+  }
+  // G1 SDF backend (muse3jsparity-PRD): the layout validates fail-loud and is
+  // recorded on the descriptor with the full author intent (size, spacing,
+  // style, occlusion policy) so the production bridge can replay the sampler
+  // at mount. The extruded mesh stays as the diagnosed fallback geometry.
+  const layout = layoutSdfText(text, rootSdfFontAtlas(), { size: options.size ?? 1, letterSpacing: options.letterSpacing, style: options.sdfStyle });
+  return primitive("custom", {
+    ...options,
+    geometry: built.geometry,
+    text3D: {
+      text: built.text,
+      glyphCount: built.glyphCount,
+      unsupportedCharacters: [...new Set([...built.unsupportedCharacters, ...layout.unsupportedCharacters])],
+      method: "sdf-atlas-quad",
+      backend: "sdf",
+      sdfQuadCount: layout.quads.length,
+      sdfWidthWorld: layout.widthWorld,
+      sdfHeightWorld: layout.heightWorld,
+      sdfSize: options.size ?? 1,
+      ...(options.letterSpacing === undefined ? {} : { sdfLetterSpacing: options.letterSpacing }),
+      ...(options.sdfStyle === undefined ? {} : { sdfStyle: options.sdfStyle }),
+      sdfOcclusion: options.sdfOcclusion ?? "dim"
+    }
+  });
 }
 
 export function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | "geometry"> & { readonly levels: readonly AuraRootLodLevelSpec[]; readonly hysteresis?: number }): AuraNodeBuilder<AuraPrimitiveNode> {
@@ -1935,6 +2339,14 @@ function proceduralTexture(texture: AuraProceduralTextureKind, options: Partial<
   };
 }
 
+const PHYSICAL_SPEC_KEYS = [
+  "color", "roughness", "metallic", "metalness", "clearcoat", "clearcoatRoughness",
+  "sheen", "sheenColor", "sheenRoughness", "iridescence", "iridescenceIOR",
+  "iridescenceThicknessRange", "anisotropy", "anisotropyRotation", "transmission",
+  "thickness", "attenuationColor", "attenuationDistance", "ior", "specularIntensity",
+  "specularColor"
+] as const;
+
 export const material = {
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
     color: "#d7dee8",
@@ -1943,7 +2355,27 @@ export const material = {
     metalness: options.metalness ?? options.metallic ?? 0,
     ...options
   }),
-  physical: (options: AuraMaterialSpec = {}): AuraMaterialSpec => material.pbr(options),
+  physical: (options: AuraMaterialSpec = {}): AuraMaterialSpec => {
+    // P3 (muse3jsparity-PRD): the sync factory stays scalar (C1 decision —
+    // no renderer change); extension params validate through the physical
+    // matrix and every non-supported request rides the spec as a warning.
+    const defined = PHYSICAL_SPEC_KEYS.reduce<Record<string, unknown>>((picked, key) => {
+      const value = (options as Record<string, unknown>)[key];
+      if (value !== undefined) picked[key] = value;
+      return picked;
+    }, {});
+    const result = createPhysicalMaterialSpec(defined);
+    const normalized = PHYSICAL_SPEC_KEYS.reduce<Record<string, unknown>>((picked, key) => {
+      const value = (result.spec as Record<string, unknown>)[key];
+      if (value !== undefined && (options as Record<string, unknown>)[key] !== undefined) picked[key] = value;
+      return picked;
+    }, {});
+    return {
+      ...material.pbr(options),
+      ...normalized,
+      ...(result.boundedWarnings.length > 0 ? { physicalWarnings: [...result.boundedWarnings] } : {})
+    };
+  },
   emissive: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
     color: options.color ?? "#111827",
     emissive: options.emissive ?? options.color ?? "#38d6ff",
@@ -2239,33 +2671,41 @@ const materialCapabilityCatalog: readonly Omit<AuraMaterialCapabilityFeature, "r
   {
     id: "base-color-texture",
     label: "Base-color texture",
-    rootSafeApi: "partial",
+    rootSafeApi: "supported",
     productionRuntime: "supported",
-    evidence: "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+    evidence: "Root textured-PBR upgrade resolves AuraAssetRef texture urls to sRGB baseColor textures with controlled texture on/off pixel deltas (tests/browser/root-textured-c1.spec.ts, tests/reports/root-textured-c1/c1-probe.json).",
     claimRule: "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels."
   },
   {
     id: "metallic-roughness",
     label: "Metallic/roughness",
-    rootSafeApi: "partial",
+    rootSafeApi: "supported",
     productionRuntime: "supported",
-    evidence: "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+    evidence: "Root textured-PBR upgrade composites roughnessMap/metalnessMap to the glTF metallic-roughness convention with scalar fallbacks and controlled browser pixel proof (tests/browser/root-textured-c1.spec.ts).",
     claimRule: "Do not claim full PBR parity without browser evidence."
   },
   {
     id: "normal-map",
     label: "Normal maps",
-    rootSafeApi: "partial",
+    rootSafeApi: "supported",
     productionRuntime: "supported",
-    evidence: "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+    evidence: "Root textured-PBR upgrade binds linear normal maps with tangent-space sampling over authored TBN and controlled browser pixel proof (tests/browser/root-textured-c1.spec.ts).",
+    claimRule: "Claim only with material-specific screenshot evidence."
+  },
+  {
+    id: "occlusion-map",
+    label: "Occlusion maps",
+    rootSafeApi: "supported",
+    productionRuntime: "supported",
+    evidence: "Root textured-PBR upgrade binds linear occlusionMap textures (R channel) with occlusionStrength and controlled browser pixel proof (tests/browser/root-textured-c1.spec.ts).",
     claimRule: "Claim only with material-specific screenshot evidence."
   },
   {
     id: "emissive",
     label: "Emissive",
-    rootSafeApi: "partial",
+    rootSafeApi: "supported",
     productionRuntime: "supported",
-    evidence: "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+    evidence: "Root textured-PBR upgrade binds sRGB emissiveMap textures multiplied by the emissive factor with controlled browser pixel proof (tests/browser/root-textured-c1.spec.ts); pixel-backed bloom is reported separately.",
     claimRule: "Distinguish emissive material from postprocess bloom."
   },
   {
@@ -2319,9 +2759,9 @@ const materialCapabilityCatalog: readonly Omit<AuraMaterialCapabilityFeature, "r
   {
     id: "hdr-ibl",
     label: "HDR/IBL",
-    rootSafeApi: "partial",
+    rootSafeApi: "supported",
     productionRuntime: "supported",
-    evidence: "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+    evidence: "Root environments.hdri resolves authored Radiance HDR through the HDR-to-cubemap-to-GGX-to-BRDF-LUT chain with iblPixelBacked diagnostics and controlled browser pixel deltas (tests/browser/root-ibl-b3.spec.ts, tests/reports/root-ibl-b3/b3-probe.json).",
     claimRule: "Root HDR/IBL claims require diagnostics and browser pixels."
   },
   {
@@ -2342,7 +2782,8 @@ function createMaterialCapabilityDiagnostics(input?: AuraMaterialCapabilityInput
     if (spec.texture) requested.add("base-color-texture");
     if (spec.metallic !== undefined || spec.metalness !== undefined || spec.roughness !== undefined || spec.roughnessMap || spec.metalnessMap) requested.add("metallic-roughness");
     if (spec.normal) requested.add("normal-map");
-    if (spec.emissive || spec.emissiveIntensity !== undefined) requested.add("emissive");
+    if (spec.occlusionMap || spec.occlusionStrength !== undefined) requested.add("occlusion-map");
+    if (spec.emissive || spec.emissiveIntensity !== undefined || spec.emissiveMap) requested.add("emissive");
     if (spec.opacity !== undefined && spec.opacity < 1) requested.add("alpha");
     if (spec.clearcoat !== undefined || spec.clearcoatRoughness !== undefined) requested.add("clearcoat");
     if (spec.sheen !== undefined || spec.sheenColor !== undefined || spec.sheenRoughness !== undefined) requested.add("sheen");
@@ -2359,6 +2800,11 @@ function createMaterialCapabilityDiagnostics(input?: AuraMaterialCapabilityInput
   const warnings: string[] = [];
   if (partialRequestedFeatures.length > 0) {
     warnings.push(`Partial root material features requested: ${partialRequestedFeatures.join(", ")}. Capture route pixels before claiming production material quality.`);
+  }
+  for (const spec of specs) {
+    for (const physicalWarning of spec.physicalWarnings ?? []) {
+      warnings.push(`Physical material extension bounded: ${physicalWarning}`);
+    }
   }
   if (unsupportedRequestedFeatures.length > 0) {
     warnings.push(`Metadata/internal material features requested: ${unsupportedRequestedFeatures.join(", ")}. Do not claim rendered support from root createAuraApp alone.`);
@@ -2576,6 +3022,21 @@ export const lights = {
       position: options.position ?? [2, 2.5, 1.5],
       intensity: options.intensity ?? 2,
       color: options.color ?? "#ffffff"
+    }),
+  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean } = {}) =>
+    new AuraNodeBuilder<AuraLightNode>({
+      kind: "light",
+      light: "spot",
+      name: options.name ?? "spot light",
+      position: options.position ?? [0, 4, 0],
+      target: options.target,
+      angle: options.angle ?? Math.PI / 6,
+      penumbra: options.penumbra ?? 0.4,
+      distance: options.distance ?? 12,
+      decay: options.decay,
+      intensity: options.intensity ?? 8,
+      color: options.color ?? "#ffffff",
+      shadow: options.shadow
     }),
   studio: (options: { readonly intensity?: number } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
@@ -2852,8 +3313,11 @@ export const camera = {
   solar: (): AuraCameraSpec => camera.orbit({ target: [0, 0, 0], distance: 7.2, fov: 46 }),
   humanoid: (): AuraCameraSpec => camera.perspective({ position: [1.2, 1.12, 3.45], target: [0, 0.78, -0.55], fov: 36 }),
   miniGolf: (): AuraCameraSpec => camera.follow({ targetNode: "white physics golf ball", distance: 4.2, fov: 48 }),
-  neon: (): AuraCameraSpec => camera.flythrough({ from: [0, 0.36, 1.6], to: [0, 0.36, -5.8], target: [0, 0.26, -6.8], fov: 54, captureTime: 0.16 })
+  neon: (): AuraCameraSpec => camera.flythrough({ from: [0, 0.36, 1.6], to: [0, 0.36, -5.8], target: [0, 0.26, -6.8], fov: 54, captureTime: 0.16 }),
+  ...gameCameraRigs
 } as const;
+
+export const gameFeel = { create: gameFeelBuilders.create, hitStopDefaults: gameFeelBuilders.hitStopDefaults } as const;
 
 function resolveFrameAssetRenderScale(bounds: ReturnType<typeof boundsFromAsset>, options: AuraCameraFrameAssetOptions): number {
   const size = boundsSize(bounds);
@@ -2920,7 +3384,10 @@ export const effects = {
       radius: options.radius ?? 0.38,
       threshold: options.threshold ?? 0.7,
       antiBlowout,
-      maxIntensity
+      maxIntensity,
+      ...(options.quality !== undefined ? { quality: options.quality } : {}),
+      ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
+      ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
     });
   },
   cinematicBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
@@ -2941,11 +3408,23 @@ export const effects = {
       antiBlowout: options.antiBlowout ?? true,
       maxIntensity: options.maxIntensity ?? 0.92
     }),
+  /**
+   * A5 volumetric fog (muse3jsparity-PRD): builds a DISTINCT "volumetric-fog"
+   * node (never plain fog) that submits the depth-aware inscatter pass plus
+   * forward GPU height-fog terms. quality "off" keeps forward exp2 fog only.
+   */
   volumetricFog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    effects.fog({
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "volumetric-fog",
+      name: options.name ?? "volumetric fog inscatter",
       density: options.density ?? 0.18,
       color: options.color ?? "#6f84b9",
-      intensity: options.intensity ?? 0.7
+      intensity: options.intensity ?? 0.7,
+      ...(options.volumetricQuality ? { volumetricQuality: options.volumetricQuality } : {}),
+      ...(options.lightPosition ? { lightPosition: options.lightPosition } : {}),
+      ...(options.heightFalloff !== undefined ? { heightFalloff: options.heightFalloff } : {}),
+      ...(options.heightReference !== undefined ? { heightReference: options.heightReference } : {})
     }),
   depthFog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     effects.fog({
@@ -2973,6 +3452,88 @@ export const effects = {
       density: options.density ?? 0.7,
       color: options.color ?? "#020617"
     }),
+  /**
+   * Root color-grade node (muse3jsparity-PRD A3). contrast/saturation execute
+   * natively; exposure/shadows/highlights/lut are recorded on the node and
+   * warned (no native grade target yet — never silently accepted).
+   */
+  colorGrade: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "color-grade",
+      name: options.name ?? "color grade",
+      intensity: options.intensity ?? 1,
+      exposure: options.exposure ?? 1,
+      contrast: options.contrast ?? 1,
+      saturation: options.saturation ?? 1,
+      ...(options.shadows !== undefined ? { shadows: options.shadows } : {}),
+      ...(options.highlights !== undefined ? { highlights: options.highlights } : {}),
+      ...(options.lut !== undefined ? { lut: options.lut } : {})
+    }),
+  /**
+   * Root anti-alias node (muse3jsparity-PRD A3). `fxaa` executes natively;
+   * `off` submits nothing; `taa` is recorded but withheld (no history binding
+   * at root) with an explicit diagnostic warning.
+   */
+  antiAlias: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "anti-alias",
+      name: options.name ?? "anti alias",
+      mode: options.mode ?? "fxaa",
+      intensity: options.intensity ?? 1
+    }),
+  /**
+   * Root outline node (muse3jsparity-PRD A3): native outline pass, width in
+   * pixels clamped to the device range 1-6 by the bridge.
+   */
+  outline: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "outline",
+      name: options.name ?? "outline",
+      color: options.color ?? "#ff9822",
+      width: options.width ?? 3,
+      threshold: options.threshold ?? 0.12,
+      intensity: options.intensity ?? 0.9
+    }),
+  /**
+   * Root screen-space reflections node (muse3jsparity-PRD A3): submits the
+   * native SSR pass against renderer-owned depth where available.
+   */
+  screenSpaceReflections: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "screen-space-reflections",
+      name: options.name ?? "screen space reflections",
+      intensity: options.intensity ?? 0.9
+    }),
+  /**
+   * Root depth-of-field node (muse3jsparity-PRD A3). focus is a
+   * linear-distance fraction (0 = near plane, 1 = far plane); aperture widens
+   * the focus transition band (game-tuned control, not a physical f-stop).
+   */
+  depthOfField: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "depth-of-field",
+      name: options.name ?? "depth of field",
+      focus: options.focus ?? 0.02,
+      aperture: options.aperture ?? 0.35,
+      maxBlur: options.maxBlur ?? 4,
+      intensity: options.intensity ?? 1
+    }),
+  /**
+   * Root motion-blur node (muse3jsparity-PRD A3): recorded but withheld (no
+   * velocity binding at root) with an explicit diagnostic warning.
+   */
+  motionBlur: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "motion-blur",
+      name: options.name ?? "motion blur",
+      intensity: options.intensity ?? 0.5
+    }),
   rain: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
@@ -2986,6 +3547,63 @@ export const effects = {
       splashes: options.splashes ?? true,
       mist: options.mist ?? true
     }),
+  snow: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "snow",
+      intensity: options.intensity ?? 0.4,
+      density: options.density ?? 0.68,
+      color: options.color ?? "#e8f1ff",
+      speed: options.speed ?? 1,
+      wind: options.wind ?? [-0.85, -1.1, -0.22],
+      particleCount: options.particleCount,
+      splashes: options.splashes ?? false,
+      mist: options.mist ?? true
+    }),
+  /**
+   * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4):
+   * recorded with validated sheet geometry, but withheld — root has no
+   * native sprite-sheet sampler yet, so no pass is submitted.
+   */
+  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
+    const columns = options.spriteColumns ?? 4;
+    const rows = options.spriteRows ?? 4;
+    resolveFlipbookUv(0, columns, rows);
+    return new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "flipbook-sprite",
+      name: options.name ?? "flipbook explosion sprite",
+      intensity: options.intensity ?? 1,
+      color: options.color ?? "#ffb347",
+      spriteColumns: columns,
+      spriteRows: rows,
+      frameRate: options.frameRate ?? 24
+    });
+  },
+  /**
+   * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
+   * with a validated quad-strip descriptor, but withheld — root has no native
+   * beam target yet, so no pass is submitted.
+   */
+  beam: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
+    const descriptor = createBeamDescriptor({
+      from: options.from ?? [0, 1, 0],
+      to: options.to ?? [0, 1, -4],
+      ...(options.widthWorld !== undefined ? { widthWorld: options.widthWorld } : {}),
+      ...(options.segmentCount !== undefined ? { segmentCount: options.segmentCount } : {})
+    });
+    return new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "light-beam",
+      name: options.name ?? "additive light beam",
+      intensity: options.intensity ?? 0.9,
+      color: options.color ?? "#9fd8ff",
+      from: [...descriptor.from] as AuraVec3,
+      to: [...descriptor.to] as AuraVec3,
+      widthWorld: descriptor.widthWorld,
+      segmentCount: descriptor.segmentCount
+    });
+  },
 	  particles: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
 	    new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
@@ -3011,6 +3629,200 @@ export const effects = {
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22
 	    })
+} as const;
+
+/**
+ * D3 atmosphere builders (PRD D3 boxes 1-2). ADDITIVE root surface over the
+ * pure descriptors in `@aura3d/rendering` (`DayNightSky.ts`,
+ * `AtmosphereWetness.ts`, `Weather.ts`).
+ *
+ * Every builder below composes pre-existing node kinds only (primitive,
+ * light, effect); no existing builder is modified. Precipitation pixels in
+ * the default production path come from weather-state-driven primitive
+ * streaks/flakes, because the production bridge does not pixel-back `rain`,
+ * `snow`, or `particles` effect passes (they render only in the safe-basic
+ * fallback and the Canvas2D diagnostic path). The matching effect node is
+ * still declared so diagnostics report the request.
+ */
+export const sky = {
+  /** Time-of-day sky: background key, sun/moon discs, stars, 2D-noise clouds, key light. */
+  dayNight: (options: DayNightSkyOptions & { readonly starLimit?: number; readonly cloudLimit?: number } = {}): {
+    readonly nodes: readonly AuraSceneNode[];
+    readonly background: string;
+    readonly dayFactor: number;
+    readonly visibleStarCount: number;
+  } => {
+    const state = createDayNightSky(options);
+    const nodes: AuraSceneNode[] = [];
+    const sunUp = state.sun.elevationRadians > -0.05;
+    const moonUp = state.moon.elevationRadians > -0.05;
+    if (sunUp) {
+      nodes.push(primitives.sphere({ name: "d3 sun disc", material: material.emissive({ color: state.sun.color, emissive: state.sun.color, emissiveIntensity: 2.2, roughness: 0.8 }) })
+        .position(-6 * Math.cos(state.sun.azimuthRadians), 1 + 5 * Math.sin(state.sun.azimuthRadians), -7).scale(0.85).toJSON());
+    }
+    if (moonUp) {
+      nodes.push(primitives.sphere({ name: "d3 moon disc", material: material.emissive({ color: state.moon.color, emissive: state.moon.color, emissiveIntensity: 1.4, roughness: 0.8 }) })
+        .position(-6 * Math.cos(state.moon.azimuthRadians), 1 + 5 * Math.sin(state.moon.azimuthRadians), -7).scale(0.6).toJSON());
+    }
+    const starLimit = Math.max(0, Math.min(120, options.starLimit ?? 48));
+    const visibleStars = state.stars.filter((star) => star.brightness > 0.05 && star.y > 0).slice(0, starLimit);
+    for (const [index, star] of visibleStars.entries()) {
+      nodes.push(primitives.sphere({ name: `d3 night star ${index}`, material: material.emissive({ color: "#dbeafe", emissive: "#bfdbfe", emissiveIntensity: 1.8, roughness: 0.9 }) })
+        .position(star.x * 7, star.y * 4 + 0.6, -6.5).scale(0.028 + star.size * 2).toJSON());
+    }
+    const cloudLimit = Math.max(0, Math.min(48, options.cloudLimit ?? 12));
+    const cloudTint = state.dayFactor > 0.5 ? "#f1f5f9" : state.dayFactor > 0.2 ? "#b6a6a6" : "#1e293b";
+    for (const [index, cell] of state.clouds.slice(0, cloudLimit).entries()) {
+      nodes.push(primitives.sphere({ name: `d3 noise cloud ${index}`, material: material.pbr({ color: cloudTint, roughness: 1, metallic: 0 }) })
+        .position(cell.x * 6, cell.y * 3 + 1.4, -5.5).scale([cell.radius * 1.7, cell.radius * 0.5, cell.radius * 0.8]).toJSON());
+    }
+    nodes.push(lights.directional({
+      name: sunUp ? "d3 sun key light" : "d3 moon key light",
+      position: sunUp ? [-4, 5, 2] : [3, 4, -1],
+      color: sunUp ? state.sun.color : state.moon.color,
+      intensity: sunUp ? 0.6 + state.dayFactor * 1.2 : 0.35
+    }).toJSON());
+    return { nodes, background: state.dayFactor > 0.5 ? state.horizonColor : state.nightFactor > 0.6 ? "#020617" : state.horizonColor, dayFactor: state.dayFactor, visibleStarCount: visibleStars.length };
+  }
+} as const;
+
+export const weather = {
+  /** Rain/snow declaration + weather-state-driven primitive streaks/flakes for production-path pixels. */
+  precipitation: (options: {
+    readonly type: WeatherType;
+    readonly seed?: number;
+    readonly streakLimit?: number;
+    readonly elapsedSeconds?: number;
+  }): { readonly nodes: readonly AuraSceneNode[]; readonly dropCount: number; readonly wetness: number } => {
+    const state = createWeatherState({
+      type: options.type,
+      seed: options.seed ?? 0xd3e7,
+      elapsedSeconds: options.elapsedSeconds ?? 1.2,
+      maxVisualDrops: 400
+    });
+    const snowing = options.type === "snow";
+    const intensity = snowing ? Math.max(0.2, state.snowIntensity) : Math.max(0.2, state.rainIntensity);
+    const nodes: AuraSceneNode[] = [
+      (snowing ? effects.snow({ intensity, color: "#e8f1ff" }) : effects.rain({ intensity, color: "#bcd7ff" })).toJSON()
+    ];
+    const limit = Math.max(0, Math.min(160, options.streakLimit ?? (snowing ? 70 : 90)));
+    const drops = state.visualDrops.slice(0, limit);
+    drops.forEach((drop, index) => {
+      const x = Math.max(-3.4, Math.min(3.4, drop.x * 2.4));
+      const y = Math.max(0.15, Math.min(3.4, drop.y + 1.6));
+      const z = Math.max(-4.5, Math.min(2.5, drop.z * 2.4));
+      if (snowing) {
+        nodes.push(primitives.sphere({ name: `d3 snow flake ${index}`, material: material.pbr({ color: "#eef4ff", roughness: 0.85, metallic: 0 }) })
+          .position(x, y, z).scale(0.035).toJSON());
+      } else {
+        nodes.push(primitives.box({ name: `d3 rain streak ${index}`, material: material.pbr({ color: "#bcd7ff", roughness: 0.35, metallic: 0 }) })
+          .position(x, y, z).scale([0.014, Math.max(0.08, drop.length * 2.4), 0.014]).toJSON());
+      }
+    });
+    return { nodes, dropCount: drops.length, wetness: state.wetness };
+  },
+  /** Ground slab with wetness darkening + puddle discs mapped from WeatherPuddlePatch. */
+  wetGround: (options: {
+    readonly type?: WeatherType;
+    readonly dryColor?: string;
+    readonly dryRoughness?: number;
+    readonly seed?: number;
+    readonly size?: number;
+  } = {}): {
+    readonly nodes: readonly AuraSceneNode[];
+    readonly wetness: number;
+    readonly albedoColor: string;
+    readonly roughness: number;
+    readonly puddleCount: number;
+  } => {
+    const probe = describeWetMaterial({
+      type: options.type ?? "rain",
+      dryColor: options.dryColor ?? "#5b6b4f",
+      dryRoughness: options.dryRoughness ?? 0.9,
+      seed: options.seed ?? 0xd3e7
+    });
+    const size = Math.max(2, Math.min(14, options.size ?? 8));
+    const nodes: AuraSceneNode[] = [
+      primitives.box({ name: "d3 weather ground slab", material: material.pbr({ color: probe.response.albedoColor, roughness: probe.response.roughness, metallic: 0 }) })
+        .position(0, -0.02, 0).scale([size, 0.04, size]).toJSON()
+    ];
+    probe.weather.puddlePatches.forEach((patch, index) => {
+      nodes.push(primitives.cylinder({ name: `d3 puddle disc ${index}`, material: material.pbr({ color: "#16283a", roughness: 0.05, metallic: 0.1 }) })
+        .position(patch.x * 2.4, 0.005, patch.z * 2.4).scale([Math.max(0.06, patch.radius * 3), 0.006, Math.max(0.06, patch.radius * 3)]).toJSON());
+    });
+    return {
+      nodes,
+      wetness: probe.response.wetness,
+      albedoColor: probe.response.albedoColor,
+      roughness: probe.response.roughness,
+      puddleCount: probe.weather.puddlePatches.length
+    };
+  },
+  /** Lightning-flash light hook: intensity is 0 unless type is thunderstorm. */
+  lightning: (options: { readonly type: WeatherType; readonly elapsedSeconds?: number; readonly seed?: number } = { type: "thunderstorm" }): {
+    readonly nodes: readonly AuraSceneNode[];
+    readonly intensity: number;
+  } => {
+    const probe = describeWetMaterial({ type: options.type, elapsedSeconds: options.elapsedSeconds ?? 0.4, seed: options.seed ?? 0xd3e7 });
+    return {
+      nodes: probe.flash.intensity > 0
+        ? [lights.directional({ name: "d3 lightning flash", color: "#dbeafe", intensity: 1 + probe.flash.intensity * 4, position: [2, 6, -3] }).toJSON()]
+        : [],
+      intensity: probe.flash.intensity
+    };
+  }
+} as const;
+
+/**
+ * D3 water surface builder (PRD D3 box 3). ADDITIVE root surface over
+ * `createWaterSurface` in `@aura3d/rendering`.
+ *
+ * Rendered material = layered opaque depth-tinted bands (bounded refraction
+ * look) + fresnel-baked sky tint + white shore-foam discs mapped from
+ * `OceanFoamPatch` + boat + fading wake trail. Buoyancy queries stay on the
+ * fixture (`sampleOceanFixture().buoyancy`); this builder creates no planar
+ * reflection/refraction targets (B4 dependency, see
+ * WATER_SURFACE_PLANAR_DEPENDENCY).
+ */
+export const water = {
+  surface: (options: {
+    readonly preset?: WaterSurfacePreset;
+    readonly seed?: number;
+    readonly boat?: WaterSurfaceBoat;
+    readonly withBoatHull?: boolean;
+  } = {}): {
+    readonly nodes: readonly AuraSceneNode[];
+    readonly bandCount: number;
+    readonly foamCount: number;
+    readonly wakeActive: boolean;
+    readonly wakeSegmentCount: number;
+  } => {
+    const state = createWaterSurface({ preset: options.preset, seed: options.seed, boat: options.boat });
+    const nodes: AuraSceneNode[] = [];
+    const bandSpan = 4 / state.bands.length;
+    state.bands.forEach((band, index) => {
+      nodes.push(primitives.box({ name: `d3 water depth band ${index}`, material: material.pbr({ color: band.color, roughness: 0.12, metallic: 0.05 }) })
+        .position(0, 0.02 + index * 0.0012, -4.5 + bandSpan * (index + 0.5)).scale([9, 0.024, bandSpan + 0.01]).toJSON());
+    });
+    nodes.push(primitives.box({ name: "d3 shoreline sand", material: material.pbr({ color: "#cbb37f", roughness: 0.95, metallic: 0 }) })
+      .position(0, 0, 0.9).scale([9, 0.03, 2.6]).toJSON());
+    for (const [index, patch] of state.foam.entries()) {
+      nodes.push(primitives.sphere({ name: `d3 shore foam ${index}`, material: material.pbr({ color: "#f4fafd", roughness: 0.55, metallic: 0 }) })
+        .position(Math.max(-4.2, Math.min(4.2, patch.x * 3)), 0.045, -0.42 + (index % 3) * 0.12).scale([Math.max(0.08, patch.radius * 6), 0.02, Math.max(0.05, patch.radius * 3)]).toJSON());
+    }
+    if (options.withBoatHull !== false && options.boat) {
+      nodes.push(primitives.box({ name: "d3 wake boat hull", material: material.pbr({ color: "#7c3f21", roughness: 0.7, metallic: 0 }) })
+        .position(options.boat.x ?? 0, 0.12, options.boat.z ?? -2).scale([0.34, 0.16, 0.9]).toJSON());
+    }
+    state.wake.forEach((segment, index) => {
+      nodes.push(primitives.box({ name: `d3 boat wake ${index}`, material: material.pbr({ color: "#cfeaf7", roughness: 0.3, metallic: 0 }) })
+        .position(segment.x * 2, 0.038, segment.z - 1.2).scale([segment.width, 0.012, 0.3]).toJSON());
+    });
+    return { nodes, bandCount: state.bands.length, foamCount: state.foam.length, wakeActive: state.wakeActive, wakeSegmentCount: state.wake.length };
+  },
+  /** Fixture-side buoyancy telemetry passthrough (no physics implemented here). */
+  buoyancy: (options: { readonly preset?: WaterSurfacePreset; readonly seed?: number } = {}): ReturnType<typeof sampleOceanFixture>["buoyancy"] =>
+    sampleOceanFixture({ preset: options.preset ?? "moderate", seed: options.seed ?? 0xaa7e5 }).buoyancy
 } as const;
 
 export const interactions = {
@@ -3274,7 +4086,24 @@ export const environments = {
     if (materialClass === "glass") return environments.glassStudio();
     if (materialClass === "product") return environments.productHero();
     return environments.studio();
-  }
+  },
+  /**
+   * B3 root HDRI environment (muse3jsparity-PRD). The `.hdr` asset resolves
+   * post-mount: first frames render the honest studio procedural fallback,
+   * then the HDR→cubemap→GGX-prefilter→BRDF-LUT chain swaps in and
+   * `iblPixelBacked` flips true in diagnostics. Fetch/parse failures keep the
+   * fallback and warn — never a black scene, never a silent swap.
+   */
+  hdri: (options: AuraEnvironmentOptions & { texture: AuraAssetRef<"texture"> }): AuraNodeBuilder<AuraEnvironmentNode> => new AuraNodeBuilder({
+    kind: "environment",
+    environment: "hdri",
+    name: options.name ?? "hdri ibl environment",
+    intensity: options.intensity ?? 1,
+    texture: options.texture,
+    ...(options.reflectionTexture ? { reflectionTexture: options.reflectionTexture } : {}),
+    ...(options.color ? { color: options.color } : {}),
+    ...(options.rotation !== undefined ? { rotation: options.rotation } : {})
+  })
 } as const;
 
 const rendererColorManagementPreset: AuraRendererColorManagementPreset = {
@@ -3409,6 +4238,7 @@ function normalizeCreateAppRendererOptions(options: AuraCreateAppRendererOptions
     mode,
     fallback: options?.fallback ?? "safe-basic",
     qualityProfile: profile.id,
+    textureBudgetBytes: normalizeTextureBudgetBytes(options?.textureBudgetBytes),
     profile
   };
 }
@@ -3469,12 +4299,19 @@ interface AuraRendererRuntimeObservation {
     readonly actualPasses: readonly string[];
     readonly fallbackPasses: readonly string[];
     readonly targetFormat?: "rgba8" | "rgba16f" | "rgba32f";
+    /** Device-observed postprocess execution path (muse3jsparity-PRD A1). */
+    readonly executionMode: RendererPostprocessExecutionMode | "unknown";
   };
   readonly environment?: {
     readonly enabled: boolean;
     readonly preset?: AuraEnvironmentNode["environment"] | string;
     readonly intensity?: number;
     readonly evidence: string;
+    /** B3: true only after the HDRI chain swaps the live lighting object. */
+    readonly iblPixelBacked?: boolean;
+    readonly hdriStatus?: "none" | "pending" | "ready" | "fallback";
+    readonly dualProbe?: boolean;
+    readonly hdriRotation?: number;
   };
   /**
    * Device-observed shadow-map activity. This exists because the root report
@@ -3490,13 +4327,60 @@ interface AuraRendererRuntimeObservation {
     readonly label?: string;
     readonly nativeShadowMapBindings?: number;
     readonly shadowRenderTargetsAllocated?: number;
+    /**
+     * N1 authored spot shadow state (muse3jsparity-PRD). `spotPixelBacked`
+     * requires the device-observed map signals on a spot caster.
+     */
+    readonly spot?: {
+      readonly requested: boolean;
+      readonly casterIsSpot: boolean;
+      readonly casterName?: string;
+      readonly angle?: number;
+      readonly penumbra?: number;
+      readonly range?: number;
+      readonly atlasResolution?: number;
+      readonly atlasReason?: string;
+      readonly spotPixelBacked: boolean;
+      readonly reason: string;
+    };
+  };
+  /** G1 SDF text observation, computed from the mounted primitive entries. */
+  readonly text?: {
+    readonly sdfTexts: number;
+    readonly textPixelBacked: boolean;
+    readonly quadCount: number;
+    readonly lastOpacity: number;
+    readonly reason: string;
+  };
+  /** M2 streaming residency, funded from the post-upgrade texture table. */
+  readonly textures?: {
+    readonly budgetBytes: number;
+    readonly usedBytes: number;
+    readonly requestedBytes: number;
+    readonly overBudget: boolean;
+    readonly overBudgetBytes: number;
+    readonly residentEntries: number;
+    readonly evictedEntries: readonly string[];
   };
   readonly warnings?: readonly string[];
-  readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects">;
+  readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects" | "bloom" | "samplerAnisotropyUploads" | "maxTextureAnisotropy">;
   readonly lodSelections?: readonly {
     readonly nodeName: string;
     readonly levelIndex: number;
     readonly levelName: string;
+  }[];
+  /**
+   * C1 per-material textured diagnostics. pixelBacked is true only after the
+   * post-mount upgrade swaps in the TexturedPBRMaterial (scalar first frames
+   * report false, never a premature true).
+   */
+  readonly texturedMaterials?: readonly {
+    readonly nodeName: string;
+    readonly levelName: string;
+    readonly status: "none" | "pending" | "textured" | "fallback";
+    readonly slots: readonly string[];
+    readonly pixelBacked: boolean;
+    readonly warnings: readonly string[];
   }[];
 }
 
@@ -3512,17 +4396,47 @@ function createRendererDiagnosticReport(
   const sceneCategory = resolveRendererSceneCategory(snapshot, names);
   const exposure = sceneExposurePresets[sceneCategory];
   const bloom = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
-  const fog = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "fog");
+  const fog = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && (node.effect === "fog" || node.effect === "volumetric-fog"));
   const environment = flattened.find((node): node is AuraEnvironmentNode => node.kind === "environment");
   const contactShadows = names.filter((name) => name.includes("contact shadow") || name.includes("footprint") || name.includes("glow pool")).length;
   const ambientOcclusion = flattened.some((node) => node.kind === "effect" && node.effect === "ambient-occlusion");
   const contactOcclusion = flattened.some((node) => node.kind === "effect" && node.effect === "contact-occlusion") || contactShadows > 0;
+  // muse3jsparity-PRD A3: newly requestable root passes. motion-blur and
+  // taa-mode anti-alias are recorded but withheld (no velocity/history binding
+  // at root) — requestedPasses names the intent, actualPasses the execution.
+  const colorGradeNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "color-grade");
+  const antiAliasNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "anti-alias");
+  const outlineNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "outline");
+  const ssrNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "screen-space-reflections");
+  const dofNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "depth-of-field");
+  const motionBlurNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "motion-blur");
+  const flipbookNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "flipbook-sprite");
+  const beamNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "light-beam");
+  const sdfTextRequested = flattened.some((node) => node.kind === "primitive" && node.text3D?.backend === "sdf");
+  const fxaaRequested = (antiAliasNode?.mode ?? "fxaa") === "fxaa" && Boolean(antiAliasNode);
+  const taaWithheld = (antiAliasNode?.mode ?? "fxaa") === "taa";
+  const motionBlurWithheld = Boolean(motionBlurNode);
   const runtimePostprocess = runtime?.postprocess;
   const runtimePasses = runtimePostprocess?.actualPasses ?? [];
-  const postprocessRequested = Boolean(bloom) || ambientOcclusion || contactOcclusion || runtimePasses.length > 0;
+  const postprocessRequested = Boolean(bloom) || ambientOcclusion || contactOcclusion
+    || Boolean(colorGradeNode) || Boolean(antiAliasNode) || Boolean(outlineNode)
+    || Boolean(ssrNode) || Boolean(dofNode) || motionBlurWithheld || runtimePasses.length > 0;
   const requestedPasses = runtimePasses.length > 0
     ? runtimePasses
-    : requestedRendererPostProcessPasses(Boolean(bloom), ambientOcclusion, contactOcclusion);
+    : requestedRendererPostProcessPasses(
+      Boolean(bloom),
+      ambientOcclusion,
+      contactOcclusion,
+      {
+        colorGrade: Boolean(colorGradeNode),
+        fxaa: fxaaRequested,
+        outline: Boolean(outlineNode),
+        ssr: Boolean(ssrNode),
+        depthOfField: Boolean(dofNode),
+        motionBlurWithheld,
+        taaWithheld
+      }
+    );
   const runtimeStatus = !postprocessRequested
     ? "disabled"
     : runtime?.mounted
@@ -3534,6 +4448,21 @@ function createRendererDiagnosticReport(
   if (!environment && (sceneCategory === "product" || sceneCategory === "material")) warnings.push("product/material scene has no explicit IBL environment node");
   if (!contactOcclusion) warnings.push("scene has no contact shadow or contact-occlusion grounding cue");
   if (bloom && (bloom.intensity ?? 0) > 0.95 && bloom.antiBlowout !== true) warnings.push("bloom is high without anti-blowout safeguards");
+  if (motionBlurWithheld) warnings.push("motion-blur is recorded but withheld: root has no velocity binding, so no motion-blur pass is submitted");
+  if (flipbookNode) warnings.push("flipbook-sprite is recorded but withheld: root has no native sprite-sheet sampler yet, so no flipbook pass is submitted");
+  if (beamNode) warnings.push("light-beam is recorded but withheld: root has no native beam target yet, so no beam pass is submitted");
+  // G1: the baked-SDF sampler mounts synchronously on the production bridge.
+  // Warn only when the SDF request cannot be pixel-backed (non-production
+  // mount, or the sampler fell back to the extruded mesh at runtime).
+  if (sdfTextRequested && (!runtime?.mounted || !(runtime.text?.textPixelBacked ?? false))) {
+    warnings.push(runtime?.mounted
+      ? `text3D sdf backend fell back to the extruded mesh (${runtime.text?.reason ?? "sampler failed"}); textPixelBacked stays false`
+      : "text3D sdf backend is recorded but unmounted: the production bridge samples the SDF atlas at mount, so textPixelBacked stays false until render");
+  }
+  if (taaWithheld) warnings.push("anti-alias mode \"taa\" is recorded but withheld: root has no history binding, so no taa pass is submitted");
+  if (colorGradeNode && (colorGradeNode.exposure ?? 1) !== 1) warnings.push("color-grade exposure is recorded but has no native grade target yet; contrast/saturation execute");
+  if (colorGradeNode && (colorGradeNode.shadows !== undefined || colorGradeNode.highlights !== undefined)) warnings.push("color-grade shadows/highlights are recorded but have no native grade target yet; contrast/saturation execute");
+  if (colorGradeNode?.lut !== undefined) warnings.push("color-grade lut is recorded but LUT samplers are not bound yet; the lut is ignored");
   if (postprocessRequested && !runtime?.mounted) warnings.push("renderer diagnostics are a scene plan only; call createAuraApp(...).diagnostics() after the first render for pixel-backed pass status");
   if (postprocessRequested && runtime?.mounted && !runtimePostprocess?.pixelBacked) warnings.push("postprocess was requested but the runtime composer did not initialize a pixel-backed pass");
   if (rendererSelection.mode === "production" && !runtime?.mounted && productionEligibility.eligible) {
@@ -3581,7 +4510,8 @@ function createRendererDiagnosticReport(
       intensity: bloom?.intensity ?? 0,
       threshold: bloom?.threshold ?? 0,
       radius: bloom?.radius ?? 0,
-      antiBlowout: bloom?.antiBlowout ?? true
+      antiBlowout: bloom?.antiBlowout ?? true,
+      ...(bloom?.quality !== undefined ? { quality: bloom.quality } : {})
     },
     shadows: {
       // Never a source-authored `true`. When the runtime is mounted this is the
@@ -3596,7 +4526,8 @@ function createRendererDiagnosticReport(
       nativeShadowMapBindings: runtime?.shadow?.nativeShadowMapBindings ?? 0,
       shadowRenderTargetsAllocated: runtime?.shadow?.shadowRenderTargetsAllocated ?? 0,
       contactShadows,
-      mapType: "pcf-soft"
+      mapType: "pcf-soft",
+      ...(runtime?.shadow?.spot === undefined ? {} : { spot: runtime.shadow.spot })
     },
     occlusion: {
       enabled: ambientOcclusion || contactOcclusion,
@@ -3611,7 +4542,9 @@ function createRendererDiagnosticReport(
     fog: {
       enabled: Boolean(fog),
       density: fog?.density ?? 0,
-      preset: fog ? ((fog.intensity ?? 0) > 0.65 ? "volumetric" : "depth") : "none"
+      // A5: a volumetric-fog node labels "volumetric" because it submits the
+      // distinct inscatter pass; plain fog keeps the legacy intensity label.
+      preset: fog ? (fog.effect === "volumetric-fog" || (fog.intensity ?? 0) > 0.65 ? "volumetric" : "depth") : "none"
     },
     postprocess: {
       enabled: runtimePostprocess?.pixelBacked ?? false,
@@ -3627,6 +4560,7 @@ function createRendererDiagnosticReport(
       actualPasses: runtimePostprocess?.actualPasses ?? [],
       fallbackPasses: runtimePostprocess?.fallbackPasses ?? [],
       targetFormat: runtimePostprocess?.targetFormat,
+      executionMode: runtimePostprocess?.executionMode ?? "unknown",
       evidence: postprocessEvidence
     },
     runtime: {
@@ -3640,13 +4574,39 @@ function createRendererDiagnosticReport(
       visibleObjects: runtime?.deviceDiagnostics?.visibleObjects ?? 0,
       culledObjects: runtime?.deviceDiagnostics?.culledObjects ?? 0,
       frustumTestedObjects: runtime?.deviceDiagnostics?.frustumTestedObjects ?? 0,
-      lodSelections: runtime?.lodSelections ?? []
+      bloom: runtime?.deviceDiagnostics?.bloom ?? null,
+      samplerAnisotropyUploads: runtime?.deviceDiagnostics?.samplerAnisotropyUploads ?? 0,
+      maxTextureAnisotropy: runtime?.deviceDiagnostics?.maxTextureAnisotropy ?? 1,
+      lodSelections: runtime?.lodSelections ?? [],
+      texturedMaterials: runtime?.texturedMaterials ?? []
     },
     environment: {
       enabled: environmentStatus.enabled,
       preset: environmentStatus.preset as AuraEnvironmentNode["environment"] | undefined,
       intensity: environmentStatus.intensity,
-      evidence: environmentStatus.evidence
+      evidence: environmentStatus.evidence,
+      // B3: pass through the HDRI upgrade observation; the unmounted default
+      // reports not-pixel-backed so static diagnostics never claim HDRI proof.
+      iblPixelBacked: environmentStatus.iblPixelBacked ?? false,
+      hdriStatus: environmentStatus.hdriStatus ?? "none",
+      ...(environmentStatus.dualProbe === undefined ? {} : { dualProbe: environmentStatus.dualProbe }),
+      ...(environmentStatus.hdriRotation === undefined ? {} : { hdriRotation: environmentStatus.hdriRotation })
+    },
+    text: runtime?.text ?? {
+      sdfTexts: flattened.filter((node) => node.kind === "primitive" && node.text3D?.backend === "sdf").length,
+      textPixelBacked: false,
+      quadCount: 0,
+      lastOpacity: 1,
+      reason: "SDF text requested in the scene graph but no runtime has mounted yet"
+    },
+    textures: runtime?.textures ?? {
+      budgetBytes: normalizeTextureBudgetBytes(rendererOptions?.textureBudgetBytes),
+      usedBytes: 0,
+      requestedBytes: 0,
+      overBudget: false,
+      overBudgetBytes: 0,
+      residentEntries: 0,
+      evictedEntries: []
     },
     antialiasing: rendererQualityPresets.screenshot.antialiasing,
     screenshotQuality: rendererQualityPresets.screenshot,
@@ -3655,11 +4615,34 @@ function createRendererDiagnosticReport(
   };
 }
 
-function requestedRendererPostProcessPasses(hasBloom: boolean, ambientOcclusion: boolean, contactOcclusion: boolean): readonly string[] {
-  if (!hasBloom && !ambientOcclusion && !contactOcclusion) return [];
+function requestedRendererPostProcessPasses(
+  hasBloom: boolean,
+  ambientOcclusion: boolean,
+  contactOcclusion: boolean,
+  extra: {
+    readonly colorGrade?: boolean;
+    readonly fxaa?: boolean;
+    readonly outline?: boolean;
+    readonly ssr?: boolean;
+    readonly depthOfField?: boolean;
+    readonly motionBlurWithheld?: boolean;
+    readonly taaWithheld?: boolean;
+  } = {}
+): readonly string[] {
+  if (!hasBloom && !ambientOcclusion && !contactOcclusion && !extra.colorGrade && !extra.fxaa
+    && !extra.outline && !extra.ssr && !extra.depthOfField && !extra.motionBlurWithheld && !extra.taaWithheld) return [];
   const passes = ["render"];
   if (ambientOcclusion || contactOcclusion) passes.push("ssao");
   if (hasBloom) passes.push("bloom");
+  if (extra.colorGrade) passes.push("color-grade");
+  if (extra.ssr) passes.push("ssr");
+  if (extra.depthOfField) passes.push("depth-of-field");
+  if (extra.outline) passes.push("outline");
+  if (extra.fxaa) passes.push("fxaa");
+  // Withheld intents stay visible in the request list with an explicit suffix
+  // so requested-vs-actual never silently agrees on an unexecuted pass.
+  if (extra.motionBlurWithheld) passes.push("motion-blur (withheld: no velocity binding)");
+  if (extra.taaWithheld) passes.push("taa (withheld: no history binding)");
   passes.push("output");
   return passes;
 }
@@ -9229,6 +10212,8 @@ export interface AuraDiagnostics {
    * while evidence counted the nodes, so the counted-node signal is not enough.
    */
   readonly labels?: readonly ProjectedLabel[];
+  readonly labelTelemetry?: LabelTelemetry;
+  readonly textBuckets?: TextBucketSummary;
 }
 
 export interface AuraAssetProvenance {
@@ -9383,6 +10368,13 @@ export interface AuraRuntimeNodeImportedAssetEvidence {
   readonly renderItemCount: number;
   readonly skinnedRenderItemCount: number;
   readonly morphRenderItemCount: number;
+  readonly lastMaterialTracksApplied?: number | undefined;
+  readonly lastLightTracksApplied?: number | undefined;
+  readonly lastFootPlantingGroundedFeet?: number | undefined;
+  readonly lastFootPlantingTargetError?: number | undefined;
+  readonly lastFootPlantingHipOffset?: number | undefined;
+  readonly lastFootPlantingMissingLegs?: readonly string[] | undefined;
+  readonly footPlantingConfigured?: boolean | undefined;
   readonly diagnostics: readonly AuraRuntimeNodeImportedAssetDiagnostic[];
 }
 
@@ -9416,6 +10408,13 @@ export interface AuraRuntimeNodeImportedAssetEvidenceInput {
   readonly renderItemCount?: number | undefined;
   readonly skinnedRenderItemCount?: number | undefined;
   readonly morphRenderItemCount?: number | undefined;
+  readonly lastMaterialTracksApplied?: number | undefined;
+  readonly lastLightTracksApplied?: number | undefined;
+  readonly lastFootPlantingGroundedFeet?: number | undefined;
+  readonly lastFootPlantingTargetError?: number | undefined;
+  readonly lastFootPlantingHipOffset?: number | undefined;
+  readonly lastFootPlantingMissingLegs?: readonly string[] | undefined;
+  readonly footPlantingConfigured?: boolean | undefined;
   readonly requiredClips?: readonly string[] | undefined;
   readonly requiredBones?: readonly string[] | undefined;
   readonly requiredMorphTargets?: readonly string[] | undefined;
@@ -9461,6 +10460,13 @@ export function createRuntimeNodeImportedAssetEvidence(
     renderItemCount: input.renderItemCount ?? 0,
     skinnedRenderItemCount: input.skinnedRenderItemCount ?? 0,
     morphRenderItemCount: input.morphRenderItemCount ?? 0,
+    ...(input.lastMaterialTracksApplied !== undefined ? { lastMaterialTracksApplied: input.lastMaterialTracksApplied } : {}),
+    ...(input.lastLightTracksApplied !== undefined ? { lastLightTracksApplied: input.lastLightTracksApplied } : {}),
+    ...(input.lastFootPlantingGroundedFeet !== undefined ? { lastFootPlantingGroundedFeet: input.lastFootPlantingGroundedFeet } : {}),
+    ...(input.lastFootPlantingTargetError !== undefined ? { lastFootPlantingTargetError: input.lastFootPlantingTargetError } : {}),
+    ...(input.lastFootPlantingHipOffset !== undefined ? { lastFootPlantingHipOffset: input.lastFootPlantingHipOffset } : {}),
+    ...(input.lastFootPlantingMissingLegs !== undefined ? { lastFootPlantingMissingLegs: [...input.lastFootPlantingMissingLegs] } : {}),
+    ...(input.footPlantingConfigured !== undefined ? { footPlantingConfigured: input.footPlantingConfigured } : {}),
     diagnostics
   };
 }
@@ -9584,6 +10590,10 @@ export interface AuraCreateAppOptions {
     readonly layers?: AuraCollisionLayers | undefined;
     /** World gravity. Defaults to `[0, -9.81, 0]`; top-down games usually want zero. */
     readonly gravity?: readonly [number, number, number] | undefined;
+    /** Repeatability seed provenance (H1): recorded on the world, fail-loud unless a finite integer. */
+    readonly seed?: number | undefined;
+    /** Continuous-collision selection (H1): without this the app world never enables CCD. */
+    readonly continuousCollision?: PhysicsContinuousCollisionDescriptor | undefined;
   };
   readonly diagnostics?: boolean | AuraDiagnosticsOptions;
   readonly renderer?: AuraCreateAppRendererOptions;
@@ -10006,7 +11016,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     appPhysicsWorldInstance ??= new PhysicsWorld({
       gravity: options.physics?.gravity ? [...options.physics.gravity] : [0, -9.81, 0],
       fixedDelta: 1 / 60,
-      enableSleeping: true
+      enableSleeping: true,
+      ...(options.physics?.seed === undefined ? {} : { seed: options.physics.seed }),
+      ...(options.physics?.continuousCollision ? { continuousCollision: options.physics.continuousCollision } : {})
     });
     return appPhysicsWorldInstance;
   };
@@ -11044,6 +12056,14 @@ async function startProductionRender(
       ));
       labelLayer.update(renderer.viewProjection(renderTime));
       diagnosticsState.labels = labelLayer.snapshot();
+      const labelNodes = groups.flatten(snapshot.nodes).filter((node): node is AuraLabelNode => node.kind === "label");
+      diagnosticsState.labelTelemetry = collectLabelTelemetry(labelNodes, diagnosticsState.labels);
+      diagnosticsState.textBuckets = summarizeTextBuckets({
+        accessibleDom: labelNodes.filter((node) => node.label === "hud").length,
+        worldAnchoredPlaced: diagnosticsState.labels.filter((label) => label.visible).length,
+        sdfTexts: groups.flatten(snapshot.nodes).filter((node) =>
+          node.kind === "primitive" && node.text3D?.backend === "sdf").length
+      });
     }
     overlay?.update();
     if ((sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
@@ -11159,6 +12179,46 @@ interface ProductionRuntimePrimitiveResource {
   readonly material: PBRMaterial | InstancedPBRMaterial;
   readonly bounds: GltfBounds;
   readonly name: string;
+  /** Source material spec (for the C1 textured upgrade); undefined when the node carries none. */
+  readonly materialSpec: AuraMaterialSpec | undefined;
+  /** Effective primitive node (LOD level node when applicable) for scalar re-derivation on upgrade. */
+  readonly sourceNode: AuraPrimitiveNode;
+  /**
+   * C1 textured upgrade slot. The sync factory always installs a scalar
+   * material first; the post-mount upgrade swaps in a TexturedPBRMaterial
+   * once authored texture refs resolve. Reads prefer this slot.
+   */
+  texturedMaterial: TexturedPBRMaterial | null;
+  /** C1 upgrade lifecycle: none (no texture inputs) → pending → textured | fallback. */
+  textureStatus: "none" | "pending" | "textured" | "fallback";
+  /** Native texture slots bound by the upgrade (subset of baseColor/normal/metallicRoughness). */
+  textureSlots: readonly string[];
+  /** Per-resource texture warnings (procedural inputs, fetch failures, skips). */
+  textureWarnings: string[];
+  /**
+   * G1 SDF text state. Non-null only when the SDF sampler mounted this
+   * resource as atlas-derived quads (textPixelBacked diagnostics source).
+   */
+  sdfText: {
+    readonly quadCount: number;
+    readonly imageBytes: number;
+    readonly lodFadeNear?: number;
+    readonly lodFadeFar?: number;
+    readonly occlusionPolicy: SdfTextOcclusionPolicy;
+    /** Last per-frame opacity written to the quad material (LOD x occlusion). */
+    lastOpacity: number;
+    /** Last per-frame visibility (occlusion hide policy skips submission). */
+    lastVisible: boolean;
+    /** True when quads were submitted on the last frame (pixel-backing leg). */
+    lastSubmitted: boolean;
+  } | null;
+  /**
+   * M2 streaming table: resident texture bytes on this resource (base +
+   * full mip-chain estimate) feeding the distance-prioritized residency.
+   */
+  textureBytes: number;
+  /** Coarse-to-fine mip-level bytes for the residency funding walk. */
+  textureMipBytes: readonly number[];
 }
 
 interface ProductionRuntimePrimitiveState {
@@ -11173,6 +12233,9 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly intensity: number;
   readonly evidence: string;
   readonly lighting: EnvironmentLightingOptions;
+  readonly hdriUrl?: string;
+  readonly hdriReflectionUrl?: string;
+  readonly hdriRotation?: number;
 } {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredEnvironment = nodes.find((node): node is AuraEnvironmentNode => node.kind === "environment");
@@ -11183,16 +12246,37 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
       "product-hero": "softbox",
       "night-cinematic": "evening",
       "metal-studio": "exhibit",
-      "glass-studio": "softbox"
+      "glass-studio": "softbox",
+      // B3: HDRI first frames render the honest studio procedural fallback;
+      // the post-mount upgrade swaps in the HDR chain (hdriUrl below).
+      "hdri": "studio"
     };
     const preset = presetByEnvironment[authoredEnvironment.environment];
     const bundle = createExternalParityEnvironmentLighting(preset);
     const intensity = nonNegativeFinite(authoredEnvironment.intensity);
     const proceduralMap = bundle.lighting.proceduralMap;
+    const hdriUrl = authoredEnvironment.environment === "hdri"
+      && typeof authoredEnvironment.texture === "object"
+      && (authoredEnvironment.texture as { kind?: string }).kind === "aura-asset-ref"
+      ? (authoredEnvironment.texture as AuraAssetRef<"texture">).url ?? undefined
+      : undefined;
+    const hdriReflectionUrl = authoredEnvironment.environment === "hdri"
+      && typeof authoredEnvironment.reflectionTexture === "object"
+      && (authoredEnvironment.reflectionTexture as { kind?: string }).kind === "aura-asset-ref"
+      ? (authoredEnvironment.reflectionTexture as AuraAssetRef<"texture">).url ?? undefined
+      : undefined;
+    const hdriRotation = authoredEnvironment.environment === "hdri" && authoredEnvironment.rotation !== undefined
+      ? authoredEnvironment.rotation
+      : undefined;
     return {
       preset: authoredEnvironment.environment,
       intensity,
-      evidence: `production bridge submitted the authored ${authoredEnvironment.environment} environment through generated HDR ${preset} lighting`,
+      evidence: hdriUrl
+        ? `production bridge renders the studio procedural fallback until the authored HDRI ${hdriUrl}${hdriReflectionUrl ? ` (reflection ${hdriReflectionUrl})` : ""} resolves through the HDR chain`
+        : `production bridge submitted the authored ${authoredEnvironment.environment} environment through generated HDR ${preset} lighting`,
+      ...(hdriUrl ? { hdriUrl } : {}),
+      ...(hdriReflectionUrl ? { hdriReflectionUrl } : {}),
+      ...(hdriRotation !== undefined ? { hdriRotation } : {}),
       lighting: {
         ...bundle.lighting,
         color: authoredEnvironment.color ? colorToLinearRgb(authoredEnvironment.color) : bundle.lighting.color,
@@ -11249,29 +12333,88 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
  * changed exactly zero pixels through `createAuraApp`. Returning `false` when no
  * fog node is authored keeps the unfogged path unchanged.
  */
-function createProductionRuntimeEnvironmentFog(snapshot: AuraSceneSnapshot): ForwardEnvironmentFogOptions | false {
-  const fog = groups.flatten(snapshot.nodes).find(
+function createProductionRuntimeEnvironmentFog(
+  snapshot: AuraSceneSnapshot,
+  lights: readonly CollectedLight[] = [],
+  renderWidth = 1280,
+  renderHeight = 720
+): ForwardEnvironmentFogOptions | false {
+  const nodes = groups.flatten(snapshot.nodes);
+  const volumetric = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "volumetric-fog"
+  );
+  const fog = volumetric ?? nodes.find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "fog"
   );
   if (!fog) return false;
   const density = clampNumber(fog.density ?? 0.12, 0, 1);
   const intensity = clampNumber(fog.intensity ?? 0.5, 0, 1);
   const color = colorToLinearRgb(fog.color ?? "#9fb7d9");
-  return {
+  const base = {
     // Exponential-squared reads as depth haze rather than a hard linear band, which
     // matches what the public helper documents.
-    mode: "exponential-squared",
-    color: [color[0], color[1], color[2]],
+    mode: "exponential-squared" as const,
+    color: [color[0], color[1], color[2]] as [number, number, number],
     near: 1,
     far: 60,
     density,
     maxOpacity: clampNumber(0.25 + intensity * 0.55, 0, 0.92)
   };
+  if (!volumetric) return base;
+  // A5: the volumetric-fog node drives the GPU forward inscatter terms from
+  // the dominant collected light; quality "off" zeroes the forward term and
+  // keeps this exp2 base exactly.
+  const resolved = resolveVolumetricFog(
+    {
+      density: volumetric.density,
+      intensity: volumetric.intensity,
+      ...(volumetric.lightPosition ? { lightPosition: volumetric.lightPosition } : {}),
+      ...(volumetric.heightFalloff !== undefined ? { heightFalloff: volumetric.heightFalloff } : {}),
+      ...(volumetric.heightReference !== undefined ? { heightReference: volumetric.heightReference } : {}),
+      ...(volumetric.volumetricQuality ? { quality: volumetric.volumetricQuality } : {})
+    },
+    lights,
+    renderWidth,
+    renderHeight
+  );
+  return {
+    ...base,
+    density: clampNumber(volumetric.density ?? 0.18, 0, 1),
+    volumetricIntensity: resolved.forward.volumetricIntensity,
+    ...(resolved.forward.volumetricLightDirection ? { volumetricLightDirection: resolved.forward.volumetricLightDirection } : {}),
+    volumetricLightColor: resolved.forward.volumetricLightColor,
+    ...(resolved.forward.heightFalloff !== undefined ? { heightFalloff: resolved.forward.heightFalloff } : {}),
+    ...(resolved.forward.heightReference !== undefined ? { heightReference: resolved.forward.heightReference } : {})
+  };
 }
 
-function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): RendererPostProcessOptions {
+function createProductionRuntimePostprocess(
+  snapshot: AuraSceneSnapshot,
+  lights: readonly CollectedLight[] = [],
+  renderWidth = 1280,
+  renderHeight = 720
+): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
+  // A5: the DISTINCT volumetric-fog node submits the depth-aware inscatter
+  // pass (renderer-owned depth attaches automatically); quality "off" (or no
+  // node) submits nothing and the scene keeps forward exp2 fog only.
+  const authoredVolumetricFog = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "volumetric-fog");
+  const volumetricPass = authoredVolumetricFog
+    ? resolveVolumetricFog(
+      {
+        density: authoredVolumetricFog.density,
+        intensity: authoredVolumetricFog.intensity,
+        ...(authoredVolumetricFog.lightPosition ? { lightPosition: authoredVolumetricFog.lightPosition } : {}),
+        ...(authoredVolumetricFog.heightFalloff !== undefined ? { heightFalloff: authoredVolumetricFog.heightFalloff } : {}),
+        ...(authoredVolumetricFog.heightReference !== undefined ? { heightReference: authoredVolumetricFog.heightReference } : {}),
+        ...(authoredVolumetricFog.volumetricQuality ? { quality: authoredVolumetricFog.volumetricQuality } : {})
+      },
+      lights,
+      renderWidth,
+      renderHeight
+    ).pass
+    : null;
   const bloomRequested = Boolean(authoredBloom);
   // Root previously advertised `ssao` in `requestedPasses` whenever a scene added
   // effects.ambientOcclusion() or effects.contactOcclusion(), but never submitted
@@ -11285,6 +12428,27 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "contact-occlusion"
   );
   const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
+  // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / dof submit real
+  // native options. motion-blur and taa are withheld (velocity/history have no
+  // root binding): the status layer warns instead of submitting doomed options
+  // that would fail the route with zero draw calls.
+  const authoredColorGrade = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "color-grade"
+  );
+  const authoredAntiAlias = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "anti-alias"
+  );
+  const authoredOutline = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "outline"
+  );
+  const authoredSsr = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "screen-space-reflections"
+  );
+  const authoredDof = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "depth-of-field"
+  );
+  const fxaaRequested = (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
+  const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
   return {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
@@ -11293,7 +12457,10 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
       bloom: {
         threshold: clampNumber(authoredBloom?.threshold ?? 0.78, 0, 1),
         intensity: clampNumber(authoredBloom?.intensity ?? 0.3, 0, 2),
-        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? 2)))
+        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? 2))),
+        ...(authoredBloom?.quality !== undefined ? { quality: authoredBloom.quality } : {}),
+        ...(authoredBloom?.softKnee !== undefined ? { softKnee: authoredBloom.softKnee } : {}),
+        ...(authoredBloom?.shoulder !== undefined ? { shoulder: authoredBloom.shoulder } : {})
       }
     } : {}),
     ...(authoredOcclusion ? {
@@ -11314,7 +12481,41 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
       operator: "aces",
       inputColorSpace: "linear",
       outputColorSpace: "srgb"
-    }
+    },
+    ...(authoredColorGrade ? {
+      colorGrade: {
+        contrast: clampNumber(authoredColorGrade.contrast ?? 1, 0, 3),
+        saturation: clampNumber(authoredColorGrade.saturation ?? 1, 0, 3)
+      }
+    } : {}),
+    ...(authoredOutline ? {
+      outline: {
+        color: [
+          Math.round(outlineChannels[0] * 255),
+          Math.round(outlineChannels[1] * 255),
+          Math.round(outlineChannels[2] * 255),
+          255
+        ] as const,
+        width: Math.max(1, Math.min(6, Math.round(authoredOutline.width ?? 3))),
+        threshold: clampNumber(authoredOutline.threshold ?? 0.12, 0, 4),
+        opacity: clampNumber(authoredOutline.intensity ?? 0.9, 0, 1)
+      }
+    } : {}),
+    ...(fxaaRequested && authoredAntiAlias ? { fxaa: {} } : {}),
+    ...(authoredSsr ? {
+      ssr: {
+        intensity: clampNumber(authoredSsr.intensity ?? 0.9, 0, 2),
+        maxDistance: 18
+      }
+    } : {}),
+    ...(authoredDof ? {
+      depthOfField: {
+        focusDepth: clampNumber(authoredDof.focus ?? 0.02, 0, 1),
+        focusRange: clampNumber(0.02 + clampNumber(authoredDof.aperture ?? 0.35, 0, 1) * 0.3, 0.001, 1),
+        maxRadius: Math.max(0, Math.min(8, Math.round(authoredDof.maxBlur ?? 4)))
+      }
+    } : {}),
+    ...(volumetricPass ? { volumetricLight: volumetricPass } : {})
   };
 }
 
@@ -11376,6 +12577,88 @@ function createProductionRuntimeShadowObservation(
   };
 }
 
+/**
+ * G1 SDF text observation (muse3jsparity-PRD): per-resource fail-closed gate
+ * (`describeSdfTextPixelBacking`) ANDed across mounted SDF resources. Layout
+ * alone never backs pixels; lastOpacity is the live LOD x occlusion proof.
+ */
+function createProductionTextObservation(
+  entries: readonly ProductionRuntimePrimitiveEntry[]
+): NonNullable<AuraRendererRuntimeObservation["text"]> {
+  const sdf = entries.flatMap((entry) => entry.resources.filter((resource) => resource.sdfText !== null));
+  if (sdf.length === 0) {
+    return {
+      sdfTexts: 0,
+      textPixelBacked: false,
+      quadCount: 0,
+      lastOpacity: 1,
+      reason: "no SDF text nodes mounted"
+    };
+  }
+  const gates = sdf.map((resource) => describeSdfTextPixelBacking({
+    atlasUploaded: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
+    quadsSubmitted: resource.sdfText!.lastSubmitted,
+    quadCount: resource.sdfText!.quadCount
+  }));
+  const backed = gates.filter((gate) => gate.textPixelBacked).length;
+  const quadCount = sdf.reduce((total, resource) => total + (resource.sdfText?.quadCount ?? 0), 0);
+  const lastOpacity = Math.min(...sdf.map((resource) => resource.sdfText?.lastOpacity ?? 1));
+  return {
+    sdfTexts: sdf.length,
+    textPixelBacked: backed === sdf.length,
+    quadCount,
+    lastOpacity,
+    reason: backed === sdf.length
+      ? `${backed}/${sdf.length} SDF quad sets sampled from uploaded label textures (${quadCount} quads)`
+      : `${backed}/${sdf.length} SDF quad sets backed: ${gates.filter((gate) => !gate.textPixelBacked).map((gate) => gate.reason).join("; ")}`
+  };
+}
+
+/**
+ * M2 texture streaming observation (muse3jsparity-PRD): funds the
+ * post-upgrade texture table (SDF label images + C1 upgrades) against the
+ * budget with distance-prioritized residency. Empty table = nothing to fund.
+ */
+function createProductionTexturesObservation(
+  entries: readonly ProductionRuntimePrimitiveEntry[],
+  cameraEye: AuraVec3,
+  budgetBytes: number
+): NonNullable<AuraRendererRuntimeObservation["textures"]> {
+  const budget = normalizeTextureBudgetBytes(budgetBytes);
+  const table = entries.flatMap((entry, entryIndex) => entry.resources
+    .filter((resource) => resource.textureMipBytes.length > 0)
+    .map((resource, resourceIndex) => {
+      const position = entry.node.position ?? [0, 0, 0];
+      return {
+        id: `${entry.node.name ?? `primitive-${entryIndex}`}#${resourceIndex}`,
+        mipBytesCoarseToFine: resource.textureMipBytes,
+        distanceMeters: Math.hypot(
+          cameraEye[0] - position[0], cameraEye[1] - position[1], cameraEye[2] - position[2])
+      };
+    }));
+  if (table.length === 0) {
+    return {
+      budgetBytes: budget,
+      usedBytes: 0,
+      requestedBytes: 0,
+      overBudget: false,
+      overBudgetBytes: 0,
+      residentEntries: 0,
+      evictedEntries: []
+    };
+  }
+  const residency = describeTextureStreamingResidency(table, budget);
+  return {
+    budgetBytes: budget,
+    usedBytes: residency.usedBytes,
+    requestedBytes: residency.requestedBytes,
+    overBudget: residency.overBudget,
+    overBudgetBytes: residency.overBudgetBytes,
+    residentEntries: residency.residents.filter((resident) => resident.residentLevels > 0).length,
+    evictedEntries: [...residency.evicted]
+  };
+}
+
 function createProductionRuntimePostprocessObservation(
   diagnostics: RenderDeviceDiagnostics
 ): AuraRendererRuntimeObservation["postprocess"] {
@@ -11390,7 +12673,8 @@ function createProductionRuntimePostprocessObservation(
     pixelBacked,
     actualPasses,
     fallbackPasses: pixelBacked ? [] : ["direct-render"],
-    targetFormat: diagnostics.postprocessTargetFormat
+    targetFormat: diagnostics.postprocessTargetFormat,
+    executionMode: diagnostics.postprocessPlan?.executionMode ?? "unknown"
   };
 }
 
@@ -11405,6 +12689,13 @@ interface ProductionRuntimeLightDescriptor {
   readonly spotAngle: number;
   readonly penumbra: number;
   readonly shadowPriority: number;
+  /**
+   * N1 explicit shadow request (`lights.spot({ shadow: true })`). Requested
+   * descriptors outrank unrequested ones for the single caster slot; when
+   * nobody requests, the legacy first-by-priority fallback applies
+   * unchanged, so existing scenes render byte-identical maps.
+   */
+  readonly shadowRequested: boolean;
   readonly authoredLight: AuraLightType | "fallback";
   readonly authoredWidth?: number;
   readonly authoredHeight?: number;
@@ -11415,17 +12706,30 @@ function createProductionRuntimeCollectedLights(snapshot: AuraSceneSnapshot): re
   const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index));
   if (descriptors.length === 0) return createProductionRuntimeFallbackLights();
 
-  const shadowCasterIndex = descriptors.reduce((selected, descriptor, index) => {
-    if (selected < 0) return index;
-    const current = descriptors[selected]!;
-    if (descriptor.shadowPriority !== current.shadowPriority) {
-      return descriptor.shadowPriority > current.shadowPriority ? index : selected;
-    }
-    return descriptor.intensity > current.intensity ? index : selected;
-  }, -1);
+  const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
   return descriptors.map((descriptor, index) =>
     createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
   );
+}
+
+/**
+ * N1 caster selection (pure, unit-tested): an explicit `shadow: true`
+ * request wins the single caster slot over unrequested lights; ties and
+ * all-unrequested scenes keep the legacy priority-then-intensity order.
+ */
+export function resolveProductionShadowCasterIndex(
+  descriptors: readonly { readonly shadowPriority: number; readonly shadowRequested: boolean; readonly intensity: number }[]
+): number {
+  return descriptors.reduce((selected, descriptor, index) => {
+    if (selected < 0) return index;
+    const current = descriptors[selected]!;
+    const priority = descriptor.shadowPriority + (descriptor.shadowRequested ? 10 : 0);
+    const currentPriority = current.shadowPriority + (current.shadowRequested ? 10 : 0);
+    if (priority !== currentPriority) {
+      return priority > currentPriority ? index : selected;
+    }
+    return descriptor.intensity > current.intensity ? index : selected;
+  }, -1);
 }
 
 function createProductionRuntimeLightDescriptors(
@@ -11455,6 +12759,7 @@ function createProductionRuntimeLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 3,
+      shadowRequested: false,
       authoredLight: node.light
     }];
   }
@@ -11470,11 +12775,32 @@ function createProductionRuntimeLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 1,
+      shadowRequested: false,
       authoredLight: node.light
     }];
   }
   if (node.light === "studio") {
     return createProductionRuntimeStudioLightDescriptors(node, name, color, intensity, position);
+  }
+  if (node.light === "spot") {
+    // N1 (muse3jsparity-PRD): authored spot with an explicit cone. The aim
+    // target wins over lookAt; the direction feeds the B1 spot shadow path
+    // and the A5 volumetric dominant-light selection.
+    const spotTarget = node.target ?? node.lookAt ?? [0, 0.75, 0];
+    return [{
+      kind: "spot",
+      name,
+      color,
+      intensity,
+      position,
+      direction: normalize3([spotTarget[0] - position[0], spotTarget[1] - position[1], spotTarget[2] - position[2]]),
+      range: Math.max(1, node.distance ?? 12),
+      spotAngle: clampNumber(node.angle ?? Math.PI / 6, 0.08, Math.PI / 2 - 0.01),
+      penumbra: clampNumber(node.penumbra ?? 0.4, 0, 1),
+      shadowPriority: 2,
+      shadowRequested: node.shadow ?? false,
+      authoredLight: node.light
+    }];
   }
 
   const width = positiveFinite(node.width, node.light === "softbox" ? 2.4 : 2.2)
@@ -11495,6 +12821,7 @@ function createProductionRuntimeLightDescriptors(
     spotAngle: clampNumber(Math.atan2(halfDiagonal, targetDistance), 0.08, Math.PI / 2 - 0.01),
     penumbra: node.light === "softbox" ? 0.78 : 0.42,
     shadowPriority: 2,
+    shadowRequested: false,
     authoredLight: node.light,
     authoredWidth: width,
     authoredHeight: height
@@ -11531,6 +12858,7 @@ function createProductionRuntimeStudioLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 3,
+      shadowRequested: false,
       authoredLight: node.light
     },
     {
@@ -11544,6 +12872,7 @@ function createProductionRuntimeStudioLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 0,
+      shadowRequested: false,
       authoredLight: node.light
     },
     {
@@ -11557,6 +12886,7 @@ function createProductionRuntimeStudioLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 0,
+      shadowRequested: false,
       authoredLight: node.light
     }
   ];
@@ -11576,6 +12906,7 @@ function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 3,
+      shadowRequested: false,
       authoredLight: "fallback"
     },
     {
@@ -11589,6 +12920,7 @@ function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 0,
+      shadowRequested: false,
       authoredLight: "fallback"
     },
     {
@@ -11602,6 +12934,7 @@ function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 0,
+      shadowRequested: false,
       authoredLight: "fallback"
     }
   ];
@@ -11795,29 +13128,115 @@ async function createProductionRuntimeSceneRenderer(
   });
   let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
   let latestFeatures: readonly ProductionRendererFeature[] = productionRenderer.getFeatures();
+  // M2 streaming distances measure against the live camera eye; refreshed
+  // every render so residency follows the camera instead of mount intent.
+  let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
   const runtimeWarnings = new Set<string>();
+  // C1 textured upgrade: fire-and-forget after mount. Scalar first frames stay
+  // fast; outcomes land in textureUpgradeWarnings, which render() never clears
+  // (per-frame runtimeWarnings are rebuilt every frame).
+  const textureUpgradeWarnings = new Set<string>();
+  void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
+    textureUpgradeWarnings.add(message);
+  }).catch((error) => {
+    textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+  });
   const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
+  // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
+  // studio procedural fallback; the HDR chain swaps the lighting object the
+  // render closure reads every frame. Outcomes land in hdriWarnings, which
+  // render() never clears (per-frame runtimeWarnings are rebuilt every frame).
+  let currentEnvironmentLighting = productionEnvironment.lighting;
+  const hdriWarnings = new Set<string>();
+  const hdriState: {
+    status: "none" | "pending" | "ready" | "fallback";
+    maxLinearValue?: number;
+    specularMipCount?: number;
+    dualProbe?: boolean;
+  } = { status: productionEnvironment.hdriUrl ? "pending" : "none" };
+  let disposeHdriEnvironment: (() => void) | null = null;
+  if (flattened.some((node) => node.kind === "environment" && node.environment === "hdri" && (node.texture as { kind?: string } | undefined)?.kind !== "aura-asset-ref")) {
+    hdriWarnings.add("hdri environment has no texture asset ref; studio procedural fallback retained");
+  }
+  if (productionEnvironment.hdriUrl) {
+    const hdriUrl = productionEnvironment.hdriUrl;
+    const hdriReflectionUrl = productionEnvironment.hdriReflectionUrl;
+    const hdriIntensity = productionEnvironment.intensity;
+    const hdriRotation = productionEnvironment.hdriRotation;
+    void upgradeProductionEnvironmentHdri(hdriUrl, hdriIntensity, hdriReflectionUrl, hdriRotation)
+      .then((result) => {
+        disposeHdriEnvironment?.();
+        disposeHdriEnvironment = result.dispose;
+        currentEnvironmentLighting = result.lighting;
+        hdriState.status = "ready";
+        hdriState.maxLinearValue = result.maxLinearValue;
+        hdriState.specularMipCount = result.specularMipCount;
+        hdriState.dualProbe = result.dualProbe;
+      })
+      .catch((error) => {
+        hdriState.status = "fallback";
+        hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
+      });
+  }
   const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
   const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
   const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
   const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
   const authoredAreaProxyCount = authoredDirectLightNodes.filter((node) => node.light === "rect" || node.light === "softbox").length;
 
-  const buildDiagnostics = (): AuraRendererDiagnosticReport => createRendererDiagnosticReport(
-    snapshot,
-    {
-      mounted: true,
-      backend: "production-runtime",
-      postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
-      shadow: createProductionRuntimeShadowObservation(
-        createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights),
-        latestDeviceDiagnostics
-      ),
+  // N1 + G1 + M2 observations refresh on every diagnostics read from the
+  // live entries/device state — never cached intent.
+  const buildDiagnostics = (): AuraRendererDiagnosticReport => {
+    const shadowObservation = createProductionRuntimeShadowObservation(
+      createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights),
+      latestDeviceDiagnostics
+    );
+    const spotCaster = productionRuntimeLights.find((light) => light.castsShadow);
+    const spotAngle = spotCaster?.kind === "spot" ? spotCaster.spotAngle : undefined;
+    const texturesObservation = createProductionTexturesObservation(
+      primitiveEntries,
+      latestCameraEye,
+      rendererOptions?.textureBudgetBytes ?? normalizeTextureBudgetBytes(undefined)
+    );
+    const streamingWarnings = texturesObservation.overBudget
+      ? [`texture streaming over budget by ${texturesObservation.overBudgetBytes} bytes `
+        + `(${texturesObservation.residentEntries} resident, `
+        + `${texturesObservation.evictedEntries.length} evicted: ${texturesObservation.evictedEntries.join(", ") || "none"}); `
+        + `raise renderer.textureBudgetBytes above ${texturesObservation.requestedBytes} bytes or move textures closer`]
+      : [];
+    return createRendererDiagnosticReport(
+      snapshot,
+      {
+        mounted: true,
+        backend: "production-runtime",
+        postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
+        shadow: {
+          ...shadowObservation,
+          spot: describeProductionSpotShadow({
+            requested: flattened.some((node) => node.kind === "light" && node.light === "spot" && node.shadow === true),
+            casterIsSpot: spotCaster?.kind === "spot",
+            ...(spotCaster === undefined ? {} : { casterName: spotCaster.source.name }),
+            ...(spotAngle === undefined ? {} : { angle: spotAngle }),
+            ...(spotCaster?.kind === "spot" ? { penumbra: spotCaster.penumbra, range: spotCaster.range } : {}),
+            mapRendered: shadowObservation.mapRendered,
+            mapSampled: shadowObservation.mapSampled
+          })
+        },
+        text: createProductionTextObservation(primitiveEntries),
+        textures: texturesObservation,
       environment: {
         enabled: true,
         preset: productionEnvironment.preset,
         intensity: productionEnvironment.intensity,
-        evidence: productionEnvironment.evidence
+        evidence: hdriState.status === "ready"
+          ? `${productionEnvironment.evidence} — HDRI chain ready${hdriState.dualProbe ? " (dual-probe: illumination diffuse + reflection specular)" : " (single probe)"} (maxLinear ${hdriState.maxLinearValue}, ${hdriState.specularMipCount} specular mips)`
+          : productionEnvironment.evidence,
+        // B3 iblPixelBacked: true only after the HDR chain swaps the live
+        // lighting object. Procedural first frames and fallbacks never claim it.
+        iblPixelBacked: hdriState.status === "ready",
+        hdriStatus: hdriState.status,
+        ...(hdriState.dualProbe === undefined ? {} : { dualProbe: hdriState.dualProbe }),
+        ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
       },
       warnings: [
         `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.backend}.`,
@@ -11837,7 +13256,10 @@ async function createProductionRuntimeSceneRenderer(
         ...latestFeatures
           .filter((feature) => feature.state !== "supported")
           .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
-        ...runtimeWarnings
+        ...runtimeWarnings,
+        ...textureUpgradeWarnings,
+        ...streamingWarnings,
+        ...hdriWarnings
       ],
       deviceDiagnostics: latestDeviceDiagnostics,
       lodSelections: primitiveEntries
@@ -11846,10 +13268,21 @@ async function createProductionRuntimeSceneRenderer(
           nodeName: entry.node.name ?? "unnamed distance LOD",
           levelIndex: entry.currentLodIndex,
           levelName: entry.resources[entry.currentLodIndex]?.name ?? `level-${entry.currentLodIndex}`
+        })),
+      texturedMaterials: primitiveEntries.flatMap((entry) =>
+        entry.resources.map((resource) => ({
+          nodeName: entry.node.name ?? `aura-primitive-${entry.node.primitive}`,
+          levelName: resource.name,
+          status: resource.textureStatus,
+          slots: resource.textureSlots,
+          pixelBacked: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
+          warnings: resource.textureWarnings
         }))
-    },
-    rendererOptions
-  );
+      )
+      },
+      rendererOptions
+    );
+  };
 
   return {
     get backend() {
@@ -11860,6 +13293,7 @@ async function createProductionRuntimeSceneRenderer(
     },
     render(time) {
       runtimeWarnings.clear();
+      latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
       const input = createProductionRuntimeRendererInput(
         snapshot,
         canvas,
@@ -11868,7 +13302,7 @@ async function createProductionRuntimeSceneRenderer(
         time,
         runtimeNodes,
         runtimeWarnings,
-        productionEnvironment.lighting,
+        currentEnvironmentLighting,
         productionRuntimeLights
       );
       const result = productionRenderer.renderInteractiveFrame(input);
@@ -11892,12 +13326,14 @@ async function createProductionRuntimeSceneRenderer(
       return productionRenderer.deviceLost();
     },
     dispose() {
+      disposeHdriEnvironment?.();
       productionRenderer.dispose();
       for (const { actor } of actorEntries) actor.dispose();
       for (const { resources } of primitiveEntries) {
-        for (const { geometry, material } of resources) {
+        for (const { geometry, material, texturedMaterial } of resources) {
           geometry.dispose();
           material.dispose();
+          texturedMaterial?.dispose();
         }
       }
     }
@@ -11922,25 +13358,91 @@ function createProductionRuntimeRendererInput(
     const currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     const currentNode = currentState.node;
     if (currentNode.visible === false) continue;
-    applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings);
-    applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
     const modelMatrix = [...createModelMatrix(
       currentNode,
       productionActorModelBounds(currentNode.asset, entry.actor),
       shouldNormalizeModelNode(currentNode),
       time
     )];
-    const actorItems = entry.actor.collectRenderItems({ modelMatrix });
-    items.push(...actorItems.map((item) => ({ ...item, castShadow: currentNode.castShadow })));
+    // The foot-planting post-pass solves in the same world space this matrix draws into;
+    // refresh its matrix before the clip plays so the solve uses this frame, not the last.
+    applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
+    applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings);
+    applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
+    // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
+    // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.
+    const wrinkleStrength = currentNode.wrinkle
+      ? resolveWrinkleMapStrength(currentState.morphTargets ?? {}, currentNode.wrinkle)
+      : undefined;
+    const actorItems = entry.actor.collectRenderItems({
+      modelMatrix,
+      ...(wrinkleStrength === undefined ? {} : { wrinkleStrength })
+    });
+    // P2 (muse3jsparity-PRD): model instances attach exactly like primitive
+    // nodes. Skinned actors cannot instance (D1 matrix) — warn once and draw
+    // single instead of silently dropping copies.
+    const modelInstances = currentNode.instances;
+    let modelInstanceAttach: { readonly instanceTransforms?: Float32Array; readonly instanceColors?: Float32Array } = {};
+    if (modelInstances && modelInstances.length > 0) {
+      if (actorItems.some((item) => item.skinning)) {
+        warnOnInstancingFallback({
+          material: currentNode.name ?? currentNode.asset.id,
+          requestedInstances: modelInstances.length,
+          drawnBatches: Math.max(1, actorItems.length),
+          reason: "skinned-palette-overflow-cpu-fallback",
+          onWarning: (message) => runtimeWarnings.add(message)
+        });
+      } else {
+        modelInstanceAttach = {
+          instanceTransforms: createProductionModelInstanceTransforms(modelInstances, currentNode, productionActorModelBounds(currentNode.asset, entry.actor), time),
+          ...(currentNode.instanceColors
+            ? { instanceColors: createProductionInstanceColors(currentNode.instanceColors, modelInstances.length) }
+            : {})
+        };
+      }
+    }
+    if (currentNode.instancedModelWarning) runtimeWarnings.add(currentNode.instancedModelWarning);
+    items.push(...actorItems.map((item) => ({ ...item, castShadow: currentNode.castShadow, ...modelInstanceAttach })));
     attachProductionActorEvidence(currentNode, entry.actor, actorItems, runtimeNodes);
   }
+  // G1 SDF occlusion test, built once per frame only when SDF quads exist
+  // (same cost argument as WS-2.7: one bbox per node, negligible beside render).
+  const sdfEntries = primitiveEntries.filter((entry) =>
+    entry.resources.some((resource) => resource.sdfText !== null));
+  const sdfOcclusionTest = sdfEntries.length > 0
+    ? createSceneLabelOcclusionTest(snapshot, cameraPosition, runtimeNodes)
+    : undefined;
   for (const entry of primitiveEntries) {
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     if (!currentState.visible) continue;
     const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition);
+    if (resource.sdfText && resource.texturedMaterial) {
+      // G1 per-frame SDF opacity: LOD fade from the live camera distance
+      // times the scene occlusion policy, written to the quad material.
+      // Occlusion "hide" skips submission (no pixels, no backing claim).
+      const position = currentState.node.position ?? [0, 0, 0];
+      const distance = Math.hypot(
+        cameraPosition[0] - position[0], cameraPosition[1] - position[1], cameraPosition[2] - position[2]);
+      const frame = resolveSdfTextFrameOpacity({
+        distance,
+        ...(resource.sdfText.lodFadeNear === undefined ? {} : { lodFadeNear: resource.sdfText.lodFadeNear }),
+        ...(resource.sdfText.lodFadeFar === undefined ? {} : { lodFadeFar: resource.sdfText.lodFadeFar }),
+        occluded: sdfOcclusionTest?.(position) ?? false,
+        occlusionPolicy: resource.sdfText.occlusionPolicy
+      });
+      resource.sdfText.lastOpacity = frame.opacity;
+      resource.sdfText.lastVisible = frame.visible;
+      resource.sdfText.lastSubmitted = frame.visible;
+      if (!frame.visible) continue;
+      const base = resource.texturedMaterial.getParameter("baseColor");
+      const rgb = Array.isArray(base) && base.length >= 3
+        ? [base[0] ?? 1, base[1] ?? 1, base[2] ?? 1]
+        : [1, 1, 1];
+      resource.texturedMaterial.setParameter("baseColor", [rgb[0], rgb[1], rgb[2], frame.opacity]);
+    }
     items.push({
       geometry: resource.geometry,
-      material: resource.material,
+      material: resource.texturedMaterial ?? resource.material,
       modelMatrix: createModelMatrix(currentState.node, resource.bounds, false, time),
       label: currentState.node.name ?? `aura-primitive-${currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
@@ -11958,9 +13460,9 @@ function createProductionRuntimeRendererInput(
     // The production runtime owns the pixel-backed HDR target and pass chain for
     // routes that request effects. The diagnostics are device-observed, so a
     // compositor failure is reported as fallback rather than claimed as a pass.
-    postprocess: createProductionRuntimePostprocess(snapshot),
+    postprocess: createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height),
     shadow: createProductionRuntimeShadowOptions(snapshot, collectedLights),
-    environmentFog: createProductionRuntimeEnvironmentFog(snapshot),
+    environmentFog: createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
     cameraPosition
   };
   const cameraLike: CameraLike = { viewProjectionMatrix };
@@ -11977,10 +13479,579 @@ function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[]
     .map((node) => ({ node, resources: createProductionPrimitiveResources(node), currentLodIndex: 0 }));
 }
 
+function blankProductionPrimitiveTextureState(): {
+  texturedMaterial: TexturedPBRMaterial | null;
+  textureStatus: "none" | "pending" | "textured" | "fallback";
+  textureSlots: readonly string[];
+  textureWarnings: string[];
+  sdfText: ProductionRuntimePrimitiveResource["sdfText"];
+  textureBytes: number;
+  textureMipBytes: readonly number[];
+} {
+  return { texturedMaterial: null, textureStatus: "none", textureSlots: [], textureWarnings: [], sdfText: null, textureBytes: 0, textureMipBytes: [] };
+}
+
+/**
+ * C1 texture intent classification (pure, unit-tested). Asset refs resolve to
+ * fetchable urls; procedural inputs have no rasterizer and are reported so
+ * the caller can warn instead of silently dropping them.
+ */
+export function createProductionPrimitiveTextureIntent(materialSpec: AuraMaterialSpec | undefined): {
+  readonly baseColorUrl?: string;
+  readonly normalUrl?: string;
+  readonly roughnessUrl?: string;
+  readonly metalnessUrl?: string;
+  readonly occlusionUrl?: string;
+  readonly emissiveUrl?: string;
+  readonly proceduralInputs: readonly string[];
+} {
+  const refUrl = (input: AuraMaterialTextureInput | AuraAssetRef<"texture"> | undefined): string | undefined =>
+    input && typeof input === "object" && (input as { kind?: string }).kind === "aura-asset-ref"
+      ? (input as AuraAssetRef<"texture">).url ?? undefined
+      : undefined;
+  const procedurals: string[] = [];
+  const noteProcedural = (slot: string, input: AuraMaterialTextureInput | AuraAssetRef<"texture"> | undefined): void => {
+    if (input && typeof input === "object" && (input as { kind?: string }).kind === "aura-procedural-texture") {
+      procedurals.push(`${slot}:${(input as AuraProceduralTextureSpec).texture}`);
+    }
+  };
+  noteProcedural("normal", materialSpec?.normal);
+  noteProcedural("roughnessMap", materialSpec?.roughnessMap);
+  noteProcedural("metalnessMap", materialSpec?.metalnessMap);
+  noteProcedural("occlusionMap", materialSpec?.occlusionMap);
+  noteProcedural("emissiveMap", materialSpec?.emissiveMap);
+  const baseColorUrl = refUrl(materialSpec?.texture);
+  const normalUrl = refUrl(materialSpec?.normal);
+  const roughnessUrl = refUrl(materialSpec?.roughnessMap);
+  const metalnessUrl = refUrl(materialSpec?.metalnessMap);
+  const occlusionUrl = refUrl(materialSpec?.occlusionMap);
+  const emissiveUrl = refUrl(materialSpec?.emissiveMap);
+  return {
+    ...(baseColorUrl ? { baseColorUrl } : {}),
+    ...(normalUrl ? { normalUrl } : {}),
+    ...(roughnessUrl ? { roughnessUrl } : {}),
+    ...(metalnessUrl ? { metalnessUrl } : {}),
+    ...(occlusionUrl ? { occlusionUrl } : {}),
+    ...(emissiveUrl ? { emissiveUrl } : {}),
+    proceduralInputs: procedurals
+  };
+}
+
+/**
+ * C1 metallic-roughness compositing (pure, unit-tested). glTF convention:
+ * R = occlusion (unused here, forced to 255), G = roughness, B = metallic.
+ * Missing channels fall back to the scalar spec values.
+ */
+async function loadProductionPrimitiveBitmap(url: string): Promise<ImageBitmap> {
+  if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
+    throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
+  }
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
+  return await createImageBitmap(await response.blob());
+}
+
+function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
+  if (typeof document === "undefined") throw new Error("texture compositing requires a DOM canvas");
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("2d canvas unavailable for texture compositing");
+  context.drawImage(bitmap, 0, 0);
+  const image = context.getImageData(0, 0, bitmap.width, bitmap.height);
+  return { width: bitmap.width, height: bitmap.height, data: new Uint8Array(image.data) };
+}
+
+/**
+ * C1 post-mount textured upgrade (muse3jsparity-PRD). Runs fire-and-forget
+ * after mount: scalar first frames stay fast and honest, and every outcome —
+ * textured, fallback, or skipped — is recorded on the resource with warnings.
+ * Procedural inputs have no rasterizer: recorded + warned, never faked.
+ */
+export async function upgradeProductionPrimitiveTextures(
+  entries: readonly ProductionRuntimePrimitiveEntry[],
+  warn: (message: string) => void
+): Promise<void> {
+  for (const entry of entries) {
+    for (const resource of entry.resources) {
+      const spec = resource.materialSpec;
+      const intent = createProductionPrimitiveTextureIntent(spec);
+      for (const procedural of intent.proceduralInputs) {
+        // Static channel (collectGeneratedCodeWarnings) already warns; record
+        // per-resource without duplicating into runtime warnings.
+        resource.textureWarnings.push(
+          `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
+        );
+      }
+      const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl].filter(
+        (url): url is string => typeof url === "string" && url.length > 0
+      );
+      if (urls.length === 0) continue;
+      if (resource.textureStatus !== "none") continue;
+      resource.textureStatus = "pending";
+      try {
+        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent);
+      } catch (error) {
+        resource.textureStatus = "fallback";
+        const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
+        resource.textureWarnings.push(message);
+        warn(message);
+      }
+    }
+  }
+}
+
+/**
+ * B3 post-mount HDRI upgrade (muse3jsparity-PRD). Fetches a Radiance `.hdr`
+ * asset, runs the HDR→cubemap→GGX-prefilter→BRDF-LUT chain, and returns the
+ * live lighting object plus its disposal. Throws on fetch/parse failure so
+ * the caller keeps the honest procedural fallback and warns.
+ */
+export async function upgradeProductionEnvironmentHdri(
+  url: string,
+  intensity: number,
+  reflectionUrl?: string,
+  rotation?: number
+): Promise<{
+  readonly lighting: EnvironmentLightingOptions;
+  readonly dispose: () => void;
+  readonly maxLinearValue: number;
+  readonly specularMipCount: number;
+  readonly dualProbe: boolean;
+}> {
+  if (typeof fetch !== "function") {
+    throw new Error("HDRI upgrade requires fetch (browser production mount)");
+  }
+  const fetchRadiance = async (assetUrl: string): Promise<Uint8Array> => {
+    const response = await fetch(assetUrl);
+    if (!response.ok) throw new Error(`HDRI fetch failed with status ${response.status} for ${assetUrl}`);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.length === 0) throw new Error(`HDRI asset is empty for ${assetUrl}`);
+    return bytes;
+  };
+  const clampIntensity = Math.max(0, intensity);
+  const illumination = createProductionPbrHdrPipelineFromRadiance(await fetchRadiance(url), {
+    id: "root-hdri-environment",
+    label: "Root HDRI environment",
+    intensity: clampIntensity,
+    ...(rotation !== undefined ? { rotation } : {})
+  });
+  if (!illumination.diagnostics.realRadianceHdr) throw new Error(`HDRI asset did not parse as Radiance HDR for ${url}`);
+  if (!reflectionUrl) {
+    const resources = createProductionEnvironmentLightingResources(illumination);
+    return {
+      lighting: resources.lighting,
+      dispose: resources.dispose,
+      maxLinearValue: illumination.diagnostics.maxLinearValue,
+      specularMipCount: illumination.diagnostics.specularMipCount,
+      dualProbe: false
+    };
+  }
+  const reflection = createProductionPbrHdrPipelineFromRadiance(await fetchRadiance(reflectionUrl), {
+    id: "root-hdri-reflection-environment",
+    label: "Root HDRI reflection environment",
+    intensity: clampIntensity,
+    ...(rotation !== undefined ? { rotation } : {})
+  });
+  if (!reflection.diagnostics.realRadianceHdr) throw new Error(`HDRI reflection asset did not parse as Radiance HDR for ${reflectionUrl}`);
+  const dual = createDualProbeEnvironmentLightingResources({ illumination, reflection });
+  return {
+    lighting: dual.lighting,
+    dispose: dual.dispose,
+    maxLinearValue: Math.max(illumination.diagnostics.maxLinearValue, reflection.diagnostics.maxLinearValue),
+    specularMipCount: reflection.diagnostics.specularMipCount,
+    dualProbe: true
+  };
+}
+
+async function upgradeProductionPrimitiveResource(
+  resource: ProductionRuntimePrimitiveResource,
+  node: AuraPrimitiveNode,
+  spec: AuraMaterialSpec | undefined,
+  intent: ReturnType<typeof createProductionPrimitiveTextureIntent>
+): Promise<void> {
+  const fail = (message: string): Error => new Error(message);
+  if (resource.material instanceof InstancedPBRMaterial) {
+    throw fail(`instanced primitives have no textured material variant for "${resource.name}"`);
+  }
+  if (!resource.geometry.vertexBuffer.format.hasAttribute("uv")) {
+    throw fail(`"${resource.name}" geometry carries no uv set; textured upgrade needs generated uvs`);
+  }
+  const scalars = resolveProductionPrimitiveScalars(node);
+  const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = await Promise.all([
+    intent.baseColorUrl ? loadProductionPrimitiveBitmap(intent.baseColorUrl) : Promise.resolve(undefined),
+    intent.normalUrl ? loadProductionPrimitiveBitmap(intent.normalUrl) : Promise.resolve(undefined),
+    intent.roughnessUrl ? loadProductionPrimitiveBitmap(intent.roughnessUrl) : Promise.resolve(undefined),
+    intent.metalnessUrl ? loadProductionPrimitiveBitmap(intent.metalnessUrl) : Promise.resolve(undefined),
+    intent.occlusionUrl ? loadProductionPrimitiveBitmap(intent.occlusionUrl) : Promise.resolve(undefined),
+    intent.emissiveUrl ? loadProductionPrimitiveBitmap(intent.emissiveUrl) : Promise.resolve(undefined)
+  ]);
+  const slots: string[] = [];
+  const baseColorTexture = baseColorSource
+    ? new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` })
+    : undefined;
+  if (baseColorTexture) slots.push("baseColor");
+  const normalTexture = normalSource
+    ? new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` })
+    : undefined;
+  if (normalTexture) slots.push("normal");
+  let metallicRoughnessTexture: Texture | undefined;
+  if (roughnessSource ?? metalnessSource) {
+    const base = roughnessSource ?? metalnessSource!;
+    const size = { width: base.width, height: base.height };
+    const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
+      if (!bitmap) return undefined;
+      const decoded = bitmapRgbaPixels(bitmap);
+      if (decoded.width !== size.width || decoded.height !== size.height) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size.width;
+        canvas.height = size.height;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) throw fail("2d canvas unavailable for texture compositing");
+        context.drawImage(bitmap, 0, 0, size.width, size.height);
+        return new Uint8Array(context.getImageData(0, 0, size.width, size.height).data);
+      }
+      return decoded.data;
+    };
+    const composited = compositeMetallicRoughnessPixels(
+      readPixels(roughnessSource),
+      readPixels(metalnessSource),
+      size.width * size.height,
+      spec?.roughness ?? 0.58,
+      spec?.metallic ?? spec?.metalness ?? 0
+    );
+    metallicRoughnessTexture = new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` });
+    slots.push("metallicRoughness");
+  }
+  const occlusionTexture = occlusionSource
+    ? new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` })
+    : undefined;
+  if (occlusionTexture) slots.push("occlusion");
+  const emissiveTexture = emissiveSource
+    ? new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` })
+    : undefined;
+  if (emissiveTexture) slots.push("emissive");
+  if (slots.length === 0) throw fail(`no texture resolved for "${resource.name}"`);
+  // M2 streaming table: resident bytes from the decoded sources (base +
+  // full mip-chain estimate) with the chain keyed off the largest source.
+  const loadedDims = [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource]
+    .filter((source): source is ImageBitmap => source !== undefined)
+    .map((source) => ({ width: source.width, height: source.height }));
+  const loadedBaseBytes = loadedDims.reduce((total, dims) => total + dims.width * dims.height * 4, 0);
+  const largestDims = loadedDims.reduce(
+    (largest, dims) => (dims.width * dims.height > largest.width * largest.height ? dims : largest),
+    { width: 1, height: 1 }
+  );
+  resource.textureBytes = Math.round(loadedBaseBytes * (4 / 3));
+  resource.textureMipBytes = mipChainBytesCoarseToFine(largestDims.width, largestDims.height);
+  const texCoords = spec?.texCoords;
+  // C3: every root textured slot shares one capability-gated sampler request
+  // (default 8x where supported; the renderer clamps to the device maximum).
+  const textureSampler = new Sampler({
+    maxAnisotropy: resolveSamplerAnisotropy({ desired: spec?.textureAnisotropy }).applied
+  });
+  resource.texturedMaterial = new TexturedPBRMaterial({
+    name: `a3d-production-textured-primitive-${resource.name}`,
+    baseColor: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
+    metallic: clamp01(spec?.metallic ?? spec?.metalness ?? 0),
+    roughness: clamp01(spec?.roughness ?? 0.58),
+    emissiveColor: spec?.emissive
+      ? [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]]
+      : emissiveTexture ? [1, 1, 1] : [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]],
+    emissiveStrength: Math.max(0, spec?.emissiveIntensity ?? (spec?.emissive || emissiveTexture ? 1.35 : 0)),
+    occlusionStrength: clamp01(spec?.occlusionStrength ?? 1),
+    clearcoatFactor: scalars.clearcoat,
+    clearcoatRoughnessFactor: clamp01(spec?.clearcoatRoughness ?? 0.34),
+    sheenColorFactor: [scalars.sheenColor[0], scalars.sheenColor[1], scalars.sheenColor[2]],
+    sheenRoughnessFactor: clamp01(spec?.sheenRoughness ?? 0.3),
+    anisotropyStrength: scalars.anisotropy,
+    anisotropyRotation: spec?.anisotropyRotation ?? 0,
+    iridescenceFactor: scalars.iridescence,
+    iridescenceIor: Math.max(1, spec?.iridescenceIOR ?? 1.3),
+    ...(scalars.thicknessRange ? { iridescenceThicknessMinimum: scalars.thicknessRange[0], iridescenceThicknessMaximum: scalars.thicknessRange[1] } : {}),
+    transmissionFactor: scalars.transmission,
+    ...(spec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, spec.thickness) }),
+    ...(spec?.ior === undefined ? {} : { ior: Math.max(1, spec.ior) }),
+    ...(spec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(spec.attenuationColor) } : {}),
+    ...(spec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, spec.attenuationDistance) }),
+    environmentIntensity: scalars.environmentIntensity,
+    envMapIntensity: scalars.envMapIntensity,
+    renderState: {
+      blend: scalars.opacity < 0.999,
+      depthWrite: scalars.opacity >= 0.999,
+      cullMode: node.primitive === "plane" || scalars.opacity < 0.999 ? "none" : "back"
+    },
+    ...(baseColorTexture ? { baseColorTexture, baseColorSampler: textureSampler } : {}),
+    ...(normalTexture ? { normalTexture, normalSampler: textureSampler, normalScale: spec?.normalScale ?? 1 } : {}),
+    ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: textureSampler } : {}),
+    ...(occlusionTexture ? { occlusionTexture, occlusionSampler: textureSampler } : {}),
+    ...(emissiveTexture ? { emissiveTexture, emissiveSampler: textureSampler } : {}),
+    ...(spec?.texTransforms?.baseColor ? { baseColorTextureTransform: { ...spec.texTransforms.baseColor } } : {}),
+    ...(spec?.texTransforms?.normal ? { normalTextureTransform: { ...spec.texTransforms.normal } } : {}),
+    ...(spec?.texTransforms?.metallicRoughness ? { metallicRoughnessTextureTransform: { ...spec.texTransforms.metallicRoughness } } : {}),
+    ...(spec?.texTransforms?.occlusion ? { occlusionTextureTransform: { ...spec.texTransforms.occlusion } } : {}),
+    ...(spec?.texTransforms?.emissive ? { emissiveTextureTransform: { ...spec.texTransforms.emissive } } : {}),
+    ...((texCoords?.baseColor ?? 0) > 0 || (texCoords?.normal ?? 0) > 0 || (texCoords?.metallicRoughness ?? 0) > 0 || (texCoords?.occlusion ?? 0) > 0 || (texCoords?.emissive ?? 0) > 0
+      ? {
+        textureTexCoords: {
+          ...(baseColorTexture && (texCoords?.baseColor ?? 0) > 0 ? { baseColor: 1 as const } : {}),
+          ...(normalTexture && (texCoords?.normal ?? 0) > 0 ? { normal: 1 as const } : {}),
+          ...(metallicRoughnessTexture && (texCoords?.metallicRoughness ?? 0) > 0 ? { metallicRoughness: 1 as const } : {}),
+          ...(occlusionTexture && (texCoords?.occlusion ?? 0) > 0 ? { occlusion: 1 as const } : {}),
+          ...(emissiveTexture && (texCoords?.emissive ?? 0) > 0 ? { emissive: 1 as const } : {})
+        }
+      }
+      : {})
+  });
+  resource.textureStatus = "textured";
+  resource.textureSlots = slots;
+}
+
+export function compositeMetallicRoughnessPixels(
+  rough: Uint8Array | undefined,
+  metal: Uint8Array | undefined,
+  pixelCount: number,
+  roughnessScalar: number,
+  metalnessScalar: number
+): Uint8Array {
+  const out = new Uint8Array(pixelCount * 4);
+  const fallbackG = Math.round(clamp01(roughnessScalar) * 255);
+  const fallbackB = Math.round(clamp01(metalnessScalar) * 255);
+  for (let pixel = 0; pixel < pixelCount; pixel += 1) {
+    const base = pixel * 4;
+    out[base] = 255;
+    out[base + 1] = rough ? rough[base + 1] ?? fallbackG : fallbackG;
+    out[base + 2] = metal ? metal[base + 2] ?? fallbackB : fallbackB;
+    out[base + 3] = 255;
+  }
+  return out;
+}
+
+/**
+ * G1 SDF text resource (muse3jsparity-PRD): replays the recorded descriptor
+ * through the atlas sampler at mount, uploads the label image as a native
+ * texture, and submits atlas-derived quads. Returns null (extruded fallback)
+ * with a warning when the sampler cannot run — never a silent mesh swap.
+ */
+function createSdfTextPrimitiveResource(
+  node: AuraPrimitiveNode,
+  warn: (message: string) => void
+): ProductionRuntimePrimitiveResource | null {
+  const text = node.text3D;
+  if (!text || text.backend !== "sdf") return null;
+  try {
+    const layout = layoutSdfText(text.text, rootSdfFontAtlas(), {
+      size: text.sdfSize ?? 1,
+      ...(text.sdfLetterSpacing === undefined ? {} : { letterSpacing: text.sdfLetterSpacing }),
+      ...(text.sdfStyle === undefined ? {} : { style: text.sdfStyle })
+    });
+    const style = layout.style;
+    const styled = text.sdfStyle !== undefined && (
+      style.outlineWidthEm > 0 || style.glowRadiusEm > 0 || style.shadowOffsetEm !== undefined
+    );
+    const image = rasterizeSdfTextLabelImage(layout, rootSdfFontAtlas(), {
+      texelsPerWorldUnit: 64,
+      ...(styled
+        ? {
+          outline: [1, 0.85, 0.6, 1] as const,
+          glow: [0.5, 0.8, 1, 1] as const,
+          shadow: [0, 0, 0, 1] as const
+        }
+        : {})
+    });
+    const mesh = createSdfTextQuadMesh(layout, image);
+    const vertexCount = mesh.vertexCount;
+    const vertices = new VertexBuffer(VertexFormat.P3N3T4T2T2, vertexCount);
+    for (let index = 0; index < vertexCount; index += 1) {
+      vertices.setAttribute(index, "position", [mesh.positions[index * 3] ?? 0, mesh.positions[index * 3 + 1] ?? 0, 0]);
+      vertices.setAttribute(index, "normal", [0, 0, 1]);
+      vertices.setAttribute(index, "tangent", [1, 0, 0, 1]);
+      vertices.setAttribute(index, "uv", [mesh.uvs[index * 2] ?? 0, mesh.uvs[index * 2 + 1] ?? 0]);
+      vertices.setAttribute(index, "uv1", [mesh.uvs[index * 2] ?? 0, mesh.uvs[index * 2 + 1] ?? 0]);
+    }
+    const geometry = new Geometry(
+      vertices,
+      new IndexBuffer(mesh.indices, vertexCount),
+      "triangles",
+      { min: [mesh.min[0], mesh.min[1], mesh.min[2]], max: [mesh.max[0], mesh.max[1], mesh.max[2]] }
+    );
+    const opacity = clamp01(node.material?.opacity ?? 1);
+    const labelTexture = new Texture({
+      width: image.width,
+      height: image.height,
+      data: image.data,
+      colorSpace: "srgb",
+      label: `${node.name ?? "sdf-text"}-sdf-label`
+    });
+    const sampler = new Sampler({ maxAnisotropy: resolveSamplerAnisotropy({ desired: node.material?.textureAnisotropy }).applied });
+    const texturedMaterial = new TexturedPBRMaterial({
+      name: `a3d-production-sdf-text-${node.name ?? "label"}`,
+      baseColor: [1, 1, 1, opacity],
+      metallic: 0,
+      roughness: 0.9,
+      emissiveColor: [0.92, 0.92, 0.92],
+      emissiveStrength: 0.9,
+      occlusionStrength: 0,
+      environmentIntensity: 0,
+      renderState: { blend: true, depthWrite: false, cullMode: "none" },
+      baseColorTexture: labelTexture,
+      baseColorSampler: sampler,
+      emissiveTexture: labelTexture,
+      emissiveSampler: sampler
+    });
+    const mipBytes = mipChainBytesCoarseToFine(image.width, image.height);
+    return {
+      geometry,
+      material: createProductionPrimitiveMaterial(node),
+      bounds: { min: [mesh.min[0], mesh.min[1], mesh.min[2]], max: [mesh.max[0], mesh.max[1], mesh.max[2]] },
+      name: node.name ?? "sdf-text",
+      materialSpec: node.material,
+      sourceNode: node,
+      ...blankProductionPrimitiveTextureState(),
+      texturedMaterial,
+      textureStatus: "textured",
+      textureSlots: ["baseColor", "emissive"],
+      textureWarnings: [],
+      sdfText: {
+        quadCount: mesh.quadCount,
+        imageBytes: image.width * image.height * 4,
+        ...(style.lodFadeNear === undefined ? {} : { lodFadeNear: style.lodFadeNear }),
+        ...(style.lodFadeFar === undefined ? {} : { lodFadeFar: style.lodFadeFar }),
+        occlusionPolicy: (text.sdfOcclusion ?? "dim") as SdfTextOcclusionPolicy,
+        lastOpacity: opacity,
+        lastVisible: true,
+        lastSubmitted: false
+      },
+      textureBytes: Math.round(image.width * image.height * 4 * (4 / 3)),
+      textureMipBytes: mipBytes
+    };
+  } catch (error) {
+    warn(`SDF text sampler failed for "${node.name ?? "sdf-text"}" (${error instanceof Error ? error.message : String(error)}); extruded mesh fallback retained`);
+    return null;
+  }
+}
+
+/**
+ * M2 mip-chain byte estimate (pure, unit-tested): full chain from the base
+ * level, coarse-to-fine, RGBA8. Matches the GPU residency the bridge funds.
+ */
+export function mipChainBytesCoarseToFine(width: number, height: number): readonly number[] {
+  if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) {
+    throw new Error("Mip-chain bytes require positive integer dimensions.");
+  }
+  const levels: number[] = [];
+  let w = width;
+  let h = height;
+  while (true) {
+    levels.unshift(w * h * 4);
+    if (w === 1 && h === 1) break;
+    w = Math.max(1, Math.floor(w / 2));
+    h = Math.max(1, Math.floor(h / 2));
+  }
+  return levels;
+}
+
+/** M2 streaming budget normalization (pure, unit-tested): default 256 MiB, fail-closed. */
+export function normalizeTextureBudgetBytes(value: number | undefined): number {
+  if (value === undefined) return 256 * 1024 * 1024;
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error("Aura3D textureBudgetBytes must be a positive byte count.");
+  }
+  return Math.floor(value);
+}
+
+export interface TextureStreamingTableEntry {
+  readonly id: string;
+  readonly mipBytesCoarseToFine: readonly number[];
+  readonly distanceMeters: number;
+}
+
+/**
+ * M2 streaming residency from the post-upgrade texture table (pure,
+ * unit-tested): distance-prioritized mip funding against the budget with
+ * over-budget telemetry for the unfunded tail.
+ */
+export function describeTextureStreamingResidency(
+  table: readonly TextureStreamingTableEntry[],
+  budgetBytes: number
+): TextureStreamingResidency {
+  const candidates: TextureStreamingCandidate[] = table.map((entry) => ({
+    id: entry.id,
+    mipBytesCoarseToFine: entry.mipBytesCoarseToFine,
+    distanceMeters: entry.distanceMeters
+  }));
+  return evaluateDistancePrioritizedMipResidency(candidates, normalizeTextureBudgetBytes(budgetBytes));
+}
+
+/**
+ * N1 spot shadow observation (pure, unit-tested): cone + atlas tier from the
+ * authored spot, pixel-backing gated on the device-observed map signals with
+ * the spot as caster. No signal, no claim.
+ */
+export function describeProductionSpotShadow(input: {
+  readonly requested: boolean;
+  readonly casterIsSpot: boolean;
+  readonly casterName?: string;
+  readonly angle?: number;
+  readonly penumbra?: number;
+  readonly range?: number;
+  readonly mapRendered: boolean;
+  readonly mapSampled: boolean;
+}): NonNullable<AuraRendererRuntimeObservation["shadow"]>["spot"] {
+  if (!input.requested || !input.casterIsSpot || input.angle === undefined) {
+    return {
+      requested: input.requested,
+      casterIsSpot: input.casterIsSpot,
+      ...(input.casterName === undefined ? {} : { casterName: input.casterName }),
+      spotPixelBacked: false,
+      reason: !input.requested
+        ? "no authored spot requested a shadow map"
+        : !input.casterIsSpot
+          ? "shadow requested but the caster slot went to a non-spot light"
+          : "spot caster has no cone description"
+    };
+  }
+  // Tier selection validates the cone fail-closed (RangeError on bad angle);
+  // the full projection matrix composes in-device from this cone + range.
+  const tier = selectSpotShadowAtlasTier(input.angle);
+  createSpotShadowProjection(input.angle, Math.max(1, input.range ?? 12));
+  const backed = input.mapRendered && input.mapSampled;
+  return {
+    requested: true,
+    casterIsSpot: true,
+    ...(input.casterName === undefined ? {} : { casterName: input.casterName }),
+    angle: input.angle,
+    ...(input.penumbra === undefined ? {} : { penumbra: input.penumbra }),
+    range: Math.max(1, input.range ?? 12),
+    atlasResolution: tier.resolution,
+    atlasReason: tier.reason,
+    spotPixelBacked: backed,
+    reason: backed
+      ? `spot shadow map rendered and sampled (${tier.resolution}px ${tier.reason})`
+      : "spot caster selected but the device shows no rendered+sampled shadow map yet"
+  };
+}
+
 function createProductionPrimitiveResources(node: AuraPrimitiveNode): readonly ProductionRuntimePrimitiveResource[] {
+  const sdfWarnings: string[] = [];
+  const sdfResource = createSdfTextPrimitiveResource(node, (message) => { sdfWarnings.push(message); });
   const levels = node.lod?.levels;
   if (!levels?.length) {
-    return [{ geometry: createProductionPrimitiveGeometry(node), material: createProductionPrimitiveMaterial(node), bounds: primitiveGeometryBounds(node), name: node.name ?? node.primitive }];
+    if (sdfResource) return [sdfResource];
+    const fallback = {
+      geometry: createProductionPrimitiveGeometry(node),
+      material: createProductionPrimitiveMaterial(node),
+      bounds: primitiveGeometryBounds(node),
+      name: node.name ?? node.primitive,
+      materialSpec: node.material,
+      sourceNode: node,
+      ...blankProductionPrimitiveTextureState()
+    };
+    // Sampler failures stay visible on the fallback resource (surfaced via
+    // texturedMaterials diagnostics), never swallowed by the mesh swap.
+    fallback.textureWarnings.push(...sdfWarnings);
+    return [fallback];
   }
   return levels.map((level, index) => {
     if (!level.primitive && !level.geometry) throw new Error(`Aura3D LOD level ${index} requires primitive or custom geometry.`);
@@ -11991,7 +14062,20 @@ function createProductionPrimitiveResources(node: AuraPrimitiveNode): readonly P
       material: level.material ?? node.material,
       lod: undefined
     };
-    return { geometry: createProductionPrimitiveGeometry(levelNode), material: createProductionPrimitiveMaterial(levelNode), bounds: primitiveGeometryBounds(levelNode), name: level.name };
+    const levelWarnings: string[] = [];
+    const levelSdf = createSdfTextPrimitiveResource(levelNode, (message) => { levelWarnings.push(message); });
+    if (levelSdf) return { ...levelSdf, name: level.name };
+    const levelFallback = {
+      geometry: createProductionPrimitiveGeometry(levelNode),
+      material: createProductionPrimitiveMaterial(levelNode),
+      bounds: primitiveGeometryBounds(levelNode),
+      name: level.name,
+      materialSpec: levelNode.material,
+      sourceNode: levelNode,
+      ...blankProductionPrimitiveTextureState()
+    };
+    levelFallback.textureWarnings.push(...levelWarnings);
+    return levelFallback;
   });
 }
 
@@ -12002,6 +14086,20 @@ function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntr
   const selection = selectAuraRootLodLevel(distance, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
   entry.currentLodIndex = selection.levelIndex;
   return entry.resources[selection.levelIndex] ?? entry.resources[entry.resources.length - 1]!;
+}
+
+function createProductionModelInstanceTransforms(
+  transforms: readonly AuraTransformSpec[],
+  node: AuraModelNode,
+  bounds: { readonly min: AuraVec3; readonly max: AuraVec3 },
+  time: number
+): Float32Array {
+  const matrices = new Float32Array(transforms.length * 16);
+  transforms.forEach((transform, index) => {
+    const localNode: AuraModelNode = { ...node, ...transform };
+    matrices.set(createModelMatrix(localNode, bounds, shouldNormalizeModelNode(node), time), index * 16);
+  });
+  return matrices;
 }
 
 function createProductionInstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): Float32Array {
@@ -12071,7 +14169,30 @@ function resolveProductionPrimitiveRuntimeState(
  * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
  * arrived. The plumbing defect concealed the shading defect.
  */
-function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial {
+interface ProductionPrimitiveScalars {
+  readonly materialSpec: AuraMaterialSpec | undefined;
+  readonly baseColor: readonly [number, number, number, number];
+  readonly opacity: number;
+  readonly emissiveColor: readonly [number, number, number];
+  readonly clearcoat: number;
+  readonly sheen: number;
+  readonly iridescence: number;
+  readonly anisotropy: number;
+  readonly transmission: number;
+  readonly thicknessRange: readonly [number, number] | undefined;
+  readonly sheenColor: readonly [number, number, number];
+  readonly declaresExtension: boolean;
+  readonly environmentIntensity: number;
+  /**
+   * B3 per-material env-map response scale (muse3jsparity-PRD). Unlike
+   * `environmentIntensity` (ambient only, and overwritten per-frame by the
+   * scene environment), this reaches the sampled HDRI terms through the
+   * `u_materialEnvironmentIntensity` uniform the forward pass never touches.
+   */
+  readonly envMapIntensity: number;
+}
+
+function resolveProductionPrimitiveScalars(node: AuraPrimitiveNode): ProductionPrimitiveScalars {
   const materialSpec = node.material;
   const baseColor = colorToLinearRgba(materialSpec?.color ?? materialSpec?.emissive ?? "#d7dee8");
   const opacity = clamp01(materialSpec?.opacity ?? baseColor[3] ?? 1);
@@ -12102,6 +14223,19 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
   const environmentIntensity = declaresExtension
     ? Math.max(0.35, requestedEnvironmentIntensity)
     : requestedEnvironmentIntensity;
+  // B3: the sampled env-map scale defaults to 1 (no look change) and honors
+  // an explicitly authored envMapIntensity, including 0 (killed response).
+  const envMapIntensity = materialSpec?.envMapIntensity === undefined ? 1 : Math.max(0, materialSpec.envMapIntensity);
+  return {
+    materialSpec, baseColor, opacity, emissiveColor, clearcoat, sheen, iridescence,
+    anisotropy, transmission, thicknessRange, sheenColor, declaresExtension, environmentIntensity, envMapIntensity
+  };
+}
+
+function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial {
+  const materialSpec = node.material;
+  const { baseColor, opacity, emissiveColor, clearcoat, sheenColor, declaresExtension, transmission, thicknessRange, sheen, iridescence, anisotropy, environmentIntensity, envMapIntensity } =
+    resolveProductionPrimitiveScalars(node);
   /*
    * Native instance submission requires the renderer's instanced shader contract. The ordinary
    * PBR shader intentionally has no instance matrix inputs and ForwardPass therefore expands it.
@@ -12119,6 +14253,7 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
       emissiveColor,
       emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
       environmentIntensity,
+      envMapIntensity,
       renderState: {
         blend: opacity < 0.999,
         depthWrite: opacity >= 0.999,
@@ -12149,6 +14284,7 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
     ...(materialSpec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(materialSpec.attenuationColor) } : {}),
     ...(materialSpec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, materialSpec.attenuationDistance) }),
     environmentIntensity,
+    envMapIntensity,
     renderState: {
       blend: opacity < 0.999,
       depthWrite: opacity >= 0.999,
@@ -12170,7 +14306,33 @@ function primitiveGeometryBounds(nodeOrPrimitive: AuraPrimitiveNode | AuraBuilti
   return createProductionPrimitiveMesh(primitive).bounds;
 }
 
-function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+/**
+ * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
+ * generators that provide them opt into textured materials; uv1 is a
+ * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
+ * selector has two distinct sets to choose between.
+ */
+interface ProductionPrimitiveMesh {
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint16Array;
+  readonly bounds: GltfBounds;
+  readonly uvs?: Float32Array;
+  readonly uv1s?: Float32Array;
+  /**
+   * Axis-aligned analytic tangents (vec4 per vertex, w = handedness) for the
+   * textured material contract. Generators with uvs provide these.
+   */
+  readonly tangents?: Float32Array;
+}
+
+function tilingSecondUnwrap(uvs: Float32Array): Float32Array {
+  const uv1s = new Float32Array(uvs.length);
+  for (let i = 0; i < uvs.length; i += 1) uv1s[i] = (uvs[i] ?? 0) * 2;
+  return uv1s;
+}
+
+function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive): ProductionPrimitiveMesh {
   if (primitive === "sphere") return createSphereGeometry();
   if (primitive === "capsule") return createCapsuleApproxGeometry();
   if (primitive === "torus") return createTorusGeometry();
@@ -12212,13 +14374,28 @@ function calculateCustomGeometryNormals(spec: AuraCustomGeometrySpec): readonly 
   return totals.map((normal) => { const length = Math.hypot(...normal) || 1; return [normal[0] / length, normal[1] / length, normal[2] / length] as const; });
 }
 
-function createProductionGeometryFromPrimitiveMesh(mesh: { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds }): Geometry {
+function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh): Geometry {
   const vertexCount = mesh.positions.length / 3;
-  const vertices = new VertexBuffer(VertexFormat.P3N3, vertexCount);
+  const textured = Boolean(
+    mesh.uvs && mesh.uvs.length === vertexCount * 2
+    && mesh.tangents && mesh.tangents.length === vertexCount * 4
+  );
+  const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2T2 : VertexFormat.P3N3, vertexCount);
   for (let index = 0; index < vertexCount; index += 1) {
     const base = index * 3;
     vertices.setAttribute(index, "position", [mesh.positions[base] ?? 0, mesh.positions[base + 1] ?? 0, mesh.positions[base + 2] ?? 0]);
     vertices.setAttribute(index, "normal", [mesh.normals[base] ?? 0, mesh.normals[base + 1] ?? 1, mesh.normals[base + 2] ?? 0]);
+    if (textured) {
+      const uvBase = index * 2;
+      const tangentBase = index * 4;
+      vertices.setAttribute(index, "tangent", [
+        mesh.tangents![tangentBase] ?? 1, mesh.tangents![tangentBase + 1] ?? 0,
+        mesh.tangents![tangentBase + 2] ?? 0, mesh.tangents![tangentBase + 3] ?? 1
+      ]);
+      vertices.setAttribute(index, "uv", [mesh.uvs![uvBase] ?? 0, mesh.uvs![uvBase + 1] ?? 0]);
+      const uv1 = mesh.uv1s && mesh.uv1s.length === vertexCount * 2 ? mesh.uv1s : mesh.uvs!;
+      vertices.setAttribute(index, "uv1", [uv1[uvBase] ?? 0, uv1[uvBase + 1] ?? 0]);
+    }
   }
   return new Geometry(vertices, new IndexBuffer(Array.from(mesh.indices), vertexCount), "triangles", mesh.bounds);
 }
@@ -12265,6 +14442,47 @@ function applyProductionActorAnimation(
   } catch (error) {
     runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply clip "${clipName}": ${productionRenderErrorMessage(error)}`);
   }
+}
+
+/**
+ * Applies controller-bound foot planting (E2) to the typed GLB actor. The resolved config
+ * is refreshed every frame with the actor's live model matrix: time-animated model nodes
+ * (float/orbit/turntable) move, and the post-pass solves in world space, so a stale matrix
+ * would plant feet in yesterday's frame. Foot-lock state survives the refresh — the runtime
+ * keeps its rig across matrix-only updates and resets it only when the leg set, ground, or
+ * solve parameters change.
+ */
+function applyProductionActorFootPlanting(
+  entry: ProductionRuntimeActorEntry,
+  animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined,
+  modelMatrix: readonly number[] | undefined,
+  runtimeWarnings: Set<string>
+): void {
+  const footPlanting = animationBinding?.footPlanting;
+  try {
+    entry.actor.animation.setFootPlanting(
+      (footPlanting === undefined
+        ? undefined
+        : { ...footPlanting, ...spreadFootPlantingWorldMatrix(modelMatrix) }) as GLTFootPlantingConfig | undefined
+    );
+  } catch (error) {
+    runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply foot planting: ${productionRenderErrorMessage(error)}`);
+  }
+}
+
+/**
+ * Packages the actor model matrix as the post-pass `worldFromLocal`. The matrix the
+ * renderer draws with (column-major 16, model-local → world) is exactly the space the
+ * foot-planting ground speaks, so the same array threads both paths. Returns {} when the
+ * matrix is missing or malformed so the pass falls back to actor-local solving.
+ */
+function spreadFootPlantingWorldMatrix(
+  modelMatrix: readonly number[] | undefined
+): { readonly worldFromLocal?: Mat4 } {
+  if (!modelMatrix || modelMatrix.length !== 16) return {};
+  const worldFromLocal = Array.from(modelMatrix, (component) => Number(component)) as Mat4;
+  if (worldFromLocal.some((component) => !Number.isFinite(component))) return {};
+  return { worldFromLocal };
 }
 
 function applyProductionActorMorphTargets(
@@ -12326,7 +14544,14 @@ function createRuntimeEvidenceFromTypedGLBActor(
     },
     renderItemCount: renderItems.length,
     skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
-    morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length
+    morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,
+    lastMaterialTracksApplied: actorEvidence.lastMaterialTracksApplied,
+    lastLightTracksApplied: actorEvidence.lastLightTracksApplied,
+    lastFootPlantingGroundedFeet: actorEvidence.lastFootPlantingGroundedFeet,
+    lastFootPlantingTargetError: actorEvidence.lastFootPlantingTargetError,
+    lastFootPlantingHipOffset: actorEvidence.lastFootPlantingHipOffset,
+    lastFootPlantingMissingLegs: [...actorEvidence.lastFootPlantingMissingLegs],
+    footPlantingConfigured: actorEvidence.footPlantingConfigured
   });
 }
 
@@ -12870,7 +15095,9 @@ function collectRuntimeEffectNodes(snapshot: AuraSceneSnapshot): AuraEffectNode[
 }
 
 function hasRuntimePostProcessEffects(effectNodes: readonly AuraEffectNode[]): boolean {
-  return effectNodes.some((node) => node.effect === "bloom" || node.effect === "ambient-occlusion" || node.effect === "contact-occlusion");
+  return effectNodes.some((node) => node.effect === "bloom" || node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"
+    || node.effect === "color-grade" || node.effect === "anti-alias" || node.effect === "outline"
+    || node.effect === "screen-space-reflections" || node.effect === "depth-of-field" || node.effect === "motion-blur");
 }
 
 interface WebGLPrimitive {
@@ -13108,7 +15335,8 @@ async function createWebGLSceneRenderer(
         contactOcclusionReceiver: false,
         pixelBacked: false,
         actualPasses: [],
-        fallbackPasses: hasRuntimePostProcessEffects(requestedEffectNodes) ? ["webgl2-direct-render"] : []
+        fallbackPasses: hasRuntimePostProcessEffects(requestedEffectNodes) ? ["webgl2-direct-render"] : [],
+        executionMode: "none"
       },
       warnings: [
         "Aura3D WebGL2 agent runtime is an explicit safe-basic fallback; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless the production runtime proves them.",
@@ -14370,7 +16598,9 @@ function textureRef<K extends string>(
   return { [key]: texture.index } as Partial<Record<K, number>>;
 }
 
-function createPlaneGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+function createPlaneGeometry(): ProductionPrimitiveMesh {
+  const uvs = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+  const tangents = new Float32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]);
   return {
     positions: new Float32Array([
       -0.5, 0, -0.5,
@@ -14391,11 +16621,22 @@ function createPlaneGeometry(): { readonly positions: Float32Array; readonly nor
     // up-normal downward. The plane then faced away from every overhead light and
     // received no direct lighting or visible cast shadows.
     indices: new Uint16Array([0, 2, 1, 0, 3, 2]),
-    bounds: { min: [-0.5, 0, -0.5], max: [0.5, 0, 0.5] }
+    bounds: { min: [-0.5, 0, -0.5], max: [0.5, 0, 0.5] },
+    uvs,
+    uv1s: tilingSecondUnwrap(uvs),
+    tangents
   };
 }
 
-function createBoxGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+function createBoxGeometry(): ProductionPrimitiveMesh {
+  // One full 0-1 unwrap per face, matching the 4-vertex face order below.
+  const faceUvs = [0, 0, 1, 0, 1, 1, 0, 1];
+  const uvs = new Float32Array([...faceUvs, ...faceUvs, ...faceUvs, ...faceUvs, ...faceUvs, ...faceUvs]);
+  // Analytic tangents along each face's +u direction (face order +z,-z,+y,-y,+x,-x).
+  const faceTangents = [
+    [1, 0, 0, 1], [-1, 0, 0, 1], [1, 0, 0, 1], [1, 0, 0, 1], [0, 0, -1, 1], [0, 0, 1, 1]
+  ];
+  const tangents = new Float32Array(faceTangents.flatMap((tangent) => [...tangent, ...tangent, ...tangent, ...tangent]));
   const positions = new Float32Array([
     -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5,
     0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
@@ -14423,15 +16664,20 @@ function createBoxGeometry(): { readonly positions: Float32Array; readonly norma
       16, 17, 18, 16, 18, 19,
       20, 21, 22, 20, 22, 23
     ]),
-    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }
+    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] },
+    uvs,
+    uv1s: tilingSecondUnwrap(uvs),
+    tangents
   };
 }
 
-function createSphereGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+function createSphereGeometry(): ProductionPrimitiveMesh {
   const rows = 12;
   const columns = 16;
   const positions: number[] = [];
   const normals: number[] = [];
+  const uvs: number[] = [];
+  const tangents: number[] = [];
   const indices: number[] = [];
   for (let row = 0; row <= rows; row += 1) {
     const v = row / rows;
@@ -14444,6 +16690,8 @@ function createSphereGeometry(): { readonly positions: Float32Array; readonly no
       const z = Math.sin(theta) * Math.sin(phi);
       positions.push(x * 0.5, y * 0.5, z * 0.5);
       normals.push(x, y, z);
+      uvs.push(u, 1 - v);
+      tangents.push(-Math.sin(phi), 0, Math.cos(phi), 1);
     }
   }
   for (let row = 0; row < rows; row += 1) {
@@ -14456,11 +16704,15 @@ function createSphereGeometry(): { readonly positions: Float32Array; readonly no
       indices.push(a, a + 1, b, b, a + 1, b + 1);
     }
   }
+  const sphereUvs = new Float32Array(uvs);
   return {
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     indices: new Uint16Array(indices),
-    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }
+    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] },
+    uvs: sphereUvs,
+    uv1s: tilingSecondUnwrap(sphereUvs),
+    tangents: new Float32Array(tangents)
   };
 }
 
@@ -15271,6 +17523,8 @@ interface MutableDiagnostics {
    * let every production callout go missing while reports stayed green.
    */
   labels?: readonly ProjectedLabel[];
+  labelTelemetry?: LabelTelemetry;
+  textBuckets?: TextBucketSummary;
 }
 
 function createInitialDiagnostics(snapshot: AuraSceneSnapshot, rendererOptions?: AuraCreateAppRendererOptions): MutableDiagnostics {
@@ -15298,7 +17552,9 @@ function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics {
     renderer: value.renderer,
     warnings: [...value.warnings],
     errors: [...value.errors],
-    ...(value.labels ? { labels: value.labels } : {})
+    ...(value.labels ? { labels: value.labels } : {}),
+    ...(value.labelTelemetry ? { labelTelemetry: value.labelTelemetry } : {}),
+    ...(value.textBuckets ? { textBuckets: value.textBuckets } : {})
   };
 }
 
@@ -15309,6 +17565,27 @@ function collectGeneratedCodeWarnings(snapshot: AuraSceneSnapshot): string[] {
   }
   if (!snapshot.nodes.some((node) => node.kind === "interaction")) {
     warnings.push("Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.");
+  }
+  // muse3jsparity-PRD A3: withheld postprocess intents must warn on the
+  // mounted channel too (plan-level warnings never reach app.diagnostics()).
+  const flatNodes = groups.flatten(snapshot.nodes);
+  const hasEffect = (effect: AuraEffectType): boolean =>
+    flatNodes.some((node) => node.kind === "effect" && node.effect === effect);
+  if (hasEffect("motion-blur")) {
+    warnings.push("motion-blur is recorded but withheld: root has no velocity binding, so no motion-blur pass is submitted");
+  }
+  const antiAlias = flatNodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "anti-alias");
+  if (antiAlias && (antiAlias.mode ?? "fxaa") === "taa") {
+    warnings.push("anti-alias mode \"taa\" is recorded but withheld: root has no history binding, so no taa pass is submitted");
+  }
+  // muse3jsparity-PRD C1: procedural texture inputs have no rasterizer. The
+  // intent is compile-time known, so warn here; fetch outcomes stay dynamic.
+  for (const node of flatNodes) {
+    if (node.kind !== "primitive" || !node.material) continue;
+    const label = node.name ?? `aura-primitive-${node.primitive}`;
+    for (const procedural of createProductionPrimitiveTextureIntent(node.material).proceduralInputs) {
+      warnings.push(`procedural texture ${procedural} on "${label}" has no rasterizer; recorded only, scalar material retained`);
+    }
   }
   for (const node of snapshot.nodes) {
     if (node.kind === "model" && createAssetProvenance(node.asset).source === "unsafe-url") {
@@ -15477,6 +17754,16 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
     context.fillStyle = toAlphaColor(node.color ?? "#9fb7d9", node.density ?? 0.12);
     context.fillRect(0, height * 0.2, width, height * 0.8);
   }
+  if (node.effect === "volumetric-fog") {
+    context.fillStyle = toAlphaColor(node.color ?? "#6f84b9", node.density ?? 0.18);
+    context.fillRect(0, height * 0.2, width, height * 0.8);
+    const anchor = node.lightPosition ?? [0.5, 0.18];
+    const glow = context.createRadialGradient(width * anchor[0], height * anchor[1], 8, width * anchor[0], height * anchor[1], width * 0.3);
+    glow.addColorStop(0, toAlphaColor(node.color ?? "#fff3d6", (node.intensity ?? 0.7) * 0.35));
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    context.fillStyle = glow;
+    context.fillRect(0, 0, width, height);
+  }
   if (node.effect === "bloom") {
     const gradient = context.createRadialGradient(width * 0.5, height * 0.45, 20, width * 0.5, height * 0.45, width * 0.46);
     gradient.addColorStop(0, toAlphaColor(node.color ?? "#ffffff", (node.intensity ?? 0.35) * 0.3));
@@ -15526,6 +17813,29 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
         context.beginPath();
         context.ellipse(x, y, radius * 1.9, radius * 0.42, 0, 0, Math.PI * 2);
         context.stroke();
+      }
+    }
+  }
+  if (node.effect === "snow") {
+    const density = Math.max(0.2, Math.min(1.6, node.density ?? node.intensity ?? 0.68));
+    const intensity = Math.max(0.1, Math.min(1.4, node.intensity ?? 0.4));
+    const color = node.color ?? "#e8f1ff";
+    if (node.mist !== false) {
+      context.fillStyle = toAlphaColor(color, Math.min(0.1, 0.03 + intensity * 0.04));
+      context.fillRect(0, height * 0.2, width, height * 0.72);
+    }
+    const drift = (node.wind?.[0] ?? -0.85) * 0.02;
+    for (let layer = 0; layer < 3; layer += 1) {
+      const count = Math.round((layer === 2 ? 30 : 52) * density);
+      const size = layer === 2 ? 3.1 : layer === 1 ? 2.2 : 1.4;
+      context.fillStyle = toAlphaColor(color, Math.min(0.85, 0.34 + intensity * (0.3 - layer * 0.06)));
+      for (let i = 0; i < count; i += 1) {
+        const sway = Math.sin(time * 0.0011 * (node.speed ?? 1) + i * 1.7 + layer) * (6 + layer * 5);
+        const x = (((i * 61 + layer * 197 + time * 0.008 * (node.speed ?? 1) * drift * 60) % width) + width) % width + sway * 0.14;
+        const y = ((i * 97 + layer * 131 + time * 0.028 * (node.speed ?? 1) * (1 + layer * 0.3)) % (height * 0.86)) + height * 0.06;
+        context.beginPath();
+        context.arc(x, y, size, 0, Math.PI * 2);
+        context.fill();
       }
     }
   }

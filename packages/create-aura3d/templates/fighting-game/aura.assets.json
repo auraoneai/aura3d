@@ -3,5 +3,66 @@
   "assetBasePath": "/aura-assets/",
   "outputDir": "public/aura-assets",
   "typegen": "src/aura-assets.ts",
-  "assets": []
+  "assets": [
+    {
+      "id": "showcaseWalkAnimatedGirl",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+      "outputPath": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+      "url": "/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+      "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+      "sizeBytes": 3791152,
+      "bounds": [
+        86.929,
+        161.836,
+        37.758
+      ],
+      "materials": [
+        "material_0",
+        "material_1",
+        "material_0_0",
+        "material_0_1",
+        "material_0_2",
+        "material_0_3",
+        "material_0_4"
+      ],
+      "animations": [
+        "Take 001"
+      ],
+      "textures": [],
+      "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg"
+    },
+    {
+      "id": "showcaseRunnerRobot",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/showcaseRunnerRobot.252b3a16.glb",
+      "outputPath": "public/aura-assets/showcaseRunnerRobot.252b3a16.glb",
+      "url": "/aura-assets/showcaseRunnerRobot.252b3a16.glb",
+      "hash": "sha256-252b3a16d5a8d7fd67a4304ec8135d4fa492802a31bc2fc2d4614e130a1f4e73",
+      "sizeBytes": 5500216,
+      "bounds": [
+        17.509,
+        9.101,
+        27.461
+      ],
+      "materials": [
+        "HEAD",
+        "EYES",
+        "BODY",
+        "HINGE",
+        "material",
+        "material_5"
+      ],
+      "animations": [
+        "IDLE",
+        "WALK",
+        "RUN",
+        "ALL"
+      ],
+      "textures": [],
+      "thumbnailUrl": "/aura-assets/showcaseRunnerRobot.thumb.svg"
+    }
+  ]
 }

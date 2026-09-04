@@ -607,6 +607,166 @@ export function pbrCausticsConformanceSuite(): PbrCausticsConformanceReport {
   };
 }
 
+export interface PbrSplitSumEnvironmentInput extends PbrEnvironmentLightInput {
+  readonly environmentBrdf: readonly [number, number];
+}
+
+export interface PbrFogFactorInput {
+  readonly worldPosition: Vec3;
+  readonly cameraPosition: Vec3;
+  readonly enabled: boolean;
+  readonly mode: "linear" | "exponential" | "exponential-squared";
+  readonly near?: number;
+  readonly far?: number;
+  readonly density?: number;
+  readonly heightFalloff?: number;
+  readonly heightReference?: number;
+  readonly maxOpacity?: number;
+}
+
+/**
+ * TS mirror of `a3dPbrCharlieSheen` (ShaderChunks.ts `pbr_common`).
+ * Reference-vector pinned by `tests/unit/rendering/shader-brdf-reference.test.ts`.
+ */
+export function pbrCharlieSheen(nDotH: number, sheenRoughness: number): number {
+  const alpha = Math.max(0.07, sheenRoughness * sheenRoughness);
+  const inverseAlpha = 1 / alpha;
+  const sin2h = Math.max(1 - nDotH * nDotH, 0.0078125);
+  return ((2 + inverseAlpha) * Math.pow(sin2h, inverseAlpha * 0.5)) / (2 * PBR_REFERENCE_PI);
+}
+
+/**
+ * TS mirror of `a3dPbrAnisotropicDistribution` (ShaderChunks.ts `pbr_common`).
+ * Aspect-ratio anisotropic-GGX over the procedural frame (Q1.3 — replaced the
+ * Gaussian lobe on 2026-09-03; the textured path already used this family).
+ */
+export function pbrAnisotropicDistribution(
+  normal: Vec3,
+  halfVector: Vec3,
+  roughness: number,
+  anisotropy: number,
+  rotation: number
+): number {
+  const normalized = normalize(normal);
+  const half = normalize(halfVector);
+  const c = Math.cos(rotation);
+  const s = Math.sin(rotation);
+  const tangent: Vec3 = normalize([c, s, 0]);
+  const bitangent: Vec3 = normalize([-s, c, 0]);
+  const alpha = Math.max(0.035, roughness * roughness);
+  const aspect = Math.sqrt(Math.max(0.08, 1 - clampFinite(anisotropy, 0, 0.98) * 0.92));
+  const alphaT = Math.max(0.012, alpha / aspect);
+  const alphaB = Math.max(0.012, alpha * aspect);
+  const tDotH = dot(tangent, half);
+  const bDotH = dot(bitangent, half);
+  const nDotH = Math.max(dot(normalized, half), 0);
+  const denominator =
+    (tDotH * tDotH) / (alphaT * alphaT) + (bDotH * bDotH) / (alphaB * alphaB) + nDotH * nDotH;
+  return 1 / Math.max(PBR_REFERENCE_PI * alphaT * alphaB * denominator * denominator, PBR_REFERENCE_EPSILON);
+}
+
+/**
+ * TS mirror of `a3dPbrIridescenceColor` (ShaderChunks.ts `pbr_common`).
+ * Cosine thin-film approximation (bounded — not spectral integration).
+ */
+export function pbrIridescenceColor(
+  minimumThickness: number,
+  maximumThickness: number,
+  iridescenceIor: number,
+  nDotV: number
+): Vec3 {
+  const thickness = clampFinite((minimumThickness + maximumThickness) * 0.5, 0, 1200);
+  const opticalPhase = clampFinite((thickness - 100) / 1100, 0, 1) * (Math.PI * 2);
+  const iorShift = clampFinite((iridescenceIor - 1) / 2, 0, 1) * 0.65;
+  const viewPhase = Math.pow(1 - clampFinite(nDotV, 0, 1), 1.25) * (3.2 + iridescenceIor * 1.4);
+  const phase = opticalPhase + iorShift + viewPhase;
+  return [
+    clampFinite(0.5 + 0.5 * Math.cos(phase), 0, 1),
+    clampFinite(0.5 + 0.5 * Math.cos(phase + 2.0943951), 0, 1),
+    clampFinite(0.5 + 0.5 * Math.cos(phase + 4.1887902), 0, 1),
+  ];
+}
+
+/**
+ * TS mirror of `a3dPbrEnvironmentLightSplitSum` (ShaderChunks.ts `pbr_common`),
+ * including the multiscatter compensation and the zero-LUT Fresnel fallback.
+ */
+export function pbrEnvironmentLightSplitSum(input: PbrSplitSumEnvironmentInput): Vec3 {
+  const normal = normalize(input.normal);
+  const view = normalize(input.viewDirection);
+  const nDotV = Math.max(pbrSaturate(dot(normal, view)), PBR_REFERENCE_EPSILON);
+  const specularFactor = input.specularFactor ?? 1;
+  const specularColorFactor = input.specularColorFactor ?? [1, 1, 1];
+  const f0 = pbrF0(input.albedo, input.metallic, specularFactor, specularColorFactor);
+  const brdf: Vec3 = [clampFinite(input.environmentBrdf[0], 0, 1), clampFinite(input.environmentBrdf[1], 0, 1), 0];
+  const hasSplitSum = brdf[0] + brdf[1] >= 0.0001 ? 1 : 0;
+  const fallbackFresnel = pbrFresnelSchlickRoughnessSpecular(f0, nDotV, input.roughness, specularFactor);
+  const f90 = mix(pbrSaturate(specularFactor), 1, pbrSaturate(input.metallic));
+  const singleScatter = add(multiplyScalar(f0, brdf[0]), [f90 * brdf[1], f90 * brdf[1], f90 * brdf[1]]);
+  const ess = brdf[0] + brdf[1];
+  const ems = 1 - ess;
+  const favg = add(f0, multiplyScalar(subtract([1, 1, 1], f0), 1 / 21));
+  const multiScatter: Vec3 = [
+    (singleScatter[0] * favg[0]) / Math.max(1 - ems * favg[0], PBR_REFERENCE_EPSILON) * ems,
+    (singleScatter[1] * favg[1]) / Math.max(1 - ems * favg[1], PBR_REFERENCE_EPSILON) * ems,
+    (singleScatter[2] * favg[2]) / Math.max(1 - ems * favg[2], PBR_REFERENCE_EPSILON) * ems,
+  ];
+  const scattering = hasSplitSum === 1 ? add(singleScatter, multiScatter) : fallbackFresnel;
+  const kd = multiplyScalar(subtract([1, 1, 1], scattering), 1 - pbrSaturate(input.metallic));
+  const diffuse = multiply(multiply(kd, input.albedo), input.diffuseIrradiance);
+  const specular = multiply(input.specularRadiance, scattering);
+  return add(diffuse, specular);
+}
+
+/**
+ * TS mirror of `a3dPbrEncodeOutput` (ShaderLibrary.ts / ShaderLibraryCore.ts):
+ * Narkowicz ACES fit + EXACT sRGB transfer function (Q1.1 — replaced gamma 2.2).
+ */
+export function pbrEncodeOutput(linearColor: Vec3): Vec3 {
+  const color: Vec3 = [Math.max(linearColor[0], 0), Math.max(linearColor[1], 0), Math.max(linearColor[2], 0)];
+  const filmic: Vec3 = [
+    clampFinite((color[0] * (2.51 * color[0] + 0.03)) / (color[0] * (2.43 * color[0] + 0.59) + 0.14), 0, 1),
+    clampFinite((color[1] * (2.51 * color[1] + 0.03)) / (color[1] * (2.43 * color[1] + 0.59) + 0.14), 0, 1),
+    clampFinite((color[2] * (2.51 * color[2] + 0.03)) / (color[2] * (2.43 * color[2] + 0.59) + 0.14), 0, 1),
+  ];
+  return [pbrLinearToSrgbChannel(filmic[0]), pbrLinearToSrgbChannel(filmic[1]), pbrLinearToSrgbChannel(filmic[2])];
+}
+
+/** Exact sRGB opto-electronic transfer function (mirror of `a3dLinearToSrgb`). */
+export function pbrLinearToSrgbChannel(value: number): number {
+  const clamped = Math.max(value, 0);
+  return clamped <= 0.0031308 ? clamped * 12.92 : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+}
+
+/**
+ * TS mirror of `a3dEnvironmentFogFactor` (ShaderChunks.ts `environment_fog_common`):
+ * linear / exponential / exponential-squared modes with height falloff and max opacity.
+ */
+export function pbrEnvironmentFogFactor(input: PbrFogFactorInput): number {
+  if (!input.enabled) return 0;
+  const dx = input.cameraPosition[0] - input.worldPosition[0];
+  const dy = input.cameraPosition[1] - input.worldPosition[1];
+  const dz = input.cameraPosition[2] - input.worldPosition[2];
+  const distanceToCamera = Math.hypot(dx, dy, dz);
+  let factor: number;
+  if (input.mode === "linear") {
+    const near = input.near ?? 0;
+    const far = input.far ?? 1;
+    factor = (distanceToCamera - near) / Math.max(far - near, 0.000001);
+  } else if (input.mode === "exponential") {
+    factor = 1 - Math.exp(-Math.max(input.density ?? 0, 0) * distanceToCamera);
+  } else {
+    const scaledDensity = Math.max(input.density ?? 0, 0) * distanceToCamera;
+    factor = 1 - Math.exp(-scaledDensity * scaledDensity);
+  }
+  const heightFalloff = input.heightFalloff ?? 0;
+  const heightMultiplier =
+    heightFalloff > 0
+      ? Math.exp(-Math.max(0, input.worldPosition[1] - (input.heightReference ?? 0)) * heightFalloff)
+      : 1;
+  return clampFinite(factor * heightMultiplier, 0, 1) * clampFinite(input.maxOpacity ?? 1, 0, 1);
+}
+
 function clampFinite(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) return min;
   return Math.max(min, Math.min(max, value));

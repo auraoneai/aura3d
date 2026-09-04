@@ -133,14 +133,14 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
     ? options.makeResolver(adapters)
     : makeDefaultResolver(adapters, limit);
 
-  const constraints = toResolveConstraints(options.constraints ?? {}, false);
+  const constraints = toResolveConstraints(options.constraints ?? {}, false, options.query);
   const profile = options.constraints?.profile ?? "general";
   const result: ResolveResult = await resolver.resolve({
     text: options.query,
     constraints,
   });
 
-  const rankedCandidates = rankResolveCandidates(rankForProfile(result.candidates, profile), {
+  const rankedCandidates = rankResolveCandidates(rankForProfile(result.candidates, profile, options.query), {
     query: options.query,
     profile,
   });

@@ -301,6 +301,10 @@ export async function evaluateCurrentRoute(
   if (probe.status === "ready" && (probe.drawCalls ?? 0) <= 0) {
     failures.push(`${route.path} reported ready with ${probe.drawCalls ?? 0} draw calls`);
   }
+  const labelTelemetry = (probe.runtime?.diagnostics as { labelTelemetry?: { placesLabels?: unknown; declared?: unknown; placed?: unknown } } | undefined)?.labelTelemetry;
+  if (labelTelemetry && labelTelemetry.placesLabels === false) {
+    failures.push(`${route.path} declares ${String(labelTelemetry.declared ?? "?")} labels but placed ${String(labelTelemetry.placed ?? "?")} (placesLabels=false)`);
+  }
   if (consoleErrors.length > 0) {
     failures.push(`${route.path} emitted ${consoleErrors.length} browser error(s)`);
   }

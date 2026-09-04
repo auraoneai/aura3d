@@ -8,12 +8,21 @@ import {
   AudioListener,
   AudioSource,
   AudioTimelineTrack,
+  FootstepPlayer,
+  PositionalEmitter,
   SceneAudioBridge,
+  applyOcclusionToGain,
+  attachFocusPolicy,
+  computeDistanceAttenuation,
+  computeDopplerShift,
   createAudioTimelineMixSnapshot,
   createAudioWaveformReviewData,
   createAnimationAudioMixer,
   createAudioWaveform,
   createAudioWaveformPath,
+  createGameMixer,
+  occlusionLowpassFrequency,
+  resolveOcclusion,
   sampleAudioWaveformAtTime,
   validateAudioCaptionSync,
   validateEpisodeAudioAssets
@@ -359,4 +368,203 @@ test("animation audio waveform review data and mixer defaults expose route evide
   assert.deepEqual(evidence.buses.map((bus) => bus.name).sort(), ["ambient", "master", "music", "sfx", "voice"]);
   assert.equal(evidence.buses.find((bus) => bus.name === "music")?.volume, 0.4);
   assert.equal(evidence.unlocked, true);
+});
+
+test("distance attenuation matches panner models at the boundaries", () => {
+  assert.equal(computeDistanceAttenuation(0.5, { refDistance: 1 }), 1);
+  assert.equal(computeDistanceAttenuation(10_000, { maxDistance: 100 }), 0);
+  assert.ok(Math.abs(computeDistanceAttenuation(4, { refDistance: 1, rolloffFactor: 1 }) - 1 / 4) < 1e-9);
+  assert.equal(computeDistanceAttenuation(55, { refDistance: 10, maxDistance: 100, rolloffFactor: 1, model: "linear" }), 0.5);
+  assert.ok(computeDistanceAttenuation(2, { refDistance: 1, rolloffFactor: 2, model: "exponential" }) < 0.26);
+});
+
+test("doppler shift is 1 at rest and rises on approach", () => {
+  const rest = computeDopplerShift({ x: 10, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 });
+  assert.equal(rest, 1);
+  const approaching = computeDopplerShift(
+    { x: 10, y: 0, z: 0 }, { x: -10, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }
+  );
+  const receding = computeDopplerShift(
+    { x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }
+  );
+  assert.ok(approaching > 1);
+  assert.ok(receding < 1);
+});
+
+test("occlusion helpers clamp and map to gain + lowpass", () => {
+  assert.equal(resolveOcclusion(undefined, { x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }), 0);
+  assert.equal(resolveOcclusion(7, { x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }), 1);
+  assert.equal(resolveOcclusion(() => 0.5, { x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }), 0.5);
+  assert.equal(applyOcclusionToGain(0), 1);
+  assert.ok(Math.abs(applyOcclusionToGain(1) - 0.15) < 1e-9);
+  assert.equal(occlusionLowpassFrequency(0), 20_000);
+  assert.equal(occlusionLowpassFrequency(1), 400);
+});
+
+class MockPanner extends MockNode {
+  panningModel = "";
+  distanceModel = "";
+  maxDistance = 0;
+  refDistance = 0;
+  rolloffFactor = 0;
+  positionX = new MockParam();
+  positionY = new MockParam();
+  positionZ = new MockParam();
+}
+
+class MockFilter extends MockNode {
+  type = "";
+  frequency = new MockParam();
+}
+
+function createSpatialContext() {
+  const panners: MockPanner[] = [];
+  const filters: MockFilter[] = [];
+  const sources: MockSource[] = [];
+  const context = {
+    state: "running",
+    destination: new MockNode() as unknown as AudioNode,
+    currentTime: 0,
+    resume: async () => {},
+    suspend: async () => {},
+    close: async () => {},
+    createGain: () => new MockGain() as unknown as GainNode,
+    createBufferSource: () => {
+      const source = new MockSource() as unknown as AudioBufferSourceNode & { playbackRate: { value: number } };
+      (source as unknown as { playbackRate: { value: number } }).playbackRate = { value: 1 };
+      sources.push(source as unknown as MockSource);
+      return source;
+    },
+    createPanner: () => {
+      const panner = new MockPanner();
+      panners.push(panner);
+      return panner as unknown as PannerNode;
+    },
+    createBiquadFilter: () => {
+      const filter = new MockFilter();
+      filters.push(filter);
+      return filter as unknown as BiquadFilterNode;
+    },
+    createConvolver: () => new MockNode() as unknown as ConvolverNode
+  };
+  return { context, panners, filters, sources };
+}
+
+test("PositionalEmitter chains source into filter into panner and reports evidence", () => {
+  const { context, panners, filters } = createSpatialContext();
+  const emitter = new PositionalEmitter({
+    context,
+    clip: new AudioClip({ buffer: { duration: 1, numberOfChannels: 1, sampleRate: 44100 } as AudioBuffer }),
+    position: { x: 3, y: 0, z: 0 },
+    volume: 0.8
+  });
+  assert.equal(emitter.connected, true);
+  assert.equal(panners.length, 1);
+  assert.equal(filters.length, 1);
+  // source gain feeds the occlusion filter, which feeds the panner.
+  assert.equal(filters[0]?.connections[0], panners[0]);
+
+  const evidence = emitter.update({ x: 0, y: 0, z: 0 });
+  assert.equal(evidence.kind, "positional-emitter-evidence");
+  assert.ok(Math.abs(evidence.attenuationGain - 1 / 3) < 1e-9);
+  assert.equal(evidence.dopplerShift, 1);
+  assert.equal(evidence.occlusion, 0);
+  assert.deepEqual(evidence.position, { x: 3, y: 0, z: 0 });
+
+  emitter.setVelocity({ x: -34.3, y: 0, z: 0 });
+  const doppler = emitter.update({ x: 0, y: 0, z: 0 });
+  assert.ok(doppler.dopplerShift > 1);
+  assert.equal(emitter.source.playbackRate, doppler.dopplerShift);
+
+  emitter.setOcclusion(1);
+  assert.equal(emitter.evidence().occlusion, 1);
+  emitter.update({ x: 0, y: 0, z: 0 });
+  assert.ok(emitter.source.gain.gain.value < 0.8 * (1 / 3) + 1e-9);
+
+  emitter.play();
+  assert.equal(emitter.source.state, "playing");
+  emitter.dispose();
+});
+
+test("PositionalEmitter without panner support still reports math, never fake-connected", () => {
+  const context = {
+    state: "running",
+    destination: new MockNode() as unknown as AudioNode,
+    currentTime: 0,
+    resume: async () => {},
+    suspend: async () => {},
+    close: async () => {},
+    createGain: () => new MockGain() as unknown as GainNode,
+    createBufferSource: () => new MockSource() as unknown as AudioBufferSourceNode,
+    createPanner: () => {
+      throw new Error("panner unavailable");
+    },
+    createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
+    createConvolver: () => new MockNode() as unknown as ConvolverNode
+  };
+  const emitter = new PositionalEmitter({ context, position: { x: 9, y: 0, z: 0 } });
+  assert.equal(emitter.connected, false);
+  const evidence = emitter.update({ x: 0, y: 0, z: 0 });
+  assert.ok(Math.abs(evidence.attenuationGain - 1 / 9) < 1e-9);
+  emitter.dispose();
+});
+
+test("createGameMixer builds music/sfx/voice buses with dialogue ducking", () => {
+  const { context } = createSpatialContext();
+  const mixer = createGameMixer(context, { musicVolume: 0.8 });
+  assert.equal(mixer.evidence().music.volume, 0.8);
+  assert.equal(mixer.evidence().duckingActive, false);
+
+  const ducked = mixer.setDialogueActive(true);
+  assert.equal(ducked.duckingActive, true);
+  assert.ok(Math.abs(ducked.music.volume - 0.8 * 0.35) < 1e-9);
+  // sfx/voice are untouched by dialogue ducking.
+  assert.equal(ducked.sfx.volume, 0.9);
+  assert.equal(ducked.voice.volume, 1);
+
+  const restored = mixer.setDialogueActive(false);
+  assert.equal(restored.duckingActive, false);
+  assert.ok(Math.abs(restored.music.volume - 0.8) < 1e-9);
+
+  const muted = mixer.setMuted(true);
+  assert.equal(muted.muted, true);
+  mixer.setMuted(false);
+  assert.throws(() => mixer.setDuckingRatio(2), /between 0 and 1/);
+});
+
+test("focus policy ducks on blur and restores on focus without a DOM", () => {
+  const { context } = createSpatialContext();
+  const mixer = createGameMixer(context);
+  const listeners = new Map<string, Array<() => void>>();
+  const target = {
+    addEventListener: (type: string, listener: () => void) => {
+      listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+    },
+    removeEventListener: (type: string, listener: () => void) => {
+      listeners.set(type, (listeners.get(type) ?? []).filter((entry) => entry !== listener));
+    }
+  };
+  const detach = attachFocusPolicy(target, mixer, "duck-on-blur");
+  for (const listener of listeners.get("blur") ?? []) listener();
+  assert.equal(mixer.evidence().duckingActive, true);
+  for (const listener of listeners.get("focus") ?? []) listener();
+  assert.equal(mixer.evidence().duckingActive, false);
+  detach();
+  assert.equal(listeners.get("blur")?.length ?? 0, 0);
+  assert.equal(mixer.evidence().duckingActive, false);
+});
+
+test("FootstepPlayer round-robins per surface and falls back honestly", () => {
+  const player = new FootstepPlayer({ surfaces: { grass: ["step-grass-a", "step-grass-b"] }, fallback: "step-default" });
+  assert.equal(player.onPlant({ foot: "left", surface: "grass" }), "step-grass-a");
+  assert.equal(player.onPlant({ foot: "right", surface: "grass" }), "step-grass-b");
+  assert.equal(player.onPlant({ foot: "left", surface: "grass" }), "step-grass-a");
+  assert.equal(player.onPlant({ foot: "left", surface: "metal" }), "step-default");
+  assert.equal(player.evidence().plantCount, 4);
+  assert.equal(player.evidence().lastCue, "step-default");
+
+  const bare = new FootstepPlayer();
+  assert.equal(bare.onPlant({ foot: "left", surface: "grass" }), null);
+  assert.equal(bare.evidence().plantCount, 0);
+  assert.throws(() => bare.registerSurface("empty", []), /at least one cue/);
 });

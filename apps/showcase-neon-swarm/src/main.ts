@@ -505,7 +505,7 @@ const courierPulseEmitterNode = primitives.box({
 // courier (not a primitive-only hero or weapon claim): the live pulse query
 // remains the source of damage truth, while this barrel, cyan receiver, and
 // event-driven muzzle marker show which way the player is firing.
-const courierPulseCarbineNode = primitives.box({
+const courierPulseRifleNode = primitives.box({
   name: "courier pulse carbine",
   size: [0.18, 0.16, 0.92],
   material: material.pbr({
@@ -519,7 +519,7 @@ const courierPulseCarbineNode = primitives.box({
 }).runtime(game.runtimeNode("neon-courier-pulse-carbine", {
   tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
 }));
-const courierPulseCarbineCoreNode = primitives.box({
+const courierPulseRifleCoreNode = primitives.box({
   name: "courier pulse carbine core",
   size: [0.1, 0.1, 0.34],
   material: material.emissive({
@@ -560,8 +560,8 @@ appScene.addMany([
   courierCoreNode,
   courierShoulderFrameNode,
   courierPulseEmitterNode,
-  courierPulseCarbineNode,
-  courierPulseCarbineCoreNode,
+  courierPulseRifleNode,
+  courierPulseRifleCoreNode,
   courierPulseMuzzleRingNode,
   courierPulseMuzzleFlashNode
 ]);
@@ -810,12 +810,13 @@ for (const edge of ["north", "south", "east", "west"] as const) {
 // mesh, so a full archetype remains one native instanced draw submission.
 // +Z is the facing direction used by swarm.yaw.
 function createFacetedThreatGeometry(elite: boolean) {
+  // Elites read top-down, so they need a threat silhouette with a nose, swept
+  // wings, and a notched tail — the earlier 16-point flower ring rendered as
+  // flat confetti petals at review distance. Grunts keep their pebble disc.
   const ring: Array<[number, number]> = elite
     ? [
-      [0, 1.05], [0.28, 0.72], [0.82, 0.86], [1.08, 0.48], [0.72, 0.16],
-      [1.12, -0.18], [0.7, -0.58], [0.24, -0.46], [0, -1.02],
-      [-0.24, -0.46], [-0.7, -0.58], [-1.12, -0.18], [-0.72, 0.16],
-      [-1.08, 0.48], [-0.82, 0.86], [-0.28, 0.72]
+      [0, 1.0], [0.35, 0.35], [0.9, 0.1], [0.4, -0.12], [0.25, -0.7],
+      [0, -0.45], [-0.25, -0.7], [-0.4, -0.12], [-0.9, 0.1], [-0.35, 0.35]
     ]
     : [
       [0, 0.92], [0.34, 0.68], [0.5, 0.2], [0.42, -0.52],
@@ -850,7 +851,7 @@ appScene.add(
     name: "thorn moth swarm grunt pool",
     transforms: swarm.gruntTransforms,
     colors: swarm.gruntColors,
-    material: material.pbr({ color: "#315f57", emissive: "#73b99d", emissiveIntensity: 0.18, roughness: 0.48, metallic: 0.12 })
+    material: material.pbr({ color: "#315f57", emissive: "#73b99d", emissiveIntensity: 0.5, roughness: 0.48, metallic: 0.12 })
   })
 );
 
@@ -859,7 +860,7 @@ appScene.add(
     name: "crown hunter elite pool",
     transforms: swarm.eliteTransforms,
     colors: swarm.eliteColors,
-    material: material.pbr({ color: "#d9bca9", emissive: "#f5c3ab", emissiveIntensity: 0.18, roughness: 0.42, metallic: 0.12 })
+    material: material.pbr({ color: "#7a1f3d", emissive: "#ff4d7e", emissiveIntensity: 0.55, roughness: 0.42, metallic: 0.12 })
   })
 );
 

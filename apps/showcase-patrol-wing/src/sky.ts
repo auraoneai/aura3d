@@ -302,7 +302,14 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
   // CSS backdrop. They give the chase frame a horizon and a readable flight
   // scale while leaving the island/rings available as the gameplay truth.
   const cloudMaterial = material.glass({ name: "coastal cloud bank", color: "#dce5e4", opacity: 0.24, transmission: 0.08, roughness: 0.46 });
-  for (const [index, cloud] of (reviewCapture ? [] : [
+  // The review lens keeps three far banks so the judged chase frame retains a
+  // horizon and flight-scale cue; the full seven-bank set stays default-only
+  // to bound review-capture overdraw.
+  for (const [index, cloud] of (reviewCapture ? [
+    [3, 12.5, -38, 6.0, 0.82, 2.9],
+    [22, 9.5, -27, 4.2, 0.64, 2.0],
+    [-34, 12, -52, 5.8, 0.74, 2.7]
+  ] : [
     [-18, 10.5, -30, 5.2, 0.72, 2.4],
     [3, 12.5, -38, 6.0, 0.82, 2.9],
     [22, 9.5, -27, 4.2, 0.64, 2.0],
@@ -523,6 +530,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
             name: `ring-${gate.index} glow`,
             color: "#20323a",
             emissive: RING_ACTIVE_COLOR,
+            emissiveIntensity: 1.7,
             roughness: 0.35,
             opacity: 0.92
           })
@@ -534,6 +542,31 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
         .toJSON()
     );
   }
+
+  // Objective beacon shaft: a broad translucent light column that always marks
+  // the next gate. Ring tori read poorly at island distance in the wide lens
+  // and crop to arcs in the chase lens; the shaft stays legible in both. It
+  // is repositioned (never duplicated) by applyRingMaterials in main.ts and
+  // hidden once the course is complete. Renderer-owned world geometry only.
+  const firstGate = RING_GATES[0]!;
+  nodes.push(
+    primitives
+      .cylinder({
+        name: "next-ring beacon",
+        material: material.emissive({
+          name: "next-ring beacon glow",
+          color: "#3a2a12",
+          emissive: RING_ACTIVE_COLOR,
+          emissiveIntensity: 2.2,
+          roughness: 0.4,
+          opacity: 0.55
+        })
+      })
+      .position(firstGate.position[0], firstGate.position[1] + 5, firstGate.position[2])
+      .scale([2.2, 14, 2.2])
+      .runtime({ id: "next-ring-beacon", tags: ["objective-beacon"] })
+      .toJSON()
+  );
 
   // The compact combat lens keeps enough typed rocks and trees to establish
   // scale and a flight canyon, but each placement remains snapped to the same

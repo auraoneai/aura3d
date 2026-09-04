@@ -133,6 +133,17 @@ test("gallery shift hall renders, patrols walk, cones overlay, and the review se
       "the patrol must walk its route"
     ).toBeGreaterThan(0.5);
 
+    // The open-foyer spawn sits inside the patrol sightlines, so observing the
+    // full patrol loop legitimately fills the alarm and ends the floor caught.
+    // Restart via the documented R floor-reset control so each review section
+    // below starts from a fresh playing floor; no assertion is weakened.
+    await page.keyboard.press("KeyR");
+    await page.waitForFunction(
+      () => (window as unknown as { __GALLERY_SHIFT_EVIDENCE__?: { status?: string; state?: string } }).__GALLERY_SHIFT_EVIDENCE__?.state === "playing",
+      undefined,
+      { timeout: 30_000 }
+    );
+
     // Mid-sneak view: toggle sneak and walk up the hall.
     await page.keyboard.press("ShiftLeft");
     await page.keyboard.down("KeyW");

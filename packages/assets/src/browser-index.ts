@@ -10,11 +10,12 @@ export type { AssetLoadOptions, AssetManagerOptions } from "./AssetManager";
 export { AssetRegistry } from "./AssetRegistry";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type {
   GLTFAsset,
+  GLTFAnimationPointerBinding,
   GLTFCameraAsset,
   GLTFClearcoatMaterialExtension,
   GLTFDracoDecodeDescriptor,
@@ -24,9 +25,11 @@ export type {
   GLTFImageAsset,
   GLTFLightAsset,
   GLTFAccessorLoadProfileEntry,
+  GLTFJson,
   GLTFLoaderDiagnostics,
   GLTFLoaderLoadProfileDiagnostics,
   GLTFLoaderOptions,
+  GLTFMaterialVariantSceneState,
   GLTFMaterialAsset,
   GLTFMaterialVariantAsset,
   GLTFMaterialVariantMappingAsset,
@@ -89,6 +92,10 @@ export type {
   GLTFSceneAnimationCloneSampleResult,
   GLTFSceneAnimationCloneSamplerSnapshot,
   GLTFSceneAnimationClipBindingDiagnostics,
+  GLTFootPlantingApplyResult,
+  GLTFootPlantingConfig,
+  GLTFootPlantingLegConfig,
+  GLTFSceneAnimationMaterialSink,
   GLTFSceneAnimationMixerOptions,
   GLTFSceneAnimationPlayOptions,
   GLTFSceneAnimationMixerSnapshot,
@@ -201,7 +208,17 @@ export type {
   ProductionGLTFRenderPipeline,
   ProductionGLTFRenderPipelineOptions
 } from "./asset-corpus/ProductionGLTFRenderPipeline";
+export { evaluateDistancePrioritizedMipResidency, evaluateTextureStreamingBudget } from "./TextureStreaming";
+export type {
+  TextureStreamingBudget,
+  TextureStreamingCandidate,
+  TextureStreamingDecision,
+  TextureStreamingResidency,
+  TextureStreamingResident
+} from "./TextureStreaming";
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
+export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
+export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 export type {
   GLTFDracoAttribute,
   GLTFDracoDecoderBuffer,

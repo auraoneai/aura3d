@@ -56,6 +56,12 @@ const reducedMotion =
 // unchanged for players and for the interaction/evidence specs.
 const visualReviewCapture =
   typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+// Candidate Meshy reactor-deck arena shell. Opt-in only via ?arena=candidate so
+// the release-validated V11 shell stays the default for players, specs, and
+// the review capture. Non-colliding presentation; lanes, chart, collisions,
+// and scoring remain route-authoritative.
+const pulseArenaCandidateEnabled =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("arena") === "candidate";
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- authored presentation constants ---------------------------------------
@@ -359,6 +365,18 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
   .position(0, 0, 0)
   .runtime(game.runtimeNode("pulse-finale-arena-shell", {
     tags: ["finale-arena", "typed-world", "release-probed", "renderer-owned", "non-colliding"]
+  }));
+// Meshy candidate reactor-deck arena (quality: candidate). Same enclosure
+// footprint class as the V11 shell it swaps with; shown only when
+// ?arena=candidate is set.
+const finaleArenaCandidateBuilder = model(assets.pulseArena, {
+  name: "pulse candidate reactor deck arena",
+  role: "primaryWorld",
+  targetMaxDimension: 11.556,
+})
+  .position(0, 0, 0)
+  .runtime(game.runtimeNode("pulse-finale-arena-candidate", {
+    tags: ["finale-arena", "typed-world", "candidate", "renderer-owned", "non-colliding"]
   }));
 const finaleProjectileBuilders = Array.from({ length: 18 }, (_, index) =>
   primitives.cylinder({
@@ -1374,7 +1392,7 @@ const app = createAuraApp("#app", {
       ...reviewActorContourBuilders,
       finaleBeaconBuilder,
       ...finaleShieldVaneBuilders,
-      finaleArenaShellBuilder,
+      ...(pulseArenaCandidateEnabled ? [finaleArenaCandidateBuilder] : [finaleArenaShellBuilder]),
       finaleTerminalSentryBuilder,
       ...finaleProjectileBuilders,
       ...reviewProjectileBuilders,
@@ -1463,10 +1481,10 @@ const app = createAuraApp("#app", {
       // black silhouettes under the reactor roof. These are local scene lights
       // (not material replacement or CSS) and are bounded to the review lens.
       lights.directional({ name: "review actor neutral fill", color: "#d9f4ff", intensity: visualReviewCapture ? 1.18 : 0 }).position(-2.4, 6.8, 7.4),
-      lights.point({ name: "review runner cyan fill", color: "#48e5ff", intensity: visualReviewCapture ? 1.45 : 0 }).position(-1.72, 1.72, 2.65),
+      lights.point({ name: "review runner cyan fill", color: "#48e5ff", intensity: visualReviewCapture ? 1.45 : 1.15 }).position(-1.72, 1.72, 2.65),
       lights.point({ name: "review sentry warm fill", color: "#ffc18f", intensity: visualReviewCapture ? 1.72 : 0 }).position(1.48, 2.10, -1.25),
-      lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity: visualReviewCapture ? 0.84 : 0 }).position(-0.7, 1.72, 3.2),
-      lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity: visualReviewCapture ? 0.82 : 0 }).position(-1.5, 0.42, 1.25),
+      lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity: visualReviewCapture ? 0.84 : 0.7 }).position(-0.7, 1.72, 3.2),
+      lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity: visualReviewCapture ? 0.82 : 0.7 }).position(-1.5, 0.42, 1.25),
       lights.point({ name: "terminal amber detail key", color: "#ffbd72", intensity: visualReviewCapture ? 1.28 : 0 }).position(1.5, 2.0, -3.2),
       lights.point({ name: "terminal magenta rim", color: "#ff72ac", intensity: visualReviewCapture ? 0.94 : 0 }).position(-1.2, 1.62, -4.0),
       lights.point({ name: "deck cyan depth practical", color: "#39d9f2", intensity: visualReviewCapture ? 0.88 : 0 }).position(-2.85, 1.8, -1.85),
@@ -1540,12 +1558,35 @@ const app = createAuraApp("#app", {
         .position(0, 0.2, PULSE_PLAYER_Z + 0.3)
         .scale([0.22, 0.22, 0.22])
         .runtime(game.runtimeNode("pulse-ship-glow", { tags: ["player", "craft"] })),
+      // Hover light: a soft cyan pool on the deck under the craft. The craft
+      // floats with a real gap above the track, and without a grounding cue
+      // the gap reads as a compositing error. Renderer-owned dressing only.
+      primitives.plane({
+        name: "pulse ship hover light",
+        material: material.emissive({
+          name: "hover light cyan",
+          color: "#22d3ee",
+          emissive: "#22d3ee",
+          emissiveIntensity: 0.45,
+          opacity: 0.12
+        })
+      })
+        // Tucked fully under the hull silhouette: the chase camera sits low
+        // and close behind the craft, so any pool peeking toward the viewer
+        // foreshortens into a solid-looking ramp. Only its rim escapes the
+        // hull occlusion, which reads as bounce light rather than geometry.
+        .position(0, -0.03, PULSE_PLAYER_Z - 0.1)
+        .scale([0.5, 0.35, 1])
+        .rotate(-1.5708, 0, 0)
+        .runtime(game.runtimeNode("pulse-ship-hover-light", {
+          tags: ["player", "craft", "hover-cue", "renderer-owned", "non-colliding", "alpha-blended"]
+        })),
       ...gateSlotBuilders,
       ...sparkBuilders
     ])
     .camera(camera.perspective(visualReviewCapture
       ? { position: [0.10, 2.72, 6.55], target: [0.02, 0.92, -2.02], fov: 47 }
-      : { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 56 })),
+      : { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 })),
   diagnostics: false,
   autoStart: true
 });
@@ -1567,9 +1608,10 @@ const fogPulse = requireHandle("pulse-fog-pulse");
 const hitFlash = requireHandle("pulse-hit-flash");
 const shipBody = requireHandle("pulse-ship-body");
 const shipGlow = requireHandle("pulse-ship-glow");
+const shipHoverLight = requireHandle("pulse-ship-hover-light");
 const finaleBeacon = requireHandle("pulse-finale-beacon");
 const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHandle("pulse-finale-shield-vane-" + index));
-const finaleArenaShell = requireHandle("pulse-finale-arena-shell");
+const finaleArenaShell = requireHandle(pulseArenaCandidateEnabled ? "pulse-finale-arena-candidate" : "pulse-finale-arena-shell");
 const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
 const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHandle("pulse-finale-projectile-" + index));
 // The authored basalt arena is finale dressing, not a permanent spawn-room
@@ -2059,16 +2101,31 @@ function renderWorld(dt: number): void {
   // The evidence lens keeps the complete typed pod inside frame. Its full
   // silhouette is the player-side anchor for the terminal exchange; only its
   // route-local transform changes, never the player collider or controls.
+  // Stand scale 0.72 (from 0.8): with the raised ride height the old size
+  // filled the frame and the pods still grazed the paint. Slide narrows and
+  // drops its center so the canopy (top ~0.36) ducks the 0.38 high-gate bar
+  // instead of clipping 0.14 into it as before.
   const craftScale = visualReviewCapture
     ? [1.30, playerState.sliding ? 0.82 : 1.30, 1.30] as const
-    : playerState.sliding ? [0.76, 0.54, 0.76] as const : [0.8, 0.8, 0.8] as const;
+    : playerState.sliding ? [0.68, 0.36, 0.72] as const : [0.72, 0.72, 0.72] as const;
   const reviewPlayerX = visualReviewCapture ? playerState.x - 1.38 : playerState.x;
   const reviewPlayerZ = visualReviewCapture ? 0.42 : PULSE_PLAYER_Z;
-  shipBody.setPosition(reviewPlayerX, playerState.y + 0.34, reviewPlayerZ)
+  // The craft floats: its visual center sits +0.50 above the gameplay feet so
+  // the turbine pods clear the deck with a visible hover gap (the old +0.34
+  // put the pod undersides exactly on the track paint). Gameplay feet, jump
+  // apex, and gate overlap math are untouched; only the presentation rides
+  // higher, and the raised top (0.74) now matches the 0.72 stand collider.
+  // Sliding drops the center to +0.24 so the squashed canopy ducks under the
+  // high-gate bar instead of riding through it.
+  const craftCenterY = playerState.sliding && !visualReviewCapture ? 0.24 : 0.50;
+  shipBody.setPosition(reviewPlayerX, playerState.y + craftCenterY, reviewPlayerZ)
     .setScale(craftScale)
     .setRotation(0, visualReviewCapture ? 0.12 : 0, laneBank);
-  shipGlow.setPosition(reviewPlayerX, playerState.y + 0.44, reviewPlayerZ + 0.34)
+  shipGlow.setPosition(reviewPlayerX, playerState.y + craftCenterY + 0.10, reviewPlayerZ + 0.34)
     .setScale(visualReviewCapture ? [0.14, 0.14, 0.14] : [0.34, 0.34, 0.34]);
+  // The hover pool stays on the deck under the craft: it tracks lane x (and
+  // the review island offset) but never lifts with jumps.
+  shipHoverLight.setPosition(reviewPlayerX, visualReviewCapture ? 0.0 : -0.03, reviewPlayerZ - 0.1);
   const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
   shipBody.setVisible(!blinking);
   shipGlow.setVisible(!blinking);

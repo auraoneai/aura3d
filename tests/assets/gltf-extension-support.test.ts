@@ -41,9 +41,10 @@ describe("glTF extension support matrix", () => {
     ]));
     expect(GLTF_PARSED_WITH_LIMITS_EXTENSION_NAMES).toEqual(expect.arrayContaining([
       "KHR_materials_transmission",
-      "KHR_materials_variants"
+      "KHR_materials_variants",
+      "KHR_animation_pointer"
     ]));
-    expect(GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES).toEqual(["KHR_animation_pointer"]);
+    expect(GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES).toEqual([]);
     expect(GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES).not.toContain("KHR_materials_transmission");
   });
 
@@ -59,11 +60,11 @@ describe("glTF extension support matrix", () => {
       "KHR_draco_mesh_compression",
       "KHR_texture_basisu"
     ]);
-    expect(evaluation.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_materials_transmission"]);
-    expect(evaluation.diagnosticOnly.map((entry) => entry.name)).toEqual(["KHR_animation_pointer"]);
+    expect(evaluation.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_animation_pointer", "KHR_materials_transmission"]);
+    expect(evaluation.diagnosticOnly.map((entry) => entry.name)).toEqual([]);
     expect(evaluation.unsupportedUsed).toEqual(["EXT_vendor_unknown"]);
-    expect(evaluation.unsupportedRequired).toEqual(["EXT_vendor_required", "KHR_animation_pointer"]);
-    expect(evaluation.notAcceptedUsed).toEqual(["EXT_vendor_unknown", "KHR_animation_pointer"]);
+    expect(evaluation.unsupportedRequired).toEqual(["EXT_vendor_required"]);
+    expect(evaluation.notAcceptedUsed).toEqual(["EXT_vendor_unknown"]);
   });
 
   it("carries extension support buckets through GLTFLoader diagnostics and inspection-safe JSON", async () => {
@@ -82,14 +83,14 @@ describe("glTF extension support matrix", () => {
     const asset = await new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
 
     expect(asset.loaderDiagnostics.extensionSupport.schemaVersion).toBe("gltf-extension-support");
-    expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_materials_transmission"]);
-    expect(asset.loaderDiagnostics.extensionSupport.diagnosticOnly.map((entry) => entry.name)).toEqual(["KHR_animation_pointer"]);
+    expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_animation_pointer", "KHR_materials_transmission"]);
+    expect(asset.loaderDiagnostics.extensionSupport.diagnosticOnly.map((entry) => entry.name)).toEqual([]);
     expect(asset.loaderDiagnostics.extensionSupport.unsupportedUsed).toEqual(["EXT_vendor_unknown"]);
-    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_vendor_unknown", "KHR_animation_pointer"]);
+    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_vendor_unknown"]);
     expect(asset.toJSON().loaderDiagnostics.extensionSupport).toEqual(asset.loaderDiagnostics.extensionSupport);
   });
 
-  it("rejects required diagnostic-only extensions instead of treating them as full support", async () => {
+  it("accepts required KHR_animation_pointer at the parsed-with-limits tier (subset binds, remainder diagnosed)", async () => {
     const gltf = {
       asset: { version: "2.0" },
       extensionsUsed: ["KHR_animation_pointer"],
@@ -98,8 +99,11 @@ describe("glTF extension support matrix", () => {
       scene: 0
     };
 
-    await expect(new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext()))
-      .rejects.toThrow(/Unsupported required glTF extensions: KHR_animation_pointer/);
+    const asset = await new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
+    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual([]);
+    expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual([
+      "KHR_animation_pointer"
+    ]);
   });
 
   it("keeps the HDR loader diagnostic honest about decode parity", () => {

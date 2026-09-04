@@ -217,7 +217,7 @@ describe("renderer visual pipeline report", () => {
       executionMode: "renderer-owned-pass-chain-readback",
       nativePresentation: false,
       usesReadback: true,
-      missingInputs: ["motion-blur:velocity", "ssao:depth"],
+      missingInputs: ["motion-blur:velocity", "ssao:depth", "ssao:normals"],
       readbackPassNames: ["bloom", "tone-mapping", "motion-blur", "ssao"],
       clarityWarnings: [
         "bloom-noise-risk threshold=0.42 intensity=0.7 radius=4",
@@ -225,6 +225,7 @@ describe("renderer visual pipeline report", () => {
       ]
     });
     expect(report.warnings.join(" ")).toContain("ssao:depth");
+    expect(report.warnings.join(" ")).toContain("ssao:normals");
     expect(report.warnings.join(" ")).toContain("motion-blur:velocity");
     expect(report.postprocess.clarityWarnings.join(" ")).toContain("bloom-noise-risk");
   });

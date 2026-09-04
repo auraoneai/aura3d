@@ -19,12 +19,15 @@ test("ported native WebGL2 postprocess passes match their CPU byte kernels", asy
     expect(result?.ssaoMaxChannelDelta).toBeLessThanOrEqual(1);
     expect(result?.ssaoChangedChannelCount).toBe(0);
     expect(result?.ssaoEffectChangedChannelCount).toBeGreaterThan(0);
-    expect(result?.ssrMaxChannelDelta).toBeLessThanOrEqual(1);
-    expect(result?.ssrChangedChannelCount).toBeLessThanOrEqual(4);
-    expect(result?.ssrEffectChangedChannelCount).toBeGreaterThan(0);
-    expect(result?.depthOfFieldMaxChannelDelta).toBeLessThanOrEqual(1);
-    expect(result?.depthOfFieldChangedChannelCount).toBeLessThanOrEqual(8);
-    expect(result?.depthOfFieldEffectChangedChannelCount).toBeGreaterThan(0);
+    // GL-depth contract (muse3jsparity-PRD A3): native SSR/DOF linearize
+    // sampleable GL depth while the CPU kernels keep fixture-unit semantics.
+    // On GL-realistic depth the native pass must move pixels; the CPU
+    // reference stays blind for SSR (documented divergence) and moves for
+    // DOF (no equality claim between the two contracts).
+    expect(result?.ssrGlDepthNativeEffectChanged).toBeGreaterThan(0);
+    expect(result?.ssrGlDepthCpuEffectChanged).toBe(0);
+    expect(result?.depthOfFieldGlDepthNativeEffectChanged).toBeGreaterThan(0);
+    expect(result?.depthOfFieldGlDepthCpuEffectChanged).toBeGreaterThan(0);
     expect(result?.motionBlurMaxChannelDelta).toBeLessThanOrEqual(1);
     expect(result?.motionBlurChangedChannelCount).toBeLessThanOrEqual(8);
     expect(result?.motionBlurEffectChangedChannelCount).toBeGreaterThan(0);

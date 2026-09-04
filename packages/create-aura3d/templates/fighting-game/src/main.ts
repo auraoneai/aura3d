@@ -4,10 +4,13 @@ import {
   animationLayer,
   createFighterAnimationController,
   createFighterNode,
+  FIGHTER_CERTIFIED_CLIP,
   isLoopingFighterClip,
+  PLAYER_FIGHTER_ASSET,
   publicAssetInstructions,
   REQUIRED_FIGHTER_ASSETS,
   resolveTypedFighterAssets,
+  RIVAL_FIGHTER_ASSET,
   type FighterClip
 } from "./game/fighters";
 import { heavyMove, lightMove, specialMove } from "./game/moves";
@@ -129,8 +132,10 @@ const inputOptions = {
 const arena = scene()
   .background("#10071c")
   .addMany(fightingStage.nodes)
-  .add(createFighterNode("player", "playerFighter", "Player fighter", playerStart, 1, "#45f5bb", typedFighterAssets))
-  .add(createFighterNode("rival", "rivalFighter", "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets))
+  // The creature rival renders roughly twice the player height at scale 1, so
+  // it mounts slightly under scale to share the frame with the humanoid player.
+  .add(createFighterNode("player", PLAYER_FIGHTER_ASSET, "Player fighter", playerStart, 1, "#45f5bb", typedFighterAssets, 1))
+  .add(createFighterNode("rival", RIVAL_FIGHTER_ASSET, "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets, 0.75))
   .addMany([
     effects.bloom({ intensity: 0.32 }),
     lights.studio({ intensity: 1.15 }),
@@ -183,8 +188,8 @@ const director = game.cameraDirector({
 });
 const playerNode = app.nodes.require("player");
 const rivalNode = app.nodes.require("rival");
-const playerAnimation = createFighterAnimationController("player", typedFighterAssets.playerFighter);
-const rivalAnimation = createFighterAnimationController("rival", typedFighterAssets.rivalFighter);
+const playerAnimation = createFighterAnimationController("player", typedFighterAssets[PLAYER_FIGHTER_ASSET]);
+const rivalAnimation = createFighterAnimationController("rival", typedFighterAssets[RIVAL_FIGHTER_ASSET]);
 
 playerAnimation.bindRuntimeNode(playerNode, { defaultClipId: "idle", fallbackClipId: "idle" });
 rivalAnimation.bindRuntimeNode(rivalNode, { defaultClipId: "idle", fallbackClipId: "idle" });
@@ -207,6 +212,18 @@ gameWindow.__AURA3D_GAME_SOURCE__ = {
   typedAssetPattern: "src/aura-assets.ts",
   typedAssetKeys: REQUIRED_FIGHTER_ASSETS,
   missingAssets: missingFighterAssets,
+  heroAssets: {
+    player: {
+      assetId: assets[PLAYER_FIGHTER_ASSET]?.id ?? PLAYER_FIGHTER_ASSET,
+      url: assets[PLAYER_FIGHTER_ASSET]?.url,
+      certifiedClip: FIGHTER_CERTIFIED_CLIP.player
+    },
+    rival: {
+      assetId: assets[RIVAL_FIGHTER_ASSET]?.id ?? RIVAL_FIGHTER_ASSET,
+      url: assets[RIVAL_FIGHTER_ASSET]?.url,
+      certifiedClip: FIGHTER_CERTIFIED_CLIP.rival
+    }
+  },
   addAssets: publicAssetInstructions,
   touchControls: touchLayout,
   readiness: routeReadiness

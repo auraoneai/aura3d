@@ -560,6 +560,21 @@ function buildScene() {
       })
         .position(0, -10, 0)
         .runtime(defenderPresentationHandle),
+      // Meshy decimated shooter candidate (50k tris, Blender COLLAPSE). It stays
+      // hidden until independent review promotes it; the typed bind keeps the
+      // admitted asset hash-bound to this route without changing the broadcast
+      // silhouette.
+      model(assets.rooftopShooterMeshyV1, {
+        name: "shooter-meshy-candidate-mesh",
+        role: "primaryCharacter",
+        castShadow: false,
+        receiveShadow: false,
+        scaleMode: "world",
+        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
+        visible: false
+      })
+        .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
+        .runtime(game.runtimeNode("shooter-meshy-candidate", { tags: ["candidate-asset", "meshy-decimated"] })),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)
         .scale([0.7, 0.035, 0.38])
@@ -1571,7 +1586,7 @@ function publishEvidence(): RooftopBucketsEvidence {
     simulationOwner: "route-local authored deterministic ballistic integrator; composed rim/board/defender regions are not Rapier bodies",
     predictionPointCount: AIM_POINT_COUNT,
     primaryAssets: ["assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
-    presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender"],
+    presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender", "assets.rooftopShooterMeshyV1"],
     systems: ROUTE_SYSTEMS,
     controls: ROUTE_CONTROLS,
     claimBoundary: "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",

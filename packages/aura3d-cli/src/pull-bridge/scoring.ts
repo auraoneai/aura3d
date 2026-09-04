@@ -161,7 +161,15 @@ function expectsTextureEvidence(asset: AuraCanonicalAsset, query: string): boole
   return role === "character" || role === "vehicle" || role === "track" || role === "world" || role === "environment" || role === "product" || role === "weapon";
 }
 
-function inferQueryRole(query: string, profile?: CliAssetSearchProfile): AuraAssetIntendedRole | undefined {
+/**
+ * Infer the intended catalog role from a free-text query (and, when set, the
+ * caller's explicit profile).
+ *
+ * Exported so the resolve-constraint and rank seams can apply the same
+ * character/vehicle reading instead of letting those queries fall through to
+ * the unfiltered `general` path while scoring alone knows the role.
+ */
+export function inferQueryRole(query: string, profile?: CliAssetSearchProfile): AuraAssetIntendedRole | undefined {
   if (profile === "fighting-character" || profile === "animation-character") return "character";
   const text = query.toLowerCase();
   if (/\b(character|avatar|runner|humanoid|person|hero|fighter|enemy|npc)\b/.test(text)) return "character";

@@ -33,6 +33,7 @@ import { PhysicsDebugDraw, Shape, type PhysicsShape } from "@aura3d/physics/solv
 import type {
   CollisionEvent,
   Contact,
+  PhysicsBackendSelection,
   PhysicsWorld,
   RaycastHit,
   RigidBody
@@ -149,11 +150,28 @@ export interface AuraDebugLine {
   readonly category?: string | undefined;
 }
 
+export interface AuraDebugBudgetTelemetry {
+  /** Lines the world would have emitted without a budget. */
+  readonly requested: number;
+  /** Lines actually returned. */
+  readonly emitted: number;
+  /** Lines dropped by the budget (`requested - emitted`). */
+  readonly dropped: number;
+  /** True when a `maxLines` budget was applied. */
+  readonly budgeted: boolean;
+  /** Emitted line counts by category. */
+  readonly byCategory: Readonly<Record<string, number>>;
+}
+
 export interface AuraPhysicsDebugOptions {
+  /** Master toggle: `false` returns zero lines. Defaults to on. */
+  readonly enabled?: boolean | undefined;
   readonly contacts?: boolean | undefined;
   readonly joints?: boolean | undefined;
   readonly sleeping?: boolean | undefined;
   readonly normalLength?: number | undefined;
+  /** Line budget: truncate the tail and report drops in `debugBudget()`. */
+  readonly maxLines?: number | undefined;
   /** Rays to draw. The world cannot know about a query you ran, so pass it here. */
   readonly raycasts?: readonly {
     readonly origin: PhysicsVec3;
@@ -187,6 +205,15 @@ export interface AuraBodySpec {
   readonly sensor?: boolean | undefined;
   /** Layer name, resolved against the layers passed to {@link createPhysicsRuntime}. */
   readonly layer?: string | undefined;
+  /**
+   * Hull vertices, `convexHull` only. The H1 root promotion for convex colliders:
+   * Rapier (the sole physical-simulation owner) builds a native convex hull from
+   * these points, so a crate chunk or rock needs no deep import to collide as one
+   * solid volume rather than a box approximation.
+   */
+  readonly vertices?: readonly PhysicsVec3[] | undefined;
+  /** Hull triangle indices, `convexHull` only. Must reference `vertices`. */
+  readonly indices?: readonly number[] | undefined;
 }
 
 export interface AuraPhysicsRuntime {
@@ -218,6 +245,12 @@ export interface AuraPhysicsRuntime {
    * plain line segments so a route can render them with whatever it already uses.
    */
   debugLines(options?: AuraPhysicsDebugOptions): readonly AuraDebugLine[];
+  /**
+   * Budget telemetry for the debug overlay: requested/emitted/dropped counts plus
+   * per-category breakdown, so a route can prove the overlay stayed within budget.
+   * Honors the same `enabled` toggle and `maxLines` budget as `debugLines`.
+   */
+  debugBudget(options?: AuraPhysicsDebugOptions): AuraDebugBudgetTelemetry;
   /** Every collision, including resting contacts. */
   onCollision(handler: AuraCollisionHandler): AuraUnsubscribe;
   /** Collisions involving one named node, which is what gameplay code usually wants. */
@@ -228,6 +261,16 @@ export interface AuraPhysicsRuntime {
   /** Gravity currently applied by the world. */
   gravity(): PhysicsVec3;
   setGravity(gravity: PhysicsVec3): void;
+  /**
+   * Backend provenance (H1 promotion): the sole physical-simulation owner
+   * (`rapier`), the adaptive-substep CCD selection with per-step telemetry
+   * (`lastSubSteps`, `lastMaxMotion`, limit flags), and the repeatability seed
+   * when the world was constructed with one.
+   *
+   * Read this after `step()` to confirm the tunnel-guard actually engaged on a
+   * fast-body frame rather than assuming it did.
+   */
+  backend(): PhysicsBackendSelection;
 }
 
 /**
@@ -282,8 +325,16 @@ export function collisionMaskFor(layers: AuraCollisionLayers, name: string): num
   return mask;
 }
 
-/** Joint kinds this runtime exposes. Every one is backed by a solver constraint. */
-export type AuraJointKind = "fixed" | "hinge" | "slider" | "ball-socket" | "spring" | "motorised-hinge";
+/**
+ * Joint kinds this runtime exposes. Every one is backed by a solver constraint.
+ *
+ * `revolute` is the Rapier-native name for `hinge`; `prismatic` is the
+ * Rapier-native name for `slider`. Both spellings build the same native joint,
+ * so the H1 fixed/revolute/prismatic promotion reads identically at root and in
+ * the adapter. Authored arcade motion (vehicles, characters) stays non-physical
+ * and never routes through these joints.
+ */
+export type AuraJointKind = "fixed" | "hinge" | "revolute" | "slider" | "prismatic" | "ball-socket" | "spring" | "motorised-hinge";
 
 export interface AuraJointSpec {
   readonly kind: AuraJointKind;
@@ -332,7 +383,7 @@ export function validateJointSpec(spec: AuraJointSpec): void {
   if (spec.limits) {
     const [lower, upper] = spec.limits;
     if (!(lower <= upper)) throw new Error("Joint limits must be ordered [lower, upper].");
-    if (spec.kind !== "hinge" && spec.kind !== "motorised-hinge") {
+    if (spec.kind !== "hinge" && spec.kind !== "revolute" && spec.kind !== "motorised-hinge") {
       throw new Error(`Joint limits are only supported on hinge joints, not "${spec.kind}".`);
     }
   }
@@ -354,7 +405,7 @@ export function validateJointSpec(spec: AuraJointSpec): void {
  * | `box` | yes | yes | yes |
  * | `sphere` | yes | yes | yes |
  * | `capsule` | yes | yes | yes |
- * | `convexHull` | yes | yes | no — needs vertices |
+ * | `convexHull` | yes | yes | with spec `vertices` + `indices` (not dimensions-alone) |
  * | `mesh` | no | yes | no — needs geometry |
  * | `plane` | no | yes | yes |
  * | `heightfield` | no | yes | no — needs a height grid |
@@ -386,7 +437,14 @@ export const AURA_DYNAMIC_CAPABLE_SHAPES: readonly AuraColliderShape[] = [
 
 export const AURA_STATIC_ONLY_SHAPES: readonly AuraColliderShape[] = ["plane", "mesh", "heightfield"];
 
-/** Shapes {@link AuraPhysicsRuntime.createBody} can build from dimensions alone. */
+/**
+ * Shapes {@link AuraPhysicsRuntime.createBody} can build from dimensions alone.
+ *
+ * `convexHull` is deliberately absent: it is supported from a spec (H1 promotion)
+ * but needs `vertices` + `indices`, so a bare `{ shape: "convexHull" }` throws an
+ * actionable error instead of silently becoming a box. The existing
+ * "refuses a shape it cannot build from a spec" contract pins this list.
+ */
 export const AURA_SPEC_CONSTRUCTIBLE_SHAPES: readonly AuraColliderShape[] = [
   "box",
   "sphere",
@@ -786,8 +844,11 @@ export function createPhysicsRuntime(
         (bodyA.position[1] + bodyB.position[1]) / 2,
         (bodyA.position[2] + bodyB.position[2]) / 2
       ] as const);
+      // Normalize the Rapier-native spellings onto the constraint types: `revolute`
+      // builds the same native joint as `hinge`, `prismatic` the same as `slider`.
+      const constraintType = spec.kind === "revolute" ? "hinge" : spec.kind === "prismatic" ? "slider" : spec.kind;
       const constraint = world.createConstraint({
-        type: spec.kind,
+        type: constraintType,
         bodyA,
         bodyB,
         localAnchorA: [anchor[0] - bodyA.position[0], anchor[1] - bodyA.position[1], anchor[2] - bodyA.position[2]],
@@ -860,22 +921,7 @@ export function createPhysicsRuntime(
       return () => triggerExitHandlers.delete(handler);
     },
     debugLines(debugOptions) {
-      const lines = debugDraw.buildLines(world, {
-        ...(debugOptions?.contacts === undefined ? {} : { contacts: debugOptions.contacts }),
-        ...(debugOptions?.joints === undefined ? {} : { joints: debugOptions.joints }),
-        ...(debugOptions?.sleeping === undefined ? {} : { sleeping: debugOptions.sleeping }),
-        ...(debugOptions?.normalLength === undefined ? {} : { normalLength: debugOptions.normalLength }),
-        ...(debugOptions?.raycasts === undefined
-          ? {}
-          : {
-            raycasts: debugOptions.raycasts.map((ray) => ({
-              origin: [...ray.origin] as [number, number, number],
-              direction: [...ray.direction] as [number, number, number],
-              distance: ray.distance,
-              ...(ray.hit === undefined ? {} : { hit: ray.hit })
-            }))
-          })
-      });
+      const lines = debugDraw.buildLines(world, toDebugDrawOptions(debugOptions));
       return lines.map((line) => ({
         from: [...line.from] as unknown as PhysicsVec3,
         to: [...line.to] as unknown as PhysicsVec3,
@@ -883,15 +929,46 @@ export function createPhysicsRuntime(
         category: line.category
       }));
     },
+    debugBudget(debugOptions) {
+      return debugDraw.buildLinesBudgeted(world, toDebugDrawOptions(debugOptions)).telemetry;
+    },
     gravity() {
       return [...world.gravity] as unknown as PhysicsVec3;
     },
     setGravity(gravity) {
       world.setGravity([...gravity]);
+    },
+    backend() {
+      return world.snapshot().backend;
     }
   };
 
   return runtime;
+}
+
+/**
+ * Translate public debug options onto the solverless draw options, preserving the
+ * previous exact behavior when the new toggle/budget fields are absent.
+ */
+function toDebugDrawOptions(debugOptions: AuraPhysicsDebugOptions | undefined) {
+  return {
+    ...(debugOptions?.enabled === undefined ? {} : { enabled: debugOptions.enabled }),
+    ...(debugOptions?.contacts === undefined ? {} : { contacts: debugOptions.contacts }),
+    ...(debugOptions?.joints === undefined ? {} : { joints: debugOptions.joints }),
+    ...(debugOptions?.sleeping === undefined ? {} : { sleeping: debugOptions.sleeping }),
+    ...(debugOptions?.normalLength === undefined ? {} : { normalLength: debugOptions.normalLength }),
+    ...(debugOptions?.maxLines === undefined ? {} : { maxLines: debugOptions.maxLines }),
+    ...(debugOptions?.raycasts === undefined
+      ? {}
+      : {
+        raycasts: debugOptions.raycasts.map((ray) => ({
+          origin: [...ray.origin] as [number, number, number],
+          direction: [...ray.direction] as [number, number, number],
+          distance: ray.distance,
+          ...(ray.hit === undefined ? {} : { hit: ray.hit })
+        }))
+      })
+  };
 }
 
 /**
@@ -911,9 +988,21 @@ function toPhysicsShape(shape: AuraColliderShape, spec: AuraBodySpec): PhysicsSh
       return Shape.plane([0, 1, 0], spec.position?.[1] ?? 0);
     case "box":
       return Shape.box(half[0], half[1], half[2]);
+    case "convexHull": {
+      if (!spec.vertices || !spec.indices) {
+        throw new Error(
+          'Shape "convexHull" needs `vertices` and `indices` on the body spec. ' +
+          "Pass at least four vertices plus one or more complete triangles."
+        );
+      }
+      return Shape.convexHull(
+        spec.vertices.map((vertex) => [vertex[0], vertex[1], vertex[2]] as const),
+        [...spec.indices]
+      );
+    }
     default:
-      // `convexHull`, `trimesh` and `heightfield` need geometry the declaration form does
-      // not carry. Failing loudly beats silently substituting a box, which would look like
+      // `mesh` and `heightfield` need geometry the declaration form does not
+      // carry. Failing loudly beats silently substituting a box, which would look like
       // a physics bug rather than a missing argument.
       throw new Error(
         `Shape "${shape}" cannot be created from a body spec because it needs geometry. ` +

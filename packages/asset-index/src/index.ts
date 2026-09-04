@@ -33,7 +33,7 @@ export type {
 } from "./SourceAdapter.js";
 export { defaultFetchJson } from "./SourceAdapter.js";
 
-export { scoreAsset, matchesConstraints } from "./ranking.js";
+export { scoreAsset, matchesConstraints, SCREENED_HERO_RANK_BONUS } from "./ranking.js";
 export { evaluateGameAssetProfile, gameAssetProfileDefinitions, getGameAssetProfileDefinition } from "./game-profile.js";
 export type { GameAssetProfile, GameAssetProfileDefinition, GameAssetProfileEvaluation, GameAssetProfileScoringRules } from "./game-profile.js";
 export {

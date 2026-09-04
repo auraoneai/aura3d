@@ -1,6 +1,12 @@
 import { Geometry } from "./Geometry";
 import { PBRMaterial } from "./PBRMaterial";
+import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
 import type { RenderItem } from "./ForwardPass";
+import type {
+  GlassRefractionCaptureResult,
+  PlanarReflectionCaptureResult
+} from "./PlanarReflection";
+import type { WaterReflectionRefractionResult } from "./OceanSurface";
 import {
   createReflectionProbe,
   type CubeCameraReflectionCapture,
@@ -27,6 +33,15 @@ export interface ReflectionSurfaceOptions {
   readonly intensity?: number;
   readonly probe?: ReflectionProbe;
   readonly capture?: CubeCameraReflectionCapture;
+  /**
+   * Live B4 renderer bindings. A status is promoted to `implemented` ONLY
+   * when the matching binding is present: `mirror` backs planar-reflector
+   * and reflective-floor, `glass` backs refractor-glass, `water` backs
+   * water-refraction. Screen-space reflection has no binding by design.
+   */
+  readonly mirror?: PlanarReflectionCaptureResult;
+  readonly glass?: GlassRefractionCaptureResult;
+  readonly water?: WaterReflectionRefractionResult;
 }
 
 export interface ReflectionSurfaceReport {
@@ -46,6 +61,9 @@ export interface ReflectionSurface {
   readonly item?: RenderItem;
   readonly probe?: ReflectionProbe;
   readonly capture?: CubeCameraReflectionCapture;
+  readonly mirror?: PlanarReflectionCaptureResult;
+  readonly glass?: GlassRefractionCaptureResult;
+  readonly water?: WaterReflectionRefractionResult;
   readonly report: ReflectionSurfaceReport;
 }
 
@@ -54,7 +72,52 @@ export function createReflectionSurface(options: ReflectionSurfaceOptions): Refl
   const kind = options.kind;
   if (!isReflectionSurfaceKind(kind)) throw new Error(`Unsupported reflection surface kind: ${String(kind)}`);
 
+  if (kind === "planar-reflector" && options.mirror) {
+    const mirror = options.mirror;
+    const size = validateSize(options.size ?? [12, 12]);
+    const y = finite(options.y ?? mirror.planeY, "reflection surface y");
+    requirePlaneMatch(y, mirror.planeY, options.id);
+    return {
+      id: options.id,
+      kind,
+      mirror,
+      item: {
+        geometry: Geometry.texturedCube(1),
+        material: new TexturedUnlitMaterial({
+          name: `${options.id} planar mirror`,
+          texture: mirror.texture
+        }),
+        modelMatrix: scaleTranslate([0, y, 0], [size[0], 0.035, size[1]]),
+        includeInAutoFrame: false,
+        label: `${options.id} planar mirror sampling live mirror target r${mirror.revision}`
+      },
+      report: report(options.id, kind, "implemented", "live mirror render target with oblique near-plane clip binding", true, [], [])
+    };
+  }
+
   if (kind === "reflective-floor") {
+    if (options.mirror) {
+      const mirror = options.mirror;
+      const size = validateSize(options.size ?? [12, 12]);
+      const y = finite(options.y ?? mirror.planeY, "reflection surface y");
+      requirePlaneMatch(y, mirror.planeY, options.id);
+      return {
+        id: options.id,
+        kind,
+        mirror,
+        item: {
+          geometry: Geometry.texturedCube(1),
+          material: new TexturedUnlitMaterial({
+            name: `${options.id} reflective floor mirror`,
+            texture: mirror.texture
+          }),
+          modelMatrix: scaleTranslate([0, y, 0], [size[0], 0.035, size[1]]),
+          includeInAutoFrame: false,
+          label: `${options.id} reflective floor sampling live mirror target r${mirror.revision}`
+        },
+        report: report(options.id, kind, "implemented", "reflective floor sampling the live planar mirror target (first consumer)", true, [], [])
+      };
+    }
     const size = validateSize(options.size ?? [12, 12]);
     const y = finite(options.y ?? -0.02, "reflection surface y");
     const roughness = unit(options.roughness ?? 0.22, "reflection surface roughness");
@@ -112,11 +175,62 @@ export function createReflectionSurface(options: ReflectionSurfaceOptions): Refl
     };
   }
 
+  if (kind === "refractor-glass" && options.glass) {
+    const glass = options.glass;
+    const size = validateSize(options.size ?? [3, 2]);
+    const y = finite(options.y ?? 1, "reflection surface y");
+    return {
+      id: options.id,
+      kind,
+      glass,
+      item: {
+        geometry: Geometry.texturedCube(1),
+        material: new TexturedUnlitMaterial({
+          name: `${options.id} refractor glass`,
+          texture: glass.texture
+        }),
+        modelMatrix: scaleTranslate([0, y, 0], [size[0], size[1], 0.05]),
+        includeInAutoFrame: false,
+        label: `${options.id} glass sampling live thickness-tinted refraction target r${glass.revision}`
+      },
+      report: report(options.id, kind, "implemented", "live scene-color target with thickness-tinted, roughness-blurred refraction binding", true, [], [])
+    };
+  }
+
+  if (kind === "water-refraction" && options.water) {
+    const water = options.water;
+    const size = validateSize(options.size ?? [12, 12]);
+    const y = finite(options.y ?? water.planeY, "reflection surface y");
+    requirePlaneMatch(y, water.planeY, options.id);
+    return {
+      id: options.id,
+      kind,
+      water,
+      item: {
+        geometry: Geometry.texturedCube(1),
+        material: new TexturedUnlitMaterial({
+          name: `${options.id} water composite`,
+          texture: water.texture
+        }),
+        modelMatrix: scaleTranslate([0, y, 0], [size[0], 0.02, size[1]]),
+        includeInAutoFrame: false,
+        label: `${options.id} water sampling live reflection/refraction composite r${water.revision}`
+      },
+      report: report(options.id, kind, "implemented", "live reflection + refraction targets with depth-tinted composite binding", true, [], [])
+    };
+  }
+
   return {
     id: options.id,
     kind,
     report: report(options.id, kind, "unsupported", "claim-boundary descriptor", false, rendererRequirements(kind), unsupportedReflectionRequests(kind))
   };
+}
+
+function requirePlaneMatch(y: number, planeY: number, id: string): void {
+  if (Math.abs(y - planeY) > 1e-6) {
+    throw new Error(`Reflection surface ${id} plane y=${y} does not match the bound capture plane y=${planeY}.`);
+  }
 }
 
 export function createReflectiveFloorSurface(

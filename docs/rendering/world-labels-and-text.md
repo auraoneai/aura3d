@@ -1,16 +1,42 @@
-# World labels and mesh text
+# World labels, SDF text, and mesh text
 
-Aura3D exposes two different text surfaces. They are not interchangeable.
+Aura3D exposes three different text surfaces. They are not interchangeable,
+and diagnostics counts them separately (N4 inventory rule — a DOM count must
+never masquerade as 3D proof).
 
+- `ui.*` draws **accessible DOM UI** (screen-reader text, buttons, HUD copy).
+  UI-only, never 3D proof.
 - `labels.*` draws **world-anchored DOM UI**. It is accessible, scales crisply,
   and can hide or dim when its subject is occluded. It is not lit by scene
-  lights and is not 3D mesh geometry.
+  lights and is not 3D mesh geometry. Placement is proven per route by
+  placed-vs-offscreen telemetry (`collectLabelTelemetry`), computed from the
+  projected set — not from counting nodes.
+- SDF text draws **lit/occluded in-world quads** from a signed-distance atlas
+  (`packages/rendering/src/SdfText.ts`, G1). Same uppercase alphanumeric
+  catalog as `text3D`, with outline/glow/drop-shadow styling, LOD fade, and
+  dim/hide occlusion handling. Pixel proof is `textPixelBacked`, which is true
+  only when the atlas is uploaded AND quads were submitted this frame.
+  Sampling is a deterministic bake (`rasterizeSdfTextLabelImage`: per-texel
+  atlas coverage through `sampleSdfCoverage`, once per mount — not a
+  per-pixel shader SDF loop); the production bridge uploads the label image
+  as a native texture and submits one quad per glyph, replaying the recorded
+  `text3D(backend: "sdf")` descriptor fail-closed with the extruded mesh as
+  the diagnosed fallback. LOD fade and occlusion resolve per frame from the
+  live camera distance and the shared scene occlusion test
+  (`resolveSdfTextFrameOpacity`, surfaced as `lastOpacity`). Browser proof:
+  `tests/browser/root-sdf-text-g1.spec.ts` + `tests/reports/root-sdf-text-g1.json`
+  (SDF-vs-mesh delta, 0.35 dim, hide-policy unbacking, far fade to 0).
 - `text3D(...)` builds **extruded triangle meshes** that share the same
   transform, depth test, PBR material, and lighting path as other root custom
   geometry. It is a small built-in glyph catalog, not a font stack.
 
-Both come from `@aura3d/engine`. Do not import `three`, `TextGeometry`, or
-`troika-three-text` in public routes.
+`labels.*`, `ui.*`, and `text3D` come from `@aura3d/engine`. Do not import
+`three`, `TextGeometry`, or `troika-three-text` in public routes.
+
+Explicit 2.1 decision: NO `CSS2DRenderer` / `CSS3DRenderer` parity. Game
+annotation needs are covered by world-anchored labels + SDF text; the
+three-compat migration lab (`CSS2D_CSS3D_MANUAL_MAP`) documents the manual
+mapping for importers. Revisit only with a named customer workload.
 
 ## World labels
 
@@ -115,9 +141,22 @@ Root evidence: `pnpm renderer:geometry-instancing-lod-text` and
 | Need | Use | Do not use |
 | --- | --- | --- |
 | Callout, measurement, hotspot, HUD | `labels.*` | `text3D` |
-| Selectable / screen-reader text | `labels.*` (DOM) | mesh text |
+| Selectable / screen-reader text | `labels.*` / `ui.*` (DOM) | mesh or SDF text |
+| Lit in-world signage with outline/glow, LOD fade | SDF text (G1) | DOM labels |
 | Title card, signage, extruded logo from the built-in catalog | `text3D` | DOM labels |
-| Arbitrary typeface, CJK, or paragraph layout | not shipped | either API as a substitute |
+| Arbitrary typeface, CJK, or paragraph layout | not shipped | any API as a substitute |
+
+## Per-route proof (N4 contract)
+
+The N4 gate is `placesLabels`: a route that declares labels but places none
+on screen fails route-health. The gate reads `AuraDiagnostics.labels` (the
+projected set) joined with scene nodes via `collectLabelTelemetry`
+(`packages/engine/src/agent-api/LabelTelemetry.ts`, unit-proven), reporting
+placed-vs-offscreen counts broken down by HUD / annotation / tick roles.
+Collision avoidance is tuned per role: disabled for HUD, tight gap for ticks,
+default gap for annotations. Engine-bridge + route-health-tool wiring is
+specified as code hunks in the phase report (the bridge file is owned by a
+sibling phase) — this doc describes the contract, not landed wiring.
 
 World labels must not be relabeled as 3D text in public claims. Mesh text must
 not be claimed as a general font renderer.

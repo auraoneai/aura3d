@@ -137,6 +137,67 @@ export function createShadowAtlasLayout(requests: readonly ShadowAtlasRequest[],
   };
 }
 
+export interface ShadowAtlasPlanRequest extends ShadowAtlasRequest {
+  /** Lower priority lights are shed first when the atlas overflows. */
+  readonly priority?: number;
+}
+
+export interface ShadowAtlasFallback {
+  readonly id: string;
+  readonly requestedSize: number;
+  readonly reason: string;
+}
+
+export interface ShadowAtlasPlan {
+  readonly atlasSize: number;
+  readonly allocations: readonly ShadowAtlasAllocation[];
+  /** Requested texel area divided by atlas area; >1 means over budget. */
+  readonly utilization: number;
+  readonly fallbacks: readonly ShadowAtlasFallback[];
+  readonly warnings: readonly string[];
+}
+
+/**
+ * B1 atlas packing with graceful over-budget fallback (same policy as B5):
+ * directional + spot + point requests share one atlas; overflow sheds the
+ * lowest-priority requests with a warning instead of throwing, and
+ * `utilization` still reports the requested load.
+ */
+export function createShadowAtlasPlan(requests: readonly ShadowAtlasPlanRequest[], atlasSize: number): ShadowAtlasPlan {
+  if (!Number.isInteger(atlasSize) || atlasSize <= 0) {
+    throw new RangeError("Shadow atlas size must be a positive integer");
+  }
+  const ranked = requests.map((request) => {
+    if (!request.id.trim()) throw new Error("Shadow atlas request id is required");
+    if (!Number.isInteger(request.size) || request.size <= 0) throw new RangeError("Shadow atlas request size must be a positive integer");
+    if (request.size > atlasSize) {
+      throw new RangeError(`Shadow atlas request ${request.id} size cannot exceed atlas size`);
+    }
+    return request;
+  }).sort((left, right) => (right.priority ?? 0) - (left.priority ?? 0) || right.size - left.size || left.id.localeCompare(right.id));
+  const requestedArea = ranked.reduce((sum, request) => sum + request.size * request.size, 0);
+  const utilization = Number((requestedArea / (atlasSize * atlasSize)).toFixed(6));
+  const fallbacks: ShadowAtlasFallback[] = [];
+  const warnings: string[] = [];
+  let admitted = ranked;
+  while (admitted.length > 0) {
+    try {
+      const layout = createShadowAtlasLayout(admitted, atlasSize);
+      return { atlasSize, allocations: layout.allocations, utilization, fallbacks, warnings };
+    } catch {
+      const shed = admitted[admitted.length - 1]!;
+      admitted = admitted.slice(0, -1);
+      fallbacks.push({
+        id: shed.id,
+        requestedSize: shed.size,
+        reason: `Over-budget shadow atlas: shed lowest-priority request ${shed.id} (${shed.size}px); light falls back to unshadowed with a warning.`
+      });
+      warnings.push(`Shadow atlas over budget: ${shed.id} shed (priority ${shed.priority ?? 0}); light renders unshadowed.`);
+    }
+  }
+  return { atlasSize, allocations: [], utilization, fallbacks, warnings };
+}
+
 export function createShadowFilterKernel(options: Pick<ShadowMapOptions, "filter" | "pcfRadius" | "pcfSamples" | "pcfDistribution"> = {}): ShadowFilterKernel {
   const mode = options.filter ?? "none";
   if (mode !== "none" && mode !== "pcf") {

@@ -51,6 +51,34 @@ export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from 
 export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
+export {
+  PositionalEmitter,
+  applyOcclusionToGain,
+  computeDistanceAttenuation,
+  computeDopplerShift,
+  occlusionLowpassFrequency,
+  resolveOcclusion
+} from "./PositionalEmitter";
+export type {
+  DistanceAttenuationModel,
+  DistanceAttenuationOptions,
+  DopplerOptions,
+  OcclusionHook,
+  PositionalEmitterEvidence,
+  PositionalEmitterOptions
+} from "./PositionalEmitter";
+export { attachFocusPolicy, createGameMixer, focusHandlersForMixer } from "./GameMixer";
+export type {
+  FocusEventTargetLike,
+  FocusMutePolicy,
+  FocusPolicyHandlers,
+  GameMixer,
+  GameMixerBusLevel,
+  GameMixerEvidence,
+  GameMixerOptions
+} from "./GameMixer";
+export { FootstepPlayer } from "./Footsteps";
+export type { FootId, FootPlantEvent, FootstepEvidence, FootstepPlayerOptions } from "./Footsteps";
 export { AudioSystem } from "./AudioSystem";
 export { SceneAudioBridge } from "./SceneAudioBridge";
 export type { SceneAudioSourceBinding } from "./SceneAudioBridge";

@@ -15,6 +15,14 @@
 - `createStaticExportHtml`, `createStaticExportRuntime`: package-owned static export shell/runtime generation for checked editor-authored project smoke tests without loading the editor app.
 - `CreateNodeCommand`, `DeleteNodeCommand`, `SetPropertyCommand`, `TransformCommand`: built-in editor commands.
 
+## Platform Scope
+
+Browser-only. `@aura3d/editor-runtime` has no Desktop shell, no Tauri
+integration, and no native file-system or windowing bindings: the bounded root
+surface (`editor.undo/redo/gizmo/playMode/outliner`, capability label
+`editor`) runs inside the browser `createAuraApp` page. A Desktop/Tauri editor
+is roadmap, not a current capability — do not claim it.
+
 ## Verification
 
 Editor selection, command rollback, undo/redo, inspector edits, material variant workflow selection, picking, play-mode snapshots, translate/rotate/scale gizmos, keyboard shortcut contracts, browser editor pixels, editor public-runtime boundary enforcement, editor-authored provenance, and package-owned static export runtime generation are covered by `tests/unit/workstream5-input-audio-scripting-editor.test.ts`, `packages/editor-runtime/tests/editor-runtime.test.ts`, `tests/unit/editor/project-serializer.test.ts`, `tests/unit/editor/public-runtime-boundary.test.ts`, `tests/integration/editor-authored-project-replay.test.ts`, `tests/browser/editor-browser.spec.ts`, and `tests/visual/editor-app-pixels.spec.ts`. Export and import consistency is covered by `pnpm verify:exports` and `pnpm verify:imports`.

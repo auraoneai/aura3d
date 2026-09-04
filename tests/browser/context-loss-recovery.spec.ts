@@ -74,6 +74,11 @@ test.describe("context loss recovery", () => {
     expect(probe.deviceLost).toBe(false);
     expect(probe.resourcesRecreated, JSON.stringify(probe)).toBe(true);
     expect(probe.sceneRestored).toBe(true);
+    // U2: every allocated class proves re-creation — backend, draw calls, and
+    // ready-asset counts match across the loss boundary; the contract stays
+    // app-owned pause + explicit remount.
+    expect(probe.inventoryMatch, JSON.stringify(probe.resourceInventory)).toBe(true);
+    expect(probe.recoveryContract).toBe("app-owned-pause_explicit-remount");
     expect(probe.afterRestore.litPixels).toBeGreaterThan(1_000);
     expect(probe.afterRestore.pixelHash).toBe(probe.beforeLoss.pixelHash);
     expect(probe.afterRestore.runtimeMounted).toBe(true);
@@ -89,6 +94,7 @@ test.describe("context loss recovery", () => {
         && probe.recoveryCount >= 1
         && probe.pausedOnLoss
         && probe.resourcesRecreated
+        && probe.inventoryMatch
         && probe.sceneRestored
         && probe.afterRestore.litPixels > 1_000
         && probe.afterRestore.pixelHash === probe.beforeLoss.pixelHash
@@ -126,6 +132,12 @@ declare global {
       readonly recoveryCount: number;
       readonly deviceLost: boolean;
       readonly pausedOnLoss: boolean;
+      readonly resourceInventory: {
+        readonly before: { readonly backend: string; readonly drawCalls: number; readonly runtimeMounted: boolean; readonly readyAssets: number } | null;
+        readonly after: { readonly backend: string; readonly drawCalls: number; readonly runtimeMounted: boolean; readonly readyAssets: number } | null;
+      };
+      readonly inventoryMatch: boolean;
+      readonly recoveryContract: "app-owned-pause_explicit-remount";
       readonly resourcesRecreated: boolean;
       readonly sceneRestored: boolean;
       readonly runtimeBackend: string | undefined;

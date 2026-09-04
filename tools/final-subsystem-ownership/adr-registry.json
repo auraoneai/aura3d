@@ -27,6 +27,14 @@
     "packages/physics/src/FightingCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
     "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
     "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
-    "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md"
+    "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
+    "packages/aura3d-cli/src/meshy/admission.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/evidence.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/import.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/index.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/metadata.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/provenance.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/thumbnail.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md",
+    "packages/aura3d-cli/src/meshy/validation.ts": "docs/architecture/adr/0012-external-generated-asset-import-stays-cli-owned.md"
   }
 }

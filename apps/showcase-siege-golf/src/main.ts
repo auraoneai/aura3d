@@ -681,9 +681,11 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
         // Pull the horizon down and lower the lens slightly so the authored
         // fairway owns the frame instead of leaving a third of the capture as
         // empty mint sky.  The tee, obstacle and target remain inside the
-        // validated route bounds; only presentation changes here.
-        position: [4.75, 4.28, 9.2],
-        target: [0.12, 0.68, -2.62],
+        // validated route bounds; only presentation changes here. The lens
+        // sits further back than the first framing so the 0.16 m typed ball
+        // reads as equipment on the tee rather than a boulder in the lens.
+        position: [5.4, 5.2, 11.4],
+        target: [0.1, 0.4, -3.0],
         fov: 42
       });
     }
@@ -842,16 +844,20 @@ Object.defineProperty(siegeWindow, "__AURA3D_COMPOSITION_PROBE__", {
       // close camera, so the diff measured a full-viewport camera jump instead
       // of the golf ball. Subject isolation must change only the hero node;
       // camera and world stay byte-for-byte identical across both renders.
+      // The 2.4x composition scale applies only on the default path: review
+      // captures (?capture=review, used by thumbnails) share this seam and
+      // must keep the regulation-sized ball, otherwise the thumbnail inherits
+      // a boulder that exists nowhere in play.
       resolveHandles();
       syncVisuals();
-      dynamicHandles.get("golf-ball")?.setScale(COMPOSITION_BALL_SCALE);
+      dynamicHandles.get("golf-ball")?.setScale(visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);
       app.step(0);
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
       const ball = dynamicHandles.get("golf-ball");
       ball?.setVisible(true);
-      ball?.setScale(suppressed ? 0.0001 : COMPOSITION_BALL_SCALE);
+      ball?.setScale(suppressed ? 0.0001 : visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);
       app.step(0);
     }
   },

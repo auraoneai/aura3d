@@ -14,6 +14,8 @@ export interface AudioSourceOptions {
 export class AudioSource {
   clip?: AudioClip;
   loop: boolean;
+  /** Playback-rate multiplier; the positional emitter drives this for doppler. Defaults to 1. */
+  playbackRate = 1;
   readonly gain: GainNode;
 
   private stateRef: AudioSourceState = "idle";
@@ -42,6 +44,11 @@ export class AudioSource {
     const source = this.options.context.createBufferSource();
     source.buffer = this.clip.buffer;
     source.loop = this.loop;
+    // Guarded: minimal mock contexts in unit tests may not implement playbackRate.
+    const rate = (source as unknown as { playbackRate?: { value: number } }).playbackRate;
+    if (rate && Number.isFinite(this.playbackRate) && this.playbackRate > 0) {
+      rate.value = this.playbackRate;
+    }
     source.connect(this.gain);
     const offset = Math.min(this.offsetSeconds, Math.max(0, this.clip.duration - Number.EPSILON));
     if (this.spriteDuration === undefined) source.start(when, offset);

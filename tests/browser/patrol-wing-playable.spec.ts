@@ -58,7 +58,7 @@ test("Patrol Wing proves flight, patrol, combat, failure, landing, touch, pause,
     await page.goto(`${server.origin}/apps/showcase-patrol-wing/?capture=review`, { waitUntil: "commit", timeout: 120_000 }); await waitReady(page);
     const boot = await evidence(page);
     expect(boot.state).toBe("preflight"); expect(boot.flightMode).toBe("authored-arcade"); expect(boot.backend).toBe("rapier");
-    expect(boot.primaryAssets).toEqual(["assets.patrolWingPlane", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"]);
+    expect(boot.primaryAssets).toEqual(["assets.patrolAircraftMeshy", "assets.patrolWingDroneA", "assets.patrolWingDroneB", "assets.patrolWingPadBeacon"]);
     expect(boot.claimBoundary).toContain("no aerodynamic");
     await capture(page, "takeoff", artifacts); scenarios.push("takeoff", "bounded-arcade-claim");
 

@@ -78,6 +78,26 @@ ACES intent at exposure 1 and sRGB display output. These tests do not establish
 OpenEXR support, physical Rayleigh/Mie atmosphere, global illumination, or
 universal output equivalence.
 
+Root IBL (muse3jsparity-PRD B3, 2026-09-03): `environments.hdri({ texture })`
+resolves an authored Radiance `.hdr` post-mount through the HDR to cubemap to
+GGX-prefilter to BRDF-LUT chain and reports `iblPixelBacked` only after the
+live lighting object swaps; first frames render the honest studio procedural
+fallback, and fetch/parse failures keep the fallback with a warning. The
+optional `reflectionTexture` second probe owns the sharper specular mips while
+`texture` keeps the roughest diffuse mip (reflection versus illumination at
+the resource level; no second sampler is claimed). Per-material
+`envMapIntensity` scales the sampled env-map response through the
+`u_materialEnvironmentIntensity` uniform the forward pass never overwrites
+(WebGL2; the experimental WebGPU path is unchanged). Evidence:
+`tests/browser/root-ibl-b3.spec.ts`,
+`tests/reports/root-ibl-b3/b3-probe.json` (HDRI-vs-procedural delta 0.6121,
+dual-probe delta 0.0327, envMapIntensity 0-vs-2 delta 0.0346),
+`tests/unit/rendering/dual-probe-environment.test.ts`,
+`tests/unit/rendering/environment-preset-pack.test.ts` (indoor/outdoor/night
+pack with measured exposure normalization; rebuilt normalized PMREM rows keep
+real SSIM >= 0.975 against frozen references). EXR remains explicitly
+unsupported.
+
 ## Contact-shadow terminology
 
 Aura3D's product contact path is described as a **bounded receiver-contact

@@ -40,6 +40,7 @@ export class FlyControls {
   protected readonly controlledCamera: FlyCameraLike;
   protected pointerLookSpeed: number;
   private delegate: FlyControlsDelegate;
+  private disposed = false;
 
   constructor(camera?: FlyCameraLike, options: FlyControlsOptions = {}) {
     this.movementSpeed = options.movementSpeed ?? 1;
@@ -59,6 +60,11 @@ export class FlyControls {
   /** True for every instance: even the no-camera form owns a delegated state camera. */
   get isDelegated(): true {
     return true;
+  }
+
+  /** True after `dispose()`; every mutator is a no-op past this point. */
+  get isDisposed(): boolean {
+    return this.disposed;
   }
 
   get enabled(): boolean {
@@ -106,12 +112,24 @@ export class FlyControls {
     );
   }
 
+  /**
+   * F1-standard disposal: disables the instance and delegates (the input
+   * engine owns zero DOM listeners — motion arrives via snapshots — so
+   * nothing can leak). Idempotent; mutators stay no-ops afterwards even if
+   * `enabled` is reassigned.
+   */
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.state.enabled = false;
     this.delegate.dispose();
   }
 
   protected replaceDelegate(delegate: FlyControlsDelegate, pointerLookSpeed: number): void {
+    if (this.disposed) {
+      delegate.dispose();
+      return;
+    }
     this.delegate.dispose();
     this.delegate = delegate;
     this.pointerLookSpeed = pointerLookSpeed;
@@ -122,7 +140,7 @@ export class FlyControls {
   protected lookByRadians(deltaYaw: number, deltaPitch: number, button: number): void {
     assertFinite(deltaYaw, "yaw delta");
     assertFinite(deltaPitch, "pitch delta");
-    if (!this.state.enabled || (deltaYaw === 0 && deltaPitch === 0)) return;
+    if (this.disposed || !this.state.enabled || (deltaYaw === 0 && deltaPitch === 0)) return;
     const speed = Math.abs(this.pointerLookSpeed) > Number.EPSILON ? this.pointerLookSpeed : 1;
     this.updateDelegate(
       new InputSnapshot({
@@ -138,7 +156,7 @@ export class FlyControls {
 
   private updateDelegate(snapshot: InputSnapshot, deltaSeconds: number): void {
     assertFinite(deltaSeconds, "delta seconds");
-    if (!this.state.enabled) return;
+    if (this.disposed || !this.state.enabled) return;
     this.delegate.enabled = true;
     this.delegate.update(snapshot, deltaSeconds);
     this.syncState();

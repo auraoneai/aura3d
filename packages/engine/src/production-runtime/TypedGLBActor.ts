@@ -2,11 +2,34 @@ import {
   createGLTFSceneAnimationRuntime,
   loadProductionGLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult,
+  type GLTFSceneAnimationMaterialSink,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
   type GLTFScenePose,
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
+
+/**
+ * Builds the `resolveAnimationMaterial` adapter for animation-pointer `material:*` tracks from
+ * a loaded pipeline's material library. First material wins on duplicate names; the library
+ * keeps names individually addressable, so pointer tracks always drive a deterministic sink.
+ */
+export function createGLBActorAnimationMaterialResolver(
+  resources: { readonly materialLibrary?: ReadonlyMap<string, Material> | undefined }
+): (name: string) => GLTFSceneAnimationMaterialSink | undefined {
+  const byName = new Map<string, Material>();
+  for (const material of resources.materialLibrary?.values() ?? []) {
+    if (!byName.has(material.name)) byName.set(material.name, material);
+  }
+  return (name: string) => {
+    const material = byName.get(name);
+    if (!material) return undefined;
+    return {
+      name: material.name,
+      setAnimationParameter: (parameter, value) => material.setParameter(parameter, value)
+    };
+  };
+}
 import {
   consolidateStaticMeshes,
   type Material,
@@ -63,6 +86,11 @@ export interface TypedGLBActorTintOptions {
 
 export interface TypedGLBActorTransformOptions {
   readonly modelMatrix?: Mat4 | readonly number[];
+  /**
+   * Wrinkle-detail intensity (E1 face-rig demo), resolved engine-side from live morph
+   * weights. Stamped onto every render item; shaders without `u_wrinkleStrength` ignore it.
+   */
+  readonly wrinkleStrength?: number;
 }
 
 export interface TypedGLBActorEvidence {
@@ -82,6 +110,13 @@ export interface TypedGLBActorEvidence {
   readonly lastClip: string | null;
   readonly lastTracksApplied: number;
   readonly lastTransformTracksApplied: number;
+  readonly lastMaterialTracksApplied: number;
+  readonly lastLightTracksApplied: number;
+  readonly lastFootPlantingGroundedFeet: number;
+  readonly lastFootPlantingTargetError: number;
+  readonly lastFootPlantingHipOffset: number;
+  readonly lastFootPlantingMissingLegs: readonly string[];
+  readonly footPlantingConfigured: boolean;
   readonly lastSkinningPalettesUpdated: number;
   readonly lastMorphApply?: TypedGLBActorMorphApplyResult;
   readonly missingTargets: readonly string[];
@@ -152,7 +187,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   const animation = createGLTFSceneAnimationRuntime({
     scene: pipeline.resources.scene,
     clips: pipeline.asset.animations,
-    asset: pipeline.asset
+    asset: pipeline.asset,
+    resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(pipeline.resources)
   });
   let lastApply: GLTFSceneAnimationApplyResult | null = null;
   let lastMorphApply: TypedGLBActorMorphApplyResult | undefined;
@@ -215,9 +251,11 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
 }
 
 export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: TypedGLBActorTransformOptions = {}): RenderItem[] {
+  const wrinkle = options.wrinkleStrength === undefined ? {} : { wrinkleStrength: options.wrinkleStrength };
   if (actor.staticRenderItems) {
     return actor.staticRenderItems.map((item) => ({
       ...item,
+      ...wrinkle,
       modelMatrix: resolveTypedGLBActorModelMatrix(
         (item.modelMatrix ?? identityMat4()) as Mat4,
         options.modelMatrix
@@ -237,6 +275,7 @@ export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: T
       label: `${actor.id}:${node.name}:${renderable.geometry}`,
       geometry,
       material,
+      ...wrinkle,
       modelMatrix: resolveTypedGLBActorModelMatrix(node.transform.worldMatrix, options.modelMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
       ...(renderable.instanceTransforms ? { instanceTransforms: renderable.instanceTransforms } : {}),
@@ -312,6 +351,13 @@ export function createTypedGLBActorEvidence(
     lastClip: lastApply?.clipName ?? null,
     lastTracksApplied: lastApply?.tracksApplied ?? 0,
     lastTransformTracksApplied: lastApply?.transformTracksApplied ?? 0,
+    lastMaterialTracksApplied: lastApply?.materialTracksApplied ?? 0,
+    lastLightTracksApplied: lastApply?.lightTracksApplied ?? 0,
+    lastFootPlantingGroundedFeet: lastApply?.footPlanting?.groundedFeet ?? 0,
+    lastFootPlantingTargetError: lastApply?.footPlanting?.averageTargetError ?? 0,
+    lastFootPlantingHipOffset: lastApply?.footPlanting?.hipOffset ?? 0,
+    lastFootPlantingMissingLegs: lastApply?.footPlanting ? [...lastApply.footPlanting.missingLegNodes] : [],
+    footPlantingConfigured: lastApply?.footPlanting !== undefined,
     lastSkinningPalettesUpdated: lastApply?.skinningPalettesUpdated ?? 0,
     ...(lastMorphApply ? { lastMorphApply } : {}),
     missingTargets: lastApply?.missingTargets ?? [],

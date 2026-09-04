@@ -5,6 +5,8 @@ export {
   THREE_COMPAT_PBR_MATERIAL_LIBRARY,
   THREE_COMPAT_REQUIRED_MATERIAL_CLASSES
 } from "./PBRMaterialLibrary";
+export { findGameReadyMaterial, GAME_READY_MATERIAL_IDS, GAME_READY_MATERIAL_PRESETS, listGameReadyMaterials } from "./GameReadyMaterialLibrary";
+export type { GameReadyMaterialKind, GameReadyMaterialPreset, GameReadyMaterialProbe, GameReadyMaterialTunable } from "./GameReadyMaterialLibrary";
 export { findThreeCompatTextureSet, THREE_COMPAT_TEXTURE_SETS } from "./TextureSet";
 export { createThreeCompatMaterialPreviewScene, createThreeCompatMaterialPreviewTile } from "./MaterialPreviewScene";
 export type {

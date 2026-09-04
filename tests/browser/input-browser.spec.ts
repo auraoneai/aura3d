@@ -60,9 +60,22 @@ test.describe("input browser runtime", () => {
         && result.accessibility.role === "application"
         && Boolean(result.accessibility.label)
         && Boolean(result.accessibility.describedBy)
-        && result.pointerLock.settled,
+        && result.pointerLock.settled
+        && result.remapRestored
+        && result.comboFired
+        && result.hapticGateHonest,
       result
     }, null, 2)}\n`);
+
+    // I2: remap + combo + haptics gate + genre touch layouts, proven in the real browser.
+    expect(result?.remapRestored).toBe(true);
+    expect(result?.remapConflictCount).toBe(1);
+    expect(result?.comboFired).toBe(true);
+    expect(result?.hapticGateHonest, `haptic via=${result?.hapticVia}`).toBe(true);
+    expect(result?.touchGenres).toEqual(["fight", "race", "platform"]);
+    expect(result?.touchFightButtons).toBeGreaterThan(0);
+    expect(result?.touchRaceButtons).toBeGreaterThan(0);
+    expect(result?.touchPlatformButtons).toBeGreaterThan(0);
   });
 });
 
@@ -78,6 +91,15 @@ declare global {
       readonly gamepadAxis: number;
       readonly gamepadButtonPressed: boolean;
       readonly firstPersonMoved: boolean;
+      readonly remapRestored?: boolean;
+      readonly remapConflictCount?: number;
+      readonly comboFired?: boolean;
+      readonly hapticGateHonest?: boolean;
+      readonly hapticVia?: string;
+      readonly touchGenres?: readonly string[];
+      readonly touchFightButtons?: number;
+      readonly touchRaceButtons?: number;
+      readonly touchPlatformButtons?: number;
       readonly accessibility: {
         readonly focusable: boolean;
         readonly role: string | null;

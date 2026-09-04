@@ -17,6 +17,12 @@ export type SelectionManagerListener = (change: SelectionManagerChange) => void;
 export class SelectionManager {
   private readonly selectedObjects = new Set<ControlObject3DLike>();
   private readonly listeners = new Set<SelectionManagerListener>();
+  private disposed = false;
+
+  /** True after `dispose()`; selection state stays re-mountable but listeners are dropped. */
+  get isDisposed(): boolean {
+    return this.disposed;
+  }
 
   get selected(): ReadonlySet<ControlObject3DLike> {
     return this.selectedObjects;
@@ -64,7 +70,13 @@ export class SelectionManager {
     return () => this.listeners.delete(listener);
   }
 
+  /**
+   * F1-standard disposal: drops every listener and clears selection. The
+   * instance stays re-mountable (select/subscribe work again) so repeated
+   * mount/dispose cycles cannot accumulate listeners. Idempotent.
+   */
   dispose(): void {
+    this.disposed = true;
     this.listeners.clear();
     this.selectedObjects.clear();
   }

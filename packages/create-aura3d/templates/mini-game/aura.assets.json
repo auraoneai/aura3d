@@ -5,27 +5,51 @@
   "typegen": "src/aura-assets.ts",
   "assets": [
     {
-      "id": "playerModel",
+      "id": "showcaseKenneyOobiPlatformerHero",
       "type": "model",
       "format": "glb",
-      "source": "public/aura-assets/player-fixture.glb",
-      "outputPath": "public/aura-assets/player-fixture.glb",
-      "url": "/aura-assets/player-fixture.glb",
-      "hash": "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
-      "sizeBytes": 463988,
+      "source": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "sizeBytes": 208028,
       "bounds": [
-        1.2,
-        1.9,
-        0.8
+        0.868,
+        0.907,
+        0.603
       ],
       "materials": [
-        "painted robot body",
-        "black joints",
-        "white armor"
+        "colormap"
       ],
-      "animations": [],
+      "animations": [
+        "attack-kick-left",
+        "attack-kick-right",
+        "attack-melee-left",
+        "attack-melee-right",
+        "crouch",
+        "die",
+        "drive",
+        "emote-no",
+        "emote-yes",
+        "fall",
+        "holding-both",
+        "holding-both-shoot",
+        "holding-left",
+        "holding-left-shoot",
+        "holding-right",
+        "holding-right-shoot",
+        "idle",
+        "interact-left",
+        "interact-right",
+        "jump",
+        "pick-up",
+        "sit",
+        "sprint",
+        "static",
+        "walk"
+      ],
       "textures": [],
-      "thumbnailUrl": "/aura-assets/player.thumb.svg"
+      "thumbnailUrl": "/aura-assets/showcaseKenneyOobiPlatformerHero.thumb.svg"
     }
   ]
 }

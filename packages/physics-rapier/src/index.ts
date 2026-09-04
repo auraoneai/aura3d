@@ -48,7 +48,13 @@ export interface RapierColliderSpec {
 export interface RapierBodySpec extends RapierRigidBodySpec, RapierColliderSpec {}
 
 export type RapierJointSpec = {
-  readonly type: "fixed" | "hinge" | "slider" | "spring" | "ball-socket" | "motorised-hinge";
+  /**
+   * `revolute` is the Rapier-native name for `hinge`; `prismatic` is the
+   * Rapier-native name for `slider`. Both spellings are accepted and build the
+   * same native joint — the alias exists so H1's fixed/revolute/prismatic
+   * promotion reads identically at the adapter and at root.
+   */
+  readonly type: "fixed" | "hinge" | "revolute" | "slider" | "prismatic" | "spring" | "ball-socket" | "motorised-hinge";
   readonly localAnchorA: PhysicsVec3;
   readonly localAnchorB: PhysicsVec3;
   readonly axis: PhysicsVec3;
@@ -274,7 +280,7 @@ export class RapierPhysicsWorld {
     const axis = vec(spec.axis, "joint axis");
     let data: Rapier.JointData;
     if (spec.type === "fixed") data = R.JointData.fixed(anchorA, { x: 0, y: 0, z: 0, w: 1 }, anchorB, { x: 0, y: 0, z: 0, w: 1 });
-    else if (spec.type === "slider") data = R.JointData.prismatic(anchorA, anchorB, axis);
+    else if (spec.type === "slider" || spec.type === "prismatic") data = R.JointData.prismatic(anchorA, anchorB, axis);
     else if (spec.type === "spring") {
       // Aura exposes normalized game-facing stiffness/damping; Rapier expects physical
       // coefficients. The adapter owns this unit conversion so public descriptors remain

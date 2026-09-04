@@ -7,10 +7,22 @@ export type PostProcessColorSpace = "linear" | "srgb";
 export type DepthTextureFormat = "depth24";
 export type ToneMappingPresetName = "natural" | "cinematic" | "vibrant" | "realistic" | "stylized";
 
+export type BloomQualityOption = "performance" | "balanced" | "cinematic";
+
 export interface BloomOptions {
   readonly threshold?: number;
   readonly intensity?: number;
   readonly radius?: number;
+  /**
+   * Native bloom path only (muse3jsparity-PRD A1): `performance` keeps the
+   * legacy single-scale ping-pong; `balanced`/`cinematic` use the 5/3-mip
+   * pyramid (cinematic implies half-float targets). CPU kernels ignore it.
+   */
+  readonly quality?: BloomQualityOption;
+  /** HDR float bright-extract knee width in [0, 0.5]; 0 keeps the hard step. */
+  readonly softKnee?: number;
+  /** LDR composite highlight shoulder in [0, 1]; 0 keeps the legacy clamp. */
+  readonly shoulder?: number;
 }
 
 export interface FXAAOptions {
@@ -177,6 +189,8 @@ export interface VolumetricLightOptions {
   readonly exposure?: number;
   readonly samples?: number;
   readonly occlusionThreshold?: number;
+  /** A5 ordered-dither output (one LSB); default false preserves legacy bytes. */
+  readonly dither?: boolean;
 }
 
 export interface VolumetricLightResult {
@@ -1217,9 +1231,12 @@ export function volumetricLightPixels(
       const beforeR = pixels[offset] ?? 0;
       const beforeG = pixels[offset + 1] ?? 0;
       const beforeB = pixels[offset + 2] ?? 0;
-      output[offset] = clampByte(beforeR + color[0] * boost * 255);
-      output[offset + 1] = clampByte(beforeG + color[1] * boost * 255);
-      output[offset + 2] = clampByte(beforeB + color[2] * boost * 255);
+      // A5: ordered Bayer dither (one LSB) so smooth inscatter gradients do
+      // not band in 8-bit output. Off by default to preserve legacy bytes.
+      const dither = options.dither === true ? bayer2(x, y) : 0;
+      output[offset] = clampByte(beforeR + color[0] * boost * 255 + dither);
+      output[offset + 1] = clampByte(beforeG + color[1] * boost * 255 + dither);
+      output[offset + 2] = clampByte(beforeB + color[2] * boost * 255 + dither);
       if (output[offset] !== beforeR || output[offset + 1] !== beforeG || output[offset + 2] !== beforeB) {
         changedPixels += 1;
       }
@@ -2533,7 +2550,10 @@ function createToneMappingPreset(
       gamma: options.gamma ?? 2.2,
       operator: options.operator ?? "reinhard",
       inputColorSpace: options.inputColorSpace ?? "linear",
-      outputColorSpace: options.outputColorSpace ?? "linear"
+      // Display presets feed display-referred chains (public composer, parity
+      // probes): linear-out crushed every preset to near-black (5 buckets on
+      // the comprehensive fixture). Explicit overrides still win.
+      outputColorSpace: options.outputColorSpace ?? "srgb"
     },
     colorGrade: {
       contrast: options.contrast ?? 1,
@@ -2631,6 +2651,12 @@ function integerNumberInRange(value: number, min: number, max: number, label: st
 
 function clampByte(value: number): number {
   return Math.round(Math.max(0, Math.min(255, value)));
+}
+
+/** 2x2 Bayer ordered dither in [-0.5, 0.5]; A5 one-LSB anti-banding. */
+function bayer2(x: number, y: number): number {
+  const index = ((y & 1) << 1) | (x & 1);
+  return (index === 0 ? -0.375 : index === 1 ? 0.375 : index === 2 ? -0.125 : 0.125);
 }
 
 function clampInt(value: number, min: number, max: number): number {

@@ -153,12 +153,14 @@ const propColliders: readonly PropCollider[] = buildPropColliders();
 const trafficSim = createTrafficSimulation({ seed: SHIFT_SEED });
 
 /**
- * Van fit size. Catalog bounds [165.12, 87.17, 80.48]: the longest bound is the
- * length, so fitting to 2.7 yields a van about 1.42 wide - a comfortable
- * single-vehicle footprint on a 2.64-wide road.
+ * Van fit size. The hero is the typed Meshy decimated van (bounds
+ * [1.905, 0.867, 0.847]): the longest bound is the length, so fitting to 2.7
+ * yields a van about 1.2 wide - a comfortable single-vehicle footprint on a
+ * 2.64-wide road. The collider derives from the same hero bounds, so the
+ * strike authority always matches the visible vehicle.
  */
 const VAN_TARGET_LENGTH = 2.7;
-const vanBounds = assets.courierVan.bounds;
+const vanBounds = assets.courierVanMeshyV2Decimated.bounds;
 const vanScale = VAN_TARGET_LENGTH / Math.max(...vanBounds);
 const VAN_HALF_WIDTH = (vanScale * Math.min(vanBounds[0]!, vanBounds[2]!)) / 2;
 const VAN_COLLIDER_RADIUS = VAN_HALF_WIDTH + 0.05;
@@ -246,7 +248,7 @@ const chaseCamera = camera.follow({
   targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.22, -1.05],
   offsetMode: "target-yaw",
   offset: visualReviewCapture
-    ? [0.66, 3.28, 11.4]
+    ? [0.55, 2.7, 8.6]
     : [0.22, CHASE_CAMERA.height + 1.45, CHASE_CAMERA.distance + 4.2] as [number, number, number],
   fov: visualReviewCapture ? 55 : 56,
   // Review retains the normal follow rig but removes its long residual pan so
@@ -281,31 +283,40 @@ const app = createAuraApp("#app", {
     // registry covers model/primitive/group/label nodes, so nothing rides in a
     // group hierarchy here).
     .add(
-      model(assets.courierVan, {
+      model(assets.courierVanMeshyV2Decimated, {
         name: "courier-van",
         role: "primaryVehicle",
         scaleMode: "fit",
         // Give the typed vehicle a modest presentation lift in the named
         // review frame without changing its arcade collider or route physics.
-        targetMaxDimension: visualReviewCapture ? 2.95 : VAN_TARGET_LENGTH,
-        // The catalog van is authored in a very dark delivery livery. Keep
-        // the typed GLB and its provenance, but lift the body into a cool
-        // midnight-blue PBR finish so the cab, cargo box, and wheel contact
-        // remain readable in the pressure capture without a CSS cheat.
-        material: material.pbr({
-          name: "courier van midnight finish",
-          color: visualReviewCapture ? "#8fcfe2" : "#1f6288",
-          roughness: visualReviewCapture ? 0.18 : 0.27,
-          metallic: visualReviewCapture ? 0.62 : 0.48,
-          clearcoat: visualReviewCapture ? 0.58 : 0.34,
-          clearcoatRoughness: visualReviewCapture ? 0.1 : 0.14,
-          emissive: visualReviewCapture ? "#164d68" : "#09263f",
-          emissiveIntensity: visualReviewCapture ? 0.38 : 0.18
-        }),
+        targetMaxDimension: visualReviewCapture ? 4.2 : VAN_TARGET_LENGTH,
+        // The V2 Meshy van carries its own livery (white body, orange side
+        // stripe, dark glasshouse, black tires) in the authored base-color
+        // texture. Mount it un-overridden: the former single-material
+        // midnight finish flattened that texture into one blue van. The
+        // hero key/rim practicals keep it readable under night lighting.
         castShadow: true,
         receiveShadow: true
       }).runtime({ id: "courier-van", tags: ["player", "vehicle", "typed-primary-asset"] })
     )
+    // Depot fleet mate: the release-catalog typed van parked clear of every
+    // lane and sensor approach in the full kit city. It keeps the provenanced
+    // catalog asset live in this route (and its release-quality evidence
+    // green) now that the Meshy decimated van drives the shift. Dressing only,
+    // like the kit towers: no collider, no delivery rule reads it. Kept out
+    // of the review canyon slice, which stages only the avenue, hero, live
+    // traffic, and pressure gate.
+    .addMany(visualReviewCapture ? [] : [
+      model(assets.courierVan, {
+        name: "courier-depot-fleet-van",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: VAN_TARGET_LENGTH,
+        castShadow: true,
+        receiveShadow: true
+      }).position(3.0, 0, 10.5).rotate(0, Math.PI / 2, 0)
+        .runtime({ id: "courier-depot-fleet-van", tags: ["depot-fleet", "typed-secondary-asset"] })
+    ])
     .add(
       primitives.sphere({
         name: "courier chase camera target",
@@ -584,6 +595,7 @@ const mountedEvidence = {
     zoneSites: ZONE_SITES.length
   },
   primaryAssets: [
+    "assets.courierVanMeshyV2Decimated",
     "assets.courierVan",
     "assets.courierParcel",
     "assets.courierTrafficSedan",
@@ -1131,11 +1143,10 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  // `courierVan` is authored with its nose on +X. The runtime heading basis
-  // expects the vehicle's forward axis opposite the camera-facing +Z side, so
-  // the former `-heading` correction made the van drive nose-first toward its
-  // own chase camera. The additional half-turn presents the cargo doors to the
-  // trailing eye and keeps the typed vehicle aligned with actual motion.
+  // Presentation yaw: `-heading + PI` drives the Meshy hero nose-first away
+  // from its own chase camera, confirmed in the pressure capture (tailgate
+  // and rear window to the trailing eye, nose toward the headlight pools and
+  // the measured direction of travel).
   vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
   cameraTargetNode
     .setPosition(vanAfter.x, 0.2, vanAfter.z)
@@ -1152,12 +1163,15 @@ app.onFrame(({ dt }) => {
   // typed van pose. They add identity/contact scale without replacing the
   // courier GLB or changing its collider.
   const vanRenderHeading = -vanAfter.heading + Math.PI;
+  // Trim bars hug the Meshy hero's measured half width instead of the wider
+  // catalog body they were spaced for, so they read as livery, not debris.
+  const trimLateral = VAN_HALF_WIDTH + 0.04;
   vanTrimNodes[0]!
-    .setPosition(vanAfter.x + rightX * -0.68, 0.72, vanAfter.z + rightZ * -0.68)
+    .setPosition(vanAfter.x + rightX * -trimLateral, 0.72, vanAfter.z + rightZ * -trimLateral)
     .setRotation(0, vanRenderHeading, 0)
     .setVisible(!reducedMotion);
   vanTrimNodes[1]!
-    .setPosition(vanAfter.x + rightX * 0.68, 0.72, vanAfter.z + rightZ * 0.68)
+    .setPosition(vanAfter.x + rightX * trimLateral, 0.72, vanAfter.z + rightZ * trimLateral)
     .setRotation(0, vanRenderHeading, 0)
     .setVisible(!reducedMotion);
   vanRearBumper

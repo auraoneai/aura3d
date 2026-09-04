@@ -28,24 +28,46 @@ export interface DragControlsOptions {
 export class DragControls {
   dragging: ControlObject3DLike | null = null;
   readonly transforms: TransformControls;
+  private disposed = false;
+  private readonly ownsTransforms: boolean;
 
   constructor(options: DragControlsOptions = {}) {
     this.transforms = options.transforms ?? new TransformControls();
+    this.ownsTransforms = options.transforms === undefined;
+  }
+
+  /** True after `dispose()`; `start`/`drag` are no-ops past this point. */
+  get isDisposed(): boolean {
+    return this.disposed;
   }
 
   start(object: ControlObject3DLike): void {
+    if (this.disposed) return;
     this.dragging = object;
     this.transforms.attach(object);
     this.transforms.setMode("translate");
   }
 
   drag(delta: Vector3Like): void {
-    if (!this.dragging) return;
+    if (this.disposed || !this.dragging) return;
     this.transforms.apply(delta);
   }
 
   end(): void {
     this.dragging = null;
     this.transforms.detach();
+  }
+
+  /**
+   * F1-standard disposal: ends any active drag, detaches the object, and
+   * disposes the owned transform helper (a caller-supplied `transforms`
+   * instance is left undisposed — its owner disposes it). Idempotent. Owns
+   * zero DOM listeners, so nothing can leak.
+   */
+  dispose(options: { readonly disposeTransforms?: boolean } = {}): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.end();
+    if ((options.disposeTransforms ?? this.ownsTransforms)) this.transforms.dispose();
   }
 }

@@ -1,14 +1,19 @@
 import { validateGraph, type VisualEdge, type VisualGraph } from "./VisualGraph";
 import {
+  type VisualAiSnapshot,
   type VisualAnimationControllerState,
   type VisualAnimationEvent,
   type VisualCollisionEvent,
   type VisualCombatEvent,
+  type VisualGameScoreState,
   type VisualGraphDiagnostic,
   type VisualGraphExecutionContext,
   type VisualGraphSideEffect,
   type VisualInputSet,
+  type VisualObjectiveState,
   type VisualStateCollection,
+  type VisualStateMachineState,
+  type VisualTimerState,
   type VisualVector3
 } from "./VisualGraphContext";
 import { getVisualNodeDefinition } from "./VisualNodeCatalog";
@@ -528,6 +533,118 @@ function executeVisualNode(
       return command("animation.publishing.exportCaption", node, context, sideEffects, optionalString("path"), { format: optionalString("format") ?? "vtt", path: optionalString("path") });
     case "markChapter":
       return command("animation.publishing.markChapter", node, context, sideEffects, string("title"), { title: string("title"), time: number("time") });
+
+    case "runBehaviorTree":
+      return command("ai.runBehaviorTree", node, context, sideEffects, string("treeId"), {
+        treeId: string("treeId"),
+        blackboard: object("blackboard")
+      });
+    case "onBehaviorTreeStatus": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("treeId"));
+      const status = snapshot?.planner === "behavior-tree" ? snapshot.status : "idle";
+      return outputs(status, { out: true, status, succeeded: status === "success" });
+    }
+    case "planGoap":
+      return command("ai.planGoap", node, context, sideEffects, string("goalId"), {
+        goalId: string("goalId"),
+        goal: object("goal")
+      });
+    case "onGoapPlan": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("goalId"));
+      const planned = snapshot?.planner === "goap" && snapshot.status === "planned";
+      return outputs(stableClone(snapshot?.output ?? null), { out: planned, planned, plan: stableClone(snapshot?.output ?? null) });
+    }
+    case "planHtn":
+      return command("ai.planHtn", node, context, sideEffects, string("taskId"), {
+        taskId: string("taskId"),
+        domain: object("domain")
+      });
+    case "onHtnPlan": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("taskId"));
+      const planned = snapshot?.planner === "htn" && snapshot.status === "planned";
+      return outputs(stableClone(snapshot?.output ?? null), { out: planned, planned, plan: stableClone(snapshot?.output ?? null) });
+    }
+    case "scoreUtility": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("contextId"));
+      const output = (snapshot?.planner === "utility" ? snapshot.output : undefined) as { readonly action?: unknown; readonly score?: unknown } | undefined;
+      const action = typeof output?.action === "string" ? output.action : "";
+      const score = typeof output?.score === "number" && Number.isFinite(output.score) ? output.score : 0;
+      return outputs(action, { action, score });
+    }
+    case "evaluateDecision": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("treeId"));
+      const decision = snapshot?.planner === "decision-tree" && typeof snapshot.output === "string" ? snapshot.output : "";
+      return outputs(decision, { decision, decided: decision.length > 0 });
+    }
+    case "sensePerception": {
+      const snapshot = collectionGet<VisualAiSnapshot>(context.aiSnapshots, string("sensorId"));
+      const output = (snapshot?.planner === "perception" ? snapshot.output : undefined) as { readonly hits?: unknown } | undefined;
+      const hits = typeof output?.hits === "number" && Number.isFinite(output.hits) ? Math.max(0, Math.floor(output.hits)) : 0;
+      return outputs(hits, { hits, snapshot: stableClone(snapshot?.output ?? null) });
+    }
+    case "fireWeaponBurst":
+      return command("combat.fireWeaponBurst", node, context, sideEffects, string("weaponId"), {
+        weaponId: string("weaponId"),
+        kind: optionalString("kind") ?? "laser",
+        rounds: Math.max(1, Math.floor(number("rounds")))
+      });
+
+    case "setState":
+      return command("game.setState", node, context, sideEffects, string("machineId"), {
+        machineId: string("machineId"),
+        state: string("state")
+      });
+    case "onStateEnter": {
+      const machine = collectionGet<VisualStateMachineState>(context.stateMachines, string("machineId"));
+      const entered = machine?.state === string("state") && string("state").length > 0;
+      return outputs(entered, { out: entered, entered });
+    }
+    case "startTimer":
+      return command("game.startTimer", node, context, sideEffects, string("timerId"), {
+        timerId: string("timerId"),
+        duration: Math.max(0, number("duration"))
+      });
+    case "onTimerElapsed": {
+      const timer = collectionGet<VisualTimerState>(context.timers, string("timerId"));
+      const elapsed = timer && Number.isFinite(timer.elapsed) ? Math.max(0, timer.elapsed) : 0;
+      const fired = timer !== undefined && timer.running !== false && elapsed >= (Number.isFinite(timer.duration) ? timer.duration : Number.POSITIVE_INFINITY);
+      return outputs(elapsed, { out: fired, elapsed, fired });
+    }
+    case "addScore":
+      return command("game.addScore", node, context, sideEffects, string("playerId"), {
+        playerId: string("playerId"),
+        points: number("points")
+      });
+    case "getScore": {
+      const entry = collectionGet<VisualGameScoreState>(context.gameScores, string("playerId"));
+      const score = entry && Number.isFinite(entry.score) ? entry.score : 0;
+      return outputs(score, { score });
+    }
+    case "setObjective": {
+      const status = string("status");
+      if (status !== "active" && status !== "complete" && status !== "failed") {
+        throw new Error(`Visual node ${node.id} setObjective requires status active|complete|failed.`);
+      }
+      return command("game.setObjective", node, context, sideEffects, string("objectiveId"), {
+        objectiveId: string("objectiveId"),
+        status
+      });
+    }
+    case "onObjectiveComplete": {
+      const objective = collectionGet<VisualObjectiveState>(context.objectives, string("objectiveId"));
+      const complete = objective?.status === "complete";
+      return outputs(complete, { out: complete, complete });
+    }
+    case "despawnCharacter":
+      return command("animation.scene.despawnCharacter", node, context, sideEffects, string("characterId"), {
+        characterId: string("characterId")
+      });
+    case "spawnWave":
+      return command("game.spawnWave", node, context, sideEffects, string("waveId"), {
+        waveId: string("waveId"),
+        formation: optionalString("formation") ?? "line",
+        count: Math.max(1, Math.floor(number("count")))
+      });
   }
 
   throw new Error(`Unsupported visual node kind: ${node.kind}`);

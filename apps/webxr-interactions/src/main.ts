@@ -21,6 +21,10 @@ interface CurrentRoutesWebXRInteractionsRuntime {
   readonly draggedObjects: number;
   readonly arCones: number;
   readonly hitTestCount: number;
+  readonly handCount: number;
+  readonly handTrackedCount: number;
+  readonly xrCameraTracked: boolean;
+  readonly capabilitiesHitTest: boolean;
   readonly referenceSpaces: number;
   readonly outputNonDarkPixels: number;
   readonly outputColorBuckets: number;
@@ -73,6 +77,10 @@ async function run(): Promise<void> {
 
     const vrSample = samples.find((item) => item.mode === "immersive-vr")!.sample;
     const arSample = samples.find((item) => item.mode === "immersive-ar")!.sample;
+    const handCount = Math.max(...samples.map((item) => item.sample.hands.length));
+    const handTrackedCount = Math.max(...samples.map((item) => item.sample.hands.filter((hand) => hand.tracked).length));
+    const xrCameraTracked = samples.some((item) => item.sample.camera.tracked);
+    const capabilitiesHitTest = samples.some((item) => item.sample.capabilities.hitTest);
     const ballShots = vrSample.controllers.filter((controller) => controller.triggerPressed).length;
     const draggedObjects = vrSample.controllers.filter((controller) => controller.squeezePressed || controller.primaryValue > 0.5).length;
     const arCones = arSample.hitTestCount;
@@ -102,6 +110,10 @@ async function run(): Promise<void> {
         draggedObjects,
         arCones,
         hitTestCount: arSample.hitTestCount,
+        handCount,
+        handTrackedCount,
+        xrCameraTracked,
+        capabilitiesHitTest,
         referenceSpaces: new Set(samples.map((item) => item.start.referenceSpace)).size,
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
@@ -132,6 +144,7 @@ function createInjectedXR(mode: A3DXRSessionMode): A3DXRSystemLike {
 function createSession(mode: A3DXRSessionMode): A3DXRSessionLike {
   return {
     inputSources: mode === "immersive-ar" ? [rightController()] : [leftController(), rightController()],
+    enabledFeatures: mode === "immersive-vr" ? ["local-floor", "hand-tracking"] : ["hit-test", "hand-tracking"],
     async requestReferenceSpace(type) {
       return { type };
     },
@@ -160,6 +173,15 @@ function rightController() {
     handedness: "right" as const,
     targetRayMode: "tracked-pointer" as const,
     profiles: ["generic-trigger-squeeze"],
+    hand: {
+      handedness: "right" as const,
+      trackingState: "tracked" as const,
+      joints: {
+        wrist: { position: [0.18, 1.32, -0.42] as readonly [number, number, number], radius: 0.02 },
+        "index-finger-tip": { position: [0.2, 1.36, -0.52] as readonly [number, number, number], radius: 0.012 },
+        "thumb-tip": { position: [0.15, 1.33, -0.47] as readonly [number, number, number], radius: 0.013 }
+      }
+    },
     gamepad: {
       buttons: [{ pressed: true, value: 0.86 }, { pressed: true, value: 1 }],
       axes: [0.28, -0.18]
@@ -175,6 +197,14 @@ function createFrame(): A3DXRFrameLike {
         { position: [0.04, 0, -0.72], normal: [0, 1, 0] },
         { position: [0.44, 0, -0.88], normal: [0, 1, 0] }
       ];
+    },
+    getViewerPose() {
+      return {
+        position: [0, 1.6, 0] as readonly [number, number, number],
+        orientation: [0, 0, 0, 1] as readonly [number, number, number, number],
+        viewMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.6, 0, 1],
+        projectionMatrix: [1.2, 0, 0, 0, 0, 1.6, 0, 0, 0, 0, -1.002, -1, 0, 0, -0.2, 0]
+      };
     }
   };
 }
@@ -266,6 +296,10 @@ function createRuntime(
     draggedObjects: patch.draggedObjects ?? 0,
     arCones: patch.arCones ?? 0,
     hitTestCount: patch.hitTestCount ?? 0,
+    handCount: patch.handCount ?? 0,
+    handTrackedCount: patch.handTrackedCount ?? 0,
+    xrCameraTracked: patch.xrCameraTracked ?? false,
+    capabilitiesHitTest: patch.capabilitiesHitTest ?? false,
     referenceSpaces: patch.referenceSpaces ?? 0,
     outputNonDarkPixels: patch.outputNonDarkPixels ?? 0,
     outputColorBuckets: patch.outputColorBuckets ?? 0,
@@ -294,6 +328,8 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesWebXRInteractionsRunt
         ${metric("dragged", runtime.draggedObjects)}
         ${metric("AR cones", runtime.arCones)}
         ${metric("hit tests", runtime.hitTestCount)}
+        ${metric("hands", `${runtime.handTrackedCount}/${runtime.handCount}`)}
+        ${metric("XR camera", String(runtime.xrCameraTracked))}
         ${metric("real device", String(runtime.realDeviceClaimed))}
       </div>
       <p class="note">${runtime.error ? escapeHtml(runtime.error) : `Evidence mode: ${runtime.evidenceMode}. Real headset/browser XR is still a release blocker.`}</p>

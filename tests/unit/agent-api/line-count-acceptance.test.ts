@@ -45,7 +45,7 @@ describe("agent API line-count acceptance", () => {
     expect(source).toContain("createAuraApp");
     expect(source).toContain("game.platformer");
     expect(source).toContain("game.input");
-    expect(source).toContain("model(assets.playerModel");
+    expect(source).toContain("model(assets.showcaseKenneyOobiPlatformerHero");
     expect(source).toContain("__AURA3D_MINI_GAME__");
     expect(source).toContain("routeEvents");
     expect(countAppLines(path)).toBeLessThanOrEqual(260);

@@ -72,3 +72,4 @@ records why an existing one could not be removed.
 | [0009](0009-runtime-descriptors-cannot-claim-capabilities.md) | Public descriptors cannot claim unmounted runtime capabilities | accepted |
 | [0010](0010-lean-entrypoints-compose-existing-owners.md) | Lean entrypoints compose existing owners | accepted |
 | [0011](0011-public-rendering-adapters-remain-owned-by-rendering.md) | Public rendering adapters remain owned by rendering | accepted |
+| [0012](0012-external-generated-asset-import-stays-cli-owned.md) | External generated-asset import adapters stay CLI-owned | accepted |

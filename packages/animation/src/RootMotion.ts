@@ -53,6 +53,84 @@ export function extractRootMotion(clip: AnimationClip, descriptor: RootMotionExt
   };
 }
 
+export interface RootMotionSlideReport {
+  /** Per-cycle displacement of the looping clip (the distance one walk cycle travels). */
+  readonly cycleDelta: Vec3;
+  /** Length of `cycleDelta` (0 for in-place clips). */
+  readonly cycleDistance: number;
+  /**
+   * Loop-closure error (units/second): magnitude of the root-velocity discontinuity at the
+   * loop point, `|v(0+) − v(duration−)|` via finite differences. Zero means the clip wraps
+   * seamlessly — no velocity snap at the seam, which is the quantitative form of "no foot
+   * sliding at turn".
+   */
+  readonly loopClosureError: number;
+  /**
+   * Peak mid-loop velocity deviation (units/second): the largest deviation of any sampled
+   * segment velocity from the cycle-average velocity `cycleDelta / duration`. Catches what
+   * `loopClosureError` cannot — a teleport or pop *inside* the loop (e.g. a walk cycle that
+   * snaps back mid-stride). A seamless constant-velocity loop reports ~0; a clip whose feet
+   * pop every cycle reports a large value here.
+   */
+  readonly maxVelocityDeviation: number;
+}
+
+/**
+ * Zero-slide metric for root-motion locomotion (E2): for a looping clip, verify the root
+ * advances by a stable per-cycle delta with (near-)zero loop-closure error. Pure and
+ * deterministic.
+ */
+export function measureRootMotionLoopClosure(
+  clip: AnimationClip,
+  target = "root.position"
+): RootMotionSlideReport {
+  const track = clip.tracks.find((candidate) => candidate.target === target);
+  if (!track) {
+    throw new Error(`Root motion track "${target}" was not found.`);
+  }
+  if (track.valueType !== "vector3") {
+    throw new Error(`Root motion track "${target}" must be a vector3 track.`);
+  }
+  if (!Number.isFinite(clip.duration) || clip.duration <= 0) {
+    throw new Error("Loop-closure measurement requires a positive clip duration.");
+  }
+  const duration = clip.duration;
+  const start = sampleVec3(track, 0);
+  const end = sampleVec3(track, duration);
+  const cycleDelta = subtractVec3(end, start);
+  const cycleDistance = Math.hypot(cycleDelta[0], cycleDelta[1], cycleDelta[2]);
+  const epsilon = Math.min(1 / 60, duration / 10);
+  const velocityAtStart = scaleVec3(
+    subtractVec3(sampleVec3(track, clampTime(epsilon, duration)), start),
+    1 / epsilon
+  );
+  const velocityAtEnd = scaleVec3(
+    subtractVec3(end, sampleVec3(track, clampTime(duration - epsilon, duration))),
+    1 / epsilon
+  );
+  const loopClosureError = Math.hypot(
+    velocityAtStart[0] - velocityAtEnd[0],
+    velocityAtStart[1] - velocityAtEnd[1],
+    velocityAtStart[2] - velocityAtEnd[2]
+  );
+  const averageVelocity = scaleVec3(cycleDelta, 1 / duration);
+  let maxVelocityDeviation = 0;
+  const segments = 64;
+  let previous = sampleVec3(track, 0);
+  for (let segment = 1; segment <= segments; segment += 1) {
+    const current = sampleVec3(track, (segment / segments) * duration);
+    const step = duration / segments;
+    const deviation = Math.hypot(
+      (current[0] - previous[0]) / step - averageVelocity[0],
+      (current[1] - previous[1]) / step - averageVelocity[1],
+      (current[2] - previous[2]) / step - averageVelocity[2]
+    );
+    maxVelocityDeviation = Math.max(maxVelocityDeviation, deviation);
+    previous = current;
+  }
+  return { cycleDelta, cycleDistance, loopClosureError, maxVelocityDeviation };
+}
+
 export function applyRootMotion(target: RootMotionTarget, sample: RootMotionSample, scale = 1): RootMotionTarget {
   if (!Number.isFinite(scale)) {
     throw new Error("Root motion scale must be finite.");

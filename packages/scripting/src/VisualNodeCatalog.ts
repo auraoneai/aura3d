@@ -18,6 +18,8 @@ export type VisualNodeCategory =
   | "timing"
   | "publishing"
   | "camera"
+  | "ai"
+  | "game"
   | "evidence";
 
 export interface VisualNodeDefinition {
@@ -110,6 +112,28 @@ const definitions: readonly VisualNodeDefinition[] = [
   define("frameTargets", "camera", "Frame Targets", "Create a camera framing command for a deterministic target list.", [flowInput(), objectInput("targetIds"), numberInput("padding", 0)], commandOutputs(), ["src/scripting/nodes/CameraNodes.ts"]),
   define("shake", "camera", "Shake", "Create a deterministic camera shake command.", [flowInput(), numberInput("intensity", 0.2), numberInput("duration", 0.12)], commandOutputs(), ["src/scripting/nodes/CameraNodes.ts"]),
   define("cutTo", "camera", "Cut To", "Create a camera cut command.", [flowInput(), objectInput("position"), objectInput("target", true)], commandOutputs(), ["src/scripting/nodes/CameraNodes.ts"]),
+
+  define("runBehaviorTree", "ai", "Run Behavior Tree", "Request a BehaviorTree tick for a named tree with blackboard input.", [flowInput(), stringInput("treeId"), objectInput("blackboard", true)], commandOutputs(), ["packages/scripting/src/BehaviorTree.ts"]),
+  define("onBehaviorTreeStatus", "ai", "On Behavior Tree Status", "Read a deterministic behavior-tree status snapshot.", [stringInput("treeId")], [{ id: "out", direction: "output", type: "flow" }, { id: "status", direction: "output", type: "string" }, { id: "succeeded", direction: "output", type: "boolean" }], ["packages/scripting/src/BehaviorTree.ts"]),
+  define("planGoap", "ai", "Plan GOAP", "Request a GOAP plan for a named goal state.", [flowInput(), stringInput("goalId"), objectInput("goal", true)], commandOutputs(), ["packages/scripting/src/GOAP.ts"]),
+  define("onGoapPlan", "ai", "On GOAP Plan", "Read a deterministic GOAP plan snapshot.", [stringInput("goalId")], [{ id: "out", direction: "output", type: "flow" }, { id: "planned", direction: "output", type: "boolean" }, { id: "plan", direction: "output", type: "object" }], ["packages/scripting/src/GOAP.ts"]),
+  define("planHtn", "ai", "Plan HTN", "Request an HTN plan for a named task.", [flowInput(), stringInput("taskId"), objectInput("domain", true)], commandOutputs(), ["packages/scripting/src/HTN.ts"]),
+  define("onHtnPlan", "ai", "On HTN Plan", "Read a deterministic HTN plan snapshot.", [stringInput("taskId")], [{ id: "out", direction: "output", type: "flow" }, { id: "planned", direction: "output", type: "boolean" }, { id: "plan", direction: "output", type: "object" }], ["packages/scripting/src/HTN.ts"]),
+  define("scoreUtility", "ai", "Score Utility", "Read the deterministic UtilityAI selection snapshot.", [stringInput("contextId")], [{ id: "action", direction: "output", type: "string" }, { id: "score", direction: "output", type: "number" }], ["packages/scripting/src/UtilityAI.ts"]),
+  define("evaluateDecision", "ai", "Evaluate Decision", "Read a deterministic DecisionTree decision snapshot.", [stringInput("treeId")], [{ id: "decision", direction: "output", type: "string" }, { id: "decided", direction: "output", type: "boolean" }], ["packages/scripting/src/DecisionTree.ts"]),
+  define("sensePerception", "ai", "Sense Perception", "Read a deterministic PerceptionSensor snapshot.", [stringInput("sensorId")], [{ id: "hits", direction: "output", type: "number" }, { id: "snapshot", direction: "output", type: "object" }], ["packages/scripting/src/Perception.ts"]),
+  define("fireWeaponBurst", "ai", "Fire Weapon Burst", "Create a deterministic weapon-burst command.", [flowInput(), stringInput("weaponId"), stringInput("kind", true), numberInput("rounds", 3)], commandOutputs(), ["packages/scripting/src/WeaponSystem.ts"]),
+
+  define("setState", "game", "Set State", "Create a deterministic state-machine transition command.", [flowInput(), stringInput("machineId"), stringInput("state")], commandOutputs(), ["packages/scripting/src/StateMachine.ts"]),
+  define("onStateEnter", "game", "On State Enter", "Read whether a state machine entered a named state.", [stringInput("machineId"), stringInput("state")], [{ id: "out", direction: "output", type: "flow" }, { id: "entered", direction: "output", type: "boolean" }], ["packages/scripting/src/StateMachine.ts"]),
+  define("startTimer", "game", "Start Timer", "Create a deterministic game-timer start command.", [flowInput(), stringInput("timerId"), numberInput("duration", 1)], commandOutputs(), ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("onTimerElapsed", "game", "On Timer Elapsed", "Read a deterministic game-timer snapshot.", [stringInput("timerId")], [{ id: "out", direction: "output", type: "flow" }, { id: "elapsed", direction: "output", type: "number" }, { id: "fired", direction: "output", type: "boolean" }], ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("addScore", "game", "Add Score", "Create a deterministic scoring command.", [flowInput(), stringInput("playerId"), numberInput("points", 1)], commandOutputs(), ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("getScore", "game", "Get Score", "Read a deterministic player score snapshot.", [stringInput("playerId")], [{ id: "score", direction: "output", type: "number" }], ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("setObjective", "game", "Set Objective", "Create a deterministic objective-state command.", [flowInput(), stringInput("objectiveId"), stringInput("status")], commandOutputs(), ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("onObjectiveComplete", "game", "On Objective Complete", "Read whether an objective is complete.", [stringInput("objectiveId")], [{ id: "out", direction: "output", type: "flow" }, { id: "complete", direction: "output", type: "boolean" }], ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("despawnCharacter", "game", "Despawn Character", "Create a deterministic character-despawn command.", [flowInput(), stringInput("characterId")], commandOutputs(), ["packages/scripting/src/VisualGraphContext.ts"]),
+  define("spawnWave", "game", "Spawn Wave", "Create a deterministic enemy-wave spawn command.", [flowInput(), stringInput("waveId"), stringInput("formation", true), numberInput("count", 5)], commandOutputs(), ["packages/scripting/src/WeaponSystem.ts"]),
 
   define("captureSnapshot", "evidence", "Capture Snapshot", "Create an evidence snapshot command from deterministic graph context.", [flowInput(), stringInput("label", true)], [{ id: "out", direction: "output", type: "flow" }, { id: "snapshot", direction: "output", type: "object" }], ["src/scripting/nodes/EvidenceNodes.ts"]),
   define("markProof", "evidence", "Mark Proof", "Create a deterministic proof marker command.", [flowInput(), stringInput("proofId"), objectInput("details", true)], commandOutputs(), ["src/scripting/nodes/EvidenceNodes.ts"]),

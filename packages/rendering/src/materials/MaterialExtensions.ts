@@ -24,11 +24,11 @@ export const EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT: readonly ExternalParity
   { extension: "transmission", support: "bounded", diagnostic: "Transmission is approximated by the bounded transmission pass; refraction parity is not claimed." },
   { extension: "volume", support: "bounded", diagnostic: "Volume thickness/attenuation are tracked for diagnostics; full volumetric caustics are not claimed." },
   { extension: "ior", support: "bounded", diagnostic: "IOR is tracked and used by bounded Fresnel/transmission response." },
-  { extension: "anisotropy", support: "bounded", diagnostic: "Anisotropy intent is tracked for brushed material review; tangent-space parity requires visual evidence." },
+  { extension: "anisotropy", support: "bounded", diagnostic: "Anisotropy uses the aspect-ratio anisotropic-GGX NDF in both primitive (procedural frame) and textured (authored-TBN) paths; same-scene rotation response is browser-proven (tests/browser/anisotropic-rotation-q1.spec.ts, tests/reports/anisotropic-rotation-q1/aniso-rotation.json). Full authored-tangent identity stays bounded." },
   { extension: "iridescence", support: "bounded", diagnostic: "Iridescence factors are tracked for diagnostics; spectral accuracy is not claimed." },
   { extension: "emissive-strength", support: "supported", diagnostic: "Emissive strength is supported through HDR/tone-mapped material proof." },
-  { extension: "texture-transform", support: "supported", diagnostic: "Texture transforms are tracked and validated for material slots." },
-  { extension: "multi-uv", support: "bounded", diagnostic: "Multiple UV intent is tracked; fallback diagnostics are required when a shader path cannot bind the requested UV set." }
+  { extension: "texture-transform", support: "supported", diagnostic: "Texture transforms are runtime per-slot uniforms; root texTransforms pass-through is browser-proven (tests/browser/root-textured-c1.spec.ts)." },
+  { extension: "multi-uv", support: "bounded", diagnostic: "Multiple UV sets are root-bound with per-resource fallback diagnostics when geometry carries no uv1 (cylinder/torus/capsule/custom stay scalar with warnings); bounded by design (tests/browser/root-textured-c1.spec.ts)." }
 ];
 
 export function getExternalParityMaterialExtensionState(extension: ExternalParityMaterialExtension): ExternalParityMaterialExtensionState {

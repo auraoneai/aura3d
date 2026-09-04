@@ -560,11 +560,11 @@ const reactorScene = scene()
       name: "blockfall-reactor-arena-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 2.62 : 2.46,
+      targetMaxDimension: visualReviewCapture ? 1.8 : 2.46,
       castShadow: true,
       receiveShadow: true
     })
-      .position(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -1.72 : -1.96)
+      .position(visualReviewCapture ? -4.1 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.96)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-arena-mascot", {
         tags: ["typed-supporting-asset", "arcade-mechanic-mascot", "release-probed", "non-gameplay-set-dressing"]
@@ -575,11 +575,11 @@ const reactorScene = scene()
       name: "blockfall-reactor-rival-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 2.48 : 2.2,
+      targetMaxDimension: visualReviewCapture ? 1.5 : 2.2,
       castShadow: true,
       receiveShadow: true
     })
-      .position(visualReviewCapture ? 2.94 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -1.72 : -1.98)
+      .position(visualReviewCapture ? 4.6 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.98)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-rival-mascot", {
         tags: ["typed-supporting-asset", "arcade-plasma-rival", "release-probed", "non-gameplay-set-dressing"]

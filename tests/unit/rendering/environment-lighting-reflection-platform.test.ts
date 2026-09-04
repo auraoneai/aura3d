@@ -169,7 +169,10 @@ describe("lighting rig platform helpers", () => {
       "industrial",
       "urban-neon",
       "product-detail",
-      "product-shot"
+      "product-shot",
+      "cinematic-night",
+      "arena-showdown",
+      "product-hero"
     ]);
 
     const product = createLightingRig({ preset: "product-shot", intensityScale: 1.5 });

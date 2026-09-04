@@ -32,6 +32,42 @@ evidence for an asset or behavior not covered by the bounded browser fixtures:
 - imported asset evidence with `skinnedRenderItemCount` or
   `morphRenderItemCount`.
 
+## Certified hero rigs (selected roster, not arbitrary rigs)
+
+No hero rig is certified yet. Certification requires per-rig clip-playback pixel
+proof for five rigs (humanoid ×2, creature, vehicle-driver, face) via
+`tests/browser/certified-hero-rigs.spec.ts`. Skinning diagnostics carry
+machine-readable CPU-fallback reason codes (`decideSkinningPalettePath` in
+`packages/rendering/src/WebGPUSkinningLimits.ts`), and animated bounds stay
+culling-correct via unioned per-frame palettes
+(`computeAnimatedSkinnedBoundsUnion` in
+`packages/rendering/src/SkinningBounds.ts`). The face wrinkle-map hook
+(`WrinkleMapHook` / `resolveWrinkleMapStrength` in
+`packages/rendering/src/MorphTargetPlan.ts`, tangent-domain texture rows
+included) is unit-proven; renderer-side wrinkle wiring needs the engine bridge.
+
+Roster asset findings (GLB-verified): `showcaseWalkAnimatedGirl` (78 joints),
+`showcaseAnimatedRunnerHero` (136 joints — data-texture palette path),
+`showcaseRunnerRobot` (34 joints), `showcaseKenneyOobiPlatformerHero` (6
+joints; "drive" is a static pose, certifies with "walk"), and the runner hero's
+"FacialExpressions" clip for the face slot (`showcaseMorphExpression` is a
+single-triangle morph unit card, not a face).
+
+Certified 2026-09-03 (`tests/browser/certified-hero-rigs.spec.ts` 6/6, production-runtime
+backend, stable camera, per-rig evidence in `tests/reports/certified-hero-rigs/`):
+
+Certified rigs:
+
+- humanoid-a: `showcaseWalkAnimatedGirl` / "Take 001" — 78 joints, 7 skinned items, 24,274 changed px.
+- humanoid-b: `showcaseAnimatedRunnerHero` / "OffensiveIdle" — 136 joints (data-texture palette path), 6 skinned items, 55,150 changed px.
+- creature: `showcaseRunnerRobot` / "WALK" — 34 joints, 6 skinned items, 64,530 changed px.
+- vehicle-driver: `showcaseKenneyOobiPlatformerHero` / "walk" — 6 joints, 1 skinned item, 95,949 changed px.
+- face: `showcaseAnimatedRunnerHero` / "FacialExpressions" — 136 joints, 6 skinned items, 10,640 changed px.
+
+Only these rigs may be claimed as certified. The earlier module-load collision
+(`AssetDecoders.ts` vs the assets browser barrel) was resolved — both barrels
+export `ensureCompressedTextureSupport` — and the proof ran green after the fix.
+
 ## Acceptance Criteria For Public Claims
 
 To claim visible root-path skinning or morph support, provide:

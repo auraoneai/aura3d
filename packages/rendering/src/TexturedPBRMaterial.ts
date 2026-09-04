@@ -43,6 +43,7 @@ export interface TexturedPBRMaterialOptions {
   readonly roughness?: number;
   readonly environmentColor?: readonly [number, number, number];
   readonly environmentIntensity?: number;
+  readonly envMapIntensity?: number;
   readonly proceduralEnvironmentMap?: TexturedPBRProceduralEnvironmentMapOptions;
   readonly environmentMapTexture?: TextureBinding;
   readonly environmentMapIntensity?: number;
@@ -340,6 +341,7 @@ export class TexturedPBRMaterial extends Material {
     validateColor3(environmentColor, "environmentColor");
     validateProceduralEnvironmentMap(proceduralEnvironmentMap);
     validateNonNegative(options.environmentMapIntensity ?? 0, "environmentMapIntensity");
+    validateNonNegative(options.envMapIntensity ?? 1, "envMapIntensity");
     validateNonNegative(options.environmentMapSpecularIntensity ?? 0, "environmentMapSpecularIntensity");
     validateFinite(options.environmentMapRotation ?? 0, "environmentMapRotation");
     validateMipCount(options.environmentMapMipCount ?? 1, "environmentMapMipCount");
@@ -409,6 +411,7 @@ export class TexturedPBRMaterial extends Material {
         u_roughness: options.roughness ?? 0.5,
         u_environmentColor: environmentColor,
         u_environmentIntensity: options.environmentIntensity ?? DEFAULT_PBR_ENVIRONMENT_INTENSITY,
+        u_materialEnvironmentIntensity: options.envMapIntensity ?? 1,
         u_environmentSkyColor: proceduralEnvironmentMap.skyColor,
         u_environmentHorizonColor: proceduralEnvironmentMap.horizonColor,
         u_environmentGroundColor: proceduralEnvironmentMap.groundColor,
@@ -746,6 +749,7 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_roughness", kind: "float" },
         { name: "u_environmentColor", kind: "vec3" },
         { name: "u_environmentIntensity", kind: "float" },
+        { name: "u_materialEnvironmentIntensity", kind: "float" },
         { name: "u_environmentSkyColor", kind: "vec3" },
         { name: "u_environmentHorizonColor", kind: "vec3" },
         { name: "u_environmentGroundColor", kind: "vec3" },

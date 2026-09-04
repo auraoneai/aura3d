@@ -737,7 +737,7 @@ function buildWorldScene() {
     }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
-      distance: visualReviewCapture ? 10.6 : 17,
+      distance: visualReviewCapture ? 10.6 : 14,
       // The opening approach is still a wide three-quarter chase, but the
       // previous 17m default left the typed probe at roughly 100px in the
       // route-primary frame.  Bring the eye in one measured step so the
@@ -747,7 +747,7 @@ function buildWorldScene() {
       offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 6.4, 12.4],
       targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
       fov: visualReviewCapture ? 46 : 54,
-      smoothing: visualReviewCapture ? 0 : 0.14
+      smoothing: visualReviewCapture ? 0 : 0.05
     }));
 
   return builder;

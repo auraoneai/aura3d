@@ -304,10 +304,19 @@ function skylineDressingNodes(): AuraNodeInput[] {
   }
   const signMaterial = material.emissive({ name: "courier dispatch signage", color: "#f5d0fe", emissive: "#e879f9", emissiveIntensity: 1.7 });
   const aquaSignMaterial = material.emissive({ name: "courier aqua signage", color: "#cffafe", emissive: "#22d3ee", emissiveIntensity: 1.8 });
+  const signPostMaterial = material.pbr({ name: "courier sign post", color: "#101c2c", roughness: 0.6, metallic: 0.4 });
   nodes.push(
     primitives.box({ name: "courier dispatch billboard", material: signMaterial }).position(-7.3, 4.1, -14.8).rotate(0, 0.08, 0).scale([1.45, 0.78, 0.05]),
     primitives.box({ name: "courier drop billboard", material: aquaSignMaterial }).position(7.6, 3.4, -14.8).rotate(0, -0.1, 0).scale([1.2, 0.62, 0.05]),
-    primitives.box({ name: "courier overhead guide beam", material: aquaSignMaterial }).position(0, 4.8, -3.2).scale([6.8, 0.045, 0.045])
+    primitives.box({ name: "courier overhead guide beam", material: aquaSignMaterial }).position(0, 4.8, -3.2).scale([6.8, 0.045, 0.045]),
+    // Mounting poles so the signs read as street furniture instead of
+    // floating light rectangles. Renderer-owned dressing only.
+    primitives.box({ name: "courier dispatch sign post left", material: signPostMaterial }).position(-7.85, 1.85, -14.8).scale([0.09, 3.7, 0.09]),
+    primitives.box({ name: "courier dispatch sign post right", material: signPostMaterial }).position(-6.75, 1.85, -14.8).scale([0.09, 3.7, 0.09]),
+    primitives.box({ name: "courier drop sign post left", material: signPostMaterial }).position(7.15, 1.55, -14.8).scale([0.09, 3.1, 0.09]),
+    primitives.box({ name: "courier drop sign post right", material: signPostMaterial }).position(8.05, 1.55, -14.8).scale([0.09, 3.1, 0.09]),
+    primitives.box({ name: "courier guide beam post left", material: signPostMaterial }).position(-3.2, 2.4, -3.2).scale([0.11, 4.8, 0.11]),
+    primitives.box({ name: "courier guide beam post right", material: signPostMaterial }).position(3.2, 2.4, -3.2).scale([0.11, 4.8, 0.11])
   );
 
   // Repeating portal ribs create the forward tunnel read that the typed van
@@ -330,13 +339,19 @@ function skylineDressingNodes(): AuraNodeInput[] {
 
   const curbCyan = material.emissive({ name: "courier curb cyan", color: "#8af7ff", emissive: "#2dd4bf", emissiveIntensity: 0.92, opacity: 0.86 });
   const curbCoral = material.emissive({ name: "courier curb coral", color: "#ffafba", emissive: "#fb7185", emissiveIntensity: 0.8, opacity: 0.82 });
+  // Instanced curb markers: identical positions, scales, and materials to the
+  // former per-marker primitives, in one draw per side.
+  const leftCurbTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+  const rightCurbTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   for (let segment = 0; segment < 8; segment += 1) {
     const z = 17.5 - segment * 4.9;
-    nodes.push(
-      primitives.box({ name: `courier left curb marker ${segment}`, material: curbCyan }).position(-2.0, 0.08, z).scale([0.055, 0.035, 1.05]),
-      primitives.box({ name: `courier right curb marker ${segment}`, material: curbCoral }).position(2.0, 0.08, z + 0.35).scale([0.055, 0.035, 0.82])
-    );
+    leftCurbTransforms.push({ position: [-2.0, 0.08, z], scale: [0.055, 0.035, 1.05] });
+    rightCurbTransforms.push({ position: [2.0, 0.08, z + 0.35], scale: [0.055, 0.035, 0.82] });
   }
+  nodes.push(
+    instances.box({ name: "courier left curb markers", size: [1, 1, 1], transforms: leftCurbTransforms, material: curbCyan }),
+    instances.box({ name: "courier right curb markers", size: [1, 1, 1], transforms: rightCurbTransforms, material: curbCoral })
+  );
 
   // Renderer-owned rain and skyline light traces add the layered, atmospheric
   // tunnel language that the typed van needs in a still pressure frame. They
@@ -668,6 +683,10 @@ function pressureMomentNodes(
       ],
       material: cyanGlow
     }),
+    // Neutral key over the contact gate, on the trailing-camera side: the
+    // Meshy hero keeps its authored near-black paint, so it needs a real
+    // light at the pressure moment rather than a repaint.
+    lights.point({ name: "courier pressure gate key", color: "#d8f1ff", intensity: 4.0 }).position(originX + 1.5, 3.4, originZ + 4.5),
     model(assets.courierTrafficSedan, {
       name: "courier pressure blocker typed traffic",
       role: "setDressing",

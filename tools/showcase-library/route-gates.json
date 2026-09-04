@@ -396,14 +396,14 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "gravityPostCourierSkiff",
+        "gravityPodSkiffMeshy",
         "gravityPostDockBeacon"
       ],
       "primaryAssetRoles": {
-        "gravityPostCourierSkiff": "primary-vehicle",
+        "gravityPodSkiffMeshy": "primary-vehicle",
         "gravityPostDockBeacon": "dock-landmark-prop"
       },
-      "routePrimaryHeroAsset": "gravityPostCourierSkiff",
+      "routePrimaryHeroAsset": "gravityPodSkiffMeshy",
       "secondaryPrimaryAssets": [
         "gravityPostDockBeacon"
       ],
@@ -678,14 +678,14 @@
       "globalName": "__AURA3D_SHOWCASE_PATROL_WING__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
+      "primaryAssets": ["patrolAircraftMeshy", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
       "primaryAssetRoles": {
-        "patrolWingPlane": "primary-player-aircraft",
+        "patrolAircraftMeshy": "primary-player-aircraft",
         "patrolWingDroneA": "primary-intercept-target-a",
         "patrolWingDroneB": "primary-intercept-target-b",
         "patrolWingPadBeacon": "primary-landing-objective"
       },
-      "routePrimaryHeroAsset": "patrolWingPlane",
+      "routePrimaryHeroAsset": "patrolAircraftMeshy",
       "secondaryPrimaryAssets": ["patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
       "primitiveBudget": 80,
       "requiresTypedPrimaryAssets": true,

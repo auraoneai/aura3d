@@ -394,7 +394,9 @@ describe("agent API", () => {
 
     expect(diagnostics.kind).toBe("aura-material-capability-diagnostics");
     expect(diagnostics.requestedFeatures).toEqual(expect.arrayContaining(["base-color", "clearcoat", "normal-map", "transmission"]));
-    expect(diagnostics.partialRequestedFeatures).toEqual(expect.arrayContaining(["clearcoat", "normal-map", "transmission"]));
+    // C1: normal-map is root-supported with browser pixel proof; clearcoat/transmission stay partial.
+    expect(diagnostics.partialRequestedFeatures).toEqual(expect.arrayContaining(["clearcoat", "transmission"]));
+    expect(diagnostics.partialRequestedFeatures).not.toContain("normal-map");
     expect(diagnostics.warnings.join(" ")).toContain("Partial root material features requested");
   });
 
@@ -1095,7 +1097,9 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "rect" && node.width === 2.8)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "softbox")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "bloom" && node.threshold === 0.72)).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "fog" && node.intensity === 0.7)).toBe(true);
+    // muse3jsparity-PRD A5 task 1: volumetricFog builds a DISTINCT volumetric-fog
+    // node (never plain fog) so the bridge can submit the inscatter pass.
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "volumetric-fog" && node.intensity === 0.7)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "interaction" && node.mode === "hover" && node.selected === "height-colored data bar 4-6")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft footprint contact shadow" && Array.isArray(node.scale) && node.scale[0] === 1.6)).toBe(true);
     expect(snapshot.camera).toMatchObject({ mode: "flythrough", captureTime: 1.2 });

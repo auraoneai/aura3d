@@ -1,4 +1,5 @@
 import type { AnimationPose } from "@aura3d/animation";
+import type { AuraResolvedFootPlanting } from "./FootPlanting.js";
 
 export type RuntimeNodeVec3 = readonly [number, number, number];
 export type RuntimeNodeMorphTargetWeights = Readonly<Record<string, number>>;
@@ -60,6 +61,11 @@ export interface AuraRuntimeNodeAnimationBindingMetadata {
   readonly poseBakedFallback?: boolean;
   readonly sourceAssetId?: string;
   readonly sourceAssetName?: string;
+  /**
+   * Foot planting (E2): resolved once at controller bind and carried in-memory to the
+   * typed GLB actor. Never serialized — ground functions do not survive JSON.
+   */
+  readonly footPlanting?: AuraResolvedFootPlanting;
   readonly metadata?: Record<string, unknown>;
 }
 

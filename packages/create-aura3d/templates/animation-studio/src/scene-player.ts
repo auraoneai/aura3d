@@ -14,7 +14,7 @@
  */
 
 import { A3DRenderer, TextureBinding as EngineTextureBinding } from "@aura3d/engine/advanced-runtime";
-import { createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
+import { createPerformanceGovernor, createSideViewGameRenderPreset, createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import { createCameraPathFromPreset, sampleCameraPath, type CameraPath } from "@aura3d/engine";
 // I1 clean-room correctness: import the rendering/scene PRIMITIVES from the engine's own subpaths
 // (`@aura3d/engine/rendering` / `@aura3d/engine/scene`) — the SAME copy the A3DRenderer uses — NOT
@@ -88,6 +88,13 @@ interface LiveRouteSeekProof {
    * inspectable per-seek (e.g. "miko: talk←talk [extracted] 9 bones / 0.412rad").
    */
   readonly debugOverlay: readonly string[];
+  /** J3 perf governor snapshot (optional so old capture scripts keep working). */
+  readonly governor?: {
+    readonly resolutionScale: number;
+    readonly particleScale: number;
+    readonly lodBias: number;
+    readonly shadowSize: number;
+  };
   readonly characters: readonly {
     readonly id: string;
     readonly clip: string;
@@ -634,7 +641,15 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   };
 
   // 8. Pose at episode time `t`, drive camera + lip-sync + world-state, render.
+  // J3 perf governor: watches wall-clock frame cost against the side-view game
+  // budget and degrades resolution/particles/LOD/shadows in order.
+  const governorBudget = createSideViewGameRenderPreset().performanceBudget;
+  let governor = createPerformanceGovernor("conservative");
+  let lastPoseAtMs = 0;
   const poseAt = (time: number, options: LiveSeekOptions = {}): LiveRouteSeekProof => {
+    const nowMs = performance.now();
+    const frameMs = lastPoseAtMs === 0 ? 1000 / 60 : Math.min(250, Math.max(0, nowMs - lastPoseAtMs));
+    lastPoseAtMs = nowMs;
     const shot = shotAtTime(doc, time);
     const gardenGlow = sampleWorldStateGlow(doc, time);
     applyWorldGlow(gardenGlow);
@@ -820,11 +835,23 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
     if (debugOverlayEl && debugOverlayEnabled) {
       debugOverlayEl.textContent = `t=${time.toFixed(2)}s  shot=${shot.shotId}\n${debugOverlay.join("\n")}`;
     }
+    governor = governor.step(
+      {
+        fps: 1000 / Math.max(1, frameMs),
+        frameTimeMs: frameMs,
+        draws: diagnostics.drawCalls,
+        tris: 0,
+        particles: 0,
+        shadowBytes: 0
+      },
+      governorBudget
+    );
     return {
       time,
       drawCalls: diagnostics.drawCalls,
       skinnedRenderItems,
       gardenGlow,
+      governor: { ...governor.settings },
       shot: {
         shotId: shot.shotId,
         presetId: String(shot.presetId),

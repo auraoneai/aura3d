@@ -17,6 +17,23 @@ export interface ControlPickMetadata {
   readonly pickRadius?: number;
   readonly priority?: number;
   readonly payload?: unknown;
+  /**
+   * Instanced picking: world-space centers of the instances belonging to an
+   * `InstancedMesh` (or any multi-part object). Each entry is tested as its
+   * own pick sphere; a hit reports the nearest entry via `instanceId` on the
+   * result metadata. Entries accept either a `Vector3Like` or an
+   * `[x, y, z]` tuple.
+   */
+  readonly instancePositions?: readonly (Vector3Like | readonly [number, number, number])[];
+  /**
+   * Skinned picking: number of influencing bones, when known. Informational
+   * only — the sphere test runs against the bind-pose position plus radius,
+   * so deformation beyond that radius is an explicit non-goal (see
+   * `Picking` docs).
+   */
+  readonly skinnedBoneCount?: number;
+  /** Reported on a hit against one entry of `instancePositions`. */
+  readonly instanceId?: number;
 }
 
 export class ControlVector3 implements Vector3Like {

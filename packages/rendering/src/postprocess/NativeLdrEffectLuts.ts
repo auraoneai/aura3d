@@ -82,16 +82,37 @@ export function readBloomBrightThresholdLut(lut: Uint8Array, red: number, green:
  *
  * Texel `(source, blurred)` stores `clampByte(source + blurred * intensity)` in every color
  * channel. The CPU composite depends on nothing else, so the table is exact by construction.
+ *
+ * With `options.shoulder` in (0, 1], the hard clamp is replaced by a smooth
+ * highlight shoulder baked into the same table (still exact by construction):
+ * `out = 255 * (1 - exp(-linear * c)) / (1 - exp(-maxLinear * c))` with
+ * `c = (1 + shoulder * 3) / 255` and `maxLinear = 255 * (1 + intensity)`, so
+ * full-scale input still maps to 255 while mid-highlights roll off instead of
+ * clipping. `shoulder: 0` (default) keeps the legacy clamp byte-for-byte.
  */
-export function createBloomCompositeLut(intensity: number): Uint8Array {
+export function createBloomCompositeLut(
+  intensity: number,
+  options: { readonly shoulder?: number } = {}
+): Uint8Array {
   if (!Number.isFinite(intensity) || intensity < 0) {
     throw new Error("Bloom intensity must be finite and non-negative.");
   }
+  const shoulder = options.shoulder ?? 0;
+  if (!Number.isFinite(shoulder) || shoulder < 0 || shoulder > 1) {
+    throw new Error("Bloom composite shoulder must be finite and in [0, 1].");
+  }
   const lut = new Uint8Array(BLOOM_COMPOSITE_LUT_SIZE * BLOOM_COMPOSITE_LUT_SIZE * 4);
+  const knee = shoulder <= 0 ? 0 : (1 + shoulder * 3) / 255;
+  const maxLinear = 255 * (1 + intensity);
+  const kneeNormalization = knee <= 0 ? 1 : 1 - Math.exp(-maxLinear * knee);
   for (let blurred = 0; blurred < BLOOM_COMPOSITE_LUT_SIZE; blurred += 1) {
     const boost = blurred * intensity;
     for (let source = 0; source < BLOOM_COMPOSITE_LUT_SIZE; source += 1) {
-      const value = clampByte(source + boost);
+      const linear = source + boost;
+      const value =
+        knee <= 0
+          ? clampByte(linear)
+          : Math.round((255 * (1 - Math.exp(-linear * knee))) / kneeNormalization);
       const offset = (blurred * BLOOM_COMPOSITE_LUT_SIZE + source) * 4;
       lut[offset] = value;
       lut[offset + 1] = value;

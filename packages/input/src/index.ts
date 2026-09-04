@@ -1,5 +1,18 @@
 export { ActionMap } from "./ActionMap";
-export type { ActionBinding, AxisBinding } from "./ActionMap";
+export type { ActionBinding, ActionConflict, AxisBinding, SerializedActionBindings } from "./ActionMap";
+export { ComboDetector } from "./ComboDetector";
+export type { ComboDefinition, ComboEvent, ComboFrameInput } from "./ComboDetector";
+export { playHaptic, probeHaptics } from "./Haptics";
+export type {
+  GamepadRumbleActuatorLike,
+  HapticRequest,
+  HapticResult,
+  HapticsCapability,
+  HapticProbeInput,
+  NavigatorVibrateLike
+} from "./Haptics";
+export { TOUCH_LAYOUT_GENRES, createTouchLayoutPreset } from "./TouchLayouts";
+export type { TouchLayoutButtonBinding, TouchLayoutGenre, TouchLayoutPreset, TouchLayoutPresetOptions } from "./TouchLayouts";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
 export { GestureRecognizer } from "./GestureRecognizer";
@@ -35,8 +48,10 @@ export { WebXRSessionController } from "./WebXRSessionController";
 export type {
   A3DXRFrameLike,
   A3DXRHandedness,
+  A3DXRHandLike,
   A3DXRHitTestResultLike,
   A3DXRInputSourceLike,
+  A3DXRJointSample,
   A3DXRPoseLike,
   A3DXRReferenceSpaceLike,
   A3DXRReferenceSpaceType,
@@ -44,9 +59,14 @@ export type {
   A3DXRSessionLike,
   A3DXRSessionMode,
   A3DXRSystemLike,
+  A3DXRViewerPoseLike,
+  WebXRCameraSample,
+  WebXRCapabilityReport,
   WebXRControllerSample,
   WebXRFrameSample,
+  WebXRHandSample,
   WebXRHitTestSample,
+  WebXRJointSample,
   WebXRSessionControllerOptions,
   WebXRSessionStartResult
 } from "./WebXRSessionController";

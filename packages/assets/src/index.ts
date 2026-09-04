@@ -45,6 +45,10 @@ export type {
   GLTFSceneAnimationCloneSampleResult,
   GLTFSceneAnimationCloneSamplerSnapshot,
   GLTFSceneAnimationClipBindingDiagnostics,
+  GLTFootPlantingApplyResult,
+  GLTFootPlantingConfig,
+  GLTFootPlantingLegConfig,
+  GLTFSceneAnimationMaterialSink,
   GLTFSceneAnimationMixerOptions,
   GLTFSceneAnimationPlayOptions,
   GLTFSceneAnimationMixerSnapshot,
@@ -211,11 +215,12 @@ export type {
 } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type {
   GLTFAsset,
+  GLTFAnimationPointerBinding,
   GLTFCameraAsset,
   GLTFClearcoatMaterialExtension,
   GLTFDracoDecodeDescriptor,
@@ -224,8 +229,10 @@ export type {
   GLTFGeometryAsset,
   GLTFImageAsset,
   GLTFLightAsset,
+  GLTFJson,
   GLTFLoaderOptions,
   GLTFLoaderDiagnostics,
+  GLTFMaterialVariantSceneState,
   SkinWeightNormalizationStats,
   GLTFMaterialAsset,
   GLTFMaterialVariantAsset,
@@ -282,8 +289,8 @@ export { loadRenderableAsset } from "./loadRenderableAsset";
 export type { LoadRenderableAssetOptions, RenderableAsset, RenderableAssetKind } from "./loadRenderableAsset";
 export { createRenderableScene } from "./createRenderableScene";
 export type { CreateRenderableSceneOptions, RenderableScene } from "./createRenderableScene";
-export { transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
-export type { KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
+export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
+export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 export { ImportPipeline, ImportPipelineError } from "./ImportPipeline";
 export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportStage } from "./ImportPipeline";
 export { LoadContext } from "./LoadContext";
@@ -296,8 +303,8 @@ export { SceneLoader } from "./SceneLoader";
 export type { NativeSceneAsset, NativeSceneNodeDescriptor } from "./SceneLoader";
 export { ShaderLoader } from "./ShaderLoader";
 export type { ShaderSourceAsset } from "./ShaderLoader";
-export { createTextureMipGenerationStage, generateTextureMipChain } from "./TexturePipeline";
-export type { TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
+export { createTextureMipGenerationStage, generateTextureMipChain, resolveAnisotropyRequest } from "./TexturePipeline";
+export type { AnisotropyRequest, AnisotropyResolution, TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";

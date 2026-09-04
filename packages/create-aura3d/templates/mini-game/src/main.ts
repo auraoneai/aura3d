@@ -22,8 +22,13 @@ interface MiniGameEvidence {
   readonly deaths: number;
   readonly checkpointId: string;
   readonly collected: readonly string[];
+  readonly hero: { readonly assetId: string; readonly url: string };
   readonly player: { readonly x: number; readonly y: number; readonly grounded: boolean };
   readonly events: readonly string[];
+  readonly cameraRig: { readonly kind: string; readonly position: readonly [number, number, number] };
+  readonly gameFeel: { readonly trauma: number; readonly frozen: boolean };
+  readonly debugDraw: boolean;
+  readonly governor: { readonly resolutionScale: number; readonly particleScale: number };
   readonly evidence: { readonly entry: string; readonly physics: string; readonly typedAssets: number };
 }
 
@@ -58,12 +63,20 @@ const input = game.input({
     jump: ["Space", "KeyW", "ArrowUp"],
     dash: ["ShiftLeft", "ShiftRight"],
     down: ["KeyS", "ArrowDown"],
-    reset: ["KeyR"]
+    reset: ["KeyR"],
+    debug: ["KeyT"]
   },
   axes: { moveX: { negative: "left", positive: "right" } },
   bufferMs: 140
 });
 const platformer = game.platformer(level);
+// J3 scaffold surface: camera rig frames the opening shot, game feel adds
+// trauma/shake on impacts, the debug toggle gates overlays, and the lean perf
+// governor degrades resolution/particle scale when frames run long.
+const cameraRig = game.cameraRig({ kind: "side-view-follow", offset: [0, 2.98, 10.4] });
+const gameFeel = game.gameFeel();
+const debugDraw = game.debugDraw();
+const governor = game.performanceGovernor("conservative");
 const routeEvents: string[] = [];
 const app = createAuraApp("#app", { scene: buildScene() });
 const player = app.nodes.require("mini-player");
@@ -76,6 +89,9 @@ let objective = "Collect coins, avoid spikes, reach the goal";
 
 app.onFrame((dt) => {
   input.update(dt);
+  governor.step(Math.max(0, dt) * 1000);
+  gameFeel.update(Math.max(0, dt));
+  if (input.pressed("debug")) debugDraw.toggle();
   if (input.pressed("reset")) {
     platformer.reset();
     routeEvents.push("reset:Route reset");
@@ -96,12 +112,22 @@ app.onFrame((dt) => {
       dashPressed: firstSubstep && dashPressed,
       fastFall: input.held("down")
     });
-    for (const event of state.events) updateObjective(event);
+    for (const event of state.events) {
+      updateObjective(event);
+      if (event.type === "collect") gameFeel.addTrauma(0.25);
+      if (event.type === "hazard" || event.type === "fall") {
+        gameFeel.addTrauma(0.7);
+        gameFeel.hitStop();
+      }
+      if (event.type === "land") gameFeel.addTrauma(0.12);
+    }
     remaining -= substep;
     firstSubstep = false;
   } while (remaining > 0.000_001);
 
-  player.setPosition(state.player.x + 0.38, state.player.y + 0.5, 0);
+  // The certified Oobi hero is feet-origin (GLB min y = 0), so the visual
+  // rides at the physics point instead of the old fixture's +0.5 lift.
+  player.setPosition(state.player.x + 0.38, state.player.y + 0.01, 0);
   lift.setPosition(level.movingPlatforms[0].x + level.movingPlatforms[0].width / 2, movingLiftY(state.time), 0);
   for (const [id, node] of coins) node.setVisible(!state.collected.includes(id));
   checkpoint.setVisible(!state.activatedCheckpoints.includes("mid"));
@@ -139,10 +165,14 @@ function buildScene() {
     primitives.box({ name: "finish portal", material: material.pbr({ color: "#ffad57", metallic: 0.2, roughness: 0.18 }) })
       .position(level.finish.x, level.finish.y + 0.7, 0.08).scale([0.22, 0.92, 0.16]).runtime("goal")
   ];
+  // Opening shot is framed by the side-view camera rig. The offset reproduces
+  // the certified framing exactly (position [6.1, 3.8, 10.4], target
+  // [6.1, 0.82, 0]) so screenshot baselines do not shift.
+  const opening = cameraRig.snap([6.1, 0.82, 0]);
   return scene().background("#071015")
-    .add(model(assets.playerModel, { name: "typed mini-game player" }).position(level.start.x + 0.38, level.start.y + 0.5, 0).scale(0.28).runtime("mini-player"))
+    .add(model(assets.showcaseKenneyOobiPlatformerHero, { name: "certified hero vehicle-driver" }).position(level.start.x + 0.38, level.start.y + 0.01, 0).scale(1).runtime("mini-player"))
     .addMany(nodes)
-    .camera(camera.perspective({ position: [6.1, 3.8, 10.4], target: [6.1, 0.82, 0], fov: 46 }));
+    .camera(camera.perspective({ position: [opening[0], opening[1], opening[2]], target: [6.1, 0.82, 0], fov: 46 }));
 }
 
 function updateObjective(event: LeanPlatformerEvent): void {
@@ -178,8 +208,13 @@ function publishEvidence(state: ReturnType<typeof platformer.snapshot>): void {
     deaths: state.deaths,
     checkpointId: state.checkpointId,
     collected: state.collected,
+    hero: { assetId: assets.showcaseKenneyOobiPlatformerHero.id, url: assets.showcaseKenneyOobiPlatformerHero.url },
     player: { x: state.player.x, y: state.player.y, grounded: state.player.grounded },
     events: [...routeEvents],
+    cameraRig: { kind: cameraRig.kind, position: cameraRig.follow([state.player.x, state.player.y, 0], 1 / 60) },
+    gameFeel: gameFeel.snapshot(),
+    debugDraw: debugDraw.enabled,
+    governor: { ...governor.settings },
     evidence: { entry: "@aura3d/lean/game", physics: "solver-free deterministic arcade", typedAssets: Object.keys(assets).length }
   };
 }

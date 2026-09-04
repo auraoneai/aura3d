@@ -25,27 +25,27 @@ export class TrackballControls extends OrbitControls {
   private dollyVelocity = 0;
 
   roll(delta: number): void {
-    if (!this.state.enabled || !this.enableRotate) return;
+    if (this.isDisposed || !this.state.enabled || !this.enableRotate) return;
     this.state.rotation.z += delta;
     this.rotationVelocity.z += delta;
   }
 
   override rotate(deltaX: number, deltaY: number): void {
-    if (!this.state.enabled || !this.enableRotate) return;
+    if (this.isDisposed || !this.state.enabled || !this.enableRotate) return;
     super.rotate(deltaX, deltaY);
     this.rotationVelocity.x += deltaY;
     this.rotationVelocity.y += deltaX;
   }
 
   override pan(deltaX: number, deltaY: number): void {
-    if (!this.state.enabled || !this.enablePan) return;
+    if (this.isDisposed || !this.state.enabled || !this.enablePan) return;
     super.pan(deltaX, deltaY);
     this.panVelocity.x += deltaX;
     this.panVelocity.y += deltaY;
   }
 
   override dolly(scale: number): void {
-    if (!this.state.enabled || !this.enableZoom) return;
+    if (this.isDisposed || !this.state.enabled || !this.enableZoom) return;
     super.dolly(scale);
     this.dollyVelocity += scale - 1;
   }
@@ -83,8 +83,22 @@ export class TrackballControls extends OrbitControls {
     }
   }
 
+  /**
+   * F1-standard disposal: drains pending damping velocities through the base
+   * disposal (disables + detaches + delegates), then zeroes the residual
+   * velocities this class accumulates so a later `update()` cannot drift.
+   * Idempotent.
+   */
+  override dispose(): void {
+    if (this.isDisposed) return;
+    super.dispose();
+    this.rotationVelocity = { x: 0, y: 0, z: 0 };
+    this.panVelocity = { x: 0, y: 0 };
+    this.dollyVelocity = 0;
+  }
+
   update(deltaSeconds = 1 / 60): boolean {
-    if (!this.enableDamping) {
+    if (this.isDisposed || !this.enableDamping) {
       return false;
     }
     const damping = Math.max(0, Math.min(1, this.dampingFactor * deltaSeconds * 60));

@@ -8,7 +8,10 @@ export type LightingRigPreset =
   | "industrial"
   | "urban-neon"
   | "product-detail"
-  | "product-shot";
+  | "product-shot"
+  | "cinematic-night"
+  | "arena-showdown"
+  | "product-hero";
 
 export type LightingRigUnsupportedFeature =
   | "rectangular-area-light"
@@ -217,7 +220,34 @@ function scaleRigPosition(
 }
 
 export function listLightingRigPresets(): readonly LightingRigPreset[] {
-  return ["key-fill-rim", "studio-softbox", "sun", "industrial", "urban-neon", "product-detail", "product-shot"];
+  return ["key-fill-rim", "studio-softbox", "sun", "industrial", "urban-neon", "product-detail", "product-shot", "cinematic-night", "arena-showdown", "product-hero"];
+}
+
+/**
+ * Moonlit-night rig: cool directional moon key with shadows, a warm tungsten
+ * practical, a finite rectangular neon-sign emitter, a cool spot rim, and a
+ * dim sky fill. Pure descriptors — mounting onto a scene stays opt-in.
+ */
+export function cinematicNight(options: Omit<LightingRigOptions, "preset"> = {}): LightingRig {
+  return createLightingRig({ ...options, preset: "cinematic-night" });
+}
+
+/**
+ * High-contrast arena rig: warm overhead spot key with shadows, cool spot rim,
+ * magenta crowd-wash practical, finite rectangular jumbotron emitter, and a
+ * dim fill. Pure descriptors — mounting onto a scene stays opt-in.
+ */
+export function arenaShowdown(options: Omit<LightingRigOptions, "preset"> = {}): LightingRig {
+  return createLightingRig({ ...options, preset: "arena-showdown" });
+}
+
+/**
+ * Product-hero rig: large finite rectangular key, low directional fill, cool
+ * spot rim, and a warm point accent. Pure descriptors — mounting onto a scene
+ * stays opt-in.
+ */
+export function productHero(options: Omit<LightingRigOptions, "preset"> = {}): LightingRig {
+  return createLightingRig({ ...options, preset: "product-hero" });
 }
 
 function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRigLightDescriptor[] {
@@ -258,6 +288,29 @@ function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRig
         light("product-fill", "directional", "fill", [0.7, 0.78, 0.9], 0.3, [4, 3, 3], [-0.68, -0.46, -0.57], 0, 0, 0, false, "Product fill is direct lighting."),
         light("product-rim", "spot", "rim", [0.85, 0.92, 1], 0.78, [0.5, 3.2, -4.5], [-0.08, -0.36, 0.93], 8, Math.PI / 6, 0.42, false, "Rim light is a bounded spot helper.")
       ];
+    case "cinematic-night":
+      return [
+        light("night-moon", "directional", "key", [0.62, 0.74, 1], 0.9, [6, 9, -4], [-0.52, -0.72, 0.46], 0, 0, 0, true, "Moon key is a directional approximation, not a physical atmosphere or sky model."),
+        light("night-practical", "point", "practical", [1, 0.6, 0.3], 1.5, [-2.5, 1.7, 1.6], [0, -1, 0], 7, 0, 0, false, "Tungsten practical has no IES profile; falloff is bounded range attenuation only."),
+        areaLight("night-sign", "accent", [1, 0.32, 0.55], 6, [3, 2.2, -2.5], [-0.62, -0.34, 0.71], 9, [1.6, 0.9], "Finite rectangular neon-sign emitter integrated by the forward PBR shader; rectangular-light shadow maps remain unsupported."),
+        light("night-rim", "spot", "rim", [0.5, 0.72, 1], 1.1, [1, 3.2, -4.2], [-0.14, -0.4, 0.91], 10, Math.PI / 5, 0.5, false, "Cool rim is a bounded spot helper for silhouette separation."),
+        light("night-sky-fill", "directional", "fill", [0.3, 0.42, 0.72], 0.16, [-4, 5, 3], [0.55, -0.62, -0.56], 0, 0, 0, false, "Sky fill is a direct-light approximation.")
+      ];
+    case "arena-showdown":
+      return [
+        light("arena-key", "spot", "key", [1, 0.86, 0.7], 2.4, [0, 6.5, 3.5], [0, -0.88, -0.48], 14, Math.PI / 6, 0.35, true, "Overhead arena fixture represented as a shadow-casting spot light, not a measured luminaire."),
+        light("arena-rim", "spot", "rim", [0.45, 0.8, 1], 1.5, [0, 3.5, -5], [0, -0.44, 0.9], 12, Math.PI / 5, 0.5, false, "Cool rim is a bounded spot helper for silhouette separation."),
+        light("arena-crowd", "point", "accent", [1, 0.28, 0.62], 0.85, [5, 2.5, 4], [-1, -0.2, 0.1], 12, 0, 0, false, "Crowd wash has no IES profile and does not bounce light globally."),
+        areaLight("arena-jumbotron", "practical", [0.92, 0.96, 1], 9, [-4, 5, -3], [0.55, -0.62, 0.56], 12, [3, 1.6], "Finite rectangular jumbotron emitter integrated by the forward PBR shader; rectangular-light shadow maps remain unsupported."),
+        light("arena-fill", "directional", "fill", [0.5, 0.56, 0.7], 0.2, [5, 3, 4], [-0.64, -0.48, -0.6], 0, 0, 0, false, "Fill is a direct-light approximation.")
+      ];
+    case "product-hero":
+      return [
+        areaLight("hero-key", "key", [1, 0.96, 0.9], 18, [-4, 5, 4], [0.52, -0.64, -0.56], 14, [2.6, 1.5], "Finite rectangular hero key integrated across its emitting surface; rectangular-light shadow maps remain unsupported."),
+        light("hero-fill", "directional", "fill", [0.7, 0.78, 0.9], 0.32, [4, 3, 3], [-0.68, -0.46, -0.57], 0, 0, 0, false, "Hero fill is direct lighting that preserves material contrast."),
+        light("hero-rim", "spot", "rim", [0.9, 0.95, 1], 1.1, [1, 3.5, -4], [-0.14, -0.4, 0.9], 9, Math.PI / 6, 0.42, false, "Rim light is a bounded spot helper for product edge separation."),
+        light("hero-accent", "point", "accent", [1, 0.7, 0.45], 0.6, [2.5, 1.2, 2], [-0.5, -0.3, -0.81], 5, 0, 0, false, "Warm accent is a bounded point helper; it is not emissive bounce or GI.")
+      ];
     case "key-fill-rim":
       return [
         light("key", "directional", "key", [1, 0.94, 0.86], 1.2, [-3, 4, 3], [0.5, -0.66, -0.56], 0, 0, 0, true, "Reusable key light descriptor."),
@@ -286,6 +339,19 @@ function lightingRigSoftboxes(preset: LightingRigPreset): readonly LightingRigSo
         softbox("product-detail-key-strip", "key", [1, 0.9, 0.78], 1.48, [-4.0, 2.7, 2.7], [0.7, -0.48, -0.52], [1.9, 0.58], ["product-detail-key"], "Low glancing key strip proxy for product material inspection; renderer still receives direct lights."),
         softbox("product-detail-cool-rim", "rim", [0.64, 0.78, 1], 1.15, [2.5, 2.3, -3.0], [-0.42, -0.34, 0.84], [1.55, 0.34], ["product-detail-cool-edge"], "Cool rim proxy for edge separation; not GI or physical area lighting."),
         softbox("product-detail-fill-card", "fill", [0.48, 0.56, 0.68], 0.16, [3.2, 2.0, 2.7], [-0.68, -0.34, -0.64], [1.3, 0.9], ["product-detail-fill"], "Low fill proxy keeps material contrast bounded.")
+      ];
+    case "cinematic-night":
+      return [
+        softbox("night-sign-softbox", "key", [1, 0.32, 0.55], 0.9, [2.6, 2.0, -2.1], [-0.62, -0.34, 0.71], [1.6, 0.9], ["night-sign"], "Neon-sign panel proxy used for placement and diagnostics only; renderer still receives direct light descriptors.")
+      ];
+    case "arena-showdown":
+      return [
+        softbox("arena-jumbotron-softbox", "key", [0.92, 0.96, 1], 1.1, [-3.4, 4.2, -2.5], [0.55, -0.62, 0.56], [3, 1.6], ["arena-jumbotron"], "Jumbotron panel proxy used for placement and diagnostics only; renderer still receives direct light descriptors.")
+      ];
+    case "product-hero":
+      return [
+        softbox("hero-key-softbox", "key", [1, 0.96, 0.9], 1.7, [-3.2, 3.8, 3.1], [0.52, -0.64, -0.56], [2.6, 1.5], ["hero-key"], "Hero key softbox proxy; renderer still receives direct light descriptors."),
+        softbox("hero-rim-strip", "rim", [0.9, 0.95, 1], 1.1, [0.9, 3.0, -3.4], [-0.14, -0.4, 0.9], [1.7, 0.4], ["hero-rim"], "Rear strip proxy for product edge separation; not GI or area-light shading.")
       ];
     default:
       return [];

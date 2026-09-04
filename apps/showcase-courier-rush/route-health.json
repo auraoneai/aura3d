@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T08:02:12.452Z",
+  "generatedAt": "2026-09-03T10:00:40.034Z",
   "appId": "showcase-courier-rush",
   "route": "/apps/showcase-courier-rush/",
   "classification": "prototype-blocked",
@@ -150,7 +150,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 35,
+    "sourceOccurrences": 39,
     "primitiveBudget": 40,
     "role": "street/zone guides, light pools, feedback, and non-subject set dressing",
     "status": "within-stated-role-and-budget"
@@ -225,43 +225,43 @@
     "acceptanceArtifacts": [
       {
         "path": "tests/reports/showcase-courier-rush/load.png",
-        "sha256": "ce71f65c91b0cc6a5636b9422838a82cc4918436c7e0b15d6bc51ebd7b6b5bfe"
+        "sha256": "e10c49ccc0f919ce9b8908ac9f8c774037d361d3f8337b7a449a5124c3e3f2e1"
       },
       {
         "path": "tests/reports/showcase-courier-rush/pickup-zone.png",
-        "sha256": "2a2ebc652b96905537c1d12b5a1fd6c84fa9b71d674ab97cce141d4deb1f9b28"
+        "sha256": "afe7f4c39c4dc7826cb55b9a2ea17d54957d3a3f5a931fec4692bc9843c2c39c"
       },
       {
         "path": "tests/reports/showcase-courier-rush/parcel-in-bed.png",
-        "sha256": "069c5002aadc2d552304b03feee9f6ee96d70dddd2f5bb1503cf0f82635ec658"
+        "sha256": "63526e754ef1c52060e19d71c2cf364cdb9b6db9ef122f13611998a15cb81b47"
       },
       {
         "path": "tests/reports/showcase-courier-rush/busy-intersection.png",
-        "sha256": "3619e867c67cc97fa2a1cf279e840cee8a255dd66f62b6842c4b00b5b78cb75e"
+        "sha256": "ff6b1d68ed2e68d92d06645414703a7e7a030ebcd1581e4b0e9c4881436b3a89"
       },
       {
         "path": "tests/reports/showcase-courier-rush/drop-flash.png",
-        "sha256": "3b779c6ae0efebd44339b249b817998c8aba320c9bdcccb96e8fcdf5e7c35e04"
+        "sha256": "de0acaa00039804a69b2e68c890496fad3d60a50ff511f2ac3d18643fc561339"
       },
       {
         "path": "tests/reports/showcase-courier-rush/traffic-strike-fail.png",
-        "sha256": "e8608dcb5724a4e3d4e0a52818ac5d94748e79ae7ac2093a8de6350b12923b0d"
+        "sha256": "5015fae731551eb57ec92c965a72c538cf6b4087195f4ad79d9fe4813bba99d4"
       },
       {
         "path": "tests/reports/showcase-courier-rush/timer-fail-summary.png",
-        "sha256": "c5308967da8a0bd8b66330df35c73eebe85136b0f46593340c20618ae29762ab"
+        "sha256": "e3f94e5a16be09de9744a957ba8a281231a5a088aaeefceee4592c1b818a6f48"
       },
       {
         "path": "tests/reports/showcase-courier-rush/shift-clear.png",
-        "sha256": "7badf957e514b8ad2fb3f79e920feb8df5e5524775ba00af8d3b8136b79a030b"
+        "sha256": "896c661b5a358893dffb6428cee742620884bd7765f4ca52b307f1fddf05140c"
       },
       {
         "path": "tests/reports/showcase-courier-rush/mobile.png",
-        "sha256": "e085c2515e163c4c7bdf032f6b481853bdc180040b3fd248d1ce251afe36c227"
+        "sha256": "f44f493b9e9832410fdd5eaee309fdf7eb6000226ff2dfd19df3ddb5dd431b80"
       },
       {
         "path": "tests/reports/showcase-courier-rush/reduced-motion.png",
-        "sha256": "9622b28539e14b355c65fcb2fb3aadb82661dd1e0780f929c1e31ffc8baed06c"
+        "sha256": "15aacd4556c3799f2388ba63f24c6206577545ab698183e726b876a927c93af7"
       }
     ],
     "performance": "apps/showcase-courier-rush/performance-report.json",

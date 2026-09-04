@@ -13,6 +13,7 @@ export {
 export type { TransmissionBackdropSource } from "./TransmissionBackdropCapture";
 export type { ProductionWebGL2RendererOptions } from "./ProductionWebGL2Renderer";
 export {
+  createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
@@ -25,13 +26,17 @@ export {
 export {
   ProductionWebGPURenderer,
   createProductionWebGPUReport,
-  createProductionWebGPUReadinessReport
+  createProductionWebGPUReadinessReport,
+  describeWebGPULostDevice,
+  screenWebGPURenderBundlePrototype,
+  WEBGPU_PARITY_PLAN
 } from "./ProductionWebGPURenderer";
 export {
   createProductionOrbitControlPreset,
   summarizeProductionAnimationWorkflow
 } from "./AnimationControlsPipeline";
 export type {
+  DualProbeEnvironmentLightingOptions,
   ProductionEnvironmentLightingResources,
   ProductionPbrHdrPipeline,
   ProductionPbrHdrPipelineOptions,
@@ -50,7 +55,12 @@ export type {
   ProductionWebGPUStatus,
   ProductionWebGPUReadinessItem,
   ProductionWebGPUReadinessReport,
-  ProductionWebGPURendererOptions
+  ProductionWebGPURendererOptions,
+  WebGPULostDeviceReport,
+  WebGPUParityFeatureId,
+  WebGPUParityFeatureRow,
+  WebGPUParityFeatureStatus,
+  WebGPURenderBundlePrototype
 } from "./ProductionWebGPURenderer";
 export type {
   ProductionAnimationMetadataInput,
@@ -107,6 +117,7 @@ export * from "./passes/OpaquePass";
 export * from "./passes/TransparentPass";
 export * from "./passes/SkyboxPass";
 export * from "./passes/ToneMappingPass";
+export * from "./passes/FramegraphTopology";
 export * from "./postprocess/ProductionEffectComposer";
 export * from "./postprocess/ProductionPostProcessTypes";
 export * from "./postprocess/BloomPass";

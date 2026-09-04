@@ -5,6 +5,10 @@ import { describe, expect, test } from "vitest";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject } from "../../../packages/create-aura3d/src";
 import { createFightingRouteReadiness } from "../../../packages/create-aura3d/templates/fighting-game/src/game/stage";
 import {
+  PLAYER_FIGHTER_ASSET,
+  RIVAL_FIGHTER_ASSET
+} from "../../../packages/create-aura3d/templates/fighting-game/src/game/fighters";
+import {
   animationStudioOptionalAudioAssetKeys,
   animationStudioRequiredAssetKeys
 } from "../../../packages/create-aura3d/templates/animation-studio/src/aura-assets";
@@ -31,17 +35,17 @@ describe("create-aura3d templates", () => {
   });
 
   test("fighting-game readiness distinguishes placeholders from typed asset proof", () => {
-    const placeholder = createFightingRouteReadiness({ missingFighterAssets: ["playerFighter", "rivalFighter"] });
+    const placeholder = createFightingRouteReadiness({ missingFighterAssets: [PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET] });
     const typedAssets = createFightingRouteReadiness({ missingFighterAssets: [] });
 
     expect(placeholder.sourceOnly).toBe(true);
     expect(placeholder.placeholderMode).toBe(true);
     expect(placeholder.proofMode).toBe("source-placeholders");
-    expect(placeholder.missingTypedAssets).toEqual(["playerFighter", "rivalFighter"]);
+    expect(placeholder.missingTypedAssets).toEqual([PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET]);
     expect(typedAssets.sourceOnly).toBe(false);
     expect(typedAssets.placeholderMode).toBe(false);
     expect(typedAssets.proofMode).toBe("typed-assets");
-    expect(typedAssets.requiredTypedAssets).toEqual(["playerFighter", "rivalFighter"]);
+    expect(typedAssets.requiredTypedAssets).toEqual([PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET]);
     expect(typedAssets.publicEngineApis).toEqual(expect.arrayContaining(["createGameApp", "game.combatWorld", "games.fighting.stagePreset"]));
   });
 

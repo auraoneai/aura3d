@@ -275,6 +275,159 @@ export interface ProductionWebGPUReadinessReport {
   readonly blockers: readonly string[];
 }
 
+export type WebGPUParityFeatureId =
+  | "bloom-pyramid"
+  | "color-grade"
+  | "fxaa-taa"
+  | "spot-shadows"
+  | "textured-pbr"
+  | "render-bundles"
+  | "compute-particles";
+
+export type WebGPUParityFeatureStatus = "unproven" | "prototype-measured" | "proven";
+
+/**
+ * J2 per-feature WebGPU plan. Every row names its WGSL foundation file and an
+ * honest status: NOTHING here is `proven` until adapter + backend + dispatch +
+ * render + pixel evidence lands on real hardware per repo rules. The strict
+ * `backend:webgpu` failure semantics below are what keep these rows from
+ * passing silently on a WebGL substitute.
+ */
+export interface WebGPUParityFeatureRow {
+  readonly id: WebGPUParityFeatureId;
+  readonly status: WebGPUParityFeatureStatus;
+  readonly wgslFoundation: string;
+  readonly evidence: string;
+}
+
+export const WEBGPU_PARITY_PLAN: readonly WebGPUParityFeatureRow[] = [
+  {
+    id: "bloom-pyramid",
+    status: "unproven",
+    wgslFoundation: "production-runtime/shaders/wgsl/postprocess.wgsl",
+    evidence: "A1 bloom pyramid has no WebGPU dispatch/render/pixel proof yet."
+  },
+  {
+    id: "color-grade",
+    status: "unproven",
+    wgslFoundation: "production-runtime/shaders/wgsl/postprocess.wgsl",
+    evidence: "A3 colorGrade has no WebGPU dispatch/render/pixel proof yet."
+  },
+  {
+    id: "fxaa-taa",
+    status: "unproven",
+    wgslFoundation: "production-runtime/shaders/wgsl/postprocess.wgsl",
+    evidence: "A3 FXAA/TAA has no WebGPU dispatch/render/pixel proof yet."
+  },
+  {
+    id: "spot-shadows",
+    status: "unproven",
+    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    evidence: "B1 spot shadows have no WebGPU dispatch/render/pixel proof yet."
+  },
+  {
+    id: "textured-pbr",
+    status: "proven",
+    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    evidence: "Proven 2026-09-04 on Apple Metal 3 (vendor=apple arch=metal-3): adapter real; backend webgpu strict "
+      + "(backend='auto' selected webgpu, fallback=false); dispatch nativePbrSubmissions=110; render nativeSubmissions=110, "
+      + "pipelines=2, passes=110, uploads=170, bindings=404; pixel native texture-to-buffer readback with 140,378 non-black "
+      + "pixels (car-concept: 109 primitives, 29 materials, 15 textures). "
+      + "tests/reports/runtime-parity/webgpu-sdk-production/webgpu-sdk-production-report.json + "
+      + "tests/reports/webgpu-parity/feature-probe.json (pbr routes 28/3 PBR submissions, 80/4 bindings)."
+  },
+  {
+    id: "render-bundles",
+    status: "prototype-measured",
+    wgslFoundation: "n/a (API-level prototype, no new shader)",
+    evidence: "Measured 2026-09-04 on Apple Metal 3: 4096 static draws, median bundle-execute 0.60ms vs re-encoded 0.80ms, "
+      + "ratio 0.75 (<1, adopt-candidate per screen). tests/reports/webgpu-parity/render-bundle-measurement.json. "
+      + "Zero renderBundle call sites exist in the engine backend — adoption still needs engine implementation."
+  },
+  {
+    id: "compute-particles",
+    status: "unproven",
+    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    evidence: "Particle compute-dispatch reuse has no WebGPU dispatch proof yet."
+  }
+];
+
+export interface WebGPURenderBundlePrototype {
+  readonly schema: "a3d-webgpu-render-bundle-prototype";
+  /** Static/instanced repeat draws eligible for one recorded bundle. */
+  readonly eligibleDraws: number;
+  readonly totalDraws: number;
+  /** Labeled estimate: executes are cheaper than re-recorded draws, but wall-clock proof needs hardware. */
+  readonly estimatedExecuteVsDrawRatio: number;
+  readonly verdict: "adopt-candidate" | "needs-hardware-proof" | "out";
+  readonly reasoning: string;
+}
+
+/**
+ * J2 render-bundle prototype screen. Pure and hardware-free: it decides
+ * whether the workload even qualifies (static repeat draws), and always
+ * returns `needs-hardware-proof` for adoption — wall-clock + draw-call proof
+ * can only come from a real adapter. Never returns `adopt-candidate` without
+ * measured numbers passed in.
+ */
+export function screenWebGPURenderBundlePrototype(options: {
+  readonly totalDraws: number;
+  readonly staticRepeatDraws: number;
+  readonly measuredExecuteMs?: number;
+  readonly measuredDrawMs?: number;
+}): WebGPURenderBundlePrototype {
+  const totalDraws = Math.max(0, Math.floor(options.totalDraws));
+  const eligibleDraws = Math.min(totalDraws, Math.max(0, Math.floor(options.staticRepeatDraws)));
+  if (eligibleDraws < 2) {
+    return {
+      schema: "a3d-webgpu-render-bundle-prototype",
+      eligibleDraws,
+      totalDraws,
+      estimatedExecuteVsDrawRatio: 1,
+      verdict: "out",
+      reasoning: "Fewer than 2 static repeat draws — bundle recording cannot pay off."
+    };
+  }
+  const measured = options.measuredExecuteMs !== undefined && options.measuredDrawMs !== undefined;
+  const ratio = measured && options.measuredDrawMs! > 0
+    ? Math.max(0, options.measuredExecuteMs! / options.measuredDrawMs!)
+    : eligibleDraws > 0 ? 1 / eligibleDraws : 1;
+  return {
+    schema: "a3d-webgpu-render-bundle-prototype",
+    eligibleDraws,
+    totalDraws,
+    estimatedExecuteVsDrawRatio: ratio,
+    verdict: measured && ratio < 1 ? "adopt-candidate" : "needs-hardware-proof",
+    reasoning: measured
+      ? `Measured execute/draw ratio ${ratio.toFixed(3)} on real hardware.`
+      : `${eligibleDraws}/${totalDraws} draws are bundle-eligible by structure, but no wall-clock numbers exist — needs hardware proof.`
+  };
+}
+
+export interface WebGPULostDeviceReport {
+  readonly schema: "a3d-webgpu-lost-device";
+  readonly reason: string;
+  readonly fallbackAttempted: false;
+  readonly action: "fail-closed";
+  readonly message: string;
+}
+
+/**
+ * J2/U2 lost-device + uncaptured-error diagnostics. Fail-closed by construction:
+ * the type system forbids recording a fallback (`fallbackAttempted: false`),
+ * so no silent WebGL substitution can be expressed here.
+ */
+export function describeWebGPULostDevice(reason: string): WebGPULostDeviceReport {
+  const normalized = reason.trim() || "unknown";
+  return {
+    schema: "a3d-webgpu-lost-device",
+    reason: normalized,
+    fallbackAttempted: false,
+    action: "fail-closed",
+    message: `WebGPU device lost (${normalized}). Explicit backend:webgpu requests fail closed — remount with a new device or switch backends explicitly. No silent WebGL substitution was performed.`
+  };
+}
+
 export interface ProductionWebGPULike {
   requestAdapter(): Promise<ProductionWebGPUAdapterLike | null>;
   getPreferredCanvasFormat?(): string;

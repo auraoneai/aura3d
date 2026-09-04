@@ -297,6 +297,164 @@ function defaultDebugColor(kind: CollisionVolumeKind): string {
   }
 }
 
+/**
+ * Generalized route topology volumes (H2).
+ *
+ * Combat volumes above (`hitbox`/`hurtbox`/`pushbox`/`guardbox`) cover fighting
+ * routes, but racing routes need checkpoints/track segments and platformers need
+ * surfaces/hazards/spawns — previously each route hand-rolled its own bounds
+ * checks against `PublicGameGeometry` data. These helpers generalize that into
+ * one validated volume core (same half-extent validation, same AABB overlap and
+ * penetration math) so any route — racing, platformer, or a new genre — builds
+ * certified topology from the same code instead of inventing a fifth bounds
+ * check. Volumes are authoring data, not simulation: overlap tests here never
+ * apply forces; forces come only from the real simulation.
+ */
+export type CollisionTopologyKind =
+  | "checkpoint"
+  | "track-segment"
+  | "platform-surface"
+  | "hazard-zone"
+  | "spawn-zone"
+  | "trigger-zone";
+
+export type TopologyVolumeDescriptor = {
+  readonly id?: string;
+  readonly offset?: Vec3;
+  readonly halfExtents: Vec3;
+  readonly enabled?: boolean;
+  readonly tags?: readonly string[];
+  /** Lap/route progress at this volume, 0..1 (checkpoints, track segments). */
+  readonly progress?: number;
+  readonly metadata?: Readonly<Record<string, unknown>>;
+};
+
+export type TopologyVolume = {
+  readonly id: string;
+  readonly kind: CollisionTopologyKind;
+  readonly offset: Vec3;
+  readonly halfExtents: Vec3;
+  readonly enabled: boolean;
+  readonly tags: readonly string[];
+  readonly progress?: number | undefined;
+  readonly metadata?: Readonly<Record<string, unknown>>;
+};
+
+export type ResolvedTopologyVolume = TopologyVolume & {
+  readonly center: Vec3;
+  readonly bounds: Bounds;
+};
+
+export function topologyVolume(kind: CollisionTopologyKind, descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  validateHalfExtents(descriptor.halfExtents, `${kind} halfExtents`);
+  if (descriptor.progress !== undefined && (!Number.isFinite(descriptor.progress) || descriptor.progress < 0 || descriptor.progress > 1)) {
+    throw new Error(`${kind} progress must be a finite number in [0, 1], got ${descriptor.progress}.`);
+  }
+  const volume: TopologyVolume = {
+    id: descriptor.id ?? kind,
+    kind,
+    offset: cloneVec3(descriptor.offset ?? [0, 0, 0]),
+    halfExtents: cloneVec3(descriptor.halfExtents),
+    enabled: descriptor.enabled ?? true,
+    tags: [...(descriptor.tags ?? [])],
+    ...(descriptor.progress === undefined ? {} : { progress: descriptor.progress }),
+    ...(descriptor.metadata === undefined ? {} : { metadata: { ...descriptor.metadata } })
+  };
+  validateFiniteVec3(volume.offset, `${kind} offset`);
+  return volume;
+}
+
+export function checkpointVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("checkpoint", descriptor);
+}
+
+export function trackSegmentVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("track-segment", descriptor);
+}
+
+export function platformSurfaceVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("platform-surface", descriptor);
+}
+
+export function hazardZoneVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("hazard-zone", descriptor);
+}
+
+export function spawnZoneVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("spawn-zone", descriptor);
+}
+
+export function triggerZoneVolume(descriptor: TopologyVolumeDescriptor): TopologyVolume {
+  return topologyVolume("trigger-zone", descriptor);
+}
+
+export function resolveTopologyVolume(volume: TopologyVolume, originPosition: Vec3): ResolvedTopologyVolume {
+  validateFiniteVec3(originPosition, "topology origin position");
+  const center: Vec3 = [
+    originPosition[0] + volume.offset[0],
+    originPosition[1] + volume.offset[1],
+    originPosition[2] + volume.offset[2]
+  ];
+  return { ...volume, offset: cloneVec3(volume.offset), halfExtents: cloneVec3(volume.halfExtents), tags: [...volume.tags], center, bounds: aabbFromCenter(center, volume.halfExtents) };
+}
+
+export function overlapsTopology(a: ResolvedTopologyVolume, b: ResolvedTopologyVolume): boolean {
+  if (!a.enabled || !b.enabled) return false;
+  return overlapsAabb(a.bounds, b.bounds);
+}
+
+export function topologyPenetration(a: ResolvedTopologyVolume, b: ResolvedTopologyVolume): CollisionPenetration | null {
+  if (!a.enabled || !b.enabled) return null;
+  return aabbPenetration(a.bounds, b.bounds);
+}
+
+export function topologyVolumeDebugColor(kind: CollisionTopologyKind): string {
+  switch (kind) {
+    case "checkpoint":
+      return "#38bdf8";
+    case "track-segment":
+      return "#a78bfa";
+    case "platform-surface":
+      return "#22c55e";
+    case "hazard-zone":
+      return "#ef4444";
+    case "spawn-zone":
+      return "#facc15";
+    case "trigger-zone":
+      return "#fb923c";
+  }
+}
+
+export type TopologyVolumeDebugDescriptor = {
+  readonly id: string;
+  readonly kind: CollisionTopologyKind;
+  readonly center: Vec3;
+  readonly halfExtents: Vec3;
+  readonly color: string;
+  readonly opacity: number;
+  readonly label: string;
+};
+
+export function topologyVolumeDebugDescriptors(
+  volumes: readonly TopologyVolume[],
+  originPosition: Vec3
+): TopologyVolumeDebugDescriptor[] {
+  return volumes
+    .filter((volume) => volume.enabled)
+    .map((volume) => {
+      const resolved = resolveTopologyVolume(volume, originPosition);
+      return {
+        id: resolved.id,
+        kind: resolved.kind,
+        center: resolved.center,
+        halfExtents: resolved.halfExtents,
+        color: topologyVolumeDebugColor(resolved.kind),
+        opacity: 0.28,
+        label: `${resolved.kind}:${resolved.id}`
+      };
+    });
+}
+
 function volumeKey(volume: CollisionVolume | ResolvedCollisionVolume): string {
   const owner = volume.ownerId === undefined ? "none" : String(volume.ownerId);
   return `${owner}/${volume.kind}/${volume.id}`;

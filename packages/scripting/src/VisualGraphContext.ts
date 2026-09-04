@@ -98,6 +98,38 @@ export interface VisualCameraState {
   readonly targetIds?: readonly string[];
 }
 
+export interface VisualGameScoreState {
+  readonly id: string;
+  readonly score: number;
+}
+
+export interface VisualObjectiveState {
+  readonly id: string;
+  readonly status: "active" | "complete" | "failed";
+  readonly progress?: number;
+}
+
+export interface VisualStateMachineState {
+  readonly id: string;
+  readonly state: string;
+}
+
+export interface VisualTimerState {
+  readonly id: string;
+  readonly elapsed: number;
+  readonly duration: number;
+  readonly running: boolean;
+}
+
+export type VisualAiPlanner = "behavior-tree" | "goap" | "htn" | "utility" | "decision-tree" | "perception" | "weapon";
+
+export interface VisualAiSnapshot {
+  readonly id: string;
+  readonly planner: VisualAiPlanner;
+  readonly status: string;
+  readonly output?: unknown;
+}
+
 export interface VisualGraphExecutionContext {
   readonly frame?: number;
   readonly time?: number;
@@ -112,6 +144,11 @@ export interface VisualGraphExecutionContext {
   readonly overlaps?: VisualStateCollection<VisualOverlapResult>;
   readonly combatEvents?: readonly VisualCombatEvent[];
   readonly camera?: VisualCameraState;
+  readonly gameScores?: VisualStateCollection<VisualGameScoreState>;
+  readonly objectives?: VisualStateCollection<VisualObjectiveState>;
+  readonly stateMachines?: VisualStateCollection<VisualStateMachineState>;
+  readonly timers?: VisualStateCollection<VisualTimerState>;
+  readonly aiSnapshots?: VisualStateCollection<VisualAiSnapshot>;
   readonly evidence?: Readonly<Record<string, unknown>>;
 }
 

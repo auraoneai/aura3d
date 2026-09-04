@@ -2,6 +2,7 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
+  readonly "animationPointerPanel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auroraAmbientWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "auroraCrashSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "auroraExtractionBayBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -75,6 +76,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "courierTrafficHatch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "courierTrafficSedan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "courierVan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "courierVanMeshyV1Decimated": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "courierVanMeshyV2Decimated": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "courierZoneAwning": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "courierZoneBollard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "deepRecoveryAmbientDeepSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -93,6 +96,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "deepRecoverySub": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "deepRecoverySurfaceBreakSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "deepRecoveryWreckHull": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "deepSubMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "deliveryCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftAlertRiseSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftAmbientHallSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftCameraWhirSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -111,6 +116,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "galleryShiftPedestal": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftSneakStepSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftWalkStepSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "galleryThief": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravityPodSkiffMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostAmbientSpaceSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostAssistChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostBounceOffSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -124,10 +131,12 @@ type AuraGeneratedAssetDefinitions = {
   readonly "gravityPostFreightDistrict": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostLaunchWhooshSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostMailPod": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravityPostMeshyFreight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostPodLostSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostStationRing": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostWarpHumSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "helperChar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechAmbientHangarSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "mechArmsA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechArmsB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -140,6 +149,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "mechGuardBlockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "mechGuardBreakSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "mechHeavyHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "mechHeroDecimated": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechKoStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "mechLegsA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechLegsB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -155,6 +165,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "mechWeaponC": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "mechWeaponD": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonAmbientHumSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "neonArena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonBarricadeProp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonBurstSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonComboBreakSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -173,6 +184,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "neonStreetLampProp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonWaveClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonWaveStartSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "patrolAircraftMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "patrolWingAmbientWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "patrolWingCannonFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "patrolWingCrashThudSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -194,6 +206,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "propRockA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "propRockB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseAirStem": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "pulseArena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseBassStem": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseDrumsStem": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseGrazeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -230,6 +243,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "rooftopLayupScorer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopRim": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopShooterMeshyV1": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopShooterV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopVenueV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseAdventurerRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -340,6 +354,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "skylineDeathStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineEmberDenySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineEmberFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineHeroMeshyV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "skylineHeroRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "skylineIceLedgeCompact": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "skylineIceLedgeLong": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "skylineIceLedgeMedium": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -389,6 +405,139 @@ type AuraGeneratedAssetDefinitions = {
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
+  "animationPointerPanel": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/animationPointerPanel.dfb9abe2.glb",
+    hash: "sha256-dfb9abe2b14a7ee7e4dd00c6ed3f298e786c27ad8e23e601763b6ca04df6767e",
+    bounds: [
+      1.2,
+      1.1,
+      0
+    ],
+    sizeBytes: 1500,
+    metadata: {
+      "materials": [
+        "GlowPanelMat"
+      ],
+      "animations": [
+        "pointerFade"
+      ],
+      "animationClips": [
+        "pointerFade"
+      ],
+      "animationMetadata": {
+        "clipCount": 1,
+        "clips": [
+          {
+            "index": 0,
+            "name": "pointerFade",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "pointer"
+            ],
+            "targetNodes": []
+          }
+        ],
+        "messages": [
+          "Detected 1 embedded animation clip."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 0,
+        "animationClipCount": 1,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "PointerPanel"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "fixtures/three-compat/assets/corpus/animation-pointer-panel.glb",
+        "license": "CC0-1.0",
+        "author": "Aura3D fixtures",
+        "checkedAt": "2026-09-03T23:44:14.088Z"
+      },
+      "sourcePath": "fixtures/three-compat/assets/corpus/animation-pointer-panel.glb",
+      "outputPath": "public/aura-assets/animationPointerPanel.dfb9abe2.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D fixtures",
+      "boundsMetadata": {
+        "min": [
+          -0.6,
+          -0.5,
+          0
+        ],
+        "max": [
+          0.6,
+          0.6,
+          0
+        ],
+        "size": [
+          1.2,
+          1.1,
+          0
+        ],
+        "center": [
+          0,
+          0.05,
+          0
+        ],
+        "maxDimension": 1.2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "GlowPanelMat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "PointerPanel"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/animationPointerPanel.thumb.svg",
+      "quality": "prototype",
+      "role": "debug"
+    },
+  },
   "auroraAmbientWindSfx": {
     type: "audio",
     format: "wav",
@@ -9852,6 +10001,278 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "courierVanMeshyV1Decimated": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/courierVanMeshyV1Decimated.6c1aa6f0.glb",
+    hash: "sha256-6c1aa6f092aa920933d78c62c55ed30a1e44489594ade51113d46d81ada33916",
+    bounds: [
+      1.905,
+      0.867,
+      0.847
+    ],
+    sizeBytes: 19113732,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/courier-van-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Courier Rush hero-van prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:08.362Z",
+        "evidence": [
+          "aura-evidence/meshy/courierVanMeshyV1Decimated.rights.c77991db275f.json",
+          "aura-evidence/meshy/courierVanMeshyV1Decimated.metadata.47432bc72d68.json",
+          "public/aura-assets/courierVanMeshyV1Decimated.meshy-candidate.104b04f5.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:08.362Z"
+      },
+      "sourcePath": "artifacts/meshy/courier-van-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/courierVanMeshyV1Decimated.6c1aa6f0.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.954,
+          -0.426,
+          -0.424
+        ],
+        "max": [
+          0.951,
+          0.442,
+          0.423
+        ],
+        "size": [
+          1.905,
+          0.867,
+          0.847
+        ],
+        "center": [
+          -0.001,
+          0.008,
+          0
+        ],
+        "maxDimension": 1.905,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/courierVanMeshyV1Decimated.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/courierVanMeshyV1Decimated.meshy-candidate.104b04f5.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-104b04f582051892dc15796e654f181f20ad571d1a3db6769ffc630a6e22eb47",
+        "checkedAt": "2026-09-03T08:09:10.876Z"
+      }
+    },
+  },
+  "courierVanMeshyV2Decimated": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
+    hash: "sha256-6f509ab0902bbf048f828938332c4172b1dac0aef67f375e3fc666e88e0ba983",
+    bounds: [
+      1.904,
+      0.941,
+      0.998
+    ],
+    sizeBytes: 9737668,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/courier-van-v2/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use in the Courier Rush hero van in the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-04T12:30:49.788Z",
+        "evidence": [
+          "aura-evidence/meshy/courierVanMeshyV2Decimated.rights.e9b339eaa1d1.json",
+          "aura-evidence/meshy/courierVanMeshyV2Decimated.metadata.fa2d492fe0e4.json",
+          "public/aura-assets/courierVanMeshyV2Decimated.meshy-candidate.5ae91023.png"
+        ],
+        "checkedAt": "2026-09-04T12:30:49.788Z"
+      },
+      "sourcePath": "artifacts/meshy/courier-van-v2/model-decimated.glb",
+      "outputPath": "public/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.471,
+          -0.501
+        ],
+        "max": [
+          0.952,
+          0.47,
+          0.497
+        ],
+        "size": [
+          1.904,
+          0.941,
+          0.998
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.002
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/courierVanMeshyV2Decimated.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/courierVanMeshyV2Decimated.meshy-candidate.5ae91023.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5ae91023bdaa5df35f750a67674a4d8e2be068049c7f7a0202e826a91e0f60db",
+        "checkedAt": "2026-09-04T12:35:43.949Z"
+      }
+    },
+  },
   "courierZoneAwning": {
     type: "model",
     format: "glb",
@@ -12246,6 +12667,338 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "height": 230
         }
       }
+    },
+  },
+  "deepSubMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/deepSubMeshy.f6feb67e.glb",
+    hash: "sha256-f6feb67e48009ad3c05861ca249b401d88e6204f0e1be71abbbea8e80b3defc1",
+    bounds: [
+      1.903,
+      0.987,
+      0.789
+    ],
+    sizeBytes: 21030980,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/deep-sub-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Deep Recovery hero submersible) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T13:22:45.562Z",
+        "evidence": [
+          "aura-evidence/meshy/deepSubMeshy.rights.65441f9bec27.json",
+          "aura-evidence/meshy/deepSubMeshy.metadata.57661fba211e.json",
+          "public/aura-assets/deepSubMeshy.meshy-candidate.251863a4.png"
+        ],
+        "checkedAt": "2026-09-03T13:22:45.562Z"
+      },
+      "sourcePath": "artifacts/meshy/deep-sub-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/deepSubMeshy.f6feb67e.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.496,
+          -0.395
+        ],
+        "max": [
+          0.952,
+          0.492,
+          0.394
+        ],
+        "size": [
+          1.903,
+          0.987,
+          0.789
+        ],
+        "center": [
+          0,
+          -0.002,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/deepSubMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/deepSubMeshy.meshy-candidate.251863a4.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-251863a4a000c1da925938bb87befebb70360758f75a7de3023266bee08032b3",
+        "checkedAt": "2026-09-03T13:43:56.793Z"
+      }
+    },
+  },
+  "deliveryCar": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/deliveryCar.426a3e3a.glb",
+    hash: "sha256-426a3e3a2c242c05c889b1445ba02ef95b2c8b7cd6f597e1275ef736a826014b",
+    bounds: [
+      1.5,
+      1.65,
+      3.25
+    ],
+    sizeBytes: 240264,
+    metadata: {
+      "materials": [
+        "colormap"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 6,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "door",
+          "wheel-front-right",
+          "wheel-front-left",
+          "wheel-back-right",
+          "wheel-back-left",
+          "body"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 6 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/deliveryCar.426a3e3a.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/kenney/car-kit/delivery.glb",
+        "sourceUrl": "https://kenney.nl/assets",
+        "license": "CC0-1.0",
+        "licenseName": "CC0",
+        "licenseUrl": "https://kenney.nl/assets",
+        "licenseRaw": "CC0",
+        "author": "Kenney",
+        "sourceFamily": "starter:kenney",
+        "attribution": "Kenney",
+        "sha256": "sha256-426a3e3a2c242c05c889b1445ba02ef95b2c8b7cd6f597e1275ef736a826014b",
+        "retrievedAt": "2026-09-04T15:38:55.517Z",
+        "resolveCandidate": {
+          "catalogId": "animation-starter:prop-delivery-car",
+          "query": "delivery vehicle",
+          "source": "starter:kenney",
+          "scoreTotal": 34.16,
+          "scoreBreakdown": {
+            "semantic": 2.16,
+            "sourceQuality": 18,
+            "license": 17,
+            "inspection": 9,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 2.16",
+            "source page preserved",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC0-1.0 license",
+            "bounds/dimensions metadata preserved"
+          ],
+          "penalties": [
+            "missing material metadata for visual model role",
+            "missing texture metadata for visual model role"
+          ],
+          "sourcePage": "https://kenney.nl/assets",
+          "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/kenney/car-kit/delivery.glb",
+          "license": "CC0-1.0",
+          "licenseName": "CC0",
+          "licenseUrl": "https://kenney.nl/assets",
+          "licenseRaw": "CC0",
+          "attribution": "Kenney",
+          "bounds": [
+            1,
+            1,
+            1
+          ],
+          "triangleCount": 12000,
+          "postDownloadInspection": {
+            "bounds": [
+              1.5,
+              1.65,
+              3.25
+            ],
+            "materialCount": 1,
+            "textureCount": 1,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          }
+        },
+        "checkedAt": "2026-09-04T15:38:55.517Z"
+      },
+      "sourcePath": "public/aura-assets/deliveryCar.426a3e3a.glb",
+      "outputPath": "public/aura-assets/deliveryCar.426a3e3a.glb",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "boundsMetadata": {
+        "min": [
+          -0.75,
+          0,
+          -1.65
+        ],
+        "max": [
+          0.75,
+          1.65,
+          1.6
+        ],
+        "size": [
+          1.5,
+          1.65,
+          3.25
+        ],
+        "center": [
+          0,
+          0.825,
+          -0.025
+        ],
+        "maxDimension": 3.25,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "colormap",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "door",
+        "wheel-front-right",
+        "wheel-front-left",
+        "wheel-back-right",
+        "wheel-back-left",
+        "body"
+      ],
+      "textures": [
+        "Textures/colormap.png"
+      ],
+      "dependencies": [
+        "Textures/colormap.png"
+      ],
+      "thumbnailUrl": "/aura-assets/deliveryCar.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
     },
   },
   "galleryShiftAlertRiseSfx": {
@@ -14662,6 +15415,273 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Walk/guard authored-gait footstep cue."
+    },
+  },
+  "galleryThief": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/galleryThief.528ad4aa.glb",
+    hash: "sha256-528ad4aa876de1a6702ce90d68dff19ddd1da255c6c0f3c96f352b94fb73870c",
+    bounds: [
+      0.977,
+      1.903,
+      0.469
+    ],
+    sizeBytes: 15192196,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gallery-thief-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Gallery Shift museum-thief prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:50:02.033Z",
+        "evidence": [
+          "aura-evidence/meshy/galleryThief.rights.84760f50de09.json",
+          "aura-evidence/meshy/galleryThief.metadata.ea649e745b5b.json",
+          "public/aura-assets/galleryThief.meshy-candidate.abe5fce7.png"
+        ],
+        "checkedAt": "2026-09-03T07:50:02.033Z"
+      },
+      "sourcePath": "artifacts/meshy/gallery-thief-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/galleryThief.528ad4aa.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.488,
+          -0.953,
+          -0.242
+        ],
+        "max": [
+          0.489,
+          0.951,
+          0.227
+        ],
+        "size": [
+          0.977,
+          1.903,
+          0.469
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.008
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/galleryThief.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/galleryThief.meshy-candidate.abe5fce7.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-abe5fce702559cbbd910143b48ebe0fb1c14413145ae436daf766a4120cc4afe",
+        "checkedAt": "2026-09-03T08:07:52.145Z"
+      }
+    },
+  },
+  "gravityPodSkiffMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityPodSkiffMeshy.5f38bf96.glb",
+    hash: "sha256-5f38bf96c1663e602fa7f7afc54d750ed0bdf0ee70974c95666450f244e614ec",
+    bounds: [
+      1.903,
+      1.005,
+      1.077
+    ],
+    sizeBytes: 23993924,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gravity-skiff/model-decimated.glb",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T16:40:37.862Z",
+        "evidence": [
+          "aura-evidence/meshy/gravityPodSkiffMeshy.rights.7fcc7bfad170.json",
+          "aura-evidence/meshy/gravityPodSkiffMeshy.metadata.dcde95dd32d5.json",
+          "public/aura-assets/gravityPodSkiffMeshy.meshy-candidate.97ee7b80.png"
+        ],
+        "checkedAt": "2026-09-03T16:40:37.862Z"
+      },
+      "sourcePath": "artifacts/meshy/gravity-skiff/model-decimated.glb",
+      "outputPath": "public/aura-assets/gravityPodSkiffMeshy.5f38bf96.glb",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.503,
+          -0.539
+        ],
+        "max": [
+          0.951,
+          0.502,
+          0.538
+        ],
+        "size": [
+          1.903,
+          1.005,
+          1.077
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityPodSkiffMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "vehicle",
+      "renderedProbe": {
+        "url": "/aura-assets/gravityPodSkiffMeshy.meshy-candidate.97ee7b80.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-97ee7b80b5b8f8f39d4c836d4c6baa4832780216560e4a168798cfada4cd8d20",
+        "checkedAt": "2026-09-03T16:50:38.400Z"
+      }
     },
   },
   "gravityPostAmbientSpaceSfx": {
@@ -18120,6 +19140,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "width": 161,
           "height": 161
         }
+      }
+    },
+  },
+  "gravityPostMeshyFreight": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityPostMeshyFreight.1db015a8.glb",
+    hash: "sha256-1db015a8a1294f6e7fc2446faff58cffcb30a1196a498073c05ffcb542a53e8c",
+    bounds: [
+      1.654,
+      0.917,
+      1.907
+    ],
+    sizeBytes: 22380092,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/gravity-freight-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account and approved for candidate use in the Aura3D 2.0.4 prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:55.933Z",
+        "evidence": [
+          "aura-evidence/meshy/gravityPostMeshyFreight.rights.b2bfbbb3f025.json",
+          "aura-evidence/meshy/gravityPostMeshyFreight.metadata.75fdd5979003.json",
+          "public/aura-assets/gravityPostMeshyFreight.meshy-candidate.37a84461.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:55.933Z"
+      },
+      "sourcePath": "artifacts/meshy/gravity-freight-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/gravityPostMeshyFreight.1db015a8.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.822,
+          -0.469,
+          -0.956
+        ],
+        "max": [
+          0.832,
+          0.448,
+          0.952
+        ],
+        "size": [
+          1.654,
+          0.917,
+          1.907
+        ],
+        "center": [
+          0.005,
+          -0.01,
+          -0.002
+        ],
+        "maxDimension": 1.907,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityPostMeshyFreight.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/gravityPostMeshyFreight.meshy-candidate.37a84461.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-37a844615cb2c25acbabf7efd6d4385c954fd7360cc90692bff7fab073e71e8b",
+        "checkedAt": "2026-09-03T08:08:31.878Z"
       }
     },
   },
@@ -25957,6 +27113,693 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Bounded time-warp hum retriggered only while warp is active."
     },
   },
+  "helperChar": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/helperChar.30ed390a.glb",
+    hash: "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a",
+    bounds: [
+      1.6,
+      2.7,
+      0.8
+    ],
+    sizeBytes: 113596,
+    metadata: {
+      "materials": [
+        "texture-b"
+      ],
+      "animations": [
+        "static",
+        "idle",
+        "walk",
+        "sprint",
+        "sit",
+        "drive",
+        "die",
+        "pick-up",
+        "emote-yes",
+        "emote-no",
+        "holding-right",
+        "holding-left",
+        "holding-both",
+        "holding-right-shoot",
+        "holding-left-shoot",
+        "holding-both-shoot",
+        "attack-melee-right",
+        "attack-melee-left",
+        "attack-kick-right",
+        "attack-kick-left",
+        "interact-right",
+        "interact-left",
+        "wheelchair-sit",
+        "wheelchair-move-forward",
+        "wheelchair-move-back",
+        "wheelchair-move-left",
+        "wheelchair-move-right"
+      ],
+      "animationClips": [
+        "static",
+        "idle",
+        "walk",
+        "sprint",
+        "sit",
+        "drive",
+        "die",
+        "pick-up",
+        "emote-yes",
+        "emote-no",
+        "holding-right",
+        "holding-left",
+        "holding-both",
+        "holding-right-shoot",
+        "holding-left-shoot",
+        "holding-both-shoot",
+        "attack-melee-right",
+        "attack-melee-left",
+        "attack-kick-right",
+        "attack-kick-left",
+        "interact-right",
+        "interact-left",
+        "wheelchair-sit",
+        "wheelchair-move-forward",
+        "wheelchair-move-back",
+        "wheelchair-move-left",
+        "wheelchair-move-right"
+      ],
+      "animationMetadata": {
+        "clipCount": 27,
+        "clips": [
+          {
+            "index": 0,
+            "name": "static",
+            "channelCount": 21,
+            "samplerCount": 21,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "idle",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "walk",
+            "channelCount": 6,
+            "samplerCount": 6,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 3,
+            "name": "sprint",
+            "channelCount": 7,
+            "samplerCount": 7,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "head",
+              "arm-right",
+              "arm-left"
+            ]
+          },
+          {
+            "index": 4,
+            "name": "sit",
+            "channelCount": 3,
+            "samplerCount": 3,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right"
+            ]
+          },
+          {
+            "index": 5,
+            "name": "drive",
+            "channelCount": 5,
+            "samplerCount": 5,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 6,
+            "name": "die",
+            "channelCount": 8,
+            "samplerCount": 8,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 7,
+            "name": "pick-up",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 8,
+            "name": "emote-yes",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "head",
+              "torso",
+              "arm-right",
+              "arm-left"
+            ]
+          },
+          {
+            "index": 9,
+            "name": "emote-no",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "arm-right",
+              "arm-left",
+              "head"
+            ]
+          },
+          {
+            "index": 10,
+            "name": "holding-right",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "arm-right"
+            ]
+          },
+          {
+            "index": 11,
+            "name": "holding-left",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "arm-left"
+            ]
+          },
+          {
+            "index": 12,
+            "name": "holding-both",
+            "channelCount": 2,
+            "samplerCount": 2,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 13,
+            "name": "holding-right-shoot",
+            "channelCount": 3,
+            "samplerCount": 3,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 14,
+            "name": "holding-left-shoot",
+            "channelCount": 3,
+            "samplerCount": 3,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "head",
+              "arm-left"
+            ]
+          },
+          {
+            "index": 15,
+            "name": "holding-both-shoot",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "arm-right",
+              "head",
+              "arm-left"
+            ]
+          },
+          {
+            "index": 16,
+            "name": "attack-melee-right",
+            "channelCount": 7,
+            "samplerCount": 7,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-right",
+              "torso",
+              "leg-left",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 17,
+            "name": "attack-melee-left",
+            "channelCount": 7,
+            "samplerCount": 7,
+            "targetPaths": [
+              "translation",
+              "rotation"
+            ],
+            "targetNodes": [
+              "root",
+              "torso",
+              "head",
+              "arm-left",
+              "arm-right",
+              "leg-left",
+              "leg-right"
+            ]
+          },
+          {
+            "index": 18,
+            "name": "attack-kick-right",
+            "channelCount": 7,
+            "samplerCount": 7,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "torso",
+              "leg-right",
+              "arm-left",
+              "arm-right",
+              "root",
+              "leg-left",
+              "head"
+            ]
+          },
+          {
+            "index": 19,
+            "name": "attack-kick-left",
+            "channelCount": 7,
+            "samplerCount": 7,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "torso",
+              "root",
+              "head",
+              "arm-left",
+              "arm-right",
+              "leg-left",
+              "leg-right"
+            ]
+          },
+          {
+            "index": 20,
+            "name": "interact-right",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "head",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 21,
+            "name": "interact-left",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "torso",
+              "head",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 22,
+            "name": "wheelchair-sit",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "leg-left",
+              "leg-right",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 23,
+            "name": "wheelchair-move-forward",
+            "channelCount": 6,
+            "samplerCount": 6,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "leg-left",
+              "leg-right",
+              "torso",
+              "head",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 24,
+            "name": "wheelchair-move-back",
+            "channelCount": 6,
+            "samplerCount": 6,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          },
+          {
+            "index": 25,
+            "name": "wheelchair-move-left",
+            "channelCount": 6,
+            "samplerCount": 6,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-right",
+              "arm-left",
+              "head"
+            ]
+          },
+          {
+            "index": 26,
+            "name": "wheelchair-move-right",
+            "channelCount": 6,
+            "samplerCount": 6,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right",
+              "head"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 27 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 8,
+        "meshCount": 6,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 27,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "character-b"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 8 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/helperChar.30ed390a.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/kenney/blocky-characters/character-b.glb",
+        "sourceUrl": "https://kenney.nl/assets",
+        "license": "CC0-1.0",
+        "licenseName": "CC0",
+        "licenseUrl": "https://kenney.nl/assets",
+        "licenseRaw": "CC0",
+        "author": "Kenney",
+        "sourceFamily": "starter:kenney",
+        "attribution": "Kenney",
+        "sha256": "sha256-30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a",
+        "retrievedAt": "2026-09-04T15:39:02.855Z",
+        "resolveCandidate": {
+          "catalogId": "animation-starter:luma",
+          "query": "moon garden helper character",
+          "source": "starter:kenney",
+          "scoreTotal": 35.24,
+          "scoreBreakdown": {
+            "semantic": 3.24,
+            "sourceQuality": 18,
+            "license": 17,
+            "inspection": 9,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 3.24",
+            "source page preserved",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC0-1.0 license",
+            "bounds/dimensions metadata preserved"
+          ],
+          "penalties": [
+            "missing material metadata for visual model role",
+            "missing texture metadata for visual model role"
+          ],
+          "sourcePage": "https://kenney.nl/assets",
+          "downloadUrl": "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main/kenney/blocky-characters/character-b.glb",
+          "license": "CC0-1.0",
+          "licenseName": "CC0",
+          "licenseUrl": "https://kenney.nl/assets",
+          "licenseRaw": "CC0",
+          "attribution": "Kenney",
+          "bounds": [
+            0.8,
+            1.7,
+            0.8
+          ],
+          "triangleCount": 8000,
+          "postDownloadInspection": {
+            "bounds": [
+              1.6,
+              2.7,
+              0.8
+            ],
+            "materialCount": 1,
+            "textureCount": 1,
+            "animationClipCount": 27,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          }
+        },
+        "checkedAt": "2026-09-04T15:39:02.855Z"
+      },
+      "sourcePath": "public/aura-assets/helperChar.30ed390a.glb",
+      "outputPath": "public/aura-assets/helperChar.30ed390a.glb",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "boundsMetadata": {
+        "min": [
+          -0.8,
+          0,
+          -0.4
+        ],
+        "max": [
+          0.8,
+          2.7,
+          0.4
+        ],
+        "size": [
+          1.6,
+          2.7,
+          0.8
+        ],
+        "center": [
+          0,
+          1.35,
+          0
+        ],
+        "maxDimension": 2.7,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "texture-b",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "character-b",
+        "root",
+        "leg-left",
+        "leg-right",
+        "torso",
+        "arm-left",
+        "arm-right",
+        "head"
+      ],
+      "textures": [
+        "Textures/texture-b.png"
+      ],
+      "dependencies": [
+        "Textures/texture-b.png"
+      ],
+      "thumbnailUrl": "/aura-assets/helperChar.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
   "mechAmbientHangarSfx": {
     type: "audio",
     format: "wav",
@@ -27699,6 +29542,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Heavy impact cue driven by a route-local heavy hit event."
+    },
+  },
+  "mechHeroDecimated": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/mechHeroDecimated.0e52ceb3.glb",
+    hash: "sha256-0e52ceb36af6ca3e5bf2351252788f5a0e206f61976e10ca6ccb7f227d85da0d",
+    bounds: [
+      1.01,
+      1.903,
+      0.766
+    ],
+    sizeBytes: 27963704,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/mech-hero-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 (dry-run estimate 30) on 2026-09-03 for candidate use as the Mech Hangar hero mech in the Aura3D prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:14.070Z",
+        "evidence": [
+          "aura-evidence/meshy/mechHeroDecimated.rights.bb9e8e267db1.json",
+          "aura-evidence/meshy/mechHeroDecimated.metadata.01d2263340bc.json",
+          "public/aura-assets/mechHeroDecimated.meshy-candidate.38749d39.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:14.070Z"
+      },
+      "sourcePath": "artifacts/meshy/mech-hero-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/mechHeroDecimated.0e52ceb3.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.498,
+          -0.953,
+          -0.384
+        ],
+        "max": [
+          0.512,
+          0.95,
+          0.382
+        ],
+        "size": [
+          1.01,
+          1.903,
+          0.766
+        ],
+        "center": [
+          0.007,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/mechHeroDecimated.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/mechHeroDecimated.meshy-candidate.38749d39.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-38749d3948bd076e8ec28e923147c6065f39ffe577e61f5907eac114cf5c9472",
+        "checkedAt": "2026-09-03T08:19:07.014Z"
+      }
     },
   },
   "mechKoStingSfx": {
@@ -29660,6 +31639,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Looped abstract city ambience started after a user gesture."
+    },
+  },
+  "neonArena": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/neonArena.7327d83f.glb",
+    hash: "sha256-7327d83f8c49650515e6f23ef4a2e8a857415001e37a469dcf5407adaa96dd15",
+    bounds: [
+      1.904,
+      1.169,
+      0.244
+    ],
+    sizeBytes: 33052244,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/neon-arena-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Neon Corridor Strike arena lane under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:43.073Z",
+        "evidence": [
+          "aura-evidence/meshy/neonArena.rights.9cd065c2f367.json",
+          "aura-evidence/meshy/neonArena.metadata.59e1573ccbd5.json",
+          "public/aura-assets/neonArena.meshy-candidate.ec181805.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:43.073Z"
+      },
+      "sourcePath": "artifacts/meshy/neon-arena-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/neonArena.7327d83f.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.577,
+          -0.122
+        ],
+        "max": [
+          0.952,
+          0.592,
+          0.121
+        ],
+        "size": [
+          1.904,
+          1.169,
+          0.244
+        ],
+        "center": [
+          0,
+          0.007,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/neonArena.thumb.svg",
+      "quality": "candidate",
+      "role": "world",
+      "renderedProbe": {
+        "url": "/aura-assets/neonArena.meshy-candidate.ec181805.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ec18180570967458bc3f4187e371f0571adb79f4e651d35bcb6f393e57dce11d",
+        "checkedAt": "2026-09-03T08:19:03.401Z"
+      }
     },
   },
   "neonBarricadeProp": {
@@ -32016,6 +34131,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Wave-start warning driven by the five-stage campaign transition."
+    },
+  },
+  "patrolAircraftMeshy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/patrolAircraftMeshy.183e83f8.glb",
+    hash: "sha256-183e83f818cc35b68d0a5f0b1dcb2d11485abaf977c7cbefd4c3a538554d3428",
+    bounds: [
+      1.535,
+      0.409,
+      1.902
+    ],
+    sizeBytes: 19885212,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/patrol-aircraft-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Patrol Wing hero aircraft) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T13:21:42.460Z",
+        "evidence": [
+          "aura-evidence/meshy/patrolAircraftMeshy.rights.9c40f55897d5.json",
+          "aura-evidence/meshy/patrolAircraftMeshy.metadata.62a999836ce1.json",
+          "public/aura-assets/patrolAircraftMeshy.meshy-candidate.7892ed3d.png"
+        ],
+        "checkedAt": "2026-09-03T13:21:42.460Z"
+      },
+      "sourcePath": "artifacts/meshy/patrol-aircraft-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/patrolAircraftMeshy.183e83f8.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.767,
+          -0.197,
+          -0.952
+        ],
+        "max": [
+          0.768,
+          0.212,
+          0.951
+        ],
+        "size": [
+          1.535,
+          0.409,
+          1.902
+        ],
+        "center": [
+          0,
+          0.007,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/patrolAircraftMeshy.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/patrolAircraftMeshy.meshy-candidate.7892ed3d.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-7892ed3de6b934dd21c825ef92e15958e6de296e018b69d0e4acfa37b9471b98",
+        "checkedAt": "2026-09-03T13:43:56.511Z"
+      }
     },
   },
   "patrolWingAmbientWindSfx": {
@@ -35232,6 +37483,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Four-section 120 BPM air stem sharing one AudioContext anchor with the other authored stems."
+    },
+  },
+  "pulseArena": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pulseArena.2445a728.glb",
+    hash: "sha256-2445a7289e758eedc1f5a91c769322258723586ae972dad9235df4a54f377958",
+    bounds: [
+      1.162,
+      1.268,
+      1.903
+    ],
+    sizeBytes: 29283100,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/pulse-arena-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use in the Aura3D Pulse Tunnel encounter-world lane under the current Meshy terms; dry-run estimate was 30 credits with an approved maximum of 60; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:29.157Z",
+        "evidence": [
+          "aura-evidence/meshy/pulseArena.rights.216d276b5cb4.json",
+          "aura-evidence/meshy/pulseArena.metadata.2d8d15bf1f2a.json",
+          "public/aura-assets/pulseArena.meshy-candidate.ceff7355.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:29.157Z"
+      },
+      "sourcePath": "artifacts/meshy/pulse-arena-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/pulseArena.2445a728.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.581,
+          -0.634,
+          -0.952
+        ],
+        "max": [
+          0.581,
+          0.634,
+          0.951
+        ],
+        "size": [
+          1.162,
+          1.268,
+          1.903
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pulseArena.thumb.svg",
+      "quality": "candidate",
+      "role": "world",
+      "renderedProbe": {
+        "url": "/aura-assets/pulseArena.meshy-candidate.ceff7355.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-ceff7355bed858c37214c678b8f5ef6fb0cdfa858edaa2c177fac0f24b37e4ca",
+        "checkedAt": "2026-09-03T08:09:48.559Z"
+      }
     },
   },
   "pulseBassStem": {
@@ -44118,6 +46505,142 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "width": 97,
           "height": 403
         }
+      }
+    },
+  },
+  "rooftopShooterMeshyV1": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
+    hash: "sha256-ed5a33b3d23aecb240072e6de6525effca6a5147ef0dff958c74735083ad8828",
+    bounds: [
+      0.734,
+      1.902,
+      0.663
+    ],
+    sizeBytes: 21597028,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/rooftop-shooter-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Rooftop Buckets shooter-athlete lane under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:26.515Z",
+        "evidence": [
+          "aura-evidence/meshy/rooftopShooterMeshyV1.rights.ff0875c014f1.json",
+          "aura-evidence/meshy/rooftopShooterMeshyV1.metadata.dec713aee285.json",
+          "public/aura-assets/rooftopShooterMeshyV1.meshy-candidate.1fd938c9.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:26.515Z"
+      },
+      "sourcePath": "artifacts/meshy/rooftop-shooter-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.37,
+          -0.951,
+          -0.335
+        ],
+        "max": [
+          0.364,
+          0.951,
+          0.327
+        ],
+        "size": [
+          0.734,
+          1.902,
+          0.663
+        ],
+        "center": [
+          -0.003,
+          0,
+          -0.004
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopShooterMeshyV1.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/rooftopShooterMeshyV1.meshy-candidate.1fd938c9.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-1fd938c97036cbe6c58e95bda7f6a6ef449d543b93e857ba6153086c08708639",
+        "checkedAt": "2026-09-03T08:07:25.278Z"
       }
     },
   },
@@ -105397,6 +107920,278 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/skylineEmberFireSfx.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
+    },
+  },
+  "skylineHeroMeshyV2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
+    hash: "sha256-9bdd5ae2a040cb1c2cb43ec0220a70fd86a3b5d6940fdaf31befa46531c9e81a",
+    bounds: [
+      0.912,
+      1.903,
+      0.653
+    ],
+    sizeBytes: 8664812,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/skyline-hero-v2/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use as the Skyline Runner hero runner in the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-04T14:05:40.659Z",
+        "evidence": [
+          "aura-evidence/meshy/skylineHeroMeshyV2.rights.2aa9972450e2.json",
+          "aura-evidence/meshy/skylineHeroMeshyV2.metadata.e5457f1c7e09.json",
+          "public/aura-assets/skylineHeroMeshyV2.meshy-candidate.6dbb7b50.png"
+        ],
+        "checkedAt": "2026-09-04T14:05:40.659Z"
+      },
+      "sourcePath": "artifacts/meshy/skyline-hero-v2/model-decimated.glb",
+      "outputPath": "public/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.457,
+          -0.952,
+          -0.326
+        ],
+        "max": [
+          0.455,
+          0.951,
+          0.327
+        ],
+        "size": [
+          0.912,
+          1.903,
+          0.653
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineHeroMeshyV2.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/skylineHeroMeshyV2.meshy-candidate.6dbb7b50.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-6dbb7b50d400d667b108d8af19969842535bdbb9e5034898b115b6ac883e25b6",
+        "checkedAt": "2026-09-04T14:14:20.824Z"
+      }
+    },
+  },
+  "skylineHeroRunner": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineHeroRunner.67a8a30b.glb",
+    hash: "sha256-67a8a30b86526a55b9d45d1e0d0b3d013140234eb9d2b433c76b058b497767bb",
+    bounds: [
+      0.787,
+      1.903,
+      0.625
+    ],
+    sizeBytes: 20755840,
+    metadata: {
+      "materials": [
+        "material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "mesh_node"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/skyline-hero-v1/model-decimated.glb",
+        "license": "Meshy paid private generation terms",
+        "licenseName": "Meshy paid private generation terms",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use in the Aura3D Skyline Runner hero prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-09-03T07:45:11.643Z",
+        "evidence": [
+          "aura-evidence/meshy/skylineHeroRunner.rights.f9a161914f9a.json",
+          "aura-evidence/meshy/skylineHeroRunner.metadata.251f6bced532.json",
+          "public/aura-assets/skylineHeroRunner.meshy-candidate.e2a7a311.png"
+        ],
+        "checkedAt": "2026-09-03T07:45:11.643Z"
+      },
+      "sourcePath": "artifacts/meshy/skyline-hero-v1/model-decimated.glb",
+      "outputPath": "public/aura-assets/skylineHeroRunner.67a8a30b.glb",
+      "license": "Meshy paid private generation terms",
+      "boundsMetadata": {
+        "min": [
+          -0.394,
+          -0.952,
+          -0.31
+        ],
+        "max": [
+          0.393,
+          0.951,
+          0.315
+        ],
+        "size": [
+          0.787,
+          1.903,
+          0.625
+        ],
+        "center": [
+          0,
+          0,
+          0.003
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "mesh_node"
+      ],
+      "textures": [
+        "normal",
+        "base_color",
+        "metallic_roughness"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineHeroRunner.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/skylineHeroRunner.meshy-candidate.e2a7a311.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-e2a7a31153354035e551c687a6f50aacb2954524b1fbf5eb48ed4948d1e79918",
+        "checkedAt": "2026-09-03T08:08:09.466Z"
+      }
     },
   },
   "skylineIceLedgeCompact": {

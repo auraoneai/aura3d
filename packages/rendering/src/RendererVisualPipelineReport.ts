@@ -317,7 +317,9 @@ export function createRendererVisualPipelineReport(
         sourceTargetFormat: targetFormat,
         targetFormat,
         nativeLdrPostprocess: Boolean(options.device.presentLdrPostprocess),
-        rendererDepthAvailable: capabilitySet.has("depth-textures")
+        rendererDepthAvailable: capabilitySet.has("depth-textures"),
+        width: options.width,
+        height: options.height
       })
     : undefined;
   const hdrTarget = createHdrTargetReport(capabilitySet, targetFormat, postprocess?.toneMapping);

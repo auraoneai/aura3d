@@ -72,7 +72,7 @@ describe("public API docs", () => {
     // `MAX_WEBGPU_SKINNING_JOINTS` moved to its own leaf module so the barrel can export the
     // constant without statically importing the ~139 KB `WebGPUDevice`, which was defeating the
     // dynamic-import split in `createRenderDevice`. Both symbols remain public.
-    expect(docs).toContain("export { MAX_WEBGPU_SKINNING_JOINTS } from \"./WebGPUSkinningLimits\";");
+    expect(docs).toContain("export { MAX_WEBGPU_SKINNING_JOINTS, decideSkinningPalettePath } from \"./WebGPUSkinningLimits\";");
     /*
      * WS-2.2 — `WebGPUDevice` moved OFF the rendering barrel to `@aura3d/engine/rendering/webgpu`.
      *
@@ -89,7 +89,7 @@ describe("public API docs", () => {
     expect(docs).toContain("## @aura3d/physics/solverless");
     expect(docs).toContain("## @aura3d/physics/world");
     expect(docs).toContain("## @aura3d/assets");
-    expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights } from \"./GLTFLoader\";");
+    expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from \"./GLTFLoader\";");
     expect(docs).toContain("createGLTFRenderResources");
     expect(docs).toContain("from \"./GLTFRenderResources\";");
     expect(docs).toContain("## @aura3d/editor-runtime");

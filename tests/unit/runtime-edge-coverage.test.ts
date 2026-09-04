@@ -303,7 +303,27 @@ describe("runtime edge-case coverage audit", () => {
        * does nothing and why that is correct.
        */
       "packages/engine/src/agent-api/WorldLabelRenderer.ts:/** WS-2.7 — occlusion test for a world anchor. Omit when unavailable; labels are then never occluded. */",
-      "packages/engine/src/agent-api/WorldLabelRenderer.ts:* occlusion, and guessing pessimistically would hide labels whenever the test was unavailable — the same"
+      "packages/engine/src/agent-api/WorldLabelRenderer.ts:* occlusion, and guessing pessimistically would hide labels whenever the test was unavailable — the same",
+      /*
+       * 2026-09-04 honesty push (muse3jsparity C2/C3/C4/O/GNM lanes): every line below is a
+       * fail-closed disclosure, warned fallback, or bounded diagnostic — the opposite of fake
+       * success. Fail-closed throws, budget notes, fallback warnings, and "unavailable" reasons
+       * are what the audit wants code to do instead of quietly doing nothing; allowlisting them
+       * with rationale (per the WS-2.7 precedent above) rather than rewording to dodge the grep.
+       */
+      "packages/assets/src/KTX2BasisTextureTranscoder.ts:* check; draco/meshopt default to unavailable (fail-closed: the caller must",
+      "packages/engine/src/agent-api/AssetDecoders.ts:* fail-closed (unavailable) unless the route injects real capability probes.",
+      "packages/engine/src/agent-api/Decals.ts:* Deferred-decal budget note: root renders decals forward as transparent",
+      "packages/engine/src/agent-api/Decals.ts:* geometry — one draw call per decal. There is no deferred decal pass at",
+      "packages/engine/src/agent-api/Decals.ts:* Deferred-decal budget note, kept next to the constant so routes quote the",
+      "packages/engine/src/agent-api/Decals.ts:* same sentence as telemetry. Root has no deferred decal pass; decals are",
+      "packages/engine/src/agent-api/Decals.ts:`author at most ${AURA_DECAL_MAX_DECALS} live decals per route. A deferred decal pass is roadmap, ` +",
+      "packages/engine/src/agent-api/NavigationCrowds.ts:* the package's fail-closed \"optional peer unavailable + install step\" error.",
+      "packages/engine/src/agent-api/NavigationCrowds.ts:throw new Error(\"Recast navigation peer unavailable: the optional \\\"@aura3d/navigation-recast\\\" package did not export createRecastNavigation.\");",
+      "packages/input/src/Haptics.ts:* `{ played: false, reason }` instead of fake success on unsupported hosts.",
+      "packages/input/src/Haptics.ts:parts.push(vibrate ? \"navigator.vibrate available\" : \"navigator.vibrate unavailable\");",
+      "packages/input/src/Haptics.ts:parts.push(gamepadRumble ? \"gamepad rumble available\" : \"gamepad rumble unavailable\");",
+      "packages/materials/src/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

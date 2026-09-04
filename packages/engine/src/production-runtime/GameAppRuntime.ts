@@ -7,6 +7,8 @@ export type {
   GameAppRuntimeEvidence,
   GameAppRuntimeLoopOptions,
   GameAppRuntimeOptions,
+  GameAppRuntimePerformanceBudgetOptions,
+  GameAppRuntimePerformanceSnapshot,
   GameAppRuntimeResize,
   GameAppRuntimeStatus
 } from "../agent-api/GameAppRuntime.js";

@@ -12,11 +12,41 @@ interface LoseContextExtension {
   restoreContext(): void;
 }
 
+interface RecoveryResourceInventory {
+  readonly backend: string;
+  readonly drawCalls: number;
+  readonly runtimeMounted: boolean;
+  readonly readyAssets: number;
+  readonly renderSize: readonly [number, number];
+  /** U2: device class — backend discriminator; equality proves no silent substitution across loss. */
+  readonly runtimeBackend: string;
+  /** U2: post-target class — committed post passes (A1/A3/A5 surface) re-created after remount. */
+  readonly postPasses: readonly string[];
+  readonly postTargetFormat: string | undefined;
+  /** U2: B1 shadow-map class, device-observed. */
+  readonly shadowTargetsAllocated: number;
+  readonly shadowMapRendered: boolean;
+  /** U2: A1 bloom device-observed target bytes (0 when no bloom pass runs). */
+  readonly bloomTargetBytes: number;
+  /** U2: atlas/texture-residency class (M2 table) + G1 SDF text counts. */
+  readonly textureResidentEntries: number;
+  readonly sdfTexts: number;
+  readonly textQuadCount: number;
+  /** U2: A5 volumetric marker + animation class (skinned-clip presence at scene level). */
+  readonly fogPreset: string;
+  readonly animatedNodes: number;
+}
+
 interface ContextLossRecoveryProbe {
   readonly status: "ready" | "lost" | "recovering" | "restored" | "error";
   readonly extensionAvailable: boolean;
   readonly beforeLoss: { readonly litPixels: number; readonly pixelHash: string; readonly deviceLost: boolean };
   readonly afterRestore: { readonly litPixels: number; readonly pixelHash: string; readonly runtimeMounted: boolean };
+  /** U2: allocated-class inventory proving re-creation after loss (root stays app-owned pause + explicit remount). */
+  readonly resourceInventory: { readonly before: RecoveryResourceInventory | null; readonly after: RecoveryResourceInventory | null };
+  readonly inventoryMatch: boolean;
+  /** U2: recovery contract wording (boundaries preserved, not broadened). */
+  readonly recoveryContract: "app-owned-pause_explicit-remount";
   readonly lostCount: number;
   readonly restoredCount: number;
   readonly recoveryCount: number;
@@ -113,6 +143,32 @@ async function main(): Promise<void> {
   let resourcesRecreated = false;
   let sceneRestored = false;
   let extension: LoseContextExtension | null = null;
+  let inventoryBefore: RecoveryResourceInventory | null = null;
+  let inventoryAfter: RecoveryResourceInventory | null = null;
+  let inventoryMatch = false;
+
+  const takeInventory = (): RecoveryResourceInventory => {
+    const diagnostics = app.diagnostics();
+    const report = diagnostics.renderer;
+    return {
+      backend: diagnostics.backend,
+      drawCalls: diagnostics.drawCalls,
+      runtimeMounted: report?.runtime.mounted === true,
+      readyAssets: diagnostics.assets.filter((asset) => asset.status === "ready").length,
+      renderSize: [diagnostics.renderSize[0], diagnostics.renderSize[1]],
+      runtimeBackend: report?.runtime.backend ?? "unknown",
+      postPasses: [...(report?.postprocess.actualPasses ?? [])],
+      postTargetFormat: report?.postprocess.targetFormat,
+      shadowTargetsAllocated: report?.shadows.shadowRenderTargetsAllocated ?? 0,
+      shadowMapRendered: report?.shadows.mapRendered ?? false,
+      bloomTargetBytes: report?.runtime.bloom?.targetBytes ?? 0,
+      textureResidentEntries: report?.textures?.residentEntries ?? 0,
+      sdfTexts: report?.text?.sdfTexts ?? 0,
+      textQuadCount: report?.text?.quadCount ?? 0,
+      fogPreset: report?.fog.preset ?? "none",
+      animatedNodes: diagnostics.evidence?.animation.animatedNodes ?? 0
+    };
+  };
 
   const publish = (): void => {
     window.__AURA3D_CONTEXT_LOSS_RECOVERY__ = {
@@ -120,6 +176,9 @@ async function main(): Promise<void> {
       extensionAvailable: Boolean(extension),
       beforeLoss,
       afterRestore,
+      resourceInventory: { before: inventoryBefore, after: inventoryAfter },
+      inventoryMatch,
+      recoveryContract: "app-owned-pause_explicit-remount",
       lostCount,
       restoredCount,
       recoveryCount,
@@ -166,9 +225,27 @@ async function main(): Promise<void> {
         runtimeMounted: diagnostics.renderer?.runtime.mounted === true
       };
       recoveryCount += 1;
+      inventoryAfter = takeInventory();
+      inventoryMatch = inventoryBefore !== null
+        && inventoryAfter.backend === inventoryBefore.backend
+        && inventoryAfter.drawCalls === inventoryBefore.drawCalls
+        && inventoryAfter.readyAssets === inventoryBefore.readyAssets
+        && inventoryAfter.runtimeMounted
+        && inventoryAfter.runtimeBackend === inventoryBefore.runtimeBackend
+        && inventoryAfter.postPasses.join("|") === inventoryBefore.postPasses.join("|")
+        && inventoryAfter.postTargetFormat === inventoryBefore.postTargetFormat
+        && inventoryAfter.shadowTargetsAllocated === inventoryBefore.shadowTargetsAllocated
+        && inventoryAfter.shadowMapRendered === inventoryBefore.shadowMapRendered
+        && inventoryAfter.bloomTargetBytes === inventoryBefore.bloomTargetBytes
+        && inventoryAfter.textureResidentEntries === inventoryBefore.textureResidentEntries
+        && inventoryAfter.sdfTexts === inventoryBefore.sdfTexts
+        && inventoryAfter.textQuadCount === inventoryBefore.textQuadCount
+        && inventoryAfter.fogPreset === inventoryBefore.fogPreset
+        && inventoryAfter.animatedNodes === inventoryBefore.animatedNodes;
       resourcesRecreated = diagnostics.renderer.runtime.backend === "production-runtime"
         && diagnostics.renderer.runtime.mounted
-        && afterRestore.litPixels > 1_000;
+        && afterRestore.litPixels > 1_000
+        && inventoryMatch;
       sceneRestored = afterRestore.litPixels > 1_000
         && beforeLoss.pixelHash !== "00000000"
         && afterRestore.pixelHash === beforeLoss.pixelHash;
@@ -186,6 +263,7 @@ async function main(): Promise<void> {
     pixelHash: pixelHash(canvas),
     deviceLost: app.deviceLost()
   };
+  inventoryBefore = takeInventory();
   extension = canvas.getContext("webgl2")?.getExtension("WEBGL_lose_context") as LoseContextExtension | null;
 
   loseButton.disabled = !extension;
@@ -210,6 +288,9 @@ void main().catch((error: unknown) => {
     extensionAvailable: false,
     beforeLoss: { litPixels: 0, pixelHash: "00000000", deviceLost: false },
     afterRestore: { litPixels: 0, pixelHash: "00000000", runtimeMounted: false },
+    resourceInventory: { before: null, after: null },
+    inventoryMatch: false,
+    recoveryContract: "app-owned-pause_explicit-remount",
     lostCount: 0,
     restoredCount: 0,
     recoveryCount: 0,

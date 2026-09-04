@@ -29,6 +29,43 @@ so this document does not imply that every root-safe app uses WebGPU.
 | Compute | Renderer exposes compute/computeAsync through the node system | `WebGPUParticleBackend` creates WGSL compute pipelines, dispatches workgroups, copies storage buffers, maps readback, and returns measured results | Real adapter test verifies numeric integration; 2,048-particle route reports native compute dispatches |
 | Public evidence routes | Official WebGPU examples use the renderer/backend APIs | Six Aura3D WebGPU evidence routes must report `selectedBackend: "webgpu"`, native submissions, distinct screenshots, and route-specific texture/readback/compute facts | Unsupported, WebGL2, Canvas2D, zero-submission, or duplicate-output routes fail the retained gate |
 
+## Per-feature WebGPU parity rows (PART J)
+
+Source: `WEBGPU_PARITY_PLAN` in
+`packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`.
+Every row names its WGSL foundation; every row is `unproven` until
+adapter + backend + dispatch + render + pixel evidence lands on real
+hardware for that exact feature. Backend selection, native submissions, or
+pixels from a *different* feature never flip a row. No row flips without
+all five evidence legs.
+
+| Feature id | WGSL foundation | Status | Evidence boundary |
+| --- | --- | --- | --- |
+| `bloom-pyramid` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A1 bloom pyramid has no WebGPU dispatch/render/pixel proof yet. |
+| `color-grade` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A3 colorGrade has no WebGPU dispatch/render/pixel proof yet. |
+| `fxaa-taa` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A3 FXAA/TAA has no WebGPU dispatch/render/pixel proof yet. |
+| `spot-shadows` | `production-runtime/shaders/wgsl/pbr.wgsl` | unproven | B1 spot shadows have no WebGPU dispatch/render/pixel proof yet. |
+| `textured-pbr` | `production-runtime/shaders/wgsl/pbr.wgsl` | proven 2026-09-04 | All 5 legs on Apple Metal 3: adapter, strict-webgpu backend, 110 PBR dispatches, 110 native submissions, 140,378 non-black readback px (car-concept). |
+| `render-bundles` | n/a (API-level prototype, no new shader) | prototype-measured 2026-09-04 | 4096 static draws: bundle-execute 0.60ms vs re-encode 0.80ms (ratio 0.75, adopt-candidate). Zero engine call sites — adoption still needs engine implementation. |
+| `compute-particles` | `production-runtime/shaders/wgsl/pbr.wgsl` | unproven | Particle compute-dispatch reuse has no WebGPU dispatch proof yet. |
+
+Related native facts that do NOT flip rows above (live attempt 2026-09-04,
+`tests/reports/webgpu-parity/feature-probe.json`): this machine exposes a
+real Apple Metal 3 adapter/device (`tests/reports/webgpu-hardware-matrix.json`).
+`textured-pbr` holds 4 of 5 legs live — both pbr routes settle `ready` on
+`selectedBackend: "webgpu"` with nativePbrSubmissions 28/3,
+nativeTextureBindings 80/4, and 800×600 screenshots at 463,672/468,396
+non-black pixels (`tests/reports/webgpu-parity/apps-wow-webgpu-pbr-asset.png`,
+`...-product-viewer.png`). Row flip still needs human review + gate update.
+`compute-particles` is blocked: its route settles `ready` on webgpu but
+reports 0 dispatches / 0 native submissions (`apps/wow-webgpu-compute-particles/src/main.ts`
+is under active edit in this worktree — not a hardware verdict).
+The all-routes gate (`webgpu-native-routes.spec.ts`) currently fails on the
+triangle route (0 draw calls despite `a3d-webgpu` backend + adapter) — a route
+issue, not an adapter verdict; per-row attempts above do not inherit it.
+Retained history: `tests/reports/webgpu-current-architecture/native-routes.json`
+(2026-08-09, 6/6 pass on its machine).
+
 ## Unsupported and partial rows
 
 - Aura3D does not claim general TSL/node-material parity. The selected

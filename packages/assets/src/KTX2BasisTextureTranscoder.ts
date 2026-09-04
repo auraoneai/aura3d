@@ -223,3 +223,117 @@ async function installNodeLoadersGLFileHooks(): Promise<void> {
 async function importNodeModule<T>(specifier: string): Promise<T> {
   return import(/* @vite-ignore */ specifier) as Promise<T>;
 }
+
+export interface CompressedTextureDecoderProbes {
+  /**
+   * Injected capability probes. Each accepts a boolean or a thunk so browser
+   * routes can pass live `navigator.gpu` / decoder-module checks while unit
+   * tests pass literals. `ktx2Available` defaults to a loaders.gl resolve
+   * check; draco/meshopt default to unavailable (fail-closed: the caller must
+   * prove the injected decoder exists).
+   */
+  readonly dracoAvailable?: boolean | (() => boolean | Promise<boolean>);
+  readonly meshoptAvailable?: boolean | (() => boolean | Promise<boolean>);
+  readonly ktx2Available?: boolean | (() => boolean | Promise<boolean>);
+  /** GPU-compressed formats the device actually supports, finest-preference last. */
+  readonly gpuCompressedFormats?: readonly string[];
+}
+
+export interface CompressedTextureSupportRequest {
+  readonly draco?: boolean;
+  readonly meshopt?: boolean;
+  readonly ktx2?: boolean;
+  readonly targetFormat?: KTX2BasisTargetFormat;
+}
+
+export interface CompressedTextureDecoderStatus {
+  readonly requested: boolean;
+  readonly available: boolean;
+  readonly detail: string;
+}
+
+export interface CompressedTextureSupportDiagnostics {
+  readonly schema: "a3d-compressed-texture-support";
+  readonly draco: CompressedTextureDecoderStatus;
+  readonly meshopt: CompressedTextureDecoderStatus;
+  readonly ktx2: CompressedTextureDecoderStatus;
+  readonly gpuCompressedFormats: readonly string[];
+  readonly chosenKtx2Target: KTX2BasisTargetFormat;
+}
+
+/**
+ * M2 one-call decoder setup (package level). The root `assets.ensureDecoders`
+ * wiring is a reported bridge hunk — this function is the behavior it calls.
+ * Never reports success for a decoder no probe confirmed.
+ */
+export async function ensureCompressedTextureSupport(
+  request: CompressedTextureSupportRequest = {},
+  probes: CompressedTextureDecoderProbes = {}
+): Promise<CompressedTextureSupportDiagnostics> {
+  const wantDraco = request.draco ?? false;
+  const wantMeshopt = request.meshopt ?? false;
+  const wantKtx2 = request.ktx2 ?? true;
+  const dracoAvailable = await resolveProbe(probes.dracoAvailable, async () => false);
+  const meshoptAvailable = await resolveProbe(probes.meshoptAvailable, async () => false);
+  const ktx2Available = await resolveProbe(probes.ktx2Available, probeKtx2Modules);
+  const gpuCompressedFormats = probes.gpuCompressedFormats ?? [];
+  const requestedTarget = request.targetFormat ?? "etc2-rgba8unorm";
+  const supportedTargets: readonly KTX2BasisTargetFormat[] =
+    ["etc2-rgba8unorm", "bc3-rgba-unorm", "astc-4x4-rgba-unorm", "rgba8"];
+  const gpuSet = new Set(gpuCompressedFormats);
+  const chosenKtx2Target = !wantKtx2 || !ktx2Available
+    ? "rgba8"
+    : gpuSet.size === 0 || gpuSet.has(requestedTarget)
+      ? requestedTarget
+      : (supportedTargets.find((target) => gpuSet.has(target)) ?? "rgba8");
+  return {
+    schema: "a3d-compressed-texture-support",
+    draco: {
+      requested: wantDraco,
+      available: dracoAvailable,
+      detail: !wantDraco
+        ? "Draco not requested."
+        : dracoAvailable
+          ? "Injected Draco decoder confirmed by probe."
+          : "Draco requested but no decoder probe confirmed it — geometry decoding will fail closed."
+    },
+    meshopt: {
+      requested: wantMeshopt,
+      available: meshoptAvailable,
+      detail: !wantMeshopt
+        ? "Meshopt not requested."
+        : meshoptAvailable
+          ? "Injected Meshopt decoder confirmed by probe."
+          : "Meshopt requested but no decoder probe confirmed it — buffer decoding will fail closed."
+    },
+    ktx2: {
+      requested: wantKtx2,
+      available: ktx2Available,
+      detail: !wantKtx2
+        ? "KTX2 not requested; rgba8 fallback path."
+        : ktx2Available
+          ? `KTX2 transcoder resolved; target=${chosenKtx2Target}.`
+          : "KTX2 requested but the transcoder modules did not resolve — rgba8 fallback path."
+    },
+    gpuCompressedFormats,
+    chosenKtx2Target
+  };
+}
+
+async function resolveProbe(
+  probe: boolean | (() => boolean | Promise<boolean>) | undefined,
+  fallback: () => boolean | Promise<boolean>
+): Promise<boolean> {
+  if (typeof probe === "boolean") return probe;
+  if (typeof probe === "function") return Boolean(await probe());
+  return Boolean(await fallback());
+}
+
+async function probeKtx2Modules(): Promise<boolean> {
+  try {
+    await loadLoadersGLModules();
+    return true;
+  } catch {
+    return false;
+  }
+}

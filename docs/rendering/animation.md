@@ -66,6 +66,50 @@ This is a tracked renderer/mixer resource guarantee. It is not a claim that a
 browser heap measurement can prove every JavaScript object was immediately
 garbage-collected.
 
+## Certified hero rigs (selected roster, not arbitrary rigs)
+
+No hero rig is certified yet. The E1 roster (humanoid ×2, creature,
+vehicle-driver, face) is covered by `tests/browser/certified-hero-rigs.spec.ts`
++ harness, each rig with clip-playback pixel proof from the root public API.
+Until per-rig pixel proof lands green, retargeting stays "selected-roster":
+`analyzeHumanoidRig` / `createHumanoidRetargetingMap` validate explicit maps,
+and per-rig correction profiles (`HumanoidRetargetingProfile`,
+`HUMANOID_RETARGETING_PROFILES` registry) ship as mechanism with an empty
+registry. Do not claim arbitrary-rig support.
+
+Roster asset findings (GLB-verified, constrain what can be certified):
+
+- Humanoids: `showcaseWalkAnimatedGirl` ("Take 001", 78 joints, sampler range
+  t=31.8–32.9) and `showcaseAnimatedRunnerHero` ("OffensiveIdle", 136 joints —
+  over the 96-joint uniform cap, so it exercises the data-texture palette path).
+- Creature: `showcaseRunnerRobot` ("WALK", 34 joints, sampler range t=2.48–3.24).
+  Captures taken before a clip's first keyframe render identical frames — a
+  false proof the harness avoids with per-rig in-range capture times.
+- Vehicle-driver: `showcaseKenneyOobiPlatformerHero` (6 joints). Its "drive"
+  clip is a static 2-keyframe pose (zero channel motion, GLB-verified), so the
+  rig certifies with "walk" (0.667 s, real rotation motion) instead.
+- Face: `showcaseAnimatedRunnerHero` ("FacialExpressions" — drives dozens of
+  head/face bones, GLB-verified). `showcaseMorphExpression` is a
+  single-triangle morph unit card, not a face, and cannot serve as the face rig.
+  The wrinkle-map hook (`WrinkleMapHook` / `resolveWrinkleMapStrength`) is
+  unit-proven; renderer-side wrinkle wiring needs the engine bridge.
+
+Blocker (2026-09-03): final browser confirmation is blocked-with-cause — a
+Certified 2026-09-03 (`tests/browser/certified-hero-rigs.spec.ts` 6/6, production-runtime
+backend, stable camera, per-rig evidence in `tests/reports/certified-hero-rigs/`):
+
+Certified rigs:
+
+- humanoid-a: `showcaseWalkAnimatedGirl` / "Take 001" — 78 joints, 24,274 changed px.
+- humanoid-b: `showcaseAnimatedRunnerHero` / "OffensiveIdle" — 136 joints, 55,150 changed px.
+- creature: `showcaseRunnerRobot` / "WALK" — 34 joints, 64,530 changed px.
+- vehicle-driver: `showcaseKenneyOobiPlatformerHero` / "walk" — 6 joints, 95,949 changed px.
+- face: `showcaseAnimatedRunnerHero` / "FacialExpressions" — 136 joints, 10,640 changed px.
+
+Only these rigs may be claimed as certified. The earlier module-load collision
+was resolved (both assets barrels export `ensureCompressedTextureSupport`) and
+the proof ran green after the fix; no proof was faked.
+
 ## Reproduce the receipt
 
 ```bash
