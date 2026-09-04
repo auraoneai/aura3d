@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Aura3D Root Decals Harness (PART C4)</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #05070c;
+        color: white;
+        font: 13px system-ui, sans-serif;
+      }
+
+      #mount {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        place-items: center;
+        overflow: auto;
+      }
+
+      canvas {
+        width: 640px;
+        height: 360px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mount"></div>
+    <script type="module" src="/tests/browser/root-decals-harness.js"></script>
+  </body>
+</html>

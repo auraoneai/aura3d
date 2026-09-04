@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PART O3 Bounded Editor Surface Harness</title>
+  </head>
+  <body>
+    <style>html,body{margin:0;background:#05070b}#o3-stage{width:1280px;height:800px;overflow:hidden}canvas{display:block}</style>
+    <div id="o3-stage"><canvas id="o3-viewport" data-testid="o3-viewport"></canvas></div>
+    <div>
+      <button data-testid="o3-execute">Execute move</button>
+      <button data-testid="o3-undo">Undo</button>
+      <button data-testid="o3-redo">Redo</button>
+      <button data-testid="o3-play">Toggle play mode</button>
+    </div>
+    <div data-testid="o3-state">loading</div>
+    <ul data-testid="o3-outliner"></ul>
+    <script type="module" src="./part-o3-editor-surface-harness.ts"></script>
+  </body>
+</html>

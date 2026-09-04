@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PART O2 Root Visual Scripting Harness</title>
+  </head>
+  <body>
+    <style>html,body{margin:0;background:#05070b}#o2-stage{width:1280px;height:800px;overflow:hidden}canvas{display:block}</style>
+    <div id="o2-stage"><canvas id="o2-viewport" data-testid="o2-viewport"></canvas></div>
+    <div>
+      <button data-testid="o2-jump">Jump (graph attach with input)</button>
+      <button data-testid="o2-observe">Observe (graph attach without input)</button>
+      <button data-testid="o2-reset">Reset</button>
+    </div>
+    <div data-testid="o2-state">loading</div>
+    <div data-testid="o2-score">score 0</div>
+    <script type="module" src="./part-o2-visual-scripting-harness.ts"></script>
+  </body>
+</html>

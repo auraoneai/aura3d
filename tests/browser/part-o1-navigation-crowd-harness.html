@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PART O1 Root Navigation Crowd Harness</title>
+  </head>
+  <body>
+    <style>html,body{margin:0;background:#05070b}#o1-stage{width:1280px;height:800px;overflow:hidden}canvas{display:block}</style>
+    <div id="o1-stage"><canvas id="o1-viewport" data-testid="o1-viewport"></canvas></div>
+    <div>
+      <button data-testid="o1-run">Run root crowd trace</button>
+      <button data-testid="o1-pulse">Pulse 10 ticks</button>
+      <button data-testid="o1-reset">Reset</button>
+    </div>
+    <div data-testid="o1-state">loading</div>
+    <div data-testid="o1-metrics">booting</div>
+    <script type="module" src="./part-o1-navigation-crowd-harness.ts"></script>
+  </body>
+</html>

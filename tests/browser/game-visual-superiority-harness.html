@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Aura3D Game Visual Superiority Head-to-Head (PART K1)</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #05070c;
+        color: white;
+        font: 13px system-ui, sans-serif;
+      }
+
+      #mount {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        overflow: auto;
+      }
+
+      #mount .cell {
+        flex: 0 0 auto;
+        width: 600px;
+        height: 380px;
+      }
+
+      #mount canvas {
+        width: 600px !important;
+        height: 380px !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mount">
+      <div class="cell"><canvas id="aura" width="600" height="380"></canvas></div>
+      <div class="cell"><canvas id="three" width="600" height="380"></canvas></div>
+    </div>
+    <script type="module" src="/tests/browser/game-visual-superiority-harness.js"></script>
+  </body>
+</html>
