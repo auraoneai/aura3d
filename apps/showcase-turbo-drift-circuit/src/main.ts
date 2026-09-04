@@ -1864,9 +1864,13 @@ function buildTurboRoadDetailNodes() {
       const innerZ = centre[2] + leftZ * shoulderInnerOffset * side;
       const outerX = centre[0] + leftX * shoulderOuterOffset * side;
       const outerZ = centre[2] + leftZ * shoulderOuterOffset * side;
+      // The whole cross-section hangs off the measured lane-edge height, not
+      // the centre sample: on a dipped edge a centre-hung shoulder floats
+      // above the true surface and buries a car riding the edge line.
+      const edgeY = side === 1 ? ringSkin.left : ringSkin.right;
       shoulderPositions.push(
-        [innerX, roadDetailY + 0.003, innerZ],
-        [outerX, roadDetailY - shoulderDrop, outerZ]
+        [innerX, edgeY + 0.003, innerZ],
+        [outerX, edgeY - shoulderDrop, outerZ]
       );
       shoulderNormals.push(asphaltNormal, asphaltNormal);
     }
@@ -1914,9 +1918,12 @@ function buildTurboRoadDetailNodes() {
       ];
       for (const section of bankSections) {
         const edgeOffset = gamePointToSceneLength(section.offset);
+        // Bank steps hang off the same measured edge so the outfield falloff
+        // follows real dips instead of floating over them.
+        const bankEdgeY = side === 1 ? ringSkin.left : ringSkin.right;
         vergeBankPositions.push([
           centre[0] + leftX * edgeOffset * side,
-          roadDetailY - section.drop,
+          bankEdgeY - section.drop,
           centre[2] + leftZ * edgeOffset * side
         ]);
         vergeBankNormals.push(slopeNormal);
@@ -2640,6 +2647,10 @@ let opponentChassisPose = opponentChassis.reset({
   speed: 0,
   steer: 0
 });
+// Last fully-meshed presentation poses for the off-mesh guard below. A reset
+// re-seats both chassis, so the held poses clear wherever the poses reset.
+let lastMeshedPlayerPose: typeof playerChassisPose | undefined = playerChassisPose;
+let lastMeshedOpponentPose: typeof opponentChassisPose | undefined = opponentChassisPose;
 const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
 const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
 const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
@@ -4267,6 +4278,8 @@ app.onFrame(({ dt }) => {
     opponentChassisPose = opponentChassis.reset({
       x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponent.heading, speed: 0, steer: 0
     });
+    lastMeshedPlayerPose = playerChassisPose;
+    lastMeshedOpponentPose = opponentChassisPose;
     playerCar.setPosition(...seatCarOnVisibleAsphalt(playerChassisPose, heroFraming.subject.size, carChassisSpec.wheelRadius));
     playerCar.setRotation(playerChassisPose.rotation[0], resetPose.rotation[1], playerChassisPose.rotation[2]);
     opponentCar.setPosition(...seatCarOnVisibleAsphalt(opponentChassisPose, opponentRenderedSize, opponentChassisSpec.wheelRadius));
@@ -4663,6 +4676,24 @@ app.onFrame(({ dt }) => {
     brake: resolvedBrakeHeld ? 1 : 0,
     slip: Math.min(1, Math.abs(raceSnapshot.drift))
   });
+  // Zero wheels on the certified mesh means the support plane is extrapolated,
+  // not measured: rendering it dives the car under the visible world while the
+  // glued chase camera follows it into the dirt. Hold the last meshed
+  // presentation pose until real triangles return; the chassis keeps
+  // integrating underneath so recovery is instant. Physics, telemetry and
+  // contact evidence are untouched by this presentation guard.
+  const playerMeshContact = playerChassis.telemetry();
+  if (playerMeshContact.groundedWheels === 0) {
+    if (lastMeshedPlayerPose !== undefined) {
+      playerChassisPose = {
+        ...playerChassisPose,
+        groundedPosition: lastMeshedPlayerPose.groundedPosition,
+        rotation: lastMeshedPlayerPose.rotation
+      };
+    }
+  } else {
+    lastMeshedPlayerPose = playerChassisPose;
+  }
   /*
    * `groundedPosition`, not `position`.
    *
@@ -5033,6 +5064,20 @@ app.onFrame(({ dt }) => {
     brake: opponentDriverInput.brake ? 1 : 0,
     slip: Math.min(1, Math.abs(opponent.drift))
   });
+  // Same off-mesh presentation guard as the player car: never render an
+  // extrapolated support plane, hold the last meshed pose instead.
+  const opponentMeshContact = opponentChassis.telemetry();
+  if (opponentMeshContact.groundedWheels === 0) {
+    if (lastMeshedOpponentPose !== undefined) {
+      opponentChassisPose = {
+        ...opponentChassisPose,
+        groundedPosition: lastMeshedOpponentPose.groundedPosition,
+        rotation: lastMeshedOpponentPose.rotation
+      };
+    }
+  } else {
+    lastMeshedOpponentPose = opponentChassisPose;
+  }
   // Both cars seat on the same visible shell: the former capture-only
   // `-wheelRadius * 0.32` drop had no justifying contact reason and pushed the
   // rival back under the asphalt ribbon in exactly the thumbnail path.
