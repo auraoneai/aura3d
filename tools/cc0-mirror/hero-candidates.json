@@ -1,0 +1,6 @@
+{
+  "schema": "aura3d-cc0-mirror-hero-candidates/1",
+  "report": "tests/reports/asset-screening/hero-vehicle-mini-cooper-race-car.json",
+  "note": "Curated hero shortlist for the CC0 mirror manifest, populated from a screen:assets pass. Empty until the first mirror-candidate screening admits an asset: add {id, qualityScore} entries whose ids match manifest asset ids (source:pack:name). buildManifest merges them into manifest.json as heroCandidate/qualityScore plus a top-level heroCandidates list; the jsDelivr adapter carries the verdict in rawCatalogMetadata so ranking boosts proven picks with no key and no browser.",
+  "candidates": []
+}

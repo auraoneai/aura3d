@@ -1,0 +1,130 @@
+{
+  "producer": "rooftop-athlete-candidate-exact-route",
+  "url": "http://127.0.0.1:5199/?capture=review",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "screenshotPath": "/Users/gurbakshchahal/platforms/aura3d/apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/exact-route/rooftop-athletes-exact-route.png",
+  "pageErrors": [],
+  "consoleErrors": [],
+  "snapshot": {
+    "route": {
+      "status": "ready",
+      "mounted": true,
+      "heat": 3,
+      "state": "paused",
+      "currentSpotId": 1,
+      "score": 2,
+      "target": 6,
+      "streak": 1,
+      "onFire": false,
+      "possession": 2,
+      "makes": 1,
+      "misses": 0,
+      "shotClockMs": 6000,
+      "heatTimerMs": 35000,
+      "lastShotResult": "swish",
+      "goldBall": false,
+      "goldAttempted": false,
+      "goldMade": false,
+      "madeSpotIds": [
+        1
+      ],
+      "fireAchieved": false,
+      "aimPitch": 0,
+      "chargePower": 0,
+      "charging": false,
+      "ballInFlight": true,
+      "reducedMotion": false,
+      "hoopMode": "pressure",
+      "defenderTelegraph": "contest",
+      "shooterAnimation": "FollowThrough",
+      "defenderAnimation": "Contest",
+      "shooterMotionPhase": "follow-through",
+      "defenderMotionPhase": "airborne-reach",
+      "shooterBodyCompression": 0,
+      "defenderReach": 0.2667159910684201,
+      "contactFxKind": "none",
+      "contactFxActive": false,
+      "contestReactionActive": true,
+      "shooterClips": [],
+      "defenderClips": [],
+      "contestAimOffset": -0.0896,
+      "sensorEventCount": 2,
+      "physicsBodyCount": 0,
+      "simulationOwner": "route-local authored deterministic ballistic integrator; composed rim/board/defender regions are not Rapier bodies",
+      "predictionPointCount": 25,
+      "primaryAssets": [
+        "assets.rooftopCourt",
+        "assets.rooftopBackboard",
+        "assets.rooftopRim",
+        "assets.rooftopBall",
+        "assets.rooftopLayupScorer",
+        "assets.rooftopDefender"
+      ],
+      "systems": {
+        "flight": "route-local deterministic authored ballistic integrator shared by preview and actual first flight",
+        "scoring": "route-local five-heat objective, sensor-sequence, streak, gold, clock, and shot-lock rules",
+        "contest": "visible deterministic defender telegraph creates a documented pre-launch aim offset",
+        "presentation": "typed court, backboard, rim, ball, and defender with renderer-owned trajectory markers",
+        "audio": "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
+      },
+      "controls": [
+        "A/D change spot",
+        "W/S aim arc",
+        "hold/release Space shoot",
+        "P pause",
+        "R reset",
+        "touch aim/spot/shoot/pause/reset"
+      ],
+      "claimBoundary": "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",
+      "renderer": {
+        "drawCalls": 0,
+        "renderSize": [
+          0,
+          0
+        ],
+        "backend": "unknown"
+      },
+      "audioCues": [
+        "buzzerFail",
+        "buzzerFail"
+      ],
+      "ballPos": {
+        "x": -1.970656583490153,
+        "y": 3.4550375295778224,
+        "z": 2.915127980057318
+      },
+      "hoopPos": {
+        "x": 0,
+        "y": 3.05,
+        "z": 0
+      }
+    },
+    "renderer": {
+      "drawCalls": 0,
+      "renderSize": [
+        0,
+        0
+      ],
+      "backend": "unknown"
+    },
+    "canvases": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1000,
+          "top": 0,
+          "right": 1440,
+          "bottom": 1000,
+          "left": 0
+        }
+      }
+    ]
+  }
+}

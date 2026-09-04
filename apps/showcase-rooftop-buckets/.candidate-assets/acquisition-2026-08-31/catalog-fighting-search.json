@@ -1,0 +1,278 @@
+{
+  "ok": true,
+  "query": "credible animated basketball athlete human player",
+  "profile": "fighting-character",
+  "candidates": [],
+  "rejectedCandidates": [
+    {
+      "id": "objaverse:9a1be0ed25f94e9998adee1df3a2d218",
+      "source": "objaverse",
+      "title": "Basketball player",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+      "author": "3DDomino",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "sketchfab:9350c70c446d403eadb43e87cd43f3cd",
+      "source": "sketchfab",
+      "title": "Male human body",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://api.sketchfab.com/v3/models/9350c70c446d403eadb43e87cd43f3cd/download",
+      "author": "Izaskun_Arraiz",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "sketchfab:3ee634a324d5400ab84555b0636416f6",
+      "source": "sketchfab",
+      "title": "Basketball Jersey",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://api.sketchfab.com/v3/models/3ee634a324d5400ab84555b0636416f6/download",
+      "author": "Sev",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:33d01509e1fa4deeb23ccd807b686ad3",
+      "source": "objaverse",
+      "title": "Basketball",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-091/33d01509e1fa4deeb23ccd807b686ad3.glb",
+      "author": "Microsoft",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:2343abdae7674f46ad85071858db93c6",
+      "source": "objaverse",
+      "title": "Basketball",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-026/2343abdae7674f46ad85071858db93c6.glb",
+      "author": "afurokn",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:3ee634a324d5400ab84555b0636416f6",
+      "source": "objaverse",
+      "title": "Basketball Jersey",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-036/3ee634a324d5400ab84555b0636416f6.glb",
+      "author": "Sev",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:c94d08a3c24349bbbbd7213532cd05ee",
+      "source": "objaverse",
+      "title": "Basketball",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-074/c94d08a3c24349bbbbd7213532cd05ee.glb",
+      "author": "Arman.Abgaryan",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:e3c719662981472f8479031a074bc727",
+      "source": "objaverse",
+      "title": "Basketball",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-019/e3c719662981472f8479031a074bc727.glb",
+      "author": "Scott VanArsdale",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:d3fc2490cbe54e37b6d5b159704c787f",
+      "source": "objaverse",
+      "title": "Basketball Hoop",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-035/d3fc2490cbe54e37b6d5b159704c787f.glb",
+      "author": "paethon",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    },
+    {
+      "id": "objaverse:f08dada8b253466daff7bfd6445c9e41",
+      "source": "objaverse",
+      "title": "Basketball",
+      "license": "CC-BY-4.0",
+      "autoPullable": true,
+      "access": "direct-download",
+      "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-078/f08dada8b253466daff7bfd6445c9e41.glb",
+      "author": "inter_net",
+      "profile": {
+        "name": "fighting-character",
+        "suitable": false,
+        "rejectionReasons": [
+          "missing animation metadata; fighting-character requires proven embedded animation clips.",
+          "catalog metadata is not character-like or humanoid enough for a fighter."
+        ],
+        "warnings": [
+          "bounds metadata unavailable; validate-game must confirm scale after resolve."
+        ],
+        "validationHooks": []
+      }
+    }
+  ],
+  "deepLinks": [
+    {
+      "id": "marketplace:cgtrader",
+      "source": "marketplace",
+      "title": "Search CGTrader for 'credible animated basketball athlete human player' (free GLB filter)",
+      "license": "UNVERIFIED",
+      "autoPullable": false,
+      "access": "deep-link-only",
+      "sourcePage": "https://www.cgtrader.com/3d-models/ext/glb?keywords=credible%2Canimated%2Cbasketball%2Cathlete%2Chuman%2Cplayer&price_max=0",
+      "downloadUrl": "https://www.cgtrader.com/3d-models/ext/glb?keywords=credible%2Canimated%2Cbasketball%2Cathlete%2Chuman%2Cplayer&price_max=0"
+    },
+    {
+      "id": "marketplace:turbosquid",
+      "source": "marketplace",
+      "title": "Search TurboSquid for 'credible animated basketball athlete human player' (free GLB filter)",
+      "license": "UNVERIFIED",
+      "autoPullable": false,
+      "access": "deep-link-only",
+      "sourcePage": "https://www.turbosquid.com/Search/3D-Models/free/gltf/credible-animated-basketball-athlete-human-player",
+      "downloadUrl": "https://www.turbosquid.com/Search/3D-Models/free/gltf/credible-animated-basketball-athlete-human-player"
+    },
+    {
+      "id": "marketplace:free3d",
+      "source": "marketplace",
+      "title": "Search Free3D for 'credible animated basketball athlete human player' (free GLB filter)",
+      "license": "UNVERIFIED",
+      "autoPullable": false,
+      "access": "deep-link-only",
+      "sourcePage": "https://free3d.com/3d-models/credible-animated-basketball-athlete-human-player",
+      "downloadUrl": "https://free3d.com/3d-models/credible-animated-basketball-athlete-human-player"
+    }
+  ],
+  "warnings": [
+    "objaverse:9a1be0ed25f94e9998adee1df3a2d218: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "sketchfab:9350c70c446d403eadb43e87cd43f3cd: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "sketchfab:3ee634a324d5400ab84555b0636416f6: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:33d01509e1fa4deeb23ccd807b686ad3: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:2343abdae7674f46ad85071858db93c6: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:3ee634a324d5400ab84555b0636416f6: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:c94d08a3c24349bbbbd7213532cd05ee: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:e3c719662981472f8479031a074bc727: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:d3fc2490cbe54e37b6d5b159704c787f: bounds metadata unavailable; validate-game must confirm scale after resolve.",
+    "objaverse:f08dada8b253466daff7bfd6445c9e41: bounds metadata unavailable; validate-game must confirm scale after resolve."
+  ],
+  "messages": [
+    "0 candidate(s) for \"credible animated basketball athlete human player\" using fighting-character profile.",
+    "10 rejected candidate(s) moved to rejectedCandidates by the fighting-character profile.",
+    "No auto-pullable candidate. Listed assets need a manual license check before use.",
+    "No fighting-character-ready candidate. Listed candidates were rejected by the asset profile; inspect rejectionReasons before resolving.",
+    "3 marketplace deep-link(s) - manual download (license check required)."
+  ]
+}

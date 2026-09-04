@@ -1,0 +1,3780 @@
+{
+  "schema": "aura3d.visual-scripting-catalog/1.0",
+  "generatedAt": "2026-09-04T08:21:21.611Z",
+  "generatedBy": "packages/scripting/scripts/generate-visual-node-catalog.ts — do not hand-edit; regenerate with pnpm exec tsx packages/scripting/scripts/generate-visual-node-catalog.ts",
+  "nodeKindCount": 120,
+  "categories": [
+    {
+      "category": "ai",
+      "kinds": [
+        {
+          "kind": "evaluateDecision",
+          "category": "ai",
+          "title": "Evaluate Decision",
+          "description": "Read a deterministic DecisionTree decision snapshot.",
+          "inputs": [
+            {
+              "id": "treeId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "decision",
+              "type": "string"
+            },
+            {
+              "id": "decided",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/DecisionTree.ts"
+          ]
+        },
+        {
+          "kind": "fireWeaponBurst",
+          "category": "ai",
+          "title": "Fire Weapon Burst",
+          "description": "Create a deterministic weapon-burst command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "weaponId",
+              "type": "string"
+            },
+            {
+              "id": "kind",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "rounds",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/WeaponSystem.ts"
+          ]
+        },
+        {
+          "kind": "onBehaviorTreeStatus",
+          "category": "ai",
+          "title": "On Behavior Tree Status",
+          "description": "Read a deterministic behavior-tree status snapshot.",
+          "inputs": [
+            {
+              "id": "treeId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "status",
+              "type": "string"
+            },
+            {
+              "id": "succeeded",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/BehaviorTree.ts"
+          ]
+        },
+        {
+          "kind": "onGoapPlan",
+          "category": "ai",
+          "title": "On GOAP Plan",
+          "description": "Read a deterministic GOAP plan snapshot.",
+          "inputs": [
+            {
+              "id": "goalId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "planned",
+              "type": "boolean"
+            },
+            {
+              "id": "plan",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/GOAP.ts"
+          ]
+        },
+        {
+          "kind": "onHtnPlan",
+          "category": "ai",
+          "title": "On HTN Plan",
+          "description": "Read a deterministic HTN plan snapshot.",
+          "inputs": [
+            {
+              "id": "taskId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "planned",
+              "type": "boolean"
+            },
+            {
+              "id": "plan",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/HTN.ts"
+          ]
+        },
+        {
+          "kind": "planGoap",
+          "category": "ai",
+          "title": "Plan GOAP",
+          "description": "Request a GOAP plan for a named goal state.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "goalId",
+              "type": "string"
+            },
+            {
+              "id": "goal",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/GOAP.ts"
+          ]
+        },
+        {
+          "kind": "planHtn",
+          "category": "ai",
+          "title": "Plan HTN",
+          "description": "Request an HTN plan for a named task.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "taskId",
+              "type": "string"
+            },
+            {
+              "id": "domain",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/HTN.ts"
+          ]
+        },
+        {
+          "kind": "runBehaviorTree",
+          "category": "ai",
+          "title": "Run Behavior Tree",
+          "description": "Request a BehaviorTree tick for a named tree with blackboard input.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "treeId",
+              "type": "string"
+            },
+            {
+              "id": "blackboard",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/BehaviorTree.ts"
+          ]
+        },
+        {
+          "kind": "scoreUtility",
+          "category": "ai",
+          "title": "Score Utility",
+          "description": "Read the deterministic UtilityAI selection snapshot.",
+          "inputs": [
+            {
+              "id": "contextId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "action",
+              "type": "string"
+            },
+            {
+              "id": "score",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/UtilityAI.ts"
+          ]
+        },
+        {
+          "kind": "sensePerception",
+          "category": "ai",
+          "title": "Sense Perception",
+          "description": "Read a deterministic PerceptionSensor snapshot.",
+          "inputs": [
+            {
+              "id": "sensorId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "hits",
+              "type": "number"
+            },
+            {
+              "id": "snapshot",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/Perception.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "animation",
+      "kinds": [
+        {
+          "kind": "crossFade",
+          "category": "animation",
+          "title": "Cross Fade",
+          "description": "Create an animation crossfade command for a named clip.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "clip",
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            },
+            {
+              "id": "restart",
+              "type": "boolean"
+            },
+            {
+              "id": "layer",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "getClipTime",
+          "category": "animation",
+          "title": "Get Clip Time",
+          "description": "Read deterministic animation clip time from a controller snapshot.",
+          "inputs": [
+            {
+              "id": "controllerId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            },
+            {
+              "id": "clip",
+              "type": "string"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "onAnimationEvent",
+          "category": "animation",
+          "title": "On Animation Event",
+          "description": "Read a deterministic animation event emitted from clip-local time.",
+          "inputs": [
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "eventType",
+              "type": "string"
+            },
+            {
+              "id": "clip",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "fired",
+              "type": "boolean"
+            },
+            {
+              "id": "event",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "playClip",
+          "category": "animation",
+          "title": "Play Clip",
+          "description": "Create an animation play command for a named clip.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "clip",
+              "type": "string"
+            },
+            {
+              "id": "loop",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "restartClip",
+          "category": "animation",
+          "title": "Restart Clip",
+          "description": "Create an animation restart command for a named clip.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "clip",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "setLayerWeight",
+          "category": "animation",
+          "title": "Set Layer Weight",
+          "description": "Create an animation layer weight command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "layer",
+              "type": "string"
+            },
+            {
+              "id": "weight",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "setMorphTarget",
+          "category": "animation",
+          "title": "Set Morph Target",
+          "description": "Create a morph target weight command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "morphTarget",
+              "type": "string"
+            },
+            {
+              "id": "weight",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        },
+        {
+          "kind": "setMorphTargets",
+          "category": "animation",
+          "title": "Set Morph Targets",
+          "description": "Create a batch morph target weight command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "controllerId",
+              "type": "string"
+            },
+            {
+              "id": "weights",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/AnimationNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "audio",
+      "kinds": [
+        {
+          "kind": "playMusic",
+          "category": "audio",
+          "title": "Play Music",
+          "description": "Start a music cue.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "musicId",
+              "type": "string"
+            },
+            {
+              "id": "volume",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "playSfx",
+          "category": "audio",
+          "title": "Play SFX",
+          "description": "Play a sound effect cue.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "sfxId",
+              "type": "string"
+            },
+            {
+              "id": "volume",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "setVolume",
+          "category": "audio",
+          "title": "Set Volume",
+          "description": "Set an audio bus volume.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "busId",
+              "type": "string"
+            },
+            {
+              "id": "volume",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "stopMusic",
+          "category": "audio",
+          "title": "Stop Music",
+          "description": "Stop the current music cue.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "musicId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "camera",
+      "kinds": [
+        {
+          "kind": "animationCutTo",
+          "category": "camera",
+          "title": "Animation Cut To",
+          "description": "Cut to a named animation camera preset.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "presetId",
+              "type": "string"
+            },
+            {
+              "id": "targetId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "cutTo",
+          "category": "camera",
+          "title": "Cut To",
+          "description": "Create a camera cut command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "position",
+              "type": "object"
+            },
+            {
+              "id": "target",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CameraNodes.ts"
+          ]
+        },
+        {
+          "kind": "dollyTo",
+          "category": "camera",
+          "title": "Dolly To",
+          "description": "Dolly the camera to a target framing.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "position",
+              "type": "object"
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "follow",
+          "category": "camera",
+          "title": "Follow",
+          "description": "Create a camera follow command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "targetId",
+              "type": "string"
+            },
+            {
+              "id": "stiffness",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CameraNodes.ts"
+          ]
+        },
+        {
+          "kind": "frameCharacter",
+          "category": "camera",
+          "title": "Frame Character",
+          "description": "Frame a character with composition rules.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "characterId",
+              "type": "string"
+            },
+            {
+              "id": "composition",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "frameTargets",
+          "category": "camera",
+          "title": "Frame Targets",
+          "description": "Create a camera framing command for a deterministic target list.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "targetIds",
+              "type": "object"
+            },
+            {
+              "id": "padding",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CameraNodes.ts"
+          ]
+        },
+        {
+          "kind": "shake",
+          "category": "camera",
+          "title": "Shake",
+          "description": "Create a deterministic camera shake command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "intensity",
+              "type": "number"
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CameraNodes.ts"
+          ]
+        },
+        {
+          "kind": "shakeCamera",
+          "category": "camera",
+          "title": "Shake Camera",
+          "description": "Add animation camera shake.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "intensity",
+              "type": "number"
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "combat",
+      "kinds": [
+        {
+          "kind": "applyDamage",
+          "category": "combat",
+          "title": "Apply Damage",
+          "description": "Create a deterministic damage command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "targetId",
+              "type": "string"
+            },
+            {
+              "id": "amount",
+              "type": "number"
+            },
+            {
+              "id": "sourceId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        },
+        {
+          "kind": "applyKnockback",
+          "category": "combat",
+          "title": "Apply Knockback",
+          "description": "Create a deterministic knockback command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "targetId",
+              "type": "string"
+            },
+            {
+              "id": "velocity",
+              "type": "object"
+            },
+            {
+              "id": "sourceId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        },
+        {
+          "kind": "closeHitbox",
+          "category": "combat",
+          "title": "Close Hitbox",
+          "description": "Create a combat hitbox-close command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "hitboxId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        },
+        {
+          "kind": "onHit",
+          "category": "combat",
+          "title": "On Hit",
+          "description": "Read a deterministic combat hit event snapshot.",
+          "inputs": [
+            {
+              "id": "actorId",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "hitboxId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "hit",
+              "type": "boolean"
+            },
+            {
+              "id": "event",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        },
+        {
+          "kind": "openHitbox",
+          "category": "combat",
+          "title": "Open Hitbox",
+          "description": "Create a combat hitbox-open command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "hitboxId",
+              "type": "string"
+            },
+            {
+              "id": "ownerId",
+              "type": "string"
+            },
+            {
+              "id": "damage",
+              "type": "number"
+            },
+            {
+              "id": "payload",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        },
+        {
+          "kind": "setHurtbox",
+          "category": "combat",
+          "title": "Set Hurtbox",
+          "description": "Create a combat hurtbox command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "hurtboxId",
+              "type": "string"
+            },
+            {
+              "id": "ownerId",
+              "type": "string"
+            },
+            {
+              "id": "payload",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/CombatNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "debug",
+      "kinds": [
+        {
+          "kind": "log",
+          "category": "debug",
+          "title": "Log",
+          "description": "Pass-through debug log value.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "any"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/DebugNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dialogue",
+      "kinds": [
+        {
+          "kind": "sayLine",
+          "category": "dialogue",
+          "title": "Say Line",
+          "description": "Schedule a dialogue line for a speaker.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "speakerId",
+              "type": "string"
+            },
+            {
+              "id": "text",
+              "type": "string"
+            },
+            {
+              "id": "emotion",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "setEmotion",
+          "category": "dialogue",
+          "title": "Set Emotion",
+          "description": "Set a character performance emotion.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "characterId",
+              "type": "string"
+            },
+            {
+              "id": "emotion",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "setGesture",
+          "category": "dialogue",
+          "title": "Set Gesture",
+          "description": "Set a character performance gesture.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "characterId",
+              "type": "string"
+            },
+            {
+              "id": "gestureId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "waitForResponse",
+          "category": "dialogue",
+          "title": "Wait For Response",
+          "description": "Block until a response beat or timeout.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "speakerId",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "timeout",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "evidence",
+      "kinds": [
+        {
+          "kind": "assertState",
+          "category": "evidence",
+          "title": "Assert State",
+          "description": "Compare actual and expected values for deterministic evidence.",
+          "inputs": [
+            {
+              "id": "actual",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "id": "expected",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "id": "operator",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "passed",
+              "type": "boolean"
+            },
+            {
+              "id": "assertion",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/EvidenceNodes.ts"
+          ]
+        },
+        {
+          "kind": "captureSnapshot",
+          "category": "evidence",
+          "title": "Capture Snapshot",
+          "description": "Create an evidence snapshot command from deterministic graph context.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "label",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "snapshot",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/EvidenceNodes.ts"
+          ]
+        },
+        {
+          "kind": "markProof",
+          "category": "evidence",
+          "title": "Mark Proof",
+          "description": "Create a deterministic proof marker command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "proofId",
+              "type": "string"
+            },
+            {
+              "id": "details",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/EvidenceNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "flow",
+      "kinds": [
+        {
+          "kind": "branch",
+          "category": "flow",
+          "title": "Branch",
+          "description": "Choose true or false flow path from a boolean condition.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "condition",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "true",
+              "type": "flow"
+            },
+            {
+              "id": "false",
+              "type": "flow"
+            },
+            {
+              "id": "selected",
+              "type": "string"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/FlowNodes.ts"
+          ]
+        },
+        {
+          "kind": "forRange",
+          "category": "flow",
+          "title": "For Range",
+          "description": "Summarize bounded integer loop iterations.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "startIndex",
+              "type": "number"
+            },
+            {
+              "id": "endIndex",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "body",
+              "type": "flow"
+            },
+            {
+              "id": "completed",
+              "type": "flow"
+            },
+            {
+              "id": "index",
+              "type": "number"
+            },
+            {
+              "id": "indices",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/FlowNodes.ts"
+          ]
+        },
+        {
+          "kind": "gate",
+          "category": "flow",
+          "title": "Gate",
+          "description": "Allow or block flow with an initial open/closed state.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "startClosed",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "isOpen",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/FlowNodes.ts"
+          ]
+        },
+        {
+          "kind": "sequence",
+          "category": "flow",
+          "title": "Sequence",
+          "description": "Publish a deterministic ordered flow-output list.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "count",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out0",
+              "type": "flow"
+            },
+            {
+              "id": "out1",
+              "type": "flow"
+            },
+            {
+              "id": "out2",
+              "type": "flow"
+            },
+            {
+              "id": "outputs",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/FlowNodes.ts"
+          ]
+        },
+        {
+          "kind": "switch",
+          "category": "flow",
+          "title": "Switch",
+          "description": "Choose a numbered case or default path.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "value",
+              "type": "number"
+            },
+            {
+              "id": "caseCount",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "case0",
+              "type": "flow"
+            },
+            {
+              "id": "case1",
+              "type": "flow"
+            },
+            {
+              "id": "case2",
+              "type": "flow"
+            },
+            {
+              "id": "default",
+              "type": "flow"
+            },
+            {
+              "id": "selected",
+              "type": "string"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/FlowNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "game",
+      "kinds": [
+        {
+          "kind": "addScore",
+          "category": "game",
+          "title": "Add Score",
+          "description": "Create a deterministic scoring command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "playerId",
+              "type": "string"
+            },
+            {
+              "id": "points",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "despawnCharacter",
+          "category": "game",
+          "title": "Despawn Character",
+          "description": "Create a deterministic character-despawn command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "characterId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "getScore",
+          "category": "game",
+          "title": "Get Score",
+          "description": "Read a deterministic player score snapshot.",
+          "inputs": [
+            {
+              "id": "playerId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "score",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "onObjectiveComplete",
+          "category": "game",
+          "title": "On Objective Complete",
+          "description": "Read whether an objective is complete.",
+          "inputs": [
+            {
+              "id": "objectiveId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "complete",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "onStateEnter",
+          "category": "game",
+          "title": "On State Enter",
+          "description": "Read whether a state machine entered a named state.",
+          "inputs": [
+            {
+              "id": "machineId",
+              "type": "string"
+            },
+            {
+              "id": "state",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "entered",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/StateMachine.ts"
+          ]
+        },
+        {
+          "kind": "onTimerElapsed",
+          "category": "game",
+          "title": "On Timer Elapsed",
+          "description": "Read a deterministic game-timer snapshot.",
+          "inputs": [
+            {
+              "id": "timerId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "elapsed",
+              "type": "number"
+            },
+            {
+              "id": "fired",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "setObjective",
+          "category": "game",
+          "title": "Set Objective",
+          "description": "Create a deterministic objective-state command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "objectiveId",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        },
+        {
+          "kind": "setState",
+          "category": "game",
+          "title": "Set State",
+          "description": "Create a deterministic state-machine transition command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "machineId",
+              "type": "string"
+            },
+            {
+              "id": "state",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/StateMachine.ts"
+          ]
+        },
+        {
+          "kind": "spawnWave",
+          "category": "game",
+          "title": "Spawn Wave",
+          "description": "Create a deterministic enemy-wave spawn command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "waveId",
+              "type": "string"
+            },
+            {
+              "id": "formation",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "count",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/WeaponSystem.ts"
+          ]
+        },
+        {
+          "kind": "startTimer",
+          "category": "game",
+          "title": "Start Timer",
+          "description": "Create a deterministic game-timer start command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "timerId",
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/VisualGraphContext.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "input",
+      "kinds": [
+        {
+          "kind": "axis",
+          "category": "input",
+          "title": "Axis",
+          "description": "Read a deterministic input axis snapshot.",
+          "inputs": [
+            {
+              "id": "axis",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        },
+        {
+          "kind": "buffered",
+          "category": "input",
+          "title": "Buffered",
+          "description": "Read a deterministic buffered input action snapshot.",
+          "inputs": [
+            {
+              "id": "action",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        },
+        {
+          "kind": "combo",
+          "category": "input",
+          "title": "Combo",
+          "description": "Read a deterministic combo match snapshot.",
+          "inputs": [
+            {
+              "id": "combo",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        },
+        {
+          "kind": "held",
+          "category": "input",
+          "title": "Held",
+          "description": "Read a deterministic held input action snapshot.",
+          "inputs": [
+            {
+              "id": "action",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        },
+        {
+          "kind": "pressed",
+          "category": "input",
+          "title": "Pressed",
+          "description": "Read a deterministic pressed input action snapshot.",
+          "inputs": [
+            {
+              "id": "action",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        },
+        {
+          "kind": "released",
+          "category": "input",
+          "title": "Released",
+          "description": "Read a deterministic released input action snapshot.",
+          "inputs": [
+            {
+              "id": "action",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/InputNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "logic",
+      "kinds": [
+        {
+          "kind": "and",
+          "category": "logic",
+          "title": "AND",
+          "description": "Boolean AND.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "boolean"
+            },
+            {
+              "id": "b",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "equal",
+          "category": "logic",
+          "title": "Equal",
+          "description": "Strict equality comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "id": "b",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "greater",
+          "category": "logic",
+          "title": "Greater",
+          "description": "Numeric greater-than comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "greaterEqual",
+          "category": "logic",
+          "title": "Greater Equal",
+          "description": "Numeric greater-or-equal comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "isNull",
+          "category": "logic",
+          "title": "Is Null",
+          "description": "Null or undefined check.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "isValid",
+          "category": "logic",
+          "title": "Is Valid",
+          "description": "Non-null and non-undefined check.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "less",
+          "category": "logic",
+          "title": "Less",
+          "description": "Numeric less-than comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "lessEqual",
+          "category": "logic",
+          "title": "Less Equal",
+          "description": "Numeric less-or-equal comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "not",
+          "category": "logic",
+          "title": "NOT",
+          "description": "Boolean NOT.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "notEqual",
+          "category": "logic",
+          "title": "Not Equal",
+          "description": "Strict inequality comparison.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "id": "b",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "or",
+          "category": "logic",
+          "title": "OR",
+          "description": "Boolean OR.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "boolean"
+            },
+            {
+              "id": "b",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "select",
+          "category": "logic",
+          "title": "Select",
+          "description": "Ternary select by condition.",
+          "inputs": [
+            {
+              "id": "condition",
+              "type": "boolean"
+            },
+            {
+              "id": "ifTrue",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "id": "ifFalse",
+              "type": "any",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "any"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        },
+        {
+          "kind": "xor",
+          "category": "logic",
+          "title": "XOR",
+          "description": "Boolean exclusive OR.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "boolean"
+            },
+            {
+              "id": "b",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/LogicNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "math",
+      "kinds": [
+        {
+          "kind": "abs",
+          "category": "math",
+          "title": "Absolute",
+          "description": "Absolute numeric value.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "add",
+          "category": "math",
+          "title": "Add",
+          "description": "Add all connected numeric inputs.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "clamp",
+          "category": "math",
+          "title": "Clamp",
+          "description": "Clamp value between min and max.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "number"
+            },
+            {
+              "id": "min",
+              "type": "number"
+            },
+            {
+              "id": "max",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "cos",
+          "category": "math",
+          "title": "Cosine",
+          "description": "Cosine in radians.",
+          "inputs": [
+            {
+              "id": "angle",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "divide",
+          "category": "math",
+          "title": "Divide",
+          "description": "Divide a by b with zero division rejection.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "inverseLerp",
+          "category": "math",
+          "title": "Inverse Lerp",
+          "description": "Calculate interpolation factor for value between a and b.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            },
+            {
+              "id": "value",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "lerp",
+          "category": "math",
+          "title": "Lerp",
+          "description": "Linear interpolation.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            },
+            {
+              "id": "t",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "max",
+          "category": "math",
+          "title": "Maximum",
+          "description": "Maximum of two numbers.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "min",
+          "category": "math",
+          "title": "Minimum",
+          "description": "Minimum of two numbers.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "multiply",
+          "category": "math",
+          "title": "Multiply",
+          "description": "Multiply a by b.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "power",
+          "category": "math",
+          "title": "Power",
+          "description": "Raise base to exponent.",
+          "inputs": [
+            {
+              "id": "base",
+              "type": "number"
+            },
+            {
+              "id": "exponent",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "sin",
+          "category": "math",
+          "title": "Sine",
+          "description": "Sine in radians.",
+          "inputs": [
+            {
+              "id": "angle",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "sqrt",
+          "category": "math",
+          "title": "Square Root",
+          "description": "Calculate square root with negative input rejection.",
+          "inputs": [
+            {
+              "id": "value",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "subtract",
+          "category": "math",
+          "title": "Subtract",
+          "description": "Subtract b from a.",
+          "inputs": [
+            {
+              "id": "a",
+              "type": "number"
+            },
+            {
+              "id": "b",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        },
+        {
+          "kind": "tan",
+          "category": "math",
+          "title": "Tangent",
+          "description": "Tangent in radians.",
+          "inputs": [
+            {
+              "id": "angle",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "number"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/MathNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "physics",
+      "kinds": [
+        {
+          "kind": "dash",
+          "category": "physics",
+          "title": "Dash",
+          "description": "Create a kinematic dash command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "bodyId",
+              "type": "string"
+            },
+            {
+              "id": "direction",
+              "type": "object"
+            },
+            {
+              "id": "speed",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "jump",
+          "category": "physics",
+          "title": "Jump",
+          "description": "Create a kinematic jump command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "bodyId",
+              "type": "string"
+            },
+            {
+              "id": "impulse",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "onCollisionEnter",
+          "category": "physics",
+          "title": "On Collision Enter",
+          "description": "Read a deterministic collision-enter event snapshot.",
+          "inputs": [
+            {
+              "id": "bodyId",
+              "type": "string"
+            },
+            {
+              "id": "otherBodyId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "collided",
+              "type": "boolean"
+            },
+            {
+              "id": "event",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "onCollisionExit",
+          "category": "physics",
+          "title": "On Collision Exit",
+          "description": "Read a deterministic collision-exit event snapshot.",
+          "inputs": [
+            {
+              "id": "bodyId",
+              "type": "string"
+            },
+            {
+              "id": "otherBodyId",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "collided",
+              "type": "boolean"
+            },
+            {
+              "id": "event",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "overlap",
+          "category": "physics",
+          "title": "Overlap",
+          "description": "Read a deterministic overlap result by query id.",
+          "inputs": [
+            {
+              "id": "queryId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "hit",
+              "type": "boolean"
+            },
+            {
+              "id": "result",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "raycast",
+          "category": "physics",
+          "title": "Raycast",
+          "description": "Read a deterministic raycast result by query id.",
+          "inputs": [
+            {
+              "id": "queryId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "hit",
+              "type": "boolean"
+            },
+            {
+              "id": "result",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        },
+        {
+          "kind": "setVelocity",
+          "category": "physics",
+          "title": "Set Velocity",
+          "description": "Create a kinematic body velocity command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "bodyId",
+              "type": "string"
+            },
+            {
+              "id": "velocity",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/PhysicsNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "publishing",
+      "kinds": [
+        {
+          "kind": "captureThumbnail",
+          "category": "publishing",
+          "title": "Capture Thumbnail",
+          "description": "Mark a thumbnail capture time.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "time",
+              "type": "number"
+            },
+            {
+              "id": "path",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "exportCaption",
+          "category": "publishing",
+          "title": "Export Caption",
+          "description": "Export a caption track in VTT or SRT format.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "format",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "path",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "markChapter",
+          "category": "publishing",
+          "title": "Mark Chapter",
+          "description": "Create a video chapter marker.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "title",
+              "type": "string"
+            },
+            {
+              "id": "time",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "runtime",
+      "kinds": [
+        {
+          "kind": "getNode",
+          "category": "runtime",
+          "title": "Get Runtime Node",
+          "description": "Read a runtime node snapshot by id.",
+          "inputs": [
+            {
+              "id": "nodeId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "node",
+              "type": "object"
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "exists",
+              "type": "boolean"
+            },
+            {
+              "id": "position",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "onFrame",
+          "category": "runtime",
+          "title": "On Frame",
+          "description": "Emit deterministic frame timing from app.onFrame or app.step context.",
+          "inputs": [],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "dt",
+              "type": "number"
+            },
+            {
+              "id": "time",
+              "type": "number"
+            },
+            {
+              "id": "frame",
+              "type": "number"
+            },
+            {
+              "id": "context",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "onStart",
+          "category": "runtime",
+          "title": "On Start",
+          "description": "Emit flow when the deterministic frame context is at start.",
+          "inputs": [],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "active",
+              "type": "boolean"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "rotate",
+          "category": "runtime",
+          "title": "Rotate",
+          "description": "Create a deterministic runtime node rotation command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "rotation",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "setMaterial",
+          "category": "runtime",
+          "title": "Set Material",
+          "description": "Create a deterministic runtime node material override command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "material",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "setPosition",
+          "category": "runtime",
+          "title": "Set Position",
+          "description": "Create a deterministic runtime node position command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "position",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "setVisible",
+          "category": "runtime",
+          "title": "Set Visible",
+          "description": "Create a deterministic runtime node visibility command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "visible",
+              "type": "boolean"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        },
+        {
+          "kind": "translate",
+          "category": "runtime",
+          "title": "Translate",
+          "description": "Create a deterministic runtime node translation command.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "nodeId",
+              "type": "string"
+            },
+            {
+              "id": "delta",
+              "type": "object"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/RuntimeNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "scene",
+      "kinds": [
+        {
+          "kind": "loadSet",
+          "category": "scene",
+          "title": "Load Set",
+          "description": "Load a animation set asset into the episode scene.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "setId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "setScene",
+          "category": "scene",
+          "title": "Set Scene",
+          "description": "Switch to a named animation scene.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "sceneId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "spawnCharacter",
+          "category": "scene",
+          "title": "Spawn Character",
+          "description": "Spawn a character asset at a scene position.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "characterId",
+              "type": "string"
+            },
+            {
+              "id": "position",
+              "type": "object",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "transitionTo",
+          "category": "scene",
+          "title": "Transition To",
+          "description": "Transition to a animation scene with a named transition.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "sceneId",
+              "type": "string"
+            },
+            {
+              "id": "transition",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "timing",
+      "kinds": [
+        {
+          "kind": "delay",
+          "category": "timing",
+          "title": "Delay",
+          "description": "Delay a animation action by seconds.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "duration",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "schedule",
+          "category": "timing",
+          "title": "Schedule",
+          "description": "Schedule a animation command at a timeline time.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "time",
+              "type": "number"
+            },
+            {
+              "id": "label",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "syncToAudio",
+          "category": "timing",
+          "title": "Sync To Audio",
+          "description": "Synchronize downstream actions to an audio timestamp.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "audioId",
+              "type": "string"
+            },
+            {
+              "id": "time",
+              "type": "number"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        },
+        {
+          "kind": "waitForBeat",
+          "category": "timing",
+          "title": "Wait For Beat",
+          "description": "Wait for a named story beat.",
+          "inputs": [
+            {
+              "id": "in",
+              "type": "flow",
+              "optional": true
+            },
+            {
+              "id": "beatId",
+              "type": "string"
+            }
+          ],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "flow"
+            },
+            {
+              "id": "command",
+              "type": "object"
+            }
+          ],
+          "evidence": [
+            "packages/scripting/src/AnimationVisualNodes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "value",
+      "kinds": [
+        {
+          "kind": "const",
+          "category": "value",
+          "title": "Constant",
+          "description": "Constant value node.",
+          "inputs": [],
+          "outputs": [
+            {
+              "id": "out",
+              "type": "any"
+            }
+          ],
+          "evidence": [
+            "src/scripting/nodes/VariableNodes.ts"
+          ]
+        }
+      ]
+    }
+  ]
+}
