@@ -3007,15 +3007,29 @@ function publishPlatformerEvidence(): void {
   const presentedPlayer = skylineDensityCaptureGameX === null
     ? scenePlayer
     : platformerScene.toScenePlayer({ ...state.player, x: skylineDensityCaptureGameX });
-  player.setPosition(...presentedPlayer.position);
+  // Rigid-mesh run cycle. The Meshy hero ships no skeleton or clips and the
+  // root runtime does not advance skinned mixers, so a translating rigid mesh
+  // is the only thing locomotion can move -- which reads as frozen while
+  // running. Stride-frequency vertical bob, forward lean and lateral sway,
+  // all bounded and speed-driven, carry the run state in the rigid
+  // transform instead. Cosmetic only: physics, contact, camera targeting and
+  // the certified pose are unchanged.
+  const runSpeed = Math.abs(state.player.vx);
+  const runCycleActive = !reducedMotion && !compositionPoseSettled
+    && !compositionSubjectSuppressed && readAnimationState() === "run" && runSpeed > 0.01;
+  const runPhase = state.time * (7 + runSpeed * 1.4);
+  const runBob = runCycleActive ? Math.abs(Math.sin(runPhase)) * SKYLINE_CHARACTER_HEIGHT * 0.05 : 0;
+  const runLean = runCycleActive ? Math.min(0.22, 0.1 + runSpeed * 0.016) : 0;
+  const runSway = runCycleActive ? Math.sin(runPhase) * 0.1 : 0;
+  player.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + runBob, presentedPlayer.position[2]);
   if (skylineAccessoryHandles.length > 0) {
     const facingSign = playerFacing >= 0 ? 1 : -1;
     const [sash, pack, visor] = skylineAccessoryHandles;
-    sash?.setPosition(presentedPlayer.position[0] - 0.08 * facingSign, presentedPlayer.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045);
+    sash?.setPosition(presentedPlayer.position[0] - 0.08 * facingSign, presentedPlayer.position[1] + 0.08 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.045);
     sash?.setRotation(0, playerVisualYawForFacing(playerFacing), -0.16 * facingSign);
-    pack?.setPosition(presentedPlayer.position[0] + 0.19 * facingSign, presentedPlayer.position[1] - 0.01, GAMEPLAY_ACTOR_DEPTH + 0.06);
+    pack?.setPosition(presentedPlayer.position[0] + 0.19 * facingSign, presentedPlayer.position[1] - 0.01 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.06);
     pack?.setRotation(0, playerVisualYawForFacing(playerFacing), Math.PI * 0.5);
-    visor?.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + 0.19, GAMEPLAY_ACTOR_DEPTH + 0.09);
+    visor?.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + 0.19 + runBob, GAMEPLAY_ACTOR_DEPTH + 0.09);
     visor?.setRotation(Math.PI * 0.5, playerVisualYawForFacing(playerFacing), 0);
     skylineAccessoryHandles.forEach((node) => node.setVisible(!compositionSubjectSuppressed));
   }
@@ -3053,8 +3067,15 @@ function publishPlatformerEvidence(): void {
   // Keep the travel-facing yaw as an explicit source contract. The small
   // renderer-owned sway is applied as a second bounded presentation pass so
   // it cannot obscure the gameplay-facing orientation.
+  // Run lean tips the rigid body into the travel direction with a touch of
+  // stride sway on the yaw; idle keeps its own sway pass below. The default
+  // lens is a three-quarter view, so the Z lean projects onto the screen as
+  // forward pitch; the front-on review lens would read it as a sideways trip,
+  // so lean stays off there (bob still carries the stride).
+  const runYaw = playerVisualYawForFacing(playerFacing) + runSway;
+  const runLeanZ = runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0;
   if (visualReviewCapture) {
-    player.setRotation(0, playerVisualYawForFacing(playerFacing), 0);
+    player.setRotation(0, runYaw, runLeanZ);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
   } else {
     // Keep the public evidence-facing yaw at ±90° (see `facingYaw` below),
@@ -3062,7 +3083,7 @@ function publishPlatformerEvidence(): void {
     // authored above. The old update path silently overwrote the profile with
     // the exact side-on yaw every frame, so the screenshot still showed only a
     // white helmet ellipse despite the source-level profile change.
-    player.setRotation(0, playerVisualYawForFacing(playerFacing), 0);
+    player.setRotation(0, runYaw, runLeanZ);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
   }
   // Request the hero's embedded clip for the current locomotion state. Root

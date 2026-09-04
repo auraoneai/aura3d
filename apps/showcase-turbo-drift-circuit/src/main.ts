@@ -1584,6 +1584,22 @@ function buildTurboRallySetNodes() {
   ];
 }
 
+/**
+ * Mesh-derived asphalt-skin height at an arbitrary XZ.
+ *
+ * Edge-zone visuals (ribbon edges, kerb blocks) must sit on the surface the
+ * chassis actually drives, not on the centre sample: on a banked edge the
+ * centre-derived skin floats above the true dipped surface and a car riding
+ * the edge renders half-buried under the floating strip while the glued chase
+ * camera follows it down. The clamp keeps the sparse-seam fallback (or any
+ * off-mesh miss) from spiking a vertex: worst case it reproduces the old
+ * centre-derived height — never a spike.
+ */
+function edgeRoadSkinY(x: number, z: number, centreRoadY: number): number {
+  const sampled = sampleTurboRoadHeight(x, z);
+  const clamped = Math.min(centreRoadY + 0.09, Math.max(centreRoadY - 0.09, sampled));
+  return clamped + ROAD_DETAIL_SURFACE_LIFT;
+}
 /** Return the same mesh-derived height used by the four-wheel chassis. */
 function sampleTurboRoadHeight(x: number, z: number): number {
   const sample = racingScene.surfaceQuery()?.sample(x, z);
@@ -1710,7 +1726,9 @@ function buildTurboRoadDetailNodes() {
         y: midpoint.y + leftZ * edgeOffset * side
       });
       curbTransforms.push({
-        position: [edge[0], roadDetailY + 0.014, edge[2]],
+        // Each kerb block sits on the mesh sampled at its own XZ (see
+        // edgeRoadSkinY): the centre sample floats over a banked edge.
+        position: [edge[0], edgeRoadSkinY(edge[0], edge[2], roadY) + 0.014, edge[2]],
         rotation: [0, pose.rotation[1], 0],
         // Keep the kerb just outside the certified asphalt edge.  Its narrow
         // cross-section reads as a curb stripe without changing the contact
@@ -1743,7 +1761,7 @@ function buildTurboRoadDetailNodes() {
           y: midpoint.y + leftZ * rubberOffset * side
         });
         rubberTransforms.push({
-          position: [rubber[0], roadDetailY + 0.01, rubber[2]],
+          position: [rubber[0], edgeRoadSkinY(rubber[0], rubber[2], roadY) + 0.01, rubber[2]],
           rotation: [0, pose.rotation[1], 0],
           scale: [0.026, 0.006, Math.min(0.36, segmentLength * 0.54)]
         });
@@ -1768,9 +1786,16 @@ function buildTurboRoadDetailNodes() {
     // cars; spanning the complete 3.6-unit ribbon lets one continuous material
     // carry the bend, banking and aggregate response through the action frame.
     const halfWidth = gamePointToSceneLength(routeWidth * 0.5);
+    // Ribbon edges follow the mesh at their own XZ for the same banked-edge
+    // reason as the kerbs: a centre-derived edge floats over a dipped outside
+    // lane and buries a car riding it.
+    const leftEdgeX = centre[0] + leftX * halfWidth;
+    const leftEdgeZ = centre[2] + leftZ * halfWidth;
+    const rightEdgeX = centre[0] - leftX * halfWidth;
+    const rightEdgeZ = centre[2] - leftZ * halfWidth;
     asphaltPositions.push(
-      [centre[0] + leftX * halfWidth, roadDetailY, centre[2] + leftZ * halfWidth],
-      [centre[0] - leftX * halfWidth, roadDetailY, centre[2] - leftZ * halfWidth]
+      [leftEdgeX, edgeRoadSkinY(leftEdgeX, leftEdgeZ, roadY), leftEdgeZ],
+      [rightEdgeX, edgeRoadSkinY(rightEdgeX, rightEdgeZ, roadY), rightEdgeZ]
     );
     const asphaltNormal = asphaltNormalAt(index / segmentCount);
     asphaltNormals.push(asphaltNormal, asphaltNormal);
