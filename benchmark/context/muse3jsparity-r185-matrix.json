@@ -1,0 +1,455 @@
+{
+  "schema": "aura3d.muse3jsparity-r185-matrix/1.0",
+  "status": "frozen",
+  "generatedBy": "tools/muse3jsparity-matrix/index.ts (never hand-edit; rerun on three-version change)",
+  "generatedAt": "2026-09-04T07:23:43.027Z",
+  "three": {
+    "version": "0.185.1",
+    "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "srcFiles": 750,
+    "jsmFiles": 425,
+    "jsmTslFiles": 61,
+    "renderBundleSrcFiles": 4
+  },
+  "decoderLibs": [
+    {
+      "lib": "draco3d",
+      "r185": "1.5.7",
+      "repoPin": "^1.5.7",
+      "installed": "1.5.7",
+      "status": "aligned",
+      "reason": "Pin ^1.5.7 resolves to installed 1.5.7, equal to the r185 companion set."
+    },
+    {
+      "lib": "meshoptimizer",
+      "r185": "1.2.0",
+      "repoPin": "^1.1.1",
+      "installed": "1.1.1",
+      "status": "divergent",
+      "reason": "r185 companion set pins meshoptimizer 1.2.0; repo pin is ^1.1.1 (installed 1.1.1). Divergence accepted: the meshopt decode path is route-injected at runtime via createMeshoptDecoder (decoder-required, fail-closed without it — packages/assets/src/GLTFCompressionDecoders.ts), so the npm pin only serves node-side tooling/tests and does not gate the shipped decode path. Re-pin to ^1.2.0 with lockfile regen is a follow-up outside S-task scope (root package.json + pnpm-lock.yaml are not S-task touch targets)."
+    },
+    {
+      "lib": "ktx-parse",
+      "r185": null,
+      "repoPin": null,
+      "installed": "0.7.1",
+      "status": "divergent",
+      "reason": "r185 vendors ktx-parse as a versionless module blob under examples/jsm/libs/ (no npm version to align to). Ours resolves via the @loaders.gl transitive ktx-parse plus BasisU transcoder URLs (packages/assets/src/KTX2BasisTextureTranscoder.ts); the KTX2 path is proven by tests/unit/rendering/texture-pipeline-c3.test.ts."
+    }
+  ],
+  "meshOps": {
+    "mergeAdopted": true,
+    "deindexAdopted": true,
+    "interleaveNote": "VertexBuffer stores attributes interleaved in a single ArrayBuffer by construction; no interleave adoption needed."
+  },
+  "rows": [
+    {
+      "area": "postprocessing",
+      "filesMeasured": 30,
+      "filesPrd": "30",
+      "verdict": "PARTIAL",
+      "prdSection": "A1-A3",
+      "proof": null,
+      "closingSection": "A1-A3 (GPU-resident passes + missing 17)",
+      "outReason": null,
+      "note": "13 CPU passes exist; GPU-resident rewrite + 17 missing passes close the rest."
+    },
+    {
+      "area": "controls",
+      "filesMeasured": 9,
+      "filesPrd": "9",
+      "verdict": "GAP",
+      "prdSection": "N2/F1",
+      "proof": null,
+      "closingSection": "N2/F1 owns Arcball; the other 8 controls stay covered by the unified follow-rig work",
+      "outReason": null,
+      "note": "GAP = Arcball only, owned by N2/F1."
+    },
+    {
+      "area": "loaders",
+      "filesMeasured": 56,
+      "filesPrd": "56",
+      "verdict": "PARTIAL",
+      "prdSection": "M1-M3",
+      "proof": null,
+      "closingSection": "M1-M3 (animation-pointer, formats triage)",
+      "outReason": null,
+      "note": "GLTF/OBJ/HDR/KTX2 paths + matrix exist; animation-pointer + format triage close the rest."
+    },
+    {
+      "area": "objects",
+      "filesMeasured": 14,
+      "filesPrd": "14",
+      "verdict": "GAP",
+      "prdSection": "B4/D3",
+      "proof": null,
+      "closingSection": "B4/D3 (contract-only/fixtures for Reflector/Refractor/Water/Sky/Lensflare/ShadowMesh)",
+      "outReason": null,
+      "note": "GAP owned by B4/D3."
+    },
+    {
+      "area": "renderers",
+      "filesMeasured": 4,
+      "filesPrd": "4",
+      "verdict": "OUT",
+      "prdSection": "N4",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Game annotation needs are covered by world-anchored labels + SDF text; the migration lab documents the manual CSS2D/3D mapping. N4 records the decision.",
+      "note": "CSS2D/CSS3D/SVG/Projector stay out for 2.1."
+    },
+    {
+      "area": "webgpu-render-bundles",
+      "filesMeasured": 4,
+      "filesPrd": "n/a (cross-cutting; inventory S135)",
+      "verdict": "GAP",
+      "prdSection": "J2",
+      "proof": null,
+      "closingSection": "J2 owns the render-bundle verdict",
+      "outReason": null,
+      "note": "r185 WebGPURenderer render-bundle + instancing improvements; zero renderBundle matches in packages/rendering/src."
+    },
+    {
+      "area": "webxr",
+      "filesMeasured": 13,
+      "filesPrd": "13",
+      "verdict": "OUT",
+      "prdSection": "N3",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Full XR parity is out; only injected-session state is supported (N3). Real-device XR stays roadmap.",
+      "note": "OUT except injected-session state."
+    },
+    {
+      "area": "animation",
+      "filesMeasured": 2,
+      "filesPrd": "2",
+      "verdict": "OUT",
+      "prdSection": "E2 (bounded)",
+      "proof": null,
+      "closingSection": "E2 bounded (retarget PARTIAL)",
+      "outReason": "CCDIKSolver is Tier-3 OUT; AnimationClipCreator retarget is PARTIAL under bounded E2.",
+      "note": "Split row: OUT (Tier-3) / PARTIAL (retarget)."
+    },
+    {
+      "area": "lights",
+      "filesMeasured": 3,
+      "filesPrd": "3",
+      "verdict": "GAP",
+      "prdSection": "Q1.6/B5",
+      "proof": null,
+      "closingSection": "Q1.6/B5 (LTC sub-part documented OUT unless product-viz demands)",
+      "outReason": null,
+      "note": "GAP = LTC, owned by Q1.6/B5."
+    },
+    {
+      "area": "environments",
+      "filesMeasured": 3,
+      "filesPrd": "3",
+      "verdict": "PARTIAL",
+      "prdSection": "M3/B3",
+      "proof": null,
+      "closingSection": "M3/B3 (HDRI root/file)",
+      "outReason": null,
+      "note": "6 presets exist; no HDRI root/file."
+    },
+    {
+      "area": "tsl",
+      "filesMeasured": 61,
+      "filesPrd": "61",
+      "verdict": "OUT",
+      "prdSection": "claim boundaries",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Universal TSL/node parity is explicitly roadmap (out-of-scope list); PortableShaderMaterial stays the custom-material path.",
+      "note": "OUT except the PortableShaderMaterial workload."
+    },
+    {
+      "area": "shaders",
+      "filesMeasured": 52,
+      "filesPrd": "52",
+      "verdict": "COVERED",
+      "prdSection": "Q0",
+      "proof": "tests/unit/rendering/shader-brdf-reference.test.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED by the Q0 audit match list."
+    },
+    {
+      "area": "helpers",
+      "filesMeasured": 13,
+      "filesPrd": "13",
+      "verdict": "PARTIAL",
+      "prdSection": "H2/I1",
+      "proof": null,
+      "closingSection": "H2/I1 rows",
+      "outReason": null,
+      "note": "PARTIAL via H2/I1 rows."
+    },
+    {
+      "area": "lines",
+      "filesMeasured": 10,
+      "filesPrd": "10",
+      "verdict": "PARTIAL",
+      "prdSection": "D4",
+      "proof": null,
+      "closingSection": "D4 (thick lines exist)",
+      "outReason": null,
+      "note": "PARTIAL: thick lines exist, D4 closes the rest."
+    },
+    {
+      "area": "transpiler",
+      "filesMeasured": 8,
+      "filesPrd": "8",
+      "verdict": "OUT",
+      "prdSection": "claim boundaries",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Engine, not a shader-toolchain vendor; PortableShaderMaterial stays the custom-material path.",
+      "note": "GLSL->TSL/WGSL converters stay out."
+    },
+    {
+      "area": "generators",
+      "filesMeasured": 6,
+      "filesPrd": "6",
+      "verdict": "PARTIAL",
+      "prdSection": "D2",
+      "proof": null,
+      "closingSection": "D2 (fixture samplers exist; rendered systems close the rest)",
+      "outReason": null,
+      "note": "City/Forest/Terrain/Tree generators: fixture samplers exist."
+    },
+    {
+      "area": "lighting",
+      "filesMeasured": 3,
+      "filesPrd": "3",
+      "verdict": "PARTIAL",
+      "prdSection": "B5",
+      "proof": null,
+      "closingSection": "B5 (clustered forward exists; warning policy + probe grid triage)",
+      "outReason": null,
+      "note": "ClusteredLighting/DynamicLighting/LightProbeGrid."
+    },
+    {
+      "area": "textures",
+      "filesMeasured": 1,
+      "filesPrd": "1",
+      "verdict": "COVERED",
+      "prdSection": "M2/C3",
+      "proof": "tests/unit/rendering/texture-pipeline-c3.test.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED: KTX2 path + sampler."
+    },
+    {
+      "area": "exporters",
+      "filesMeasured": 8,
+      "filesPrd": "8",
+      "verdict": "OUT",
+      "prdSection": "S-task 4",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Engine, not a DCC tool: GLTFExporter/OBJ/PLY/STL export is not a runtime-game need.",
+      "note": "S-task 4 triage: OUT with reason."
+    },
+    {
+      "area": "modifiers",
+      "filesMeasured": 5,
+      "filesPrd": "5",
+      "verdict": "OUT",
+      "prdSection": "S-task 4",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Engine, not a DCC tool: Simplify/Subdivision/EdgeSplit are authoring-time ops; runtime LOD needs are owned elsewhere.",
+      "note": "S-task 4 triage: OUT with reason."
+    },
+    {
+      "area": "curves",
+      "filesMeasured": 5,
+      "filesPrd": "5",
+      "verdict": "COVERED",
+      "prdSection": "F2",
+      "proof": "packages/engine/src/agent-api/CameraPathEditor.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED: camera paths use curves."
+    },
+    {
+      "area": "utils",
+      "filesMeasured": 16,
+      "filesPrd": "16",
+      "verdict": "PARTIAL",
+      "prdSection": "S-task 4 / D1",
+      "proof": "tests/unit/rendering/mesh-consolidation.test.ts",
+      "closingSection": "S-task 4 mesh-op adoption (done): merge via consolidateStaticMeshes + de-index via deindexGeometryToNonIndexed in packages/rendering/src/MeshConsolidation.ts; interleaving is the native VertexBuffer storage model so no adoption is needed",
+      "outReason": null,
+      "note": "BufferGeometryUtils-class mesh ops adopted; rest of utils (LDraw etc.) stays OUT as DCC/devtools-adjacent."
+    },
+    {
+      "area": "math",
+      "filesMeasured": 10,
+      "filesPrd": "10",
+      "verdict": "COVERED",
+      "prdSection": "@aura3d/math",
+      "proof": "packages/math/src/index.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED by @aura3d/math."
+    },
+    {
+      "area": "misc",
+      "filesMeasured": 14,
+      "filesPrd": "14",
+      "verdict": "OUT",
+      "prdSection": "S-task 4 / A4",
+      "proof": null,
+      "closingSection": "A4 owns the GPGPU comparison carve-out (WGSL compute is real)",
+      "outReason": "Engine, not DCC/devtools: ConvexObjectBreaker and siblings stay out; the GPUComputationRenderer-vs-compute-backend comparison is carved out to A4.",
+      "note": "S-task 4 triage: OUT with an A4-owned GPGPU carve-out."
+    },
+    {
+      "area": "gpgpu",
+      "filesMeasured": 1,
+      "filesPrd": "1",
+      "verdict": "PARTIAL",
+      "prdSection": "A4",
+      "proof": null,
+      "closingSection": "A4 (WGSL compute real)",
+      "outReason": null,
+      "note": "PARTIAL: WGSL compute is real."
+    },
+    {
+      "area": "csm",
+      "filesMeasured": 5,
+      "filesPrd": "5",
+      "verdict": "PARTIAL",
+      "prdSection": "B1",
+      "proof": null,
+      "closingSection": "B1 (CSM exists, hysteresis missing)",
+      "outReason": null,
+      "note": "PARTIAL: CSM exists, hysteresis missing."
+    },
+    {
+      "area": "effects",
+      "filesMeasured": 5,
+      "filesPrd": "5",
+      "verdict": "PARTIAL",
+      "prdSection": "A4",
+      "proof": null,
+      "closingSection": "A4 (particles/trails)",
+      "outReason": null,
+      "note": "PARTIAL: particles/trails."
+    },
+    {
+      "area": "materials",
+      "filesMeasured": 3,
+      "filesPrd": "3",
+      "verdict": "COVERED",
+      "prdSection": "C/P3",
+      "proof": "packages/engine/src/material-physical/PhysicalMaterialSpec.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED: physical/standard + compat."
+    },
+    {
+      "area": "geometries",
+      "filesMeasured": 9,
+      "filesPrd": "9",
+      "verdict": "COVERED",
+      "prdSection": "D",
+      "proof": "packages/rendering/src/GeometryPrimitives.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED: primitives + compat."
+    },
+    {
+      "area": "interaction",
+      "filesMeasured": 1,
+      "filesPrd": "1",
+      "verdict": "COVERED",
+      "prdSection": "F",
+      "proof": "packages/engine/src/agent-api/index.ts",
+      "closingSection": null,
+      "outReason": null,
+      "note": "COVERED: interactions/raycast (AuraInteractionSpec + raycastMesh in the agent API root)."
+    },
+    {
+      "area": "capabilities-offscreen-interactive",
+      "filesMeasured": 9,
+      "filesPrd": "2+3+4",
+      "verdict": "OUT",
+      "prdSection": "S-task 4",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Devtools-adjacent surfaces, not engine parity; no runtime-game need.",
+      "note": "S-task 4 triage: OUT with reason."
+    },
+    {
+      "area": "physics",
+      "filesMeasured": 3,
+      "filesPrd": "3",
+      "verdict": "PARTIAL",
+      "prdSection": "H1/H2",
+      "proof": null,
+      "closingSection": "H1/H2 (Rapier owns; debug-draw pending)",
+      "outReason": null,
+      "note": "PARTIAL: Rapier owns physics; debug-draw pending."
+    },
+    {
+      "area": "culling-renderorder-layers",
+      "filesMeasured": null,
+      "filesPrd": "n/a (cross-cutting; inventory S134)",
+      "verdict": "PARTIAL",
+      "prdSection": "D2",
+      "proof": null,
+      "closingSection": "D2 (static-bounds frustum intersector exists; render-order + layers audit)",
+      "outReason": null,
+      "note": "Frustum culling + object/render-list behavior; render-order + layers audit closes the rest."
+    },
+    {
+      "area": "react-r3f-stack",
+      "filesMeasured": null,
+      "filesPrd": "n/a (companion packages; inventory S186)",
+      "verdict": "PARTIAL",
+      "prdSection": "V",
+      "proof": null,
+      "closingSection": "V (@aura3d/react ships AuraCanvas + Scene/Model/Camera/Lights/Effect + productViewerScene; no useFrame/events/drei)",
+      "outReason": null,
+      "note": "React 19 + R3F + drei row."
+    },
+    {
+      "area": "libs",
+      "filesMeasured": 22,
+      "filesPrd": "22",
+      "verdict": "PARTIAL",
+      "prdSection": "M2",
+      "proof": null,
+      "closingSection": "M2 (vendored decoder alignment; see decoderLibs: draco3d aligned, meshoptimizer + ktx-parse divergences recorded with reason)",
+      "outReason": null,
+      "note": "Third-party vendored libs (draco, ktx-parse, meshopt...)."
+    },
+    {
+      "area": "inspector",
+      "filesMeasured": 20,
+      "filesPrd": "20",
+      "verdict": "OUT",
+      "prdSection": "S-task 4",
+      "proof": null,
+      "closingSection": null,
+      "outReason": "Devtools surface, not engine parity; AuraDiagnosticsOverlay stays the diagnostics path.",
+      "note": "S-task 4 triage: OUT with reason."
+    }
+  ],
+  "checklist": {
+    "matrixGeneratedFromInstalledTree": true,
+    "zeroGapsWithoutOwningSectionOrOutReason": true,
+    "meshOpAdoptionLanded": true,
+    "decoderLibsAlignedOrDivergenceRecorded": true,
+    "verdictCounts": {
+      "covered": 7,
+      "partial": 15,
+      "gap": 4,
+      "out": 10
+    }
+  }
+}

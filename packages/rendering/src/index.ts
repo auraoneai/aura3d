@@ -22,10 +22,11 @@ export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceErro
 export { createRenderDevice } from "./RenderBackend";
 export type { RenderBackendOptions } from "./RenderBackend";
 export { WebGL2Device } from "./WebGL2Device";
-export type { WebGL2DeviceOptions } from "./WebGL2Device";
+export type { WebGL2BloomDiagnostics, WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
-export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
+export { MAX_WEBGPU_SKINNING_JOINTS, decideSkinningPalettePath } from "./WebGPUSkinningLimits";
+export type { SkinningCpuFallbackReason, SkinningPaletteDecision } from "./WebGPUSkinningLimits";
 /*
  * WS-2.2 — TYPE-ONLY. The value moved to `./webgpu` (`@aura3d/engine/rendering/webgpu`).
  *
@@ -63,7 +64,7 @@ export { Geometry, computeBounds } from "./Geometry";
 export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
-export { computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
+export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 export type { SkinningBoundsPalette } from "./SkinningBounds";
 export { Texture, bytesPerPixel, compressedBlockByteLength, compressedTextureByteLength, isCompressedTextureFormat } from "./Texture";
 export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
@@ -242,6 +243,18 @@ export {
 } from "./PMREM";
 export type { ExternalParityPmrem, ExternalParityPmremLevel } from "./PMREM";
 export {
+  resolveVolumetricFog,
+  resolveVolumetricQuality,
+  selectVolumetricLight,
+  volumetricLightDirection
+} from "./VolumetricFog";
+export type {
+  VolumetricFogEffectParams,
+  VolumetricFogQuality,
+  VolumetricFogResolution,
+  VolumetricQualityResolution
+} from "./VolumetricFog";
+export {
   createExternalParityIblResources
 } from "./IBL";
 export type { ExternalParityIblOptions, ExternalParityIblResourceSet } from "./IBL";
@@ -298,6 +311,16 @@ export { runExternalParityDepthOfField } from "./postprocess/DepthOfFieldPass";
 export { runExternalParityColorGrade } from "./postprocess/ColorGradingPass";
 export type { ExternalParityColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
+export {
+  bloomPyramidCompositeGain,
+  normalizeBloomQualityPreset,
+  resolveBloomPyramidPlan,
+} from "./postprocess/NativeBloomPyramid";
+export type {
+  BloomPyramidMip,
+  BloomPyramidPlan,
+  BloomQualityPreset,
+} from "./postprocess/NativeBloomPyramid";
 export type {
   PostProcessCapabilityReport,
   PostProcessComposerDiagnostics,
@@ -354,8 +377,8 @@ export type {
   Rgba8EnvironmentMapSource,
   RgbeEnvironmentMapSource
 } from "./EnvironmentMapResources";
-export { Sampler } from "./Sampler";
-export type { SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
+export { DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler } from "./Sampler";
+export type { SamplerAnisotropyRequest, SamplerAnisotropyResolution, SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { isTextureBinding, TextureBinding } from "./TextureBinding";
@@ -392,12 +415,16 @@ export {
   createTransmissionBackdropSource,
   createContactShadowPass,
   createProductionOrbitControlPreset,
+  createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
   createProductionEffectsRenderSource,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
   createProductionWebGPUReport,
+  describeWebGPULostDevice,
   resolveProductionRuntimeRendererBackend,
+  screenWebGPURenderBundlePrototype,
+  WEBGPU_PARITY_PLAN,
   loadProductionHdrEnvironmentFile,
   loadProductionHdrEnvironment,
   normalizeTransmissionBackdropCapture,
@@ -412,6 +439,7 @@ export type {
   ProductionEffectsSummary,
   ProductionAnimationMetadataInput,
   ProductionAnimationWorkflowSummary,
+  DualProbeEnvironmentLightingOptions,
   ProductionOrbitControlPreset,
   ProductionEnvironmentLightingResources,
   ProductionHdrEnvironmentLoaderOptions,
@@ -442,6 +470,11 @@ export type {
   ProductionRuntimeRendererOptions,
   ProductionWebGL2RendererOptions,
   ProductionWebGPURendererOptions,
+  WebGPULostDeviceReport,
+  WebGPUParityFeatureId,
+  WebGPUParityFeatureRow,
+  WebGPUParityFeatureStatus,
+  WebGPURenderBundlePrototype,
   RuntimeParityTransmissionBackdropCaptureOptions,
   RuntimeParityTransmissionBackdropCaptureProof,
   TransmissionBackdropSource
@@ -590,19 +623,90 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { ForwardPass } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
+export {
+  createSpotShadowProjection,
+  defaultSpotShadowKernel,
+  projectSpotShadowUv,
+  resolveSpotShadowFactor,
+  selectSpotShadowAtlasTier,
+} from "./shadows/SpotShadowMaps";
+export type { ForwardSpotShadowMapOptions, SpotShadowAtlasTier, SpotShadowFactorInput, SpotShadowProjection } from "./shadows/SpotShadowMaps";
+export {
+  computeShimmerScore,
+  createCascadeBiasTable,
+  selectCascadeWithHysteresis,
+} from "./shadows/CascadeHysteresis";
+export type { CascadeBiasTableEntry, CascadeHysteresisInput, HysteresisCascadeSplit, ShimmerSample, ShimmerScore } from "./shadows/CascadeHysteresis";
+export { createShadowAtlasPlan } from "./ShadowMap";
+export type { ShadowAtlasFallback, ShadowAtlasPlan, ShadowAtlasPlanRequest } from "./ShadowMap";
+export {
+  createContactTelemetryFrame,
+  resolveContactDarkening,
+  resolveDepthAwareContactRadius,
+} from "./shadows/ContactShadows";
+export type { ContactDarkeningSample, ContactOccluder, ContactReceiverSample, ContactTelemetryFrame } from "./shadows/ContactShadows";
+export {
+  computeObliqueClipProjection,
+  computePlanarMirrorCamera,
+  computePlanarViewMatrix,
+  createPlanarProjectionMatrix,
+  createSsrPassDescriptor,
+  GlassRefractionCapture,
+  multiplyPlanarMatrices,
+  PlanarReflectionCapture,
+  resolveGlassRefractionParams,
+  resolveWaterReflectionRefraction,
+} from "./PlanarReflection";
+export type {
+  GlassRefractionCaptureOptions,
+  GlassRefractionCaptureResult,
+  GlassRefractionParams,
+  GlassRefractionSceneRenderer,
+  ObliqueClipProjection,
+  PlanarMirrorCamera,
+  PlanarReflectionCaptureOptions,
+  PlanarReflectionCaptureResult,
+  PlanarReflectionFrame,
+  PlanarReflectionSceneRenderer,
+  SsrPassDescriptor,
+  WaterReflectionRefractionParams
+} from "./PlanarReflection";
+export {
+  consolidateBatchedMeshes,
+  instancingPathMatrix,
+  resetInstancingFallbackWarnings,
+  warnOnInstancingFallback,
+} from "./InstancingDiagnostics";
+export type { BatchedMeshResult, BatchedMeshTelemetry, InstancingFallbackReason, InstancingFallbackReport, InstancingPathEntry, InstancingPathSupport } from "./InstancingDiagnostics";
+export {
+  auditRenderOrder,
+  createTerrainTileGrid,
+  enforceFrameBudget,
+  planScatterInstances,
+  queryTerrainHeight,
+  resolveTerrainSlopeBlend,
+} from "./TerrainTiles";
+export type { FrameBudgetDecision, FrameBudgetInput, RenderOrderAuditEntry, ScatterPlan, ScatterPlanOptions, TerrainBlendLayer, TerrainTileGridOptions, TerrainTileKey, TerrainTilePlan } from "./TerrainTiles";
+export {
+  createBeamDescriptor,
+  resolveBillboardCorners,
+  resolveFlipbookUv,
+} from "./SpriteFlipbook";
+export type { BeamDescriptor, BillboardCorners, BillboardMode, BillboardOptions, FlipbookFrame } from "./SpriteFlipbook";
 export {
   createMorphTargetPlan,
   planMorphTargets,
+  resolveWrinkleMapStrength,
   DEFAULT_MORPH_DEVICE_LIMITS,
   MORPH_UNIFORM_MAX_TARGETS,
   MORPH_UNIFORM_MAX_VERTICES
 } from "./MorphTargetPlan";
-export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan } from "./MorphTargetPlan";
-export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding, SkinningPaletteDiagnostics, SkinningPalettePath } from "./ForwardPass";
+export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan, WrinkleMapBinding, WrinkleMapHook } from "./MorphTargetPlan";
+export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding, SkinningPaletteDecisionRecord, SkinningPaletteDiagnostics, SkinningPalettePath } from "./ForwardPass";
 export { batchStaticRenderItems, buildStaticBoundsBvh, queryStaticBoundsBvh, raycastStaticBoundsBvh, selectLodLevel, updateStaticBoundsBvh } from "./SceneOptimization";
-export { consolidateStaticMeshes } from "./MeshConsolidation";
+export { consolidateStaticMeshes, deindexGeometryToNonIndexed } from "./MeshConsolidation";
 export type { MeshConsolidationInput, MeshConsolidationOptions, MeshConsolidationResult } from "./MeshConsolidation";
 export type {
   LodLevel,
@@ -628,6 +732,32 @@ export type {
 } from "./SceneOptimization";
 export { computeOrthographicCameraFrame, computeOrthographicCameraView, computePerspectiveCameraFrame } from "./CameraFraming";
 export type { CameraFrameBounds, CameraFrameViewport, OrthographicCameraFrame, OrthographicCameraFrameFitMode, OrthographicCameraFrameOptions, OrthographicCameraViewOptions, PerspectiveCameraFrame, PerspectiveCameraFrameOptions } from "./CameraFraming";
+export {
+  SDF_FONT_SCOPE_NOTE,
+  SDF_OCCLUDED_OPACITY,
+  SDF_SUPPORTED_GLYPHS,
+  applySdfTextOcclusion,
+  createSdfFontAtlas,
+  describeSdfTextPixelBacking,
+  layoutSdfText,
+  sampleSdfCoverage,
+  sdfTextLodFade,
+  summarizeTextSurfaces
+} from "./SdfText";
+export type {
+  SdfFontAtlas,
+  SdfFontAtlasOptions,
+  SdfGlyphMetrics,
+  SdfPixelBacking,
+  SdfPixelBackingInput,
+  SdfTextLayout,
+  SdfTextLayoutOptions,
+  SdfTextOcclusionPolicy,
+  SdfTextQuad,
+  SdfTextResolvedStyle,
+  SdfTextStyle,
+  TextSurfaceSummary
+} from "./SdfText";
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
@@ -647,8 +777,8 @@ export { LightCollector } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
-export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting } from "./ClusteredForwardLighting";
-export type { ClusteredForwardLightingDiagnostics, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting, resetClusteredForwardLightingWarnings } from "./ClusteredForwardLighting";
+export type { ClusteredForwardFallbackPolicy, ClusteredForwardLightingDiagnostics, ClusteredForwardLightingOptions, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 export { DepthMaterial, DepthPass } from "./DepthPass";
 export type { DepthPassOptions } from "./DepthPass";
 export { ShadowMap, computeShadowDepthBias, createPoissonDiskShadowKernel, createShadowAtlasLayout, createShadowFilterKernel } from "./ShadowMap";
@@ -812,7 +942,7 @@ export type {
   PrimitiveSubmissionBlocker,
   PrimitiveSubmissionRecord
 } from "./PrimitiveSubmissionAudit";
-export { createLightingRig, listLightingRigPresets, resolveSubjectRimPlacement } from "./LightingRig";
+export { arenaShowdown, cinematicNight, createLightingRig, listLightingRigPresets, productHero, resolveSubjectRimPlacement } from "./LightingRig";
 export type {
   LightingRig,
   LightingRigDiagnostics,
@@ -848,6 +978,37 @@ export type {
   VoxelWorldState
 } from "./VoxelWorld";
 export { sampleOceanFixture } from "./OceanSurface";
+export { createDayNightSky, sampleCloudNoise, DAY_NIGHT_SKY_CLAIM_BOUNDARY } from "./DayNightSky";
+export type {
+  DayNightSkyCloudCell,
+  DayNightSkyDisc,
+  DayNightSkyOptions,
+  DayNightSkyStar,
+  DayNightSkyState
+} from "./DayNightSky";
+export {
+  applyWetnessToColor,
+  applyWetnessToRoughness,
+  describeWetMaterial,
+  sampleLightningFlash,
+  samplePuddleMask
+} from "./AtmosphereWetness";
+export type { LightningFlashSample, WetnessMaterialResponse, WetnessProbe } from "./AtmosphereWetness";
+export {
+  createWaterSurface,
+  WATER_SURFACE_CLAIM_BOUNDARY,
+  WATER_SURFACE_PLANAR_DEPENDENCY
+} from "./WaterSurface";
+export type {
+  WaterDepthBand,
+  WaterFoamMask,
+  WaterSurfaceBoat,
+  WaterSurfaceOptions,
+  WaterSurfacePreset,
+  WaterSurfaceState,
+  WaterWakeSegment
+} from "./WaterSurface";
+export { WaterReflectionRefractionCapture } from "./OceanSurface";
 export type {
   OceanBuoyancySample,
   OceanFixtureOptions,
@@ -855,7 +1016,12 @@ export type {
   OceanFixtureSample,
   OceanFoamPatch,
   OceanWaveDescriptor,
-  OceanWaveSample
+  OceanWaveSample,
+  WaterCaptureFrame,
+  WaterReflectionRefractionOptions,
+  WaterReflectionRefractionResult,
+  WaterReflectionSceneRenderer,
+  WaterRefractionSceneRenderer
 } from "./OceanSurface";
 export { createSpaceEnvironment } from "./SpaceEnvironment";
 export type {
@@ -880,7 +1046,7 @@ export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, 
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
 export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
-export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
+export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
 export type { RendererFeature, RendererFeatureReport, RendererFeatureStatus } from "./RendererFeatureGates";
 export {
@@ -895,6 +1061,16 @@ export {
   externalParityBlockedFeature,
   externalParityUnsupportedFeature
 } from "./ExternalParityRenderPreset";
+export {
+  AURA_INDOOR_OUTDOOR_NIGHT_PRESET_PACK,
+  applyPresetPackExposure,
+  meanLinearLuma
+} from "./EnvironmentPresetPack";
+export type {
+  EnvironmentPresetPack,
+  EnvironmentPresetPackEntry,
+  EnvironmentPresetPackSlot
+} from "./EnvironmentPresetPack";
 export type {
   ExternalParityEnvironmentLightingBundle,
   ExternalParityEnvironmentPreset,
@@ -911,18 +1087,25 @@ export {
   PBR_REFERENCE_INV_PI,
   PBR_REFERENCE_MIN_ROUGHNESS,
   PBR_REFERENCE_PI,
+  pbrAnisotropicDistribution,
   pbrCausticsConformanceSuite,
   pbrCausticsTransmissionResponse,
+  pbrCharlieSheen,
   pbrDiffuseBurley,
   pbrDirectLight,
   pbrDistributionGgx,
+  pbrEncodeOutput,
+  pbrEnvironmentFogFactor,
   pbrEnvironmentLight,
+  pbrEnvironmentLightSplitSum,
   pbrF0,
   pbrFresnelSchlick,
   pbrFresnelSchlickRoughness,
   pbrFresnelSchlickRoughnessSpecular,
   pbrFresnelSchlickSpecular,
   pbrGeometrySmithGgxCorrelated,
+  pbrIridescenceColor,
+  pbrLinearToSrgbChannel,
   pbrPhotometricConformanceSuite,
   pbrReferenceFinite,
   pbrReferenceLuminance,
@@ -936,10 +1119,12 @@ export type {
   PbrCausticsConformanceReport,
   PbrCausticsTransmissionInput,
   PbrCausticsTransmissionResponse,
+  PbrFogFactorInput,
   PbrPhotometricConformanceCategory,
   PbrPhotometricConformanceCheck,
   PbrPhotometricConformanceReport,
   PbrPhotometricConformanceSample,
+  PbrSplitSumEnvironmentInput,
   PbrTransmissionVolumeConformanceReport,
   PbrTransmissionVolumeInput,
   PbrTransmissionVolumeResponse,

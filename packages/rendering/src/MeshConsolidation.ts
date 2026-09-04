@@ -220,6 +220,34 @@ export function consolidateStaticMeshes(
 }
 
 /**
+ * Expands indexed geometry into non-indexed geometry (the `BufferGeometryUtils.toNonIndexed`
+ * operation from three's `examples/jsm/utils/`: one vertex per index, in index order).
+ *
+ * Games need this at runtime wherever indexed sources must be rewritten per-vertex
+ * (CPU morph/skin baking, per-face attribute painting) or concatenated with
+ * non-indexed data. Attribute expansion goes through the public buffer API so
+ * dirty tracking stays correct, mirroring `mergeGeometries` below.
+ *
+ * Already non-indexed input is returned unchanged (idempotent, documented).
+ */
+export function deindexGeometryToNonIndexed(geometry: Geometry): Geometry {
+  if (!geometry.indexBuffer) return geometry;
+  const source = geometry.vertexBuffer;
+  const indices = geometry.indexBuffer.data;
+  if (indices.length === 0) {
+    throw new Error("Cannot de-index geometry with an empty index buffer.");
+  }
+  const expanded = new VertexBuffer(source.format, indices.length);
+  for (let target = 0; target < indices.length; target += 1) {
+    const sourceVertex = indices[target]!;
+    for (const attribute of source.format.attributes) {
+      expanded.setAttribute(target, attribute.semantic, [...source.getAttribute(sourceVertex, attribute.semantic)]);
+    }
+  }
+  return new Geometry(expanded, null, geometry.topology);
+}
+
+/**
  * Concatenates a run of geometries into one buffer, baking each source model matrix into its vertices.
  *
  * Positions are transformed by the full matrix. Normals and tangents are transformed by the matrix's

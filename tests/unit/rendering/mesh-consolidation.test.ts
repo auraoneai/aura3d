@@ -4,6 +4,7 @@ import {
   PBRMaterial,
   UnlitMaterial,
   consolidateStaticMeshes,
+  deindexGeometryToNonIndexed,
   type MeshConsolidationInput
 } from "../../../packages/rendering/src";
 import { composeMat4, type Mat4 } from "../../../packages/scene/src";
@@ -151,5 +152,32 @@ describe("static mesh consolidation", () => {
     // Both pass through: concatenating non-indexed buffers would reinterpret primitives.
     expect(result.mergedMeshes).toBe(0);
     expect(result.passthroughItems).toBe(2);
+  });
+});
+
+describe("de-index to non-indexed (BufferGeometryUtils.toNonIndexed equivalent)", () => {
+  it("expands one vertex per index, in index order, preserving every attribute", () => {
+    const cube = Geometry.litCube(1);
+    const indexCount = cube.indexBuffer!.data.length;
+    const expanded = deindexGeometryToNonIndexed(cube);
+
+    expect(expanded.indexBuffer).toBeNull();
+    expect(expanded.topology).toBe(cube.topology);
+    expect(expanded.vertexBuffer.vertexCount).toBe(indexCount);
+    // Vertex i of the output equals the indexed source vertex the i-th index points at.
+    for (let i = 0; i < indexCount; i += 1) {
+      const sourceVertex = cube.indexBuffer!.data[i]!;
+      expect([...expanded.vertexBuffer.getAttribute(i, "position")]).toEqual([
+        ...cube.vertexBuffer.getAttribute(sourceVertex, "position")
+      ]);
+      expect([...expanded.vertexBuffer.getAttribute(i, "normal")]).toEqual([
+        ...cube.vertexBuffer.getAttribute(sourceVertex, "normal")
+      ]);
+    }
+  });
+
+  it("returns already non-indexed geometry unchanged", () => {
+    const lines = Geometry.lineSegments([[0, 0, 0], [1, 0, 0]]);
+    expect(deindexGeometryToNonIndexed(lines)).toBe(lines);
   });
 });
