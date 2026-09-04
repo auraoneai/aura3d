@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy paid private generation terms",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 (dry-run estimate 30) on 2026-09-03 for candidate use as the Mech Hangar hero mech in the Aura3D prototype route under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights."
+  }
+}

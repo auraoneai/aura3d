@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy paid private generation terms",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use in the Rooftop Buckets shooter-athlete lane under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights."
+  }
+}

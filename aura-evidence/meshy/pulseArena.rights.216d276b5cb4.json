@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy paid private generation terms",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated through the authenticated paid Meshy API account for candidate use in the Aura3D Pulse Tunnel encounter-world lane under the current Meshy terms; dry-run estimate was 30 credits with an approved maximum of 60; this does not certify release-ready geometry or broader commercial rights."
+  }
+}
