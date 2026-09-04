@@ -571,13 +571,25 @@ const VISUAL_CAPTURE_CAMERA = {
   // Pull back just enough to keep the full rear wing, both front wheels and
   // the rival in the same read. The previous 1.17x rig made the hero consume
   // the lower third while the rival collapsed to a thumbnail at the horizon.
-  distanceMultiplier: 1.28,
-  heightMultiplier: 1.08,
+  // 2026-09-04: the retained probe still reads primary-foreground-clipped at
+  // 1.28x/1.08x (hero rear cropped at the frame bottom in the held drift),
+  // so both axes grow one step. The 1.52x overview stays the thumbnail-scale
+  // ceiling this must not approach.
+  // 2026-09-04 (2): the car itself now fits, but the connected drift-smoke
+  // plumes reach the frame bottom and merge into the subject mask (bottom
+  // exactly 900). One more step out+up so the whole car+smoke assembly
+  // clears the edge; subject width has headroom (436px vs the 75px floor
+  // that trips Skyline).
+  distanceMultiplier: 1.48,
+  heightMultiplier: 1.32,
   sideMultiplier: 0.22,
   // The follow rig applies 18% of lookAhead to its target offset. A 2.6x
   // multiplier therefore exposes the first right-hand bend in the same live
   // route frame instead of pointing down a featureless straight.
-  lookAheadMultiplier: 2.6,
+  // 2026-09-04: 2.6x looks far enough ahead that the held-drift hero drops
+  // through the frame bottom (probe: primary-foreground-clipped). 1.9x keeps
+  // the bend in view while raising the hero back inside the frame.
+  lookAheadMultiplier: 1.9,
   fov: 58,
   smoothing: 0
 } as const;
@@ -1588,17 +1600,19 @@ function buildTurboRallySetNodes() {
  * Mesh-derived asphalt-skin height at an arbitrary XZ.
  *
  * Edge-zone visuals (ribbon edges, kerb blocks) must sit on the surface the
- * chassis actually drives, not on the centre sample: on a banked edge the
- * centre-derived skin floats above the true dipped surface and a car riding
- * the edge renders half-buried under the floating strip while the glued chase
- * camera follows it down. The clamp keeps the sparse-seam fallback (or any
- * off-mesh miss) from spiking a vertex: worst case it reproduces the old
- * centre-derived height — never a spike.
+ * chassis actually drives, not on the centre sample: on a banked or dipped
+ * edge the centre-derived skin floats above the true surface and a car
+ * riding the edge renders half-buried under the floating strip while the
+ * glued chase camera follows it down. A hit-aware sample follows real dips
+ * of any depth; only a genuine off-mesh miss falls back to the centre
+ * height, which reproduces the old look instead of a spike.
  */
+function sampleHitRoadHeight(x: number, z: number): number | undefined {
+  const sample = racingScene.surfaceQuery()?.sample(x, z);
+  return sample && sample.hit && Number.isFinite(sample.height) ? sample.height : undefined;
+}
 function edgeRoadSkinY(x: number, z: number, centreRoadY: number): number {
-  const sampled = sampleTurboRoadHeight(x, z);
-  const clamped = Math.min(centreRoadY + 0.09, Math.max(centreRoadY - 0.09, sampled));
-  return clamped + ROAD_DETAIL_SURFACE_LIFT;
+  return (sampleHitRoadHeight(x, z) ?? centreRoadY) + ROAD_DETAIL_SURFACE_LIFT;
 }
 /** Return the same mesh-derived height used by the four-wheel chassis. */
 function sampleTurboRoadHeight(x: number, z: number): number {
@@ -1773,6 +1787,40 @@ function buildTurboRoadDetailNodes() {
   // disconnected boxes.  A quad per sampled centreline segment keeps the dark
   // tarmac unbroken through the bend while preserving the certified GLB as the
   // authoritative geometry/contact source underneath.
+  //
+  // Lane-edge skin heights are precomputed with lap-circular miss-fill: a hit
+  // follows real dips of any depth, while a sparse-seam miss inherits the
+  // nearest hit edges instead of the centre sample, so one extraction gap
+  // cannot tear the ribbon or spike a vertex.
+  const laneEdgeSkinY: Array<{ left: number; right: number }> = (() => {
+    const rings: Array<{ centreY: number; left: number | undefined; right: number | undefined }> = [];
+    for (let ring = 0; ring <= segmentCount; ring += 1) {
+      const sample = sampleCentreline(ring / segmentCount);
+      const centre = gamePointToScene(sample);
+      const centreY = sampleTurboRoadHeight(centre[0], centre[2]);
+      const leftX = Math.sin(sample.heading);
+      const leftZ = -Math.cos(sample.heading);
+      const halfWidth = gamePointToSceneLength(routeWidth * 0.5);
+      rings.push({
+        centreY,
+        left: sampleHitRoadHeight(centre[0] + leftX * halfWidth, centre[2] + leftZ * halfWidth),
+        right: sampleHitRoadHeight(centre[0] - leftX * halfWidth, centre[2] - leftZ * halfWidth)
+      });
+    }
+    const nearestHit = (ring: number, pick: (entry: { left: number | undefined; right: number | undefined }) => number | undefined): number | undefined => {
+      for (let distance = 1; distance < rings.length; distance += 1) {
+        const forward = pick(rings[(ring + distance) % rings.length]!);
+        if (forward !== undefined) return forward;
+        const backward = pick(rings[(ring - distance + rings.length * distance) % rings.length]!);
+        if (backward !== undefined) return backward;
+      }
+      return undefined;
+    };
+    return rings.map((entry, ring) => ({
+      left: (nearestHit(ring, (candidate) => candidate.left) ?? entry.centreY) + ROAD_DETAIL_SURFACE_LIFT,
+      right: (nearestHit(ring, (candidate) => candidate.right) ?? entry.centreY) + ROAD_DETAIL_SURFACE_LIFT
+    }));
+  })();
   for (let index = 0; index <= segmentCount; index += 1) {
     const sample = sampleCentreline(index / segmentCount);
     const centre = gamePointToScene(sample);
@@ -1793,9 +1841,10 @@ function buildTurboRoadDetailNodes() {
     const leftEdgeZ = centre[2] + leftZ * halfWidth;
     const rightEdgeX = centre[0] - leftX * halfWidth;
     const rightEdgeZ = centre[2] - leftZ * halfWidth;
+    const ringSkin = laneEdgeSkinY[index]!;
     asphaltPositions.push(
-      [leftEdgeX, edgeRoadSkinY(leftEdgeX, leftEdgeZ, roadY), leftEdgeZ],
-      [rightEdgeX, edgeRoadSkinY(rightEdgeX, rightEdgeZ, roadY), rightEdgeZ]
+      [leftEdgeX, ringSkin.left, leftEdgeZ],
+      [rightEdgeX, ringSkin.right, rightEdgeZ]
     );
     const asphaltNormal = asphaltNormalAt(index / segmentCount);
     asphaltNormals.push(asphaltNormal, asphaltNormal);
@@ -4842,7 +4891,7 @@ app.onFrame(({ dt }) => {
     // glossy blackwalls, erasing the contact read and making the car look
     // sunken. Matches the live-game trail, which starts at the axle plus
     // the tyre exit gap plus its own margin.
-    const reviewWakeDistance = rearAxleOffset + 0.14 + historyAge * 0.42;
+    const reviewWakeDistance = rearAxleOffset + 0.14 + historyAge * 0.30;
     // Keep the young puffs outside the rear-tyre silhouettes and slightly
     // above their midline: centered puffs overlapped the glossy blackwalls,
     // erasing the contact read and making the car look sunken.
@@ -4851,7 +4900,7 @@ app.onFrame(({ dt }) => {
     // Give the billow enough scene-space volume to read beside a full-size
     // Formula car while keeping the newest contact puffs tighter than the
     // older, dispersing tail.
-    const reviewRadius = 0.028 + historyAge * 0.058;
+    const reviewRadius = 0.028 + historyAge * 0.040;
     const radius = Math.max(0.018, 0.038 - index * 0.0045) * (0.82 + driftAmount * speedFraction * 0.32);
     // The transformed scene-space forward vector keeps every puff attached to
     // the rendered car even though the source circuit is rotated in scene space.
