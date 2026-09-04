@@ -1,0 +1,5 @@
+{
+  "ready": true,
+  "backend": "webgl2",
+  "drawCalls": 11
+}
