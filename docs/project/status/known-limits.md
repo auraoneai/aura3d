@@ -1,6 +1,6 @@
 # Aura3D Known Limits
 
-Date: 2026-08-11
+Date: 2026-09-05
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
@@ -97,7 +97,9 @@ guide or README must include the narrower wording.
   measurements use `three@0.165.0`. They are historical regression evidence,
   not evidence of parity with the locked current `three@0.185.1` ecosystem.
 - The current r185.1 comparison program passes all 15 selected correctness
-  workloads from 29 freshly packed and npm-installed Aura3D 2.0.0 tarballs.
+  workloads from 29 freshly packed and npm-installed Aura3D 3.0.0 tarballs
+  (K2 `fresh-installed-2.0-packages-prove-all-workloads` gate green at the
+  release commit; the check id retains its 2.0-era name).
   Every workload retains explicit losses and a claim boundary. The aggregate
   remains incomplete because the full repeated-performance protocol,
   clean-machine reproduction, independent gallery review, general TSL/node-

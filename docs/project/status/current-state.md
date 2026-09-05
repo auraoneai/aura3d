@@ -1,7 +1,7 @@
 # Aura3D Current State
 
-Date: 2026-08-16
-Status: Aura3D 2.0.3 current package version; independent exact-artifact review remains a separate gate
+Date: 2026-09-05
+Status: Aura3D 3.0.0 release candidate (K2 14/14 supersede at the release commit; tag + publish pending); independent exact-artifact review remains a separate gate
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -12,11 +12,11 @@ This file is intentionally conservative. It describes what the public root
 `createAuraApp` path can prove today and what still requires library work before
 showcase or marketing claims can use it.
 
-Aura3D is not currently a Unity or Unreal replacement. Version 2.0.3 is the
-current coordinated package version. The immutable `v2.0.0` and `v2.0.1` tags
-remain historical. Subsequent game, lighting, and website changes still require
-exact-artifact review before they can be promoted as independently approved
-showcase artifacts.
+Aura3D is not currently a Unity or Unreal replacement. Version 3.0.0 is the
+current coordinated package version (release candidate until the `v3.0.0` tag
+lands). The immutable `v2.0.0` and `v2.0.1` tags remain historical. Subsequent
+game, lighting, and website changes still require exact-artifact review before
+they can be promoted as independently approved showcase artifacts.
 
 ## Current Public Root API Strengths
 
@@ -91,7 +91,7 @@ Current retained result:
 - removed public game/racing hosts: not counted as release games or parity
   evidence;
 - current same-workload Three.js comparison: all 15 bounded workloads pass from
-  freshly packed and installed 2.0.0 tarballs, while visual differences remain
+  freshly packed and installed 3.0.0 tarballs, while visual differences remain
   disclosed and the result does not support a universal ecosystem-parity claim.
 
 Current route-library release status: per-route repairs, human dispositions,
