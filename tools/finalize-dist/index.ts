@@ -108,15 +108,11 @@ function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorks
 }
 
 function rewriteSpecifier(file: string, distRoot: string, specifier: string, rewriteWorkspacePackages: boolean): string {
-  // `@aura3d/navigation-recast` is the documented OPTIONAL peer (see
-  // `packages/engine/src/agent-api/NavigationCrowds.ts`): it is intentionally
-  // absent from the packed root dist, so rewriting its bare specifier into a
-  // relative dist path manufactures a dangling hard link that breaks every
-  // installed consumer at typecheck and build time. The bare specifier must
-  // survive: workspace source builds resolve it via aliases, and installed
-  // routes resolve it via node_modules only when they actually use crowds
-  // (dynamic import, fail-closed when absent).
-  if (specifier === "@aura3d/navigation-recast" || specifier.startsWith("@aura3d/navigation-recast/")) return specifier;
+  // `@aura3d/navigation-recast` internalizes like every other workspace
+  // package: its adapter ships inside the root dist (the heavy
+  // `recast-navigation` engine behind it stays a lazy consumer-side import
+  // with a fail-closed error). A bare-specifier carve-out here would leak an
+  // undeclared import into the packed tarball that the install smoke forbids.
   const sourcePackageMatch = /(?:^|\/)([a-z0-9-]+)\/src\/index\.js$/i.exec(specifier);
   if (sourcePackageMatch && packageNameSet.has(sourcePackageMatch[1]!)) {
     if (!rewriteWorkspacePackages) return `@aura3d/${sourcePackageMatch[1]!}`;

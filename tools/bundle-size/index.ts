@@ -63,11 +63,7 @@ const targets: readonly BundleTarget[] = [
     entryPoint: "packages/engine/src/agent-api/index.ts",
     budget: 80_000,
     enforced: false,
-    // `@aura3d/navigation-recast` is an optional peerDependency loaded lazily at
-    // runtime (consumer install + dynamic import), so it is deferred by design —
-    // unlike the WS-2.3 Node builtins, which no browser could load at all. The
-    // measurement covers the critical path; recast arrives on demand.
-    external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js", "@aura3d/navigation-recast"]
+    external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
   },
   {
     id: "react-adapter",
@@ -99,24 +95,27 @@ const targets: readonly BundleTarget[] = [
     label: "product-viewer starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/product-viewer/src/main.ts",
     budget: 250_000,
-    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
-    external: ["react", "@aura3d/navigation-recast"]
+    external: ["react"]
   },
   {
     id: "template-cinematic-scene",
     label: "cinematic-scene starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
-    budget: 250_000,
-    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
-    external: ["react", "@aura3d/navigation-recast"]
+    // 260_000 (was 250_000): the prior green measured a phantom -- with the
+    // navigation adapter externalized, esbuild's splitter dropped three.js
+    // and the engine core into deferred chunks and reported ~31KB for an app
+    // that really ships ~258KB. Source-mode resolution measures honestly
+    // (adapter delta proven 0 by A/B); the +3% is Sept game-kit barrel
+    // growth (genre kits, runtime, animation) that cinematic genuinely uses.
+    budget: 260_000,
+    external: ["react"]
   },
   {
     id: "template-mini-game",
     label: "mini-game starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/mini-game/src/main.ts",
     budget: 250_000,
-    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
-    external: ["react", "@aura3d/navigation-recast"]
+    external: ["react"]
   }
 ];
 
@@ -140,6 +139,15 @@ function createAliasPlugin(external: readonly string[]): Plugin {
       ["@aura3d/scene", "./packages/scene/src/index.ts"],
       ["@aura3d/scene/math", "./packages/scene/src/MathTypes.ts"],
       ["@aura3d/core", "./packages/core/src/index.ts"],
+      /*
+       * Optional engine adapters reached by measured entries resolve to
+       * source like every other workspace package, so the measurement
+       * includes the adapter bytes consumers actually ship. Their heavy
+       * engines stay out: the adapters import them through variables, which
+       * no bundler follows (the same indirection that keeps consumer builds
+       * working without the engine installed).
+       */
+      ["@aura3d/navigation-recast", "./packages/navigation-recast/src/index.ts"],
       ["@aura3d/math", "./packages/math/src/index.ts"],
       ["@aura3d/physics", "./packages/physics/src/index.ts"],
       /*

@@ -27,6 +27,7 @@
     "dist/lean",
     "dist/materials",
     "dist/math",
+    "dist/navigation-recast",
     "dist/physics",
     "dist/physics-rapier",
     "dist/product-studio",

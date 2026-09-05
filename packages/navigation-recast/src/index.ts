@@ -283,10 +283,21 @@ async function verifyNavigationAssetHash(asset: NavigationAssetRef, bytes: Uint8
  * resolving to a no-op navigator. The root `navigation` builder must surface this
  * in diagnostics rather than reporting a successful bake.
  */
+/*
+ * Indirected so bundlers cannot statically resolve the optional engine: a
+ * literal `import("recast-navigation")` makes vite/rollup fail the *build*
+ * for every consumer that did not install the engine, even when navigation
+ * is never called. Through this variable the import stays a runtime-only
+ * lookup, and absence still surfaces at call time through the fail-closed
+ * errors below (never as a silent no-op navigator).
+ */
+const RECAST_ENGINE_SPECIFIER = "recast-navigation";
+const RECAST_GENERATORS_SPECIFIER = "recast-navigation/generators";
+
 export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> {
   let module: RecastModule;
   try {
-    module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
+    module = await (options.moduleLoader ?? (() => import(RECAST_ENGINE_SPECIFIER) as Promise<RecastModule>))();
     await module.init();
   } catch (error) {
     throw new Error(
@@ -297,7 +308,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
   }
   let generators: RecastGenerators;
   try {
-    generators = await (options.generatorLoader ?? (() => import("recast-navigation/generators")))();
+    generators = await (options.generatorLoader ?? (() => import(RECAST_GENERATORS_SPECIFIER) as Promise<RecastGenerators>))();
   } catch (error) {
     throw new Error(
       "Recast navigation generators unavailable: \"recast-navigation/generators\" could not be loaded. " +
