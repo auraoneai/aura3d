@@ -6,7 +6,16 @@ apps/**/dist/
 apps/**/node_modules/
 apps/*/dist/
 apps/*/node_modules/
+packages/*/node_modules/
+packages/**/node_modules/
+marketing/node_modules/
 marketing/dist/
+templates/*/node_modules/
+workers/*/node_modules/
+dist/
+artifacts/
+test-screenshots/
+aura-evidence/
 .git/
 tests/
 test-results/
