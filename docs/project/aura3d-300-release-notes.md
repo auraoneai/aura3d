@@ -43,4 +43,4 @@ npx create-aura3d@3.0.0 my-product --template product-viewer
 ## Still open (not claimed)
 
 - Turbo + skyline + smart-city route gates (human approval, camera re-probe, framing fix) — tracked in the release checklist, not blockers for the engine release.
-- Marketing-site deploy + deployed-origin proof (L6).
+- Marketing-site deploy + deployed-origin proof (L6) — DONE post-publish: production deployment aliased to `https://aura3d.auraone.ai` (homepage 200 with v3.0.0 LIVE pill, docs + llms.txt 200, hosted full-page screenshot retained at `release-artifacts/3.0-homepage-origin.png`).
