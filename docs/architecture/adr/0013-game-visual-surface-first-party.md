@@ -58,7 +58,7 @@ Covered sources: `audio/{Footsteps,GameMixer,PositionalEmitter}`,
 `materials/GameReadyMaterialLibrary`,
 `rendering/{AtmosphereWetness,DayNightSky,EnvironmentPresetPack,InstancingDiagnostics,OceanSurface,PlanarReflection,SdfText,SpriteFlipbook,TerrainTiles,VolumetricFog,WaterSurface}`,
 `rendering/effects/{HeightfieldModule,LightingModule,SubEmitterModule,TurbulenceModule}`,
-`rendering/{postprocess/NativeBloomPyramid,production-runtime/passes/FramegraphTopology,shadows/CascadeHysteresis,shadows/SpotShadowMaps}`,
+`rendering/{postprocess/NativeBloomPyramid,production-runtime/passes/FramegraphTopology,shadows/CascadeHysteresis,shadows/SpotShadowMaps,webgpu/WebGPUPostShaders}`,
 `scripting/VisualScriptingRoot`,
 `three-compat/{ApproximationLedger,migration/R3fMigration}`.
 

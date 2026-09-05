@@ -78,6 +78,7 @@
     "packages/rendering/src/production-runtime/passes/FramegraphTopology.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/rendering/src/shadows/CascadeHysteresis.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/rendering/src/shadows/SpotShadowMaps.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
+    "packages/rendering/src/webgpu/WebGPUPostShaders.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/scripting/src/VisualScriptingRoot.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/three-compat/src/ApproximationLedger.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/three-compat/src/migration/R3fMigration.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md"
