@@ -101,13 +101,15 @@ const targets: readonly BundleTarget[] = [
     id: "template-cinematic-scene",
     label: "cinematic-scene starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
-    // 260_000 (was 250_000): the prior green measured a phantom -- with the
-    // navigation adapter externalized, esbuild's splitter dropped three.js
-    // and the engine core into deferred chunks and reported ~31KB for an app
-    // that really ships ~258KB. Source-mode resolution measures honestly
-    // (adapter delta proven 0 by A/B); the +3% is Sept game-kit barrel
-    // growth (genre kits, runtime, animation) that cinematic genuinely uses.
-    budget: 260_000,
+    // 400_000 against a 2026-09-05 honest measurement of 384,326 gzip bytes
+    // (1,525,773 js). The pre-fix gate measured whichever split chunk
+    // esbuild listed first (see findEntryOutputKey), so its greens are not
+    // comparable. Composition verified genuine: three (tree-shaken) +
+    // engine barrels + cinematic presets + postprocessing addons; the
+    // recast engine is absent from the critical path (lazy dynamic edge).
+    // Carried as a known cost, not a regression: this template ships more
+    // pipeline than product-viewer/mini-game by design.
+    budget: 400_000,
     external: ["react"]
   },
   {
@@ -143,9 +145,9 @@ function createAliasPlugin(external: readonly string[]): Plugin {
        * Optional engine adapters reached by measured entries resolve to
        * source like every other workspace package, so the measurement
        * includes the adapter bytes consumers actually ship. Their heavy
-       * engines stay out: the adapters import them through variables, which
-       * no bundler follows (the same indirection that keeps consumer builds
-       * working without the engine installed).
+       * engines stay out of the critical path because the adapters reach
+       * them only through lazy `import()` (dynamic edges split into
+       * deferred chunks, which the critical-path walk does not follow).
        */
       ["@aura3d/navigation-recast", "./packages/navigation-recast/src/index.ts"],
       ["@aura3d/math", "./packages/math/src/index.ts"],
@@ -231,7 +233,7 @@ async function bundleTarget(target: BundleTarget): Promise<BundleResult> {
   const outputFiles = buildResult.outputFiles ?? [];
   const metafile = buildResult.metafile;
   if (!metafile) throw new Error(`Missing esbuild metafile for ${target.id}`);
-  const criticalPathFiles = collectCriticalPathFiles(metafile);
+  const criticalPathFiles = collectCriticalPathFiles(metafile, findEntryOutputKey(metafile, target));
   const criticalOutputs = outputFiles.filter((file) => criticalPathFiles.has(normalizeOutputPath(file.path)));
   const deferredOutputs = outputFiles.filter((file) => !criticalPathFiles.has(normalizeOutputPath(file.path)));
   if (criticalOutputs.length === 0) throw new Error(`No critical-path output files found for ${target.id}`);
@@ -266,10 +268,35 @@ async function bundleTarget(target: BundleTarget): Promise<BundleResult> {
   };
 }
 
-function collectCriticalPathFiles(metafile: Metafile): Set<string> {
+/*
+ * With splitting enabled every lazy split point is also recorded with an
+ * `entryPoint`, so first-match selection can start the walk at a small async
+ * chunk and report a fraction of the app as the critical path (twice observed:
+ * two unrelated targets reporting the identical byte count). The walk must
+ * start at the output whose recorded entry matches the measured target;
+ * anything else fails loudly instead of measuring the wrong node.
+ */
+function findEntryOutputKey(metafile: Metafile, target: BundleTarget): string {
   const outputs = Object.entries(metafile.outputs);
-  const entry = outputs.find(([, output]) => typeof output.entryPoint === "string");
-  if (!entry) throw new Error("esbuild did not emit an entry output");
+  const candidates = outputs.filter(([, output]) => typeof output.entryPoint === "string");
+  if (candidates.length === 0) throw new Error(`esbuild did not emit an entry output for ${target.id}`);
+  if (target.entryPoint) {
+    const want = normalizeOutputPath(target.entryPoint);
+    const exact = candidates.find(([, output]) => normalizeOutputPath(output.entryPoint as string) === want);
+    if (!exact) {
+      throw new Error(
+        `No bundle output matches entry ${target.entryPoint} for ${target.id} ` +
+        `(saw ${candidates.map(([, output]) => String(output.entryPoint)).join(", ")}); ` +
+        "refusing to measure a split chunk as the critical path"
+      );
+    }
+    return exact[0]!;
+  }
+  return candidates[0]![0];
+}
+
+function collectCriticalPathFiles(metafile: Metafile, entryKey: string): Set<string> {
+  const outputs = Object.entries(metafile.outputs);
   const keyByAbsolutePath = new Map(outputs.map(([key]) => [normalizeOutputPath(key), key]));
   const visited = new Set<string>();
   const visit = (path: string): void => {
@@ -288,7 +315,7 @@ function collectCriticalPathFiles(metafile: Metafile): Set<string> {
       if (dependencyKey) visit(dependencyKey);
     }
   };
-  visit(entry[0]);
+  visit(entryKey);
   return visited;
 }
 
