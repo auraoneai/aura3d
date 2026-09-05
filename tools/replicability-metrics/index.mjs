@@ -173,7 +173,16 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     "FORMULA_ASPHALT_WIDTH", "VISUAL_DRIFT_PLUME_COUNT", "ROAD_DETAIL_SURFACE_LIFT", "DRIFT_PARTICLE_GRAVITY",
     "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
     "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS",
-    "DEFAULT_PLAYER_X", "DEFAULT_RIVAL_X"
+    "DEFAULT_PLAYER_X", "DEFAULT_RIVAL_X",
+    /*
+     * Skyline's ledge-lip presentation fraction. The collision-derived X/Y
+     * placement is retained exactly; 0.78 only seats the fitted snow-lip
+     * visual against the extracted surface so the runner's typed feet stay
+     * readable. An authored per-asset presentation choice in the same family
+     * as Turbo's `reviewBackdropDistance` — not a frozen asset dimension,
+     * so it stays here rather than moving to asset-derived.
+     */
+    "SKYLINE_LEDGE_SURFACE_ALIGNMENT"
   ],
   /**
    * 2: Reusable genre defaults. Belong in a shared preset.

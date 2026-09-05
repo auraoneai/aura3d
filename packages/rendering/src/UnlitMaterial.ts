@@ -22,14 +22,23 @@ export class UnlitMaterial extends Material {
         u_baseColor: color,
         u_pointSize: options.pointSize ?? 7,
         u_roundPoints: options.roundPoints === true ? 1 : 0,
-        u_modelViewProjection: identityMatrix()
+        u_modelViewProjection: identityMatrix(),
+        // P2 instanced-GLB path (muse3jsparity-PRD): zero instances by
+        // default so non-instanced draws keep the legacy shader branch
+        // bit-exact; applyInstanceBinding stamps real counts per item.
+        u_instanceMatrices: defaultUnlitInstanceMatrices(),
+        u_instanceCount: 0,
+        u_instanceAttributeMode: 0
       },
       requiredAttributes: ["a_position"],
       uniformSchema: [
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_pointSize", kind: "float" },
         { name: "u_roundPoints", kind: "float" },
-        { name: "u_modelViewProjection", kind: "mat4" }
+        { name: "u_modelViewProjection", kind: "mat4" },
+        { name: "u_instanceMatrices", kind: "any" },
+        { name: "u_instanceCount", kind: "float" },
+        { name: "u_instanceAttributeMode", kind: "float" }
       ]
     });
   }
@@ -72,4 +81,14 @@ function identityMatrix(): Float32Array {
     0, 0, 1, 0,
     0, 0, 0, 1
   ]);
+}
+
+/** 64 identity matrices: the uniform-path instance ceiling (mirrors ForwardPass MAX_GPU_INSTANCES). */
+function defaultUnlitInstanceMatrices(): Float32Array {
+  const matrices = new Float32Array(64 * 16);
+  matrices[0] = 1;
+  matrices[5] = 1;
+  matrices[10] = 1;
+  matrices[15] = 1;
+  return matrices;
 }

@@ -19,6 +19,21 @@ import {
   spreadGpuTargetInventory
 } from "./RenderDevice";
 import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
+import {
+  defaultWebGPUBloomWeights,
+  normalizeWebGPUColorGradeOptions,
+  normalizeWebGPUBloomOptions,
+  webgpuBlurFragment,
+  webgpuBloomCompositeFragment,
+  webgpuBrightExtractFragment,
+  webgpuColorGradeFragment,
+  webgpuFxaaFragment,
+  WEBGPU_POST_VERTEX_WGSL,
+  type WebGPUBloomDiagnostics,
+  type WebGPUBloomOptions,
+  type WebGPUColorGradeOptions
+} from "./webgpu/WebGPUPostShaders";
+import { DEFAULT_DEPTH_SHADER_MARKER } from "./ShaderLibraryCore";
 import { reflectShaderSources } from "./ShaderReflection";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureFormat } from "./Texture";
@@ -418,6 +433,22 @@ export class WebGPUDevice implements RenderDevice {
   private nativeMorphSubmissions = 0;
   private nativeEnvironmentBindings = 0;
   private nativeShadowMapBindings = 0;
+  private nativeBloomPasses = 0;
+  private nativeColorGradePasses = 0;
+  private nativeFxaaPasses = 0;
+  private readonly webgpuPostPipelines = new Map<string, WebGPURenderPipelineLike>();
+  private webgpuPostLinearSampler: WebGPUSamplerLike | null = null;
+  private lastWebGPUBloom: WebGPUBloomDiagnostics | null = null;
+  /**
+   * Uniform buffers referenced by submitted-but-maybe-unexecuted post
+   * passes. Destroying them synchronously after submit races the GPU (the
+   * reads happen later), so they retire here and are reclaimed at the start
+   * of the next post run — after any intervening readback fence — or on
+   * dispose.
+   */
+  private webgpuPostRetiredUniformBuffers: WebGPUBufferLike[] = [];
+  private webgpuPostErrorScopePending: Promise<unknown>[] = [];
+  private webgpuPostErrors: string[] = [];
   private canvasSubmissions = 0;
   private readonly buffers = new Set<WebGPURenderBuffer>();
   private readonly shaders = new Set<WebGPUShaderProgram>();
@@ -1119,6 +1150,9 @@ export class WebGPUDevice implements RenderDevice {
       ["nativeMorphSubmissions", this.nativeMorphSubmissions],
       ["nativeEnvironmentBindings", this.nativeEnvironmentBindings],
       ["nativeShadowMapBindings", this.nativeShadowMapBindings],
+      ["nativeBloomPasses", this.nativeBloomPasses],
+      ["nativeColorGradePasses", this.nativeColorGradePasses],
+      ["nativeFxaaPasses", this.nativeFxaaPasses],
       ["canvasSubmissions", this.canvasSubmissions]
     ]);
   }
@@ -1168,13 +1202,315 @@ export class WebGPUDevice implements RenderDevice {
       nativeMorphSubmissions: this.nativeMorphSubmissions,
       nativeEnvironmentBindings: this.nativeEnvironmentBindings,
       nativeShadowMapBindings: this.nativeShadowMapBindings,
+      nativeBloomPasses: this.nativeBloomPasses,
+      nativeColorGradePasses: this.nativeColorGradePasses,
+      nativeFxaaPasses: this.nativeFxaaPasses,
       lastError: this.lastError,
       contextLost: this.contextLost
     };
   }
 
+  /**
+   * muse3jsparity-PRD J2 — native WebGPU bloom pyramid.
+   *
+   * Renders bright-extract -> separable-blur mip pyramid -> composite over
+   * the source, all as real WGSL fullscreen passes on this device. Returns a
+   * fresh rgba8 target owned by the caller (dispose it); every intermediate
+   * is disposed before return. Throws fail-closed when the native device
+   * cannot run fullscreen passes.
+   */
+  executeWebGPUBloom(source: RenderTarget, options: WebGPUBloomOptions = {}): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const normalized = normalizeWebGPUBloomOptions(options);
+    const src = this.requireRenderTarget(source);
+    const srcView = src.nativeView;
+    if (!srcView) {
+      throw new RenderDeviceError("WebGPU bloom source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    const width = src.width;
+    const height = src.height;
+    const mipFormat = normalized.halfFloat ? "rgba16f" : "rgba8";
+    const owned: RenderTarget[] = [];
+    const track = (target: RenderTarget): RenderTarget => {
+      owned.push(target);
+      return target;
+    };
+    try {
+      const bright = track(this.createRenderTarget({ width, height, format: mipFormat, label: "a3d-webgpu-bloom-bright" }));
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-bloom-bright",
+        fragment: webgpuBrightExtractFragment(),
+        entryPoint: "fs_bright",
+        uniforms: new Float32Array([normalized.threshold, normalized.knee, normalized.strength, 0]),
+        views: [srcView],
+        target: bright
+      });
+      const mips: RenderTarget[] = [];
+      let level: RenderTarget = bright;
+      let levelWidth = width;
+      let levelHeight = height;
+      for (let mip = 0; mip < normalized.mipCount; mip += 1) {
+        levelWidth = Math.max(1, levelWidth >> 1);
+        levelHeight = Math.max(1, levelHeight >> 1);
+        const scratch = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, label: `a3d-webgpu-bloom-mip${mip}-scratch` }));
+        const mipTarget = track(this.createRenderTarget({ width: levelWidth, height: levelHeight, format: mipFormat, label: `a3d-webgpu-bloom-mip${mip}` }));
+        const levelView = this.requireRenderTarget(level).nativeView;
+        const scratchView = this.requireRenderTarget(scratch).nativeView;
+        if (!levelView || !scratchView) {
+          throw new RenderDeviceError("WebGPU bloom pyramid target has no native view", "NATIVE_POST_UNSUPPORTED", { mip });
+        }
+        this.runWebGPUFullscreenPass({
+          label: `webgpu-bloom-mip${mip}-h`,
+          fragment: webgpuBlurFragment(),
+          entryPoint: "fs_blur",
+          uniforms: new Float32Array([1, 0, 1 / levelWidth, 1 / levelHeight]),
+          views: [levelView],
+          target: scratch
+        });
+        this.runWebGPUFullscreenPass({
+          label: `webgpu-bloom-mip${mip}-v`,
+          fragment: webgpuBlurFragment(),
+          entryPoint: "fs_blur",
+          uniforms: new Float32Array([0, 1, 1 / levelWidth, 1 / levelHeight]),
+          views: [scratchView],
+          target: mipTarget
+        });
+        mips.push(mipTarget);
+        level = mipTarget;
+      }
+      const weights = defaultWebGPUBloomWeights(normalized.mipCount);
+      const composite = track(this.createRenderTarget({ width, height, format: "rgba8", label: "a3d-webgpu-bloom-composite" }));
+      const mipViews = mips.map((mipTarget) => {
+        const view = this.requireRenderTarget(mipTarget).nativeView;
+        if (!view) throw new RenderDeviceError("WebGPU bloom mip has no native view", "NATIVE_POST_UNSUPPORTED", {});
+        return view;
+      });
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-bloom-composite",
+        fragment: webgpuBloomCompositeFragment({ weights, strength: normalized.strength }),
+        entryPoint: "fs_composite",
+        uniforms: new Float32Array([normalized.strength, 0, 0, 0]),
+        views: [srcView, ...mipViews],
+        target: composite
+      });
+      const bytesPerPixel = normalized.halfFloat ? 8 : 4;
+      const targetBytes = width * height * bytesPerPixel
+        + mips.reduce((total, mipTarget) => total + mipTarget.width * mipTarget.height * bytesPerPixel, 0)
+        + width * height * 4;
+      this.lastWebGPUBloom = {
+        mipCount: normalized.mipCount,
+        halfFloat: normalized.halfFloat,
+        targetBytes,
+        compositeGain: normalized.strength,
+        passes: 1 + normalized.mipCount * 2 + 1,
+        executionMode: "webgpu-native-post"
+      };
+      this.nativeBloomPasses += this.lastWebGPUBloom.passes;
+      for (const target of owned) {
+        if (target !== composite) target.dispose();
+      }
+      return composite;
+    } catch (error) {
+      for (const target of owned) target.dispose();
+      throw error;
+    }
+  }
+
+  /** Last native bloom run on this device (null before the first run). */
+  getWebGPUBloomDiagnostics(): WebGPUBloomDiagnostics | null {
+    return this.lastWebGPUBloom;
+  }
+
+  /**
+   * Drains GPU validation errors observed by the native post passes.
+   * Empty means every submitted post pass validated clean.
+   */
+  async drainWebGPUPostErrors(): Promise<readonly string[]> {
+    const pending = this.webgpuPostErrorScopePending;
+    this.webgpuPostErrorScopePending = [];
+    await Promise.all(pending);
+    const errors = [...this.webgpuPostErrors];
+    this.webgpuPostErrors = [];
+    return errors;
+  }
+
+  /**
+   * muse3jsparity-PRD J2 — native WebGPU color grade.
+   * Exposure (stops) -> saturation around luma -> contrast around middle
+   * gray, one WGSL fullscreen pass into a fresh caller-owned rgba8 target.
+   */
+  executeWebGPUColorGrade(source: RenderTarget, options: WebGPUColorGradeOptions = {}): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const normalized = normalizeWebGPUColorGradeOptions(options);
+    const src = this.requireRenderTarget(source);
+    const srcView = src.nativeView;
+    if (!srcView) {
+      throw new RenderDeviceError("WebGPU color-grade source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-color-grade" });
+    try {
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-color-grade",
+        fragment: webgpuColorGradeFragment(),
+        entryPoint: "fs_grade",
+        uniforms: new Float32Array([normalized.exposure, normalized.contrast, normalized.saturation, 0]),
+        views: [srcView],
+        target: out
+      });
+      this.nativeColorGradePasses += 1;
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    }
+  }
+
+  /**
+   * muse3jsparity-PRD J2 — native WebGPU FXAA.
+   * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
+   * blend tap pair; flat neighborhoods pass through untouched). TAA is
+   * intentionally out of scope: no velocity/history inputs exist on the
+   * WebGPU path (same withheld doctrine as the root A3 nodes).
+   */
+  executeWebGPUFxaa(source: RenderTarget): RenderTarget {
+    this.reclaimWebGPUPostUniformBuffers();
+    const src = this.requireRenderTarget(source);
+    const srcView = src.nativeView;
+    if (!srcView) {
+      throw new RenderDeviceError("WebGPU FXAA source target has no native view", "NATIVE_POST_UNSUPPORTED", { label: src.label });
+    }
+    const out = this.createRenderTarget({ width: src.width, height: src.height, format: "rgba8", label: "a3d-webgpu-fxaa" });
+    try {
+      this.runWebGPUFullscreenPass({
+        label: "webgpu-fxaa",
+        fragment: webgpuFxaaFragment(),
+        entryPoint: "fs_fxaa",
+        uniforms: new Float32Array([1 / src.width, 1 / src.height, 0, 0]),
+        views: [srcView],
+        target: out
+      });
+      this.nativeFxaaPasses += 1;
+      return out;
+    } catch (error) {
+      out.dispose();
+      throw error;
+    }
+  }
+
+  private runWebGPUFullscreenPass(args: {
+    readonly label: string;
+    readonly fragment: string;
+    readonly entryPoint: string;
+    readonly uniforms: Float32Array;
+    readonly views: readonly unknown[];
+    readonly target: RenderTarget;
+  }): void {
+    // No assertFrame here on purpose: these are target-to-target passes with
+    // their own encoders, so they run both inside a Renderer frame (scene ->
+    // post chaining) and after it closed (proof harnesses that render, then
+    // post, then read back).
+    this.assertAlive();
+    const target = this.requireRenderTarget(args.target);
+    const targetView = target.nativeView;
+    if (!targetView) {
+      throw new RenderDeviceError("WebGPU post target has no native view", "NATIVE_POST_UNSUPPORTED", { label: target.label });
+    }
+    if (!this.device.createShaderModule || !this.device.createRenderPipeline || !this.device.createCommandEncoder
+      || !this.device.createSampler || !this.device.createBuffer || !this.device.createBindGroup) {
+      throw new RenderDeviceError("WebGPU fullscreen post requires shader/pipeline/sampler/buffer natives", "NATIVE_POST_UNSUPPORTED", { label: args.label });
+    }
+    const scopeDevice = this.device as unknown as {
+      pushErrorScope?(scope: string): void;
+      popErrorScope?(): Promise<{ readonly message: string } | null>;
+    };
+    const scopedErrors = Boolean(scopeDevice.pushErrorScope && scopeDevice.popErrorScope);
+    if (scopedErrors) {
+      // Bracket everything below (module/pipeline/bind-group creation plus
+      // the submit) so per-pass validation failures land here labeled.
+      scopeDevice.pushErrorScope?.("validation");
+    }
+    const format = webgpuTextureFormat(target.colorTexture.format);
+    const cacheKey = `${args.label}:${args.entryPoint}:${format}`;
+    let pipeline = this.webgpuPostPipelines.get(cacheKey);
+    if (!pipeline) {
+      const vertexModule = this.device.createShaderModule({ label: `${args.label}-vs`, code: WEBGPU_POST_VERTEX_WGSL });
+      const fragmentModule = this.device.createShaderModule({ label: `${args.label}-fs`, code: args.fragment });
+      pipeline = this.device.createRenderPipeline({
+        label: `${args.label}-pipeline`,
+        layout: "auto",
+        vertex: { module: vertexModule, entryPoint: "vs_post" },
+        fragment: { module: fragmentModule, entryPoint: args.entryPoint, targets: [{ format }] },
+        primitive: { topology: "triangle-list" }
+      });
+      this.nativeRenderPipelinesCreated += 1;
+      this.webgpuPostPipelines.set(cacheKey, pipeline);
+    }
+    if (!this.webgpuPostLinearSampler) {
+      this.webgpuPostLinearSampler = this.device.createSampler({
+        minFilter: "linear",
+        magFilter: "linear",
+        addressModeU: "clamp-to-edge",
+        addressModeV: "clamp-to-edge"
+      });
+    }
+    const uniformBuffer = this.device.createBuffer({
+      label: `${args.label}-uniforms`,
+      size: args.uniforms.byteLength,
+      usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST
+    });
+    let submitted = false;
+    try {
+      this.device.queue.writeBuffer(uniformBuffer, 0, args.uniforms);
+      const layout = pipeline.getBindGroupLayout?.(0);
+      if (!layout) throw new RenderDeviceError("WebGPU post pipeline has no bind-group layout", "NATIVE_POST_UNSUPPORTED", { label: args.label });
+      const group = this.device.createBindGroup({
+        label: `${args.label}-bind`,
+        layout,
+        entries: [
+          { binding: 0, resource: { buffer: uniformBuffer } },
+          { binding: 1, resource: this.webgpuPostLinearSampler },
+          ...args.views.map((view, index) => ({ binding: 2 + index, resource: view }))
+        ]
+      });
+      const encoder = this.device.createCommandEncoder({ label: `${args.label}-encoder` });
+      const pass = encoder.beginRenderPass({
+        label: `${args.label}-pass`,
+        colorAttachments: [{ view: targetView, loadOp: "load", storeOp: "store" }]
+      });
+      pass.setPipeline(pipeline);
+      pass.setBindGroup?.(0, group);
+      pass.draw(3, 1, 0);
+      pass.end();
+      this.device.queue.submit([encoder.finish()]);
+      submitted = true;
+      // The pass owns every pixel (fullscreen triangle), so a later
+      // readPixelsAsync must NOT flush a stale pending clear over it.
+      target.nativeNeedsClear = false;
+      this.nativeRenderPasses += 1;
+      // Retired, not destroyed: the submit only enqueues; the pass reads
+      // these uniforms when the GPU gets to it.
+      this.webgpuPostRetiredUniformBuffers.push(uniformBuffer);
+    } catch (error) {
+      if (!submitted) uniformBuffer.destroy();
+      throw error;
+    } finally {
+      if (scopedErrors && scopeDevice.popErrorScope) {
+        const pending = scopeDevice.popErrorScope().then((info) => {
+          if (info?.message) this.webgpuPostErrors.push(`[${args.label}] ${info.message}`);
+        }, () => undefined);
+        this.webgpuPostErrorScopePending.push(pending);
+      }
+    }
+  }
+
+  private reclaimWebGPUPostUniformBuffers(): void {
+    for (const buffer of this.webgpuPostRetiredUniformBuffers) buffer.destroy();
+    this.webgpuPostRetiredUniformBuffers = [];
+  }
+
   dispose(): void {
     if (this.disposed) return;
+    this.reclaimWebGPUPostUniformBuffers();
     for (const buffer of this.buffers) buffer.dispose();
     for (const shader of this.shaders) shader.dispose();
     for (const target of this.renderTargets) target.dispose();
@@ -1426,7 +1762,9 @@ export class WebGPUDevice implements RenderDevice {
               { binding: 13, resource: materialTextures.occlusion.sampler },
               { binding: 14, resource: materialTextures.occlusion.view },
               { binding: 15, resource: materialTextures.clusterLightData.view },
-              { binding: 16, resource: materialTextures.clusterLightIndices.view }
+              { binding: 16, resource: materialTextures.clusterLightIndices.view },
+              { binding: 17, resource: materialTextures.spotShadow.sampler },
+              { binding: 18, resource: materialTextures.spotShadow.view }
             ] : [])
           ]
         })
@@ -1494,6 +1832,7 @@ export class WebGPUDevice implements RenderDevice {
     if (materialTextures?.actualEnvironment) this.nativeEnvironmentBindings += 1;
     if (materialTextures?.actualBrdf) this.nativeEnvironmentBindings += 1;
     if (materialTextures?.actualShadow) this.nativeShadowMapBindings += 1;
+    if (materialTextures?.actualSpotShadow) this.nativeShadowMapBindings += 1;
     if (!this.activeRenderTarget) this.canvasSubmissions += 1;
   }
 
@@ -1530,6 +1869,19 @@ export class WebGPUDevice implements RenderDevice {
   private createNativeSampledTextureBinding(binding: TextureBinding | null): { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean } | null {
     if (!binding?.texture || binding.texture.disposed || !binding.validate().ok || !hasNativeSampledTextureBinding(this.device)) return null;
     const texture = binding.texture;
+    // J2 zero-copy shadow path: a render target's native color texture is
+    // created with TEXTURE_BINDING usage, so a shadow map rendered natively
+    // (ShadowPass "encoded-color-depth") samples directly — no CPU readback
+    // round-trip. Same-queue submission order guarantees the depth writes
+    // are visible to the later lit pass.
+    for (const target of this.renderTargets) {
+      if (target.disposed || target.sampleCount !== 1 || target.colorTexture !== texture || !target.nativeView) continue;
+      return {
+        view: target.nativeView,
+        sampler: this.device.createSampler(webgpuSamplerDescriptor(binding.sampler)),
+        actual: true
+      };
+    }
     let resource = this.nativeSampledTextures.get(texture);
     if (!resource) {
       if (texture.source) {
@@ -1604,6 +1956,7 @@ export class WebGPUDevice implements RenderDevice {
     readonly environment: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly brdf: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly shadow: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
+    readonly spotShadow: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly normal: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly metallicRoughness: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly occlusion: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
@@ -1613,6 +1966,7 @@ export class WebGPUDevice implements RenderDevice {
     readonly actualEnvironment: boolean;
     readonly actualBrdf: boolean;
     readonly actualShadow: boolean;
+    readonly actualSpotShadow: boolean;
     readonly actualNormal: boolean;
     readonly actualMetallicRoughness: boolean;
     readonly actualOcclusion: boolean;
@@ -1622,6 +1976,7 @@ export class WebGPUDevice implements RenderDevice {
     const environmentBinding = uniformTextureBinding(command.uniforms, "u_environmentMapTexture");
     const brdfBinding = uniformTextureBinding(command.uniforms, "u_environmentBrdfLutTexture");
     const shadowBinding = uniformTextureBinding(command.uniforms, "u_shadowMapTexture");
+    const spotShadowBinding = uniformTextureBinding(command.uniforms, "u_spotShadowMapTexture");
     const normalBinding = uniformTextureBinding(command.uniforms, "u_normalTexture");
     const metallicRoughnessBinding = uniformTextureBinding(command.uniforms, "u_metallicRoughnessTexture");
     const occlusionBinding = uniformTextureBinding(command.uniforms, "u_occlusionTexture");
@@ -1631,17 +1986,19 @@ export class WebGPUDevice implements RenderDevice {
     const environment = this.createNativeSampledTextureBinding(environmentBinding) ?? this.createNativeFallbackSampledTextureBinding("environment-srgb", [92, 116, 156, 255], "srgb");
     const brdf = this.createNativeSampledTextureBinding(brdfBinding) ?? this.createNativeFallbackSampledTextureBinding("brdf-linear", [180, 180, 255, 255], "linear");
     const shadow = this.createNativeSampledTextureBinding(shadowBinding) ?? this.createNativeFallbackSampledTextureBinding("shadow-lit-linear", [255, 255, 255, 255], "linear");
+    const spotShadow = this.createNativeSampledTextureBinding(spotShadowBinding) ?? this.createNativeFallbackSampledTextureBinding("spot-shadow-lit-linear", [255, 255, 255, 255], "linear");
     const normal = this.createNativeSampledTextureBinding(normalBinding) ?? this.createNativeFallbackSampledTextureBinding("flat-normal-linear", [128, 128, 255, 255], "linear");
     const metallicRoughness = this.createNativeSampledTextureBinding(metallicRoughnessBinding) ?? this.createNativeFallbackSampledTextureBinding("metallic-roughness-linear", [255, 255, 255, 255], "linear");
     const occlusion = this.createNativeSampledTextureBinding(occlusionBinding) ?? this.createNativeFallbackSampledTextureBinding("occlusion-linear", [255, 255, 255, 255], "linear");
     const clusterLightData = this.createNativeSampledTextureBinding(clusterLightDataBinding) ?? this.createNativeFallbackSampledTextureBinding("cluster-light-data-linear", [0, 0, 0, 0], "linear");
     const clusterLightIndices = this.createNativeSampledTextureBinding(clusterLightIndicesBinding) ?? this.createNativeFallbackSampledTextureBinding("cluster-light-indices-linear", [0, 0, 0, 0], "linear");
-    if (!base || !environment || !brdf || !shadow || !normal || !metallicRoughness || !occlusion || !clusterLightData || !clusterLightIndices) return null;
+    if (!base || !environment || !brdf || !shadow || !spotShadow || !normal || !metallicRoughness || !occlusion || !clusterLightData || !clusterLightIndices) return null;
     return {
       base,
       environment,
       brdf,
       shadow,
+      spotShadow,
       normal,
       metallicRoughness,
       occlusion,
@@ -1651,6 +2008,7 @@ export class WebGPUDevice implements RenderDevice {
       actualEnvironment: environmentBinding !== null && environment.actual,
       actualBrdf: brdfBinding !== null && brdf.actual,
       actualShadow: shadowBinding !== null && shadow.actual,
+      actualSpotShadow: spotShadowBinding !== null && spotShadow.actual,
       actualNormal: normalBinding !== null && normal.actual,
       actualMetallicRoughness: metallicRoughnessBinding !== null && metallicRoughness.actual,
       actualOcclusion: occlusionBinding !== null && occlusion.actual
@@ -1691,8 +2049,10 @@ export class WebGPUDevice implements RenderDevice {
 
   private createNativeDrawUniformBuffer(command: DrawCommand): WebGPUBufferLike | null {
     if (!this.device.createBindGroup) return null;
-    // 188 floats for the scalar/matrix fields + 96 joint matrices (16 floats each) appended at 188.
-    const data = new Float32Array(188 + MAX_WEBGPU_SKINNING_JOINTS * 16);
+    // 188 floats for the scalar/matrix fields + 96 joint matrices (16 floats each) appended at 188
+    // + J2 native shadow projections (312 floats at 1724: directional matrix/params/PCF, then spot)
+    // + model matrix (16 floats at 2036) for instanced world composition.
+    const data = new Float32Array(2052);
     const baseColorBinding = uniformBaseColorTextureBinding(command.uniforms);
     const environmentBinding = uniformTextureBinding(command.uniforms, "u_environmentMapTexture");
     const normalBinding = uniformTextureBinding(command.uniforms, "u_normalTexture");
@@ -1744,6 +2104,49 @@ export class WebGPUDevice implements RenderDevice {
     for (let index = 0; index < MAX_WEBGPU_SKINNING_JOINTS; index += 1) {
       data.set(jointMatrices[index] ?? identityMatrix(), 188 + index * 16);
     }
+    // J2 native shadow projections (WGSL parity with a3dForwardShadowFactor /
+    // a3dSpotShadowFactor). Identity matrices + zero enabled flags keep every
+    // shadow factor at exactly 1.0 (lit) when the ForwardPass gates stay shut.
+    data.set(uniformMat4(command.uniforms?.get("u_shadowMapMatrix")) ?? identityMatrix(), 1724);
+    const shadowTexel = uniformVec2(command.uniforms?.get("u_shadowMapTexelSize")) ?? [1, 1];
+    data.set(
+      [
+        uniformNumber(command.uniforms?.get("u_shadowMapBias"), 0.001),
+        uniformNumber(command.uniforms?.get("u_shadowMapSlopeBias"), 1),
+        shadowTexel[0],
+        shadowTexel[1]
+      ],
+      1740
+    );
+    data.set([uniformNumber(command.uniforms?.get("u_shadowPcfSampleCount"), 1), 0, 0, 0], 1744);
+    setNativeShadowPcfSamples(data, command.uniforms?.get("u_shadowPcfSamples"), 1748);
+    data.set(uniformMat4(command.uniforms?.get("u_spotShadowMatrix")) ?? identityMatrix(), 1876);
+    const spotLightPosition = uniformVec3(command.uniforms?.get("u_spotShadowLightPosition")) ?? [0, 0, 0];
+    data.set(
+      [spotLightPosition[0], spotLightPosition[1], spotLightPosition[2], uniformNumber(command.uniforms?.get("u_spotShadowRange"), 1)],
+      1892
+    );
+    const spotLightDirection = uniformVec3(command.uniforms?.get("u_spotShadowLightDirection")) ?? [0, -1, 0];
+    data.set([spotLightDirection[0], spotLightDirection[1], spotLightDirection[2], 0], 1896);
+    data.set(
+      [
+        uniformNumber(command.uniforms?.get("u_spotShadowMapEnabled"), 0),
+        uniformNumber(command.uniforms?.get("u_spotShadowStrength"), 0.65),
+        uniformNumber(command.uniforms?.get("u_spotShadowBias"), 0.001),
+        uniformNumber(command.uniforms?.get("u_spotShadowSlopeBias"), 1)
+      ],
+      1900
+    );
+    const spotTexel = uniformVec2(command.uniforms?.get("u_spotShadowTexelSize")) ?? [1, 1];
+    const spotCone = uniformVec2(command.uniforms?.get("u_spotShadowCone")) ?? [Math.PI / 4, 0];
+    data.set(
+      [spotTexel[0], spotTexel[1], uniformNumber(command.uniforms?.get("u_spotShadowPcfSampleCount"), 1), spotCone[0]],
+      1904
+    );
+    setNativeShadowPcfSamples(data, command.uniforms?.get("u_spotShadowPcfSamples"), 1908);
+    // Model matrix for the instanced vertex world composition
+    // (u_modelMatrix * instanceMatrix * position, GLSL parity).
+    data.set(modelMatrix, 2036);
     const morphDeltas = command.uniforms?.get("u_morphPositionDeltas");
     const morphNumbers = morphDeltas instanceof Float32Array || Array.isArray(morphDeltas) ? Array.from(morphDeltas).slice(0, 32) : [];
     if (morphNumbers.length > 0) data.set(morphNumbers, 128);
@@ -2179,6 +2582,16 @@ function uniformVec2(value: UniformValue | undefined): readonly [number, number]
   return components.length === 2 && components.every(Number.isFinite)
     ? [components[0]!, components[1]!]
     : null;
+}
+
+function setNativeShadowPcfSamples(data: Float32Array, value: UniformValue | undefined, offset: number): void {
+  const numbers = value instanceof Float32Array || Array.isArray(value) ? Array.from(value) : [];
+  for (let index = 0; index < 32; index += 1) {
+    const quad = numbers.slice(index * 4, index * 4 + 4);
+    // Default single center tap (weight 1) so an enabled shadow map without
+    // an explicit kernel still occludes instead of dividing by zero weight.
+    data.set(quad.length === 4 && quad.every(Number.isFinite) ? quad : [0, 0, 1, 0], offset + index * 4);
+  }
 }
 
 function uniformMat4Array(value: UniformValue | undefined, count: number): readonly (readonly number[])[] {
@@ -2639,10 +3052,20 @@ function createNativeShaderSources(sources: ShaderSources): {
   return {
     vertex: `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\nstruct VertexOutput {\n  @builtin(position) position: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@vertex\nfn ${vertexEntry}(@location(0) position: vec3<f32>) -> VertexOutput {\n  var output: VertexOutput;\n  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
   output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);\n  return output;\n}\n`,
-    fragment: `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@fragment\nfn ${fragmentEntry}() -> @location(0) vec4<f32> {\n  return u_draw.color;\n}\n`,
+    fragment: sources.marker.includes(DEFAULT_DEPTH_SHADER_MARKER)
+      ? nativeDepthFragment(sources.marker, fragmentEntry)
+      : `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@fragment\nfn ${fragmentEntry}() -> @location(0) vec4<f32> {\n  return u_draw.color;\n}\n`,
     entryPoints: [vertexEntry, fragmentEntry],
     uniformLayout: "generated-basic"
   };
+}
+
+function nativeDepthFragment(marker: string, fragmentEntry: string): string {
+  // J2 native depth encoding: the GLSL depth program writes gl_FragCoord.z
+  // into an rgba8 shadow target ("encoded-color-depth"). The framebuffer
+  // depth @builtin(position).z is already 0..1 in WebGPU, so packing it
+  // samples identically to the GL path through the projective PCF reader.
+  return `// ${marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\nstruct VertexOutput {\n  @builtin(position) position: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@fragment\nfn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {\n  return vec4<f32>(input.position.z, input.position.z, input.position.z, 1.0);\n}\n`;
 }
 
 const PORTABLE_BINDINGS_MARKER = "/* @aura3d-bindings */";
@@ -2773,6 +3196,23 @@ function nativeUniformStruct(): string {
   // 96-joint skinning palette (WebGL2 \`u_jointMatrices[96]\` parity). Appended at the struct end so
   // the existing field offsets are unchanged.
   joints: array<mat4x4<f32>, 96>,
+  // J2 native shadow projections (float offsets 1724+, after the 96-joint
+  // palette). Directional block mirrors GLSL \`a3dForwardShadowFactor\`;
+  // spot block mirrors \`a3dSpotShadowFactor\` (cone/range pre-check inside
+  // the helper). Appended here so no existing field offset moves.
+  shadowMapMatrix: mat4x4<f32>,
+  shadowParams0: vec4<f32>,
+  shadowParams1: vec4<f32>,
+  shadowPcf: array<vec4<f32>, 32>,
+  spotShadowMatrix: mat4x4<f32>,
+  spotShadowParams0: vec4<f32>,
+  spotShadowParams1: vec4<f32>,
+  spotShadowParams2: vec4<f32>,
+  spotShadowParams3: vec4<f32>,
+  spotShadowPcf: array<vec4<f32>, 32>,
+  // Model matrix for GLSL-parity world composition on the instanced path
+  // (\`u_modelMatrix * instanceMatrix * position\`; float offset 2036).
+  modelMatrix: mat4x4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;
@@ -2806,6 +3246,8 @@ ${nativeUniformStruct()}
 @group(0) @binding(14) var u_occlusionTexture: texture_2d<f32>;
 @group(0) @binding(15) var u_clusterLightData: texture_2d<f32>;
 @group(0) @binding(16) var u_clusterLightIndices: texture_2d<f32>;
+@group(0) @binding(17) var u_spotShadowSampler: sampler;
+@group(0) @binding(18) var u_spotShadowTexture: texture_2d<f32>;
 
 struct VertexOutput {
   @builtin(position) position: vec4<f32>,
@@ -2897,6 +3339,67 @@ fn perturbNormal(normalInput: vec3<f32>, tangentFrame: vec4<f32>, normalSample: 
   return normalize(tangent * mapped.x + bitangent * mapped.y + n * max(mapped.z, 0.001));
 }
 
+fn a3dNativeShadowFactor(worldPosition: vec3<f32>, normal: vec3<f32>, lightDirection: vec3<f32>, useSpot: bool, shadowSampler: sampler, shadowTexture: texture_2d<f32>) -> f32 {
+  var shadowMatrix = u_draw.shadowMapMatrix;
+  var bias = u_draw.shadowParams0.x;
+  var slopeBias = u_draw.shadowParams0.y;
+  var texelSize = u_draw.shadowParams0.zw;
+  var strength = u_draw.flags.z;
+  var sampleCount = i32(u_draw.shadowParams1.x + 0.5);
+  var receiverLightDirection = lightDirection;
+  if (useSpot) {
+    if (u_draw.spotShadowParams2.x < 0.5) { return 1.0; }
+    let toFragment = worldPosition - u_draw.spotShadowParams0.xyz;
+    let distanceToLight = max(length(toFragment), 0.0001);
+    if (distanceToLight > u_draw.spotShadowParams0.w) { return 1.0; }
+    let coneAxis = u_draw.spotShadowParams1.xyz / max(length(u_draw.spotShadowParams1.xyz), 0.0001);
+    if (dot(toFragment / distanceToLight, coneAxis) < cos(u_draw.spotShadowParams3.w)) { return 1.0; }
+    receiverLightDirection = coneAxis * -1.0;
+    shadowMatrix = u_draw.spotShadowMatrix;
+    bias = u_draw.spotShadowParams2.z;
+    slopeBias = u_draw.spotShadowParams2.w;
+    texelSize = u_draw.spotShadowParams3.xy;
+    strength = u_draw.spotShadowParams2.y;
+    sampleCount = i32(u_draw.spotShadowParams3.z + 0.5);
+  }
+  let lightPosition = shadowMatrix * vec4<f32>(worldPosition, 1.0);
+  let projected = lightPosition.xyz / max(lightPosition.w, 0.0001);
+  let uv = projected.xy * 0.5 + vec2<f32>(0.5, 0.5);
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) { return 1.0; }
+  // Native render targets store framebuffer row 0 at the top while the CPU
+  // projection math addresses texels GL-style (row 0 at the bottom), so the
+  // sample V must be mirrored to land on the texel the projection means.
+  // Display and readback paths already account for the row order, which is
+  // why screenshots and readPixels match GL while direct sampling does not.
+  let sampleUv = vec2<f32>(uv.x, 1.0 - uv.y);
+  let receiverNormal = normalize(normal);
+  let shadowLightDirection = receiverLightDirection / max(length(receiverLightDirection), 0.0001);
+  let normalDotLight = clamp(abs(dot(receiverNormal, shadowLightDirection)), 0.0, 1.0);
+  // Shared bias-table policy (GLSL parity): per-sample tangent-scaled slope
+  // bias — a centre-only bias under-compensates outer PCF taps on sloped
+  // receivers, so each tap scales by its own texel distance.
+  let slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  let slopeTexelBias = slopeTangent * slopeBias * max(texelSize.x, texelSize.y);
+  let projectedDepth = projected.z * 0.5 + 0.5;
+  var shadowed = 0.0;
+  var totalWeight = 0.0;
+  let taps = clamp(sampleCount, 1, 32);
+  for (var i = 0; i < 32; i = i + 1) {
+    if (i >= taps) { break; }
+    var sampleData = u_draw.shadowPcf[i];
+    if (useSpot) { sampleData = u_draw.spotShadowPcf[i]; }
+    let weight = max(sampleData.z, 0.0);
+    let offset = sampleData.xy * texelSize;
+    let storedDepth = textureSampleLevel(shadowTexture, shadowSampler, sampleUv + offset, 0.0).r;
+    let sampleTexelDistance = max(1.0, length(sampleData.xy));
+    let receiverDepth = projectedDepth - bias - slopeTexelBias * sampleTexelDistance;
+    shadowed = shadowed + select(0.0, 1.0, receiverDepth > storedDepth) * weight;
+    totalWeight = totalWeight + weight;
+  }
+  let occlusion = select(0.0, shadowed / totalWeight, totalWeight > 0.0);
+  return mix(1.0, 1.0 - occlusion, clamp(strength, 0.0, 1.0));
+}
+
 fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>, fragmentPosition: vec2<f32>) -> vec4<f32> {
   var normal = normalize(normalInput);
   if (u_draw.morph0.x > 0.5) {
@@ -2960,11 +3463,14 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
     environmentSpecularContribution = environmentSpecular;
     environment = environment + environmentDiffuse + environmentSpecular;
   }
+  // J2 native shadow projections: directional PCF mirrors GLSL
+  // a3dForwardShadowFactor; spot PCF mirrors a3dSpotShadowFactor. Both
+  // default to 1.0 (lit) when disabled or outside the shadow frustum.
   var shadow = 1.0;
   if (u_draw.flags.y > 0.5) {
-    let shadowDepth = textureSampleLevel(u_shadowTexture, u_shadowSampler, vec2<f32>(0.5, 0.5), 0.0).r;
-    shadow = mix(1.0, shadowDepth, clamp(u_draw.flags.z, 0.0, 1.0));
+    shadow = a3dNativeShadowFactor(worldPosition, normal, lightDirection, false, u_shadowSampler, u_shadowTexture);
   }
+  shadow = shadow * a3dNativeShadowFactor(worldPosition, normal, lightDirection, true, u_spotShadowSampler, u_spotShadowTexture);
   var clusteredDirect = vec3<f32>(0.0, 0.0, 0.0);
   if (u_draw.materialFlags.w > 0.5) {
     let indexDimensions = textureDimensions(u_clusterLightIndices);
@@ -3094,13 +3600,27 @@ fn instanceMatrix(index: u32) -> mat4x4<f32> {
   return u_draw.instance0;
 }
 
+fn a3dInstanceNormalMatrix(model: mat4x4<f32>) -> mat3x3<f32> {
+  // GLSL parity: v_normal = u_normalMatrix * transpose(inverse(mat3(instance))) * a_normal.
+  let m = mat3x3<f32>(model[0].xyz, model[1].xyz, model[2].xyz);
+  let adj0 = cross(m[1], m[2]);
+  let adj1 = cross(m[2], m[0]);
+  let adj2 = cross(m[0], m[1]);
+  let det = dot(m[0], adj0);
+  let safeDet = select(det, 1.0, abs(det) < 0.00001);
+  return mat3x3<f32>(
+    vec3<f32>(adj0.x, adj1.x, adj2.x) / safeDet,
+    vec3<f32>(adj0.y, adj1.y, adj2.y) / safeDet,
+    vec3<f32>(adj0.z, adj1.z, adj2.z) / safeDet);
+}
+
 @vertex
 fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @builtin(instance_index) instanceIndex: u32) -> VertexOutput {
   var output: VertexOutput;
   let model = instanceMatrix(instanceIndex);
-  let worldPosition = (model * vec4<f32>(position, 1.0)).xyz;
+  let worldPosition = (u_draw.modelMatrix * model * vec4<f32>(position, 1.0)).xyz;
   output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * model * vec4<f32>(position, 1.0));
-  output.normal = normalize((model * vec4<f32>(normal, 0.0)).xyz);
+  output.normal = normalize((u_draw.normalMatrix * vec4<f32>(a3dInstanceNormalMatrix(model) * normal, 0.0)).xyz);
   output.uv = vec2<f32>(0.5, 0.5);
   output.worldPosition = worldPosition;
   output.tangent = vec4<f32>(1.0, 0.0, 0.0, 1.0);

@@ -4,6 +4,7 @@ import { basename, join, resolve } from "node:path";
 import { build, type Metafile } from "esbuild";
 
 const root = resolve(import.meta.dirname, "..", "..");
+const expectedPackedVersion = (JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as { version: string }).version;
 const cleanInstallReportPath = resolve(root, "tests/reports/package-clean-install.json");
 const templateRoot = resolve(root, "tests/reports/package-clean-install-workspace/templates");
 const outputPath = resolve(root, "tests/reports/installed-tree-shaking.json");
@@ -60,8 +61,8 @@ try {
 
     checks.push({
       id: `${profile}-exact-packed-version`,
-      pass: manifest.name === "@aura3d/lean" && manifest.version === "2.0.0",
-      detail: `${manifest.name}@${manifest.version} from the fresh clean-install project`
+      pass: manifest.name === "@aura3d/lean" && manifest.version === expectedPackedVersion,
+      detail: `${manifest.name}@${manifest.version} from the fresh clean-install project (need ${expectedPackedVersion})`
     });
     checks.push({
       id: `${profile}-documented-subpath`,

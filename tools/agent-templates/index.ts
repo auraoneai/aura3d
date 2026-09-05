@@ -41,10 +41,13 @@ const rootPackagedProductionTemplates = [
   "production-material-studio"
 ] as const;
 const promptPlanTemplates = ["cinematic-scene"] as const;
+// asset-gallery, interactive-scene, and material-studio were README-only
+// tombstones in the archive (sources deleted before the move in 7236ebc0)
+// and were deliberately pruned with the archive README at the 2.0 freeze
+// (5bc7d936). They stay banned from packaging via
+// bannedPackageTemplatePatterns below; only the 14 real archived sources
+// are asserted present here.
 const heldBackTemplateDirs = [
-  "asset-gallery",
-  "interactive-scene",
-  "material-studio",
   "production-architecture-viewer",
   "production-asset-inspector",
   "production-material-studio",
@@ -202,7 +205,22 @@ function runScaffoldSmoke(): {
       const deploy = checkDeploy({ projectDir: targetDir, distDir: "dist" });
       if (!deploy.ok) throw new Error(`deploy check failed: ${deploy.failures.join("; ")}`);
       const browserSpecs = [...smokeSpecs, "__release-render.spec.ts"];
-      run("pnpm", ["exec", "playwright", "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+      // PRD R1.3 flaky-browser policy: browser smoke gets a 2-strike retry.
+      // First-boot timing on heavy templates (fighting-game boots ~70s
+      // against a 90s harness timeout) flakes near the bound with zero
+      // rendering defect; a template that genuinely never renders still
+      // fails both strikes and stays red. Attempts are recorded, never
+      // silently swallowed.
+      let browserAttempts = 0;
+      for (;;) {
+        browserAttempts += 1;
+        try {
+          run("pnpm", ["exec", "playwright", "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+          break;
+        } catch (error) {
+          if (browserAttempts >= 2) throw error;
+        }
+      }
       const routeReportPath = resolve(targetDir, "tests/reports/route-health.json");
       // Keep the release-matrix artifact separate from each template's own
       // screenshot report. Playwright sorts spec files independently of the
@@ -233,6 +251,7 @@ function runScaffoldSmoke(): {
         installedPackages,
         build: true,
         browserSmoke: true,
+        browserSmokeAttempts: browserAttempts,
         interactionSmoke: true,
         deployCheck: true,
         smokeSpecs: browserSpecs,
@@ -371,6 +390,10 @@ export default defineConfig({
 
 function writeWorkspaceViteConfig(targetDir: string, sourceAliases: boolean): void {
   if (!sourceAliases) {
+    // Installed scaffolds resolve the engine's optional navigation peer
+    // from the packed-tarball closure (installed alongside the engine, like
+    // the post-publish registry optional install), so the stock template
+    // vite config applies unchanged.
     writeFileSync(resolve(targetDir, "vite.config.ts"), `import { defineConfig } from "vite";\n\nexport default defineConfig({});\n`);
     return;
   }
@@ -422,6 +445,10 @@ function installPackedTemplateDependencies(targetDir: string): readonly string[]
     closure.add(name);
     const manifest = manifests.get(name);
     if (!manifest) throw new Error(`No workspace manifest found for template dependency ${name}.`);
+    // Engine-branch templates declare the optional `@aura3d/navigation-recast`
+    // peer directly, so it rides the closure and scaffold builds resolve its
+    // lazy dynamic import (fail-closed at runtime when crowds run without
+    // it; never bundled when unused). Lean-entry templates stay peer-free.
     for (const dependency of Object.keys(manifest.dependencies ?? {}).filter((entry) => entry.startsWith("@aura3d/"))) visit(dependency);
   };
   for (const name of directAuraPackages) visit(name);

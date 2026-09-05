@@ -71,3 +71,9 @@ Before making first-class mobile claims, run `tests/browser/webgpu-real-device.s
 - Driver-level performance claims.
 - A claim that WebGPU behavior matches WebGL2 or low-level renderer code in every route.
 - Public claims must not say "full WebGPU support" without a complete hardware matrix.
+
+## Superiority (K1 · 2026-09-04)
+
+- No win claimed: this doc is the hardware-truth registry. WebGPU
+  superiority stays unclaimed until its rows go green; see
+  `webgpu-current-architecture.md` Superiority.

@@ -144,6 +144,59 @@ describe("vehicle grounding", () => {
     expect(pose.grounded).toBe(false);
     expect(pose.wheels.filter((wheel) => !wheel.grounded).length).toBeGreaterThan(0);
   });
+
+  it("holds the body on the road when a whole axle misses a mesh seam", () => {
+    // A sparse-mesh seam: the query reports an explicit miss with a fallback
+    // height far below the road, the way a mesh query falls back to its lowest
+    // vertex. Both front wheels miss at once, which used to drag the support
+    // median halfway to the fallback and bury the rendered car under the road.
+    const surface: VehicleSurface = {
+      sample: (x) => x > 0.3
+        ? { height: -2, normal: [0, 1, 0], grip: 0.2, hit: false }
+        : { height: 0, normal: [0, 1, 0], grip: 1, hit: true }
+    };
+    const chassis = createVehicleChassis(SPEC, surface);
+    chassis.reset(driving({ x: -2, speed: 0, throttle: 0 }));
+    let pose = chassis.pose();
+    for (let step = 0; step < 20; step += 1) {
+      pose = chassis.step(1 / 60, driving({ x: -2 + step * 0.1, speed: 5 }));
+    }
+    // Front axle is past the seam (x + 0.6 > 0.3); rear axle is still on it.
+    expect(chassis.telemetry().groundedWheels).toBe(2);
+    expect(pose.grounded).toBe(false);
+    // The contact plane stays on the road instead of splitting the difference
+    // with the fallback depth.
+    expect(pose.groundedPosition[1]).toBeCloseTo(0, 1);
+    for (const wheel of pose.wheels) {
+      for (const component of wheel.position) expect(component).not.toBeNaN();
+      expect(wheel.position[1] - SPEC.wheelRadius).toBeGreaterThan(-0.5);
+    }
+  });
+
+  it("freezes the pose instead of diving when every wheel misses the mesh", () => {
+    const surface: VehicleSurface = {
+      sample: (x) => x > 0.3
+        ? { height: -2, normal: [0, 1, 0], grip: 0.2, hit: false }
+        : { height: 0, normal: [0, 1, 0], grip: 1, hit: true }
+    };
+    const chassis = createVehicleChassis(SPEC, surface);
+    chassis.reset(driving({ x: -2, speed: 0, throttle: 0 }));
+    for (let step = 0; step < 10; step += 1) {
+      chassis.step(1 / 60, driving({ x: -2 + step * 0.1, speed: 5 }));
+    }
+    const before = chassis.pose().groundedPosition[1];
+    // Drive the whole car past the seam edge so no wheel has a surface.
+    for (let step = 0; step < 30; step += 1) {
+      chassis.step(1 / 60, driving({ x: -1 + step * 0.3, speed: 15 }));
+    }
+    const pose = chassis.pose();
+    expect(chassis.telemetry().groundedWheels).toBe(0);
+    expect(pose.groundedPosition[1]).toBeCloseTo(before, 6);
+    for (const wheel of pose.wheels) {
+      expect(wheel.grounded).toBe(false);
+      for (const component of wheel.position) expect(component).not.toBeNaN();
+    }
+  });
 });
 
 describe("suspension and attitude", () => {

@@ -12,6 +12,7 @@ interface CommandResult {
 
 interface TemplateResult {
   readonly template: string;
+  readonly assetId: string;
   readonly install: CommandResult;
   readonly build: CommandResult;
   readonly devRouteHealth: CommandResult;
@@ -46,7 +47,8 @@ const tarballs = {
   react: pack("packages/react", tarballDir),
   assetIndex: pack("packages/asset-index", tarballDir),
   cli: pack("packages/aura3d-cli", tarballDir),
-  create: pack("packages/create-aura3d", tarballDir)
+  create: pack("packages/create-aura3d", tarballDir),
+  navigationRecast: pack("packages/navigation-recast", tarballDir)
 };
 
 const engineResult = runEngineInstall();
@@ -82,7 +84,7 @@ const checks: ReleaseCheck[] = [
     check(`${result.template}-dev-route-health`, result.devRouteHealth.ok, result.devRouteHealth.output),
     check(`${result.template}-preview-route-health`, result.previewRouteHealth.ok, result.previewRouteHealth.output),
     check(`${result.template}-asset-replacement`, result.assetReplacement.ok && result.assetReplacementBuild.ok, `${result.assetReplacement.output}\n${result.assetReplacementBuild.output}`),
-    check(`${result.template}-missing-asset-output-actionable`, !result.missingAssetOutput.ok && includesAll(result.missingAssetOutput.output, ["Missing asset output", "product"]), result.missingAssetOutput.output),
+    check(`${result.template}-missing-asset-output-actionable`, !result.missingAssetOutput.ok && includesAll(result.missingAssetOutput.output, ["Missing asset output", result.assetId]), result.missingAssetOutput.output),
     check(`${result.template}-invented-asset-id-type-fails`, !result.inventedAssetId.ok && includesAll(result.inventedAssetId.output, ["missingAsset"]), result.inventedAssetId.output),
     check(`${result.template}-missing-manifest-actionable`, !result.missingManifest.ok && includesAll(result.missingManifest.output, ["Missing aura.assets.json", "Suggested fix"]), result.missingManifest.output),
     screenshotProfileCheck(result)
@@ -240,6 +242,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   const missingManifest = assetReplacement.ok ? runMissingManifestCheck(appDir) : assetReplacement;
   return {
     template,
+    assetId,
     install,
     build,
     devRouteHealth,
@@ -263,12 +266,20 @@ function patchScaffoldPackage(appDir: string): void {
     devDependencies?: Record<string, string>;
   };
   const usesLean = parsed.dependencies?.["@aura3d/lean"] !== undefined;
+  // The engine's optional navigation peer must be resolvable for scaffold
+  // builds (its lazy dynamic import is followed at build time); the packed
+  // tarball stands in for the post-publish registry optional install.
+  // Lean-entry scaffolds stay peer-free: the lean dist carries no crowds
+  // code (verified: zero navigation-recast references in the packed lean
+  // tarball), and the isolation gate below forbids it there.
+  const navigationPeer = { "@aura3d/navigation-recast": `file:${tarballs.navigationRecast}` };
   parsed.dependencies = usesLean
     ? { ...(parsed.dependencies ?? {}), ...leanClosureTarballDependencies() }
     : {
         ...(parsed.dependencies ?? {}),
         "@aura3d/engine": `file:${tarballs.engine}`,
-        ...leanClosureTarballDependencies()
+        ...leanClosureTarballDependencies(),
+        ...navigationPeer
       };
   parsed.devDependencies = {
     ...(parsed.devDependencies ?? {}),
@@ -313,9 +324,11 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
     if (source.includes("model(assets.playerModel") || source.includes("asset: assets.playerModel")) {
       return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
     }
-    const next = source
-      .replace("import { camera, createAuraApp, effects, interactions, lights, material, primitives, scene, timeline } from \"@aura3d/engine\";", "import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from \"@aura3d/engine\";\nimport { assets } from \"./aura-assets\";")
-      .replace(".add(primitives.sphere({ name: \"player\", material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))", ".add(model(assets.playerModel, { material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))");
+    // J3 template shape: the player is already a certified-hero model
+    // (`model(assets.showcaseKenneyOobiPlatformerHero, ...)` via
+    // `@aura3d/lean/game`), so replacement swaps the hero for the newly
+    // added real asset instead of the retired primitive-player anchors.
+    const next = source.replace("model(assets.showcaseKenneyOobiPlatformerHero", "model(assets.playerModel");
     if (next === source || !next.includes("model(assets.playerModel")) {
       return { ok: false, output: "mini-game asset replacement did not update src/main.ts", seconds: 0 };
     }

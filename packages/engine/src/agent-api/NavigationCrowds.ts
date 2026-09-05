@@ -1,11 +1,40 @@
-import type {
-  NavigationCrowdAgentOptions,
-  NavigationPathResult,
-  NavigationTriangleSoup,
-  NavigationVec3,
-  RecastCrowdAgentState,
-  RecastNavigationOptions
-} from "@aura3d/navigation-recast";
+/**
+ * Structural mirrors of the `@aura3d/navigation-recast` value-object shapes,
+ * kept LOCAL (never imported) so the packed engine carries no hard link —
+ * type-level or runtime — to the optional peer. The peer stays resolvable
+ * through the bare specifier in `loadNavigationPeer` below (dynamic import,
+ * fail-closed when absent) and through workspace aliases in source builds.
+ * If the peer shapes change, update these mirrors to match; assignability
+ * with the real peer holds structurally (loader returns are covariant).
+ */
+type NavigationVec3 = readonly [number, number, number];
+interface NavigationTriangleSoup {
+  readonly positions: readonly number[] | Float32Array;
+  readonly indices: readonly number[] | Uint32Array;
+}
+interface NavigationPathResult {
+  readonly success: boolean;
+  readonly points: readonly NavigationVec3[];
+  readonly error?: string;
+}
+interface NavigationCrowdAgentOptions {
+  readonly radius?: number;
+  readonly height?: number;
+  readonly maxAcceleration?: number;
+  readonly maxSpeed?: number;
+  readonly collisionQueryRange?: number;
+  readonly pathOptimizationRange?: number;
+  readonly separationWeight?: number;
+}
+interface RecastCrowdAgentState {
+  readonly position: NavigationVec3;
+  readonly velocity: NavigationVec3;
+  readonly speed: number;
+}
+interface RecastNavigationOptions {
+  readonly moduleLoader?: () => Promise<unknown>;
+  readonly generatorLoader?: () => Promise<unknown>;
+}
 
 /**
  * Root navigation + crowds builders (muse3jsparity-PRD O1).
@@ -57,6 +86,13 @@ export interface AuraNavigationPeerLoaders extends RecastNavigationOptions {
 
 async function loadNavigationPeer(loaders?: AuraNavigationPeerLoaders): Promise<AuraNavigationPeer> {
   if (loaders?.peer) return loaders.peer;
+  // Literal bare specifier (never rewritten: finalize-dist exempts the
+  // optional peer). Workspace source builds resolve it through the
+  // `@aura3d/navigation-recast` alias and bundle it; installed consumers
+  // keep it external (the scaffold vite config marks it
+  // `build.rollupOptions.external`) so builds pass without shipping the
+  // peer, and it resolves via node_modules only if a route actually uses
+  // crowds — otherwise the fail-closed error below fires.
   const peer = (await import("@aura3d/navigation-recast")) as unknown as AuraNavigationPeer;
   if (typeof peer.createRecastNavigation !== "function") {
     throw new Error("Recast navigation peer unavailable: the optional \"@aura3d/navigation-recast\" package did not export createRecastNavigation.");

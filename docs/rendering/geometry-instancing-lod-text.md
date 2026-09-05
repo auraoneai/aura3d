@@ -156,3 +156,16 @@ named CPU frustum culling plus a public static-bounds BVH broad phase.
 Screenshots prove only their visible scene. Runtime claims such as native
 instance submission and culling counts come from the corresponding diagnostics
 assertions, not from screenshots alone.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN (directional, same-machine): 4096 instanced quads in one
+  `drawArraysInstanced` — median **1.20 ms** over 25 iterations with GPU
+  completion on every iteration
+  (`tests/reports/muse3jsparity/perf.json`, `instance4k`). K1 specs
+  10/10 green 2026-09-04.
+- LOSS: P2 instanced-GLB **pixel proof is OPEN** (builder + mount + warnings
+  are unit-proven only); the 1.20 ms number is a workload-class cost, not an
+  end-to-end frame claim
+  (`tests/reports/muse3jsparity/library-parity-superiority.json`
+  `openItems`).

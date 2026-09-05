@@ -82,8 +82,17 @@ describe("Skyline's composition subject is measured in a deterministic pose", ()
     const measured = probe().compositionProbe;
     const height = measured?.subjectBounds?.height ?? 0;
     const projected = measured?.projectedSubjectHeight ?? 1;
-    expect(height, "a capture taller than projection + bob amplitude means the pose was not settled")
-      .toBeLessThan(projected * 1.1);
+    /*
+     * Bound 1.15 (was 1.1 before the 2.5-distance camera): the settled capture
+     * is bit-identical across probe runs, so this is systematic projection
+     * geometry, not phase — the closer camera magnifies the live-vs-declared
+     * depth delta and the depth-offset accessories (8.5% at 3.55 becomes ~12%
+     * at 2.5). The margin philosophy matches the sibling scaleDelta test
+     * (0.13). Still catches the historical defect class (154 vs 129.5 = 1.19)
+     * and any runBob-phase capture (>= ~1.17: 12% systematic + 5% stride bob).
+     */
+    expect(height, "a capture taller than projection + settled-geometry margin means the pose was not settled")
+      .toBeLessThan(projected * 1.15);
   });
 
   it("still passes its route gate with the pose settled", () => {

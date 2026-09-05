@@ -124,3 +124,13 @@ telemetry must not use one as proof of another.
 - bounded contact comparison: `tests/reports/runtime-parity/contact-shadow-parity/contact-shadow-parity-report.json`;
 - PMREM/skybox: `tests/reports/runtime-parity/pmrem-parity/pmrem-parity-report.json`;
 - HDR target/tone mapping: `tests/reports/external-parity-hdr-browser.json`.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN (directional, same-machine): fullscreen 64-light forward accumulation
+  loop — median **1.10 ms** over 25 iterations with GPU completion on every
+  iteration (`tests/reports/muse3jsparity/perf.json`, `light64`). K1 specs
+  10/10 green 2026-09-04.
+- LOSS: matrix GAP **lights → Q1.6/B5** remains open; the 1.10 ms number is a
+  workload-class cost on one machine, not a lighting-superiority claim
+  (`tests/reports/muse3jsparity/matrix-check.json` `gapAreas`).

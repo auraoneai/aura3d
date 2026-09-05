@@ -150,3 +150,15 @@ The aggregate receipt is `tests/reports/postprocessing/report.json` and fails
 when any constituent browser receipt is older than 30 minutes. Package-level
 proof does not promote unavailable effects into root `createAuraApp`; the root
 table above remains authoritative.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN (directional, same-machine): full bloom chain — bright-extract 640x360 +
+  5-mip separable blur pyramid + composite — median **1.30 ms** over 25
+  iterations with GPU completion on every iteration
+  (`tests/reports/muse3jsparity/perf.json`, `bloomChain`). K1 specs
+  10/10 green 2026-09-04 (`root-path-integrity` +
+  `game-visual-superiority` + `library-parity-superiority`).
+- LOSS: single-machine directional number, not a universal claim; planar
+  reflections (B4) retain no per-part files — live capture only
+  (`tests/reports/muse3jsparity/game-visual-superiority.json` `b4Note`).

@@ -62,7 +62,7 @@ so the rest of the app still uses `model(assets.helmet)`.
 Meshy generation runs through the pinned official Meshy CLI. After a completed run is downloaded locally, admit a selected GLB through Aura3D:
 
 ```bash
-npx @aura3d/cli@2.0.4 assets import-meshy artifacts/meshy/arena-relic/ \
+npx @aura3d/cli@3.0.0 assets import-meshy artifacts/meshy/arena-relic/ \
   --name arenaRelic \
   --quality candidate \
   --role prop \
@@ -80,7 +80,7 @@ See the [Meshy CLI guide](https://github.com/auraoneai/aura3d/blob/main/docs/mes
 npx @aura3d/cli@latest assets add ./model.glb --name model
 npx @aura3d/cli@latest assets search "studio robot" --json
 npx @aura3d/cli@latest assets resolve "studio robot" --name robot
-npx @aura3d/cli@2.0.4 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
+npx @aura3d/cli@3.0.0 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
 npx @aura3d/cli@latest assets inspect ./model.glb --animation --humanoid
 npx @aura3d/cli@latest assets validate --source --release
 npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter

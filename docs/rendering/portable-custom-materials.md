@@ -135,3 +135,10 @@ Evidence:
 - unit test: `tests/unit/rendering/portable-shader-material.test.ts`;
 - report: `tests/reports/portable-custom-materials/comparison.json`;
 - gate: `pnpm renderer:portable-materials`.
+
+## Superiority (K1 · 2026-09-04)
+
+- No K1 superiority claimed here: the package-level comparison above stands
+  on its own gate, and the custom-material-shader workload was not among the
+  K1 measured workloads. A shader-quality win will be claimed only with a
+  same-scene capture receipt.

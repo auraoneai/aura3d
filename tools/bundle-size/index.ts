@@ -63,7 +63,11 @@ const targets: readonly BundleTarget[] = [
     entryPoint: "packages/engine/src/agent-api/index.ts",
     budget: 80_000,
     enforced: false,
-    external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
+    // `@aura3d/navigation-recast` is an optional peerDependency loaded lazily at
+    // runtime (consumer install + dynamic import), so it is deferred by design —
+    // unlike the WS-2.3 Node builtins, which no browser could load at all. The
+    // measurement covers the critical path; recast arrives on demand.
+    external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js", "@aura3d/navigation-recast"]
   },
   {
     id: "react-adapter",
@@ -95,21 +99,24 @@ const targets: readonly BundleTarget[] = [
     label: "product-viewer starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/product-viewer/src/main.ts",
     budget: 250_000,
-    external: ["react"]
+    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
+    external: ["react", "@aura3d/navigation-recast"]
   },
   {
     id: "template-cinematic-scene",
     label: "cinematic-scene starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
     budget: 250_000,
-    external: ["react"]
+    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
+    external: ["react", "@aura3d/navigation-recast"]
   },
   {
     id: "template-mini-game",
     label: "mini-game starter app before user assets",
     entryPoint: "packages/create-aura3d/templates/mini-game/src/main.ts",
     budget: 250_000,
-    external: ["react"]
+    // `@aura3d/navigation-recast` arrives lazily as an optional peer (see compatibility-root note above).
+    external: ["react", "@aura3d/navigation-recast"]
   }
 ];
 

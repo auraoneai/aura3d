@@ -193,7 +193,13 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
     expect(b4?.mirrorRevisions).toEqual([1, 2]);
     expect(b4?.floorMirrorVsPlainDelta).toBeGreaterThan(100);
     expect(b4?.ssrStatus).toBe("unsupported");
-    await page.locator("#mount, body").first().screenshot({ path: resolve(`${REPORT_DIR}/reflection-surfaces-b4.png`) });
+    // The B4 harness renders to a 96x96 probe canvas with programmatic
+    // readback (the numeric deltas above are the proof); mirror that canvas.
+    await page.locator("#reflection-b4").screenshot({ path: resolve(`${REPORT_DIR}/reflection-surfaces-b4.png`) });
+    expect(
+      statSync(resolve(`${REPORT_DIR}/reflection-surfaces-b4.png`)).size,
+      "B4 mirror capture non-trivial"
+    ).toBeGreaterThan(300);
     live.reflectionSurfacesB4 = {
       mirrorRevisions: b4?.mirrorRevisions,
       floorMirrorVsPlainDelta: b4?.floorMirrorVsPlainDelta,

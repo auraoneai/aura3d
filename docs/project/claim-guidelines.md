@@ -1,6 +1,6 @@
 # Aura3D Claim Guidelines
 
-Version: 2.0.4
+Version: 3.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 

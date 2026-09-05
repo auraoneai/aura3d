@@ -177,7 +177,13 @@ export class PBRMaterial extends Material {
         u_lightCount: 0,
         u_lightData: new Float32Array(0),
         u_modelViewProjection: identityMatrix(),
-        u_normalMatrix: identityMatrix()
+        u_normalMatrix: identityMatrix(),
+        // P2 instanced-GLB path (muse3jsparity-PRD): zero instances by
+        // default so non-instanced draws keep the legacy shader branch
+        // bit-exact; applyInstanceBinding stamps real counts per item.
+        u_instanceMatrices: defaultPbrInstanceMatrices(),
+        u_instanceCount: 0,
+        u_instanceAttributeMode: 0
       },
       requiredAttributes: ["a_position", "a_normal"],
       uniformSchema: [
@@ -233,7 +239,10 @@ export class PBRMaterial extends Material {
         { name: "u_lightCount", kind: "float" },
         { name: "u_lightData", kind: "any" },
         { name: "u_modelViewProjection", kind: "mat4" },
-        { name: "u_normalMatrix", kind: "mat4" }
+        { name: "u_normalMatrix", kind: "mat4" },
+        { name: "u_instanceMatrices", kind: "any" },
+        { name: "u_instanceCount", kind: "float" },
+        { name: "u_instanceAttributeMode", kind: "float" }
       ]
     });
   }
@@ -359,6 +368,16 @@ export class PBRMaterial extends Material {
     const value = this.getParameter("u_environmentBrdfLutTexture");
     return isTextureBinding(value) && value.texture ? value : null;
   }
+}
+
+/** 64 identity matrices: the uniform-path instance ceiling (mirrors ForwardPass MAX_GPU_INSTANCES). */
+function defaultPbrInstanceMatrices(): Float32Array {
+  const matrices = new Float32Array(64 * 16);
+  matrices[0] = 1;
+  matrices[5] = 1;
+  matrices[10] = 1;
+  matrices[15] = 1;
+  return matrices;
 }
 
 function validateNonNegative(value: number, label: string): void {

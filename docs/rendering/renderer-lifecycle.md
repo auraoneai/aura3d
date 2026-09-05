@@ -46,3 +46,14 @@ The bounded root context receipt in
 paused work, an explicit public scene remount, a newly mounted production
 runtime, and identical restored pixels. It does not prove automatic recovery
 for every lower-level consumer or arbitrary caller-owned GPU resource.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN (scoped): three showcase routes mount **only** documented renderers and
+  draw through the root production bridge — `hello-world-typed-asset`,
+  `material-lighting`, `camera-path` (800x600 canvas backing each) — with the
+  T1a+T1b+T2+T3 ownership gates re-executed live from source
+  (`tests/reports/muse3jsparity/root-path-integrity.json`, K1 green
+  2026-09-04).
+- LOSS: scoped to the three listed routes; a renderer-ownership win for every
+  route is unclaimed.

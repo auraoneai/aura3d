@@ -185,3 +185,15 @@ NDF, Estevez-Kulla 2017 sheen, Narkowicz ACES fit, sRGB specification.
 - combined-card comparison: `tests/reports/runtime-parity/material-extension-parity/material-extension-parity-report.json`;
 - real-loader same-fixture comparison: `tests/reports/threejs-parity/loader-material-extensions-parity.json`;
 - current baseline: `tests/reports/current-threejs-baseline.json`.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN: fresh same-scene Aura-vs-pinned-three@0.185.1 captures, earned
+  in-run — `tests/reports/muse3jsparity/head-to-head-aura.png` vs
+  `tests/reports/muse3jsparity/head-to-head-three.png` (K1
+  game-visual-superiority "fresh same-scene head-to-head capture", green
+  2026-09-04).
+- LOSS: the captures show a disclosed material-response color delta
+  (cream vs orange cubes) — same geometry and camera, not identical
+  shading; bundle position stays over budget as disclosed in the release
+  notes.

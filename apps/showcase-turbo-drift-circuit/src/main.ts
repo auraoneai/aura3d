@@ -5460,6 +5460,11 @@ function updateTurboHudPanel(): void {
     signageLapBoardNodes.forEach((node, index) => node.setVisible(index === nextLabelIndex));
     signageActiveLabelIndex = nextLabelIndex;
   }
+  const hudContact = playerChassis.telemetry();
+  const hudChassisY = playerChassisPose.groundedPosition[1];
+  const hudRoadY =
+    sampleTurboRoadHeight(playerChassisPose.groundedPosition[0], playerChassisPose.groundedPosition[2]) +
+    ROAD_DETAIL_SURFACE_LIFT;
   updateTurboHud(hud, {
     snapshot: raceSnapshot,
     session: raceSession,
@@ -5471,7 +5476,12 @@ function updateTurboHudPanel(): void {
     debugMode,
     ghostAvailable: bestGhostRecording !== null,
     ghostEnabled: ghostToggleEnabled,
-    ghostBestLabel: formatLapClock(bestGhostLapMs !== null ? bestGhostLapMs / 1000 : undefined)
+    ghostBestLabel: formatLapClock(bestGhostLapMs !== null ? bestGhostLapMs / 1000 : undefined),
+    chassisY: hudChassisY,
+    roadY: hudRoadY,
+    deltaY: hudChassisY - hudRoadY,
+    wheels: hudContact.groundedWheels,
+    poseHeld: hudContact.groundedWheels === 0 && lastMeshedPlayerPose !== undefined
   });
 }
 

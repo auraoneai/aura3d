@@ -160,3 +160,9 @@ sibling phase) — this doc describes the contract, not landed wiring.
 
 World labels must not be relabeled as 3D text in public claims. Mesh text must
 not be claimed as a general font renderer.
+
+## Superiority (K1 · 2026-09-04)
+
+- No K1 superiority claimed for SDF/world-label text: K1 measured no text
+  pixels. The boundaries above stand; a text-rendering win will be claimed
+  only with a same-scene capture receipt.

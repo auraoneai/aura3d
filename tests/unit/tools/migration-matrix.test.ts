@@ -35,7 +35,8 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .map((path) => ({ path, manifest: JSON.parse(readFileSync(path, "utf8")) as { private?: boolean; name?: string; version?: string } }))
       .filter(({ manifest }) => manifest.private !== true);
     expect(released.length).toBe(29);
-    expect(coordinatedVersion).toMatch(/^2\.0\.\d+$/);
+    // 3.0.0 train (muse3jsparity L1 retarget): the coordinated major moved 2.0 -> 3.0.
+    expect(coordinatedVersion).toMatch(/^3\.0\.\d+$/);
     expect(released.every(({ manifest }) => manifest.version === coordinatedVersion)).toBe(true);
   });
 

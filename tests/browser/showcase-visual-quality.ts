@@ -142,20 +142,26 @@ export function analyzeForegroundPng(buffer: Buffer, crop?: Partial<PngCrop>): P
    * exact equality, so the two implementations must agree pixel-for-pixel. A single four-corner
    * average cannot describe a gradient sky: rows near the horizon get scored against a background
    * sampled from the top of the frame, so sky is admitted as foreground and the measured subject
-   * silhouette is wrong. Sampling the left/right margins of each row and taking a per-channel median
-   * tracks the gradient and stays robust to a prop or HUD edge intruding into one margin.
+   * silhouette is wrong. Sampling the left/right margins of each row as separate per-channel medians
+   * and taking the closer reference tracks the gradient, survives systematic left/right margin splits,
+   * and stays robust to a prop or HUD edge intruding into one margin.
    */
   const rowBackground = perRowBackgroundColors(image, resolvedCrop);
   const mask = new Uint8Array(resolvedCrop.width * resolvedCrop.height);
 
   for (let y = resolvedCrop.y; y < resolvedCrop.y + resolvedCrop.height; y += 1) {
     const localY = y - resolvedCrop.y;
-    const backgroundR = rowBackground[localY * 3];
-    const backgroundG = rowBackground[localY * 3 + 1];
-    const backgroundB = rowBackground[localY * 3 + 2];
+    const backgroundRL = rowBackground[localY * 6];
+    const backgroundGL = rowBackground[localY * 6 + 1];
+    const backgroundBL = rowBackground[localY * 6 + 2];
+    const backgroundRR = rowBackground[localY * 6 + 3];
+    const backgroundGR = rowBackground[localY * 6 + 4];
+    const backgroundBR = rowBackground[localY * 6 + 5];
     for (let x = resolvedCrop.x; x < resolvedCrop.x + resolvedCrop.width; x += 1) {
       const pixel = pixelAt(image, x, y);
-      const backgroundDistance = Math.abs(pixel.r - backgroundR) + Math.abs(pixel.g - backgroundG) + Math.abs(pixel.b - backgroundB);
+      const backgroundDistanceLeft = Math.abs(pixel.r - backgroundRL) + Math.abs(pixel.g - backgroundGL) + Math.abs(pixel.b - backgroundBL);
+      const backgroundDistanceRight = Math.abs(pixel.r - backgroundRR) + Math.abs(pixel.g - backgroundGR) + Math.abs(pixel.b - backgroundBR);
+      const backgroundDistance = Math.min(backgroundDistanceLeft, backgroundDistanceRight);
       const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
       if (pixel.a <= 8 || backgroundDistance <= 30 || luma <= 7) continue;
       mask[localY * resolvedCrop.width + (x - resolvedCrop.x)] = 1;
@@ -534,19 +540,26 @@ function pixelAt(image: DecodedPng, x: number, y: number): PixelSample {
 
 function perRowBackgroundColors(image: DecodedPng, crop: PngCrop): Uint8Array {
   const margin = Math.max(2, Math.min(24, Math.floor(crop.width * 0.02)));
-  const rows = new Uint8Array(crop.height * 3);
-  const samples: PixelSample[] = [];
+  const rows = new Uint8Array(crop.height * 6);
+  const left: PixelSample[] = [];
+  const right: PixelSample[] = [];
   for (let localY = 0; localY < crop.height; localY += 1) {
     const y = crop.y + localY;
-    samples.length = 0;
+    left.length = 0;
+    right.length = 0;
     for (let offset = 0; offset < margin; offset += 1) {
-      samples.push(pixelAt(image, crop.x + offset, y));
-      samples.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
+      left.push(pixelAt(image, crop.x + offset, y));
+      right.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
     }
-    // Median per channel: robust to a prop or HUD edge intruding into one margin.
-    rows[localY * 3] = medianChannel(samples, "r");
-    rows[localY * 3 + 1] = medianChannel(samples, "g");
-    rows[localY * 3 + 2] = medianChannel(samples, "b");
+    // Separate left/right medians (mirrors tools/showcase-library/png-foreground.mjs):
+    // a joint median matches neither side when the margins split systematically,
+    // and callers take the closer reference so one-sided intrusions stay contained.
+    rows[localY * 6] = medianChannel(left, "r");
+    rows[localY * 6 + 1] = medianChannel(left, "g");
+    rows[localY * 6 + 2] = medianChannel(left, "b");
+    rows[localY * 6 + 3] = medianChannel(right, "r");
+    rows[localY * 6 + 4] = medianChannel(right, "g");
+    rows[localY * 6 + 5] = medianChannel(right, "b");
   }
   return rows;
 }

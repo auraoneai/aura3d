@@ -178,6 +178,64 @@ describe("turbo drift grounds on the real circuit mesh", () => {
     expect(groundedSteps).toBeGreaterThan(0);
   });
 
+  it("a chassis driven the full lap never dives below the rendered road", () => {
+    // The shipped defect, stated as arithmetic: the extracted mesh is sparse
+    // (whole segments miss every triangle), a miss samples the mesh's lowest
+    // vertex, and the old chassis treated that fallback as ground -- so the car
+    // rendered ~0.3 units under a correctly miss-filled road ribbon while
+    // reporting itself grounded. Drive the lap with the route's own surface
+    // config and require the contact plane to stay at road level throughout.
+    const scene = binding();
+    const wheelRadius = 0.109;
+    const surface = scene.vehicleSurface({ offRoadGrip: 0.55, contactPatchRadius: wheelRadius * 3 })!;
+    const query = scene.surfaceQuery()!;
+    const chassis = createVehicleChassis(
+      {
+        wheelbase: 0.576,
+        trackWidth: 0.304,
+        wheelRadius,
+        rideHeight: 0.136,
+        suspensionTravel: 0.046,
+        contactTolerance: 0.03
+      },
+      surface
+    );
+    const points = routeGeometry.points;
+    const at = (t: number) => {
+      const f = (((t % 1) + 1) % 1) * points.length;
+      const i0 = Math.floor(f) % points.length;
+      const i1 = (i0 + 1) % points.length;
+      const a = points[i0]!, b = points[i1]!, k = f - Math.floor(f);
+      return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
+    };
+    const start = scene.toScenePoint({ x: points[0]!.x, y: points[0]!.y }, 0);
+    chassis.reset({ x: start[0], z: start[2], heading: 0, speed: 0, steer: 0 });
+
+    let roadRef = query.sample(start[0], start[2]).height;
+    let worstDive = 0;
+    const steps = 720;
+    for (let step = 0; step < steps; step += 1) {
+      const t = step / steps;
+      const c = at(t), c2 = at(t + 0.003);
+      const p = scene.toScenePoint({ x: c.x, y: c.y }, 0);
+      const hit = query.sample(p[0], p[2]);
+      if (hit.hit) roadRef = hit.height;
+      const pose = chassis.step(1 / 60, {
+        x: p[0],
+        z: p[2],
+        heading: Math.atan2(c2.y - c.y, c2.x - c.x),
+        speed: 8,
+        steer: 0,
+        throttle: 1
+      });
+      expect(Number.isFinite(pose.groundedPosition[1])).toBe(true);
+      worstDive = Math.min(worstDive, pose.groundedPosition[1] - roadRef);
+    }
+    // Rendering adds a small lift above this plane; anything beyond a wheel
+    // radius below the road is the burial defect, not suspension.
+    expect(worstDive).toBeGreaterThan(-0.08);
+  });
+
   it("a flat-plane surface fails the same penetration check the mesh passes", () => {
     // Proves the check above is load-bearing rather than trivially satisfiable. This is the
     // model the route used to ship: one height everywhere.

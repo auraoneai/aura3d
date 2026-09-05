@@ -1467,7 +1467,7 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("expands instance transforms for textured materials without an instanced shader path", async () => {
+  it("instances textured materials natively through the textured program instance path (P2)", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4 });
     const transforms = new Float32Array([
       ...translationMatrix(-0.35, 0, 0),
@@ -1478,22 +1478,26 @@ describe("Renderer", () => {
       geometry: Geometry.texturedCube(1),
       material: new TexturedPBRMaterial({ baseColor: [0.7, 0.35, 0.2, 1] }),
       instanceTransforms: transforms,
-      label: "textured-pbr-instance-fallback"
+      label: "textured-pbr-instance-native"
     }]);
 
     const commands = (renderer.device as MockRenderDevice).drawCommands;
-    expect(diagnostics.drawCalls).toBe(2);
-    expect(commands.map((command) => command.label)).toEqual([
-      "textured-pbr-instance-fallback#instance-0",
-      "textured-pbr-instance-fallback#instance-1"
-    ]);
-    expect(commands.map((command) => command.instanceCount)).toEqual([undefined, undefined]);
+    // P2 (muse3jsparity-PRD): the textured program carries the instance
+    // chunk, so two instances submit as ONE instanced draw — no expansion.
+    expect(diagnostics.drawCalls).toBe(1);
+    expect(commands.map((command) => command.label)).toEqual(["textured-pbr-instance-native"]);
+    expect(commands.map((command) => command.instanceCount)).toEqual([2]);
     expect(commands[0]?.shader?.label).not.toBe("aura3d/instanced-pbr");
     expect(commands[0]?.shader?.label).toBe(DEFAULT_TEXTURED_PBR_SHADER_NAME);
+    expect(commands[0]?.shader?.reflection.uniforms.has("u_instanceMatrices")).toBe(true);
+    expect(commands[0]?.shader?.reflection.uniforms.has("u_instanceCount")).toBe(true);
+    expect(commands[0]?.uniforms?.get("u_instanceCount")).toBe(2);
     expect(commands[0]?.vertexFormat?.hasAttribute("uv")).toBe(true);
     expect(commands[0]?.uniforms?.get("u_baseColorTexture")).toBeInstanceOf(TextureBinding);
-    expect(Array.from((commands[0]?.uniforms?.get("u_modelMatrix") as Float32Array).slice(12, 16)).map((value) => Number(value.toFixed(2)))).toEqual([-0.35, 0, 0, 1]);
-    expect(Array.from((commands[1]?.uniforms?.get("u_modelMatrix") as Float32Array).slice(12, 16)).map((value) => Number(value.toFixed(2)))).toEqual([0.35, 0, 0, 1]);
+    const matrices = commands[0]?.uniforms?.get("u_instanceMatrices");
+    expect(matrices).toBeInstanceOf(Float32Array);
+    expect(Array.from((matrices as Float32Array).slice(12, 16)).map((value) => Number(value.toFixed(2)))).toEqual([-0.35, 0, 0, 1]);
+    expect(Array.from((matrices as Float32Array).slice(28, 32)).map((value) => Number(value.toFixed(2)))).toEqual([0.35, 0, 0, 1]);
     renderer.dispose();
   });
 
@@ -3088,6 +3092,8 @@ describe("Renderer", () => {
     expect(fragmentSource).toContain("@group(0) @binding(14) var u_occlusionTexture: texture_2d<f32>;");
     expect(fragmentSource).toContain("@group(0) @binding(15) var u_clusterLightData: texture_2d<f32>;");
     expect(fragmentSource).toContain("@group(0) @binding(16) var u_clusterLightIndices: texture_2d<f32>;");
+    expect(fragmentSource).toContain("@group(0) @binding(17) var u_spotShadowSampler: sampler;");
+    expect(fragmentSource).toContain("@group(0) @binding(18) var u_spotShadowTexture: texture_2d<f32>;");
     expect(fragmentSource).toContain("textureLoad(u_clusterLightData");
     expect(fragmentSource).toContain("fn perturbNormal");
     expect(fragmentSource).toContain("textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv)");
@@ -3102,8 +3108,11 @@ describe("Renderer", () => {
     expect(native.device.uniformWrites[0]?.[128]).toBe(0);
     expect(native.device.uniformWrites[0]?.[129]).toBe(1);
     expect(native.device.uniformWrites[0]?.[130]).toBe(1);
+    // Bindings 17/18 are the J2 native spot-shadow map (sampler + texture),
+    // always present in the static PBR layout (proven live in
+    // webgpu-spot-shadow-j2.spec.ts: core-patch drop 40.28, lit-corner Δ=0).
     expect((native.device.bindGroups[0] as { entries: Array<{ binding: number }> }).entries.map((entry) => entry.binding)).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
     ]);
     expect(device.getDiagnostics().nativePbrSubmissions).toBe(1);
     device.dispose();

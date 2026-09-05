@@ -80,3 +80,10 @@ To claim visible root-path skinning or morph support, provide:
   whole-frame movement;
 - route-health or evidence JSON that names the renderer backend and fallback
   state.
+
+## Superiority (K1 · 2026-09-04)
+
+- No new K1 numbers for skinning/morph paths: the K1 wall-clock covers
+  bloom, 4k-instancing, 64-light, and 10k-particle workloads only. The
+  skinning/morph parity receipts cited in `animation.md` stand unchanged;
+  skinned-morph rendering superiority is unclaimed until measured.

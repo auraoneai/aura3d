@@ -1,5 +1,13 @@
 # Renderer Texture Compression
 
+## Superiority (K1 · 2026-09-04)
+
+- Covered at matrix level only: M2 decoder/streaming rows are mapped in
+  `tests/reports/muse3jsparity/matrix-check.json` with every GAP owned.
+  No standalone K1 wall-clock or capture number exists for compression
+  itself — ordered KTX2/transcoding proof lives in the decoder reports
+  cited under Current Behavior, not here.
+
 Version: 2.0.3
 
 Texture compression support is split between asset decoding/transcoding and renderer texture submission.

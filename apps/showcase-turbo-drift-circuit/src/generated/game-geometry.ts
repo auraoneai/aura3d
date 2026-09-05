@@ -14030,7 +14030,7 @@ export const gameGeometryContract = {
   "evidence": {
     "geometryReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-2UMS6v/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "routePrimaryScreenshotSha256": "sha256-b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c"
+    "routePrimaryScreenshotSha256": "sha256-9833c228cc95d039e9b9c77d641bf0e7d3680e8a25ced7549f3015017769a8bf"
   },
   "design": {
     "minCheckpoints": 6,
@@ -27813,14 +27813,14 @@ export const gameGeometryContract = {
       ],
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
       "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-      "screenshotSha256": "sha256-b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c",
+      "screenshotSha256": "sha256-9833c228cc95d039e9b9c77d641bf0e7d3680e8a25ced7549f3015017769a8bf",
       "geometryEvidence": {
         "category": "racing",
         "kind": "racing-track-topology",
         "source": "asset-mesh-extracted",
         "report": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-2UMS6v/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-        "routePrimaryScreenshotSha256": "sha256-b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c",
+        "routePrimaryScreenshotSha256": "sha256-9833c228cc95d039e9b9c77d641bf0e7d3680e8a25ced7549f3015017769a8bf",
         "assets": [
           {
             "id": "showcaseCc0FormulaRaceCar",

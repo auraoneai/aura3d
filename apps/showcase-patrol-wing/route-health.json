@@ -16,9 +16,9 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.patrolWingPlane",
-      "hash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
-      "quality": "release",
+      "typedRef": "assets.patrolAircraftMeshy",
+      "hash": "sha256-183e83f818cc35b68d0a5f0b1dcb2d11485abaf977c7cbefd4c3a538554d3428",
+      "quality": "candidate",
       "role": "vehicle"
     },
     {

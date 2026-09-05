@@ -90,11 +90,20 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 2.0.4
+## Current Release: Aura3D 3.0.0 (candidate — publish gates pending)
 
-Aura3D 2.0.4 adds a bounded Meshy integration to the **CLI asset pipeline**. The pinned official Meshy CLI remains responsible for authentication, spend planning, task execution, resumption, and artifact download. Aura3D admits selected local outputs as candidate-quality typed assets with hashes, sanitized provenance, supplied rights evidence, profile-specific validation, and generated `assets.name` references.
+Aura3D 3.0.0 is the agent-era major: the browser 3D engine for the agent era — prompt it, prove it, ship it. It carries forward the 2.0 runtime and animation evidence foundation plus the 2.0.4 Meshy CLI asset-pipeline patch, with the public API surface and parity evidence accumulated since 2.0. Every capability below is bounded by its evidence gate; showcase routes stay individually gated and promotion-blocked until hash-bound independent human review covers their exact final artifacts. See [the 3.0.0 release notes](docs/project/aura3d-300-release-notes.md) for scope, receipts, and explicit non-claims.
 
-### What ships in 2.0.4
+### What ships in 3.0.0
+
+- **Agent-era API surface.** Prompt→game and prompt→animation builders, game-feel triggers, follow/chase/platformer camera rigs, vehicle chassis + driver AI, GPU particles, SDF text, navmesh crowds, visual-scripting catalog, bounded editor surface — each `createAuraApp`-claimed only where root browser evidence exists.
+- **Rendering proofs.** Native fused LDR postprocess, multi-mip bloom with presets, exact sRGB output, anisotropic-GGX, cascaded shadows, GGX PMREM IBL, with shader-reference vectors pinning the math.
+- **Bounded three.js comparison.** Repository-locked `three@0.185.1` head-to-head reports only; no universal superiority claim.
+- **2.0.4 carried forward.** Candidate-only `assets import-meshy`, fail-closed admission, profile diagnostics, spend/secret controls, and the relic `prototype` pilot, unchanged.
+
+See [the Meshy CLI guide](docs/meshy-cli.md) and [the 2.0.4 release notes](docs/project/aura3d-204-release-notes.md) for the 2.0.4 history.
+
+### What shipped in 2.0.4 (history)
 
 - **Candidate-only Meshy import.** `assets import-meshy` reuses Aura3D's existing add, inspect, hash, manifest, and type-generation path. Import cannot certify release quality.
 - **Fail-closed admission.** Ambiguous or invalid GLBs, unsafe metadata, missing required rights evidence, out-of-root paths, and attempts to request release quality during import are rejected.
@@ -217,13 +226,13 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@2.0.4
+npm install @aura3d/engine@3.0.0
 # or scaffold an app
-npx create-aura3d@2.0.4 my-product --template product-viewer
+npx create-aura3d@3.0.0 my-product --template product-viewer
 ```
 
-The current 2.0 candidate notes are in
-[`docs/project/aura3d-200-release-notes.md`](docs/project/aura3d-200-release-notes.md),
+The current 3.0.0 candidate notes are in
+[`docs/project/aura3d-300-release-notes.md`](docs/project/aura3d-300-release-notes.md),
 with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
 
@@ -249,8 +258,8 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.4 is
-the current package release that carries it forward:
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 3.0.0 is
+the current package release candidate that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
@@ -712,7 +721,7 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The published 2.0.4 patch packages carry the
+Expected current state — The 3.0.0 candidate packages carry the
 playable-route, catalog, and documentation corrections on this tag. The
 historical exact-installed 2.0.0 comparison against
 `three@0.185.1` passes its bounded local checks across 15 workloads. That

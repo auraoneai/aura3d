@@ -15,13 +15,13 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.gravityPostCourierSkiff",
+      "typedRef": "assets.gravityPodSkiffMeshy",
       "role": "primary-vehicle",
-      "status": "release-validated-typed-primary-asset",
-      "quality": "release",
-      "hash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
-      "license": "CC0-1.0",
-      "author": "Aura3D synthesis"
+      "status": "typed-primary-asset",
+      "quality": "candidate",
+      "hash": "sha256-5f38bf96c1663e602fa7f7afc54d750ed0bdf0ee70974c95666450f244e614ec",
+      "license": "provider-supplied (see aura-evidence/meshy/gravityPodSkiffMeshy.metadata.dcde95dd32d5.json)",
+      "author": "Meshy text-to-3d-refine"
     },
     {
       "typedRef": "assets.gravityPostDockBeacon",

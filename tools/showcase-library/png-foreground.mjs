@@ -199,12 +199,17 @@ function analyzeForegroundPng(buffer, cropInput) {
 
   for (let y = crop.y; y < crop.y + crop.height; y += 1) {
     const localY = y - crop.y;
-    const backgroundR = rowBackground[localY * 3];
-    const backgroundG = rowBackground[localY * 3 + 1];
-    const backgroundB = rowBackground[localY * 3 + 2];
+    const backgroundRL = rowBackground[localY * 6];
+    const backgroundGL = rowBackground[localY * 6 + 1];
+    const backgroundBL = rowBackground[localY * 6 + 2];
+    const backgroundRR = rowBackground[localY * 6 + 3];
+    const backgroundGR = rowBackground[localY * 6 + 4];
+    const backgroundBR = rowBackground[localY * 6 + 5];
     for (let x = crop.x; x < crop.x + crop.width; x += 1) {
       const pixel = pixelAt(image, x, y);
-      const backgroundDistance = Math.abs(pixel.r - backgroundR) + Math.abs(pixel.g - backgroundG) + Math.abs(pixel.b - backgroundB);
+      const backgroundDistanceLeft = Math.abs(pixel.r - backgroundRL) + Math.abs(pixel.g - backgroundGL) + Math.abs(pixel.b - backgroundBL);
+      const backgroundDistanceRight = Math.abs(pixel.r - backgroundRR) + Math.abs(pixel.g - backgroundGR) + Math.abs(pixel.b - backgroundBR);
+      const backgroundDistance = Math.min(backgroundDistanceLeft, backgroundDistanceRight);
       const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
       if (pixel.a <= 8 || backgroundDistance <= 30 || luma <= 7) continue;
       mask[localY * crop.width + (x - crop.x)] = 1;
@@ -268,15 +273,22 @@ function analyzeVisualCompositionPng(buffer, cropInput) {
   const flatCounts = new Uint32Array(4096);
   for (let y = crop.y; y < crop.y + crop.height; y += 1) {
     const localRow = y - crop.y;
-    const backgroundR = rowBackground[localRow * 3];
-    const backgroundG = rowBackground[localRow * 3 + 1];
-    const backgroundB = rowBackground[localRow * 3 + 2];
+    const backgroundRL = rowBackground[localRow * 6];
+    const backgroundGL = rowBackground[localRow * 6 + 1];
+    const backgroundBL = rowBackground[localRow * 6 + 2];
+    const backgroundRR = rowBackground[localRow * 6 + 3];
+    const backgroundGR = rowBackground[localRow * 6 + 4];
+    const backgroundBR = rowBackground[localRow * 6 + 5];
     for (let x = crop.x; x < crop.x + crop.width; x += 1) {
       const pixel = pixelAt(image, x, y);
       flatCounts[(((pixel.r >> 4) << 8) | ((pixel.g >> 4) << 4) | (pixel.b >> 4)) & 0xfff] += 1;
-      const distance = Math.abs(pixel.r - backgroundR) +
-        Math.abs(pixel.g - backgroundG) +
-        Math.abs(pixel.b - backgroundB);
+      const distanceLeft = Math.abs(pixel.r - backgroundRL) +
+        Math.abs(pixel.g - backgroundGL) +
+        Math.abs(pixel.b - backgroundBL);
+      const distanceRight = Math.abs(pixel.r - backgroundRR) +
+        Math.abs(pixel.g - backgroundGR) +
+        Math.abs(pixel.b - backgroundBR);
+      const distance = Math.min(distanceLeft, distanceRight);
       const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
       if (pixel.a <= 8 || distance <= 30 || luma <= 7) continue;
       const localX = x - crop.x;
@@ -554,19 +566,30 @@ function pixelAt(image, x, y) {
  */
 function perRowBackgroundColors(image, crop) {
   const margin = Math.max(2, Math.min(24, Math.floor(crop.width * 0.02)));
-  const rows = new Uint8Array(crop.height * 3);
-  const samples = [];
+  const rows = new Uint8Array(crop.height * 6);
+  const left = [];
+  const right = [];
   for (let localY = 0; localY < crop.height; localY += 1) {
     const y = crop.y + localY;
-    samples.length = 0;
+    left.length = 0;
+    right.length = 0;
     for (let offset = 0; offset < margin; offset += 1) {
-      samples.push(pixelAt(image, crop.x + offset, y));
-      samples.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
+      left.push(pixelAt(image, crop.x + offset, y));
+      right.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
     }
-    // Median per channel: robust to a prop or HUD edge intruding into one margin.
-    rows[localY * 3] = medianChannel(samples, "r");
-    rows[localY * 3 + 1] = medianChannel(samples, "g");
-    rows[localY * 3 + 2] = medianChannel(samples, "b");
+    /*
+     * Separate left/right medians: a joint median matches neither side when
+     * the margins split systematically (dark ridge left, bright ice right),
+     * marking whole rows foreground. Callers take the closer reference, so a
+     * prop or HUD edge intruding into one margin still cannot poison the other
+     * side's pixels -- the property the joint median was added for.
+     */
+    rows[localY * 6] = medianChannel(left, "r");
+    rows[localY * 6 + 1] = medianChannel(left, "g");
+    rows[localY * 6 + 2] = medianChannel(left, "b");
+    rows[localY * 6 + 3] = medianChannel(right, "r");
+    rows[localY * 6 + 4] = medianChannel(right, "g");
+    rows[localY * 6 + 5] = medianChannel(right, "b");
   }
   return rows;
 }

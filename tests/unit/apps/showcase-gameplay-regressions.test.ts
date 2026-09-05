@@ -165,9 +165,13 @@ describe("public showcase gameplay regressions", () => {
     expect(source).toContain("playerYawForFacing");
     expect(source).toContain("state.player.vx >= 0 ? 1 : -1");
     // The shipped route keeps the gameplay-facing yaw contract while applying
-    // a documented visual profile offset to the typed hero. The old assertion
-    // required the pre-profile helper and no longer described the live source.
-    expect(source).toContain("player.setRotation(0, playerVisualYawForFacing(playerFacing), 0)");
+    // a documented visual profile offset to the typed hero. The rigid run
+    // cycle (26912b8c) folds stride sway + lean into a run yaw derived from
+    // that same profile, so the assertion follows the run yaw, not the
+    // pre-cycle direct call: the base is still the facing profile, and the
+    // bounded sway/lean cannot turn the hero toward the camera.
+    expect(source).toContain("const runYaw = playerVisualYawForFacing(playerFacing) + runSway");
+    expect(source).toContain("player.setRotation(0, runYaw, runLeanZ)");
   });
 
   it("scores Skyline flow, collection chains, checkpoint splits, retries, and reset", () => {

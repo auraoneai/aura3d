@@ -167,4 +167,10 @@ Allowed wording:
 - WebGL2 remains the broadly available default backend.
 - A3D supports WebGPU for feature-matrix rows marked `supported`.
 
+## Superiority (K1 · 2026-09-04)
+
+- No win claimed: see `webgpu-current-architecture.md` Superiority — J2
+  render-bundle rows are GAPped and hardware-blocked. Route evidence proves
+  marked rows only.
+
 Avoid unqualified WebGPU wording such as complete WebGPU/WebGL2 parity, support across all browsers and GPUs, or every route supporting WebGPU. Hardware claims must follow [WebGPU hardware matrix](webgpu-hardware-matrix.md), and fallback behavior must follow [WebGPU availability and fallback behavior](webgpu-fallback.md).

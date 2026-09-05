@@ -152,8 +152,9 @@ export function createInstancedModelNode<TAsset>(options: InstancedModelOptions<
       reason: "material-rejects-instancing",
       diagnostic:
         `Instancing fallback for material "${material}": ` +
-        `${count} instances expanded to ${count} draws (material-rejects-instancing). ` +
-        `Use an instancing-aware material or instances.model will not reach 1-draw class.`
+        `${count} instances requested but the material is not in the instancing-aware registry ` +
+        `(material-rejects-instancing). The renderer expands to ${count} draws unless the material ` +
+        `program supports instance matrices — use an instancing-aware material to guarantee 1-draw class.`
     };
 
   const culling = computeCullingTelemetry(options.transforms);

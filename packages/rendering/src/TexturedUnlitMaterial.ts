@@ -36,7 +36,13 @@ export class TexturedUnlitMaterial extends Material {
         u_baseColorTextureOffset: options.textureTransform?.offset ?? [0, 0],
         u_baseColorTextureScale: options.textureTransform?.scale ?? [1, 1],
         u_baseColorTextureRotation: options.textureTransform?.rotation ?? 0,
-        u_modelViewProjection: identityMatrix()
+        u_modelViewProjection: identityMatrix(),
+        // P2 instanced-GLB path (muse3jsparity-PRD): zero instances by
+        // default so non-instanced draws keep the legacy shader branch
+        // bit-exact; applyInstanceBinding stamps real counts per item.
+        u_instanceMatrices: defaultTexturedUnlitInstanceMatrices(),
+        u_instanceCount: 0,
+        u_instanceAttributeMode: 0
       },
       requiredAttributes: ["a_position", "a_uv"],
       uniformSchema: [
@@ -45,10 +51,23 @@ export class TexturedUnlitMaterial extends Material {
         { name: "u_baseColorTextureOffset", kind: "vec2" },
         { name: "u_baseColorTextureScale", kind: "vec2" },
         { name: "u_baseColorTextureRotation", kind: "float" },
-        { name: "u_modelViewProjection", kind: "mat4" }
+        { name: "u_modelViewProjection", kind: "mat4" },
+        { name: "u_instanceMatrices", kind: "any" },
+        { name: "u_instanceCount", kind: "float" },
+        { name: "u_instanceAttributeMode", kind: "float" }
       ]
     });
   }
+}
+
+/** 64 identity matrices: the uniform-path instance ceiling (mirrors ForwardPass MAX_GPU_INSTANCES). */
+function defaultTexturedUnlitInstanceMatrices(): Float32Array {
+  const matrices = new Float32Array(64 * 16);
+  matrices[0] = 1;
+  matrices[5] = 1;
+  matrices[10] = 1;
+  matrices[15] = 1;
+  return matrices;
 }
 
 function validateColor(color: readonly [number, number, number, number]): void {

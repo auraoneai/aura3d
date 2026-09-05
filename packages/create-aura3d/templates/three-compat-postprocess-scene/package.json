@@ -11,7 +11,8 @@
     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "2.0.4"
+    "@aura3d/engine": "3.0.0",
+    "@aura3d/navigation-recast": "3.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

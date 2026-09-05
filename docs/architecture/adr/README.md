@@ -73,3 +73,4 @@ records why an existing one could not be removed.
 | [0010](0010-lean-entrypoints-compose-existing-owners.md) | Lean entrypoints compose existing owners | accepted |
 | [0011](0011-public-rendering-adapters-remain-owned-by-rendering.md) | Public rendering adapters remain owned by rendering | accepted |
 | [0012](0012-external-generated-asset-import-stays-cli-owned.md) | External generated-asset import adapters stay CLI-owned | accepted |
+| [0013](0013-game-visual-surface-first-party.md) | Game-library visual surface ships as first-party subsystems owned by existing packages | accepted |

@@ -75,3 +75,8 @@ pipeline, upload, pass, readback, compute, fallback, error, and six-route
 evidence on Chromium/Apple Metal. This bounded route evidence does not claim full real-hardware WebGPU support across all browsers and devices. It does not claim universal browser
 availability, root-default WebGPU, TSL parity, or WebGPU parity for every
 renderer feature. See `webgpu-current-architecture.md`.
+
+## Superiority (K1 · 2026-09-04)
+
+- No win claimed: this doc is a boundary registry by design. See
+  `webgpu-current-architecture.md` Superiority for the J2 GAP position.

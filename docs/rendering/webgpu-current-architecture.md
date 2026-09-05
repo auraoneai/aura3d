@@ -41,10 +41,10 @@ all five evidence legs.
 
 | Feature id | WGSL foundation | Status | Evidence boundary |
 | --- | --- | --- | --- |
-| `bloom-pyramid` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A1 bloom pyramid has no WebGPU dispatch/render/pixel proof yet. |
-| `color-grade` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A3 colorGrade has no WebGPU dispatch/render/pixel proof yet. |
-| `fxaa-taa` | `production-runtime/shaders/wgsl/postprocess.wgsl` | unproven | A3 FXAA/TAA has no WebGPU dispatch/render/pixel proof yet. |
-| `spot-shadows` | `production-runtime/shaders/wgsl/pbr.wgsl` | unproven | B1 spot shadows have no WebGPU dispatch/render/pixel proof yet. |
+| `bloom-pyramid` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native `webgpu-native-post` on Metal 3: 8 bloom passes, 3 half-float mips, 7,472 changed px (`webgpu-post-j2.spec.ts` 2/2). |
+| `color-grade` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native grade pass on Metal 3: 47,576 changed px, mean luma lift (`webgpu-post-j2.spec.ts` 2/2). |
+| `fxaa-taa` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native FXAA pass on Metal 3: 1,928 changed px, mean abs diff 0.0054 — subtle edge AA, not a look change (`webgpu-post-j2.spec.ts` 2/2). TAA row stays unproven (no TAA proof). |
+| `spot-shadows` | `production-runtime/shaders/wgsl/pbr.wgsl` | proven 2026-09-05 | Native spot depth target on Metal 3 (86 depth levels, CPU-oracle-matched sphere depth 0.631), projective 9-tap PCF: core receiver patch 183.1→142.8 (drop 40.28), centroid 88.4px off-center, PCF-vs-single 218px, lit-corner Δ=0 (`webgpu-spot-shadow-j2.spec.ts` 1/1). |
 | `textured-pbr` | `production-runtime/shaders/wgsl/pbr.wgsl` | proven 2026-09-04 | All 5 legs on Apple Metal 3: adapter, strict-webgpu backend, 110 PBR dispatches, 110 native submissions, 140,378 non-black readback px (car-concept). |
 | `render-bundles` | n/a (API-level prototype, no new shader) | prototype-measured 2026-09-04 | 4096 static draws: bundle-execute 0.60ms vs re-encode 0.80ms (ratio 0.75, adopt-candidate). Zero engine call sites — adoption still needs engine implementation. |
 | `compute-particles` | `production-runtime/shaders/wgsl/pbr.wgsl` | unproven | Particle compute-dispatch reuse has no WebGPU dispatch proof yet. |
@@ -92,3 +92,11 @@ Primary receipt:
 online current-baseline lock, real hardware matrix, public SDK imported-asset
 proof, native-route matrix, compute/fallback/error proof, and exact installed
 Three.js renderer source hash.
+
+## Superiority (K1 · 2026-09-04)
+
+- No win claimed: the library K1 matrix records an explicit GAP for
+  **webgpu-render-bundles → J2**, and J2 rows are hardware-blocked and
+  honestly unproven. This doc records the boundary; WebGPU superiority
+  stays unclaimed until real-hardware rows go green
+  (`tests/reports/muse3jsparity/matrix-check.json` `gapAreas`).

@@ -198,3 +198,10 @@ Not allowed:
 - "Aura3D turns still images into 3D animated episodes."
 - "The preset replaces a production animation studio renderer."
 - "A still-image puppet output proves the animation system works."
+
+## Superiority (K1 · 2026-09-04)
+
+- No superiority claimed for the preset itself: it is authoring mechanics,
+  and K1 measured no preset numbers. Animation proof lives in
+  `animation.md` (pointer + variant round-trip, live re-verified) and the
+  K1 library receipts — not here.

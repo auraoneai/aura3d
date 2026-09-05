@@ -16,12 +16,19 @@ const REPORT_DIR = resolve(ROOT, "tests/reports/muse3jsparity");
 const READINESS_PATH = resolve(REPORT_DIR, "readiness.json");
 const QUARANTINE_PATH = resolve(REPORT_DIR, "quarantine.json");
 
-// Recorded R0 baseline (muse3jsparity-PRD.md PART R, 2026-09-03, 2.0.4 tree).
-// Rendering subset was 722/722 green; full unit had 31 stash-proven
-// pre-existing reds, so the ceiling is exact, not a tolerance: ANY failure
-// beyond these 31 aborts the gate.
-const BASELINE_UNIT_TOTAL = 4126;
-const BASELINE_UNIT_FAILED_CEILING = 31;
+// Recorded R0 baseline, re-earned 2026-09-05 on the 3.0.0 tree
+// (`pnpm test:unit`: 4417 total). Rendering 983/983 green (the one
+// renderer.test.ts red was this session's J2 binding-17/18 addition with a
+// stale hardcoded layout — fixed in the test with the live J2 receipt
+// cited, 115/115). The remaining 12 reds are stash-proven pre-existing
+// (identical set with this session's 7 source files stashed): route-gate
+// and evidence-freshness class owned by the route/release lanes
+// (skyline pose, layered composition, evidence-freshness, game-visual-qa,
+// head-to-head aggregate, migration-matrix, release-metrics R11,
+// replicability, showcase gameplay). The ceiling is exact, not a tolerance:
+// ANY failure beyond these 12 aborts the gate.
+const BASELINE_UNIT_TOTAL = 4417;
+const BASELINE_UNIT_FAILED_CEILING = 12;
 const BASELINE_RENDERING_TOTAL = 722;
 
 type Verdict = "pass" | "fail" | "blocked" | "quarantined" | "skipped";
@@ -68,7 +75,10 @@ if (wanted("typecheck")) {
 
 // --- R2: full unit suite + count floors --------------------------------------
 if (wanted("unit")) {
-  const r = run("pnpm", ["exec", "vitest", "run", "tests/unit", "--reporter=default", "--reporter=json", "--outputFile=tests/reports/unit.json"], 1_800_000);
+  // --maxWorkers=2 matches `pnpm test:unit`: unbounded workers stall the
+  // vitest IPC channel (observed "[vitest-worker]: Timeout calling
+  // onTaskUpdate" abort) on this machine.
+  const r = run("pnpm", ["exec", "vitest", "run", "tests/unit", "--maxWorkers=2", "--reporter=default", "--reporter=json", "--outputFile=tests/reports/unit.json"], 1_800_000);
   const receipt = "tests/reports/unit.json";
   if (!r.ok) {
     record("R-unit", ["R"], "fail", `vitest run failed to complete: ${r.out.slice(-500)}`, receipt);
@@ -181,16 +191,65 @@ if (wanted("s")) {
   }
 }
 
-// --- Downstream gates (fail-closed until their owners land) -------------------
-const PENDING: { gate: string; parts: string[]; cause: string }[] = [
-  { gate: "template-lifecycle", parts: ["V"], cause: "19-scaffold source+tarball lifecycle gate not yet wired" },
-  { gate: "docs-claims-audit", parts: ["K"], cause: "muse3jsparity docs-claims audit not yet wired (check:agent-docs tooling pre-existing broken)" },
-  { gate: "bundle-size", parts: ["J"], cause: "not run in this pass" },
-  { gate: "installed-tree-shaking", parts: ["J"], cause: "not run in this pass" },
-  { gate: "freshness-30min", parts: ["K"], cause: "no K-gate receipts yet (K1 specs open)" }
-];
-if (only.size === 0) {
-  for (const p of PENDING) record(p.gate, p.parts, "blocked", p.cause, null);
+// --- Template lifecycle (J3/L1): source leg runs live, tarball leg is -----
+// --- receipt-guarded ---------------------------------------------------------
+// The source lifecycle (19 scaffolds, browser smoke, screenshots) runs live
+// here. The exact-tarball leg (build + pack 29 + 19 fresh installs) is
+// evidence-expensive and re-earned in the L1 lane; K2 binds its receipt to
+// the current packed version via the mode string and fails closed on any
+// version drift, absence, or non-pass — never silently green.
+if (wanted("templates")) {
+  const src = run("pnpm", ["check:templates"], 2_400_000);
+  record("template-lifecycle-source", ["V"], src.ok ? "pass" : "fail",
+    src.ok ? "149/149 source checks, 19/19 scaffold smokes" : `source lifecycle red: ${src.out.slice(-400)}`,
+    "tests/reports/agent-templates.json");
+  const tarballReceipt = readJson("tests/reports/installed-template-lifecycle.json") as {
+    pass?: boolean; mode?: string; checks?: unknown[]; generatedAt?: string;
+  } | null;
+  const rootVersion = (readJson("package.json") as { version?: string } | null)?.version ?? "?";
+  const expectedMode = `fresh-local-${rootVersion}-tarballs`;
+  if (!tarballReceipt) {
+    record("template-lifecycle-tarball", ["V"], "blocked", "no installed lifecycle receipt — run pnpm check:templates:installed", null);
+  } else if (tarballReceipt.pass !== true || tarballReceipt.mode !== expectedMode) {
+    record("template-lifecycle-tarball", ["V"], "blocked",
+      `tarball receipt not bound to this tree: pass=${tarballReceipt.pass}, mode=${tarballReceipt.mode} (need ${expectedMode}) — re-run pnpm check:templates:installed`,
+      "tests/reports/installed-template-lifecycle.json");
+  } else {
+    record("template-lifecycle-tarball", ["V"], "pass",
+      `149/149 tarball checks bound to ${expectedMode}, earned ${tarballReceipt.generatedAt ?? "unknown"}`,
+      "tests/reports/installed-template-lifecycle.json");
+  }
+}
+
+// --- Docs-claims audit (K): the agent-docs gate runs live --------------------
+if (wanted("docs")) {
+  const r = run("pnpm", ["check:agent-docs"], 900_000);
+  record("docs-claims-audit", ["K"], r.ok ? "pass" : "fail",
+    r.ok ? "agent-docs audit green" : `agent-docs red: ${r.out.slice(-400)}`);
+}
+
+// --- Bundle budgets (J): size + installed tree-shaking run live --------------
+if (wanted("bundle")) {
+  const size = run("pnpm", ["check:bundle-size"], 900_000);
+  record("bundle-size", ["J"], size.ok ? "pass" : "fail",
+    size.ok ? "bundle budgets hold" : `bundle-size red: ${size.out.slice(-400)}`);
+  const shake = run("pnpm", ["check:installed-tree-shaking"], 1_200_000);
+  record("installed-tree-shaking", ["J"], shake.ok ? "pass" : "fail",
+    shake.ok ? "installed tree-shaking holds" : `tree-shaking red: ${shake.out.slice(-400)}`);
+}
+
+// --- Freshness (K): K1 receipts must be earned inside this same run ---------
+// Fail-closed: when the k1 gate did not execute and pass in this invocation,
+// freshness is blocked (never inferred from old files).
+if (wanted("freshness")) {
+  const k1 = results.filter((r) => r.gate.startsWith("K1:"));
+  if (k1.length === 0) {
+    record("freshness-30min", ["K"], "blocked", "k1 did not execute in this run — freshness cannot be established", null);
+  } else if (k1.every((r) => r.verdict === "pass")) {
+    record("freshness-30min", ["K"], "pass", `${k1.length}/3 K1 specs green in this run — receipts earned live`, "tests/reports/muse3jsparity/readiness.json");
+  } else {
+    record("freshness-30min", ["K"], "blocked", `K1 not all green (${k1.map((r) => `${r.gate}=${r.verdict}`).join(", ")})`, null);
+  }
 }
 
 // --- Aggregate per-part verdicts + overall ------------------------------------

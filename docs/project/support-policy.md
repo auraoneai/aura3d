@@ -1,6 +1,6 @@
 # Support Policy
 
-Version: 2.0.4
+Version: 3.0.0
 
 ## Supported Surface
 

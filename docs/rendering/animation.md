@@ -128,3 +128,12 @@ to `tests/reports/animation-complete/report.json`. Its underlying receipts are:
 - `tests/reports/threejs-parity/skinning-blending-parity.json`
 - `tests/reports/threejs-parity/skinning-ik-parity.json`
 - `tests/reports/threejs-parity/morphtargets-parity.json`
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN: animation-pointer runtime + scene-state-JSON variant round-trip live
+  re-proven in-run (library-parity K1 "live re-verification", green
+  2026-09-04); the skinning/morph parity receipts above stand unchanged.
+- LOSS: no K1 wall-clock claim on animation paths — the 1.1–1.3 ms
+  directional numbers cover bloom/instancing/lights/particles only
+  (`tests/reports/muse3jsparity/perf.json`).

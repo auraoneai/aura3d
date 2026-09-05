@@ -58,6 +58,7 @@
       <a class="nav-link" href="#templates">Templates</a>
       <a class="nav-link" href="#packages">Platform</a>
       <a class="nav-link" href="#deployment">Deploy</a>
+      <a class="nav-link" href="#release-30">3.0</a>
       <a class="nav-link" href="/llms.txt">Agent&nbsp;context</a>
     </div>
     <div class="nav-actions">
@@ -83,18 +84,18 @@
   <div class="wrap hero-grid">
     <div class="hero-left">
       <span class="hero-tag">
-        <span class="pill">SDK</span>
-        <b>AI-native 3D.</b>
-        <span class="mute">Prompt it. Shape it. Ship it.</span>
+        <span class="pill">3.0 soon</span>
+        <b>Agent-era 3D.</b>
+        <span class="mute">Prompt it. Prove it. Ship it.</span>
       </span>
 
       <h1>
-        The 3D SDK<br />
-        <em>for the next era of software.</em>
+        The browser 3D engine<br />
+        <em>for the agent era.</em>
       </h1>
 
       <p class="hero-lede">
-        Aura3D turns a sentence into an editable browser 3D scene your team can actually own — and its CLI gives your AI agent searchable, license-aware access to a catalog of <b>800,000+ real GLB/glTF assets</b>, so prompts resolve to real models instead of generic grey-box cubes. Primitives, particles, physics, data worlds, cities, characters, materials, and those assets all flow into clean TypeScript with visible checks before release.
+        Aura3D turns a sentence into an editable browser 3D scene your team can actually own — and its CLI gives your AI agent searchable, license-aware access to a catalog of <b>800,000+ real GLB/glTF assets</b>, so prompts resolve to real models instead of generic grey-box cubes. Where a low-level renderer hands your agent raw plumbing and wishes it luck, Aura3D ships one agent-safe API — typed assets, owned physics and navigation — and every route carries machine-checked visual and gameplay evidence before release.
       </p>
 
       <div class="hero-cta">
@@ -219,6 +220,76 @@
       <div><span class="eyebrow">Built to ship</span><h3>Your 3D application stack, already assembled.</h3></div>
       <p>Start above renderer plumbing with typed assets, agent-ready scene composition, maintained scaffolds, Rapier physics, Recast navigation, interaction systems, diagnostics, and deployment checks in one TypeScript workflow.</p>
       <a class="btn btn-primary" href="/docs/agent-quickstart.html">Build your first scene <span class="arr"></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AURA3D 3.0 ───────────────────────────────────────────── -->
+<section class="section-tight" id="release-30" data-search-index="aura3d 3.0 agent era prompt to game verified threejs comparison typed assets rapier recast evidence launch showcase">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">Aura3D 3.0 · in final verification</span>
+        <h2 class="h2">The engine three.js would be <em style="font-family:var(--serif);font-style:italic">if it had been designed for models to drive it.</em></h2>
+        <p class="lede">three.js hands your agent a renderer and wishes it luck: no agent API, no asset pipeline, no correctness proof. Aura3D 3.0 turns a game prompt into a playable, machine-verified browser game — and proves it. 2.0.4 is the current live release across all 29 packages; everything below is what 3.0 adds on top.</p>
+      </div>
+    </div>
+
+    <div class="diag">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">prompt → game API</span>
+          <span class="pass">● agent-safe</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">surface</span> <span class="v ok">one typed API, not renderer plumbing</span></div>
+          <div class="diag-row"><span class="k">authoring</span> <span class="v ok">scenes, models, lights, gameplay in TypeScript</span></div>
+          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">no agent entrypoint; every app hand-wires its own loop</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">typed asset pipeline</span>
+          <span class="pass">● hash-pinned</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">catalog</span> <span class="v ok">800,000+ real GLB/glTF, license-aware</span></div>
+          <div class="diag-row"><span class="k">consumption</span> <span class="v ok">generated keys; invented paths fail closed</span></div>
+          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">raw URLs and loaders; nothing stops a hallucinated path</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">physics + navigation owned</span>
+          <span class="pass">● single owners</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">simulation</span> <span class="v ok">Rapier is the sole physics owner</span></div>
+          <div class="diag-row"><span class="k">crowds</span> <span class="v ok">Recast navigation, arcade motion kept non-physical</span></div>
+          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">no physics, no nav; every project vets its own plugins</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">proof, not vibes</span>
+          <span class="pass">● fail-closed</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">per route</span> <span class="v ok">health, probes, screenshots, gameplay receipts</span></div>
+          <div class="diag-row"><span class="k">freshness</span> <span class="v ok">stale evidence fails the gate, never ships silent</span></div>
+          <div class="diag-row"><span class="k">three.js delta</span> <span class="v">correctness is the developer's problem, every time</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="wwx-source-row" aria-label="Aura3D 3.0 agent-era references" style="margin-top:24px">
+      <a href="/llms.txt">Agent context</a>
+      <a href="/docs/agent-quickstart.html">Agent quickstart</a>
+      <a href="/docs/api.html">Public API</a>
+      <a href="#templates">Templates</a>
+      <a href="/apps/showcase-index/">36 live experiences</a>
     </div>
   </div>
 </section>

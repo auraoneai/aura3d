@@ -29,6 +29,12 @@ export interface TurboHudElements {
   /** TDC-A1 additive ghost controls. */
   ghostState: HTMLElement;
   ghostBest: HTMLElement;
+  /** Live contact telemetry readout (chassis Y vs visible road Y). */
+  chassisY: HTMLElement;
+  roadY: HTMLElement;
+  deltaY: HTMLElement;
+  wheels: HTMLElement;
+  held: HTMLElement;
 }
 
 export interface TurboHudUpdateInput {
@@ -44,6 +50,11 @@ export interface TurboHudUpdateInput {
   readonly ghostAvailable: boolean;
   readonly ghostEnabled: boolean;
   readonly ghostBestLabel: string;
+  readonly chassisY: number;
+  readonly roadY: number;
+  readonly deltaY: number;
+  readonly wheels: number;
+  readonly poseHeld: boolean;
 }
 
 export function requireHudElement(id: string): HTMLElement {
@@ -71,7 +82,12 @@ export function bindTurboHudElements(): TurboHudElements {
     debugSection: document.getElementById("debug-section"),
     alignment: requireHudElement("alignment-value"),
     ghostState: requireHudElement("ghost-state-value"),
-    ghostBest: requireHudElement("ghost-best-value")
+    ghostBest: requireHudElement("ghost-best-value"),
+    chassisY: requireHudElement("contact-chassis-value"),
+    roadY: requireHudElement("contact-road-value"),
+    deltaY: requireHudElement("contact-delta-value"),
+    wheels: requireHudElement("contact-wheels-value"),
+    held: requireHudElement("contact-held-value")
   };
 }
 
@@ -108,6 +124,13 @@ export function renderTurboHudPanel(debugMode: boolean): string {
       <article class="metric metric--compact"><span>Last</span><strong id="last-lap-value">--:--.--</strong></article>
       <article class="metric metric--compact"><span>Best</span><strong id="best-lap-value">--:--.--</strong></article>
       <article class="metric metric--compact"><span>Track</span><strong id="track-state-value">On track</strong></article>
+    </section>
+    <section class="lap-times" aria-label="Contact telemetry">
+      <article class="metric metric--compact"><span>Chassis Y</span><strong id="contact-chassis-value">--</strong></article>
+      <article class="metric metric--compact"><span>Road Y</span><strong id="contact-road-value">--</strong></article>
+      <article class="metric metric--compact"><span>Delta</span><strong id="contact-delta-value">--</strong></article>
+      <article class="metric metric--compact"><span>Wheels</span><strong id="contact-wheels-value">--</strong></article>
+      <article class="metric metric--compact"><span>Held</span><strong id="contact-held-value">live</strong></article>
     </section>
     <section class="lap-times" aria-label="Time-trial ghost">
       <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
@@ -172,6 +195,12 @@ export function updateTurboHud(hud: TurboHudElements, input: TurboHudUpdateInput
   // TDC-A1 additive ghost controls.
   hud.ghostState.textContent = input.ghostAvailable && input.ghostEnabled ? "Ghost ON" : "Ghost OFF";
   hud.ghostBest.textContent = input.ghostAvailable ? input.ghostBestLabel : "--:--.--";
+
+  hud.chassisY.textContent = Number.isFinite(input.chassisY) ? input.chassisY.toFixed(3) : "--";
+  hud.roadY.textContent = Number.isFinite(input.roadY) ? input.roadY.toFixed(3) : "--";
+  hud.deltaY.textContent = Number.isFinite(input.deltaY) ? input.deltaY.toFixed(3) : "--";
+  hud.wheels.textContent = `${input.wheels}/4`;
+  hud.held.textContent = input.poseHeld ? "held" : "live";
 
   if (input.debugMode && hud.debugSection) {
     hud.debugSection.hidden = false;

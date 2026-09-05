@@ -53884,7 +53884,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Lee Alex Johansson",
         "sha256": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
         "retrievedAt": "2026-06-17T19:03:07.418Z",
-        "checkedAt": "2026-07-31T08:54:13.877Z"
+        "checkedAt": "2026-06-17T19:03:07.418Z"
       },
       "sourcePath": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
       "outputPath": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
@@ -53935,11 +53935,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-06-22T03:36:27.318Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCityVehicle",
         "renderedProbe": {
-          "url": "tests/reports/showcase-release-asset-probes/showcaseCityVehicle.png",
-          "sha256": "sha256-99f176494ebf3b7e01e2ef2d94e81ae4a3e247ac6a903facd185c35b409e38c4",
+          "url": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
+          "sha256": "sha256-ed3fce6ab1cda9c528a5b929d91874bbb073af75f49bc1fd3ba63bd20e4b681a",
           "assetHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
-          "checkedAt": "2026-07-31T08:51:16.166Z",
-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCityVehicle"
+          "checkedAt": "2026-09-04T22:52:43.813Z",
+          "route": "/apps/showcase-smart-city-control/"
         }
       },
       "nodeNames": [
@@ -53960,22 +53960,22 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "vehicle",
       "suitabilityReason": "Smart City Control primary vehicle with durable Objaverse provenance, CC-BY-4.0 license, four texture references, readable material metadata, retained route-primary evidence, isolated release probe foreground proof, and route-normalized placement as the single typed hero vehicle.",
       "renderedProbe": {
-        "url": "tests/reports/showcase-release-asset-probes/showcaseCityVehicle.png",
+        "url": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
         "kind": "browser-screenshot",
-        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCityVehicle",
-        "sha256": "sha256-99f176494ebf3b7e01e2ef2d94e81ae4a3e247ac6a903facd185c35b409e38c4",
+        "renderer": "@aura3d/engine createAuraApp route-primary probe",
+        "route": "/apps/showcase-smart-city-control/",
+        "sha256": "sha256-ed3fce6ab1cda9c528a5b929d91874bbb073af75f49bc1fd3ba63bd20e4b681a",
         "assetHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
-        "width": 752,
-        "height": 600,
-        "nonBlankPixels": 451085,
-        "colorBuckets": 48,
-        "checkedAt": "2026-07-31T08:51:16.166Z",
+        "width": 1440,
+        "height": 900,
+        "nonBlankPixels": 1296000,
+        "colorBuckets": 172,
+        "checkedAt": "2026-09-04T22:52:43.813Z",
         "foregroundBounds": {
-          "x": 251,
-          "y": 226,
-          "width": 250,
-          "height": 177
+          "x": 524,
+          "y": 209,
+          "width": 589,
+          "height": 571
         }
       },
       "gameGeometry": {
@@ -58209,9 +58209,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-b46d92b219f013a78ced44e6675c8eadc84b9c6ecd824a24726f1edb1878c762",
+          "sha256": "sha256-f4592c679dd72f1d5b072abd1b3bf4151591319eb160722d1449166c1825b617",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-09-02T22:28:53.126Z",
+          "checkedAt": "2026-09-04T19:13:46.334Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -58238,18 +58238,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-b46d92b219f013a78ced44e6675c8eadc84b9c6ecd824a24726f1edb1878c762",
+        "sha256": "sha256-f4592c679dd72f1d5b072abd1b3bf4151591319eb160722d1449166c1825b617",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
         "nonBlankPixels": 1296000,
-        "colorBuckets": 74,
-        "checkedAt": "2026-09-02T22:28:53.126Z",
+        "colorBuckets": 75,
+        "checkedAt": "2026-09-04T19:13:46.334Z",
         "foregroundBounds": {
           "x": 521,
           "y": 293,
           "width": 485,
-          "height": 427
+          "height": 428
         }
       }
     },
@@ -70085,11 +70085,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-06-22T22:40:57.393Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
         "renderedProbe": {
-          "url": "tests/reports/showcase-release-asset-probes/showcaseParticleCore.png",
-          "sha256": "sha256-66b5258982668cbf7a9bd16e732b46b06abe4df6c80bce331e6e963e980ce3eb",
+          "url": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
+          "sha256": "sha256-ddb9529f694c4fc88af336a67d6264a124bcb511f9eff4bc6af4f0b264291b44",
           "assetHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-          "checkedAt": "2026-08-03T23:21:01.160Z",
-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore"
+          "checkedAt": "2026-09-04T22:52:33.393Z",
+          "route": "/apps/showcase-data-galaxy/"
         }
       },
       "nodeNames": [
@@ -70115,22 +70115,22 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "abstract",
       "suitabilityReason": "Abstract diagnostic data anchor with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, normalized camera-fit release probe foreground proof, and explicit diagnostic non-primary rationale for data/particle internal routes.",
       "renderedProbe": {
-        "url": "tests/reports/showcase-release-asset-probes/showcaseParticleCore.png",
+        "url": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
         "kind": "browser-screenshot",
-        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
-        "sha256": "sha256-66b5258982668cbf7a9bd16e732b46b06abe4df6c80bce331e6e963e980ce3eb",
+        "renderer": "@aura3d/engine createAuraApp route-primary probe",
+        "route": "/apps/showcase-data-galaxy/",
+        "sha256": "sha256-ddb9529f694c4fc88af336a67d6264a124bcb511f9eff4bc6af4f0b264291b44",
         "assetHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-        "width": 752,
-        "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 72,
-        "checkedAt": "2026-08-03T23:21:01.160Z",
+        "width": 1440,
+        "height": 900,
+        "nonBlankPixels": 370799,
+        "colorBuckets": 134,
+        "checkedAt": "2026-09-04T22:52:33.393Z",
         "foregroundBounds": {
-          "x": 231,
-          "y": 177,
-          "width": 276,
-          "height": 421
+          "x": 569,
+          "y": 141,
+          "width": 476,
+          "height": 428
         }
       }
     },
@@ -77064,7 +77064,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "Optimized with Blender decimate ratio 0.65 from the original Objaverse GLB to preserve the industrial workcell while reducing stored GLB size from 35,390,404 bytes to 21,324,208 bytes for release packaging."
         ],
-        "checkedAt": "2026-07-31T08:55:22.423Z"
+        "checkedAt": "2026-06-19T18:39:41.010Z"
       },
       "sourcePath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
       "outputPath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
@@ -77640,11 +77640,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-06-26T00:49:57.057Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell",
         "renderedProbe": {
-          "url": "tests/reports/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.png",
-          "sha256": "sha256-cd8c8b5a0d8edc0f7b8339613eafa83c01d791c4cbced167e936e1e54dbf0b98",
+          "url": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+          "sha256": "sha256-0349a33732f8f2d2a67ba88c688f0e51308ba44d76b6f67849670af907c1f268",
           "assetHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
-          "checkedAt": "2026-07-31T08:44:22.541Z",
-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell"
+          "checkedAt": "2026-09-04T22:53:01.414Z",
+          "route": "/apps/showcase-digital-twin-ops/"
         }
       },
       "nodeNames": [
@@ -77897,22 +77897,22 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "prop",
       "suitabilityReason": "Release optimized industrial workcell prop derived from the Objaverse robotic welding workcell source, kept under the release asset size limit, with retained root rendered-probe proof, material metadata, texture evidence, and camera-fit normalized route placement for the Digital Twin visual operations scene.",
       "renderedProbe": {
-        "url": "tests/reports/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.png",
+        "url": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
         "kind": "browser-screenshot",
-        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell",
-        "sha256": "sha256-cd8c8b5a0d8edc0f7b8339613eafa83c01d791c4cbced167e936e1e54dbf0b98",
+        "renderer": "@aura3d/engine createAuraApp route-primary probe",
+        "route": "/apps/showcase-digital-twin-ops/",
+        "sha256": "sha256-0349a33732f8f2d2a67ba88c688f0e51308ba44d76b6f67849670af907c1f268",
         "assetHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
-        "width": 752,
-        "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 94,
-        "checkedAt": "2026-07-31T08:44:22.541Z",
+        "width": 1440,
+        "height": 900,
+        "nonBlankPixels": 1280811,
+        "colorBuckets": 169,
+        "checkedAt": "2026-09-04T22:53:01.414Z",
         "foregroundBounds": {
-          "x": 127,
-          "y": 175,
-          "width": 480,
-          "height": 269
+          "x": 49,
+          "y": 49,
+          "width": 962,
+          "height": 668
         }
       }
     },
@@ -81505,7 +81505,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Virginia Vidonis",
         "sha256": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
         "retrievedAt": "2026-06-18T01:12:46.047Z",
-        "checkedAt": "2026-07-31T08:55:29.372Z"
+        "checkedAt": "2026-06-18T01:12:46.047Z"
       },
       "sourcePath": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
       "outputPath": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
@@ -82150,11 +82150,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-07-18T17:04:47.707Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity",
         "renderedProbe": {
-          "url": "tests/reports/showcase-release-asset-probes/showcaseSkylineCity.png",
-          "sha256": "sha256-025009004230d0adfb80cf9ff92db2700db431a41b353421b60ab119b548fc34",
+          "url": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+          "sha256": "sha256-54c82597a4a092e914401a1af3ea063bfae9f81cd20891cc05d9d50608abaa18",
           "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
-          "checkedAt": "2026-07-31T08:44:14.807Z",
-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity"
+          "checkedAt": "2026-09-04T22:52:53.376Z",
+          "route": "/apps/showcase-cinematic-architecture/"
         },
         "messages": [
           "Reviewed world view is bound to the current asset hash and retained root probe; no character or vehicle forward axis is claimed."
@@ -83674,22 +83674,22 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "world",
       "suitabilityReason": "Release city world with a mesh-extracted 13.514-unit traversable platform route, normalized camera-fit placement, readable textured materials, broad gameplay footprint, and durable CC-BY provenance.",
       "renderedProbe": {
-        "url": "tests/reports/showcase-release-asset-probes/showcaseSkylineCity.png",
+        "url": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
         "kind": "browser-screenshot",
-        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity",
-        "sha256": "sha256-025009004230d0adfb80cf9ff92db2700db431a41b353421b60ab119b548fc34",
+        "renderer": "@aura3d/engine createAuraApp route-primary probe",
+        "route": "/apps/showcase-cinematic-architecture/",
+        "sha256": "sha256-54c82597a4a092e914401a1af3ea063bfae9f81cd20891cc05d9d50608abaa18",
         "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
-        "width": 752,
-        "height": 600,
-        "nonBlankPixels": 451199,
-        "colorBuckets": 113,
-        "checkedAt": "2026-07-31T08:44:14.807Z",
+        "width": 1440,
+        "height": 900,
+        "nonBlankPixels": 1295962,
+        "colorBuckets": 259,
+        "checkedAt": "2026-09-04T22:52:53.376Z",
         "foregroundBounds": {
-          "x": 156,
-          "y": 194,
-          "width": 443,
-          "height": 345
+          "x": 71,
+          "y": 59,
+          "width": 1005,
+          "height": 614
         }
       },
       "gameGeometry": {

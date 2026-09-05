@@ -303,14 +303,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
+        "screenshotSha256": "sha256-8e8fa9cb5ec90486128625bac5c0b13ff1c45c2205dd8643b21b64028d6af3e2",
         "geometryEvidence": {
           "category": "platformer",
           "kind": "platformer-playable-surface-map",
           "source": "asset-mesh-extracted",
           "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
+          "routePrimaryScreenshotSha256": "sha256-8e8fa9cb5ec90486128625bac5c0b13ff1c45c2205dd8643b21b64028d6af3e2",
           "assets": [
             {
               "id": "skylineArcticRunnerHero",

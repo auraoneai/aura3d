@@ -243,6 +243,12 @@ export interface RenderDeviceDiagnostics {
   } | null;
   readonly nativeEnvironmentBindings?: number;
   readonly nativeShadowMapBindings?: number;
+  /** Cumulative native WebGPU fullscreen bloom passes (muse3jsparity-PRD J2). */
+  readonly nativeBloomPasses?: number;
+  /** Cumulative native WebGPU fullscreen color-grade passes (muse3jsparity-PRD J2). */
+  readonly nativeColorGradePasses?: number;
+  /** Cumulative native WebGPU fullscreen FXAA passes (muse3jsparity-PRD J2). */
+  readonly nativeFxaaPasses?: number;
   /**
    * Cumulative count of shadow depth render targets this device allocated. Live
    * `renderTargets` cannot answer "was a shadow map rendered?" because a shadow

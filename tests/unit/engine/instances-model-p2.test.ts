@@ -55,7 +55,8 @@ describe("P2 root instances.model wiring source", () => {
     assert.equal(diagnostics.estimatedDrawCallsWithInstancing, 8);
     assert.equal(diagnostics.oneDrawClass, false);
     assert.equal(diagnostics.fallbackWarning?.reason, "material-rejects-instancing");
-    assert.match(diagnostics.fallbackWarning?.diagnostic ?? "", /8 instances expanded to 8 draws/);
+    assert.match(diagnostics.fallbackWarning?.diagnostic ?? "", /8 instances requested but the material is not in the instancing-aware registry/);
+    assert.match(diagnostics.fallbackWarning?.diagnostic ?? "", /\(material-rejects-instancing\)/);
   });
 
   test("per-instance color + LOD + culling telemetry ride the node", () => {

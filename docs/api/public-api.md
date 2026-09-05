@@ -13,48 +13,48 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `2.0.4` | `packages/animation/src/index.ts` | 45 |
-| `@aura3d/apps` | `2.0.4` | `packages/apps/src/index.ts` | 10 |
-| `@aura3d/asset-index` | `2.0.4` | `packages/asset-index/src/index.ts` | 32 |
-| `@aura3d/assets` | `2.0.4` | `packages/assets/src/index.ts` | 78 |
-| `@aura3d/assets/gltf-runtime` | `2.0.4` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `2.0.4` | `packages/audio/src/index.ts` | 31 |
-| `@aura3d/cli` | `2.0.4` | `packages/aura3d-cli/src/index.ts` | 36 |
-| `@aura3d/controls` | `2.0.4` | `packages/controls/src/index.ts` | 31 |
-| `@aura3d/core` | `2.0.4` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `2.0.4` | `packages/create-aura3d/src/index.ts` | 10 |
-| `@aura3d/debug` | `2.0.4` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `2.0.4` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor` | `2.0.4` | `packages/editor/src/index.ts` | 1 |
-| `@aura3d/editor-runtime` | `2.0.4` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `2.0.4` | `packages/engine/src/index.ts` | 39 |
-| `@aura3d/environments` | `2.0.4` | `packages/environments/src/index.ts` | 5 |
-| `@aura3d/environments/node` | `2.0.4` | `packages/environments/src/node.ts` | 6 |
-| `@aura3d/input` | `2.0.4` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/lean` | `2.0.4` | `packages/lean/src/index.ts` | 2 |
-| `@aura3d/lean/game` | `2.0.4` | `packages/lean/src/game.ts` | 20 |
-| `@aura3d/lean/product` | `2.0.4` | `packages/lean/src/product.ts` | 2 |
-| `@aura3d/materials` | `2.0.4` | `packages/materials/src/index.ts` | 1 |
-| `@aura3d/materials/node` | `2.0.4` | `packages/materials/src/node.ts` | 3 |
-| `@aura3d/math` | `2.0.4` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/navigation-recast` | `2.0.4` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `2.0.4` | `packages/physics/src/index.ts` | 22 |
-| `@aura3d/physics-rapier` | `2.0.4` | `packages/physics-rapier/src/index.ts` | 18 |
-| `@aura3d/physics/solverless` | `2.0.4` | `packages/physics/src/solverless.ts` | 13 |
-| `@aura3d/physics/world` | `2.0.4` | `packages/physics/src/world.ts` | 2 |
-| `@aura3d/product-studio` | `2.0.4` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `2.0.4` | `packages/react/src/index.ts` | 37 |
-| `@aura3d/rendering` | `2.0.4` | `packages/rendering/src/index.ts` | 304 |
-| `@aura3d/rendering/lean-runtime` | `2.0.4` | `packages/rendering/src/lean-runtime.ts` | 10 |
-| `@aura3d/rendering/webgpu` | `2.0.4` | `packages/rendering/src/webgpu.ts` | 2 |
-| `@aura3d/scene` | `2.0.4` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `2.0.4` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/three-compat` | `2.0.4` | `packages/three-compat/src/index.ts` | 33 |
-| `@aura3d/workflows` | `2.0.4` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `3.0.0` | `packages/animation/src/index.ts` | 45 |
+| `@aura3d/apps` | `3.0.0` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/asset-index` | `3.0.0` | `packages/asset-index/src/index.ts` | 32 |
+| `@aura3d/assets` | `3.0.0` | `packages/assets/src/index.ts` | 78 |
+| `@aura3d/assets/gltf-runtime` | `3.0.0` | `packages/assets/src/gltf-runtime.ts` | 4 |
+| `@aura3d/audio` | `3.0.0` | `packages/audio/src/index.ts` | 31 |
+| `@aura3d/cli` | `3.0.0` | `packages/aura3d-cli/src/index.ts` | 36 |
+| `@aura3d/controls` | `3.0.0` | `packages/controls/src/index.ts` | 31 |
+| `@aura3d/core` | `3.0.0` | `packages/core/src/index.ts` | 14 |
+| `create-aura3d` | `3.0.0` | `packages/create-aura3d/src/index.ts` | 10 |
+| `@aura3d/debug` | `3.0.0` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `3.0.0` | `packages/ecs/src/index.ts` | 25 |
+| `@aura3d/editor` | `3.0.0` | `packages/editor/src/index.ts` | 1 |
+| `@aura3d/editor-runtime` | `3.0.0` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/engine` | `3.0.0` | `packages/engine/src/index.ts` | 39 |
+| `@aura3d/environments` | `3.0.0` | `packages/environments/src/index.ts` | 5 |
+| `@aura3d/environments/node` | `3.0.0` | `packages/environments/src/node.ts` | 6 |
+| `@aura3d/input` | `3.0.0` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/lean` | `3.0.0` | `packages/lean/src/index.ts` | 2 |
+| `@aura3d/lean/game` | `3.0.0` | `packages/lean/src/game.ts` | 20 |
+| `@aura3d/lean/product` | `3.0.0` | `packages/lean/src/product.ts` | 2 |
+| `@aura3d/materials` | `3.0.0` | `packages/materials/src/index.ts` | 1 |
+| `@aura3d/materials/node` | `3.0.0` | `packages/materials/src/node.ts` | 3 |
+| `@aura3d/math` | `3.0.0` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/navigation-recast` | `3.0.0` | `packages/navigation-recast/src/index.ts` | 16 |
+| `@aura3d/physics` | `3.0.0` | `packages/physics/src/index.ts` | 22 |
+| `@aura3d/physics-rapier` | `3.0.0` | `packages/physics-rapier/src/index.ts` | 18 |
+| `@aura3d/physics/solverless` | `3.0.0` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `3.0.0` | `packages/physics/src/world.ts` | 2 |
+| `@aura3d/product-studio` | `3.0.0` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/react` | `3.0.0` | `packages/react/src/index.ts` | 37 |
+| `@aura3d/rendering` | `3.0.0` | `packages/rendering/src/index.ts` | 304 |
+| `@aura3d/rendering/lean-runtime` | `3.0.0` | `packages/rendering/src/lean-runtime.ts` | 10 |
+| `@aura3d/rendering/webgpu` | `3.0.0` | `packages/rendering/src/webgpu.ts` | 2 |
+| `@aura3d/scene` | `3.0.0` | `packages/scene/src/index.ts` | 21 |
+| `@aura3d/scripting` | `3.0.0` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/three-compat` | `3.0.0` | `packages/three-compat/src/index.ts` | 33 |
+| `@aura3d/workflows` | `3.0.0` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -110,7 +110,7 @@ export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility
 
 ## @aura3d/apps
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -131,7 +131,7 @@ export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp>
 
 ## @aura3d/asset-index
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/asset-index/package.json`
 - Public entrypoint: `packages/asset-index/src/index.ts`
 
@@ -174,7 +174,7 @@ export function defaultAdapters(): SourceAdapter[] { return [ createAnimationSta
 
 ## @aura3d/assets
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -263,7 +263,7 @@ export * from "./TextureStreaming.js";
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/gltf-runtime.ts`
 
@@ -278,7 +278,7 @@ export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTF
 
 ## @aura3d/audio
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -320,7 +320,7 @@ export { ReverbEffect } from "./effects/Reverb";
 
 ## @aura3d/cli
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/aura3d-cli/package.json`
 - Public entrypoint: `packages/aura3d-cli/src/index.ts`
 
@@ -367,7 +367,7 @@ export function initAgentFiles(options: { readonly projectDir?: string; readonly
 
 ## @aura3d/controls
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -409,7 +409,7 @@ export type { ThreeCompatControlEvent, ThreeCompatControlState } from "./Control
 
 ## @aura3d/core
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -434,7 +434,7 @@ export * from "./VersionedSerialization.js";
 
 ## create-aura3d
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/create-aura3d/package.json`
 - Public entrypoint: `packages/create-aura3d/src/index.ts`
 
@@ -455,7 +455,7 @@ export { SHOWCASE_ASSET_PAIR_COMPOSITION_THRESHOLDS, validateShowcaseAssetPairCo
 
 ## @aura3d/debug
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -496,7 +496,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @aura3d/ecs
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -532,7 +532,7 @@ export * from "./systems/index.js";
 
 ## @aura3d/editor
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/editor/package.json`
 - Public entrypoint: `packages/editor/src/index.ts`
 
@@ -544,7 +544,7 @@ export * from "@aura3d/editor-runtime";
 
 ## @aura3d/editor-runtime
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -637,7 +637,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @aura3d/engine
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -687,7 +687,7 @@ export function createDiagnosticsPanel(initial: { readonly render?: RenderDevice
 
 ## @aura3d/environments
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/environments/package.json`
 - Public entrypoint: `packages/environments/src/index.ts`
 
@@ -703,7 +703,7 @@ export type { ThreeCompatEnvironmentDiagnostics, ThreeCompatEnvironmentKind, Thr
 
 ## @aura3d/environments/node
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/environments/package.json`
 - Public entrypoint: `packages/environments/src/node.ts`
 
@@ -720,7 +720,7 @@ export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvir
 
 ## @aura3d/input
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -779,7 +779,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @aura3d/lean
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/lean/package.json`
 - Public entrypoint: `packages/lean/src/index.ts`
 
@@ -792,7 +792,7 @@ export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreate
 
 ## @aura3d/lean/game
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/lean/package.json`
 - Public entrypoint: `packages/lean/src/game.ts`
 
@@ -823,7 +823,7 @@ export const game = { input: createLeanGameInput, platformer: createLeanPlatform
 
 ## @aura3d/lean/product
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/lean/package.json`
 - Public entrypoint: `packages/lean/src/product.ts`
 
@@ -836,7 +836,7 @@ export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreate
 
 ## @aura3d/materials
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/materials/package.json`
 - Public entrypoint: `packages/materials/src/index.ts`
 
@@ -848,7 +848,7 @@ export * from "./browser-index.js";
 
 ## @aura3d/materials/node
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/materials/package.json`
 - Public entrypoint: `packages/materials/src/node.ts`
 
@@ -862,7 +862,7 @@ export type { GameReadyMaterialLibraryValidation, GameReadyMaterialValidationRes
 
 ## @aura3d/math
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -891,7 +891,7 @@ export * from "./Curves.js";
 
 ## @aura3d/navigation-recast
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/navigation-recast/package.json`
 - Public entrypoint: `packages/navigation-recast/src/index.ts`
 
@@ -918,7 +918,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
 
 ## @aura3d/physics
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -951,7 +951,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @aura3d/physics-rapier
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/physics-rapier/package.json`
 - Public entrypoint: `packages/physics-rapier/src/index.ts`
 
@@ -980,7 +980,7 @@ export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "mod
 
 ## @aura3d/physics/solverless
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/solverless.ts`
 
@@ -1004,7 +1004,7 @@ export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from ".
 
 ## @aura3d/physics/world
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/world.ts`
 
@@ -1017,7 +1017,7 @@ export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection,
 
 ## @aura3d/product-studio
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -1040,7 +1040,7 @@ export type * from "./ProductShowcaseLayout";
 
 ## @aura3d/react
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/react/package.json`
 - Public entrypoint: `packages/react/src/index.ts`
 
@@ -1088,7 +1088,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ## @aura3d/rendering
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -1403,7 +1403,7 @@ export * from "./animation/index.js";
 
 ## @aura3d/rendering/lean-runtime
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/lean-runtime.ts`
 
@@ -1424,7 +1424,7 @@ export type { ProductionImportedAssetRenderMetadata, ProductionRendererInput } f
 
 ## @aura3d/rendering/webgpu
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/webgpu.ts`
 
@@ -1437,7 +1437,7 @@ export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, W
 
 ## @aura3d/scene
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -1469,7 +1469,7 @@ export * from "./SceneSerializer.js";
 
 ## @aura3d/scripting
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -1519,7 +1519,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @aura3d/three-compat
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/three-compat/package.json`
 - Public entrypoint: `packages/three-compat/src/index.ts`
 
@@ -1563,7 +1563,7 @@ export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibil
 
 ## @aura3d/workflows
 
-- Version: `2.0.4`
+- Version: `3.0.0`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 

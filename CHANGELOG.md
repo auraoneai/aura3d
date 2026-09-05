@@ -1,6 +1,18 @@
 # Changelog
 
-Version: 2.0.4
+Version: 3.0.0
+
+## 3.0.0 (2026-09-05, candidate — K2/publish gates pending, see docs/project/aura3d-300-release-notes.md)
+
+Agent-era major: the public API surface, parity evidence, and claim boundaries accumulated since 2.0, coordinated across root + 28 packages:
+
+- root `createAuraApp` API additions since 2.0 (prompt→game/animation builders, game feel, camera rigs, vehicle chassis/driver AI, platformer rigs, GPU particles, SDF text, navmesh crowds, visual-scripting catalog, editor surface) with per-part browser evidence where Parts A–K record green and bounded wording where they do not;
+- rendering package proofs (native fused LDR postprocess, bloom pyramid + presets, exact sRGB OETF, anisotropic-GGX, CSM/PCF shadows, GGX PMREM IBL) with shader-reference vectors pinning the math;
+- three.js comparison stays bounded: repository-locked `three@0.185.1` head-to-head reports only, no universal superiority claim (see docs/project/aura3d-300-release-notes.md non-claims);
+- showcase routes remain individually gated: machine-green routes are still promotion-blocked until hash-bound independent human review covers their exact final artifacts;
+- production-runtime, physics, and ecosystem claims unchanged except where K evidence records receipts.
+
+## 2.0.4 (2026-09-02)
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.4` is the coordinated Meshy CLI asset-pipeline patch across all 29 public packages; `2.0.3`, `2.0.2`, `2.0.1`, and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 

@@ -78,3 +78,10 @@ The command verifies the online current Three.js baseline, builds the workspace,
 runs 19 focused unit tests, runs eight browser tests, and writes a 12/12
 aggregate report to
 `tests/reports/controls-picking-xr-context/report.json`.
+
+## Superiority (K1 · 2026-09-04)
+
+- No win claimed: the library K1 matrix records an explicit GAP for
+  **controls → N2/F1**. The unit + browser coverage above is correctness
+  proof for what exists, not a superiority claim over three.js controls
+  (`tests/reports/muse3jsparity/matrix-check.json` `gapAreas`).

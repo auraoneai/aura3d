@@ -80,3 +80,14 @@ marketing claim until a browser screenshot proves the pixels for that feature.
 
 `app.diagnostics().renderer?.materialCapabilities` exposes the same report for
 materials actually present in the mounted scene.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN: same-scene Aura-vs-r185 captures earned in-run (see
+  `pbr-gltf-correctness.md` Superiority for receipt paths); the library K1
+  matrix maps 750 three.js source files + 425 jsm + 61 TSL files with every
+  GAP owned and every OUT reasoned
+  (`tests/reports/muse3jsparity/matrix-check.json`).
+- LOSS: the capture pair carries the disclosed material-response delta; the
+  matrix still records PARTIAL 15 / GAP 4 (controls→N2/F1, objects→B4/D3,
+  render-bundles→J2, lights→Q1.6/B5) — none of those rows are claimed here.

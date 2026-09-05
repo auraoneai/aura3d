@@ -48,3 +48,11 @@ and exponential-squared fog have deterministic
 WebGL2 object-pixel and screenshot proof; that evidence does not establish volumetric
 scattering, physical atmosphere, automatic preset attachment, or root `createAuraApp`
 support.
+
+## Superiority (K1 · 2026-09-04)
+
+- WIN: spot-light + HDRI-environment root proof live re-verified in-run
+  (library-parity K1, `tests/browser/library-parity-superiority.spec.ts`
+  "live re-verification", green 2026-09-04).
+- LOSS: planar reflections (B4) retain no per-part files — live capture plus
+  fresh mirror only; volumetrics and atmosphere stay unclaimed as above.

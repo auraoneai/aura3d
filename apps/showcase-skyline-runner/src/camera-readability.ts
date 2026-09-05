@@ -36,10 +36,22 @@ export function skylineCameraTuning(compactViewport: boolean): SkylineCameraTuni
       }
     : {
         viewport: "desktop",
-        // 3.55 (from 3.75): the hero sat exactly on the 96px route-primary
-        // width floor; +5% scale buys real margin and a slightly more heroic
-        // frame without returning to the over-zoomed mascot look at 3.2.
-        distance: 3.55,
+        // 2.5 (from 3.55): the retained route-primary probe measures the
+        // settled hero at 75x179 against minForegroundWidth 96 (reproduced
+        // with the repo's own difference metrics: 6262px, density 0.47, not
+        // clipped -- genuinely small, not a measurement artefact). Apparent
+        // size scales ~1/distance, so 3.55 -> 2.5 predicts ~107px and clears
+        // the floor with real margin. The old 3.2 "oversized mascot" verdict
+        // does not transfer: it described a larger-hero era (hero filled the
+        // frame at 3.2); the current asset measures 75px at 3.55, and ~107px
+        // is ~7% of frame width. Height scales along (179 -> ~254, floor 72,
+        // bounds stay central so no clip risk).
+        // VERIFIED 2026-09-05 via retained probe (two consecutive runs,
+        // bit-identical): settled hero measures 106x248 against projection
+        // 221.48px, width floor 96 cleared with margin. Consequence: the
+        // pose-determinism height bound moved 1.1 -> 1.15 (systematic
+        // close-camera geometry, not phase — see the determinism test).
+        distance: 2.5,
         height: 0.6,
         lookAhead: 0.42,
         targetHeight: 0.34,

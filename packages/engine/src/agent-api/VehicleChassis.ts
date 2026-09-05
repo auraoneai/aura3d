@@ -393,8 +393,31 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     });
     const meanGrip = samples.reduce((sum, entry) => sum + (entry.sample.grip ?? 1), 0) / samples.length;
 
+    /*
+     * An explicit miss (`hit === false`) carries the query's fallback height, which
+     * for a mesh query is the lowest vertex in the whole track -- not a surface.
+     * Nothing below may treat that number as ground: wheels with no surface hang,
+     * and the body is supported only by wheels that hit. Surfaces without a hit
+     * flag (flat test planes, analytic slopes) keep the previous behaviour.
+     */
+    const missingSurface = samples.map((entry) => entry.sample.hit === false);
+    const supportedHeights: number[] = [];
+
     const cornerHeights: number[] = [];
-    const wheels: VehicleWheelPose[] = samples.map(({ wheel, point, sample }) => {
+    const wheels: VehicleWheelPose[] = samples.map(({ wheel, point, sample }, sampleIndex) => {
+      if (missingSurface[sampleIndex]) {
+        cornerHeights.push(Number.NaN);
+        const spring = compression.get(wheel.id) ?? { value: 0.5, velocity: 0 };
+        return {
+          id: wheel.id,
+          position: [point.x, Number.NaN, point.z] as unknown as VehicleVec3,
+          steerAngle: wheel.steered ? steerInput * resolved.maxSteerAngle : 0,
+          spin,
+          compression: spring.value,
+          grounded: false,
+          contactGap: 0
+        };
+      }
       const spring = compression.get(wheel.id) ?? { value: 0.5, velocity: 0 };
       /*
        * Target compression from load transfer. A front wheel (`forward > 0`) compresses
@@ -426,6 +449,7 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
       const cornerY = wheelCentreY - resolved.wheelRadius + resolved.rideHeight
         - (spring.value - 0.5) * resolved.suspensionTravel;
       cornerHeights.push(cornerY);
+      supportedHeights.push(cornerY);
       return {
         id: wheel.id,
         position: [point.x, wheelCentreY, point.z] as VehicleVec3,
@@ -445,8 +469,19 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      * Measured against the body: if a corner would have to sit further above its wheel
      * than ride height plus full travel, the wheel has run out of extension and hangs.
      */
-    const bodyY = cornerHeights.reduce((sum, value) => sum + value, 0) / cornerHeights.length;
     const maxReach = resolved.rideHeight + resolved.suspensionTravel * 0.5;
+    /*
+     * The body rests on supported corners only. Averaging in a fallback height
+     * dragged the whole car toward the bottom of the mesh whenever two or more
+     * wheels missed a sparse seam at once; with every corner missed the mean
+     * equalled the fallback and the car rendered at rock bottom while reporting
+     * itself grounded. With no support at all, hold the previous body height so
+     * a mesh gap reads as a hold, not a dive.
+     */
+    const heldBodyY = currentPose?.position[1];
+    const bodyY = supportedHeights.length > 0
+      ? supportedHeights.reduce((sum, value) => sum + value, 0) / supportedHeights.length
+      : (heldBodyY ?? cornerHeights.reduce((sum, value) => sum + (Number.isFinite(value) ? value : 0), 0) / cornerHeights.length);
 
     /*
      * Which wheels can the body actually rest on?
@@ -465,17 +500,34 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      *    into it.
      *
      * The physical model is a rigid body resting on the wheels it can reach. The support
-     * height is the *median* of the corner heights rather than the mean: a median ignores
-     * one corner that has fallen into a hole, where a mean is dragged down by it. With
-     * four corners the median is the average of the middle two, which also keeps the value
-     * stable as the car rocks.
+     * height is the *median* of the supported corner heights rather than the mean, and
+     * corners with no surface under them are excluded entirely: their sample height
+     * is the query fallback (the mesh's lowest vertex), not a measurement, and even
+     * the median is dragged down once two wheels miss the same seam.
      */
-    const sortedCorners = [...cornerHeights].sort((left, right) => left - right);
-    const supportY = sortedCorners.length === 4
-      ? (sortedCorners[1]! + sortedCorners[2]!) / 2
-      : bodyY;
+    const sortedSupported = [...supportedHeights].sort((left, right) => left - right);
+    // With no supported corner there is no measured support plane; hang the wheels
+    // off the held body so the whole pose freezes instead of falling to fallback.
+    const heldSupportY = (currentPose?.groundedPosition[1] ?? bodyY - maxReach) + maxReach;
+    const supportY = sortedSupported.length > 0
+      ? (sortedSupported.length % 2 === 1
+        ? sortedSupported[Math.floor(sortedSupported.length / 2)]!
+        : (sortedSupported[sortedSupported.length / 2 - 1]! + sortedSupported[sortedSupported.length / 2]!) / 2)
+      : heldSupportY;
 
     const resolvedWheels: VehicleWheelPose[] = wheels.map((wheel, index) => {
+      if (missingSurface[index]) {
+        // No surface under this wheel: hang it at full extension below the
+        // supported body. The gap is unknown, so report the extension itself --
+        // grounded:false with a positive gap stays a coherent pair.
+        return {
+          ...wheel,
+          position: [wheel.position[0], supportY - maxReach + resolved.wheelRadius, wheel.position[2]] as VehicleVec3,
+          compression: 0,
+          grounded: false,
+          contactGap: maxReach
+        };
+      }
       const sample = samples[index]!.sample;
       const requiredDrop = supportY - sample.height;
       if (requiredDrop <= maxReach + resolved.contactTolerance) return wheel;
@@ -505,7 +557,6 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      * three supported corners, the missing corner is the planar continuation of the
      * other three; with fewer, use the supported median rather than inventing a slope.
      */
-    const missingSurface = samples.map((entry) => entry.sample.hit === false);
     const supportedCornerHeights = supportPlaneValues(cornerHeights, missingSurface);
     const supportedSurfaceHeights = supportPlaneValues(
       samples.map((entry) => entry.sample.height),
@@ -555,6 +606,12 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     // produces a negative roll and steering left a positive one.
     const totalRoll = Math.asin(clamp((leftHeight - rightHeight) / Math.max(1e-6, resolved.trackWidth), -1, 1));
     roll = surfaceRoll + clamp(totalRoll - surfaceRoll, -resolved.maxRoll, resolved.maxRoll);
+    if (supportedHeights.length === 0 && currentPose) {
+      // No measured surface anywhere under the car: the support-plane fill above
+      // resolves to zero, which would snap the body level. Hold the last attitude.
+      pitch = currentPose.rotation[0];
+      roll = currentPose.rotation[2];
+    }
 
     // Rolling rotation from distance travelled. A stationary car's wheels must not
     // spin, and a fast car's must, which is what makes motion legible.
@@ -565,8 +622,15 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     const averageCompression = spunWheels.reduce((sum, wheel) => sum + wheel.compression, 0) / spunWheels.length;
     const maxContactGap = Math.max(...spunWheels.map((wheel) => wheel.contactGap));
 
-    // Lowest contact patch across the four wheels: where a grounded model sits.
-    const contactPlaneY = Math.min(...resolvedWheels.map((wheel) => wheel.position[1] - resolved.wheelRadius));
+    // Lowest contact patch across the supported wheels: where a grounded model
+    // sits. Hanging wheels dangle below support and must not set the plane;
+    // with no support at all, hold the last plane instead of the fallback depth.
+    const supportedPatches = resolvedWheels
+      .filter((_wheel, index) => !missingSurface[index])
+      .map((wheel) => wheel.position[1] - resolved.wheelRadius);
+    const contactPlaneY = supportedPatches.length > 0
+      ? Math.min(...supportedPatches)
+      : (currentPose?.groundedPosition[1] ?? Math.min(...resolvedWheels.map((wheel) => wheel.position[1] - resolved.wheelRadius)));
     currentPose = {
       position: [state.x, bodyY, state.z],
       groundedPosition: [state.x, contactPlaneY, state.z],
