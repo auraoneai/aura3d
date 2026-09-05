@@ -1,0 +1,45 @@
+name: Native WebGPU Adapter Probe 3.0.1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/native-webgpu-probe-301]
+    paths:
+      - .github/workflows/native-webgpu-probe-301.yml
+      - tools/native-webgpu-probe/**
+
+permissions:
+  contents: read
+
+jobs:
+  adapter:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/native-webgpu-probe
+          lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser probe
+        run: |
+          mkdir -p "$RUNNER_TEMP/native-webgpu-probe"
+          cp tools/native-webgpu-probe/probe.mjs "$RUNNER_TEMP/native-webgpu-probe/probe.mjs"
+          cd "$RUNNER_TEMP/native-webgpu-probe"
+          npm install --ignore-scripts --no-audit --no-fund --package-lock playwright@1.59.1
+          ./node_modules/.bin/playwright install chromium
+      - name: Capture native adapter and compute evidence
+        env:
+          PROBE_OUTPUT: ${{ runner.temp }}/native-webgpu-probe/evidence
+        run: node "$RUNNER_TEMP/native-webgpu-probe/probe.mjs"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-webgpu-adapter-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-webgpu-probe/evidence/
+            ${{ runner.temp }}/native-webgpu-probe/package-lock.json
+          if-no-files-found: error
+          retention-days: 14
