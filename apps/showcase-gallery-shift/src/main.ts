@@ -841,7 +841,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL, backend: "sdf" })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
       .toJSON(),
@@ -851,11 +851,11 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .scale([1.5, 1.5, 0.12])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL, backend: "sdf" })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.46, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL, backend: "sdf" })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
@@ -877,7 +877,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         .scale([0.82, 0.82, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.42, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL, backend: "sdf" })
         .position(0, -20, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
         .toJSON()
@@ -1061,11 +1061,14 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany([
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
-      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
+      effects.antiAlias({ mode: "fxaa" }),
       lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.06 : 0.38 }),
       lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 0.4 : 1.05 }),
       lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
+      lights.spot({ name: "rotunda guard spotlight", position: [-8.5, 2.6, 4.5], target: [-4, 0, 1], angle: 0.5, penumbra: 0.6, distance: 18, decay: 2, intensity: 2.2, color: "#ffd58a", shadow: true }),
       lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
       lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
       lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
@@ -1112,6 +1115,10 @@ function buildScene(): ReturnType<typeof scene> {
 // ---------------------------------------------------------------- mount ------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260916,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       moveUp: ["KeyW", "ArrowUp"],
@@ -1125,7 +1132,7 @@ const gameApp = createGameApp("#app", {
       restart: ["KeyR"]
     },
     bufferMs: 80,
-    gamepad: false,
+    gamepad: true,
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },

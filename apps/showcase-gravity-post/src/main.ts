@@ -1175,7 +1175,9 @@ for (let index = 0; index < FLYBY_DRONES; index += 1) {
 }
 
 sceneBuilder = sceneBuilder
-  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true }))
+  .add(effects.neonBloom({ name: "gravity route glow", intensity: 0.18, threshold: 0.62, maxIntensity: 0.9, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+  .add(effects.antiAlias({ mode: "fxaa" }))
   // Keep enough cool fill for the board while allowing the freight district's
   // graphite/alloy/rust material groups to retain real value separation in the
   // review lens. A warm opposing directional reveals bevels and parcel edges.
@@ -1232,7 +1234,9 @@ const app = createAuraApp("#app", {
   diagnostics: { overlay: false },
   physics: {
     layers: createCollisionLayers({ pod: ["dock"], dock: ["pod"] }),
-    gravity: [0, 0, 0]
+    gravity: [0, 0, 0],
+    seed: 20260914,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
   },
   scene: sceneBuilder.camera(visualReviewCapture ? camera.perspective({
     // Anchor the evidence lens to the immutable Rust -> Gale route instead of

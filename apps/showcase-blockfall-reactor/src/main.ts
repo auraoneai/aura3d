@@ -281,7 +281,7 @@ const inputOptions = {
     reset: ["KeyR"]
   },
   bufferMs: 120,
-  gamepad: false,
+  gamepad: true,
   touch: true
 } as const;
 type BlockfallInputName = keyof typeof inputOptions.actions;
@@ -499,7 +499,10 @@ const bloomEffect = effects.neonBloom({
   intensity: reducedFlash ? 0.12 : 0.26,
   threshold: 0.55,
   maxIntensity: 1.6,
-  antiBlowout: true
+  antiBlowout: true,
+  quality: "balanced",
+  softKnee: 0.5,
+  shoulder: 0.6
 });
 // The builder stores its node by reference (toJSON returns this.value), so the
 // stills probe can mutate the exact node object the mounted scene renders.
@@ -630,7 +633,10 @@ const reactorScene = scene()
     // from the room behind it.
     bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
+    effects.contactOcclusion({ name: "cabinet floor contact", intensity: 0.34, radius: 0.5 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
+    effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+    effects.antiAlias({ mode: "fxaa" }),
     lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
@@ -643,6 +649,10 @@ const reactorScene = scene()
 
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260909,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: inputOptions,
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
   scene: reactorScene

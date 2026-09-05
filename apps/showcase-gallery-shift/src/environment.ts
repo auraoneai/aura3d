@@ -554,19 +554,19 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     emissiveIntensity: 0.82
   });
   nodes.push(
-    text3D("ARCHIVE", { name: "archive room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+    text3D("ARCHIVE", { name: "archive room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial, backend: "sdf" })
       .position(-8.28, 2.78, -6.83)
       .runtime(game.runtimeNode("archive room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("TREASURY", { name: "treasury room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+    text3D("TREASURY", { name: "treasury room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial, backend: "sdf" })
       .position(5.78, 2.78, -6.83)
       .runtime(game.runtimeNode("treasury room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("ROTUNDA", { name: "rotunda room label", size: 0.68, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+    text3D("ROTUNDA", { name: "rotunda room label", size: 0.68, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial, backend: "sdf" })
       .position(-1.1, 2.78, -6.83)
       .runtime(game.runtimeNode("rotunda room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("SERVICE EXIT", { name: "service exit room label", size: 0.52, depth: 0.055, letterSpacing: 0.04, material: roomLabelMaterial })
+    text3D("SERVICE EXIT", { name: "service exit room label", size: 0.52, depth: 0.055, letterSpacing: 0.04, material: roomLabelMaterial, backend: "sdf" })
       .position(-1.42, 2.17, -6.83)
       .runtime(game.runtimeNode("service exit room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON()

@@ -29,7 +29,7 @@ const DIGIT_MATERIAL = material.emissive({ name: "sb digit", color: "#ffcc00", e
 const MISSION_MATERIAL = material.emissive({ name: "sb mission", color: "#00ffcc", emissive: "#00cc99" });
 
 function textNode(id: string, text: string, x: number, y: number, size: number, mat: ReturnType<typeof material.emissive>): AuraSceneNode {
-  return text3D(text, { name: id, material: mat, size, depth: 0.035, letterSpacing: 0.02 })
+  return text3D(text, { name: id, material: mat, size, depth: 0.035, letterSpacing: 0.02, backend: "sdf" })
     .position(x, y, -4.05)
     .runtime(game.runtimeNode(id, { tags: ["scoreboard", "text3d"] }))
     .toJSON();

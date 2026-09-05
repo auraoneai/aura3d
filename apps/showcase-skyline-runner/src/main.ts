@@ -1173,6 +1173,7 @@ const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
   const [sceneX, surfaceSceneY] = platformerScene.toScenePoint({ x: gate.x, y: gate.surfaceY });
   return text3D("ACT " + (gate.act + 1), {
     name: gate.id,
+    backend: "sdf",
     // The review ceremony already names the district in accessible UI. Keep
     // the renderer-owned gate as a restrained in-world marker there instead of
     // letting a second giant title compete with station, runner, and relay.
@@ -1596,6 +1597,10 @@ const skylineAccessoryNodes = [
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260910,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   // FS-304: this route is the root renderer integration reference, so it opts
   // explicitly into the typed-GLB production bridge. That makes the bloom, fog,
   // and shadow features it already authors actually render, each of which has its
@@ -1825,8 +1830,11 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
       tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1 }))
+    .add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
     .add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))
+    .add(effects.contactOcclusion({ name: "platform landing contact", intensity: 0.32, radius: 0.5 }))
     .add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.86 }))
     .camera(platformerCamera)
 });

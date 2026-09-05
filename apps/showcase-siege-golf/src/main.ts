@@ -749,8 +749,10 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
     .addMany(buildSetDressing(hole, phase))
     .addMany(visualNodes(phase))
     .addMany([
-      effects.neonBloom({ intensity: reducedMotion ? 0.025 : 0.07 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.025 : 0.07, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.fog({ name: "golden-hour distance haze", density: 0.009, color: "#9fd7d1", intensity: 0.12 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.05, saturation: 1.08 }),
+      effects.antiAlias({ mode: "fxaa" }),
       lights.ambient({ name: "blue-sky ambient wash", color: "#e0fff3", intensity: 0.7 }),
       lights.directional({ name: "low golden sun key", color: "#ffd28a", intensity: 2.55 }).position(-7.5, 8.2, 5.0),
       lights.directional({ name: "cool hill fill", color: "#9fc9d2", intensity: 0.4 }).position(5.5, 6.0, -hole.halfLength * 0.5),
@@ -765,6 +767,10 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
 // ---------------------------------------------------------------- mount ------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260908,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       aimLeft: ["ArrowLeft"],
@@ -776,7 +782,7 @@ const gameApp = createGameApp("#app", {
       resetRound: ["KeyT"]
     },
     bufferMs: 80,
-    gamepad: false,
+    gamepad: true,
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },

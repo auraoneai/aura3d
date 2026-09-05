@@ -13,6 +13,7 @@ import {
   characterAssembly,
   camera,
   createAuraApp,
+  effects,
   lights,
   material,
   model,
@@ -652,14 +653,16 @@ const pitSignBuilders = [
     size: 0.46,
     depth: 0.05,
     letterSpacing: 0.03,
-    material: pitSignMaterial
+    material: pitSignMaterial,
+    backend: "sdf"
   }).position(-3.05, 5.15, ARENA_CENTER_Z - 4.46),
   text3D("ROUND 01", {
     name: "pit sign round",
     size: 0.22,
     depth: 0.03,
     letterSpacing: 0.025,
-    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.72 })
+    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.72 }),
+    backend: "sdf"
   }).position(2.7, 5.08, ARENA_CENTER_Z - 4.45),
   text3D("MH-2M // LIVE TEST", {
     name: "pit sign mh2m live test",
@@ -672,10 +675,18 @@ const pitSignBuilders = [
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  physics: {
+    seed: 20260920,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   scene: scene()
     .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
+      effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
+      effects.antiAlias({ mode: "fxaa" }),
+      effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
       lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.55, color: "#d7ebff" }),
       lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
       lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),

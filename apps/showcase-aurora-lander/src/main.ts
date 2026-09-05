@@ -537,7 +537,7 @@ function buildWorldScene() {
 
     // text3D site marker above the pad — real depth-bearing geometry, not a DOM label.
     builder.add(
-      text3D(`SITE ${nextSite.id}`, { size: 0.7, depth: 0.18 })
+      text3D(`SITE ${nextSite.id}`, { size: 0.7, depth: 0.18, backend: "sdf" })
         .position(pad.x - 2.2, padHeight + 2.4, pad.z - 3.3)
         .rotate(0.42, 0.78, 0)
         .runtime(game.runtimeNode(`${prefix}-marker`, { tags: ["site-marker", "text3d"] }))
@@ -656,7 +656,8 @@ function buildWorldScene() {
   builder.add(
     text3D(visualReviewCapture ? "EXTRACTION BAY" : "EXTRACTION READY", {
       size: visualReviewCapture ? 0.58 : 2.1,
-      depth: visualReviewCapture ? 0.16 : 0.35
+      depth: visualReviewCapture ? 0.16 : 0.35,
+      backend: "sdf"
     })
       .position(0, -50, 0)
       .runtime(game.runtimeNode("extraction-title", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
@@ -722,6 +723,9 @@ function buildWorldScene() {
   // sites so no live scene swaps are ever needed.
   builder
     .add(effects.fog({ name: "valley haze", color: "#0b1120", density: 0.0021, intensity: 0.42 }))
+    .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
     .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.95 }))
     .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.1 }).position(-38, 62, -22))
     .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.05 }).position(30, 40, 36))
@@ -756,6 +760,10 @@ function buildWorldScene() {
 // ---- app mount ---------------------------------------------------------------
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260915,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   scene: buildWorldScene()
 });
 void app;

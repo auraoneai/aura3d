@@ -1466,7 +1466,9 @@ const app = createAuraApp("#app", {
             alphaOverLife: [0.08, 0.28, 0.03]
           })]
         : []),
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }),
+      effects.antiAlias({ mode: "fxaa" }),
       effects.fog({ name: "pulse downbeat fog pulse", density: visualReviewCapture ? 0.009 : 0.065, color: visualReviewCapture ? "#11192a" : "#241044" })
         .runtime(game.runtimeNode("pulse-fog-pulse", { tags: ["downbeat-fog"] })),
       // Review capture uses a deliberate three-plane lighting setup: neutral
@@ -1587,6 +1589,10 @@ const app = createAuraApp("#app", {
     .camera(camera.perspective(visualReviewCapture
       ? { position: [0.10, 2.72, 6.55], target: [0.02, 0.92, -2.02], fov: 47 }
       : { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 50 })),
+  physics: {
+    seed: 20260912,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   diagnostics: false,
   autoStart: true
 });

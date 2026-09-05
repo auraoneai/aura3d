@@ -337,7 +337,7 @@ function digitSlotNodes(
   const nodes: AuraNodeInput[] = [];
   for (let digit = 0; digit <= 9; digit += 1) {
     nodes.push(
-      text3D(String(digit), { name: nodeIdFor(slotIndex, digit), size, depth: size * 0.18, material: materialSpec })
+      text3D(String(digit), { name: nodeIdFor(slotIndex, digit), size, depth: size * 0.18, material: materialSpec, backend: "sdf" })
         .position(x - (size * 5) / 14, digitsY - size / 2, z)
         .scale(HIDDEN_BLOCK_SCALE)
         .runtime(game.runtimeNode(nodeIdFor(slotIndex, digit), { tags: ["blockfall", "scoreboard", "digit"] }))

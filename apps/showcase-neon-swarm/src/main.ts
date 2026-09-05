@@ -899,9 +899,12 @@ appScene.add(effects.ambientOcclusion({
   intensity: visualReviewCapture ? 0.52 : 0.34,
   radius: visualReviewCapture ? 0.82 : 0.68
 }));
+appScene.add(effects.contactOcclusion({ name: "courier horde contact", intensity: 0.34, radius: 0.5 }));
 if (!reducedMotion) {
-  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff" }));
+  appScene.add(effects.bloom({ intensity: 0.42, color: "#35e6ff", quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
 }
+appScene.add(effects.colorGrade({ exposure: 1.05, contrast: 1.08, saturation: 1.12 }));
+appScene.add(effects.antiAlias({ mode: "fxaa" }));
 
 appScene.camera(
   camera.follow({
@@ -923,7 +926,11 @@ appScene.camera(
 
 const app = createAuraApp("#app", {
   scene: appScene,
-  diagnostics: { overlay: false, performancePanel: false }
+  diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260913,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  }
 });
 
 const input = game.input({

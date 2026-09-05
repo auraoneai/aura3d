@@ -333,8 +333,11 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      effects.antiAlias({ mode: "fxaa" }),
       effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
+      effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({
         name: "hall haze",
         density: visualReviewCapture ? 0.0035 : 0.011,
@@ -366,6 +369,10 @@ function buildScene(): ReturnType<typeof scene> {
 // ---------------------------------------------------------------- mount ------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260905,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       aimLeft: ["KeyA", "ArrowLeft"],
@@ -377,7 +384,7 @@ const gameApp = createGameApp("#app", {
       reset: ["KeyR"]
     },
     bufferMs: 80,
-    gamepad: false,
+    gamepad: true,
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },

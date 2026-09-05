@@ -261,6 +261,10 @@ type MutableChaseCamera = { offset?: readonly [number, number, number] };
 // ---- scene --------------------------------------------------------------------
 const app = createAuraApp("#app", {
   diagnostics: { overlay: debugMode, performancePanel: false },
+  physics: {
+    seed: 20260911,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   scene: scene()
   .background("#030711")
     .addMany(dressing.staticNodes)
@@ -268,7 +272,9 @@ const app = createAuraApp("#app", {
     .addMany(dressing.dropZone)
     // Aurora Noir / Midnight Slate city night lighting
     .add(effects.fog({ name: "night city haze", color: "#090714", density: visualReviewCapture ? 0.0042 : 0.0018, intensity: visualReviewCapture ? 0.58 : 0.44 }))
-    .add(effects.neonBloom({ intensity: reducedMotion ? 0.18 : visualReviewCapture ? 0.64 : 0.78 }))
+    .add(effects.neonBloom({ intensity: reducedMotion ? 0.18 : visualReviewCapture ? 0.64 : 0.78, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
     .add(lights.ambient({ name: "night city fill", color: "#718da5", intensity: visualReviewCapture ? 0.42 : 1.72 }))
     .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: visualReviewCapture ? 3.8 : 2.55 }).position(-18, 26, 8))
     .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: visualReviewCapture ? 1.9 : 1.42 }).position(20, 18, 16))

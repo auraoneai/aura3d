@@ -564,21 +564,24 @@ export function buildScene() {
       size: 0.26,
       depth: 0.06,
       letterSpacing: 0.03,
-      material: material.glowingEmissive({ color: "#0a0f16", emissive: "#38d6ff", emissiveIntensity: 1.5 })
+      material: material.glowingEmissive({ color: "#0a0f16", emissive: "#38d6ff", emissiveIntensity: 1.5 }),
+      backend: "sdf"
     }).position(-3.32, 1.85, 5.4).rotate(0, Math.PI / 2, 0))
     .add(text3D("SECTOR 2", {
       name: "sector 2 sign",
       size: 0.26,
       depth: 0.06,
       letterSpacing: 0.03,
-      material: material.glowingEmissive({ color: "#160a14", emissive: "#ff4fd0", emissiveIntensity: 1.4 })
+      material: material.glowingEmissive({ color: "#160a14", emissive: "#ff4fd0", emissiveIntensity: 1.4 }),
+      backend: "sdf"
     }).position(3.32, 1.85, -3.4).rotate(0, -Math.PI / 2, 0))
     .add(text3D("EXIT", {
       name: "exit sign",
       size: 0.3,
       depth: 0.07,
       letterSpacing: 0.04,
-      material: material.glowingEmissive({ color: "#07160f", emissive: "#3dffb0", emissiveIntensity: 1.6 })
+      material: material.glowingEmissive({ color: "#07160f", emissive: "#3dffb0", emissiveIntensity: 1.6 }),
+      backend: "sdf"
     }).position(0, 2.15, -8.28))
     // Low-density renderer fog separates the three encounter depths without
     // veiling the deck. The broad neutral fill establishes exposure; restrained
@@ -589,8 +592,11 @@ export function buildScene() {
     // A restrained bloom pass lets the installed power cells and shot cues
     // share a controlled highlight language without washing out the corridor.
     .add(effects.ambientOcclusion({ name: "containment bay grounding", intensity: 0.32, radius: 0.68, density: 0.54, color: "#02090d" }))
+    .add(effects.contactOcclusion({ name: "warden deck contact", intensity: 0.34, radius: 0.5 }))
     .add(effects.fog({ density: 0.022, color: "#10252c" }))
-    .add(effects.bloom({ name: "containment power bloom", intensity: 0.16, color: "#79e4ec", threshold: 0.82, radius: 0.2, maxIntensity: 0.26 }))
+    .add(effects.bloom({ name: "containment power bloom", intensity: 0.16, color: "#79e4ec", threshold: 0.82, radius: 0.2, maxIntensity: 0.26, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
     .add(lights.ambient({ name: "corridor exposure fill", intensity: 0.5, color: "#bdcfcc" }))
     .add(lights.directional({ name: "steel architectural key", position: [-4, 7, 6], intensity: 1.02, color: "#dcefeb" }))
     .add(lights.directional({ name: "warm asset rim", position: [5, 5, -9], intensity: 1.32, color: "#f2b878" }))
@@ -599,6 +605,7 @@ export function buildScene() {
     .add(lights.point({ name: "engagement key", position: [0, 1.72, 0.82], color: "#ffad63", intensity: 4.3 }))
     .add(lights.point({ name: "deep bay key", position: [0, 1.9, -3.45], color: "#ff754d", intensity: 2.4 }))
     .add(lights.point({ name: "exit practical", position: [0, 2.0, -7.2], color: "#70f7c0", intensity: 1.75 }))
+    .add(lights.spot({ name: "engagement stage spot", position: [0, 3.4, 0.82], target: [0, 0.4, 0.82], angle: 0.55, penumbra: 0.5, distance: 14, decay: 2, intensity: 5.0, color: "#ffb066", shadow: true }))
     // Muzzle light: parked under the floor until a shot teleports it to the barrel.
     // Runtime handles cannot change light intensity, so the attenuation does the
     // hiding while it sits nine metres below the deck.

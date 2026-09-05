@@ -621,7 +621,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       size: 0.42,
       depth: 0.045,
       letterSpacing: 0.028,
-      material: facadeSign
+      material: facadeSign,
+      backend: "sdf"
     })
       .position(-3.55, 7.8, -17.85)
       .toJSON()
@@ -809,7 +810,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         size: 0.34,
         depth: 0.045,
         letterSpacing: 0.024,
-        material: clubSign
+        material: clubSign,
+        backend: "sdf"
       })
         // Keep the venue mark below the capture HUD so the authored identity
         // remains legible in the action frame instead of being clipped by the
@@ -886,7 +888,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         size: 0.24,
         depth: 0.035,
         letterSpacing: 0.02,
-        material: arenaLintel
+        material: arenaLintel,
+        backend: "sdf"
       })
         .position(5.3, 6.72, -5.7)
         .toJSON()
@@ -1040,7 +1043,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       size: 0.3,
       depth: 0.035,
       letterSpacing: 0.024,
-      material: scoreboardReadout
+      material: scoreboardReadout,
+      backend: "sdf"
     })
       .position(1.25, 4.98, -0.64)
       .toJSON(),
@@ -1049,7 +1053,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       size: 0.22,
       depth: 0.03,
       letterSpacing: 0.018,
-      material: scoreboardTrim
+      material: scoreboardTrim,
+      backend: "sdf"
     })
       .position(3.1, 5.01, -0.63)
       .toJSON()

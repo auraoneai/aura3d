@@ -261,7 +261,18 @@ const sceneDef = scene()
     intensity: 0.1,
     threshold: 0.72,
     maxIntensity: 0.42,
-    antiBlowout: true
+    antiBlowout: true,
+    quality: "balanced",
+    softKnee: 0.5,
+    shoulder: 0.6
+  }))
+  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }))
+  .add(effects.antiAlias({ mode: "fxaa" }))
+  .add(effects.volumetricFog({
+    name: "water-column light inscatter",
+    density: 0.12,
+    color: "#3f7d86",
+    intensity: 0.55
   }))
   .camera(
     camera.follow({
@@ -456,7 +467,11 @@ const sceneDef = scene()
   ]);
 
 const app = createAuraApp("#canvas-host", {
-  scene: sceneDef
+  scene: sceneDef,
+  physics: {
+    seed: 20260918,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  }
 });
 
 app.onFrame((frame) => {

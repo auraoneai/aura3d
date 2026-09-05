@@ -348,9 +348,12 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([
-      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
-      effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 })
+      effects.contactOcclusion({ name: "mechanism contact", intensity: 0.36, radius: 0.52 }),
+      effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 }),
+      effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+      effects.antiAlias({ mode: "fxaa" })
     ])
     .camera(camera.perspective({
       // Give the typed mechanism assembly a small safety margin on every edge
@@ -370,6 +373,10 @@ function buildScene(): ReturnType<typeof scene> {
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  physics: {
+    seed: 20260906,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       flipperLeft: ["KeyA", "ArrowLeft"],
@@ -380,7 +387,7 @@ const gameApp = createGameApp("#app", {
       reset: ["KeyR"]
     },
     bufferMs: 80,
-    gamepad: false,
+    gamepad: true,
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },

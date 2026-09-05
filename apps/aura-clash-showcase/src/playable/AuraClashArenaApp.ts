@@ -710,6 +710,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       requestFrame: window.requestAnimationFrame.bind(window),
       cancelFrame: window.cancelAnimationFrame.bind(window)
     },
+    physics: {
+      seed: 20260921,
+      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+    },
     scene: scene(),
     input: {
       actions: {

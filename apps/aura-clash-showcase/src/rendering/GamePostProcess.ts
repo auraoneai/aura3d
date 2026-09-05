@@ -94,6 +94,11 @@ export function createAuraClashPostProcess(options?: { reducedFlash?: boolean })
     effects.bloom({
       intensity: bloomIntensity,
       radius: auraClashPostProcessPreset.bloomRadius,
+      quality: "balanced",
+      softKnee: 0.5,
+      shoulder: 0.6,
     }),
+    effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.1 }),
+    effects.antiAlias({ mode: "fxaa" }),
   ] as const;
 }

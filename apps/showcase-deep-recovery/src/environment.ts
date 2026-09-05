@@ -54,7 +54,19 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
       name: "sub-headlight-halo",
       color: "#b9efff",
       intensity: options.review ? 6.2 : 7.2
-    }).position(0, -6, 5)
+    }).position(0, -6, 5),
+    lights.spot({
+      name: "sub searchlight",
+      position: [0, -5.4, 5.5],
+      target: [0, -8, -6],
+      angle: 0.42,
+      penumbra: 0.5,
+      distance: 40,
+      decay: 2,
+      intensity: 8.0,
+      color: "#c8f4ff",
+      shadow: true
+    })
   );
 
   // A distant, rounded water-column volume supplies a soft blue-green depth
@@ -874,7 +886,8 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
       size: 0.42,
       depth: 0.028,
       letterSpacing: 0.022,
-      material: ruinMapAmber
+      material: ruinMapAmber,
+      backend: "sdf"
     }).position(-10.35, -9.3, -13.65),
     ...[-9.95, -8.5, -7.05, -5.6, -4.15].map((x, index) => primitives.sphere({
       name: `salvage-island-chart-light-${index}`,

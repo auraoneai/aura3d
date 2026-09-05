@@ -2165,7 +2165,8 @@ function buildTurboSignageNodes() {
     size: SIGNAGE_TEXT_SIZE,
     depth: 0.012,
     letterSpacing: SIGNAGE_TEXT_SIZE * 0.14,
-    material: material.pbr({ name: "board glyphs warm", color: "#ffd8a8", emissive: "#ffb066", emissiveIntensity: 0.55, roughness: 0.4 })
+    material: material.pbr({ name: "board glyphs warm", color: "#ffd8a8", emissive: "#ffb066", emissiveIntensity: 0.55, roughness: 0.4 }),
+    backend: "sdf"
   }).position(...centeredAt(plan.circuitBoardCenter, "TSUKUBA")).rotate(0, yaw, 0).runtime(game.runtimeNode("signage circuit board TSUKUBA", { tags: ["signage", "text3d-board"] }));
   const lapBoards = signageBoardLabels.map((label, index) =>
     text3D(label, {
@@ -2173,7 +2174,8 @@ function buildTurboSignageNodes() {
       size: SIGNAGE_TEXT_SIZE,
       depth: 0.01,
       letterSpacing: SIGNAGE_TEXT_SIZE * 0.14,
-      material: material.pbr({ name: "board glyphs cool", color: "#b9f7ff", emissive: "#57e6ff", emissiveIntensity: 0.6, roughness: 0.4 })
+      material: material.pbr({ name: "board glyphs cool", color: "#b9f7ff", emissive: "#57e6ff", emissiveIntensity: 0.6, roughness: 0.4 }),
+      backend: "sdf"
     }).position(...centeredAt(plan.lapBoardCenter, label)).rotate(0, yaw, 0).runtime(game.runtimeNode("signage lap board " + index + " " + label.replace(/ /g, "_"), { tags: ["signage", "text3d-board", "lap-state"] }))
   );
   return [...postNodes, crossbar, backing, circuitBoard, ...lapBoards];
@@ -2946,6 +2948,10 @@ const tsukubaReliefPosition: [number, number, number] = [
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260922,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   scene: scene()
     .background(visualCaptureCamera ? TURBO_REVIEW_GRADE.background : TURBO_LATE_AFTERNOON_MOOD.background)
     // Late-afternoon key: warmer body reflections with a cooler distant grade.
@@ -3345,7 +3351,9 @@ const app = createAuraApp("#app", {
       intensity: visualCaptureCamera ? 0.5 : 0.28,
       radius: visualCaptureCamera ? 0.68 : 0.54
     }))
-    .add(effects.neonBloom({ intensity: 0.34 }))
+    .add(effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
+    .add(effects.antiAlias({ mode: "fxaa" }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
     // Fog density and light positions are expressed relative to the scene's own size.

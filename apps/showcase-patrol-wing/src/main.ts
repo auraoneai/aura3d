@@ -515,7 +515,10 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(arenaLighting().nodes)
     .addMany([
       effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+      effects.antiAlias({ mode: "fxaa" }),
+      lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
       lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 2.2 }).position(20, 24, 30),
       lights.point({ name: "aircraft rim light", color: "#b7dce6", intensity: 2.3 }).position(-8, 14, -4),
       lights.point({ name: "flight horizon fill", color: "#8bbccc", intensity: 1.55 }).position(0, 9, -18)
@@ -526,6 +529,10 @@ function buildScene(): ReturnType<typeof scene> {
 // ---------------------------------------------------------------- mount -------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  physics: {
+    seed: 20260917,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       pitchDown: ["KeyW"],
@@ -542,7 +549,7 @@ const gameApp = createGameApp("#app", {
       reset: ["KeyR"]
     },
     bufferMs: 80,
-    gamepad: false,
+    gamepad: true,
     touch: true
   },
   loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },

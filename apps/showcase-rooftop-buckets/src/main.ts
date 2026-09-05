@@ -369,7 +369,9 @@ function buildScene() {
     .addMany([
       // Atmospheric & Lighting Setup
       effects.fog({ name: "dusk haze", density: 0.005, color: "#24173f", intensity: 0.14 }),
-      effects.neonBloom({ intensity: 0.34 }),
+      effects.neonBloom({ intensity: 0.34, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+      effects.antiAlias({ mode: "fxaa" }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.
       lights.ambient({ color: "#8098c8", intensity: visualReviewCapture ? 0.72 : 1.32 }),
@@ -731,6 +733,10 @@ const gameApp = createGameApp("#canvas-host", {
   // renderer setting makes the route's typed athletes/court use the audited
   // production backend instead of an implicit profile.
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+  physics: {
+    seed: 20260907,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   input: {
     actions: {
       spotLeft: ["KeyA", "ArrowLeft"],

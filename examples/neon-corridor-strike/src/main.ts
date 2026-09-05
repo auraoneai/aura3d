@@ -103,7 +103,12 @@ const app = createAuraApp("#app", {
   // on any real display. Box-heavy corridor geometry holds full rate at 1.0
   // on hardware GL; CSS/HUD dimensions and all game state remain unchanged.
   pixelRatio: 1,
-  physics: { layers, gravity: [0, -24, 0] },
+  physics: {
+    layers,
+    gravity: [0, -24, 0],
+    seed: 20260919,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
+  },
   scene: buildScene()
 });
 
