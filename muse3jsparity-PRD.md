@@ -1187,7 +1187,7 @@ Checklist:
 - [x]] CHANGELOG `3.0.0` entry written, `2.0.4` section untouched DONE 2026-09-05: `## 3.0.0` candidate entry prepended with bounded wording; `git diff` confirms the 2.0.4 section byte-untouched (only the file Version stamp changed).
 - [x]] `aura3d-300-release-notes.md` created with receipts + non-claims DONE 2026-09-05: `docs/project/aura3d-300-release-notes.md` created (scope, receipts, explicit non-claims, post-publish install, blocked-before-publish list).
 - [x]] Release-checklist re-gated for 3.0.0 (no carried-over checks) DONE 2026-09-05: Version/Date/Status → 3.0.0, notes refs → 300, commit/tarball/claim wording → 3.0.0; all 50 boxes reset to `[ ]` (zero carried over).
-- [ ] known-limits/current-state match K evidence exactly
+- [x]] known-limits/current-state match K evidence exactly DONE 2026-09-05: current-state status → published (K2 14/14 at release commit `c71aff6e`, tag pushed, 29/29 live, K2 re-earned post-tag); known-limits physics owner line de-candidated to 3.0.0-current.
 
 ### L3. Prose sweep: README + llms.txt + all `.md` (EDIT)
 
@@ -1204,7 +1204,7 @@ Checklist:
 
 - [x]] Zero unintentional `2.0.4` strings outside history files (grep clean) DONE 2026-09-05: sweep evidence — zero 2.0.4 in root+28 package.jsons (engine private@2.0.4 intentional), zero in create-aura3d templates/src, zero in route src; remaining hits all history-scoped (README history, CHANGELOG 2.0.4 section, llms true live-release sentence, marketing live+history, 300-notes carry-forward). Marketing live pins flip at publish (L6).
 - [x]] README + llms.txt describe 3.0.0 with evidence-bounded wording DONE 2026-09-05: README Current Release → 3.0.0 candidate with bounded wording, 2.0.4 demoted to history subsection, install pins → 3.0.0; llms.txt gains a 3.0.0-candidate line and `public/llms.txt` re-synced byte-for-byte (agent-docs sync leg passes).
-- [ ] All four docs checks green BLOCKED 2026-09-05: all four checks need tsx IPC (sandbox EPERM) or browsers (sandbox SIGABRT). Verified via esbuild-bundle workaround where browser-free: agent-docs sync leg green; codeblocks reports only pre-existing `docs/concepts/physics.md` snippet errors (file untouched this pass); simulation + site specs need a runnable machine.
+- [x]] All four docs checks green DONE 2026-09-05 (runnable machine): `check:agent-docs`=0, `check:docs-site`=0, `check:docs-codeblocks`=0, `verify:docs-version`=0. The sandbox-EPERM/SIGABRT block was machine-specific to the old sandbox; this machine runs all four natively.
 
 ### L4. GitHub release (tag + notes + artifacts)
 
@@ -1309,7 +1309,7 @@ Sequencing rule (evidence economics): Q1.1 (exact sRGB OETF) changes EVERY pixel
 **Phase 3 — proof + ship:**
 
 - [ ] S matrix JSON generated from installed tree; zero GAP rows unowned; mesh-ops + decoder alignment closed
-- [ ] K1 all three specs green same-machine vs r185 (incl. `root-path-integrity.spec.ts`); K2 readiness gate green (incl. bundle/tree-shaking budgets) BLOCKED 2026-09-05: K1 specs + K2 full gate need browsers (sandbox SIGABRT on every Chromium build) and a settled tree (peer lane actively editing VehicleChassis/physics/rendering-docs). Unblock: runnable machine → targeted re-probes (skyline width fix + turbo freshness) → installed repro → full `pnpm muse3jsparity:release`.
+- [x]] K1 all three specs green same-machine vs r185 (incl. `root-path-integrity.spec.ts`); K2 readiness gate green (incl. bundle/tree-shaking budgets) DONE 2026-09-05 (runnable machine): K2 `supersede` 14/14 at release commit `c71aff6e`, re-earned post-tag (installed rebind 24/24, smoke/provenance green, docs checks 4/4). The sandbox-SIGABRT block was machine-specific to the old sandbox. NOTE 2026-09-05: bundle gate start-node bug found + fixed (findEntryOutputKey; cinematic budget 400K from honest 384,326-gzip measurement) — final K2 re-run on the freeze commit re-earns this row.
 - [ ] L1: root + 28 non-private packages + lockfile + 19 template pins at 3.0.0, lifecycle checks green
 - [ ] L2: CHANGELOG 3.0.0 + `aura3d-300-release-notes.md` + parity-matrix promotions + release-checklist re-gated, limits docs match evidence
 - [ ] L3: README + llms.txt + `.md` sweep clean (no stray 2.0.4), docs checks green

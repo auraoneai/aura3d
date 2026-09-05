@@ -153,7 +153,7 @@ guide or README must include the narrower wording.
 
 ## Physics Backend Limits
 
-- `@aura3d/physics` has one production solver owner in the 2.0 candidate:
+- `@aura3d/physics` has one production solver owner since 2.0 (current in 3.0.0):
   `@dimforge/rapier3d-compat@0.20.0`. Removed Cannon and custom-solver paths are
   not fallbacks and must not be described as current production owners.
 - The public contract has named production-backend invariants for stacking,

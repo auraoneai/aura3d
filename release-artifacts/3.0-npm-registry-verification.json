@@ -1,0 +1,242 @@
+{
+  "schema": "aura3d-npm-registry-verification/1.0",
+  "generatedAt": "2026-09-05T14:25:39.383Z",
+  "version": "3.0.0",
+  "expectedPackageCount": 29,
+  "verifiedPackageCount": 29,
+  "ok": true,
+  "packages": [
+    {
+      "name": "@aura3d/engine",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-P6QcJq8VKT3uD5Cm/8h6+30UrAIkVCFiJyC+OnKmBQwClsp5UQPeizWBbPUd7p+xsB5aV0XTpvfULpi8J2NVyw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/animation",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-w0fzaQkUcu/LlR1FB5w9kE/BFXlUtdXQFqyX0Yv4arLghcsNd/eEkyJtvPYayeFpXVfSXFqRR7EUboVKzAv/9w==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/apps",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-MUFo71S2TG1XGySNbuhPwacAdkftQEnE+LNamfr3Ag27i8jeW+g1RyoXciaw8WytSOWr3fAhVIO914t1z3pJMA==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/asset-index",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-2Rw/h4f/90m8zcvfx9a9gxNWgYqf/x9YFOXHddktmB+FVdQzQW0KHoYULgZlzINwHNar+gtue5rSQlzi7jNCkA==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/assets",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-Sp9Val5PsQ6RzTxDMyVVN3aXqFVoychCzN9wO81ZKqbXjIsOsVSId3UA7zMj/G4b64msWfc7iLeTBI6hbJI5lQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/audio",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-hGNdcIi5ERpkHI94FL0QQDRoA4R+pUvfwbQtzc9RHXQY1eiJuRs+knYtHVTiqbCq74iImXVvkbbVx9SWJWSpeQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/cli",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-H7fhvGq+1pBCvJV3dCojsp367iibCwbIqVh3jX69yPgzUvimzCBPKkfx1DKfuDklZwE+BD/VB7VhY6mrwDBftw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/controls",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-JZFuwBEafpHzUoVxqa34IjU+PAoCQHcxTJOJS8gIrZj9AuX0HuExYXz/RuV39Iir+JaOeNy+ZnHOwLzsk0jFhw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/core",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-ddq+IUd7wvSvkmyOXUpdLGSoKrzV5v9kFe47b0qbgBhJ2FB03qXxPxV/HE5rMp9/2s9Hj4f9DheJomlNCP3yYg==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "create-aura3d",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-0Pvj5H/uiSNX5o4OJTXivJ6jBnYFeYoUmRIUK7WQGDqhKB7TlpsndSLngqg3d0RpEqPRUdxpxHRzwMhT7xEQig==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/debug",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-K+G4k5rpCSLeaT83wYcVgDfjhqU/vwX/E8Ybzrt25aNT+/DDc2pfI4hVeUEmcynyGwzbs4C34Q+DBQ7sQ+u0/A==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/ecs",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-uvJqx9BO1WymKEtDy8/Tjlkd1Wr6LR1QUOvmodyT9owsjRVTczsYoWPXfwq8W8bBVJa8DwBprrElv8zLgP1EYg==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/editor",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-2ND0pvqCOJtCGbcziI56u9A8FFxhjEaDvCs0Feji1+30LIRBEVgt2C6BgimZrLHUEETiEecc90znzGzWYZFeJw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/editor-runtime",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-BFlj1CWTIkuA7cYe+mtILbg5nIblNimQwi7CVV6bH0/M5JEPPw2CUqW32XfWkwCNGc3Yd561+tGT0FDH8mtGgQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/environments",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-P7IfJChVQwVmD80vK4kveOhdPhOY9jA/B+Ne0esy3LDi9HRLoWqS7oOPpbevSIx/eQqx2M2zKw0dZRpBqLaoCg==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/input",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-Ovv2MhvLQ7Rsz+AJyu1GbVBhcszBHFyvMBmFaH9uK9bM8ZNtr7hbwx8YX3Qb0xVdXd3biQ1m/PnL+nPHDoODoQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/lean",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-Whr8iMsRBsHmXCWJy92te5Mb9RKvMWxB+uTjOsNyheOodIRuXiuZq1T75K9ywtInoR3dRMmKf3NpODmIcuNslw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/materials",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-rYILj09WCK6O0fABptsF7ivPszBo2UGCpNfiJowBm4cj1giRYpcaxOeUJiPfFPcGPpRow+xRhK+IlLaycDB4LQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/math",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-4v9d/ZvGdprlt43y4oJkp2yUVpFDWBfcHwKB38BwcMy0njhxWfO4KofUWa0tLZaiq6/+UhH7zD//CduaH6x+Fw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/navigation-recast",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-z7FJkbH/hC27m4DLwNN2A0WzoljUoGOvFqbAff504vFIKkfLG+TOoW++hh6j946OdneR0gnTxw+nVMBYzEFIbw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/physics",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-lmGyZXwPFjUHcyqvZXBt1UIdYnQlFLC7/2SOVLDs/IucJtswMpD6OM9L9KbjLWQ/dGywPFeqCmYlltOxlcnXQw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/physics-rapier",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-ln5Ul7KGx5sBi6/BKrDMkfAb7reoCkSfYprM7FaFpQaRbEWPS5PyKxmBm/w1R+QpF9lxosWE4i54YWd9AUw/EQ==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/product-studio",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-hSoJekoYTW/uWzC9IZw+jHTp+oWjPrhT1yD/1zCV4+G4u4YmNLtseAVNwQiEBdtbGAENbEcIOrfBmMqYqtAIXA==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/react",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-IeRGLIE91nOs67FT/xwwij50lKgcRFK6wiyTtNe4ckLhyOwNpEXozNPTzi+R2Ns4spP5skkoonLDRxjr9KvcAw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/rendering",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-Ak6e710NGjlz1HTLbPm5b9/gU7Pof5e5wFI7ak1hDHdCc4yBEVMFdliyHceGJ00qZBGgjjZxUiTR0B3Lbx1ohA==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/scene",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-oO6nbT0uqJyL12PmND8wySV1Ildvf3yGE2+oeXEMjFtt8nIFbURtj6YbVyeVsL07p/LvadUk+J5Jl3n6SVSt7w==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/scripting",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-YGGLRkxdZH+75vJ7pwWNfkL5yuhKMWRfcom2B+r9JSgUAVCOqeksnzPHEmiV9A/5UUkZ5PO4mReFpabD85uvnw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/three-compat",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-/ZpUKqJiYTBsdxfH51LRVzU2fpzwSOwAsd2ZKqtDvW1jGd8ugCDaySzSt74K50eNNZXhWeWD12Z5y9FowMvXFw==",
+      "integrityMatches": true,
+      "error": null
+    },
+    {
+      "name": "@aura3d/workflows",
+      "version": "3.0.0",
+      "versionMatches": true,
+      "integrity": "sha512-n6jWa7x7c7wvWdsbWRg/qceO9mANwQIoq6yh/tfndvgIZHRZQC9uXIxTqbSMeF8WwSyTy/UL9yLpzWv4N5oP+g==",
+      "integrityMatches": true,
+      "error": null
+    }
+  ]
+}

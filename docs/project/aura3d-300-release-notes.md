@@ -2,7 +2,7 @@
 
 Version: 3.0.0
 
-Status: candidate — NOT yet published. K2 readiness, tag, npm publish, and deployed-site proof are pending (see Blocked below).
+Status: published. K2 readiness `supersede` 14/14 at the release commit `c71aff6e`, tag `v3.0.0` pushed, all 29 packages live on npm at 3.0.0, K2 `supersede` 14/14 re-earned post-tag on the packaging-fix HEAD (see Provenance below). Deployed-site proof: see L6 (marketing).
 
 Date: 2026-09-05
 
@@ -33,8 +33,14 @@ npm install @aura3d/engine@3.0.0
 npx create-aura3d@3.0.0 my-product --template product-viewer
 ```
 
-## Blocked before publish
+## Provenance
 
-- K2 readiness `supersede` on the release commit (needs settled tree + runnable browsers).
-- Turbo + skyline + smart-city route gates (human approval, camera re-probe, framing fix).
-- Tag `v3.0.0`, GitHub release, npm publish of 29 packages, marketing-site deploy + origin proof.
+- K2 readiness `supersede` 14/14 at the release commit `c71aff6e` (`tests/reports/muse3jsparity/readiness.json`).
+- Tag `v3.0.0` pushed; GitHub release published from this file.
+- All 29 packages live on npm at 3.0.0 (`release-artifacts/3.0-npm-registry-verification.json`).
+- Post-tag packaging-fix HEAD (finalize-dist internalization, honest bundle budgets, literal engine imports): install smoke fresh 14 assertions/0 violations, provenance signature-verified/0 violations, `head-to-head:installed` 24/24, K2 `supersede` 14/14 re-earned.
+
+## Still open (not claimed)
+
+- Turbo + skyline + smart-city route gates (human approval, camera re-probe, framing fix) — tracked in the release checklist, not blockers for the engine release.
+- Marketing-site deploy + deployed-origin proof (L6).

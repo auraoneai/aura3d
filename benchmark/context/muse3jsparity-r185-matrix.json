@@ -2,7 +2,7 @@
   "schema": "aura3d.muse3jsparity-r185-matrix/1.0",
   "status": "frozen",
   "generatedBy": "tools/muse3jsparity-matrix/index.ts (never hand-edit; rerun on three-version change)",
-  "generatedAt": "2026-09-05T12:55:02.652Z",
+  "generatedAt": "2026-09-05T14:13:34.111Z",
   "three": {
     "version": "0.185.1",
     "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
