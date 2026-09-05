@@ -34,7 +34,7 @@ const publicDraftLanguageTerms = [
 
 const checks: ReleaseCheck[] = [
   fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
-  fileIncludes("marketing/index.html", ["Aura3D 2.0.4 is live", "36 apps, games, and focused examples", "29 coordinated packages at 2.0.4", "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
+  fileIncludes("marketing/index.html", ["Aura3D 3.0.0 is live", "36 apps, games, and focused examples", "29 coordinated packages at 3.0.0", "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
   fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["15 / 15", "29", "exact installed Aura3D tarballs", "Frozen r185 workload set", "The set proves these named outcomes"], "technical comparison retains scoped evidence"),
   fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "36 live experiences", "Templates", "Asset pipeline", "Deployment"], "marketing release reference links"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
