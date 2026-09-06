@@ -2,6 +2,9 @@ name: Remote Browser Acceptance 3.0.1
 
 on:
   workflow_dispatch:
+  push:
+    branches: [codex/native-webgpu-probe-301]
+    paths: [.github/workflows/remote-browser-301.yml]
 
 permissions:
   contents: read
@@ -52,9 +55,11 @@ jobs:
           with tarfile.open(delta,'r:gz') as bundle: bundle.extractall(root/'source',filter='data')
           (root/'evidence'/'source-verification.json').write_text(__import__('json').dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_actual,'passed':True},indent=2)+'\n')
           PY
-          cp "$RUNNER_TEMP/browser-acceptance/source/tools/native-webgpu-probe/package.json" "$RUNNER_TEMP/browser-acceptance/source/package.json"
           cd "$RUNNER_TEMP/browser-acceptance/source"
+          cp package.json "$RUNNER_TEMP/browser-acceptance/source-package.json"
+          cp tools/native-webgpu-probe/package.json package.json
           pnpm install --frozen-lockfile --ignore-scripts
+          cp "$RUNNER_TEMP/browser-acceptance/source-package.json" package.json
           pnpm exec playwright install --with-deps chromium
       - name: Browser semantic check
         run: |
@@ -117,9 +122,11 @@ jobs:
           with tarfile.open(delta,'r:gz') as bundle: bundle.extractall(root/'source',filter='data')
           (root/'evidence'/'source-verification.json').write_text(__import__('json').dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_actual,'passed':True},indent=2)+'\n')
           PY
-          cp "$RUNNER_TEMP/browser-acceptance/source/tools/native-webgpu-probe/package.json" "$RUNNER_TEMP/browser-acceptance/source/package.json"
           cd "$RUNNER_TEMP/browser-acceptance/source"
+          cp package.json "$RUNNER_TEMP/browser-acceptance/source-package.json"
+          cp tools/native-webgpu-probe/package.json package.json
           pnpm install --frozen-lockfile --ignore-scripts
+          cp "$RUNNER_TEMP/browser-acceptance/source-package.json" package.json
           pnpm exec playwright install --with-deps chromium
       - name: Exact-installed 15-workload reproduction
         run: |
