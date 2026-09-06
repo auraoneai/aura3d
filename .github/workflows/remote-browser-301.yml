@@ -36,6 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/browser-acceptance/source" "$RUNNER_TEMP/browser-acceptance/evidence"
+          cp -R tools/native-webgpu-probe "$RUNNER_TEMP/browser-acceptance/orchestration"
           python3 - <<'PY'
           import hashlib, os, pathlib, tarfile, urllib.request
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'browser-acceptance'
@@ -56,10 +57,7 @@ jobs:
           (root/'evidence'/'source-verification.json').write_text(__import__('json').dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_actual,'passed':True},indent=2)+'\n')
           PY
           cd "$RUNNER_TEMP/browser-acceptance/source"
-          cp package.json "$RUNNER_TEMP/browser-acceptance/source-package.json"
-          cp tools/native-webgpu-probe/package.json package.json
-          pnpm install --frozen-lockfile --ignore-scripts
-          cp "$RUNNER_TEMP/browser-acceptance/source-package.json" package.json
+          pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Browser semantic check
         run: |
@@ -103,6 +101,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/browser-acceptance/source" "$RUNNER_TEMP/browser-acceptance/evidence"
+          cp -R tools/native-webgpu-probe "$RUNNER_TEMP/browser-acceptance/orchestration"
           python3 - <<'PY'
           import hashlib, os, pathlib, tarfile, urllib.request
           root=pathlib.Path(os.environ['RUNNER_TEMP'])/'browser-acceptance'
@@ -123,10 +122,7 @@ jobs:
           (root/'evidence'/'source-verification.json').write_text(__import__('json').dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_actual,'passed':True},indent=2)+'\n')
           PY
           cd "$RUNNER_TEMP/browser-acceptance/source"
-          cp package.json "$RUNNER_TEMP/browser-acceptance/source-package.json"
-          cp tools/native-webgpu-probe/package.json package.json
-          pnpm install --frozen-lockfile --ignore-scripts
-          cp "$RUNNER_TEMP/browser-acceptance/source-package.json" package.json
+          pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Exact-installed 15-workload reproduction
         run: |
