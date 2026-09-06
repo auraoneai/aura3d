@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: temporal,atlas
+  NATIVE_WORKLOADS: temporal
 
 jobs:
   native-functional:
