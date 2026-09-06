@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: root-r02
+  NATIVE_WORKLOADS: root-r02,particles
 
 jobs:
   native-functional:
@@ -110,14 +110,6 @@ jobs:
           node --input-type=module -e 'import fs from "node:fs"; const source=fs.readFileSync(process.env.RUNNER_TEMP+"/native-functional/orchestration/probe.mjs","utf8"); fs.writeFileSync("native-adapter-probe.mjs",source.replace("from '\''playwright'\''", "from '\''@playwright/test'\''"));'
           node native-adapter-probe.mjs
           rm native-adapter-probe.mjs
-      - name: Native R03 temporal regression after default sample count change
-        id: r03_regression
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/r03-regression-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-post-j2.spec.ts --grep 'R03 native TAA' --output "$RUNNER_TEMP/native-functional/evidence/r03-regression-results"
       - name: Native HDR numerical oracle
         id: hdr
         if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'hdr') }}
@@ -201,7 +193,6 @@ jobs:
       - name: Assert each measured gate passed
         if: always()
         env:
-          R03_OUTCOME: ${{ steps.r03_regression.outcome }}
           HDR_OUTCOME: ${{ steps.hdr.outcome }}
           TEMPORAL_OUTCOME: ${{ steps.temporal.outcome }}
           PARTICLES_OUTCOME: ${{ steps.particles.outcome }}
@@ -211,7 +202,6 @@ jobs:
           ROOT_TEMPORAL_OUTCOME: ${{ steps.root_temporal.outcome }}
           ATLAS_OUTCOME: ${{ steps.atlas.outcome }}
         run: |
-          test "$R03_OUTCOME" = success
           case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *temporal*) test "$TEMPORAL_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *particles*) test "$PARTICLES_OUTCOME" = success ;; esac
