@@ -11,7 +11,7 @@ permissions:
 
 env:
   SOURCE_SHA256: 3a4504bb25245994bfcb55f4e5ff7fdcc6123e57c5ac680643fcacc83c888aaf
-  DELTA_SHA256: f53eea3afbda698877380b873bd8985cc34f2437fa72c623933b120d17f9cfd9
+  DELTA_SHA256: e8922772a784e3cf732cfc694b6c5ea2d0147486dc47bad62a387b3ec0dcaa80
 
 jobs:
   route-primary:
@@ -65,7 +65,7 @@ jobs:
           pnpm exec tsc --noEmit -p tsconfig.browser-301.json --pretty false
       - name: Full route-primary capture and aggregate
         env:
-          A3D_ROUTE_PRIMARY_WORKERS: '4'
+          A3D_ROUTE_PRIMARY_WORKERS: '1'
         run: |
           cd "$RUNNER_TEMP/browser-acceptance/source"
           pnpm exec tsx --tsconfig tsconfig.base.json tools/showcase-library/run-route-primary-parallel.ts
@@ -80,7 +80,7 @@ jobs:
           if-no-files-found: error
 
   installed-head-to-head:
-    runs-on: ubuntu-24.04
+    runs-on: macos-14
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -123,8 +123,17 @@ jobs:
           PY
           cd "$RUNNER_TEMP/browser-acceptance/source"
           pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps chromium
+          pnpm exec playwright install chromium
+      - name: Configure native Metal browser
+        run: |
+          cat > "$RUNNER_TEMP/chrome-metal" <<'SH'
+          #!/bin/sh
+          exec "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --use-angle=metal "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/chrome-metal"
       - name: Exact-installed 15-workload reproduction
+        env:
+          A3D_WEBGPU_BROWSER_EXECUTABLE: ${{ runner.temp }}/chrome-metal
         run: |
           cd "$RUNNER_TEMP/browser-acceptance/source"
           pnpm head-to-head:installed
