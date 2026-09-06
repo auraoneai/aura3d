@@ -11,7 +11,7 @@ permissions:
 
 env:
   SOURCE_SHA256: 3a4504bb25245994bfcb55f4e5ff7fdcc6123e57c5ac680643fcacc83c888aaf
-  DELTA_SHA256: d449f6c1000454088df3552d870e36b12f518dc8f80a997e15aee5983f65feac
+  DELTA_SHA256: f53eea3afbda698877380b873bd8985cc34f2437fa72c623933b120d17f9cfd9
 
 jobs:
   route-primary:
@@ -31,8 +31,8 @@ jobs:
           run_install: false
       - name: Restore immutable current source
         env:
-          SOURCE_URL: ${{ secrets.AURA3D_NATIVE_SOURCE_URL }}
-          SOURCE_DELTA_URL: ${{ secrets.AURA3D_NATIVE_DELTA_URL }}
+          SOURCE_URL: ${{ secrets.AURA3D_BROWSER_SOURCE_URL }}
+          SOURCE_DELTA_URL: ${{ secrets.AURA3D_BROWSER_DELTA_URL }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/browser-acceptance/source" "$RUNNER_TEMP/browser-acceptance/evidence"
@@ -96,8 +96,8 @@ jobs:
           run_install: false
       - name: Restore immutable current source
         env:
-          SOURCE_URL: ${{ secrets.AURA3D_NATIVE_SOURCE_URL }}
-          SOURCE_DELTA_URL: ${{ secrets.AURA3D_NATIVE_DELTA_URL }}
+          SOURCE_URL: ${{ secrets.AURA3D_BROWSER_SOURCE_URL }}
+          SOURCE_DELTA_URL: ${{ secrets.AURA3D_BROWSER_DELTA_URL }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/browser-acceptance/source" "$RUNNER_TEMP/browser-acceptance/evidence"
