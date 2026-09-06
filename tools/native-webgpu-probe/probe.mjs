@@ -75,7 +75,7 @@ try {
           return { available: true, adapterInfo, fallback: adapter.isFallbackAdapter ?? info.isFallbackAdapter ?? null, features: Array.from(adapter.features), actual, expected: [17, 18, 21, 26], computePassed: actual.join(',') === '17,18,21,26' && errors.length === 0 && !validationError, errors, validationError: validationError ? String(validationError) : null };
         } finally { gpu.destroy(); readback.destroy(); device.destroy(); }
       });
-      if (process.env.PROBE_CADENCE === '1' && attempt.result?.computePassed) {
+      if (process.env.PROBE_CADENCE === '1' && attempt.result?.computePassed && attempt.result?.fallback === false && attempt.systemInfo?.gpu?.auxAttributes?.displayType === 'ANGLE_METAL') {
         attempt.cadence = await page.evaluate(async () => {
           const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance', forceFallbackAdapter: false });
           const device = await adapter.requestDevice();
