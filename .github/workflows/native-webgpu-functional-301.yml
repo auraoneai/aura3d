@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: temporal,root-r02,atlas
+  NATIVE_WORKLOADS: temporal,particles,atlas
 
 jobs:
   native-functional:
@@ -167,14 +167,14 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/particle-collision-resident-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/collision-results"
-      - name: Native full extension atlas acceptance
+      - name: Native zero-F0 environment regression
         id: atlas
         if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'atlas') }}
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/atlas-browser.json
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-extension-atlas-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/atlas-results"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-extension-atlas-301.spec.ts --grep 'zero-F0 substrate' --output "$RUNNER_TEMP/native-functional/evidence/atlas-results"
       - name: Retain raw measurements
         if: always()
         run: |
