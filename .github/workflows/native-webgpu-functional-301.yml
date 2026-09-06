@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+env:
+  NATIVE_WORKLOADS: temporal
+
 jobs:
   native-functional:
     runs-on: macos-latest
@@ -31,6 +34,8 @@ jobs:
         env:
           SOURCE_URL: ${{ secrets.AURA3D_NATIVE_SOURCE_URL }}
           SOURCE_SHA256: ${{ secrets.AURA3D_NATIVE_SOURCE_SHA256 }}
+          SOURCE_DELTA_URL: ${{ secrets.AURA3D_NATIVE_DELTA_URL }}
+          SOURCE_DELTA_SHA256: ${{ secrets.AURA3D_NATIVE_DELTA_SHA256 }}
         run: |
           mkdir -p "$RUNNER_TEMP/native-functional/source" "$RUNNER_TEMP/native-functional/evidence"
           cp -R tools/native-webgpu-probe "$RUNNER_TEMP/native-functional/orchestration"
@@ -59,6 +64,33 @@ jobs:
                   raise RuntimeError('Manifest file mismatch: '+item['path'])
           (root/'evidence'/'source-archive.json').write_text(json.dumps({'sha256':actual,'bytes':archive.stat().st_size,'workflowCommit':os.environ['GITHUB_SHA'],'runId':os.environ['GITHUB_RUN_ID']},indent=2))
           archive.unlink()
+          delta_url=os.environ.get('SOURCE_DELTA_URL','')
+          if delta_url:
+              delta=root/'delta.tar.gz'
+              try:
+                  with urllib.request.urlopen(delta_url,timeout=90) as response, delta.open('wb') as out:
+                      while chunk:=response.read(1024*1024): out.write(chunk)
+              except Exception as error:
+                  raise RuntimeError('Delta download failed: '+type(error).__name__) from None
+              with delta.open('rb') as file: delta_sha=hashlib.file_digest(file,'sha256').hexdigest()
+              if delta_sha!=os.environ['SOURCE_DELTA_SHA256']: raise RuntimeError('Delta SHA256 mismatch')
+              with tarfile.open(delta,'r:*') as tar: tar.extractall(source,filter='data')
+              changes=json.loads((source/'native-delta-manifest.json').read_text())
+              by_path={item['path']:item for item in manifest['files']}
+              for item in changes['files']:
+                  path=(source/item['path']).resolve()
+                  if not path.is_relative_to(source): raise RuntimeError('Delta manifest path escapes source')
+                  with path.open('rb') as file: digest=hashlib.file_digest(file,'sha256').hexdigest()
+                  if digest!=item['sha256'] or path.stat().st_size!=item['bytes']: raise RuntimeError('Delta file mismatch: '+item['path'])
+                  by_path[item['path']]=item
+              manifest['files']=sorted(by_path.values(),key=lambda item:item['path'])
+              manifest['baseArchiveSha256']=actual
+              manifest['overlayArchiveSha256']=delta_sha
+              manifest['scope']='Targeted native snapshot derived from verified base plus independently hashed current overlay; not original base fingerprint'
+              (source/'native-source-manifest.json').write_text(json.dumps(manifest))
+              (root/'evidence'/'native-delta-manifest.json').write_text(json.dumps(changes,indent=2))
+              (root/'evidence'/'source-overlay.json').write_text(json.dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_sha,'effectiveManifestSha256':hashlib.sha256((source/'native-source-manifest.json').read_bytes()).hexdigest()},indent=2))
+              delta.unlink()
           PY
           if [ -f "$RUNNER_TEMP/native-functional/source/native-source-manifest.json" ]; then
             cp "$RUNNER_TEMP/native-functional/source/native-source-manifest.json" "$RUNNER_TEMP/native-functional/evidence/native-source-manifest.json"
@@ -71,6 +103,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm exec playwright install chromium
       - name: Record actual runner adapter
+        id: adapter
         env:
           PROBE_OUTPUT: ${{ runner.temp }}/native-functional/evidence/adapter
         run: |
@@ -80,7 +113,7 @@ jobs:
           rm native-adapter-probe.mjs
       - name: Native HDR numerical oracle
         id: hdr
-        continue-on-error: true
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'hdr') }}
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/hdr-browser.json
         run: |
@@ -88,7 +121,7 @@ jobs:
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-bloom-hdr-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/hdr-results"
       - name: Native temporal sequence and reset evidence
         id: temporal
-        continue-on-error: true
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'temporal') }}
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/temporal-browser.json
         run: |
@@ -96,7 +129,7 @@ jobs:
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-post-j2.spec.ts --grep 'R03 native TAA' --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
       - name: Sustained particle measurements on disclosed hosted hardware
         id: particles
-        continue-on-error: true
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'particles') }}
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/particles-browser.json
         run: |
@@ -124,6 +157,6 @@ jobs:
           TEMPORAL_OUTCOME: ${{ steps.temporal.outcome }}
           PARTICLES_OUTCOME: ${{ steps.particles.outcome }}
         run: |
-          test "$HDR_OUTCOME" = success
-          test "$TEMPORAL_OUTCOME" = success
-          test "$PARTICLES_OUTCOME" = success
+          case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *temporal*) test "$TEMPORAL_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *particles*) test "$PARTICLES_OUTCOME" = success ;; esac
