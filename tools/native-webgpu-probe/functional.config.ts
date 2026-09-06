@@ -1,0 +1,18 @@
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: '../..',
+  testMatch: ['tests/browser/webgpu-bloom-hdr-301.spec.ts', 'tests/browser/webgpu-post-j2.spec.ts', 'tests/browser/gpu-particle-a4.spec.ts'],
+  workers: 1,
+  timeout: 240_000,
+  retries: 0,
+  use: {
+    browserName: 'chromium',
+    headless: true,
+    viewport: { width: 1280, height: 800 },
+    launchOptions: { args: ['--use-angle=metal', '--enable-unsafe-webgpu'] },
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
+  },
+  reporter: [['line'], ['json', { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? 'tests/reports/native-ci/browser.json' }]],
+});

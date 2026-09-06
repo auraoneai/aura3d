@@ -78,7 +78,10 @@ try {
       await page.screenshot({ path: join(output, `probe-${evidence.attempts.length}.png`) });
       const identity = JSON.stringify(attempt.result?.adapterInfo ?? {});
       const nativeIdentity = /apple|metal/i.test(identity) && !/swiftshader|llvmpipe|software|lavapipe/i.test(identity);
-      attempt.nativeMetalComputeVerified = platform() === 'darwin' && nativeIdentity && attempt.result?.fallback === false && attempt.result?.computePassed === true;
+      const gpu = attempt.systemInfo?.gpu;
+      const nativeBackend = gpu?.auxAttributes?.displayType === 'ANGLE_METAL' &&
+        /metal/i.test(gpu?.auxAttributes?.glRenderer ?? '') && gpu?.featureStatus?.webgpu === 'enabled';
+      attempt.nativeMetalComputeVerified = platform() === 'darwin' && nativeIdentity && nativeBackend && attempt.result?.fallback === false && attempt.result?.computePassed === true;
       evidence.nativeMetalComputeVerified ||= attempt.nativeMetalComputeVerified;
     } catch (error) { attempt.error = String(error?.stack ?? error); }
     finally { await browser?.close(); await writeFile(join(output, 'adapter-probe.json'), JSON.stringify(evidence, null, 2)); }
