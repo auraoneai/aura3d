@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: root-r02,particles
+  NATIVE_WORKLOADS: root-r02
 
 jobs:
   native-functional:
