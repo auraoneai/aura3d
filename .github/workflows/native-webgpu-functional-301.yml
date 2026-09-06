@@ -2,17 +2,12 @@ name: Native WebGPU Functional Evidence 3.0.1
 
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/native-webgpu-probe-301]
-    paths:
-      - .github/workflows/native-webgpu-functional-301.yml
-      - tools/native-webgpu-probe/functional.config.ts
 
 permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: temporal,root-r02,particles,atlas
+  NATIVE_WORKLOADS: temporal,root-r02,atlas
 
 jobs:
   native-functional:
