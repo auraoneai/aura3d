@@ -7,11 +7,11 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: atlas
+  NATIVE_WORKLOADS: temporal,particles
 
 jobs:
   native-functional:
-    runs-on: macos-latest
+    runs-on: macos-14
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -117,14 +117,14 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-bloom-hdr-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/hdr-results"
-      - name: Diagnostic static root temporal sequence (not acceptance)
+      - name: Diagnostic converged supersampling (not acceptance)
         id: temporal
         if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'temporal') }}
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/temporal-browser.json
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/root-temporal-diagnostic-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/root-temporal-diagnostic-301.spec.ts --grep 'converged supersampling' --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
       - name: Root rigid temporal motion and cut sequences
         id: root_temporal
         if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'root-r02') }}
