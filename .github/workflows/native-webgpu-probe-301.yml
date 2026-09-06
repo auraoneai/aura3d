@@ -6,7 +6,7 @@ on:
     branches: [codex/native-webgpu-probe-301]
     paths:
       - .github/workflows/native-webgpu-probe-301.yml
-      - tools/native-webgpu-probe/**
+      - tools/native-webgpu-probe/probe.mjs
 
 permissions:
   contents: read

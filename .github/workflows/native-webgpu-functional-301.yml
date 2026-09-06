@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: hdr,basic-color
+  NATIVE_WORKLOADS: temporal
 
 jobs:
   native-functional:
