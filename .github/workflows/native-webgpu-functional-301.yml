@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: temporal,particles
+  NATIVE_WORKLOADS: hdr,basic-color
 
 jobs:
   native-functional:
@@ -144,6 +144,14 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-temporal-device-loss-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/device-loss-results"
+      - name: Native RGB and RGBA vertex colors
+        id: basic_color
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'basic-color') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/basic-color-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-basic-color-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/basic-color-results"
       - name: Retain raw measurements
         if: always()
         run: |
@@ -165,8 +173,10 @@ jobs:
           TEMPORAL_OUTCOME: ${{ steps.temporal.outcome }}
           PARTICLES_OUTCOME: ${{ steps.particles.outcome }}
           DEVICE_LOSS_OUTCOME: ${{ steps.device_loss.outcome }}
+          BASIC_COLOR_OUTCOME: ${{ steps.basic_color.outcome }}
         run: |
           case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *temporal*) test "$TEMPORAL_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *particles*) test "$PARTICLES_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *device-loss*) test "$DEVICE_LOSS_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *basic-color*) test "$BASIC_COLOR_OUTCOME" = success ;; esac
