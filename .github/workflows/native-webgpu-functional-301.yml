@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: temporal,root-r02,atlas
+  NATIVE_WORKLOADS: particles
 
 jobs:
   native-functional:
