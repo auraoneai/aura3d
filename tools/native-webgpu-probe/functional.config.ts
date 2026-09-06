@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: '../..',
-  testMatch: ['tests/browser/webgpu-bloom-hdr-301.spec.ts', 'tests/browser/webgpu-post-j2.spec.ts', 'tests/browser/gpu-particle-a4.spec.ts'],
+  testMatch: ['tests/browser/webgpu-bloom-hdr-301.spec.ts', 'tests/browser/webgpu-post-j2.spec.ts', 'tests/browser/gpu-particle-a4.spec.ts', 'tests/browser/webgpu-temporal-device-loss-301.spec.ts'],
   workers: 1,
   timeout: 240_000,
   retries: 0,
