@@ -2,18 +2,13 @@ name: Native WebGPU Adapter Probe 3.0.1
 
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/native-webgpu-probe-301]
-    paths:
-      - .github/workflows/native-webgpu-probe-301.yml
-      - tools/native-webgpu-probe/probe.mjs
 
 permissions:
   contents: read
 
 jobs:
   adapter:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +27,7 @@ jobs:
           ./node_modules/.bin/playwright install chromium
       - name: Capture native adapter and compute evidence
         env:
+          PROBE_CADENCE: '1'
           PROBE_OUTPUT: ${{ runner.temp }}/native-webgpu-probe/evidence
         run: node "$RUNNER_TEMP/native-webgpu-probe/probe.mjs"
       - uses: actions/upload-artifact@v4

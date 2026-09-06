@@ -75,9 +75,29 @@ try {
           return { available: true, adapterInfo, fallback: adapter.isFallbackAdapter ?? info.isFallbackAdapter ?? null, features: Array.from(adapter.features), actual, expected: [17, 18, 21, 26], computePassed: actual.join(',') === '17,18,21,26' && errors.length === 0 && !validationError, errors, validationError: validationError ? String(validationError) : null };
         } finally { gpu.destroy(); readback.destroy(); device.destroy(); }
       });
+      if (process.env.PROBE_CADENCE === '1' && attempt.result?.computePassed) {
+        attempt.cadence = await page.evaluate(async () => {
+          const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance', forceFallbackAdapter: false });
+          const device = await adapter.requestDevice();
+          const canvas = document.createElement('canvas'); canvas.width = 1800; canvas.height = 1200; document.body.append(canvas);
+          const context = canvas.getContext('webgpu'); context.configure({ device, format: navigator.gpu.getPreferredCanvasFormat(), alphaMode: 'opaque' });
+          const source = device.createBuffer({size:128,usage:GPUBufferUsage.COPY_SRC|GPUBufferUsage.COPY_DST});
+          const readback = device.createBuffer({size:128,usage:GPUBufferUsage.COPY_DST|GPUBufferUsage.MAP_READ});
+          const frames = []; const startedAt = performance.now(); let previous = startedAt;
+          try {
+            while (performance.now() - startedAt < 10000) {
+              const raf = await new Promise(resolve => requestAnimationFrame(resolve));
+              const encoder = device.createCommandEncoder(); const pass = encoder.beginRenderPass({colorAttachments:[{view:context.getCurrentTexture().createView(),loadOp:'clear',storeOp:'store',clearValue:{r:0.02,g:0.02,b:0.02,a:1}}]});pass.end();encoder.copyBufferToBuffer(source,0,readback,0,128);device.queue.submit([encoder.finish()]);
+              await readback.mapAsync(GPUMapMode.READ); readback.unmap(); const completed = performance.now(); frames.push({raf,completed,intervalMs:completed-previous,visible:document.visibilityState==='visible'});previous=completed;
+            }
+            const quantile = values => { const sorted=values.sort((a,b)=>a-b);return {median:sorted[Math.floor(sorted.length*.5)],p95:sorted[Math.floor(sorted.length*.95)],p99:sorted[Math.floor(sorted.length*.99)]}; };
+            return {acceptance:false,scope:'10 second empty 1800x1200 native clear and 128B map control; not particle performance',frames,durationMs:performance.now()-startedAt,completion:quantile(frames.slice(1).map(f=>f.intervalMs)),raf:quantile(frames.slice(1).map((f,i)=>f.raf-frames[i].raf))};
+          } finally {source.destroy();readback.destroy();context.unconfigure();device.destroy();canvas.remove();}
+        });
+      }
       await page.screenshot({ path: join(output, `probe-${evidence.attempts.length}.png`) });
       const identity = JSON.stringify(attempt.result?.adapterInfo ?? {});
-      const nativeIdentity = /apple|metal/i.test(identity) && !/swiftshader|llvmpipe|software|lavapipe/i.test(identity);
+      const nativeIdentity = /apple|metal|intel|amd/i.test(identity) && !/swiftshader|llvmpipe|software|lavapipe/i.test(identity);
       const gpu = attempt.systemInfo?.gpu;
       const nativeBackend = gpu?.auxAttributes?.displayType === 'ANGLE_METAL' &&
         /metal/i.test(gpu?.auxAttributes?.glRenderer ?? '') && gpu?.featureStatus?.webgpu === 'enabled';
