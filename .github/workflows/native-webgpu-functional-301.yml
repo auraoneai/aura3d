@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: device-loss
+  NATIVE_WORKLOADS: temporal,particles
 
 jobs:
   native-functional:
