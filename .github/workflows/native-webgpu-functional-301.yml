@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  NATIVE_WORKLOADS: atlas
+  NATIVE_WORKLOADS: temporal,root-r02,particles,atlas
 
 jobs:
   native-functional:
@@ -130,6 +130,14 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
           pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-post-j2.spec.ts --grep 'R03 native TAA' --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
+      - name: Root rigid temporal motion and cut sequences
+        id: root_temporal
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'root-r02') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/root-r02-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/root-effects-a3.spec.ts --grep 'R02 root rigid' --output "$RUNNER_TEMP/native-functional/evidence/root-r02-results"
       - name: Sustained particle measurements on disclosed hosted hardware
         id: particles
         if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'particles') }}
@@ -195,6 +203,7 @@ jobs:
           DEVICE_LOSS_OUTCOME: ${{ steps.device_loss.outcome }}
           BASIC_COLOR_OUTCOME: ${{ steps.basic_color.outcome }}
           COLLISION_OUTCOME: ${{ steps.collision.outcome }}
+          ROOT_TEMPORAL_OUTCOME: ${{ steps.root_temporal.outcome }}
           ATLAS_OUTCOME: ${{ steps.atlas.outcome }}
         run: |
           case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
@@ -204,3 +213,4 @@ jobs:
           case "$NATIVE_WORKLOADS" in *basic-color*) test "$BASIC_COLOR_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *collision*) test "$COLLISION_OUTCOME" = success ;; esac
           case "$NATIVE_WORKLOADS" in *atlas*) test "$ATLAS_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *root-r02*) test "$ROOT_TEMPORAL_OUTCOME" = success ;; esac
