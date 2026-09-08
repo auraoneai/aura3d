@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a4124b2fac2b3850fd64db12c2118c9ade7aebb4
+          ref: 83e2d0f3510ebb649af294b4347e0e3ddf37fb49
           fetch-depth: 1
           lfs: true
       - uses: pnpm/action-setup@v4
@@ -26,7 +26,7 @@ jobs:
           cache: pnpm
       - name: Verify immutable candidate
         run: |
-          test "$(git rev-parse HEAD)" = a4124b2fac2b3850fd64db12c2118c9ade7aebb4
+          test "$(git rev-parse HEAD)" = 83e2d0f3510ebb649af294b4347e0e3ddf37fb49
           test -z "$(git status --short)"
       - name: Install exact dependencies and browser
         run: |
@@ -36,16 +36,16 @@ jobs:
         env:
           AURA3D_REMOTE_PROVIDER: github-actions
           AURA3D_REMOTE_WORKER_ID: ${{ runner.name }}
-        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/a4124b2f
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/83e2d0f3
       - name: Retain exact L01 evidence and tarballs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-l01-a4124b2f-${{ github.run_id }}
+          name: muse301-l01-83e2d0f3-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
-            tests/reports/muse3jsparity/l01/a4124b2f/
+            tests/reports/muse3jsparity/l01/83e2d0f3/
             tests/reports/release-tarballs/
             docs/project/release-artifacts.json
             tests/reports/release-frozen-lock.json
