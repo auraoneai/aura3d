@@ -1,0 +1,33 @@
+name: Muse 3.0.1 Aura Clash Mount Diagnostic
+on:
+  push:
+    branches: [ops/muse301-clash-diag-0f71]
+permissions: {contents: read}
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 0f71dc7545a3a2fcd277be8270e45315211e6319, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:raw
+      - name: Expose complete root diagnostics in the existing fail-closed assertion
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts')
+          s=p.read_text()
+          old='const failures = rootStageApp.diagnostics().renderer?.runtime.warnings.join("; ") ?? "No renderer diagnostics";'
+          new='const failures = JSON.stringify(rootStageApp.diagnostics());'
+          if old not in s: raise SystemExit('diagnostic assertion changed')
+          p.write_text(s.replace(old,new))
+          PY
+      - run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/visual-regression.spec.ts --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: muse301-clash-mount-diagnostic, path: test-results/, if-no-files-found: ignore}
