@@ -1498,10 +1498,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     scene: createRootStageScene()
   });
   await rootStageApp.ready();
-  // Evidence mode uses explicit production frames so remote workers do not
-  // submit unrelated frames while Playwright prepares the next input. Normal
-  // players retain the continuous runtime and its initial frame.
-  if (!testDriverEnabled) rootStageApp.step(0);
+  // Submit one mount frame before evidence sampling. This compiles the live
+  // production pipeline and uploads static stage resources without claiming a
+  // gameplay performance sample; the first proof then measures a steady frame
+  // instead of shader compilation and cold GPU allocation. Evidence mode stays
+  // explicit after this mount frame, while normal players continue via RAF.
+  rootStageApp.step(0);
   if (rootStageApp.diagnostics().renderer?.runtime.backend !== "production-runtime") {
     const failures = rootStageApp.diagnostics().renderer?.runtime.warnings.join("; ") ?? "No renderer diagnostics";
     rootStageApp.dispose();
