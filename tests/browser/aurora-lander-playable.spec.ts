@@ -66,7 +66,14 @@ test.describe("aurora lander playable", () => {
 
     // Hold main thrust: fuel must drain and vertical speed must turn upward.
     await page.keyboard.down("KeyW");
-    await page.waitForTimeout(1500);
+    await expect.poll(async () => {
+      const active = await evidenceOf(page);
+      return (active.fuel ?? 1) < (idle.fuel ?? 0.999)
+        && (active.vspeed ?? -99) > (idle.vspeed ?? 0);
+    }, {
+      message: "held thrust must reach a published fixed-step frame on slow renderers",
+      timeout: 20_000
+    }).toBe(true);
     const burning = await evidenceOf(page);
     await page.keyboard.up("KeyW");
     console.log("BURNING:", JSON.stringify({ fuel: burning.fuel, vspeed: burning.vspeed }));
