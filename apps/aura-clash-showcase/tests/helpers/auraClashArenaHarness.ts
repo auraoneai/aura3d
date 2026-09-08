@@ -307,6 +307,7 @@ export async function queueNearKoHeavy(page: Page): Promise<void> {
         setRivalHealth(health: number): void;
         setPlayerMeter(meter: number): void;
         setPositions(playerX: number, rivalX: number): void;
+        setRivalGuardSuppressed(suppressed: boolean): void;
         queuePlayerAttack(move: AuraClashMoveId): void;
       };
     }).__AURA_CLASH_ARENA_TEST_DRIVER__;
@@ -314,6 +315,7 @@ export async function queueNearKoHeavy(page: Page): Promise<void> {
     driver.setPositions(-0.95, 0.5);
     driver.setRivalHealth(9);
     driver.setPlayerMeter(100);
+    driver.setRivalGuardSuppressed(true);
     driver.queuePlayerAttack("heavy");
   });
 }
