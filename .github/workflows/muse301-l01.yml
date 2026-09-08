@@ -2,7 +2,7 @@ name: Muse 3.0.1 Exact Package L01
 on:
   push:
     branches:
-      - ops/muse301-l01-ba0dfaeb
+      - ops/muse301-l01-3a445008
 permissions:
   contents: read
 jobs:
