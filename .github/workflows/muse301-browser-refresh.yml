@@ -1,0 +1,44 @@
+name: Muse 3.0.1 browser refresh fa9e0507
+on:
+  push:
+    branches: [ops/muse301-browser-refresh]
+permissions: {contents: read}
+env:
+  SOURCE_COMMIT: fa9e050725b716d4e91bbb06d474eed328290ae9
+jobs:
+  browser:
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [k1, product, aurora, neon]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fa9e050725b716d4e91bbb06d474eed328290ae9, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:raw
+      - name: Run lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ matrix.lane }}" in
+            k1) pnpm muse3jsparity:release --only=k1 ;;
+            product) PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/product-demos-refresh.json pnpm exec playwright test tests/browser/product-demos.spec.ts --reporter=line,json ;;
+            aurora) PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/aurora-refresh.json pnpm exec playwright test tests/browser/aurora-lander-campaign.spec.ts tests/browser/aurora-lander-terrain.spec.ts tests/browser/aurora-lander-playable.spec.ts --reporter=line,json && pnpm --dir apps/showcase-aurora-lander evidence:route-health ;;
+            neon) PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/neon-refresh.json pnpm exec playwright test tests/browser/neon-swarm-playable.spec.ts tests/browser/neon-swarm-instancing.spec.ts --reporter=line,json && pnpm --dir apps/showcase-neon-swarm evidence:route-health ;;
+          esac
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-${{ matrix.lane }}-fa9e0507
+          path: |
+            tests/reports/
+            apps/showcase-aurora-lander/route-health.json
+            apps/showcase-neon-swarm/route-health.json
+          if-no-files-found: warn
