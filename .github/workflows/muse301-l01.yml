@@ -1,32 +1,32 @@
-name: Muse 3.0.1 L01 7d1c70bb
+name: Muse 3.0.1 L01 afae090c
 on:
   push:
-    branches: [ops/muse301-l01-fa9e0507]
+    branches: [ops/muse301-l01-afae090c]
 permissions: {contents: read}
 env:
-  SOURCE_COMMIT: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219
+  SOURCE_COMMIT: afae090cfb2c3bcf73bf6f8a15444be8a180b3bf
   AURA3D_REMOTE_PROVIDER: github-actions
-  AURA3D_REMOTE_WORKER_ID: muse301-l01-7d1c70bb
+  AURA3D_REMOTE_WORKER_ID: muse301-l01-afae090c
 jobs:
   l01:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: afae090cfb2c3bcf73bf6f8a15444be8a180b3bf, lfs: true, fetch-depth: 0}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
         with: {node-version: '22', cache: pnpm, registry-url: 'https://registry.npmjs.org'}
       - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/7d1c70bb
+      - run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/afae090c
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-l01-7d1c70bb
+          name: muse301-l01-afae090c
           path: |
-            tests/reports/muse3jsparity/l01/7d1c70bb/
+            tests/reports/muse3jsparity/l01/afae090c/
             tests/reports/release-tarballs/
             tests/reports/agent-templates.json
             tests/reports/installed-template-lifecycle.json
