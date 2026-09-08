@@ -41,7 +41,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: {name: gallery-routes, path: "tests/reports/showcase-gameplay/\ntests/reports/smart-city-composition-301/\ntests/reports/muse301-gallery/routes/receipt.json", if-no-files-found: error}
   clash:
-    runs-on: ubuntu-24.04
+    # Aura Clash's own Playwright config requires installed macOS Chrome for a
+    # real GPU path. Bundled Linux Chromium falls back to ~2 FPS SwiftShader
+    # and cannot satisfy the authored 90-second visual-state contract.
+    runs-on: macos-15
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +54,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '22', cache: pnpm}
       - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
-      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+      - run: test -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
       - run: pnpm build:raw
       - run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/visual-regression.spec.ts --reporter=line
       - run: node tools/release/muse301-gallery.mjs receipt gallery-clash aura-clash-final-review tests/reports/muse301-gallery/clash/receipt.json 12 apps/aura-clash-showcase/launch-evidence
