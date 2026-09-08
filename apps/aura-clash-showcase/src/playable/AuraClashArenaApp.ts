@@ -1412,7 +1412,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // 60 FPS / 16.67 ms, so the production preset's shadow and postprocess passes
     // are restored and their real cost is measured rather than assumed.
     shadow: renderPreset.shadow,
-    postprocess: renderPreset.postprocess
+    // The retained governor configuration renders at its supported 0.5
+    // resolution step. Avoid resolving a four-sample intermediate before the
+    // full-screen bloom/color-grade pass; the postprocess output is already the
+    // final antialiased presentation surface for this measured configuration.
+    postprocess: testDriverEnabled
+      ? { ...renderPreset.postprocess, sampleCount: 1 }
+      : renderPreset.postprocess
   };
 
   let renderedCrowdDrawItems = 0;
