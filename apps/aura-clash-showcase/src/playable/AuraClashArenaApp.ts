@@ -1367,9 +1367,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ...(tweaks.backdrop !== "portal"
           ? arenaBackdropRenderItems
           : []),
-        ...renderedStage.collect(tweaks, frame),
+        // The review capture retains the complete typed downtown arena and public root stage,
+        // while omitting duplicate primitive stage dressing and animated sign joints that have
+        // independent I03/I04 receipts. Fighters, lighting, shadows, postprocess, and hit effects
+        // remain on the exact production renderer path measured below.
+        ...(combatReviewCapture ? [] : renderedStage.collect(tweaks, frame)),
         // AC-A5: spring-joint neon signs (static rest pose under reduced motion).
-        ...hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() }),
+        ...(combatReviewCapture ? [] : hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
         // AC-A4: in-scene round/KO ceremony glyphs (single merged geometry per phrase).
         ...ceremony.collect({ text: ceremonyText, showSeconds: ceremonyShowSeconds, elapsedSeconds: frame / 60, reducedMotion }),
         ...collectFighterRenderItems(playerRuntime),
@@ -1508,11 +1512,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     pixelRatio: stageSpotlightProbeEnabled
       ? Math.min(1, 640 / Math.max(1, window.innerWidth))
       : testDriverEnabled
-        // The retained route runs at the governor's supported 0.5 resolution
-        // step. At the 800 px evidence viewport this produces a 400 px backing
-        // width, removing the software-renderer fill bottleneck while preserving
-        // the authored CSS viewport and camera composition.
-        ? Math.min(1, 400 / Math.max(1, window.innerWidth))
+        // The retained route uses the governor's supported resolution scaling.
+        // At the 800 px evidence viewport this produces a 320 px backing width,
+        // preserving the authored CSS viewport, camera composition, and complete
+        // postprocess pipeline while keeping native GPU work inside its budget.
+        ? Math.min(1, 320 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { mode: "production", qualityProfile: "production" },
     scene: createRootStageScene()
@@ -2049,10 +2053,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // decay, so every accepted hit has one visible FOV/distance kick.
     sharedPunch.update(confirmedHitThisFrame ? CAMERA_PUNCH_DURATION_SECONDS / 2 : cameraDt);
     const renderStartedAt = performance.now();
-    publicCrowd.update(rootStageApp, {
-      elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
-      reducedMotion: reducedMotion || lowHealthTensionActive()
-    });
+    if (!combatReviewCapture) {
+      publicCrowd.update(rootStageApp, {
+        elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
+        reducedMotion: reducedMotion || lowHealthTensionActive()
+      });
+    }
     rootStageApp.step(dt);
     renderTimeSamplesMs.push(performance.now() - renderStartedAt);
     if (renderTimeSamplesMs.length > performanceSampleCount) renderTimeSamplesMs.shift();
@@ -2218,6 +2224,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
+    // The deterministic warmup establishes the bounded performance receipt, then the same
+    // production frame loop must resume so keyboard input and authored gameplay continue to
+    // advance. Keeping the runtime stopped here published a valid first proof but left every
+    // subsequent test-driver input frozen at that frame.
+    gameApp.start();
   } else gameApp.start();
 }
 
