@@ -2,156 +2,60 @@ name: Native WebGPU Functional Evidence 3.0.1
 
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/native-webgpu-probe-301]
-    paths:
-      - .github/workflows/native-webgpu-functional-301.yml
-      - tools/native-webgpu-probe/functional.config.ts
 
 permissions:
   contents: read
 
-env:
-  NATIVE_WORKLOADS: temporal,root-r02,particles,atlas
-
 jobs:
-  native-functional:
-    runs-on: macos-latest
-    timeout-minutes: 30
+  l01-exact-package-replay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: a4124b2fac2b3850fd64db12c2118c9ade7aebb4
           fetch-depth: 1
           lfs: true
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: pnpm
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.3
           run_install: false
-      - name: Restore exact dispatched source
+      - name: Verify immutable candidate
         run: |
-          mkdir -p "$RUNNER_TEMP/native-functional/evidence"
-          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/native-functional/source"
-          cd "$GITHUB_WORKSPACE"
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          git rev-parse HEAD > "$RUNNER_TEMP/native-functional/evidence/source-head.txt"
-          git status --short > "$RUNNER_TEMP/native-functional/evidence/source-status.txt"
-          test ! -s "$RUNNER_TEMP/native-functional/evidence/source-status.txt"
-          node --input-type=module - <<'NODE' > "$RUNNER_TEMP/native-functional/evidence/source-identity.json"
-          import { sourceIdentity } from './tools/release/source-identity.mjs';
-          console.log(JSON.stringify(sourceIdentity(process.cwd()), null, 2));
-          NODE
+          test "$(git rev-parse HEAD)" = a4124b2fac2b3850fd64db12c2118c9ade7aebb4
+          test -z "$(git status --short)"
+      - name: Install exact dependencies and browser
+        run: |
           pnpm install --frozen-lockfile
-          pnpm exec playwright install chromium
-      - name: Record actual runner adapter
-        id: adapter
+          pnpm exec playwright install --with-deps chromium
+      - name: Build, pack once, and replay L01
         env:
-          PROBE_OUTPUT: ${{ runner.temp }}/native-functional/evidence/adapter
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          node --input-type=module -e 'import fs from "node:fs"; const source=fs.readFileSync("tools/native-webgpu-probe/probe.mjs","utf8"); fs.writeFileSync("native-adapter-probe.mjs",source.replace("from '\''playwright'\''", "from '\''@playwright/test'\''"));'
-          node native-adapter-probe.mjs
-          rm native-adapter-probe.mjs
-      - name: Native HDR numerical oracle
-        id: hdr
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'hdr') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/hdr-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-bloom-hdr-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/hdr-results"
-      - name: Native temporal sequence and reset evidence
-        id: temporal
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'temporal') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/temporal-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-post-j2.spec.ts --grep 'R03 native TAA' --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
-      - name: Root rigid temporal motion and cut sequences
-        id: root_temporal
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'root-r02') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/root-r02-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/root-effects-a3.spec.ts --grep 'R02 root rigid' --output "$RUNNER_TEMP/native-functional/evidence/root-r02-results"
-      - name: Sustained particle measurements on disclosed hosted hardware
-        id: particles
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'particles') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/particles-browser.json
-          NATIVE_PERFORMANCE_TRACE: 'off'
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          AURA3D_REFERENCE_HARDWARE_ATTESTATION="$(node --input-type=module -e 'import fs from "node:fs"; const d=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/native-functional/evidence/adapter/adapter-probe.json","utf8")); console.log(JSON.stringify({hostedRunner:d.runner,conditionDisclosure:"GitHub hosted virtual machine; host thermal state, power mode, GPU contention and physical reference equivalence are not exposed. Foreground visibility is measured by the test. One browser worker; Playwright tracing disabled for timed performance, raw frames and postmeasurement screenshots retained.",runId:d.source.runId}));')"
-          export AURA3D_REFERENCE_HARDWARE_ATTESTATION
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/gpu-particle-a4.spec.ts --grep '10k live rendered particles' --output "$RUNNER_TEMP/native-functional/evidence/particles-results"
-      - name: Native device loss and temporal reseeding
-        id: device_loss
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'device-loss') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/device-loss-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-temporal-device-loss-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/device-loss-results"
-      - name: Native RGB and RGBA vertex colors
-        id: basic_color
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'basic-color') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/basic-color-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-basic-color-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/basic-color-results"
-      - name: Native resident particle collision pixels
-        id: collision
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'collision') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/collision-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/particle-collision-resident-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/collision-results"
-      - name: Native complete extension atlas maps
-        id: atlas
-        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'atlas') }}
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/atlas-browser.json
-        run: |
-          cd "$RUNNER_TEMP/native-functional/source"
-          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-extension-atlas-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/atlas-results"
-      - name: Retain raw measurements
+          AURA3D_REMOTE_PROVIDER: github-actions
+          AURA3D_REMOTE_WORKER_ID: ${{ runner.name }}
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/a4124b2f
+      - name: Retain exact L01 evidence and tarballs
         if: always()
-        run: |
-          mkdir -p "$RUNNER_TEMP/native-functional/evidence/generated-reports"
-          if [ -d "$RUNNER_TEMP/native-functional/source/tests/reports" ]; then
-            cp -R "$RUNNER_TEMP/native-functional/source/tests/reports/." "$RUNNER_TEMP/native-functional/evidence/generated-reports/"
-          fi
-      - uses: actions/upload-artifact@v4
-        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: native-functional-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/native-functional/evidence/
+          name: muse301-l01-a4124b2f-${{ github.run_id }}
           retention-days: 14
-          if-no-files-found: error
-      - name: Assert each measured gate passed
-        if: always()
-        env:
-          HDR_OUTCOME: ${{ steps.hdr.outcome }}
-          TEMPORAL_OUTCOME: ${{ steps.temporal.outcome }}
-          PARTICLES_OUTCOME: ${{ steps.particles.outcome }}
-          DEVICE_LOSS_OUTCOME: ${{ steps.device_loss.outcome }}
-          BASIC_COLOR_OUTCOME: ${{ steps.basic_color.outcome }}
-          COLLISION_OUTCOME: ${{ steps.collision.outcome }}
-          ROOT_TEMPORAL_OUTCOME: ${{ steps.root_temporal.outcome }}
-          ATLAS_OUTCOME: ${{ steps.atlas.outcome }}
-        run: |
-          case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *temporal*) test "$TEMPORAL_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *particles*) test "$PARTICLES_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *device-loss*) test "$DEVICE_LOSS_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *basic-color*) test "$BASIC_COLOR_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *collision*) test "$COLLISION_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *atlas*) test "$ATLAS_OUTCOME" = success ;; esac
-          case "$NATIVE_WORKLOADS" in *root-r02*) test "$ROOT_TEMPORAL_OUTCOME" = success ;; esac
+          if-no-files-found: warn
+          path: |
+            tests/reports/muse3jsparity/l01/a4124b2f/
+            tests/reports/release-tarballs/
+            docs/project/release-artifacts.json
+            tests/reports/release-frozen-lock.json
+            tests/reports/agent-templates.json
+            tests/reports/installed-template-lifecycle.json
+            tests/reports/public-surface-diff-3.0.1.json
+            tests/reports/package-clean-install.json
+            tests/reports/import-smoke.json
+            tests/reports/exports.json
+            tests/reports/package-install-smoke.json
+            tests/reports/package-provenance.json
+            tests/reports/bundle-size.json
+            tests/reports/installed-tree-shaking.json
