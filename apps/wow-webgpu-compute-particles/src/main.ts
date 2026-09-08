@@ -492,10 +492,11 @@ async function setupResidentParticles(canvas: HTMLCanvasElement, width: number, 
   capture.start=()=>{if(pacingActive||gpuTimingActive)throw new Error('Full measurement forbidden during pacing control');guardedCaptureStart();};
   let steps=0,lastCompletedAt=performance.now();
   return {
-    // Acceptance uses one completed submission per display interval. Allowing a
-    // second frame when a prior map callback is late creates short/long completion
-    // pairs that inflate the measured p95 without adding rendered work.
-    get maxFramesInFlight():1|3{return capture.capturing||frozen||pendingControl||pacingActive||gpuTimingActive||collisionRunning?1:3;},
+    // Timed acceptance keeps the same bounded three-slot queue as normal rendering.
+    // Each slot has an independent completion readback, so delayed map callbacks do
+    // not suppress later display-interval submissions. Controls and diagnostics
+    // remain exclusive because they mutate or inspect shared renderer state.
+    get maxFramesInFlight():1|3{return frozen||pendingControl||pacingActive||gpuTimingActive||collisionRunning?1:3;},
     requestedBackend:'auto' as const,selectedBackend:'webgpu' as const,adapterName:owner.adapterName,
     capabilities:['webgpu-compute','gpu-resident-particles','a4-sub-emitters','a4-curl-turbulence','a4-heightfield-collision','a4-ribbon-trails','a4-life-curves','a4-particle-lighting','a4-soft-particles'],
     resize:(w:number,h:number)=>{const size=residentSize(w,h);owner.resize(size.width,size.height);},dispose:()=>owner.dispose(),

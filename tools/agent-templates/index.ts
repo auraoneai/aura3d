@@ -497,6 +497,11 @@ function installPackedTemplateDependencies(targetDir: string): readonly { name: 
   const registryInstall = process.env.A3D_REGISTRY_INSTALL === "1";
   if (registryInstall && !exactReleasePlan) throw new Error("Registry lifecycle requires a validated exact release plan");
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-save", `--logs-dir=${resolve(targetDir,"tests/reports/npm-install")}`, "--timing", "--loglevel=http", "--fetch-timeout=30000", "--fetch-retries=1", "--fetch-retry-maxtimeout=10000", ...(registryInstall ? [...closure].sort().map(name => `${name}@${currentPackageVersion}`) : tarballs)], targetDir);
+  // The scaffold resolves its own declared Playwright range. The root lock can
+  // therefore use a different browser revision from a fresh exact install.
+  // Install through the scaffold-local CLI so its tests and Chromium always
+  // agree; the shared Playwright cache makes later scaffolds a no-op.
+  run(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir);
   for (const name of directAuraPackages) {
     const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
     if (installed.version !== currentPackageVersion) throw new Error(`${name}: expected installed ${currentPackageVersion}, found ${installed.version ?? "missing"}.`);

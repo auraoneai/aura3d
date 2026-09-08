@@ -385,7 +385,8 @@ test.describe("A4 GPU particle effects", () => {
           visible: boolean; backend: string; executionPath?: string; capacity: number; count: number; workgroups: number; readbackBytes: number;
           computeAndReadbackMs: number; cpuSubmitAndReadbackMs: number; collision: number; trails: number; subemitters: number;
           turbulence: number; curves: number; lighting: number; childRequests: number; queueCompletedAt:number;
-          counterSourceSubmission:number; counterSampleAge:number };
+          counterSourceSubmission:number; counterSampleAge:number;
+          submissionQueue?: { limit: number; inFlight: number; backpressureFrames: number } };
         const capture = (window as unknown as { __a3dParticle301: { start(): void; stop(): Frame[]; frames: Frame[] } }).__a3dParticle301;
         if (!capture) throw new Error("Missing actual particle completion capture");
         const start = performance.now(), rafIntervals: number[] = [];
@@ -429,6 +430,7 @@ test.describe("A4 GPU particle effects", () => {
         if (![f.collision, f.trails, f.subemitters, f.turbulence, f.curves, f.lighting, f.faded].every(n => n > 0)) failures.push("missing submitted effect");
         if (f.ribbonVertices<=0 || f.trailCount<=0 || f.workgroups<=0 || f.drawCalls<=0 || f.nativeSubmissions<=0) failures.push("missing device workload");
         if (f.completedAt!==f.queueCompletedAt || f.counterSourceSubmission<1 || f.counterSourceSubmission>f.frameId || f.counterSampleAge!==f.frameId-f.counterSourceSubmission || f.counterSampleAge<0 || f.counterSampleAge>=60) failures.push("missing queue completion or stale periodic counters");
+        if (f.submissionQueue?.limit!==3 || !Number.isInteger(f.submissionQueue.inFlight) || f.submissionQueue.inFlight<1 || f.submissionQueue.inFlight>3) failures.push("timed bounded submission queue inactive");
         if (f.width!==fixed.width || f.height!==fixed.height || f.capacity!==fixed.capacity || f.executionPath!==fixed.executionPath) failures.push("workload adapted");
         if (!f.visible || f.backend!=="webgpu") failures.push("not visible native WebGPU");
         if (i>0 && f.frameId!==frames[i-1]!.frameId+1) failures.push("missing render frame receipt");
