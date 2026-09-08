@@ -1,6 +1,8 @@
 # Release Process
 
-Version: 3.0.0
+Version: 3.0.1
+
+Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -70,7 +72,7 @@ The exact command names may evolve, but the release run must generate or verify:
 
 Nonblank screenshots alone are not release evidence.
 Route-primary, deploy, and gameplay proof are also not enough for public game
-routes. Public racing and platformer examples require certified game geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence. Turbo Drift Circuit and Skyline Runner currently pass that bounded chain; the diagnostic proof routes remain non-public.
+routes. Public racing and platformer examples require certified game geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence. Turbo Drift Circuit and Skyline Runner require fresh evidence for that bounded chain and independent review of the exact 3.0.1 artifacts; prior automated receipts do not constitute that approval. The diagnostic proof routes remain non-public.
 
 ## Hosted Demo Deployment
 

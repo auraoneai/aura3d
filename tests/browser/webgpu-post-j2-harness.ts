@@ -12,8 +12,8 @@ import type { WebGPUDevice } from "/packages/rendering/src/WebGPUDevice.js";
  * Rendering-package level (not root): NDC quads rendered by Renderer on the
  * real WebGPU backend, then WebGPUDevice.executeWebGPUBloom /
  * executeWebGPUColorGrade / executeWebGPUFxaa over the scene target with
- * readback metrics per stage. TAA is withheld by design (no velocity or
- * history inputs on the WebGPU path — same doctrine as root A3).
+ * readback metrics per stage. The ?temporal variant independently exercises
+ * renderer-owned native TAA history across actual rendered frame sequences.
  */
 
 const WIDTH = 256;
@@ -36,7 +36,7 @@ interface J2Stage {
 }
 
 interface J2Result {
-  readonly status: "ready" | "error" | "unsupported";
+  readonly status: "ready" | "error" | "unsupported" | "waiting";
   readonly backend?: string;
   readonly adapter?: string;
   readonly stages?: readonly J2Stage[];
@@ -48,6 +48,7 @@ interface J2Result {
 declare global {
   interface Window {
     __AURA3D_J2_WEBGPU_POST__?: J2Result;
+    __AURA3D_R03_FRAMES__?: { frame: number; mode: string; x: number; reset: boolean; sceneKey: string; width: number; height: number; pixelsBase64: string; nativeSubmissions: number; nativeTemporalBindings: number }[];
   }
 }
 
@@ -61,7 +62,7 @@ if (!mount || !shoot) {
 } else {
   shoot.addEventListener("click", () => {
     shoot.hidden = true;
-    void runHarness().catch((error: unknown) => {
+    void (new URLSearchParams(location.search).has("temporal") ? runTemporalHarness() : runHarness()).catch((error: unknown) => {
       window.__AURA3D_J2_WEBGPU_POST__ = {
         status: "error",
         error: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -249,5 +250,121 @@ async function runHarness(): Promise<void> {
     }
   } finally {
     renderer.dispose();
+  }
+}
+
+
+/** Independent R03 sequence; output readbacks are measurement only, after native submission. */
+async function runTemporalHarness(): Promise<void> {
+  const renderer = await Renderer.create({ backend: "webgpu", width: WIDTH, height: HEIGHT, clearColor: [0.02, 0.02, 0.03, 1] });
+  const device = renderer.device as WebGPUDevice;
+  const geometry = ndcQuad(-0.32, -0.61, 0.32, 0.61);
+  const material = new UnlitMaterial({ color: [0.85, 0.85, 0.85, 1] });
+  const output = device.createRenderTarget({ width: WIDTH, height: HEIGHT, format: "rgba8", label: "r03-measured-output" });
+  try {
+    const adapter = `${device.info.vendor} ${device.info.renderer}`.trim();
+    if (device.kind !== "webgpu" || !adapter || /swiftshader|llvmpipe|software|lavapipe/i.test(adapter)) {
+      window.__AURA3D_J2_WEBGPU_POST__ = { status: "unsupported", backend: device.kind, adapter, error: "R03 requires a hardware WebGPU adapter; software evidence cannot close native acceptance." };
+      return;
+    }
+    window.__AURA3D_R03_FRAMES__ = [];
+    let frameCount = 0;
+    let hotPathReadbacks = 0;
+    const count = (key: string): number => Number(device.captureState().get(key) ?? 0);
+    const frame = async (mode: "off" | "taa" | "fxaa", x: number, reset = false, sceneKey = "r03-stable"): Promise<Uint8Array> => {
+      const matrix = new Float32Array(IDENTITY);
+      const angle = 0.31;
+      matrix[0] = Math.cos(angle); matrix[1] = Math.sin(angle);
+      matrix[4] = -Math.sin(angle); matrix[5] = Math.cos(angle);
+      matrix[12] = x;
+      const before = count("nativeTextureReadbacks");
+      await renderer.renderAsync({
+        renderItems: [{ geometry, material, modelMatrix: matrix, modelViewProjectionMatrix: matrix, label: "r03-stable-rigid-quad" }],
+        renderTarget: output,
+        cameraPolicy: "identity",
+        postprocess: { execution: "auto", toneMapping: { operator: "linear", outputColorSpace: "linear" },
+          ...(mode === "taa" ? { taa: { blend: 0.9 }, temporal: { sceneKey, reset } } : {}),
+          ...(mode === "fxaa" ? { fxaa: true } : {}) }
+      });
+      hotPathReadbacks += count("nativeTextureReadbacks") - before;
+      frameCount++;
+      device.setRenderTarget(output);
+      const pixels = await device.readPixelsAsync(0, 0, WIDTH, HEIGHT);
+      let binary = "";
+      for (let start = 0; start < pixels.length; start += 8192) binary += String.fromCharCode(...pixels.subarray(start, start + 8192));
+      window.__AURA3D_R03_FRAMES__!.push({ frame: frameCount, mode, x, reset, sceneKey, width: WIDTH, height: HEIGHT, pixelsBase64: btoa(binary), nativeSubmissions: count("nativeSubmissions"), nativeTemporalBindings: count("nativeTemporalBindings") });
+      return pixels;
+    };
+    const sequence = async (mode: "off" | "taa" | "fxaa", resetEveryFrame = false): Promise<{ flicker: number; pixels: Uint8Array }> => {
+      renderer.resetTemporalHistory("r03-independent-sequence");
+      let previous: Uint8Array | undefined;
+      let flicker = 0;
+      let samples = 0;
+      let pixels: Uint8Array = new Uint8Array();
+      for (let i = 0; i < 32; i++) {
+        // Controlled subpixel camera motion of a high-contrast oblique edge.
+        pixels = await frame(mode, (i % 2 ? 0.3 : -0.3) * 2 / WIDTH, resetEveryFrame);
+        if (previous && i >= 8) { flicker += analyze(previous, pixels).meanAbsDiffVsScene; samples++; }
+        previous = pixels;
+      }
+      return { flicker: flicker / samples, pixels };
+    };
+    const off = await sequence("off");
+    const fxaa = await sequence("fxaa");
+    const taa = await sequence("taa");
+    const reset = await sequence("taa", true);
+    // The same fixed ROI must contain actual old silhouette and become background.
+    for (let i = 0; i < 8; i++) await frame("taa", -0.55);
+    const oldSilhouette = await frame("off", -0.55);
+    let staleHistory: Uint8Array = new Uint8Array();
+    for (let i = 0; i < 8; i++) staleHistory = await frame("taa", -0.55);
+    const moved = await frame("taa", 0.55);
+    const movedReference = await frame("off", 0.55);
+    let ghostSum = 0, staleSum = 0, oldCoverage = 0, newCoverage = 0, ghostSamples = 0, roiPixels = 0;
+    for (let y = 70; y < 186; y++) for (let x = 20; x < 78; x++) {
+      const offset = (y * WIDTH + x) * 4;
+      const luma = (pixels: Uint8Array) => (pixels[offset]! + pixels[offset + 1]! + pixels[offset + 2]!) / 3 / 255;
+      if (luma(oldSilhouette) > .5) oldCoverage++;
+      if (luma(movedReference) > .5) newCoverage++;
+      roiPixels++;
+      for (let channel = 0; channel < 3; channel++) {
+        ghostSum += Math.abs(moved[offset + channel]! - movedReference[offset + channel]!);
+        staleSum += Math.abs(staleHistory[offset + channel]! - movedReference[offset + channel]!);
+        ghostSamples++;
+      }
+    }
+    // Explicit camera cut and scene identity change must seed, never blend stale history.
+    for (let i = 0; i < 8; i++) await frame("taa", -0.55);
+    renderer.resetTemporalHistory("camera-cut");
+    const cut = await frame("taa", 0.55);
+    renderer.resetTemporalHistory("cold-reference");
+    const cold = await frame("taa", 0.55);
+    for (let i = 0; i < 8; i++) await frame("taa", -0.55);
+    const replacement = await frame("taa", 0.55, false, "r03-replacement");
+    for (let i = 0; i < 8; i++) await frame("taa", -0.55);
+    renderer.resize(WIDTH / 2, HEIGHT / 2);
+    renderer.resize(WIDTH, HEIGHT);
+    const resized = await frame("taa", 0.55);
+    const checks = {
+      resizeMeanError: analyze(cold, resized).meanAbsDiffVsScene,
+      frames: frameCount,
+      offFlicker: off.flicker, fxaaFlicker: fxaa.flicker, taaFlicker: taa.flicker,
+      resetFlicker: reset.flicker,
+      taaVsFxaaPixels: analyze(fxaa.pixels, taa.pixels).diffPixelsVsScene,
+      ghostMeanError: ghostSum / ghostSamples / 255,
+      staleHistoryGhostMeanError: staleSum / ghostSamples / 255,
+      oldSilhouetteRoiCoverage: oldCoverage / roiPixels,
+      newSilhouetteRoiCoverage: newCoverage / roiPixels,
+      cutMeanError: analyze(cold, cut).meanAbsDiffVsScene,
+      sceneReplacementMeanError: analyze(cold, replacement).meanAbsDiffVsScene,
+      hotPathReadbacks,
+      nativeTaaPasses: count("nativeTaaPasses"), nativeFxaaPasses: count("nativeFxaaPasses"),
+      nativeTemporalBindings: count("nativeTemporalBindings"), nativeSubmissions: count("nativeSubmissions"),
+      nativeRenderPipelinesCreated: count("nativeRenderPipelinesCreated"), nativeTextureReadbacks: count("nativeTextureReadbacks")
+    };
+    paintGallery([{ id: "off-sequence", pixels: off.pixels }, { id: "fxaa-sequence", pixels: fxaa.pixels }, { id: "taa-sequence", pixels: taa.pixels }, { id: "taa-disocclusion", pixels: moved }]);
+    window.__AURA3D_J2_WEBGPU_POST__ = { status: "ready", backend: device.kind, adapter, checks, postErrors: [...await device.drainWebGPUPostErrors()] };
+  } finally {
+    output.dispose(); geometry.dispose(); material.dispose(); renderer.dispose();
   }
 }

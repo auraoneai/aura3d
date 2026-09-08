@@ -1,10 +1,12 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 const ORIGIN = process.env.A3D_PUBLIC_DEMO_URL ?? "https://aura3d.auraone.ai";
 const ROUTE = "/apps/wow-robot-expressive-rig/";
-const SCRATCH = "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer";
+const SCRATCH = process.env.A3D_PRODUCTION_AUDIT_DIR
+  ?? join(tmpdir(), "aura3d-production-audit");
 
 test("production wow-robot-expressive-rig has no console, page, or asset errors", async ({ page }, testInfo) => {
   testInfo.setTimeout(180_000);

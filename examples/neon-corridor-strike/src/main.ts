@@ -331,6 +331,27 @@ window.__AURA3D_FPS_CAPTURE__ = {
   }
 };
 
+// Readback of the mounted route for typed-world visibility evidence.
+if (new URLSearchParams(location.search).has("worldProbe")) {
+  (window as unknown as Record<string, unknown>).__AURA3D_CORRIDOR_WORLD_PROBE__ = {
+    async capture(visible: boolean) {
+      app.pause();
+      await app.ready();
+      const worldNode = app.nodes.get("containment-world");
+      if (!worldNode) throw new Error("Typed containment world is missing.");
+      worldNode.setVisible(visible);
+      await app.stepAsync(0);
+      const canvas = app.canvas;
+      const gl = canvas?.getContext("webgl2");
+      if (!canvas || !gl) throw new Error("World proof requires the mounted WebGL2 canvas.");
+      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return { pixels: Array.from(pixels), width: canvas.width, height: canvas.height,
+        imported: worldNode.importedAssetEvidence(), diagnostics: app.diagnostics() };
+    }
+  };
+}
+
 function syncWeaponViewmodel(): void {
   const eye = playerEye(playerBody);
   const forward = lookDirection(state.yaw, state.pitch);

@@ -1,12 +1,13 @@
-# Aura3D 2.0 Public-Surface Diff
+# Aura3D 3.0.1 Public-Surface Diff
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
 - Baseline packages: **26**; current packages: **29**
-- Baseline export subpaths: **68**; current export subpaths: **88**
-- Baseline symbols: **13007**; current symbols: **13686**
-- Classified removals: **945**; unclassified removals: **0**
-- Retained-symbol declaration contract changes: **293**
+- Baseline export subpaths: **68**; current export subpaths: **91**
+- Baseline symbols: **13007**; current symbols: **14518**
+- Classified removals: **950**; unclassified removals: **0**
+- Incompatible retained-symbol declaration changes: **0**
+- Compatible retained-symbol declaration additions: **0**
 - Public schema identifiers: **25** baseline; **28** current
 - Generated asset shape: **field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership**
 - Verdict: **PASS**
@@ -108,6 +109,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine` | runtime-symbol | `probeYouTubeUploadAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine` | runtime-symbol | `validatePublishingPackage` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine` | runtime-symbol | `validateYouTubeUploadPackage` | relocated-to-@aura3d/engine/media-node |
+| `@aura3d/engine` | type-symbol | `AnimationTrack` | documented-2.0-animation-track-relocated-to-@aura3d/animation |
 | `@aura3d/engine` | type-symbol | `AudioMuxer` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine` | type-symbol | `AudioMuxerAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine` | type-symbol | `AudioMuxerCodec` | relocated-to-@aura3d/engine/media-node |
@@ -261,6 +263,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine/engine` | runtime-symbol | `probeYouTubeUploadAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine` | runtime-symbol | `validatePublishingPackage` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine` | runtime-symbol | `validateYouTubeUploadPackage` | relocated-to-@aura3d/engine/media-node |
+| `@aura3d/engine/engine` | type-symbol | `AnimationTrack` | documented-2.0-animation-track-relocated-to-@aura3d/animation |
 | `@aura3d/engine/engine` | type-symbol | `AudioMuxer` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine` | type-symbol | `AudioMuxerAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine` | type-symbol | `AudioMuxerCodec` | relocated-to-@aura3d/engine/media-node |
@@ -342,6 +345,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine/engine-runtime` | runtime-symbol | `probeYouTubeUploadAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine-runtime` | runtime-symbol | `validatePublishingPackage` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine-runtime` | runtime-symbol | `validateYouTubeUploadPackage` | relocated-to-@aura3d/engine/media-node |
+| `@aura3d/engine/engine-runtime` | type-symbol | `AnimationTrack` | documented-2.0-animation-track-relocated-to-@aura3d/animation |
 | `@aura3d/engine/engine-runtime` | type-symbol | `AudioMuxer` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine-runtime` | type-symbol | `AudioMuxerAdapter` | relocated-to-@aura3d/engine/media-node |
 | `@aura3d/engine/engine-runtime` | type-symbol | `AudioMuxerCodec` | relocated-to-@aura3d/engine/media-node |
@@ -559,6 +563,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine/rendering` | runtime-symbol | `UniformsThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | runtime-symbol | `VignettePassThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | runtime-symbol | `WebGPUDevice` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/engine/rendering` | runtime-symbol | `WebGPUPipelineCache` | documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath |
 | `@aura3d/engine/rendering` | type-symbol | `ArchitecturalInteriorLight` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | type-symbol | `ArchitecturalLightingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | type-symbol | `ArchitecturalLightingFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -834,6 +839,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/rendering` | runtime-symbol | `UniformsThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | runtime-symbol | `VignettePassThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | runtime-symbol | `WebGPUDevice` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/rendering` | runtime-symbol | `WebGPUPipelineCache` | documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath |
 | `@aura3d/rendering` | type-symbol | `ArchitecturalInteriorLight` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | type-symbol | `ArchitecturalLightingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | type-symbol | `ArchitecturalLightingFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -965,25 +971,58 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 The JSON receipt contains the normalized before/after declaration contract for every retained symbol whose public signature changed. These are classified as reviewed 2.0 major-version contract changes; they are not hidden as compatible aliases.
 
+- `@aura3d/animation:runtime:AnimationLayer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/animation:runtime:AnimationMixer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/animation:type:AnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/animation:type:AnimationTarget` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/animation:type:FootLegInput` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/animation:type:HumanoidBoneRetargetBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/animation:type:HumanoidRetargetingOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/animation:type:LocomotionKitOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:HDRLoader` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:HDRLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:GLTFSceneAnimationApplyResult` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:GLTFSceneAnimationClipBindingDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:GLTFSceneAnimationApplyResult` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:GLTFSceneAnimationClipBindingDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioBus` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioFileManager` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioSource` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/cli:type:AddAssetOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/cli:type:AuraCliAssetProvenance` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/cli:type:AuraCliAssetType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:DragControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:FlyControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:InteractionControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:MapControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:SelectionManager` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:TrackballControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:runtime:TransformControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:type:ControlPickMetadata` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/controls:type:OrbitCameraLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:runtime:resolveLabelCollisions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraAnimationRuntimeNodeBindingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraAnimationRuntimeNodeBindingSnapshot` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraCameraSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraCreateAppRendererOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraEffectNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraEffectType` — reviewed-2.0-public-declaration-contract-change
@@ -997,6 +1036,9 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraRuntimeNodeAnimationBindingMetadata` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraRuntimeNodeImportedAssetEvidence` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraRuntimeNodeImportedAssetEvidenceInput` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameAppRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameAppRuntimeEvidence` — reviewed-2.0-public-declaration-contract-change
@@ -1025,25 +1067,64 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:runtime:AnimationLayer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:runtime:AnimationMixer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:type:AnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:type:AnimationTarget` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:type:FootLegInput` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation:type:HumanoidBoneRetargetBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/animation:type:HumanoidRetargetingOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/animation:type:LocomotionKitOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:runtime:AnimationLayer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:runtime:AnimationMixer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:type:AnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:type:AnimationTarget` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:type:FootLegInput` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/animation/browser:type:HumanoidBoneRetargetBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/animation/browser:type:HumanoidRetargetingOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/animation/browser:type:LocomotionKitOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:HDRLoader` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:HDRLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:GLTFSceneAnimationApplyResult` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:GLTFSceneAnimationClipBindingDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:GLTFSceneAnimationApplyResult` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:GLTFSceneAnimationClipBindingDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioBus` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioFileManager` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioSource` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:DragControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:FlyControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:InteractionControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:MapControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:SelectionManager` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:TrackballControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:runtime:TransformControls` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:type:ControlPickMetadata` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/controls:type:OrbitCameraLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/create-aura3d:type:ShowcaseRacingTrackTopology` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:runtime:resolveLabelCollisions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraAnimationRuntimeNodeBindingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraAnimationRuntimeNodeBindingSnapshot` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraCameraSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraCreateAppRendererOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraEffectNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraEffectType` — reviewed-2.0-public-declaration-contract-change
@@ -1057,6 +1138,9 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraRuntimeNodeAnimationBindingMetadata` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraRuntimeNodeImportedAssetEvidence` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraRuntimeNodeImportedAssetEvidenceInput` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameAppRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameAppRuntimeEvidence` — reviewed-2.0-public-declaration-contract-change
@@ -1086,12 +1170,17 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:runtime:resolveLabelCollisions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraAnimationRuntimeNodeBindingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraAnimationRuntimeNodeBindingSnapshot` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraCameraSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraCreateAppRendererOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraEffectNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraEffectType` — reviewed-2.0-public-declaration-contract-change
@@ -1105,6 +1194,9 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine-runtime:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraRuntimeNodeAnimationBindingMetadata` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraRuntimeNodeImportedAssetEvidence` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraRuntimeNodeImportedAssetEvidenceInput` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameAppRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameAppRuntimeEvidence` — reviewed-2.0-public-declaration-contract-change
@@ -1134,9 +1226,12 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine-runtime:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:Constraint` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/physics:runtime:FightingCharacterController` — reviewed-2.0-public-declaration-contract-change
@@ -1158,58 +1253,99 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/production-runtime:type:TypedGLBActorEvidence` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/production-runtime:type:TypedGLBActorOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/production-runtime:type:TypedGLBActorTintOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/production-runtime:type:TypedGLBActorTransformOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:CollisionModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:ColorModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:createClusteredForwardLighting` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:Geometry` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:planMorphTargets` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:ProductionRuntimeRenderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:ProductionWebGL2Renderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:ProductionWebGPURenderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:Renderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:ShaderLibrary` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:SizeModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:TextureBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:TrailModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:VertexFormat` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:runtime:WebGL2Device` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:runtime:WebGPUParticleBackend` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:BloomOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ClusteredForwardLightingDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:CompiledShaderSource` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ForwardEnvironmentFogOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ForwardShadowMapOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:GPUParticleBackend` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:GPUParticleUpdateInput` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:GPUParticleUpdateResult` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:InstancedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:LayeredParticleBudgetPlan` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:LightingRigPreset` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:MorphPlanDecision` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ParticleModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ParticleRenderOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ParticleSprite` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ParticleSystemStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:PBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ProductionProductionRenderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ReflectionSurface` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:ReflectionSurfaceOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderDevice` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderDeviceDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererPostprocessPassDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererPostProcessPassPlan` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererPostprocessPlanContext` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererPostprocessPlanDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererPostprocessPlanOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RendererShadowOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderItem` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ShaderSourcePair` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ShaderSources` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:SkinningPaletteDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:SSROptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:StaticBatchInput` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:TexturedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VolumetricLightOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VoxelBlockDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VoxelVisibleBlock` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:WebGPUDeviceLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:WebGPUParticleBackendOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:WebGPUQueueLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:runtime:Geometry` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/advanced-runtime:runtime:Renderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:ForwardEnvironmentFogOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:ForwardShadowMapOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:LdrPostprocessPresentationOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:PBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:RenderDevice` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:RenderDeviceDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/advanced-runtime:type:RendererShadowOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:RenderItem` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/advanced-runtime:type:ShaderSources` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/advanced-runtime:type:SkinningPaletteDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:DepthPrepass` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/production-runtime:runtime:FrameGraph` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:OpaquePass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:ProductionRuntimeRenderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:ProductionWebGL2Renderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/production-runtime:runtime:ProductionWebGPURenderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:ShadowPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:SkyboxPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:ToneMappingPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:runtime:TransparentPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering/production-runtime:type:ProductionProductionRenderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/production-runtime:type:RenderPass` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering/production-runtime:type:RenderPassExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scene:runtime:Scene` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:Constraint` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/physics:runtime:FightingCharacterController` — reviewed-2.0-public-declaration-contract-change
@@ -1227,33 +1363,63 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/react:runtime:Model` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/react:type:AuraCanvasProps` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/react:type:ModelProps` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:CollisionModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:ColorModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:createClusteredForwardLighting` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:Geometry` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:planMorphTargets` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:ProductionRuntimeRenderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:ProductionWebGL2Renderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:ProductionWebGPURenderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:Renderer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:ShaderLibrary` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:SizeModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:TextureBinding` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:TrailModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:VertexFormat` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:runtime:WebGL2Device` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:runtime:WebGPUParticleBackend` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:BloomOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ClusteredForwardLightingDiagnostics` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:CompiledShaderSource` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ForwardEnvironmentFogOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ForwardShadowMapOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:GPUParticleBackend` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:GPUParticleUpdateInput` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:GPUParticleUpdateResult` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:InstancedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:LayeredParticleBudgetPlan` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:LightingRigPreset` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:MorphPlanDecision` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ParticleModule` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ParticleRenderOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ParticleSprite` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ParticleSystemStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:PBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ProductionProductionRenderer` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ReflectionSurface` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:ReflectionSurfaceOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderDevice` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderDeviceDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererPostprocessPassDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererPostProcessPassPlan` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererPostprocessPlanContext` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererPostprocessPlanDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererPostprocessPlanOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RendererShadowOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderItem` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ShaderSourcePair` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ShaderSources` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:SkinningPaletteDiagnostics` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:SSROptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:StaticBatchInput` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:TexturedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VolumetricLightOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VoxelBlockDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VoxelVisibleBlock` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:WebGPUDeviceLike` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:WebGPUParticleBackendOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:WebGPUQueueLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scene:runtime:Scene` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
@@ -1263,4 +1429,4 @@ The JSON receipt contains the normalized before/after declaration contract for e
 
 Schema identifiers: 25 baseline, 28 current, 0 retired, 3 added. CLI command tokens and all scaffold names are retained in the JSON receipt. The generated asset manifest schema and emitted field sets are compared directly; field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership.
 
-The machine-readable, per-package and per-symbol inventory is retained in `tests/reports/public-surface-diff.json`.
+The machine-readable, per-package and per-symbol inventory is retained in tests/reports/public-surface-diff.json.

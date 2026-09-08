@@ -44,6 +44,9 @@
       "@aura3d/rendering/lean-runtime": [
         "packages/rendering/src/lean-runtime.ts"
       ],
+      "@aura3d/rendering/lean-core-runtime": [
+        "packages/rendering/src/lean-core-runtime.ts"
+      ],
       "@aura3d/controls": [
         "packages/controls/src/index.ts"
       ],
@@ -108,18 +111,18 @@
         "packages/rendering/src/production-runtime/index.ts"
       ],
       "@aura3d/engine/media-node": [
-      "packages/engine/src/agent-api/media-node.ts"
-    ],
-    "@aura3d/physics/world": [
-      "packages/physics/src/world.ts"
-    ],
-    "@aura3d/physics/solverless": [
-      "packages/physics/src/solverless.ts"
-    ],
-    "@aura3d/engine/rendering/webgpu": [
-      "packages/rendering/src/webgpu.ts"
-    ],
-    "@aura3d/engine/rendering/advanced-runtime": [
+        "packages/engine/src/agent-api/media-node.ts"
+      ],
+      "@aura3d/physics/world": [
+        "packages/physics/src/world.ts"
+      ],
+      "@aura3d/physics/solverless": [
+        "packages/physics/src/solverless.ts"
+      ],
+      "@aura3d/engine/rendering/webgpu": [
+        "packages/rendering/src/webgpu.ts"
+      ],
+      "@aura3d/engine/rendering/advanced-runtime": [
         "packages/rendering/src/advanced-runtime/index.ts"
       ],
       "@aura3d/engine/workflows/production": [
@@ -193,6 +196,12 @@
       ],
       "@aura3d/engine/advanced-runtime": [
         "packages/engine/src/advanced-runtime/index.ts"
+      ],
+      "@aura3d/rendering/extension-scalar-atlas": [
+        "packages/rendering/src/extension-scalar-atlas.ts"
+      ],
+      "@aura3d/rendering/reflection-surfaces": [
+        "packages/rendering/src/reflection-surfaces.ts"
       ]
     }
   }

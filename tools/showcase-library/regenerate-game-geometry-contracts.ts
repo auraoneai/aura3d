@@ -16,7 +16,7 @@
  * Usage: pnpm exec tsx --tsconfig tsconfig.base.json tools/showcase-library/regenerate-game-geometry-contracts.ts
  */
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { compileShowcaseSpecFile } from "../../packages/create-aura3d/src/showcase-spec-compiler.js";
 
 interface RouteSpec {
@@ -46,6 +46,7 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
   // current evidence. An OS-temp output can only consume retained fixtures,
   // which is how stale 33-point topology leaked back into the app metadata.
   const outputDir = mkdtempSync(resolve(root, "tests", "reports", `.aura3d-geometry-${route.routeId}-`));
+  const retainedReportRoot = `tests/reports/showcase-spec-compiler/${route.reportDir}`;
   try {
     // Fixture specs deliberately point at retained fixture evidence so compiler
     // unit tests remain hermetic.  App metadata, however, must point at the
@@ -61,7 +62,7 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
       continue;
     }
     const target = resolve(root, "apps", route.routeId, "src", "generated", "game-geometry.ts");
-    const next = readFileSync(generated, "utf8");
+    const next = normalizeCompilerPaths(readFileSync(generated, "utf8"), outputDir, retainedReportRoot);
     const previous = existsSync(target) ? readFileSync(target, "utf8") : "";
     if (next === previous) {
       console.log(`unchanged ${route.routeId}`);
@@ -79,7 +80,9 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
     ]) {
       const generatedArtifact = join(outputDir, artifact);
       if (!existsSync(generatedArtifact)) continue;
-      writeFileSync(resolve(root, "apps", route.routeId, artifact), readFileSync(generatedArtifact));
+      const normalized = normalizeCompilerPaths(readFileSync(generatedArtifact, "utf8"), outputDir, retainedReportRoot);
+      writeFileSync(resolve(root, "apps", route.routeId, artifact), normalized);
+      writeFileSync(resolve(root, retainedReportRoot, artifact), normalized);
     }
 
     // The geometry report and generated contract are one compiler-owned proof pair.
@@ -88,7 +91,11 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
     const geometryFile = `${route.routeId}-${route.geometrySuffix}.json`;
     const generatedGeometryReport = join(outputDir, "game-template", geometryFile);
     if (existsSync(generatedGeometryReport)) {
-      const geometryReportContents = readFileSync(generatedGeometryReport);
+      const geometryReportContents = normalizeCompilerPaths(
+        readFileSync(generatedGeometryReport, "utf8"),
+        outputDir,
+        retainedReportRoot
+      );
       writeFileSync(
         resolve(root, "tests", "reports", "showcase-spec-compiler", route.reportDir, "game-template", geometryFile),
         geometryReportContents
@@ -149,4 +156,16 @@ function promoteFixtureEvidencePaths(source: string): string {
   }
 
   return `${JSON.stringify(spec, null, 2)}\n`;
+}
+
+/**
+ * Compiler output is first written beneath a disposable directory. Persisted
+ * contracts must never retain that directory because it is deleted in `finally`.
+ */
+function normalizeCompilerPaths(source: string, outputDir: string, retainedReportRoot: string): string {
+  const absoluteOutput = outputDir.replaceAll("\\", "/");
+  const relativeOutput = relative(root, outputDir).replaceAll("\\", "/");
+  return source
+    .replaceAll(absoluteOutput, retainedReportRoot)
+    .replaceAll(relativeOutput, retainedReportRoot);
 }

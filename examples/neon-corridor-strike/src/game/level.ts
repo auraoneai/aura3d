@@ -56,38 +56,10 @@ export function buildScene() {
   // preserved). Visual-only wall dressing; the authored hull, sight lines,
   // hitscan, and player collision remain authoritative and unchanged.
   const arenaModule = groundedRenderedAssetPlacement(assets.neonArena, { targetHeight: 1.02, floorY: 0.25, x: -2.8, z: 2.6 });
-  // Sixth visual pass: the asset shell is deliberately retained as the typed
-  // exterior volume, but its native glossy grate cannot be the primary visual
-  // floor. In the previous frame it reflected every practical as a black grid
-  // and made the action read as disconnected objects in a void. These matte
-  // values establish one continuous, mid-value interior: deck first, broad
-  // wall fields second, installed service detail last. Low metalness is
-  // intentional: specular response is reserved for the actual typed weapon,
-  // crates, and creatures rather than swallowing the playable lane.
-  // This is a deliberately restrained steel/oxidized-bronze value ladder.
-  // The catalog rifle, crates, and creatures carry dark, warm, worn surface
-  // information.  The former blue-black runner made them look pasted into an
-  // unrelated UI tunnel.  A neutral steel deck plus small bronze structure lets
-  // the typed subjects belong to the same material family without pretending
-  // that their imported materials have been replaced.
-  // The route used to declare every lining as an uncoated matte swatch. That
-  // gave the imported typed world and the installed architecture identical
-  // values, so the corridor collapsed into flat cyan/grey strips at gameplay
-  // scale. Keep the same geometry and palette, but give each manufactured
-  // surface its own measured response: soft steel sheen on walking surfaces,
-  // clear-coated bronze on the bay hardware, and a restrained edge highlight
-  // on wall panels. These are renderer-owned material inputs, not a second
-  // fake world painted over the typed asset.
-  const deckBase = material.pbr({
-    color: "#223437",
-    roughness: 0.78,
-    metalness: 0.24,
-    clearcoat: 0.26,
-    clearcoatRoughness: 0.22,
-    sheen: 0.12,
-    sheenColor: "#7aa6a7",
-    envMapIntensity: 0.92
-  });
+  // The imported containment world owns the visible deck, walls and ceiling.
+  // Route-local materials below belong only to localized bay hardware, signs,
+  // debris and gameplay cues. Continuous surface overlays would conceal the
+  // authored world and are intentionally absent.
   const deckDetail = material.pbr({
     color: "#506368",
     roughness: 0.62,
@@ -122,15 +94,6 @@ export function buildScene() {
     clearcoatRoughness: 0.11,
     envMapIntensity: 1.24
   });
-  const wallField = material.pbr({
-    color: "#263a3e",
-    roughness: 0.8,
-    metalness: 0.16,
-    sheen: 0.14,
-    sheenRoughness: 0.42,
-    sheenColor: "#5b8c8e",
-    envMapIntensity: 0.78
-  });
   const wallDetail = material.pbr({
     color: "#53676b",
     roughness: 0.56,
@@ -138,14 +101,6 @@ export function buildScene() {
     clearcoat: 0.3,
     clearcoatRoughness: 0.19,
     envMapIntensity: 1.02
-  });
-  const ceilingField = material.pbr({
-    color: "#1e3035",
-    roughness: 0.82,
-    metalness: 0.14,
-    clearcoat: 0.2,
-    clearcoatRoughness: 0.26,
-    envMapIntensity: 0.8
   });
   const railHousing = material.metal({
     name: "recessed rail housing",
@@ -159,15 +114,15 @@ export function buildScene() {
 
   return scene()
     .background("#102733")
-    // This is the primary continuous authored world, not a catalogue tunnel
-    // hidden behind a separate primitive shell.  The very small route-local
-    // floor/trigger guides below remain only as collision/effect supports.
+    // The typed world supplies the continuous visible surfaces. Local bay
+    // hardware and gameplay cues below supplement its authored architecture.
     .add(model(assets.neonCorridorContainmentWorld, {
       name: "continuous containment corridor world",
       role: "primaryWorld",
       castShadow: true,
       receiveShadow: true
-    }).position(world.position[0], world.position[1], world.position[2]).scale(world.scale))
+    }).position(world.position[0], world.position[1], world.position[2]).scale(world.scale)
+      .runtime(game.runtimeNode("containment-world", { tags: ["typed-primary-world"] })))
     .add(model(assets.neonContainmentPulseRifle, { name: "containment pulse rifle viewmodel" }).position(0.28, 1.18, 5.7).scale(rifle.scale).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
     .addMany(ENEMIES.map((enemy) => {
       // The Meshy warden bot replaces WardenA's blockout breacher with a
@@ -265,49 +220,8 @@ export function buildScene() {
       name: "look target",
       material: material.pbr({ color: "#05070c", roughness: 1 })
     }).position(PLAYER_START[0], EYE_HEIGHT, PLAYER_START[2] - LOOK_AHEAD).scale(0.001).runtime(game.runtimeNode("look-target", { tags: ["camera"] })))
-    // A raised continuous deck deliberately occludes the imported grate. It is
-    // visual-only and sits above the unchanged physics floor, so movement,
-    // pickups, hitscan, and the evidence route remain exactly as authored.
-    .add(primitives.box({
-      name: "continuous matte corridor deck",
-      material: deckInset,
-      receiveShadow: true
-    }).position(0, 0.105, 0.4).scale([6.18, 0.12, 20.15]))
-    // Broad removable deck cartridges sit over the dark pressure hull. Their
-    // sparse seams create perspective and route scale; unlike the rejected
-    // luminous runway, no single bright surface now occupies the entire lower
-    // half of the frame.
-    .add(instances.box({
-      name: "instanced even containment deck cartridges",
-      material: deckBase,
-      transforms: [7.1, 2.7, -1.7, -6.1].map((z) => ({
-        position: [0, 0.224, z] as const,
-        scale: [5.42, 0.028, 1.84] as const
-      }))
-    }))
-    .add(instances.box({
-      name: "instanced odd containment deck cartridges",
-      material: structuralDetail,
-      transforms: [4.9, 0.5, -3.9, -8.3].map((z) => ({
-        position: [0, 0.224, z] as const,
-        scale: [5.42, 0.028, 1.84] as const
-      }))
-    }))
-    // Full-height side fields and ceiling soffits are architecture, not neon
-    // garnish. They cover the black exterior ribs at the player-facing depth
-    // while their repeated inset bays give the chase a readable, continuous
-    // scale from spawn to the exit gateway.
-    .addMany([
-      primitives.box({ name: "port interior wall field", material: wallField, receiveShadow: true })
-        .position(-3.02, 1.32, 0.35).scale([0.16, 2.3, 20.1]),
-      primitives.box({ name: "starboard interior wall field", material: wallField, receiveShadow: true })
-        .position(3.02, 1.32, 0.35).scale([0.16, 2.3, 20.1]),
-      primitives.box({ name: "continuous ceiling soffit", material: ceilingField, receiveShadow: true })
-        .position(0, 2.46, 0.35).scale([6.18, 0.16, 20.1])
-    ])
-    // Repeating bay panels, skirting, and ceiling beams sit flush to those
-    // continuous fields. They establish a single manufactured corridor scale
-    // without making a separate-object collage or a floor-wide visual grid.
+    // Local panels and bay hardware supplement the imported world; they do
+    // not form another continuous wall, ceiling or deck surface.
     .add(instances.box({
       name: "instanced flush wall bay panels",
       material: wallDetail,

@@ -1,0 +1,8 @@
+import { describe,it,expect } from 'vitest';
+import { validateRootPerformanceQuality,registerRootParticleQualityConsumer,applyRootParticleQuality,supportsRootParticleQuality,setRootPerformanceQuality,getRootPerformanceQuality } from '../../packages/engine/src/agent-api/RootPerformanceQuality';
+const initial={resolutionScale:1,particleScale:1,lodBias:1,shadowSize:1024};
+describe('root native performance quality ownership',()=>{
+ it('rejects invalid resource dimensions before mutation',()=>{for(const change of [{resolutionScale:NaN},{resolutionScale:0},{particleScale:2},{lodBias:.5},{shadowSize:513},{shadowSize:8192}])expect(()=>validateRootPerformanceQuality({...initial,...change})).toThrow('PERFORMANCE_QUALITY_INVALID');});
+ it('copies quality so external mutation cannot change rendering between frames',()=>{const canvas={} as HTMLCanvasElement;const value={...initial};setRootPerformanceQuality(canvas,value);value.shadowSize=256;expect(getRootPerformanceQuality(canvas)?.shadowSize).toBe(1024);expect(Object.isFrozen(getRootPerformanceQuality(canvas))).toBe(true);});
+ it('supports only the registered live particle owner and unregisters on disposal',()=>{const canvas={} as HTMLCanvasElement,seen:number[]=[];expect(supportsRootParticleQuality(canvas)).toBe(false);const dispose=registerRootParticleQualityConsumer(canvas,s=>seen.push(s));applyRootParticleQuality(canvas,.4);expect(seen).toEqual([.4]);expect(()=>registerRootParticleQualityConsumer(canvas,()=>{})).toThrow();dispose();expect(supportsRootParticleQuality(canvas)).toBe(false);applyRootParticleQuality(canvas,1);expect(seen).toEqual([.4]);});
+});

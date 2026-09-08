@@ -7,12 +7,46 @@ This file is the public limitations source for project docs, release copy, and
 showcase review. If a guide or README makes a claim narrowed by this file, the
 guide or README must include the narrower wording.
 
+## 3.0.1 candidate verification limits
+
+The [3.0.1 remediation PRD](../../../muse3jsparity-3.0.1-PRD.md) remains the
+acceptance ledger. Implementation or targeted unit success does not close a
+browser, comparative-performance, packaging, or independent-review obligation.
+Historical K2 `supersede` reports omitted required part coverage; they cannot be
+used to certify the complete 3.0.1 requirement set.
+
+- Root asynchronous rendering, motion blur/TAA, extension maps, and translated
+  locomotion require their exact root-only browser and lifecycle evidence.
+- Native WebGPU temporal effects require actual native-backend rendering proof;
+  WebGL2 tests do not establish that result.
+- Particle throughput and shadow stability require the specified sustained
+  rendered measurements. Configured capacity, short runs, analytic-only loops,
+  and software-adapter timings do not satisfy reference-hardware performance.
+- Crowd/instancing and camera/spotlight adoption require actual product-route
+  proof. A helper harness does not establish a shipped route integration.
+- Comparative wins require per-feature paired rendering and actual engine
+  workloads against locked Three.js r185. Microbenchmarks and primitive scene
+  comparisons do not establish all-feature parity or superiority.
+- Turbo Drift, Skyline Runner, and Smart City still require fresh desktop/mobile
+  framing, gameplay-camera, and hero/panel occlusion review on final artifacts.
+- Exact 3.0.1 tarballs, all scaffold lifecycles, immutable evidence lineage, and
+  independent final-artifact review remain separate release conditions.
+
+## Evidence dating
+
+Unless identified as 3.0.1 source implementation, measured examples below are
+historical retained workload evidence. Relevant records include the August 9
+2026 public-renderer, animation, WebGPU architecture, shadow-cascade and Rapier
+validation reports, and the August 10 portable-custom-material report. They
+establish the described prior bounded runs, not freshness for the current
+candidate. Final release claims require regeneration and source-bound receipts.
+
 ## Root `createAuraApp` Renderer Limits
 
 - The public root path defaults to `production-runtime` for renderable safe
   authored scenes. This proves backend selection and lifecycle plumbing, not
   every renderer feature.
-- Root screenshots currently prove basic GLB rendering, base-color material and
+- Prior root screenshots record basic GLB rendering, base-color material and
   texture paths, scene composition, simple effects, runtime transforms, and
   non-skinned node animation on tested routes.
 - Root-wide PBR parity is not a current public claim. HDR/IBL lighting,
@@ -28,11 +62,10 @@ guide or README must include the narrower wording.
 - Non-skinned glTF node animation can be claimed only for routes that prove it.
 - Root skinned-animation evidence is bounded to routes that import only
   `@aura3d/engine`, play a typed real skinned asset, and retain meaningful
-  character-region pixel deltas. The character animation viewer currently
-  proves that contract for one CC0 Robot Expressive GLB, not arbitrary rigs.
+  character-region pixel deltas. The prior character animation viewer receipt records that contract for one CC0 Robot Expressive GLB, not arbitrary rigs.
 - Morph rendering uses direct uniforms for small target sets and a
   texture-backed position-and-normal delta plan for larger sets, with a
-  device-limit-driven CPU fallback. The character animation viewer proves the
+  device-limit-driven CPU fallback. The prior character animation viewer receipt records the
   three named Robot Expressive facial targets; broader facial rigs and
   viseme/lip-sync behavior still require route-specific pixel evidence.
 - Counters, metadata, or camera movement are not enough to prove animated
@@ -53,7 +86,7 @@ guide or README must include the narrower wording.
   binds the character, contact point, collision, checkpoint path, hazards,
   finish, camera, and visible world geometry.
 - Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner have materially
-  rebuilt gameplay and current bounded route evidence. Skyline's authored
+  rebuilt gameplay and retained bounded route evidence that requires current-source revalidation. Skyline's authored
   Level 1 is constrained to a 70–115-second completion window (authored 95
   seconds) with coins and ember volleys; Turbo retains distinct typed
   vehicles, four-lap progression, per-wheel circuit contact, and visual
@@ -85,21 +118,22 @@ guide or README must include the narrower wording.
 - A route named "WebGPU" must demote itself when running in WebGL or simulated
   fallback mode.
 - The six named WebGPU evidence routes and the production SDK imported-asset
-  workload have bounded native proof in
+  workload have historical bounded native proof in
   `tests/reports/webgpu-current-architecture/report.json`. This does not
   generalize to root-default WebGPU, general TSL/node-material parity, WebXR,
   or every renderer feature. The separate selected custom-material workload is
-  proven in `tests/reports/portable-custom-materials/report.json`.
+  recorded in the August 10 receipt `tests/reports/portable-custom-materials/report.json`.
 
 ## Evidence Limits
 
 - The retained 54-row Three.js comparison and its bundle/developer-friction
   measurements use `three@0.165.0`. They are historical regression evidence,
   not evidence of parity with the locked current `three@0.185.1` ecosystem.
-- The current r185.1 comparison program passes all 15 selected correctness
+- The prior r185.1 comparison recorded passes for 15 selected correctness
   workloads from 29 freshly packed and npm-installed Aura3D 3.0.0 tarballs
   (K2 `fresh-installed-2.0-packages-prove-all-workloads` gate green at the
   release commit; the check id retains its 2.0-era name).
+  These prior package receipts do not certify the 3.0.1 worktree.
   Every workload retains explicit losses and a claim boundary. The aggregate
   remains incomplete because the full repeated-performance protocol,
   clean-machine reproduction, independent gallery review, general TSL/node-
@@ -118,7 +152,7 @@ guide or README must include the narrower wording.
 - Renderer scene frustum culling is implemented and covered by focused moving-camera unit tests; this is not a broad large-scene performance claim.
 - Rendering-internal cubemap and equirectangular backgrounds, GGX PMREM, RGBE HDR file loading, live cube-camera probes, bounded scene-color transmission/refraction, depth-aware radial volumetric light, and generated terrain heightfields have focused unit and browser-pixel evidence. None of those package-level proofs automatically establishes root `createAuraApp` support.
 - OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported. Rendering-internal finite rectangular emitters now have deterministic size-dependent and one-sided WebGL2 PBR pixel proof; exact three.js LTC lookup-table identity, rectangular-light shadow maps, GI, automatic preset attachment, and root `createAuraApp` support remain excluded. Rendering-internal linear and exponential-squared fog also have deterministic WebGL2 object-pixel proof, but this does not establish volumetric scattering or physical atmosphere.
-- Current glTF render resources expose one primary UV path for glTF render resources.
+- glTF render resources bind TEXCOORD_0 and TEXCOORD_1. Higher sets are diagnosed and fall back; generated tangents derive from TEXCOORD_0 when authored tangents are absent. See `packages/assets/src/GLTFRenderResources.ts`.
 - Texture support has bounded KTX2/Basis transcoding coverage and GPU capability-driven format selection; it is not universal compressed-texture support.
 - There is no product-studio material-matrix visual coverage broad enough to claim all material combinations.
 - Shadow coverage includes unit-level moving-camera cascade split stress. Directional cascades do not imply production-ready point/spot shadow maps.
@@ -141,14 +175,13 @@ guide or README must include the narrower wording.
   attributes. A plain `PBRMaterial` compiles `aura3d/pbr-direct`, which declares none of them, so
   the forward pass correctly falls back to expanding the batch into one draw per instance. The
   fallback is a correct degradation, not a defect, but the cost difference is large and silent:
-  the same 4,096-instance scene measured **1 draw call at ~88 FPS** with `InstancedPBRMaterial`
-  and **4,096 draw calls at 9 FPS** with `PBRMaterial`. There is no diagnostic that warns about
-  this today.
+  a prior 4,096-instance scene measured **1 draw call at ~88 FPS** with `InstancedPBRMaterial`
+  and **4,096 draw calls at 9 FPS** with `PBRMaterial`. Check actual per-route draw diagnostics; that historical timing does not establish current performance.
 - `Scene.createInstancedMesh` registers the node in the scene's id map but does not parent it.
   Callers must attach it (for example `scene.root.addChild(mesh)`) or the renderer collects
   nothing and reports zero draw calls. This matches the rest of the `Scene.create*` family.
-- Instanced evidence is bounded to the 4,096-instance shared benchmark descriptor. Frame time and
-  draw calls tie with Three.js on that scene; bundle size is a measured loss. No general
+- Instanced evidence is bounded to the 4,096-instance shared benchmark descriptor. Historical frame time and
+  draw calls tied with Three.js on that scene; bundle size is a measured loss. No general
   instancing performance advantage is claimed.
 
 ## Physics Backend Limits

@@ -13,6 +13,8 @@ import {
   type RegisteredAnimationClip
 } from "@aura3d/animation";
 import type {
+  AuraRootMotionBinding,
+  AuraRootMotionClipSample,
   AuraRuntimeNodeAnimationPoseBindingMetadata,
   AuraRuntimeNodeAnimationBindingMetadata,
   RuntimeNodeAnimationSpecLike,
@@ -456,6 +458,7 @@ export interface AuraAnimationRuntimeNodeBindingOptions<TClipId extends string =
    * functions never serialize).
    */
   readonly footPlanting?: AuraFootPlantingOptions;
+  readonly rootMotion?: AuraRootMotionBinding;
   readonly metadata?: Record<string, unknown>;
 }
 
@@ -516,6 +519,9 @@ export interface AuraAnimationRuntimeNodeBindingSnapshot<TClipId extends string 
   readonly sourceAssetId?: string;
   readonly sourceAssetName?: string;
   readonly footPlanting?: AuraResolvedFootPlanting;
+  readonly rootMotion?: AuraRootMotionBinding;
+  readonly rootMotionTime?: number;
+  readonly rootMotionSamples?: readonly AuraRootMotionClipSample[];
   readonly metadata?: Record<string, unknown>;
 }
 
@@ -1870,6 +1876,10 @@ export class AnimationController<
       sourceAssetId: clip?.metadata?.assetId ?? this.embeddedGLB?.assetId,
       sourceAssetName: clip?.metadata?.assetName ?? this.embeddedGLB?.assetName,
       ...(binding.resolvedFootPlanting ? { footPlanting: binding.resolvedFootPlanting } : {}),
+      ...(binding.options.rootMotion ? { rootMotion: binding.options.rootMotion, rootMotionTime: state?.playhead ?? 0,
+        rootMotionSamples: states.map(sample => ({ playbackId: sample.id, clipName: runtimeClipNameForState(sample), time: sample.playhead,
+          weight: effectiveWeight(sample), loop: sample.loopMode !== "once", additive: Boolean(sample.layerMetadata?.additive ?? sample.clip.layerMetadata?.additive) }))
+      } : {}),
       metadata: {
         ...binding.options.metadata,
         eventSource: state?.eventSource ?? clip?.eventSource,
@@ -2325,6 +2335,7 @@ function createRuntimeNodeAnimationBindingMetadata<TClipId extends string>(
     sourceAssetId: snapshot.sourceAssetId,
     sourceAssetName: snapshot.sourceAssetName,
     ...(snapshot.footPlanting ? { footPlanting: snapshot.footPlanting } : {}),
+    ...(snapshot.rootMotion ? { rootMotion: snapshot.rootMotion, rootMotionTime: snapshot.rootMotionTime, rootMotionSamples: snapshot.rootMotionSamples } : {}),
     metadata: snapshot.metadata
   }) as AuraRuntimeNodeAnimationBindingMetadata;
 }

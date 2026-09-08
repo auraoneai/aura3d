@@ -50,6 +50,7 @@ export class InputSystem {
       ["pointermove", onPointerMove],
       ["pointerdown", onPointerDown],
       ["pointerup", onPointerUp],
+      ["pointercancel", onPointerUp],
       ["wheel", onWheel],
       ["blur", onBlur]
     ];

@@ -8,7 +8,6 @@ import {
   primitives,
   scene
 } from "@aura3d/engine";
-import { Renderer } from "@aura3d/rendering";
 import { assets } from "../../src/aura-assets";
 
 /**
@@ -28,7 +27,9 @@ type PyramidVariantId =
   | "bloom-balanced"
   | "bloom-cinematic"
   | "bloom-hard-knee"
-  | "bloom-soft-knee";
+  | "bloom-soft-knee"
+  | "bloom-v01"
+  | "bloom-v01-disabled";
 
 interface PyramidBloomCapture {
   readonly quality: string | undefined;
@@ -48,22 +49,21 @@ interface PyramidCapture {
   readonly actualPasses: readonly string[];
   readonly pixelBacked: boolean;
   readonly executionMode: string;
+  readonly nativeDrawArrays: number;
+  readonly nativeDrawElements: number;
+  readonly hotPathReadbacks: number;
   readonly pixels: readonly number[];
   readonly width: number;
   readonly height: number;
 }
 
-interface AsyncTwinCapture {
-  readonly executionMode: string;
-  readonly bloom: PyramidBloomCapture | null;
-  readonly passNames: readonly string[];
-}
 
 declare global {
   interface Window {
     __AURA3D_BLOOM_PYRAMID_RUNNER__?: {
       renderVariant(id: PyramidVariantId): Promise<PyramidCapture>;
-      renderAsyncTwin(): Promise<AsyncTwinCapture>;
+      renderAsyncTwin(id: PyramidVariantId): Promise<PyramidCapture>;
+      lifecycle(): Promise<{ mutationRejected: boolean; disposedRejected: boolean; resizeDeferred: boolean; resizeApplied: boolean; captureFailureRecovered: boolean; pausePreserved: boolean }>;
     };
     __AURA3D_BLOOM_PYRAMID_ERROR__?: string;
   }
@@ -85,34 +85,54 @@ void run().catch((error: unknown) => {
 async function run(): Promise<void> {
   window.__AURA3D_BLOOM_PYRAMID_RUNNER__ = {
     renderVariant: async (id) => renderVariant(id),
-    renderAsyncTwin: async () => renderAsyncTwin()
+    renderAsyncTwin: async (id) => renderVariant(id, true),
+    lifecycle: async () => lifecycle()
   };
 }
 
-async function renderVariant(id: PyramidVariantId): Promise<PyramidCapture> {
+async function renderVariant(id: PyramidVariantId, asynchronous = false): Promise<PyramidCapture> {
   const stage = requiredElement("bloom-pyramid-stage");
   stage.style.width = "720px";
   stage.style.height = "480px";
   stage.style.minHeight = "0px";
   stage.replaceChildren();
   const app = createAuraApp(stage, {
+    autoStart: false,
     pixelRatio: 1,
     resize: false,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     scene: sceneForVariant(id)
   });
   try {
-    await waitForAppDraw(app);
+    await app.ready();
     const canvas = app.canvas;
     if (!canvas) throw new Error("Aura app did not expose a canvas for the bloom pyramid probe.");
     const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
     if (!gl) throw new Error("WebGL2 context unavailable for the bloom pyramid probe.");
+    let nativeDrawArrays = 0, nativeDrawElements = 0, hotPathReadbacks = 0;
+    const originalDrawArrays = gl.drawArrays.bind(gl);
+    const originalDrawElements = gl.drawElements.bind(gl);
+    const originalReadPixels = gl.readPixels.bind(gl);
+    gl.drawArrays = (...args) => { nativeDrawArrays++; originalDrawArrays(...args); };
+    gl.drawElements = (...args) => { nativeDrawElements++; originalDrawElements(...args); };
+    // Reject a CPU fallback at its actual native readback boundary. The explicit
+    // capture below runs only after restoring this method.
+    gl.readPixels = () => { hotPathReadbacks++; throw new Error("Hot-path GPU readback is forbidden"); };
+    try {
+      if (asynchronous) await app.stepAsync(1 / 60);
+      else app.step(1 / 60);
+    } finally {
+      gl.drawArrays = originalDrawArrays;
+      gl.drawElements = originalDrawElements;
+      gl.readPixels = originalReadPixels;
+    }
+    if (app.diagnostics().errors.length) throw new Error(app.diagnostics().errors.join("; "));
     const pixels = new Uint8Array(canvas.width * canvas.height * 4);
     gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     const diagnostics = app.diagnostics();
     const deviceBloom = diagnostics.renderer?.runtime.bloom ?? null;
     return {
-      id,
+      id, nativeDrawArrays, nativeDrawElements, hotPathReadbacks,
       bloom: toBloomCapture(deviceBloom),
       actualPasses: [...(diagnostics.renderer?.postprocess?.actualPasses ?? [])],
       pixelBacked: diagnostics.renderer?.postprocess?.pixelBacked ?? false,
@@ -122,7 +142,7 @@ async function renderVariant(id: PyramidVariantId): Promise<PyramidCapture> {
       height: canvas.height
     };
   } finally {
-    app.dispose();
+    await app.disposeAsync();
   }
 }
 
@@ -151,42 +171,64 @@ function sceneForVariant(id: PyramidVariantId) {
     builder.add(effects.bloom({ name: "pyramid cinematic probe", intensity: 1.4, threshold: 0.45, radius: 4, quality: "cinematic" }));
   } else if (id === "bloom-hard-knee") {
     builder.add(effects.bloom({ name: "pyramid hard knee probe", intensity: 1.4, threshold: 0.45, radius: 4, quality: "balanced", softKnee: 0, shoulder: 0 }));
-  } else {
+  } else if (id === "bloom-soft-knee") {
     builder.add(effects.bloom({ name: "pyramid soft knee probe", intensity: 1.4, threshold: 0.45, radius: 4, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }));
+  } else if (id === "bloom-v01") {
+    builder.add(effects.bloom({ name: "V01 frozen bloom probe", intensity: 0.35, threshold: 0.7, radius: 0.38, quality: "cinematic" }));
   }
+  // bloom-v01-disabled intentionally retains the identical scene with no bloom.
+
   return builder;
 }
 
-/**
- * Async twin (muse3jsparity-PRD A1.1): the duplicate-gated
- * `executeFusedLdrPostprocessAsync` path must land on the same fused-native
- * execution mode. Root routes never drive `renderAsync`, so this is proven at
- * the rendering-package level and labeled as such — never as root proof.
- */
-async function renderAsyncTwin(): Promise<AsyncTwinCapture> {
-  const canvas = document.createElement("canvas");
-  canvas.width = 160;
-  canvas.height = 120;
-  document.body.appendChild(canvas);
-  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 160, height: 120 });
-  try {
-    const diagnostics = await renderer.renderAsync({
-      renderItems: [],
-      postprocess: {
-        targetFormat: "rgba8",
-        bloom: { threshold: 0.45, intensity: 1.4, radius: 4, quality: "balanced", softKnee: 0.25, shoulder: 0.3 }
-      }
-    });
-    const deviceBloom = renderer.getDiagnostics().bloom ?? null;
-    return {
-      executionMode: diagnostics.postprocessPlan?.executionMode ?? "unknown",
-      bloom: toBloomCapture(deviceBloom),
-      passNames: [...(diagnostics.postprocessPassNames ?? [])]
-    };
-  } finally {
-    renderer.dispose();
-    canvas.remove();
-  }
+/** Dispose during a root native submission; synchronous mutation must fail loudly. */
+async function lifecycle(): Promise<{ mutationRejected: boolean; disposedRejected: boolean; resizeDeferred: boolean; resizeApplied: boolean; captureFailureRecovered: boolean; pausePreserved: boolean }> {
+  const stage = requiredElement("bloom-pyramid-stage");
+  const app = createAuraApp(stage, {
+    autoStart: false, resize: true, pixelRatio: 1,
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    scene: sceneForVariant("bloom-balanced")
+  });
+  await app.ready();
+  const canvas = app.canvas!;
+  const initialWidth = canvas.width;
+  let resizeDeferred = false;
+  let requestedResize = false;
+  const resizeFrame = () => {
+    if (requestedResize) return;
+    requestedResize = true;
+    stage.style.width = "640px";
+    window.dispatchEvent(new Event("resize"));
+    resizeDeferred = canvas.width === initialWidth;
+    app.pause();
+  };
+  app.onFrame(resizeFrame);
+  await app.stepAsync(1 / 60);
+  app.offFrame(resizeFrame);
+  const resizeApplied = canvas.width === 640;
+  const pausePreserved = app.runtime.paused;
+  const originalCapture = canvas.toDataURL;
+  let captureFailed = false;
+  canvas.toDataURL = () => { throw new Error("injected capture failure"); };
+  try { app.screenshot(); } catch { captureFailed = true; }
+  finally { canvas.toDataURL = originalCapture; }
+  const priorFrame = app.runtime.frame;
+  await app.stepAsync(1 / 60);
+  const captureFailureRecovered = captureFailed && app.runtime.frame === priorFrame + 1 && app.screenshot().dataUrl.startsWith("data:image/png");
+  let started!: () => void;
+  const entered = new Promise<void>((resolve) => { started = resolve; });
+  app.onFrame(() => started());
+  const pending = app.stepAsync(1 / 60);
+  // Attach a handler before disposal can reject the submission.
+  const observed = pending.catch(() => undefined);
+  await entered;
+  let mutationRejected = false;
+  try { app.setScene(sceneForVariant("bloom-performance")); } catch { mutationRejected = true; }
+  await app.disposeAsync();
+  await observed;
+  let disposedRejected = false;
+  try { await app.stepAsync(1 / 60); } catch { disposedRejected = true; }
+  return { mutationRejected, disposedRejected, resizeDeferred, resizeApplied, captureFailureRecovered, pausePreserved };
 }
 
 function toBloomCapture(deviceBloom: {
@@ -212,21 +254,6 @@ function toBloomCapture(deviceBloom: {
     softKnee: deviceBloom.softKnee,
     shoulder: deviceBloom.shoulder
   };
-}
-
-async function waitForAppDraw(app: ReturnType<typeof createAuraApp>): Promise<void> {
-  const started = performance.now();
-  while (performance.now() - started < 30_000) {
-    if (app.diagnostics().drawCalls > 0 && app.diagnostics().renderSize[0] > 0) break;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  const diagnostics = app.diagnostics();
-  if (!(diagnostics.drawCalls > 0 && diagnostics.renderSize[0] > 0)) {
-    throw new Error(`Bloom pyramid variant never drew: drawCalls=${diagnostics.drawCalls} errors=${JSON.stringify(diagnostics.errors)}`);
-  }
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  app.step(1 / 60);
-  await new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
 function requiredElement(id: string): HTMLElement {

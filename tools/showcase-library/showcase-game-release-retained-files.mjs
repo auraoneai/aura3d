@@ -156,25 +156,29 @@ function validateManifestGameEvidence(input, manifestAsset, assetId) {
     input.failures.push(`release-game-geometry-asset-evidence-missing:${assetId}`);
     return;
   }
-  if (evidence.routePrimaryScreenshot !== input.expectedScreenshot) {
-    input.failures.push(`release-game-geometry-asset-evidence-screenshot:${assetId}:${String(evidence.routePrimaryScreenshot)}`);
-  }
-  if (typeof input.geometry.report === "string" && evidence.geometryReport !== input.geometry.report) {
-    input.failures.push(`release-game-geometry-asset-evidence-report:${assetId}:${String(evidence.geometryReport)}`);
-  }
-  if (evidence.routePrimaryScreenshotSha256 !== input.geometry.routePrimaryScreenshotSha256) {
-    input.failures.push(`release-game-geometry-asset-evidence-screenshot-sha:${assetId}:${String(evidence.routePrimaryScreenshotSha256)}`);
+  if (input.requireFinalPromotion !== false) {
+    if (evidence.routePrimaryScreenshot !== input.expectedScreenshot) {
+      input.failures.push(`release-game-geometry-asset-evidence-screenshot:${assetId}:${String(evidence.routePrimaryScreenshot)}`);
+    }
+    if (typeof input.geometry.report === "string" && evidence.geometryReport !== input.geometry.report) {
+      input.failures.push(`release-game-geometry-asset-evidence-report:${assetId}:${String(evidence.geometryReport)}`);
+    }
+    if (evidence.routePrimaryScreenshotSha256 !== input.geometry.routePrimaryScreenshotSha256) {
+      input.failures.push(`release-game-geometry-asset-evidence-screenshot-sha:${assetId}:${String(evidence.routePrimaryScreenshotSha256)}`);
+    }
   }
   if (typeof evidence.manifestHash !== "string" || !/^sha256-[a-f0-9]{64}$/.test(evidence.manifestHash)) {
     input.failures.push(`release-game-geometry-asset-evidence-manifest-hash:${assetId}:${String(evidence.manifestHash)}`);
   } else if (evidence.manifestHash !== manifestAsset.hash) {
     input.failures.push(`release-game-geometry-asset-evidence-manifest-hash-mismatch:${assetId}`);
   }
-  if (evidence.visualReview !== "pass") {
-    input.failures.push(`release-game-geometry-asset-evidence-visual:${assetId}:${String(evidence.visualReview)}`);
-  }
-  if (evidence.assetPairPass !== true) {
-    input.failures.push(`release-game-geometry-asset-evidence-asset-pair:${assetId}:${String(evidence.assetPairPass)}`);
+  if (input.requireFinalPromotion !== false) {
+    if (evidence.visualReview !== "pass") {
+      input.failures.push(`release-game-geometry-asset-evidence-visual:${assetId}:${String(evidence.visualReview)}`);
+    }
+    if (evidence.assetPairPass !== true) {
+      input.failures.push(`release-game-geometry-asset-evidence-asset-pair:${assetId}:${String(evidence.assetPairPass)}`);
+    }
   }
   const blockers = Array.isArray(evidence.blockers)
     ? evidence.blockers.filter((blocker) => typeof blocker === "string" && blocker.length > 0)

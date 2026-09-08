@@ -446,23 +446,26 @@ Object.defineProperty(bankWindow, "__AURA3D_COMPOSITION_PROBE__", {
       rotation: [0, 0, 0],
       targetSize: 3.26
     },
-    settleSubjectPose: () => {
+    settleSubjectPose: async () => {
       app.pause();
+      await app.ready();
       resolveHandles();
       tableHandle?.setVisible(true);
       tableHandle?.setScale(1);
       pocketAccentHandles.forEach((handle) => handle.setVisible(true));
-      app.step(0);
+      // Resolve only after the mutated subject has been submitted for capture.
+      await app.stepAsync(0);
     },
-    setSubjectSuppressed: (suppressed: boolean) => {
+    setSubjectSuppressed: async (suppressed: boolean) => {
       app.pause();
+      await app.ready();
       tableHandle?.setVisible(true);
       tableHandle?.setScale(suppressed ? 0.0001 : 1);
       // Pocket catch-lights are attached presentation detail for the typed
       // table. Hide them with the table during the checker’s suppressed pass;
       // otherwise six orphan rings would remain suspended over the floor.
       pocketAccentHandles.forEach((handle) => handle.setVisible(!suppressed));
-      app.step(0);
+      await app.stepAsync(0);
     }
   },
   configurable: true

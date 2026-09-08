@@ -21,7 +21,7 @@ export function validateReleaseGameAssetPairEvidence(input) {
   if (!status || !publicGameCategories.has(status.category)) return [];
 
   const failures = [];
-  if (status.publicTemplateReady !== true) {
+  if (input.requirePublicTemplateReady !== false && status.publicTemplateReady !== true) {
     failures.push(`release-game-template-ready:${String(status.publicTemplateReady)}`);
   }
   if (!Array.isArray(status.evidence) || status.evidence.length === 0) {
@@ -93,7 +93,8 @@ export function validateReleaseGameAssetPairEvidence(input) {
     expectedScreenshot,
     primaryAssets: input.route.primaryAssets,
     geometryEvidence: evidence.geometryEvidence,
-    root: input.root
+    root: input.root,
+    requireFinalPromotion: input.requireFinalPromotion !== false
   }));
 
   return failures;
@@ -232,7 +233,8 @@ function validatePublicGameGeometryEvidence(input) {
     primaryAssets: input.primaryAssets,
     geometry,
     root: input.root,
-    failures
+    failures,
+    requireFinalPromotion: input.requireFinalPromotion !== false
   });
 
   return failures;

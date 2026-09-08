@@ -267,6 +267,9 @@ export interface SSRResult {
 }
 
 export interface SSROptions {
+  /** Exact projection or view-projection; native SSR reconstructs in its coordinate space. */
+  readonly projection?: Float32Array;
+  readonly inverseProjection?: Float32Array;
   readonly depth?: DepthTextureBinding;
   readonly intensity?: number;
   readonly maxDistance?: number;

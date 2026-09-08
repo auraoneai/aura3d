@@ -121,8 +121,9 @@ try {
 
   // I2: haptics capability gate on the real navigator (headless has no vibrate:
   // the honest outcome there is played:false with a cause, never fake success).
-  const capability = probeHaptics({ navigatorLike: navigator });
-  const hapticResult = await playHaptic({ durationMs: 30 }, capability, { navigatorLike: navigator });
+  const navigatorLike = { vibrate: typeof navigator.vibrate === "function" ? (pattern: number | readonly number[]) => navigator.vibrate(typeof pattern === "number" ? pattern : [...pattern]) : undefined };
+  const capability = probeHaptics({ navigatorLike });
+  const hapticResult = await playHaptic({ durationMs: 30 }, capability, { navigatorLike });
   // Honest iff success is only ever reported via a real sink, and every refusal carries a cause.
   const hapticGateHonest =
     (hapticResult.played && hapticResult.via !== "none") ||

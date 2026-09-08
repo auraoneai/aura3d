@@ -6,6 +6,7 @@ import {
   mipChainBytesCoarseToFine,
   normalizeTextureBudgetBytes,
   resolveProductionShadowCasterIndex,
+  resolveProductionRuntimeShadowTuning,
   text3D
 } from "@aura3d/engine";
 
@@ -55,6 +56,35 @@ describe("scene contract G1/N1/M2 pure bridge", () => {
       { ...spot, shadowRequested: true, intensity: 9 }
     ])).toBe(1);
     expect(resolveProductionShadowCasterIndex([])).toBe(-1);
+    // Explicit false is a real disable signal, not an unrequested legacy light.
+    expect(resolveProductionShadowCasterIndex([
+      { ...directional, shadowDisabled: true },
+      { ...spot, shadowDisabled: true }
+    ])).toBe(-1);
+    expect(resolveProductionShadowCasterIndex([
+      { ...directional, shadowDisabled: true },
+      spot
+    ])).toBe(-1);
+    expect(resolveProductionShadowCasterIndex([
+      directional,
+      { ...spot, shadowRequested: true, shadowDisabled: false }
+    ])).toBe(1);
+  });
+
+  it("uses normalized perspective bias for spot maps without changing the established map policy", () => {
+    const spot = resolveProductionRuntimeShadowTuning("spot", 1024, 6.8);
+    expect(spot.bias).toBeCloseTo(0.15 / 1024, 10);
+    expect(spot.slopeBias).toBe(0.12);
+    // Aura Clash's measured caster/receiver separation is 0.00147 in spot
+    // depth. Even a grazing receiver stays below it with the bounded slope
+    // term; the previous 0.004 constant bias failed this invariant outright.
+    const grazingSlope = 3.3 * spot.slopeBias! / 1024 * 1.5;
+    expect(spot.bias + grazingSlope).toBeLessThan(0.00147);
+
+    expect(resolveProductionRuntimeShadowTuning("directional", 1024, 6.8)).toEqual({ bias: 0.004 });
+    expect(resolveProductionRuntimeShadowTuning("point", 1024, 1)).toEqual({ bias: expect.any(Number) });
+    expect(() => resolveProductionRuntimeShadowTuning("spot", 0, 1)).toThrow(/positive integer/);
+    expect(() => resolveProductionRuntimeShadowTuning("spot", 1024, 0)).toThrow(/finite and positive/);
   });
 
   it("gates spotPixelBacked on the device map signals, never intent alone", () => {
@@ -81,6 +111,8 @@ describe("scene contract G1/N1/M2 pure bridge", () => {
     expect(sdf.text3D?.sdfOcclusion).toBe("hide");
     expect(sdf.text3D?.sdfQuadCount).toBeGreaterThan(0);
     const spot = lights.spot({ position: [0, 4, 0], shadow: true }).toJSON() as { shadow?: boolean };
+    const directional = lights.directional({ position: [3, 4, 3], shadow: true }).toJSON() as { shadow?: boolean };
     expect(spot.shadow).toBe(true);
+    expect(directional.shadow).toBe(true);
   });
 });

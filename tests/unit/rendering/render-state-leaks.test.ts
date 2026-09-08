@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   Geometry,
+  createPlanarProjectionMatrix,
   Sampler,
   Texture,
   TextureBinding,
@@ -470,6 +471,41 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.deletions.framebuffers).toBeGreaterThanOrEqual(4);
   });
 
+  it("keeps cinematic bloom centered across the complete mip pyramid and full-size presentation", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 640, height: 360, label: "cinematic-bloom-source" });
+    const output = device.createRenderTarget({ width: 640, height: 360, label: "cinematic-bloom-output" });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "bloom", options: { quality: "cinematic", threshold: 1, intensity: 1, radius: 1, softKnee: 0, shoulder: 0 } },
+        { name: "tone-mapping", options: { exposure: 1, operator: "aces" } }
+      ],
+      outputTarget: output,
+      toneMappingDefaults: { outputColorSpace: "srgb" }
+    });
+
+    expect(gl.state.fullscreenDraws.map((draw) => draw.viewport.slice(2))).toEqual([
+      [640, 360],
+      [320, 180], [320, 180], [320, 180],
+      [160, 90], [160, 90], [160, 90],
+      [80, 45], [80, 45], [80, 45],
+      [40, 23], [40, 23], [40, 23],
+      [20, 12], [20, 12], [20, 12],
+      [320, 180], [320, 180], [320, 180], [320, 180], [320, 180],
+      [640, 360], [640, 360], [640, 360]
+    ]);
+    const downsampleSource = gl.state.fullscreenDraws
+      .map((draw) => draw.program?.shaders.map((shader) => shader.source).join("\n") ?? "")
+      .find((sourceText) => sourceText.includes("u_targetSize"));
+    expect(downsampleSource).toContain("gl_FragCoord.xy / u_targetSize");
+    expect(downsampleSource).not.toContain("(gl_FragCoord.xy - 0.5) * u_texelSize");
+    expect(gl.state.fullscreenDraws.at(-1)?.framebuffer).toBe(gl.state.framebuffer);
+
+    device.dispose();
+  });
+
   it("runs LDR outline as an integer Sobel, circular dilation, and LUT blend stage", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
@@ -540,9 +576,14 @@ describe("WebGL2 render-state isolation", () => {
     const source = device.createRenderTarget({ width: 5, height: 4, label: "native-ssr-source", depth: "texture" });
     const output = device.createRenderTarget({ width: 5, height: 4, label: "native-ssr-output", depth: false });
 
+    const projection = createPlanarProjectionMatrix(Math.PI / 5, 5 / 4, 0.3, 80);
+    expect(() => device.presentLdrPostprocess(source, {
+      passes: [{ name: "ssr", options: { intensity: 0.6, maxDistance: 8 } }], outputTarget: output,
+    })).toThrow(/actual frame projection/);
+    expect(gl.state.fullscreenDraws).toHaveLength(0);
     device.presentLdrPostprocess(source, {
       passes: [
-        { name: "ssr", options: { intensity: 0.6, maxDistance: 8 } },
+        { name: "ssr", options: { intensity: 0.6, maxDistance: 8, projection } },
         { name: "fxaa", options: {} }
       ],
       outputTarget: output
@@ -551,7 +592,12 @@ describe("WebGL2 render-state isolation", () => {
     const drawSources = gl.state.fullscreenDraws.map((draw) =>
       draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
     );
-    expect(drawSources[0]).toContain("rayDistance");
+    expect(drawSources).toHaveLength(2);
+    expect(drawSources[0]).toContain("depthDifference(candidate, hitUV)");
+    expect(drawSources[0]).toContain("u_inverseProjection * vec4");
+    expect(drawSources[0]).not.toContain("u_size.y - 1 - pixel.y");
+    expect(gl.state.uniformWrites).toContainEqual({ name: "u_projection", value: Array.from(projection) });
+    expect(gl.state.uniformWrites).toContainEqual({ name: "u_hasNormalMask", value: 0 });
     expect(drawSources[0]).toContain("uniform sampler2D u_depth");
     expect(drawSources[1]).toContain("u_hasFxaa");
     device.dispose();
@@ -626,7 +672,14 @@ describe("WebGL2 render-state isolation", () => {
       draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
     );
     expect(drawSources[0]).toContain("uniform sampler2D u_history");
-    expect(drawSources[0]).toContain("mix(source.rgb, history, u_blend)");
+    expect(drawSources).toHaveLength(2);
+    expect(drawSources[0]).toContain("float weight = u_blend;");
+    expect(drawSources[0]).toContain("weight /= 1.0 + length");
+    expect(drawSources[0]).toContain("mix(source.rgb,history.rgb,weight)");
+    // Explicit byte history preserves the old blend contract; native reprojection guards stay disabled.
+    expect(gl.state.uniformWrites).toContainEqual({ name: "u_temporal", value: 0 });
+    expect(gl.state.uniformWrites).toContainEqual({ name: "u_blend", value: 0.25 });
+    expect(drawSources[0]).not.toContain("u_storeDepth");
     expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
       internalFormat: gl.RGBA8,
       width: 5,
@@ -732,7 +785,8 @@ interface FakeWebGL2State {
   multisampleAllocations: { readonly samples: number; readonly internalFormat: number; readonly width: number; readonly height: number }[];
   framebufferBlits: { readonly mask: number; readonly filter: number }[];
   samplerParameters: { readonly parameter: number; readonly value: number }[];
-  fullscreenDraws: { readonly program: FakeProgram | null; readonly framebuffer: unknown }[];
+  uniformWrites: { readonly name: string; readonly value: number | number[] }[];
+  fullscreenDraws: { readonly program: FakeProgram | null; readonly framebuffer: unknown; readonly viewport: readonly [number, number, number, number] }[];
   depthTextureUploadAttempts: number;
   deletions: {
     buffers: number;
@@ -795,6 +849,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     framebufferBlits: [],
     samplerParameters: [],
     fullscreenDraws: [],
+    uniformWrites: [],
     depthTextureUploadAttempts: 0,
     deletions: {
       buffers: 0,
@@ -1107,10 +1162,15 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     getUniformLocation(program: FakeProgram, name: string) {
       return program.uniforms.includes(name.replace(/\[0\]$/, "")) ? { name: name.replace(/\[0\]$/, "") } : null;
     },
-    uniform1f() {},
+    uniform1f(location: { readonly name: string } | null, value: number) {
+      if (location) state.uniformWrites.push({ name: location.name, value });
+    },
     uniform2f() {},
     uniform2i() {},
-    uniformMatrix4fv() {},
+    uniformMatrix4fv(location: { readonly name: string } | null, transpose: boolean, value: Float32Array) {
+      if (transpose) throw new Error("WebGL matrix upload must not transpose");
+      if (location) state.uniformWrites.push({ name: location.name, value: Array.from(value) });
+    },
     uniform4fv() {},
     uniform3fv() {},
     uniform2fv() {},
@@ -1119,6 +1179,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     },
     uniform1i(location: { readonly name: string }, unit: number) {
       state.uniformSamplers.set(location.name, unit);
+      state.uniformWrites.push({ name: location.name, value: unit });
     },
     enableVertexAttribArray() {},
     vertexAttribPointer() {},
@@ -1142,7 +1203,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     },
     blendFunc() {},
     drawArrays() {
-      state.fullscreenDraws.push({ program: state.currentProgram, framebuffer: state.framebuffer });
+      state.fullscreenDraws.push({ program: state.currentProgram, framebuffer: state.framebuffer, viewport: [...state.viewport] });
     },
     drawElements() {},
     drawArraysInstanced() {},

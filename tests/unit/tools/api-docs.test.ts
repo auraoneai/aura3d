@@ -46,7 +46,10 @@ describe("public API docs", () => {
       "@aura3d/product-studio",
       "@aura3d/react",
       "@aura3d/rendering",
+      "@aura3d/rendering/extension-scalar-atlas",
+      "@aura3d/rendering/lean-core-runtime",
       "@aura3d/rendering/lean-runtime",
+      "@aura3d/rendering/reflection-surfaces",
       "@aura3d/rendering/webgpu",
       "@aura3d/scene",
       "@aura3d/scripting",
@@ -84,6 +87,8 @@ describe("public API docs", () => {
      * Still public, still documented: the barrel keeps the types, and the value has its own entry so a
      * developer writing a custom WebGPU path can construct one (WS-2.8's escape-hatch requirement).
      */
+    expect(docs).toContain("## @aura3d/rendering/extension-scalar-atlas");
+    expect(docs).toContain("## @aura3d/rendering/reflection-surfaces");
     expect(docs).toContain("## @aura3d/rendering/webgpu");
     expect(docs).toContain("export { WebGPUDevice } from \"./WebGPUDevice\";");
     expect(docs).toContain("## @aura3d/physics/solverless");

@@ -70,7 +70,7 @@ export class MaterialBindingError extends Error {
     message: string,
     public readonly diagnostics: readonly string[]
   ) {
-    super(message);
+    super(`${message}: ${diagnostics.join("; ")}`);
     this.name = "MaterialBindingError";
   }
 }

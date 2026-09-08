@@ -38,6 +38,8 @@ const aliasEntries = [
   ["@aura3d/scene", "./packages/scene/src/index.ts"],
   ["@aura3d/ecs", "./packages/ecs/src/index.ts"],
   ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
+  ["@aura3d/rendering/extension-scalar-atlas", "./packages/rendering/src/extension-scalar-atlas.ts"],
+  ["@aura3d/rendering/reflection-surfaces", "./packages/rendering/src/reflection-surfaces.ts"],
   ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
   ["@aura3d/controls", "./packages/controls/src/index.ts"],
   ["@aura3d/environments", "./packages/environments/src/index.ts"],

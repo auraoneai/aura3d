@@ -60,9 +60,8 @@ export interface RootMotionSlideReport {
   readonly cycleDistance: number;
   /**
    * Loop-closure error (units/second): magnitude of the root-velocity discontinuity at the
-   * loop point, `|v(0+) − v(duration−)|` via finite differences. Zero means the clip wraps
-   * seamlessly — no velocity snap at the seam, which is the quantitative form of "no foot
-   * sliding at turn".
+   * loop point, `|v(0+) − v(duration−)|` via finite differences. Zero means no root velocity
+   * snap at the seam; planted-foot contact must be measured independently.
    */
   readonly loopClosureError: number;
   /**
@@ -76,7 +75,7 @@ export interface RootMotionSlideReport {
 }
 
 /**
- * Zero-slide metric for root-motion locomotion (E2): for a looping clip, verify the root
+ * Root-track continuity metric only: this does not measure planted-foot slip. Verify the root
  * advances by a stable per-cycle delta with (near-)zero loop-closure error. Pure and
  * deterministic.
  */
@@ -199,4 +198,37 @@ function subtractVec3(a: Vec3, b: Vec3): Vec3 {
 
 function scaleVec3(a: Vec3, scale: number): Vec3 {
   return [a[0] * scale, a[1] * scale, a[2] * scale];
+}
+
+/** Convert a clip-space displacement to world space; translation of the matrix is deliberately ignored. */
+export function transformRootMotionDelta(delta: Vec3, worldFromLocal: ArrayLike<number>): Vec3 {
+  if (worldFromLocal.length !== 16 || Array.from(worldFromLocal).some(value => !Number.isFinite(value))) {
+    throw new Error("Root motion transform must be a finite 4x4 matrix.");
+  }
+  return [
+    worldFromLocal[0]! * delta[0] + worldFromLocal[4]! * delta[1] + worldFromLocal[8]! * delta[2],
+    worldFromLocal[1]! * delta[0] + worldFromLocal[5]! * delta[1] + worldFromLocal[9]! * delta[2],
+    worldFromLocal[2]! * delta[0] + worldFromLocal[6]! * delta[1] + worldFromLocal[10]! * delta[2]
+  ];
+}
+
+export interface RootMotionConsumption {
+  readonly requested: Vec3;
+  readonly accepted: Vec3;
+  /** Rejected displacement is diagnostic, never silently carried into the next frame. */
+  readonly rejected: Vec3;
+}
+
+/** The injected authority (e.g. Rapier character controller) is the only position owner. */
+export function consumeRootMotion(
+  sample: RootMotionSample,
+  worldFromLocal: ArrayLike<number>,
+  move: (requestedWorldDelta: Vec3) => Vec3
+): RootMotionConsumption {
+  const requested = transformRootMotionDelta(sample.delta, worldFromLocal);
+  const accepted = move(requested);
+  if (accepted.length !== 3 || accepted.some(value => !Number.isFinite(value))) {
+    throw new Error("Root motion authority must return a finite accepted displacement.");
+  }
+  return { requested, accepted: [...accepted], rejected: subtractVec3(requested, accepted) };
 }

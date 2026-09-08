@@ -1,34 +1,8 @@
+import type {} from "./reflection-surfaces-b4-harness";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
-
-declare global {
-  interface Window {
-    __AURA3D_REFLECTION_SURFACES_B4__?: {
-      readonly status: "ready" | "error";
-      readonly renderer: "webgl2";
-      readonly claimBoundary: string;
-      readonly mirrorRevisions?: readonly [number, number];
-      readonly mirrorPixelHashes?: readonly [string, string];
-      readonly mirrorChangedPixelCount?: number;
-      readonly floorMirrorVsPlainDelta?: number;
-      readonly glassTintedDelta?: number;
-      readonly glassTransmittance?: number;
-      readonly waterRevisions?: readonly [number, number];
-      readonly waterChangedPixelCount?: number;
-      readonly waterBlendedDelta?: number;
-      readonly planarStatus?: string;
-      readonly floorStatus?: string;
-      readonly glassStatus?: string;
-      readonly waterStatus?: string;
-      readonly ssrStatus?: string;
-      readonly planarTrueReflection?: boolean;
-      readonly floorTrueReflection?: boolean;
-      readonly glassTrueReflection?: boolean;
-      readonly waterTrueReflection?: boolean;
-      readonly error?: string;
-    };
-  }
-}
 
 test.describe("reflection surfaces B4 renderer bindings", () => {
   test.setTimeout(60_000);
@@ -44,7 +18,7 @@ test.describe("reflection surfaces B4 renderer bindings", () => {
 
   test("mirror, glass, and water bindings change real pixels and promote only bound statuses", async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto(`${server.origin}/tests/browser/reflection-surfaces-b4-harness.html`, {
       waitUntil: "domcontentloaded",
     });
@@ -83,11 +57,27 @@ test.describe("reflection surfaces B4 renderer bindings", () => {
     expect(result?.floorStatus).toBe("implemented");
     expect(result?.glassStatus).toBe("implemented");
     expect(result?.waterStatus).toBe("implemented");
-    expect(result?.ssrStatus).toBe("unsupported");
+    expect(result?.ssrStatus).toBe("implemented");
+    const ssr = result?.ssrEvidence;
+    const output = testInfo.outputPath("b4-ssr");
+    await mkdir(output, { recursive: true });
+    for (const [index, image] of (ssr?.images ?? []).entries()) {
+      await writeFile(join(output, `frame-${index}.png`), Buffer.from(image.split(",")[1]!, "base64"));
+    }
+    await writeFile(join(output, "evidence.json"), JSON.stringify({ ...result, ssrEvidence: { ...ssr, images: undefined } }, null, 2));
+    expect(ssr?.nativeDraws).toBe(6);
+    expect(ssr?.cameraReflectionPixels).toBeGreaterThan(5);
+    expect(ssr?.occludedRedReflectionPixels).toBe(0);
+    expect(ssr?.reflectedPixels).toBeGreaterThan(10);
+    expect(ssr?.movedReflectionPixels).toBeGreaterThan(10);
+    expect(ssr?.roughnessDelta).toBeGreaterThan(10);
+    expect(ssr?.offscreenDelta).toBe(0);
+    expect(ssr?.missingDepthRejected).toBe(true);
+    expect(ssr?.disposed).toBe(true);
     expect(result?.planarTrueReflection).toBe(true);
     expect(result?.floorTrueReflection).toBe(true);
     expect(result?.glassTrueReflection).toBe(true);
     expect(result?.waterTrueReflection).toBe(true);
-    expect(result?.claimBoundary).toMatch(/no SSR/i);
+    expect(result?.claimBoundary).toMatch(/native bounded SSR/i);
   });
 });

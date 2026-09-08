@@ -266,24 +266,24 @@
       "globalName": "__AURA3D_SHOWCASE_SIEGE_GOLF__",
       "published": true,
       "releaseClass": "prototype-blocked",
-    "primaryAssets": [
-      "siegeGolfCourseWorld",
-      "siegeGolfBall",
+      "primaryAssets": [
+        "siegeGolfCourseWorld",
+        "siegeGolfBall",
         "siegeWoodenCrate",
         "siegeWoodenBarrel",
         "siegePlankSet"
       ],
-    "primaryAssetRoles": {
-      "siegeGolfCourseWorld": "course-world",
+      "primaryAssetRoles": {
+        "siegeGolfCourseWorld": "course-world",
         "siegeGolfBall": "weighted-gameplay-ball",
         "siegeWoodenCrate": "destructible-prop",
         "siegeWoodenBarrel": "destructible-prop",
         "siegePlankSet": "jointed-structure"
       },
       "routePrimaryHeroAsset": "siegeGolfBall",
-    "secondaryPrimaryAssets": [
-      "siegeGolfCourseWorld",
-      "siegeWoodenCrate",
+      "secondaryPrimaryAssets": [
+        "siegeGolfCourseWorld",
+        "siegeWoodenCrate",
         "siegeWoodenBarrel",
         "siegePlankSet"
       ],
@@ -396,14 +396,14 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "gravityPodSkiffMeshy",
+        "gravityPostCourierSkiff",
         "gravityPostDockBeacon"
       ],
       "primaryAssetRoles": {
-        "gravityPodSkiffMeshy": "primary-vehicle",
+        "gravityPostCourierSkiff": "primary-vehicle",
         "gravityPostDockBeacon": "dock-landmark-prop"
       },
-      "routePrimaryHeroAsset": "gravityPodSkiffMeshy",
+      "routePrimaryHeroAsset": "gravityPostCourierSkiff",
       "secondaryPrimaryAssets": [
         "gravityPostDockBeacon"
       ],
@@ -433,13 +433,18 @@
       "globalName": "__AURA3D_SHOWCASE_COURIER_RUSH__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["courierVan", "courierParcel"],
+      "primaryAssets": [
+        "courierVan",
+        "courierParcel"
+      ],
       "primaryAssetRoles": {
         "courierVan": "primary-vehicle",
         "courierParcel": "visible-cargo"
       },
       "routePrimaryHeroAsset": "courierVan",
-      "secondaryPrimaryAssets": ["courierParcel"],
+      "secondaryPrimaryAssets": [
+        "courierParcel"
+      ],
       "primitiveBudget": 40,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -496,7 +501,12 @@
       "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primaryAssets": [
+        "mechChassisA",
+        "mechArmsA",
+        "mechLegsA",
+        "mechWeaponA"
+      ],
       "primaryAssetRoles": {
         "mechChassisA": "primary-character-chassis",
         "mechArmsA": "primary-character-arms",
@@ -504,7 +514,11 @@
         "mechWeaponA": "primary-right-hand-attachment"
       },
       "routePrimaryHeroAsset": "mechChassisA",
-      "secondaryPrimaryAssets": ["mechArmsA", "mechLegsA", "mechWeaponA"],
+      "secondaryPrimaryAssets": [
+        "mechArmsA",
+        "mechLegsA",
+        "mechWeaponA"
+      ],
       "primitiveBudget": 46,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -531,7 +545,13 @@
       "globalName": "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"],
+      "primaryAssets": [
+        "vaultBreakersTable",
+        "vaultBreakersMechanisms",
+        "vaultBreakersBall",
+        "vaultBreakersFlipper",
+        "vaultBreakersVaultDoor"
+      ],
       "primaryAssetRoles": {
         "vaultBreakersTable": "primary-cabinet-and-play-surface",
         "vaultBreakersMechanisms": "primary-mission-mechanisms",
@@ -540,7 +560,12 @@
         "vaultBreakersVaultDoor": "primary-mission-door"
       },
       "routePrimaryHeroAsset": "vaultBreakersMechanisms",
-      "secondaryPrimaryAssets": ["vaultBreakersTable", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"],
+      "secondaryPrimaryAssets": [
+        "vaultBreakersTable",
+        "vaultBreakersBall",
+        "vaultBreakersFlipper",
+        "vaultBreakersVaultDoor"
+      ],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -567,7 +592,15 @@
       "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
+      "primaryAssets": [
+        "rooftopCourt",
+        "rooftopVenueV2",
+        "rooftopBackboard",
+        "rooftopRim",
+        "rooftopBall",
+        "rooftopLayupScorer",
+        "rooftopDefender"
+      ],
       "primaryAssetRoles": {
         "rooftopCourt": "primary-play-surface",
         "rooftopVenueV2": "primary-venue-depth",
@@ -578,7 +611,14 @@
         "rooftopDefender": "primary-pressure-character"
       },
       "routePrimaryHeroAsset": "rooftopBackboard",
-      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopVenueV2", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
+      "secondaryPrimaryAssets": [
+        "rooftopCourt",
+        "rooftopVenueV2",
+        "rooftopRim",
+        "rooftopBall",
+        "rooftopLayupScorer",
+        "rooftopDefender"
+      ],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -605,7 +645,14 @@
       "globalName": "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
+      "primaryAssets": [
+        "galleryShiftCutawayMuseumWorld",
+        "galleryShiftPedestal",
+        "galleryShiftExhibitA",
+        "galleryShiftExhibitB",
+        "galleryShiftExhibitC",
+        "galleryShiftDisplayCase"
+      ],
       "primaryAssetRoles": {
         "galleryShiftCutawayMuseumWorld": "primary-museum-world",
         "galleryShiftPedestal": "primary-objective-fixture",
@@ -615,7 +662,13 @@
         "galleryShiftDisplayCase": "primary-cover-fixture"
       },
       "routePrimaryHeroAsset": "galleryShiftCutawayMuseumWorld",
-      "secondaryPrimaryAssets": ["galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
+      "secondaryPrimaryAssets": [
+        "galleryShiftPedestal",
+        "galleryShiftExhibitA",
+        "galleryShiftExhibitB",
+        "galleryShiftExhibitC",
+        "galleryShiftDisplayCase"
+      ],
       "primitiveBudget": 20,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -642,7 +695,13 @@
       "globalName": "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"],
+      "primaryAssets": [
+        "deepRecoverySub",
+        "deepRecoveryWreckHull",
+        "deepRecoveryCrateStandard",
+        "deepRecoveryCrateHeavy",
+        "deepRecoveryBuoyBeacon"
+      ],
       "primaryAssetRoles": {
         "deepRecoverySub": "primary-player-vehicle",
         "deepRecoveryWreckHull": "primary-mission-world",
@@ -651,7 +710,12 @@
         "deepRecoveryBuoyBeacon": "primary-bank-repair-surface-station"
       },
       "routePrimaryHeroAsset": "deepRecoverySub",
-      "secondaryPrimaryAssets": ["deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"],
+      "secondaryPrimaryAssets": [
+        "deepRecoveryWreckHull",
+        "deepRecoveryCrateStandard",
+        "deepRecoveryCrateHeavy",
+        "deepRecoveryBuoyBeacon"
+      ],
       "primitiveBudget": 72,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -678,7 +742,12 @@
       "globalName": "__AURA3D_SHOWCASE_PATROL_WING__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["patrolAircraftMeshy", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
+      "primaryAssets": [
+        "patrolAircraftMeshy",
+        "patrolWingDroneA",
+        "patrolWingDroneB",
+        "patrolWingPadBeacon"
+      ],
       "primaryAssetRoles": {
         "patrolAircraftMeshy": "primary-player-aircraft",
         "patrolWingDroneA": "primary-intercept-target-a",
@@ -686,7 +755,11 @@
         "patrolWingPadBeacon": "primary-landing-objective"
       },
       "routePrimaryHeroAsset": "patrolAircraftMeshy",
-      "secondaryPrimaryAssets": ["patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
+      "secondaryPrimaryAssets": [
+        "patrolWingDroneA",
+        "patrolWingDroneB",
+        "patrolWingPadBeacon"
+      ],
       "primitiveBudget": 80,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -713,14 +786,21 @@
       "globalName": "__AURA3D_SHOWCASE_BANK_SHOT__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["bankShotTable", "bankShotCue", "bankShotBall00"],
+      "primaryAssets": [
+        "bankShotTable",
+        "bankShotCue",
+        "bankShotBall00"
+      ],
       "primaryAssetRoles": {
         "bankShotTable": "primary-play-surface",
         "bankShotCue": "primary-interaction-prop",
         "bankShotBall00": "primary-player-ball"
       },
       "routePrimaryHeroAsset": "bankShotTable",
-      "secondaryPrimaryAssets": ["bankShotCue", "bankShotBall00"],
+      "secondaryPrimaryAssets": [
+        "bankShotCue",
+        "bankShotBall00"
+      ],
       "primitiveBudget": 18,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,

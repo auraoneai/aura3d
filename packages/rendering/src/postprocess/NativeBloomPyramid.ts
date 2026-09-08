@@ -73,7 +73,37 @@ export function resolveBloomPyramidPlan(
   return { quality, mipCount: weights.length, mips, weights, halfFloat, targetBytes };
 }
 
-/** Energy-preserving composite gain for evidence: always 1 for pyramid weights. */
+
+/**
+ * Resolve a widening Gaussian radius for each mip while preserving the
+ * authored radius as the quality control. The cinematic reference profile at
+ * authored radius 4 follows [6, 10, 14, 16, 16]; smaller authored radii scale
+ * the same profile instead of applying one narrow box kernel to every mip.
+ */
+export function resolveBloomPyramidBlurRadii(plan: BloomPyramidPlan, authoredRadius: number): number[] {
+  if (!Number.isInteger(authoredRadius) || authoredRadius < 0 || authoredRadius > 16) {
+    throw new Error(`Bloom pyramid radius must be an integer in [0, 16], received ${String(authoredRadius)}.`);
+  }
+  if (plan.quality === "performance") return [authoredRadius];
+  const reference = plan.quality === "balanced" ? [6, 10, 14] : [6, 10, 14, 18, 22];
+  if (authoredRadius === 0) return reference.map(() => 0);
+  return reference.map((radius) => Math.max(1, Math.min(16, Math.round(radius * authoredRadius / 4))));
+}
+
+/** Energy-preserving mip gain: normalized per-mip weights always sum to 1. */
 export function bloomPyramidCompositeGain(plan: BloomPyramidPlan): number {
   return plan.weights.reduce((total, weight) => total + weight, 0);
+}
+
+/**
+ * Global multiscale response applied after the normalized mip composite.
+ * This is deliberately separate from the energy-preserving weights: authored
+ * strength remains one control, while balanced/cinematic recover the visual
+ * response of a multi-mip bloom stack instead of becoming weaker as mips are
+ * normalized. The cinematic response is calibrated against the frozen r185
+ * ACES/sRGB workload; keeping it explicit makes the measured response auditable.
+ */
+export function resolveBloomPyramidResponseGain(plan: BloomPyramidPlan): number {
+  if (plan.quality === "performance") return 1;
+  return plan.quality === "balanced" ? 7 : 17;
 }

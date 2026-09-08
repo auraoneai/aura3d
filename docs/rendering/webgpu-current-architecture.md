@@ -1,6 +1,8 @@
 # Current WebGPU Architecture and Three.js r185 Comparison
 
-Date: 2026-08-08
+Date: 2026-09-05
+
+The architecture baseline and older per-feature rows retain their original run dates. New native TAA evidence below belongs only to its recorded source snapshot; final 3.0.1 release acceptance remains pending.
 
 This is the bounded architecture comparison for WS-3.2. The baseline is the
 live npm `latest` result verified by `pnpm current-threejs:baseline`:
@@ -43,13 +45,14 @@ all five evidence legs.
 | --- | --- | --- | --- |
 | `bloom-pyramid` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native `webgpu-native-post` on Metal 3: 8 bloom passes, 3 half-float mips, 7,472 changed px (`webgpu-post-j2.spec.ts` 2/2). |
 | `color-grade` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native grade pass on Metal 3: 47,576 changed px, mean luma lift (`webgpu-post-j2.spec.ts` 2/2). |
-| `fxaa-taa` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native FXAA pass on Metal 3: 1,928 changed px, mean abs diff 0.0054 — subtle edge AA, not a look change (`webgpu-post-j2.spec.ts` 2/2). TAA row stays unproven (no TAA proof). |
+| `fxaa` | `production-runtime/shaders/wgsl/postprocess.wgsl` | proven 2026-09-05 | Native FXAA pass on Metal 3: 1,928 changed px, mean abs diff 0.0054 — subtle edge AA, not a look change (`webgpu-post-j2.spec.ts` 2/2). |
+| `taa` | `webgpu/WebGPUTemporal.ts` | native sequence verified for run 34001658939 | Strict WebGPU on `apple apple`; 175 retained frames, 218 TAA passes, 327 temporal bindings and 284 submissions. Flicker fell 51.6% versus disabled; ghost error 0 versus stale-history control 0.7953; old/new silhouette ROI coverage 0.9599/0. Resize, cut and scene-reset errors 0. Final-source release revalidation remains required. |
 | `spot-shadows` | `production-runtime/shaders/wgsl/pbr.wgsl` | proven 2026-09-05 | Native spot depth target on Metal 3 (86 depth levels, CPU-oracle-matched sphere depth 0.631), projective 9-tap PCF: core receiver patch 183.1→142.8 (drop 40.28), centroid 88.4px off-center, PCF-vs-single 218px, lit-corner Δ=0 (`webgpu-spot-shadow-j2.spec.ts` 1/1). |
 | `textured-pbr` | `production-runtime/shaders/wgsl/pbr.wgsl` | proven 2026-09-04 | All 5 legs on Apple Metal 3: adapter, strict-webgpu backend, 110 PBR dispatches, 110 native submissions, 140,378 non-black readback px (car-concept). |
 | `render-bundles` | n/a (API-level prototype, no new shader) | prototype-measured 2026-09-04 | 4096 static draws: bundle-execute 0.60ms vs re-encode 0.80ms (ratio 0.75, adopt-candidate). Zero engine call sites — adoption still needs engine implementation. |
 | `compute-particles` | `production-runtime/shaders/wgsl/pbr.wgsl` | unproven | Particle compute-dispatch reuse has no WebGPU dispatch proof yet. |
 
-Related native facts that do NOT flip rows above (live attempt 2026-09-04,
+Historical attempt details (2026-09-04; not the later TAA result or a current-worktree verdict),
 `tests/reports/webgpu-parity/feature-probe.json`): this machine exposes a
 real Apple Metal 3 adapter/device (`tests/reports/webgpu-hardware-matrix.json`).
 `textured-pbr` holds 4 of 5 legs live — both pbr routes settle `ready` on
@@ -65,6 +68,18 @@ triangle route (0 draw calls despite `a3d-webgpu` backend + adapter) — a route
 issue, not an adapter verdict; per-row attempts above do not inherit it.
 Retained history: `tests/reports/webgpu-current-architecture/native-routes.json`
 (2026-08-09, 6/6 pass on its machine).
+
+## Native TAA source-snapshot evidence
+
+[Run 34001658939](https://github.com/auraoneai/aura3d/actions/runs/34001658939)
+retains `native-functional-34001658939-1/generated-reports/webgpu-post-j2/r03-retained-sequences.json`
+and all 175 referenced PNG frames. Capture interval: 2026-09-06 00:36:58–00:37:18 UTC.
+The receipt binds source fingerprint
+`485c99ee60f8b0f60cb49b8b615aa6b1f2e84dd21a6f7b863a5cfa7fef5abf6c`
+and commit `b3fdd2612a1f1a259c0c76522417ad7e4c7b68fd`; start/end identity matches.
+Its renderer-owned history sequence is independent of the older FXAA probe.
+This establishes the bounded native TAA sequence on that snapshot, not device-loss
+coverage, every material/geometry combination, root-default WebGPU, or final release approval.
 
 ## Unsupported and partial rows
 
@@ -93,10 +108,9 @@ online current-baseline lock, real hardware matrix, public SDK imported-asset
 proof, native-route matrix, compute/fallback/error proof, and exact installed
 Three.js renderer source hash.
 
-## Superiority (K1 · 2026-09-04)
+## Historical K1 comparison limits (2026-09-04)
 
 - No win claimed: the library K1 matrix records an explicit GAP for
-  **webgpu-render-bundles → J2**, and J2 rows are hardware-blocked and
-  honestly unproven. This doc records the boundary; WebGPU superiority
+  **webgpu-render-bundles → J2**, and its then-unproven J2 rows do not certify later per-feature work. This doc records the boundary; WebGPU superiority
   stays unclaimed until real-hardware rows go green
   (`tests/reports/muse3jsparity/matrix-check.json` `gapAreas`).

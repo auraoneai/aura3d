@@ -126,14 +126,15 @@ const courierHandoffParcelHeight = visualReviewCapture
   ? courierOperatorSeatHeight + courierOperatorTargetHeight * 0.57
   : courierOperatorSeatHeight + courierOperatorTargetHeight * 0.55;
 
-const BODY_COLORS: Readonly<Record<string, string>> = {
-  sol: "#ffd166",
-  cinder: "#f4a261",
-  verdance: "#70e000",
-  aquaria: "#22d3ee",
-  rust: "#fb7185",
-  gale: "#c4b5fd"
-};
+// NASA/VTAD textured planet assets furnish the fictional wells' visual bodies.
+// These are visual analogues, not assertions of real solar-system dynamics.
+const WELL_PLANET_ASSETS = {
+  cinder: assets.gravityPlanetMercury,
+  verdance: assets.gravityPlanetEarth,
+  aquaria: assets.gravityPlanetNeptune,
+  rust: assets.gravityPlanetMars,
+  gale: assets.gravityPlanetJupiter
+} as const;
 
 const BODY_EMISSIVE: Readonly<Record<string, string>> = {
   sol: "#fb923c",
@@ -255,8 +256,8 @@ declare global {
         readonly rotation: readonly [number, number, number];
         readonly targetSize: number;
       };
-      setSubjectSuppressed(suppressed: boolean): void;
-      settleSubjectPose(): void;
+      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+      settleSubjectPose(): Promise<void>;
     };
     /** Deterministic test hook: manually advance the mounted app by dt seconds. */
     __GRAVITY_POST_STEP__?: (dtSeconds: number) => void;
@@ -339,18 +340,26 @@ for (const body of WELL_BODIES) {
   // planning board still shows every authored well, but detached planet balls
   // do not belong inside the close freightway composition.
   if (visualReviewCapture) continue;
-  const color = BODY_COLORS[body.id] ?? "#94a3b8";
+  const planetAsset = WELL_PLANET_ASSETS[body.id as keyof typeof WELL_PLANET_ASSETS];
+  if (!planetAsset) throw new Error(`Missing typed visual planet for ${body.id}`);
+  const planetDiameter = body.visualRadius * 4.8;
+  const planetBounds = planetAsset.bounds ?? [1, 1, 1];
+  const planetHeight = planetDiameter * planetBounds[1] / Math.max(...planetBounds);
   sceneBuilder = sceneBuilder.add(
-    primitives.sphere({
-      name: body.name + " authored gravity-well planet",
-      material: material.pbr({
-        color,
-        roughness: 0.38,
-        metallic: 0.24,
-        emissive: BODY_EMISSIVE[body.id],
-        emissiveIntensity: body.id === "sol" ? 0.55 : 0.2
-      })
-    }).position(body.position[0], PLAY_PLANE_Y, body.position[1]).scale(body.visualRadius * (visualReviewCapture ? 0.92 : 4.8))
+    model(planetAsset, {
+      name: body.name + " typed gravity-well planet",
+      role: "primaryWorld",
+      scaleMode: "fit",
+      targetMaxDimension: planetDiameter,
+      castShadow: true,
+      receiveShadow: true
+    })
+      // Fit models are grounded at min-Y; center this spherical visual on the
+      // unchanged well position. No collider, force, orbit or contract changes.
+      .position(body.position[0], PLAY_PLANE_Y - planetHeight * 0.5, body.position[1])
+      .runtime(game.runtimeNode(`gravity-post-planet-${body.id}`, {
+        tags: ["typed-planet", "gravity-well-visual", "non-colliding"]
+      }))
   );
 
   // Atmospheric and celestial planet accessories
@@ -903,7 +912,7 @@ if (visualReviewCapture) {
 // owner of movement, sensors, collision and scoring.
 sceneBuilder = sceneBuilder
   .add(
-    model(assets.gravityPodSkiffMeshy, {
+    model(assets.gravityPostCourierSkiff, {
       name: "mail-pod",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -2197,9 +2206,9 @@ function publishEvidence(): void {
       unlocked: proof.unlocked,
       playedCueCount: proof.playedCueCount
     },
-    primaryAssets: ["gravityPodSkiffMeshy", "gravityPostDockBeacon"],
+    primaryAssets: ["gravityPostCourierSkiff", "gravityPostDockBeacon"],
     typedAssets: [
-      { id: "gravityPodSkiffMeshy", typedRef: "assets.gravityPodSkiffMeshy", role: "primaryVehicle" },
+      { id: "gravityPostCourierSkiff", typedRef: "assets.gravityPostCourierSkiff", role: "primaryVehicle" },
       { id: "neonCourierAvatar", typedRef: "assets.neonCourierAvatar", role: "supportingCourierOperator" },
       { id: "gravityPostDockBeacon", typedRef: "assets.gravityPostDockBeacon", role: "primaryWorld" },
       { id: "courierParcel", typedRef: "assets.courierParcel", role: "supportingCargo" },
@@ -2332,6 +2341,29 @@ window.__GRAVITY_POST_CAPTURE__ = () => {
   if (!canvas) throw new Error("Gravity Post canvas missing.");
   return canvas.toDataURL("image/png");
 };
+if (new URLSearchParams(location.search).has("planetProbe")) {
+  (window as unknown as Record<string, unknown>).__GRAVITY_POST_PLANET_PROBE__ = {
+    async capture(visible: boolean) {
+      paused = true;
+      app.pause();
+      await app.ready();
+      const planets = WELL_BODIES.filter(body => body.id !== "sol").map(body => {
+        const handle = app.nodes.require(`gravity-post-planet-${body.id}`);
+        handle.setVisible(visible);
+        return { id: body.id, handle };
+      });
+      await app.stepAsync(0);
+      const canvas = app.canvas;
+      const gl = canvas?.getContext("webgl2");
+      if (!canvas || !gl) throw new Error("Typed planet proof requires actual mounted WebGL2 output.");
+      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return { width: canvas.width, height: canvas.height, pixels: Array.from(pixels),
+        planets: planets.map(({ id, handle }) => ({ id, imported: handle.importedAssetEvidence(), node: handle.snapshot() })),
+        diagnostics: app.diagnostics() };
+    }
+  };
+}
 /** Debug/test surface: the mounted physics runtime. */
 (window as unknown as Record<string, unknown>).__GRAVITY_POST_PHYSICS__ = physics;
 window.__GRAVITY_POST_EVIDENCE_SNAPSHOT__ = () => window.__GRAVITY_POST_EVIDENCE__;
@@ -2350,7 +2382,13 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         targetSize: 3.8
       };
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      // Visibility mutates retained nodes; it does not present pixels. Freeze
+      // the RAF owner and explicitly await the frame containing this mutation
+      // so a busy browser cannot capture the previous visible frame twice.
+      paused = true;
+      app.pause();
+      await app.ready();
       compositionSubjectSuppressed = suppressed;
       app.nodes.get("mail-pod")?.setVisible(!suppressed);
       app.nodes.get("mail-pod-courier-operator")?.setVisible(!suppressed && pod.state !== "lost");
@@ -2368,14 +2406,18 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)?.setVisible(!suppressed);
       }
       for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) app.nodes.get("mail-pod-trail-" + index)?.setVisible(false);
+      await app.stepAsync(0);
     },
-    settleSubjectPose() {
+    async settleSubjectPose() {
       paused = true;
+      app.pause();
+      await app.ready();
       compositionPresentationOverride = visualReviewCapture;
       resetPodForContract(pod, contract());
       app.nodes.get("mail-pod")?.setVisible(!compositionSubjectSuppressed);
       syncPodVisual();
       publishEvidence();
+      await app.stepAsync(0);
     }
   },
   configurable: true

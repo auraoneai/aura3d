@@ -1,9 +1,15 @@
+import type { ExactPackageSmoke } from "../release/exact-package-smoke.mjs";
+import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
 import { createHash, generateKeyPairSync, sign, verify } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 interface PackageProvenanceReport {
+  readonly packages?: readonly unknown[];
+  readonly packageCount?: number;
+  readonly releasePlan?: {path:string;sha256:string};
+  readonly installedIdentity?: unknown;
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly command: string;
@@ -39,6 +45,7 @@ const reportPath = "tests/reports/package-provenance.json";
 const installSmokePath = "tests/reports/package-install-smoke.json";
 
 export function createPackageProvenanceReport(root = process.cwd()): PackageProvenanceReport {
+  const exactPlan = loadValidatedReleasePlan(root);
   const installSmoke = readJson(join(root, installSmokePath));
   const packageInfo = readJson(join(root, "package.json"));
   const packageName = typeof packageInfo?.name === "string" ? packageInfo.name : null;
@@ -49,9 +56,13 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
   const actualSha = tarballFullPath && existsSync(tarballFullPath)
     ? createHash("sha256").update(readFileSync(tarballFullPath)).digest("hex")
     : null;
+  const exactSmoke = installSmoke?.exactPackages as ExactPackageSmoke | undefined;
   const violations = [
+    ...(exactPlan && (!exactSmoke?.ok || exactSmoke.packageCount !== 29 || exactSmoke.packages.length !== 29 || new Set(exactSmoke.packages.map(p=>p.name)).size !== 29 || JSON.stringify(exactSmoke.releasePlan)!==JSON.stringify(exactPlan.reference)) ? ["All29 exact candidate smoke proofs are required."] : []),
     ...(installSmoke?.ok === true ? [] : ["External package install smoke report is missing or failing."]),
-    ...(installSmoke?.packMode === "fresh-current-checkout-pack" ? [] : ["Package install smoke did not use a fresh current-checkout pack."]),
+    ...(exactPlan
+      ? (installSmoke?.packMode === "validated-release-plan" && JSON.stringify(installSmoke?.releasePlan) === JSON.stringify(exactPlan.reference) && installSmoke?.installedIdentity ? [] : ["Install smoke is not bound to the validated exact plan and observed installed identity."])
+      : (installSmoke?.packMode === "fresh-current-checkout-pack" ? [] : ["Package install smoke did not use a fresh current-checkout pack."])),
     ...(packageName ? [] : ["Package name is unreadable."]),
     ...(packageVersion ? [] : ["Package version is unreadable."]),
     ...(installSmoke?.packageName === packageName ? [] : [`Install-smoke package name ${String(installSmoke?.packageName ?? "missing")} does not match ${packageName ?? "unreadable"}.`]),
@@ -75,11 +86,12 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
     materials: [
       material(installSmokePath),
       material("package.json"),
+      ...(exactPlan ? [material(exactPlan.reference.path)] : []),
       ...(tarballPath ? [material(tarballPath)] : [])
     ].map((entry) => hashMaterial(root, entry)),
     buildType: "https://aura3d.local/build/package-tarball" as const,
     invocation: {
-      configSource: "local-checkout",
+      configSource: exactPlan ? exactPlan.reference.path : "local-checkout",
       parameters: [
         "pnpm build",
         "pnpm verify:package-install-smoke:fresh",
@@ -94,7 +106,27 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
   const verified = verify(null, payload, keyPair.publicKey, signatureBytes);
   if (!verified) violations.push("Generated Ed25519 provenance signature did not verify.");
 
+  const packageProvenance = exactPlan?.packages.map(candidate=>{
+    const smoke=exactSmoke?.packages.find(p=>p.name===candidate.name);
+    if(!smoke?.ok || smoke.sha256!==candidate.sha256 || smoke.installedIntegrity!==candidate.integrity) violations.push(`Missing verified smoke/installed identity for ${candidate.name}`);
+    const packageStatement={
+      statementType: "https://slsa.dev/provenance", predicateType: "https://slsa.dev/provenance",
+      subject:{name:candidate.name,version:candidate.version,digest:{sha256:candidate.sha256}},
+      builder:statement.builder, source:exactPlan.source, releasePlan:exactPlan.reference,
+      materials:[hashMaterial(root,material(candidate.tarball)),hashMaterial(root,material(installSmokePath))],
+      installedIntegrity:smoke?.installedIntegrity,
+      scope:"Local release-verifier attestation of exact candidate bytes and executed consumer smoke; not registry issuer provenance"
+    };
+    const bytes=Buffer.from(JSON.stringify(packageStatement)), signature=sign(null,bytes,keyPair.privateKey);
+    const verified=verify(null,bytes,keyPair.publicKey,signature);
+    if(!verified)violations.push(`Signature failed for ${candidate.name}`);
+    return {name:candidate.name,version:candidate.version,sha256:candidate.sha256,ok:!!smoke?.ok&&verified,statement:packageStatement,signature:{algorithm:"ed25519",publicKeyPem,signatureBase64:signature.toString("base64"),verified}};
+  });
   return {
+    packages:packageProvenance,
+    packageCount:packageProvenance?.length,
+    releasePlan: exactPlan?.reference,
+    installedIdentity: exactPlan ? installSmoke?.installedIdentity : undefined,
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
     command: "pnpm verify:package-provenance",

@@ -1,3 +1,4 @@
+import type { TemporalHistory } from "./TemporalHistory";
 import {
   Bounds3 as SceneBounds3,
   Camera,
@@ -71,6 +72,7 @@ import {
   type VolumetricLightOptions
 } from "./PostProcessPass";
 import {
+  bindRendererSsrProjection,
   createRendererPostprocessPasses,
   createRendererPostprocessPlanDiagnostics,
   type RendererPostProcessPassName,
@@ -369,6 +371,8 @@ export interface RendererShadowOptions extends ShadowMapOptions {
   readonly cascadeCount?: number;
   readonly cascadeLambda?: number;
   readonly cascadePadding?: number;
+  /** Disable only for stability negative controls; defaults to texel snapping. */
+  readonly stabilize?: boolean;
 }
 
 export interface RendererPostProcessOptions extends RendererPostprocessPlanOptions {
@@ -431,6 +435,11 @@ export class Renderer {
    * still reallocates exactly once.
    */
   private shadowDepthTarget: RenderTarget | null = null;
+  private lastShadowEvidence: Record<string, unknown> | null = null;
+  private submittedShadowFrameId = 0;
+
+  /** Actual shadow resources selected for the most recent submitted forward pass. */
+  getShadowEvidence(): Readonly<Record<string, unknown>> | null { return this.lastShadowEvidence; }
   /**
    * Forward-color target reused by the postprocess path across frames.
    *
@@ -448,8 +457,10 @@ export class Renderer {
   private animationLoop: RendererAnimationLoopImpl | null = null;
   private readonly fusedLdrPostprocessScratch: FusedLdrPostProcessScratch = {};
 
-  private constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }) {
+  private constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
+    this.temporalHistory = temporalHistory;
+    this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
     this.canvas = options.canvas;
     this.width = options.width ?? inferInitialCanvasDimension(options.canvas, "width");
     this.height = options.height ?? inferInitialCanvasDimension(options.canvas, "height");
@@ -465,7 +476,11 @@ export class Renderer {
     }
     const shaderLibrary = options.shaderLibrary
       ?? (await import("./ShaderLibrary.js")).createDefaultShaderLibrary();
-    return new Renderer(device, { ...options, shaderLibrary });
+    // Temporal history is an optional runtime subsystem. Keep it behind the
+    // asynchronous renderer factory so non-temporal apps do not place its
+    // shaders, materials, and target owner on their critical download path.
+    const { TemporalHistory } = await import("./TemporalHistory.js");
+    return new Renderer(device, { ...options, shaderLibrary }, new TemporalHistory());
   }
 
   getFeatureReport(): RendererFeatureReport {
@@ -477,6 +492,7 @@ export class Renderer {
     if (width <= 0 || height <= 0 || !Number.isInteger(width) || !Number.isInteger(height)) {
       throw new RenderDeviceError("Renderer dimensions must be positive integers", "INVALID_FRAME_SIZE", { width, height });
     }
+    if (this.width !== width || this.height !== height) this.temporalHistory.dispose();
     this.width = width;
     this.height = height;
     this.resizeCanvas(width, height);
@@ -515,6 +531,11 @@ export class Renderer {
     return loop;
   }
 
+  private readonly temporalHistory: TemporalHistory;
+  private readonly unsubscribeTemporalDeviceLoss?: () => void;
+
+  resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); }
+
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
@@ -552,7 +573,8 @@ export class Renderer {
         cameraPosition = sourceCameraPosition ?? autoFrame.cameraPosition;
       }
     }
-    const postprocess = collectPostprocess(source);
+    let postprocess = collectPostprocess(source);
+    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) this.temporalHistory.reset();
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
@@ -583,7 +605,10 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const sampleCount = postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
+      // Temporal AA owns subpixel coverage. Pre-resolving MSAA before tone
+      // mapping gives it nonlinear mixed-coverage colors while velocity remains
+      // single-sample, biasing moving silhouettes and filtering them twice.
+      const sampleCount = postprocess.sampleCount ?? (postprocess.taa && postprocess.temporal ? 1 : this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
@@ -593,6 +618,7 @@ export class Renderer {
     }
     this.device.beginFrame(this.width, this.height);
     try {
+      this.lastShadowEvidence = null;
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
@@ -602,6 +628,14 @@ export class Renderer {
         ownedShadowPasses,
         camera: resolvedCamera?.camera
       });
+      this.lastShadowEvidence = rendererShadowMap ? {
+        lightMatrix: Array.from(rendererShadowMap.lightMatrix),
+        cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
+        pointFaceMatrices: rendererShadowMap.pointLight ? Array.from(rendererShadowMap.pointLight.faceMatrices) : [],
+        pointFaceRects: rendererShadowMap.pointLight ? Array.from(rendererShadowMap.pointLight.faceRects) : [],
+        stabilize: shadowOptions?.stabilize !== false,
+        shadowRenderTargetsAllocated: this.device.getDiagnostics().shadowRenderTargetsAllocated ?? null,
+      } : null;
       if (postprocess) {
         const forwardTarget = ownedTargets[0];
         if (!forwardTarget) {
@@ -620,6 +654,13 @@ export class Renderer {
           shaderLibrary: this.shaderLibrary
         }));
       }
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
+        if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
+        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa) });
+        items = this.temporalHistory.renderItems;
+        postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
+        this.device.setRenderTarget(ownedTargets[0]!);
+      }
       this.graph.addPass(new ForwardPass({
         items,
         lights,
@@ -635,8 +676,14 @@ export class Renderer {
       }));
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
+        postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       }
+    } catch (error) {
+      this.lastShadowEvidence = null;
+      if (postprocess?.temporal) this.temporalHistory.reset();
+      throw error;
     } finally {
       this.device.endFrame();
       for (const shadowPass of ownedShadowPasses) {
@@ -649,6 +696,8 @@ export class Renderer {
         target.dispose();
       }
     }
+    this.submittedShadowFrameId += 1;
+    if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
       targetFormat: postprocessTargetFormat,
       nativeLdrPostprocess: Boolean(this.device.presentLdrPostprocess),
@@ -693,7 +742,8 @@ export class Renderer {
         cameraPosition = sourceCameraPosition ?? autoFrame.cameraPosition;
       }
     }
-    const postprocess = collectPostprocess(source);
+    let postprocess = collectPostprocess(source);
+    if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) this.temporalHistory.reset();
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
@@ -724,7 +774,10 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const sampleCount = postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
+      // Temporal AA owns subpixel coverage. Pre-resolving MSAA before tone
+      // mapping gives it nonlinear mixed-coverage colors while velocity remains
+      // single-sample, biasing moving silhouettes and filtering them twice.
+      const sampleCount = postprocess.sampleCount ?? (postprocess.taa && postprocess.temporal ? 1 : this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
       // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
       // the diagnostics builder both read the forward target from that slot; the end-of-frame
       // disposal loop skips it via `isReusedTarget` so the reuse is safe.
@@ -734,6 +787,7 @@ export class Renderer {
     }
     this.device.beginFrame(this.width, this.height);
     try {
+      this.lastShadowEvidence = null;
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
@@ -743,6 +797,14 @@ export class Renderer {
         ownedShadowPasses,
         camera: resolvedCamera?.camera
       });
+      this.lastShadowEvidence = rendererShadowMap ? {
+        lightMatrix: Array.from(rendererShadowMap.lightMatrix),
+        cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
+        pointFaceMatrices: rendererShadowMap.pointLight ? Array.from(rendererShadowMap.pointLight.faceMatrices) : [],
+        pointFaceRects: rendererShadowMap.pointLight ? Array.from(rendererShadowMap.pointLight.faceRects) : [],
+        stabilize: shadowOptions?.stabilize !== false,
+        shadowRenderTargetsAllocated: this.device.getDiagnostics().shadowRenderTargetsAllocated ?? null,
+      } : null;
       if (postprocess) {
         const forwardTarget = ownedTargets[0];
         if (!forwardTarget) {
@@ -761,6 +823,13 @@ export class Renderer {
           shaderLibrary: this.shaderLibrary
         }));
       }
+      if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
+        if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
+        const temporal = this.temporalHistory.prepare(this.device, this.width, this.height, items, cameraViewProjection, { ...postprocess.temporal, jitter: Boolean(postprocess.taa) });
+        items = this.temporalHistory.renderItems;
+        postprocess = { ...postprocess, ...(postprocess.motionBlur ? {motionBlur: { ...postprocess.motionBlur, temporal }} : {}), ...(postprocess.taa ? {taa: { ...postprocess.taa, temporal }} : {}) };
+        this.device.setRenderTarget(ownedTargets[0]!);
+      }
       this.graph.addPass(new ForwardPass({
         items,
         lights,
@@ -776,8 +845,14 @@ export class Renderer {
       }));
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
+        postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
+        if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       }
+    } catch (error) {
+      this.lastShadowEvidence = null;
+      if (postprocess?.temporal) this.temporalHistory.reset();
+      throw error;
     } finally {
       this.device.endFrame();
       for (const shadowPass of ownedShadowPasses) {
@@ -790,6 +865,8 @@ export class Renderer {
         target.dispose();
       }
     }
+    this.submittedShadowFrameId += 1;
+    if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
       targetFormat: postprocessTargetFormat,
       nativeLdrPostprocess: Boolean(this.device.presentLdrPostprocess),
@@ -829,12 +906,15 @@ export class Renderer {
   }
 
   dispose(): void {
+    this.lastShadowEvidence = null;
     this.animationLoop?.stop();
     this.animationLoop = null;
     this.shadowDepthTarget?.dispose();
     this.shadowDepthTarget = null;
     this.forwardColorTarget?.target.dispose();
     this.forwardColorTarget = null;
+    this.unsubscribeTemporalDeviceLoss?.();
+    this.temporalHistory.dispose();
     this.device.dispose();
     this.disposed = true;
   }
@@ -1399,7 +1479,7 @@ export class Renderer {
       casters: [],
       receivers: [],
       padding: options.shadowOptions.cascadePadding ?? 0.25,
-      stabilize: true
+      stabilize: options.shadowOptions.stabilize !== false
     });
     const lightMatrices = fits.map(shadowCameraFitViewProjectionMatrix);
     const cascadePass = new CascadedShadowPass({

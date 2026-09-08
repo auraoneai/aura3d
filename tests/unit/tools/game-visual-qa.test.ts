@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
+import { createRouteSourceHash } from "../../../tools/showcase-library/route-primary-probes.mjs";
 
 interface VisualQaModule {
   validateGameVisualQa(input: {
@@ -49,9 +50,30 @@ const routeHealth = JSON.parse(readFileSync(`apps/${routeId}/route-health.json`,
  * cache would have reintroduced the staleness class this repository exists to prevent -- there is a test for that).
  * Together those took this file from 18.85s to ~2.5s. No assertion is relaxed; only the wall-clock budget.
  */
+function currentVisualFixture(prefix = "aura3d-visual-qa-current-"): string {
+  const root = mkdtempSync(join(tmpdir(), prefix));
+  for (const relativePath of [
+    `apps/${routeId}`,
+    `tests/reports/showcase-route-primary-probes/${routeId}.json`,
+    `tests/reports/showcase-route-primary-probes/${routeId}.png`,
+    `tests/reports/showcase-route-primary-probes/${routeId}-subject-suppressed.png`,
+    `tests/reports/showcase-library-screenshots/${routeId}-desktop.png`,
+    `tests/reports/showcase-library-screenshots/${routeId}-mobile.png`,
+    `tests/reports/showcase-gameplay/${routeId}-before-input.png`,
+    `tests/reports/showcase-gameplay/${routeId}-after-input.png`,
+    `tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/${routeId}-asset-pair-composition.json`
+  ]) cpSync(relativePath, join(root, relativePath), { recursive: true });
+  const probePath = join(root, `tests/reports/showcase-route-primary-probes/${routeId}.json`);
+  const probe = JSON.parse(readFileSync(probePath, "utf8")) as Record<string, unknown>;
+  probe.sourceHash = createRouteSourceHash(routeId, root);
+  writeFileSync(probePath, `${JSON.stringify(probe, null, 2)}\n`);
+  return root;
+}
+
 describe("game visual QA", { timeout: 30_000 }, () => {
   it("separates structural checks from image-derived composition checks", async () => {
-    const result = (await modulePromise).validateGameVisualQa({ route, routeHealth });
+    const root = currentVisualFixture();
+    const result = (await modulePromise).validateGameVisualQa({ route, routeHealth, root });
     expect(result.pass).toBe(true);
     expect(result.checks.map((check) => [check.id, check.verdict])).toEqual([
       ["subject-bound-to-surface", "pass"], ["contact", "pass"], ["camera-readability", "pass"],
@@ -61,21 +83,13 @@ describe("game visual QA", { timeout: 30_000 }, () => {
       ["hud-occlusion-budget", "pass"],
       ["material-visual-change", "pass"], ["gameplay-pixel-change", "pass"]
     ]);
+    rmSync(root, { recursive: true, force: true });
   });
 
 
   it("retains an independently inspectable six-check report", async () => {
-    const root = mkdtempSync(join(tmpdir(), "aura3d-visual-qa-report-"));
+    const root = currentVisualFixture("aura3d-visual-qa-report-");
     try {
-      copy(`apps/${routeId}`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}.json`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}.png`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}-subject-suppressed.png`, root);
-      copy(`tests/reports/showcase-library-screenshots/${routeId}-desktop.png`, root);
-      copy(`tests/reports/showcase-library-screenshots/${routeId}-mobile.png`, root);
-      copy(`tests/reports/showcase-gameplay/${routeId}-before-input.png`, root);
-      copy(`tests/reports/showcase-gameplay/${routeId}-after-input.png`, root);
-      copy(`tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/${routeId}-asset-pair-composition.json`, root);
       const report = (await modulePromise).writeGameVisualQaReport({ route, routeHealth, root });
       const reportPath = join(root, `tests/reports/showcase-game-visual-qa/${routeId}.json`);
       expect(report.pass).toBe(true);
@@ -87,9 +101,6 @@ describe("game visual QA", { timeout: 30_000 }, () => {
         checks: expect.arrayContaining([expect.objectContaining({ id: "hud-occlusion-budget", verdict: "pass" })])
       });
     } finally { rmSync(root, { recursive: true, force: true }); }
-    function copy(relativePath: string, root: string): void {
-      const target = join(root, relativePath); cpSync(relativePath, target, { recursive: true });
-    }
   });
 
   it("rejects synthetic clipped, unreadable screenshot metrics", async () => {
@@ -160,26 +171,14 @@ describe("game visual QA", { timeout: 30_000 }, () => {
   });
 
   it("rejects route-primary evidence after route source becomes stale", async () => {
-    const root = mkdtempSync(join(tmpdir(), "aura3d-visual-qa-"));
+    const root = currentVisualFixture("aura3d-visual-qa-");
     try {
-      copy(`apps/${routeId}`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}.json`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}.png`, root);
-      copy(`tests/reports/showcase-route-primary-probes/${routeId}-subject-suppressed.png`, root);
-      copy(`tests/reports/showcase-library-screenshots/${routeId}-desktop.png`, root);
-      copy(`tests/reports/showcase-library-screenshots/${routeId}-mobile.png`, root);
-      copy(`tests/reports/showcase-gameplay/${routeId}-before-input.png`, root);
-      copy(`tests/reports/showcase-gameplay/${routeId}-after-input.png`, root);
-      copy(`tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/${routeId}-asset-pair-composition.json`, root);
       const mainPath = join(root, `apps/${routeId}/src/main.ts`);
       writeFileSync(mainPath, `${readFileSync(mainPath, "utf8")}\n// stale mutation\n`);
       const result = (await modulePromise).validateGameVisualQa({ route, routeHealth, root });
       expect(result.pass).toBe(false);
       expect(result.blockers).toContain("route-primary-source-stale");
     } finally { rmSync(root, { recursive: true, force: true }); }
-    function copy(relativePath: string, root: string): void {
-      const target = join(root, relativePath); cpSync(relativePath, target, { recursive: true });
-    }
   });
 
   it("rejects an unchanged gameplay frame even when the HUD could differ outside the measured scene", async () => {

@@ -91,6 +91,8 @@ test.describe("asset viewer compression decode evidence", () => {
     const pixels = await canvasPixelStats(page, "[data-testid='asset-viewer-canvas']");
     mkdirSync(join(process.cwd(), screenshotDirectory), { recursive: true });
     writePngDataUrl(screenshotPath, pixels.pngDataUrl);
+    expect(pixels.nonBlankPixels, "decoded geometry must produce visible pixels").toBeGreaterThan(1000);
+    expect(pixels.colorBuckets, "a clear-color-only canvas is not rendering proof").toBeGreaterThan(1);
     validations.push({
       name: "browser-meshopt-compression-decode",
       extension: "EXT_meshopt_compression",
@@ -180,6 +182,8 @@ test.describe("asset viewer compression decode evidence", () => {
     const pixels = await canvasPixelStats(page, "[data-testid='asset-viewer-canvas']");
     mkdirSync(join(process.cwd(), screenshotDirectory), { recursive: true });
     writePngDataUrl(screenshotPath, pixels.pngDataUrl);
+    expect(pixels.nonBlankPixels, "decoded geometry must produce visible pixels").toBeGreaterThan(1000);
+    expect(pixels.colorBuckets, "a clear-color-only canvas is not rendering proof").toBeGreaterThan(1);
     validations.push({
       name: "browser-draco-compression-decode",
       extension: "KHR_draco_mesh_compression",
@@ -253,6 +257,8 @@ test.describe("asset viewer compression decode evidence", () => {
     const pixels = await canvasPixelStats(page, "[data-testid='asset-viewer-canvas']");
     mkdirSync(join(process.cwd(), screenshotDirectory), { recursive: true });
     writePngDataUrl(screenshotPath, pixels.pngDataUrl);
+    expect(pixels.nonBlankPixels, "decoded geometry must produce visible pixels").toBeGreaterThan(1000);
+    expect(pixels.colorBuckets, "a clear-color-only canvas is not rendering proof").toBeGreaterThan(1);
     validations.push({
       name: "browser-ktx2-basisu-texture-transcode",
       extension: "KHR_texture_basisu",

@@ -30,7 +30,7 @@ interface ClipDecision {
 }
 
 function decisionFor(intent: string, t = 0.6): ClipDecision {
-  const stdout = execFileSync("npx", ["tsx", CLI, "--intent", intent, "--t", String(t)], {
+  const stdout = execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", CLI, "--intent", intent, "--t", String(t)], {
     cwd: REPO_ROOT,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]

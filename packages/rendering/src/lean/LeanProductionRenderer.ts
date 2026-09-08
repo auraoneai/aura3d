@@ -1,7 +1,7 @@
 import { ForwardPass, type RenderItem } from "../ForwardPass.js";
 import type { RenderDeviceDiagnostics } from "../RenderDevice.js";
 import { createLeanCoreShaderLibrary } from "../ShaderLibraryCore.js";
-import { WebGL2Device } from "../WebGL2Device.js";
+import { LeanWebGL2Device } from "../LeanWebGL2Device.js";
 import type {
   ProductionRendererFeature,
   ProductionRendererInput,
@@ -28,7 +28,7 @@ export interface LeanProductionRendererOptions {
  */
 export class LeanProductionRenderer {
   readonly backend = "webgl2" as const;
-  private readonly device: WebGL2Device;
+  private readonly device: LeanWebGL2Device;
   private readonly shaderLibrary = createLeanCoreShaderLibrary();
   private width: number;
   private height: number;
@@ -38,7 +38,7 @@ export class LeanProductionRenderer {
     this.width = options.width;
     this.height = options.height;
     this.clearColor = options.clearColor ?? [0, 0, 0, 1];
-    this.device = WebGL2Device.create({
+    this.device = LeanWebGL2Device.create({
       canvas: options.canvas,
       antialias: options.antialias,
       preserveDrawingBuffer: options.preserveDrawingBuffer

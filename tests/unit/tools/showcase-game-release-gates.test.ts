@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
-// @ts-expect-error -- .mjs showcase tooling has no type declarations; it is covered by its own tests.
 import { hashRouteHealthDependency } from "../../../tools/showcase-library/route-primary-probes.mjs";
 
 interface GameReleaseGateModule {

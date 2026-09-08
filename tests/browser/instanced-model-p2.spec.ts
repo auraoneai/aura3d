@@ -1,3 +1,4 @@
+import type {} from "./instanced-model-p2-harness";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -118,28 +119,3 @@ test.describe("P2 instanced-GLB at root — rendered 4k pixel proof", () => {
     expect(result?.checks?.fallbackWarns).toBe(true);
   });
 });
-
-declare global {
-  interface Window {
-    __AURA3D_P2_INSTANCED_MODEL__?: {
-      readonly status: "ready" | "error" | "waiting";
-      readonly captures?: readonly {
-        readonly id: string;
-        readonly instanceCount: number;
-        readonly drawCalls: number;
-        readonly assetStatus: string;
-        readonly backend: string;
-        readonly errorCount: number;
-        readonly warnings: readonly string[];
-        readonly image: {
-          readonly nonDarkPixels: number;
-          readonly brightPixels: number;
-          readonly colorBuckets: number;
-          readonly spatialChecksum: number;
-        };
-      }[];
-      readonly checks?: Record<string, number | string | boolean>;
-      readonly error?: string;
-    };
-  }
-}

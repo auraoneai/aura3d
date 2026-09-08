@@ -1,12 +1,8 @@
-import type { RenderPass, RenderPassExecutionContext } from '../framegraph/RenderPass';
+import { executeNativePass, type RenderPass, type RenderPassExecutionContext } from '../framegraph/RenderPass';
 import { assertValidPassContext } from './DepthPrepass';
 
-/**
- * muse3jsparity-PRD T3 — SkyboxPass owns real logic (feeds D3 day/night sky).
- *
- * Reads the environment sky resource (procedural sky or HDRI chain output)
- * and writes into hdr.color ahead of the opaque composite.
- */
+/** Compatibility adapter; rendering is dispatched to the canonical native pass.
+ * Allocation, shader compilation and device lifetime remain with that renderer. */
 export interface SkyboxPassOptions {
   readonly enabled?: boolean;
   readonly skyResource?: string;
@@ -52,6 +48,7 @@ export class SkyboxPass implements RenderPass {
   execute(context: RenderPassExecutionContext): void {
     assertValidPassContext(this.id, context);
     if (!this.enabled) return;
+    executeNativePass(this, context);
     this.executedFrames += 1;
     this.lastFrame = context.frameIndex;
   }

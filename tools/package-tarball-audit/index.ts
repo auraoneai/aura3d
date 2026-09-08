@@ -1,22 +1,10 @@
+import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
+import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, mkdtempSync, readdirSync, statSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
-
-interface PackFile {
-  readonly path: string;
-  readonly size: number;
-}
-
-interface PackResult {
-  readonly id: string;
-  readonly name: string;
-  readonly version: string;
-  readonly size: number;
-  readonly unpackedSize: number;
-  readonly filename: string;
-  readonly files: readonly PackFile[];
-}
+import { parseSinglePackResult, type PackFile, type PackResult } from "./pack-result";
 
 interface PackageTarget {
   readonly id: string;
@@ -63,12 +51,17 @@ const targets: readonly PackageTarget[] = [
 
 const disallowedPathPatterns = [/^archive\//, /V[234]PRD\.md$/, /TestV4PlanPRD\.md$/, /\.(png|jpe?g|csv)$/i];
 const disallowedTextPatterns = [/AuraSceneIR/, /MockProvider/, /prompt-to-scene/, /@aura3d\/ai-scene/, /\bV[234]\b/, /Path A/, /Path B/];
+const exactPlan = loadValidatedReleasePlan();
+const extracted = new Map<string,string>();
+const temporary: string[] = [];
 const results: Record<string, unknown>[] = [];
 const checks: ReleaseCheck[] = [];
 
+try {
 for (const target of targets) {
   const pack = runPack(target.dir);
-  const packageJson = JSON.parse(readFileSync(resolve(target.dir, "package.json"), "utf8")) as {
+  const inspectedDir = extracted.get(target.dir) ?? target.dir;
+  const packageJson = JSON.parse(readFileSync(resolve(inspectedDir, "package.json"), "utf8")) as {
     name?: string;
     bin?: Record<string, string>;
     dependencies?: Record<string, string>;
@@ -78,8 +71,8 @@ for (const target of targets) {
   const paths = pack.files.map((file) => file.path);
   const missing = target.requiredFiles.filter((file) => !paths.includes(file));
   const disallowedPaths = paths.filter((path) => disallowedPathPatterns.some((pattern) => pattern.test(path)));
-  const textHits = findTextHits(target.dir, pack.files);
-  const rootNoThreeHits = target.id === "engine-root" ? findRootNoThreeHits(target.dir, pack.files) : [];
+  const textHits = findTextHits(inspectedDir, pack.files);
+  const rootNoThreeHits = target.id === "engine-root" ? findRootNoThreeHits(inspectedDir, pack.files) : [];
   const missingBins = (target.requiredBins ?? []).filter((bin) => !packageJson.bin?.[bin]);
 
   checks.push(
@@ -144,12 +137,29 @@ for (const target of targets) {
   });
 }
 
-writeReport("tests/reports/package-tarball-audit.json", "aura3d-package-tarball-audit", checks, { packages: results });
+writeReport("tests/reports/package-tarball-audit.json", "aura3d-package-tarball-audit", checks, { packages: results, releasePlan: exactPlan?.reference });
+} finally { for(const dir of temporary)rmSync(dir,{recursive:true,force:true}); }
 
 function runPack(dir: string): PackResult {
-  const output = execFileSync("npm", ["pack", "--dry-run", "--json", "."], { cwd: resolve(dir), encoding: "utf8", stdio: "pipe" });
-  const [pack] = JSON.parse(output) as PackResult[];
-  return pack;
+  if(exactPlan) {
+    const {name}=JSON.parse(readFileSync(resolve(dir,"package.json"),"utf8")) as {name:string};
+    const candidate=exactPlan.packages.find(p=>p.name===name);
+    if(!candidate)throw new Error(`Missing exact package ${name}`);
+    const archive=resolve(candidate.tarball);
+    const entries=execFileSync("tar",["-tzf",archive],{encoding:"utf8",maxBuffer:64*1024*1024}).split("\n").filter(Boolean);
+    if(entries.some(p=>!p.startsWith("package/")||p.split("/").includes("..")))throw new Error("Unsafe archive path");
+    const listing=execFileSync("tar",["-tvzf",archive],{encoding:"utf8",maxBuffer:64*1024*1024});
+    if(listing.split("\n").some(line=>line && !['-','d'].includes(line[0]!)))throw new Error("Archive contains non-file/directory entries");
+    const temp=mkdtempSync(resolve(tmpdir(),"aura-exact-audit-"));temporary.push(temp);
+    execFileSync("tar",["-xzf",archive,"-C",temp]);
+    const base=resolve(temp,"package");extracted.set(dir,base);
+    const walk=(path:string,prefix=""):PackFile[]=>readdirSync(path,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(resolve(path,e.name),`${prefix}${e.name}/`):[{path:`${prefix}${e.name}`,size:statSync(resolve(path,e.name)).size}]);
+    const files=walk(base);
+    return {id:`${name}@${candidate.version}`,name,version:candidate.version,size:statSync(archive).size,unpackedSize:files.reduce((n,f)=>n+f.size,0),filename:candidate.tarball,files};
+  }
+  const packageJson = JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")) as { name: string };
+  const output = execFileSync("npm", ["pack", "--dry-run", "--json", "."], { cwd: resolve(dir), encoding: "utf8", stdio: "pipe", maxBuffer: 64 * 1024 * 1024 });
+  return parseSinglePackResult(output, packageJson.name);
 }
 
 function findTextHits(dir: string, files: readonly PackFile[]): string[] {

@@ -1,3 +1,4 @@
+import type { ScreenSpaceReflectionPass } from "./ScreenSpaceReflectionPass";
 import { Geometry } from "./Geometry";
 import { PBRMaterial } from "./PBRMaterial";
 import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
@@ -37,11 +38,12 @@ export interface ReflectionSurfaceOptions {
    * Live B4 renderer bindings. A status is promoted to `implemented` ONLY
    * when the matching binding is present: `mirror` backs planar-reflector
    * and reflective-floor, `glass` backs refractor-glass, `water` backs
-   * water-refraction. Screen-space reflection has no binding by design.
+   * water-refraction. Screen-space reflection requires a successfully executed native pass.
    */
   readonly mirror?: PlanarReflectionCaptureResult;
   readonly glass?: GlassRefractionCaptureResult;
   readonly water?: WaterReflectionRefractionResult;
+  readonly ssr?: ScreenSpaceReflectionPass;
 }
 
 export interface ReflectionSurfaceReport {
@@ -64,6 +66,7 @@ export interface ReflectionSurface {
   readonly mirror?: PlanarReflectionCaptureResult;
   readonly glass?: GlassRefractionCaptureResult;
   readonly water?: WaterReflectionRefractionResult;
+  readonly ssr?: ScreenSpaceReflectionPass;
   readonly report: ReflectionSurfaceReport;
 }
 
@@ -71,6 +74,16 @@ export function createReflectionSurface(options: ReflectionSurfaceOptions): Refl
   if (!options.id.trim()) throw new Error("Reflection surface id is required.");
   const kind = options.kind;
   if (!isReflectionSurfaceKind(kind)) throw new Error(`Unsupported reflection surface kind: ${String(kind)}`);
+
+  if (kind === "screen-space-reflection" && options.ssr) {
+    const pass = options.ssr;
+    return { id: options.id, kind, ssr: pass,
+      get report() {
+        return pass.result
+          ? report(options.id, kind, "implemented", "native scene-depth-normal ray march into renderer-owned output", true, [], [])
+          : report(options.id, kind, "unsupported", "native SSR output unavailable or invalidated", false, rendererRequirements(kind), unsupportedReflectionRequests(kind));
+      } };
+  }
 
   if (kind === "planar-reflector" && options.mirror) {
     const mirror = options.mirror;
@@ -293,7 +306,7 @@ function unsupportedReflectionRequests(kind: ReflectionSurfaceKind): readonly st
     case "water-refraction":
       return ["Water reflection/refraction helper is not implemented; procedural water remains separate and must disclose no true refraction."];
     case "screen-space-reflection":
-      return ["SSR is unsupported; no depth/normal ray-march pass is created."];
+      return ["SSR requires a successfully executed ScreenSpaceReflectionPass with live scene color/depth and normal-mask targets."];
     case "cube-probe":
       return ["Cube-probe descriptors require a CubeCameraReflectionCapture before claiming live reflections."];
     case "reflective-floor":

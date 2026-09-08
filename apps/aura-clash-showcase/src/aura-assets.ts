@@ -2,21 +2,21 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
-  readonly "arenaNeonDowntownTextured": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "arenaRooftopBuilding": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "auraClashDashSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashDeniedSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashDrawSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashGuardSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashJumpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashKoSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashPlayerRig": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "auraClashRivalRig": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "auraClashSpecialSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashUiToggleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
-  readonly "auraClashWinSfx": AuraAssetDefinition & { readonly type: "audio"; readonly url: string; readonly hash: string; };
+  readonly "arenaNeonDowntownTextured": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "arenaRooftopBuilding": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "auraClashDashSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashDeniedSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashDrawSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashGuardSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashJumpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashKoSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashPlayerRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "auraClashRivalRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "auraClashSpecialSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashUiToggleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashWinSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({

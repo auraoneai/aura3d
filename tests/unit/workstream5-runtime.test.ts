@@ -23,7 +23,7 @@ import {
   type GLTFDracoDecoder,
   type GLTFMeshoptDecoder
 } from "@aura3d/assets";
-import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, TextureBinding, UnlitMaterial } from "@aura3d/rendering";
+import { createDefaultShaderLibrary, DEFAULT_TEXTURED_PBR_SHADER_NAME, texturedPbrShaderActiveTextureSlots, DEFAULT_PBR_ENVIRONMENT_INTENSITY, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, TextureBinding, UnlitMaterial } from "@aura3d/rendering";
 import { InputSnapshot, InteractionSystem, pickingRayFromCamera } from "@aura3d/input";
 import { AudioListener, SceneAudioBridge } from "@aura3d/audio";
 import { CommandHistory, DeleteNodeCommand, PickingService, TranslateGizmo, type Command } from "@aura3d/editor-runtime";
@@ -2086,7 +2086,36 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
   const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
-  const resources = await createGLTFRenderResources(asset, {
+  // Parsing preserves the full glTF contract, but fourteen simultaneous
+  // extension maps cannot fit the guaranteed WebGL2 fragment sampler budget.
+  await assert.rejects(() => createGLTFRenderResources(asset, {
+    imageDecoder: (_image, imageIndex) => ({ width: 1, height: 1, data: new Uint8Array([imageIndex, 0, 0, 255]) })
+  }), /16-sampler variant budget/);
+
+  // Exercise every binding through a supported shader family, retaining all
+  // scalar extensions on each material. Parameters alone do not prove a map
+  // survives shader variant selection.
+  const families = {
+    clearcoat: ["KHR_materials_clearcoat"],
+    transmission: ["KHR_materials_transmission", "KHR_materials_diffuse_transmission", "KHR_materials_volume"],
+    specular: ["KHR_materials_specular", "KHR_materials_sheen", "KHR_materials_anisotropy"],
+    iridescence: ["KHR_materials_iridescence"]
+  };
+  const familyGltf = {
+    ...gltf,
+    materials: Object.entries(families).map(([name, activeExtensions]) => ({
+      name,
+      extensions: Object.fromEntries(Object.entries(gltf.materials[0]!.extensions).map(([extension, values]) => [
+        extension,
+        Object.fromEntries(Object.entries(values).filter(([key]) => !key.endsWith("Texture") || activeExtensions.includes(extension)))
+      ]))
+    }))
+  };
+  const familyAsset = await new GLTFLoader().load(
+    { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(familyGltf))}` },
+    { throwIfAborted: () => undefined } as never
+  );
+  const resources = await createGLTFRenderResources(familyAsset, {
     imageDecoder: (_image, imageIndex) => ({
       width: 1,
       height: 1,
@@ -2094,21 +2123,41 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
     })
   });
   const materialAsset = asset.materials[0];
-  const material = resources.materialLibrary.get("advanced-pbr");
+  const material = resources.materialLibrary.get("clearcoat");
+  const transmissionMaterial = resources.materialLibrary.get("transmission");
+  const specularMaterial = resources.materialLibrary.get("specular");
+  const iridescenceMaterial = resources.materialLibrary.get("iridescence");
+  for (const [familyMaterial, slots] of [
+    [material, ["clearcoat", "clearcoatRoughness", "clearcoatNormal"]],
+    [transmissionMaterial, ["transmission", "diffuseTransmission", "diffuseTransmissionColor", "volumeThickness"]],
+    [specularMaterial, ["specular", "specularColor", "sheenColor", "sheenRoughness", "anisotropy"]],
+    [iridescenceMaterial, ["iridescence", "iridescenceThickness"]]
+  ] as const) {
+    assert.ok(familyMaterial);
+    assert.ok(familyMaterial.shaderVariant);
+    const activeSlots = texturedPbrShaderActiveTextureSlots(familyMaterial.shaderVariant);
+    const shader = createDefaultShaderLibrary().compileVariant(DEFAULT_TEXTURED_PBR_SHADER_NAME, familyMaterial.shaderVariant);
+    const samplers = [...shader.fragment.matchAll(/\buniform\s+sampler(?:2D|Cube)\s+(\w+)/g)].map(match => match[1]);
+    assert.ok(samplers.length <= 16, `${familyMaterial.shaderVariant}: ${samplers.length} samplers`);
+    for (const slot of slots) {
+      assert.ok(activeSlots.includes(slot), `${familyMaterial.shaderVariant} must retain ${slot}`);
+      assert.ok(samplers.includes(`u_${slot}Texture`));
+    }
+  }
   const clearcoatBinding = material?.getParameter("u_clearcoatTexture");
   const clearcoatRoughnessBinding = material?.getParameter("u_clearcoatRoughnessTexture");
   const clearcoatNormalBinding = material?.getParameter("u_clearcoatNormalTexture");
-  const transmissionBinding = material?.getParameter("u_transmissionTexture");
-  const diffuseTransmissionBinding = material?.getParameter("u_diffuseTransmissionTexture");
-  const diffuseTransmissionColorBinding = material?.getParameter("u_diffuseTransmissionColorTexture");
-  const volumeThicknessBinding = material?.getParameter("u_volumeThicknessTexture");
-  const specularBinding = material?.getParameter("u_specularTexture");
-  const specularColorBinding = material?.getParameter("u_specularColorTexture");
-  const sheenColorBinding = material?.getParameter("u_sheenColorTexture");
-  const sheenRoughnessBinding = material?.getParameter("u_sheenRoughnessTexture");
-  const anisotropyBinding = material?.getParameter("u_anisotropyTexture");
-  const iridescenceBinding = material?.getParameter("u_iridescenceTexture");
-  const iridescenceThicknessBinding = material?.getParameter("u_iridescenceThicknessTexture");
+  const transmissionBinding = transmissionMaterial?.getParameter("u_transmissionTexture");
+  const diffuseTransmissionBinding = transmissionMaterial?.getParameter("u_diffuseTransmissionTexture");
+  const diffuseTransmissionColorBinding = transmissionMaterial?.getParameter("u_diffuseTransmissionColorTexture");
+  const volumeThicknessBinding = transmissionMaterial?.getParameter("u_volumeThicknessTexture");
+  const specularBinding = specularMaterial?.getParameter("u_specularTexture");
+  const specularColorBinding = specularMaterial?.getParameter("u_specularColorTexture");
+  const sheenColorBinding = specularMaterial?.getParameter("u_sheenColorTexture");
+  const sheenRoughnessBinding = specularMaterial?.getParameter("u_sheenRoughnessTexture");
+  const anisotropyBinding = specularMaterial?.getParameter("u_anisotropyTexture");
+  const iridescenceBinding = iridescenceMaterial?.getParameter("u_iridescenceTexture");
+  const iridescenceThicknessBinding = iridescenceMaterial?.getParameter("u_iridescenceThicknessTexture");
 
   assert.equal(materialAsset?.clearcoat?.factor, 0.7);
   assert.equal(materialAsset?.clearcoat?.roughnessFactor, 0.3);
@@ -2176,53 +2225,53 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   assert.deepEqual(material?.getParameter("u_clearcoatNormalTextureOffset"), [0.31, 0.32]);
   assert.deepEqual(material?.getParameter("u_clearcoatNormalTextureScale"), [1.5, 1.6]);
   assert.equal(material?.getParameter("u_clearcoatNormalTextureRotation"), 0.33);
-  assert.deepEqual(material?.getParameter("u_transmissionTextureOffset"), [0.41, 0.42]);
-  assert.deepEqual(material?.getParameter("u_transmissionTextureScale"), [1.7, 1.8]);
-  assert.equal(material?.getParameter("u_transmissionTextureRotation"), 0.43);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_transmissionTextureOffset"), [0.41, 0.42]);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_transmissionTextureScale"), [1.7, 1.8]);
+  assert.equal(transmissionMaterial?.getParameter("u_transmissionTextureRotation"), 0.43);
   assert.equal(diffuseTransmissionBinding.texture?.label, "diffuse-transmission-texture");
   assert.equal(diffuseTransmissionBinding.texture?.colorSpace, "linear");
-  assert.deepEqual(material?.getParameter("u_diffuseTransmissionTextureOffset"), [0.14, 0.15]);
-  assert.deepEqual(material?.getParameter("u_diffuseTransmissionTextureScale"), [1.15, 1.25]);
-  assert.equal(material?.getParameter("u_diffuseTransmissionTextureRotation"), 0.16);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_diffuseTransmissionTextureOffset"), [0.14, 0.15]);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_diffuseTransmissionTextureScale"), [1.15, 1.25]);
+  assert.equal(transmissionMaterial?.getParameter("u_diffuseTransmissionTextureRotation"), 0.16);
   assert.equal(diffuseTransmissionColorBinding.texture?.label, "diffuse-transmission-color-texture");
   assert.equal(diffuseTransmissionColorBinding.texture?.colorSpace, "srgb");
-  assert.deepEqual(material?.getParameter("u_diffuseTransmissionColorTextureOffset"), [0.24, 0.25]);
-  assert.deepEqual(material?.getParameter("u_diffuseTransmissionColorTextureScale"), [1.35, 1.45]);
-  assert.equal(material?.getParameter("u_diffuseTransmissionColorTextureRotation"), 0.26);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_diffuseTransmissionColorTextureOffset"), [0.24, 0.25]);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_diffuseTransmissionColorTextureScale"), [1.35, 1.45]);
+  assert.equal(transmissionMaterial?.getParameter("u_diffuseTransmissionColorTextureRotation"), 0.26);
   assert.equal(volumeThicknessBinding.texture?.label, "volume-thickness-texture");
   assert.equal(volumeThicknessBinding.texture?.colorSpace, "linear");
-  assert.deepEqual(material?.getParameter("u_volumeThicknessTextureOffset"), [0.44, 0.45]);
-  assert.deepEqual(material?.getParameter("u_volumeThicknessTextureScale"), [1.45, 1.55]);
-  assert.equal(material?.getParameter("u_volumeThicknessTextureRotation"), 0.46);
-  assert.deepEqual(material?.getParameter("u_specularTextureOffset"), [0.51, 0.52]);
-  assert.deepEqual(material?.getParameter("u_specularTextureScale"), [1.9, 2]);
-  assert.equal(material?.getParameter("u_specularTextureRotation"), 0.53);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_volumeThicknessTextureOffset"), [0.44, 0.45]);
+  assert.deepEqual(transmissionMaterial?.getParameter("u_volumeThicknessTextureScale"), [1.45, 1.55]);
+  assert.equal(transmissionMaterial?.getParameter("u_volumeThicknessTextureRotation"), 0.46);
+  assert.deepEqual(specularMaterial?.getParameter("u_specularTextureOffset"), [0.51, 0.52]);
+  assert.deepEqual(specularMaterial?.getParameter("u_specularTextureScale"), [1.9, 2]);
+  assert.equal(specularMaterial?.getParameter("u_specularTextureRotation"), 0.53);
   assert.equal(specularColorBinding.texture?.colorSpace, "srgb");
-  assert.deepEqual(material?.getParameter("u_specularColorTextureOffset"), [0.61, 0.62]);
-  assert.deepEqual(material?.getParameter("u_specularColorTextureScale"), [2.1, 2.2]);
-  assert.equal(material?.getParameter("u_specularColorTextureRotation"), 0.63);
+  assert.deepEqual(specularMaterial?.getParameter("u_specularColorTextureOffset"), [0.61, 0.62]);
+  assert.deepEqual(specularMaterial?.getParameter("u_specularColorTextureScale"), [2.1, 2.2]);
+  assert.equal(specularMaterial?.getParameter("u_specularColorTextureRotation"), 0.63);
   assert.equal(sheenColorBinding.texture?.colorSpace, "srgb");
-  assert.deepEqual(material?.getParameter("u_sheenColorTextureOffset"), [0.71, 0.72]);
-  assert.deepEqual(material?.getParameter("u_sheenColorTextureScale"), [2.3, 2.4]);
-  assert.equal(material?.getParameter("u_sheenColorTextureRotation"), 0.73);
-  assert.deepEqual(material?.getParameter("u_sheenRoughnessTextureOffset"), [0.81, 0.82]);
-  assert.deepEqual(material?.getParameter("u_sheenRoughnessTextureScale"), [2.5, 2.6]);
-  assert.equal(material?.getParameter("u_sheenRoughnessTextureRotation"), 0.83);
+  assert.deepEqual(specularMaterial?.getParameter("u_sheenColorTextureOffset"), [0.71, 0.72]);
+  assert.deepEqual(specularMaterial?.getParameter("u_sheenColorTextureScale"), [2.3, 2.4]);
+  assert.equal(specularMaterial?.getParameter("u_sheenColorTextureRotation"), 0.73);
+  assert.deepEqual(specularMaterial?.getParameter("u_sheenRoughnessTextureOffset"), [0.81, 0.82]);
+  assert.deepEqual(specularMaterial?.getParameter("u_sheenRoughnessTextureScale"), [2.5, 2.6]);
+  assert.equal(specularMaterial?.getParameter("u_sheenRoughnessTextureRotation"), 0.83);
   assert.equal(anisotropyBinding.texture?.label, "anisotropy-texture");
   assert.equal(anisotropyBinding.texture?.colorSpace, "linear");
-  assert.deepEqual(material?.getParameter("u_anisotropyTextureOffset"), [0.91, 0.92]);
-  assert.deepEqual(material?.getParameter("u_anisotropyTextureScale"), [2.7, 2.8]);
-  assert.equal(material?.getParameter("u_anisotropyTextureRotation"), 0.93);
+  assert.deepEqual(specularMaterial?.getParameter("u_anisotropyTextureOffset"), [0.91, 0.92]);
+  assert.deepEqual(specularMaterial?.getParameter("u_anisotropyTextureScale"), [2.7, 2.8]);
+  assert.equal(specularMaterial?.getParameter("u_anisotropyTextureRotation"), 0.93);
   assert.equal(iridescenceBinding.texture?.label, "iridescence-texture");
   assert.equal(iridescenceBinding.texture?.colorSpace, "linear");
-  assert.deepEqual(material?.getParameter("u_iridescenceTextureOffset"), [1.01, 1.02]);
-  assert.deepEqual(material?.getParameter("u_iridescenceTextureScale"), [2.9, 3]);
-  assert.equal(material?.getParameter("u_iridescenceTextureRotation"), 1.03);
+  assert.deepEqual(iridescenceMaterial?.getParameter("u_iridescenceTextureOffset"), [1.01, 1.02]);
+  assert.deepEqual(iridescenceMaterial?.getParameter("u_iridescenceTextureScale"), [2.9, 3]);
+  assert.equal(iridescenceMaterial?.getParameter("u_iridescenceTextureRotation"), 1.03);
   assert.equal(iridescenceThicknessBinding.texture?.label, "iridescence-thickness-texture");
   assert.equal(iridescenceThicknessBinding.texture?.colorSpace, "linear");
-  assert.deepEqual(material?.getParameter("u_iridescenceThicknessTextureOffset"), [1.11, 1.12]);
-  assert.deepEqual(material?.getParameter("u_iridescenceThicknessTextureScale"), [3.1, 3.2]);
-  assert.equal(material?.getParameter("u_iridescenceThicknessTextureRotation"), 1.13);
+  assert.deepEqual(iridescenceMaterial?.getParameter("u_iridescenceThicknessTextureOffset"), [1.11, 1.12]);
+  assert.deepEqual(iridescenceMaterial?.getParameter("u_iridescenceThicknessTextureScale"), [3.1, 3.2]);
+  assert.equal(iridescenceMaterial?.getParameter("u_iridescenceThicknessTextureRotation"), 1.13);
 
   const serialized = asset.toJSON();
   assert.equal(serialized.materials[0]?.clearcoat?.factor, 0.7);

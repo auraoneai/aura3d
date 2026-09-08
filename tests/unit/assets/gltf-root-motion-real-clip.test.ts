@@ -30,7 +30,7 @@ function requireClip(clips: readonly AnimationClip[], name: string): AnimationCl
 }
 
 describe("root motion on real certified clips", () => {
-  it("Kenney walk loops with (near-)zero slide on its root track", async () => {
+  it("keeps Kenney in-place root continuity as a zero-travel negative control", async () => {
     const clips = await loadClips("public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb");
     const walk = requireClip(clips, "walk");
     expect(walk.duration).toBeCloseTo(0.67, 1);
@@ -40,7 +40,7 @@ describe("root motion on real certified clips", () => {
     const report = measureRootMotionLoopClosure(walk, "root.translation");
     // eslint-disable-next-line no-console
     console.log("kenney-walk-root-motion", JSON.stringify(report));
-    // In-place walk: the root bobs but travels nowhere — zero slide means zero travel.
+    // In-place negative control: zero travel cannot establish planted-foot slip.
     expect(report.cycleDelta).toEqual([0, 0, 0]);
     expect(report.cycleDistance).toBeLessThan(1e-6);
     // No mid-loop pops: a 5cm teleport inside one 1/60 segment would spike past 3 u/s.
@@ -60,6 +60,21 @@ describe("root motion on real certified clips", () => {
     expect(moved.position[2]).toBeCloseTo(sample.delta[2], 10);
   });
 
+  it("extracts the real Rival Shield_Dash_RM one-meter translation across multiple seams", async () => {
+    const clips = await loadClips("public/aura-assets/auraClashRivalRig.c8d844dc.glb");
+    const dash = requireClip(clips, "Shield_Dash_RM");
+    const report = measureRootMotionLoopClosure(dash, "root.translation");
+    expect(report.cycleDelta[2]).toBeCloseTo(1, 5);
+    expect(report.cycleDistance).toBeGreaterThan(0.99);
+    const whole = extractRootMotion(dash, {target:"root.translation",fromTime:0,toTime:dash.duration*3,loop:true});
+    expect(whole.delta[2]).toBeCloseTo(3, 5);
+    const before = extractRootMotion(dash, {target:"root.translation",fromTime:dash.duration*0.9,toTime:dash.duration,loop:true});
+    const after = extractRootMotion(dash, {target:"root.translation",fromTime:dash.duration,toTime:dash.duration*1.1,loop:true});
+    const seam = extractRootMotion(dash, {target:"root.translation",fromTime:dash.duration*0.9,toTime:dash.duration*1.1,loop:true});
+    expect(seam.delta[2]).toBeCloseTo(before.delta[2]+after.delta[2], 6);
+    // This is a translated dash, not evidence of walking stance quality.
+  });
+
   it("characterizes Take 001 COM motion over the full showcase timeline", async () => {
     const clips = await loadClips("public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb");
     const take = requireClip(clips, "Take 001");
@@ -76,5 +91,25 @@ describe("root motion on real certified clips", () => {
     expect(Number.isFinite(report.cycleDistance)).toBe(true);
     expect(Number.isFinite(report.loopClosureError)).toBe(true);
     expect(Number.isFinite(report.maxVelocityDeviation)).toBe(true);
+  });
+});
+
+describe("real GLB consumed pose ownership", () => {
+  it("commits collision-authority travel exactly once and removes authored root translation", async () => {
+    const { createGLTFSceneAnimationRuntime } = await import("../../../packages/assets/src/GLTFAnimationRuntime");
+    const bytes = readFileSync("public/aura-assets/auraClashRivalRig.c8d844dc.glb");
+    const asset = await new GLTFLoader().load({url:`data:model/gltf-binary;base64,${bytes.toString("base64")}`,type:"gltf"},new LoadContext());
+    const scene = asset.createScene();
+    const runtime = createGLTFSceneAnimationRuntime({scene,clips:asset.animations,asset});
+    const dash = requireClip(asset.animations,"Shield_Dash_RM");
+    let commits = 0; let z = 0;
+    const result = runtime.applyRootMotionClip(dash.name, {target:"root.translation",fromTime:0,toTime:dash.duration,loop:false,worldFromLocal:[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],move: requested=>{commits++;z+=requested[2]*0.25;return [0,0,requested[2]*0.25];}});
+    expect(commits).toBe(1);expect(z).toBeCloseTo(0.25,5);
+    expect(result.motion.rejected[2]).toBeCloseTo(0.75,5);
+    let local: readonly number[] | undefined;
+    scene.traverse(node=>{if(node.name==="root")local=node.transform.position;});
+    expect(local).toEqual(dash.tracks.find(track=>track.target==="root.translation")!.sample(0));
+    expect(result.applyResult.missingTargets).toEqual([]);
+    expect(result.applyResult.skinningPalettesUpdated).toBeGreaterThan(0);
   });
 });

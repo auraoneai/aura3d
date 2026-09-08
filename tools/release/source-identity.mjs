@@ -1,0 +1,31 @@
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+// Keep identical to readiness/evidence-lineage.ts: includes dirty and untracked source.
+export const isSourceInput = path => !!path
+  && !/(^|\/)(node_modules|dist|coverage|test-results)(\/|$)/.test(path)
+  && !/^(tests\/reports\/|release-artifacts\/|\.goal(?:\/|$)|\.orchestrate(?:\/|$))/.test(path)
+  && path !== 'muse3jsparity-3.0.1-PRD.md'
+  && path !== 'docs/project/release-artifacts.json'
+  // Hash-bound review inputs are administrative evidence. Their own hashes are
+  // retained by audit receipts; editing a disposition must not change the
+  // product source identity of the artifacts being reviewed.
+  && path !== 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json'
+  && path !== 'benchmark/context/muse3jsparity-r185-matrix.json';
+
+export function sourceIdentity(root) {
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  const paths = git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0').filter(isSourceInput);
+  const hash = createHash('sha256');
+  for (const path of [...new Set(paths)].sort()) hash.update(path).update('\0').update(existsSync(resolve(root, path)) ? readFileSync(resolve(root, path)) : '<deleted>').update('\0');
+  return { commit: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'), lockfileSha256: createHash('sha256').update(readFileSync(resolve(root, 'pnpm-lock.yaml'))).digest('hex'), fingerprint: hash.digest('hex') };
+}
+
+/** A Git tag can identify only committed source; dirty-source candidate receipts cannot authorize publication. */
+export function assertCommittedReleaseSource(root) {
+  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'});
+  const paths=[...git('diff','--name-only','-z','HEAD').split('\0'),...git('ls-files','-z','--others','--exclude-standard').split('\0')];
+  const relevant=paths.filter(isSourceInput);
+  if(relevant.length)throw new Error(`Release tag cannot identify uncommitted source: ${[...new Set(relevant)].slice(0,20).join(', ')}`);
+}

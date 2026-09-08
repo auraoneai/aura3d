@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-9833c228cc95d039e9b9c77d641bf0e7d3680e8a25ced7549f3015017769a8bf",
+    "sha256": "sha256-5ad3ba8582ff74095441ff31da45b5cf14ef17842eef19b722e1d3af916b7030",
     "width": 1440,
     "height": 900
   },
@@ -55,7 +55,7 @@
         "requiresZeroPresentationOffset": true
       },
       "measured": {
-        "overlapRatio": 0.8294,
+        "overlapRatio": 0.941,
         "averageBindingError": 0,
         "modelAnchorCount": 3,
         "sceneAssetHashMatches": true,
@@ -74,8 +74,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0.061,
-        "screenContactDistance": 92.48316046178353,
-        "screenContactDistanceRatio": 0.272
+        "screenContactDistance": 15.709511672868787,
+        "screenContactDistanceRatio": 0.0708
       },
       "blockers": []
     },
@@ -90,7 +90,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.2948,
+        "playSpaceAreaRatio": 0.3813,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -108,10 +108,10 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.3778,
+        "subjectWorldRatio": 0.2467,
         "characterScaleRatio": "not-required",
         "projectedTargetHeight": "not-required",
-        "renderedSubjectHeight": 340,
+        "renderedSubjectHeight": 222,
         "scaleDelta": "missing"
       },
       "blockers": []

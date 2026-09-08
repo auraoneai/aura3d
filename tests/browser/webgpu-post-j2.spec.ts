@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { retainTemporalFrame, temporalHash, temporalSourceIdentity, temporalCommandIdentity } from "./root-temporal-evidence";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const harnessSource = resolve(process.cwd(), "tests/browser/webgpu-post-j2-harness.ts");
@@ -23,6 +24,59 @@ test.describe("J2 native WebGPU post — bloom, color-grade, FXAA pixel proof", 
     expect(source).toContain("executeWebGPUBloom");
     expect(source).toContain("executeWebGPUColorGrade");
     expect(source).toContain("executeWebGPUFxaa");
+  });
+
+  test("R03 native TAA has independent sequence, disocclusion and history-reset proof", async ({ page }, testInfo) => {
+    test.setTimeout(240_000);
+    const startedAt = new Date().toISOString();
+    const sourceStart = temporalSourceIdentity();
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+    await page.goto(`${server.origin}/tests/browser/webgpu-post-j2-harness.html?temporal`, { waitUntil: "domcontentloaded" });
+    await page.click("#shoot");
+    await page.waitForFunction(() => ["ready", "error", "unsupported"].includes(window.__AURA3D_J2_WEBGPU_POST__?.status ?? ""), undefined, { timeout: 180_000 });
+    const result = await page.evaluate(() => window.__AURA3D_J2_WEBGPU_POST__);
+    await testInfo.attach("r03-native-taa-sequence", { body: JSON.stringify({ ...result, errors }, null, 2), contentType: "application/json" });
+    await testInfo.attach("r03-native-taa-capture", { body: await page.screenshot(), contentType: "image/png" });
+    const captures = await page.evaluate(() => window.__AURA3D_R03_FRAMES__ ?? []);
+    const frames = captures.map(({ pixelsBase64, ...metadata }) => ({ ...metadata,
+      artifact: retainTemporalFrame(`tests/reports/webgpu-post-j2/r03-sequences/frame-${String(metadata.frame).padStart(3, "0")}.png`, metadata.width, metadata.height, Array.from(Buffer.from(pixelsBase64, "base64")), "top-left")
+    }));
+    const sourceEnd = temporalSourceIdentity();
+    const command = temporalCommandIdentity();
+    const retained = { startedAt, endedAt: new Date().toISOString(), sourceStart, sourceEnd, command, commandSha256: temporalHash(JSON.stringify(command)), frames, result, errors };
+    mkdirSync(resolve("tests/reports/webgpu-post-j2"), { recursive: true });
+    writeFileSync(resolve("tests/reports/webgpu-post-j2/r03-retained-sequences.json"), JSON.stringify(retained, null, 2));
+    await testInfo.attach("r03-retained-sequences", { body: JSON.stringify(retained), contentType: "application/json" });
+    expect(sourceEnd).toEqual(sourceStart);
+    expect(result?.status, result?.error).toBe("ready");
+    expect(result?.backend).toBe("webgpu");
+    expect(result?.adapter).toBeTruthy();
+    expect(result?.adapter).not.toMatch(/swiftshader|llvmpipe|software|lavapipe/i);
+    expect(errors).toEqual([]);
+    expect(result?.postErrors).toEqual([]);
+    const metric = (key: string): number => { const value = Number(result?.checks?.[key]); expect(Number.isFinite(value), key).toBe(true); return value; };
+    expect(metric("frames")).toBeGreaterThanOrEqual(150);
+    expect(metric("nativeTaaPasses")).toBeGreaterThan(100);
+    expect(metric("nativeTemporalBindings")).toBeGreaterThan(150);
+    expect(metric("nativeSubmissions")).toBeGreaterThan(metric("frames"));
+    expect(metric("nativeRenderPipelinesCreated")).toBeGreaterThan(0);
+    expect(metric("nativeTextureReadbacks")).toBeGreaterThanOrEqual(metric("frames"));
+    expect(metric("hotPathReadbacks")).toBe(0);
+    expect(metric("nativeFxaaPasses")).toBe(32);
+    expect(metric("taaVsFxaaPixels")).toBeGreaterThan(20);
+    // Predeclared quality limits, independent of backend implementation counters.
+    expect(metric("offFlicker")).toBeGreaterThan(0.0001);
+    expect(metric("taaFlicker")).toBeLessThan(metric("offFlicker") * 0.9);
+    expect(metric("taaFlicker")).toBeLessThan(metric("resetFlicker") * 0.9);
+    expect(metric("oldSilhouetteRoiCoverage")).toBeGreaterThan(.25);
+    expect(metric("newSilhouetteRoiCoverage")).toBeLessThan(.01);
+    expect(metric("staleHistoryGhostMeanError")).toBeGreaterThan(.1);
+    expect(metric("ghostMeanError")).toBeLessThan(0.01);
+    expect(metric("cutMeanError")).toBeLessThan(1 / 255);
+    expect(metric("resizeMeanError")).toBeLessThan(1 / 255);
+    expect(metric("sceneReplacementMeanError")).toBeLessThan(1 / 255);
   });
 
   test("bloom, color-grade, and FXAA change real WebGPU pixels", async ({ page }) => {

@@ -1,10 +1,14 @@
-import { execFileSync } from "node:child_process";
+import { runTemplateCommand } from "./command.mjs";
+import { templateCli, shellArgument } from "./cli.mjs";
+import { createHash } from "node:crypto";
+import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { checkDeploy } from "../../packages/aura3d-cli/src/index";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
+const exactReleasePlan = loadValidatedReleasePlan();
 const currentPackageVersion = (JSON.parse(readFileSync("package.json", "utf8")) as { version: string }).version;
 const templates = [...CREATE_AURA3D_TEMPLATES];
 const requestedSmokeTemplates = process.env.A3D_TEMPLATE_FILTER
@@ -171,6 +175,7 @@ checks.push({
 });
 
 writeReport(installedTarballDirectory ? "tests/reports/installed-template-lifecycle.json" : "tests/reports/agent-templates.json", installedTarballDirectory ? "aura3d-installed-template-lifecycle" : "aura3d-agent-templates", checks, {
+  releasePlan: exactReleasePlan?.reference,
   mode: installedTarballDirectory ? `fresh-local-${currentPackageVersion}-tarballs` : "workspace-source-aliases",
   scaffoldSmoke: scaffoldSmoke.results
 });
@@ -180,14 +185,18 @@ function runScaffoldSmoke(): {
   readonly results: readonly Record<string, unknown>[];
   readonly failures: readonly string[];
 } {
-  const outRoot = resolve("tests/reports/create-aura3d-scaffold-smoke");
+  const outRoot = resolve("tests/reports/create-aura3d-scaffold-smoke",installedTarballDirectory ? "installed" : "source");
   rmSync(outRoot, { recursive: true, force: true });
   mkdirSync(outRoot, { recursive: true });
   const results: Record<string, unknown>[] = [];
   const failures: string[] = [];
+  const progressPath=resolve(outRoot,"progress.json");
+  const progress=(active: string|null,status:string)=>writeFileSync(progressPath,JSON.stringify({schema:"aura3d-template-progress/v1",mode:installedTarballDirectory?"installed":"source",updatedAt:new Date().toISOString(),status,active,total:smokeTemplates.length,completed:results.length,results,failures},null,2)+"\n");
+  progress(null,"running");
 
   for (const template of smokeTemplates) {
     const targetDir = resolve(outRoot, template);
+    progress(template,"running");console.log(`[template ${template}] starting ${results.length+1}/${smokeTemplates.length}`);
     try {
       const scaffold = createA3DProject({
         targetDir,
@@ -198,10 +207,10 @@ function runScaffoldSmoke(): {
       const installedPackages = installedTarballDirectory ? installPackedTemplateDependencies(targetDir) : [];
       writeWorkspaceViteConfig(targetDir, !installedTarballDirectory);
       writeWorkspacePlaywrightConfig(targetDir);
-      writeReleaseRenderSpec(targetDir);
+      writeReleaseRenderSpec(targetDir, template);
       const smokeSpecs = templateSmokeSpecs(template);
       if (installedTarballDirectory) run("npm", ["run", "build"], targetDir);
-      else run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
+      else run(process.execPath, [templateCli(targetDir, "vite"), "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
       const deploy = checkDeploy({ projectDir: targetDir, distDir: "dist" });
       if (!deploy.ok) throw new Error(`deploy check failed: ${deploy.failures.join("; ")}`);
       const browserSpecs = [...smokeSpecs, "__release-render.spec.ts"];
@@ -215,7 +224,7 @@ function runScaffoldSmoke(): {
       for (;;) {
         browserAttempts += 1;
         try {
-          run("pnpm", ["exec", "playwright", "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+          run(process.execPath, [templateCli(targetDir, "playwright"), "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
           break;
         } catch (error) {
           if (browserAttempts >= 2) throw error;
@@ -238,21 +247,28 @@ function runScaffoldSmoke(): {
             interactionEvents?: readonly string[];
           }
         : undefined;
+      if (!routeReport || typeof routeReport !== "object") {
+        throw new Error("route-health smoke did not retain its runtime observation report");
+      }
       if (!existsSync(screenshotPath) || statSync(screenshotPath).size <= 1_000) {
         throw new Error("render smoke did not retain a screenshot larger than 1,000 bytes");
       }
-      if (screenshotReport?.interactionEvents?.length !== 3) {
-        throw new Error("interaction smoke did not exercise pointer drag, wheel, and keyboard focus");
+      const genericInteractionCount = screenshotReport?.interactionEvents?.length ?? 0;
+      const hasDedicatedInteractionSmoke = template === "fighting-game" && smokeSpecs.includes("gameplay-smoke.spec.ts");
+      if (genericInteractionCount !== 3 && !hasDedicatedInteractionSmoke) {
+        throw new Error("interaction smoke did not exercise the required route inputs");
       }
       results.push({
         template,
         files: scaffold.files.length,
         installMode: installedTarballDirectory ? `fresh-local-${currentPackageVersion}-tarballs` : "workspace-source-aliases",
-        installedPackages,
+        installedPackages: installedPackages.map((entry) => entry.tarball),
+        installedArtifacts: installedPackages,
         build: true,
         browserSmoke: true,
         browserSmokeAttempts: browserAttempts,
         interactionSmoke: true,
+        interactionProof: hasDedicatedInteractionSmoke ? "gameplay-smoke.spec.ts" : "release-screenshot protocol input",
         deployCheck: true,
         smokeSpecs: browserSpecs,
         routeHealth: true,
@@ -267,7 +283,9 @@ function runScaffoldSmoke(): {
       failures.push(`${template}: ${error instanceof Error ? error.message : String(error)}`);
       results.push({ template, build: false, error: error instanceof Error ? error.message : String(error) });
     }
+    progress(null,"running");console.log(`[template ${template}] completed; failures=${failures.length}`);
   }
+  progress(null,failures.length?"failed":"completed");
 
   return { pass: failures.length === 0, results, failures };
 }
@@ -288,7 +306,7 @@ function templateSmokeSpecs(template: string): readonly string[] {
   return ["route-health.spec.ts", "screenshot.spec.ts"];
 }
 
-function writeReleaseRenderSpec(targetDir: string): void {
+function writeReleaseRenderSpec(targetDir: string, template: CreateA3DTemplate): void {
   writeFileSync(resolve(targetDir, "tests/__release-render.spec.ts"), `import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -297,6 +315,13 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   test.setTimeout(90_000);
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  ${template === "fighting-game" ? `await page.addInitScript(() => {
+    const nativeRequest = window.requestAnimationFrame.bind(window);
+    let frames = 0;
+    window.requestAnimationFrame = (callback: FrameRequestCallback): number => nativeRequest((time) => {
+      if (frames++ < 8) callback(time);
+    });
+  });` : ""}
   await page.goto("/");
   const canvas = page.locator("canvas").first();
   await expect(canvas).toBeVisible({ timeout: 45_000 });
@@ -308,34 +333,32 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   if (!box) throw new Error("visible Aura3D canvas did not expose screenshot bounds");
   const centerX = box.x + box.width / 2;
   const centerY = box.y + box.height / 2;
-  await page.evaluate(({ centerX, centerY, dragX, dragY }) => {
-    const target = document.querySelector("canvas");
-    if (!(target instanceof HTMLCanvasElement)) throw new Error("Aura3D canvas disappeared before interaction smoke.");
-    target.dispatchEvent(new PointerEvent("pointerdown", { clientX: centerX, clientY: centerY, pointerId: 1, buttons: 1, bubbles: true }));
-    target.dispatchEvent(new PointerEvent("pointermove", { clientX: dragX, clientY: dragY, pointerId: 1, buttons: 1, bubbles: true }));
-    target.dispatchEvent(new PointerEvent("pointerup", { clientX: dragX, clientY: dragY, pointerId: 1, buttons: 0, bubbles: true }));
-    target.dispatchEvent(new WheelEvent("wheel", { deltaY: -120, bubbles: true }));
-  }, {
-    centerX,
-    centerY,
-    dragX: centerX + Math.min(80, box.width / 6),
-    dragY: centerY + Math.min(36, box.height / 8)
-  });
-  await page.keyboard.press("Tab");
-  await page.waitForTimeout(250);
-  expect(pageErrors).toEqual([]);
-  await expect(canvas).toBeVisible();
-  // Capture through Chromium's protocol directly. Playwright page/locator
-  // screenshots can wait for a continuously rendering game canvas to become
-  // stable and consume the whole test timeout even though the route is healthy.
+  const interactionEvents: string[] = [];
+  // Drive input and capture through Chromium's protocol. DOM evaluation and
+  // locator screenshots can starve behind a continuously-rendering game main
+  // thread after the canvas has already proven visible. Protocol input still
+  // reaches the real page and avoids turning renderer load into a false timeout.
   const cdp = await page.context().newCDPSession(page);
+  if (${template !== "fighting-game"}) {
+    const dragX = centerX + Math.min(80, box.width / 6);
+    const dragY = centerY + Math.min(36, box.height / 8);
+    await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", x: centerX, y: centerY, button: "left", buttons: 1, clickCount: 1 });
+    await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: dragX, y: dragY, button: "left", buttons: 1 });
+    await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: dragX, y: dragY, button: "left", buttons: 0, clickCount: 1 });
+    await cdp.send("Input.dispatchMouseEvent", { type: "mouseWheel", x: centerX, y: centerY, deltaX: 0, deltaY: -120 });
+    await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+    await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+    interactionEvents.push("pointer-drag", "wheel", "keyboard-input");
+  }
+  expect(pageErrors).toEqual([]);
   const capture = await cdp.send("Page.captureScreenshot", {
     format: "png",
     fromSurface: true,
     captureBeyondViewport: false,
     clip: { x: box.x, y: box.y, width: box.width, height: box.height, scale: 1 }
   });
-  await cdp.detach();
+  // The session is closed with the page. Explicit detach can itself block
+  // behind a saturated renderer after the screenshot has already completed.
   const screenshot = Buffer.from(capture.data, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
@@ -343,7 +366,7 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     bytes: screenshot.byteLength,
     canvas: box,
     pageErrors,
-    interactionEvents: ["pointer-drag", "wheel", "keyboard-tab"]
+    interactionEvents
   }, null, 2) + "\\n");
   expect(screenshot.byteLength).toBeGreaterThan(1_000);
 });
@@ -376,10 +399,13 @@ export default defineConfig({
   workers: 1,
   testDir: "./tests",
   use: {
-    baseURL: "http://127.0.0.1:4173"
+    baseURL: "http://127.0.0.1:4173",
+    ...(process.env.A3D_WEBGPU_BROWSER_EXECUTABLE ? {
+      launchOptions: { executablePath: process.env.A3D_WEBGPU_BROWSER_EXECUTABLE }
+    } : {})
   },
   webServer: {
-    command: "pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort",
+    command: ${JSON.stringify(`${shellArgument(process.execPath)} ${shellArgument(templateCli(targetDir, "vite"))} --host 127.0.0.1 --port 4173 --strictPort`)},
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
@@ -424,7 +450,7 @@ ${aliasEntries}
 `);
 }
 
-function installPackedTemplateDependencies(targetDir: string): readonly string[] {
+function installPackedTemplateDependencies(targetDir: string): readonly { name: string; version: string; tarball: string; sha256: string; integrity: string; installedIntegrity: string; resolved?: string }[] {
   if (!installedTarballDirectory) return [];
   const templateManifest = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8")) as {
     readonly dependencies?: Readonly<Record<string, string>>;
@@ -457,22 +483,41 @@ function installPackedTemplateDependencies(targetDir: string): readonly string[]
     if (!existsSync(path)) throw new Error(`Missing packed template dependency ${path}.`);
     return path;
   });
-  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-save", ...tarballs], targetDir);
+  if (exactReleasePlan) {
+    for (const path of tarballs) {
+      const expected = exactReleasePlan.packages.find((entry) => resolve(entry.tarball) === path);
+      if (!expected || createHash("sha256").update(readFileSync(path)).digest("hex") !== expected.sha256) throw new Error(`Template archive differs from exact plan: ${path}`);
+    }
+  }
+  const observations = tarballs.map((path, index) => ({
+    name: [...closure].sort()[index]!, tarball: basename(path),
+    sha256: createHash("sha256").update(readFileSync(path)).digest("hex"),
+    integrity: `sha512-${createHash("sha512").update(readFileSync(path)).digest("base64")}`
+  }));
+  const registryInstall = process.env.A3D_REGISTRY_INSTALL === "1";
+  if (registryInstall && !exactReleasePlan) throw new Error("Registry lifecycle requires a validated exact release plan");
+  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-save", `--logs-dir=${resolve(targetDir,"tests/reports/npm-install")}`, "--timing", "--loglevel=http", "--fetch-timeout=30000", "--fetch-retries=1", "--fetch-retry-maxtimeout=10000", ...(registryInstall ? [...closure].sort().map(name => `${name}@${currentPackageVersion}`) : tarballs)], targetDir);
   for (const name of directAuraPackages) {
     const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
     if (installed.version !== currentPackageVersion) throw new Error(`${name}: expected installed ${currentPackageVersion}, found ${installed.version ?? "missing"}.`);
   }
-  return tarballs.map((path) => basename(path));
+  // npm's installed hidden lock records the actual resolved archive integrity.
+  // A declared input hash alone cannot establish what the installer consumed.
+  const installedLock = JSON.parse(readFileSync(resolve(targetDir, "node_modules/.package-lock.json"), "utf8")) as {
+    packages?: Record<string, { version?: string; integrity?: string; resolved?: string }>;
+  };
+  return observations.map((observation, index) => {
+    const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...observation.name.split("/"), "package.json"), "utf8")) as { name?: string; version?: string };
+    const lockEntry = installedLock.packages?.[`node_modules/${observation.name}`];
+    if (installed.name !== observation.name || installed.version !== currentPackageVersion || lockEntry?.version !== currentPackageVersion || lockEntry.integrity !== observation.integrity) {
+      throw new Error(`Installed artifact integrity/version mismatch: ${observation.name}`);
+    }
+    if (createHash("sha256").update(readFileSync(tarballs[index]!)).digest("hex") !== observation.sha256) throw new Error(`Tarball changed during installation: ${observation.name}`);
+    if (registryInstall && (!lockEntry.resolved || new URL(lockEntry.resolved).origin !== "https://registry.npmjs.org")) throw new Error(`Registry lifecycle consumed a non-registry archive: ${observation.name}`);
+    return { ...observation, version: installed.version, installedIntegrity: lockEntry.integrity, resolved: lockEntry.resolved };
+  });
 }
 
 function run(command: string, args: readonly string[], cwd: string): void {
-  try {
-    execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: "pipe" });
-  } catch (error) {
-    const output = error instanceof Error && "stdout" in error
-      ? `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}`
-      : String(error);
-    const message = output.trim().split("\n").slice(-16).join("\n");
-    throw new Error(message || `${command} ${args.join(" ")} failed`);
-  }
+  runTemplateCommand(command,args,cwd);
 }

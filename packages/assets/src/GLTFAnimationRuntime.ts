@@ -1,5 +1,5 @@
-import { AnimationAction, AnimationClip, AnimationMixer, createFootIkRig, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
-import { invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
+import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
 /**
@@ -36,6 +36,10 @@ export interface GLTFootPlantingLegConfig {
   readonly knee: string;
   readonly ankle: string;
   readonly pole?: readonly [number, number, number];
+  /** Optional measured joint-to-sole offset for asymmetric footwear. */
+  readonly ankleHeight?: number;
+  readonly contact?: boolean;
+  readonly support?: { readonly id: string; readonly delta: readonly [number, number, number] };
 }
 
 export interface GLTFootPlantingConfig {
@@ -46,6 +50,8 @@ export interface GLTFootPlantingConfig {
   readonly maxRayDistance?: number;
   readonly plantThreshold?: number;
   readonly hipDropFactor?: number;
+  /** False is a diagnostic control: ankle lock alone does not plant the skinned sole. */
+  readonly lockFootRotation?: boolean;
   /**
    * Actor-local → world matrix (column-major 16). The runtime skeleton usually lives in
    * import units (the certified walk girl is centimeter-scale) while `ground` speaks world
@@ -58,6 +64,10 @@ export interface GLTFootPlantingConfig {
 }
 
 export interface GLTFootPlantingApplyResult {
+  /** Post-writeback world ankle positions, measured from scene transforms rather than IK targets. */
+  readonly feet?: readonly { readonly side: "left" | "right"; readonly worldPosition: readonly [number, number, number]; readonly contactError: number; readonly locked: boolean }[];
+  readonly surfaces?: readonly { readonly side: "left" | "right"; readonly mesh: string; readonly vertex: number; readonly worldPosition: readonly [number, number, number]; readonly groundError: number | null; readonly skinningProbe?: { readonly position: readonly number[]; readonly joints: readonly number[]; readonly weights: readonly number[]; readonly matrices: readonly number[]; readonly modelMatrix: readonly number[]; readonly expectedWorldPosition: readonly number[] } }[];
+  readonly legDeformation?: readonly { readonly side: "left" | "right"; readonly upperBefore: number; readonly upperAfter: number; readonly lowerBefore: number; readonly lowerAfter: number; readonly maxRelativeLengthChange: number }[];
   readonly groundedFeet: number;
   readonly averageTargetError: number;
   readonly lockedSides: readonly ("left" | "right")[];
@@ -223,6 +233,8 @@ export interface GLTFSceneAnimationClipBindingDiagnostics {
 export interface GLTFSceneAnimationMixerOptions extends GLTFSceneAnimationRuntimeOptions {
   readonly autoPlay?: string | false;
   readonly mixer?: AnimationMixerOptions;
+  /** Called once per blended update; owns actor movement before foot placement. */
+  readonly consumeRootMotion?: (sample: RootMotionSample) => void;
 }
 
 export interface GLTFSceneAnimationMixerUpdateResult {
@@ -544,6 +556,7 @@ interface RuntimeSkinningBinding {
   readonly renderable: Renderable;
   readonly mesh: GLTFMeshAsset;
   readonly skin: GLTFSkinAsset;
+  readonly bindWorldMatrix: Mat4;
 }
 
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: TrackValueType };
@@ -554,6 +567,10 @@ export class GLTFSceneAnimationRuntime {
   private readonly nodesByName = new Map<string, SceneNode[]>();
   private readonly morphRenderablesByNodeName = new Map<string, Renderable[]>();
   private readonly skinningBindings: RuntimeSkinningBinding[] = [];
+  private readonly footBindMatrices = new Map<string, { world: Mat4; local: Mat4 }>();
+  private readonly footOrientationLocks = new Map<string, Mat4>();
+  private readonly footDescendantLocks = new Map<string, Map<string, Mat4>>();
+  private readonly footSurfaceVertices = new Map<string, readonly number[]>();
   private footPlanting: GLTFootPlantingConfig | undefined;
   private footRig: FootIkRig | undefined;
   private lastApply?: GLTFSceneAnimationApplyResult;
@@ -579,8 +596,79 @@ export class GLTFSceneAnimationRuntime {
     }
     if (!sameFootPlantingShape(this.footPlanting, config)) {
       this.footRig = undefined;
+      this.footOrientationLocks.clear();
+      this.footDescendantLocks.clear();
     }
     this.footPlanting = config;
+  }
+
+  /**
+   * Extract real authored displacement over unwrapped clip time, hand it to the physical
+   * authority once, then apply an in-place root pose and solve feet in the updated actor
+   * transform. Rejected movement is returned and discarded rather than accumulating drift.
+   * The caller refreshes footPlanting.worldFromLocal inside move after committing movement.
+   */
+  applyRootMotionClip(name: string, options: {
+    readonly fromTime: number;
+    readonly toTime: number;
+    readonly target: string;
+    readonly loop?: boolean;
+    readonly worldFromLocal: Mat4;
+    readonly move: (requested: readonly [number, number, number]) => readonly [number, number, number];
+  }): { motion: RootMotionConsumption; applyResult: GLTFSceneAnimationApplyResult } {
+    return this.applyRootMotionClips([{ clipName: name, ...options }], options);
+  }
+
+  /** Blend displacement and consumed poses with the same base/additive weights. */
+  applyRootMotionClips(samples: readonly {
+    readonly clipName: string;
+    readonly fromTime: number;
+    readonly toTime: number;
+    readonly target: string;
+    readonly loop?: boolean;
+    readonly weight?: number;
+    readonly additive?: boolean;
+  }[], options: {
+    readonly worldFromLocal: Mat4;
+    readonly move: (requested: readonly [number, number, number]) => readonly [number, number, number];
+  }): { motion: RootMotionConsumption; applyResult: GLTFSceneAnimationApplyResult } {
+    if (samples.length === 0) throw new Error("glTF root motion blend requires at least one clip sample.");
+    const accumulators = new Map<string, TargetAccumulator>();
+    const motionAccumulators = new Map<string, TargetAccumulator>();
+    const unsupportedTracks: string[] = [];
+    const names: string[] = [];
+    let maxTime = 0;
+    // Finish validation and sampling before the physical authority can mutate the actor.
+    for (const sample of samples) {
+      const clip = this.clipsByName.get(sample.clipName);
+      if (!clip) throw new Error(`glTF animation clip "${sample.clipName}" was not found.`);
+      const weight = sample.weight ?? 1;
+      if (!Number.isFinite(weight) || weight < 0) throw new Error("glTF root motion blend weight must be finite and non-negative.");
+      const extracted = extractRootMotion(clip, sample);
+      if (weight === 0) continue;
+      const time = sample.loop && clip.duration > 0
+        ? ((sample.toTime % clip.duration) + clip.duration) % clip.duration
+        : Math.max(0, Math.min(clip.duration, sample.toTime));
+      maxTime = Math.max(maxTime, time);
+      names.push(`${clip.name}@${time}x${weight}${sample.additive ? "+add" : ""}`);
+      blendInto(motionAccumulators, "motion", "vector3", extracted.delta, weight, sample.additive === true);
+      for (const track of clip.tracks) {
+        if (!parseAnimationTarget(track.target)) {
+          unsupportedTracks.push(track.target);
+          continue;
+        }
+        // Consume each clip's own root before blending, including additive root tracks.
+        const value = track.sample(track.target === sample.target ? 0 : time);
+        blendInto(accumulators, track.target, track.valueType, value, weight, sample.additive === true);
+      }
+    }
+    const values = new Map<string, AnimationValue>();
+    for (const [target, accumulator] of accumulators) values.set(target, finalizeTargetBlend(accumulator));
+    const motionAccumulator = motionAccumulators.get("motion");
+    const delta = motionAccumulator ? finalizeTargetBlend(motionAccumulator) as readonly [number, number, number] : [0, 0, 0] as const;
+    const motion = consumeRootMotion({ target: "blend", fromTime: 0, toTime: maxTime, looped: samples.some(sample => sample.loop), delta }, options.worldFromLocal, options.move);
+    this.lastApply = this.applySampledTargets(`root-motion:${names.join(",")}`, maxTime, { sampledTargets: values, unsupportedTracks }, samples.length);
+    return { motion, applyResult: this.lastApply };
   }
 
   applyClipByName(name: string, time: number): GLTFSceneAnimationApplyResult {
@@ -847,10 +935,16 @@ export class GLTFSceneAnimationRuntime {
   }
 
   reindexScene(): void {
+    this.options.scene.updateWorldTransforms();
+    this.footBindMatrices.clear();
+    this.footOrientationLocks.clear();
+    this.footDescendantLocks.clear();
     this.nodesByName.clear();
     this.morphRenderablesByNodeName.clear();
     this.skinningBindings.length = 0;
+    this.footSurfaceVertices.clear();
     this.options.scene.traverse((node) => {
+      this.footBindMatrices.set(node.id, { world: [...node.transform.worldMatrix] as Mat4, local: [...node.transform.localMatrix] as Mat4 });
       const nodes = this.nodesByName.get(node.name) ?? [];
       nodes.push(node);
       this.nodesByName.set(node.name, nodes);
@@ -870,7 +964,7 @@ export class GLTFSceneAnimationRuntime {
         const mesh = meshesByName.get(renderable.geometry);
         const skin = mesh?.skinIndex === undefined ? undefined : this.options.asset.skins[mesh.skinIndex];
         if (!mesh || !skin || skin.joints.length > MAX_RENDERABLE_SKINNING_JOINTS) continue;
-        this.skinningBindings.push({ node, renderable, mesh, skin });
+        this.skinningBindings.push({ node, renderable, mesh, skin, bindWorldMatrix: [...node.transform.worldMatrix] as Mat4 });
       }
     }
   }
@@ -880,9 +974,9 @@ export class GLTFSceneAnimationRuntime {
   }
 
   /**
-   * Foot-planting post-pass (E2): solves the configured leg chains against the ground and
-   * writes the solved hip/knee/ankle world positions back onto the skeleton. Position-only
-   * write-back (rotations stay as animated); missing leg nodes are reported in
+   * Foot-planting post-pass (E2): solves the configured leg chains against the ground,
+   * applies a shared pelvis reach correction, and rotates rigid hip/knee chains toward the
+   * solved targets. Missing leg nodes are reported in
    * `missingLegNodes` and skipped, never faked. Returns undefined when unconfigured.
    */
   private applyFootPlanting(): GLTFootPlantingApplyResult | undefined {
@@ -902,7 +996,7 @@ export class GLTFSceneAnimationRuntime {
       return toLocal ? transformPoint(toLocal, mutable) : mutable;
     };
     const missingLegNodes: string[] = [];
-    const resolved: { readonly side: "left" | "right"; readonly hip: SceneNode; readonly knee: SceneNode; readonly ankle: SceneNode; readonly pole: readonly [number, number, number] | undefined }[] = [];
+    const resolved: { readonly side: "left" | "right"; readonly hip: SceneNode; readonly knee: SceneNode; readonly ankle: SceneNode; readonly pole: readonly [number, number, number] | undefined; readonly contact?: boolean; readonly support?: GLTFootPlantingLegConfig["support"] }[] = [];
     for (const leg of config.legs) {
       const hip = this.nodesByName.get(leg.hip)?.[0];
       const knee = this.nodesByName.get(leg.knee)?.[0];
@@ -911,11 +1005,20 @@ export class GLTFSceneAnimationRuntime {
       if (!knee) missingLegNodes.push(`${leg.side}:knee:${leg.knee}`);
       if (!ankle) missingLegNodes.push(`${leg.side}:ankle:${leg.ankle}`);
       if (!hip || !knee || !ankle) continue;
-      resolved.push({ side: leg.side, hip, knee, ankle, pole: leg.pole });
+      resolved.push({ side: leg.side, hip, knee, ankle, pole: leg.pole, ...(leg.contact === undefined ? {} : {contact:leg.contact}), ...(leg.support ? {support:leg.support} : {}) });
     }
     if (resolved.length === 0) {
       return { groundedFeet: 0, averageTargetError: 0, lockedSides: [], missingLegNodes, hipOffset: 0 };
     }
+    // Measure each animated ankle-to-sole offset from the exact pre-solve skinning
+    // palette. One global value cannot plant asymmetric shoes or a rotated touchdown.
+    this.refreshSkinningPalettes();
+    const rawSoles = this.sampleFootSurfaces();
+    const measuredAnkleHeights = new Map(resolved.map(entry => {
+      const ankle = solvePoint(worldPosition(entry.ankle));
+      const minimum = Math.min(Infinity, ...rawSoles.filter(point => point.side === entry.side).map(point => point.worldPosition[1]));
+      return [entry.side, Number.isFinite(minimum) ? Math.max(0, ankle[1] - minimum) : undefined] as const;
+    }));
     if (!this.footRig) {
       this.footRig = createFootIkRig({
         legs: resolved.map((entry) => ({
@@ -923,6 +1026,7 @@ export class GLTFSceneAnimationRuntime {
           hip: solvePoint(worldPosition(entry.hip)),
           knee: solvePoint(worldPosition(entry.knee)),
           ankle: solvePoint(worldPosition(entry.ankle)),
+          ...(measuredAnkleHeights.get(entry.side) ?? config.ankleHeight) !== undefined ? { ankleHeight: measuredAnkleHeights.get(entry.side) ?? config.ankleHeight } : {},
           ...(entry.pole ? { pole: entry.pole } : {})
         })),
         raycaster: config.ground,
@@ -933,37 +1037,110 @@ export class GLTFSceneAnimationRuntime {
         ...(config.hipDropFactor !== undefined ? { hipDropFactor: config.hipDropFactor } : {})
       });
     }
+    const distance = (a: Vec3, b: Vec3): number => Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+    const originalLengths = new Map(resolved.map(entry => [entry.side, {
+      upper:distance(solvePoint(worldPosition(entry.hip)),solvePoint(worldPosition(entry.knee))),
+      lower:distance(solvePoint(worldPosition(entry.knee)),solvePoint(worldPosition(entry.ankle)))
+    }]));
     const solved = this.footRig.solveFootPlacement({
       legs: resolved.map((entry) => ({
         side: entry.side,
         hip: solvePoint(worldPosition(entry.hip)),
         knee: solvePoint(worldPosition(entry.knee)),
         ankle: solvePoint(worldPosition(entry.ankle)),
-        ...(entry.pole ? { pole: entry.pole } : {})
+        ...(measuredAnkleHeights.get(entry.side) ?? config.ankleHeight) !== undefined ? { ankleHeight: measuredAnkleHeights.get(entry.side) ?? config.ankleHeight } : {},
+        ...(entry.pole ? { pole: entry.pole } : {}),
+        ...(entry.contact === undefined ? {} : {contact:entry.contact}),
+        ...(entry.support ? {support:entry.support} : {})
       }))
     });
+    // A reach correction belongs to the shared pelvis owner. Move it once before
+    // rotating either leg; translating each upper-leg root dislocates the chain,
+    // while omitting the drop leaves a fully extended stance foot above ground.
+    if (solved.hipOffset < 0) {
+      const common = commonAncestor(resolved.map(entry => entry.hip));
+      const anchors = common && common.parent ? [common] : [...new Set(resolved.map(entry => entry.hip))];
+      for (const anchor of anchors) {
+        const currentWorld = solvePoint(worldPosition(anchor));
+        const dropped = actorPoint([currentWorld[0], currentWorld[1] + solved.hipOffset, currentWorld[2]]);
+        setWorldPosition(anchor, dropped);
+      }
+      this.options.scene.updateWorldTransforms();
+    }
     for (const foot of solved.feet) {
       const entry = resolved.find((candidate) => candidate.side === foot.side);
       if (!entry) continue;
-      // The rig returns the pelvis drop separately: apply it to the hip so an over-extended
-      // leg can reach its planted foot. Solved knee/ankle targets already account for the
-      // drop — the rig re-solves over-extended legs from the dropped hip — so they write
-      // back directly; a leg that needed no drop keeps phase-one targets and lets its knee
-      // absorb the pelvis motion by bending, the natural single-pelvis compromise.
-      // Refresh down the chain after each write: setWorldPosition reads the parent's world
-      // matrix, so the knee must see the new hip world before its own write (same for ankle).
-      // Solved targets are world-space; convert to actor-local for the write-back.
-      const hipTarget = actorPoint([foot.hip[0], foot.hip[1] + solved.hipOffset, foot.hip[2]]);
-      setWorldPosition(entry.hip, [hipTarget[0], hipTarget[1], hipTarget[2]]);
-      entry.hip.updateWorldTransform();
+      // Apply the two-bone solution with joint rotations. Moving hip/knee/ankle
+      // translations directly changes authored bone lengths and deforms every weighted
+      // mesh. The solver targets are world-space; orient each parent toward its solved
+      // child while preserving the animation's local translations and scales.
       const kneeTarget = actorPoint(foot.knee);
-      setWorldPosition(entry.knee, [kneeTarget[0], kneeTarget[1], kneeTarget[2]]);
-      entry.knee.updateWorldTransform();
+      orientJointToward(entry.hip, entry.knee, kneeTarget);
+      entry.hip.updateWorldTransform();
       const ankleTarget = actorPoint(foot.ankle);
-      setWorldPosition(entry.ankle, [ankleTarget[0], ankleTarget[1], ankleTarget[2]]);
+      orientJointToward(entry.knee, entry.ankle, ankleTarget);
+      entry.knee.updateWorldTransform();
+    }
+    this.options.scene.updateWorldTransforms();
+    for (const foot of solved.feet) {
+      const entry = resolved.find(candidate => candidate.side === foot.side)!;
+      if (!foot.locked || config.lockFootRotation === false) {
+        this.footOrientationLocks.delete(foot.side);
+        this.footDescendantLocks.delete(foot.side);
+        continue;
+      }
+      let locked = this.footOrientationLocks.get(foot.side);
+      if (!locked) {
+        // Capture the actual animated sole orientation and toe pose at touchdown.
+        // Reusing the asset bind pose snaps arbitrary rigs and moves their sole vertices.
+        locked = toWorld ? multiplyMat4(toWorld, entry.ankle.transform.worldMatrix) : [...entry.ankle.transform.worldMatrix] as Mat4;
+        const descendants = new Map<string, Mat4>();
+        entry.ankle.children.forEach(child => child.traverse(node => descendants.set(node.id, [...node.transform.localMatrix] as Mat4)));
+        this.footDescendantLocks.set(foot.side, descendants);
+        const normal = foot.sample.groundNormal;
+        const norm = Math.hypot(...normal);
+        if (!(norm > 0)) throw new Error("Foot contact requires a nonzero ground normal.");
+        const nx=normal[0]/norm, ny=normal[1]/norm, nz=normal[2]/norm;
+        if (ny <= -0.999) throw new Error("Foot contact cannot plant on a downward facing surface.");
+        const vx=nz, vz=-nx, t=1/(1+ny);
+        const tilt:Mat4=[1-vz*vz*t,vz,vx*vz*t,0, -vz,1-(vx*vx+vz*vz)*t,vx,0, vx*vz*t,-vx,1-vx*vx*t,0, 0,0,0,1];
+        locked=multiplyMat4(tilt,locked);
+        this.footOrientationLocks.set(foot.side, locked);
+      }
+      // Keep the solved ankle position while holding the sole orientation in world space.
+      const ankleWorld = solvePoint(worldPosition(entry.ankle));
+      const desired = [...locked] as Mat4;
+      desired[12] = ankleWorld[0]; desired[13] = ankleWorld[1]; desired[14] = ankleWorld[2];
+      const actorMatrix = toLocal ? multiplyMat4(toLocal, desired) : desired;
+      const parent = entry.ankle.parent;
+      const local = parent ? multiplyMat4(invertMat4(parent.transform.worldMatrix), actorMatrix) : actorMatrix;
+      entry.ankle.transform.setFromLocalMatrix(local);
+      // Toe joints remain in their touchdown relationship during stance; animated
+      // toe curl otherwise moves the sole while the ankle still reports zero slip.
+      const touchdown = this.footDescendantLocks.get(foot.side);
+      const restore = (node: SceneNode): void => {
+        const rest = touchdown?.get(node.id);
+        if (rest) node.transform.setFromLocalMatrix(rest);
+        node.children.forEach(restore);
+      };
+      entry.ankle.children.forEach(restore);
+      entry.ankle.updateWorldTransform();
     }
     this.options.scene.updateWorldTransforms();
     return {
+      legDeformation: resolved.map(entry => {
+        const before=originalLengths.get(entry.side)!;
+        const upperAfter=distance(solvePoint(worldPosition(entry.hip)),solvePoint(worldPosition(entry.knee)));
+        const lowerAfter=distance(solvePoint(worldPosition(entry.knee)),solvePoint(worldPosition(entry.ankle)));
+        return {side:entry.side,upperBefore:before.upper,lowerBefore:before.lower,upperAfter,lowerAfter,
+          maxRelativeLengthChange:Math.max(Math.abs(upperAfter-before.upper)/Math.max(1e-9,before.upper),Math.abs(lowerAfter-before.lower)/Math.max(1e-9,before.lower))};
+      }),
+      feet: solved.feet.map(foot => {
+        const entry = resolved.find(candidate => candidate.side === foot.side)!;
+        const position = solvePoint(worldPosition(entry.ankle));
+        return { side: foot.side, worldPosition: position, locked: foot.locked,
+          contactError: Math.hypot(...position.map((value, axis) => value - foot.sample.plantedFoot[axis]!)) };
+      }),
       groundedFeet: solved.groundedFeet,
       averageTargetError: solved.averageTargetError,
       lockedSides: solved.feet.filter((foot) => foot.locked).map((foot) => foot.side),
@@ -1011,6 +1188,76 @@ export class GLTFSceneAnimationRuntime {
     if (typeof rangeHolder.range !== "number") return false;
     (light as unknown as { range: number }).range = asPositiveScalar(value, trackTarget);
     return true;
+  }
+
+  /** CPU skinning oracle using the exact palette submitted to rendering, not IK targets. */
+  sampleFootSurfaces(): NonNullable<GLTFootPlantingApplyResult["surfaces"]> {
+    const config = this.footPlanting;
+    if (!config) return [];
+    const samples: { side: "left" | "right"; mesh: string; vertex: number; worldPosition: readonly [number, number, number]; groundError: number | null; skinningProbe?: { position: readonly number[]; joints: readonly number[]; weights: readonly number[]; matrices: readonly number[]; modelMatrix: readonly number[]; expectedWorldPosition: readonly number[] } }[] = [];
+    for (const leg of config.legs) {
+      const ankle = this.nodesByName.get(leg.ankle)?.[0];
+      if (!ankle) continue;
+      const footNames = new Set<string>();
+      const visit = (node: SceneNode): void => { footNames.add(node.name); node.children.forEach(visit); };
+      visit(ankle);
+      for (const binding of this.skinningBindings) {
+        const palette = binding.renderable.skinning;
+        if (!palette) continue;
+        const mesh = binding.mesh;
+        const cacheKey = `${leg.ankle}:${binding.node.id}:${mesh.name}`;
+        let selected = this.footSurfaceVertices.get(cacheKey);
+        if (!selected) {
+        const candidates: number[] = [];
+        for (let vertex = 0; vertex < mesh.positions.length; vertex++) {
+          let footWeight = 0;
+          for (let lane = 0; lane < 4; lane++) {
+            if (footNames.has(binding.skin.jointNames[mesh.joints[vertex]?.[lane] ?? -1] ?? "")) footWeight += mesh.weights[vertex]?.[lane] ?? 0;
+            if (footNames.has(binding.skin.jointNames[mesh.joints1?.[vertex]?.[lane] ?? -1] ?? "")) footWeight += mesh.weights1?.[vertex]?.[lane] ?? 0;
+          }
+          if (footWeight >= 0.5) candidates.push(vertex);
+        }
+        if (!candidates.length) { this.footSurfaceVertices.set(cacheKey, []); continue; }
+        // Fixed bind-space sole strip: never reselect vertices from animated positions.
+        const bindHeights = new Map(candidates.map(vertex => [vertex, transformPoint(binding.bindWorldMatrix, [...mesh.positions[vertex]!])[1]]));
+        const ys = [...bindHeights.values()];
+        const minimum = Math.min(...ys), maximum = Math.max(...ys);
+        const strip = Math.max(1e-6, (maximum - minimum) * 0.001);
+        selected = candidates.filter(index => bindHeights.get(index)! <= minimum + strip);
+        this.footSurfaceVertices.set(cacheKey, selected);
+        }
+        const toWorld = config.worldFromLocal ? multiplyMat4(config.worldFromLocal, binding.node.transform.worldMatrix) : binding.node.transform.worldMatrix;
+        for (const vertex of selected) {
+          const authored = [...mesh.positions[vertex]!] as Vec3;
+          for (let morph = 0; morph < mesh.morphTargets.length; morph++) {
+            const weight = binding.renderable.morphWeights?.[morph] ?? 0;
+            const delta = mesh.morphTargets[morph]?.positions[vertex];
+            if (delta && weight) for (let axis = 0; axis < 3; axis++) authored[axis] += delta[axis]! * weight;
+          }
+          const skinned: Vec3 = [0, 0, 0];
+          let total = 0;
+          for (let set = 0; set < 2; set++) for (let lane = 0; lane < 4; lane++) {
+            const weight = (set ? mesh.weights1?.[vertex]?.[lane] : mesh.weights[vertex]?.[lane]) ?? 0;
+            const joint = (set ? mesh.joints1?.[vertex]?.[lane] : mesh.joints[vertex]?.[lane]) ?? -1;
+            if (weight <= 0) continue;
+            if (joint < 0 || joint >= palette.jointCount) throw new Error("Foot surface vertex has an invalid palette influence.");
+            const point = transformPoint(Array.from(palette.matrices.subarray(joint * 16, joint * 16 + 16)) as Mat4, authored);
+            for (let axis = 0; axis < 3; axis++) skinned[axis] += point[axis]! * weight;
+            total += weight;
+          }
+          if (Math.abs(total - 1) > 0.001) throw new Error("Foot surface vertex weights must sum to one.");
+          const worldPosition = transformPoint(toWorld, skinned);
+          const hit = config.ground.raycastDown([worldPosition[0], worldPosition[1] + 2, worldPosition[2]], 4);
+          samples.push({ side: leg.side, mesh: `${binding.node.userData.gltfNodeIndex ?? binding.node.name}:${mesh.name}`, vertex, worldPosition,
+            groundError: hit ? worldPosition[1] - hit.point[1] : null,
+            ...(vertex === selected[0] ? { skinningProbe: { position: authored,
+              joints: [...(mesh.joints[vertex] ?? [0,0,0,0]), ...(mesh.joints1?.[vertex] ?? [0,0,0,0])],
+              weights: [...(mesh.weights[vertex] ?? [0,0,0,0]), ...(mesh.weights1?.[vertex] ?? [0,0,0,0])],
+              matrices: Array.from(palette.matrices), modelMatrix: [...toWorld], expectedWorldPosition: worldPosition } } : {}) });
+        }
+      }
+    }
+    return samples;
   }
 
   private refreshSkinningPalettes(): { readonly updated: number; readonly missingTargets: readonly string[] } {
@@ -1189,6 +1436,7 @@ export class GLTFSceneAnimationRuntime {
     this.options.scene.updateWorldTransforms();
     const footPlanting = this.applyFootPlanting();
     const skinning = this.refreshSkinningPalettes();
+    const measuredFootPlanting = footPlanting ? { ...footPlanting, surfaces: this.sampleFootSurfaces() } : undefined;
     return {
       clipName,
       time,
@@ -1198,7 +1446,7 @@ export class GLTFSceneAnimationRuntime {
       morphWeightTracksApplied,
       materialTracksApplied,
       lightTracksApplied,
-      ...(footPlanting === undefined ? {} : { footPlanting }),
+      ...(measuredFootPlanting === undefined ? {} : { footPlanting: measuredFootPlanting }),
       skinningPalettesUpdated: skinning.updated,
       missingTargets: [...missingTargets, ...skinning.missingTargets],
       unsupportedTracks: sampled.unsupportedTracks
@@ -1223,6 +1471,7 @@ export class GLTFSceneAnimationMixerBinding {
   constructor(options: GLTFSceneAnimationMixerOptions) {
     this.runtime = new GLTFSceneAnimationRuntime(options);
     this.mixer = new AnimationMixer({
+      ...(options.consumeRootMotion ? { consumeRootMotion: options.consumeRootMotion } : {}),
       setAnimationValue: (target, value) => {
         this.pendingValues.set(target, cloneAnimationValue(value));
       }
@@ -1554,6 +1803,7 @@ function sameFootPlantingShape(
   if (previous.maxRayDistance !== next.maxRayDistance) return false;
   if (previous.plantThreshold !== next.plantThreshold) return false;
   if (previous.hipDropFactor !== next.hipDropFactor) return false;
+  if (previous.lockFootRotation !== next.lockFootRotation) return false;
   if (previous.legs.length !== next.legs.length) return false;
   return previous.legs.every((leg, index) => {
     const other = next.legs[index];
@@ -1562,6 +1812,7 @@ function sameFootPlantingShape(
       && leg.hip === other.hip
       && leg.knee === other.knee
       && leg.ankle === other.ankle
+      && leg.ankleHeight === other.ankleHeight
       && (leg.pole ?? []).join(",") === (other.pole ?? []).join(",");
   });
 }
@@ -1570,6 +1821,47 @@ function worldPosition(node: SceneNode): Vec3 {
   node.updateWorldTransform();
   return [node.transform.worldMatrix[12], node.transform.worldMatrix[13], node.transform.worldMatrix[14]];
 }
+
+function commonAncestor(nodes: readonly SceneNode[]): SceneNode | undefined {
+  if (nodes.length === 0) return undefined;
+  const first: SceneNode[] = [];
+  for (let node: SceneNode | null = nodes[0]!; node; node = node.parent) first.push(node);
+  return first.find(candidate => nodes.every(node => node === candidate || candidate.isAncestorOf(node)));
+}
+
+function orientJointToward(node: SceneNode, child: SceneNode, target: Vec3): void {
+  node.updateWorldTransform();
+  child.updateWorldTransform();
+  const origin = worldPosition(node);
+  const current = worldPosition(child);
+  const from: Vec3 = [current[0]-origin[0], current[1]-origin[1], current[2]-origin[2]];
+  const to: Vec3 = [target[0]-origin[0], target[1]-origin[1], target[2]-origin[2]];
+  const delta = quatFromUnitVectors(from, to);
+  const worldRotation = multiplyRigidQuat(delta, decomposeMat4(node.transform.worldMatrix).rotation);
+  const parentRotation = node.parent ? decomposeMat4(node.parent.transform.worldMatrix).rotation : [0,0,0,1] as Quat;
+  const localRotation = multiplyRigidQuat(invertRigidQuat(parentRotation), worldRotation);
+  node.transform.setRotation(localRotation[0], localRotation[1], localRotation[2], localRotation[3]);
+}
+
+function quatFromUnitVectors(from: Vec3, to: Vec3): Quat {
+  const fl=Math.hypot(...from), tl=Math.hypot(...to);
+  if (!(fl>1e-12) || !(tl>1e-12)) return [0,0,0,1];
+  const fx=from[0]/fl,fy=from[1]/fl,fz=from[2]/fl,tx=to[0]/tl,ty=to[1]/tl,tz=to[2]/tl;
+  const dot=fx*tx+fy*ty+fz*tz;
+  if (dot < -0.999999) {
+    const axis=Math.abs(fx)>0.1?[-fz,0,fx] as Vec3:[0,fz,-fy] as Vec3;
+    const length=Math.hypot(...axis);
+    return [axis[0]/length,axis[1]/length,axis[2]/length,0];
+  }
+  if (dot > 0.999999) return [0,0,0,1];
+  return normalizeQuaternion([fy*tz-fz*ty,fz*tx-fx*tz,fx*ty-fy*tx,1+dot]);
+}
+
+function multiplyRigidQuat(a: Quat,b: Quat): Quat {
+  return normalizeQuaternion([a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]]);
+}
+function invertRigidQuat(q:Quat):Quat { return [-q[0],-q[1],-q[2],q[3]]; }
+function normalizeQuaternion(q:Quat):Quat { const n=Math.hypot(...q); return n>0?[q[0]/n,q[1]/n,q[2]/n,q[3]/n]:[0,0,0,1]; }
 
 function setWorldPosition(node: SceneNode, position: readonly [number, number, number]): void {
   const local = node.parent

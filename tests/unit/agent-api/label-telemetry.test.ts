@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AuraLabelNode } from "../../../packages/engine/src/agent-api/index.js";
-import type { ProjectedLabel } from "../../../packages/engine/src/agent-api/WorldLabelRenderer.js";
+import { resolveLabelCollisions, type ProjectedLabel } from "../../../packages/engine/src/agent-api/WorldLabelRenderer.js";
 import {
   CSS2D_OUT_OF_SCOPE,
   collectLabelTelemetry,
@@ -36,6 +36,21 @@ function projected(id: string, overrides: Partial<ProjectedLabel> = {}): Project
 }
 
 describe("N4 label telemetry", () => {
+  it("role tuning changes final placement and reports collision suppression", () => {
+    const pair = (role: "tick" | "annotation") => resolveLabelCollisions([
+      projected("a", { role, width: 80, height: 20 }),
+      projected("b", { role, width: 80, height: 20 })
+    ], { viewport: { width: 200, height: 200 } });
+    expect(Math.abs(pair("tick")[0]!.y - pair("tick")[1]!.y)).toBe(22);
+    expect(Math.abs(pair("annotation")[0]!.y - pair("annotation")[1]!.y)).toBe(24);
+    const final = resolveLabelCollisions([
+      projected("a", { role: "hud", width: 80, height: 20 }),
+      projected("b", { role: "hud", width: 80, height: 20 }),
+      projected("c", { visible: false, occluded: true })
+    ], { viewport: { width: 200, height: 200 } });
+    const telemetry = collectLabelTelemetry([node("hud", "a"), node("hud", "b"), node("anchor", "c")], final);
+    expect(telemetry).toMatchObject({ declared: 3, placed: 1, offscreen: 2, suppressed: 1, occludedHidden: 1 });
+  });
   it("maps label kinds to HUD / annotation / tick roles", () => {
     expect(labelTelemetryRoleFor("hud")).toBe("hud");
     expect(labelTelemetryRoleFor("axis-tick")).toBe("tick");

@@ -672,10 +672,11 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     subject: { position: cabinetPosition, rotation: [0, -Math.PI / 2, 0], targetSize: cabinetTargetSize },
     playSpacePoints: [lowerLeftCell, upperRightCell],
     contactPoint: cellPosition(Math.floor(BOARD_WIDTH / 2), 0, 0),
-    setSubjectSuppressed: (suppressed: boolean) => {
+    setSubjectSuppressed: async (suppressed: boolean) => {
       app.pause();
+      await app.ready();
       cabinetHandle.setScale(suppressed ? 0.0001 : 1);
-      app.step(0);
+      await app.stepAsync(0);
     }
   },
   configurable: true

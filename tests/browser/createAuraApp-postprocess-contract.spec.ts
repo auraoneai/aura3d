@@ -48,7 +48,7 @@ interface VariantComparison {
   readonly brightFractionDelta: number;
 }
 
-interface PostprocessWindow extends Window {
+interface PostprocessWindow extends Omit<Window, "__AURA3D_ROOT_POSTPROCESS_RUNNER__"> {
   readonly __AURA3D_ROOT_POSTPROCESS_RUNNER__?: {
     readonly imports: readonly string[];
     readonly variantIds: readonly string[];

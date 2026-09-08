@@ -69,10 +69,10 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     })
   );
 
-  // A distant, rounded water-column volume supplies a soft blue-green depth
-  // gradient behind the authored wreck without becoming a hard-edged
-  // screen-filling plane. Its low-opacity PBR shell catches the sunbeam and
-  // lets the near props read as silhouettes against a real underwater volume.
+  // Distant translucent surface shells provide blue-green backdrop dressing
+  // behind the typed wreck. They are authored color geometry, not volumetric
+  // water or participating-media scattering; physical underwater rendering
+  // cannot be established from these shells.
   if (!options.review) {
     nodes.push(
       primitives.sphere({

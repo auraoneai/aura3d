@@ -11,7 +11,8 @@ import {
 import {
   animationStudioOptionalAudioAssetKeys,
   animationStudioRequiredAssetKeys
-} from "../../../packages/create-aura3d/templates/animation-studio/src/aura-assets";
+} from "../../../packages/create-aura3d/templates/animation-studio/src/asset-contract";
+import { assets as animationStudioAssets } from "../../../packages/create-aura3d/templates/animation-studio/src/aura-assets";
 
 describe("create-aura3d templates", () => {
   test("scaffolds every starter template with scripts and copy-paste tests", () => {
@@ -67,6 +68,10 @@ describe("create-aura3d templates", () => {
     expect(existsSync("packages/create-aura3d/templates/animation-studio/index.html")).toBe(true);
     expect(existsSync("packages/create-aura3d/templates/animation-studio/src/main.ts")).toBe(false);
     expect(animationStudioRequiredAssetKeys).toEqual(["miko", "luma", "moonGarden"]);
+    for (const key of animationStudioRequiredAssetKeys) {
+      expect(animationStudioAssets[key].type).toBe("model");
+      expect(animationStudioAssets[key].hash).toMatch(/^sha256-[a-f0-9]{64}$/);
+    }
     expect(animationStudioOptionalAudioAssetKeys).toEqual(expect.arrayContaining([
       "mikoDialogueStem",
       "lumaDialogueStem",

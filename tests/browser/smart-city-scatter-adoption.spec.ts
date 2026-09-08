@@ -1,3 +1,4 @@
+import type { SmartCityBrowserWindow301 } from "./smart-city-evidence-301";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -40,12 +41,12 @@ test.describe("smart-city scatter + budget adoption (PART D2)", () => {
       timeout: 120_000,
     });
     await page.waitForFunction(
-      () => window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__?.status === "ready",
+      () => (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__?.status === "ready",
       undefined,
       { timeout: 120_000 }
     );
 
-    const evidence = await page.evaluate(() => window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__);
+    const evidence = await page.evaluate(() => (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__);
     const corridor = evidence?.diagnostics?.scatterCorridor as
       | {
           readonly plan: { readonly admittedInstances: number; readonly culledInstances: number; readonly withinBudget: boolean; readonly windStrength: number };

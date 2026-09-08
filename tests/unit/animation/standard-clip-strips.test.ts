@@ -63,7 +63,7 @@ let intentSummary: Record<string, IntentSummaryEntry>;
 let rigSummary: Record<string, RigSummaryEntry>;
 
 beforeAll(() => {
-  const stdout = execFileSync("npx", ["tsx", CLI, "--out", workDir, "--clip", "gesture"], {
+  const stdout = execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", CLI, "--out", workDir, "--clip", "gesture"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]

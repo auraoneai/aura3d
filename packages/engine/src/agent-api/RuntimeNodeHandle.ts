@@ -43,6 +43,23 @@ export interface RuntimeNodeAnimationSpecLike {
   readonly metadata?: Record<string, unknown>;
 }
 
+/** Live physical movement authority; navigation supplies steering before this callback. */
+export interface AuraRootMotionClipSample {
+  readonly playbackId: string;
+  readonly clipName: string;
+  readonly time: number;
+  readonly weight: number;
+  readonly loop: boolean;
+  readonly additive: boolean;
+}
+
+export interface AuraRootMotionBinding {
+  readonly target: string;
+  /** Commit accepted movement to the physical body and runtime node exactly once. */
+  readonly move: (requestedWorldDelta: RuntimeNodeVec3) => RuntimeNodeVec3;
+  readonly onSample?: (sample: { readonly requested: RuntimeNodeVec3; readonly accepted: RuntimeNodeVec3; readonly rejected: RuntimeNodeVec3 }) => void;
+}
+
 export interface AuraRuntimeNodeAnimationBindingMetadata {
   readonly kind: "aura-runtime-node-animation-binding";
   readonly controllerId?: string;
@@ -66,6 +83,9 @@ export interface AuraRuntimeNodeAnimationBindingMetadata {
    * typed GLB actor. Never serialized — ground functions do not survive JSON.
    */
   readonly footPlanting?: AuraResolvedFootPlanting;
+  readonly rootMotion?: AuraRootMotionBinding;
+  readonly rootMotionTime?: number;
+  readonly rootMotionSamples?: readonly AuraRootMotionClipSample[];
   readonly metadata?: Record<string, unknown>;
 }
 

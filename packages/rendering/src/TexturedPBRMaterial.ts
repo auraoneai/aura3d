@@ -1,7 +1,11 @@
+import type { ExtensionScalarAtlas } from "./ExtensionScalarAtlas";
 import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { Sampler } from "./Sampler";
 import {
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT,
+  DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
@@ -35,7 +39,10 @@ export type TexturedPBRTextureSlot =
   | "iridescence"
   | "iridescenceThickness";
 
+export type ExtensionScalarAtlasBinding = ExtensionScalarAtlas;
+
 export interface TexturedPBRMaterialOptions {
+  readonly extensionScalarAtlas?: ExtensionScalarAtlasBinding;
   readonly name?: string;
   readonly baseColor?: readonly [number, number, number, number];
   readonly renderState?: Partial<RenderState>;
@@ -272,7 +279,10 @@ const IRIDESCENCE_TEXTURE_SLOTS: readonly TexturedPBRTextureSlot[] = [
 
 export function texturedPbrShaderActiveTextureSlots(shaderVariant?: string): readonly TexturedPBRTextureSlot[] {
   const slots = new Set<TexturedPBRTextureSlot>(BASE_TEXTURED_PBR_SHADER_TEXTURE_SLOTS);
+  if (shaderVariant === DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT) return [...slots, ...CLEARCOAT_TEXTURE_SLOTS, ...SHEEN_ANISOTROPY_TEXTURE_SLOTS, ...IRIDESCENCE_TEXTURE_SLOTS];
   if (
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT
@@ -294,12 +304,14 @@ export function texturedPbrShaderActiveTextureSlots(shaderVariant?: string): rea
   }
   if (
     shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT
   ) {
     for (const slot of SHEEN_ANISOTROPY_TEXTURE_SLOTS) slots.add(slot);
   }
   if (
     shaderVariant === DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT
   ) {
     for (const slot of IRIDESCENCE_TEXTURE_SLOTS) slots.add(slot);
@@ -406,6 +418,24 @@ export class TexturedPBRMaterial extends Material {
       shaderVariant,
       renderState: options.renderState,
       parameters: {
+        ...(options.extensionScalarAtlas ? {
+          u_extensionScalarAtlas: new TextureBinding({ name: "u_extensionScalarAtlas", texture: options.extensionScalarAtlas.texture }),
+          u_clearcoatAtlasRect: options.extensionScalarAtlas.clearcoat,
+          u_clearcoatAtlasY: options.extensionScalarAtlas.originsY?.clearcoat ?? 0,
+          u_clearcoatAtlasFilter: extensionAtlasFilter(options.clearcoatSampler),
+          u_clearcoatRoughnessAtlasRect: options.extensionScalarAtlas.clearcoatRoughness,
+          u_clearcoatRoughnessAtlasY: options.extensionScalarAtlas.originsY?.clearcoatRoughness ?? 0,
+          u_clearcoatRoughnessAtlasFilter: extensionAtlasFilter(options.clearcoatRoughnessSampler),
+          u_sheenRoughnessAtlasRect: options.extensionScalarAtlas.sheenRoughness,
+          u_sheenRoughnessAtlasY: options.extensionScalarAtlas.originsY?.sheenRoughness ?? 0,
+          u_sheenRoughnessAtlasFilter: extensionAtlasFilter(options.sheenRoughnessSampler),
+          u_iridescenceAtlasRect: options.extensionScalarAtlas.iridescence,
+          u_iridescenceAtlasY: options.extensionScalarAtlas.originsY?.iridescence ?? 0,
+          u_iridescenceAtlasFilter: extensionAtlasFilter(options.iridescenceSampler),
+          u_iridescenceThicknessAtlasRect: options.extensionScalarAtlas.iridescenceThickness,
+          u_iridescenceThicknessAtlasY: options.extensionScalarAtlas.originsY?.iridescenceThickness ?? 0,
+          u_iridescenceThicknessAtlasFilter: extensionAtlasFilter(options.iridescenceThicknessSampler),
+        } : {}),
         u_baseColor: baseColor,
         u_metallic: options.metallic ?? 0,
         u_roughness: options.roughness ?? 0.5,
@@ -750,6 +780,22 @@ export class TexturedPBRMaterial extends Material {
         ...(usesSecondaryTexCoord(options.textureTexCoords) ? ["a_uv1"] : [])
       ],
       uniformSchema: [
+        { name: "u_extensionScalarAtlas", kind: "texture2d", required: false },
+        { name: "u_clearcoatAtlasRect", kind: "vec4", required: false },
+        { name: "u_clearcoatAtlasY", kind: "float", required: false },
+        { name: "u_clearcoatAtlasFilter", kind: "vec4", required: false },
+        { name: "u_clearcoatRoughnessAtlasRect", kind: "vec4", required: false },
+        { name: "u_clearcoatRoughnessAtlasY", kind: "float", required: false },
+        { name: "u_clearcoatRoughnessAtlasFilter", kind: "vec4", required: false },
+        { name: "u_sheenRoughnessAtlasRect", kind: "vec4", required: false },
+        { name: "u_sheenRoughnessAtlasY", kind: "float", required: false },
+        { name: "u_sheenRoughnessAtlasFilter", kind: "vec4", required: false },
+        { name: "u_iridescenceAtlasRect", kind: "vec4", required: false },
+        { name: "u_iridescenceAtlasY", kind: "float", required: false },
+        { name: "u_iridescenceAtlasFilter", kind: "vec4", required: false },
+        { name: "u_iridescenceThicknessAtlasRect", kind: "vec4", required: false },
+        { name: "u_iridescenceThicknessAtlasY", kind: "float", required: false },
+        { name: "u_iridescenceThicknessAtlasFilter", kind: "vec4", required: false },
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_metallic", kind: "float" },
         { name: "u_roughness", kind: "float" },
@@ -798,7 +844,9 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_anisotropyRotation", kind: "float" },
         { name: "u_iridescenceFactor", kind: "float" },
         { name: "u_iridescenceIor", kind: "float" },
-        { name: "u_iridescenceThicknessMinimum", kind: "float" },
+        // The minimum participates only when the variant samples a thickness map.
+        // Scalar film uses maximum thickness; WebGL legitimately removes this uniform.
+        { name: "u_iridescenceThicknessMinimum", kind: "float", required: isTexturedPbrTextureSlotShaderActive("iridescenceThickness", shaderVariant) },
         { name: "u_iridescenceThicknessMaximum", kind: "float" },
         { name: "u_dispersion", kind: "float" },
         { name: "u_lightCount", kind: "float" },
@@ -994,6 +1042,7 @@ function addressModeCode(mode: Sampler["addressU"]): number {
 }
 
 function texturedPbrShaderVariant(options: TexturedPBRMaterialOptions): string | undefined {
+  if (options.extensionScalarAtlas) return DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT;
   const hasClearcoatTextures = Boolean(options.clearcoatTexture || options.clearcoatRoughnessTexture || options.clearcoatNormalTexture);
   const hasTransmissionVolumeTextures = Boolean(
     options.transmissionTexture ||
@@ -1010,6 +1059,16 @@ function texturedPbrShaderVariant(options: TexturedPBRMaterialOptions): string |
   const hasSpecularSheenAnisotropyTextures = hasSpecularTextures || hasSheenAnisotropyTextures;
   const hasIridescenceTextures = Boolean(options.iridescenceTexture || options.iridescenceThicknessTexture);
 
+  // Fixed environment/base/shadow samplers leave at most six extension units
+  // on WebGL2's guaranteed 16-unit fragment stage. Never silently drop a map.
+  if (hasClearcoatTextures && (hasSheenAnisotropyTextures || hasIridescenceTextures)) {
+    if (hasTransmissionVolumeTextures || hasSpecularTextures || (hasSheenAnisotropyTextures && hasIridescenceTextures)) {
+      throw new Error("TexturedPBRMaterial mixed clearcoat extension textures exceed the supported 16-sampler variant budget");
+    }
+    return hasSheenAnisotropyTextures
+      ? DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT
+      : DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT;
+  }
   if (hasClearcoatTextures && hasSpecularTextures && !hasTransmissionVolumeTextures) {
     return DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT;
   }
@@ -1132,4 +1191,12 @@ function identityMatrix(): Float32Array {
     0, 0, 1, 0,
     0, 0, 0, 1
   ]);
+}
+
+function extensionAtlasFilter(sampler?: Sampler): readonly [number, number, number, number] {
+  const min = sampler?.minFilter ?? "linear";
+  const anisotropy = sampler?.maxAnisotropy ?? 1;
+  if (anisotropy > 16) throw new RangeError("Extension scalar atlas supports at most 16 anisotropic taps");
+  return [sampler?.magFilter === "nearest" ? 1 : 0, min.startsWith("nearest") ? 1 : 0,
+    min.endsWith("mipmap-linear") ? 2 : min.endsWith("mipmap-nearest") ? 1 : 0, anisotropy];
 }

@@ -60,7 +60,7 @@ export interface GPUParticleUpdateResult {
   spawnRequests?: Uint32Array;
   /**
    * GPU-evaluated size/color-over-life: count * 2 vec4 entries
-   * (rgba, then size in x). Present only when effects requested life
+   * (rgba, then size in x, executed-effect mask in y, and contact count in w). Present only when effects requested life
    * curves or lighting. A compute kill is signaled as positions w = -1.
    */
   attributes?: Float32Array;
@@ -1124,7 +1124,7 @@ fn spawn_main(@builtin(global_invocation_id) globalId: vec3<u32>) {
  * slots (wind, windGust, windTurb, fxCounts, 3x plane pairs, sub0, sub1,
  * height0, height1, light0, light1). Kill signaling: positions w = -1.
  */
-export function createEffectsParticleComputeShader(): string {
+export function createEffectsParticleComputeShader(options: { preserveTrailBirthAge?: boolean } = {}): string {
   return `
 struct FxParams {
   deltaTime: f32,
@@ -1280,6 +1280,8 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   var vel = velocities[index].xyz;
   let lifetime = max(velocities[index].w, 0.000001);
   var dead = false;
+  var executedEffects = 0u;
+  var collisionContacts = 0u;
 
   if ((flags & 1u) != 0u) {
     let along = dot(pos, params.windGust.xyz);
@@ -1288,6 +1290,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   }
 
   if ((flags & 2u) != 0u) {
+    executedEffects = executedEffects | 2u;
     let samplePos = pos * params.windTurb.z + vec3<f32>(params.time * params.windTurb.w, 0.0, 0.0);
     vel = vel + aura_sample_turb(samplePos) * params.windTurb.y * dt;
   }
@@ -1296,10 +1299,12 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   pos = pos + vel * dt;
 
   if ((flags & 4u) != 0u) {
+    executedEffects = executedEffects | 4u;
     let planeCount = u32(params.fxCounts.y);
     if (planeCount >= 1u) {
       let d = dot(params.plane0.xyz, pos) + params.plane0.w;
       if (d < 0.0) {
+        collisionContacts = collisionContacts + 1u;
         if (params.plane0Misc.y > 0.5) {
           dead = true;
         } else {
@@ -1314,6 +1319,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
     if (!dead && planeCount >= 2u) {
       let d = dot(params.plane1.xyz, pos) + params.plane1.w;
       if (d < 0.0) {
+        collisionContacts = collisionContacts + 1u;
         if (params.plane1Misc.y > 0.5) {
           dead = true;
         } else {
@@ -1328,6 +1334,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
     if (!dead && planeCount >= 3u) {
       let d = dot(params.plane2.xyz, pos) + params.plane2.w;
       if (d < 0.0) {
+        collisionContacts = collisionContacts + 1u;
         if (params.plane2Misc.y > 0.5) {
           dead = true;
         } else {
@@ -1342,8 +1349,10 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   }
 
   if (!dead && (flags & 8u) != 0u) {
+    executedEffects = executedEffects | 8u;
     let ground = aura_height_at(pos.x, pos.z);
     if (pos.y < ground) {
+      collisionContacts = collisionContacts + 1u;
       if (params.height1.z > 0.5) {
         dead = true;
       } else {
@@ -1365,6 +1374,7 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   }
 
   if (!dead && (flags & 16u) != 0u) {
+    executedEffects = executedEffects | 16u;
     let prevAge = age - dt;
     let nPrev = prevAge / lifetime;
     let nNew = age / lifetime;
@@ -1384,12 +1394,15 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
     var col = baseAttributes[index * 2u];
     var size = baseAttributes[index * 2u + 1u].x;
     if ((flags & 32u) != 0u) {
+      executedEffects = executedEffects | 32u;
       col = aura_sample_color(t);
     }
     if ((flags & 256u) != 0u) {
+      executedEffects = executedEffects | 256u;
       size = aura_sample_size(t);
     }
     if ((flags & 64u) != 0u) {
+      executedEffects = executedEffects | 64u;
       col = vec4<f32>(aura_apply_light(col.xyz, vel), col.w);
     }
     attributes[index * 2u] = col;
@@ -1397,16 +1410,21 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
   }
 
   if ((flags & 128u) != 0u) {
+    executedEffects = executedEffects | 128u;
     let k = u32(params.fxCounts.x);
     let base = index * k;
     var s = k - 1u;
     while (s >= 1u) {
-      trailRing[base + s] = trailRing[base + s - 1u] + vec4<f32>(0.0, 0.0, 0.0, dt);
+      trailRing[base + s] = trailRing[base + s - 1u]${options.preserveTrailBirthAge ? "" : " + vec4<f32>(0.0, 0.0, 0.0, dt)"};
       s = s - 1u;
     }
     trailRing[base] = vec4<f32>(pos, age);
   }
 
+  // Spare attribute lanes retain executed branches and actual contact events.
+  // Written by this invocation after every effect, not inferred from CPU options.
+  attributes[index * 2u + 1u].y = f32(executedEffects);
+  attributes[index * 2u + 1u].w = f32(collisionContacts);
   if (dead) {
     age = -1.0;
   }

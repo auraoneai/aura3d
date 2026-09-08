@@ -1,7 +1,19 @@
+import type {} from "./clustered-lighting-b5-harness";
+import type {} from "./d4-flipbook-beam-harness";
+import type {} from "./reflection-surfaces-b4-harness";
+import type {} from "./shadow-family-b1-harness";
+import type {} from "./game-visual-superiority-harness";
+import type {} from "./game-visual-superiority-perf-harness";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { validateRootGovernorReport } from "./muse3jsparity-301-root-governor-contract";
+import { validateEnginePerfReport } from "./muse3jsparity-301-engine-perf-contract";
+import { VISUAL_CASES_301 } from "./muse3jsparity-301-visual-cases";
+import { evaluateVisualMatrix, type VisualContract, type VisualObservation } from "../../tools/muse3jsparity-readiness/visual-acceptance";
+import { sameSource, sourceIdentity } from "../../tools/muse3jsparity-readiness/evidence-lineage";
 
 /**
  * PART K1 lane 1 + lane 2 (muse3jsparity-PRD task 1 + task 3).
@@ -20,9 +32,8 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * - Plus one FRESH same-scene head-to-head capture vs the pinned
  *   three@0.185.1 opponent (new 96-box scene, both canvases screenshotted).
  *
- * Lane 2 (perf): full bloom chain + 4k-instance + 64-light + 10k-particle
- * wall-clock on THIS machine with per-iteration GPU completion (fence sync
- * + readback). Numbers are directional, not universal.
+ * Lane 2 legacy microbenchmarks are supplemental. 3.0.1 closure requires
+ * separate actual engine timings and the complete seven-family visual matrix.
  */
 
 const REPORT_DIR = "tests/reports/muse3jsparity";
@@ -192,7 +203,7 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
     expect(b4?.status, `${b4?.error ?? ""}\n${errors.join("\n")}`).toBe("ready");
     expect(b4?.mirrorRevisions).toEqual([1, 2]);
     expect(b4?.floorMirrorVsPlainDelta).toBeGreaterThan(100);
-    expect(b4?.ssrStatus).toBe("unsupported");
+    expect(b4?.ssrStatus).toBe("implemented");
     // The B4 harness renders to a 96x96 probe canvas with programmatic
     // readback (the numeric deltas above are the proof); mirror that canvas.
     await page.locator("#reflection-b4").screenshot({ path: resolve(`${REPORT_DIR}/reflection-surfaces-b4.png`) });
@@ -348,7 +359,7 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
     );
   });
 
-  test("lane 2 perf: bloom chain + 4k-instance + 64-light + 10k-particle wall-clock with GPU completion", async ({
+  test("supplemental direct-WebGL microbenchmarks: not Aura engine timings", async ({
     page,
   }) => {
     const errors = captureErrors(page);
@@ -399,8 +410,9 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
       const ageMs = now - statSync(resolve(file.path)).mtimeMs;
       if (ageMs > FRESHNESS_MS) stale.push(`${file.path} (age ${(ageMs / 60000).toFixed(1)} min)`);
     }
-    // Stale retained files are acceptable ONLY because the live
-    // re-verification test re-earned every area in this same run.
+    // Narrow live probes above do not re-earn entire particle, shimmer or
+    // comparison obligations. Retained evidence itself must remain current.
+    expect(stale, "Stale feature evidence must be rerun by its full producer").toEqual([]);
     const liveReceipt = resolve(`${REPORT_DIR}/live-reverification.json`);
     const headReceipt = resolve(`${REPORT_DIR}/head-to-head.json`);
     const perfReceipt = resolve(`${REPORT_DIR}/perf.json`);
@@ -409,14 +421,73 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
       const ageMs = now - statSync(receipt).mtimeMs;
       expect(ageMs, `${receipt} must be earned in this run`).toBeLessThan(FRESHNESS_MS);
     }
+    const readCurrentProducer = (name: string, schema: string, producer: string): Record<string, unknown> => {
+      const path = resolve(REPORT_DIR, name);
+      expect(existsSync(path), `Missing complete 3.0.1 producer: ${name}`).toBe(true);
+      const receipt = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+      expect(receipt.schema).toBe(schema);
+      if (typeof receipt.producer === "string") expect(receipt.producer).toBe(producer);
+      else expect((receipt.producer as { path?: string }).path).toBe(producer);
+      const age = now - Date.parse(String(receipt.generatedAt));
+      expect(Number.isFinite(age)).toBe(true);
+      expect(age).toBeGreaterThanOrEqual(0);
+      expect(age).toBeLessThan(FRESHNESS_MS);
+      expect(receipt.complete, `${name}: partial evidence cannot close K1`).toBe(true);
+      return receipt;
+    };
+    const visualMatrix = readCurrentProducer("visual-matrix-301.json", "aura3d.visual-matrix-301/v1", "tests/browser/muse3jsparity-301-visual.spec.ts");
+    const visualProducerPath = "tests/browser/muse3jsparity-301-visual.spec.ts";
+    expect(visualMatrix.producer).toEqual({
+      path: visualProducerPath,
+      sha256: createHash("sha256").update(readFileSync(visualProducerPath)).digest("hex")
+    });
+    expect(sameSource(visualMatrix.source as any, sourceIdentity(process.cwd())), "V01 matrix must bind the current source").toBe(true);
+    const enginePerformance = readCurrentProducer("engine-perf-301.json", "aura3d.engine-perf-301/v1", "tests/browser/muse3jsparity-301-engine-perf.spec.ts");
+    const rootGovernor = readCurrentProducer("root-governor-301.json", "aura3d.root-governor-301/v1", "tests/browser/muse3jsparity-301-root-governor.spec.ts");
+    expect(validateRootGovernorReport(rootGovernor), "Every governor rung must change actual rendered resources").toEqual([]);
+    expect(visualMatrix.contracts, "Thresholds must match source-frozen definitions").toEqual(VISUAL_CASES_301);
+    expect(Array.isArray(visualMatrix.observations)).toBe(true);
+    expect(Array.isArray(visualMatrix.artifacts)).toBe(true);
+    expect(visualMatrix.qualityTargetsMet, "Every V01 family must meet its frozen quality target").toBe(true);
+    expect(visualMatrix.superiorityTargetsMet, "Every named K1 family must earn an actual measured win").toBe(true);
+    expect(visualMatrix.failures).toEqual([]);
+    const artifacts = visualMatrix.artifacts as Array<{ path: string; sha256: string }>;
+    const expectedCaptures = VISUAL_CASES_301.flatMap(({ family }) => ["aura", "three"].flatMap(engine => ["on", "off"].map(state => `${REPORT_DIR}/visual-301-${family}-${engine}-${state}.png`)));
+    for (const path of expectedCaptures) {
+      const matches = artifacts.filter(artifact => artifact.path === path);
+      expect(matches, `Exactly one paired image receipt for ${path}`).toHaveLength(1);
+      const bytes = readFileSync(resolve(path));
+      expect(createHash("sha256").update(bytes).digest("hex"), `Image receipt must match actual ${path}`).toBe(matches[0]!.sha256);
+    }
+    const numericalVerdicts = evaluateVisualMatrix(visualMatrix.contracts as VisualContract[], visualMatrix.observations as VisualObservation[]);
+    expect(numericalVerdicts.complete, JSON.stringify(numericalVerdicts)).toBe(true);
+    expect(validateEnginePerfReport(enginePerformance), "Every raw engine sample must meet the comparison contract").toEqual([]);
+    const bloomArtifacts = (enginePerformance.bloomQuality as { artifacts: Array<{ path: string; sha256: string }> }).artifacts;
+    for (const engine of ["aura", "three"]) for (const state of ["on", "off"]) {
+      const path = `${REPORT_DIR}/engine-perf-bloom-${engine}-${state}.png`;
+      const matches = bloomArtifacts.filter(artifact => artifact.path === path);
+      expect(matches, `Exactly one performance quality capture for ${path}`).toHaveLength(1);
+      expect(createHash("sha256").update(readFileSync(resolve(path))).digest("hex")).toBe(matches[0]!.sha256);
+    }
+    expect(Array.isArray(enginePerformance.workloads)).toBe(true);
+    const workloadNames = (enginePerformance.workloads as Array<{ workload: string }>).map(row => row.workload).sort();
+    expect(workloadNames).toEqual(["bloomChain", "instance4k", "light64", "particle10k"].sort());
     mkdirSync(resolve(REPORT_DIR), { recursive: true });
     writeFileSync(
       resolve(`${REPORT_DIR}/game-visual-superiority.json`),
       `${JSON.stringify(
         {
           generatedAt: new Date().toISOString(),
-          lane1: "stills-vs-three.js on the same scenes (retained receipts + live re-verification + fresh head-to-head)",
-          lane2: "directional same-machine perf with GPU completion",
+          schema: "aura3d.game-comparison-301/v1",
+          producer: "tests/browser/game-visual-superiority.spec.ts",
+          lane1: "complete paired visual matrix with disclosed win/tie/loss/inconclusive metrics",
+          lane2: "actual engine timings; direct-WebGL microbenchmarks are supplemental only",
+          superiorityVerdict: "inconclusive",
+          numericalVerdicts,
+          independentReviewRequired: true,
+          visualMatrix,
+          enginePerformance,
+          rootGovernor,
           staleRetainedReEarnedLive: stale,
           b4Note: "reflection-surfaces-b4 retains no per-part files; live capture + fresh mirror is its evidence",
           receipts: {
@@ -438,68 +509,10 @@ test.describe("K1 game visual superiority (lanes 1+2)", () => {
 
 declare global {
   interface Window {
-    __AURA3D_SHADOW_FAMILY_B1__?: {
-      readonly status: "ready" | "error";
-      readonly spot?: { readonly shadowDropCount?: number };
-      readonly point?: { readonly shadowDropCount?: number };
-      readonly error?: string;
-    };
-    __AURA3D_CLUSTER_B5_RUNNER__?: {
-      clusterFallback(): {
-        readonly requestedLights: number;
-        readonly indexedLights: number;
-        readonly droppedLights: number;
-      };
-    };
-    __AURA3D_CLUSTER_B5_ERROR__?: string;
-    __AURA3D_D4_FLIPBOOK_BEAM__?: {
-      readonly status: "ready" | "error";
-      readonly captures?: readonly {
-        readonly id: string;
-        readonly image: { readonly nonDarkPixels: number };
-      }[];
-      readonly checks?: Record<string, number | string | boolean | readonly number[] | Record<string, unknown>>;
-      readonly error?: string;
-    };
-    __AURA3D_REFLECTION_SURFACES_B4__?: {
-      readonly status: "ready" | "error";
-      readonly mirrorRevisions?: readonly [number, number];
-      readonly floorMirrorVsPlainDelta?: number;
-      readonly glassTintedDelta?: number;
-      readonly waterBlendedDelta?: number;
-      readonly ssrStatus?: string;
-      readonly error?: string;
-    };
     __AURA3D_BATCH_SHOOTOUT__?: {
       readonly status: "ready" | "error";
       readonly aura?: { readonly mountedDrawCalls?: number };
       readonly three?: { readonly batchedCalls?: number };
-      readonly error?: string;
-    };
-    __AURA3D_GAME_VISUAL_SUPERIORITY__?: {
-      readonly status: "ready" | "error";
-      readonly threeRevision?: string;
-      readonly instanceCount?: number;
-      readonly aura?: {
-        readonly errors: readonly string[];
-        readonly pixels: { readonly nonDarkPixels: number; readonly foregroundPixels: number; readonly checksum: number };
-      };
-      readonly three?: {
-        readonly calls: number;
-        readonly triangles: number;
-        readonly pixels: { readonly nonDarkPixels: number; readonly foregroundPixels: number; readonly checksum: number };
-      };
-      readonly error?: string;
-    };
-    __AURA3D_GAME_VISUAL_PERF__?: {
-      readonly status: "ready" | "error";
-      readonly renderer?: string;
-      readonly canvasSize?: readonly [number, number];
-      readonly directional?: string;
-      readonly workloads?: Record<
-        string,
-        { readonly medianMs: number; readonly meanMs: number; readonly iters: number; readonly gpuCompleted: boolean; readonly detail: string }
-      >;
       readonly error?: string;
     };
   }

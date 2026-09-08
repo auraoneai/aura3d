@@ -117,3 +117,46 @@ describe("T3b assertFrameGraphResourceFlow", () => {
     ).not.toThrow();
   });
 });
+
+
+import { FrameGraph } from "../../../packages/rendering/src/production-runtime/framegraph/FrameGraph";
+import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
+import type { FrameGraphResource } from "../../../packages/rendering/src/production-runtime/framegraph/RenderPass";
+
+describe("R06 executed resource lifetime", () => {
+  test("failed native execution invalidates outputs and retains borrowed inputs", () => {
+    const device = new MockRenderDevice();
+    const input = { value: {}, frameIndex: 3 };
+    const resources = new Map<string, FrameGraphResource>([['environment.sky', input], ['hdr.color', { value: 'stale', frameIndex: 2 }]]);
+    const graph = new FrameGraph().addPass(new SkyboxPass());
+    expect(() => graph.execute({ frameIndex: 3, width: 4, height: 4, device, resources,
+      commands: new Map([['SkyboxPass', bindings => {
+        bindings.read('environment.sky'); bindings.write('hdr.color', { value: {}, frameIndex: 3 });
+        return { name: 'failing-native', reads: [], writes: [], execute() { throw new Error('device failure'); } };
+      }]]) })).toThrow('device failure');
+    expect(resources.has('hdr.color')).toBe(false);
+    expect(resources.get('environment.sky')).toBe(input);
+    expect(device.disposed).toBe(false);
+    device.dispose();
+  });
+
+  test("resized and disposed handles are rejected before native work", () => {
+    const device = new MockRenderDevice();
+    const pass = new SkyboxPass();
+    const resources = new Map<string, FrameGraphResource>([['environment.sky', { value: {}, frameIndex: 0, width: 8, height: 8 }]]);
+    const context = { frameIndex: 0, width: 4, height: 4, device, resources,
+      commands: new Map([['SkyboxPass', () => { throw new Error('must not dispatch'); }]]) };
+    expect(() => pass.execute(context)).toThrow('size mismatch');
+    resources.set('environment.sky', { value: { disposed: true }, frameIndex: 0 });
+    expect(() => pass.execute(context)).toThrow('disposed resource');
+    resources.set('environment.sky', { value: {}, frameIndex: 1 });
+    expect(() => pass.execute(context)).toThrow('stale resource');
+    device.dispose();
+  });
+});
+
+
+test('T3 static policy cannot disguise a missing shadow producer as external', () => {
+  expect(findFrameGraphResourceBreaks([{ id: 'opaque', reads: ['shadow.mask'], writes: ['ldr.output'] }])).toContain('opaque reads unwritten resource: shadow.mask.');
+  expect(findFrameGraphResourceBreaks([{ id: 'orphan', reads: ['scene.geometry'], writes: ['scene.geometry'] }])).toContain('orphan writes scene.geometry that no downstream pass reads.');
+});

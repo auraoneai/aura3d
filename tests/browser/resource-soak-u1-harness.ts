@@ -25,19 +25,19 @@ interface RegistryCycleEvidence {
 }
 
 interface SoakReport {
-  readonly status: "ready" | "running" | "done" | "error";
-  readonly cycles: SoakCycleEvidence[];
-  readonly registry: RegistryCycleEvidence[];
-  readonly registryFinal: {
-    readonly renderTargets: number;
-    readonly gpuTargetCount: number;
-    readonly gpuTargetBytes: number;
-    readonly disposedRenderTargets: number;
+  status: "ready" | "running" | "done" | "error";
+  cycles: SoakCycleEvidence[];
+  registry: RegistryCycleEvidence[];
+  registryFinal: {
+    renderTargets: number;
+    gpuTargetCount: number;
+    gpuTargetBytes: number;
+    disposedRenderTargets: number;
   } | null;
-  readonly ownersSeen: readonly string[];
-  readonly shadowBytesSeen: number;
-  readonly mirrorBytesSeen: number;
-  readonly error?: string;
+  ownersSeen: readonly string[];
+  shadowBytesSeen: number;
+  mirrorBytesSeen: number;
+  error?: string;
 }
 
 declare global {

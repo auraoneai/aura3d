@@ -307,6 +307,10 @@ test-data/
 *.gif
 *.csv
 
+# GLB sidecar textures are runtime source dependencies and must travel with snapshots.
+!public/aura-assets/Textures/
+!public/aura-assets/Textures/*.png
+
 fixtures/
 # Immutable, hash-bound showcase compiler specs and evidence.
 !tests/fixtures/
@@ -360,3 +364,8 @@ marketing/public/aura-assets/
 # Curated production marketing previews.
 !marketing/public/previews/showcase/*.png
 .visual-iter/
+# Reproducible typed C1 extension-map analytical fixtures (CLI producer owned).
+!tests/browser/fixtures/
+tests/browser/fixtures/*
+!tests/browser/fixtures/c1-extension/
+!tests/browser/fixtures/c1-extension/**

@@ -84,8 +84,8 @@ declare global {
         readonly rotation: readonly [number, number, number];
         readonly targetSize: number;
       };
-      setSubjectSuppressed(suppressed: boolean): void;
-      settleSubjectPose(): void;
+      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+      settleSubjectPose(): Promise<void>;
     };
   }
 }
@@ -674,11 +674,15 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         targetSize: VAN_TARGET_LENGTH
       };
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
       compositionSubjectSuppressed = suppressed;
       vanNode.setVisible(!suppressed);
+      await app.stepAsync(0);
     },
-    settleSubjectPose() {
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
       paused = true;
       resetVan();
       vanNode
@@ -686,6 +690,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         .setRotation(0, -SPAWN_POSE.heading, 0)
         .setVisible(!compositionSubjectSuppressed);
       updateMountedEvidence();
+      await app.stepAsync(0);
     }
   },
   configurable: true

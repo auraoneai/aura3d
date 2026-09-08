@@ -32,6 +32,7 @@ import {
   Texture,
   TextureBinding,
   TexturedPBRMaterial,
+  type TexturedPBRMaterialOptions,
   UniformLayout,
   createClusteredForwardLighting,
   createDefaultShaderLibrary,
@@ -880,9 +881,8 @@ describe("PBR material and direct light contracts", () => {
 	  it("binds textured PBR material slots for glTF base-color, normal, metallic-roughness, occlusion, and emissive textures", () => {
 	    const library = createDefaultShaderLibrary();
 	    const device = new MockRenderDevice();
-	    const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-textured"));
 	    const extensionSampler = new Sampler({ addressU: "repeat", addressV: "mirror-repeat" });
-	    const material = new TexturedPBRMaterial({
+	    const options: TexturedPBRMaterialOptions = {
 	      baseColor: [0.5, 0.6, 0.7, 1],
 	      baseColorTexture: new Texture({ width: 1, height: 1, colorSpace: "srgb", data: new Uint8Array([255, 128, 64, 255]) }),
 	      baseColorSampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "repeat", addressV: "mirror-repeat" }),
@@ -965,11 +965,33 @@ describe("PBR material and direct light contracts", () => {
 	      iridescenceThicknessSampler: extensionSampler,
 	      iridescenceThicknessTextureTransform: { offset: [1.11, 1.12], scale: [3.1, 3.2], rotation: 1.13 },
       dispersion: 12
-    });
+    };
+    expect(() => new TexturedPBRMaterial(options)).toThrow(/16-sampler/);
+    const coreSlots = ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive"];
+    const family = (slots: string[]) => new TexturedPBRMaterial(Object.fromEntries(
+      Object.entries(options).filter(([key]) => !key.endsWith("Texture") || [...coreSlots, ...slots].some(slot => key === `${slot}Texture`))
+    ) as TexturedPBRMaterialOptions);
+    const material = family(["clearcoat", "clearcoatRoughness", "clearcoatNormal"]);
+    const transmissionMaterial = family(["transmission", "diffuseTransmission", "diffuseTransmissionColor", "volumeThickness"]);
+    const specularMaterial = family(["specular", "specularColor", "sheenColor", "sheenRoughness", "anisotropy"]);
+    const iridescenceMaterial = family(["iridescence", "iridescenceThickness"]);
+    const bindFamily = (value: TexturedPBRMaterial) => {
+      const source = library.compileVariant(DEFAULT_TEXTURED_PBR_SHADER_NAME, value.shaderVariant!);
+      expect([...source.fragment.matchAll(/\buniform\s+sampler(?:2D|Cube)\s+/g)].length).toBeLessThanOrEqual(16);
+      for (const [key, texture] of Object.entries(options)) {
+        if (!key.endsWith("Texture") || !(texture instanceof Texture)) continue;
+        if ((value.getParameter(`u_${key}`) as TextureBinding | undefined)?.texture !== texture) continue;
+        expect(source.fragment).toContain(`u_${key}`);
+      }
+      return new MaterialBinding().bind(value, device.createShaderProgram(source));
+    };
+    const transmissionBinding = bindFamily(transmissionMaterial);
+    const specularBinding = bindFamily(specularMaterial);
+    const iridescenceBinding = bindFamily(iridescenceMaterial);
 
-    const binding = new MaterialBinding().bind(material, shader);
+    const binding = bindFamily(material);
 
-    expect(material.shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT);
+    expect(material.shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT);
     expect(material.requiredAttributes).toEqual(["a_position", "a_normal", "a_uv", "a_tangent"]);
     expect(binding.uniforms.get("u_baseColorTexture")).toBeInstanceOf(TextureBinding);
     expect(binding.uniforms.get("u_normalTexture")).toBeInstanceOf(TextureBinding);
@@ -1018,99 +1040,99 @@ describe("PBR material and direct light contracts", () => {
 	    expect(binding.uniforms.get("u_clearcoatNormalTextureRotation")).toBe(0.33);
 	    expect(binding.uniforms.get("u_clearcoatNormalTextureWrap")).toEqual([1, 2]);
 	    expect(binding.uniforms.get("u_clearcoatNormalScale")).toBe(0.5);
-    expect(binding.uniforms.get("u_transmissionFactor")).toBe(0.1);
-    expect(binding.uniforms.get("u_transmissionTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_transmissionTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_transmissionTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_transmissionTextureOffset")).toEqual([0.41, 0.42]);
-	    expect(binding.uniforms.get("u_transmissionTextureScale")).toEqual([1.7, 1.8]);
-	    expect(binding.uniforms.get("u_transmissionTextureRotation")).toBe(0.43);
-	    expect(binding.uniforms.get("u_transmissionTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionFactor")).toBe(0.2);
-	    expect(binding.uniforms.get("u_diffuseTransmissionTexture")).toBeInstanceOf(TextureBinding);
-	    expect(binding.uniforms.get("u_diffuseTransmissionTextureEnabled")).toBe(1);
-	    expect((binding.uniforms.get("u_diffuseTransmissionTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-	    expect(binding.uniforms.get("u_diffuseTransmissionTextureOffset")).toEqual([0.47, 0.48]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionTextureScale")).toEqual([1.65, 1.75]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionTextureRotation")).toBe(0.49);
-	    expect(binding.uniforms.get("u_diffuseTransmissionTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorFactor")).toEqual([0.55, 0.65, 0.75]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTexture")).toBeInstanceOf(TextureBinding);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTextureEnabled")).toBe(1);
-	    expect((binding.uniforms.get("u_diffuseTransmissionColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTextureOffset")).toEqual([0.57, 0.58]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTextureScale")).toEqual([1.85, 1.95]);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTextureRotation")).toBe(0.59);
-	    expect(binding.uniforms.get("u_diffuseTransmissionColorTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_volumeThicknessFactor")).toBe(0.3);
-    expect(binding.uniforms.get("u_volumeThicknessTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_volumeThicknessTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_volumeThicknessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_volumeThicknessTextureOffset")).toEqual([0.44, 0.45]);
-	    expect(binding.uniforms.get("u_volumeThicknessTextureScale")).toEqual([1.45, 1.55]);
-	    expect(binding.uniforms.get("u_volumeThicknessTextureRotation")).toBe(0.46);
-	    expect(binding.uniforms.get("u_volumeThicknessTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_volumeAttenuationDistance")).toBe(5);
-    expect(binding.uniforms.get("u_volumeAttenuationColor")).toEqual([0.7, 0.8, 0.9]);
+    expect(transmissionBinding.uniforms.get("u_transmissionFactor")).toBe(0.1);
+    expect(transmissionBinding.uniforms.get("u_transmissionTexture")).toBeInstanceOf(TextureBinding);
+    expect(transmissionBinding.uniforms.get("u_transmissionTextureEnabled")).toBe(1);
+    expect((transmissionBinding.uniforms.get("u_transmissionTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(transmissionBinding.uniforms.get("u_transmissionTextureOffset")).toEqual([0.41, 0.42]);
+	    expect(transmissionBinding.uniforms.get("u_transmissionTextureScale")).toEqual([1.7, 1.8]);
+	    expect(transmissionBinding.uniforms.get("u_transmissionTextureRotation")).toBe(0.43);
+	    expect(transmissionBinding.uniforms.get("u_transmissionTextureWrap")).toEqual([1, 2]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionFactor")).toBe(0.2);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTexture")).toBeInstanceOf(TextureBinding);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTextureEnabled")).toBe(1);
+	    expect((transmissionBinding.uniforms.get("u_diffuseTransmissionTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTextureOffset")).toEqual([0.47, 0.48]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTextureScale")).toEqual([1.65, 1.75]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTextureRotation")).toBe(0.49);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionTextureWrap")).toEqual([1, 2]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorFactor")).toEqual([0.55, 0.65, 0.75]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTexture")).toBeInstanceOf(TextureBinding);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureEnabled")).toBe(1);
+	    expect((transmissionBinding.uniforms.get("u_diffuseTransmissionColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureOffset")).toEqual([0.57, 0.58]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureScale")).toEqual([1.85, 1.95]);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureRotation")).toBe(0.59);
+	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureWrap")).toEqual([1, 2]);
+	    expect(transmissionBinding.uniforms.get("u_volumeThicknessFactor")).toBe(0.3);
+    expect(transmissionBinding.uniforms.get("u_volumeThicknessTexture")).toBeInstanceOf(TextureBinding);
+    expect(transmissionBinding.uniforms.get("u_volumeThicknessTextureEnabled")).toBe(1);
+    expect((transmissionBinding.uniforms.get("u_volumeThicknessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(transmissionBinding.uniforms.get("u_volumeThicknessTextureOffset")).toEqual([0.44, 0.45]);
+	    expect(transmissionBinding.uniforms.get("u_volumeThicknessTextureScale")).toEqual([1.45, 1.55]);
+	    expect(transmissionBinding.uniforms.get("u_volumeThicknessTextureRotation")).toBe(0.46);
+	    expect(transmissionBinding.uniforms.get("u_volumeThicknessTextureWrap")).toEqual([1, 2]);
+	    expect(transmissionBinding.uniforms.get("u_volumeAttenuationDistance")).toBe(5);
+    expect(transmissionBinding.uniforms.get("u_volumeAttenuationColor")).toEqual([0.7, 0.8, 0.9]);
     expect(binding.uniforms.get("u_ior")).toBe(1.33);
-    expect(binding.uniforms.get("u_specularFactor")).toBe(0.7);
-    expect(binding.uniforms.get("u_specularTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_specularTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_specularTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_specularTextureOffset")).toEqual([0.51, 0.52]);
-	    expect(binding.uniforms.get("u_specularTextureScale")).toEqual([1.9, 2]);
-	    expect(binding.uniforms.get("u_specularTextureRotation")).toBe(0.53);
-	    expect(binding.uniforms.get("u_specularTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_specularColorFactor")).toEqual([0.8, 0.9, 1]);
-    expect(binding.uniforms.get("u_specularColorTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_specularColorTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_specularColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
-    expect(binding.uniforms.get("u_specularColorTextureOffset")).toEqual([0.61, 0.62]);
-	    expect(binding.uniforms.get("u_specularColorTextureScale")).toEqual([2.1, 2.2]);
-	    expect(binding.uniforms.get("u_specularColorTextureRotation")).toBe(0.63);
-	    expect(binding.uniforms.get("u_specularColorTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_sheenColorFactor")).toEqual([0.2, 0.3, 0.4]);
-    expect(binding.uniforms.get("u_sheenColorTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_sheenColorTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_sheenColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
-    expect(binding.uniforms.get("u_sheenColorTextureOffset")).toEqual([0.71, 0.72]);
-	    expect(binding.uniforms.get("u_sheenColorTextureScale")).toEqual([2.3, 2.4]);
-	    expect(binding.uniforms.get("u_sheenColorTextureRotation")).toBe(0.73);
-	    expect(binding.uniforms.get("u_sheenColorTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_sheenRoughnessFactor")).toBe(0.45);
-    expect(binding.uniforms.get("u_sheenRoughnessTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_sheenRoughnessTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_sheenRoughnessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_sheenRoughnessTextureOffset")).toEqual([0.81, 0.82]);
-	    expect(binding.uniforms.get("u_sheenRoughnessTextureScale")).toEqual([2.5, 2.6]);
-	    expect(binding.uniforms.get("u_sheenRoughnessTextureRotation")).toBe(0.83);
-	    expect(binding.uniforms.get("u_sheenRoughnessTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_anisotropyStrength")).toBe(0.5);
-    expect(binding.uniforms.get("u_anisotropyTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_anisotropyTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_anisotropyTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_anisotropyTextureOffset")).toEqual([0.91, 0.92]);
-	    expect(binding.uniforms.get("u_anisotropyTextureScale")).toEqual([2.7, 2.8]);
-	    expect(binding.uniforms.get("u_anisotropyTextureRotation")).toBe(0.93);
-	    expect(binding.uniforms.get("u_anisotropyTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_iridescenceFactor")).toBe(0.65);
-    expect(binding.uniforms.get("u_iridescenceTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_iridescenceTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_iridescenceTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_iridescenceTextureOffset")).toEqual([1.01, 1.02]);
-	    expect(binding.uniforms.get("u_iridescenceTextureScale")).toEqual([2.9, 3]);
-	    expect(binding.uniforms.get("u_iridescenceTextureRotation")).toBe(1.03);
-	    expect(binding.uniforms.get("u_iridescenceTextureWrap")).toEqual([1, 2]);
-	    expect(binding.uniforms.get("u_iridescenceIor")).toBe(1.45);
-    expect(binding.uniforms.get("u_iridescenceThicknessMinimum")).toBe(150);
-    expect(binding.uniforms.get("u_iridescenceThicknessMaximum")).toBe(650);
-    expect(binding.uniforms.get("u_iridescenceThicknessTexture")).toBeInstanceOf(TextureBinding);
-    expect(binding.uniforms.get("u_iridescenceThicknessTextureEnabled")).toBe(1);
-    expect((binding.uniforms.get("u_iridescenceThicknessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
-    expect(binding.uniforms.get("u_iridescenceThicknessTextureOffset")).toEqual([1.11, 1.12]);
-	    expect(binding.uniforms.get("u_iridescenceThicknessTextureScale")).toEqual([3.1, 3.2]);
-	    expect(binding.uniforms.get("u_iridescenceThicknessTextureRotation")).toBe(1.13);
-	    expect(binding.uniforms.get("u_iridescenceThicknessTextureWrap")).toEqual([1, 2]);
+    expect(specularBinding.uniforms.get("u_specularFactor")).toBe(0.7);
+    expect(specularBinding.uniforms.get("u_specularTexture")).toBeInstanceOf(TextureBinding);
+    expect(specularBinding.uniforms.get("u_specularTextureEnabled")).toBe(1);
+    expect((specularBinding.uniforms.get("u_specularTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(specularBinding.uniforms.get("u_specularTextureOffset")).toEqual([0.51, 0.52]);
+	    expect(specularBinding.uniforms.get("u_specularTextureScale")).toEqual([1.9, 2]);
+	    expect(specularBinding.uniforms.get("u_specularTextureRotation")).toBe(0.53);
+	    expect(specularBinding.uniforms.get("u_specularTextureWrap")).toEqual([1, 2]);
+	    expect(specularBinding.uniforms.get("u_specularColorFactor")).toEqual([0.8, 0.9, 1]);
+    expect(specularBinding.uniforms.get("u_specularColorTexture")).toBeInstanceOf(TextureBinding);
+    expect(specularBinding.uniforms.get("u_specularColorTextureEnabled")).toBe(1);
+    expect((specularBinding.uniforms.get("u_specularColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+    expect(specularBinding.uniforms.get("u_specularColorTextureOffset")).toEqual([0.61, 0.62]);
+	    expect(specularBinding.uniforms.get("u_specularColorTextureScale")).toEqual([2.1, 2.2]);
+	    expect(specularBinding.uniforms.get("u_specularColorTextureRotation")).toBe(0.63);
+	    expect(specularBinding.uniforms.get("u_specularColorTextureWrap")).toEqual([1, 2]);
+	    expect(specularBinding.uniforms.get("u_sheenColorFactor")).toEqual([0.2, 0.3, 0.4]);
+    expect(specularBinding.uniforms.get("u_sheenColorTexture")).toBeInstanceOf(TextureBinding);
+    expect(specularBinding.uniforms.get("u_sheenColorTextureEnabled")).toBe(1);
+    expect((specularBinding.uniforms.get("u_sheenColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+    expect(specularBinding.uniforms.get("u_sheenColorTextureOffset")).toEqual([0.71, 0.72]);
+	    expect(specularBinding.uniforms.get("u_sheenColorTextureScale")).toEqual([2.3, 2.4]);
+	    expect(specularBinding.uniforms.get("u_sheenColorTextureRotation")).toBe(0.73);
+	    expect(specularBinding.uniforms.get("u_sheenColorTextureWrap")).toEqual([1, 2]);
+	    expect(specularBinding.uniforms.get("u_sheenRoughnessFactor")).toBe(0.45);
+    expect(specularBinding.uniforms.get("u_sheenRoughnessTexture")).toBeInstanceOf(TextureBinding);
+    expect(specularBinding.uniforms.get("u_sheenRoughnessTextureEnabled")).toBe(1);
+    expect((specularBinding.uniforms.get("u_sheenRoughnessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(specularBinding.uniforms.get("u_sheenRoughnessTextureOffset")).toEqual([0.81, 0.82]);
+	    expect(specularBinding.uniforms.get("u_sheenRoughnessTextureScale")).toEqual([2.5, 2.6]);
+	    expect(specularBinding.uniforms.get("u_sheenRoughnessTextureRotation")).toBe(0.83);
+	    expect(specularBinding.uniforms.get("u_sheenRoughnessTextureWrap")).toEqual([1, 2]);
+	    expect(specularBinding.uniforms.get("u_anisotropyStrength")).toBe(0.5);
+    expect(specularBinding.uniforms.get("u_anisotropyTexture")).toBeInstanceOf(TextureBinding);
+    expect(specularBinding.uniforms.get("u_anisotropyTextureEnabled")).toBe(1);
+    expect((specularBinding.uniforms.get("u_anisotropyTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(specularBinding.uniforms.get("u_anisotropyTextureOffset")).toEqual([0.91, 0.92]);
+	    expect(specularBinding.uniforms.get("u_anisotropyTextureScale")).toEqual([2.7, 2.8]);
+	    expect(specularBinding.uniforms.get("u_anisotropyTextureRotation")).toBe(0.93);
+	    expect(specularBinding.uniforms.get("u_anisotropyTextureWrap")).toEqual([1, 2]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceFactor")).toBe(0.65);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceTexture")).toBeInstanceOf(TextureBinding);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceTextureEnabled")).toBe(1);
+    expect((iridescenceBinding.uniforms.get("u_iridescenceTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(iridescenceBinding.uniforms.get("u_iridescenceTextureOffset")).toEqual([1.01, 1.02]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceTextureScale")).toEqual([2.9, 3]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceTextureRotation")).toBe(1.03);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceTextureWrap")).toEqual([1, 2]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceIor")).toBe(1.45);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessMinimum")).toBe(150);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessMaximum")).toBe(650);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTexture")).toBeInstanceOf(TextureBinding);
+    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTextureEnabled")).toBe(1);
+    expect((iridescenceBinding.uniforms.get("u_iridescenceThicknessTexture") as TextureBinding).expectedColorSpace).toBe("linear");
+    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTextureOffset")).toEqual([1.11, 1.12]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTextureScale")).toEqual([3.1, 3.2]);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTextureRotation")).toBe(1.13);
+	    expect(iridescenceBinding.uniforms.get("u_iridescenceThicknessTextureWrap")).toEqual([1, 2]);
 	    expect(binding.uniforms.get("u_dispersion")).toBe(12);
 	    expect(binding.uniforms.get("u_emissiveTextureOffset")).toEqual([0.2, 0.1]);
 	    expect(binding.uniforms.get("u_emissiveTextureWrap")).toEqual([1, 0]);
@@ -1126,7 +1148,7 @@ describe("PBR material and direct light contracts", () => {
     expect(new TexturedPBRMaterial({ iridescenceTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), transmissionTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), specularTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT);
-    expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), sheenColorTexture: srgbPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT);
+    expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), sheenColorTexture: srgbPixel() }).shaderVariant).toBe("clearcoat-sheen-anisotropy-textures");
     expect(new TexturedPBRMaterial({ specularTexture: linearPixel(), iridescenceTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ baseColorTexture: srgbPixel() }).shaderVariant).toBeUndefined();
   });
@@ -1139,7 +1161,9 @@ describe("PBR material and direct light contracts", () => {
       clearcoatRoughnessTexture: linearPixel(),
       clearcoatNormalTexture: linearPixel(),
       specularTexture: linearPixel(),
-      specularColorTexture: srgbPixel(),
+      specularColorTexture: srgbPixel()
+    });
+    const iridescenceMaterial = new TexturedPBRMaterial({
       iridescenceTexture: linearPixel(),
       iridescenceThicknessTexture: linearPixel()
     });
@@ -1149,19 +1173,19 @@ describe("PBR material and direct light contracts", () => {
     expect(material.getParameter("u_clearcoatNormalTextureEnabled")).toBe(1);
     expect(material.getParameter("u_specularTextureEnabled")).toBe(1);
     expect(material.getParameter("u_specularColorTextureEnabled")).toBe(1);
-    expect(material.getParameter("u_iridescenceTextureEnabled")).toBe(1);
-    expect(material.getParameter("u_iridescenceThicknessTextureEnabled")).toBe(1);
+    expect(iridescenceMaterial.getParameter("u_iridescenceTextureEnabled")).toBe(1);
+    expect(iridescenceMaterial.getParameter("u_iridescenceThicknessTextureEnabled")).toBe(1);
 
     material.setParameter("u_specularTextureEnabled", 0);
     material.setParameter("u_clearcoatNormalTextureEnabled", 0);
-    material.setParameter("u_iridescenceTextureEnabled", 0);
+    iridescenceMaterial.setParameter("u_iridescenceTextureEnabled", 0);
 
     expect(material.getParameter("u_specularTextureEnabled")).toBe(0);
     expect(material.getParameter("u_clearcoatNormalTextureEnabled")).toBe(0);
-    expect(material.getParameter("u_iridescenceTextureEnabled")).toBe(0);
+    expect(iridescenceMaterial.getParameter("u_iridescenceTextureEnabled")).toBe(0);
     expect(material.uniformSchema.some((uniform) => uniform.name === "u_specularTextureEnabled")).toBe(true);
     expect(material.uniformSchema.some((uniform) => uniform.name === "u_clearcoatNormalTextureEnabled")).toBe(true);
-    expect(material.uniformSchema.some((uniform) => uniform.name === "u_iridescenceTextureEnabled")).toBe(true);
+    expect(iridescenceMaterial.uniformSchema.some((uniform) => uniform.name === "u_iridescenceTextureEnabled")).toBe(true);
   });
 
   it("collects scene lights and packs direct-light uniform data deterministically", () => {

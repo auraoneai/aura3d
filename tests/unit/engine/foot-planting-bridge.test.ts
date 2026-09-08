@@ -141,3 +141,20 @@ describe("animation-controller foot-planting binding", () => {
     expect(setAnimationBinding).toHaveBeenLastCalledWith(undefined);
   });
 });
+
+describe("root-motion physical binding", () => {
+  it("carries the physical authority and unwrapped multi-loop time without moving during controller update", () => {
+    const controller = createAnimationController({ id: "motion-time" });
+    controller.registerClip({ id: "walk", name: "walk", duration: 1, loop: true });
+    let received: AuraRuntimeNodeAnimationBindingMetadata | undefined;
+    const move = vi.fn((delta: readonly [number, number, number]) => delta);
+    const node = { id: "walker", setAnimationBinding(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined) { received = binding; return this; } };
+    controller.bindRuntimeNode(node as never, { rootMotion: { target: "root.translation", move } });
+    controller.play("walk", { loop: "loop" });
+    controller.update(3.25);
+    expect(received?.rootMotionTime).toBeCloseTo(3.25);
+    expect(received?.localTime).toBeCloseTo(0.25);
+    expect(received?.rootMotion?.move).toBe(move);
+    expect(move).not.toHaveBeenCalled();
+  });
+});

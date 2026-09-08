@@ -159,3 +159,58 @@ describe("B4 reflection surface status promotion", () => {
     capture.dispose();
   });
 });
+
+import { ScreenSpaceReflectionPass, invertSsrProjection } from "../../../packages/rendering/src/ScreenSpaceReflectionPass";
+
+describe("B4 native SSR resource ownership", () => {
+  it("rejects a mock backend instead of promoting a descriptor to pixel-backed", () => {
+    const device = new MockRenderDevice();
+    const pass = new ScreenSpaceReflectionPass(device, { width: 8, height: 8 });
+    const scene = device.createRenderTarget({ width: 8, height: 8, depth: "texture" });
+    const normalMask = device.createRenderTarget({ width: 8, height: 8 });
+    expect(() => pass.execute({ scene, normalMask, projection: projection(), frame: 1 })).toThrow(/native renderer/);
+    expect(pass.result).toBeUndefined();
+    expect(createReflectionSurface({ id: "ssr", kind: "screen-space-reflection", ssr: pass }).report.trueReflection).toBe(false);
+    pass.dispose();
+  });
+
+  it("inverts the actual projection and rejects singular camera input", () => {
+    const matrix = projection(), inverse = invertSsrProjection(matrix);
+    for (let r = 0; r < 4; ++r) for (let c = 0; c < 4; ++c) {
+      let value = 0;
+      for (let k = 0; k < 4; ++k) value += matrix[k * 4 + r]! * inverse[c * 4 + k]!;
+      expect(value).toBeCloseTo(Number(r === c), 5);
+    }
+    expect(() => invertSsrProjection(new Float32Array(16))).toThrow(/singular/);
+  });
+});
+
+import { Renderer } from "../../../packages/rendering/src/Renderer";
+import { bindRendererSsrProjection } from "../../../packages/rendering/src/RendererPostprocessPlan";
+
+describe("native SSR uses the actual frame camera", () => {
+  for (const asynchronous of [false, true]) it(`forwards the non-90-degree projection on ${asynchronous ? "async" : "sync"} frames`, async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8 });
+    (renderer.device.info.capabilities as string[]).push("depth-textures");
+    const expected = createPlanarProjectionMatrix(Math.PI / 5, 1.6, 0.3, 80);
+    const received: Float32Array[] = [];
+    renderer.device.presentLdrPostprocess = (_source, options) => {
+      const ssr = options.passes.find(pass => pass.name === "ssr");
+      if (ssr) received.push(ssr.options["projection"] as Float32Array);
+    };
+    const source = { renderItems: [], postprocess: { targetFormat: "rgba8" as const, sampleCount: 1, toneMapping: false as const, ssr: { intensity: 0.4, maxDistance: 8 } } };
+    if (asynchronous) await renderer.renderAsync(source, { viewProjectionMatrix: expected });
+    else renderer.render(source, { viewProjectionMatrix: expected });
+    expect(received).toHaveLength(1);
+    expect(Array.from(received[0]!)).toEqual(Array.from(expected));
+    renderer.dispose();
+  });
+
+  it("preserves exact orthographic matrices and leaves CPU reference execution unchanged", () => {
+    const matrix = Float32Array.from([0.3, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.02, 0, -0.4, 0.2, -1.01, 1]);
+    const bound = bindRendererSsrProjection({ ssr: { intensity: 0.4 } }, matrix);
+    expect(Array.from((bound.ssr as unknown as { projection: Float32Array }).projection)).toEqual(Array.from(matrix));
+    const cpu = { execution: "cpu-deterministic" as const, ssr: { intensity: 0.4 } };
+    expect(bindRendererSsrProjection(cpu, matrix)).toBe(cpu);
+  });
+});

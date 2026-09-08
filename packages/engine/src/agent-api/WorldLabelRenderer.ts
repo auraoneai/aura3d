@@ -25,6 +25,8 @@
  * The projection math here is pure and unit-testable; only `mount` touches the DOM.
  */
 
+import { tuneLabelCollision, type LabelTelemetryRole } from "./LabelTelemetry.js";
+
 export type LabelVec3 = readonly [number, number, number];
 
 /** Policy for labels whose anchor falls outside the viewport. */
@@ -37,6 +39,7 @@ export type OffscreenPolicy =
   | "draw";
 
 export interface WorldLabel {
+  readonly role?: LabelTelemetryRole | undefined;
   readonly id: string;
   readonly text: string;
   /** World point the label box is placed at. */
@@ -128,6 +131,11 @@ export interface LabelViewport {
 }
 
 export interface ProjectedLabel {
+  readonly role?: LabelTelemetryRole | undefined;
+  readonly width?: number | undefined;
+  readonly height?: number | undefined;
+  readonly offscreenPolicy?: OffscreenPolicy | undefined;
+  readonly suppressed?: boolean | undefined;
   readonly id: string;
   readonly text: string;
   /** CSS-pixel position of the label box centre. */
@@ -212,6 +220,8 @@ export function projectWorldLabels(
       const [x, y] = screenAnchorPosition(label.screenAnchor, viewport, fontSize);
       return {
         id: label.id,
+        role: "hud",
+        offscreenPolicy: "clamp",
         text: label.text,
         x,
         y,
@@ -291,6 +301,8 @@ export function projectWorldLabels(
 
     return {
       id: label.id,
+      role: label.role ?? "annotation",
+      offscreenPolicy: policy,
       text: label.text,
       x: round(x),
       y: round(y),
@@ -314,42 +326,55 @@ export function projectWorldLabels(
  * Resolve overlapping labels by nudging later ones vertically.
  *
  * Collision avoidance is a documented option on the label API, so it must
- * actually happen. Labels are sorted front-to-back so nearer labels keep their
- * requested position and farther ones move.
+ * actually happen. HUD reserves fixed positions, annotations precede ticks,
+ * then depth and stable ids decide priority. A mixed pair uses the larger role
+ * gap. Candidates outside measured viewport bounds or the role's displacement
+ * budget are suppressed, and never counted as placed. The mount measures real
+ * DOM rectangles; pure callers may supply bounds or use the font estimate.
  */
 export function resolveLabelCollisions(
   labels: readonly ProjectedLabel[],
-  options: { readonly minGap?: number | undefined } = {}
+  options: { readonly minGap?: number | undefined; readonly viewport?: LabelViewport | undefined } = {}
 ): readonly ProjectedLabel[] {
-  const minGap = options.minGap ?? 4;
-  const ordered = [...labels].sort((a, b) => a.depth - b.depth);
+  const tuning = (label: ProjectedLabel) => tuneLabelCollision(label.role ?? "annotation");
+  const width = (label: ProjectedLabel) => label.width ?? Math.max(48, label.text.length * label.fontSize * 0.62 + 18);
+  const height = (label: ProjectedLabel) => label.height ?? label.fontSize * 1.2 + 10;
+  const ordered = [...labels].sort((a, b) => (tuning(b).priority ?? 0) - (tuning(a).priority ?? 0) || a.depth - b.depth || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const placed: ProjectedLabel[] = [];
   for (const label of ordered) {
     if (!label.visible) {
       placed.push(label);
       continue;
     }
-    let y = label.y;
-    const halfHeight = label.fontSize * 0.9;
-    const halfWidth = Math.max(24, label.text.length * label.fontSize * 0.31);
-    let moved = true;
-    let guard = 0;
-    while (moved && guard < 32) {
-      moved = false;
-      guard += 1;
-      for (const other of placed) {
-        if (!other.visible) continue;
-        const otherHalfHeight = other.fontSize * 0.9;
-        const otherHalfWidth = Math.max(24, other.text.length * other.fontSize * 0.31);
-        const overlapsX = Math.abs(label.x - other.x) < halfWidth + otherHalfWidth;
-        const overlapsY = Math.abs(y - other.y) < halfHeight + otherHalfHeight + minGap;
-        if (overlapsX && overlapsY) {
-          y = other.y - (otherHalfHeight + halfHeight + minGap);
-          moved = true;
-        }
-      }
+    const config = tuning(label);
+    const halfWidth = width(label) / 2;
+    const halfHeight = height(label) / 2;
+    const view = options.viewport;
+    const policy = label.offscreenPolicy ?? "clamp";
+    let x = label.x;
+    let baseY = label.y;
+    if (view && policy === "clamp") {
+      x = Math.max(halfWidth, Math.min(view.width - halfWidth, x));
+      baseY = Math.max(halfHeight, Math.min(view.height - halfHeight, baseY));
     }
-    placed.push(y === label.y ? label : { ...label, y: round(y) });
+    const obstacles = placed.filter(other => other.visible);
+    const gap = (other: ProjectedLabel) => options.minGap ?? Math.max(config.minGapPx, tuning(other).minGapPx);
+    const candidates = [baseY];
+    if (config.avoidanceEnabled) for (const other of obstacles) {
+      const distance = (height(other) + height(label)) / 2 + gap(other);
+      candidates.push(other.y - distance, other.y + distance);
+    }
+    candidates.sort((a, b) => Math.abs(a - baseY) - Math.abs(b - baseY) || a - b);
+    const y = candidates.find(candidate => {
+      if (Math.abs(candidate - baseY) > (config.maxDisplacementPx ?? 0)) return false;
+      if (view && (width(label) > view.width || height(label) > view.height ||
+          x - halfWidth < 0 || x + halfWidth > view.width || candidate - halfHeight < 0 || candidate + halfHeight > view.height)) return false;
+      return obstacles.every(other => Math.abs(x - other.x) >= (width(label) + width(other)) / 2 ||
+        Math.abs(candidate - other.y) + 0.001 >= (height(label) + height(other)) / 2 + gap(other));
+    });
+    placed.push({ ...label, x, y: y ?? baseY, width: width(label), height: height(label),
+      visible: y !== undefined, suppressed: y === undefined,
+      clamped: label.clamped || x !== label.x || baseY !== label.y });
   }
   // Restore the caller's ordering so ids stay stable for tests and evidence.
   const byId = new Map(placed.map((label) => [label.id, label]));
@@ -514,7 +539,19 @@ export function createWorldLabelLayer(host: WorldLabelLayerHost): WorldLabelLaye
       occlusionTest = next;
     },
     update(viewProjection) {
-      projected = resolveLabelCollisions(projectWorldLabels(labels, viewProjection, viewport(), occlusionTest));
+      const view = viewport();
+      const measured = projectWorldLabels(labels, viewProjection, view, occlusionTest).map(label => {
+        const element = ensureElement(label);
+        element.textContent = label.text;
+        element.style.fontSize = `${label.fontSize}px`;
+        element.style.display = "block";
+        element.style.visibility = "hidden";
+        const bounds = element.getBoundingClientRect();
+        element.style.visibility = "";
+        element.dataset.labelRole = label.role ?? "annotation";
+        return { ...label, width: bounds.width || undefined, height: bounds.height || undefined };
+      });
+      projected = resolveLabelCollisions(measured, { viewport: view });
       draw();
     },
     snapshot() {

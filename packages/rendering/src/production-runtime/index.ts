@@ -145,3 +145,5 @@ export * from "./backends/webgpu/WebGPUBuffer";
 export * from "./backends/webgpu/WebGPUTexture";
 export * from "./backends/webgpu/WebGPURenderTarget";
 export * from "./backends/webgpu/WebGPUCapabilities";
+export { createNativeFrameGraphBindings } from './framegraph/NativeFrameGraphBindings';
+export type { NativeFrameGraphBindingsOptions } from './framegraph/NativeFrameGraphBindings';

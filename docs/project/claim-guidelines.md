@@ -1,6 +1,8 @@
 # Aura3D Claim Guidelines
 
-Version: 3.0.0
+Version: 3.0.1
+
+Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -43,7 +45,7 @@ Examples:
 - Allowed: "The root `createAuraApp` path can render typed static GLB assets
   with base-color materials when the route imports `model(assets.x)`."
 - Allowed: "The production-runtime package contains stronger renderer concepts,
-  but they are not the default public root path until the bridge lands."
+  and the public production bridge does not automatically prove every feature."
 - Blocked: "Aura3D has production renderer quality" without naming the path,
   route, tests, screenshots, and fallback behavior.
 
@@ -106,8 +108,8 @@ Do not claim these until the named gates pass:
 - "The asset catalog returns production-ready game art." Blocked. Catalog search
   finds candidates; release readiness requires validation, license review,
   visual review, and route evidence.
-- "Aura3D matches or exceeds Three.js performance." Blocked while the
-  comparative performance report has six missing evidence inputs; feature
+- "Aura3D matches or exceeds Three.js performance." Blocked until the
+  required current comparative performance inputs are verified; feature
   inventory status and stale visual captures are not performance measurements.
 
 ## Allowed Product Wording Today

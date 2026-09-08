@@ -1,6 +1,10 @@
+import { withNpmTransport } from "../release/npm-transport.mjs";
+import { optionalPeerFixture, validateOptionalPeerObservation } from "../release/optional-peer-fixture.mjs";
+import { tmpdir } from "node:os";
+import { loadValidatedReleasePlan, inspectInstalledRelease } from "../release/exact-release-plan.mjs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, copyFileSync, readFileSync, readdirSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
@@ -28,6 +32,7 @@ interface TemplateResult {
   readonly previewScreenshotBytes: number;
 }
 
+const exactPlan = loadValidatedReleasePlan();
 const workspace = resolve("tests/reports/package-clean-install-workspace");
 const tarballDir = resolve(workspace, "tarballs");
 const templates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
@@ -51,6 +56,7 @@ const tarballs = {
   navigationRecast: pack("packages/navigation-recast", tarballDir)
 };
 
+const optionalPeerMatrix = (["absent", "present"] as const).map(runOptionalPeerConsumer);
 const engineResult = runEngineInstall();
 const reactResult = runReactInstall();
 const cliResult = runCliInstall();
@@ -58,6 +64,7 @@ const createResult = runCreateInstall();
 const templateResults = templates.map((template, index) => runTemplateLifecycle(template, 4310 + index));
 
 const checks: ReleaseCheck[] = [
+  ...optionalPeerMatrix.map(result => check(`navigation-optional-peer-${result.mode}`, result.install.ok && result.runtime.ok && result.observation !== null, `${result.install.output}\n${result.runtime.output}`)),
   {
     id: "engine-tarball-clean-typescript-import",
     pass: engineResult.ok,
@@ -106,8 +113,11 @@ const checks: ReleaseCheck[] = [
 
 writeCleanInstallMarkdown(checks, templateResults);
 writeReport("tests/reports/package-clean-install.json", "aura3d-package-clean-install", checks, {
+  releasePlan: exactPlan?.reference,
+  installedIdentity: exactPlan ? collectInstalledIdentity(workspace) : undefined,
   workspace: repoRelative(workspace),
   tarballs: Object.fromEntries(Object.entries(tarballs).map(([key, value]) => [key, repoRelative(value)])),
+  optionalPeerMatrix,
   engineResult,
   reactResult,
   cliResult,
@@ -115,7 +125,52 @@ writeReport("tests/reports/package-clean-install.json", "aura3d-package-clean-in
   templateResults
 });
 
+function runOptionalPeerConsumer(mode: "absent" | "present") {
+  // Outside the repository: an absent peer must not resolve from workspace node_modules.
+  const dir = mkdtempSync(resolve(tmpdir(), `aura3d-301-peer-${mode}-`));
+  const retained = resolve(workspace, `optional-peer-${mode}`);
+  mkdirSync(retained, { recursive: true });
+  const dependencies = {
+    "@aura3d/engine": `file:${tarballs.engine}`,
+    ...leanClosureTarballDependencies(),
+    ...(mode === "present" ? { "@aura3d/navigation-recast": `file:${tarballs.navigationRecast}` } : {})
+  };
+  try {
+    writePackage(dir, { name: `aura3d-optional-peer-${mode}`, private: true, type: "module", dependencies });
+    writeFileSync(resolve(dir, "probe.mjs"), optionalPeerFixture(mode));
+    const install = run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"], dir);
+    let runtime: CommandResult = install.ok ? run("node", ["probe.mjs"], dir) : { ok: false, output: "Install failed; runtime was not executed", seconds: 0 };
+    let observation: unknown = null;
+    let installedIdentity: unknown;
+    try {
+      if (runtime.ok) {
+        observation = JSON.parse(readFileSync(resolve(dir, "optional-peer-result.json"), "utf8"));
+        validateOptionalPeerObservation(observation, mode);
+      }
+      if (install.ok && exactPlan) installedIdentity = inspectInstalledRelease(process.cwd(), dir, exactPlan);
+    } catch (error) { runtime = { ...runtime, ok: false, output: `${runtime.output}\n${String(error)}` }; observation = null; }
+    for (const name of ["package.json", "package-lock.json", "probe.mjs", "optional-peer-result.json"]) if (existsSync(resolve(dir, name))) copyFileSync(resolve(dir, name), resolve(retained, name));
+    writeFileSync(resolve(retained, "commands.json"), JSON.stringify({install,runtime}, null, 2));
+    return { mode, install, runtime, observation, installedIdentity, retained: repoRelative(retained) };
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+}
+
+function collectInstalledIdentity(dir: string): unknown[] {
+  const results: unknown[] = [];
+  for (const entry of readdirSync(dir, {withFileTypes:true})) {
+    if (entry.name === "node_modules" || entry.name.startsWith("optional-peer-")) continue;
+    if (entry.isDirectory()) results.push(...collectInstalledIdentity(resolve(dir,entry.name)));
+    else if (entry.name === "package-lock.json") results.push(inspectInstalledRelease(process.cwd(),dir,exactPlan!));
+  }
+  return results;
+}
 function pack(dir: string, outDir: string): string {
+  if (exactPlan) {
+    const manifest = JSON.parse(readFileSync(resolve(dir,"package.json"),"utf8")) as {name:string};
+    const candidate=exactPlan.packages.find(p=>p.name===manifest.name);
+    if(!candidate)throw new Error(`Missing exact candidate ${manifest.name}`);
+    return resolve(candidate.tarball);
+  }
   const output = execFileSync("pnpm", ["pack", "--pack-destination", outDir], {
     cwd: resolve(dir),
     encoding: "utf8",
@@ -433,6 +488,7 @@ function writeTsconfig(dir: string): void {
 }
 
 function run(command: string, args: readonly string[], cwd: string): CommandResult {
+  args=command === "npm" ? withNpmTransport(args) : args;
   const start = Date.now();
   try {
     const output = execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
@@ -461,10 +517,19 @@ function screenshotProfileCheck(result: TemplateResult): ReleaseCheck {
 
 function leanTemplateIsolationCheck(template: string): ReleaseCheck {
   const appDir = resolve(workspace, "templates", template, "demo");
-  const manifest = JSON.parse(readFileSync(resolve(appDir, "package.json"), "utf8")) as {
+  const manifestPath = resolve(appDir, "package.json");
+  const lockPath = resolve(appDir, "package-lock.json");
+  if (!existsSync(manifestPath) || !existsSync(lockPath)) {
+    return check(
+      `${template}-installed-lean-dependency-isolation`,
+      false,
+      `clean install did not produce ${!existsSync(manifestPath) ? "package.json" : "package-lock.json"}`
+    );
+  }
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
     readonly dependencies?: Record<string, string>;
   };
-  const lockText = readFileSync(resolve(appDir, "package-lock.json"), "utf8");
+  const lockText = readFileSync(lockPath, "utf8");
   const forbidden = [
     "@aura3d/engine",
     "@aura3d/physics",

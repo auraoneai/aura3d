@@ -1,22 +1,23 @@
 # Aura3D Current State
 
 Date: 2026-09-05
-Status: Aura3D 3.0.0 published (K2 14/14 supersede at the release commit `c71aff6e`; tag `v3.0.0` pushed; 29/29 packages live on npm; K2 14/14 supersede re-earned post-tag on the packaging-fix HEAD); independent exact-artifact review remains a separate gate
+Status: 3.0.1 remediation candidate in progress; source changes and targeted tests are not final release acceptance. Historical 3.0.0 K2 reports returned `supersede`, but the remediation audit found uncovered E/H/I/U obligations. Those historical results do not prove full PRD completion. Independent exact-artifact review remains required.
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
 normal TypeScript or JavaScript against public `@aura3d/engine` APIs and use the
 Aura3D CLI to register typed assets.
 
-This file is intentionally conservative. It describes what the public root
-`createAuraApp` path can prove today and what still requires library work before
-showcase or marketing claims can use it.
+This file separates source-level API availability, historical bounded workload evidence, and pending 3.0.1 acceptance. The August 9 public-renderer and animation reports support the prior root examples; their timestamps are not current-candidate validation. Showcase and marketing claims require fresh source-bound receipts.
 
-Aura3D is not currently a Unity or Unreal replacement. Version 3.0.0 is the
-current coordinated package version (published; tags `v2.0.0`/`v2.0.1`/`v3.0.0`
-are immutable and historical once superseded). Subsequent
-game, lighting, and website changes still require exact-artifact review before
-they can be promoted as independently approved showcase artifacts.
+Aura3D is not currently a Unity or Unreal replacement. The worktree targets
+3.0.1; this is not a claim that 3.0.1 has been published. Historical release
+records and tags remain unchanged. Current implementation, unresolved acceptance
+criteria, and final evidence requirements are tracked in
+[`muse3jsparity-3.0.1-PRD.md`](../../../muse3jsparity-3.0.1-PRD.md) and the
+[3.0.1 candidate release notes](../aura3d-301-release-notes.md).
+Route, lighting, animation, and website changes require exact-artifact evidence
+and independent review before promotion as approved showcase artifacts.
 
 ## Current Public Root API Strengths
 
@@ -73,7 +74,7 @@ The package track can be considered for release when package tests, API docs,
 packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
-The current public `examples/` inventory contains 13 retained routes after
+The August 9, 2026 public `examples/` audit recorded 13 retained routes after
 duplicate, contract-only, misleading, or visually rejected hosts were archived
 or moved to internal fixtures. Each retained route has been inspected at source,
 canvas, and full-page level and assigned a bounded disposition. The final clean
@@ -82,7 +83,7 @@ unfiltered audit after the last presentation fixes passed in 1.3 minutes on
 captures. The material, postprocess, and large-scene pairs were personally
 reopened from that run before the audit disposition was closed.
 
-Current retained result:
+Historical retained result (not final 3.0.1 acceptance):
 
 - public `examples/` routes: 13 retained, with real-asset workflows and bounded
   diagnostics distinguished explicitly;
@@ -90,14 +91,14 @@ Current retained result:
   excluded from the public route inventory and visual-parity claims;
 - removed public game/racing hosts: not counted as release games or parity
   evidence;
-- current same-workload Three.js comparison: all 15 bounded workloads pass from
+- previously recorded same-workload Three.js comparison: all 15 bounded workloads pass from
   freshly packed and installed 3.0.0 tarballs, while visual differences remain
   disclosed and the result does not support a universal ecosystem-parity claim.
 
-Current route-library release status: per-route repairs, human dispositions,
+Prior route-library evidence status: per-route repairs, human dispositions,
 and the clean unfiltered audit are recorded in retained release evidence. The exact
 installed-package same-workload run and internal per-file visual ledger are
-current; clean-machine reproduction is retained with an explicit container
+historical for this remediation candidate; clean-machine reproduction is retained with an explicit container
 WebGPU hardware boundary, broad performance superiority is not claimed, and
 independent human review plus the remaining release tracks are still open.
 The former comparison suite is frozen
@@ -110,7 +111,7 @@ or ecosystem claim is permitted without current, workload-specific evidence.
 The non-game candidate slate includes Product Configurator, Smart City Control,
 Cinematic Architecture, and Digital Twin Operations. Blockfall Reactor, Turbo
 Drift Circuit, and Skyline Runner now have materially rebuilt gameplay and
-current automated evidence; they remain promotion-blocked until an independent
+retained automated evidence requiring current-source revalidation; they remain promotion-blocked until an independent
 reviewer approves the exact final artifacts. Aura Clash is tracked separately
 and remains a development showcase under the same exact-artifact rule.
 Superseded and duplicate public routes are excluded from the website build.

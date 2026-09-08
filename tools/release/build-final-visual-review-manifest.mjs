@@ -1,13 +1,33 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, relative, isAbsolute } from "node:path";
 import { execFileSync } from "node:child_process";
 
+import { buildModernVisualReviewManifest } from './visual-review-manifest.mjs';
+import { sourceIdentity } from './source-identity.mjs';
+
 const root = resolve(import.meta.dirname, "../..");
-const output = "release-artifacts/2.0-final-visual-review-manifest.json";
+const args = process.argv.slice(2);
+function option(name) { const i = args.indexOf(name); if (i < 0) return undefined; if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`Missing ${name}`); return args[i + 1]; }
+const version = option('--version');
+if (version && !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid version');
+const output = option('--output') ?? (version ? `release-artifacts/${version}-final-visual-review-manifest.json` : 'release-artifacts/2.0-final-visual-review-manifest.json');
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 
+// Modern captures carry source identity and hashes from their producer; generation never grants approval.
+if (version) {
+  const indexPath = option('--artifact-index');
+  if (!indexPath) throw new Error('--artifact-index is required with --version');
+  const indexBytes = readFileSync(resolve(root, indexPath));
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  if (git('status', '--porcelain', '--untracked-files=no')) throw new Error('Freeze tracked source before building the final review manifest');
+  const source = sourceIdentity(root);
+  const document = buildModernVisualReviewManifest({ version, source, indexPath, indexBytes, readBytes: path => readFileSync(resolve(root, path)), generatedAt: new Date().toISOString(), command: ['node', ...process.argv.slice(1)] });
+  mkdirSync(dirname(resolve(root, output)), { recursive: true });
+  writeFileSync(resolve(root, output), `${JSON.stringify(document, null, 2)}\n`);
+  console.log(`Wrote ${version} review manifest with ${document.artifactCount} artifacts; human approval remains pending.`);
+} else {
 const flagshipIds = [
   "showcase-product-configurator",
   "showcase-smart-city-control",
@@ -106,3 +126,5 @@ const absoluteOutput = resolve(root, output);
 mkdirSync(dirname(absoluteOutput), { recursive: true });
 writeFileSync(absoluteOutput, `${JSON.stringify(document, null, 2)}\n`);
 console.log(`Final visual review manifest: ${document.artifactCount} artifacts across ${document.sectionCount} sections -> ${output}`);
+
+}

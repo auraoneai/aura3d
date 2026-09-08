@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   createSmartCityControlSnapshot,
@@ -26,6 +27,13 @@ function cameraInput(controls: Record<string, string | boolean>, cameraPreset = 
 }
 
 describe("smart city overlay and control bindings", () => {
+  it("bounds only the explicit composition-probe backing target", () => {
+    const source = readFileSync("apps/showcase-smart-city-control/src/main.ts", "utf8");
+    expect(source).toContain('has("compositionProbe") ? 0.25 : 1');
+    expect(source).toContain("pixelRatio: compositionProbePixelRatio");
+    expect(source).toContain("padding: compactViewport ? 0.8");
+  });
+
   it("keeps default hologram pillars thinner than the authored city keepout", () => {
     const snapshot = createSmartCityControlSnapshot({
       time: 1.5,

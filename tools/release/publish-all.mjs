@@ -18,7 +18,8 @@
 //     the registry; the expected count is asserted (29).
 //
 // Usage:
-//   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs [--dry-run|--pack-only]
+//   node tools/release/publish-all.mjs --pack-only
+//   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs --from-plan tests/reports/release-tarballs/release-plan.json
 //
 // `--dry-run` is a release-candidate preflight and therefore requires the
 // target version to be unpublished. `--pack-only` is for exact installed-
@@ -40,6 +41,7 @@
 //     child process only.
 
 import { execFileSync, execSync } from "node:child_process";
+import { sourceIdentity, assertCommittedReleaseSource } from "./source-identity.mjs";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -47,6 +49,9 @@ import { join, resolve } from "node:path";
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const DRY_RUN = process.argv.includes("--dry-run");
 const PACK_ONLY = process.argv.includes("--pack-only");
+const planArgument = process.argv.indexOf("--from-plan");
+const FROM_PLAN = planArgument < 0 ? null : process.argv[planArgument + 1];
+if (planArgument >= 0 && (!FROM_PLAN || FROM_PLAN.startsWith("--"))) throw new Error("--from-plan requires an exact release-plan path");
 if (DRY_RUN && PACK_ONLY) {
   console.error("Choose either --dry-run or --pack-only, not both.");
   process.exit(1);
@@ -146,6 +151,8 @@ if (packages.length !== EXPECTED_PUBLIC_COUNT) {
 }
 
 const version = packages[0].manifest.version;
+const frozenSource = sourceIdentity(ROOT);
+if (!DRY_RUN && !PACK_ONLY) assertCommittedReleaseSource(ROOT);
 const mismatched = packages.filter(({ manifest }) => manifest.version !== version);
 if (mismatched.length > 0) {
   console.error(`Version lockstep violated (root is ${version}):`);
@@ -171,13 +178,28 @@ if (DRY_RUN) {
   }
 }
 
-rmSync(PACK_DIR, { recursive: true, force: true });
+// Reuse the exact validated archive bytes. A publication run must never repack them.
+const retainedPlan = FROM_PLAN ? JSON.parse(readFileSync(resolve(ROOT, FROM_PLAN), "utf8")) : null;
+if (!DRY_RUN && !PACK_ONLY && !retainedPlan) throw new Error("Publication requires --from-plan pointing to the validated exact artifact set");
+if (retainedPlan) {
+  if (!retainedPlan.source || Object.keys(frozenSource).some(key=>retainedPlan.source[key] !== frozenSource[key])) throw new Error("Release plan source fingerprint mismatch");
+  if (retainedPlan.version !== version || retainedPlan.commit !== sh("git rev-parse HEAD") || retainedPlan.lockfileSha256 !== createHash("sha256").update(readFileSync(join(ROOT,"pnpm-lock.yaml"))).digest("hex")) throw new Error("Release plan source/version/lock mismatch");
+  if (retainedPlan.packages?.length !== EXPECTED_PUBLIC_COUNT || new Set(retainedPlan.packages.map(p=>p.name)).size !== EXPECTED_PUBLIC_COUNT) throw new Error("Release plan inventory mismatch");
+  // Validate every archive before making any registry write.
+  for (const { manifest } of packages) {
+    const entry = retainedPlan.packages.find(p=>p.name===manifest.name && p.version===manifest.version);
+    if (!entry?.tarball) throw new Error(`Missing exact archive for ${manifest.name}`);
+    const bytes = readFileSync(resolve(ROOT,entry.tarball));
+    if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256 || `sha512-${createHash("sha512").update(bytes).digest("base64")}` !== entry.integrity) throw new Error(`Archive changed: ${entry.tarball}`);
+  }
+}
+if (!retainedPlan) rmSync(PACK_DIR, { recursive: true, force: true });
 mkdirSync(PACK_DIR, { recursive: true });
 
 // Trap 2: move the animation-studio template node_modules aside while packing.
 const STUDIO_NODE_MODULES = join(ROOT, "packages", "create-aura3d", "templates", "animation-studio", "node_modules");
 const STUDIO_NODE_MODULES_ASIDE = `${STUDIO_NODE_MODULES}.publish-aside`;
-const hadStudioNodeModules = existsSync(STUDIO_NODE_MODULES);
+const hadStudioNodeModules = !retainedPlan && existsSync(STUDIO_NODE_MODULES);
 if (hadStudioNodeModules) renameSync(STUDIO_NODE_MODULES, STUDIO_NODE_MODULES_ASIDE);
 
 const failures = [];
@@ -187,7 +209,8 @@ try {
     const label = `${manifest.name}@${manifest.version}`;
     try {
       // Trap 1: pnpm pack rewrites workspace:* to concrete versions.
-      const packOutput = sh(`pnpm pack --pack-destination ${JSON.stringify(PACK_DIR)}`, { cwd: dir });
+      const retained = retainedPlan?.packages.find(p=>p.name===manifest.name);
+      const packOutput = retained ? resolve(ROOT,retained.tarball) : sh(`pnpm pack --pack-destination ${JSON.stringify(PACK_DIR)}`, { cwd: dir });
       const tarball = packOutput.split("\n").pop();
       if (!tarball || !existsSync(tarball)) throw new Error(`pack produced no tarball (output: ${packOutput})`);
       const tarballBytes = readFileSync(tarball);
@@ -195,7 +218,7 @@ try {
       const sha256 = createHash("sha256").update(tarballBytes).digest("hex");
       packedPackages.set(manifest.name, { tarball, integrity, sha256 });
       if (DRY_RUN || PACK_ONLY) {
-        console.log(`[${DRY_RUN ? "dry-run" : "pack-only"}] packed ${label} -> ${tarball}`);
+        console.log(`[${DRY_RUN ? "dry-run" : "pack-only"}] ${retained ? "validated retained" : "packed"} ${label} -> ${tarball}`);
       } else {
         sh(`npm publish ${JSON.stringify(tarball)} --access public${OTP_ARG}`, { cwd: dir });
         console.log(`published ${label}`);
@@ -229,10 +252,14 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-writeFileSync(
+const finalSource = sourceIdentity(ROOT);
+if (Object.keys(frozenSource).some(key=>finalSource[key] !== frozenSource[key])) throw new Error("Source changed during packing/publication; discard this run");
+
+if (!retainedPlan) writeFileSync(
   join(PACK_DIR, "release-plan.json"),
   `${JSON.stringify({
     schema: "aura3d-release-plan/1.0",
+    source: frozenSource,
     generatedAt: new Date().toISOString(),
     commit: sh("git rev-parse HEAD"),
     lockfileSha256: createHash("sha256").update(readFileSync(join(ROOT, "pnpm-lock.yaml"))).digest("hex"),

@@ -7,14 +7,14 @@ chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenat
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/lean core primitive critical path` | 323,034 | 78,068 | 80,000 | pass |
-| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 2,105,816 | 560,786 | 80,000 | informational |
+| `@aura3d/lean core primitive critical path` | 322,577 | 77,458 | 80,000 | pass |
+| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 2,146,578 | 574,982 | 80,000 | informational |
 | `@aura3d/react adapter excluding React and core` | 7,634 | 3,260 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 705 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 50,869 | 13,787 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 898,316 | 202,839 | 250,000 | pass |
-| `cinematic-scene starter app before user assets` | 1,525,773 | 384,326 | 400,000 | pass |
-| `mini-game starter app before user assets` | 915,297 | 208,902 | 250,000 | pass |
+| `product-viewer starter app before user assets` | 911,873 | 207,638 | 250,000 | pass |
+| `cinematic-scene starter app before user assets` | 1,564,863 | 398,120 | 400,000 | pass |
+| `mini-game starter app before user assets` | 928,854 | 213,695 | 250,000 | pass |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.

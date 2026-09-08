@@ -176,6 +176,10 @@ const platformerScene = game.platformerSceneBinding({
 // generic mascot. Keep this rendered height shared by the model and the
 // composition probe so the scale contract describes the visible envelope.
 const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT * 1.22;
+// The certified Arctic card's visible silhouette includes authored extremities
+// outside its fit-height reference. Composition compares the full pixel bounds,
+// so declare that measured envelope separately from the model scale itself.
+const SKYLINE_COMPOSITION_SUBJECT_HEIGHT = SKYLINE_RENDERED_CHARACTER_HEIGHT * 1.28;
 const skylineWorldNodes = [
   model(assets.showcaseKenneyVerdantPlatformerWorld, {
     name: "platformer-bound-level-one-world",
@@ -644,7 +648,7 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
   }
 }
 /**
- * The relay runner is the Meshy hero card (`assets.skylineHeroMeshyV2`): a
+ * The relay runner is the release Arctic hero (`assets.skylineArcticRunnerHero`): a
  * static textured mesh with no embedded clips, posed procedurally by the
  * renderer (bounded idle/run/jump/fall/land silhouettes) exactly like the
  * project-original card it replaces. The prior 25-name clip list described a
@@ -1524,7 +1528,7 @@ setupSkylineGameHud();
 // typed hero across gameplay/review keeps the visual contract honest and gives
 // the actual route a readable runner silhouette.
 const skylinePlayerVisualNode = model(
-  assets.skylineHeroMeshyV2,
+  assets.skylineArcticRunnerHero,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
@@ -2503,22 +2507,26 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     subject: {
       position: initialPlayerPose.position,
       rotation: [0, 0, 0],
-      targetSize: SKYLINE_RENDERED_CHARACTER_HEIGHT
+      targetSize: SKYLINE_COMPOSITION_SUBJECT_HEIGHT
     },
     playSpacePoints: platforms.flatMap((surface) => [
       platformerScene.toScenePoint({ x: surface.x, y: surface.y + surface.height }),
       platformerScene.toScenePoint({ x: surface.x + surface.width, y: surface.y + surface.height })
     ]),
     contactPoint: platformerScene.contactPointForPlayer(state.player),
-    setSubjectSuppressed: (suppressed: boolean) => {
+    setSubjectSuppressed: async (suppressed: boolean) => {
       compositionSubjectSuppressed = suppressed;
       app.pause();
+      await app.ready();
       // Keep the runtime target visible so the follow camera does not fall back
       // to its authored target and trigger unrelated LOD/camera differences.
-      // The frame loop applies the exact 0.0001 suppression scale below.
+      // A settled composition intentionally skips the visual-update callback,
+      // so apply its existing suppression scale here rather than relying on
+      // a callback that returns before it reaches syncPlayerVisual.
       player.setVisible(true);
-      player.setScale(1);
-      app.step(0);
+      player.setScale(suppressed ? 0.0001 : 1);
+      skylineAccessoryHandles.forEach((node) => node.setVisible(!suppressed));
+      await app.stepAsync(0);
     },
     /*
      * Freeze the hero into the neutral pose `targetSize` actually describes.
@@ -2534,8 +2542,9 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
      * declares. The node position is untouched: it was already authoritative for camera and contact and
      * must stay so.
      */
-    settleSubjectPose: () => {
+    settleSubjectPose: async () => {
       app.pause();
+      await app.ready();
       player.setScale(1);
       /*
        * Pin the idle clip to a fixed frame as well as resetting the scale bob.
@@ -2551,7 +2560,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       player.play(HERO_LOCOMOTION_CLIP_MAP.idle, { loop: false, captureTime: 0.4 });
       // Pin the loop's own scale decision, or the next frame overwrites the reset above from `visualState`.
       compositionPoseSettled = true;
-      app.step(0);
+      await app.stepAsync(0);
     }
   },
   configurable: true
@@ -2899,10 +2908,10 @@ const mountedEvidence = {
     }
   },
   eventFeedback: buildSkylineEventFeedbackEvidence(),
-  primaryAssets: ["skylineHeroMeshyV2", "showcaseKenneyVerdantPlatformerWorld"],
+  primaryAssets: ["skylineArcticRunnerHero", "showcaseKenneyVerdantPlatformerWorld"],
   platformer: {
     cameraIntent: "side-scroller",
-    characterAsset: "skylineHeroMeshyV2",
+    characterAsset: "skylineArcticRunnerHero",
     worldAssets: ["showcaseKenneyVerdantPlatformerWorld"],
     gameplayRequirements: ["movement", "jump", "checkpoint", "progression"],
     levelDesign: {

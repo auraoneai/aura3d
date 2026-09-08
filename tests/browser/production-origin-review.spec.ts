@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 const ORIGIN = process.env.A3D_PUBLIC_DEMO_URL ?? "https://aura3d.auraone.ai";
 const OUT = process.env.A3D_PRODUCTION_REVIEW_DIR
-  ?? "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/production";
+  ?? join(tmpdir(), "aura3d-production-review");
 
 const ROUTES = [
   { id: "catalog", path: "/apps/showcase-index/", file: "catalog-desktop.png" },

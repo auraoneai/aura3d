@@ -327,8 +327,13 @@ export function createTraumaShake(options: TraumaShakeOptions = {}): TraumaShake
 
   const snap = (): TraumaShakeSnapshot => {
     const energy = trauma * trauma;
-    // `+ 0` normalizes -0 (negative noise × zero energy) to 0 so snapshots
-    // stay Object.is-clean for evidence comparisons.
+    // A shake that reports settled must publish the exact authored lens pose.
+    // Tiny residual offsets made route consumers restore FOV while leaving the
+    // chase/follow camera displaced for another frame. Snap the terminal band
+    // to zero; values above it retain the same deterministic curve.
+    if (trauma < 0.05) {
+      return { kind: "aura-game-trauma-shake", offset: [0, 0, 0], roll: 0, trauma, energy };
+    }
     return {
       kind: "aura-game-trauma-shake",
       offset: [

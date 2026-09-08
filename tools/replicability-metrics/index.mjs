@@ -171,7 +171,9 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     // the route-bound racing kit; plume count and review backdrop distance tune
     // the visible feedback family.
     "FORMULA_ASPHALT_WIDTH", "VISUAL_DRIFT_PLUME_COUNT", "ROAD_DETAIL_SURFACE_LIFT", "DRIFT_PARTICLE_GRAVITY",
-    "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
+    // Number of typed venue-kit copies in the exact review composition. It is
+    // deliberately route-local like plume count and backdrop distance.
+    "supplementalHairpinVenueCopies", "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
     "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS",
     "DEFAULT_PLAYER_X", "DEFAULT_RIVAL_X",
     /*
@@ -182,7 +184,11 @@ export const CONSTANT_CATEGORIES = Object.freeze({
      * as Turbo's `reviewBackdropDistance` — not a frozen asset dimension,
      * so it stays here rather than moving to asset-derived.
      */
-    "SKYLINE_LEDGE_SURFACE_ALIGNMENT"
+    "SKYLINE_LEDGE_SURFACE_ALIGNMENT",
+    // Evidence-only fixed grid framing blend: an authored composition choice
+    // used to keep the player and opponent readable in the deterministic
+    // review frame, in the same category as the route's chase FOV.
+    "VISUAL_CAPTURE_GRID_FOCUS_BLEND"
   ],
   /**
    * 2: Reusable genre defaults. Belong in a shared preset.

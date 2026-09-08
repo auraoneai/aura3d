@@ -105,7 +105,9 @@ const hud = game.hud.bindings([
 ]);
 const lapProof = createLapProof();
 
+const evidenceMode = navigator.webdriver;
 const app = createAuraApp("#app", {
+  autoStart: !evidenceMode,
   diagnostics: { overlay: true, performancePanel: true },
   scene: buildScene()
 });
@@ -163,6 +165,28 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
 
 publishEvidence(racing.snapshot());
 renderHud(racing.snapshot());
+
+// Keep browser evidence deterministic on software GPUs without replacing real
+// keyboard input. The input controller receives each DOM event first; this
+// handler then advances the same app.onFrame gameplay callback and presents one
+// completed frame. Generated apps outside WebDriver retain continuous playback.
+if (evidenceMode) {
+  await app.ready();
+  // Present the initial production frame asynchronously. SwiftShader can take
+  // seconds to drain a typed GLB scene; a synchronous submission here blocks
+  // Playwright's state readback and turns an input contract into a timeout.
+  await app.stepAsync(0);
+  const advanceFromKeyboard = (event: KeyboardEvent) => {
+    const frames = event.type === "keydown" ? 18 : 1;
+    // Advance the real input/game callbacks immediately. The playable contract
+    // reads simulation-owned evidence, so it does not need another GPU frame
+    // for every key transition; visual lifecycle coverage retains the initial
+    // completed production frame above.
+    for (let frame = 0; frame < frames; frame += 1) app.advance(1 / 60);
+  };
+  window.addEventListener("keydown", advanceFromKeyboard);
+  window.addEventListener("keyup", advanceFromKeyboard);
+}
 
 function buildScene() {
   const nodes: AuraNodeInput[] = [

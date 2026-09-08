@@ -98,6 +98,7 @@ export interface ProductionProductionRenderer {
   renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof;
   getFeatures(): readonly ProductionRendererFeature[];
   getDiagnostics(): RenderDeviceDiagnostics;
+  getShadowEvidence?(): Readonly<Record<string, unknown>> | null;
   /**
    * WS-2.6 — device-loss subscription, when this renderer is backed by a device that can lose context.
    *

@@ -1,3 +1,4 @@
+import type { SmartCityBrowserWindow301 } from "./smart-city-evidence-301";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -22,13 +23,14 @@ test("proves the public Smart City route changes LOD and performs native frustum
 
     await page.locator("[data-district='core']").click();
     await page.waitForFunction(() => {
-      const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
+      const evidence = (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
       return evidence?.interactionState.selectedBuildingId === "core-tower-3"
         && evidence.diagnostics?.buildingFocus?.cameraFocused === true
         && evidence.diagnostics?.buildingFocus?.invariants?.passes === true;
     });
     const focusedBuilding = await page.evaluate(() => {
-      const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__!;
+      const evidence = (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
+      if (!evidence) throw new Error("Smart City did not publish route evidence");
       return {
         selectedBuildingId: evidence.interactionState.selectedBuildingId,
         focus: evidence.diagnostics.buildingFocus,
@@ -99,7 +101,7 @@ test("proves the public Smart City route changes LOD and performs native frustum
 
 async function waitForOptimizationEvidence(page: import("@playwright/test").Page, cameraMode: "command" | "street" | "flythrough"): Promise<void> {
   await page.waitForFunction((mode) => {
-    const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
+    const evidence = (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
     const runtime = evidence?.diagnostics?.rendererRuntime;
     return evidence?.status === "ready"
       && evidence.interactionState.cameraMode === mode
@@ -151,8 +153,10 @@ async function readEvidence(page: import("@playwright/test").Page): Promise<{
   readonly lod: { readonly nodeName: string; readonly levelIndex: number; readonly levelName: string };
 }> {
   return await page.evaluate(() => {
-    const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__!;
+    const evidence = (window as SmartCityBrowserWindow301).__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
+      if (!evidence) throw new Error("Smart City did not publish route evidence");
     const runtime = evidence.diagnostics.rendererRuntime;
+    if (!runtime || runtime.lodSelections.length === 0) throw new Error("Smart City renderer or LOD evidence is missing");
     return {
       cameraMode: evidence.interactionState.cameraMode,
       runtime: {

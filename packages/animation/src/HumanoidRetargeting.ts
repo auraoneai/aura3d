@@ -187,6 +187,9 @@ export interface HumanoidBoneRetargetBinding {
   readonly sourceRest?: AnimationQuaternion;
   /** Target rig rest-pose local rotation for this bone (identity when unknown). */
   readonly targetRest?: AnimationQuaternion;
+  /** Source and target local bind translations, captured so animated translation deltas can be rebased. */
+  readonly sourceRestPosition?: AnimationVector3;
+  readonly targetRestPosition?: AnimationVector3;
 }
 
 export interface HumanoidRetargetingMap {
@@ -416,7 +419,9 @@ export function createHumanoidRetargetingMap(
         options.profile
       ),
       sourceRest: restRotationFor(source, bone, sourceBinding),
-      targetRest: restRotationFor(target, bone, targetBinding)
+      targetRest: restRotationFor(target, bone, targetBinding),
+      sourceRestPosition: restPositionFor(source, bone, sourceBinding),
+      targetRestPosition: restPositionFor(target, bone, targetBinding)
     };
   }
 
@@ -465,8 +470,9 @@ export function createHumanoidRetargetingMap(
  *      `F` that carries the source facing axis onto the target facing axis: `Rt_hips = F · Rt_hips`.
  *      This only touches the root so child bones inherit the reframe through the hierarchy.
  *
- *   3. Position / hip-height scaling (unchanged from before): translations are scaled by the
- *      bone's length ratio (`binding.scale`), and optional root motion by the average bone scale.
+ *   3. Position / hip-height scaling: the animated displacement from the source local bind
+ *      translation is scaled by the bone length ratio and rebased on the target local bind
+ *      translation. Optional root motion is scaled by the average bone scale.
  *
  * The signature and return type are unchanged.
  *
@@ -652,6 +658,15 @@ function restRotationFor(
   return IDENTITY_QUAT;
 }
 
+function restPositionFor(
+  rig: HumanoidRigDefinition,
+  bone: HumanoidBoneName,
+  binding: HumanoidBoneBinding
+): AnimationVector3 {
+  const position = rig.restPose?.[bone]?.position ?? binding.position;
+  return position ? { ...position } : { x: 0, y: 0, z: 0 };
+}
+
 /**
  * Apply rest-pose reconciliation + (root-only) facing alignment + length scaling to one bone.
  * See {@link retargetHumanoidPose} for the math derivation.
@@ -679,11 +694,15 @@ function retargetBoneTransform(
     rotation = normalizeQuatObj(multiplyQuat(facing, targetRest));
   }
 
-  return {
-    position: transform.position ? scaleVector(transform.position, binding.scale) : undefined,
-    rotation,
-    scale: transform.scale
-  };
+  const sourceRestPosition = binding.sourceRestPosition ?? { x: 0, y: 0, z: 0 };
+  const targetRestPosition = binding.targetRestPosition ?? { x: 0, y: 0, z: 0 };
+  const position = transform.position ? {
+    x: targetRestPosition.x + (transform.position.x - sourceRestPosition.x) * binding.scale,
+    y: targetRestPosition.y + (transform.position.y - sourceRestPosition.y) * binding.scale,
+    z: targetRestPosition.z + (transform.position.z - sourceRestPosition.z) * binding.scale
+  } : undefined;
+
+  return { position, rotation, scale: transform.scale };
 }
 
 /**

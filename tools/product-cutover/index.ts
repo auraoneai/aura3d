@@ -31,7 +31,15 @@ const staleHits = activeFiles.flatMap((path) => {
   return bannedTerms.filter((term) => text.includes(term)).map((term) => `${path}: ${term}`);
 });
 const versionCycleHits = activeFiles
-  .filter((path) => path === "README.md" || path === "llms.txt" || path.startsWith("docs/") || path === "AGENTS.md" || path.startsWith(".claude/") || path.startsWith(".cursor/") || path.startsWith(".github/"))
+  .filter((path) =>
+    path === "README.md" ||
+    path === "llms.txt" ||
+    path === "AGENTS.md" ||
+    path.startsWith(".claude/") ||
+    path.startsWith(".cursor/") ||
+    path.startsWith(".github/") ||
+    (path.startsWith("docs/") && !path.endsWith(".json"))
+  )
   .flatMap((path) => {
     const text = readFileSync(resolve(path), "utf8");
     return Array.from(text.matchAll(versionCyclePattern), (match) => `${path}: ${match[0]}`);
@@ -84,7 +92,10 @@ function listActiveSourceFiles(): string[] {
       // rather than kept "just in case": an exclusion list naming a file that does not exist is
       // indistinguishable from one naming a file that does, and it was the single R8 blocker
       // standing between that document and deletion.
-      "tools/package-tarball-audit/index.ts"
+      "tools/package-tarball-audit/index.ts",
+      // Frozen 3.0.0 assertion identities preserve historical filenames verbatim.
+      // They are readiness input, not active product or documentation language.
+      "tools/muse3jsparity-readiness/baseline-unit-inventory.json"
     ].includes(path))
     .filter((path) => isTextSource(path));
 }

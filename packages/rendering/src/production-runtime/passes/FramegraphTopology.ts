@@ -55,5 +55,5 @@ export function validatePassResourceFlow(passes: readonly RenderPass[]): readonl
 
 /** Scene/environment inputs exist before the graph runs; everything else must be produced in-graph. */
 function isExternalResource(resource: string): boolean {
-  return resource.startsWith("scene.") || resource.startsWith("environment.") || resource.startsWith("shadow.");
+  return ["scene.geometry", "scene.casters", "shadow.maps", "environment.sky", "environment.lighting"].includes(resource);
 }

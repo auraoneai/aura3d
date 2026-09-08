@@ -35,18 +35,19 @@ describe("root effects A3 nodes", () => {
     expect(diagnostics.postprocess.actualPasses).toEqual([]);
   });
 
-  test("withheld intents stay visible and warned, never silently dropped", () => {
+  test("temporal intents are requested without claiming unmounted GPU execution", () => {
     const diagnostics = renderer.diagnostics(
       scene()
         .add(primitives.box({ name: "a3 withheld subject" }))
         .add(effects.motionBlur({ intensity: 0.5 }))
         .add(effects.antiAlias({ mode: "taa" }))
     );
-    expect(diagnostics.postprocess.requestedPasses).toContain("motion-blur (withheld: no velocity binding)");
-    expect(diagnostics.postprocess.requestedPasses).toContain("taa (withheld: no history binding)");
+    expect(diagnostics.postprocess.requestedPasses).toContain("motion-blur");
+    expect(diagnostics.postprocess.requestedPasses).toContain("taa");
     const warnings = diagnostics.warnings.join(" ");
-    expect(warnings).toContain("motion-blur is recorded but withheld");
-    expect(warnings).toContain("taa\" is recorded but withheld");
+    expect(warnings).not.toContain("withheld");
+    expect(diagnostics.postprocess.actualPasses).toEqual([]);
+    expect(diagnostics.postprocess.pixelBacked).toBe(false);
   });
 
   test("anti-alias off submits nothing and warns nothing", () => {

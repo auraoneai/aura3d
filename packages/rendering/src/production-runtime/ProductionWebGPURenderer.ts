@@ -54,6 +54,22 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     return new ProductionWebGPURenderer(renderer, options.width, options.height);
   }
 
+  onDeviceLost(listener: () => void): () => void {
+    const device = this.renderer.device as { onDeviceLost?: (listener: () => void) => () => void };
+    return device.onDeviceLost?.(listener) ?? (() => undefined);
+  }
+
+  onDeviceRestored(listener: () => void): () => void {
+    // Native WebGPU requires device recreation after loss. Only subscribe when
+    // the device implements restoration; never synthesize a successful restore.
+    const device = this.renderer.device as { onDeviceRestored?: (listener: () => void) => () => void };
+    return device.onDeviceRestored?.(listener) ?? (() => undefined);
+  }
+
+  deviceLost(): boolean {
+    return this.renderer.getDiagnostics().contextLost;
+  }
+
   renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     this.validateImportedAsset(input);
     const diagnostics = this.renderer.render(input.source, input.camera);
@@ -200,8 +216,17 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     ];
   }
 
+  /** Resources actually selected by the latest submitted shadow pass. */
+  getShadowEvidence(): Readonly<Record<string, unknown>> | null {
+    return this.renderer.getShadowEvidence();
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     return this.renderer.getDiagnostics();
+  }
+
+  resetTemporalHistory(reason = "explicit-reset"): void {
+    this.renderer.resetTemporalHistory(reason);
   }
 
   dispose(): void {
@@ -279,6 +304,8 @@ export type WebGPUParityFeatureId =
   | "bloom-pyramid"
   | "color-grade"
   | "fxaa-taa"
+  | "fxaa"
+  | "taa"
   | "spot-shadows"
   | "textured-pbr"
   | "render-bundles"
@@ -314,10 +341,16 @@ export const WEBGPU_PARITY_PLAN: readonly WebGPUParityFeatureRow[] = [
     evidence: "A3 colorGrade has no WebGPU dispatch/render/pixel proof yet."
   },
   {
-    id: "fxaa-taa",
+    id: "fxaa",
     status: "unproven",
     wgslFoundation: "production-runtime/shaders/wgsl/postprocess.wgsl",
-    evidence: "A3 FXAA/TAA has no WebGPU dispatch/render/pixel proof yet."
+    evidence: "FXAA native execution is owned by WebGPUPostShaders.ts; acceptance requires its own source-bound native receipt."
+  },
+  {
+    id: "taa",
+    status: "unproven",
+    wgslFoundation: "webgpu/WebGPUTemporal.ts",
+    evidence: "Native GPU history/reprojection/depth rejection is implemented by executeWebGPUTaa. Remote adapter, submission, temporal sequence quality and lifecycle evidence is still required."
   },
   {
     id: "spot-shadows",

@@ -1,11 +1,13 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer } from "./example-dev-server";
 import { DEMOS, type DemoControlDefinition, type DemoId } from "../../apps/advanced-examples-gallery/src/metadata";
 
 const REPORT_DIR = resolve("tests/reports/advanced-gallery-control-audit");
-const SCRATCH_DIR = "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer";
+const SCRATCH_DIR = process.env.A3D_GALLERY_AUDIT_DIR
+  ?? join(tmpdir(), "aura3d-gallery-audit");
 const ROUTE = "/apps/advanced-examples-gallery/";
 
 interface GalleryRuntime {

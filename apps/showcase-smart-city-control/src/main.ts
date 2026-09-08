@@ -120,18 +120,20 @@ const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
   u: 0.47,
   v: 0.16,
   w: 0.64,
-  // A 18%-of-city station presents the hero at roughly 40% of the 3.8-unit
-  // city footprint: readable, but still far below the rejected 64% occluding
-  // scale. The prior 12% station sat too close to the primary-pixel floor and
-  // produced sequence-dependent 2,126–2,500-pixel probe results. The slightly
-  // larger pad is staged on the open central avenue so the vehicle is not hidden
-  // behind the tower family in the command view.
-  extent: [0.18, 0.1, 0.18]
+  // A 35%-of-city station keeps the route-primary command vehicle above the
+  // release vehicle readability floor in the full 1440x900 city view. The
+  // former 18% footprint isolated to only 156x125 pixels, below the required
+  // 18% viewport width and 2.5% viewport area. The station remains on the open
+  // central avenue so the larger vehicle does not hide the tower family.
+  extent: [0.35, 0.1, 0.35]
 };
 
 /** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
 function vehicleTargetMaxDimension(): number {
-  return fitSizeToRegion(resolveSemanticRegion(cityBounds(), VEHICLE_STATION_FOOTPRINT_REGION), {
+  const footprint = window.innerWidth < 700
+    ? { ...VEHICLE_STATION_FOOTPRINT_REGION, extent: [0.35, 0.1, 0.35] as const }
+    : VEHICLE_STATION_FOOTPRINT_REGION;
+  return fitSizeToRegion(resolveSemanticRegion(cityBounds(), footprint), {
     // Keep the typed vehicle legible at the release 1440x900 probe size. The
     // former smaller station produced only 2,126–2,500 isolated subject
     // pixels—at or below the public-primary floor—even though its bounds were
@@ -235,6 +237,9 @@ function createScatterCorridorPlan(): ScatterCorridorReport {
   // Street viewpoint: the same authored view the route stages at night.
   const reference = { x: -7.8, z: 8.8 };
   const sorted = strips
+    // The service fleet occupies the foreground operations lot. Preserve an
+    // open approach rather than planting opaque canopies in front of its cars.
+    .filter(([x, z]) => !(Math.abs(x) < 3.8 && z > 2.6))
     .map(([x, z]) => ({ x, z, distance: Math.hypot(x - reference.x, z - reference.z) }))
     .sort((a, b) => a.distance - b.distance);
   const plan = planScatterInstances({
@@ -366,14 +371,21 @@ const controls: SmartCityControls = {
   alertLevel: 42
 };
 
+let fleetMode: "native" | "individual" | "hidden" = "native";
+let fleetVisibleIndex: number | undefined;
 let lastChanged = "initial-load";
+let sceneUpdateGeneration = 0;
 let activeBuild = buildSmartCityScene();
 let app: ReturnType<typeof createAuraApp> | undefined;
 
 publishEvidence("booting");
+const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : 1;
 app = createAuraApp("#aura-stage", {
   diagnostics: { overlay: false, performancePanel: false },
-  pixelRatio: 1,
+  // Composition evidence retains the real CSS viewport and UI geometry while
+  // bounding only its software-rendered backing target. Public route rendering
+  // remains at full resolution.
+  pixelRatio: compositionProbePixelRatio,
   renderer: {
     mode: "production",
     qualityProfile: "production",
@@ -391,7 +403,17 @@ window.addEventListener("resize", () => {
   applyScene(`viewport:${nextCompactLayout ? "compact" : "wide"}`);
 });
 updateControlState();
-publishEvidence("ready");
+// Initial mount has the same asynchronous ownership as a control-driven scene
+// update. Publish its first actual submitted frame immediately; waiting for
+// the twelfth animation callback made a mounted scene look pending for up to
+// minutes on a software-rendered worker.
+void app.ready().then(() => app!.stepAsync(0)).then(() => {
+  if (sceneUpdateGeneration === 0) publishEvidence("ready");
+}).catch((error: unknown) => {
+  if (sceneUpdateGeneration !== 0) return;
+  console.error("Smart City initial mount failed", error);
+  publishEvidence("error");
+});
 
 /*
  * Route-primary evidence for an application route.
@@ -422,10 +444,23 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         targetSize: vehicleTargetMaxDimension()
       };
     },
-    setSubjectSuppressed: (suppressed: boolean) => {
+    pauseForCapture: async () => {
       app?.pause();
+      await app?.ready();
+    },
+    settleSubjectPose: async () => {
+      app?.pause();
+      await app?.ready();
+      await app?.stepAsync(0);
+    },
+    setSubjectSuppressed: async (suppressed: boolean) => {
+      app?.pause();
+      // Camera/district interaction rebuilds the scene asynchronously. Wait for
+      // that scene before mutating its actual typed subject and submitting the
+      // frame retained by composition evidence.
+      await app?.ready();
       app?.nodes.get("city-vehicle-primary")?.setScale(suppressed ? 0.0001 : 1);
-      app?.step(0);
+      await app?.stepAsync(0);
     }
   },
   configurable: true
@@ -761,7 +796,34 @@ function createSmartCityDepthNodes(): AuraNodeInput[] {
     (_, index) => (["#2f6d62", "#3f7861", "#315d68", "#4b7354", "#326f6c", "#56764e"] as const)[index % 6]!
   );
 
+  // Static service fleet shares the existing typed vehicle asset/material groups.
+  // Moving traffic retains its individually addressable runtime handles.
+  const fleetRegion = resolveSemanticRegion(bounds, {
+    id: "service-fleet-parking", u: 0.5, v: 0.04, w: 0.8,
+    extent: [0.6, 0.04, 0.28]
+  });
+  const fleetTarget = Math.min(fleetRegion.size[0] / 3.6, fleetRegion.size[2] / 2.4);
+  const fleetTransforms = Array.from({ length: 6 }, (_, index) => ({
+    position: [
+      fleetRegion.center[0] + ((index % 3) - 1) * fleetRegion.size[0] / 3,
+      bounds.floorY + 0.04,
+      fleetRegion.center[2] + (Math.floor(index / 3) - 0.5) * fleetRegion.size[2] / 2
+    ] as [number, number, number],
+    rotation: [0, Math.PI / 2, 0] as [number, number, number]
+  }));
   return [
+    ...(fleetMode === "hidden" ? [] : fleetMode === "individual" ? fleetTransforms.flatMap((transform, index) => fleetVisibleIndex !== undefined && fleetVisibleIndex !== index ? [] : [
+
+      model(assets.showcaseCityVehicle, { name: `smart city service fleet copy ${index}`, targetMaxDimension: fleetTarget, castShadow: false, receiveShadow: true })
+        .position(...transform.position).rotate(...transform.rotation)
+        .runtime(game.runtimeNode(`city-service-fleet-copy-${index}`))
+    ]) : [instances.model(assets.showcaseCityVehicle, {
+      name: "smart city typed instanced service fleet",
+      targetMaxDimension: fleetTarget,
+      transforms: fleetTransforms.filter((_, index) => fleetVisibleIndex === undefined || fleetVisibleIndex === index),
+      castShadow: false,
+      receiveShadow: true
+    }).runtime(game.runtimeNode("city-service-fleet", { tags: ["traffic", "typed-asset", "static-instanced-fleet"] }))]),
     instances.box({
       name: "smart city far skyline massing",
       transforms: skylineTransforms,
@@ -816,7 +878,23 @@ function createSmartCityDepthNodes(): AuraNodeInput[] {
 }
 
 function widenBuildingFocusCamera(intent: NonNullable<FocusResult["camera"]>): AuraCameraSpec {
-  const distanceScale = window.innerWidth < 700 ? 2.4 : 1.85;
+  // Keep the selected tower and the operational vehicle in one readable
+  // district view. The former desktop lens put the vehicle in the bottom-left
+  // command panel (30% overlap) and cropped the surrounding city at the edges.
+  const compact = window.innerWidth < 700;
+  // The focus helper already supplies a fitted camera. Desktop needs extra
+  // district context, but applying the same 2.4x pullback in portrait reduced
+  // the typed command vehicle to 58 px against the 96 px release floor. Keep
+  // the compact view close enough to retain the vehicle while the midpoint
+  // target below keeps the selected tower in frame.
+  const distanceScale = compact ? 1.45 : 2.6;
+  const station = resolveSemanticRegion(cityBounds(), VEHICLE_STATION_REGION).center;
+  // A portrait district view must retain both the selected building and its
+  // command vehicle. Aim between them; the tower-only target cut the vehicle
+  // off at the left edge even though it was large enough to read.
+  const target: readonly [number, number, number] = compact
+    ? [(intent.target[0] + station[0]) / 2, (intent.target[1] + station[1]) / 2, (intent.target[2] + station[2]) / 2]
+    : intent.target;
   const offset = [
     intent.position[0] - intent.target[0],
     intent.position[1] - intent.target[1],
@@ -825,11 +903,11 @@ function widenBuildingFocusCamera(intent: NonNullable<FocusResult["camera"]>): A
   return {
     mode: "perspective",
     position: [
-      intent.target[0] + offset[0] * distanceScale,
-      intent.target[1] + offset[1] * distanceScale,
-      intent.target[2] + offset[2] * distanceScale
+      target[0] + offset[0] * distanceScale,
+      target[1] + offset[1] * distanceScale,
+      target[2] + offset[2] * distanceScale
     ],
-    target: intent.target,
+    target,
     fov: 44
   };
 }
@@ -1110,7 +1188,9 @@ function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDa
       target,
       seconds: 9,
       captureTime: 4.5,
-      fov: 44
+      // Portrait flythrough retains the typed command vehicle above the same
+      // 96 px release floor used by the other compact camera states.
+      fov: compactViewport ? 40 : 44
     });
   }
   // The command view frames the whole city from its bounds instead of a hardcoded
@@ -1119,8 +1199,16 @@ function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDa
   // route-primary probe reports as `primary-foreground-clipped`.
   return camera.autoFrame({
     bounds: { min: bounds.min, max: bounds.max },
-    target,
-    padding: compactViewport ? 2.35 : timeOfDay === "night" ? 1.18 : 1.68,
+    // On a narrow screen, frame the operational station as the command
+    // subject instead of shrinking the whole city to a tiny overview. Aim
+    // slightly above it to place the vehicle in the clear space between the
+    // camera controls and the bottom command panel.
+    target: compactViewport ? [
+      resolveSemanticRegion(bounds, VEHICLE_STATION_REGION).center[0],
+      resolveSemanticRegion(bounds, VEHICLE_STATION_REGION).center[1] + 0.9,
+      resolveSemanticRegion(bounds, VEHICLE_STATION_REGION).center[2]
+    ] : target,
+    padding: compactViewport ? 0.8 : timeOfDay === "night" ? 1.18 : 1.68,
     fov: 40
   });
 }
@@ -1172,11 +1260,26 @@ function bindControls(): void {
 }
 
 function applyScene(change: string): void {
+  const generation = ++sceneUpdateGeneration;
   lastChanged = change;
   activeBuild = buildSmartCityScene();
-  app?.setScene(activeBuild.snapshot);
+  const currentApp = app;
+  currentApp?.setScene(activeBuild.snapshot);
   updateControlState();
-  publishEvidence("ready");
+  publishEvidence("booting");
+  if (!currentApp) return;
+  // A paused evidence capture (or user-paused scene) has no animation callback
+  // to republish diagnostics after the asynchronous scene mount. Commit the
+  // actual frame and ready evidence as part of the control update itself.
+  void currentApp.ready().then(async () => {
+    if (generation !== sceneUpdateGeneration) return;
+    await currentApp.stepAsync(0);
+    if (generation === sceneUpdateGeneration) publishEvidence("ready");
+  }).catch((error: unknown) => {
+    if (generation !== sceneUpdateGeneration) return;
+    console.error("Smart City scene update failed", error);
+    publishEvidence("error");
+  });
 }
 
 function updateControlState(): void {
@@ -1269,4 +1372,61 @@ function isDistrict(value: string | undefined): value is SmartCityDistrict {
 
 function isCameraMode(value: string | undefined): value is SmartCityCameraMode {
   return CAMERA_MODES.includes(value as SmartCityCameraMode);
+}
+
+
+if (new URLSearchParams(location.search).has("crowdProbe")) {
+  void (async () => {
+  const { attachRootRenderSource } = await import("@aura3d/engine/production-runtime");
+  const canvas = document.querySelector<HTMLCanvasElement>("#aura-stage canvas, canvas#aura-stage");
+  if (!canvas) throw new Error("City crowd observer requires its mounted canvas");
+  let observedFleet = { labels: [] as string[], instancesPerDraw: [] as number[] };
+  const detach = attachRootRenderSource(canvas, { source: { collectRenderItems: () => [] }, onFrame: (_diagnostics, items) => {
+    const fleet = items.filter(item => /(?:^|:)city-service-fleet(?:-copy-\d+)?(?=:|$)/.test(item.label ?? ""));
+    observedFleet = { labels: fleet.map(item => item.label!), instancesPerDraw: fleet.map(item => item.instanceTransforms ? item.instanceTransforms.length / 16 : 1) };
+  } });
+  window.addEventListener("pagehide", detach, { once: true });
+  Object.assign(window, { __AURA3D_CITY_CROWD_PROBE__: {
+    async capture(mode: "native" | "individual" | "hidden", visibleIndex?: number) {
+      if (!app) throw new Error("City app is not mounted");
+      const mark = (stage: string) => {
+        const detail = { stage, mode, at: performance.now(), diagnostics: app!.diagnostics() };
+        Object.assign(window, { __AURA3D_CITY_CROWD_PROBE_STAGE__: detail });
+        console.info(`[I03 city] ${mode} ${stage}`);
+      };
+      const bounded = async (work: Promise<void>, stage: string) => {
+        mark(stage);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([work, new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error(`City ${mode} ${stage} exceeded 60 seconds: ${JSON.stringify(app!.diagnostics())}`)), 60_000);
+          })]);
+        } finally { if (timer !== undefined) clearTimeout(timer); }
+      };
+      app.pause();
+      // Do not supersede the initial asynchronous GLB mount with another mount.
+      await bounded(app.ready(), "initial-ready");
+      if (visibleIndex !== undefined && (!Number.isInteger(visibleIndex) || visibleIndex < 0 || visibleIndex >= 6)) throw new Error("Invalid fleet copy index");
+      fleetMode = mode;
+      fleetVisibleIndex = visibleIndex;
+      mark("set-scene");
+      applyScene(`fleet-probe:${mode}`);
+      await bounded(app.ready(), "scene-ready");
+      await bounded(app.stepAsync(0), "render");
+      mark("read-pixels");
+      const canvas = document.querySelector<HTMLCanvasElement>("#aura-stage canvas, canvas#aura-stage");
+      const gl = canvas?.getContext("webgl2");
+      if (!canvas || !gl) throw new Error("City probe requires native WebGL2");
+      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+      // Read the presented canvas, not a postprocess framebuffer left bound
+        // by an internal pass; restore state before the next renderer step.
+        const previousReadFramebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+        try { gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); }
+        finally { gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousReadFramebuffer); }
+      mark("complete");
+      return { pixels: Array.from(pixels), width: canvas.width, height: canvas.height, crowdDrawLabels: observedFleet.labels, crowdInstancesPerDraw: observedFleet.instancesPerDraw, crowdDrawItems: observedFleet.labels.length, crowdInstances: observedFleet.instancesPerDraw.reduce((sum, count) => sum + count, 0), diagnostics: app.diagnostics() };
+    }
+  } });
+  })().catch(error => { console.error("City crowd probe failed", error); });
 }

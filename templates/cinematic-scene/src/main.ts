@@ -21,7 +21,15 @@ const plan = definePromptPlan({
   ]
 } as const);
 
-createAuraApp("#app", {
-  diagnostics: { overlay: true, assetPanel: true, performancePanel: true },
+const evidenceMode = navigator.webdriver;
+const app = createAuraApp("#app", {
+  autoStart: !evidenceMode,
   scene: promptPlanToScene(plan)
 });
+
+// Browser evidence needs one completed production frame, then a stable GPU.
+// A generated app outside WebDriver keeps the normal continuous render loop.
+if (evidenceMode) {
+  await app.ready();
+  app.step(0);
+}

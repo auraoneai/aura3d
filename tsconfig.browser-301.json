@@ -1,0 +1,286 @@
+// Browser fixtures are not covered by tsconfig.build.json.
+// Roots: browser TypeScript files named in muse3jsparity-3.0.1-PRD.md,
+// their conventionally paired harnesses, and every new 301 browser fixture.
+// TypeScript follows imports to check their full dependency closure.
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "paths": {
+      "@aura3d/math": [
+        "packages/math/src/index.ts"
+      ],
+      "@aura3d/core": [
+        "packages/core/src/index.ts"
+      ],
+      "@aura3d/asset-index": [
+        "packages/asset-index/src/index.ts"
+      ],
+      "@aura3d/scene": [
+        "packages/scene/src/index.ts"
+      ],
+      "@aura3d/scene/math": [
+        "packages/scene/src/MathTypes.ts"
+      ],
+      "@aura3d/ecs": [
+        "packages/ecs/src/index.ts"
+      ],
+      "@aura3d/rendering": [
+        "packages/rendering/src/index.ts"
+      ],
+      "@aura3d/rendering/lean-runtime": [
+        "packages/rendering/src/lean-runtime.ts"
+      ],
+      "@aura3d/rendering/lean-core-runtime": [
+        "packages/rendering/src/lean-core-runtime.ts"
+      ],
+      "@aura3d/rendering/extension-scalar-atlas": [
+        "packages/rendering/src/extension-scalar-atlas.ts"
+      ],
+      "@aura3d/rendering/reflection-surfaces": [
+        "packages/rendering/src/reflection-surfaces.ts"
+      ],
+      "@aura3d/controls": [
+        "packages/controls/src/index.ts"
+      ],
+      "@aura3d/environments": [
+        "packages/environments/src/index.ts"
+      ],
+      "@aura3d/materials": [
+        "packages/materials/src/index.ts"
+      ],
+      "@aura3d/engine": [
+        "packages/engine/src/index.ts"
+      ],
+      "@aura3d/engine/lean": [
+        "packages/engine/src/agent-api/lean.ts"
+      ],
+      "@aura3d/engine/lean-game": [
+        "packages/engine/src/agent-api/lean-game.ts"
+      ],
+      "@aura3d/engine/lean-product": [
+        "packages/engine/src/agent-api/lean-product.ts"
+      ],
+      "@aura3d/lean": [
+        "packages/lean/src/index.ts"
+      ],
+      "@aura3d/lean/product": [
+        "packages/lean/src/product.ts"
+      ],
+      "@aura3d/lean/game": [
+        "packages/lean/src/game.ts"
+      ],
+      "@aura3d/cli": [
+        "packages/aura3d-cli/src/index.ts"
+      ],
+      "@aura3d/react": [
+        "packages/react/src/index.ts"
+      ],
+      "@aura3d/engine-runtime": [
+        "packages/engine/src/index.ts"
+      ],
+      "@aura3d/apps": [
+        "packages/apps/src/index.ts"
+      ],
+      "@aura3d/engine/apps": [
+        "packages/apps/src/index.ts"
+      ],
+      "@aura3d/engine/engine": [
+        "packages/engine/src/index.ts"
+      ],
+      "@aura3d/engine/assets": [
+        "packages/assets/src/index.ts"
+      ],
+      "@aura3d/engine/assets/browser": [
+        "packages/assets/src/browser-index.ts"
+      ],
+      "@aura3d/engine/rendering": [
+        "packages/rendering/src/index.ts"
+      ],
+      "@aura3d/engine/scene": [
+        "packages/scene/src/index.ts"
+      ],
+      "@aura3d/engine/rendering/production-runtime": [
+        "packages/rendering/src/production-runtime/index.ts"
+      ],
+      "@aura3d/engine/media-node": [
+        "packages/engine/src/agent-api/media-node.ts"
+      ],
+      "@aura3d/physics/world": [
+        "packages/physics/src/world.ts"
+      ],
+      "@aura3d/physics/solverless": [
+        "packages/physics/src/solverless.ts"
+      ],
+      "@aura3d/engine/rendering/webgpu": [
+        "packages/rendering/src/webgpu.ts"
+      ],
+      "@aura3d/engine/rendering/advanced-runtime": [
+        "packages/rendering/src/advanced-runtime/index.ts"
+      ],
+      "@aura3d/engine/workflows/production": [
+        "packages/workflows/src/production-runtime/index.ts"
+      ],
+      "@aura3d/engine/workflows/production-runtime": [
+        "packages/workflows/src/production-runtime/index.ts"
+      ],
+      "@aura3d/three-compat": [
+        "packages/three-compat/src/index.ts"
+      ],
+      "@aura3d/create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
+      "create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
+      "@aura3d/physics": [
+        "packages/physics/src/index.ts"
+      ],
+      "@aura3d/physics-rapier": [
+        "packages/physics-rapier/src/index.ts"
+      ],
+      "@aura3d/navigation-recast": [
+        "packages/navigation-recast/src/index.ts"
+      ],
+      "@aura3d/product-studio": [
+        "packages/product-studio/src/index.ts"
+      ],
+      "@aura3d/animation": [
+        "packages/animation/src/index.ts"
+      ],
+      "@aura3d/assets": [
+        "packages/assets/src/index.ts"
+      ],
+      "@aura3d/assets/browser": [
+        "packages/assets/src/browser-index.ts"
+      ],
+      "@aura3d/assets/gltf-runtime": [
+        "packages/assets/src/gltf-runtime.ts"
+      ],
+      "@aura3d/input": [
+        "packages/input/src/index.ts"
+      ],
+      "@aura3d/audio": [
+        "packages/audio/src/index.ts"
+      ],
+      "@aura3d/scripting": [
+        "packages/scripting/src/index.ts"
+      ],
+      "@aura3d/workflows": [
+        "packages/workflows/src/index.ts"
+      ],
+      "@aura3d/editor-runtime": [
+        "packages/editor-runtime/src/index.ts"
+      ],
+      "@aura3d/editor": [
+        "packages/editor/src/index.ts"
+      ],
+      "@aura3d/debug": [
+        "packages/debug/src/index.ts"
+      ],
+      "@aura3d/engine/assets/asset-corpus": [
+        "packages/assets/src/asset-corpus/index.ts"
+      ],
+      "@aura3d/engine/assets/advanced-gallery": [
+        "packages/assets/src/advanced-gallery/index.ts"
+      ],
+      "@aura3d/engine/production-runtime": [
+        "packages/engine/src/production-runtime/index.ts"
+      ],
+      "@aura3d/engine/advanced-runtime": [
+        "packages/engine/src/advanced-runtime/index.ts"
+      ],
+      "/packages/*": [
+        "packages/*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ]
+  },
+  "files": [
+    "tests/browser/animation-pointer-material-harness.ts",
+    "tests/browser/audio-browser-harness.ts",
+    "tests/browser/audio-browser.spec.ts",
+    "tests/browser/certified-hero-rigs-harness.ts",
+    "tests/browser/certified-hero-rigs.spec.ts",
+    "tests/browser/clustered-lighting-b5-harness.ts",
+    "tests/browser/contact-shimmer-b1b2.spec.ts",
+    "tests/browser/context-loss-recovery.spec.ts",
+    "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+    "tests/browser/createAuraApp-postprocess-contract.spec.ts",
+    "tests/browser/crowd-instancing-adoption-301.spec.ts",
+    "tests/browser/d4-flipbook-beam-harness.ts",
+    "tests/browser/deep-recovery-playable.spec.ts",
+    "tests/browser/foot-planting-harness.ts",
+    "tests/browser/foot-planting.spec.ts",
+    "tests/browser/game-visual-superiority-harness.ts",
+    "tests/browser/game-visual-superiority-perf-harness.ts",
+    "tests/browser/game-visual-superiority.spec.ts",
+    "tests/browser/gpu-particle-a4.spec.ts",
+    "tests/browser/input-browser-harness.ts",
+    "tests/browser/input-browser.spec.ts",
+    "tests/browser/instanced-model-p2-harness.ts",
+    "tests/browser/instanced-model-p2.spec.ts",
+    "tests/browser/label-occlusion-harness.ts",
+    "tests/browser/label-occlusion.spec.ts",
+    "tests/browser/library-parity-superiority.spec.ts",
+    "tests/browser/muse3jsparity-301-engine-perf-harness.ts",
+    "tests/browser/muse3jsparity-301-engine-perf.spec.ts",
+    "tests/browser/muse3jsparity-301-root-governor-harness.ts",
+    "tests/browser/muse3jsparity-301-visual-cases.ts",
+    "tests/browser/native-bloom-pyramid-harness.ts",
+    "tests/browser/native-bloom-pyramid.spec.ts",
+    "tests/browser/orbit-map-options-301-harness.ts",
+    "tests/browser/orbit-map-options-301.spec.ts",
+    "tests/browser/part-o1-navigation-crowd-harness.ts",
+    "tests/browser/part-o1-navigation-crowd.spec.ts",
+    "tests/browser/part-o2-visual-scripting-harness.ts",
+    "tests/browser/physics-debug-draw-harness.ts",
+    "tests/browser/physics-debug-draw.spec.ts",
+    "tests/browser/physics-h1-promotions-harness.ts",
+    "tests/browser/physics-h1-promotions.spec.ts",
+    "tests/browser/reflection-surfaces-b4-harness.ts",
+    "tests/browser/reflection-surfaces-b4.spec.ts",
+    "tests/browser/resource-soak-u1-harness.ts",
+    "tests/browser/resource-soak-u1.spec.ts",
+    "tests/browser/rig-pair-rendered-301-harness.ts",
+    "tests/browser/root-effects-a3-harness.ts",
+    "tests/browser/root-effects-a3.spec.ts",
+    "tests/browser/root-motion-locomotion-301-harness.ts",
+    "tests/browser/root-motion-locomotion-301.spec.ts",
+    "tests/browser/root-path-integrity.spec.ts",
+    "tests/browser/root-spot-shadow-n1-harness.ts",
+    "tests/browser/root-spot-shadow-n1.spec.ts",
+    "tests/browser/root-textured-c1-harness.ts",
+    "tests/browser/root-textured-c1.spec.ts",
+    "tests/browser/route-gamefeel-adoption.spec.ts",
+    "tests/browser/shadow-family-b1-harness.ts",
+    "tests/browser/shadow-stability-301-harness.ts",
+    "tests/browser/shadow-stability-301.spec.ts",
+    "tests/browser/showcase-smart-city-optimization.spec.ts",
+    "tests/browser/smart-city-scatter-adoption.spec.ts",
+    "tests/browser/spotlight-route-adoption-301.spec.ts",
+    "tests/browser/threejs-parity-orbit-controls.spec.ts",
+    "tests/browser/webgpu-basic-color-301-harness.ts",
+    "tests/browser/webgpu-bloom-hdr-301-harness.ts",
+    "tests/browser/webgpu-extension-atlas-301-harness.ts",
+    "tests/browser/webgpu-post-j2-harness.ts",
+    "tests/browser/webgpu-post-j2.spec.ts"
+  ],
+  "include": [
+    "tests/browser/*301*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/reports"
+  ]
+}

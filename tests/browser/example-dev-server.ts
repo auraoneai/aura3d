@@ -20,6 +20,8 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/ecs", "/packages/ecs/src/index.ts"],
   ["@aura3d/rendering/lean-runtime", "/packages/rendering/src/lean-runtime.ts"],
+  ["@aura3d/rendering/lean-core-runtime", "/packages/rendering/src/lean-core-runtime.ts"],
+  ["@aura3d/rendering/reflection-surfaces", "/packages/rendering/src/reflection-surfaces.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/lean-product", "/packages/engine/src/agent-api/lean-product.ts"],
   ["@aura3d/engine/lean-game", "/packages/engine/src/agent-api/lean-game.ts"],
@@ -92,6 +94,7 @@ const packageEntryPoints = new Map<string, string>([
   ["three/addons/loaders/RGBELoader.js", "/node_modules/three/examples/jsm/loaders/RGBELoader.js"],
   ["three/addons/controls/OrbitControls.js", "/node_modules/three/examples/jsm/controls/OrbitControls.js"],
   ["three/addons/environments/RoomEnvironment.js", "/node_modules/three/examples/jsm/environments/RoomEnvironment.js"],
+  ["three/addons/objects/Reflector.js", "/node_modules/three/examples/jsm/objects/Reflector.js"],
   ["three/addons/libs/meshopt_decoder.module.js", "/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js"],
   ["three/addons/postprocessing/EffectComposer.js", "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js"],
   ["three/addons/postprocessing/OutputPass.js", "/node_modules/three/examples/jsm/postprocessing/OutputPass.js"],
@@ -208,6 +211,10 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     candidates.push(join(root, legacyGameSliceTemplatePath));
   } else {
     candidates.push(join(root, normalizedPath));
+    // Vite serves repository public/ files from the origin root. Mirror that
+    // contract so route assets such as /favicon.svg do not become harness-only
+    // 404s while production and preview builds resolve them correctly.
+    candidates.push(join(root, "public", normalizedPath.replace(/^[/\\]?/, "")));
   }
 
   if (!extname(normalizedPath)) {

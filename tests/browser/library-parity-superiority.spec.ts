@@ -1,3 +1,6 @@
+import type {} from "./root-spot-shadow-n1-harness";
+import type {} from "./part-o1-navigation-crowd-harness";
+import type {} from "./part-o2-visual-scripting-harness";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -15,25 +18,16 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * zero OUT rows lack outReason. Retained M–P browser receipts must exist
  * with non-trivial bytes (missing fails, never skips), and the headline
  * metric of each is re-verified live in this same run (30-minute rule).
+ * The producer writes current-run receipts after live assertions pass; it does
+ * not require mutable reports from an earlier checkout.
  *
- * Honest open item recorded in the receipt (not a failure, not hidden):
- * P2 rendered 4k-GLB pixel proof is still OPEN per the PRD box — the builder,
- * mount, and fallback-warning legs below are unit-proven only.
+ * P2 closure requires a fresh real 4k-GLB browser run with native submission
+ * and pixel assertions; the existence of unit source files cannot close it.
  */
 
 const REPORT_DIR = "tests/reports/muse3jsparity";
 const MATRIX_PATH = "benchmark/context/muse3jsparity-r185-matrix.json";
 const FRESHNESS_MS = 30 * 60 * 1000;
-
-const RETAINED: ReadonlyArray<{ path: string; minBytes: number }> = [
-  { path: "tests/reports/animation-pointer-material/pointer-fade.json", minBytes: 100 },
-  { path: "tests/reports/animation-pointer-material/pointer-fade.png", minBytes: 1024 },
-  { path: "tests/reports/root-texture-streaming-m2.json", minBytes: 100 },
-  { path: "tests/reports/root-spot-hdri-n1m3.json", minBytes: 100 },
-  { path: "tests/reports/root-spot-shadow-n1.json", minBytes: 100 },
-  { path: "tests/reports/part-o1-navigation-crowd/browser.json", minBytes: 100 },
-  { path: "tests/reports/part-o2-visual-scripting/browser.json", minBytes: 100 },
-];
 
 // Unit-proven legs with no browser-pixel claim (asserted as files + doctrine,
 // never as rendered proof).
@@ -118,25 +112,14 @@ test.describe("K1 library parity superiority (M-P)", () => {
     );
   });
 
-  test("retained M-P receipts exist with non-trivial bytes; unit legs present", async () => {
-    const checked: Array<{ path: string; bytes: number; ageMs: number }> = [];
-    for (const file of RETAINED) {
-      const full = resolve(file.path);
-      expect(existsSync(full), `MISSING retained M-P evidence (fail-closed, never skip): ${file.path}`).toBe(true);
-      const stat = statSync(full);
-      expect(stat.size, `${file.path} is trivial`).toBeGreaterThan(file.minBytes);
-      if (file.path.endsWith(".json")) {
-        expect(typeof JSON.parse(readFileSync(full, "utf8")), `${file.path} must parse`).toBe("object");
-      }
-      checked.push({ path: file.path, bytes: stat.size, ageMs: Date.now() - stat.mtimeMs });
-    }
+  test("unit-proven source legs remain present", async () => {
     for (const leg of UNIT_LEGS) {
       expect(existsSync(resolve(leg)), `MISSING unit leg: ${leg}`).toBe(true);
     }
     mkdirSync(resolve(REPORT_DIR), { recursive: true });
     writeFileSync(
-      resolve(`${REPORT_DIR}/library-retained-check.json`),
-      `${JSON.stringify({ generatedAt: new Date().toISOString(), checked, unitLegs: UNIT_LEGS }, null, 2)}\n`
+      resolve(`${REPORT_DIR}/library-unit-leg-check.json`),
+      `${JSON.stringify({ generatedAt: new Date().toISOString(), unitLegs: UNIT_LEGS }, null, 2)}\n`
     );
   });
 
@@ -246,6 +229,29 @@ test.describe("K1 library parity superiority (M-P)", () => {
       agentZeroDisplacement: o1?.agentZeroDisplacement,
     };
 
+    // P2 is measured live; historical unit-source presence is not rendered proof.
+    errors = captureErrors(page);
+    await page.goto(`${server.origin}/tests/browser/instanced-model-p2-harness.html`, { waitUntil: "domcontentloaded" });
+    await page.click("#shoot");
+    await page.waitForFunction(() => window.__AURA3D_P2_INSTANCED_MODEL__?.status === "ready" || window.__AURA3D_P2_INSTANCED_MODEL__?.status === "error", undefined, { timeout: 180_000 });
+    const p2 = await page.evaluate(() => window.__AURA3D_P2_INSTANCED_MODEL__);
+    expect(p2?.status, p2?.error ?? errors.join("\n")).toBe("ready");
+    expect(errors).toEqual([]);
+    const p2Field = p2?.captures?.find(capture => capture.id === "instanced-4000");
+    const p2Single = p2?.captures?.find(capture => capture.id === "single");
+    expect(p2Field?.instanceCount).toBe(4000);
+    expect(p2Field?.assetStatus).toBe("ready");
+    expect(p2Field?.backend).toBe("production-runtime");
+    expect(p2Field?.errorCount).toBe(0);
+    expect(Number(p2?.checks?.instancedSubmissions4000 ?? 0)).toBeGreaterThan(0);
+    expect(Number(p2?.checks?.draws4000 ?? 0)).toBeGreaterThan(0);
+    expect(Number(p2?.checks?.draws4000 ?? Infinity)).toBeLessThanOrEqual(Number(p2?.checks?.drawsSingle ?? 0) + 4);
+    expect(Number(p2?.checks?.pixelDiffSingleVs4000 ?? 0)).toBeGreaterThan(1000);
+    expect(p2Field?.image.brightPixels ?? 0).toBeGreaterThan((p2Single?.image.brightPixels ?? 0) + 1000);
+    mkdirSync(resolve(REPORT_DIR), { recursive: true });
+    await page.screenshot({ path: resolve(`${REPORT_DIR}/library-p2-4000.png`) });
+    live.instancedModelP2 = p2;
+
     // O2 visual-scripting graph changes gameplay state.
     errors = captureErrors(page);
     await page.goto(`${server.origin}/tests/browser/part-o2-visual-scripting-harness.html`, {
@@ -277,13 +283,15 @@ test.describe("K1 library parity superiority (M-P)", () => {
       `${JSON.stringify(
         {
           generatedAt: new Date().toISOString(),
-          scope: "M-P rows: worked or explicitly OUT (matrix) + retained receipts + live re-verification",
+          scope: "M-P rows: worked or explicitly OUT (matrix) + current-run live re-verification",
           matrixReceipt: `${REPORT_DIR}/matrix-check.json`,
-          retainedReceipt: `${REPORT_DIR}/library-retained-check.json`,
+          unitLegReceipt: `${REPORT_DIR}/library-unit-leg-check.json`,
           liveReceipt: `${REPORT_DIR}/library-live-reverification.json`,
-          openItems: [
-            "P2 rendered 4k-GLB pixel proof OPEN per PRD (builder+mount+warnings unit-proven; unit legs listed in retained receipt)",
-          ],
+          schema: "aura3d.library-parity-301/v1",
+          producer: "tests/browser/library-parity-superiority.spec.ts",
+          p2RenderedProof: live.instancedModelP2,
+          superiorityVerdict: "inconclusive",
+          comparisonRequired: "Per-feature r185 winning metrics and independent image review remain required for superiority.",
         },
         null,
         2
@@ -304,27 +312,6 @@ declare global {
       readonly status: "ready" | "error";
       readonly checks?: Record<string, unknown>;
       readonly error?: string;
-    };
-    __AURA3D_N1_SPOT_SHADOW__?: {
-      readonly status: "ready" | "error";
-      readonly checks?: Record<string, unknown>;
-      readonly error?: string;
-    };
-    __AURA3D_PART_O1__?: {
-      readonly status?: string;
-      readonly claim?: string;
-      readonly available?: boolean;
-      readonly steps?: number;
-      readonly agentZeroDisplacement?: number;
-      readonly diagnostics?: { readonly count?: number; readonly atCap?: boolean };
-    };
-    __AURA3D_PART_O2__?: {
-      readonly status?: string;
-      readonly claim?: string;
-      readonly roundTripStable?: boolean;
-      readonly catalogKinds?: number;
-      readonly jumps?: number;
-      readonly score?: number;
     };
   }
 }

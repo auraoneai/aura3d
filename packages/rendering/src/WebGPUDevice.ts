@@ -1,3 +1,4 @@
+import { WEBGPU_EXTENSION_ATLAS_WGSL, webgpuExtensionAtlasUniforms } from "./WebGPUExtensionAtlas";
 import {
   type BufferUsage,
   type DrawCommand,
@@ -10,6 +11,7 @@ import {
   type RenderShaderProgram,
   type RenderTarget,
   type RenderTargetDescriptor,
+  type LdrPostprocessPresentationOptions,
   type ShaderReflection,
   type ShaderCompilationDiagnostic,
   type ShaderSources,
@@ -19,6 +21,7 @@ import {
   spreadGpuTargetInventory
 } from "./RenderDevice";
 import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
+import { normalizeWebGPUTemporalOptions, WEBGPU_TAA_FRAGMENT, WEBGPU_TAA_OUTPUT_FRAGMENT, type WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal";
 import {
   defaultWebGPUBloomWeights,
   normalizeWebGPUColorGradeOptions,
@@ -59,6 +62,26 @@ const TEXTURE_USAGE = {
   TEXTURE_BINDING: 0x0004
 } as const;
 const DEPTH_TEXTURE_FORMAT = "depth24plus";
+const WEBGPU_NATIVE_COPY_FRAGMENT = `
+@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var linearSampler: sampler;
+@group(0) @binding(2) var source: texture_2d<f32>;
+@fragment fn fs_copy(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+ return textureSample(source, linearSampler, clamp(uv, params.xy * 0.5, vec2<f32>(1.0) - params.xy * 0.5));
+}`;
+const WEBGPU_NATIVE_TONE_FRAGMENT = `
+@group(0) @binding(0) var<uniform> params: vec4<f32>;
+@group(0) @binding(1) var linearSampler: sampler;
+@group(0) @binding(2) var source: texture_2d<f32>;
+@fragment fn fs_tone(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+ let sample = textureSample(source, linearSampler, uv);
+ var c = max(sample.rgb * params.x / params.w, vec3<f32>(0.0));
+ if (params.y > 2.5) { let toe=max(c-vec3<f32>(0.004),vec3<f32>(0.0)); c=min((toe*(6.2*toe+vec3<f32>(0.5)))/(toe*(6.2*toe+vec3<f32>(1.7))+vec3<f32>(0.06)),c*1.08); }
+ else if (params.y > 1.5) { c = clamp((c * (2.51 * c + vec3<f32>(0.03))) / (c * (2.43 * c + vec3<f32>(0.59)) + vec3<f32>(0.14)), vec3<f32>(0.0), vec3<f32>(1.0)); }
+ else if (params.y > 0.5) { c = c / (vec3<f32>(1.0) + c); }
+ if (params.z > 0.5) { c = select(1.055 * pow(c, vec3<f32>(1.0 / 2.4)) - vec3<f32>(0.055), c * 12.92, c <= vec3<f32>(0.0031308)); }
+ return vec4<f32>(c, sample.a);
+}`;
 
 interface ForwardShadowUniforms {
   readonly texture: TextureBinding;
@@ -118,6 +141,7 @@ export interface WebGPUQueueLike {
   writeTexture?(destination: WebGPUImageCopyTextureLike, data: ArrayBuffer | ArrayBufferView, dataLayout: WebGPUImageDataLayoutLike, size: WebGPUExtent3DLike): void;
   copyExternalImageToTexture?(source: WebGPUImageCopyExternalImageLike, destination: WebGPUImageCopyTextureLike, size: WebGPUExtent3DLike): void;
   submit(commands: readonly unknown[]): void;
+  onSubmittedWorkDone?(): Promise<void>;
 }
 
 export interface WebGPUBufferDescriptorLike {
@@ -333,6 +357,7 @@ type NativeUniformLayout =
   | "generated-basic"
   | "generated-texture"
   | "generated-pbr"
+  | "generated-atlas-pbr"
   | "generated-textured-pbr"
   | "generated-instanced-pbr"
   | "generated-skinned-unlit"
@@ -343,6 +368,8 @@ type NativeUniformLayout =
 class WebGPUShaderProgram implements RenderShaderProgram {
   public disposed = false;
   public readonly renderPipelines = new Map<string, WebGPURenderPipelineLike>();
+  public nativeColorDefaultModule: unknown;
+  public readonly atlasVertexModules = new Map<string, unknown>();
 
   constructor(
     public readonly id: number,
@@ -352,7 +379,9 @@ class WebGPUShaderProgram implements RenderShaderProgram {
     public readonly modules: readonly unknown[],
     public readonly entryPoints: readonly [string, string],
     public readonly nativeUniformLayout: NativeUniformLayout,
-    public readonly portableBindings: readonly PortableShaderBinding[]
+    public readonly portableBindings: readonly PortableShaderBinding[],
+    public readonly nativeColorDefaultVertex?: string,
+    public readonly nativeAtlasVertex?: string
   ) {}
 
   dispose(): void {
@@ -436,6 +465,8 @@ export class WebGPUDevice implements RenderDevice {
   private nativeBloomPasses = 0;
   private nativeColorGradePasses = 0;
   private nativeFxaaPasses = 0;
+  private nativeTaaPasses = 0;
+  private nativeTemporalBindings = 0;
   private readonly webgpuPostPipelines = new Map<string, WebGPURenderPipelineLike>();
   private webgpuPostLinearSampler: WebGPUSamplerLike | null = null;
   private lastWebGPUBloom: WebGPUBloomDiagnostics | null = null;
@@ -601,7 +632,9 @@ export class WebGPUDevice implements RenderDevice {
       modules,
       nativeSources.entryPoints,
       nativeSources.uniformLayout,
-      nativeSources.portableBindings ?? []
+      nativeSources.portableBindings ?? [],
+      nativeSources.colorDefaultVertex,
+      nativeSources.atlasVertex
     );
     this.shaders.add(shader);
     return shader;
@@ -1118,6 +1151,14 @@ export class WebGPUDevice implements RenderDevice {
     this.drawCalls += 1;
   }
 
+  async waitForSubmittedWork(): Promise<void> {
+    this.assertAlive();
+    if (!this.device.queue.onSubmittedWorkDone) {
+      throw new RenderDeviceError("Native GPU queue completion is unavailable", "GPU_COMPLETION_UNAVAILABLE");
+    }
+    await this.device.queue.onSubmittedWorkDone();
+  }
+
   endFrame(): void {
     this.assertFrame();
     this.frameActive = false;
@@ -1153,6 +1194,8 @@ export class WebGPUDevice implements RenderDevice {
       ["nativeBloomPasses", this.nativeBloomPasses],
       ["nativeColorGradePasses", this.nativeColorGradePasses],
       ["nativeFxaaPasses", this.nativeFxaaPasses],
+      ["nativeTaaPasses", this.nativeTaaPasses],
+      ["nativeTemporalBindings", this.nativeTemporalBindings],
       ["canvasSubmissions", this.canvasSubmissions]
     ]);
   }
@@ -1215,7 +1258,7 @@ export class WebGPUDevice implements RenderDevice {
    *
    * Renders bright-extract -> separable-blur mip pyramid -> composite over
    * the source, all as real WGSL fullscreen passes on this device. Returns a
-   * fresh rgba8 target owned by the caller (dispose it); every intermediate
+   * fresh rgba16f target owned by the caller (dispose it); every intermediate
    * is disposed before return. Throws fail-closed when the native device
    * cannot run fullscreen passes.
    */
@@ -1229,7 +1272,10 @@ export class WebGPUDevice implements RenderDevice {
     }
     const width = src.width;
     const height = src.height;
-    const mipFormat = normalized.halfFloat ? "rgba16f" : "rgba8";
+    // Preserve HDR source energy even at performance quality. Bloom adds to
+    // scene radiance before tone mapping, so its composite is always floating point.
+    const halfFloat = normalized.halfFloat || src.colorTexture.format === "rgba16f" || src.colorTexture.format === "rgba32f";
+    const mipFormat = halfFloat ? "rgba16f" : "rgba8";
     const owned: RenderTarget[] = [];
     const track = (target: RenderTarget): RenderTarget => {
       owned.push(target);
@@ -1279,7 +1325,7 @@ export class WebGPUDevice implements RenderDevice {
         level = mipTarget;
       }
       const weights = defaultWebGPUBloomWeights(normalized.mipCount);
-      const composite = track(this.createRenderTarget({ width, height, format: "rgba8", label: "a3d-webgpu-bloom-composite" }));
+      const composite = track(this.createRenderTarget({ width, height, format: "rgba16f", label: "a3d-webgpu-bloom-composite" }));
       const mipViews = mips.map((mipTarget) => {
         const view = this.requireRenderTarget(mipTarget).nativeView;
         if (!view) throw new RenderDeviceError("WebGPU bloom mip has no native view", "NATIVE_POST_UNSUPPORTED", {});
@@ -1293,13 +1339,13 @@ export class WebGPUDevice implements RenderDevice {
         views: [srcView, ...mipViews],
         target: composite
       });
-      const bytesPerPixel = normalized.halfFloat ? 8 : 4;
+      const bytesPerPixel = halfFloat ? 8 : 4;
       const targetBytes = width * height * bytesPerPixel
-        + mips.reduce((total, mipTarget) => total + mipTarget.width * mipTarget.height * bytesPerPixel, 0)
-        + width * height * 4;
+        + mips.reduce((total, mipTarget) => total + mipTarget.width * mipTarget.height * bytesPerPixel * 2, 0)
+        + width * height * 8;
       this.lastWebGPUBloom = {
         mipCount: normalized.mipCount,
-        halfFloat: normalized.halfFloat,
+        halfFloat,
         targetBytes,
         compositeGain: normalized.strength,
         passes: 1 + normalized.mipCount * 2 + 1,
@@ -1368,9 +1414,8 @@ export class WebGPUDevice implements RenderDevice {
   /**
    * muse3jsparity-PRD J2 — native WebGPU FXAA.
    * Compact FXAA 3.11 console core (luma neighborhood, one perpendicular
-   * blend tap pair; flat neighborhoods pass through untouched). TAA is
-   * intentionally out of scope: no velocity/history inputs exist on the
-   * WebGPU path (same withheld doctrine as the root A3 nodes).
+   * blend tap pair; flat neighborhoods pass through untouched). Temporal
+   * antialiasing has a separate GPU history contract in executeWebGPUTaa.
    */
   executeWebGPUFxaa(source: RenderTarget): RenderTarget {
     this.reclaimWebGPUPostUniformBuffers();
@@ -1397,23 +1442,95 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
+  /** Native target-to-target chain. Unsupported passes fail before any submission. */
+  presentLdrPostprocess(source: RenderTarget, options: LdrPostprocessPresentationOptions): void {
+    this.assertAlive();
+    const supported = new Set(["bloom", "tone-mapping", "color-grade", "fxaa", "taa"]);
+    for (const pass of options.passes) {
+      if (!supported.has(pass.name)) throw new RenderDeviceError(`Native WebGPU postprocess does not support ${pass.name}`, "WEBGPU_POSTPROCESS_UNSUPPORTED", { pass: pass.name });
+    }
+    const owned: RenderTarget[] = [];
+    let current = source;
+    const track = (target: RenderTarget): void => { owned.push(target); current = target; };
+    try {
+      for (const pass of options.passes) {
+        if (pass.name === "bloom") track(this.executeWebGPUBloom(current, pass.options));
+        else if (pass.name === "color-grade") track(this.executeWebGPUColorGrade(current, pass.options));
+        else if (pass.name === "fxaa") track(this.executeWebGPUFxaa(current));
+        else if (pass.name === "taa") {
+          const temporal = pass.options.temporal as WebGPUTemporalInputs | undefined;
+          if (!temporal) throw new RenderDeviceError("Native WebGPU TAA requires GPU temporal bindings", "TEMPORAL_NATIVE_REQUIRED");
+          track(this.executeWebGPUTaa(current, { ...temporal, ...(typeof pass.options.blend === "number" ? { blend: pass.options.blend } : {}) }));
+        } else if (pass.name === "tone-mapping") {
+          const tone = { ...options.toneMappingDefaults, ...pass.options };
+          const operator = tone.operator ?? "reinhard";
+          const operatorId = operator === "linear" || operator === "none" ? 0 : operator === "reinhard" ? 1 : operator === "aces" || operator === "aces-filmic" ? 2 : operator === "filmic" ? 3 : -1;
+          if (operatorId < 0) throw new RenderDeviceError(`Unsupported native WebGPU tone operator ${String(operator)}`, "WEBGPU_POSTPROCESS_UNSUPPORTED");
+          const exposure = typeof tone.exposure === "number" ? tone.exposure : 1;
+          const whitePoint = typeof tone.whitePoint === "number" ? tone.whitePoint : 1;
+          if (!Number.isFinite(whitePoint) || whitePoint <= 0) throw new RenderDeviceError("Invalid tone white point", "WEBGPU_POSTPROCESS_UNSUPPORTED");
+          if (!Number.isFinite(exposure) || exposure < 0) throw new RenderDeviceError("Invalid tone exposure", "WEBGPU_POSTPROCESS_UNSUPPORTED");
+          const target = this.createRenderTarget({ width: source.width, height: source.height, format: "rgba8", label: "a3d-webgpu-tone" });
+          owned.push(target);
+          this.runWebGPUFullscreenPass({ label: "webgpu-tone", fragment: WEBGPU_NATIVE_TONE_FRAGMENT, entryPoint: "fs_tone",
+            uniforms: new Float32Array([exposure, operatorId, tone.outputColorSpace === "srgb" ? 1 : 0, whitePoint]),
+            views: [this.requireRenderTarget(current).nativeView], target });
+          current = target;
+        }
+      }
+      const target = options.outputTarget ?? null;
+      if (target === current) throw new RenderDeviceError("Native WebGPU presentation source/output alias", "INVALID_RESOURCE");
+      this.runWebGPUFullscreenPass({ label: "webgpu-post-present", fragment: WEBGPU_NATIVE_COPY_FRAGMENT, entryPoint: "fs_copy",
+        uniforms: new Float32Array([1 / source.width, 1 / source.height, 0, 0]),
+        views: [this.requireRenderTarget(current).nativeView], target });
+      if (!target) { this.activeRenderTarget = null; this.canvasSubmissions += 1; }
+    } finally { for (const target of owned) target.dispose(); }
+  }
+
+  /** Resolve GPU velocity/history into caller-owned historyOutput, returning scene-alpha color. */
+  executeWebGPUTaa(source: RenderTarget, options: WebGPUTemporalInputs): RenderTarget {
+    this.assertAlive();
+    const [blend, depthThreshold] = normalizeWebGPUTemporalOptions(options);
+    const targets = [source, options.velocity, options.history, options.historyOutput];
+    if (new Set(targets).size !== targets.length) throw new RenderDeviceError("TAA targets must not alias", "NATIVE_POST_UNSUPPORTED");
+    const native = targets.map((target) => this.requireRenderTarget(target));
+    if (native.some((target) => target.width !== source.width || target.height !== source.height || !target.nativeView)) {
+      throw new RenderDeviceError("TAA requires same-size native source, velocity and history targets", "NATIVE_POST_UNSUPPORTED");
+    }
+    if (targets.slice(1).some((target) => target.colorTexture.format !== "rgba16f")) {
+      throw new RenderDeviceError("TAA velocity/history targets require rgba16f", "NATIVE_POST_UNSUPPORTED");
+    }
+    const out = this.createRenderTarget({ width: source.width, height: source.height, format: "rgba16f", label: "a3d-webgpu-taa-color" });
+    try {
+      this.runWebGPUFullscreenPass({ label: "webgpu-taa", fragment: WEBGPU_TAA_FRAGMENT, entryPoint: "fs_taa",
+        uniforms: new Float32Array([1 / source.width, 1 / source.height, blend, options.historyValid ? 1 : 0, depthThreshold, 0, 0, 0]),
+        views: native.slice(0, 3).map((target) => target.nativeView), target: options.historyOutput });
+      this.runWebGPUFullscreenPass({ label: "webgpu-taa-output", fragment: WEBGPU_TAA_OUTPUT_FRAGMENT, entryPoint: "fs_taa_output",
+        uniforms: new Float32Array([1 / source.width, 1 / source.height, 0, 0]),
+        views: [native[3]!.nativeView, native[0]!.nativeView], target: out });
+      this.nativeTaaPasses += 2;
+      this.nativeTemporalBindings += 3;
+      return out;
+    } catch (error) { out.dispose(); throw error; }
+  }
+
   private runWebGPUFullscreenPass(args: {
     readonly label: string;
     readonly fragment: string;
     readonly entryPoint: string;
     readonly uniforms: Float32Array;
     readonly views: readonly unknown[];
-    readonly target: RenderTarget;
+    readonly target: RenderTarget | null;
   }): void {
     // No assertFrame here on purpose: these are target-to-target passes with
     // their own encoders, so they run both inside a Renderer frame (scene ->
     // post chaining) and after it closed (proof harnesses that render, then
     // post, then read back).
     this.assertAlive();
-    const target = this.requireRenderTarget(args.target);
-    const targetView = target.nativeView;
+    const target = args.target ? this.requireRenderTarget(args.target) : null;
+    const targetView = target ? target.nativeView : this.canvasContext?.getCurrentTexture().createView();
     if (!targetView) {
-      throw new RenderDeviceError("WebGPU post target has no native view", "NATIVE_POST_UNSUPPORTED", { label: target.label });
+      throw new RenderDeviceError("WebGPU post target has no native view", "NATIVE_POST_UNSUPPORTED", { label: target?.label ?? "canvas" });
     }
     if (!this.device.createShaderModule || !this.device.createRenderPipeline || !this.device.createCommandEncoder
       || !this.device.createSampler || !this.device.createBuffer || !this.device.createBindGroup) {
@@ -1429,8 +1546,10 @@ export class WebGPUDevice implements RenderDevice {
       // the submit) so per-pass validation failures land here labeled.
       scopeDevice.pushErrorScope?.("validation");
     }
-    const format = webgpuTextureFormat(target.colorTexture.format);
-    const cacheKey = `${args.label}:${args.entryPoint}:${format}`;
+    const format = target ? webgpuTextureFormat(target.colorTexture.format) : this.presentationFormat;
+    // Bloom quality changes the fragment binding layout (one texture per mip).
+    // A label/format-only key can reuse the wrong native pipeline after a quality change.
+    const cacheKey = `${args.label}:${args.entryPoint}:${format}:${args.fragment}`;
     let pipeline = this.webgpuPostPipelines.get(cacheKey);
     if (!pipeline) {
       const vertexModule = this.device.createShaderModule({ label: `${args.label}-vs`, code: WEBGPU_POST_VERTEX_WGSL });
@@ -1485,7 +1604,7 @@ export class WebGPUDevice implements RenderDevice {
       submitted = true;
       // The pass owns every pixel (fullscreen triangle), so a later
       // readPixelsAsync must NOT flush a stale pending clear over it.
-      target.nativeNeedsClear = false;
+      if (target) target.nativeNeedsClear = false;
       this.nativeRenderPasses += 1;
       // Retired, not destroyed: the submit only enqueues; the pass reads
       // these uniforms when the GPU gets to it.
@@ -1541,17 +1660,22 @@ export class WebGPUDevice implements RenderDevice {
     }
   }
 
+  private readonly temporalLossListeners = new Set<() => void>();
+  onDeviceLost(listener: () => void): () => void { this.temporalLossListeners.add(listener); return () => this.temporalLossListeners.delete(listener); }
+
   private observeDeviceLost(): void {
     const lost = this.device.lost;
     if (!lost || typeof lost.then !== "function") return;
     void lost.then((info) => {
       if (this.disposed) return;
       this.contextLost = true;
+      for (const listener of this.temporalLossListeners) { try { listener(); } catch { /* Continue notifying owners. */ } }
       const detail = [info.reason, info.message].filter(Boolean).join(": ");
       this.lastError = detail ? `WebGPU device lost: ${detail}` : "WebGPU device lost";
     }).catch((error: unknown) => {
       if (this.disposed) return;
       this.contextLost = true;
+      for (const listener of this.temporalLossListeners) { try { listener(); } catch { /* Continue notifying owners. */ } }
       this.lastError = `WebGPU device lost promise rejected: ${error instanceof Error ? error.message : String(error)}`;
     });
   }
@@ -1634,9 +1758,9 @@ export class WebGPUDevice implements RenderDevice {
           const worldA = transformPosition(localA, modelMatrix);
           const worldB = transformPosition(localB, modelMatrix);
           const worldC = transformPosition(localC, modelMatrix);
-          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA);
-          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB);
-          const colorC = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexC);
+          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA, colorAttribute?.components);
+          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB, colorAttribute?.components);
+          const colorC = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexC, colorAttribute?.components);
           const uvA = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexA);
           const uvB = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexB);
           const uvC = readVertexUv(vertexBuffer.bytes, command.vertexFormat.stride, uvAttribute?.offset, indexC);
@@ -1648,14 +1772,14 @@ export class WebGPUDevice implements RenderDevice {
           const indexB = indices[offset + 1]!;
           const a = transformPosition(readLocal(indexA), matrix);
           const b = transformPosition(readLocal(indexB), matrix);
-          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA);
-          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB);
+          const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA, colorAttribute?.components);
+          const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB, colorAttribute?.components);
           rasterizeLine(this.activeRenderTarget, a, b, color, colorA, colorB, depthTest, depthWrite);
         }
       } else {
         for (const index of indices) {
           const point = transformPosition(readLocal(index), matrix);
-          const vertexColor = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, index);
+          const vertexColor = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, index, colorAttribute?.components);
           rasterizePoint(this.activeRenderTarget, point, multiplyColor(color, vertexColor), depthTest, depthWrite);
         }
       }
@@ -1668,7 +1792,25 @@ export class WebGPUDevice implements RenderDevice {
     if (!nativeView || !command.shader) return;
     if (!hasNativeRenderPipeline(this.device)) return;
     const shader = this.requireShader(command.shader);
-    const vertexModule = shader.modules[0];
+    // GL supplies an opaque white default for an absent vertex color. Native
+    // WGSL inputs must instead match the actual vertex buffer layout.
+    const useDefaultColor = shader.nativeColorDefaultVertex && !command.vertexFormat?.attributes.some(attribute => attribute.semantic === "color");
+    if (useDefaultColor && !shader.nativeColorDefaultModule) {
+      shader.nativeColorDefaultModule = this.device.createShaderModule?.({ label: `${shader.label}-vertex-default-color`, code: shader.nativeColorDefaultVertex! });
+    }
+    let vertexModule = useDefaultColor ? shader.nativeColorDefaultModule : shader.modules[0];
+    if (shader.nativeAtlasVertex) {
+      const hasColor = command.vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 4) ?? false;
+      const hasUv1 = command.vertexFormat?.attributes.some(attribute => attribute.shaderLocation === 7) ?? false;
+      const key = `${hasColor}:${hasUv1}`;
+      if (!shader.atlasVertexModules.has(key)) {
+        let source = shader.nativeAtlasVertex;
+        if (!hasColor) source = source.replace(", @location(4) color: vec4<f32>", "").replace("output.color = color;", "output.color = vec4<f32>(1.0);");
+        if (!hasUv1) source = source.replace(", @location(7) uv1: vec2<f32>", "").replace("output.uv1 = uv1;", "output.uv1 = vec2<f32>(0.0);");
+        shader.atlasVertexModules.set(key, this.device.createShaderModule?.({ label: `${shader.label}-atlas-vertex-${key}`, code: source }));
+      }
+      vertexModule = shader.atlasVertexModules.get(key);
+    }
     const fragmentModule = shader.modules[1] ?? vertexModule;
     if (!vertexModule || !fragmentModule) return;
     const topology = command.topology === "lines" ? "line-list" : command.topology === "points" ? "point-list" : "triangle-list";
@@ -1727,12 +1869,14 @@ export class WebGPUDevice implements RenderDevice {
     const uniformBuffer = usesNativeDrawUniforms(shader.nativeUniformLayout) ? this.createNativeDrawUniformBuffer(command) : null;
     const sampledTexture = shader.nativeUniformLayout === "generated-texture" ? this.createNativeSampledTextureBinding(uniformBaseColorTextureBinding(command.uniforms)) : null;
     const materialTextures = usesNativePbrTextureBindings(shader.nativeUniformLayout) ? this.createNativePbrTextureBindings(command) : null;
+    const atlasResources = shader.nativeUniformLayout === "generated-atlas-pbr" ? this.createNativeAtlasBindings(command) : null;
+    if (shader.nativeUniformLayout === "generated-atlas-pbr" && !atlasResources) { uniformBuffer?.destroy(); return; }
     if (shader.nativeUniformLayout === "generated-texture" && !sampledTexture) {
-      uniformBuffer?.destroy();
+      uniformBuffer?.destroy(); atlasResources?.buffer.destroy();
       return;
     }
     if (usesNativePbrTextureBindings(shader.nativeUniformLayout) && !materialTextures) {
-      uniformBuffer?.destroy();
+      uniformBuffer?.destroy(); atlasResources?.buffer.destroy();
       return;
     }
     if (shader.nativeUniformLayout === "portable" && !portableResources) return;
@@ -1742,6 +1886,7 @@ export class WebGPUDevice implements RenderDevice {
           layout: pipeline.getBindGroupLayout(0),
           entries: portableResources?.entries ?? [
             { binding: 0, resource: { buffer: uniformBuffer! } },
+            ...(atlasResources?.entries ?? []),
             ...(sampledTexture ? [
               { binding: 1, resource: sampledTexture.sampler },
               { binding: 2, resource: sampledTexture.view }
@@ -1796,7 +1941,7 @@ export class WebGPUDevice implements RenderDevice {
     if (command.indexBuffer) {
       if (!pass.setIndexBuffer || !pass.drawIndexed) {
         pass.end();
-        uniformBuffer?.destroy();
+        uniformBuffer?.destroy(); atlasResources?.buffer.destroy();
         portableResources?.buffer.destroy();
         this.lastError = "Native WebGPU indexed draw skipped because the render-pass encoder does not expose indexed draw APIs.";
         return;
@@ -1810,7 +1955,7 @@ export class WebGPUDevice implements RenderDevice {
     pass.end();
     this.device.queue.submit([encoder.finish()]);
     if (this.activeRenderTarget) this.activeRenderTarget.nativeNeedsClear = false;
-    uniformBuffer?.destroy();
+    uniformBuffer?.destroy(); atlasResources?.buffer.destroy();
     portableResources?.buffer.destroy();
     this.nativeSubmissions += 1;
     if (sampledTexture) this.nativeTextureBindings += 1;
@@ -1821,10 +1966,11 @@ export class WebGPUDevice implements RenderDevice {
       this.nativePassthroughSubmissions += 1;
       this.nativeTextureBindings += portableResources?.actualTextureCount ?? 0;
     }
-    if (shader.nativeUniformLayout === "generated-pbr" || shader.nativeUniformLayout === "generated-textured-pbr" || shader.nativeUniformLayout === "generated-instanced-pbr") this.nativePbrSubmissions += 1;
+    if (shader.nativeUniformLayout === "generated-pbr" || shader.nativeUniformLayout === "generated-atlas-pbr" || shader.nativeUniformLayout === "generated-textured-pbr" || shader.nativeUniformLayout === "generated-instanced-pbr") this.nativePbrSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-instanced-pbr") this.nativeInstancedSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-skinned-unlit") this.nativeSkinnedSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-morph-unlit") this.nativeMorphSubmissions += 1;
+    this.nativeTextureBindings += atlasResources?.actualTextureCount ?? 0;
     if (materialTextures?.actualBaseColor) this.nativeTextureBindings += 1;
     if (materialTextures?.actualNormal) this.nativeTextureBindings += 1;
     if (materialTextures?.actualMetallicRoughness) this.nativeTextureBindings += 1;
@@ -2159,6 +2305,33 @@ export class WebGPUDevice implements RenderDevice {
     return buffer;
   }
 
+  private createNativeAtlasBindings(command: DrawCommand): { buffer: WebGPUBufferLike; entries: WebGPUBindGroupEntryLike[]; actualTextureCount: number } | null {
+    const definitions = [
+      ["u_extensionScalarAtlas", 20, 0, "linear"],
+      ["u_clearcoatNormalTexture", 22, 21, "linear"],
+      ["u_sheenColorTexture", 24, 23, "srgb"],
+      ["u_anisotropyTexture", 26, 25, "linear"],
+      ["u_emissiveTexture", 28, 27, "srgb"]
+    ] as const;
+    const entries: WebGPUBindGroupEntryLike[] = [];
+    let actualTextureCount = 0;
+    for (const [name, textureIndex, samplerIndex, colorSpace] of definitions) {
+      const actualTexture = this.createNativeSampledTextureBinding(uniformTextureBinding(command.uniforms, name));
+      if (textureIndex === 20 && !actualTexture) throw new RenderDeviceError("Native extension atlas requires a resolved scalar atlas texture", "TEXTURE_BINDING_MISSING");
+      const texture = actualTexture
+        ?? this.createNativeFallbackSampledTextureBinding(`atlas-${name}`, name.includes("Normal") ? [128, 128, 255, 255] : [255, 255, 255, 255], colorSpace);
+      if (!texture) return null;
+      if (texture.actual) actualTextureCount += 1;
+      entries.push({ binding: textureIndex, resource: texture.view });
+      if (samplerIndex) entries.push({ binding: samplerIndex, resource: texture.sampler });
+    }
+    const data = webgpuExtensionAtlasUniforms(command.uniforms);
+    const buffer = this.device.createBuffer({ label: "extension-atlas-uniforms", size: data.byteLength, usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST });
+    this.device.queue.writeBuffer(buffer, 0, data);
+    entries.push({ binding: 19, resource: { buffer } });
+    return { buffer, entries, actualTextureCount };
+  }
+
   private createNativePortableBindings(
     command: DrawCommand,
     bindings: readonly PortableShaderBinding[]
@@ -2489,6 +2662,7 @@ function usesNativeDrawUniforms(layout: NativeUniformLayout): boolean {
 
 function usesNativePbrTextureBindings(layout: NativeUniformLayout): boolean {
   return layout === "generated-pbr" ||
+    layout === "generated-atlas-pbr" ||
     layout === "generated-textured-pbr" ||
     layout === "generated-instanced-pbr";
 }
@@ -2774,7 +2948,7 @@ function jointPaletteFor(uniforms: DrawCommand["uniforms"]): readonly (readonly 
   return count > 0 ? uniformMat4Array(value, count) : [];
 }
 
-function readVertexColor(bytes: Uint8Array, stride: number, offset: number | undefined, vertexIndex: number): readonly [number, number, number, number] {
+function readVertexColor(bytes: Uint8Array, stride: number, offset: number | undefined, vertexIndex: number, components = 4): readonly [number, number, number, number] {
   if (offset === undefined) return [1, 1, 1, 1];
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const base = vertexIndex * stride + offset;
@@ -2782,7 +2956,7 @@ function readVertexColor(bytes: Uint8Array, stride: number, offset: number | und
     view.getFloat32(base, true),
     view.getFloat32(base + 4, true),
     view.getFloat32(base + 8, true),
-    view.getFloat32(base + 12, true)
+    components >= 4 ? view.getFloat32(base + 12, true) : 1
   ];
 }
 
@@ -3008,6 +3182,8 @@ function createNativeShaderSources(sources: ShaderSources): {
   readonly entryPoints: readonly [string, string];
   readonly uniformLayout: NativeUniformLayout;
   readonly portableBindings?: readonly PortableShaderBinding[];
+  readonly colorDefaultVertex?: string;
+  readonly atlasVertex?: string;
 } {
   if (sources.webgpu && sources.portableBindings) {
     return {
@@ -3027,7 +3203,9 @@ function createNativeShaderSources(sources: ShaderSources): {
     return { ...nativeInstancedPbrShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-instanced-pbr" };
   }
   if (sources.marker.includes("pbr-textured")) {
-    return { ...nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker, nativeShaderUsesTangent(sources.vertex)), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-textured-pbr" };
+    const atlas = /uniform\s+sampler2D\s+u_extensionScalarAtlas/.test(sources.fragment);
+    const native = nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker, nativeShaderUsesTangent(sources.vertex), atlas);
+    return { ...native, ...(atlas ? { atlasVertex: native.vertex } : {}), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: atlas ? "generated-atlas-pbr" : "generated-textured-pbr" };
   }
   if (sources.marker.includes("pbr-direct")) {
     return sources.fragment.includes("u_baseColorTexture")
@@ -3041,20 +3219,93 @@ function createNativeShaderSources(sources: ShaderSources): {
     return { ...nativeMorphUnlitShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-morph-unlit" };
   }
   if (/sampler2D/.test(sources.fragment) && /layout\s*\(\s*location\s*=\s*2\s*\)\s*in\s+vec2/.test(sources.vertex)) {
+    const colorInput = /layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+(?:lowp\s+|mediump\s+|highp\s+)?vec([34])\s+(?:a_color|color)\s*;/.exec(sources.vertex);
+    const colorParameter = colorInput ? `, @location(${colorInput[1]}) vertexColor: vec${colorInput[2]}<f32>` : "";
+    const drawUniforms = `struct DrawUniforms {
+  modelViewProjection: mat4x4<f32>,
+  color: vec4<f32>,
+};
+@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;`;
+    const vertexOutput = `struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+  ${colorInput ? "@location(1) color: vec4<f32>," : ""}
+};`;
+    const vertex = `// ${sources.marker}
+${drawUniforms}
+${vertexOutput}
+@vertex
+fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(2) uv: vec2<f32>${colorParameter}) -> VertexOutput {
+  var output: VertexOutput;
+  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
+  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
+  output.uv = uv;
+  ${colorInput ? `output.color = ${colorInput[2] === "3" ? "vec4<f32>(vertexColor, 1.0)" : "vertexColor"};` : ""}
+  return output;
+}
+`;
     return {
-      vertex: `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\nstruct VertexOutput {\n  @builtin(position) position: vec4<f32>,\n  @location(0) uv: vec2<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@vertex\nfn ${vertexEntry}(@location(0) position: vec3<f32>, @location(2) uv: vec2<f32>) -> VertexOutput {\n  var output: VertexOutput;\n  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
-  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);\n  output.uv = uv;\n  return output;\n}\n`,
-      fragment: `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\nstruct VertexOutput {\n  @builtin(position) position: vec4<f32>,\n  @location(0) uv: vec2<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n@group(0) @binding(1) var u_textureSampler: sampler;\n@group(0) @binding(2) var u_texture: texture_2d<f32>;\n\n@fragment\nfn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {\n  return u_draw.color * textureSample(u_texture, u_textureSampler, input.uv);\n}\n`,
+      vertex,
+      colorDefaultVertex: colorInput ? vertex.replace(colorParameter, "").replace(
+        /output\.color = [^;]+;/, "output.color = vec4<f32>(1.0);"
+      ) : undefined,
+      fragment: `// ${sources.marker}
+${drawUniforms}
+${vertexOutput}
+@group(0) @binding(1) var u_textureSampler: sampler;
+@group(0) @binding(2) var u_texture: texture_2d<f32>;
+@fragment
+fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
+  return u_draw.color * textureSample(u_texture, u_textureSampler, input.uv)${colorInput ? " * input.color" : ""};
+}
+`,
       entryPoints: [vertexEntry, fragmentEntry],
       uniformLayout: "generated-texture"
     };
   }
+  // Basic GLSL programs (including unlit primitives and particle sprites)
+  // declare their color input explicitly. Preserve that location and component
+  // count; RGB inputs use opaque alpha, while RGBA alpha modulates the material.
+  // Depth programs intentionally do not consume material/vertex color.
+  const colorInput = sources.marker.includes(DEFAULT_DEPTH_SHADER_MARKER) ? null
+    : /layout\s*\(\s*location\s*=\s*(\d+)\s*\)\s*in\s+(?:lowp\s+|mediump\s+|highp\s+)?vec([34])\s+(?:a_color|color)\s*;/.exec(sources.vertex);
+  const colorParameter = colorInput ? `, @location(${colorInput[1]}) vertexColor: vec${colorInput[2]}<f32>` : "";
+  const vertexOutput = `struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  ${colorInput ? "@location(0) color: vec4<f32>," : ""}
+};`;
+  const drawUniforms = `struct DrawUniforms {
+  modelViewProjection: mat4x4<f32>,
+  color: vec4<f32>,
+};
+@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;`;
+  const vertex = `// ${sources.marker}
+${drawUniforms}
+${vertexOutput}
+@vertex
+fn ${vertexEntry}(@location(0) position: vec3<f32>${colorParameter}) -> VertexOutput {
+  var output: VertexOutput;
+  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
+  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
+  ${colorInput ? `output.color = ${colorInput[2] === "3" ? "vec4<f32>(vertexColor, 1.0)" : "vertexColor"};` : ""}
+  return output;
+}
+`;
   return {
-    vertex: `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\nstruct VertexOutput {\n  @builtin(position) position: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@vertex\nfn ${vertexEntry}(@location(0) position: vec3<f32>) -> VertexOutput {\n  var output: VertexOutput;\n  let clipPosition = u_draw.modelViewProjection * vec4<f32>(position, 1.0);
-  output.position = vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);\n  return output;\n}\n`,
+    vertex,
+    colorDefaultVertex: colorInput ? vertex.replace(colorParameter, "").replace(
+      /output\.color = [^;]+;/, "output.color = vec4<f32>(1.0);"
+    ) : undefined,
     fragment: sources.marker.includes(DEFAULT_DEPTH_SHADER_MARKER)
       ? nativeDepthFragment(sources.marker, fragmentEntry)
-      : `// ${sources.marker}\nstruct DrawUniforms {\n  modelViewProjection: mat4x4<f32>,\n  color: vec4<f32>,\n};\n\n@group(0) @binding(0) var<uniform> u_draw: DrawUniforms;\n\n@fragment\nfn ${fragmentEntry}() -> @location(0) vec4<f32> {\n  return u_draw.color;\n}\n`,
+      : `// ${sources.marker}
+${drawUniforms}
+${vertexOutput}
+@fragment
+fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
+  return u_draw.color${colorInput ? " * input.color" : ""};
+}
+`,
     entryPoints: [vertexEntry, fragmentEntry],
     uniformLayout: "generated-basic"
   };
@@ -3227,7 +3478,7 @@ function nativeShaderUsesTangent(vertexSource: string): boolean {
   return /\ba_tangent\b/.test(vertexSource) || /layout\s*\(\s*location\s*=\s*3\s*\)\s*in\s+vec4/.test(vertexSource);
 }
 
-function nativePbrFragmentPrelude(marker: string): string {
+function nativePbrFragmentPrelude(marker: string, atlas = false): string {
   return `// ${marker}
 ${nativeUniformStruct()}
 @group(0) @binding(1) var u_baseSampler: sampler;
@@ -3249,12 +3500,15 @@ ${nativeUniformStruct()}
 @group(0) @binding(17) var u_spotShadowSampler: sampler;
 @group(0) @binding(18) var u_spotShadowTexture: texture_2d<f32>;
 
+${atlas ? WEBGPU_EXTENSION_ATLAS_WGSL : ""}
+
 struct VertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) normal: vec3<f32>,
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
   @location(3) tangent: vec4<f32>,
+  ${atlas ? "@location(4) uv1: vec2<f32>, @location(5) color: vec4<f32>," : ""}
 };
 
 fn fresnelSchlick(cosTheta: f32, f0: vec3<f32>) -> vec3<f32> {
@@ -3267,14 +3521,16 @@ fn fresnelSchlickRoughness(cosTheta: f32, f0: vec3<f32>, roughness: f32) -> vec3
 }
 
 fn ggxDistribution(nDotH: f32, roughness: f32) -> f32 {
-  let a = max(roughness * roughness, 0.045);
+  let a = ${atlas ? "max(roughness, 0.045) * max(roughness, 0.045)" : "max(roughness * roughness, 0.045)"};
   let a2 = a * a;
-  let denom = max((nDotH * nDotH) * (a2 - 1.0) + 1.0, 0.001);
-  return a2 / max(3.14159265 * denom * denom, 0.001);
+  // At roughness .045 the true denominator before squaring is ~4.1e-6.
+  // A .001/.00001 floor destroys the normalized low-roughness GGX lobe.
+  let denom = max((nDotH * nDotH) * (a2 - 1.0) + 1.0, ${atlas ? "0.00000001" : "0.001"});
+  return a2 / max(3.14159265 * denom * denom, ${atlas ? "0.0000000000000001" : "0.001"});
 }
 
 fn ggxVisibilitySmithCorrelated(nDotV: f32, nDotL: f32, roughness: f32) -> f32 {
-  let a = max(roughness * roughness, 0.045);
+  let a = ${atlas ? "max(roughness, 0.045) * max(roughness, 0.045)" : "max(roughness * roughness, 0.045)"};
   let a2 = a * a;
   let lambdaV = nDotL * sqrt(max((nDotV - a2 * nDotV) * nDotV + a2, 0.00001));
   let lambdaL = nDotV * sqrt(max((nDotL - a2 * nDotL) * nDotL + a2, 0.00001));
@@ -3400,18 +3656,18 @@ fn a3dNativeShadowFactor(worldPosition: vec3<f32>, normal: vec3<f32>, lightDirec
   return mix(1.0, 1.0 - occlusion, clamp(strength, 0.0, 1.0));
 }
 
-fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>, fragmentPosition: vec2<f32>) -> vec4<f32> {
+fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>, fragmentPosition: vec2<f32>${atlas ? ", uv1: vec2<f32>, vertexColor: vec4<f32>" : ""}) -> vec4<f32> {
   var normal = normalize(normalInput);
   if (u_draw.morph0.x > 0.5) {
-    normal = perturbNormal(normal, tangentFrame, textureSample(u_normalTexture, u_normalSampler, uv).rgb, u_draw.morph0.y);
+    normal = perturbNormal(normal, tangentFrame, textureSample(u_normalTexture, u_normalSampler, ${atlas ? "atlasUv(1u, uv, uv1)" : "uv"}).rgb, u_draw.morph0.y);
   }
   let viewDirection = normalize(u_draw.camera.xyz - worldPosition);
   let lightDirection = normalize(vec3<f32>(0.36, 0.52, 0.78));
   let halfVector = normalize(lightDirection + viewDirection);
-  var baseColor = u_draw.color.rgb;
-  var materialAlpha = u_draw.color.a;
+  var baseColor = u_draw.color.rgb${atlas ? " * vertexColor.rgb" : ""};
+  var materialAlpha = u_draw.color.a${atlas ? " * vertexColor.a" : ""};
   if (u_draw.flags.x > 0.5) {
-    let baseSample = textureSample(u_baseTexture, u_baseSampler, uv);
+    let baseSample = textureSample(u_baseTexture, u_baseSampler, ${atlas ? "atlasUv(0u, uv, uv1)" : "uv"});
     baseColor = baseColor * baseSample.rgb;
     materialAlpha = materialAlpha * baseSample.a;
   }
@@ -3420,16 +3676,14 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
   let productBodyGate = productPropBodyGate(sourceProductBaseColor, u_draw.materialFlags.z) * (1.0 - productOrangeGate * 0.92);
   let productSurfaceGate = clamp(productBodyGate + productOrangeGate * 0.72, 0.0, 1.0);
   baseColor = productPropAlbedo(sourceProductBaseColor, u_draw.materialFlags.z);
-  if (materialAlpha < u_draw.material.x) {
-    discard;
-  }
+  ${atlas ? "" : "if (materialAlpha < u_draw.material.x) { discard; }"}
   let transmission = clamp(max(u_draw.material.y, u_draw.material.z), 0.0, 1.0);
-  let metallicRoughnessSample = textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv);
+  let metallicRoughnessSample = textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, ${atlas ? "atlasUv(2u, uv, uv1)" : "uv"});
   let metallicRoughnessEnabled = step(0.5, u_draw.materialFlags.x);
   let occlusionEnabled = step(0.5, u_draw.materialFlags.y);
   let sampledMetallic = clamp(u_draw.params.x * metallicRoughnessSample.b, 0.0, 1.0);
   let sampledRoughness = clamp(u_draw.params.y * metallicRoughnessSample.g, 0.045, 1.0);
-  let sampledOcclusion = mix(1.0, textureSample(u_occlusionTexture, u_occlusionSampler, uv).r, clamp(u_draw.morph0.z, 0.0, 1.0));
+  let sampledOcclusion = mix(1.0, textureSample(u_occlusionTexture, u_occlusionSampler, ${atlas ? "atlasUv(3u, uv, uv1)" : "uv"}).r, clamp(u_draw.morph0.z, 0.0, 1.0));
   let metallic = mix(clamp(u_draw.params.x, 0.0, 1.0), sampledMetallic, metallicRoughnessEnabled);
   let roughness = mix(clamp(u_draw.params.y, 0.045, 1.0), sampledRoughness, metallicRoughnessEnabled);
   let occlusion = mix(1.0, sampledOcclusion, occlusionEnabled);
@@ -3439,16 +3693,23 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
   let nDotV = max(dot(normal, viewDirection), 0.001);
   let nDotH = max(dot(normal, halfVector), 0.001);
   let vDotH = max(dot(viewDirection, halfVector), 0.001);
-  let f0 = mix(vec3<f32>(0.04, 0.04, 0.04), baseColor, metallic);
+  let dielectricF0 = ${atlas ? "vec3<f32>(pow((u_atlas.substrate.x-1.0)/(u_atlas.substrate.x+1.0),2.0)) * clamp(u_atlas.specularColor.rgb,vec3<f32>(0.0),vec3<f32>(1.0)) * clamp(u_atlas.substrate.y,0.0,1.0)" : "vec3<f32>(0.04, 0.04, 0.04)"};
+  let f0 = mix(dielectricF0, baseColor, metallic);
   let fresnel = fresnelSchlick(vDotH, f0);
   let distribution = ggxDistribution(nDotH, roughness);
   let visibility = ggxVisibilitySmithCorrelated(nDotV, nDotL, roughness);
   let lDotH = max(dot(lightDirection, halfVector), 0.0);
-  let kd = (vec3<f32>(1.0, 1.0, 1.0) - fresnel) * (1.0 - metallic);
+  ${atlas ? `// The film replaces the substrate Fresnel in the dielectric energy split.
+  // Retaining the old kd while adding film specular creates or loses energy.
+  let filmFresnel = atlasIridescenceFresnel(f0, vDotH, uv, uv1);
+  let filmMaximum = max(max(filmFresnel.r, filmFresnel.g), filmFresnel.b);
+  let diffuseFresnel = select(fresnel, vec3<f32>(filmMaximum), u_atlas.iridescence.y > 0.0);
+  let kd = (vec3<f32>(1.0) - diffuseFresnel) * (1.0 - metallic);` : "let kd = (vec3<f32>(1.0, 1.0, 1.0) - fresnel) * (1.0 - metallic);"}
   let specular = fresnel * distribution * visibility;
   let diffuse = kd * baseColor * diffuseBurley(nDotV, nDotL, lDotH, roughness) / 3.14159265;
   var environment = baseColor * u_draw.params.z * (0.28 + 0.72 * clamp(normal.y * 0.5 + 0.5, 0.0, 1.0)) * occlusion;
   var environmentSpecularContribution = vec3<f32>(0.0, 0.0, 0.0);
+  var environmentExtensionRadiance = vec3<f32>(0.0);
   if (u_draw.flags.w > 0.5) {
     let reflectionDirection = reflect(-viewDirection, normal);
     let diffuseUv = vec2<f32>(fract(atan2(normal.z, normal.x) / 6.2831853 + 0.5), acos(clamp(normal.y, -1.0, 1.0)) / 3.14159265);
@@ -3459,8 +3720,10 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
     let brdf = textureSampleLevel(u_brdfTexture, u_brdfSampler, vec2<f32>(nDotV, roughness), 0.0).rg;
     let environmentFresnel = fresnelSchlickRoughness(nDotV, f0, roughness);
     let environmentDiffuse = (vec3<f32>(1.0, 1.0, 1.0) - environmentFresnel) * (1.0 - metallic) * diffuseEnv * baseColor * u_draw.params.w * occlusion;
-    let environmentSpecular = specularEnv * (f0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y)) * max(u_draw.reserved0.w, 0.0);
+    ${atlas ? "let environmentF0 = atlasIridescenceEnvironmentF0(f0, nDotV, uv, uv1);" : "let environmentF0 = f0;"}
+    let environmentSpecular = specularEnv * (environmentF0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y)) * max(u_draw.reserved0.w, 0.0);
     environmentSpecularContribution = environmentSpecular;
+    environmentExtensionRadiance = specularEnv * max(u_draw.reserved0.w, 0.0);
     environment = environment + environmentDiffuse + environmentSpecular;
   }
   // J2 native shadow projections: directional PCF mirrors GLSL
@@ -3500,7 +3763,8 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
     }
   }
   let legacyDirect = (diffuse + specular) * nDotL * 2.25 * shadow;
-  let litOpaqueLinearColor = environment + select(legacyDirect, clusteredDirect, u_draw.materialFlags.w > 0.5);
+  let litOpaqueLinearColor = environment + select(legacyDirect, clusteredDirect, u_draw.materialFlags.w > 0.5)
+    ${atlas ? "+ atlasExtensionLighting(normal, tangentFrame, viewDirection, lightDirection, uv, uv1, shadow, environmentExtensionRadiance, f0, roughness) + u_atlas.emissive.rgb * u_atlas.factors.y * mix(vec3<f32>(1.0), textureSample(u_emissiveTexture, u_emissiveSampler, atlasUv(4u, uv, uv1)).rgb, u_atlas.maps[4].control.z)" : ""};
   let smoothedBodyColor = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012), productBodyGate * 0.32);
   let smoothedBeakColor = mix(baseColor, vec3<f32>(1.0, 0.24, 0.018), productOrangeGate * 0.82);
   let softBodyProduct = smoothedBodyColor * (1.5 + 0.06 * nDotL) + specular * nDotL * 0.018;
@@ -3510,6 +3774,7 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
   let transmittedTint = baseColor * u_draw.params.w * (0.18 + 0.42 * clamp(1.0 - roughness, 0.0, 1.0)) + environmentSpecularContribution * 1.35;
   let linearColor = mix(opaqueLinearColor, opaqueLinearColor * 0.22 + transmittedTint, transmission);
   let outputAlpha = mix(materialAlpha, min(materialAlpha, 0.22), transmission);
+  ${atlas ? "if (materialAlpha < u_draw.material.x) { discard; }" : ""}
   return vec4<f32>(encodePbrOutput(linearColor), outputAlpha);
 }
 `;
@@ -3548,7 +3813,7 @@ fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
   };
 }
 
-function nativeTexturedPbrShader(vertexEntry: string, fragmentEntry: string, marker: string, usesTangent: boolean): { readonly vertex: string; readonly fragment: string } {
+function nativeTexturedPbrShader(vertexEntry: string, fragmentEntry: string, marker: string, usesTangent: boolean, atlas = false): { readonly vertex: string; readonly fragment: string } {
   return {
     vertex: `// ${marker}
 ${nativeUniformStruct()}
@@ -3558,24 +3823,26 @@ struct VertexOutput {
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
   @location(3) tangent: vec4<f32>,
+  ${atlas ? "@location(4) uv1: vec2<f32>, @location(5) color: vec4<f32>," : ""}
 };
 
 @vertex
-fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>${usesTangent ? ", @location(3) tangent: vec4<f32>" : ""}) -> VertexOutput {
+fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>${usesTangent ? ", @location(3) tangent: vec4<f32>" : ""}${atlas ? ", @location(4) color: vec4<f32>, @location(7) uv1: vec2<f32>" : ""}) -> VertexOutput {
   var output: VertexOutput;
   let worldPosition = (u_draw.instance0 * vec4<f32>(position, 1.0)).xyz;
   output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
   output.normal = normalize((u_draw.normalMatrix * vec4<f32>(normal, 0.0)).xyz);
   output.uv = uv;
+  ${atlas ? "output.uv1 = uv1; output.color = color;" : ""}
   output.worldPosition = worldPosition;
   ${usesTangent ? "output.tangent = vec4<f32>(normalize((u_draw.normalMatrix * vec4<f32>(tangent.xyz, 0.0)).xyz), tangent.w);" : "output.tangent = vec4<f32>(1.0, 0.0, 0.0, 1.0);"}
   return output;
 }
 `,
-    fragment: `${nativePbrFragmentPrelude(marker)}
+    fragment: `${nativePbrFragmentPrelude(marker, atlas)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition, input.position.xy);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition, input.position.xy${atlas ? ", input.uv1, input.color" : ""});
 }
 `
   };

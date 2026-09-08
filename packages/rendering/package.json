@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/rendering",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "type": "module",
   "exports": {
     ".": {
@@ -11,9 +11,21 @@
       "types": "./dist/lean-runtime.d.ts",
       "import": "./dist/lean-runtime.js"
     },
+    "./lean-core-runtime": {
+      "types": "./dist/lean-core-runtime.d.ts",
+      "import": "./dist/lean-core-runtime.js"
+    },
     "./webgpu": {
       "types": "./dist/webgpu.d.ts",
       "import": "./dist/webgpu.js"
+    },
+    "./extension-scalar-atlas": {
+      "types": "./dist/extension-scalar-atlas.d.ts",
+      "import": "./dist/extension-scalar-atlas.js"
+    },
+    "./reflection-surfaces": {
+      "types": "./dist/reflection-surfaces.d.ts",
+      "import": "./dist/reflection-surfaces.js"
     }
   },
   "main": "./dist/index.js",

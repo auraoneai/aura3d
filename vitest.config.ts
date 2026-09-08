@@ -16,6 +16,7 @@ export default defineConfig({
       "@aura3d/scene/math": new URL("./packages/scene/src/MathTypes.ts", import.meta.url).pathname,
       "@aura3d/scene": new URL("./packages/scene/src/index.ts", import.meta.url).pathname,
       "@aura3d/ecs": new URL("./packages/ecs/src/index.ts", import.meta.url).pathname,
+      "@aura3d/rendering/lean-core-runtime": new URL("./packages/rendering/src/lean-core-runtime.ts", import.meta.url).pathname,
       "@aura3d/rendering/lean-runtime": new URL("./packages/rendering/src/lean-runtime.ts", import.meta.url).pathname,
       "@aura3d/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/controls": new URL("./packages/controls/src/index.ts", import.meta.url).pathname,

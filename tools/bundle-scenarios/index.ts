@@ -180,6 +180,7 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/engine", "packages/engine/src/agent-api/index.ts"],
     ["@aura3d/rendering", "packages/rendering/src/index.ts"],
     ["@aura3d/rendering/lean-runtime", "packages/rendering/src/lean-runtime.ts"],
+    ["@aura3d/rendering/lean-core-runtime", "packages/rendering/src/lean-core-runtime.ts"],
     ["@aura3d/engine/lean", "packages/engine/src/agent-api/lean.ts"],
     ["@aura3d/engine/lean-game", "packages/engine/src/agent-api/lean-game.ts"],
     ["@aura3d/engine/lean-product", "packages/engine/src/agent-api/lean-product.ts"],

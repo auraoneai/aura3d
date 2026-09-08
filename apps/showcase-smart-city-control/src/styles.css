@@ -314,6 +314,60 @@ html[data-chrome="hidden"] .panel {
   display: none;
 }
 
+/*
+ * Wide command screens have a clear ribbon immediately below the top bar.
+ * Keep telemetry there instead of covering the route-primary vehicle and its
+ * operational lot in the lower-right quadrant. In the 1440x900 release
+ * viewport the compact ribbon ends at y=158, limiting flythrough overlap to
+ * the narrow top edge of the measured scene instead of crossing its towers.
+ */
+@media (min-width: 1081px) {
+  /* Stack both desktop ribbons in the previously unused top margin. This keeps
+   * telemetry outside the rendered city bounds during the flythrough while
+   * preserving a clear gap between the two controls. */
+  .commandbar {
+    top: 4px;
+  }
+
+  .telemetry {
+    top: 98px;
+    right: 18px;
+    bottom: auto;
+    width: min(900px, calc(100vw - 36px));
+    grid-template-columns: 1.35fr repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .telemetry .panel-head {
+    grid-column: auto;
+    display: grid;
+    align-content: center;
+    gap: 2px;
+  }
+
+  .telemetry .panel-head strong {
+    font-size: 10px;
+    text-align: left;
+  }
+
+  .telemetry .metric,
+  .telemetry .metric.wide {
+    grid-column: auto;
+    padding: 5px 7px;
+  }
+
+  .telemetry .metric span {
+    font-size: 9px;
+  }
+
+  .telemetry .metric output {
+    min-height: 16px;
+    margin-top: 1px;
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 1080px) {
   .shell {
     min-height: 760px;

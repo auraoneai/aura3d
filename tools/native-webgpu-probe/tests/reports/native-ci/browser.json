@@ -1,0 +1,107 @@
+{
+  "config": {
+    "configFile": "/Users/gurbakshchahal/platforms/aura3d/tools/native-webgpu-probe/functional.config.ts",
+    "rootDir": "/Users/gurbakshchahal/platforms/aura3d",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/gurbakshchahal/platforms/aura3d/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "",
+        "name": "",
+        "testDir": "/Users/gurbakshchahal/platforms/aura3d",
+        "testIgnore": [],
+        "testMatch": [
+          "tests/browser/webgpu-bloom-hdr-301.spec.ts",
+          "tests/browser/webgpu-post-j2.spec.ts",
+          "tests/browser/gpu-particle-a4.spec.ts",
+          "tests/browser/webgpu-temporal-device-loss-301.spec.ts"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "tests/reports/native-ci/browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "tests/browser/webgpu-temporal-device-loss-301.spec.ts",
+      "file": "tests/browser/webgpu-temporal-device-loss-301.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "native WebGPU temporal device loss",
+          "file": "tests/browser/webgpu-temporal-device-loss-301.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "destroys a real device with pending readback, disposes histories, rejects stale work and explicitly reseeds WebGPU",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "483a78f47b86afc2957e-64105f57c304e3a24417",
+              "file": "tests/browser/webgpu-temporal-device-loss-301.spec.ts",
+              "line": 9,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-06T00:21:27.574Z",
+    "duration": 1159.062,
+    "expected": 0,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

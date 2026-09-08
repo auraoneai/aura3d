@@ -1,13 +1,8 @@
-import type { RenderPass, RenderPassExecutionContext } from '../framegraph/RenderPass';
+import { executeNativePass, type RenderPass, type RenderPassExecutionContext } from '../framegraph/RenderPass';
 import { assertValidPassContext } from './DepthPrepass';
 
-/**
- * muse3jsparity-PRD T3 — OpaquePass owns real logic.
- *
- * Declares the opaque composite edges: depth + shadow mask + environment
- * lighting in, HDR color out. TransparentPass blends over this output;
- * ToneMappingPass consumes it.
- */
+/** Compatibility adapter; rendering is dispatched to the canonical native pass.
+ * Allocation, shader compilation and device lifetime remain with that renderer. */
 export interface OpaquePassOptions {
   readonly enabled?: boolean;
   readonly depthResource?: string;
@@ -32,7 +27,7 @@ export class OpaquePass implements RenderPass {
     for (const [label, value] of [["depthResource", depthResource], ["shadowMaskResource", shadowMaskResource], ["lightingResource", lightingResource], ["colorResource", colorResource]] as const) {
       if (value.trim().length === 0) throw new Error(`OpaquePass ${label} must be non-empty.`);
     }
-    this.reads = [depthResource, shadowMaskResource, lightingResource];
+    this.reads = [depthResource, shadowMaskResource, lightingResource, colorResource];
     this.writes = [colorResource];
   }
 
@@ -58,6 +53,7 @@ export class OpaquePass implements RenderPass {
   execute(context: RenderPassExecutionContext): void {
     assertValidPassContext(this.id, context);
     if (!this.enabled) return;
+    executeNativePass(this, context);
     this.executedFrames += 1;
     this.lastFrame = context.frameIndex;
   }

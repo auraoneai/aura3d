@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { normalizeWebGPUTemporalOptions, WEBGPU_TAA_FRAGMENT, WEBGPU_TAA_OUTPUT_FRAGMENT } from "../../../packages/rendering/src/webgpu/WebGPUTemporal";
 import {
   defaultWebGPUBloomWeights,
   normalizeWebGPUColorGradeOptions,
@@ -22,6 +23,25 @@ import {
  * and the CPU soft-knee oracle the browser spec cross-checks.
  */
 describe("J2 webgpu post shaders", () => {
+  it("rejects temporal weights that disable convergence or create invalid depth acceptance", () => {
+    expect(normalizeWebGPUTemporalOptions({})).toEqual([0.9, 0.01]);
+    expect(normalizeWebGPUTemporalOptions({ blend: 0, depthThreshold: 0.002 })).toEqual([0, 0.002]);
+    for (const blend of [-1, 1, Infinity, NaN]) expect(() => normalizeWebGPUTemporalOptions({ blend })).toThrow(/blend/);
+    for (const depthThreshold of [0, -1, 2, Infinity, NaN]) expect(() => normalizeWebGPUTemporalOptions({ depthThreshold })).toThrow(/depthThreshold/);
+  });
+
+  it("temporal binding contract reprojects and rejects history while preserving output alpha separately", () => {
+    expect(WEBGPU_TAA_FRAGMENT).toContain("uv - motion.rg");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("abs(textureLoad(history, tap, 0).a - motion.a)");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("depthError <= temporal.depthThreshold");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("temporal.valid > 0.5 && inBounds && depthMatches");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("temporal.blend * 0.90");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("textureSampleLevel(source, linearSampler, uv +");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("clamp(previous.rgb, lo, hi)");
+    expect(WEBGPU_TAA_FRAGMENT).toContain("motion.b");
+    expect(WEBGPU_TAA_OUTPUT_FRAGMENT).toContain("vec4<f32>(accumulated.rgb, current.a)");
+    expect(WEBGPU_TAA_OUTPUT_FRAGMENT).toContain("current.a");
+  });
   it("quality tiers mirror the native WebGL2 tiers", () => {
     expect(WEBGPU_BLOOM_QUALITY_TABLE.performance).toEqual({ mipCount: 1, halfFloat: false });
     expect(WEBGPU_BLOOM_QUALITY_TABLE.balanced).toEqual({ mipCount: 3, halfFloat: true });

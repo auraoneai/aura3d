@@ -1,6 +1,8 @@
 # Controls, Interaction, And Picking
 
-Version: 3.0.0
+Version: 3.0.1
+
+Source candidate. Historical measured examples below require fresh receipts before 3.0.1 release acceptance.
 
 `@aura3d/controls` owns camera controls, transform controls, selection, picking helpers, annotation picking, and interaction-mode adapters. The package is exported from `@aura3d/engine/controls`.
 
@@ -50,9 +52,9 @@ Reference: repository-locked `three@0.185.1` addon implementations.
 | Rotate / orbit | yes | yes | yes (free, no polar clamp) | yes | yes | n/a (look) | yes (`look`) | yes (locked `look`) | n/a | n/a | yes (delegates) |
 | Pan / truck | yes | yes | yes (`pan`) | yes | yes (`truck`, XZ ground plane) | n/a (strafe/lift) | n/a | n/a | n/a | n/a | yes (delegates) |
 | Dolly / zoom + min/max distance | yes | yes (min/maxDistance, polar clamp via engine) | yes (`dolly`, min/maxDistance) | yes | yes | n/a | n/a | n/a | n/a | n/a | yes (delegates) |
-| Damping (`enableDamping` + tick) | Orbit/Trackball yes | GAP (delegated engine is undamped) | yes (`update(dt)`) | yes (`update(dt)`) | GAP (inherits Orbit) | GAP (direct velocity) | GAP | GAP | n/a | n/a | n/a |
-| Zoom to cursor | Orbit yes | GAP (see note 1) | GAP (see note 1) | GAP | GAP | n/a | n/a | n/a | n/a | n/a | n/a |
-| Pan bounds | no (unbounded) | n/a (matches: unbounded) | n/a (matches: unbounded) | n/a | n/a (matches: unbounded XZ truck) | n/a | n/a | n/a | n/a | n/a | n/a |
+| Damping (`enableDamping` + tick) | Orbit/Trackball yes | implemented; 3.0.1 attached unit proof, browser acceptance pending | yes (`update(dt)`) | yes (`update(dt)`) | inherits Orbit implementation; browser acceptance pending | GAP (direct velocity) | GAP | GAP | n/a | n/a | n/a |
+| Zoom to cursor | Orbit yes | implemented with projection adapter; browser acceptance pending | GAP (see note 1) | inherits attached Orbit adapter | implemented with projection adapter; browser acceptance pending | n/a | n/a | n/a | n/a | n/a | n/a |
+| Pan bounds | no (unbounded) | optional world-axis target AABB; browser acceptance pending | n/a (matches: unbounded) | inherits attached Orbit | optional XZ target/truck AABB; browser acceptance pending | n/a | n/a | n/a | n/a | n/a | n/a |
 | Keyboard look/pan/roll/dolly | Trackball keys | GAP | GAP | yes (`handleKey`) | GAP | yes (WASD/QE + Shift fast) | yes | yes (locked) | n/a | n/a | yes (fly keys) |
 | Roll about view axis | Trackball/Arcball | GAP | yes (`roll`) | yes (`roll`) | GAP | n/a | n/a | n/a | n/a | n/a | n/a |
 | Pointer lock gate | PointerLock yes | n/a | n/a | n/a | n/a | n/a | n/a | yes (`lock`/`unlock`/`locked`) | n/a | n/a | n/a |
@@ -64,15 +66,26 @@ Reference: repository-locked `three@0.185.1` addon implementations.
 
 Notes:
 
-1. Zoom-to-cursor is a deliberate GAP, not an oversight: this package owns
-   no DOM or cursor state (input arrives via snapshots/method calls) and the
-   `*CameraLike` surfaces carry position only, so there is no projecting
-   camera to resolve the cursor ray. Same reason the Arcball header lists
-   `cursorZoom`, two-finger gestures, and `adjustNearPlane` as gaps.
-2. Damping exists where decaying velocity is meaningful (Arcball/Trackball
-   free rotation). Orbit delegates to the input engine's exact spherical
-   math, which is undamped; adding a second damped integrator on top would
-   fork the camera path rather than match three.js.
+1. Orbit/Map cursor zoom takes `zoomToCursor: true` and a live `viewport()`
+   rectangle in the same coordinate space as `InputSnapshot.pointer.x/y`
+   (normally CSS client pixels; scale the rectangle if InputSystem uses a
+   non-unit pixel ratio). The attached camera supplies vertical `fov` in degrees
+   and `aspect`, or `isOrthographicCamera`, `left/right/top/bottom`, mutable
+   `zoom` and `updateProjectionMatrix()`. The pointer ray intersects the plane
+   through the orbit target perpendicular to the viewing direction. It does
+   not raycast scene geometry. Missing projection/viewport metadata preserves
+   centered zoom. Bounds may prevent an anchor from remaining fixed.
+   Arcball still omits cursor zoom, two-finger gestures and near-plane adjustment.
+2. Orbit/Map damping lives solely in `@aura3d/input`. Opt in with
+   `enableDamping`; `dampingFactor` is the residual fraction consumed at 60Hz.
+   Pass seconds to `applyInput(snapshot, dt)` once per frame, or call `update(dt)`
+   on frames without input. Rotation and pan decay exponentially; wheel/pinch
+   zoom applies immediately. Zero/invalid elapsed time does not consume input.
+   The default is undamped. Bounds clamp target world coordinates, including
+   cursor zoom and Map truck. Orbit preserves legacy world-XY pan; Map pans
+   on the XZ ground plane. One touch rotates Orbit/pans Map, two touches pan
+   and pinch both. These additions currently have attached unit proof and
+   test-only browser proof source; release acceptance requires its fresh remote run.
 3. `DragControls` is a deprecated compatibility shim (explicit world-space
    deltas onto `TransformControls`); it is not a browser/Three.js
    DragControls implementation. See `DRAG_CONTROLS_DEPRECATION`.
@@ -125,6 +138,8 @@ This split matters for product and advanced-gallery routes: annotation hotspots 
 Focused coverage lives in:
 
 - `tests/unit/controls/control-disposal.test.ts` (F1: every control + repeated mount)
+- `tests/unit/controls/orbit-map-options-301.test.ts` (attached Orbit/Map damping, projection anchor, bounds, touch, invalid input)
+- `tests/browser/orbit-map-options-301.spec.ts` (3.0.1 real mouse/wheel and injected touch pointer events; WebGL2 perspective/orthographic pixels; remote execution required)
 - `tests/unit/controls/skinned-instanced-picking.test.ts` (F4)
 - `tests/unit/controls/hover-outline-focus-frame.test.ts` (F4)
 - `tests/browser/controls-hover-focus.spec.ts` (F4 pixel proof)

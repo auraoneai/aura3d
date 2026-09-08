@@ -38,6 +38,10 @@ const LEGITIMATE_KEYBOARD_OWNERS: Readonly<Record<string, string>> = {
     "Editor timeline scrubbing shortcuts. Editor chrome, not the hosted scene: the two must not share an action map or a spacebar would both play the timeline and jump the character.",
   "packages/create-aura3d/templates/character-controller/src/main.ts":
     "Scaffold template, shipped for a developer to copy and own. Deliberately plain listeners so the generated project is readable without first learning the input service.",
+  "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts":
+    "Standalone scaffold template whose generated application owns its keyboard stream; it is never mounted beside the engine game.input service in one application.",
+  "packages/create-aura3d/templates/racing-starter/src/main.ts":
+    "Standalone scaffold template whose generated application owns its keyboard stream; it is never mounted beside the engine game.input service in one application.",
   "packages/create-aura3d/templates/animation-studio/studio/src/App.tsx":
     "As above: scaffold template source, owned by the developer once generated."
 };

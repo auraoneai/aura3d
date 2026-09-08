@@ -31,6 +31,7 @@ import {
 import { assets } from "../../../src/aura-assets";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
+import { turboAcceptanceExcursionInput } from "./acceptance-driver";
 import { createTurboOpponentAi } from "./opponent-ai";
 import { TURBO_AUDIO_CUE_WISHLIST } from "./audio-cues";
 import { createTurboAudio, type TurboAudioCue, type TurboAudioController } from "./turbo-audio";
@@ -580,17 +581,22 @@ const VISUAL_CAPTURE_CAMERA = {
   // exactly 900). One more step out+up so the whole car+smoke assembly
   // clears the edge; subject width has headroom (436px vs the 75px floor
   // that trips Skyline).
-  distanceMultiplier: 1.48,
-  heightMultiplier: 1.32,
-  sideMultiplier: 0.22,
+  // The exact native opening frame measured the hero at only 50x49 pixels
+  // (0.19% connected foreground) with the old 1.48x/1.32x overview. Use the
+  // asset-derived close chase for the starting grid; the held live-drift state
+  // still uses this same route rig and must independently clear the full-car
+  // capture assertions later in the acceptance arc.
+  distanceMultiplier: 1.18,
+  heightMultiplier: 1.12,
+  sideMultiplier: 0.27,
   // The follow rig applies 18% of lookAhead to its target offset. A 2.6x
   // multiplier therefore exposes the first right-hand bend in the same live
   // route frame instead of pointing down a featureless straight.
   // 2026-09-04: 2.6x looks far enough ahead that the held-drift hero drops
   // through the frame bottom (probe: primary-foreground-clipped). 1.9x keeps
   // the bend in view while raising the hero back inside the frame.
-  lookAheadMultiplier: 1.9,
-  fov: 58,
+  lookAheadMultiplier: 1.18,
+  fov: 55,
   smoothing: 0
 } as const;
 const reviewVenuePlate = new URLSearchParams(window.location.search).get("venuePlate") === "1";
@@ -606,6 +612,13 @@ const reviewVenuePlate = new URLSearchParams(window.location.search).get("venueP
 // beyond the shoulder and follows the live review pose, so it supplies real
 // 3-D tents, timber rails, rocks and spectators without entering gameplay.
 const supplementalHairpinVenueEnabled = true;
+// One authored venue kit supplies real trackside depth in the certified capture.
+// The previous four-copy arrangement plus a second full circuit relief duplicated
+// environment geometry and spent more than 35 CPU-minutes in SwiftShader before
+// one 1440x900 frame could complete. The V2 circuit remains the authoritative
+// visible world; this single kit is supporting context, not gameplay geometry.
+const supplementalHairpinVenueCopies = 1;
+const supplementalTsukubaReliefEnabled = false;
 const VISUAL_DRIFT_PLUME_COUNT = 16;
 let visualCaptureHeld = false;
 // The collision proof route holds the exact solved first-contact pose until the
@@ -689,7 +702,7 @@ function turboMaybeFireJuiceProbe(): void {
 // Keep the certified approach gap above one rendered car-length while shortening
 // the review start enough that a throttled browser reaches the Rapier impact inside
 // the producer's 30-second contact wait.
-const opponentStartProgress = collisionReviewCamera ? 0.009 : visualCaptureCamera ? 0.025 : 0.032;
+const opponentStartProgress = collisionReviewCamera ? 0.009 : visualCaptureCamera ? 0.014 : 0.032;
 // Both cars occupy the same authored racing line. A permanent lateral presentation
 // offset made the first encounter a glancing side-swipe, so the retained collision
 // image could not demonstrate the requested direct rear impact.
@@ -797,7 +810,7 @@ const opponentDriver = createVehicleDriverAi(driverRoute, {
   // the rival to the moving 46% evidence pace in that one capture so it remains
   // a readable car-lengths-ahead target instead of disappearing half a lap over
   // the horizon before the real drift predicate is reached.
-  paceFraction: visualCaptureCamera ? 0.82 : evidenceDriverEnabled ? 0.46 : 0.7,
+  paceFraction: visualCaptureCamera ? 0.94 : evidenceDriverEnabled ? 0.46 : 0.7,
   // Look-ahead is the whole point: at pace the driver plans roughly a car-length-
   // scaled distance up the road rather than reacting to where it already is.
   lookAheadSeconds: 1.15,
@@ -2656,6 +2669,25 @@ let lastMeshedOpponentPose: typeof opponentChassisPose | undefined = opponentCha
 const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
 const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
 const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
+const VISUAL_CAPTURE_GRID_FOCUS_BLEND = 0.32;
+function visualCaptureFocusBlend(): number {
+  // The grid is a two-car establishing frame. Once racing begins, the rival can
+  // move behind the player after a real pass; blending toward it would then aim
+  // the camera backward and expand distance until the player became a thumbnail.
+  // Live racing therefore returns to the genre-correct player chase target.
+  return raceSession.startLights.complete ? 0 : VISUAL_CAPTURE_GRID_FOCUS_BLEND;
+}
+function visualCaptureCameraDistance(): number {
+  const focusBlend = visualCaptureFocusBlend();
+  const separation = Math.hypot(
+    opponentChassisPose.groundedPosition[0] - playerChassisPose.groundedPosition[0],
+    opponentChassisPose.groundedPosition[2] - playerChassisPose.groundedPosition[2]
+  );
+  // Compensate only for the displacement actually applied to the focus. During
+  // live racing focusBlend is zero, so the camera keeps its authored chase size.
+  return chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier
+    + separation * focusBlend;
+}
 // The generic 0.045 follow blend trails several car lengths behind at Turbo's
 // authored arcade pace, allowing the player to leave its own chase frame. A
 // firmer frame-rate-independent response keeps the hero in the lower third while
@@ -2672,7 +2704,7 @@ function turboChaseBaseFov(): number {
   return collisionReviewCamera ? 48 : visualCaptureCamera ? VISUAL_CAPTURE_CAMERA.fov : chaseFov;
 }
 const chaseCameraTuning: MutableChaseCamera = {
-  distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier : chaseDistance,
+  distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? visualCaptureCameraDistance() : chaseDistance,
   height: collisionReviewCamera ? chaseHeight * 1.3 : visualCaptureCamera ? chaseHeight * VISUAL_CAPTURE_CAMERA.heightMultiplier : chaseHeight,
   sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : visualCaptureCamera ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier : heroFraming.sideOffset,
   fov: turboChaseBaseFov()
@@ -2691,7 +2723,7 @@ function syncChaseCamera(finishBlend = 0, offTrackNudge = 0, step = 1 / 60): voi
   chaseCameraTuning.distance = collisionReviewCamera
     ? chaseDistance * 0.2
     : visualCaptureCamera
-    ? chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier
+    ? visualCaptureCameraDistance()
     : finishBlend > 0.001 ? heroDistance : chaseDistance + nudgeAmt * -0.02;
   chaseCameraTuning.height = collisionReviewCamera
     ? chaseHeight * 1.3
@@ -2781,7 +2813,7 @@ const racingCamera = game.racingCameraRig({
    * modelled barriers. The floor is relative to the car's rendered height so it
    * remains valid if the typed vehicle changes.
    */
-  distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier : chaseDistance,
+  distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? visualCaptureCameraDistance() : chaseDistance,
   height: collisionReviewCamera ? chaseHeight * 1.3 : visualCaptureCamera ? chaseHeight * VISUAL_CAPTURE_CAMERA.heightMultiplier : chaseHeight,
   // Derived, not tuned: see `requireLowerSideFeatureVisibility` above.
   sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : visualCaptureCamera ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier : heroFraming.sideOffset,
@@ -2948,6 +2980,18 @@ const tsukubaReliefPosition: [number, number, number] = [
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  // Exact review screenshots are judged at their 1440x900/390x844 CSS sizes.
+  // DPR 1 preserves that full output resolution while avoiding 2.25x fragment
+  // work and readback bytes on software-GPU runners. Public gameplay keeps its
+  // renderer-selected device pixel ratio.
+  ...(visualCaptureCamera ? {
+    pixelRatio: 1,
+    // Keep real renderer-owned shadows while bounding the first capture frame.
+    // The route's ~40-unit radius otherwise selects a 4096² shadow target; a
+    // 512² capture target preserves the same caster/receiver path with 1/64th
+    // of the depth pixels. Normal public gameplay retains adaptive defaults.
+    performanceQuality: { resolutionScale: 1, particleScale: 1, lodBias: 1, shadowSize: 512 }
+  } : {}),
   physics: {
     seed: 20260922,
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 4 }
@@ -2983,60 +3027,24 @@ const app = createAuraApp("#app", {
         role: "setDressing",
         scaleMode: "fit",
         targetMaxDimension: reviewVenueLayouts[0].targetMaxDimension,
-        castShadow: true,
+        // The authoritative V2 circuit and the two cars own the shadowed scene.
+        // Re-rendering every mesh in a supporting venue copy into the shadow map
+        // did not add route authority and dominated software-GPU frame cost.
+        castShadow: false,
         receiveShadow: true
       })
         .position(...reviewVenueInitialPoses[0].position)
         .rotate(...reviewVenueInitialPoses[0].rotation)
         .runtime(game.runtimeNode("turbo-hairpin-festival-venue", {
           tags: ["typed-supporting-asset", "renderer-owned-venue-depth", "non-gameplay-set-dressing"]
-        })),
-      model(assets.turboHairpinVenueKit, {
-        name: "turbo inside hairpin crowd grove",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: reviewVenueLayouts[1].targetMaxDimension,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(...reviewVenueInitialPoses[1].position)
-        .rotate(...reviewVenueInitialPoses[1].rotation)
-        .runtime(game.runtimeNode("turbo-inside-hairpin-crowd-grove", {
-          tags: ["typed-supporting-asset", "renderer-owned-inside-corner-depth", "non-gameplay-set-dressing"]
-        })),
-      model(assets.turboHairpinVenueKit, {
-        name: "turbo near outside shoulder spectators",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: reviewVenueLayouts[2].targetMaxDimension,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(...reviewVenueInitialPoses[2].position)
-        .rotate(...reviewVenueInitialPoses[2].rotation)
-        .runtime(game.runtimeNode("turbo-near-outside-shoulder-spectators", {
-          tags: ["typed-supporting-asset", "renderer-owned-roadside-depth", "non-gameplay-set-dressing"]
-        })),
-      model(assets.turboHairpinVenueKit, {
-        name: "turbo near inside shoulder spectators",
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: reviewVenueLayouts[3].targetMaxDimension,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(...reviewVenueInitialPoses[3].position)
-        .rotate(...reviewVenueInitialPoses[3].rotation)
-        .runtime(game.runtimeNode("turbo-near-inside-shoulder-spectators", {
-          tags: ["typed-supporting-asset", "renderer-owned-roadside-depth", "non-gameplay-set-dressing"]
-        })),
-    ] : [])
+        }))
+    ].slice(0, supplementalHairpinVenueCopies) : [])
     // A release-qualified textured mountain/forest slice restores authored
     // environmental relief in the held overview without changing the Formula
     // route's topology, contact plane, or road materials. Only the six
     // mountain/forest meshes remain visible; every road, barrier, fence and
     // venue mesh is hidden by its exact GLB node name.
-    .addMany(visualCaptureCamera ? [
+    .addMany(visualCaptureCamera && supplementalTsukubaReliefEnabled ? [
       model(assets.showcaseTsukubaCircuit, {
         name: "turbo release tsukuba scenic relief",
         role: "setDressing",
@@ -3142,15 +3150,19 @@ const app = createAuraApp("#app", {
       transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     })
       .position(
-        (initialPlayerPose.position[0] + initialOpponentPose.position[0]) * 0.5,
-        initialPlayerPose.position[1],
-        (initialPlayerPose.position[2] + initialOpponentPose.position[2]) * 0.5
+        initialPlayerPose.position[0] + (initialOpponentPose.position[0] - initialPlayerPose.position[0]) * VISUAL_CAPTURE_GRID_FOCUS_BLEND,
+        initialPlayerPose.position[1] + (initialOpponentPose.position[1] - initialPlayerPose.position[1]) * VISUAL_CAPTURE_GRID_FOCUS_BLEND,
+        initialPlayerPose.position[2] + (initialOpponentPose.position[2] - initialPlayerPose.position[2]) * VISUAL_CAPTURE_GRID_FOCUS_BLEND
       )
+      // The follow rig rotates its offset by this target yaw. Without an
+      // initial route rotation, the exact opening frame looks across world Z
+      // until the first gameplay callback and can never frame both grid cars.
+      .rotate(...initialPlayerPose.rotation)
       .scale(0.001)
       .runtime(game.runtimeNode("racing-action-focus", { tags: ["camera-target", "review-only", "non-colliding"] })))
-    // The hero is the detailed CC-BY Formula racer with blue/black livery, visible
-    // suspension, driver, wings and exposed tyres. The rival is a separate CC0
-    // Formula racer with authored red/white/graphite palette texturing. Both
+    // The hero is the detailed CC0 Formula racer with authored red/white/graphite
+    // materials, visible suspension, driver, wings and exposed tyres. The rival is
+    // the separate CC-BY Formula racer with blue/black livery. Both retain their
     // suspension, driver, front/rear wings and exposed tires. Neither vehicle receives a
     // whole-model tint: the distinction comes from authored materials and geometry.
     .add(model(assets.showcaseCc0FormulaRaceCar, {
@@ -3484,15 +3496,9 @@ const reviewVenueNode = reviewVenuePlate
 const reviewFestivalNode = visualCaptureCamera && supplementalHairpinVenueEnabled
   ? app.nodes.require("turbo-hairpin-festival-venue")
   : null;
-const reviewInsideGroveNode = visualCaptureCamera && supplementalHairpinVenueEnabled
-  ? app.nodes.require("turbo-inside-hairpin-crowd-grove")
-  : null;
-const reviewNearOutsideNode = visualCaptureCamera && supplementalHairpinVenueEnabled
-  ? app.nodes.require("turbo-near-outside-shoulder-spectators")
-  : null;
-const reviewNearInsideNode = visualCaptureCamera && supplementalHairpinVenueEnabled
-  ? app.nodes.require("turbo-near-inside-shoulder-spectators")
-  : null;
+const reviewInsideGroveNode = null;
+const reviewNearOutsideNode = null;
+const reviewNearInsideNode = null;
 const racingActionFocus = app.nodes.require("racing-action-focus");
 racingActionFocus.setVisible(false);
 // TDC incorporation runtime handles.
@@ -3539,6 +3545,13 @@ const compositionFeedbackNodes: readonly AuraRuntimeNodeHandle[] = [
   driftParticleCloudNode
 ];
 let suppressedFeedbackVisibility: Map<AuraRuntimeNodeHandle, boolean> | null = null;
+// Screenshot controls must survive the explicit frame submitted by the probe.
+// A pending route callback can otherwise restore normal presentation between
+// the mutation and the captured pixels, producing a byte-identical false
+// negative. These flags are consumed by the normal route update below; camera
+// targeting remains unchanged because hidden runtime nodes retain transforms.
+let compositionPlayerSuppressed = false;
+let compositionRivalSuppressed = false;
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -3598,13 +3611,14 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         rearAxle[2] / rearWheels.length
       ] as const;
     },
-    settleSubjectPose: () => {
+    settleSubjectPose: async () => {
       // Route-primary evidence must show the playable car on the road, not the
       // pre-race countdown that is intentionally waiting for player input.  This
       // is a route-owned deterministic presentation seam: it preserves the reset
       // pose and all authored state, advances only the start-light ceremony, and
       // pauses before any driving simulation can change the measured contact.
       app.pause();
+      await app.ready();
       raceSession = {
         ...raceSession,
         startLights: {
@@ -3618,15 +3632,16 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       };
       mountedEvidence.startLightsComplete = true;
       updateTurboHudPanel();
-      app.step(0);
+      await app.stepAsync(0);
     },
-    setSubjectSuppressed: (suppressed: boolean) => {
+    setSubjectSuppressed: async (suppressed: boolean) => {
       app.pause();
-      // Keep the runtime follow target present while reducing the rendered
-      // subject enough for a pixel-difference mask. A quarter-scale reference
-      // avoids the full-frame renderer invalidation produced by visibility
-      // toggling while still yielding a strong car-only delta.
-      playerCar.setScale(suppressed ? 0.15 : 1);
+      await app.ready();
+      compositionPlayerSuppressed = suppressed;
+      // Visibility removes the complete typed draw while retaining the runtime
+      // node and its transform as the camera target. The persistent flag keeps
+      // the route callback from restoring it during the submitted probe frame.
+      playerCar.setVisible(!suppressed);
       if (suppressed) {
         // Suppressed pixels should describe the scene without the hero, not a
         // pile of hero-owned drift/contact cues that can be mistaken for a
@@ -3643,7 +3658,18 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         suppressedFeedbackVisibility = null;
         previousVisibility?.forEach((visible, node) => node.setVisible(visible));
       }
-      app.step(0);
+      await app.stepAsync(0);
+    },
+    setRivalSuppressed: async (suppressed: boolean) => {
+      app.pause();
+      await app.ready();
+      compositionRivalSuppressed = suppressed;
+      opponentCar.setVisible(!suppressed);
+      opponentRearLightBar.setVisible(!suppressed);
+      opponentCyanSideMarker.setVisible(!suppressed);
+      opponentContactShadow.setVisible(!suppressed);
+      opponentWheelContactPads.setVisible(!suppressed);
+      await app.stepAsync(0);
     }
   },
   configurable: true
@@ -3846,7 +3872,7 @@ const mountedEvidence = {
     targetNode: "racing-player-car",
     source: "game.racingCameraRig",
     collisionReviewCamera,
-    distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? chaseDistance * VISUAL_CAPTURE_CAMERA.distanceMultiplier : chaseDistance,
+    distance: collisionReviewCamera ? chaseDistance * 0.2 : visualCaptureCamera ? visualCaptureCameraDistance() : chaseDistance,
     height: collisionReviewCamera ? chaseHeight * 1.3 : visualCaptureCamera ? chaseHeight * VISUAL_CAPTURE_CAMERA.heightMultiplier : chaseHeight,
     sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : visualCaptureCamera ? heroFraming.sideOffset * VISUAL_CAPTURE_CAMERA.sideMultiplier : heroFraming.sideOffset,
     lookAhead: visualCaptureCamera ? chaseLookAhead * VISUAL_CAPTURE_CAMERA.lookAheadMultiplier : chaseLookAhead,
@@ -4081,6 +4107,154 @@ const mountedEvidence = {
   diagnostics: app.diagnostics()
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { value: mountedEvidence, configurable: true, writable: true });
+// Route-owned capture control for exact opening-grid evidence. Software WebGL
+// frames can take close to a minute, so a screenshot request must not race an
+// unbounded sequence of automatic submissions. The producer pauses before the
+// mount settles, requests one explicit production frame, captures it, then
+// resumes the unchanged countdown/gameplay loop.
+type TurboAcceptanceMilestone =
+  | "high-speed"
+  | "checkpoint"
+  | "off-track"
+  | "drift"
+  | "rival-pass"
+  | "ghost-chase"
+  | "finish"
+  | "finish-presentation"
+  | "mobile-motion"
+  | "reduced-motion-drift";
+let turboAcceptanceOwnsClock = false;
+let turboAcceptanceInputOverride: { readonly throttle: number; readonly brake: number; readonly drift: boolean; readonly steer: number } | null = null;
+function turboAcceptanceMilestoneReached(milestone: TurboAcceptanceMilestone): boolean {
+  switch (milestone) {
+    case "high-speed":
+      return mountedEvidence.startLightsComplete === true && mountedEvidence.speed > 0.1;
+    case "checkpoint":
+      return mountedEvidence.kitContractProof.checkpointAdvances === true;
+    case "off-track":
+      return mountedEvidence.renderedFeedback.offTrack === true
+        && mountedEvidence.renderedFeedback.recoveryVisible === true;
+    case "drift":
+      return visualCaptureHeld
+        && mountedEvidence.renderedFeedback.driftVisible === true
+        && mountedEvidence.renderedFeedback.driftAmount > 0.35
+        && mountedEvidence.renderedFeedback.speedFraction >= 0.6;
+    case "rival-pass":
+      return mountedEvidence.gameplay.playerOvertookOpponent === true;
+    case "ghost-chase":
+      return mountedEvidence.ghost.hasBestLap === true && mountedEvidence.ghost.active === true;
+    case "finish":
+      return mountedEvidence.kitContractProof.finishedStatus === "finished" && mountedEvidence.lap >= 5;
+    case "finish-presentation":
+      return mountedEvidence.kitContractProof.finishedStatus === "finished"
+        && mountedEvidence.gameplay.resultCardAfterFinish === true
+        && mountedEvidence.gameplay.finishCamera3Quarter === true;
+    case "mobile-motion":
+      return mountedEvidence.startLightsComplete === true && mountedEvidence.speed > 0.1;
+    case "reduced-motion-drift":
+      return mountedEvidence.reducedMotion === true
+        && mountedEvidence.renderedFeedback.driftVisible === true;
+  }
+}
+async function claimTurboAcceptanceClock(): Promise<void> {
+  if (turboAcceptanceOwnsClock) return;
+  app.pause();
+  await app.ready();
+  // Queue behind any automatic frame that was already submitted when pause was
+  // requested. Once this explicit frame completes, `advance()` can mutate the
+  // same production-owned route without racing renderer state.
+  await app.stepAsync(0);
+  turboAcceptanceOwnsClock = true;
+}
+async function advanceTurboAcceptanceTo(milestone: TurboAcceptanceMilestone): Promise<{
+  readonly milestone: TurboAcceptanceMilestone;
+  readonly steps: number;
+  readonly frame: number;
+  readonly time: number;
+}> {
+  await claimTurboAcceptanceClock();
+  const maximumSteps = milestone === "finish" || milestone === "finish-presentation" ? 90_000 : 30_000;
+  const previousOverride = turboAcceptanceInputOverride;
+  turboAcceptanceInputOverride = null;
+  let steps = 0;
+  try {
+    while (!turboAcceptanceMilestoneReached(milestone) && steps < maximumSteps) {
+      turboAcceptanceInputOverride = milestone === "off-track"
+        ? turboAcceptanceExcursionInput(raceSnapshot, progress => racingLine.sampleAt(progress))
+        : null;
+      app.advance(1 / 60);
+      steps += 1;
+    }
+    if (!turboAcceptanceMilestoneReached(milestone)) {
+      throw new Error(`Turbo acceptance milestone ${milestone} was not reached after ${steps} fixed steps.`);
+    }
+  } finally {
+    turboAcceptanceInputOverride = previousOverride;
+  }
+  // Present exactly the milestone state through the production renderer. The
+  // intermediate fixed steps ran the same input, AI, Rapier, checkpoint, ghost,
+  // audio and camera callbacks; only their redundant GPU presentations were skipped.
+  // The drift milestone sets `visualCaptureHeld` at the end of its qualifying
+  // frame. Clear that presentation hold for one zero-time camera synchronization,
+  // then restore it before rendering so simulation state cannot move.
+  const restoreVisualHold = visualCaptureHeld;
+  if (restoreVisualHold) visualCaptureHeld = false;
+  app.advance(0);
+  if (restoreVisualHold) visualCaptureHeld = true;
+  await app.stepAsync(0);
+  mountedEvidence.diagnostics = app.diagnostics();
+  return { milestone, steps, frame: app.runtime.frame, time: app.runtime.time };
+}
+Object.defineProperty(window, "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__", {
+  value: {
+    holdOpeningGrid: async () => {
+      await claimTurboAcceptanceClock();
+      mountedEvidence.diagnostics = app.diagnostics();
+    },
+    advanceTo: advanceTurboAcceptanceTo,
+    presentInput: async () => {
+      await claimTurboAcceptanceClock();
+      // A retained drift frame holds its solved tableau. A subsequent real
+      // keyboard input (notably reset) must release that presentation hold
+      // before the mounted frame callback can consume the queued key event.
+      visualCaptureHeld = false;
+      app.advance(1 / 60);
+      await app.stepAsync(0);
+      mountedEvidence.diagnostics = app.diagnostics();
+    },
+    resume: async () => {
+      // Kept for interactive capture clients. Browser acceptance uses named
+      // fixed-step milestones so semantic time never depends on GPU throughput.
+      turboAcceptanceOwnsClock = false;
+      const before = app.runtime.frame;
+      app.resume();
+      await new Promise<void>((resolve, reject) => {
+        const deadline = performance.now() + 10_000;
+        const check = () => {
+          if (app.runtime.frame > before) resolve();
+          else if (performance.now() >= deadline) reject(new Error("Turbo production playback did not advance after resume()."));
+          else requestAnimationFrame(check);
+        };
+        requestAnimationFrame(check);
+      });
+    }
+  },
+  configurable: true
+});
+// Dispatch the deterministic production-route probe at mounted readiness. A
+// software renderer can spend minutes inside its first submitted frame; probe
+// intent must not depend on that frame completing. The browser acceptance still
+// waits for later real frames to observe camera displacement, node-backed
+// effects, punch activity, and the fully settled authored chase framing.
+if (turboJuiceTriggersAllowed) {
+  turboMaybeFireJuiceProbe();
+  // Advance the same mounted chase-camera path once at readiness. The browser
+  // can expose the route before a software GPU completes its first frame; in
+  // that interval the probe must already contain the real shake, punch and
+  // node-backed effect snapshots. Normal onFrame updates continue decay and
+  // return the rig to its authored chase framing.
+  syncChaseCamera(0, 0, 1 / 60);
+}
 updateTurboHudPanel();
 
 app.onFrame(({ dt }) => {
@@ -4088,9 +4262,6 @@ app.onFrame(({ dt }) => {
   // captures first contact. Continuing to advance Rapier beneath a held camera could
   // briefly clear and re-enter the manifold, manufacturing a second impact on release.
   if ((collisionReviewContactHeld && vehicleImpactResponses > 0) || collisionReviewReactionHeld) return;
-  // Deterministic `?juiceProbe=1` hook for the F2/F3 adoption spec. Gameplay-only
-  // by construction: certified captures never set the flag.
-  if (turboJuiceTriggersAllowed) turboMaybeFireJuiceProbe();
   // Once the exact review state has been solved, keep the gameplay transforms
   // fixed while allowing the renderer and its chase rig to run for subsequent
   // frames. Pausing the whole app from a nested rAF stopped the renderer before
@@ -4130,8 +4301,9 @@ app.onFrame(({ dt }) => {
     position: raceSnapshot.position,
     offTrack: raceSnapshot.offTrack
   });
-  const resolvedThrottleHeld = evidenceDriverInput ? evidenceDriverInput.throttle > 0.05 : throttleHeld;
-  const resolvedBrakeHeld = evidenceDriverInput ? evidenceDriverInput.brake > 0.05 : input.held("brake");
+  const acceptanceInput = turboAcceptanceInputOverride ?? evidenceDriverInput;
+  const resolvedThrottleHeld = acceptanceInput ? acceptanceInput.throttle > 0.05 : throttleHeld;
+  const resolvedBrakeHeld = acceptanceInput ? acceptanceInput.brake > 0.05 : input.held("brake");
   // The named visual review still requires the producer to hold the real keys,
   // but their effect begins at exact route coordinates. This removes the
   // one-or-two-rAF dispatch variance that previously selected different held
@@ -4145,10 +4317,12 @@ app.onFrame(({ dt }) => {
     // this only composes two genuine inputs instead of discarding Space when
     // an evidence driver is active.
     ? captureDriftGate || evidenceDriverInput?.drift === true
-    : evidenceDriverInput ? evidenceDriverInput.drift : input.held("drift");
-  const resolvedSteer = visualCaptureCamera
-    ? evidenceDriverInput?.steer ?? (captureSteerGate ? 0.62 : 0)
-    : evidenceDriverInput?.steer ?? input.axis("steer");
+    : acceptanceInput ? acceptanceInput.drift : input.held("drift");
+  const resolvedSteer = turboAcceptanceInputOverride !== null
+    ? turboAcceptanceInputOverride.steer
+    : visualCaptureCamera
+      ? evidenceDriverInput?.steer ?? (captureSteerGate ? 0.62 : 0)
+      : evidenceDriverInput?.steer ?? input.axis("steer");
   const driftHeld = resolvedDriftHeld;
   if (!raceSession.startLights.complete) {
     raceSession = {
@@ -4195,6 +4369,13 @@ app.onFrame(({ dt }) => {
         playCue("finish-fanfare");
         finishCueFired = true;
       }
+    } else {
+      // The start-light ceremony holds vehicle simulation, but it must not hold
+      // the mounted camera systems. Gameplay impacts can arrive before GO (and
+      // the deterministic adoption probe intentionally does), so advance the
+      // same chase/shake/punch/feel path used by racing and publish its state.
+      // With no trigger this resolves to the authored chase framing.
+      syncChaseCamera(0, 0, step);
     }
     mountedEvidence.diagnostics = app.diagnostics();
     updateTurboHudPanel();
@@ -4718,6 +4899,10 @@ app.onFrame(({ dt }) => {
     playerGroundedVisual[2]
   );
   playerCar.setRotation(playerChassisPose.rotation[0], playerPose.rotation[1] + reviewSlipYaw, playerChassisPose.rotation[2]);
+  playerCar.setVisible(!compositionPlayerSuppressed);
+  if (compositionPlayerSuppressed) {
+    compositionFeedbackNodes.forEach((node) => node.setVisible(false));
+  }
   if (reviewVenueNode && visualCaptureCamera) {
     const reviewForwardPoint = gamePointToScene({
       x: raceSnapshot.position.x + Math.cos(raceSnapshot.heading) * 0.1,
@@ -5057,9 +5242,6 @@ app.onFrame(({ dt }) => {
   });
   if (raceSession.nitroSeconds > 0 && nitroSecondsBeforeAward <= 0) turboFireNitroJuice();
   const finishBlend = raceSession.finishCameraBlend;
-  // Off-track camera nudge uses the decaying recovery window so the shake fades
-  // as the car returns to the road (hidden under reduced motion).
-  syncChaseCamera(finishBlend, edgeRecoverySeconds > 0 ? edgeRecoverySeconds / 0.45 : 0, step);
   const opponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
   opponentChassisPose = opponentChassis.step(step, {
@@ -5152,8 +5334,11 @@ app.onFrame(({ dt }) => {
   // Capture mode is a real race frame, not a solo product shot. Keep the rival
   // mounted and visible so its lead supplies scale and race direction whenever
   // it remains inside the live chase frustum.
-  opponentCar.setVisible(true);
-  opponentContactShadow.setVisible(true);
+  opponentCar.setVisible(!compositionRivalSuppressed);
+  opponentRearLightBar.setVisible(!compositionRivalSuppressed);
+  opponentCyanSideMarker.setVisible(!compositionRivalSuppressed);
+  opponentContactShadow.setVisible(!compositionRivalSuppressed);
+  opponentWheelContactPads.setVisible(!compositionRivalSuppressed);
   if (visualCaptureCamera) {
     // The review lens must hold the live two-car encounter, not just chase the
     // player.  Following only `playerPose` left the opponent at the far end of
@@ -5168,7 +5353,7 @@ app.onFrame(({ dt }) => {
     // wheel contact point above the rendered silhouette, failing the binding
     // gate even though Rapier still reported every wheel grounded; player-only
     // focus hid the rival at the horizon.
-    const focusBlend = 0;
+    const focusBlend = visualCaptureFocusBlend();
     racingActionFocus
       .setPosition(
         playerPose.position[0] + (opponentChassisPose.groundedPosition[0] - playerPose.position[0]) * focusBlend,
@@ -5185,6 +5370,10 @@ app.onFrame(({ dt }) => {
       )
       .setRotation(0, playerPose.rotation[1], 0);
   }
+  // Camera solving consumes the target node's current transform. Update the
+  // hidden focus first, then solve the lens in this same simulation frame; the
+  // prior ordering left every retained milestone looking at the preceding pose.
+  syncChaseCamera(finishBlend, edgeRecoverySeconds > 0 ? edgeRecoverySeconds / 0.45 : 0, step);
   // TDC-A1: drive the translucent ghost from the best-lap replay.
   const ghostReplayActive = !visualCaptureCamera && ghostToggleEnabled && ghostReplayPlayer !== null
     && raceSession.startLights.complete && raceSnapshot.status !== "finished";

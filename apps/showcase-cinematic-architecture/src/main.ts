@@ -8,8 +8,10 @@ import {
   environments,
   interactions,
   lights,
+  material,
   model,
   placedBounds,
+  primitives,
   renderer,
   scene,
   timeline
@@ -238,6 +240,8 @@ let interactionRevision = 0;
 let queuedSceneChange: string | undefined;
 let queuedSceneChangeTimer: number | undefined;
 let liveControlMode = false;
+let nightSpotlightEnabled = true;
+let nightSpotlightShadow = true;
 
 const initialScene = buildArchitectureScene(controls);
 const app = createAuraApp("#aura-scene", {
@@ -245,6 +249,29 @@ const app = createAuraApp("#aura-scene", {
   pixelRatio: Math.min(1.45, window.devicePixelRatio || 1),
   scene: initialScene
 });
+
+// Evidence toggles operate on this application's scene and renderer, with a fixed
+// public camera time. They never create a replacement scene or a second canvas.
+if (new URLSearchParams(location.search).has("spotlightProbe")) {
+  (window as unknown as Record<string, unknown>).__AURA3D_ARCHITECTURE_SPOTLIGHT_PROBE__ = {
+    async capture(enabled: boolean, shadow: boolean) {
+      app.pause();
+      controls = { ...controls, mood: "nocturne" };
+      nightSpotlightEnabled = enabled;
+      nightSpotlightShadow = shadow;
+      app.setScene(buildArchitectureScene(controls));
+      await app.ready();
+      app.pause();
+      await app.stepAsync(0);
+      const canvas = app.canvas;
+      const gl = canvas?.getContext("webgl2");
+      if (!canvas || !gl) throw new Error("Architecture spotlight proof requires the mounted WebGL2 canvas.");
+      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return { pixels: Array.from(pixels), width: canvas.width, height: canvas.height, diagnostics: app.diagnostics() };
+    }
+  };
+}
 
 let latestEvidence: ArchitectureEvidence | undefined;
 
@@ -336,6 +363,26 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       .position(compactViewport ? -0.22 : -0.32, -0.15, -1.0)
       .rotate(0, 1.62, 0)
       .runtime({ id: "architecture-traffic-background" }))
+    // The district GLB remains the primary architecture. These two small
+    // authored set-dressing pieces put a real receiver and occluder inside the
+    // nocturne spot cone, so the route demonstrates the same production shadow
+    // path it advertises instead of relying on a favorable imported-mesh pose.
+    .add(primitives.box({
+      name: "architectural spotlight receiver terrace",
+      size: [2.4, 0.08, 1.7],
+      position: [0.08, -0.52, -0.54],
+      material: material.pbr({ color: "#566174", roughness: 0.84, metallic: 0.04 }),
+      castShadow: false,
+      receiveShadow: true
+    }))
+    .add(primitives.box({
+      name: "architectural spotlight pylon caster",
+      size: [0.3, 0.92, 0.3],
+      position: [-0.24, -0.02, -0.18],
+      material: material.pbr({ color: "#9a6845", roughness: 0.48, metallic: 0.16 }),
+      castShadow: true,
+      receiveShadow: true
+    }))
     .add(effects.fog({
       name: "architectural depth haze",
       density: 0.006 + haze * 0.012,
@@ -353,6 +400,13 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       name: "architectural contact occlusion",
       intensity: 0.34,
       radius: 0.68
+    }))
+    .add(lights.spot({
+      name: "architectural night facade spotlight",
+      position: [-1.6, 3.2, 2.0], target: [0.2, -0.2, -0.62],
+      color: "#ffd9a0", angle: 0.55, penumbra: 0.4, distance: 10,
+      intensity: nextControls.mood === "nocturne" && nightSpotlightEnabled ? 18 : 0,
+      shadow: nightSpotlightShadow
     }))
     .add(lights.ambient({ name: "low gallery ambient fill", intensity: 0.2 + haze * 0.06, color: mood.fog }))
     .add(lights.directional({ name: "high museum key light", position: [-2.4, 4.8, 2.4], intensity: 2.15, color: mood.key }))

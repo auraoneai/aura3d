@@ -6,9 +6,8 @@
  * executeWebGPUFxaa). Backend-agnostic image work: bright-extract with a
  * soft-knee threshold, a separable-Gaussian mip pyramid, energy-weighted
  * composite, exposure/contrast/saturation color grade, and an FXAA
- * luma-edge pass. TAA is deliberately NOT here: it needs velocity +
- * history inputs that do not exist on the WebGPU path (same withheld
- * doctrine as the root A3 motion-blur/TAA nodes).
+ * luma-edge pass. Native TAA is owned by WebGPUTemporal.ts, with explicit
+ * GPU velocity and ping-pong history targets; it performs no CPU readback.
  */
 
 export const WEBGPU_POST_VERTEX_WGSL = `struct PostVertexOutput {

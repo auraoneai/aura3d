@@ -4,7 +4,7 @@ import {
   type CameraLike,
   type RenderItem,
   type RenderSource
-} from "@aura3d/rendering/lean-runtime";
+} from "@aura3d/rendering/lean-core-runtime";
 import {
   composeMat4,
   lookAtMat4,

@@ -1,6 +1,8 @@
 # Migration From low-level renderer code
 
-Version: 3.0.0
+Version: 3.0.1
+
+Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
 
 ## Current Migration Surface
 
@@ -69,3 +71,8 @@ pnpm three-compat:migration
 ```
 
 Migration wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.
+
+
+### WebGPU post-process helpers
+
+Low-level WebGPU post-process shader builders and option normalizers now import from `@aura3d/rendering/webgpu`. `runWebGPURenderToTextureProof` remains available from the root rendering package. This keeps optional WebGPU shader source off WebGL and template startup graphs while preserving the supported WebGPU escape hatch.

@@ -29,6 +29,7 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
+import ts from "typescript";
 import { writeReport, type ReleaseCheck } from "../check-common";
 import { PACKAGE_TIERS } from "../package-tiers";
 
@@ -109,48 +110,23 @@ function walkTs(root: string): string[] {
 }
 
 /**
- * Import detection strips template-literal bodies before matching.
- *
- * `packages/create-aura3d` emits route source as template literals that contain
- * `import { ... } from "@aura3d/engine"`. A naive scan attributes that generated text to the
- * generator and invents a dependency its manifest does not declare. Line-anchoring the regex is
- * not an alternative, because the prevailing style here puts the specifier on its own line:
- *
- *   import {
- *     createSceneShowcaseWorkflow
- *   } from "@aura3d/workflows";
- *
- * so anchoring silently drops most real edges. Removing backtick spans keeps multi-line imports
- * intact while discarding generated code, which is the distinction that actually matters.
+ * Parse only actual static imports, re-exports, import-equals declarations and
+ * string-literal dynamic imports. Example snippets and generated source inside
+ * strings/templates are data, so they must not create package dependency edges.
  */
-function stripTemplateLiterals(text: string): string {
-  let out = "";
-  let inTemplate = false;
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index];
-    if (char === "\\") {
-      if (!inTemplate) out += char + (text[index + 1] ?? "");
-      index += 1;
-      continue;
-    }
-    if (char === "`") {
-      inTemplate = !inTemplate;
-      continue;
-    }
-    if (!inTemplate) out += char;
-    else if (char === "\n") out += "\n";
-  }
-  return out;
-}
-
-const SPECIFIER = /from\s+"(@aura3d\/[^"]+)"|import\s+"(@aura3d\/[^"]+)"|import\("(@aura3d\/[^"]+)"\)/g;
-
 function collectSpecifiers(text: string): string[] {
+  const source = ts.createSourceFile("package-source.ts", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const found: string[] = [];
-  for (const match of stripTemplateLiterals(text).matchAll(SPECIFIER)) {
-    const spec = match[1] ?? match[2] ?? match[3];
-    if (spec) found.push(spec);
-  }
+  const add = (node: ts.Expression | undefined): void => {
+    if (node && ts.isStringLiteralLike(node) && node.text.startsWith("@aura3d/")) found.push(node.text);
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) add(node.moduleSpecifier);
+    else if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) add(node.moduleReference.expression);
+    else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) add(node.arguments[0]);
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
   return found;
 }
 

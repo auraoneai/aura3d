@@ -7,6 +7,8 @@ function fakePeer() {
   const agents: { position: [number, number, number]; target: [number, number, number] | null }[] = [];
   const crowd = {
     maxAgents: 2,
+    disposed: false,
+    dispose() { this.disposed = true; },
     count: () => agents.length,
     addAgent: (position: readonly [number, number, number]) => {
       if (agents.length >= 2) throw new Error("at capacity");
@@ -31,6 +33,7 @@ function fakePeer() {
       agents.map((agent) => ({ position: agent.position, velocity: [0, 0, 0] as const, speed: 0 }))
   };
   const mesh = {
+    dispose() {},
     computePath: (from: readonly [number, number, number], to: readonly [number, number, number]) => ({
       success: true,
       points: [from, to] as const
@@ -122,4 +125,74 @@ describe("crowds root builders (O1)", () => {
     expect(() => crowds.diagnostics(crowd as never, { camera: [0, 0, 0], nearDistance: 14, farDistance: 6 })).toThrow(RangeError);
     expect(() => crowds.diagnostics(crowd as never, { camera: [0, Number.NaN, 0] })).toThrow(TypeError);
   });
+});
+
+
+describe("mounted crowd representations", () => {
+  it("switches real resource visibility with hysteresis, reuses resources and disposes once", async () => {
+    const mesh = await navigation.bake({ positions: [0,0,0], indices: [] }, { peer: fakePeer() });
+    const crowd = crowds.create(mesh, { maxAgents: 2, maxAgentRadius: 0.5 });
+    crowds.addAgent(crowd, [0,0,0]);
+    const resources: { tier: string; visible: boolean; disposed: number; selected: boolean; position: readonly number[] }[] = [];
+    const binding = crowds.bindRepresentations(crowd, {
+      nearDistance: 6, farDistance: 14, hysteresis: 1,
+      create: (_index, tier) => {
+        const item = { tier, visible: false, disposed: 0, selected: false, position: [] as readonly number[] };
+        resources.push(item);
+        return { setVisible: value => { item.visible = value; }, dispose: () => { item.disposed++; },
+          update: state => { item.selected = state.selected; item.position = state.position; } };
+      }
+    });
+    expect(binding.update([5,0,0], new Set([0]))).toEqual(["near"]);
+    expect(binding.update([6.5,0,0])).toEqual(["near"]);
+    expect(binding.update([8,0,0], new Set([0]))).toEqual(["mid"]);
+    expect(resources.filter(item => item.visible).map(item => item.tier)).toEqual(["mid"]);
+    expect(resources[1]?.selected).toBe(true);
+    expect(resources[1]?.position).toEqual([0, 0, 0]);
+    expect(() => binding.update([Number.NaN, 0, 0])).toThrow("finite");
+    expect(() => crowds.bindRepresentations(crowd, {
+      nearDistance: 6, farDistance: 7, hysteresis: 1,
+      create: () => { throw new Error("must not allocate invalid binding"); }
+    })).toThrow("hysteresis");
+    expect(binding.update([16,0,0])).toEqual(["impostor"]);
+    expect(binding.update([13.5,0,0])).toEqual(["impostor"]);
+    expect(binding.update([4,0,0])).toEqual(["near"]);
+    expect(resources).toHaveLength(3);
+    binding.update([4,0,0], new Set(), new Set([0]));
+    expect(resources.every(item => !item.visible)).toBe(true);
+    binding.dispose(); binding.dispose();
+    expect(resources.every(item => item.disposed === 1)).toBe(true);
+    expect(() => binding.update([0,0,0])).toThrow("disposed");
+  });
+});
+
+
+it("forwards root disposal to the real optional-peer owner", async () => {
+  const peer = fakePeer();
+  const mesh = await navigation.bake({ positions: [], indices: [] }, { peer });
+  const crowd = crowds.create(mesh, { maxAgents: 2, maxAgentRadius: 0.5 });
+  expect(peer.__crowd.disposed).toBe(false);
+  crowds.dispose(crowd);
+  expect(peer.__crowd.disposed).toBe(true);
+  navigation.dispose(mesh);
+});
+
+it("keeps heading through stops and tier switches and releases removed agents", () => {
+  let states = [{ position: [0, 0, 0] as const, velocity: [1, 0, 0] as readonly [number, number, number], speed: 1 }];
+  const crowd = { ...fakePeer().__crowd, agentStates: () => states };
+  const updates: { heading: number; selected: boolean }[] = [];
+  let disposed = 0;
+  const binding = crowds.bindRepresentations(crowd, { create: () => ({
+    update: value => updates.push(value), setVisible: () => {}, dispose: () => { disposed++; }
+  }) });
+  binding.update([0, 0, 0], new Set([0]));
+  expect(updates.at(-1)).toMatchObject({ heading: Math.PI / 2, selected: true });
+  states = [{ position: [0, 0, 0], velocity: [0, 0, 0], speed: 0 }];
+  binding.update([100, 0, 0], new Set([0]));
+  expect(updates.at(-1)).toMatchObject({ heading: Math.PI / 2, selected: true });
+  states = [];
+  binding.update([100, 0, 0]);
+  expect(disposed).toBe(2);
+  binding.dispose();
+  expect(disposed).toBe(2);
 });

@@ -29,6 +29,18 @@ interface DREvidence {
   readonly renderer?: { readonly drawCalls?: number; readonly renderSize?: readonly number[] };
 }
 
+// The browser loads the app independently; keep its test-facing hook shape
+// local instead of merging a competing global Window declaration.
+interface DRHooks {
+  __DEEP_RECOVERY_EVIDENCE__?: DREvidence;
+  __DR_PUMP__?: (frames: number) => number;
+  __DR_TELEPORT__?: (x: number, y: number, z: number) => void;
+  __DR_TELEPORT_CRATE__?: (id: string, x: number, y: number, z: number) => void;
+  __DR_SET_OXYGEN__?: (oxygen: number) => void;
+  __DR_CAPTURE_PAUSE__?: () => Promise<void>;
+  __DR_CAPTURE_RESUME__?: () => void;
+}
+
 const REPO_ROOT = process.cwd();
 const APP_DIR = resolve(REPO_ROOT, "apps/showcase-deep-recovery");
 const REPORT_DIR = resolve(REPO_ROOT, "tests/reports/deep-recovery/playable");
@@ -54,36 +66,101 @@ function routeSourceHash(): string {
 }
 
 async function evidence(page: Page): Promise<DREvidence> {
-  return page.evaluate(() => window.__DEEP_RECOVERY_EVIDENCE__ ?? {});
+  return page.evaluate(() => (window as Window & DRHooks).__DEEP_RECOVERY_EVIDENCE__ ?? {});
+}
+
+interface MissionOperation {
+  name: string;
+  startedAt: string;
+  endedAt?: string;
+  elapsedMs?: number;
+  error?: string;
+}
+const missionOperations: MissionOperation[] = [];
+function retainMissionProgress(complete = false): void {
+  mkdirSync(REPORT_DIR, { recursive: true });
+  writeFileSync(resolve(REPORT_DIR, "progress.json"), `${JSON.stringify({
+    producer: PRODUCER, operations: missionOperations, complete
+  }, null, 2)}\n`);
+}
+async function measuredOperation<T>(name: string, operation: () => Promise<T>): Promise<T> {
+  const started = Date.now();
+  const entry: MissionOperation = { name, startedAt: new Date(started).toISOString() };
+  missionOperations.push(entry);
+  retainMissionProgress();
+  console.log(`[deep-recovery] started ${name}`);
+  try { return await operation(); }
+  catch (error) { entry.error = String(error); throw error; }
+  finally {
+    entry.endedAt = new Date().toISOString();
+    entry.elapsedMs = Date.now() - started;
+    retainMissionProgress();
+    console.log(`[deep-recovery] finished ${name} (${entry.elapsedMs} ms)`);
+  }
 }
 
 async function pump(page: Page, frames: number): Promise<void> {
-  await page.evaluate((count) => window.__DR_PUMP__?.(count), frames);
+  await measuredOperation(`simulation:${frames}`, () => page.evaluate((count) => {
+    const simulate = (window as Window & DRHooks).__DR_PUMP__;
+    if (!simulate) throw new Error("Deep Recovery simulation hook is missing.");
+    return simulate(count);
+  }, frames));
 }
 
 async function teleport(page: Page, x: number, y: number, z: number): Promise<void> {
-  await page.evaluate(([tx, ty, tz]) => window.__DR_TELEPORT__?.(tx, ty, tz), [x, y, z]);
+  await page.evaluate(([tx, ty, tz]) => (window as Window & DRHooks).__DR_TELEPORT__?.(tx, ty, tz), [x, y, z]);
 }
 
 async function teleportCrate(page: Page, id: string, x: number, y: number, z: number): Promise<void> {
-  await page.evaluate(([crateId, tx, ty, tz]) => window.__DR_TELEPORT_CRATE__?.(String(crateId), Number(tx), Number(ty), Number(tz)), [id, x, y, z]);
+  await page.evaluate(([crateId, tx, ty, tz]) => (window as Window & DRHooks).__DR_TELEPORT_CRATE__?.(String(crateId), Number(tx), Number(ty), Number(tz)), [id, x, y, z]);
 }
 
 async function capture(page: Page, name: string, artifacts: string[]): Promise<void> {
   const path = resolve(REPORT_DIR, `${name}.png`);
   await page.waitForTimeout(650);
-  await page.screenshot({ path });
+  await measuredOperation(`capture:${name}`, async () => {
+    const state = await evidence(page);
+    writeFileSync(resolve(REPORT_DIR, `${name}-state.json`), `${JSON.stringify(state, null, 2)}\n`);
+    // Freeze only render submission while Chromium copies the already-rendered
+    // compositor surface. Mission simulation is deterministic and remains
+    // under __DR_PUMP__ ownership, so this cannot advance or alter game state.
+    await page.evaluate(async () => {
+      const pause = (window as Window & DRHooks).__DR_CAPTURE_PAUSE__;
+      if (!pause) throw new Error("Deep Recovery capture-pause hook is missing.");
+      await pause();
+    });
+    const cdp = await page.context().newCDPSession(page);
+    try {
+      const capture = await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: false
+      });
+      writeFileSync(path, Buffer.from(capture.data, "base64"));
+    } finally {
+      await cdp.detach();
+      await page.evaluate(() => {
+        const resume = (window as Window & DRHooks).__DR_CAPTURE_RESUME__;
+        if (!resume) throw new Error("Deep Recovery capture-resume hook is missing.");
+        resume();
+      });
+    }
+  });
   artifacts.push(relative(REPO_ROOT, path));
 }
 
 async function waitReady(page: Page): Promise<void> {
-  await page.waitForFunction(() => Boolean(window.__DEEP_RECOVERY_EVIDENCE__?.mounted), undefined, { timeout: 180_000 });
+  await page.waitForFunction(() => Boolean((window as Window & DRHooks).__DEEP_RECOVERY_EVIDENCE__?.mounted), undefined, { timeout: 180_000 });
   await pump(page, 120);
-  await page.waitForFunction(() => window.__DEEP_RECOVERY_EVIDENCE__?.status === "ready", undefined, { timeout: 30_000 });
+  await page.waitForFunction(() => (window as Window & DRHooks).__DEEP_RECOVERY_EVIDENCE__?.status === "ready", undefined, { timeout: 30_000 });
 }
 
 test("Deep Recovery completes the full standard/breach/heavy/surface mission and exact artifact family", async ({ page }) => {
-  test.setTimeout(300_000);
+  // The retained 300-second run reached surface-win; reset, blackout, touch
+  // and a second full mount still remained. Keep all mission steps and give
+  // each screenshot its own bounded diagnostic deadline.
+  test.setTimeout(600_000);
+  missionOperations.length = 0;
   mkdirSync(REPORT_DIR, { recursive: true });
   const artifacts: string[] = [];
   const scenarios: string[] = [];
@@ -91,7 +168,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`${server.origin}/apps/showcase-deep-recovery/?capture=review`, { waitUntil: "commit", timeout: 120_000 });
-    await waitReady(page);
+    await measuredOperation("initial-mount", () => waitReady(page));
 
     const boot = await evidence(page);
     expect(boot.state).toBe("playing");
@@ -131,14 +208,8 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
     await teleport(page, -11.5, -12, -7.0);
     await pump(page, 8);
     await capture(page, "wreck-approach", artifacts);
-    // The canonical Sunless-Sea review path should show the authored submarine
-    // approaching the wreck, not the earlier sonar-only frame with sparse
-    // context. Both bytes and the source-bound receipt still come from this
-    // named producer state.
-    writeFileSync(
-      resolve("tests/reports/deep-recovery/playable/sonar-reveal.png"),
-      readFileSync(resolve(REPORT_DIR, "wreck-approach.png"))
-    );
+    // Retain each scenario's own pixels: the sonar capture must continue to
+    // match sonar-reveal-state.json after the separate wreck approach.
     scenarios.push("wreck-approach");
 
     await teleportCrate(page, "crate-s1", 2.8, -7.5, -7.5);
@@ -208,7 +279,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
     await capture(page, "heavy-tow", artifacts);
     scenarios.push("heavy-tow");
 
-    await page.evaluate(() => window.__DR_SET_OXYGEN__?.(18));
+    await page.evaluate(() => (window as Window & DRHooks).__DR_SET_OXYGEN__?.(18));
     await pump(page, 2);
     expect((await evidence(page)).audioCues).toContain("oxygen-warn");
     await capture(page, "low-oxygen", artifacts);
@@ -216,13 +287,12 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
 
     await teleportCrate(page, "crate-h1", 0, -1, 0);
     await teleport(page, 0, -1, 0);
-    // Banking is owned by the mounted simulation's containment check. Give the
-    // route a bounded handful of fixed frames to observe that real event rather
-    // than assuming four frames is enough after a screenshot/teleport.
-    await expect.poll(async () => {
-      await pump(page, 1);
-      return (await evidence(page)).heavyBanked;
-    }, { timeout: 10_000, intervals: [16, 32, 64] }).toBe(true);
+    // Banking is owned by the mounted simulation's containment check. Submit
+    // the same deterministic three-frame batch that proves standard banking;
+    // a wall-clock poll is invalid on software runners where one frame can
+    // exceed the poll timeout while still completing correctly.
+    await pump(page, 3);
+    expect((await evidence(page)).heavyBanked).toBe(true);
     const won = await evidence(page);
     expect(won.heavyBanked).toBe(true);
     expect(won.state).toBe("won");
@@ -238,7 +308,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
     expect(reset.heavyBanked).toBe(false);
     scenarios.push("full-reset");
 
-    await page.evaluate(() => window.__DR_SET_OXYGEN__?.(0.01));
+    await page.evaluate(() => (window as Window & DRHooks).__DR_SET_OXYGEN__?.(0.01));
     await teleport(page, 0, -50, 0);
     await pump(page, 2);
     const blackout = await evidence(page);
@@ -260,7 +330,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
 
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`${server.origin}/apps/showcase-deep-recovery/`, { waitUntil: "commit", timeout: 120_000 });
-    await waitReady(page);
+    await measuredOperation("reduced-motion-mount", () => waitReady(page));
     await page.keyboard.press("Space");
     await pump(page, 4);
     const reduced = await evidence(page);
@@ -283,6 +353,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
       pass: true
     };
     writeFileSync(resolve(REPORT_DIR, "browser-evidence.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+    retainMissionProgress(true);
   } finally {
     await server.close();
   }

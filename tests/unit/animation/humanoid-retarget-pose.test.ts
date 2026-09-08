@@ -140,6 +140,29 @@ describe("retargetHumanoidPose", () => {
     quatClose(out.bones.T_LeftLowerArm?.rotation, expected);
   });
 
+  it("rebases animated translation deltas on the target bind translation", () => {
+    const sourceRest = { x: 10, y: 20, z: 30 };
+    const targetRest = { x: -4, y: 5, z: 6 };
+    const source = makeRig("source-bind", {
+      armLength: 1,
+      restPose: { leftUpperArm: { position: sourceRest } }
+    });
+    const target = makeRig("target-bind", {
+      prefix: "T_",
+      armLength: 2,
+      restPose: { leftUpperArm: { position: targetRest } }
+    });
+    const map = createHumanoidRetargetingMap(source, target);
+
+    const bind = retargetHumanoidPose({ bones: { LeftUpperArm: { position: sourceRest } } }, map);
+    expect(bind.bones.T_LeftUpperArm?.position).toEqual(targetRest);
+
+    const animated = retargetHumanoidPose({
+      bones: { LeftUpperArm: { position: { x: 11, y: 18, z: 33 } } }
+    }, map);
+    expect(animated.bones.T_LeftUpperArm?.position).toEqual({ x: -2, y: 1, z: 12 });
+  });
+
   it("scales translations by the per-bone length ratio (differently proportioned rigs)", () => {
     const source = makeRig("short", { armLength: 1 });
     const target = makeRig("tall", { prefix: "T_", armLength: 2 });

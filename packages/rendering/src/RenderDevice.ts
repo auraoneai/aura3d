@@ -245,6 +245,9 @@ export interface RenderDeviceDiagnostics {
   readonly nativeShadowMapBindings?: number;
   /** Cumulative native WebGPU fullscreen bloom passes (muse3jsparity-PRD J2). */
   readonly nativeBloomPasses?: number;
+  /** Actual native temporal submissions and resource bindings observed by the device. */
+  readonly nativeTemporalPasses?: number;
+  readonly nativeTemporalBindings?: number;
   /** Cumulative native WebGPU fullscreen color-grade passes (muse3jsparity-PRD J2). */
   readonly nativeColorGradePasses?: number;
   /** Cumulative native WebGPU fullscreen FXAA passes (muse3jsparity-PRD J2). */
@@ -441,6 +444,8 @@ export interface RenderDevice {
   presentLdrPostprocess?(source: RenderTarget, options: LdrPostprocessPresentationOptions): void;
   readPixels(x: number, y: number, width: number, height: number): Uint8Array;
   readPixelsAsync?(x: number, y: number, width: number, height: number): Promise<Uint8Array>;
+  /** Resolve only when all previously submitted native GPU work has completed. */
+  waitForSubmittedWork?(): Promise<void>;
   readFloatPixels(x: number, y: number, width: number, height: number): Float32Array;
   readFloatPixelsAsync?(x: number, y: number, width: number, height: number): Promise<Float32Array>;
   readDepthPixels?(x: number, y: number, width: number, height: number): Float32Array;

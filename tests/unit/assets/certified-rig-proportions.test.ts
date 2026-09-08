@@ -1,8 +1,8 @@
+import { measureCertifiedRig } from "../../../tools/locomotion-301/rig-pair-evidence.js";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { inferHumanoidRigDetailed, type HumanoidBoneName } from "@aura3d/animation";
 import { GLTFLoader, LoadContext } from "../../../packages/assets/src";
-import type { Scene } from "@aura3d/scene";
 
 /**
  * E2 box 5 (measurement half): per-rig bone proportions for the certified roster,
@@ -68,6 +68,15 @@ describe("certified-rig bone proportions", () => {
       // eslint-disable-next-line no-console
       console.log("rig-proportions", JSON.stringify(proportions));
       expect(height).toBeGreaterThan(0);
+      const measured = await measureCertifiedRig(rig.rigId, rig.file);
+      expect(measured.assetSha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(measured.height).toBeCloseTo(height, 8);
+      expect(measured.units).toContain("not certified");
+      expect(Object.keys(measured.rig.restPose ?? {}).length).toBeGreaterThan(0);
+      for (const binding of Object.values(measured.rig.bones)) {
+        expect(binding.rotation).toBeDefined();
+        if (binding.length !== undefined) expect(binding.length).toBeGreaterThan(0);
+      }
     }
   });
 });

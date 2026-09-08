@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("fighting-game route loads", async ({ page }) => {
@@ -19,4 +21,13 @@ test("fighting-game route loads", async ({ page }) => {
     runtimeEvidenceGlobal: "__AURA3D_GAME_RUNTIME__"
   });
   expect(source.readiness.buildDeclarations.routeHealthSpec).toBe("tests/route-health.spec.ts");
+  const canvas = page.locator("canvas").first();
+  await expect(canvas).toBeVisible();
+  const canvasBounds = await canvas.boundingBox();
+  expect(canvasBounds?.width ?? 0).toBeGreaterThan(0);
+  expect(canvasBounds?.height ?? 0).toBeGreaterThan(0);
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  writeFileSync(resolve("tests/reports/route-health.json"), `${JSON.stringify({
+    template: "fighting-game", url: page.url(), canvasBounds, readiness: source.readiness, lifecycle: source.lifecycle
+  }, null, 2)}\n`);
 });

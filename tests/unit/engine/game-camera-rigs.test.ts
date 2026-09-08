@@ -80,6 +80,16 @@ describe("trauma shake", () => {
     expect(a.snapshot().offset).toEqual([0, 0, 0]);
   });
 
+  it("publishes the exact authored lens pose inside the settled band", () => {
+    const shake = createTraumaShake({ decay: 1, maxOffset: 1, maxRoll: 1 });
+    shake.addTrauma(0.1);
+    const settled = shake.update(0.051);
+    expect(settled.trauma).toBeGreaterThan(0);
+    expect(settled.trauma).toBeLessThan(0.05);
+    expect(settled.offset).toEqual([0, 0, 0]);
+    expect(settled.roll).toBe(0);
+  });
+
   it("stacks trauma up to the 1.0 cap", () => {
     const shake = createTraumaShake();
     shake.addTrauma(0.7);

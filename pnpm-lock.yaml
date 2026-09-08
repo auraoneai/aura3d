@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@loaders.gl/textures>ktx-parse': 1.0.1
+
 pnpmfileChecksum: sha256-P4u/7etXHWLb/JYylRh3Nbm+ldXabQbCBov+wF4RiY0=
 
 importers:
@@ -132,8 +135,8 @@ importers:
         specifier: ^9.26.0
         version: 9.39.4
       meshoptimizer:
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: 1.2.0
+        version: 1.2.0
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -293,9 +296,18 @@ importers:
       '@aura3d/ecs':
         specifier: workspace:*
         version: link:../ecs
+      '@aura3d/editor-runtime':
+        specifier: workspace:*
+        version: link:../editor-runtime
+      '@aura3d/input':
+        specifier: workspace:*
+        version: link:../input
       '@aura3d/lean':
         specifier: workspace:*
         version: link:../lean
+      '@aura3d/navigation-recast':
+        specifier: workspace:*
+        version: link:../navigation-recast
       '@aura3d/physics':
         specifier: workspace:*
         version: link:../physics
@@ -308,6 +320,9 @@ importers:
       '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
+      '@aura3d/scripting':
+        specifier: workspace:*
+        version: link:../scripting
       '@aura3d/workflows':
         specifier: workspace:*
         version: link:../workflows
@@ -1797,6 +1812,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -2001,8 +2017,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  ktx-parse@0.7.1:
-    resolution: {integrity: sha512-FeA3g56ksdFNwjXJJsc1CCc7co+AJYDp6ipIp878zZ2bU8kWROatLYf39TQEd4/XRSUvBXovQ8gaVKWPXsCLEQ==}
+  ktx-parse@1.0.1:
+    resolution: {integrity: sha512-djwUWv/82Xc8LOVinJU4EBrVqYkO8OsUDSPEtY/OOVY8BSe3DMU7D7PlIAZ0pI7ZZtErj7mqpJcgffUTABvgaA==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -2047,6 +2063,9 @@ packages:
 
   meshoptimizer@1.1.1:
     resolution: {integrity: sha512-oRFNWJRDA/WTrVj7NWvqa5HqE1t9MYDj2VaWirQCzCCrAd2GHrqR/sQezCxiWATPNlKTcRaPRHPJwIRoPBAp5g==}
+
+  meshoptimizer@1.2.0:
+    resolution: {integrity: sha512-davRZeIJbxJrE24cwQle7ZDsxjdk/OphNOV83oX+efQinyoHY9Jcyz3MHbaoG0qySZajldGztNZ1RN/T19PZsg==}
 
   mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
@@ -3061,7 +3080,7 @@ snapshots:
       '@loaders.gl/schema': 4.4.1
       '@loaders.gl/worker-utils': 4.4.1(@loaders.gl/core@4.4.1)
       '@math.gl/types': 4.1.0
-      ktx-parse: 0.7.1
+      ktx-parse: 1.0.1
       texture-compressor: 1.0.2
     transitivePeerDependencies:
       - '@75lb/nature'
@@ -3890,7 +3909,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  ktx-parse@0.7.1: {}
+  ktx-parse@1.0.1: {}
 
   levn@0.4.1:
     dependencies:
@@ -3931,6 +3950,8 @@ snapshots:
       three: 0.185.1
 
   meshoptimizer@1.1.1: {}
+
+  meshoptimizer@1.2.0: {}
 
   mime@3.0.0: {}
 

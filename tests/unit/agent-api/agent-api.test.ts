@@ -34,6 +34,7 @@ import {
   primitives,
   promptPlanToScene,
   renderer,
+  resolveNativeBloomRadius,
   scene,
   sceneKits,
   shadows,
@@ -333,6 +334,19 @@ describe("agent API", () => {
     expect(character.lowPolyHumanoid().some((node) => node.kind === "model" && node.name === "authored skinned humanoid character model")).toBe(true);
   });
 
+
+  test("maps normalized public bloom radius to a useful native pixel kernel", () => {
+    expect(resolveNativeBloomRadius(undefined)).toBe(3);
+    expect(resolveNativeBloomRadius(0)).toBe(1);
+    expect(resolveNativeBloomRadius(0.08)).toBe(1);
+    expect(resolveNativeBloomRadius(0.22)).toBe(2);
+    expect(resolveNativeBloomRadius(0.38)).toBe(3);
+    expect(resolveNativeBloomRadius(0.5)).toBe(4);
+    expect(resolveNativeBloomRadius(2)).toBe(2);
+    expect(resolveNativeBloomRadius(4)).toBe(4);
+    expect(resolveNativeBloomRadius(20)).toBe(4);
+  });
+
   test("keeps renderer diagnostics honest until runtime passes initialize", () => {
     const diagnostics = renderer.diagnostics(
       scene()
@@ -341,6 +355,7 @@ describe("agent API", () => {
         .add(effects.ambientOcclusion())
     );
 
+    expect(diagnostics.shadows.observed).toBeNull();
     expect(diagnostics.postprocess).toMatchObject({
       requested: true,
       enabled: false,

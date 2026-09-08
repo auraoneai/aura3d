@@ -116,6 +116,9 @@ export interface TypedGLBActorEvidence {
   readonly lastFootPlantingTargetError: number;
   readonly lastFootPlantingHipOffset: number;
   readonly lastFootPlantingMissingLegs: readonly string[];
+  readonly lastFootPlantingDeformation?: NonNullable<GLTFSceneAnimationApplyResult["footPlanting"]>["legDeformation"];
+  readonly lastFootPlantingSurfaces?: NonNullable<GLTFSceneAnimationApplyResult["footPlanting"]>["surfaces"];
+  readonly lastFootPlantingFeet?: NonNullable<GLTFSceneAnimationApplyResult["footPlanting"]>["feet"];
   readonly footPlantingConfigured: boolean;
   readonly lastSkinningPalettesUpdated: number;
   readonly lastMorphApply?: TypedGLBActorMorphApplyResult;
@@ -149,6 +152,15 @@ export interface TypedGLBActor {
   readonly animation: GLTFSceneAnimationRuntime;
   readonly evidence: TypedGLBActorEvidence;
   playClip(name: string, time: number): GLTFSceneAnimationApplyResult;
+  /** Consume authored displacement through the physical authority before applying the in-place pose. */
+  playRootMotionClip(
+    name: string,
+    options: Parameters<GLTFSceneAnimationRuntime["applyRootMotionClip"]>[1]
+  ): ReturnType<GLTFSceneAnimationRuntime["applyRootMotionClip"]>;
+  playRootMotionClips(
+    samples: Parameters<GLTFSceneAnimationRuntime["applyRootMotionClips"]>[0],
+    options: Parameters<GLTFSceneAnimationRuntime["applyRootMotionClips"]>[1]
+  ): ReturnType<GLTFSceneAnimationRuntime["applyRootMotionClips"]>;
   /**
    * Drive the GLB from an externally-computed retargeted pose (e.g. the output of
    * `@aura3d/animation`'s `retargetHumanoidPose`, whose `bones` keys are the target rig's GLB node
@@ -220,6 +232,16 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     playClip(name, time) {
       lastApply = animation.applyClipByName(name, time);
       return lastApply;
+    },
+    playRootMotionClip(name, motionOptions) {
+      const result = animation.applyRootMotionClip(name, motionOptions);
+      lastApply = result.applyResult;
+      return result;
+    },
+    playRootMotionClips(samples, motionOptions) {
+      const result = animation.applyRootMotionClips(samples, motionOptions);
+      lastApply = result.applyResult;
+      return result;
     },
     applyRetargetedPose(pose, time = 0) {
       lastApply = animation.applyPose(pose, "retargeted-pose", time);
@@ -357,6 +379,9 @@ export function createTypedGLBActorEvidence(
     lastFootPlantingTargetError: lastApply?.footPlanting?.averageTargetError ?? 0,
     lastFootPlantingHipOffset: lastApply?.footPlanting?.hipOffset ?? 0,
     lastFootPlantingMissingLegs: lastApply?.footPlanting ? [...lastApply.footPlanting.missingLegNodes] : [],
+    lastFootPlantingFeet: lastApply?.footPlanting?.feet,
+    lastFootPlantingSurfaces: lastApply?.footPlanting?.surfaces,
+    lastFootPlantingDeformation: lastApply?.footPlanting?.legDeformation,
     footPlantingConfigured: lastApply?.footPlanting !== undefined,
     lastSkinningPalettesUpdated: lastApply?.skinningPalettesUpdated ?? 0,
     ...(lastMorphApply ? { lastMorphApply } : {}),

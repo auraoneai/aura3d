@@ -1,0 +1,52 @@
+{
+  "author": "NASA Visualization Technology Applications and Development (VTAD)",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "attribution": "NASA/VTAD. Used as planet visuals for fictional arcade wells; no NASA endorsement or real orbital simulation is implied.",
+  "models": [
+    {
+      "name": "earth",
+      "sourcePage": "https://science.nasa.gov/resource/earth-3d-model/",
+      "downloadUrl": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/Earth_1_12756.glb",
+      "sha256": "05a5aea99db8ab472487a06debc3b5d0b2cae7636a1a6b9ecfa40b7d1722ba23",
+      "sizeBytes": 12916400,
+      "images": 2,
+      "meshes": 1
+    },
+    {
+      "name": "mars",
+      "sourcePage": "https://science.nasa.gov/resource/planet-mars-3d-model/",
+      "downloadUrl": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/gltf_files/24881_Mars_1_6792.glb",
+      "sha256": "0d27fc65fe3e6a5847cf0cd3a5c951538afdd49bd0513607d8a70e8ab1d8d7ac",
+      "sizeBytes": 4032148,
+      "images": 2,
+      "meshes": 1
+    },
+    {
+      "name": "jupiter",
+      "sourcePage": "https://science.nasa.gov/resource/jupiter-3d-model/",
+      "downloadUrl": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/j/Jupiter_1_142984.glb",
+      "sha256": "8edc4e9b88b73ca1b125a258f0ecaef7fc6494a7cadda37704af459a119f4870",
+      "sizeBytes": 11479456,
+      "images": 1,
+      "meshes": 1
+    },
+    {
+      "name": "mercury",
+      "sourcePage": "https://science.nasa.gov/resource/mercury-3d-model/",
+      "downloadUrl": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/m/Mercury_1_4878.glb",
+      "sha256": "0222fa976a5bb3ae3222eeddaaa7150656837a97c515f065eb855e0b1dd2ab94",
+      "sizeBytes": 3048920,
+      "images": 1,
+      "meshes": 1
+    },
+    {
+      "name": "neptune",
+      "sourcePage": "https://science.nasa.gov/resource/neptune-3d-model/",
+      "downloadUrl": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/n/Neptune_1_49528.glb",
+      "sha256": "2fc3af08d56ed429b9cc56b95d151102aa5807ea958e7cb8806a42e12a699ba8",
+      "sizeBytes": 585104,
+      "images": 1,
+      "meshes": 1
+    }
+  ]
+}

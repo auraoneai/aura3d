@@ -1,0 +1,1259 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/tests/browser/fixtures/c1-extension/generated/",
+  "outputDir": "generated",
+  "typegen": "assets.ts",
+  "assets": [
+    {
+      "id": "checker",
+      "type": "texture",
+      "format": "png",
+      "source": "generated/checker.99496e5e.png",
+      "outputPath": "generated/checker.99496e5e.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/checker.99496e5e.png",
+      "hash": "sha256-99496e5e0a5e216a090443582731f579301640331a7a5b1b586bb5a6dccc57d6",
+      "sizeBytes": 210,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "generated/checker.99496e5e.png",
+        "sourceFamily": "repository-test-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Existing source: tests/browser/fixtures/c1-checker.png",
+          "Registered by tools/root-textured-fixtures/index.ts; SHA256 derived from bytes"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/checker.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "decoyA",
+      "type": "texture",
+      "format": "png",
+      "source": "source/decoyA.png",
+      "outputPath": "generated/decoyA.cdae97d9.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/decoyA.cdae97d9.png",
+      "hash": "sha256-cdae97d9c743c52ed4e7bba934a363bd3baf52d15cd038805304bb852b40badd",
+      "sizeBytes": 4188,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/decoyA.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/decoyA.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "decoyB",
+      "type": "texture",
+      "format": "png",
+      "source": "source/decoyB.png",
+      "outputPath": "generated/decoyB.1af961f4.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/decoyB.1af961f4.png",
+      "hash": "sha256-1af961f401a7a44c592eb002e371eda5dd84c7d27ef7eb365584bc9f20fa267b",
+      "sizeBytes": 4176,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/decoyB.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/decoyB.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "decoyG",
+      "type": "texture",
+      "format": "png",
+      "source": "source/decoyG.png",
+      "outputPath": "generated/decoyG.26e4c573.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/decoyG.26e4c573.png",
+      "hash": "sha256-26e4c573854b7e8b862eee169f121421b6ebdd185d3afd4fccb27e0ec6ef7561",
+      "sizeBytes": 4180,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/decoyG.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/decoyG.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "decoyR",
+      "type": "texture",
+      "format": "png",
+      "source": "source/decoyR.png",
+      "outputPath": "generated/decoyR.de43e426.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/decoyR.de43e426.png",
+      "hash": "sha256-de43e426e0db4aa2c961ad782cadd4cacea10bea21669ad07e16734c253f45a8",
+      "sizeBytes": 4182,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/decoyR.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/decoyR.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "direction",
+      "type": "texture",
+      "format": "png",
+      "source": "source/direction.png",
+      "outputPath": "generated/direction.e74472ff.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/direction.e74472ff.png",
+      "hash": "sha256-e74472ffec6a1f64b076480e660f033a06de80c1d031cba1df7231294a199f4a",
+      "sizeBytes": 4180,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/direction.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/direction.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "emissive",
+      "type": "texture",
+      "format": "png",
+      "source": "generated/emissive.6b5ac8c0.png",
+      "outputPath": "generated/emissive.6b5ac8c0.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/emissive.6b5ac8c0.png",
+      "hash": "sha256-6b5ac8c0255a3353b4c4705ecfa1b45ed3e1c7893a8fd79f7e6b451a3d1a6187",
+      "sizeBytes": 509,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "generated/emissive.6b5ac8c0.png",
+        "sourceFamily": "repository-test-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Existing source: tests/browser/fixtures/c1-emissive.png",
+          "Registered by tools/root-textured-fixtures/index.ts; SHA256 derived from bytes"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/emissive.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "normal",
+      "type": "texture",
+      "format": "png",
+      "source": "generated/normal.2ac1b91f.png",
+      "outputPath": "generated/normal.2ac1b91f.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/normal.2ac1b91f.png",
+      "hash": "sha256-2ac1b91fd6c3f9276c7a72ea2958206c6513c5a2dda2f2ba5866bb12da839053",
+      "sizeBytes": 358,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "generated/normal.2ac1b91f.png",
+        "sourceFamily": "repository-test-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Existing source: tests/browser/fixtures/c1-normal.png",
+          "Registered by tools/root-textured-fixtures/index.ts; SHA256 derived from bytes"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/normal.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "occlusion",
+      "type": "texture",
+      "format": "png",
+      "source": "generated/occlusion.0bda7a40.png",
+      "outputPath": "generated/occlusion.0bda7a40.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/occlusion.0bda7a40.png",
+      "hash": "sha256-0bda7a40f24063f3976d7a6617c757d408de36460deda9f00ae8cd599e8d6248",
+      "sizeBytes": 12194,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "generated/occlusion.0bda7a40.png",
+        "sourceFamily": "repository-test-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Existing source: tests/browser/fixtures/c1-occlusion.png",
+          "Registered by tools/root-textured-fixtures/index.ts; SHA256 derived from bytes"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/occlusion.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "rgba",
+      "type": "texture",
+      "format": "png",
+      "source": "source/rgba.png",
+      "outputPath": "generated/rgba.3b557885.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/rgba.3b557885.png",
+      "hash": "sha256-3b5578856890800a6fd83bbfc80d73c850a23f48e3595d71adb7427a3f17cd33",
+      "sizeBytes": 4163,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/rgba.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/rgba.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "rough",
+      "type": "texture",
+      "format": "png",
+      "source": "generated/rough.c027b3ed.png",
+      "outputPath": "generated/rough.c027b3ed.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/rough.c027b3ed.png",
+      "hash": "sha256-c027b3ed2eda3e0926712163e2741e11087c14222102c778220a95628fab1e21",
+      "sizeBytes": 393,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "generated/rough.c027b3ed.png",
+        "sourceFamily": "repository-test-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Existing source: tests/browser/fixtures/c1-rough.png",
+          "Registered by tools/root-textured-fixtures/index.ts; SHA256 derived from bytes"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/rough.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "swapped",
+      "type": "texture",
+      "format": "png",
+      "source": "source/swapped.png",
+      "outputPath": "generated/swapped.8d47bba3.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/swapped.8d47bba3.png",
+      "hash": "sha256-8d47bba3a5f3ee798b9e52caeccf1efb5372f80852205e80b60abe4c5893b142",
+      "sizeBytes": 4166,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/swapped.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/swapped.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "white",
+      "type": "texture",
+      "format": "png",
+      "source": "source/white.png",
+      "outputPath": "generated/white.0ef49469.png",
+      "url": "/tests/browser/fixtures/c1-extension/generated/white.0ef49469.png",
+      "hash": "sha256-0ef494696c1d5792fde371da1ac80c500774fc1c2ced0dcef89ecbff584e405f",
+      "sizeBytes": 98,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "source/white.png",
+        "author": "Aura3D",
+        "sourceFamily": "authored-analytical-fixture",
+        "retrievedAt": "2026-09-05T00:00:00.000Z",
+        "evidence": [
+          "Producer: tools/root-textured-fixtures/index.ts",
+          "Deterministic unpremultiplied RGBA channel vectors; no external content"
+        ],
+        "checkedAt": "2026-09-05T00:00:00.000Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/tests/browser/fixtures/c1-extension/generated/white.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "suitabilityReason": "Independent extension-map channel and UV test input",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    }
+  ]
+}

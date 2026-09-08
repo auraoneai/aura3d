@@ -48,6 +48,9 @@ const aggregateTools = [
 
 rmSync(workspace, { recursive: true, force: true });
 mkdirSync(workspace, { recursive: true });
+// Aggregate tools consume the frozen Three.js baseline receipt. Produce it in
+// this clean remote lifecycle instead of relying on an untracked prior report.
+run("node", ["tools/current-threejs-baseline/index.mjs"], root);
 run("pnpm", ["build:raw"], root);
 // This reproduces an already published version, so it needs exact local
 // tarballs without the unpublished-version eligibility check used by a new
@@ -107,7 +110,7 @@ const reportBase = {
   specs,
   aggregateTools,
   aggregatePath: "tests/reports/current-head-to-head/aggregate.json",
-  claimBoundary: "All 15 retained browser workloads resolved Aura3D public imports from fresh 2.0.0 npm tarballs installed in an isolated project. Current Three.js and companion controls remain the repository-locked public packages. This does not substitute for a clean-VM rerun, independent human review, or the complete performance-sampling contract."
+  claimBoundary: `All 15 retained browser workloads resolved Aura3D public imports from fresh ${packageVersion} npm tarballs installed in an isolated project. Current Three.js and companion controls remain the repository-locked public packages. This does not substitute for a clean-VM rerun, independent human review, or the complete performance-sampling contract.`
 };
 writeFileSync(reportPath, `${JSON.stringify(reportBase, null, 2)}\n`);
 run("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/head-to-head-current-aggregate/index.ts"], root, environment);

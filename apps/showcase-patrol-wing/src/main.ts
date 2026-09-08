@@ -444,7 +444,10 @@ const chaseCameraSpec = camera.follow({
   offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
   targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
   fov: visualReviewCapture ? 50 : 47,
-  smoothing: reducedMotion ? 0 : 0.06,
+  // Exact review evidence captures the visible and suppressed subject at the
+  // same authored camera pose. Follow smoothing would advance between those
+  // two renderer submissions and turn camera motion into false subject pixels.
+  smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
   subjectEmphasis: 0.82
 });
 
@@ -1615,7 +1618,9 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "application",
     subject: { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], rotation: [0, PAD_HEADING_YAW, 0], targetSize: 4.4 },
-    settleSubjectPose() {
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
       // The retained route-primary artifact must show the named flight game,
       // not a parked aircraft on an empty pad. Stage the real deterministic
       // drone-hit exchange used by the playable evidence producer: the
@@ -1624,9 +1629,13 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       // called only by the evidence producer; normal visitors still boot at
       // the preflight pad and must take off with Shift.
       patrolWindow.__PW_SCENARIO__?.("drone-pass");
+      app.pause();
+      await app.stepAsync(0);
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
       planeHandle.setVisible(!suppressed);
+      await app.stepAsync(0);
     }
   }
 });

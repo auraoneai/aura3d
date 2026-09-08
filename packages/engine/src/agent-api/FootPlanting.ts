@@ -30,6 +30,10 @@ export interface AuraFootPlantingLegOptions {
   readonly knee: string;
   readonly ankle: string;
   readonly pole?: AuraFootVec3;
+  /** Optional measured joint-to-sole offset for asymmetric footwear. */
+  readonly ankleHeight?: number;
+  /** Authored stance phase sampled in clip-local seconds; absent uses height detection. */
+  readonly contactPhase?: (localTime: number) => boolean;
 }
 
 export interface AuraHeightfieldSpec {
@@ -59,6 +63,7 @@ export interface AuraFootPlantingOptions {
   readonly maxRayDistance?: number;
   readonly plantThreshold?: number;
   readonly hipDropFactor?: number;
+  readonly lockFootRotation?: boolean;
 }
 
 export interface AuraResolvedFootPlanting {
@@ -69,6 +74,7 @@ export interface AuraResolvedFootPlanting {
   readonly maxRayDistance?: number | undefined;
   readonly plantThreshold?: number | undefined;
   readonly hipDropFactor?: number | undefined;
+  readonly lockFootRotation?: boolean | undefined;
 }
 
 function isMovingPlatformSpec(ground: AuraFootPlantingGround): ground is AuraMovingPlatformSpec {
@@ -107,7 +113,8 @@ export function resolveFootPlanting(options: AuraFootPlantingOptions): AuraResol
     ...(options.rayStartHeight !== undefined ? { rayStartHeight: options.rayStartHeight } : {}),
     ...(options.maxRayDistance !== undefined ? { maxRayDistance: options.maxRayDistance } : {}),
     ...(options.plantThreshold !== undefined ? { plantThreshold: options.plantThreshold } : {}),
-    ...(options.hipDropFactor !== undefined ? { hipDropFactor: options.hipDropFactor } : {})
+    ...(options.hipDropFactor !== undefined ? { hipDropFactor: options.hipDropFactor } : {}),
+    ...(options.lockFootRotation !== undefined ? { lockFootRotation: options.lockFootRotation } : {})
   };
 }
 

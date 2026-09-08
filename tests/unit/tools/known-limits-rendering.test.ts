@@ -14,7 +14,13 @@ describe("renderer known limits", () => {
     expect(knownLimits).toContain(
       "OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported",
     );
-    expect(knownLimits).toContain("one primary UV path for glTF render resources");
+    expect(knownLimits).toContain("TEXCOORD_0 and TEXCOORD_1");
+    expect(knownLimits).toContain("Higher sets are diagnosed and fall back");
+    expect(knownLimits).toContain("generated tangents derive from TEXCOORD_0");
+    // Protect the actual restriction instead of restoring the obsolete UV0-only claim.
+    const resourceSource = readFileSync("packages/assets/src/GLTFRenderResources.ts", "utf8");
+    expect(resourceSource).toContain("info.texCoord > 1");
+    expect(resourceSource).toContain("unsupported-texcoord-set");
     expect(knownLimits).toContain("bounded KTX2/Basis transcoding coverage");
     expect(knownLimits).toContain("GPU capability-driven format selection");
     expect(knownLimits).toContain("no product-studio material-matrix visual coverage");

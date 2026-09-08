@@ -71,7 +71,11 @@ test.describe("Skyline camera and playable-edge readability", () => {
     { id: "desktop", width: 1440, height: 900, expectedViewport: "desktop" },
     { id: "compact", width: 390, height: 844, expectedViewport: "compact" }
   ] as const) {
-    test(`${scenario.id}: facing lead, airborne framing, and edge clearance are mounted and visible`, async ({ page }) => {
+    test(`${scenario.id}: facing lead, airborne framing, and edge clearance are mounted and visible`, async ({ page }, testInfo) => {
+      // Readiness may legitimately take up to 120 seconds on the remote software
+      // renderer. Keep the enclosing Playwright deadline above that explicit
+      // allowance so Playwright cannot cancel the subsequent key release first.
+      testInfo.setTimeout(600_000);
       await page.setViewportSize({ width: scenario.width, height: scenario.height });
       const browserErrors: string[] = [];
       page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -111,14 +115,18 @@ test.describe("Skyline camera and playable-edge readability", () => {
       await page.keyboard.up("ArrowRight");
 
       await hold(page, "ArrowRight", 550);
-      await expect.poll(async () => (await readEvidence(page)).cameraReadability.activeFrame)
-        .toMatchObject({ facing: 1, leadDirection: "right", leadMatchesFacing: true });
+      await expect.poll(
+        async () => (await readEvidence(page)).cameraReadability.activeFrame,
+        { timeout: 120_000 }
+      ).toMatchObject({ facing: 1, leadDirection: "right", leadMatchesFacing: true });
       const rightFrame = (await readEvidence(page)).cameraReadability.activeFrame;
       expect(rightFrame.targetOffset[0]).toBeGreaterThan(0);
 
       await hold(page, "ArrowLeft", 350);
-      await expect.poll(async () => (await readEvidence(page)).cameraReadability.activeFrame)
-        .toMatchObject({ facing: -1, leadDirection: "left", leadMatchesFacing: true });
+      await expect.poll(
+        async () => (await readEvidence(page)).cameraReadability.activeFrame,
+        { timeout: 120_000 }
+      ).toMatchObject({ facing: -1, leadDirection: "left", leadMatchesFacing: true });
       const leftFrame = (await readEvidence(page)).cameraReadability.activeFrame;
       expect(leftFrame.targetOffset[0]).toBeLessThan(0);
 
@@ -127,7 +135,7 @@ test.describe("Skyline camera and playable-edge readability", () => {
       await expect.poll(async () => {
         const evidence = await readEvidence(page);
         return !evidence.player.grounded && evidence.player.vy > 0.05;
-      }, { timeout: 5_000 }).toBe(true);
+      }, { timeout: 120_000 }).toBe(true);
       await page.keyboard.up("ArrowRight");
 
       await page.evaluate(() => {

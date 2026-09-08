@@ -1,0 +1,3 @@
+import type { ExactReleasePlan } from './exact-release-plan.mjs';
+export interface ExactPackageSmoke {schema:string;releasePlan:{path:string;sha256:string};source:ExactReleasePlan['source'];packageCount:number;ok:boolean;installCommand:string[];installOutput:string;installedIdentity:unknown;packages:{name:string;version:string;tarball:string;sha256:string;integrity:string;installedIntegrity?:string;importedEntrypoints:unknown[];binChecks:unknown[];ok:boolean;violations:string[]}[]}
+export function runExactPackageSmoke(root:string,plan:ExactReleasePlan,options?:{registry?:boolean;retainDir?:string}):ExactPackageSmoke;

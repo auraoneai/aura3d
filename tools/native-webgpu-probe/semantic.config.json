@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.browser-301.json",
+  "files": [
+    "../../tests/browser/webgpu-extension-atlas-301-harness.ts",
+    "../../tests/browser/webgpu-extension-atlas-301.spec.ts",
+    "../../tests/browser/root-effects-a3.spec.ts",
+    "../../tests/browser/root-temporal-diagnostic-301.spec.ts",
+    "../../tests/browser/webgpu-post-j2.spec.ts",
+    "../../tests/browser/webgpu-post-j2-harness.ts",
+    "../../tests/browser/gpu-particle-a4.spec.ts"
+  ],
+  "include": [
+    "../**/*.d.mts"
+  ],
+  "exclude": [
+    "../../node_modules",
+    "../../dist",
+    "../../tests/reports"
+  ]
+}

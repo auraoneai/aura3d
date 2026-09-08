@@ -6,6 +6,7 @@ export interface PointerEventLike {
   readonly button?: number;
   readonly buttons?: number;
   readonly pointerId?: number;
+  readonly pointerType?: string;
   preventDefault?(): void;
 }
 
@@ -43,7 +44,7 @@ export class PointerDevice {
     this.x = nextX;
     this.y = nextY;
 
-    if (event.pointerId !== undefined) {
+    if (event.pointerId !== undefined && event.pointerType !== "mouse" && event.pointerType !== "pen") {
       this.touches.set(event.pointerId, { id: event.pointerId, x: this.x, y: this.y });
     }
   }

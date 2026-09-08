@@ -47,12 +47,17 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
   },
   "@aura3d/rendering": {
     "./lean-runtime": { types: "./dist/lean-runtime.d.ts", import: "./dist/lean-runtime.js" },
-    "./webgpu": { types: "./dist/webgpu.d.ts", import: "./dist/webgpu.js" }
+    "./lean-core-runtime": { types: "./dist/lean-core-runtime.d.ts", import: "./dist/lean-core-runtime.js" },
+    "./webgpu": { types: "./dist/webgpu.d.ts", import: "./dist/webgpu.js" },
+    "./extension-scalar-atlas": { types: "./dist/extension-scalar-atlas.d.ts", import: "./dist/extension-scalar-atlas.js" },
+    "./reflection-surfaces": { types: "./dist/reflection-surfaces.d.ts", import: "./dist/reflection-surfaces.js" }
   },
   "@aura3d/scene": {
     "./math": { types: "./dist/MathTypes.d.ts", import: "./dist/MathTypes.js" }
   },
   "@aura3d/engine-runtime": {
+    // Existing v3.0.0 internal runtime contract; validate exact emitted targets.
+    "./production-runtime": { types: "./dist/production-runtime/index.d.ts", import: "./dist/production-runtime/index.js" },
     "./advanced-runtime": { types: "./dist/advanced-runtime/index.d.ts", import: "./dist/advanced-runtime/index.js" },
     "./animation-studio": { types: "./dist/animation-studio/index.d.ts", import: "./dist/animation-studio/index.js" }
   },

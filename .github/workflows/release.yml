@@ -1,9 +1,8 @@
 name: Release
 
+# Legacy repack workflow. 3.0.1 is released by the exact-plan coordinator;
+# keep this manual so creating v3.0.1 cannot repack bytes that differ from L01.
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:

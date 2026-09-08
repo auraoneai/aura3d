@@ -249,7 +249,12 @@ describe("public showcase gameplay regressions", () => {
     const hudSource = readFileSync("apps/showcase-turbo-drift-circuit/src/hud.ts", "utf8");
     expect(hudSource).toContain("Speed · km/h");
     expect(source).toContain("renderTurboHudPanel");
-    expect(source).toMatch(/paceFraction:\s*visualCaptureCamera\s*\?\s*0\.82/);
+    expect(source).toContain('| "high-speed"');
+    expect(source).toContain('| "checkpoint"');
+    expect(source).toContain('| "off-track"');
+    expect(source).toContain('turboAcceptanceInputOverride = milestone === "off-track"');
+    expect(source).toContain('visualCaptureHeld = false');
+    expect(source).toMatch(/paceFraction:\s*visualCaptureCamera\s*\?\s*0\.94/);
     expect(source).toContain("directRearImpact ? 0.5 : 0.86");
     expect(source).toContain("directRearImpact ? 0.2 : 0.1");
   });

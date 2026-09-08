@@ -12,7 +12,13 @@ describe("current Three.js head-to-head aggregate", () => {
     expect(report.workloadCount).toBe(15);
     for (const category of ["wins", "parity", "losses", "unproven", "notComparable"] as const) {
       expect(report[category], `${category} must be retained`).toBeInstanceOf(Array);
-      expect((report[category] as unknown[]).length, `${category} must not be silently empty`).toBeGreaterThan(0);
+      // A category may be empty: requiring a win would manufacture superiority
+      // when the current measured workload loses or ties.
     }
+    const source = JSON.parse(readFileSync("tests/reports/current-head-to-head/scaffold-to-deploy/aggregate.json", "utf8"));
+    const measured = [...report.wins as Array<Record<string, unknown>>, ...report.parity as Array<Record<string, unknown>>, ...report.losses as Array<Record<string, unknown>>].find(entry => entry.scope === "selected scaffold production output size");
+    expect(measured).toBeTruthy();
+    expect(measured?.aura).toEqual({ javascriptBytes: source.measurements.aura.javascriptBytes, totalBytes: source.measurements.aura.totalDeployBytes });
+    expect(measured?.three).toEqual({ javascriptBytes: source.measurements.three.javascriptBytes, totalBytes: source.measurements.three.totalDeployBytes });
   });
 });

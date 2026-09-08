@@ -12,6 +12,7 @@ import {
   type RenderItem,
   type RenderTarget,
 } from "@aura3d/rendering";
+import { ScreenSpaceReflectionPass } from "@aura3d/rendering/reflection-surfaces";
 
 interface ReflectionSurfacesB4BrowserEvidence {
   readonly status: "ready" | "error";
@@ -31,6 +32,7 @@ interface ReflectionSurfacesB4BrowserEvidence {
   readonly glassStatus?: string;
   readonly waterStatus?: string;
   readonly ssrStatus?: string;
+  readonly ssrEvidence?: { nativeDraws: number; reflectedPixels: number; movedReflectionPixels: number; roughnessDelta: number; offscreenDelta: number; cameraReflectionPixels: number; occludedRedReflectionPixels: number; missingDepthRejected: boolean; disposed: boolean; images: string[] };
   readonly planarTrueReflection?: boolean;
   readonly floorTrueReflection?: boolean;
   readonly glassTrueReflection?: boolean;
@@ -211,13 +213,69 @@ async function run(): Promise<void> {
     kind: "water-refraction",
     water: waterB,
   });
-  const ssr = createReflectionSurface({ id: "b4-browser-ssr", kind: "screen-space-reflection" });
+  const ssrPass = new ScreenSpaceReflectionPass(renderer.device, { width: canvas.width, height: canvas.height, resolutionScale: 1, maxSteps: 64, maxDistance: 10, thickness: 0.08 });
+  const ssrScene = renderer.device.createRenderTarget({ width: canvas.width, height: canvas.height, depth: "texture" });
+  const ssrNormals = renderer.device.createRenderTarget({ width: canvas.width, height: canvas.height, depth: "renderbuffer" });
+  const noDepth = renderer.device.createRenderTarget({ width: canvas.width, height: canvas.height, depth: false });
+  const floorColor = new UnlitMaterial({ color: [0.08, 0.08, 0.08, 1] });
+  const excluded = new UnlitMaterial({ color: [0.5, 0.5, 1, 0] });
+  let ssrFrame = 0;
+  let nativeSsrDraws = 0;
+  const images: string[] = [];
+  const captureSsr = (x: number, roughness: number, cameraShift = 0, occluded = false) => {
+    const eye: readonly [number, number, number] = [EYE[0] + cameraShift, EYE[1], EYE[2]];
+    const captureView = computePlanarViewMatrix(eye, TARGET, UP);
+    const captureProjection = multiplyPlanarMatrices(projection, captureView);
+    const source = [...sceneItems([x, 0.8, 0])];
+    if (occluded) source.push({ geometry: cubeGeometry, material: floorColor,
+      modelMatrix: scaleTranslateMatrix([x, 0.9, 0.8], [3, 3, 0.5]), label: "ssr-occluder" });
+    renderInto(ssrScene, captureProjection, [
+      { geometry: floorGeometry, material: floorColor, modelMatrix: floorMatrix, label: "ssr-floor" }, ...source,
+    ]);
+    const normalMaterial = new UnlitMaterial({ color: [(captureView[4]! + 1) / 2, (captureView[5]! + 1) / 2, (captureView[6]! + 1) / 2, roughness] });
+    renderInto(ssrNormals, captureProjection, [
+      { geometry: floorGeometry, material: normalMaterial, modelMatrix: floorMatrix, label: "ssr-floor-normal-mask" },
+      ...source.map(item => ({ ...item, material: excluded })),
+    ]);
+    renderer.device.setRenderTarget(ssrScene);
+    const base = renderer.device.readPixels(0, 0, canvas.width, canvas.height);
+    const result = ssrPass.execute({ scene: ssrScene, normalMask: ssrNormals, projection, frame: ++ssrFrame }, 1);
+    nativeSsrDraws += result.nativeDraws;
+    renderer.device.setRenderTarget(result.target);
+    const pixels = renderer.device.readPixels(0, 0, canvas.width, canvas.height);
+    renderer.device.presentRenderTarget!(result.target);
+    images.push(canvas.toDataURL("image/png"));
+    normalMaterial.dispose();
+    const residual = Uint8Array.from(pixels, (value, i) => i % 4 === 3 ? 255 : Math.max(0, Math.min(255, 128 + value - base[i]!)));
+    let redReflectionPixels = 0;
+    for (let i = 0; i < pixels.length; i += 4) if (pixels[i]! > base[i]! + 5 && pixels[i]! > pixels[i + 1]! * 1.5) redReflectionPixels += 1;
+    return { base, pixels, residual, redReflectionPixels };
+  };
+  const ssrA = captureSsr(-0.7, 0.05), ssrB = captureSsr(0.7, 0.05);
+  const ssrRough = captureSsr(0.7, 1), ssrMiss = captureSsr(30, 0.05);
+  const ssrCamera = captureSsr(0.7, 0.05, 0.5), ssrOccluded = captureSsr(0.7, 0.05, 0, true);
+  const ssr = createReflectionSurface({ id: "b4-browser-ssr", kind: "screen-space-reflection", ssr: ssrPass });
+  const ssrStatus = ssr.report.status;
+  const targetBeforeDispose = ssrPass.result?.target;
+  let missingDepthRejected = false;
+  try { ssrPass.execute({ scene: noDepth, normalMask: ssrNormals, projection, frame: ++ssrFrame }); } catch { missingDepthRejected = true; }
+  ssrPass.dispose();
+  const ssrEvidence = {
+    nativeDraws: nativeSsrDraws, reflectedPixels: countChangedPixels(ssrA.base, ssrA.pixels),
+    movedReflectionPixels: countChangedPixels(ssrA.residual, ssrB.residual),
+    roughnessDelta: countChangedPixels(ssrB.pixels, ssrRough.pixels),
+    offscreenDelta: countChangedPixels(ssrMiss.base, ssrMiss.pixels),
+    cameraReflectionPixels: ssrCamera.redReflectionPixels,
+    occludedRedReflectionPixels: ssrOccluded.redReflectionPixels,
+    missingDepthRejected, disposed: ssrPass.result === undefined && (targetBeforeDispose?.disposed ?? true), images,
+  };
+  ssrScene.dispose(); ssrNormals.dispose(); noDepth.dispose(); floorColor.dispose(); excluded.dispose();
 
   window.__AURA3D_REFLECTION_SURFACES_B4__ = {
     status: "ready",
     renderer: "webgl2",
     claimBoundary:
-      "rendering-internal B4 planar mirror, glass refraction, and water composite bindings with probe-delta pixel evidence; no SSR, recursive capture, or createAuraApp claim",
+      "rendering-internal B4 planar mirror, glass refraction, and water composite bindings with probe-delta pixel evidence; native bounded SSR; no recursive capture or createAuraApp claim",
     mirrorRevisions: [mirrorA.revision, mirrorB.revision],
     mirrorPixelHashes: [mirrorA.pixelHash, mirrorB.pixelHash],
     mirrorChangedPixelCount: mirrorB.changedPixelCount,
@@ -231,7 +289,8 @@ async function run(): Promise<void> {
     floorStatus: floor.report.status,
     glassStatus: glassSurface.report.status,
     waterStatus: waterSurface.report.status,
-    ssrStatus: ssr.report.status,
+    ssrStatus,
+    ssrEvidence,
     planarTrueReflection: planar.report.trueReflection,
     floorTrueReflection: floor.report.trueReflection,
     glassTrueReflection: glassSurface.report.trueReflection,

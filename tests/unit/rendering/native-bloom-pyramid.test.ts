@@ -4,6 +4,7 @@ import {
   normalizeBloomQualityPreset,
   resolveBloomPyramidPlan,
 } from "../../../packages/rendering/src";
+import { resolveBloomPyramidBlurRadii, resolveBloomPyramidResponseGain } from "../../../packages/rendering/src/postprocess/NativeBloomPyramid";
 import { createBloomCompositeLut } from "../../../packages/rendering/src/postprocess/NativeLdrEffectLuts";
 
 /**
@@ -43,6 +44,26 @@ describe("native bloom pyramid plan", () => {
     expect(cinematic.weights.reduce((total, weight) => total + weight, 0)).toBeCloseTo(1, 12);
     expect(cinematic.halfFloat).toBe(true);
     expect(cinematic.targetBytes).toBeGreaterThan(balanced.targetBytes);
+  });
+
+  it("widens Gaussian kernels by mip while respecting the authored radius", () => {
+    const cinematic = resolveBloomPyramidPlan(800, 600, "cinematic", true);
+    expect(resolveBloomPyramidBlurRadii(cinematic, 4)).toEqual([6, 10, 14, 16, 16]);
+    expect(resolveBloomPyramidBlurRadii(cinematic, 2)).toEqual([3, 5, 7, 9, 11]);
+    expect(resolveBloomPyramidBlurRadii(cinematic, 0)).toEqual([0, 0, 0, 0, 0]);
+    expect(() => resolveBloomPyramidBlurRadii(cinematic, 1.5)).toThrow(/integer/);
+  });
+
+  it("keeps normalized mip energy separate from the multiscale response gain", () => {
+    const performance = resolveBloomPyramidPlan(800, 600, "performance", true);
+    const balanced = resolveBloomPyramidPlan(800, 600, "balanced", true);
+    const cinematic = resolveBloomPyramidPlan(800, 600, "cinematic", true);
+    expect(bloomPyramidCompositeGain(performance)).toBe(1);
+    expect(bloomPyramidCompositeGain(balanced)).toBeCloseTo(1, 12);
+    expect(bloomPyramidCompositeGain(cinematic)).toBeCloseTo(1, 12);
+    expect(resolveBloomPyramidResponseGain(performance)).toBe(1);
+    expect(resolveBloomPyramidResponseGain(balanced)).toBe(7);
+    expect(resolveBloomPyramidResponseGain(cinematic)).toBe(17);
   });
 
   it("uses half-float accounting for HDR sources", () => {

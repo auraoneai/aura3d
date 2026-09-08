@@ -11,8 +11,8 @@
     "test": "playwright test tests/playable.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "3.0.0",
-    "@aura3d/navigation-recast": "3.0.0"
+    "@aura3d/engine": "3.0.1",
+    "@aura3d/navigation-recast": "3.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",

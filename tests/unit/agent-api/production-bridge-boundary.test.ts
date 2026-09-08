@@ -67,8 +67,8 @@ describe("createAuraApp production bridge boundary", () => {
     expect(postprocess).toContain("bloomRequested");
     expect(postprocess).toContain('operator: "aces"');
     // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / depth-of-field
-    // submit real native options; motion-blur and taa are withheld (no
-    // velocity/history binding at root) and must never be submitted.
+    // submit real native options. R02 now binds temporal history for supported
+    // geometry; motion blur/TAA remain gated rather than submitted unconditionally.
     expect(postprocess).toContain("authoredColorGrade");
     expect(postprocess).toContain("authoredOutline");
     expect(postprocess).toContain("fxaaRequested");
@@ -78,8 +78,11 @@ describe("createAuraApp production bridge boundary", () => {
     expect(postprocess).toContain("outline: {");
     expect(postprocess).toContain("ssr: {");
     expect(postprocess).toContain("depthOfField: {");
-    expect(postprocess).not.toContain("motionBlur: {");
-    expect(postprocess).not.toContain("taa: {");
+    expect(postprocess).toContain("const temporalRequested = temporalSupported &&");
+    expect(postprocess).toContain("...(temporalRequested ? {");
+    expect(postprocess).toContain("temporal: { sceneKey }");
+    expect(postprocess).toContain("motionBlur: {");
+    expect(postprocess).toContain("taa: {");
     expect(shadows).toContain("resolveRendererSceneCategory(snapshot, names)");
     expect(shadows).toContain("sceneRadius");
     expect(shadows).toContain("collectedLights.find");

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { Geometry, Texture } from "@aura3d/rendering";
+import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import {
   GLTFLoader,
   LoadContext,
@@ -17,6 +18,69 @@ import {
 } from "../../packages/assets/src";
 
 describe("glTF compression decoder hooks", () => {
+  it("rejects malformed KTX2 before loading optional transcoder modules", async () => {
+    await expect(transcodeKTX2BasisTexture(new Uint8Array([0, 1, 2]))).rejects.toThrow(/KTX2\/Basis input is missing the KTX2 identifier/);
+  });
+  it("decodes real installed Draco compressed bytes through the public injected helper", async () => {
+    interface EncoderModule {
+      POSITION: number;
+      Mesh: new () => object;
+      MeshBuilder: new () => {
+        AddFloatAttributeToMesh(mesh: object, type: number, count: number, components: number, values: Float32Array): number;
+        AddFacesToMesh(mesh: object, count: number, faces: Uint32Array): void;
+      };
+      Encoder: new () => { EncodeMeshToDracoBuffer(mesh: object, output: { GetValue(index: number): number }): number };
+      DracoInt8Array: new () => { GetValue(index: number): number };
+      destroy(object: object): void;
+    }
+    const specifier = "draco3d";
+    const imported = await import(specifier);
+    const factory = (imported.default ?? imported) as {
+      createEncoderModule(): Promise<EncoderModule>;
+      createDecoderModule(): Promise<GLTFDracoDecoderModule>;
+    };
+    const [encoderModule, decoderModule] = await Promise.all([factory.createEncoderModule(), factory.createDecoderModule()]);
+    const mesh = new encoderModule.Mesh();
+    const builder = new encoderModule.MeshBuilder();
+    const encoder = new encoderModule.Encoder();
+    const output = new encoderModule.DracoInt8Array();
+    try {
+      const attribute = builder.AddFloatAttributeToMesh(mesh, encoderModule.POSITION, 3, 3, new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
+      builder.AddFacesToMesh(mesh, 1, new Uint32Array([0, 1, 2]));
+      const length = encoder.EncodeMeshToDracoBuffer(mesh, output);
+      expect(length).toBeGreaterThan(0);
+      const compressed = Uint8Array.from({ length }, (_, index) => output.GetValue(index));
+      const decoded = await createDracoDecoder(decoderModule)(compressed, {
+        meshIndex: 0, primitiveIndex: 0, bufferViewIndex: 0, attributes: { POSITION: attribute }
+      });
+      expect(decoded.indices?.length).toBe(3);
+      expect(decoded.attributes.POSITION?.map(point => point.join(",")).sort()).toEqual(["0,0,0", "0,1,0", "1,0,0"]);
+      await expect(Promise.resolve().then(() => createDracoDecoder(decoderModule)(new Uint8Array([0, 1, 2]), {
+        meshIndex: 2, primitiveIndex: 3, bufferViewIndex: 0, attributes: { POSITION: attribute }
+      }))).rejects.toThrow(/glTF Draco primitive 2\/3/);
+    } finally {
+      for (const resource of [output, encoder, builder, mesh]) encoderModule.destroy(resource);
+    }
+  });
+  it("decodes real installed Meshopt compressed bytes through the public injected helper", async () => {
+    await MeshoptEncoder.ready;
+    const original = new Uint8Array(new Float32Array([-1, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+    const encoded = MeshoptEncoder.encodeGltfBuffer(original, 3, 12, "ATTRIBUTES");
+    const decode = createMeshoptDecoder(MeshoptDecoder);
+    const descriptor = { bufferViewIndex: 7, count: 3, byteStride: 12, mode: "ATTRIBUTES" as const, filter: "NONE" as const };
+    expect(await decode(encoded, descriptor)).toEqual(original);
+    await expect(decode(new Uint8Array([0, 1, 2]), descriptor)).rejects.toThrow(/glTF Meshopt bufferView 7: decode failed/);
+  });
+
+  it("names unsupported, failed readiness and invalid Meshopt descriptors", async () => {
+    const descriptor = { bufferViewIndex: 9, count: 3, byteStride: 12, mode: "ATTRIBUTES" as const };
+    const source = new Uint8Array([1, 2, 3]);
+    const unsupported = createMeshoptDecoder({ supported: false, decodeGltfBuffer() {} });
+    await expect(unsupported(source, descriptor)).rejects.toThrow(/bufferView 9: decoder is unsupported/);
+    const failed = createMeshoptDecoder({ get ready() { return Promise.reject(new Error("wasm initialization failed")); }, decodeGltfBuffer() {} });
+    await expect(failed(source, descriptor)).rejects.toThrow(/bufferView 9: decode failed: wasm initialization failed/);
+    await expect(createMeshoptDecoder(MeshoptDecoder)(source, { ...descriptor, count: -1 })).rejects.toThrow(/invalid count or byteStride/);
+  });
   it("routes EXT_meshopt_compression bufferViews through the configured decoder", async () => {
     const compressed = Buffer.from([0xde, 0xc0, 0xde]);
     const decoded = Buffer.alloc(36);

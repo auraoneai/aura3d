@@ -1,14 +1,10 @@
-import { readFileSync } from "node:fs";
+import { measureCertifiedRig } from "../../../tools/locomotion-301/rig-pair-evidence.js";
 import { describe, expect, it } from "vitest";
 import {
   createHumanoidRetargetingMap,
-  inferHumanoidRigDetailed,
-  type HumanoidBoneName,
   type HumanoidRigDefinition,
   type InferHumanoidRigOptions
 } from "@aura3d/animation";
-import { GLTFLoader, LoadContext } from "../../../packages/assets/src";
-import type { Scene } from "@aura3d/scene";
 
 /**
  * E2 box 5 (map half): real cross-rig retarget maps between certified rigs, built from
@@ -23,71 +19,8 @@ const RUNNER = "public/aura-assets/showcaseAnimatedRunnerHero.9ff4ea51.glb";
 const ROBOT = "public/aura-assets/showcaseRunnerRobot.252b3a16.glb";
 const KENNEY = "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb";
 
-const CHILD: Partial<Record<HumanoidBoneName, HumanoidBoneName>> = {
-  hips: "spine",
-  spine: "chest",
-  chest: "upperChest",
-  upperChest: "neck",
-  neck: "head",
-  leftShoulder: "leftUpperArm",
-  leftUpperArm: "leftLowerArm",
-  leftLowerArm: "leftHand",
-  rightShoulder: "rightUpperArm",
-  rightUpperArm: "rightLowerArm",
-  rightLowerArm: "rightHand",
-  leftUpperLeg: "leftLowerLeg",
-  leftLowerLeg: "leftFoot",
-  leftFoot: "leftToes",
-  rightUpperLeg: "rightLowerLeg",
-  rightLowerLeg: "rightFoot",
-  rightFoot: "rightToes"
-};
-
-/** Inverse of CHILD: terminal bones (head/hands/toes) measure toward their parent. */
-const PARENT: Partial<Record<HumanoidBoneName, HumanoidBoneName>> = Object.fromEntries(
-  Object.entries(CHILD).map(([parent, child]) => [child, parent])
-) as Partial<Record<HumanoidBoneName, HumanoidBoneName>>;
-
-async function measureRig(
-  rigId: string,
-  file: string,
-  inferenceOptions: InferHumanoidRigOptions = {}
-): Promise<HumanoidRigDefinition> {
-  const bytes = readFileSync(file);
-  const url = `data:model/gltf-binary;base64,${bytes.toString("base64")}`;
-  const asset = await new GLTFLoader().load({ url, type: "gltf" }, new LoadContext());
-  const scene: Scene = asset.createScene();
-  scene.updateWorldTransforms();
-  const names: string[] = [];
-  const positions = new Map<string, [number, number, number]>();
-  scene.traverse((node) => {
-    names.push(node.name);
-    const m = node.transform.worldMatrix;
-    positions.set(node.name, [m[12]!, m[13]!, m[14]!]);
-  });
-  const inference = inferHumanoidRigDetailed(names, { id: rigId, ...inferenceOptions });
-  const bones: HumanoidRigDefinition["bones"] = {};
-  for (const [bone, binding] of Object.entries(inference.rig.bones)) {
-    const slot = bone as HumanoidBoneName;
-    // Length convention (same both sides, so ratios are meaningful): toward the primary
-    // humanoid child; terminal bones (head/hands/toes) and bones with an unmapped child
-    // measure toward their parent instead — never left unknown when a neighbor exists.
-    const childSlot = CHILD[slot];
-    const parentSlot = PARENT[slot];
-    const neighborNode = (childSlot === undefined
-      ? undefined
-      : inference.rig.bones[childSlot]?.name)
-      ?? (parentSlot === undefined ? undefined : inference.rig.bones[parentSlot]?.name);
-    const a = positions.get(binding.name);
-    const b = neighborNode === undefined ? undefined : positions.get(neighborNode);
-    const length = a && b
-      ? Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
-      : undefined;
-    (bones as Record<string, { name: string; length?: number }>)[
-      bone
-    ] = length === undefined || length <= 0 ? { name: binding.name } : { name: binding.name, length };
-  }
-  return { id: rigId, bones };
+async function measureRig(rigId: string, file: string, options: InferHumanoidRigOptions = {}): Promise<HumanoidRigDefinition> {
+  return (await measureCertifiedRig(rigId, file, options)).rig;
 }
 
 function summarizeScales(map: ReturnType<typeof createHumanoidRetargetingMap>): Record<string, number> {
@@ -109,7 +42,7 @@ describe("certified cross-rig retarget maps", () => {
     expect(map.coverage).toBeCloseTo(1, 1);
     // Isometric roster pair (1.78m / 1.68m): limb + hip bones scale near the height ratio.
     const heightRatio = 1.784580555079753 / 168.2019299866406;
-    for (const bone of ["hips", "leftUpperArm", "rightUpperArm", "leftLowerArm", "rightLowerArm", "leftUpperLeg", "rightUpperLeg", "leftLowerLeg", "rightLowerLeg"] as const) {
+    for (const bone of ["leftUpperArm", "rightUpperArm", "leftLowerArm", "rightLowerArm", "leftUpperLeg", "rightUpperLeg", "leftLowerLeg", "rightLowerLeg"] as const) {
       const scale = map.bindings[bone]?.scale;
       expect(scale, bone).toBeDefined();
       expect(Math.abs(scale! - heightRatio) / heightRatio, bone).toBeLessThan(0.3);
@@ -119,6 +52,9 @@ describe("certified cross-rig retarget maps", () => {
     // neck (1.5x), fashion-vs-sneaker toe segments (0.7x). Base length-ratio handles each
     // per-bone; overriding them would need pair-specific quality evidence, which a
     // pair-blind registry value cannot encode — so no profile is registered for these.
+    // Skin-only node identity excludes the non-joint scene root from the pelvis estimate.
+    expect(map.bindings.hips?.source.name).not.toBe("root");
+    expect(map.bindings.hips?.scale).toBeCloseTo(0.0062096817327316235, 8);
     expect(map.bindings.spine?.scale).toBeCloseTo(0.03204, 4);
     expect(map.bindings.neck?.scale).toBeCloseTo(0.01574, 4);
     expect(map.bindings.leftShoulder?.scale).toBeCloseTo(0.01814, 4);
@@ -142,11 +78,9 @@ describe("certified cross-rig retarget maps", () => {
       expect(scale, bone).toBeDefined();
       expect(Math.abs(scale! - heightRatio) / heightRatio, bone).toBeLessThan(0.5);
     }
-    // Segmentation mismatches (cross-convention artifacts, recorded): robot spine measures
-    // BODY→hips (whole torso, no chest slot) against the girl's single lumbar segment, and
-    // robot feet measure ankle-height (no toe slots) against girl toe segments. Pinning
-    // these to the height ratio would be pair-specific editorializing, so they stay measured.
-    expect(map.bindings.spine?.scale).toBeCloseTo(1.09908, 4);
+    // Skin-only measurements exclude the decorative BODY mesh. The actual spine
+    // and foot segments remain cross-convention measurements, not correction approvals.
+    expect(map.bindings.spine?.scale).toBeCloseTo(0.14303482176608912, 8);
     expect(map.bindings.leftFoot?.scale).toBeCloseTo(0.16373, 4);
   });
 

@@ -64,7 +64,7 @@ interface D4Capture {
 interface D4Result {
   readonly status: "ready" | "error" | "waiting";
   readonly captures?: readonly D4Capture[];
-  readonly checks?: Record<string, boolean | number | string | readonly number[]>;
+  readonly checks?: Record<string, boolean | number | string | readonly number[] | ReturnType<ReturnType<typeof effects.flipbook>["toJSON"]>>;
   readonly error?: string;
 }
 

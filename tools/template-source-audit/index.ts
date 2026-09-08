@@ -5,6 +5,8 @@ import { writeReport, type ReleaseCheck } from "../check-common";
 
 const templateRoot = resolve("packages/create-aura3d/templates");
 const checks: ReleaseCheck[] = [];
+const currentVersion = (JSON.parse(readFileSync("package.json","utf8")) as {version:string}).version;
+const navigationBridge = readFileSync("packages/engine/src/agent-api/NavigationCrowds.ts","utf8");
 const details: Record<string, unknown>[] = [];
 
 for (const template of CREATE_AURA3D_TEMPLATES) {
@@ -21,7 +23,14 @@ for (const template of CREATE_AURA3D_TEMPLATES) {
       .map((match) => owningPackage(match[1]!))
   );
   const undeclared = [...auraImports].filter((name) => !auraDependencies.includes(name));
-  const unused = auraDependencies.filter((name) => !auraImports.has(name));
+  // Vite resolves the root engine's literal optional navigation import at build
+  // time, even for a route that does not call crowds. These shipped scaffolds
+  // have no externalization config, so their direct pin supplies that closure.
+  const closureDependencies = auraImports.has("@aura3d/engine")
+    && navigationBridge.includes('await import("@aura3d/navigation-recast")')
+    && manifest.dependencies?.["@aura3d/navigation-recast"] === currentVersion
+    ? ["@aura3d/navigation-recast"] : [];
+  const unused = auraDependencies.filter((name) => !auraImports.has(name) && !closureDependencies.includes(name));
   const forbidden = forbiddenSourceFindings(sourceFiles);
 
   checks.push(
@@ -33,7 +42,7 @@ for (const template of CREATE_AURA3D_TEMPLATES) {
     {
       id: `${template}-workload-only-aura-dependencies`,
       pass: unused.length === 0,
-      detail: unused.length === 0 ? `${auraDependencies.length} direct Aura3D dependencies used` : `unused: ${unused.join(", ")}`
+      detail: unused.length === 0 ? `${auraDependencies.length} Aura3D dependencies used; root build closure: ${closureDependencies.join(", ") || "none"}` : `unused: ${unused.join(", ")}`
     },
     {
       id: `${template}-safe-public-source`,
@@ -69,7 +78,7 @@ checks.push(
   {
     id: "physical-character-opt-in-installs-selected-packages",
     pass:
-      characterManifest.scripts?.["enable:physics"] === "npm install @aura3d/physics@2.0.3 @aura3d/physics-rapier@2.0.3" &&
+      characterManifest.scripts?.["enable:physics"] === `npm install @aura3d/physics@${currentVersion} @aura3d/physics-rapier@${currentVersion}` &&
       characterReadme.includes("npm run enable:physics"),
     detail: "character-controller keeps kinematic default lean and exposes one explicit selected-Rapier opt-in install command"
   }

@@ -28,6 +28,14 @@ export async function transcodeKTX2BasisTexture(
 ): Promise<DecodedGLTFImage> {
   const source = toArrayBuffer(bytes);
   const targetFormat = options.targetFormat ?? "etc2-rgba8unorm";
+  const identifier = [0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a];
+  const header = new Uint8Array(source);
+  if (identifier.some((value, index) => header[index] !== value)) {
+    throw new Error("KTX2/Basis input is missing the KTX2 identifier");
+  }
+  if (!["etc2-rgba8unorm", "bc3-rgba-unorm", "astc-4x4-rgba-unorm", "rgba8"].includes(targetFormat)) {
+    throw new Error(`KTX2/Basis target format ${String(targetFormat)} is unsupported`);
+  }
   const compressedLevels = await parseTextureLevels(source, targetFormat, options.loaderOptions);
   const baseLevel = compressedLevels[0];
   if (!baseLevel) {

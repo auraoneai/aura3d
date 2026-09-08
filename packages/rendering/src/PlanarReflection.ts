@@ -11,8 +11,8 @@
  * renderer path consumes. The capture classes further down ARE renderer
  * paths: they own real render targets, bind the oblique clip projection and
  * the Beer-Lambert / depth-tint pixel composites, and expose sampled
- * textures. SSR stays a package-level descriptor by design (root exposes
- * only planar+glass+water, and only after pixel proof).
+ * textures. ScreenSpaceReflectionPass consumes the SSR descriptor and shares
+ * the native renderer kernel; this remains package-level evidence.
  */
 
 import type { RenderDevice, RenderTarget } from "./RenderDevice";
@@ -685,6 +685,6 @@ export function createSsrPassDescriptor(options: {
     maxDistance,
     thickness,
     packageLevel: true,
-    diagnostic: "Package-level depth+normal ray-march descriptor with explicit caps; not root-exposed until pixel-proven.",
+    diagnostic: "Validated native ScreenSpaceReflectionPass configuration; descriptor alone is not pixel evidence.",
   };
 }

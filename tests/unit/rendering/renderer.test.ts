@@ -100,10 +100,9 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("runs renderer-owned WebGPU postprocess through the same presentation contract", async () => {
+  it("runs renderer-owned mock reference postprocess through the same presentation contract", async () => {
     const renderer = await Renderer.create({
-      backend: "webgpu",
-      webgpu: createFakeWebGPU(),
+      backend: "mock",
       width: 2,
       height: 1,
       clearColor: [1, 0.25, 0, 1]
@@ -124,11 +123,64 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("runs renderer-owned WebGPU postprocess asynchronously through native texture readback", async () => {
+  it.each(["rgba8", "rgba16f"] as const)("submits native WebGPU %s postprocess targets to canvas presentation", async (targetFormat) => {
+    const native = createNativeFakeWebGPU();
+    const canvas = createFakeWebGPUCanvas();
+    const renderer = await Renderer.create({ backend: "webgpu", webgpu: native.gpu, canvas: canvas as unknown as HTMLCanvasElement, width: 2, height: 2 });
+    const diagnostics = renderer.render({ renderItems: [], postprocess: {
+      targetFormat,
+      bloom: { threshold: 0.75, intensity: 0.5, radius: 0 },
+      toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "linear" }
+    } });
+    expect(diagnostics.postprocessTargetFormat).toBe(targetFormat);
+    expect(diagnostics.postprocessPassNames).toEqual(["bloom", "tone-mapping"]);
+    expect(native.device.textureDescriptors).toEqual(expect.arrayContaining([expect.objectContaining({ format: targetFormat === "rgba16f" ? "rgba16float" : "rgba8unorm" })]));
+    expect(native.device.textureDescriptors).toEqual(expect.arrayContaining([expect.objectContaining({
+      label: "a3d-webgpu-bloom-composite", format: "rgba16float"
+    })]));
+    const stagePipelines = native.device.renderPasses.map(pass => pass.pipeline);
+    const compositeIndex = stagePipelines.indexOf("webgpu-bloom-composite-pipeline");
+    const toneIndex = stagePipelines.indexOf("webgpu-tone-pipeline");
+    const presentIndex = stagePipelines.indexOf("webgpu-post-present-pipeline");
+    expect(compositeIndex).toBeGreaterThanOrEqual(0);
+    expect(toneIndex).toBeGreaterThan(compositeIndex);
+    expect(presentIndex).toBeGreaterThan(toneIndex);
+    expect(canvas.context.currentTextureViews.length).toBeGreaterThan(0);
+    expect(native.device.renderPasses.some(pass => pass.drawCalls.some(draw => draw.count === 3))).toBe(true);
+    expect(native.device.textureCopies).toHaveLength(0);
+    expect(native.device.submissions.length).toBeGreaterThan(0);
+    renderer.dispose();
+  });
+
+  it("caches distinct native bloom composite pipelines across quality changes and reuses a repeated quality", async () => {
+    const native = createNativeFakeWebGPU();
+    const renderer = await Renderer.create({
+      backend: "webgpu", webgpu: native.gpu,
+      canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement,
+      width: 8, height: 8
+    });
+    const counts: number[] = [];
+    for (const quality of ["performance", "balanced", "cinematic", "performance"] as const) {
+      renderer.render({ renderItems: [], postprocess: {
+        targetFormat: "rgba16f", bloom: { quality, intensity: 0.5 },
+        toneMapping: { operator: "reinhard" }
+      } });
+      counts.push(native.device.pipelines.filter(pipeline =>
+        (pipeline as { label?: string }).label === "webgpu-bloom-composite-pipeline"
+      ).length);
+    }
+    expect(counts).toEqual([1, 2, 3, 3]);
+    expect(native.device.renderPasses.filter(pass => pass.pipeline === "webgpu-bloom-composite-pipeline")).toHaveLength(4);
+    expect(native.device.textureCopies).toHaveLength(0);
+    renderer.dispose();
+  });
+
+  it("runs renderer-owned WebGPU postprocess asynchronously through native fullscreen passes without CPU readback", async () => {
     const native = createNativeFakeWebGPU();
     const renderer = await Renderer.create({
       backend: "webgpu",
       webgpu: native.gpu,
+      canvas: createFakeWebGPUCanvas() as unknown as HTMLCanvasElement,
       width: 4,
       height: 4,
       clearColor: [1, 0.25, 0, 1]
@@ -152,11 +204,12 @@ describe("Renderer", () => {
     expect(diagnostics.postprocessTextures).toBe(1);
     expect(diagnostics.postprocessTargetWidth).toBe(4);
     expect(diagnostics.postprocessTargetHeight).toBe(4);
-    expect(native.device.textureCopies.length).toBeGreaterThanOrEqual(1);
-    expect(native.device.textureWrites.length).toBeGreaterThanOrEqual(1);
-    expect(native.device.textureWrites.map((write) => write.format)).toEqual(expect.arrayContaining(["rgba8unorm"]));
-    expect(renderer.device.info.capabilities).toContain("native-texture-readback");
-    expect(Array.from(renderer.device.readPixels(0, 0, 1, 1))).not.toEqual([170, 85, 0, 255]);
+    // This double records native API calls; it does not execute WGSL and
+    // therefore cannot provide GPU pixel evidence.
+    expect(native.device.textureCopies).toHaveLength(0);
+    expect(native.device.renderPasses.filter(pass => pass.drawCalls.some(draw => draw.count === 3)).length).toBeGreaterThanOrEqual(3);
+    expect(native.device.shaderModules.some(module => module.code.includes("@fragment"))).toBe(true);
+    expect(native.device.submissions.length).toBeGreaterThan(0);
     expect(renderer.device.captureState().get("renderTarget") ?? null).toBeNull();
     renderer.dispose();
   });
@@ -228,10 +281,9 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("defaults LDR-only postprocess to rgba8 on HDR-capable renderers", async () => {
+  it("defaults LDR-only postprocess to rgba8 on the mock reference renderer", async () => {
     const renderer = await Renderer.create({
-      backend: "webgpu",
-      webgpu: createFakeWebGPU(),
+      backend: "mock",
       width: 2,
       height: 1,
       clearColor: [0.6, 0.3, 0.1, 1]
@@ -527,15 +579,15 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("runs renderer-owned HDR bloom in float space before tone mapping", async () => {
+  it("runs renderer-owned mock reference HDR bloom in float space before tone mapping", async () => {
     const renderer = await Renderer.create({
-      backend: "webgpu",
-      webgpu: createFakeWebGPU(),
+      backend: "mock",
       width: 1,
       height: 1,
       clearColor: [4, 0, 0, 1]
     });
 
+    (renderer.device.info.capabilities as string[]).push("hdr-render-targets");
     renderer.render({
       renderItems: [],
       postprocess: {
@@ -965,6 +1017,12 @@ describe("Renderer", () => {
     expect(nearTexture.texture?.label).toContain("renderer-csm-cascade-0");
     expect(farTexture.texture?.label).toContain("renderer-csm-cascade-3");
     expect(nearMatrix).not.toEqual(farMatrix);
+    const evidence = renderer.getShadowEvidence();
+    expect(evidence?.stabilize).toBe(true);
+    const observedCascades = evidence?.cascades as { lightMatrix: number[] }[];
+    expect(observedCascades).toHaveLength(4);
+    expect(observedCascades[0]?.lightMatrix).toEqual(nearMatrix);
+    expect(observedCascades[3]?.lightMatrix).toEqual(farMatrix);
     renderer.dispose();
   });
 
@@ -997,7 +1055,9 @@ describe("Renderer", () => {
       shadow: { size: 64, lightMatrix: translationMatrix(0, 0, 0), strength: 0.7 }
     });
 
+    expect(renderer.getShadowEvidence()).not.toBeNull();
     renderer.render([item]);
+    expect(renderer.getShadowEvidence()).toBeNull();
 
     const command = (renderer.device as MockRenderDevice).drawCommands[0];
     expect(command?.uniforms?.get("u_shadowMapEnabled")).toBe(0);
@@ -3099,7 +3159,7 @@ describe("Renderer", () => {
     expect(fragmentSource).toContain("textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv)");
     expect(fragmentSource).toContain("textureSample(u_occlusionTexture, u_occlusionSampler, uv)");
     expect(fragmentSource).toContain("textureSampleLevel(u_environmentTexture, u_environmentSampler, diffuseUv, max(environmentMipCount - 1.0, 0.0))");
-    expect(fragmentSource).toContain("specularEnv * (f0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y))");
+    expect(fragmentSource).toContain("specularEnv * (environmentF0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y))");
     expect(fragmentSource).toContain("environmentDiffuse = (vec3<f32>(1.0, 1.0, 1.0) - environmentFresnel) * (1.0 - metallic) * diffuseEnv * baseColor * u_draw.params.w * occlusion");
     expect(fragmentSource).not.toContain("textureSampleLevel(u_environmentTexture, u_environmentSampler, diffuseUv, 6.0)");
     expect(fragmentSource).not.toContain("pow(clamp(linearColor");
@@ -3537,6 +3597,54 @@ describe("Renderer", () => {
     expect(limitedDevice.getDiagnostics().lastError).toMatch(/indexed draw skipped/);
     expect(limitedNative.device.submissions).toEqual([]);
     limitedDevice.dispose();
+  });
+
+  it.each([{ components: 3, textured: false }, { components: 4, textured: false }, { components: 3, textured: true }, { components: 4, textured: true }] as const)("binds generated vertex color $components components, textured=$textured, with material RGBA modulation", async ({ components, textured }) => {
+    const native = createNativeFakeWebGPU();
+    const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+    const colorOffset = textured ? 20 : 12;
+    const baseFormat = textured ? new VertexFormat([{ semantic: "position", components: 3, offset: 0 }, { semantic: "uv", components: 2, offset: 12 }]) : VertexFormat.P3;
+    const format = new VertexFormat([
+      { semantic: "position", components: 3, offset: 0 },
+      ...baseFormat.attributes.filter(attribute => attribute.semantic === "uv"),
+      { semantic: "color", components, offset: colorOffset, shaderLocation: 4 }
+    ]);
+    const values = new Float32Array(3 * (colorOffset / 4 + components));
+    const buffer = device.createBuffer("vertex", values.byteLength, values);
+    const shader = device.createShaderProgram({
+      label: "native-basic-color", marker: "@aura3d-shader:native-basic-color",
+      vertex: `// @aura3d-shader:native-basic-color\nlayout(location = 0) in vec3 a_position; layout(location = 4) in vec${components} a_color; ${textured ? "layout(location = 2) in vec2 a_uv;" : ""}`,
+      fragment: `// @aura3d-shader:native-basic-color\nuniform vec4 u_baseColor; ${textured ? "uniform sampler2D u_baseColorTexture;" : ""}`
+    });
+    const texture = new Texture({ width: 1, height: 1, data: new Uint8Array([128, 192, 64, 128]) });
+    const uniforms = new Map<string, UniformValue>([["u_baseColor", [0.5, 0.75, 0.25, 0.5]]]);
+    if (textured) uniforms.set("u_baseColorTexture", new TextureBinding({ name: "u_baseColorTexture", texture }));
+    const target = device.createRenderTarget({ width: 8, height: 8 });
+    device.setRenderTarget(target);
+    device.beginFrame(8, 8);
+    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: format, vertexCount: 3, shader,
+      uniforms });
+    device.endFrame();
+    expect(native.device.shaderModules[0]?.code).toContain(`@location(4) vertexColor: vec${components}<f32>`);
+    expect(native.device.shaderModules[0]?.code).toContain(components === 3 ? "output.color = vec4<f32>(vertexColor, 1.0);" : "output.color = vertexColor;");
+    expect(native.device.shaderModules[1]?.code).toContain(textured ? "return u_draw.color * textureSample(u_texture, u_textureSampler, input.uv) * input.color;" : "return u_draw.color * input.color;");
+    expect(native.device.pipelines[0]).toMatchObject({ vertex: { buffers: [{ arrayStride: colorOffset + components * 4,
+      attributes: [{ shaderLocation: 0, offset: 0, format: "float32x3" }, ...(textured ? [{ shaderLocation: 2, offset: 12, format: "float32x2" }] : []), { shaderLocation: 4, offset: colorOffset, format: `float32x${components}` }] }] } });
+    expect(native.device.uniformWrites.some(write => write.slice(16, 20).every((value, index) => value === [0.5, 0.75, 0.25, 0.5][index]))).toBe(true);
+    expect(textured ? device.getDiagnostics().nativeGeneratedTextureSubmissions : device.getDiagnostics().nativeGeneratedBasicSubmissions).toBe(1);
+    // The same declared-color shader also accepts ordinary P3 geometry with
+    // opaque white vertex color, without changing the colored pipeline.
+    device.beginFrame(8, 8);
+    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: baseFormat, vertexCount: 3, shader, uniforms });
+    expect(native.device.shaderModules[2]?.code).toContain("output.color = vec4<f32>(1.0);");
+    expect(native.device.shaderModules[2]?.code).not.toContain("@location(4) vertexColor");
+    expect(native.device.pipelines[1]).toMatchObject({ vertex: { module: { label: "native-basic-color-vertex-default-color" } } });
+    device.draw({ topology: "triangles", vertexBuffer: buffer, vertexFormat: format, vertexCount: 3, shader, uniforms });
+    expect(native.device.pipelines).toHaveLength(2);
+    expect(native.device.shaderModules).toHaveLength(3);
+    device.endFrame();
+    device.dispose();
+    texture.dispose();
   });
 
   it("configures a WebGPU canvas surface and submits native render passes to the current texture", async () => {

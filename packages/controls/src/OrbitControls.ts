@@ -6,6 +6,15 @@ export type { OrbitControlsOptions };
 
 export interface OrbitCameraLike {
   position: Vector3Like;
+  readonly fov?: number;
+  readonly aspect?: number;
+  readonly isOrthographicCamera?: boolean;
+  readonly left?: number;
+  readonly right?: number;
+  readonly top?: number;
+  readonly bottom?: number;
+  zoom?: number;
+  updateProjectionMatrix?(): void;
   lookAt?(target: Vector3Like): void;
 }
 
@@ -39,6 +48,9 @@ export class OrbitControls {
   enablePan = true;
   enableZoom = true;
   enableRotate = true;
+  enableDamping = false;
+  dampingFactor = 0.05;
+  zoomToCursor = false;
 
   private readonly engine: OrbitControlsEngine | undefined;
   private attachedCamera: OrbitCameraLike | undefined;
@@ -47,9 +59,13 @@ export class OrbitControls {
   constructor(camera?: OrbitCameraLike, options: OrbitControlsOptions = {}) {
     if (!camera) return;
     this.engine = new OrbitControlsEngine(camera, options);
+    this.state.enabled = this.engine.enabled;
     this.enablePan = this.engine.enablePan;
     this.enableZoom = this.engine.enableZoom;
     this.enableRotate = this.engine.enableRotate;
+    this.enableDamping = this.engine.enableDamping;
+    this.dampingFactor = this.engine.dampingFactor;
+    this.zoomToCursor = this.engine.zoomToCursor;
     this.syncState(camera);
   }
 
@@ -67,15 +83,22 @@ export class OrbitControls {
    * Drive the controls from an input snapshot. Camera-attached only; a detached
    * instance has no camera to move and ignores the snapshot.
    *
-   * Named `applyInput` rather than `update` because `TrackballControls`
-   * overrides `update(deltaSeconds)` with damping-tick semantics.
+   * Supply frame delta seconds here, or call update(deltaSeconds) on frames
+   * without new input. Do not call both for the same elapsed interval.
    */
-  applyInput(snapshot: InputSnapshot): void {
+  applyInput(snapshot: InputSnapshot, deltaSeconds = 1 / 60): void {
     const engine = this.engine;
     if (!engine || this.disposed || !this.state.enabled) return;
     this.pushFlags(engine);
-    engine.update(snapshot);
+    engine.update(snapshot, deltaSeconds);
     this.syncState();
+  }
+
+  /** Tick residual camera motion when no fresh input snapshot is available. */
+  update(deltaSeconds = 1 / 60): boolean {
+    const before = [this.state.position.x, this.state.position.y, this.state.position.z];
+    this.applyInput(new InputSnapshot(), deltaSeconds);
+    return before.some((value, i) => value !== [this.state.position.x, this.state.position.y, this.state.position.z][i]);
   }
 
   rotate(deltaX: number, deltaY: number): void {
@@ -103,10 +126,10 @@ export class OrbitControls {
   }
 
   dolly(scale: number): void {
-    if (this.disposed || !this.enableZoom) return;
+    if (this.disposed || !this.enableZoom || !Number.isFinite(scale) || scale <= 0 || scale === 1) return;
     if (this.engine) {
       this.pushFlags(this.engine);
-      this.engine.update(new InputSnapshot({ pointer: { wheelY: scale < 1 ? -100 : 100 } }));
+      this.engine.update(new InputSnapshot({ pointer: { wheelY: Math.log(scale) / -Math.log(0.95) * 100 } }));
       this.syncState();
       return;
     }
@@ -161,7 +184,7 @@ export class OrbitControls {
    * update `state.target` bookkeeping.
    */
   protected truckTarget(deltaX: number, deltaZ: number): void {
-    if (this.disposed) return;
+    if (this.disposed || !this.state.enabled || !Number.isFinite(deltaX) || !Number.isFinite(deltaZ)) return;
     const engine = this.engine;
     if (!engine) {
       this.state.target.x += deltaX;
@@ -175,6 +198,10 @@ export class OrbitControls {
   }
 
   private pushFlags(engine: OrbitControlsEngine): void {
+    engine.enabled = this.state.enabled;
+    engine.enableDamping = this.enableDamping;
+    engine.dampingFactor = this.dampingFactor;
+    engine.zoomToCursor = this.zoomToCursor;
     engine.enablePan = this.enablePan;
     engine.enableZoom = this.enableZoom;
     engine.enableRotate = this.enableRotate;

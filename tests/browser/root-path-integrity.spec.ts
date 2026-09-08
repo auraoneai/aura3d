@@ -19,8 +19,8 @@ import { findFrameGraphResourceBreaks } from "../../tools/root-path-integrity/fr
  * - T1b: live export-ownership audit equals the 8 ratified divergent symbols.
  * - T2: the three migrated templates carry no undisclosed primitive hero;
  *   the WWX fallback remains the single recorded OPEN violation.
- * - T3: zero logic-less passes (each of the 6 pass files owns edges +
- *   execute + fail-closed validation), and the resource edges parsed from
+ * - T3: zero logic-less passes (each compatibility pass dispatches the canonical native owner +
+ *   validates explicit resource access), and the resource edges parsed from
  *   source validate clean against the canonical topology in this run.
  * - Browser: three showcase routes reach ready+draw, and each route's
  *   main.ts classifies as root-production-bridge (no undocumented renderer).
@@ -212,7 +212,7 @@ test.describe("K1 root path integrity (T)", () => {
     const parsed = PASS_FILES.map((pass) => {
       const source = readFileSync(pass.file, "utf8");
       expect(statSync(pass.file).size, `${pass.id}: non-trivial file`).toBeGreaterThan(800);
-      expect(source, `${pass.id}: must own execute logic`).toMatch(/execute\s*\(/);
+      expect(source, `${pass.id}: must dispatch native execution`).toContain("executeNativePass(this, context)");
       expect(source, `${pass.id}: must validate fail-closed`).toMatch(/throw new/);
       return parsePassEdges(pass.id, source);
     });
@@ -233,7 +233,7 @@ test.describe("K1 root path integrity (T)", () => {
     expect(
       findFrameGraphResourceBreaks([...ordered].reverse(), { order }).some((item) => item.includes("Misordered"))
     ).toBe(true);
-    gate.t3 = { passes: parsed };
+    gate.t3 = { kind: "static-adapter-contract-only", passes: parsed, runtimeProof: "R06 all six native stages and essential-pass browser negative controls" };
 
     const { mkdirSync, writeFileSync } = await import("node:fs");
     mkdirSync(resolve(REPORT_DIR), { recursive: true });
@@ -324,4 +324,110 @@ test.describe("K1 root path integrity (T)", () => {
       await exampleServer.close();
     }
   });
+});
+
+
+test("R06 native tone adapter pixels and essential-pass negative control", async ({ browser }) => {
+  const exampleServer = await startExampleDevServer();
+  const page = await browser.newPage();
+  try {
+    await page.goto(exampleServer.origin, { waitUntil: 'domcontentloaded' });
+    const result = await page.evaluate(async () => {
+      const renderingUrl = '/packages/rendering/src/index.ts';
+      const adapterUrl = '/packages/rendering/src/production-runtime/passes/ToneMappingPass.ts';
+      const { createRenderDevice, ToneMappingPass: NativeToneMappingPass } = await import(renderingUrl);
+      const { ToneMappingPass } = await import(adapterUrl);
+      const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+      canvas.id = 'r06-native'; document.body.replaceChildren(canvas);
+      const device = await createRenderDevice({ backend: 'webgl2', canvas, preserveDrawingBuffer: true });
+      const source = device.createRenderTarget({ width: 32, height: 32 });
+      const output = device.createRenderTarget({ width: 32, height: 32 });
+      try {
+        device.beginFrame(32, 32);
+        device.setRenderTarget(source); device.clear([1, 0.25, 0, 1]);
+        device.setRenderTarget(output); device.clear([0, 0, 0, 1]);
+        const before = Array.from(device.readPixels(0, 0, 1, 1));
+        const resources = new Map([['hdr.color', { value: source, frameIndex: 0 }]]);
+        const adapter = new ToneMappingPass({ exposure: 2, operator: 'reinhard' });
+        const context = { frameIndex: 0, width: 32, height: 32, device, resources,
+          commands: new Map([[adapter.id, (bindings: {
+            read(name: string): unknown;
+            write(name: string, resource: unknown): unknown;
+          }) => new NativeToneMappingPass({
+            source: bindings.read('hdr.color'),
+            target: bindings.write('ldr.output', { value: output, frameIndex: 0 }),
+            exposure: adapter.exposure, operator: adapter.nativeOperator, gamma: 1
+          })]]) };
+        new ToneMappingPass({ enabled: false }).execute(context);
+        const disabled = Array.from(device.readPixels(0, 0, 1, 1));
+        adapter.execute(context);
+        device.setRenderTarget(output);
+        const enabled = Array.from(device.readPixels(0, 0, 1, 1));
+        const outputIdentity = resources.get('ldr.output')?.value === output;
+        const owner = device.kind;
+        device.endFrame();
+        return { before, disabled, enabled, outputIdentity, owner };
+      } finally { source.dispose(); output.dispose(); device.dispose(); }
+    });
+    expect(result.disabled).toEqual(result.before);
+    expect(result.enabled[0]).toBeGreaterThan(160);
+    expect(result.enabled[0]).toBeLessThan(180);
+    expect(result.enabled[1]).toBeGreaterThan(75);
+    expect(result.enabled[1]).toBeLessThan(95);
+    expect(result.enabled[2]).toBe(0);
+    expect(result.outputIdentity).toBe(true);
+    expect(result.owner).toBe('webgl2');
+    const { mkdirSync, writeFileSync } = await import('node:fs');
+    const directory = process.env.AURA_MUSE_OUTPUT_DIR ?? REPORT_DIR;
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(resolve(directory, 'r06-native-tone-resource-proof.json'), `${JSON.stringify({
+      generatedAt: new Date().toISOString(), claimSurface: 'rendering internals compatibility adapter',
+      command: 'playwright test tests/browser/root-path-integrity.spec.ts --grep R06',
+      assertions: ['disabled leaves target unchanged', 'native reinhard pixels within byte tolerance', 'borrowed output identity', 'actual webgl2 device kind'],
+      result
+    }, null, 2)}\n`);
+  } finally { await page.close(); await exampleServer.close(); }
+});
+
+test('R06 all six native stages and essential-pass browser negative controls', async ({ browser }) => {
+  const server = await startExampleDevServer();
+  const page = await browser.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto(server.origin, { waitUntil: 'domcontentloaded' });
+    const result = await page.evaluate(async () => {
+      const url = '/tests/browser/framegraph-native-301-harness.ts';
+      return (await import(url)).runNativeFrameGraphProof();
+    });
+    expect(result.owner).toBe('webgl2');
+    expect(result.enabled.error).toBeNull();
+    expect(result.enabled.published).toBe(true);
+    expect(Object.values(result.enabled.counts)).toEqual([1, 1, 1, 1, 1, 1]);
+    expect(result.repeat.error).toBeNull();
+    expect(result.repeat.pixels).toEqual(result.enabled.pixels);
+    expect(result.borrowedAlive).toBe(true);
+    for (const control of result.controls) {
+      expect(control.counts[control.disabled], `${control.disabled} does not execute`).toBe(0);
+      if (['DepthPrepass', 'ShadowPass', 'SkyboxPass'].includes(control.disabled)) {
+        expect(control.error, `${control.disabled} is a required producer`).toContain('missing producer');
+        expect(control.published).toBe(false);
+      } else if (control.disabled === 'ToneMappingPass') {
+        expect(control.published).toBe(false);
+        expect(control.pixels).not.toEqual(result.enabled.pixels);
+      } else {
+        expect(control.error).toBeNull();
+        const changed = control.pixels.filter((value: number, i: number) => Math.abs(value - result.enabled.pixels[i]) > 5).length;
+        expect(changed, `${control.disabled} changes actual composited pixels`).toBeGreaterThan(48);
+      }
+    }
+    expect(errors).toEqual([]);
+    const { mkdirSync, writeFileSync } = await import('node:fs');
+    const directory = process.env.AURA_MUSE_OUTPUT_DIR ?? REPORT_DIR;
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(resolve(directory, 'r06-six-native-stage-proof.json'), `${JSON.stringify({
+      generatedAt: new Date().toISOString(), claimSurface: 'rendering internals compatibility adapters',
+      command: 'playwright test tests/browser/root-path-integrity.spec.ts --grep R06', result
+    }, null, 2)}\n`);
+  } finally { await page.close(); await server.close(); }
 });

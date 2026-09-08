@@ -500,7 +500,9 @@ function orthographicMatrix(bounds: ShadowCameraFit["orthographic"]): readonly n
     0, 0, -2 / depth, 0,
     -(bounds.right + bounds.left) / width,
     -(bounds.top + bounds.bottom) / height,
-    -(bounds.far + bounds.near) / depth,
+    // These bounds are signed light-space coordinates, not positive camera
+    // distances. Larger Z is nearer the light and must map to depth -1.
+    (bounds.far + bounds.near) / depth,
     1
   ];
 }

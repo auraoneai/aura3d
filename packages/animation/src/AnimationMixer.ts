@@ -9,6 +9,8 @@ import { applyRootMotion, extractRootMotion, type RootMotionSample, type RootMot
 export type AnimationTarget = {
   setAnimationValue?: (target: string, value: AnimationValue) => void;
   applyRootMotion?: (sample: RootMotionSample) => void;
+  /** Authoritative movement sink. When supplied, the mixer never also writes position. */
+  consumeRootMotion?: (sample: RootMotionSample) => void;
   position?: [number, number, number];
 };
 
@@ -16,6 +18,8 @@ export type AnimationMixerOptions = {
   readonly applyRootMotion?: boolean;
   readonly rootMotionTrack?: string;
   readonly rootMotionScale?: number;
+  /** Remove extracted displacement from the sampled local root pose. Opt in for actor locomotion. */
+  readonly consumeRootMotionTrack?: boolean;
 };
 
 export type AnimationMixerSnapshot = {
@@ -164,8 +168,11 @@ export class AnimationMixer {
     this.advanceInertialTransition(delta * this.timeScale);
     const events: AnimationEvent[] = [];
     const accumulators = new Map<string, TargetAccumulator>();
+    const motion = new Map<string, TargetAccumulator>();
+    let motionSample: RootMotionSample | undefined;
     for (const action of this.actions) {
       const previousTime = action.time;
+      const advancedTime = action.playing && !action.paused ? delta * this.timeScale * action.timeScale : 0;
       const actionEvents = action.update(delta * this.timeScale);
       if (actionEvents.length > 0) {
         events.push(...actionEvents);
@@ -173,14 +180,42 @@ export class AnimationMixer {
       if (!action.playing && action.weight <= 0) {
         continue;
       }
-      this.applyActionRootMotion(action, previousTime);
+      const rootMotionTarget = this.options.rootMotionTrack ?? "root.position";
+      if (this.options.applyRootMotion && action.weight > 0 && action.clip.tracks.some(track => track.target === rootMotionTarget)) {
+        const sample = extractRootMotion(action.clip, {
+          fromTime: previousTime,
+          toTime: action.loopMode === "repeat" ? previousTime + advancedTime : action.time,
+          loop: action.loopMode === "repeat",
+          target: rootMotionTarget
+        });
+        motionSample = sample;
+        for (const layer of this.layersForAction(action)) {
+          if (layer.capturesTarget(rootMotionTarget)) {
+            blendInto(motion, rootMotionTarget, "vector3", sample.delta, action.weight * layer.weight, layer.additive);
+          }
+        }
+      }
       for (const track of action.clip.tracks) {
-        const sample = track.sample(action.time);
+        const sample = this.options.applyRootMotion && this.options.consumeRootMotionTrack && track.target === rootMotionTarget
+          ? track.sample(0)
+          : track.sample(action.time);
         for (const layer of this.layersForAction(action)) {
           if (layer.capturesTarget(track.target)) {
             blendInto(accumulators, track.target, track.valueType, sample, action.weight * layer.weight, layer.additive);
           }
         }
+      }
+    }
+    if (motionSample) {
+      const accumulator = motion.get(motionSample.target);
+      if (accumulator) {
+        const delta = finalizeTargetBlend(accumulator) as [number, number, number];
+        const scale = this.options.rootMotionScale ?? 1;
+        if (!Number.isFinite(scale)) throw new Error("Root motion scale must be finite.");
+        const sample = { ...motionSample, delta: delta.map(value => value * scale) as [number, number, number] };
+        this.target?.applyRootMotion?.(sample);
+        if (this.target?.consumeRootMotion) this.target.consumeRootMotion(sample);
+        else if (this.target?.position) applyRootMotion(this.target as RootMotionTarget, sample);
       }
     }
     this.values.clear();
@@ -272,32 +307,6 @@ export class AnimationMixer {
       transition.to.weight = 1;
       transition.from.stop();
       this.inertialTransition = undefined;
-    }
-  }
-
-  private applyActionRootMotion(action: AnimationAction, previousTime: number): void {
-    if (!this.options.applyRootMotion || action.weight <= 0) return;
-    const rootMotionTarget = this.options.rootMotionTrack ?? "root.position";
-    if (!action.clip.tracks.some((track) => track.target === rootMotionTarget)) return;
-    const sample = extractRootMotion(action.clip, {
-      fromTime: previousTime,
-      toTime: action.time,
-      loop: action.loopMode === "repeat",
-      target: rootMotionTarget
-    });
-    const scaledSample = action.weight === 1
-      ? sample
-      : {
-          ...sample,
-          delta: [
-            sample.delta[0] * action.weight,
-            sample.delta[1] * action.weight,
-            sample.delta[2] * action.weight
-          ] as [number, number, number]
-        };
-    this.target?.applyRootMotion?.(scaledSample);
-    if (this.target?.position) {
-      applyRootMotion(this.target as RootMotionTarget, scaledSample, this.options.rootMotionScale ?? 1);
     }
   }
 

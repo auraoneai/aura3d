@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("character controller route exposes a live locomotion proof", async ({ page }) => {
@@ -23,4 +25,13 @@ test("character controller route exposes a live locomotion proof", async ({ page
   expect(sum).toBeGreaterThan(0.9);
   expect(sum).toBeLessThan(1.1);
   expect(errors).toEqual([]);
+  const canvas = page.locator("canvas").first();
+  await expect(canvas).toBeVisible();
+  const canvasBounds = await canvas.boundingBox();
+  expect(canvasBounds?.width ?? 0).toBeGreaterThan(0);
+  expect(canvasBounds?.height ?? 0).toBeGreaterThan(0);
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  writeFileSync(resolve("tests/reports/route-health.json"), `${JSON.stringify({
+    template: "character-controller", url: page.url(), canvasBounds, idle, moving, clipWeightSum: sum, errors
+  }, null, 2)}\n`);
 });

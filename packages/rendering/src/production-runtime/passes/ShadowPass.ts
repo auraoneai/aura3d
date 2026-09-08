@@ -1,13 +1,8 @@
-import type { RenderPass, RenderPassExecutionContext } from '../framegraph/RenderPass';
+import { executeNativePass, type RenderPass, type RenderPassExecutionContext } from '../framegraph/RenderPass';
 import { assertValidPassContext } from './DepthPrepass';
 
-/**
- * muse3jsparity-PRD T3 — ShadowPass owns real logic (feeds B1).
- *
- * Same contract as DepthPrepass: validated options, truthful edges, resource
- * validation, context validation, execution bookkeeping. The shadow-mask edge
- * declared here is the edge the B1 spot/directional shadow path must produce.
- */
+/** Compatibility adapter; rendering is dispatched to the canonical native pass.
+ * Allocation, shader compilation and device lifetime remain with that renderer. */
 export interface ShadowPassOptions {
   readonly enabled?: boolean;
   readonly casterResource?: string;
@@ -60,6 +55,7 @@ export class ShadowPass implements RenderPass {
   execute(context: RenderPassExecutionContext): void {
     assertValidPassContext(this.id, context);
     if (!this.enabled) return;
+    executeNativePass(this, context);
     this.executedFrames += 1;
     this.lastFrame = context.frameIndex;
   }

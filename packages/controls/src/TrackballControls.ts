@@ -15,8 +15,8 @@ export type TrackballKey =
   | "_";
 
 export class TrackballControls extends OrbitControls {
-  enableDamping = false;
-  dampingFactor = 0.08;
+  override enableDamping = false;
+  override dampingFactor = 0.08;
   keyPanSpeed = 0.12;
   keyRollSpeed = 0.06;
 
@@ -97,7 +97,8 @@ export class TrackballControls extends OrbitControls {
     this.dollyVelocity = 0;
   }
 
-  update(deltaSeconds = 1 / 60): boolean {
+  override update(deltaSeconds = 1 / 60): boolean {
+    if (this.isCameraAttached) return super.update(deltaSeconds);
     if (this.isDisposed || !this.enableDamping) {
       return false;
     }

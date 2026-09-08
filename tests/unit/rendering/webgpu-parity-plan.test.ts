@@ -8,7 +8,7 @@ import {
 describe("J2 WebGPU parity plan honesty", () => {
   it("declares every feature row with its WGSL foundation and no unproven proof", () => {
     const ids = WEBGPU_PARITY_PLAN.map((row) => row.id);
-    for (const required of ["bloom-pyramid", "color-grade", "fxaa-taa", "spot-shadows", "textured-pbr", "render-bundles", "compute-particles"] as const) {
+    for (const required of ["bloom-pyramid", "color-grade", "fxaa", "taa", "spot-shadows", "textured-pbr", "render-bundles", "compute-particles"] as const) {
       expect(ids, `${required} must have a plan row`).toContain(required);
     }
     // Nothing is proven without adapter/backend/dispatch/render/pixel evidence.

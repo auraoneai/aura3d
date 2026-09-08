@@ -32,7 +32,14 @@ import {
 
 declare global {
   interface Window {
-    __AURA3D_SHADOW_FAMILY_B1__?: unknown;
+    __AURA3D_SHADOW_FAMILY_B1__?: {
+      status: "ready" | "error"; error?: string; schema?: string;
+      scene?: {width:number;height:number};
+      spot?: Awaited<ReturnType<typeof renderSpotFamily>>;
+      shaders?: Awaited<ReturnType<typeof verifySpotShaderCompilation>>;
+      point?: Awaited<ReturnType<typeof renderPointFamily>>;
+      atlas?: {atlasSize:number;utilization:number;allocationIds:string[];allocationCount:number;fallbackCount:number;warnings:readonly string[]};
+    };
   }
 }
 

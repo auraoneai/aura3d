@@ -1,0 +1,90 @@
+{
+  "schema": "aura3d-authored-rig/v1",
+  "source": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+  "sourceSha256": "3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+  "sourceProvenance": {
+    "sourcePath": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+    "sourcePage": "https://kenney.nl/assets/platformer-kit",
+    "downloadUrl": "https://kenney.nl/media/pages/assets/platformer-kit/1585cf62b4-1775122253/kenney_platformer-kit.zip",
+    "sourceUrl": "https://kenney.nl/assets/platformer-kit",
+    "license": "CC0-1.0",
+    "licenseName": "Creative Commons CC0 1.0 Universal",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "author": "Kenney",
+    "sourceFamily": "Kenney game kits",
+    "attribution": "Kenney",
+    "retrievedAt": "2026-07-19T09:32:32.000Z",
+    "evidence": [
+      "official-publisher-CC0-page",
+      "source-zip-sha256-899605d237367688c6b42e41fff2206c0fb8d626163158294556353f7baa7c1b",
+      "deterministic-derivative-build-script"
+    ],
+    "checkedAt": "2026-07-19T09:32:32.000Z"
+  },
+  "outputSha256": "5f01ae3ba85bc72a1dd33968cbfdf809849543242e6e59b5095163a9821ff613",
+  "tool": "/Users/gurbakshchahal/platforms/aura3d/tools/locomotion-301/author-kenney-humanoid.py",
+  "toolSha256": "24ad7b35e99606d4a90b5dee07ea74f8908a071bcdca018add2522d9c256cee7",
+  "status": "candidate-unverified",
+  "authoring": [
+    {
+      "group": 1,
+      "upper": [
+        0.10736377583816659,
+        0.21999995410442816,
+        0.0649691635450576
+      ],
+      "kneeY": 0.12814859122038344,
+      "ankleY": 0.036297228336338735,
+      "method": "knee midpoint between original leg pivot and 4%-height ankle"
+    },
+    {
+      "group": 2,
+      "upper": [
+        -0.09263601852580904,
+        0.2199999541044282,
+        0.0649691635450576
+      ],
+      "kneeY": 0.12814859122038347,
+      "ankleY": 0.036297228336338735,
+      "method": "knee midpoint between original leg pivot and 4%-height ankle"
+    },
+    {
+      "group": 4,
+      "upper": [
+        0.16458613585199924,
+        0.28929331815990766,
+        0.014968986293900175
+      ],
+      "elbowX": 0.30303203021867087,
+      "handX": 0.3860995668386738,
+      "method": "50% / 80% original pivot to measured extremity"
+    },
+    {
+      "group": 5,
+      "upper": [
+        -0.1498579143408339,
+        0.2892933181599078,
+        0.01496898669561719
+      ],
+      "elbowX": -0.28830392951386175,
+      "handX": -0.3713715386176785,
+      "method": "50% / 80% original pivot to measured extremity"
+    },
+    {
+      "group": 3,
+      "neckY": 0.604450100660324,
+      "headY": 0.718067828565836,
+      "method": "60% / 75% measured torso vertical extent"
+    }
+  ],
+  "originalJointCount": 6,
+  "jointCount": 16,
+  "changed": [
+    "Added weighted articulated chains from declared measured-extent rules; source geometry and clips retained."
+  ],
+  "requiredValidation": [
+    "bind-pose mesh equivalence",
+    "joint articulation deformation",
+    "retargeted rendered pose and contact quality"
+  ]
+}

@@ -15,6 +15,7 @@ export * from "./AnimationStateGraph.js";
 export * from "./LocomotionKit.js";
 export * from "./FighterAnimationAdapter.js";
 export * from "./RootMotion.js";
+export * from "./LocomotionEvidence.js";
 export * from "./MotionQuality.js";
 export * from "./LocomotionController.js";
 export * from "./SceneAnimationBridge.js";

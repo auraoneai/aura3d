@@ -139,7 +139,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:48273"
   },
   webServer: {
-    command: "npm exec vite -- --host 127.0.0.1 --port 48273 --strictPort",
+    command: "pnpm exec vite --host 127.0.0.1 --port 48273 --strictPort",
     url: "http://127.0.0.1:48273",
     reuseExistingServer: false,
     timeout: 120_000

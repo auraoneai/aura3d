@@ -1,6 +1,12 @@
 # Changelog
 
-Version: 3.0.0
+Version: 3.0.1
+
+Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
+
+## 3.0.1 (unreleased candidate)
+
+Remediation work and acceptance evidence are tracked in `muse3jsparity-3.0.1-PRD.md` and `docs/project/aura3d-301-release-notes.md`. Changes are undergoing integrated verification. Historical entries below remain release-specific records and do not certify this candidate.
 
 ## 3.0.0 (2026-09-05, candidate — K2/publish gates pending, see docs/project/aura3d-300-release-notes.md)
 

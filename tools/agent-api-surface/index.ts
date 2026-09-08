@@ -14,8 +14,9 @@ const reactPackage = JSON.parse(readFileSync("packages/react/package.json", "utf
 };
 const publicApiDocs = readFileSync("docs/api/public-api.md", "utf8");
 const rootEngineExport = rootPackage.exports?.["."];
-const releaseMajor = rootPackage.version?.match(/^(\d+)\./)?.[1];
-const expectedEnginePeer = releaseMajor ? `^${releaseMajor}.0.0` : undefined;
+const expectedEnginePeer = rootPackage.version && /^\d+\.\d+\.\d+$/.test(rootPackage.version)
+  ? `^${rootPackage.version}`
+  : undefined;
 
 const checks: ReleaseCheck[] = [
   existsCheck("packages/engine/src/agent-api/index.ts", "agent api source"),

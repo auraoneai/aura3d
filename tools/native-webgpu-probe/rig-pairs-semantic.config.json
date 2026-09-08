@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.browser-301.json",
+  "files": [
+    "../../tests/browser/rig-pair-rendered-301.spec.ts",
+    "../../tests/browser/rig-pair-rendered-301-harness.ts",
+    "../locomotion-301/rig-pair-evidence.ts"
+  ],
+  "include": ["../**/*.d.mts"],
+  "exclude": ["../../node_modules", "../../dist", "../../tests/reports"]
+}

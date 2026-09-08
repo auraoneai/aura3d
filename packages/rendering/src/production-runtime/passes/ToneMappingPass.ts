@@ -1,16 +1,15 @@
-import type { RenderPass, RenderPassExecutionContext } from '../framegraph/RenderPass';
+import type { ToneMappingOperator } from '../../PostProcessPass';
+import { executeNativePass, type RenderPass, type RenderPassExecutionContext } from '../framegraph/RenderPass';
 import { assertValidPassContext } from './DepthPrepass';
 
-/**
- * muse3jsparity-PRD T3 — ToneMappingPass owns real logic.
- *
- * NOTE: this is the production framegraph tone pass, NOT the
- * `ToneMappingPass` in `packages/rendering/src/PostProcessPass.ts` (different
- * class, different contract — imports must use the passes/ path to get this
- * one). Consumes hdr.color, produces the LDR output with a validated
- * exposure/operator pair.
- */
+/** Compatibility adapter; rendering is dispatched to the canonical native pass.
+ * Allocation, shader compilation and device lifetime remain with that renderer. */
 export type FramegraphToneOperator = "aces-filmic" | "reinhard" | "neutral";
+
+/** Published compatibility spelling maps to the canonical ACES filmic implementation. */
+export function toNativeFramegraphToneOperator(operator: FramegraphToneOperator | ToneMappingOperator): ToneMappingOperator {
+  return operator === 'aces-filmic' ? 'aces' : operator;
+}
 
 export interface ToneMappingPassOptions {
   readonly enabled?: boolean;
@@ -57,6 +56,10 @@ export class ToneMappingPass implements RenderPass {
     return this.options.operator ?? "aces-filmic";
   }
 
+  get nativeOperator(): ToneMappingOperator {
+    return toNativeFramegraphToneOperator(this.operator);
+  }
+
   get executionCount(): number {
     return this.executedFrames;
   }
@@ -75,6 +78,7 @@ export class ToneMappingPass implements RenderPass {
   execute(context: RenderPassExecutionContext): void {
     assertValidPassContext(this.id, context);
     if (!this.enabled) return;
+    executeNativePass(this, context);
     this.executedFrames += 1;
     this.lastFrame = context.frameIndex;
   }

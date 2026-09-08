@@ -1,0 +1,216 @@
+name: Native WebGPU Functional Evidence 3.0.1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/native-webgpu-probe-301]
+    paths:
+      - .github/workflows/native-webgpu-functional-301.yml
+      - tools/native-webgpu-probe/functional.config.ts
+
+permissions:
+  contents: read
+
+env:
+  NATIVE_WORKLOADS: temporal,root-r02,particles,atlas
+
+jobs:
+  native-functional:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/native-webgpu-probe
+          lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+          run_install: false
+      - name: Restore immutable current source
+        env:
+          SOURCE_URL: ${{ secrets.AURA3D_NATIVE_SOURCE_URL }}
+          SOURCE_SHA256: ${{ secrets.AURA3D_NATIVE_SOURCE_SHA256 }}
+          SOURCE_DELTA_URL: ${{ secrets.AURA3D_NATIVE_DELTA_URL }}
+          SOURCE_DELTA_SHA256: ${{ secrets.AURA3D_NATIVE_DELTA_SHA256 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/native-functional/source" "$RUNNER_TEMP/native-functional/evidence"
+          cp -R tools/native-webgpu-probe "$RUNNER_TEMP/native-functional/orchestration"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,tarfile,urllib.request
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'native-functional'
+          archive=root/'source.tar.gz'
+          expected=os.environ['SOURCE_SHA256']
+          if len(expected)!=64: raise RuntimeError('Missing immutable archive SHA256')
+          try:
+              with urllib.request.urlopen(os.environ['SOURCE_URL'],timeout=90) as response, archive.open('wb') as out:
+                  while chunk:=response.read(1024*1024): out.write(chunk)
+          except Exception as error:
+              raise RuntimeError('Source download failed: '+type(error).__name__) from None
+          actual=hashlib.file_digest(archive.open('rb'),'sha256').hexdigest()
+          if actual!=expected: raise RuntimeError('Source archive SHA256 mismatch')
+          with tarfile.open(archive,'r:*') as tar:
+              tar.extractall(root/'source',filter='data')
+          source=(root/'source').resolve()
+          manifest=json.loads((source/'native-source-manifest.json').read_text())
+          for item in manifest['files']:
+              path=(source/item['path']).resolve()
+              if not path.is_relative_to(source): raise RuntimeError('Manifest path escapes source')
+              with path.open('rb') as file: digest=hashlib.file_digest(file,'sha256').hexdigest()
+              if digest!=item['sha256'] or path.stat().st_size!=item['bytes']:
+                  raise RuntimeError('Manifest file mismatch: '+item['path'])
+          (root/'evidence'/'source-archive.json').write_text(json.dumps({'sha256':actual,'bytes':archive.stat().st_size,'workflowCommit':os.environ['GITHUB_SHA'],'runId':os.environ['GITHUB_RUN_ID']},indent=2))
+          archive.unlink()
+          delta_url=os.environ.get('SOURCE_DELTA_URL','')
+          if delta_url:
+              delta=root/'delta.tar.gz'
+              try:
+                  with urllib.request.urlopen(delta_url,timeout=90) as response, delta.open('wb') as out:
+                      while chunk:=response.read(1024*1024): out.write(chunk)
+              except Exception as error:
+                  raise RuntimeError('Delta download failed: '+type(error).__name__) from None
+              with delta.open('rb') as file: delta_sha=hashlib.file_digest(file,'sha256').hexdigest()
+              if delta_sha!=os.environ['SOURCE_DELTA_SHA256']: raise RuntimeError('Delta SHA256 mismatch')
+              with tarfile.open(delta,'r:*') as tar: tar.extractall(source,filter='data')
+              changes=json.loads((source/'native-delta-manifest.json').read_text())
+              by_path={item['path']:item for item in manifest['files']}
+              for item in changes['files']:
+                  path=(source/item['path']).resolve()
+                  if not path.is_relative_to(source): raise RuntimeError('Delta manifest path escapes source')
+                  with path.open('rb') as file: digest=hashlib.file_digest(file,'sha256').hexdigest()
+                  if digest!=item['sha256'] or path.stat().st_size!=item['bytes']: raise RuntimeError('Delta file mismatch: '+item['path'])
+                  by_path[item['path']]=item
+              manifest['files']=sorted(by_path.values(),key=lambda item:item['path'])
+              manifest['baseArchiveSha256']=actual
+              manifest['overlayArchiveSha256']=delta_sha
+              manifest['scope']='Targeted native snapshot derived from verified base plus independently hashed current overlay; not original base fingerprint'
+              (source/'native-source-manifest.json').write_text(json.dumps(manifest))
+              (root/'evidence'/'native-delta-manifest.json').write_text(json.dumps(changes,indent=2))
+              (root/'evidence'/'source-overlay.json').write_text(json.dumps({'baseArchiveSha256':actual,'overlayArchiveSha256':delta_sha,'effectiveManifestSha256':hashlib.sha256((source/'native-source-manifest.json').read_bytes()).hexdigest()},indent=2))
+              delta.unlink()
+          PY
+          if [ -f "$RUNNER_TEMP/native-functional/source/native-source-manifest.json" ]; then
+            cp "$RUNNER_TEMP/native-functional/source/native-source-manifest.json" "$RUNNER_TEMP/native-functional/evidence/native-source-manifest.json"
+          fi
+          if [ -f "$RUNNER_TEMP/native-functional/source/native-overlay-imports.json" ]; then
+            cp "$RUNNER_TEMP/native-functional/source/native-overlay-imports.json" "$RUNNER_TEMP/native-functional/evidence/native-overlay-imports.json"
+          fi
+          mkdir -p "$RUNNER_TEMP/native-functional/source/tools/native-webgpu-probe"
+          cp "$RUNNER_TEMP/native-functional/orchestration/functional.config.ts" "$RUNNER_TEMP/native-functional/source/tools/native-webgpu-probe/functional.config.ts"
+          cd "$RUNNER_TEMP/native-functional/source"
+          git rev-parse HEAD > "$RUNNER_TEMP/native-functional/evidence/source-head.txt"
+          git status --short > "$RUNNER_TEMP/native-functional/evidence/source-status.txt"
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install chromium
+      - name: Record actual runner adapter
+        id: adapter
+        env:
+          PROBE_OUTPUT: ${{ runner.temp }}/native-functional/evidence/adapter
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          node --input-type=module -e 'import fs from "node:fs"; const source=fs.readFileSync(process.env.RUNNER_TEMP+"/native-functional/orchestration/probe.mjs","utf8"); fs.writeFileSync("native-adapter-probe.mjs",source.replace("from '\''playwright'\''", "from '\''@playwright/test'\''"));'
+          node native-adapter-probe.mjs
+          rm native-adapter-probe.mjs
+      - name: Native HDR numerical oracle
+        id: hdr
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'hdr') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/hdr-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-bloom-hdr-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/hdr-results"
+      - name: Native temporal sequence and reset evidence
+        id: temporal
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'temporal') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/temporal-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-post-j2.spec.ts --grep 'R03 native TAA' --output "$RUNNER_TEMP/native-functional/evidence/temporal-results"
+      - name: Root rigid temporal motion and cut sequences
+        id: root_temporal
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'root-r02') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/root-r02-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/root-effects-a3.spec.ts --grep 'R02 root rigid' --output "$RUNNER_TEMP/native-functional/evidence/root-r02-results"
+      - name: Sustained particle measurements on disclosed hosted hardware
+        id: particles
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'particles') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/particles-browser.json
+          NATIVE_PERFORMANCE_TRACE: 'off'
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          export AURA3D_REFERENCE_HARDWARE_ATTESTATION="$(node --input-type=module -e 'import fs from "node:fs"; const d=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/native-functional/evidence/adapter/adapter-probe.json","utf8")); console.log(JSON.stringify({hostedRunner:d.runner,conditionDisclosure:"GitHub hosted virtual machine; host thermal state, power mode, GPU contention and physical reference equivalence are not exposed. Foreground visibility is measured by the test. One browser worker; Playwright tracing disabled for timed performance, raw frames and postmeasurement screenshots retained.",runId:d.source.runId}));')"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/gpu-particle-a4.spec.ts --grep '10k live rendered particles' --output "$RUNNER_TEMP/native-functional/evidence/particles-results"
+      - name: Native device loss and temporal reseeding
+        id: device_loss
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'device-loss') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/device-loss-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-temporal-device-loss-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/device-loss-results"
+      - name: Native RGB and RGBA vertex colors
+        id: basic_color
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'basic-color') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/basic-color-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-basic-color-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/basic-color-results"
+      - name: Native resident particle collision pixels
+        id: collision
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'collision') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/collision-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/particle-collision-resident-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/collision-results"
+      - name: Native complete extension atlas maps
+        id: atlas
+        if: ${{ !cancelled() && steps.adapter.outcome == 'success' && contains(env.NATIVE_WORKLOADS, 'atlas') }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/native-functional/evidence/atlas-browser.json
+        run: |
+          cd "$RUNNER_TEMP/native-functional/source"
+          pnpm exec playwright test --config tools/native-webgpu-probe/functional.config.ts tests/browser/webgpu-extension-atlas-301.spec.ts --output "$RUNNER_TEMP/native-functional/evidence/atlas-results"
+      - name: Retain raw measurements
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/native-functional/evidence/generated-reports"
+          if [ -d "$RUNNER_TEMP/native-functional/source/tests/reports" ]; then
+            cp -R "$RUNNER_TEMP/native-functional/source/tests/reports/." "$RUNNER_TEMP/native-functional/evidence/generated-reports/"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-functional-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-functional/evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Assert each measured gate passed
+        if: always()
+        env:
+          HDR_OUTCOME: ${{ steps.hdr.outcome }}
+          TEMPORAL_OUTCOME: ${{ steps.temporal.outcome }}
+          PARTICLES_OUTCOME: ${{ steps.particles.outcome }}
+          DEVICE_LOSS_OUTCOME: ${{ steps.device_loss.outcome }}
+          BASIC_COLOR_OUTCOME: ${{ steps.basic_color.outcome }}
+          COLLISION_OUTCOME: ${{ steps.collision.outcome }}
+          ROOT_TEMPORAL_OUTCOME: ${{ steps.root_temporal.outcome }}
+          ATLAS_OUTCOME: ${{ steps.atlas.outcome }}
+        run: |
+          case "$NATIVE_WORKLOADS" in *hdr*) test "$HDR_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *temporal*) test "$TEMPORAL_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *particles*) test "$PARTICLES_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *device-loss*) test "$DEVICE_LOSS_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *basic-color*) test "$BASIC_COLOR_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *collision*) test "$COLLISION_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *atlas*) test "$ATLAS_OUTCOME" = success ;; esac
+          case "$NATIVE_WORKLOADS" in *root-r02*) test "$ROOT_TEMPORAL_OUTCOME" = success ;; esac

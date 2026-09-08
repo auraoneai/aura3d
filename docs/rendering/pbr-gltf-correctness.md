@@ -1,6 +1,6 @@
 # PBR and glTF correctness
 
-Aura3D has a bounded, current comparison for its PBR and glTF paths. The
+The prior bounded PBR/glTF comparison is recorded below. Its measurements need regeneration on the final 3.0.1 source before current-candidate claims are accepted. The
 canonical command is:
 
 ```bash
@@ -186,14 +186,56 @@ NDF, Estevez-Kulla 2017 sheen, Narkowicz ACES fit, sRGB specification.
 - real-loader same-fixture comparison: `tests/reports/threejs-parity/loader-material-extensions-parity.json`;
 - current baseline: `tests/reports/current-threejs-baseline.json`.
 
-## Superiority (K1 · 2026-09-04)
+## Historical K1 captures (2026-09-04; not per-feature 3.0.1 acceptance)
 
-- WIN: fresh same-scene Aura-vs-pinned-three@0.185.1 captures, earned
+- Recorded same-scene Aura-vs-pinned-three@0.185.1 captures, generated
   in-run — `tests/reports/muse3jsparity/head-to-head-aura.png` vs
   `tests/reports/muse3jsparity/head-to-head-three.png` (K1
   game-visual-superiority "fresh same-scene head-to-head capture", green
-  2026-09-04).
+  2026-09-04). These cube captures do not establish isolated per-feature visual acceptance.
 - LOSS: the captures show a disclosed material-response color delta
   (cream vs orange cubes) — same geometry and camera, not identical
   shading; bundle position stays over budget as disclosed in the release
   notes.
+
+### 3.0.1 extension texture verification status
+
+The root typed material bridge accepts separate clearcoat factor, roughness and
+normal maps; sheen color and roughness maps; iridescence factor and thickness
+maps; and anisotropy maps. Only sheen color is sRGB; the remaining extension
+inputs are linear data. Bitmap decoding disables alpha premultiplication and
+browser color conversion so data channels remain independent. This implementation
+status is not a claim that the new root pixel matrix has passed.
+
+`tools/root-textured-fixtures/index.ts` reproducibly generates asymmetric RGBA
+vectors and registers them through the asset CLI, including SHA256 provenance and
+typed references. `root-textured-c1.spec.ts` checks independent swapped channels,
+unused-channel decoys, disabled factors, failed fetches, UV selection and transforms.
+Remote browser evidence and affected C1/B3 receipts are still required.
+
+The WebGL2 root bridge now packs the five linear scalar extension maps into an
+atlas when all three extension families are requested together. Each map retains
+its original dimensions, independent mip strip, UV selector, transform and wrap
+mode. Mip strips use multiple shelves within the active device texture-size
+limit; invalid layouts fail before pixel copies or mip allocation. Manual filtering prevents cross-map bleed; bounded anisotropic taps preserve
+the root sampler request. All eight extension maps, all five base material maps,
+environment inputs and shadow inputs occupy 15 fragment samplers. PNG RGB/RGBA
+data-map decoding preserves original channel bytes without an intermediate
+premultiplied canvas.
+
+This implementation still needs the all-map root browser matrix. The independent
+WebGPU shader path now has atlas integration in source; its native compilation
+and per-map pixels still require the separate WebGPU browser oracle. Existing
+non-atlas mixed variants retain their previous support bounds. These changes do
+not establish blanket PBR parity or textured instancing support.
+
+
+The job-25 all-map probe confirmed that the iridescence sampler changed 27,961
+RGB channels, but no individual channel changed by more than three display-code
+values. The previous decorative grazing tint suppressed its contribution below
+the regional pixel criterion. The textured shader now uses a two-interface Airy
+reflectance approximation at representative RGB wavelengths, correcting the
+specular Fresnel term rather than adding a diffuse rainbow tint. This follows the
+[Fresnel-layering model described by KHR_materials_iridescence](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_iridescence/README.md);
+it is not a claim of full spectral integration. The corrected pixels must be
+verified in a new remote attempt; the job-25 failure remains retained evidence.

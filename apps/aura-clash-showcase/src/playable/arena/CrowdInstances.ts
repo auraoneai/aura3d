@@ -1,3 +1,4 @@
+import { instances, model, game, type AuraAssetRef, type AuraApp } from "@aura3d/engine";
 import { sampleCrowdAnimation, type CrowdAnimationAgent } from "@aura3d/animation";
 import { Geometry, InstancedUnlitMaterial, type RenderItem } from "@aura3d/engine/rendering";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
@@ -126,6 +127,46 @@ export function createCrowdInstances(): CrowdInstancesPool {
           includeInAutoFrame: false
         }
       ];
+    }
+  };
+}
+
+/** Static typed spectator cards: native GLB instances, never skinned-instancing claims. */
+export function createPublicCrowdNodes(asset: AuraAssetRef<"model">, mode: "native" | "individual" | "hidden" = "native") {
+  const node = instances.model(asset, {
+    name: "aura clash typed spectator crowd",
+    targetMaxDimension: 0.28,
+    castShadow: false,
+    receiveShadow: true,
+    transforms: FANS.map((fan, index) => ({
+      // Clamp the old negative wobble so the authored figure cannot enter the fighter lane.
+      position: [Math.abs(fan.x) >= 2.85 ? Math.sign(fan.x) * Math.max(3.02, Math.abs(fan.x)) : fan.x,
+        0.15 + Math.sin(index * 0.735) * 0.008, fan.z] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: fan.scale / 0.55
+    }))
+  }).runtime(game.runtimeNode("aura-clash-public-spectator-pool", { tags: ["crowd", "static-typed-instances"] }));
+  const snapshot = node.toJSON();
+  const nodes = mode === "hidden" ? [] : mode === "native" ? [node] : snapshot.instances!.map((transform, index) =>
+    model(asset, { name: `aura clash typed spectator crowd copy ${index}`, targetMaxDimension: 0.28, castShadow: false, receiveShadow: true })
+      .position(...(transform.position ?? [0, 0, 0]))
+      .rotate(...(transform.rotation ?? [0, 0, 0]))
+      .scale(transform.scale ?? 1)
+      .runtime(game.runtimeNode(`aura-clash-public-spectator-${index}`))
+  );
+  return {
+    nodes,
+    instanceCount: mode === "hidden" ? 0 : FANS.length,
+    update(app: AuraApp, input: { elapsedSeconds: number; cheer: number; reducedMotion: boolean }) {
+      const strength = Math.max(0, Math.min(1, input.cheer));
+      const displacement = input.reducedMotion ? 0 : Math.sin(input.elapsedSeconds * 2) * 0.008 +
+        strength * 0.06 * Math.abs(Math.sin(input.elapsedSeconds * 3 * Math.PI));
+      // Presentation-only rigid group motion. Navigation and fighter collision are untouched.
+      if (mode === "native") app.nodes.require("aura-clash-public-spectator-pool").setPosition(0, displacement, 0);
+      if (mode === "individual") snapshot.instances!.forEach((transform, index) => {
+        const position = transform.position ?? [0, 0, 0];
+        app.nodes.require(`aura-clash-public-spectator-${index}`).setPosition(position[0], position[1] + displacement, position[2]);
+      });
     }
   };
 }

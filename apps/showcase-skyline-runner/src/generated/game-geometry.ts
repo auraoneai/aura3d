@@ -4,7 +4,7 @@ export const gameGeometryContract = {
   "routeId": "showcase-skyline-runner",
   "category": "platformer",
   "geometrySource": "asset-mesh-extracted",
-  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+  "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
   "surfaceMap": {
     "assetId": "showcaseKenneyVerdantPlatformerWorld",
     "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
@@ -2263,9 +2263,9 @@ export const gameGeometryContract = {
     "maxY": 3.5140000000000002
   },
   "evidence": {
-    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "routePrimaryScreenshotSha256": "sha256-8e8fa9cb5ec90486128625bac5c0b13ff1c45c2205dd8643b21b64028d6af3e2"
+    "routePrimaryScreenshotSha256": "sha256-d7ae7ed8246e07693f1741e75fc561ddd487e154debd3904693a53d2f0f13e87"
   },
   "design": {
     "minPlayableSeconds": 30,
@@ -2510,7 +2510,7 @@ export const gameGeometryContract = {
     "characterWorldScaleCompatible": true,
     "styleCompatible": true,
     "primitivePrimaryWorldRejected": true,
-    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "playableSurfaceEvidence": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "assetPairEvidence": {
       "category": "platformer",
       "assets": [
@@ -2519,14 +2519,14 @@ export const gameGeometryContract = {
       ],
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
       "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotSha256": "sha256-8e8fa9cb5ec90486128625bac5c0b13ff1c45c2205dd8643b21b64028d6af3e2",
+      "screenshotSha256": "sha256-d7ae7ed8246e07693f1741e75fc561ddd487e154debd3904693a53d2f0f13e87",
       "geometryEvidence": {
         "category": "platformer",
         "kind": "platformer-playable-surface-map",
         "source": "asset-mesh-extracted",
-        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+        "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "routePrimaryScreenshotSha256": "sha256-8e8fa9cb5ec90486128625bac5c0b13ff1c45c2205dd8643b21b64028d6af3e2",
+        "routePrimaryScreenshotSha256": "sha256-d7ae7ed8246e07693f1741e75fc561ddd487e154debd3904693a53d2f0f13e87",
         "assets": [
           {
             "id": "skylineArcticRunnerHero",

@@ -38,6 +38,8 @@
     </script>
   </head>
 <body>
+<aside aria-label="Release candidate status"><p>Aura3D 3.0.1 is a source candidate; verification pending. The published version remains 3.0.0. <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-301-release-notes.md">Candidate scope and remaining release conditions</a>.</p></aside>
+
 
 <!-- ─── NAV ──────────────────────────────────────────────────── -->
 <nav class="nav">
@@ -902,7 +904,7 @@
         </div>
         <div class="diag-body">
           <button class="install-copy command-copy" data-copy="scaffold" data-copy-text="npx create-aura3d@latest my-scene --template product-viewer" type="button">Scaffold mini-game</button>
-          <button class="install-copy command-copy" data-copy="asset-add" data-copy-text="npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot" type="button">Add typed asset</button>
+          <button class="install-copy command-copy" data-copy="asset-add" data-copy-text="npx @aura3d/cli@latest assets add &lt;path-to-source-model&gt; --name robot" type="button">Add typed asset</button>
           <button class="install-copy command-copy" data-copy="check-deploy" data-copy-text="npx @aura3d/cli@latest check-deploy --dist dist" type="button">Check deploy</button>
           <button class="install-copy command-copy" data-copy="agent-init" data-copy-text="npx @aura3d/cli@latest init --agent all" type="button">Write agent setup</button>
         </div>
@@ -1184,7 +1186,7 @@
         <div class="label"><span class="ring"></span>Add a real asset</div>
 <pre class="code"><span class="c"># The file already exists on disk.</span>
 npx @aura3d/cli@latest assets add \
-  ./assets/robot.glb \
+  &lt;path-to-source-model&gt; \
   --name robot \
   --public-path /aura-assets/
 

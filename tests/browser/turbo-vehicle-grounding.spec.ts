@@ -13,6 +13,7 @@
  */
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -445,7 +446,8 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
   testInfo.setTimeout(240_000);
   let server: ExampleDevServer | undefined;
   const consoleErrors: string[] = [];
-  const scratchOvertake = "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/turbo-overtake";
+  const scratchOvertake = resolve(process.env.TURBO_OVERTAKE_SCRATCH_DIR
+    ?? join(tmpdir(), "aura3d-turbo-overtake"));
   try {
     server = await startExampleDevServer();
     page.on("console", (message) => {

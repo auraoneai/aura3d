@@ -1,5 +1,19 @@
 # muse3jsparity-PRD — Surpass three.js Visually as a Game Library
 
+> **3.0.1 remediation notice (2026-09-05):** Current execution and acceptance tracking moves to [muse3jsparity-3.0.1-PRD.md](muse3jsparity-3.0.1-PRD.md). The original checkmarks below do not establish complete delivery: the [source audit](muse3jsparity-completion-audit-2026-09-05.md) found unfinished implementations, route adoption, and evidence requirements. The 3.0.1 release remains in progress. The [original requirement ledger](docs/project/plans/muse3jsparity-301-requirements.json) maps each historical obligation to its corrective work orders and regression gates; the [3.0.0 archive](release-artifacts/muse3jsparity-PRD-3.0.0.md) remains unchanged.
+
+| Original obligations | Corrective 3.0.1 work orders |
+| --- | --- |
+| A1/A3/J2 native root rendering and temporal effects | R01–R03 |
+| C1 extension maps; B4 reflection surfaces; T3 framegraph execution | R04–R06 |
+| A4 live-particle performance; B1 rendered shadow stability | P01–P02 |
+| E2 translated locomotion and rig quality | E01 |
+| F1/N2 controls; N4 labels; O1/P2 crowd and instancing; F2/N1 named route adoption | I01–I04 |
+| S/M2 decoder alignment | D01 |
+| K1 visual and performance comparisons | V01–V02 |
+| K2/R completeness; K1/L7 evidence lineage; E/H/I/U omitted coverage | G01–G03 |
+| Original task reconciliation, public claims, packages, and release review | Q01–Q02, L01–L02 |
+
 Date: 2026-09-03
 Baseline: Aura3D `2.0.4` (Meshy CLI asset-pipeline patch; renderer/engine/PBR/WebGPU/animation/physics/comparison claims unchanged since 2.0.x).
 Target opponent: repository-locked `three@0.185.1` / r185 (`WebGLRenderer` + `WebGPURenderer` + `EffectComposer`/`UnrealBloomPass` + TSL/node postprocessing + `GLTFLoader` + addons).

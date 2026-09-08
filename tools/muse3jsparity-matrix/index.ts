@@ -8,7 +8,10 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+import { assertDecoderVersion, assertKtxProvenance, verifyKtxBehavior, decoderSha256, KTX_R185_PROVENANCE, type KtxParserModule } from "./decoder-alignment.js";
 
 const ROOT = process.cwd();
 const THREE_DIR = resolve(ROOT, "node_modules/three");
@@ -55,33 +58,24 @@ function grepFileCountRecursive(dir: string, needle: string): number {
   return count;
 }
 
-function installedVersion(spec: string): string | null {
-  const direct = join(ROOT, "node_modules", spec, "package.json");
-  if (existsSync(direct)) {
-    try {
-      const pkg = JSON.parse(readFileSync(direct, "utf8")) as { version?: string };
-      if (typeof pkg.version === "string") return pkg.version;
-    } catch {
-      // Fall through to the .pnpm probe below.
-    }
-  }
-  // Transitive-only deps (e.g. ktx-parse via @loaders.gl) live under .pnpm.
+function installedPackage(spec: string): { version: string; directory: string } | null {
   try {
-    const hits = execFileSync("ls", [join(ROOT, "node_modules/.pnpm")], { encoding: "utf8" })
-      .split("\n")
-      .filter((d) => d === `${spec}@` || d.startsWith(`${spec}@`))
-      .sort();
-    for (const hit of hits) {
-      const nested = join(ROOT, "node_modules/.pnpm", hit, "node_modules", spec, "package.json");
-      if (existsSync(nested)) {
-        const pkg = JSON.parse(readFileSync(nested, "utf8")) as { version?: string };
-        if (typeof pkg.version === "string") return pkg.version;
+    const rootRequire = createRequire(ROOT_PKG_PATH);
+    // Resolve exactly the parser consumed by the texture loader, never the first
+    // lexicographic pnpm-store hit (which may be an unused older installation).
+    const consumer = spec === "ktx-parse" ? createRequire(rootRequire.resolve("@loaders.gl/textures")) : rootRequire;
+    let directory = dirname(consumer.resolve(spec));
+    for (;;) {
+      const manifest = join(directory, "package.json");
+      if (existsSync(manifest)) {
+        const pkg = JSON.parse(readFileSync(manifest, "utf8")) as { name?: string; version?: string };
+        if (pkg.name === spec && pkg.version) return { version: pkg.version, directory };
       }
+      const parent = dirname(directory);
+      if (parent === directory) return null;
+      directory = parent;
     }
-  } catch {
-    // No .pnpm store visible; report null.
-  }
-  return null;
+  } catch { return null; }
 }
 
 if (!existsSync(THREE_DIR)) fail(`installed three tree missing at ${THREE_DIR}`);
@@ -124,43 +118,29 @@ interface DecoderEntry {
   readonly status: "aligned" | "divergent";
   readonly reason: string;
 }
-const decoderLibs: DecoderEntry[] = [
-  {
-    lib: "draco3d",
-    r185: companions["draco3d"]?.version ?? null,
-    repoPin: rootPins["draco3d"] ?? null,
-    installed: installedVersion("draco3d"),
-    status: "aligned",
-    reason: "Pin ^1.5.7 resolves to installed 1.5.7, equal to the r185 companion set."
-  },
-  {
-    lib: "meshoptimizer",
-    r185: companions["meshoptimizer"]?.version ?? null,
-    repoPin: rootPins["meshoptimizer"] ?? null,
-    installed: installedVersion("meshoptimizer"),
-    status: "divergent",
-    reason:
-      "r185 companion set pins meshoptimizer 1.2.0; repo pin is ^1.1.1 (installed 1.1.1). " +
-      "Divergence accepted: the meshopt decode path is route-injected at runtime via " +
-      "createMeshoptDecoder (decoder-required, fail-closed without it — " +
-      "packages/assets/src/GLTFCompressionDecoders.ts), so the npm pin only serves " +
-      "node-side tooling/tests and does not gate the shipped decode path. " +
-      "Re-pin to ^1.2.0 with lockfile regen is a follow-up outside S-task scope " +
-      "(root package.json + pnpm-lock.yaml are not S-task touch targets)."
-  },
-  {
-    lib: "ktx-parse",
-    r185: null,
-    repoPin: null,
-    installed: installedVersion("ktx-parse"),
-    status: "divergent",
-    reason:
-      "r185 vendors ktx-parse as a versionless module blob under examples/jsm/libs/ " +
-      "(no npm version to align to). Ours resolves via the @loaders.gl transitive " +
-      "ktx-parse plus BasisU transcoder URLs (packages/assets/src/KTX2BasisTextureTranscoder.ts); " +
-      "the KTX2 path is proven by tests/unit/rendering/texture-pipeline-c3.test.ts."
-  }
-];
+const decoderLibs: DecoderEntry[] = ["draco3d", "meshoptimizer", "ktx-parse"].map((lib): DecoderEntry => {
+  const installed = installedPackage(lib);
+  const minimum = lib === "ktx-parse" ? KTX_R185_PROVENANCE.version : companions[lib]?.version ?? null;
+  assertDecoderVersion(lib, installed?.version ?? null, minimum);
+  return { lib, r185: minimum, repoPin: rootPins[lib] ?? null, installed: installed!.version,
+    status: "aligned", reason: `Installed consumer resolution ${installed!.version} satisfies ${minimum}; compressed execution is separately verified.` };
+});
+const ktxInstalled = installedPackage("ktx-parse")!;
+const ktxVendoredPath = join(JSM_DIR, "libs/ktx-parse.module.js");
+const ktxInstalledPath = join(ktxInstalled.directory, "dist/ktx-parse.modern.js");
+assertKtxProvenance(readFileSync(ktxVendoredPath, "utf8"), readFileSync(ktxInstalledPath, "utf8"), KTX_R185_PROVENANCE);
+const [ktxReference, ktxActual] = await Promise.all([
+  import(pathToFileURL(ktxVendoredPath).href), import(pathToFileURL(ktxInstalledPath).href)
+]) as [KtxParserModule, KtxParserModule];
+const ktxFixtureDirectory = resolve(ROOT, "tests/assets/corpus/ktx2");
+const ktxFixtures = readdirSync(ktxFixtureDirectory).filter(name => name.endsWith(".ktx2")).sort()
+  .map(name => ({ path: `tests/assets/corpus/ktx2/${name}`, bytes: readFileSync(join(ktxFixtureDirectory, name)) }));
+const ktxEquivalence = {
+  ...KTX_R185_PROVENANCE,
+  ...verifyKtxBehavior(ktxReference, ktxActual, ktxFixtures.map(fixture => fixture.bytes)),
+  fixtures: ktxFixtures.map(fixture => ({ path: fixture.path, sha256: decoderSha256(fixture.bytes) }))
+};
+
 try {
   execFileSync("git", ["--version"], { stdio: "ignore" });
 } catch {
@@ -569,7 +549,7 @@ const rows: Row[] = [
     verdict: "PARTIAL",
     prdSection: "M2",
     proof: null,
-    closingSection: "M2 (vendored decoder alignment; see decoderLibs: draco3d aligned, meshoptimizer + ktx-parse divergences recorded with reason)",
+    closingSection: "M2 compressed rendering coverage; installed decoder versions and KTX upstream/content equivalence are enforced separately",
     outReason: null,
     note: "Third-party vendored libs (draco, ktx-parse, meshopt...)."
   },
@@ -628,6 +608,15 @@ const counts = {
 const matrix = {
   schema: "aura3d.muse3jsparity-r185-matrix/1.0",
   status: "frozen",
+  coverageComplete: rows.every(row => row.verdict === "COVERED" || row.verdict === "OUT"),
+  coverageBasis: "Curated source workload inventory, not universal addon parity or an executed runtime receipt. COVERED means the bounded named source exists; assigned GAP/PARTIAL work remains incomplete regardless of ownership.",
+  runtimeParityVerified: false,
+  command: "pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-matrix/index.ts",
+  cwd: ROOT,
+  sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+  producerInputs: ["tools/muse3jsparity-matrix/index.ts", "tools/muse3jsparity-matrix/decoder-alignment.ts", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"].map(path => ({
+    path, sha256: decoderSha256(readFileSync(resolve(ROOT, path)))
+  })),
   generatedBy: "tools/muse3jsparity-matrix/index.ts (never hand-edit; rerun on three-version change)",
   generatedAt: new Date().toISOString(),
   three: {
@@ -639,13 +628,16 @@ const matrix = {
     renderBundleSrcFiles: renderBundleFiles
   },
   decoderLibs,
+  ktxEquivalence,
   meshOps,
   rows,
   checklist: {
     matrixGeneratedFromInstalledTree: true,
     zeroGapsWithoutOwningSectionOrOutReason: uncoveredGaps.length === 0,
     meshOpAdoptionLanded: meshOps.mergeAdopted && meshOps.deindexAdopted,
-    decoderLibsAlignedOrDivergenceRecorded: true,
+    decoderLibsAlignedOrDivergenceRecorded: decoderLibs.every(decoder => decoder.status === "aligned"),
+    decoderLibsAligned: decoderLibs.every(decoder => decoder.status === "aligned"),
+    ktxContentEquivalenceVerified: ktxEquivalence.readWriteEquivalent,
     verdictCounts: counts
   }
 };

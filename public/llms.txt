@@ -1,6 +1,8 @@
-Aura3D quick patterns for AI coding agents.
+Aura3D agent guide.
 
-Release candidate: Aura3D 3.0.0 (2.0.4 live on npm; gates pending — docs/project/aura3d-300-release-notes.md). Claims bounded by docs/agents/claims-and-boundaries.md.
+Source candidate: Aura3D 3.0.1; not a publication claim. See docs/project/aura3d-301-release-notes.md.
+
+API topics: effects, camera rigs, gameFeel, SDF text, decal, rigid-body APIs. Preserve claim labels.
 
 Read this file first, then read `docs/agents/claims-and-boundaries.md` before
 making public examples, docs, route claims, template claims, or release claims.

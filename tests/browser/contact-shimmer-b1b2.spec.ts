@@ -9,7 +9,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * Unit-proven elsewhere: `computeShimmerScore` + `selectCascadeWithHysteresis`
  * (CascadeHysteresis), per-object contact telemetry + `resolveDepthAwareContactRadius`
  * (`tests/unit/rendering/contact-planar-instancing-b2b4d1.test.ts`, 6 tests).
- * This spec closes the open browser items:
+ * This spec retains analytic/contact regression checks. P02 completion additionally requires shadow-stability-301.spec.ts with real wall-clock rendering:
  *
  *  (1) 60s moving-camera shimmer stress: a 60s @ 60fps = 3600-frame camera-depth
  *       path executed accelerated in-page through the SAME pure functions the
@@ -44,7 +44,7 @@ test.describe("contact shimmer B1 stress + B2 pixel proofs", () => {
     await server.close();
   });
 
-  test("B1: 60s moving-camera shimmer stress holds under the threshold", async ({ page }) => {
+  test("B1: analytic 3600-sample cascade path and 24-frame GPU smoke", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/tests/browser/agent-api-visual-smoke-harness.html`, { waitUntil: "domcontentloaded" });
     const testStartedAt = Date.now();
@@ -369,14 +369,8 @@ async function measureMovingCameraGpuLoop(page: Page, frames: number): Promise<G
           source: light,
         }],
         shadow: { size: 1024, bias: 0.0015, pcfSamples: 16, pcfRadius: 1.5, strength: 0.72, filter: "pcf" },
-        camera: {
-          position: [4.6 * Math.cos(angle * 0.5), 3.4, 5.4 * Math.sin(angle * 0.5) + 2],
-          target: [0, -0.3, 0],
-          fovDegrees: 45,
-          near: 0.1,
-          far: 80,
-        },
-      });
+        cameraPolicy: "require",
+      }, { viewMatrix: rendering.computePlanarViewMatrix([4.6 * Math.cos(angle * 0.5), 3.4, 5.4 * Math.sin(angle * 0.5) + 2], [0, -0.3, 0], [0, 1, 0]), projectionMatrix: rendering.createPlanarProjectionMatrix(45 * Math.PI / 180, width / height, 0.1, 80) });
       const elapsed = performance.now() - start;
       totalMs += elapsed;
       maxMs = Math.max(maxMs, elapsed);
@@ -450,8 +444,8 @@ async function measureSeatedCasterContactGap(page: Page): Promise<ContactGap> {
         shadow: castShadow
           ? { size: 1024, bias: 0.0015, pcfSamples: 16, pcfRadius: 1.5, strength: 0.72, filter: "pcf" }
           : false,
-        camera: { position: [4.6, 3.4, 5.4], target: [0, -0.3, 0], fovDegrees: 45, near: 0.1, far: 80 },
-      });
+        cameraPolicy: "require",
+      }, { viewMatrix: rendering.computePlanarViewMatrix([4.6, 3.4, 5.4], [0, -0.3, 0], [0, 1, 0]), projectionMatrix: rendering.createPlanarProjectionMatrix(45 * Math.PI / 180, width / height, 0.1, 80) });
       const pixels = renderer.device.readPixels(0, 0, width, height);
       renderer.dispose();
       canvas.remove();
@@ -542,8 +536,8 @@ async function measureCasterFreeDarkening(page: Page): Promise<CasterFreeControl
           layerMask: 0xffffffff, source: light,
         }],
         shadow: castShadow ? { size: 1024, pcfSamples: 16, pcfRadius: 1.5, strength: 0.72, filter: "pcf" } : false,
-        camera: { position: [4.6, 3.4, 5.4], target: [0, -0.3, 0], fovDegrees: 45, near: 0.1, far: 80 },
-      });
+        cameraPolicy: "require",
+      }, { viewMatrix: rendering.computePlanarViewMatrix([4.6, 3.4, 5.4], [0, -0.3, 0], [0, 1, 0]), projectionMatrix: rendering.createPlanarProjectionMatrix(45 * Math.PI / 180, width / height, 0.1, 80) });
       const pixels = renderer.device.readPixels(0, 0, width, height);
       renderer.dispose();
       canvas.remove();
@@ -611,8 +605,8 @@ async function measureDoubleRenderDeterminism(page: Page): Promise<DeterminismRe
           layerMask: 0xffffffff, source: light,
         }],
         shadow: { size: 1024, pcfSamples: 16, pcfRadius: 1.5, strength: 0.72, filter: "pcf" },
-        camera: { position: [4.6, 3.4, 5.4], target: [0, -0.3, 0], fovDegrees: 45, near: 0.1, far: 80 },
-      });
+        cameraPolicy: "require",
+      }, { viewMatrix: rendering.computePlanarViewMatrix([4.6, 3.4, 5.4], [0, -0.3, 0], [0, 1, 0]), projectionMatrix: rendering.createPlanarProjectionMatrix(45 * Math.PI / 180, width / height, 0.1, 80) });
       const pixels = renderer.device.readPixels(0, 0, width, height);
       renderer.dispose();
       canvas.remove();

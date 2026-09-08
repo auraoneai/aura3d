@@ -1,3 +1,6 @@
+import { withNpmTransport } from "../release/npm-transport.mjs";
+import { runExactPackageSmoke, type ExactPackageSmoke } from "../release/exact-package-smoke.mjs";
+import { loadValidatedReleasePlan, inspectInstalledRelease } from "../release/exact-release-plan.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -6,6 +9,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 interface PackageInstallSmokeReport {
+  readonly exactPackages?: ExactPackageSmoke;
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly command: string;
@@ -13,7 +17,9 @@ interface PackageInstallSmokeReport {
   readonly packageVersion: string | null;
   readonly tarballPath: string;
   readonly tarballSha256: string | null;
-  readonly packMode: "existing-release-artifact" | "fresh-current-checkout-pack";
+  readonly packMode: "existing-release-artifact" | "fresh-current-checkout-pack" | "validated-release-plan";
+  readonly releasePlan?: {path:string;sha256:string};
+  readonly installedIdentity?: unknown;
   readonly packCommand?: readonly string[];
   readonly tempProjectKind: "external-clean-npm-project";
   readonly installCommand: readonly string[];
@@ -36,14 +42,17 @@ export function runPackageInstallSmoke(
   options: { readonly tarballPath?: string; readonly freshPack?: boolean } = {}
 ): PackageInstallSmokeReport {
   const packageInfo = readPackageInfo(root);
-  const freshPack = options.freshPack === true;
+  const exactPlan = loadValidatedReleasePlan(root);
+  const freshPack = !exactPlan && options.freshPack === true;
+  let installedIdentity: unknown;
+  let exactPackages: ExactPackageSmoke | undefined;
   const packDirectory = join(root, freshPackDirectory);
   const packCommand = ["npm", "pack", "--pack-destination", packDirectory, "--silent"] as const;
   const tempProject = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
   const smokeCommand = ["node", "smoke.mjs"] as const;
   const viteBuildCommand = [join(root, "node_modules", ".bin", process.platform === "win32" ? "vite.cmd" : "vite"), "build", "--logLevel", "warn"] as const;
   const violations: string[] = [];
-  let tarballPath = options.tarballPath ?? defaultTarballPath;
+  let tarballPath = exactPlan?.packages.find(p=>p.name===packageInfo.name)?.tarball ?? options.tarballPath ?? defaultTarballPath;
   let tarballFullPath = join(root, tarballPath);
   let tarballSha256: string | null = null;
   let installStdout = "";
@@ -82,7 +91,7 @@ export function runPackageInstallSmoke(
       violations.push(`Tarball is missing: ${tarballPath}.`);
     }
 
-    const installCommand = ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath] as const;
+    const installCommand = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath])] as const;
 
     writeFileSync(join(tempProject, "package.json"), `${JSON.stringify({
       name: "a3d-external-install-smoke",
@@ -107,6 +116,9 @@ export function runPackageInstallSmoke(
       }
     }
 
+    if (violations.length === 0 && exactPlan) {
+      try { installedIdentity = inspectInstalledRelease(root,tempProject,exactPlan); } catch(error) { violations.push(String(error)); }
+    }
     if (violations.length === 0 && packageInfo.name) {
       const installedPackage = join(tempProject, "node_modules", ...packageInfo.name.split("/"));
       const unresolvedImports = findUnresolvedInternalAuraImports(installedPackage);
@@ -149,7 +161,12 @@ export function runPackageInstallSmoke(
     rmSync(tempProject, { recursive: true, force: true });
   }
 
+  if (exactPlan) {
+    try { exactPackages=runExactPackageSmoke(root,exactPlan,process.env.A3D_REGISTRY_INSTALL === "1" ? {registry:true,retainDir:"tests/reports/registry-consumer"} : {}); if(!exactPackages.ok) violations.push("Exact29package smoke failed; inspect exactPackages."); }
+    catch(error) { violations.push(`Exact29package smoke failed: ${formatExecError(error)}`); }
+  }
   return {
+    exactPackages,
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
     command: freshPack ? "pnpm verify:package-install-smoke:fresh" : "pnpm verify:package-install-smoke",
@@ -157,7 +174,9 @@ export function runPackageInstallSmoke(
     packageVersion: packageInfo.version,
     tarballPath,
     tarballSha256,
-    packMode: freshPack ? "fresh-current-checkout-pack" : "existing-release-artifact",
+    packMode: exactPlan ? "validated-release-plan" : freshPack ? "fresh-current-checkout-pack" : "existing-release-artifact",
+    releasePlan: exactPlan?.reference,
+    installedIdentity,
     packCommand: freshPack ? packCommand : undefined,
     tempProjectKind: "external-clean-npm-project",
     installCommand: ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath],

@@ -1,3 +1,4 @@
+import type {} from "./audio-browser-harness";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
@@ -55,27 +56,3 @@ test.describe("audio browser runtime", () => {
     expect(result?.footstepFallback).toBe("step-default");
   });
 });
-
-declare global {
-  interface Window {
-    __AURA3D_AUDIO_BROWSER_TEST__?: {
-      readonly status: "waiting" | "ready" | "error";
-      readonly contextState: string;
-      readonly clipDuration: number;
-      readonly sourceStateAfterPlay: string;
-      readonly sourceStateAfterPause?: string;
-      readonly sourceStateAfterResume?: string;
-      readonly sourceStateAfterStop: string;
-      readonly repeatedMounts?: number;
-      readonly positionalConnected?: boolean;
-      readonly positionalAttenuation?: number;
-      readonly positionalDopplerAboveOne?: boolean;
-      readonly positionalOcclusion?: number;
-      readonly mixerDuckedMusic?: number;
-      readonly mixerRestoredMusic?: number;
-      readonly footstepFirst?: string | null;
-      readonly footstepFallback?: string | null;
-      readonly error?: string;
-    };
-  }
-}

@@ -841,8 +841,9 @@ Object.defineProperty(siegeWindow, "__AURA3D_COMPOSITION_PROBE__", {
         targetSize: 0.32
       };
     },
-    settleSubjectPose: () => {
+    settleSubjectPose: async () => {
       app.pause();
+      await app.ready();
       // Keep the already-mounted opening camera for the paired visible/hidden
       // captures. Rebuilding the entire typed course here used to enqueue a
       // second asynchronous GLB scene: the visible frame was still the old
@@ -857,14 +858,19 @@ Object.defineProperty(siegeWindow, "__AURA3D_COMPOSITION_PROBE__", {
       resolveHandles();
       syncVisuals();
       dynamicHandles.get("golf-ball")?.setScale(visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);
+      // Resolve only after the mutated subject has been submitted for capture.
       app.step(0);
     },
-    setSubjectSuppressed: (suppressed: boolean) => {
+    setSubjectSuppressed: async (suppressed: boolean) => {
       app.pause();
+      await app.ready();
       const ball = dynamicHandles.get("golf-ball");
       ball?.setVisible(true);
       ball?.setScale(suppressed ? 0.0001 : visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);
-      app.step(0);
+      // The hidden state needs a presented frame for the pixel diff. Restoring
+      // visibility only restores route state; no later assertion consumes a
+      // third frame, so avoid submitting one to a software renderer.
+      if (suppressed) app.step(0);
     }
   },
   configurable: true

@@ -33,7 +33,7 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   readonly backendSelection: ProductionRuntimeRendererBackendSelection;
 
   private constructor(
-    private readonly renderer: ProductionProductionRenderer,
+    private readonly renderer: ProductionWebGL2Renderer | ProductionWebGPURenderer,
     backend: ProductionRendererBackend,
     backendSelection: ProductionRuntimeRendererBackendSelection
   ) {
@@ -134,7 +134,7 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   async renderInteractiveFrameAsync(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
     const result = this.backend === "webgpu"
       ? await (this.renderer as ProductionWebGPURenderer).renderFrameAsync(input)
-      : this.renderInteractiveFrame(input);
+      : await (this.renderer as ProductionWebGL2Renderer).renderFrameAsync(input);
     return withoutReadbackFeatures(result);
   }
 
@@ -157,8 +157,17 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
     return this.renderer.getFeatures();
   }
 
+  /** Resources actually selected by the latest submitted shadow pass. */
+  getShadowEvidence(): Readonly<Record<string, unknown>> | null {
+    return this.renderer.getShadowEvidence();
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     return this.renderer.getDiagnostics();
+  }
+
+  resetTemporalHistory(reason = "explicit-reset"): void {
+    this.renderer.resetTemporalHistory(reason);
   }
 
   dispose(): void {

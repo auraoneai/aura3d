@@ -14,3 +14,6 @@ minimumReleaseAgeExclude:
   - '@aura3d/asset-index@1.0.8'
   - '@aura3d/asset-index@1.0.9'
   - '@dimforge/rapier3d-compat@0.20.0'
+
+overrides:
+  "@loaders.gl/textures>ktx-parse": "1.0.1"

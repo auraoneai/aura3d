@@ -1,3 +1,4 @@
+import { renderBundleSizeMarkdown } from "./markdown.mjs";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -136,8 +137,16 @@ function createAliasPlugin(external: readonly string[]): Plugin {
       ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
       ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
       ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
+      ["@aura3d/rendering/lean-core-runtime", "./packages/rendering/src/lean-core-runtime.ts"],
+      ["@aura3d/rendering/extension-scalar-atlas", "./packages/rendering/src/extension-scalar-atlas.ts"],
+      ["@aura3d/rendering/reflection-surfaces", "./packages/rendering/src/reflection-surfaces.ts"],
       ["@aura3d/assets", "./packages/assets/src/browser-index.ts"],
+      ["@aura3d/assets/browser", "./packages/assets/src/browser-index.ts"],
       ["@aura3d/assets/gltf-runtime", "./packages/assets/src/gltf-runtime.ts"],
+      ["@aura3d/audio", "./packages/audio/src/index.ts"],
+      ["@aura3d/input", "./packages/input/src/index.ts"],
+      ["@aura3d/scripting", "./packages/scripting/src/index.ts"],
+      ["@aura3d/editor-runtime", "./packages/editor-runtime/src/index.ts"],
       ["@aura3d/scene", "./packages/scene/src/index.ts"],
       ["@aura3d/scene/math", "./packages/scene/src/MathTypes.ts"],
       ["@aura3d/core", "./packages/core/src/index.ts"],
@@ -152,6 +161,7 @@ function createAliasPlugin(external: readonly string[]): Plugin {
       ["@aura3d/navigation-recast", "./packages/navigation-recast/src/index.ts"],
       ["@aura3d/math", "./packages/math/src/index.ts"],
       ["@aura3d/physics", "./packages/physics/src/index.ts"],
+      ["@aura3d/physics-rapier", "./packages/physics-rapier/src/index.ts"],
       /*
        * WS-2.2 subpaths. These exist so a lean import does not drag a solver or a WebGPU device onto
        * the critical path; a resolver that does not know them measures a build that no longer exists.
@@ -341,7 +351,12 @@ function concatenate(parts: readonly Uint8Array[], separator = new Uint8Array())
 
 function runSizeLimit(path: string, budget: number): { readonly passed: boolean; readonly size: number } {
   try {
-    const output = execFileSync("pnpm", ["exec", "size-limit", path, "--limit", `${budget} B`, "--json"], {
+    const sizeLimitExecutable = resolve(
+      "node_modules",
+      ".bin",
+      process.platform === "win32" ? "size-limit.cmd" : "size-limit"
+    );
+    const output = execFileSync(sizeLimitExecutable, [path, "--limit", `${budget} B`, "--json"], {
       encoding: "utf8",
       stdio: "pipe"
     });
@@ -359,60 +374,5 @@ function runSizeLimit(path: string, budget: number): { readonly passed: boolean;
 }
 
 function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
-  const lines = [
-    "# Aura3D Bundle Sizes",
-    "",
-    "Generated reproducibly by `pnpm check:bundle-size` from the current source and `tests/reports/bundle-size.json`.",
-    "",
-    "Measurement method: esbuild ESM splitting, minify, statically reachable critical-path",
-    "chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.",
-    "",
-    "| Target | JavaScript Bytes | Gzip Bytes | Budget | Result |",
-    "|---|---:|---:|---:|---:|",
-    ...results.map((result) => [
-      `\`${result.label}\``,
-      formatBytes(result.jsBytes),
-      formatBytes(result.gzipBytes),
-      formatBytes(result.budget),
-      result.enforced
-        ? result.gzipBytes <= result.budget && result.sizeLimitPassed ? "pass" : "fail"
-        : "informational"
-    ].join(" | ")).map((row) => `| ${row} |`),
-    "",
-    "The authoritative machine-readable report is",
-    "`tests/reports/bundle-size.json`.",
-    "",
-    /*
-     * This standing note is emitted by the generator, not hand-maintained in the file.
-     *
-     * `BUNDLE_SIZES.md` is fully overwritten on every run, so the note previously lived only in the
-     * committed markdown and was silently deleted the first time anyone regenerated the report —
-     * which is exactly what happened here. A policy that disappears when a tool runs is not a
-     * policy. Emitting it keeps it true for every future regeneration.
-     */
-    "## Production Renderer Bridge Watch",
-    "",
-    "Any PR that routes the public safe API through production rendering, skinned animation, PBR",
-    "material parity, shadows, postprocess, or WebGPU paths must regenerate this report and call out",
-    "the bundle delta explicitly. Do not hide renderer-capability work inside showcase patches",
-    "without a bundle-size review.",
-    "",
-    "## Known Overrun",
-    "",
-    "The `compatibility-root-observation` target retains the compatibility-heavy root as an",
-    "informational measurement rather than pretending its bytes disappeared. WS-2.2 explicitly",
-    "keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies",
-    "to `@aura3d/lean`. New product and game apps use `@aura3d/lean/product` or `@aura3d/lean/game`. Those",
-    "entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,",
-    "including a real GLB loader and the solver-free deterministic arcade runtime. Physical simulation",
-    "remains an explicit optional-package workload rather than entering the game starter critical path.",
-    "This report keeps the separate",
-    "root/template debt visible. Do not raise either set of budgets to manufacture a pass.",
-    ""
-  ];
-  writeFileSync("BUNDLE_SIZES.md", lines.join("\n"));
-}
-
-function formatBytes(value: number): string {
-  return new Intl.NumberFormat("en-US").format(value);
+  writeFileSync("BUNDLE_SIZES.md", renderBundleSizeMarkdown(results));
 }

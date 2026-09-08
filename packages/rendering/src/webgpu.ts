@@ -31,3 +31,35 @@ export type {
   WebGPUQueueLike,
   WebGPUSamplerDescriptorLike
 } from "./WebGPUDevice";
+
+export { normalizeWebGPUTemporalOptions, WEBGPU_TAA_FRAGMENT, WEBGPU_TAA_OUTPUT_FRAGMENT } from "./webgpu/WebGPUTemporal";
+export type { WebGPUTemporalInputs } from "./webgpu/WebGPUTemporal";
+
+export {
+  defaultWebGPUBloomWeights,
+  normalizeWebGPUColorGradeOptions,
+  normalizeWebGPUBloomOptions,
+  normalizeWebGPUBloomQuality,
+  webgpuBloomCompositeFragment,
+  webgpuBlurFragment,
+  webgpuBrightExtractFragment,
+  webgpuColorGradeFragment,
+  webgpuFxaaFragment,
+  webgpuSoftKneeWeight,
+  WEBGPU_BLOOM_MAX_MIPS,
+  WEBGPU_BLOOM_QUALITY_TABLE,
+  WEBGPU_POST_VERTEX_WGSL,
+} from "./webgpu/WebGPUPostShaders";
+export type {
+  NormalizedWebGPUColorGrade,
+  NormalizedWebGPUBloom,
+  WebGPUBloomDiagnostics,
+  WebGPUBloomOptions,
+  WebGPUBloomQuality,
+  WebGPUColorGradeOptions,
+  WebGPUCompositeParams,
+  WebGPUFxaaOptions,
+} from "./webgpu/WebGPUPostShaders";
+
+export { WebGPUPipelineCache } from "./webgpu/WebGPUPipelineCache";
+export { Texture } from "./Texture";

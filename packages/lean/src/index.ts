@@ -1,4 +1,4 @@
-import { LeanProductionRenderer } from "@aura3d/rendering/lean-runtime";
+import { LeanProductionRenderer } from "@aura3d/rendering/lean-core-runtime";
 import {
   createAuraAppWithRenderer,
   type AuraLeanApp,

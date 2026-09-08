@@ -11,7 +11,7 @@ export class MapControls extends OrbitControls {
     // Unlike OrbitControls' deliberately retained detached compatibility mode,
     // MapControls always delegates. A no-camera caller receives a state-backed
     // camera so truck/orbit/dolly all use the same spherical engine.
-    super(camera ?? { position: new ControlVector3(0, 0, 5) }, options);
+    super(camera ?? { position: new ControlVector3(0, 0, 5) }, { ...options, screenSpacePanning: false, oneFingerAction: "pan" });
     this.hasExternalCamera = camera !== undefined;
   }
 
@@ -19,7 +19,7 @@ export class MapControls extends OrbitControls {
    * Apply MapControls mouse semantics through the delegated orbit engine:
    * left pans, right rotates, middle dollies, and the wheel dollies.
    */
-  override applyInput(snapshot: InputSnapshot): void {
+  override applyInput(snapshot: InputSnapshot, deltaSeconds = 1 / 60): void {
     const left = snapshot.button(0).down;
     const middle = snapshot.button(1).down;
     const right = snapshot.button(2).down;
@@ -35,7 +35,7 @@ export class MapControls extends OrbitControls {
         wheelY: snapshot.pointer.wheelY + (middle ? snapshot.pointer.deltaY : 0)
       },
       gamepads: snapshot.gamepads
-    }));
+    }), deltaSeconds);
   }
 
   /**

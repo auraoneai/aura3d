@@ -160,6 +160,12 @@ export interface AuraClashArenaProof {
    * still decaying.
    */
   readonly camera: {
+    readonly fovYRadians?: number;
+    readonly sharedRig?: {
+      readonly follow: { readonly kind: string; readonly position: readonly number[] };
+      readonly shake: { readonly trauma: number; readonly energy: number; readonly offset: readonly number[] };
+      readonly punch: { readonly active: boolean; readonly distanceOffset: number };
+    };
     /** Peak `hitStopRemaining` across both fighters this frame, in seconds. */
     readonly impactStrength: number;
     /** Normalised punch-in, 0 at rest and 1 at the 0.13s special-move hit-stop peak. */
@@ -229,7 +235,7 @@ export interface AuraClashArenaProof {
     readonly clipEventsFired: Readonly<Record<string, number>>;
     /** Crowd pool size — one instanced draw call regardless of this count. */
     readonly crowdInstanceCount: number;
-    readonly crowdInstancedDrawItems: 1;
+    readonly crowdInstancedDrawItems: number;
     /** True when either spring-joint sign is still swinging. */
     readonly signsSwinging: boolean;
     /** The ceremony phrase currently rendered in-scene, or null. */

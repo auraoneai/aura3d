@@ -41,11 +41,15 @@ digraph aura3d {
   "engine" -> "audio";
   "engine" -> "core";
   "engine" -> "ecs";
+  "engine" -> "editor-runtime";
+  "engine" -> "input";
   "engine" -> "lean";
+  "engine" -> "navigation-recast";
   "engine" -> "physics";
   "engine" -> "product-studio";
   "engine" -> "rendering";
   "engine" -> "scene";
+  "engine" -> "scripting";
   "engine" -> "workflows";
   "environments" [label="environments\ntier 3"];
   "environments" -> "rendering";

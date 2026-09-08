@@ -3827,6 +3827,13 @@ function createScene(
   const nodeWorldMatrices = computeGLTFNodeWorldMatrices(json);
   const nodeNameForIndex = createGLTFNodeNameResolver(json);
   const scene = new Scene();
+  // The scene container is not an authored node. A glTF bone named "root" must
+  // never also animate this container (which would apply root motion twice).
+  const authoredNames = new Set((json.nodes ?? []).map((_node, index) => nodeNameForIndex(index)));
+  let containerName = scene.root.name;
+  while (authoredNames.has(containerName)) containerName = `_${containerName}`;
+  scene.root.name = containerName;
+  scene.root.userData.gltfSceneContainer = true;
   const nodes = new Map<number, SceneNode>();
   const createNode = (index: number): SceneNode => {
     const source = json.nodes?.[index];
@@ -4211,15 +4218,18 @@ function spotPenumbra(innerConeAngle: number, outerConeAngle: number): number {
 
 function createGLTFNodeNameResolver(json: GLTFJson): (nodeIndex: number) => string {
   const bases = (json.nodes ?? []).map((node, index) => typeof node.name === "string" && node.name.trim().length > 0 ? node.name : `node-${index}`);
-  const totals = new Map<string, number>();
-  for (const base of bases) {
-    totals.set(base, (totals.get(base) ?? 0) + 1);
-  }
   const seen = new Map<string, number>();
+  const reserved = new Set(bases);
+  const assigned = new Set<string>();
   const names = bases.map((base) => {
-    const count = seen.get(base) ?? 0;
-    seen.set(base, count + 1);
-    return (totals.get(base) ?? 0) > 1 && count > 0 ? `${base}_${count}` : base;
+    let count = seen.get(base) ?? 0;
+    let name = base;
+    if (assigned.has(name)) {
+      do { count += 1; name = `${base}_${count}`; } while (reserved.has(name) || assigned.has(name));
+    }
+    seen.set(base, count);
+    assigned.add(name);
+    return name;
   });
   return (nodeIndex) => {
     const name = names[nodeIndex];

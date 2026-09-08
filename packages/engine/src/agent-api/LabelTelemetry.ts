@@ -29,7 +29,7 @@ import type { ProjectedLabel } from "./WorldLabelRenderer.js";
  * result in diagnostics; route-health enforces it per route.
  */
 
-/** Collision-avoidance role: HUD copy never collides, ticks are dense, annotations steer. */
+/** Collision role: HUD reserves fixed positions, ticks are dense, annotations steer. */
 export type LabelTelemetryRole = "hud" | "annotation" | "tick";
 
 export function labelTelemetryRoleFor(label: AuraLabelNode["label"]): LabelTelemetryRole {
@@ -55,6 +55,8 @@ export interface LabelTelemetry {
   readonly behindCamera: number;
   readonly clamped: number;
   readonly occludedDimmed: number;
+  readonly occludedHidden?: number;
+  readonly suppressed?: number;
   readonly byRole: Readonly<Record<LabelTelemetryRole, LabelTelemetryByRole>>;
   /**
    * Fail-closed gate signal for route-health: a route that declares labels
@@ -84,6 +86,8 @@ export function collectLabelTelemetry(
   let behindCamera = 0;
   let clamped = 0;
   let occludedDimmed = 0;
+  let occludedHidden = 0;
+  let suppressed = 0;
   let placedCount = 0;
   nodes.forEach((node, index) => {
     const role = labelTelemetryRoleFor(node.label);
@@ -98,6 +102,8 @@ export function collectLabelTelemetry(
       if (result.clamped) clamped += 1;
       if (result.occluded && result.occlusionOpacity < 1) occludedDimmed += 1;
     } else {
+      if (result?.occluded) occludedHidden += 1;
+      if (result?.suppressed) suppressed += 1;
       byRole[role] = { ...byRole[role], offscreen: byRole[role].offscreen + 1 };
       if (result?.behindCamera === true) behindCamera += 1;
     }
@@ -111,6 +117,8 @@ export function collectLabelTelemetry(
     behindCamera,
     clamped,
     occludedDimmed,
+    occludedHidden,
+    suppressed,
     byRole,
     placesLabels: declared === 0 || placedCount > 0
   };
@@ -122,13 +130,17 @@ export interface LabelCollisionTuning {
   readonly minGapPx: number;
   /** Whether collision avoidance runs for this role at all. */
   readonly avoidanceEnabled: boolean;
+  /** Larger priorities reserve their rectangle first; depth then id break ties. */
+  readonly priority?: number;
+  /** Maximum vertical movement away from the requested position, in CSS pixels. */
+  readonly maxDisplacementPx?: number;
   readonly note: string;
 }
 
 /**
  * Per-role collision-avoidance tuning (N4 task 2).
  *
- * HUD copy is screen-anchored and never collides; axis ticks are dense and get
+ * HUD copy reserves its screen anchor without displacement; axis ticks are dense and get
  * the tightest gap; annotations keep the default gap so leaders stay readable.
  */
 export function tuneLabelCollision(role: LabelTelemetryRole): LabelCollisionTuning {
@@ -137,7 +149,9 @@ export function tuneLabelCollision(role: LabelTelemetryRole): LabelCollisionTuni
       role,
       minGapPx: 0,
       avoidanceEnabled: false,
-      note: "HUD labels are screen-anchored; collision avoidance is disabled so copy never moves."
+      priority: 3,
+      maxDisplacementPx: 0,
+      note: "HUD labels reserve fixed screen anchors first; conflicting later HUD copy is suppressed rather than moved."
     };
   }
   if (role === "tick") {
@@ -145,14 +159,18 @@ export function tuneLabelCollision(role: LabelTelemetryRole): LabelCollisionTuni
       role,
       minGapPx: 2,
       avoidanceEnabled: true,
-      note: "Axis ticks are dense by design; tight gap with front-to-back priority."
+      priority: 1,
+      maxDisplacementPx: 48,
+      note: "Axis ticks use a 2px gap and at most 48px displacement, after HUD and annotations; depth then id break ties."
     };
   }
   return {
     role,
     minGapPx: 4,
     avoidanceEnabled: true,
-    note: "Annotations keep the default gap so leader lines stay attached to their subject."
+    priority: 2,
+    maxDisplacementPx: 160,
+    note: "Annotations use a 4px pairwise gap and at most 160px displacement, after HUD and before ticks."
   };
 }
 

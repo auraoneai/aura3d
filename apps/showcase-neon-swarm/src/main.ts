@@ -128,8 +128,8 @@ declare global {
         readonly rotation: readonly [number, number, number];
         readonly targetSize: number;
       };
-      setSubjectSuppressed(suppressed: boolean): void;
-      settleSubjectPose(): void;
+      setSubjectSuppressed(suppressed: boolean): Promise<void>;
+      settleSubjectPose(): Promise<void>;
     };
   }
 }
@@ -500,24 +500,19 @@ const courierPulseEmitterNode = primitives.box({
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
 
-// A compact authored carbine gives the courier's combat direction a readable
-// silhouette in the exact finale still. It is an attachment to the typed
-// courier (not a primitive-only hero or weapon claim): the live pulse query
-// remains the source of damage truth, while this barrel, cyan receiver, and
-// event-driven muzzle marker show which way the player is firing.
-const courierPulseRifleNode = primitives.box({
-  name: "courier pulse carbine",
-  size: [0.18, 0.16, 0.92],
-  material: material.pbr({
-    name: "courier pulse carbine shell",
-    color: "#123246",
-    roughness: 0.28,
-    metallic: 0.72,
-    emissive: "#2bd7e7",
-    emissiveIntensity: 0.34
-  })
+// The courier carries the existing hash-bound CC0 Bolt Repeater asset from
+// the shared catalog. Its +Z authored barrel follows the same aim transform;
+// pulse damage remains simulation-owned. The small core and muzzle markers
+// below are event/readability accents on this typed weapon, not its body.
+const courierPulseRifleNode = model(assets.mechWeaponA, {
+  name: "courier pulse carbine — typed Bolt Repeater",
+  role: "setDressing",
+  scaleMode: "fit",
+  targetMaxDimension: 0.92,
+  castShadow: true,
+  receiveShadow: true
 }).runtime(game.runtimeNode("neon-courier-pulse-carbine", {
-  tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
+  tags: ["typed-weapon", "primary-actor-attachment", "renderer-owned", "non-colliding"]
 }));
 const courierPulseRifleCoreNode = primitives.box({
   name: "courier pulse carbine core",
@@ -1981,13 +1976,18 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         targetSize: 2.2
       };
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
+      await app.ready();
       compositionSubjectSuppressed = suppressed;
       app.nodes.get("neon-player")?.setVisible(!suppressed);
       app.nodes.get("neon-player-burst-radius")?.setVisible(!suppressed);
       app.nodes.get("neon-player-aim-vector")?.setVisible(!suppressed);
+      await app.stepAsync(0);
     },
-    settleSubjectPose() {
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
       paused = true;
       player.x = 0;
       player.z = 3;
@@ -2001,6 +2001,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         : [0.94, 0.98, 0.94] as [number, number, number];
       node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale(neutralScale);
       node?.setVisible(!compositionSubjectSuppressed);
+      await app.stepAsync(0);
     }
   },
   configurable: true

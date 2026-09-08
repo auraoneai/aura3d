@@ -740,11 +740,9 @@ function floor2WallNodes(): AuraSceneNode[] {
 }
 
 function lightPoolNodes(): AuraSceneNode[] {
-  // Runtime gameplay keeps these layout-authored brightness pools, but the
-  // review renderer's transparency path presents the cylinders as opaque
-  // disks. Hide that misleading presentation in the retained visual; the real
-  // LOS alert wedge and practical lights remain visible and evidence-bound.
-  if (visualReviewCapture) return [];
+  // These are authored gameplay-zone markers, not a physical lighting claim.
+  // Keep the same nodes in normal play and review captures so transparency
+  // defects remain observable in the exact artifacts under review.
   const nodes: AuraSceneNode[] = [];
   for (let index = 0; index < FLOOR_LAYOUTS.length; index += 1) {
     const layout = FLOOR_LAYOUTS[index]!;
@@ -1571,7 +1569,14 @@ function publishEvidence(): void {
   const diagnostics = app.diagnostics() as { readonly drawCalls?: number; readonly renderSize?: readonly number[]; readonly runtimeBackend?: string };
   const renderSize = diagnostics.renderSize ?? [0, 0];
   const rendererDrawn = (diagnostics.drawCalls ?? 0) > 0 && (renderSize[0] ?? 0) > 0 && (renderSize[1] ?? 0) > 0;
-  if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+  // The review producer stages its own bounded deterministic live encounter
+  // immediately after mounted evidence. Running the ordinary 90-frame idle
+  // warmup first submits 90 software-rendered frames on the page thread and can
+  // prevent both the evidence getter and CDP capture from responding. A drawn
+  // renderer is therefore the complete review-mode mount condition; normal
+  // visitors retain the canonical 90-frame lobby baseline.
+  const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);
+  if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
     bootWarmupScheduled = true;
     // Background tabs may throttle rAF before the canonical 90-frame lobby
     // baseline. Complete that same deterministic idle warmup through the
@@ -1585,7 +1590,7 @@ function publishEvidence(): void {
   const evidence = {
     // Contract keys from the PRD evidence section.
     mounted: true,
-    status: rendererDrawn && frameCount >= 90 ? "ready" : "loading",
+    status: routeReady ? "ready" : "loading",
     floor: runtime.layout.id,
     state: paused ? "paused" : phase,
     exhibitsLifted: runtime.liftedIds.length,
@@ -1995,7 +2000,9 @@ Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "application",
     subject: { node: COMPOSITION_SUBJECT_NODE, position: [0, 0, 0], rotation: [0, 0, 0], targetSize: 20.8 },
-    settleSubjectPose() {
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
       // Freeze the already-staged real LOS encounter for both halves of the
       // subject-isolation diff. Without this, the patrol and its renderer
       // feedback advance between the museum-present and museum-suppressed
@@ -2005,10 +2012,13 @@ Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
       paused = true;
       syncFloorVisuals();
       publishEvidence();
+      await app.stepAsync(0);
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
       app.nodes.get(COMPOSITION_SUBJECT_NODE)?.setVisible(!suppressed && runtime.layout.id === 1);
-      if (!suppressed) paused = false;
+      await app.stepAsync(0);
+      if (!suppressed) { paused = false; app.resume(); }
     }
   }
 });

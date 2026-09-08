@@ -40,6 +40,8 @@ export interface WebGPUShowcaseRenderResult {
 }
 
 export interface WebGPUShowcaseScene {
+  /** Bounded overlapping GPU submissions; results still count only after completion. */
+  readonly maxFramesInFlight?: 1 | 2 | 3;
   readonly requestedBackend?: "webgpu" | "auto";
   readonly selectedBackend?: "webgpu" | "webgl2";
   readonly adapterName?: string;
@@ -67,6 +69,8 @@ export interface WebGPUShowcaseConfig {
 declare global {
   interface Window {
     __a3dWowRuntime?: WebGPUShowcaseRuntime;
+    /** Route-owned performance captures can suppress telemetry allocation without changing rendering. */
+    __a3dShowcaseTelemetryPaused?: boolean;
   }
 }
 
@@ -99,6 +103,9 @@ export async function startWebGPUShowcase(config: WebGPUShowcaseConfig): Promise
   const startedAt = performance.now();
 
   const publish = (status: WebGPUShowcaseStatus, message?: string, force = false): void => {
+    // Timed native measurements retain their previously published route identity
+    // while avoiding per-completion object/HUD allocation on the measured thread.
+    if (!force && window.__a3dShowcaseTelemetryPaused) return;
     const runtime: WebGPUShowcaseRuntime = {
       appId: config.appId,
       status,
@@ -146,17 +153,19 @@ export async function startWebGPUShowcase(config: WebGPUShowcaseConfig): Promise
     return;
   }
 
+  let pendingResize:{width:number;height:number}|undefined;
   const resizeObserver = new ResizeObserver(() => {
-    const nextSize = syncCanvasRenderSize(canvas);
+    const nextSize = syncCanvasRenderSize(canvas, false);
     if (nextSize.width === renderSize.width && nextSize.height === renderSize.height) return;
-    renderSize = nextSize;
-    scene?.resize?.(renderSize.width, renderSize.height);
+    pendingResize=nextSize;
     publish(frameCount > 0 ? "running" : "ready", undefined, true);
   });
   resizeObserver.observe(canvas);
 
+  let stopped=false,rafHandle=0,backpressureFrames=0;
+  const outstanding=new Set<Promise<void>>();
   const frame = async (now: number): Promise<void> => {
-    if (!scene) return;
+    if (!scene||stopped) return;
     const before = performance.now();
     try {
       const result = await scene.render((now - startedAt) / 1000, renderSize);
@@ -176,20 +185,38 @@ export async function startWebGPUShowcase(config: WebGPUShowcaseConfig): Promise
       smoothedFrameMs = smoothedFrameMs === 0 ? lastFrameMs : smoothedFrameMs * 0.86 + lastFrameMs * 0.14;
       publish(frameCount > 1 ? "running" : "ready", undefined, frameCount <= 2);
     } catch (error) {
+      stopped=true;
       publish(isUnsupportedWebGPUError(error) ? "unsupported" : "error", formatError(error), true);
       return;
     }
-    requestAnimationFrame((next) => void frame(next));
   };
-  requestAnimationFrame((now) => void frame(now));
+  const tick=(now:number)=>{
+    if(stopped||!scene)return;
+    rafHandle=requestAnimationFrame(tick);
+    // Resize/control transitions drain the bounded queue before mutating storage.
+    if(pendingResize){
+      if(outstanding.size)return;
+      renderSize=pendingResize;pendingResize=undefined;
+      canvas.width=renderSize.width;canvas.height=renderSize.height;
+      scene.resize?.(renderSize.width,renderSize.height);
+    }
+    const limit=scene.maxFramesInFlight===3?3:scene.maxFramesInFlight===2?2:1;
+    if(outstanding.size>=limit){backpressureFrames++;return;}
+    const completion=frame(now);
+    outstanding.add(completion);
+    void completion.finally(()=>outstanding.delete(completion));
+    (window as unknown as Record<string,unknown>).__a3dShowcaseSubmissionQueue={limit,inFlight:outstanding.size,backpressureFrames};
+  };
+  rafHandle=requestAnimationFrame(tick);
 
   window.addEventListener("pagehide", () => {
-    scene?.dispose?.();
+    stopped=true;cancelAnimationFrame(rafHandle);
+    void Promise.allSettled([...outstanding]).then(()=>scene?.dispose?.());
     resizeObserver.disconnect();
   }, { once: true });
 }
 
-function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: number; readonly height: number } {
+function syncCanvasRenderSize(canvas: HTMLCanvasElement, apply=true): { readonly width: number; readonly height: number } {
   const rect = canvas.getBoundingClientRect();
   const cssWidth = rect.width > 0 ? rect.width : FALLBACK_WIDTH;
   const cssHeight = rect.height > 0 ? rect.height : FALLBACK_HEIGHT;
@@ -198,10 +225,15 @@ function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: numb
   const edgeScale = Math.min(1, quality.maxRenderEdge / Math.max(cssWidth * pixelRatio, cssHeight * pixelRatio));
   const width = Math.max(1, Math.round(cssWidth * pixelRatio * edgeScale));
   const height = Math.max(1, Math.round(cssHeight * pixelRatio * edgeScale));
-  if (canvas.width !== width) canvas.width = width;
-  if (canvas.height !== height) canvas.height = height;
+  if (apply && canvas.width !== width) canvas.width = width;
+  if (apply && canvas.height !== height) canvas.height = height;
   return { width, height };
 }
+
+// Retain the HUD tree across telemetry refreshes: parsing and replacing every
+// label every 250ms adds avoidable layout work to the same browser frame as GPU
+// submission. Only changed values need DOM writes while its schema is stable.
+const hudViews = new WeakMap<HTMLElement, { signature: string; section: Element; cells: HTMLElement[]; values: string[] }>();
 
 function renderUi(root: HTMLElement, runtime: WebGPUShowcaseRuntime, labels: WebGPUShowcaseConfig["labels"]): void {
   const stateClass = runtime.status === "error" || runtime.status === "unsupported" ? "is-error" : "";
@@ -223,18 +255,32 @@ function renderUi(root: HTMLElement, runtime: WebGPUShowcaseRuntime, labels: Web
     ...(runtime.comparison ? { Comparison: runtime.comparison } : {}),
     ...(runtime.fields ?? {})
   };
+  const entries = Object.entries(statusFields);
+  const signature = JSON.stringify([stateClass, runtime.status, runtime.title, runtime.subtitle,
+    runtime.unsupportedReason, runtime.error, entries.map(([key]) => key)]);
+  const current = hudViews.get(root);
+  const values = entries.map(([, value]) => String(value));
+  if (current?.signature === signature && current.section === root.firstElementChild) {
+    values.forEach((value, index) => {
+      if (current.values[index] !== value) current.cells[index]!.textContent = value;
+    });
+    current.values = values;
+    return;
+  }
   root.innerHTML = `
     <section class="hud ${stateClass}">
       <span class="state ${stateClass}">${escapeHtml(runtime.status)}</span>
       <h1>${escapeHtml(runtime.title)}</h1>
       <p>${escapeHtml(runtime.subtitle)}</p>
       <dl>
-        ${Object.entries(statusFields).map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}
+        ${entries.map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}
       </dl>
       ${runtime.unsupportedReason ? `<pre>${escapeHtml(runtime.unsupportedReason)}</pre>` : ""}
       ${runtime.error ? `<pre>${escapeHtml(runtime.error)}</pre>` : ""}
     </section>
   `;
+  hudViews.set(root, { signature, section: root.firstElementChild!,
+    cells: Array.from(root.querySelectorAll<HTMLElement>("dl dd")), values });
 }
 
 function isUnsupportedWebGPUError(error: unknown): boolean {

@@ -1,22 +1,5 @@
-/**
- * muse3jsparity-PRD PART T box T3b — assertFrameGraphResourceFlow.
- *
- * Source-verified basis (2026-09-04): the six production passes
- * (`packages/rendering/src/production-runtime/passes/`) own real logic
- * (validated options, truthful reads/writes, resource validation, context
- * validation, execution bookkeeping) and are barrel-exported from
- * `packages/rendering/src/production-runtime/index.ts:113-120`, re-surfaced
- * at `@aura3d/engine` `./rendering/production-runtime`. Canonical order and
- * the reads-before-written check live in `passes/FramegraphTopology.ts`
- * (`validatePassOrder`, `validatePassResourceFlow`), proven by
- * `tests/unit/rendering/framegraph-passes-t3.test.ts`.
- *
- * This assert is the named T3 gate "built for real": it takes pass records
- * structurally (no package import, so tools never deep-import owned source)
- * and enforces the full contract — canonical order, reads-before-written,
- * every non-terminal write consumed downstream, unique pass ids. Strictly
- * stronger than either topology validator alone.
- */
+/** Static topology diagnostics only. Executed native resource flow is proven separately by
+ * R06 unit/device assertions and browser pixels; metadata alone is never rendering proof. */
 
 export interface FlowPassRecord {
   readonly id: string;
@@ -33,7 +16,7 @@ export interface FrameGraphFlowOptions {
   readonly externalPrefixes?: readonly string[];
 }
 
-const DEFAULT_EXTERNAL_PREFIXES = ["scene.", "environment.", "shadow."] as const;
+const DEFAULT_EXTERNAL_RESOURCES = ["scene.geometry", "scene.casters", "shadow.maps", "environment.sky", "environment.lighting"] as const;
 const DEFAULT_TERMINALS = ["ldr.output"] as const;
 
 function isExternal(resource: string, prefixes: readonly string[]): boolean {
@@ -48,7 +31,7 @@ export function findFrameGraphResourceBreaks(
   const breaks: string[] = [];
   const order = options.order;
   const terminals = new Set(options.terminals ?? DEFAULT_TERMINALS);
-  const prefixes = options.externalPrefixes ?? DEFAULT_EXTERNAL_PREFIXES;
+  const prefixes = options.externalPrefixes;
 
   const ids = passes.map((pass) => pass.id);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -80,18 +63,16 @@ export function findFrameGraphResourceBreaks(
   const produced = new Set<string>();
   for (const pass of passes) {
     for (const resource of pass.reads) {
-      if (!produced.has(resource) && !isExternal(resource, prefixes)) {
+      if (!produced.has(resource) && !(prefixes ? isExternal(resource, prefixes) : DEFAULT_EXTERNAL_RESOURCES.some((name) => name === resource))) {
         breaks.push(`${pass.id} reads unwritten resource: ${resource}.`);
       }
     }
     for (const resource of pass.writes) produced.add(resource);
   }
 
-  const readDownstream = new Set<string>();
-  for (const pass of passes) {
-    for (const resource of pass.reads) readDownstream.add(resource);
-  }
-  for (const pass of passes) {
+  for (let index = 0; index < passes.length; index += 1) {
+    const pass = passes[index]!;
+    const readDownstream = new Set(passes.slice(index + 1).flatMap((downstream) => [...downstream.reads]));
     for (const resource of pass.writes) {
       if (!terminals.has(resource) && !readDownstream.has(resource)) {
         breaks.push(`${pass.id} writes ${resource} that no downstream pass reads.`);

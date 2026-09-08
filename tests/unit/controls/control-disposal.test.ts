@@ -313,11 +313,17 @@ describe("F1 control disposal", () => {
   it("InputSystem removes every DOM listener it adds on dispose", () => {
     const added = new Map<string, number>();
     const removed = new Map<string, number>();
+    const active = new Map<string, Set<EventListener>>();
     const target = {
-      addEventListener(type: string, _listener: EventListener): void {
+      addEventListener(type: string, listener: EventListener): void {
         added.set(type, (added.get(type) ?? 0) + 1);
+        const listeners = active.get(type) ?? new Set<EventListener>();
+        listeners.add(listener);
+        active.set(type, listeners);
       },
-      removeEventListener(type: string, _listener: EventListener): void {
+      removeEventListener(type: string, listener: EventListener): void {
+        // DOM removal requires the same callback, not merely the same event type.
+        expect(active.get(type)?.delete(listener)).toBe(true);
         removed.set(type, (removed.get(type) ?? 0) + 1);
       }
     };
@@ -328,6 +334,9 @@ describe("F1 control disposal", () => {
     for (const [type, count] of added) {
       expect(removed.get(type)).toBe(count);
     }
+    expect([...active.values()].every(listeners => listeners.size === 0)).toBe(true);
+    const removalsAfterDispose = [...removed.entries()];
     expect(() => system.dispose()).not.toThrow();
+    expect([...removed.entries()]).toEqual(removalsAfterDispose);
   });
 });

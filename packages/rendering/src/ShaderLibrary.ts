@@ -30,6 +30,9 @@ import {
   DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME,
   DEFAULT_SKINNED_UNLIT_SHADER_MARKER,
   DEFAULT_SKINNED_UNLIT_SHADER_NAME,
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT,
+  DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
@@ -227,15 +230,6 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -268,9 +262,6 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   vec4 rect = u_pointShadowFaceRects[faceIndex];
   vec2 uv = rect.xy + localUv * rect.zw;
   float normalDotLight = clamp(abs(dot(normalize(normal), normalize(lightDirection))), 0.0, 1.0);
-  // Same per-sample, tangent-scaled slope bias as the directional and atlas paths. These
-  // cubemap-face variants inline the sample fetch, but they share the identical acne
-  // mechanism: a centre-only, (1 - N.L)-scaled bias under-compensates every outer tap.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -303,9 +294,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
-  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
-  // taps on sloped receivers, so each tap scales by its own texel distance.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -327,9 +315,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
 }
 float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
-  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
-  // bound. Every gate term is 0 when no spot map is present, so mix() returns
-  // baseFactor exactly and scenes without spot lights render unchanged.
   float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
   return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
 }
@@ -378,11 +363,6 @@ vec3 a3dPbrEnvironmentDiffuseInput(vec3 normal) {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
-  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
-  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
-  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
-  // separate physical contributions, so they sum.
   vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
@@ -525,9 +505,6 @@ void main() {
   float c = cos(u_baseColorTextureRotation);
   float s = sin(u_baseColorTextureRotation);
   v_uv = vec2(scaledUv.x * c - scaledUv.y * s, scaledUv.x * s + scaledUv.y * c) + u_baseColorTextureOffset;
-  // P2 instanced-GLB path (muse3jsparity-PRD): the u_instanceCount branch is
-  // taken only for items carrying instanceTransforms; every other draw keeps
-  // the legacy math bit-exact.
   if (u_instanceCount > 0.5) {
     int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
     mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
@@ -824,15 +801,6 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -874,15 +842,6 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -917,9 +876,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
-  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
-  // taps on sloped receivers, so each tap scales by its own texel distance.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -941,9 +897,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
 }
 float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
-  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
-  // bound. Every gate term is 0 when no spot map is present, so mix() returns
-  // baseFactor exactly and scenes without spot lights render unchanged.
   float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
   return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
 }
@@ -1007,11 +960,6 @@ void main() {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
-  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
-  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
-  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
-  // separate physical contributions, so they sum.
   vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
@@ -1178,8 +1126,6 @@ void main() {
     a_weights.x + a_weights.y + a_weights.z + a_weights.w +
     a_weights1.x + a_weights1.y + a_weights1.z + a_weights1.w;
   vec4 skinnedPosition = v_weightSum > 0.0001 ? skin * vec4(a_position, 1.0) : vec4(a_position, 1.0);
-  // Normals and tangents use the same skin matrix with w = 0 so translation is
-  // excluded; renormalizing happens in the fragment stage.
   vec3 skinnedNormal = (v_weightSum > 0.0001 ? skin * vec4(a_normal, 0.0) : vec4(a_normal, 0.0)).xyz;
   vec3 skinnedTangent = (v_weightSum > 0.0001 ? skin * vec4(a_tangent.xyz, 0.0) : vec4(a_tangent.xyz, 0.0)).xyz;
   v_normal = mat3(u_normalMatrix) * skinnedNormal;
@@ -1385,15 +1331,6 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -1435,15 +1372,6 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -1478,9 +1406,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
-  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
-  // taps on sloped receivers, so each tap scales by its own texel distance.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -1502,9 +1427,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
 }
 float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
-  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
-  // bound. Every gate term is 0 when no spot map is present, so mix() returns
-  // baseFactor exactly and scenes without spot lights render unchanged.
   float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
   return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
 }
@@ -1568,11 +1490,6 @@ void main() {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
-  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
-  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
-  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
-  // separate physical contributions, so they sum.
   vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
@@ -1676,18 +1593,15 @@ void main() {
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_modelViewProjection;
-// Uniform fast path (<= 4 targets / 64 verts):
 uniform vec4 u_morphPositionDeltas[256];
 uniform vec4 u_morphWeights;
 uniform float u_morphTargetCount;
-// Texture-backed path (lifts the 4/64 cap; see MorphTargetPlan.ts createMorphTargetPlan):
 uniform sampler2D u_morphDeltaTexture;
-uniform float u_morphUsesTexture;     // > 0.5 => sample deltas from the texture
-uniform float u_morphTextureWidth;    // = vertexCount
-uniform float u_morphRowsPerTarget;   // 1 = positions only, 2 = positions + normals
-uniform float u_morphWeightArray[64]; // per-target weights for the texture path
+uniform float u_morphUsesTexture;
+uniform float u_morphTextureWidth;
+uniform float u_morphRowsPerTarget;
+uniform float u_morphWeightArray[64];
 vec3 sampleMorphTexel(float row, float vertex) {
-  // Fetch RGBA float texel at (x=vertex, y=row) using normalized coords + nearest filtering.
   float u = (vertex + 0.5) / max(1.0, u_morphTextureWidth);
   float height = u_morphTargetCount * u_morphRowsPerTarget;
   float v = (row + 0.5) / max(1.0, height);
@@ -1754,9 +1668,6 @@ out vec3 v_worldPosition;
 out vec2 v_uv;
 out vec4 v_vertexColor;
 void main() {
-  // P2 instanced-GLB path (muse3jsparity-PRD): the u_instanceCount branch is
-  // taken only for items carrying instanceTransforms; every other draw keeps
-  // the legacy math bit-exact. Mirrors the instanced-PBR vertex convention.
   if (u_instanceCount > 0.5) {
     int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
     mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
@@ -1908,15 +1819,6 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -1949,9 +1851,6 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   vec4 rect = u_pointShadowFaceRects[faceIndex];
   vec2 uv = rect.xy + localUv * rect.zw;
   float normalDotLight = clamp(abs(dot(normalize(normal), normalize(lightDirection))), 0.0, 1.0);
-  // Same per-sample, tangent-scaled slope bias as the directional and atlas paths. These
-  // cubemap-face variants inline the sample fetch, but they share the identical acne
-  // mechanism: a centre-only, (1 - N.L)-scaled bias under-compensates every outer tap.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -1984,9 +1883,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
-  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
-  // taps on sloped receivers, so each tap scales by its own texel distance.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -2008,9 +1904,6 @@ float a3dSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) 
   return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
 }
 float a3dResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
-  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
-  // bound. Every gate term is 0 when no spot map is present, so mix() returns
-  // baseFactor exactly and scenes without spot lights render unchanged.
   float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
   return mix(baseFactor, a3dSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
 }
@@ -2059,11 +1952,6 @@ vec3 a3dPbrEnvironmentDiffuseInput(vec3 normal) {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
-  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
-  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
-  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
-  // separate physical contributions, so they sum.
   vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
@@ -2175,6 +2063,9 @@ void main() {
     name: DEFAULT_TEXTURED_PBR_SHADER_NAME,
     marker: DEFAULT_TEXTURED_PBR_SHADER_MARKER,
     variants: [
+      { name: DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT, defines: { A3D_PBR_EXTENSION_ATLAS: true, A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true, A3D_PBR_NO_SPOT_SHADOW: true } },
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
       { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
       { name: DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
       { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
@@ -2212,10 +2103,6 @@ out vec4 v_vertexColor;
 void main() {
   v_uv = a_uv;
   v_uv1 = a_uv1;
-  // P2 instanced-GLB path (muse3jsparity-PRD): the u_instanceCount branch is
-  // taken only for items carrying instanceTransforms (applyInstanceBinding
-  // stamps a count >= 1); every other draw keeps the legacy math bit-exact.
-  // Mirrors the instanced-PBR vertex convention (MVP carries the base model).
   if (u_instanceCount > 0.5) {
     int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
     mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
@@ -2331,11 +2218,6 @@ uniform float u_pointShadowSlopeBias;
 uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
-// B1 spot path (muse3jsparity-PRD): the two A3D_PBR_NO_SPOT_SHADOW variants
-// (clearcoat-transmission-volume, specular-sheen-anisotropy-iridescence) sit at
-// the 16-sampler WebGL2 minimum without it, so they sample spot lights through
-// the legacy directional factor while every other lit program takes the spot
-// override. ForwardPass binds spot uniforms only when reflection declares them.
 #ifndef A3D_PBR_NO_SPOT_SHADOW
 uniform sampler2D u_spotShadowMapTexture;
 uniform float u_spotShadowMapEnabled;
@@ -2389,14 +2271,26 @@ uniform vec2 u_occlusionTextureWrap;
 uniform float u_occlusionStrength;
 uniform float u_clearcoatNormalScale;
 #ifdef A3D_PBR_CLEARCOAT_TEXTURES
+#ifndef A3D_PBR_EXTENSION_ATLAS
 uniform sampler2D u_clearcoatTexture;
+#else
+uniform vec4 u_clearcoatAtlasRect;
+uniform float u_clearcoatAtlasY;
+uniform vec4 u_clearcoatAtlasFilter;
+#endif
 uniform float u_clearcoatTextureEnabled;
 uniform vec2 u_clearcoatTextureOffset;
 uniform vec2 u_clearcoatTextureScale;
 uniform float u_clearcoatTextureRotation;
 uniform float u_clearcoatTextureTexCoord;
 uniform vec2 u_clearcoatTextureWrap;
+#ifndef A3D_PBR_EXTENSION_ATLAS
 uniform sampler2D u_clearcoatRoughnessTexture;
+#else
+uniform vec4 u_clearcoatRoughnessAtlasRect;
+uniform float u_clearcoatRoughnessAtlasY;
+uniform vec4 u_clearcoatRoughnessAtlasFilter;
+#endif
 uniform float u_clearcoatRoughnessTextureEnabled;
 uniform vec2 u_clearcoatRoughnessTextureOffset;
 uniform vec2 u_clearcoatRoughnessTextureScale;
@@ -2465,7 +2359,13 @@ uniform vec2 u_sheenColorTextureScale;
 uniform float u_sheenColorTextureRotation;
 uniform float u_sheenColorTextureTexCoord;
 uniform vec2 u_sheenColorTextureWrap;
+#ifndef A3D_PBR_EXTENSION_ATLAS
 uniform sampler2D u_sheenRoughnessTexture;
+#else
+uniform vec4 u_sheenRoughnessAtlasRect;
+uniform float u_sheenRoughnessAtlasY;
+uniform vec4 u_sheenRoughnessAtlasFilter;
+#endif
 uniform float u_sheenRoughnessTextureEnabled;
 uniform vec2 u_sheenRoughnessTextureOffset;
 uniform vec2 u_sheenRoughnessTextureScale;
@@ -2481,14 +2381,26 @@ uniform float u_anisotropyTextureTexCoord;
 uniform vec2 u_anisotropyTextureWrap;
 #endif
 #ifdef A3D_PBR_IRIDESCENCE_TEXTURES
+#ifndef A3D_PBR_EXTENSION_ATLAS
 uniform sampler2D u_iridescenceTexture;
+#else
+uniform vec4 u_iridescenceAtlasRect;
+uniform float u_iridescenceAtlasY;
+uniform vec4 u_iridescenceAtlasFilter;
+#endif
 uniform float u_iridescenceTextureEnabled;
 uniform vec2 u_iridescenceTextureOffset;
 uniform vec2 u_iridescenceTextureScale;
 uniform float u_iridescenceTextureRotation;
 uniform float u_iridescenceTextureTexCoord;
 uniform vec2 u_iridescenceTextureWrap;
+#ifndef A3D_PBR_EXTENSION_ATLAS
 uniform sampler2D u_iridescenceThicknessTexture;
+#else
+uniform vec4 u_iridescenceThicknessAtlasRect;
+uniform float u_iridescenceThicknessAtlasY;
+uniform vec4 u_iridescenceThicknessAtlasFilter;
+#endif
 uniform float u_iridescenceThicknessTextureEnabled;
 uniform vec2 u_iridescenceThicknessTextureOffset;
 uniform vec2 u_iridescenceThicknessTextureScale;
@@ -2597,15 +2509,6 @@ float a3dTexturedPbrShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDire
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
-  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
-  // depth difference proportional to N, so a centre-only bias under-compensates every outer
-  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
-  // wide kernels acne-free without inflating the constant bias into peter-panning.
-  // The depth gradient across one shadow texel is tan(angle between receiver normal and
-  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
-  // gradient grows, so it under-biases exactly the grazing angles that need the most
-  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -2638,9 +2541,6 @@ float a3dTexturedPbrPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 ligh
   vec4 rect = u_pointShadowFaceRects[faceIndex];
   vec2 uv = rect.xy + localUv * rect.zw;
   float normalDotLight = clamp(abs(dot(normalize(normal), normalize(lightDirection))), 0.0, 1.0);
-  // Same per-sample, tangent-scaled slope bias as the directional and atlas paths. These
-  // cubemap-face variants inline the sample fetch, but they share the identical acne
-  // mechanism: a centre-only, (1 - N.L)-scaled bias under-compensates every outer tap.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -2674,9 +2574,6 @@ float a3dTexturedPbrSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 light
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  // Shared bias-table policy: the same per-sample, tangent-scaled slope bias as the
-  // directional and point-cube paths. A centre-only bias under-compensates outer PCF
-  // taps on sloped receivers, so each tap scales by its own texel distance.
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_spotShadowSlopeBias * max(u_spotShadowTexelSize.x, u_spotShadowTexelSize.y);
   float projectedDepth = projected.z * 0.5 + 0.5;
@@ -2698,9 +2595,6 @@ float a3dTexturedPbrSpotShadowFactor(vec3 worldPosition, vec3 normal, vec3 light
   return mix(1.0, 1.0 - occlusion, clamp(u_spotShadowStrength, 0.0, 1.0));
 }
 float a3dTexturedPbrResolveSpotShadowOverride(float baseFactor, float kind, float shadowFlag, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
-  // Spot-kind lights (kind == 2) sample the perspective spot map only when it is
-  // bound. Every gate term is 0 when no spot map is present, so mix() returns
-  // baseFactor exactly and scenes without spot lights render unchanged.
   float spotGate = step(1.5, kind) * (1.0 - step(2.5, kind)) * step(0.5, u_spotShadowMapEnabled) * step(0.5, shadowFlag);
   return mix(baseFactor, a3dTexturedPbrSpotShadowFactor(worldPosition, normal, lightDirection), spotGate);
 }
@@ -2744,11 +2638,6 @@ vec3 a3dTexturedPbrEnvironmentDiffuseInput(vec3 normal) {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
-  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
-  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
-  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
-  // separate physical contributions, so they sum.
   vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
@@ -2763,11 +2652,6 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float clampedRoughness = clamp(roughness, 0.0, 1.0);
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
-  // Keep the procedural environment from becoming a uniform white veil on
-  // saturated textured base colors. A high roughness floor spread neutral
-  // specular over every fragment, while image-based lighting and Three.js keep
-  // the strongest neutral energy in reflection bands and glancing highlights.
-  // The lower floor preserves ambient readability without erasing texture chroma.
   float roughEnvironmentFloor = mix(0.012, 0.16, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
   float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0), mix(14.0, 3.0, clampedRoughness));
@@ -2787,13 +2671,25 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float sampledSpecularScale = materialEnvironmentSpecularScale;
   return proceduralSpecular * proceduralSpecularScale + sampledSpecular * sampledSpecularScale;
 }
-vec3 a3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor, float nDotV) {
-  float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
-  float opticalThicknessPhase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
-  float iorShift = clamp((iridescenceIor - 1.0) / 2.0, 0.0, 1.0) * 0.65;
-  float viewPhase = pow(1.0 - clamp(nDotV, 0.0, 1.0), 1.25) * (3.2 + iridescenceIor * 1.4);
-  float phase = opticalThicknessPhase + iorShift + viewPhase;
-  return clamp(0.5 + 0.5 * cos(phase + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
+vec3 a3dTexturedPbrThinFilmFresnel(vec3 substrateF0, float filmIor, float thickness, float cosine) {
+  float c1 = clamp(cosine, 0.0001, 1.0);
+  if (thickness <= 0.0) return a3dFresnelSchlick(substrateF0, c1);
+  float n2 = max(filmIor, 1.0001);
+  vec3 rootF0 = sqrt(clamp(substrateF0, vec3(0.0), vec3(0.98)));
+  vec3 n3 = (vec3(1.0) + rootF0) / max(vec3(1.0) - rootF0, vec3(0.0001));
+  float sinSquared = 1.0 - c1 * c1;
+  float c2 = sqrt(max(0.0, 1.0 - sinSquared / (n2 * n2)));
+  vec3 c3 = sqrt(max(vec3(0.0), vec3(1.0) - sinSquared / (n3 * n3)));
+  float r12s = (c1 - n2 * c2) / max(c1 + n2 * c2, 0.0001);
+  float r12p = (n2 * c1 - c2) / max(n2 * c1 + c2, 0.0001);
+  vec3 r23s = (n2 * c2 - n3 * c3) / max(n2 * c2 + n3 * c3, vec3(0.0001));
+  vec3 r23p = (n3 * c2 - n2 * c3) / max(n3 * c2 + n2 * c3, vec3(0.0001));
+  vec3 phase = 4.0 * A3D_PI * n2 * max(thickness, 0.0) * c2 / vec3(650.0, 510.0, 475.0);
+  vec3 crossS = 2.0 * r12s * r23s * cos(phase);
+  vec3 crossP = 2.0 * r12p * r23p * cos(phase);
+  vec3 Rs = (r12s * r12s + r23s * r23s + crossS) / max(vec3(1.0) + r12s * r12s * r23s * r23s + crossS, vec3(0.0001));
+  vec3 Rp = (r12p * r12p + r23p * r23p + crossP) / max(vec3(1.0) + r12p * r12p * r23p * r23p + crossP, vec3(0.0001));
+  return clamp((Rs + Rp) * 0.5, vec3(0.0), vec3(1.0));
 }
 float a3dTexturedPbrCharlieSheen(float nDotH, float sheenRoughness) {
   float alpha = max(0.07, sheenRoughness * sheenRoughness);
@@ -2844,7 +2740,10 @@ vec3 a3dTexturedPbrExtensionDirectLight(
   float iridescence,
   float iridescenceIor,
   float iridescenceThicknessMinimum,
-  float iridescenceThicknessMaximum
+  float iridescenceThicknessMaximum,
+  vec3 substrateF0,
+  vec3 substrateNormal,
+  float substrateRoughness
 ) {
   vec3 N = normalize(normal);
   vec3 V = normalize(viewDirection);
@@ -2867,9 +2766,14 @@ vec3 a3dTexturedPbrExtensionDirectLight(
   float anisotropicDistribution = a3dTexturedPbrAnisotropicDistribution(N, H, tangentFrame, clearcoatRough, anisotropy, anisotropyRotation);
   float anisotropyShape = anisotropicDistribution / (anisotropicDistribution + 3.0);
   vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyShape * 0.72);
-  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
-  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.12;
-  return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
+  vec3 filmF = a3dTexturedPbrThinFilmFresnel(substrateF0, iridescenceIor, (iridescenceThicknessMinimum + iridescenceThicknessMaximum) * 0.5, vDotH);
+  vec3 filmN = normalize(substrateNormal);
+  float filmNdotV = max(a3dSaturate(dot(filmN, V)), A3D_EPSILON);
+  float filmNdotL = a3dSaturate(dot(filmN, L));
+  float filmD = a3dDistributionGGX(a3dSaturate(dot(filmN, H)), substrateRoughness);
+  float filmG = a3dGeometrySmithGGXCorrelated(filmNdotV, filmNdotL, substrateRoughness);
+  vec3 iridescenceLobe = (filmF - a3dFresnelSchlick(substrateF0, vDotH)) * clamp(iridescence, 0.0, 1.0) * filmD * filmG;
+  return ((clearcoatLobe + sheenLobe + anisotropyLobe) * nDotL + iridescenceLobe * filmNdotL) * lightColor * lightIntensity;
 }
 vec3 a3dTexturedPbrExtensionEnvironmentLight(
   vec3 normal,
@@ -2885,7 +2789,10 @@ vec3 a3dTexturedPbrExtensionEnvironmentLight(
   float iridescence,
   float iridescenceIor,
   float iridescenceThicknessMinimum,
-  float iridescenceThicknessMaximum
+  float iridescenceThicknessMaximum,
+  vec3 substrateF0,
+  vec3 substrateNormal,
+  vec3 substrateSpecularRadiance
 ) {
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
   vec3 clearcoatF = a3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(clearcoatRoughness, 0.18, 1.0));
@@ -2902,10 +2809,66 @@ vec3 a3dTexturedPbrExtensionEnvironmentLight(
   float anisotropicDistribution = a3dTexturedPbrAnisotropicDistribution(N, environmentHalf, tangentFrame, clearcoatRoughness, anisotropy, anisotropyRotation);
   float anisotropyShape = anisotropicDistribution / (anisotropicDistribution + 3.0);
   vec3 anisotropyLobe = boundedSpecularRadiance * clamp(anisotropy, 0.0, 1.0) * anisotropyShape * 0.72;
-  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
-  vec3 iridescenceLobe = boundedSpecularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.09;
+  float filmNdotV = max(a3dSaturate(dot(normalize(substrateNormal), normalize(viewDirection))), A3D_EPSILON);
+  vec3 filmF = a3dTexturedPbrThinFilmFresnel(substrateF0, iridescenceIor, (iridescenceThicknessMinimum + iridescenceThicknessMaximum) * 0.5, filmNdotV);
+  vec3 iridescenceLobe = substrateSpecularRadiance * (filmF - a3dFresnelSchlick(substrateF0, filmNdotV)) * clamp(iridescence, 0.0, 1.0);
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
+
+#ifdef A3D_PBR_EXTENSION_ATLAS
+uniform sampler2D u_extensionScalarAtlas;
+int a3dAtlasWrapIndex(int x, int size, float mode) {
+  if (mode < 0.5) return clamp(x, 0, size - 1);
+  int period = mode < 1.5 ? size : 2 * size;
+  int index = ((x % period) + period) % period;
+  return mode < 1.5 ? index : (index < size ? index : period - 1 - index);
+}
+vec4 a3dAtlasFetch(ivec2 point, ivec2 size, ivec2 origin, vec2 wrapMode) {
+  ivec2 wrapped = ivec2(a3dAtlasWrapIndex(point.x,size.x,wrapMode.x), a3dAtlasWrapIndex(point.y,size.y,wrapMode.y));
+  return texelFetch(u_extensionScalarAtlas, origin + wrapped, 0);
+}
+vec4 a3dAtlasLevel(vec2 uv, vec4 rect, float originY, vec2 wrapMode, int level, bool nearestFilter) {
+  ivec2 size = ivec2(rect.yz);
+  ivec2 origin = ivec2(int(rect.x),int(originY));
+  for (int i=0; i<16; i++) {
+    if (i >= level) break;
+    origin.y += size.y;
+    size = max(size / 2, ivec2(1));
+  }
+  vec2 pixel = uv * vec2(size) - 0.5;
+  if (nearestFilter) return a3dAtlasFetch(ivec2(floor(pixel + 0.5)),size,origin,wrapMode);
+  ivec2 low = ivec2(floor(pixel));
+  vec2 fraction = fract(pixel);
+  return mix(mix(a3dAtlasFetch(low,size,origin,wrapMode),a3dAtlasFetch(low+ivec2(1,0),size,origin,wrapMode),fraction.x),
+             mix(a3dAtlasFetch(low+ivec2(0,1),size,origin,wrapMode),a3dAtlasFetch(low+ivec2(1,1),size,origin,wrapMode),fraction.x),fraction.y);
+}
+vec4 a3dAtlasSample(vec2 uv, vec4 rect, float originY, vec2 wrapMode, vec4 filterMode) {
+  vec2 dx=dFdx(uv), dy=dFdy(uv);
+  float lx=length(dx*rect.yz), ly=length(dy*rect.yz);
+  float major=max(lx,ly), minor=max(min(lx,ly),0.000001);
+  bool magnify=major<=1.0;
+  float taps=magnify ? 1.0 : clamp(ceil(major/max(minor,1.0)),1.0,floor(filterMode.w));
+  vec2 axis=lx>=ly ? dx : dy;
+  float lod=clamp(log2(max(major/taps,1.0)),0.0,rect.w);
+  if (filterMode.z<0.5) lod=0.0;
+  else if (filterMode.z<1.5) lod=floor(lod+0.5);
+  int low=int(floor(lod)), high=min(low+1,int(rect.w));
+  bool nearestFilter=magnify ? filterMode.x>0.5 : filterMode.y>0.5;
+  vec4 total=vec4(0.0);
+  for (int i=0;i<16;i++) {
+    if (float(i)>=taps) break;
+    vec2 sampleUv=uv+axis*((float(i)+0.5)/taps-0.5);
+    total+=mix(a3dAtlasLevel(sampleUv,rect,originY,wrapMode,low,nearestFilter),a3dAtlasLevel(sampleUv,rect,originY,wrapMode,high,nearestFilter),fract(lod));
+  }
+  return total/taps;
+}
+#endif
+
+
+
+
+
+
 void main() {
   vec2 baseColorUv = a3dTexturedPbrUv(u_baseColorTextureTexCoord, u_baseColorTextureOffset, u_baseColorTextureScale, u_baseColorTextureRotation);
   vec2 normalUv = a3dTexturedPbrUv(u_normalTextureTexCoord, u_normalTextureOffset, u_normalTextureScale, u_normalTextureRotation);
@@ -3019,10 +2982,18 @@ void main() {
   float anisotropy = clamp(u_anisotropyStrength, 0.0, 1.0);
   float anisotropyRotation = u_anisotropyRotation;
   float iridescence = clamp(u_iridescenceFactor, 0.0, 1.0);
-  float iridescenceThickness = mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, 0.5);
+  float iridescenceThickness = u_iridescenceThicknessMaximum;
 #ifdef A3D_PBR_CLEARCOAT_TEXTURES
+#ifdef A3D_PBR_EXTENSION_ATLAS
+  clearcoat = clamp(clearcoat * mix(1.0, a3dAtlasSample(clearcoatUv, u_clearcoatAtlasRect, u_clearcoatAtlasY, u_clearcoatTextureWrap, u_clearcoatAtlasFilter).r, step(0.5, u_clearcoatTextureEnabled)), 0.0, 1.0);
+#else
   clearcoat = clamp(clearcoat * mix(1.0, texture(u_clearcoatTexture, a3dTexturedPbrWrapUv(clearcoatUv, u_clearcoatTextureWrap)).r, step(0.5, u_clearcoatTextureEnabled)), 0.0, 1.0);
+#endif
+#ifdef A3D_PBR_EXTENSION_ATLAS
+  clearcoatRoughness = clamp(clearcoatRoughness * mix(1.0, a3dAtlasSample(clearcoatRoughnessUv, u_clearcoatRoughnessAtlasRect, u_clearcoatRoughnessAtlasY, u_clearcoatRoughnessTextureWrap, u_clearcoatRoughnessAtlasFilter).g, step(0.5, u_clearcoatRoughnessTextureEnabled)), 0.0, 1.0);
+#else
   clearcoatRoughness = clamp(clearcoatRoughness * mix(1.0, texture(u_clearcoatRoughnessTexture, a3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, step(0.5, u_clearcoatRoughnessTextureEnabled)), 0.0, 1.0);
+#endif
   clearcoatRoughness = max(clearcoatRoughness, 0.19 + (1.0 - clearcoatNormalBoost) * 0.12);
 #endif
 #ifdef A3D_PBR_TRANSMISSION_VOLUME_TEXTURES
@@ -3037,12 +3008,29 @@ void main() {
 #endif
 #ifdef A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
   sheenColor *= mix(vec3(1.0), a3dTexturedPbrDecodeSrgb(texture(u_sheenColorTexture, a3dTexturedPbrWrapUv(sheenColorUv, u_sheenColorTextureWrap)).rgb), step(0.5, u_sheenColorTextureEnabled));
+#ifdef A3D_PBR_EXTENSION_ATLAS
+  sheenRoughness = clamp(sheenRoughness * mix(1.0, a3dAtlasSample(sheenRoughnessUv, u_sheenRoughnessAtlasRect, u_sheenRoughnessAtlasY, u_sheenRoughnessTextureWrap, u_sheenRoughnessAtlasFilter).a, step(0.5, u_sheenRoughnessTextureEnabled)), 0.0, 1.0);
+#else
   sheenRoughness = clamp(sheenRoughness * mix(1.0, texture(u_sheenRoughnessTexture, a3dTexturedPbrWrapUv(sheenRoughnessUv, u_sheenRoughnessTextureWrap)).a, step(0.5, u_sheenRoughnessTextureEnabled)), 0.0, 1.0);
-  anisotropy = clamp(anisotropy * mix(1.0, texture(u_anisotropyTexture, a3dTexturedPbrWrapUv(anisotropyUv, u_anisotropyTextureWrap)).b, step(0.5, u_anisotropyTextureEnabled)), 0.0, 1.0);
+#endif
+  vec3 anisotropySample = texture(u_anisotropyTexture, a3dTexturedPbrWrapUv(anisotropyUv, u_anisotropyTextureWrap)).rgb;
+  anisotropy = clamp(anisotropy * mix(1.0, anisotropySample.b, step(0.5, u_anisotropyTextureEnabled)), 0.0, 1.0);
+  vec2 anisotropyDirection = anisotropySample.rg * 2.0 - 1.0;
+  if (u_anisotropyTextureEnabled > 0.5 && dot(anisotropyDirection, anisotropyDirection) > 0.000001) {
+    anisotropyRotation += atan(anisotropyDirection.y, anisotropyDirection.x);
+  }
 #endif
 #ifdef A3D_PBR_IRIDESCENCE_TEXTURES
+#ifdef A3D_PBR_EXTENSION_ATLAS
+  iridescence = clamp(iridescence * mix(1.0, a3dAtlasSample(iridescenceUv, u_iridescenceAtlasRect, u_iridescenceAtlasY, u_iridescenceTextureWrap, u_iridescenceAtlasFilter).r, step(0.5, u_iridescenceTextureEnabled)), 0.0, 1.0);
+#else
   iridescence = clamp(iridescence * mix(1.0, texture(u_iridescenceTexture, a3dTexturedPbrWrapUv(iridescenceUv, u_iridescenceTextureWrap)).r, step(0.5, u_iridescenceTextureEnabled)), 0.0, 1.0);
+#endif
+#ifdef A3D_PBR_EXTENSION_ATLAS
+  iridescenceThickness = mix(iridescenceThickness, mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, a3dAtlasSample(iridescenceThicknessUv, u_iridescenceThicknessAtlasRect, u_iridescenceThicknessAtlasY, u_iridescenceThicknessTextureWrap, u_iridescenceThicknessAtlasFilter).g), step(0.5, u_iridescenceThicknessTextureEnabled));
+#else
   iridescenceThickness = mix(iridescenceThickness, mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, texture(u_iridescenceThicknessTexture, a3dTexturedPbrWrapUv(iridescenceThicknessUv, u_iridescenceThicknessTextureWrap)).g), step(0.5, u_iridescenceThicknessTextureEnabled));
+#endif
 #endif
   vec3 base = a3dApplyAdvancedPbrLobes(
     texturedBase.rgb,
@@ -3062,13 +3050,14 @@ void main() {
     sheenRoughness,
     anisotropy,
     anisotropyRotation,
-    iridescence,
+    0.0,
     u_iridescenceIor,
     iridescenceThickness,
     iridescenceThickness,
     u_dispersion
   );
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
+  vec3 iridescenceSubstrateF0 = mix(vec3(pow((u_ior - 1.0) / max(u_ior + 1.0, 0.0001), 2.0)) * specularColor * specular, texturedBase.rgb, metallic);
   float materialRedPaintGate = smoothstep(0.28, 0.72, texturedBase.r)
     * (1.0 - smoothstep(0.05, 0.18, max(texturedBase.g, texturedBase.b)))
     * smoothstep(0.015, 0.07, u_materialEnvironmentSpecularScale);
@@ -3103,7 +3092,10 @@ void main() {
     iridescence,
     u_iridescenceIor,
     iridescenceThickness,
-    iridescenceThickness
+    iridescenceThickness,
+    iridescenceSubstrateF0,
+    mappedNormal,
+    a3dTexturedPbrEnvironmentSpecularInput(mappedNormal, viewDirection, roughness)
   );
   float texturedTransmissionAmount = clamp(max(transmission, diffuseTransmission), 0.0, 1.0);
   float texturedSampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
@@ -3136,10 +3128,6 @@ void main() {
       vec2 backdropOffset = normalize(texturedRefractionDirection.xy + vec2(0.0001)) * u_transmissionBackdropRefractionScale * mix(1.25, 0.55, roughness) * clamp(u_ior - 1.0, 0.0, 2.5);
       float backdropLod = clamp((roughness + volumeThickness * 0.08) * max(u_transmissionBackdropMipCount - 1.0, 0.0), 0.0, max(u_transmissionBackdropMipCount - 1.0, 0.0));
       vec3 backdropRadiance = a3dTexturedPbrDecodeSrgb(textureLod(u_transmissionBackdropTexture, clamp(backdropUv + backdropOffset, vec2(0.001), vec2(0.999)), backdropLod).rgb);
-      // Scene-color refraction travels through the same participating volume as
-      // environment refraction. Omitting texturedVolumeTint here made thickness,
-      // attenuationDistance, and attenuationColor byte-identical whenever the
-      // renderer-owned backdrop path was active.
       texturedRefractionRadiance = mix(
         texturedRefractionRadiance,
         backdropRadiance * texturedVolumeTint * texturedTransmissionAmount * mix(1.0, 1.22, texturedBackdropWeight),
@@ -3234,7 +3222,10 @@ void main() {
       iridescence,
       u_iridescenceIor,
       iridescenceThickness,
-      iridescenceThickness
+      iridescenceThickness,
+      iridescenceSubstrateF0,
+      mappedNormal,
+      roughness
     ) * directExtensionSpecularScale;
   }
   float alpha = texturedBase.a;
@@ -3269,28 +3260,18 @@ out float v_lineDistance;
 out float v_halfWidthPixels;
 
 void main() {
-  // a_position holds this vertex's anchor endpoint in world space. It is referenced
-  // with zero weight so the attribute is not optimized out of the linked program:
-  // bounds computation, frustum culling, and the material's attribute contract all
-  // depend on the geometry declaring a real position stream.
   vec3 anchorWorld = a_position;
   vec4 clipStart = u_modelViewProjection * vec4(a_lineStart + anchorWorld * 0.0, 1.0);
   vec4 clipEnd = u_modelViewProjection * vec4(a_lineEnd, 1.0);
 
-  // Guard against a zero or negative w: a vertex behind the eye would otherwise
-  // produce a wildly wrong NDC position and a smeared quad.
   float wStart = max(abs(clipStart.w), 1e-5);
   float wEnd = max(abs(clipEnd.w), 1e-5);
 
-  // Project to device pixels. Expansion happens here, so the resulting width is a
-  // pixel quantity and is therefore independent of depth, FOV, and viewport size.
   vec2 pixelStart = (clipStart.xy / wStart) * 0.5 * u_lineResolution;
   vec2 pixelEnd = (clipEnd.xy / wEnd) * 0.5 * u_lineResolution;
 
   vec2 pixelDirection = pixelEnd - pixelStart;
   float pixelLength = length(pixelDirection);
-  // A segment that projects to a single pixel has no screen direction; pick an
-  // arbitrary axis so the cap still renders instead of collapsing.
   vec2 direction = pixelLength > 1e-4 ? pixelDirection / pixelLength : vec2(1.0, 0.0);
   vec2 normal = vec2(-direction.y, direction.x);
 
@@ -3299,14 +3280,10 @@ void main() {
 
   float along = a_lineCorner.y;
   vec2 anchorPixel = mix(pixelStart, pixelEnd, along);
-  // Square caps push the quad outward along the segment direction so the stroke
-  // extends half a width past each endpoint, matching Three.js LineMaterial behaviour.
   float capExtension = u_lineSquareCaps > 0.5 ? halfWidth : 0.0;
   vec2 capOffset = direction * (along > 0.5 ? capExtension : -capExtension);
   vec2 pixelPosition = anchorPixel + normal * (a_lineCorner.x * halfWidth) + capOffset;
 
-  // Back to clip space, preserving the anchor endpoint's own depth so the line
-  // depth-sorts against the rest of the scene correctly.
   vec4 anchorClip = along > 0.5 ? clipEnd : clipStart;
   float anchorW = along > 0.5 ? wEnd : wStart;
   vec2 ndc = pixelPosition / (0.5 * u_lineResolution);
@@ -3335,12 +3312,9 @@ void main() {
   if (u_lineDashSize > 0.0) {
     float period = u_lineDashSize + max(u_lineGapSize, 0.0);
     float phase = mod(v_lineDistance + u_lineDashOffset, period);
-    // Discard the gap portion of each dash period.
     if (phase > u_lineDashSize) discard;
   }
   if (u_lineRoundCaps > 0.5) {
-    // Round caps: reject fragments outside the unit half-disc at each end. The
-    // corner's x component already spans -1..1 across the stroke width.
     float acrossStroke = v_lineCorner.x;
     if (abs(acrossStroke) > 1.0) discard;
   }

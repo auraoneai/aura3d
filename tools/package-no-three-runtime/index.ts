@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, type Dirent } from "node:fs";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
+import { parseSinglePackResult, type PackFile, type PackResult } from "../package-tarball-audit/pack-result";
 
 interface PackageJson {
   readonly name?: string;
@@ -10,15 +11,6 @@ interface PackageJson {
   readonly exports?: Record<string, unknown>;
   readonly dependencies?: Record<string, string>;
   readonly devDependencies?: Record<string, string>;
-}
-
-interface PackFile {
-  readonly path: string;
-  readonly size: number;
-}
-
-interface PackResult {
-  readonly files: readonly PackFile[];
 }
 
 interface ImportFinding {
@@ -247,8 +239,7 @@ function runPackDryRun(): PackResult | undefined {
       stdio: "pipe",
       maxBuffer: 10 * 1024 * 1024
     });
-    const [result] = JSON.parse(output) as PackResult[];
-    return result;
+    return parseSinglePackResult(output, packageJson.name ?? "");
   } catch (error) {
     mkdirSync(dirname(resolve(reportPath)), { recursive: true });
     return undefined;

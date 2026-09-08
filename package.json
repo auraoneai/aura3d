@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "packageManager": "pnpm@11.1.3",
   "private": false,
   "type": "module",
@@ -131,6 +131,7 @@
     "./advanced-runtime": "./dist/engine/advanced-runtime/index.js"
   },
   "scripts": {
+    "typecheck:browser:301": "tsc --noEmit -p tsconfig.browser-301.json",
     "premium-indie:reference:brawlhalla-gameplay": "node tools/premium-indie-reference/extract-brawlhalla-gameplay.mjs",
     "premium-indie:reference:ballisticng-gameplay": "node tools/premium-indie-reference/extract-ballisticng-gameplay.mjs",
     "premium-indie:reference:demetrios-pinball": "node tools/premium-indie-reference/extract-demetrios-pinball.mjs",
@@ -669,7 +670,15 @@
     "remediation:physics-audit": "node tools/product-remediation/build-physics-audit.mjs",
     "remediation:route-disposition": "node tools/product-remediation/build-route-disposition.mjs",
     "check:quality-gates": "node tools/product-remediation/check-quality-gates.mjs",
-    "remediation:reports": "pnpm remediation:inventory && pnpm remediation:parity && pnpm remediation:physics-audit && pnpm remediation:route-disposition && pnpm check:quality-gates"
+    "remediation:reports": "pnpm remediation:inventory && pnpm remediation:parity && pnpm remediation:physics-audit && pnpm remediation:route-disposition && pnpm check:quality-gates",
+    "release:prepare-version": "node tools/release/prepare-version.mjs",
+    "check:release-version": "node tools/release/prepare-version.mjs 3.0.1 --check",
+    "check:templates:exact": "node tools/release/publish-all.mjs --pack-only --from-plan tests/reports/release-tarballs/release-plan.json && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
+    "check:patch-compatibility": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --patch301",
+    "test:browser:route-primary:parallel": "tsx --tsconfig tsconfig.base.json tools/showcase-library/run-route-primary-parallel.ts",
+    "release:gallery-index": "node tools/release/build-final-visual-review-index.mjs --version 3.0.1",
+    "release:gallery-manifest": "node tools/release/build-final-visual-review-manifest.mjs --version 3.0.1",
+    "release:l02": "tsx --tsconfig tsconfig.base.json tools/release/l02-producer.ts"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",
@@ -710,7 +719,7 @@
     "draco3d": "^1.5.7",
     "esbuild": "^0.28.0",
     "eslint": "^9.26.0",
-    "meshoptimizer": "^1.1.1",
+    "meshoptimizer": "1.2.0",
     "react": "^19.2.8",
     "react-dom": "19.2.8",
     "size-limit": "^12.1.0",

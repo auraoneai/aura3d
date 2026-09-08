@@ -1578,6 +1578,7 @@ captureNodeHandles();
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "application",
+    isolationMode: "dominant-component",
     get subject() {
       return {
         position: [state.x, state.y, state.z] as const,

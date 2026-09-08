@@ -3,10 +3,13 @@ import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import ts from "typescript";
+import { classifyPatchDeclarationChange } from "./patch-compatibility.js";
 
-const BASELINE = "v1.5.2";
-const REPORT_PATH = "tests/reports/public-surface-diff.json";
-const DOC_PATH = "docs/project/public-surface-diff-2.0.md";
+const PATCH = process.argv.includes("--patch301");
+const CURRENT_VERSION = (JSON.parse(readFileSync("package.json", "utf8")) as { version: string }).version;
+const BASELINE = PATCH ? "v3.0.0" : "v1.5.2";
+const REPORT_PATH = PATCH ? "tests/reports/public-surface-diff-3.0.1.json" : "tests/reports/public-surface-diff.json";
+const DOC_PATH = PATCH ? "tests/reports/public-surface-diff-3.0.1.md" : "docs/project/public-surface-diff-2.0.md";
 
 type SymbolKind = "runtime" | "type";
 interface SurfaceSymbol { name: string; kind: SymbolKind; signature: string }
@@ -244,6 +247,8 @@ function templateNames(root: string): string[] {
 }
 
 function classifyRemoval(scope: string, name: string): string {
+  if (name === "AnimationTrack" && ["@aura3d/engine", "@aura3d/engine/engine", "@aura3d/engine/engine-runtime"].includes(scope)) return "documented-2.0-animation-track-relocated-to-@aura3d/animation";
+  if (name === "WebGPUPipelineCache" && ["@aura3d/rendering", "@aura3d/engine/rendering"].includes(scope)) return "documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath";
   if (scope === "@aura3d/engine" && name === "./three-compat") return "broken-1.5.2-root-alias-replaced-by-@aura3d/three-compat";
   if (scope === "@aura3d/three-compat" && name === "./postprocessing") return "non-rendering-compat-fabrication-removed-with-actionable-warning";
   // WS-2.3/2.6 deliberately removed the public data generators and descriptor
@@ -272,6 +277,7 @@ try {
   const mediaNodeSymbols = new Set(afterMap.get("@aura3d/engine")?.exports
     .find((entry) => entry.subpath === "./media-node")?.symbols.map((symbol) => symbol.name) ?? []);
   const classify = (scope: string, name: string): string => {
+    if (PATCH) return "unclassified";
     if (mediaNodeSymbols.has(name)) return "relocated-to-@aura3d/engine/media-node";
     if (scope === "@aura3d/physics" || scope === "@aura3d/engine/physics") return "documented-2.0-physics-navigation-owner-removal";
     return classifyRemoval(scope, name);
@@ -297,13 +303,20 @@ try {
         if (!currentSymbol) {
           removals.push({ scope: `${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, category: `${symbol.kind}-symbol`, name: symbol.name, classification: classify(`${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, symbol.name) });
         } else if (currentSymbol.signature !== symbol.signature) {
+          const patchCompatibility = PATCH
+            ? classifyPatchDeclarationChange(symbol.signature, currentSymbol.signature)
+            : undefined;
           contractChanges.push({
             scope: `${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`,
             symbol: symbol.name,
             kind: symbol.kind,
             before: symbol.signature,
             after: currentSymbol.signature,
-            classification: "reviewed-2.0-public-declaration-contract-change"
+            classification: PATCH
+              ? patchCompatibility === "compatible-addition"
+                ? "compatible-patch-addition"
+                : "patch-declaration-contract-blocker"
+              : "reviewed-2.0-public-declaration-contract-change"
           });
         }
       }
@@ -319,13 +332,15 @@ try {
 
   const unresolved = [...before, ...after].flatMap((pkg) => pkg.exports.filter((entry) => entry.source === null).map((entry) => `${pkg.name}:${entry.subpath}`));
   const unclassified = removals.filter((removal) => removal.classification === "unclassified");
+  const incompatibleContractChanges = contractChanges.filter((change) => change.classification === "patch-declaration-contract-blocker");
+  const compatibleContractAdditions = contractChanges.filter((change) => change.classification === "compatible-patch-addition");
   const beforeSchemas = publicSchemaIds(temp);
   const afterSchemas = publicSchemaIds(process.cwd());
   const schemas = {
     before: beforeSchemas,
     after: afterSchemas,
-    removed: beforeSchemas.filter((id) => !afterSchemas.includes(id)).map((id) => ({ id, classification: "intentional-2.0-schema-retirement" })),
-    added: afterSchemas.filter((id) => !beforeSchemas.includes(id)).map((id) => ({ id, classification: "2.0-schema-addition" }))
+    removed: beforeSchemas.filter((id) => !afterSchemas.includes(id)).map((id) => ({ id, classification: PATCH ? "patch-schema-removal-blocker" : "intentional-2.0-schema-retirement" })),
+    added: afterSchemas.filter((id) => !beforeSchemas.includes(id)).map((id) => ({ id, classification: PATCH ? "patch-schema-addition" : "2.0-schema-addition" }))
   };
   const assetShapeBefore = generatedAssetShape(temp);
   const assetShapeAfter = generatedAssetShape(process.cwd());
@@ -336,15 +351,15 @@ try {
     before: assetShapeBefore,
     after: assetShapeAfter,
     classification: assetFieldShapeStable
-      ? "field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership"
-      : "intentional-2.0-generated-asset-shape-change"
+      ? (PATCH ? "field-and-schema-compatible" : "field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership")
+      : (PATCH ? "patch-generated-asset-shape-blocker" : "intentional-2.0-generated-asset-shape-change")
   };
   const report = {
     schema: "aura3d.public-surface-diff/1.0",
     generatedAt: new Date().toISOString(),
     baseline: BASELINE,
-    currentVersion: "2.0.0",
-    pass: unresolved.length === 0 && unclassified.length === 0,
+    currentVersion: CURRENT_VERSION,
+    pass: unresolved.length === 0 && unclassified.length === 0 && (!PATCH || (CURRENT_VERSION === "3.0.1" && incompatibleContractChanges.length === 0 && schemas.removed.length === 0 && assetFieldShapeStable)),
     counts: {
       baselinePackages: before.length,
       currentPackages: after.length,
@@ -354,7 +369,9 @@ try {
       currentSymbols: after.reduce((sum, pkg) => sum + pkg.exports.reduce((inner, entry) => inner + entry.symbols.length, 0), 0),
       removals: removals.length,
       unclassifiedRemovals: unclassified.length,
-      declarationContractChanges: contractChanges.length,
+      declarationContractChanges: incompatibleContractChanges.length,
+      compatibleDeclarationAdditions: compatibleContractAdditions.length,
+      retainedDeclarationDifferences: contractChanges.length,
       baselineSchemas: beforeSchemas.length,
       currentSchemas: afterSchemas.length
     },
@@ -370,7 +387,7 @@ try {
   mkdirSync(dirname(REPORT_PATH), { recursive: true });
   writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
   const lines = [
-    "# Aura3D 2.0 Public-Surface Diff",
+    `# Aura3D ${CURRENT_VERSION} Public-Surface Diff`,
     "",
     `Generated from \`${BASELINE}\` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.`,
     "",
@@ -378,7 +395,8 @@ try {
     `- Baseline export subpaths: **${report.counts.baselineExportSubpaths}**; current export subpaths: **${report.counts.currentExportSubpaths}**`,
     `- Baseline symbols: **${report.counts.baselineSymbols}**; current symbols: **${report.counts.currentSymbols}**`,
     `- Classified removals: **${report.counts.removals - report.counts.unclassifiedRemovals}**; unclassified removals: **${report.counts.unclassifiedRemovals}**`,
-    `- Retained-symbol declaration contract changes: **${report.counts.declarationContractChanges}**`,
+    `- Incompatible retained-symbol declaration changes: **${report.counts.declarationContractChanges}**`,
+    `- Compatible retained-symbol declaration additions: **${report.counts.compatibleDeclarationAdditions}**`,
     `- Public schema identifiers: **${report.counts.baselineSchemas}** baseline; **${report.counts.currentSchemas}** current`,
     `- Generated asset shape: **${generatedAsset.classification}**`,
     `- Verdict: **${report.pass ? "PASS" : "FAIL"}**`,
@@ -391,7 +409,7 @@ try {
     "",
     "## Retained declaration-contract changes",
     "",
-    "The JSON receipt contains the normalized before/after declaration contract for every retained symbol whose public signature changed. These are classified as reviewed 2.0 major-version contract changes; they are not hidden as compatible aliases.",
+    PATCH ? "The JSON receipt retains normalized before/after signatures. The patch classifier accepts only additions that preserve the complete prior token contract; exported object types may add optional top-level members only. Removed, renamed, narrowed, or newly required input members remain blockers." : "The JSON receipt contains the normalized before/after declaration contract for every retained symbol whose public signature changed. These are classified as reviewed 2.0 major-version contract changes; they are not hidden as compatible aliases.",
     "",
     ...contractChanges.map((item) => `- \`${item.scope}:${item.kind}:${item.symbol}\` — ${item.classification}`),
     "",
@@ -399,7 +417,7 @@ try {
     "",
     `Schema identifiers: ${beforeSchemas.length} baseline, ${afterSchemas.length} current, ${schemas.removed.length} retired, ${schemas.added.length} added. CLI command tokens and all scaffold names are retained in the JSON receipt. The generated asset manifest schema and emitted field sets are compared directly; ${generatedAsset.classification}.`,
     "",
-    "The machine-readable, per-package and per-symbol inventory is retained in `tests/reports/public-surface-diff.json`.",
+    `The machine-readable, per-package and per-symbol inventory is retained in ${REPORT_PATH}.`,
     ""
   ];
   mkdirSync(dirname(DOC_PATH), { recursive: true });

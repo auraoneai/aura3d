@@ -324,6 +324,16 @@ describe("runtime edge-case coverage audit", () => {
       "packages/input/src/Haptics.ts:parts.push(vibrate ? \"navigator.vibrate available\" : \"navigator.vibrate unavailable\");",
       "packages/input/src/Haptics.ts:parts.push(gamepadRumble ? \"gamepad rumble available\" : \"gamepad rumble unavailable\");",
       "packages/materials/src/GameReadyMaterialLibrary.ts:{ name: \"opacity\", default: 0.35, range: \"0..1\", effect: \"Blend fallback where transmission is unavailable.\" }",
+      // 3.0.1: missing/invalidated native SSR output, absent native queue
+      // completion, and absent particle adapter metadata are real capability
+      // failures. Keep these fail-closed diagnostics visible, not disguised.
+      "packages/rendering/src/ReflectionSurfaces.ts:: report(options.id, kind, \"unsupported\", \"native SSR output unavailable or invalidated\", false, rendererRequirements(kind), unsupportedReflectionRequests(kind));",
+      "packages/rendering/src/ScreenSpaceReflectionPass.ts:if (!this.device.executeReflectionSurfaceSsr) throw new Error(\"SSR requires native renderer execution; CPU/mock fallback is unavailable.\");",
+      "packages/rendering/src/WebGPUDevice.ts:throw new RenderDeviceError(\"Native GPU queue completion is unavailable\", \"GPU_COMPLETION_UNAVAILABLE\");",
+      "packages/engine/src/production-runtime/RootGpuParticleWorkload.ts:let observed={completedUpdates:0,capacity,activeCount:0,drawableParticles:0,dispatchCount:0,workgroups:0,readbackBytes:0,vertexCount:0,particleScale:scale,backend:cpu?'cpu':'webgpu',adapter:cpu?'CPU simulation; root native draw':backend?.capabilities.adapterName ?? 'unavailable'};",
+      // Resident GPU particles fail closed if the required WebGPU canvas
+      // context is absent; this is an explicit capability failure, not a stub.
+      "packages/rendering/src/effects/ResidentGPUParticleRenderer.ts:if (!context) throw new Error(\"Resident particles: WebGPU canvas unavailable.\");",
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

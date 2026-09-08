@@ -4,6 +4,8 @@ import { relative, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import { createRouteSourceHash } from "../../tools/showcase-library/route-primary-probes.mjs";
+// @ts-expect-error -- .mjs visual evidence tooling has no declarations; focused tooling tests cover it.
+import { readPngDifferenceMetrics, readPngVisualCompositionMetrics } from "../../tools/showcase-library/png-foreground.mjs";
 
 const ROUTE_ID = "showcase-turbo-drift-circuit";
 const ROUTE = `/apps/${ROUTE_ID}/`;
@@ -12,6 +14,7 @@ const GLOBAL = "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__";
 // canonical source-bound proof. CI uses the canonical directory by default.
 const REPORT_DIR = resolve(process.env.TURBO_ACCEPTANCE_REPORT_DIR ?? "tests/reports/turbo-drift-circuit/playable");
 const REPORT_PATH = resolve(REPORT_DIR, "browser-evidence.json");
+const SOFTWARE_GPU_FRAME_TIMEOUT_MS = 300_000;
 
 type Evidence = Record<string, any>;
 type Artifact = { readonly path: string; readonly sha256: string; readonly state: string };
@@ -26,7 +29,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => { await server?.close(); });
 
 test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and reduced-motion frames", async ({ browser }, testInfo) => {
-  testInfo.setTimeout(720_000);
+  testInfo.setTimeout(1_800_000);
   const artifacts: Artifact[] = [];
   const assertions: Record<string, boolean | number | string> = {};
   const errors: string[] = [];
@@ -39,34 +42,68 @@ test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and 
   // the held review pose now remains visibly on the certified asphalt instead
   // of depending on wall-clock key-repeat through the opening bend.
   await openReady(desktop, "?capture=overview&evidenceDriver=1");
-  const grid = await readEvidence(desktop);
-  assertions.gridReady = grid.startLightsComplete === false && grid.speed === 0;
-  artifacts.push(await capture(desktop, "grid", "opening grid"));
+  await desktop.evaluate(async () => {
+    await (window as any).__AURA3D_TURBO_ACCEPTANCE_CAPTURE__.holdOpeningGrid();
+  });
   // Route evidence is published before asynchronous GLB mounting has necessarily
-  // reached pixels. Do not begin the exact review drive until two consecutive,
-  // non-fallback frames prove the mounted renderer has settled.
-  await waitForStableMountedFrame(desktop);
+  // reached pixels. Do not capture or drive until the production renderer is
+  // mounted, every typed asset has reached a terminal ready state, real draw calls
+  // have completed, and a nonblank canvas frame confirms those diagnostics reached
+  // pixels. The previous producer captured the HUD-only loading frame first and
+  // could therefore publish an empty "opening grid" as release evidence.
+  const mountedFrame = await waitForStableMountedFrame(desktop);
+  assertions.mountedCanvasForegroundPixels = mountedFrame.nonBlankPixels;
+  assertions.mountedCanvasForegroundAreaRatio = mountedFrame.foregroundAreaRatio;
+  assertions.mountedCanvasColorBuckets = mountedFrame.colorBuckets;
+  const grid = await readEvidence(desktop);
+  assertions.gridReady = grid.startLightsComplete === false
+    && grid.speed === 0
+    && grid.diagnostics?.renderer?.runtime?.mounted === true
+    && grid.diagnostics?.drawCalls > 0
+    && grid.diagnostics?.assets?.length >= 3
+    && grid.diagnostics.assets.every((asset: { status?: string }) => asset.status === "ready");
+  artifacts.push(await capture(desktop, "grid", "opening grid"));
   await desktop.keyboard.down("KeyW");
   // The repaired circuit's first bend turns right. The previous retained drive
   // held left, which could satisfy the generic drift predicate while visibly
   // crossing the verge. Drive the authored corner direction instead.
   await desktop.keyboard.down("KeyD");
   await desktop.keyboard.down("Space");
-  await desktop.waitForFunction((name) => (window as any)[name]?.startLightsComplete === true, GLOBAL, { timeout: 30_000 });
-  await expect.poll(async () => (await readEvidence(desktop)).speed, { timeout: 20_000 }).toBeGreaterThan(0.35);
-  await desktop.waitForFunction((name) => (window as any)[name]?.raceState?.progress >= 0.17, GLOBAL, { timeout: 30_000 });
-  await desktop.waitForFunction((name) => { const value = (window as any)[name]; return value?.renderedFeedback?.driftVisible === true && value?.renderedFeedback?.driftAmount > 0.35 && value?.renderedFeedback?.speedFraction >= 0.6; }, GLOBAL, { timeout: 30_000 });
-  await desktop.waitForFunction(() => document.body.dataset.turboReviewHeld === "true", undefined, { timeout: 10_000 });
+  const driftAdvance = await advanceTo(desktop, "drift");
+  assertions.driftAdvanceSteps = driftAdvance.steps;
   const drift = await readEvidence(desktop);
   assertions.driftStateDriven = drift.renderedFeedback?.driftVisible === true && drift.renderedFeedback?.driftSmokeVisible === true && drift.renderedFeedback?.driftAmount > 0.35;
   const driftArtifact = await capture(desktop, "drift", "live handbrake drift");
   artifacts.push(driftArtifact);
+  const driftPlayerSuppressedPath = resolve(REPORT_DIR, "drift-player-suppressed.png");
+  await desktop.evaluate(async () => {
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setSubjectSuppressed(true);
+  });
+  await desktop.locator("canvas").first().screenshot({ path: driftPlayerSuppressedPath, animations: "disabled", scale: "css" });
+  await desktop.evaluate(async () => {
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setSubjectSuppressed(false);
+  });
+  const driftHero = readPngDifferenceMetrics(resolve(driftArtifact.path), driftPlayerSuppressedPath) as {
+    nonBlankPixels: number;
+    colorBuckets: number;
+    foregroundAreaRatio: number;
+    clipped: boolean;
+  };
+  assertions.driftHeroPixels = driftHero.nonBlankPixels;
+  assertions.driftHeroAreaRatio = driftHero.foregroundAreaRatio;
+  assertions.driftHeroColorBuckets = driftHero.colorBuckets;
+  expect(driftHero.nonBlankPixels, "live drift player must remain a readable primary subject").toBeGreaterThanOrEqual(12_000);
+  expect(driftHero.foregroundAreaRatio, "live drift player must occupy at least 2.5% of its canvas bounds").toBeGreaterThanOrEqual(0.025);
+  expect(driftHero.colorBuckets, "live drift player must retain authored material variation").toBeGreaterThanOrEqual(20);
+  expect(driftHero.clipped, "live drift player must fit inside the retained frame").toBe(false);
   // The visual gauntlet's historical matrix path is retained for compatibility,
   // but it must point at a current, full-size gameplay frame.  Copy the same
   // producer screenshot bytes here rather than preserving the old parked-car
   // canvas capture.
+  const compatibilityScreenshotDirectory = resolve("tests/reports/showcase-library-screenshots");
+  mkdirSync(compatibilityScreenshotDirectory, { recursive: true });
   writeFileSync(
-    resolve("tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-canvas-only.png"),
+    resolve(compatibilityScreenshotDirectory, "showcase-turbo-drift-circuit-canvas-only.png"),
     readFileSync(resolve(driftArtifact.path))
   );
   await desktop.keyboard.up("Space"); await desktop.keyboard.up("KeyD"); await desktop.keyboard.up("KeyW"); await desktop.close();
@@ -74,44 +111,26 @@ test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and 
   const mission = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   collectErrors(mission, errors, "mission");
   await openReady(mission, "?evidenceDriver=1");
-  let passCaptured = false;
-  let ghostCaptured = false;
-  let passArtifact: Artifact | undefined;
-  let ghostArtifact: Artifact | undefined;
-  let finished: Evidence | undefined;
-  const deadline = Date.now() + 450_000;
-  while (Date.now() < deadline) {
-    await mission.waitForTimeout(320);
-    const evidence = await readEvidence(mission);
-    if (!passCaptured && evidence.gameplay?.playerOvertookOpponent === true) {
-      passArtifact = await capture(mission, "rival-pass", "mounted rival overtake");
-      passCaptured = true;
-    }
-    if (!ghostCaptured && evidence.ghost?.hasBestLap === true && evidence.ghost?.active === true) {
-      ghostArtifact = await capture(mission, "ghost-chase", "best-lap ghost chase");
-      ghostCaptured = true;
-    }
-    if (evidence.kitContractProof?.finishedStatus === "finished") {
-      finished = evidence;
-      break;
-    }
-  }
-  assertions.rivalPass = passCaptured;
-  assertions.ghostReplay = ghostCaptured;
+  const passAdvance = await advanceTo(mission, "rival-pass");
+  const passArtifact = await capture(mission, "rival-pass", "mounted rival overtake");
+  const ghostAdvance = await advanceTo(mission, "ghost-chase");
+  const ghostArtifact = await capture(mission, "ghost-chase", "best-lap ghost chase");
+  const finishAdvance = await advanceTo(mission, "finish");
+  const finished = await readEvidence(mission);
+  assertions.rivalPass = finished.gameplay?.playerOvertookOpponent === true;
+  assertions.ghostReplay = finished.ghost?.hasBestLap === true;
+  assertions.rivalPassAdvanceSteps = passAdvance.steps;
+  assertions.ghostAdvanceSteps = ghostAdvance.steps;
+  assertions.finishAdvanceSteps = finishAdvance.steps;
   // The racing snapshot advances the displayed lap counter after crediting lap
   // four, so a four-lap finish is represented as lap 5 + finished status.
   assertions.finishedFourLaps = (finished?.lap ?? 0) >= 5
     && finished?.kitContractProof?.finishedStatus === "finished"
     && finished?.gameplay?.finishProgression === true;
-  expect(finished, "the complete four-lap race must finish inside the bounded drive window").toBeDefined();
-  // The ghost can become active before the first overtake on a valid run. Keep
-  // the evidence files captured at their true moments, but append their
-  // manifest entries in the documented acceptance-arc order so the report is
-  // deterministic rather than dependent on which gameplay signal arrives
-  // first.
-  if (passArtifact) artifacts.push(passArtifact);
-  if (ghostArtifact) artifacts.push(ghostArtifact);
-  await mission.waitForTimeout(700);
+  artifacts.push(passArtifact);
+  artifacts.push(ghostArtifact);
+  const presentationAdvance = await advanceTo(mission, "finish-presentation");
+  assertions.finishPresentationAdvanceSteps = presentationAdvance.steps;
   const finish = await readEvidence(mission);
   assertions.finishPresentation = finish.gameplay?.resultCardAfterFinish === true
     && finish.gameplay?.finishCamera3Quarter === true;
@@ -121,11 +140,11 @@ test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   collectErrors(mobile, errors, "mobile");
   await openReady(mobile);
-  await mobile.waitForFunction((name) => (window as any)[name]?.startLightsComplete === true, GLOBAL, { timeout: 30_000 });
   const throttle = mobile.locator("#throttle-control");
   await expect(throttle).toBeVisible();
   await throttle.dispatchEvent("pointerdown");
-  await mobile.waitForTimeout(900);
+  const mobileAdvance = await advanceTo(mobile, "mobile-motion");
+  assertions.mobileAdvanceSteps = mobileAdvance.steps;
   const mobileActive = await readEvidence(mobile);
   await throttle.dispatchEvent("pointerup");
   const mobileCanvas = await mobile.locator("canvas").first().boundingBox();
@@ -143,11 +162,10 @@ test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and 
   collectErrors(reduced, errors, "reduced-motion");
   await openReady(reduced);
   await reduced.keyboard.down("KeyW");
-  await reduced.waitForFunction((name) => (window as any)[name]?.startLightsComplete === true, GLOBAL, { timeout: 30_000 });
-  await reduced.waitForTimeout(1_100);
   await reduced.keyboard.down("KeyD");
   await reduced.keyboard.down("Space");
-  await reduced.waitForFunction((name) => (window as any)[name]?.renderedFeedback?.driftVisible === true, GLOBAL, { timeout: 20_000 });
+  const reducedAdvance = await advanceTo(reduced, "reduced-motion-drift");
+  assertions.reducedMotionAdvanceSteps = reducedAdvance.steps;
   const reducedEvidence = await readEvidence(reduced);
   assertions.reducedMotionTruth = reducedEvidence.reducedMotion === true
     && reducedEvidence.renderedFeedback?.driftVisible === true
@@ -186,7 +204,11 @@ test("binds Turbo Drift's complete acceptance arc to exact desktop, mobile, and 
 
 async function openReady(page: Page, search = ""): Promise<void> {
   await page.goto(`${server.origin}${ROUTE}${search}`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction((name) => (window as any)[name]?.status === "ready", GLOBAL, { timeout: 90_000 });
+  await page.waitForFunction((name) => (window as any)[name]?.status === "ready", GLOBAL, { timeout: SOFTWARE_GPU_FRAME_TIMEOUT_MS });
+}
+
+async function advanceTo(page: Page, milestone: string): Promise<{ steps: number; frame: number; time: number }> {
+  return page.evaluate(async (name) => (window as any).__AURA3D_TURBO_ACCEPTANCE_CAPTURE__.advanceTo(name), milestone);
 }
 
 async function readEvidence(page: Page): Promise<Evidence> {
@@ -200,20 +222,126 @@ async function capture(page: Page, name: string, state: string): Promise<Artifac
   return { path: artifactPath, sha256: sha256(buffer), state };
 }
 
-async function waitForStableMountedFrame(page: Page): Promise<void> {
+type MountedCanvasMetrics = {
+  readonly nonBlankPixels: number;
+  readonly colorBuckets: number;
+  readonly foregroundAreaRatio: number;
+  readonly clipped: boolean;
+  readonly rivalPixels: number;
+  readonly rivalColorBuckets: number;
+  readonly rivalAreaRatio: number;
+  readonly rivalClipped: boolean;
+  readonly compositionCoverageRatio: number;
+  readonly compositionDistinctBuckets: number;
+};
+
+type MountedFrameGate = {
+  readonly sampledAt: string;
+  readonly elapsedMs: number;
+  readonly frameCount: number;
+  readonly backend: unknown;
+  readonly drawCalls: unknown;
+  readonly runtime: unknown;
+  readonly assets: unknown;
+  readonly errors: unknown;
+  readonly metrics?: MountedCanvasMetrics;
+};
+
+async function waitForStableMountedFrame(page: Page): Promise<MountedCanvasMetrics> {
+  const startedAt = Date.now();
+  const canvasPath = resolve(REPORT_DIR, "mounted-frame-canvas.png");
+  const suppressedPath = resolve(REPORT_DIR, "mounted-frame-hero-suppressed.png");
+  const rivalSuppressedPath = resolve(REPORT_DIR, "mounted-frame-rival-suppressed.png");
+  const gatePath = resolve(REPORT_DIR, "mounted-frame-gate.json");
+  let lastGate: MountedFrameGate | undefined;
   await expect.poll(async () => {
-    const frame = await page.screenshot({ animations: "disabled" });
-    // Mounted Formula frames currently encode between roughly 300–560 KiB;
-    // PNG byte size is content entropy, not an asset-mount contract. Keep a
-    // conservative nonblank floor here. Exact cross-context byte identity is
-    // asserted on the held action artifact itself; requiring identical live
-    // pre-grid frames was flaky because renderer-owned loading/idle frames keep
-    // advancing even after every GLB is mounted.
-    return frame.length >= 250_000;
+    const evidence = await readEvidence(page);
+    const diagnostics = evidence.diagnostics;
+    const assets = diagnostics?.assets;
+    lastGate = {
+      sampledAt: new Date().toISOString(),
+      elapsedMs: Date.now() - startedAt,
+      frameCount: Number(evidence.frameCount ?? 0),
+      backend: diagnostics?.backend ?? null,
+      drawCalls: diagnostics?.drawCalls ?? null,
+      runtime: diagnostics?.renderer?.runtime ?? null,
+      assets: Array.isArray(assets) ? assets.map((asset: Record<string, unknown>) => ({ id: asset.id, status: asset.status, message: asset.message })) : assets ?? null,
+      errors: diagnostics?.errors ?? null
+    };
+    writeFileSync(gatePath, `${JSON.stringify(lastGate, null, 2)}\n`);
+    return diagnostics?.renderer?.runtime?.mounted === true
+      && diagnostics?.backend === "webgl2"
+      && diagnostics?.drawCalls > 0
+      && Array.isArray(assets)
+      && assets.length >= 3
+      && assets.every((asset: { status?: string }) => asset.status === "ready")
+      && (diagnostics.errors?.length ?? 0) === 0;
   }, {
-    timeout: 90_000,
+    timeout: SOFTWARE_GPU_FRAME_TIMEOUT_MS,
     intervals: [250, 500, 1_000]
   }).toBe(true);
+
+  const canvas = page.locator("canvas").first();
+  await expect(canvas).toBeVisible();
+  await canvas.screenshot({ path: canvasPath, animations: "disabled", scale: "css" });
+  await page.evaluate(async () => {
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setSubjectSuppressed(true);
+  });
+  await canvas.screenshot({ path: suppressedPath, animations: "disabled", scale: "css" });
+  await page.evaluate(async () => {
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setSubjectSuppressed(false);
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setRivalSuppressed(true);
+  });
+  await canvas.screenshot({ path: rivalSuppressedPath, animations: "disabled", scale: "css" });
+  await page.evaluate(async () => {
+    await (window as any).__AURA3D_COMPOSITION_PROBE__.setRivalSuppressed(false);
+  });
+
+  const hero = readPngDifferenceMetrics(canvasPath, suppressedPath) as {
+    nonBlankPixels: number;
+    colorBuckets: number;
+    foregroundAreaRatio: number;
+    clipped: boolean;
+  };
+  const rival = readPngDifferenceMetrics(canvasPath, rivalSuppressedPath) as {
+    nonBlankPixels: number;
+    colorBuckets: number;
+    foregroundAreaRatio: number;
+    clipped: boolean;
+  };
+  const composition = readPngVisualCompositionMetrics(canvasPath) as {
+    foregroundCoverageRatio: number;
+    distinctBuckets: number;
+  };
+  const metrics: MountedCanvasMetrics = {
+    nonBlankPixels: hero.nonBlankPixels,
+    colorBuckets: hero.colorBuckets,
+    foregroundAreaRatio: hero.foregroundAreaRatio,
+    clipped: hero.clipped,
+    rivalPixels: rival.nonBlankPixels,
+    rivalColorBuckets: rival.colorBuckets,
+    rivalAreaRatio: rival.foregroundAreaRatio,
+    rivalClipped: rival.clipped,
+    compositionCoverageRatio: composition.foregroundCoverageRatio,
+    compositionDistinctBuckets: composition.distinctBuckets
+  };
+  writeFileSync(gatePath, `${JSON.stringify({ ...lastGate, sampledAt: new Date().toISOString(), elapsedMs: Date.now() - startedAt, metrics }, null, 2)}\n`);
+
+  // Measure the actual typed hero against an identical-camera negative control.
+  // The prior edge-derived foreground selector chose a 48x46 trackside tree even
+  // while the car visibly filled the lower third, so it could neither accept a
+  // readable hero nor diagnose its scale. Keep the original 20k/5%/20-bucket
+  // quality floors, now bound to hero-only pixels, and add whole-frame variety.
+  expect(metrics.nonBlankPixels, "typed Formula hero must contribute material pixels").toBeGreaterThanOrEqual(20_000);
+  expect(metrics.foregroundAreaRatio, "typed Formula hero must occupy at least 5% of the canvas bounds").toBeGreaterThanOrEqual(0.05);
+  expect(metrics.colorBuckets, "typed Formula hero must retain authored material variation").toBeGreaterThanOrEqual(20);
+  expect(metrics.clipped, "typed Formula hero must fit inside the opening-grid frame").toBe(false);
+  expect(metrics.rivalPixels, "typed Formula rival must remain visibly present in the same race frame").toBeGreaterThanOrEqual(2_000);
+  expect(metrics.rivalColorBuckets, "typed Formula rival must retain authored material variation").toBeGreaterThanOrEqual(12);
+  expect(metrics.rivalClipped, "typed Formula rival must fit inside the opening-grid frame").toBe(false);
+  expect(metrics.compositionCoverageRatio, "the rendered circuit must materially occupy the frame").toBeGreaterThanOrEqual(0.2);
+  expect(metrics.compositionDistinctBuckets, "the rendered circuit must retain authored color variation").toBeGreaterThanOrEqual(100);
+  return metrics;
 }
 
 function sha256(value: Buffer): string {

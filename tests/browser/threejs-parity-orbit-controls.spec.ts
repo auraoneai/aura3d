@@ -1,3 +1,4 @@
+import type {} from "../../apps/controls-orbit/src/main";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";

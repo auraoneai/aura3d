@@ -55,7 +55,7 @@ test.describe("U1 resource soak", () => {
       });
     };
     const runRouteCycles = (cycles: number): Promise<{ cycles: { cycle: number; drawCalls: number }[] }> =>
-      page.evaluate((count) => window.__AURA3D_RESOURCE_SOAK_U1__.runRouteCycles(count), cycles);
+      page.evaluate((count) => (() => { const runner = window.__AURA3D_RESOURCE_SOAK_U1__; if (!runner) throw new Error("Missing soak runner"); return runner.runRouteCycles(count); })(), cycles);
 
     // Warmup (discarded): first mounts pay JIT + cache costs that GC keeps.
     const warmup = await runRouteCycles(5);
@@ -86,7 +86,7 @@ test.describe("U1 resource soak", () => {
     );
 
     // Real-GL registry soak: 2 live targets mid-cycle with exact bytes, zero after every cycle.
-    const registry = (await page.evaluate(() => window.__AURA3D_RESOURCE_SOAK_U1__.runRegistry(50))) as {
+    const registry = (await page.evaluate(() => (() => { const runner = window.__AURA3D_RESOURCE_SOAK_U1__; if (!runner) throw new Error("Missing soak runner"); return runner.runRegistry(50); })())) as {
       registry: { cycle: number; liveRenderTargets: number; gpuTargetCount: number; gpuTargetBytes: number; owners: string[] }[];
       registryFinal: { renderTargets: number; gpuTargetCount: number; gpuTargetBytes: number; disposedRenderTargets: number } | null;
       ownersSeen: string[];

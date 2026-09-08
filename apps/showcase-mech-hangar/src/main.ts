@@ -347,9 +347,9 @@ const footContactSealMaterials = {
   player: material.emissive({ name: "player foot contact seal", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 0.95, opacity: 0.86 }),
   rival: material.emissive({ name: "rival foot contact seal", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 0.9, opacity: 0.86 })
 } as const;
-// A broad soft contact shadow grounds each fighter's whole silhouette on the
-// deck. The per-foot receivers above are small inspectable cups; from the
-// review distance the mech still read as floating without this dark disc.
+// An authored translucent grounding decal sits beneath each fighter. This
+// flat cylinder is a visual contact cue, not a computed contact-shadow pass.
+// Its historical runtime ID is retained so existing pose bindings still work.
 const contactShadowMaterial = material.emissive({
   name: "mech contact shadow",
   color: "#05090e",
@@ -813,6 +813,7 @@ const contactShadowNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>(
 // human reviewers see. Keep suppression state in the route so the regular mount
 // pass cannot immediately re-show the subject during the two-frame comparison.
 let compositionSubjectSuppressed = false;
+let compositionProbeActive = false;
 
 const { createMechHangarFeel } = await import("./arena/feel");
 const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
@@ -1382,7 +1383,10 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "application",
     subject: { position: [0, 1.36, 0], rotation: [0, 0, 0], targetSize: 2.72 },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
+      await app.ready();
+      compositionProbeActive = true;
       compositionSubjectSuppressed = suppressed;
       if (mode === "hangar") {
         mountSide("player", hangar.selection, HANGAR_CENTER, hangar.snapshot().turntableYaw, playerNodes);
@@ -1390,10 +1394,16 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
         mountSide("player", hangar.selection, [lastFighterPositions.playerX, 0, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
         mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [lastFighterPositions.rivalX, 0, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
       }
+      // Present the hidden state used by the pixel diff. On restore, mutate the
+      // live nodes back without an unused third full-frame submission.
+      if (suppressed) app.step(0);
     },
-    settleSubjectPose() {
-      // The typed family is authored in a static pose; the route's live
-      // turntable and combat transforms remain unchanged by this no-op hook.
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
+      // Freeze the current authored pose for the visible/suppressed pair.
+      compositionProbeActive = true;
+      app.step(0);
     }
   }
 });
@@ -1417,6 +1427,11 @@ function handleBoutEvent(event: BoutEvent): void {
 }
 
 app.onFrame(({ dt }) => {
+  // Manual zero-delta presentation must not advance the live turntable or bout.
+  if (compositionProbeActive) {
+    publishEvidence();
+    return;
+  }
   const stepDt = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   frameCount += 1;
   elapsed += stepDt;

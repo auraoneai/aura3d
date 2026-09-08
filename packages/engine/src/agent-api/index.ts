@@ -1,3 +1,5 @@
+import { applyRootParticleQuality, composeModelInstanceMatrices, createCameraProjection, DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, getRootRenderSource, hasRootRenderableContent, includeRootSourceMetadata, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, resolveCameraClipping, resolveRootRenderTime, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality, type AuraPerformanceQuality } from "./RootRuntimeSupport.js";
+export type { AuraPerformanceQuality } from "./RootRuntimeSupport.js";
 /*
  * WS-2.2 — module-scope physics values come from the SOLVERLESS entry.
  *
@@ -110,7 +112,7 @@ import {
   type Light,
   type Mat4
 } from "@aura3d/scene";
-import { lookAtMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene/math";
+import { identityMat4, lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
 /*
  * WS-2.2 — TYPE-ONLY import, plus a dynamic import at the single call site below.
  *
@@ -134,6 +136,7 @@ import {
 } from "./SceneGroundingUtils.js";
 import {
   collectLabelTelemetry,
+  labelTelemetryRoleFor,
   summarizeTextBuckets,
   type LabelTelemetry,
   type TextBucketSummary
@@ -844,6 +847,7 @@ export {
   createRuntimeNodeEffectAttachment,
   runtimeNodeHasTag,
   type AuraRuntimeNodeAnimationPoseBindingMetadata,
+  type AuraRootMotionBinding,
   type AuraRuntimeNodeAnimationBindingMetadata,
   type AuraRuntimeNodeBounds,
   type AuraRuntimeNodeEffectAttachment,
@@ -1059,6 +1063,16 @@ export interface AuraMaterialSpec {
   readonly occlusionStrength?: number;
   /** Emissive map slot: multiplied by `emissive` (default white when only the map is set) × `emissiveIntensity`. */
   readonly emissiveMap?: AuraMaterialTextureInput;
+  /** glTF extension maps: data channels are linear; sheen color is sRGB. */
+  readonly clearcoatMap?: AuraAssetRef<"texture">;
+  readonly clearcoatRoughnessMap?: AuraAssetRef<"texture">;
+  readonly clearcoatNormalMap?: AuraAssetRef<"texture">;
+  readonly clearcoatNormalScale?: number;
+  readonly sheenColorMap?: AuraAssetRef<"texture">;
+  readonly sheenRoughnessMap?: AuraAssetRef<"texture">;
+  readonly iridescenceMap?: AuraAssetRef<"texture">;
+  readonly iridescenceThicknessMap?: AuraAssetRef<"texture">;
+  readonly anisotropyMap?: AuraAssetRef<"texture">;
   /**
    * Per-slot UV set selection for the native texCoord selector (muse3jsparity-PRD C1).
    * 0 samples the authored unwrap, 1 the procedural 2x tiling unwrap.
@@ -1069,6 +1083,14 @@ export interface AuraMaterialSpec {
     readonly metallicRoughness?: 0 | 1;
     readonly occlusion?: 0 | 1;
     readonly emissive?: 0 | 1;
+    readonly clearcoat?: 0 | 1;
+    readonly clearcoatRoughness?: 0 | 1;
+    readonly clearcoatNormal?: 0 | 1;
+    readonly sheenColor?: 0 | 1;
+    readonly sheenRoughness?: 0 | 1;
+    readonly iridescence?: 0 | 1;
+    readonly iridescenceThickness?: 0 | 1;
+    readonly anisotropy?: 0 | 1;
   };
   /** Per-slot UV transforms, passed through to the native per-slot transform uniforms. */
   readonly texTransforms?: {
@@ -1077,6 +1099,14 @@ export interface AuraMaterialSpec {
     readonly metallicRoughness?: AuraTextureTransform;
     readonly occlusion?: AuraTextureTransform;
     readonly emissive?: AuraTextureTransform;
+    readonly clearcoat?: AuraTextureTransform;
+    readonly clearcoatRoughness?: AuraTextureTransform;
+    readonly clearcoatNormal?: AuraTextureTransform;
+    readonly sheenColor?: AuraTextureTransform;
+    readonly sheenRoughness?: AuraTextureTransform;
+    readonly iridescence?: AuraTextureTransform;
+    readonly iridescenceThickness?: AuraTextureTransform;
+    readonly anisotropy?: AuraTextureTransform;
   };
 }
 
@@ -1784,6 +1814,8 @@ export interface AuraRendererDiagnosticReport {
     readonly label?: string;
     readonly nativeShadowMapBindings: number;
     readonly shadowRenderTargetsAllocated: number;
+    /** Submitted cascade matrices/point atlas state; null before a real shadow frame. */
+    readonly observed: Readonly<Record<string, unknown>> | null;
     readonly contactShadows: number;
     readonly mapType: "pcf-soft";
     /**
@@ -1842,6 +1874,8 @@ export interface AuraRendererDiagnosticReport {
     readonly passNames: readonly string[];
     readonly warnings: readonly string[];
     readonly nativeInstancedSubmissions: number;
+    readonly nativeTemporalPasses?: number;
+    readonly nativeTemporalBindings?: number;
     readonly submittedObjects: number;
     readonly visibleObjects: number;
     readonly culledObjects: number;
@@ -3005,14 +3039,15 @@ export const lights = {
       intensity: options.intensity ?? 0.28,
       color: options.color ?? "#ffffff"
     }),
-  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor } = {}) =>
+  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "directional",
       name: options.name,
       position: options.position ?? [3, 4, 3],
       intensity: options.intensity ?? 1.5,
-      color: options.color ?? "#ffffff"
+      color: options.color ?? "#ffffff",
+      shadow: options.shadow
     }),
   point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
@@ -3103,6 +3138,10 @@ export interface AuraCameraSpec {
   readonly targetOffset?: AuraVec3;
   readonly offsetMode?: "scene" | "target-yaw";
   readonly fov?: number;
+  /** Positive near clipping distance in world units; defaults to 0.05. */
+  readonly near?: number;
+  /** Far clipping distance in world units, greater than near; defaults to 100. */
+  readonly far?: number;
   readonly distance?: number;
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
@@ -3146,6 +3185,7 @@ export interface AuraCameraFrameAssetOptions {
 export const camera = {
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
+    ...resolveCameraClipping(options),
     position: options.position ?? [0, 1.4, 4],
     target: options.target ?? [0, 0.8, 0],
     fov: options.fov ?? 45
@@ -3155,6 +3195,7 @@ export const camera = {
     const target = options.target ?? [0, 0.8, 0];
     return {
       mode: "orbit",
+      ...resolveCameraClipping(options),
       distance,
       target,
       position: options.position ?? [
@@ -3167,6 +3208,7 @@ export const camera = {
   },
   dolly: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "dolly",
+    ...resolveCameraClipping(options),
     from: options.from,
     to: options.to,
     target: options.target ?? [0, 0.8, 0],
@@ -3176,6 +3218,7 @@ export const camera = {
   }),
   follow: (options: Omit<AuraCameraSpec, "mode"> & { readonly targetNode: string }): AuraCameraSpec => ({
     mode: "follow",
+    ...resolveCameraClipping(options),
     targetNode: options.targetNode,
     distance: options.distance ?? 5,
     position: options.position,
@@ -3191,6 +3234,7 @@ export const camera = {
   }),
   path: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "path",
+    ...resolveCameraClipping(options),
     from: options.from,
     to: options.to,
     target: options.target ?? [0, 0.8, 0],
@@ -3201,6 +3245,7 @@ export const camera = {
   }),
   flythrough: (options: Omit<AuraCameraSpec, "mode"> & { readonly from?: AuraVec3; readonly to?: AuraVec3 } = {}): AuraCameraSpec => ({
     mode: "flythrough",
+    ...resolveCameraClipping(options),
     from: options.from ?? [0, 0.36, 1.6],
     to: options.to ?? [0, 0.36, -4.4],
     target: options.target ?? [0, 0.28, -5.8],
@@ -3221,6 +3266,7 @@ export const camera = {
    */
   orthographic: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "orthographic",
+    ...resolveCameraClipping(options),
     position: options.position ?? [0, 1.4, 4],
     target: options.target ?? [0, 0.8, 0],
     orthographicSize: options.orthographicSize ?? 1.4
@@ -3243,6 +3289,7 @@ export const camera = {
     const horizontal = Math.cos(elevation) * distance;
     return {
       mode: "isometric",
+      ...resolveCameraClipping(options),
       target,
       distance,
       orthographicSize: options.orthographicSize ?? 6,
@@ -3397,7 +3444,10 @@ export const effects = {
       radius: options.radius ?? 0.42,
       threshold: options.threshold ?? 0.72,
       antiBlowout: options.antiBlowout ?? true,
-      maxIntensity: options.maxIntensity ?? 0.92
+      maxIntensity: options.maxIntensity ?? 0.92,
+      ...(options.quality !== undefined ? { quality: options.quality } : {}),
+      ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
+      ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
     }),
   neonBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     effects.bloom({
@@ -3406,7 +3456,10 @@ export const effects = {
       radius: options.radius ?? 0.48,
       threshold: options.threshold ?? 0.68,
       antiBlowout: options.antiBlowout ?? true,
-      maxIntensity: options.maxIntensity ?? 0.92
+      maxIntensity: options.maxIntensity ?? 0.92,
+      ...(options.quality !== undefined ? { quality: options.quality } : {}),
+      ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
+      ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
     }),
   /**
    * A5 volumetric fog (muse3jsparity-PRD): builds a DISTINCT "volumetric-fog"
@@ -3472,8 +3525,8 @@ export const effects = {
     }),
   /**
    * Root anti-alias node (muse3jsparity-PRD A3). `fxaa` executes natively;
-   * `off` submits nothing; `taa` is recorded but withheld (no history binding
-   * at root) with an explicit diagnostic warning.
+   * `off` submits nothing; `taa` uses renderer-owned velocity/history for opaque
+   * rigid triangles. Unsupported deforming/transparent geometry emits a named warning.
    */
   antiAlias: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
@@ -3524,8 +3577,8 @@ export const effects = {
       intensity: options.intensity ?? 1
     }),
   /**
-   * Root motion-blur node (muse3jsparity-PRD A3): recorded but withheld (no
-   * velocity binding at root) with an explicit diagnostic warning.
+   * Root motion-blur node: renderer-owned GPU velocity for opaque rigid geometry.
+   * Unsupported deforming/transparent/instanced geometry emits a named warning.
    */
   motionBlur: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
@@ -4327,6 +4380,7 @@ interface AuraRendererRuntimeObservation {
     readonly label?: string;
     readonly nativeShadowMapBindings?: number;
     readonly shadowRenderTargetsAllocated?: number;
+    readonly observed?: Readonly<Record<string, unknown>> | null;
     /**
      * N1 authored spot shadow state (muse3jsparity-PRD). `spotPixelBacked`
      * requires the device-observed map signals on a spot caster.
@@ -4363,7 +4417,7 @@ interface AuraRendererRuntimeObservation {
     readonly evictedEntries: readonly string[];
   };
   readonly warnings?: readonly string[];
-  readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects" | "bloom" | "samplerAnisotropyUploads" | "maxTextureAnisotropy">;
+  readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeTemporalPasses" | "nativeTemporalBindings" | "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects" | "bloom" | "samplerAnisotropyUploads" | "maxTextureAnisotropy">;
   readonly lodSelections?: readonly {
     readonly nodeName: string;
     readonly levelIndex: number;
@@ -4401,9 +4455,8 @@ function createRendererDiagnosticReport(
   const contactShadows = names.filter((name) => name.includes("contact shadow") || name.includes("footprint") || name.includes("glow pool")).length;
   const ambientOcclusion = flattened.some((node) => node.kind === "effect" && node.effect === "ambient-occlusion");
   const contactOcclusion = flattened.some((node) => node.kind === "effect" && node.effect === "contact-occlusion") || contactShadows > 0;
-  // muse3jsparity-PRD A3: newly requestable root passes. motion-blur and
-  // taa-mode anti-alias are recorded but withheld (no velocity/history binding
-  // at root) — requestedPasses names the intent, actualPasses the execution.
+  // Authored temporal intent is separate from device-observed execution.
+  // Missing submissions remain visible without claiming an unmounted scene rendered.
   const colorGradeNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "color-grade");
   const antiAliasNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "anti-alias");
   const outlineNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "outline");
@@ -4414,13 +4467,14 @@ function createRendererDiagnosticReport(
   const beamNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "light-beam");
   const sdfTextRequested = flattened.some((node) => node.kind === "primitive" && node.text3D?.backend === "sdf");
   const fxaaRequested = (antiAliasNode?.mode ?? "fxaa") === "fxaa" && Boolean(antiAliasNode);
-  const taaWithheld = (antiAliasNode?.mode ?? "fxaa") === "taa";
-  const motionBlurWithheld = Boolean(motionBlurNode);
+  const taaRequested = (antiAliasNode?.mode ?? "fxaa") === "taa";
+  const taaWithheld = taaRequested && Boolean(runtime?.mounted) && !(runtime?.postprocess?.actualPasses ?? []).includes("taa");
+  const motionBlurWithheld = Boolean(motionBlurNode) && Boolean(runtime?.mounted) && !(runtime?.postprocess?.actualPasses ?? []).includes("motion-blur");
   const runtimePostprocess = runtime?.postprocess;
   const runtimePasses = runtimePostprocess?.actualPasses ?? [];
   const postprocessRequested = Boolean(bloom) || ambientOcclusion || contactOcclusion
     || Boolean(colorGradeNode) || Boolean(antiAliasNode) || Boolean(outlineNode)
-    || Boolean(ssrNode) || Boolean(dofNode) || motionBlurWithheld || runtimePasses.length > 0;
+    || Boolean(ssrNode) || Boolean(dofNode) || Boolean(motionBlurNode) || runtimePasses.length > 0;
   const requestedPasses = runtimePasses.length > 0
     ? runtimePasses
     : requestedRendererPostProcessPasses(
@@ -4433,8 +4487,8 @@ function createRendererDiagnosticReport(
         outline: Boolean(outlineNode),
         ssr: Boolean(ssrNode),
         depthOfField: Boolean(dofNode),
-        motionBlurWithheld,
-        taaWithheld
+        motionBlurWithheld: Boolean(motionBlurNode),
+        taaWithheld: taaRequested
       }
     );
   const runtimeStatus = !postprocessRequested
@@ -4448,7 +4502,7 @@ function createRendererDiagnosticReport(
   if (!environment && (sceneCategory === "product" || sceneCategory === "material")) warnings.push("product/material scene has no explicit IBL environment node");
   if (!contactOcclusion) warnings.push("scene has no contact shadow or contact-occlusion grounding cue");
   if (bloom && (bloom.intensity ?? 0) > 0.95 && bloom.antiBlowout !== true) warnings.push("bloom is high without anti-blowout safeguards");
-  if (motionBlurWithheld) warnings.push("motion-blur is recorded but withheld: root has no velocity binding, so no motion-blur pass is submitted");
+  if (motionBlurWithheld) warnings.push("TEMPORAL_INPUTS_UNAVAILABLE: motion-blur has no native submission");
   if (flipbookNode) warnings.push("flipbook-sprite is recorded but withheld: root has no native sprite-sheet sampler yet, so no flipbook pass is submitted");
   if (beamNode) warnings.push("light-beam is recorded but withheld: root has no native beam target yet, so no beam pass is submitted");
   // G1: the baked-SDF sampler mounts synchronously on the production bridge.
@@ -4459,7 +4513,7 @@ function createRendererDiagnosticReport(
       ? `text3D sdf backend fell back to the extruded mesh (${runtime.text?.reason ?? "sampler failed"}); textPixelBacked stays false`
       : "text3D sdf backend is recorded but unmounted: the production bridge samples the SDF atlas at mount, so textPixelBacked stays false until render");
   }
-  if (taaWithheld) warnings.push("anti-alias mode \"taa\" is recorded but withheld: root has no history binding, so no taa pass is submitted");
+  if (taaWithheld) warnings.push("TEMPORAL_INPUTS_UNAVAILABLE: taa has no native submission");
   if (colorGradeNode && (colorGradeNode.exposure ?? 1) !== 1) warnings.push("color-grade exposure is recorded but has no native grade target yet; contrast/saturation execute");
   if (colorGradeNode && (colorGradeNode.shadows !== undefined || colorGradeNode.highlights !== undefined)) warnings.push("color-grade shadows/highlights are recorded but have no native grade target yet; contrast/saturation execute");
   if (colorGradeNode?.lut !== undefined) warnings.push("color-grade lut is recorded but LUT samplers are not bound yet; the lut is ignored");
@@ -4525,6 +4579,7 @@ function createRendererDiagnosticReport(
       label: runtime?.shadow?.label,
       nativeShadowMapBindings: runtime?.shadow?.nativeShadowMapBindings ?? 0,
       shadowRenderTargetsAllocated: runtime?.shadow?.shadowRenderTargetsAllocated ?? 0,
+      observed: runtime?.mounted ? runtime.shadow?.observed ?? null : null,
       contactShadows,
       mapType: "pcf-soft",
       ...(runtime?.shadow?.spot === undefined ? {} : { spot: runtime.shadow.spot })
@@ -4570,6 +4625,8 @@ function createRendererDiagnosticReport(
       passNames: runtimePostprocess?.actualPasses ?? [],
       warnings: runtime?.warnings ?? [],
       nativeInstancedSubmissions: runtime?.deviceDiagnostics?.nativeInstancedSubmissions ?? 0,
+      nativeTemporalPasses: runtime?.deviceDiagnostics?.nativeTemporalPasses ?? 0,
+      nativeTemporalBindings: runtime?.deviceDiagnostics?.nativeTemporalBindings ?? 0,
       submittedObjects: runtime?.deviceDiagnostics?.submittedObjects ?? 0,
       visibleObjects: runtime?.deviceDiagnostics?.visibleObjects ?? 0,
       culledObjects: runtime?.deviceDiagnostics?.culledObjects ?? 0,
@@ -4641,8 +4698,8 @@ function requestedRendererPostProcessPasses(
   if (extra.fxaa) passes.push("fxaa");
   // Withheld intents stay visible in the request list with an explicit suffix
   // so requested-vs-actual never silently agrees on an unexecuted pass.
-  if (extra.motionBlurWithheld) passes.push("motion-blur (withheld: no velocity binding)");
-  if (extra.taaWithheld) passes.push("taa (withheld: no history binding)");
+  if (extra.motionBlurWithheld) passes.push("motion-blur");
+  if (extra.taaWithheld) passes.push("taa");
   passes.push("output");
   return passes;
 }
@@ -4713,6 +4770,7 @@ export class AuraSceneBuilder {
   }
 
   camera(next: AuraCameraSpec): this {
+    resolveCameraClipping(next);
     this.cameraSpec = next;
     return this;
   }
@@ -10374,6 +10432,9 @@ export interface AuraRuntimeNodeImportedAssetEvidence {
   readonly lastFootPlantingTargetError?: number | undefined;
   readonly lastFootPlantingHipOffset?: number | undefined;
   readonly lastFootPlantingMissingLegs?: readonly string[] | undefined;
+  readonly lastFootPlantingDeformation?: TypedGLBActorEvidence["lastFootPlantingDeformation"];
+  readonly lastFootPlantingSurfaces?: TypedGLBActorEvidence["lastFootPlantingSurfaces"];
+  readonly lastFootPlantingFeet?: readonly { readonly side: "left" | "right"; readonly worldPosition: readonly [number, number, number]; readonly contactError: number; readonly locked: boolean }[] | undefined;
   readonly footPlantingConfigured?: boolean | undefined;
   readonly diagnostics: readonly AuraRuntimeNodeImportedAssetDiagnostic[];
 }
@@ -10414,6 +10475,9 @@ export interface AuraRuntimeNodeImportedAssetEvidenceInput {
   readonly lastFootPlantingTargetError?: number | undefined;
   readonly lastFootPlantingHipOffset?: number | undefined;
   readonly lastFootPlantingMissingLegs?: readonly string[] | undefined;
+  readonly lastFootPlantingDeformation?: TypedGLBActorEvidence["lastFootPlantingDeformation"];
+  readonly lastFootPlantingSurfaces?: TypedGLBActorEvidence["lastFootPlantingSurfaces"];
+  readonly lastFootPlantingFeet?: readonly { readonly side: "left" | "right"; readonly worldPosition: readonly [number, number, number]; readonly contactError: number; readonly locked: boolean }[] | undefined;
   readonly footPlantingConfigured?: boolean | undefined;
   readonly requiredClips?: readonly string[] | undefined;
   readonly requiredBones?: readonly string[] | undefined;
@@ -10466,6 +10530,9 @@ export function createRuntimeNodeImportedAssetEvidence(
     ...(input.lastFootPlantingTargetError !== undefined ? { lastFootPlantingTargetError: input.lastFootPlantingTargetError } : {}),
     ...(input.lastFootPlantingHipOffset !== undefined ? { lastFootPlantingHipOffset: input.lastFootPlantingHipOffset } : {}),
     ...(input.lastFootPlantingMissingLegs !== undefined ? { lastFootPlantingMissingLegs: [...input.lastFootPlantingMissingLegs] } : {}),
+    ...(input.lastFootPlantingDeformation !== undefined ? { lastFootPlantingDeformation: input.lastFootPlantingDeformation.map(leg => ({ ...leg })) } : {}),
+    ...(input.lastFootPlantingSurfaces !== undefined ? { lastFootPlantingSurfaces: input.lastFootPlantingSurfaces.map(point => ({ ...point, worldPosition: [...point.worldPosition] as const })) } : {}),
+    ...(input.lastFootPlantingFeet !== undefined ? { lastFootPlantingFeet: input.lastFootPlantingFeet.map(foot => ({ ...foot, worldPosition: [...foot.worldPosition] as const })) } : {}),
     ...(input.footPlantingConfigured !== undefined ? { footPlantingConfigured: input.footPlantingConfigured } : {}),
     diagnostics
   };
@@ -10506,6 +10573,8 @@ export interface AuraApp {
    */
   readonly physics: AuraPhysicsRuntime;
   setScene(scene: AuraSceneBuilder | AuraSceneSnapshot): void;
+  /** Apply native renderer quality between completed frames; rejects unsupported particle owners. */
+  setPerformanceQuality(settings: AuraPerformanceQuality): void;
   onFrame(callback: AuraFrameCallback): () => void;
   offFrame(callback: AuraFrameCallback): void;
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
@@ -10568,6 +10637,10 @@ export interface AuraApp {
    */
   advance(dt?: number): void;
   step(dt?: number): void;
+  /** Submit a native asynchronous production frame. Rejects unavailable or disposed renderers. */
+  stepAsync(dt?: number): Promise<void>;
+  /** Wait for pending submissions and release renderer resources. */
+  disposeAsync(): Promise<void>;
   diagnostics(): AuraDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
   screenshot(): AuraScreenshot;
@@ -10575,6 +10648,8 @@ export interface AuraApp {
 }
 
 export interface AuraCreateAppOptions {
+  /** Native asynchronous presentation for the automatic loop; synchronous remains the default. */
+  readonly frameMode?: "sync" | "async";
   readonly scene: AuraSceneBuilder | AuraSceneSnapshot;
   /**
    * Configuration for {@link AuraApp.physics}.
@@ -10598,6 +10673,12 @@ export interface AuraCreateAppOptions {
   readonly diagnostics?: boolean | AuraDiagnosticsOptions;
   readonly renderer?: AuraCreateAppRendererOptions;
   readonly pixelRatio?: number;
+  /**
+   * Native renderer quality applied before the first production frame. Use this
+   * when a known device/capture budget must constrain the initial render; later
+   * changes use {@link AuraApp.setPerformanceQuality} between completed frames.
+   */
+  readonly performanceQuality?: AuraPerformanceQuality;
   readonly autoStart?: boolean;
   readonly resize?: boolean;
 }
@@ -10927,11 +11008,24 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const canvas = resolveCanvas(target);
   if (canvas) {
     configureCanvas(canvas, options.pixelRatio ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe(), options.resize ?? true);
+    initializeRootPerformanceQuality(canvas);
+    // Apply a caller's device/capture budget before the production controller
+    // derives its first backing size, LODs, particle pool and shadow target.
+    // Runtime mutations remain guarded by app.setPerformanceQuality().
+    if (options.performanceQuality) setRootPerformanceQuality(canvas, options.performanceQuality);
   }
   const overlay = canvas && shouldRenderOverlay(options.diagnostics, snapshot) ? createDiagnosticsOverlay(canvas, diagnosticsState) : undefined;
   let disposed = false;
   let animationHandle = 0;
   let productionController: WebGLRenderController | undefined;
+  let pendingAsyncSteps = 0;
+  let asyncSteps: Promise<void> = Promise.resolve();
+  const assertMutableFrame = (): void => {
+    if (disposed) throw new Error("Aura3D app is disposed.");
+    if (pendingAsyncSteps > 0 || productionController?.busy?.()) {
+      throw new Error("Aura3D frame submission is pending; await stepAsync() before synchronous mutation.");
+    }
+  };
   /** WS-2.9: true from the moment a WebGL mount starts until the controller arrives or fails. */
   let productionMountPending = false;
   /**
@@ -10952,6 +11046,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    * any time and on any scene.
    */
   let productionMountSettled: Promise<void> = Promise.resolve();
+  let productionMountTask: Promise<void> = Promise.resolve();
   /** Lets `dispose()` settle an in-flight mount; see the note there. */
   let settleMountForDispose: () => void = () => undefined;
   /*
@@ -11072,6 +11167,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   let runtimeAlpha = 0;
   const ownedInputControllers = new Set<ReturnType<typeof createGameInput>>();
   const runRuntimeFrame = (dt: number, source: AuraFrameInfo["source"]) => {
+    if (disposed) return;
     runtimeFrame += 1;
     runtimeTime += dt;
     runtimeAlpha = runtimeFixedDt > 0 ? Math.max(0, Math.min(1, (dt % runtimeFixedDt) / runtimeFixedDt)) : 0;
@@ -11089,7 +11185,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     for (const callback of [...frameCallbacks]) callback(frame);
   };
   const shouldUseProductionRendererForCurrentScene = () =>
-    Boolean(canvas && renderSnapshot.nodes.some(isWebGLRenderableNode) && typeof window !== "undefined");
+    Boolean(canvas && hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode)) && typeof window !== "undefined");
   const resetDiagnosticsForCurrentScene = (backend: AuraBackend) => {
     const fresh = createInitialDiagnostics(renderSnapshot, options.renderer);
     diagnosticsState.backend = backend;
@@ -11150,7 +11246,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
      * So the two cases are separated. A renderable scene with no usable canvas now raises a diagnosable
      * error naming the cause, instead of drawing something plausible.
      */
-    const declaresRenderableContent = renderSnapshot.nodes.some(isWebGLRenderableNode);
+    const declaresRenderableContent = hasRootRenderableContent(canvas, renderSnapshot.nodes.some(isWebGLRenderableNode));
     /*
      * Scoped to the case that is actually a lie: a canvas WAS supplied, so the caller is looking at
      * pixels, and the scene has renderable content — but WebGL declined it, so those pixels would be a
@@ -11192,7 +11288,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       : Promise.resolve();
     settleMountForDispose = settleMount;
     if (shouldUseProductionRenderer && canvas) {
-      void startProductionRender(
+      productionMountTask = startProductionRender(
         canvas,
         renderSnapshot,
         diagnosticsState,
@@ -11215,7 +11311,6 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       )
         .then((controller) => {
           if (disposed || revision !== mountRevision) {
-            productionMountPending = false;
             settleMount();
             controller.dispose();
             return;
@@ -11227,6 +11322,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           markRouteReady(snapshot, diagnosticsState);
         })
         .catch((error: unknown) => {
+          settleMount();
           if (disposed || revision !== mountRevision) return;
           productionMountPending = false;
           productionMountFailed = true;
@@ -11250,7 +11346,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     get backend() {
       return diagnosticsState.backend;
     },
+    setPerformanceQuality(settings) {
+      assertMutableFrame();
+      const quality = validateRootPerformanceQuality(settings);
+      if (!canvas || !productionController?.setPerformanceQuality) throw new Error("PERFORMANCE_QUALITY_UNSUPPORTED: await a production renderer mount before changing quality.");
+      if (quality.particleScale !== 1 && !supportsRootParticleQuality(canvas)) throw new Error("PERFORMANCE_PARTICLE_OWNER_UNAVAILABLE: this root workload has no adaptive native particle owner.");
+      applyRootParticleQuality(canvas, quality.particleScale);
+      productionController.setPerformanceQuality(quality);
+    },
     setScene(nextScene) {
+      assertMutableFrame();
       snapshot = normalizeSceneSnapshot(nextScene);
       renderSnapshot = flattenSceneSnapshot(snapshot);
       runtimeNodes.reset(renderSnapshot);
@@ -11296,6 +11401,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     pause() {
       runtimePaused = true;
+      // Stop the production requestAnimationFrame owner as well as simulation.
+      // Holding the clock alone still submitted the same expensive frame forever.
+      productionController?.pause?.();
+      productionController?.resetTemporalHistory?.("pause");
     },
     resetRuntimeClock() {
       /*
@@ -11318,6 +11427,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     resume() {
       runtimePaused = false;
+      productionController?.resetTemporalHistory?.("resume");
+      productionController?.resume?.();
       if (!animationHandle && !productionController && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
         animationHandle = requestAnimationFrame(render);
       }
@@ -11346,11 +11457,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       return productionController?.deviceLost?.() ?? false;
     },
     advance(dt = 1 / 60) {
+      assertMutableFrame();
       const seconds = Math.max(0, dt);
       runRuntimeFrame(seconds, "manual");
       canvasRuntimePhysics?.step(seconds);
+      // Imported GLB animation, consumed root motion and foot planting live in the
+      // production actor bridge. They are simulation state, so `advance()` must
+      // update them even when no GPU frame is presented.
+      productionController?.update?.(runtimeTime * 1000);
     },
     step(dt = 1 / 60) {
+      assertMutableFrame();
       const seconds = Math.max(0, dt);
       app.advance(seconds);
       const previousPaused = runtimePaused;
@@ -11407,7 +11524,40 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       }
       runtimePaused = previousPaused;
     },
+    stepAsync(dt = 1 / 60) {
+      if (!Number.isFinite(dt) || dt < 0) return Promise.reject(new Error("Aura3D stepAsync requires a finite non-negative delta."));
+      if (disposed) return Promise.reject(new Error("Aura3D app is disposed."));
+      pendingAsyncSteps += 1;
+      const next = asyncSteps.then(async () => {
+        await productionMountSettled;
+        if (disposed) throw new Error("Aura3D app is disposed.");
+        const controller = productionController;
+        if (productionMountFailed || !controller?.renderAsync) {
+          throw new Error(`Aura3D asynchronous submission unavailable: ${diagnosticsState.errors.join("; ") || "a production renderer is required"}`);
+        }
+        await controller.renderAsync(() => {
+          runRuntimeFrame(dt, "manual");
+          canvasRuntimePhysics?.step(dt);
+          return runtimeTime * 1000;
+        });
+      }).finally(() => { pendingAsyncSteps -= 1; });
+      asyncSteps = next.catch(() => undefined);
+      return next;
+    },
+    async disposeAsync() {
+      const controller = productionController;
+      app.dispose();
+      await asyncSteps;
+      await productionMountTask;
+      await controller?.whenIdle?.();
+    },
     diagnostics() {
+      diagnosticsState.renderer = readRootDiagnosticSnapshot(
+        diagnosticsState.renderer,
+        productionController?.diagnostics,
+        disposed,
+        pendingAsyncSteps > 0 || Boolean(productionController?.busy?.())
+      );
       return snapshotDiagnostics(diagnosticsState);
     },
     evidence(evidenceOptions = {}) {
@@ -11762,7 +11912,17 @@ export function createAuraAssetLoadError(asset: AuraAssetRef<"model">, reason: s
 }
 
 interface WebGLRenderController {
+  diagnostics?(): AuraRendererDiagnosticReport | undefined;
+  setPerformanceQuality?(settings: AuraPerformanceQuality): void;
+  /** Advance renderer-owned actor animation/IK/evidence without presenting pixels. */
+  update?(time: number): void;
   render(time?: number): void;
+  renderAsync?(time: () => number): Promise<void>;
+  busy?(): boolean;
+  whenIdle?(): Promise<void>;
+  resetTemporalHistory?(reason: string): void;
+  pause?(): void;
+  resume?(): void;
   dispose(): void;
   /** WS-2.6 — device-loss subscription, when the backing renderer has a real WebGL2 device. */
   onDeviceLost?(listener: () => void): () => void;
@@ -11796,6 +11956,7 @@ function worldLabelsFromSnapshot(snapshot: AuraSceneSnapshot, runtimeNodes?: Aur
       return {
         id: node.name ?? `${node.label}-${index + 1}`,
         text: node.text,
+        role: labelTelemetryRoleFor(node.label),
         anchor: [0, 0, 0] as const,
         offscreenPolicy: "hide" as const
       };
@@ -11809,6 +11970,7 @@ function worldLabelsFromSnapshot(snapshot: AuraSceneSnapshot, runtimeNodes?: Aur
     return {
       id: node.name ?? `${node.label}-${index + 1}`,
       text: node.text,
+      role: labelTelemetryRoleFor(node.label),
       anchor: [position[0], position[1], position[2]] as const,
       leaderAnchor: [anchor[0], anchor[1], anchor[2]] as const,
       screenOffset: separated ? ([0, 0] as const) : ([0, -26] as const),
@@ -11977,8 +12139,10 @@ async function startProductionRender(
    */
   pausedRenderTime: () => number = () => 0
 ): Promise<WebGLRenderController> {
-  const renderableNode = snapshot.nodes.find(isWebGLRenderableNode);
-  if (!renderableNode) {
+  // Use the same ownership rule as initial mount and setScene. A compatibility
+  // source continues supplying arena/fighter geometry when public nodes are
+  // temporarily absent (for example the crowd-hidden negative control).
+  if (!hasRootRenderableContent(canvas, snapshot.nodes.some(isWebGLRenderableNode))) {
     throw new AuraRuntimeError(
       "missing-asset",
       "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), primitives.cylinder(), or primitives.plane()."
@@ -11991,13 +12155,28 @@ async function startProductionRender(
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   const pixelRatio = options.pixelRatio ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe();
+  let disposed = false;
+  let animationHandle = 0;
+  let lastTime = 0;
+  let pendingFrames = 0;
+  let frameTail: Promise<void> = Promise.resolve();
+  const baseBackingSize = getRootPerformanceBaseSize(canvas);
+  let resourcesReleased = false;
+  const releaseResources = (): void => {
+    if (resourcesReleased) return;
+    resourcesReleased = true;
+    labelLayer?.dispose();
+    renderer.dispose();
+  };
   const resizeRenderer = (): void => {
+    if (disposed) return;
+    if (pendingFrames > 0) { resourceOwner.requestResize(); return; }
     if (options.resize === false) return;
     const parentRect = canvas.parentElement?.getBoundingClientRect();
     const cssWidth = parentRect?.width || canvas.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
     const cssHeight = parentRect?.height || canvas.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
-    const width = Math.max(320, Math.round(cssWidth * pixelRatio));
-    const height = Math.max(220, Math.round(cssHeight * pixelRatio));
+    const width = Math.max(1, Math.round(Math.max(320, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
+    const height = Math.max(1, Math.round(Math.max(220, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     if (canvas.width === width && canvas.height === height) return;
     canvas.style.width = `${cssWidth}px`;
     canvas.style.height = `${cssHeight}px`;
@@ -12005,20 +12184,18 @@ async function startProductionRender(
     canvas.height = height;
     renderer.resize?.(width, height);
   };
+  const resourceOwner = new DeferredFrameResources(releaseResources, resizeRenderer);
   const resizeObserver = options.resize !== false && typeof ResizeObserver !== "undefined" && canvas.parentElement
     ? new ResizeObserver(resizeRenderer)
     : undefined;
   resizeObserver?.observe(canvas.parentElement!);
   if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
-  let disposed = false;
-  let animationHandle = 0;
-  let lastTime = 0;
-  const renderFrame = (time = performanceNow()) => {
+  const renderFrame = (time = performanceNow(), submittedDrawCalls?: number, explicit = false) => {
     if (disposed) return;
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
-    if (!isPaused()) beforeRender?.(delta / 1000, "raf");
+    if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
     /*
      * A paused app must not keep advancing time-driven rendering.
      *
@@ -12032,8 +12209,8 @@ async function startProductionRender(
      * `runtimeTime` and renders explicitly, so stepping still produces new frames — what stops is
      * time passing on its own.
      */
-    const renderTime = isPaused() ? pausedRenderTime() : time;
-    const drawCalls = renderer.render(renderTime);
+    const renderTime = resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime);
+    const drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = diagnosticsState.fps || 60;
     diagnosticsState.drawCalls = drawCalls;
@@ -12066,14 +12243,77 @@ async function startProductionRender(
       });
     }
     overlay?.update();
-    if ((sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
-      animationHandle = requestAnimationFrame(renderFrame);
+    if (!explicit && !isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+      animationHandle = requestAnimationFrame(scheduleFrame);
     }
   };
 
-  renderFrame();
+  const submitAsync = (clock: () => number, automatic = false): Promise<void> => {
+    if (disposed) return Promise.reject(new Error("Aura3D renderer is disposed."));
+    if (!renderer.renderAsync) return Promise.reject(new Error("Aura3D asynchronous submission requires the production renderer."));
+    pendingFrames += 1;
+    const submitted = resourceOwner.run(() => frameTail.then(async () => {
+      if (disposed) throw new Error("Aura3D renderer is disposed.");
+      const time = clock();
+      if (automatic) {
+        const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
+        lastTime = time;
+        if (!isPaused()) beforeRender?.(delta / 1000, "raf");
+      }
+      // User frame callbacks can dispose the app. Do not submit a new frame after
+      // that callback; pending ownership still defers cleanup until this settles.
+      if (disposed) throw new Error("Aura3D renderer is disposed.");
+      const renderTime = resolveRootRenderTime(time, !automatic, isPaused, pausedRenderTime);
+      const drawCalls = await renderer.renderAsync!(renderTime);
+      if (!disposed) {
+        const previousLastTime = lastTime;
+        renderFrame(renderTime, drawCalls, true);
+        lastTime = previousLastTime;
+      }
+    }).finally(() => { pendingFrames -= 1; }));
+    frameTail = submitted.catch(() => undefined);
+    return submitted;
+  };
+  const scheduleFrame = (time: number): void => {
+    animationHandle = 0;
+    if (disposed) return;
+    if (options.frameMode === "async") {
+      void submitAsync(() => time, true).then(() => {
+        if (!disposed && !isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+          animationHandle = requestAnimationFrame(scheduleFrame);
+        }
+      }).catch((error: unknown) => {
+        diagnosticsState.errors.push(productionRenderErrorMessage(error));
+        overlay?.update();
+      });
+    } else if (pendingFrames > 0) {
+      // A manual async frame owns the resources. Retry without advancing simulation.
+      // A pause cancels automatic retries; the explicit owner completes independently.
+      if (!isPaused()) animationHandle = requestAnimationFrame(scheduleFrame);
+    } else renderFrame(time);
+  };
+  try {
+    if (options.frameMode === "async") {
+      await submitAsync(() => performanceNow(), true);
+      if (!isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+        animationHandle = requestAnimationFrame(scheduleFrame);
+      }
+    } else renderFrame();
+  } catch (error) {
+    // A failed first submission has no returned controller to dispose its resources.
+    disposed = true;
+    resizeObserver?.disconnect();
+    if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
+    releaseResources();
+    throw error;
+  }
 
   return {
+    update(time) {
+      if (disposed) throw new Error("Aura3D renderer is disposed.");
+      if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before advancing renderer state.");
+      renderer.update?.(time);
+    },
     render(time = performanceNow()) {
       /*
        * Preserve `lastTime` across an explicit render.
@@ -12084,9 +12324,39 @@ async function startProductionRender(
        * different clock — a visible jump. Same defect the canvas2d path had; fixed identically so
        * the two render paths cannot disagree about what `step` does.
        */
+      if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before synchronous rendering.");
       const previousLastTime = lastTime;
-      renderFrame(time);
+      renderFrame(time, undefined, true);
       lastTime = previousLastTime;
+    },
+    setPerformanceQuality(settings) {
+      if (disposed || pendingFrames > 0) throw new Error("PERFORMANCE_QUALITY_BUSY: await the active frame before changing quality.");
+      setRootPerformanceQuality(canvas, settings);
+      if (options.resize !== false) resizeRenderer();
+      else {
+        const width = Math.max(1, Math.round(baseBackingSize.width * settings.resolutionScale));
+        const height = Math.max(1, Math.round(baseBackingSize.height * settings.resolutionScale));
+        canvas.width = width; canvas.height = height;
+        renderer.resize?.(width, height);
+      }
+      renderer.resetTemporalHistory?.("performance-quality");
+    },
+    diagnostics: () => disposed || pendingFrames > 0 ? undefined : renderer.diagnostics,
+    renderAsync: (clock) => submitAsync(clock),
+    busy: () => pendingFrames > 0,
+    whenIdle: () => frameTail,
+    resetTemporalHistory(reason) {
+      // Reset after the active submission, before the next one can consume history.
+      if (pendingFrames > 0) frameTail = frameTail.then(() => { if (!disposed) renderer.resetTemporalHistory?.(reason); });
+      else renderer.resetTemporalHistory?.(reason);
+    },
+    pause() {
+      if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      animationHandle = 0;
+    },
+    resume() {
+      if (disposed || animationHandle || options.autoStart === false || typeof requestAnimationFrame === "undefined") return;
+      if (sceneWantsFrames || requiresFrames()) animationHandle = requestAnimationFrame(scheduleFrame);
     },
     // WS-2.6 — forward device-loss subscription from whichever renderer backs this controller.
     onDeviceLost: renderer.onDeviceLost ? (listener: () => void) => renderer.onDeviceLost!(listener) : undefined,
@@ -12097,8 +12367,7 @@ async function startProductionRender(
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       resizeObserver?.disconnect();
       if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
-      labelLayer?.dispose();
-      renderer.dispose();
+      resourceOwner.dispose();
     }
   };
 }
@@ -12160,10 +12429,13 @@ async function createProductionSceneRenderer(
 interface ProductionRuntimeActorEntry {
   readonly node: AuraModelNode;
   readonly actor: TypedGLBActor;
+  rootMotionCursors?: Map<string, number>;
 }
 
 interface ProductionRuntimeActorState {
   readonly node: AuraModelNode;
+  readonly animationPose?: AnimationPose;
+  readonly animationPoseTime?: number;
   readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
 }
@@ -12189,6 +12461,8 @@ interface ProductionRuntimePrimitiveResource {
    * once authored texture refs resolve. Reads prefer this slot.
    */
   texturedMaterial: TexturedPBRMaterial | null;
+  /** Owns decoded bitmap and texture resources created by asynchronous upgrade. */
+  textureDisposer?: () => void;
   /** C1 upgrade lifecycle: none (no texture inputs) → pending → textured | fallback. */
   textureStatus: "none" | "pending" | "textured" | "fallback";
   /** Native texture slots bound by the upgrade (subset of baseColor/normal/metallicRoughness). */
@@ -12388,11 +12662,21 @@ function createProductionRuntimeEnvironmentFog(
   };
 }
 
+const productionTemporalSceneKeys = new WeakMap<AuraSceneSnapshot, string>();
+let productionTemporalSceneSequence = 0;
+
+export function resolveNativeBloomRadius(authoredRadius: number | undefined): number {
+  const radius = authoredRadius ?? 0.38;
+  const normalizedKernel = radius <= 1 ? Math.round(radius * 8) : Math.round(radius);
+  return Math.max(1, Math.min(4, normalizedKernel));
+}
+
 function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
   lights: readonly CollectedLight[] = [],
   renderWidth = 1280,
-  renderHeight = 720
+  renderHeight = 720,
+  temporalSupported = true
 ): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
@@ -12428,10 +12712,8 @@ function createProductionRuntimePostprocess(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "contact-occlusion"
   );
   const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
-  // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / dof submit real
-  // native options. motion-blur and taa are withheld (velocity/history have no
-  // root binding): the status layer warns instead of submitting doomed options
-  // that would fail the route with zero draw calls.
+  // The renderer owns temporal GPU inputs. Root checks actual drawable
+  // geometry before requesting them; unsupported scenes retain ordinary output.
   const authoredColorGrade = nodes.find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "color-grade"
   );
@@ -12447,17 +12729,32 @@ function createProductionRuntimePostprocess(
   const authoredDof = nodes.find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "depth-of-field"
   );
+  const authoredMotionBlur = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "motion-blur");
+  const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa");
+  let sceneKey = productionTemporalSceneKeys.get(snapshot);
+  if (!sceneKey) { sceneKey = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, sceneKey); }
   const fxaaRequested = (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
   const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
   return {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
     targetFormat: "rgba16f",
+    ...(temporalRequested ? {
+      temporal: { sceneKey },
+      ...(authoredMotionBlur ? { motionBlur: { samples: 8, scale: clampNumber(authoredMotionBlur.intensity ?? .5, 0, 2) } } : {}),
+      ...(authoredAntiAlias?.mode === "taa" ? { taa: { blend: .9 } } : {})
+    } : {}),
     ...(bloomRequested ? {
       bloom: {
         threshold: clampNumber(authoredBloom?.threshold ?? 0.78, 0, 1),
         intensity: clampNumber(authoredBloom?.intensity ?? 0.3, 0, 2),
-        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? 2))),
+        // Public bloom radius follows the normalized UnrealBloomPass-style
+        // control used by routes and prefabs (normally 0..1), while the native
+        // separable blur consumes an integer pixel kernel. Preserve legacy
+        // explicit pixel kernels above 1 and spread normalized values across
+        // 1..4 so common authored values such as 0.22/0.38 do not all collapse
+        // to a one-pixel blur after rounding.
+        radius: resolveNativeBloomRadius(authoredBloom?.radius),
         ...(authoredBloom?.quality !== undefined ? { quality: authoredBloom.quality } : {}),
         ...(authoredBloom?.softKnee !== undefined ? { softKnee: authoredBloom.softKnee } : {}),
         ...(authoredBloom?.shoulder !== undefined ? { shoulder: authoredBloom.shoulder } : {})
@@ -12538,11 +12835,11 @@ function createProductionRuntimeShadowOptions(
   }, 1);
   const shadowCaster = collectedLights.find((light) => light.castsShadow);
   const size = sceneRadius > 30 ? 4096 : sceneRadius > 10 ? 2048 : 1024;
-  const texelWorldSize = (sceneRadius * 2) / size;
+  const tuning = resolveProductionRuntimeShadowTuning(shadowCaster?.kind, size, sceneRadius);
   return {
     enabled: Boolean(shadowCaster),
     size,
-    bias: clampNumber(texelWorldSize * 0.55, 0.00035, 0.004),
+    ...tuning,
     strength: category === "city-day" ? 0.38
       : category === "material" || category === "product" ? 0.24
         : 0.32,
@@ -12554,6 +12851,33 @@ function createProductionRuntimeShadowOptions(
 }
 
 /**
+ * Shadow bias is compared in normalized light-depth space. Directional maps use
+ * an orthographic projection, so their existing scene-radius/texel heuristic is
+ * world-linear. A spot map is perspective: applying that world-space value at
+ * the far end of its cone erased legitimate caster/receiver separation (Aura
+ * Clash measured 0.00147 normalized depth versus the old 0.004 constant bias),
+ * and the default slope term could erase the remainder on a vertical receiver.
+ * Keep the established directional/point policy intact and use a bounded
+ * fraction of one normalized spot-map texel for both perspective terms.
+ */
+export function resolveProductionRuntimeShadowTuning(
+  kind: CollectedLight["kind"] | undefined,
+  size: number,
+  sceneRadius: number
+): { readonly bias: number; readonly slopeBias?: number } {
+  if (!Number.isInteger(size) || size <= 0) throw new RangeError("Shadow-map size must be a positive integer.");
+  if (!Number.isFinite(sceneRadius) || sceneRadius <= 0) throw new RangeError("Shadow scene radius must be finite and positive.");
+  if (kind === "spot") {
+    return {
+      bias: clampNumber(0.15 / size, 0.00005, 0.00035),
+      slopeBias: 0.12
+    };
+  }
+  const texelWorldSize = (sceneRadius * 2) / size;
+  return { bias: clampNumber(texelWorldSize * 0.55, 0.00035, 0.004) };
+}
+
+/**
  * Device-observed shadow state. `requested` comes from the submitted shadow
  * options, but `mapRendered`/`mapSampled` come only from what the device
  * actually did: a shadow depth target has to exist and a shader has to bind and
@@ -12562,12 +12886,14 @@ function createProductionRuntimeShadowOptions(
  */
 function createProductionRuntimeShadowObservation(
   shadowOptions: RendererShadowOptions,
-  diagnostics: RenderDeviceDiagnostics
+  diagnostics: RenderDeviceDiagnostics,
+  observed: Readonly<Record<string, unknown>> | null
 ): NonNullable<AuraRendererRuntimeObservation["shadow"]> {
   const nativeShadowMapBindings = diagnostics.nativeShadowMapBindings ?? 0;
-  const mapRendered = Boolean(shadowOptions.enabled) && (diagnostics.shadowRenderTargetsAllocated ?? 0) > 0;
+  const mapRendered = Boolean(shadowOptions.enabled) && observed !== null && (diagnostics.shadowRenderTargetsAllocated ?? 0) > 0;
   return {
     requested: Boolean(shadowOptions.enabled),
+    observed,
     mapRendered,
     mapSampled: mapRendered && nativeShadowMapBindings > 0,
     mapSize: shadowOptions.size,
@@ -12693,9 +13019,12 @@ interface ProductionRuntimeLightDescriptor {
    * N1 explicit shadow request (`lights.spot({ shadow: true })`). Requested
    * descriptors outrank unrequested ones for the single caster slot; when
    * nobody requests, the legacy first-by-priority fallback applies
-   * unchanged, so existing scenes render byte-identical maps.
+   * unchanged, so existing scenes render byte-identical maps. Explicit
+   * `shadow: false` is retained separately so a negative control can disable
+   * the map rather than falling back to an implicit caster.
    */
   readonly shadowRequested: boolean;
+  readonly shadowDisabled?: boolean;
   readonly authoredLight: AuraLightType | "fallback";
   readonly authoredWidth?: number;
   readonly authoredHeight?: number;
@@ -12718,18 +13047,32 @@ function createProductionRuntimeCollectedLights(snapshot: AuraSceneSnapshot): re
  * all-unrequested scenes keep the legacy priority-then-intensity order.
  */
 export function resolveProductionShadowCasterIndex(
-  descriptors: readonly { readonly shadowPriority: number; readonly shadowRequested: boolean; readonly intensity: number }[]
+  descriptors: readonly {
+    readonly shadowPriority: number;
+    readonly shadowRequested: boolean;
+    readonly shadowDisabled?: boolean;
+    readonly intensity: number;
+  }[]
 ): number {
-  return descriptors.reduce((selected, descriptor, index) => {
-    if (selected < 0) return index;
-    const current = descriptors[selected]!;
-    const priority = descriptor.shadowPriority + (descriptor.shadowRequested ? 10 : 0);
-    const currentPriority = current.shadowPriority + (current.shadowRequested ? 10 : 0);
-    if (priority !== currentPriority) {
-      return priority > currentPriority ? index : selected;
+  const explicitlyRequested = descriptors
+    .map((descriptor, index) => ({ descriptor, index }))
+    .filter(({ descriptor }) => descriptor.shadowRequested);
+  // An authored false is scene-level opt-out when no light is explicitly
+  // requested. Otherwise another unspecified light would silently take the
+  // legacy caster slot and make `shadow: false` visually ineffective.
+  if (explicitlyRequested.length === 0 && descriptors.some((descriptor) => descriptor.shadowDisabled === true)) {
+    return -1;
+  }
+  const candidates = explicitlyRequested.length > 0
+    ? explicitlyRequested
+    : descriptors.map((descriptor, index) => ({ descriptor, index }));
+  return candidates.reduce((selected, candidate) => {
+    if (selected === undefined) return candidate;
+    if (candidate.descriptor.shadowPriority !== selected.descriptor.shadowPriority) {
+      return candidate.descriptor.shadowPriority > selected.descriptor.shadowPriority ? candidate : selected;
     }
-    return descriptor.intensity > current.intensity ? index : selected;
-  }, -1);
+    return candidate.descriptor.intensity > selected.descriptor.intensity ? candidate : selected;
+  }, undefined as { readonly descriptor: typeof descriptors[number]; readonly index: number } | undefined)?.index ?? -1;
 }
 
 function createProductionRuntimeLightDescriptors(
@@ -12759,7 +13102,8 @@ function createProductionRuntimeLightDescriptors(
       spotAngle: 0,
       penumbra: 0,
       shadowPriority: 3,
-      shadowRequested: false,
+      shadowRequested: node.shadow === true,
+      shadowDisabled: node.shadow === false,
       authoredLight: node.light
     }];
   }
@@ -12798,7 +13142,8 @@ function createProductionRuntimeLightDescriptors(
       spotAngle: clampNumber(node.angle ?? Math.PI / 6, 0.08, Math.PI / 2 - 0.01),
       penumbra: clampNumber(node.penumbra ?? 0.4, 0, 1),
       shadowPriority: 2,
-      shadowRequested: node.shadow ?? false,
+      shadowRequested: node.shadow === true,
+      shadowDisabled: node.shadow === false,
       authoredLight: node.light
     }];
   }
@@ -13121,6 +13466,7 @@ async function createProductionRuntimeSceneRenderer(
     height: canvas.height,
     backend: "webgl2",
     antialias: true,
+    ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
     preserveDrawingBuffer: true,
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
@@ -13138,7 +13484,7 @@ async function createProductionRuntimeSceneRenderer(
   const textureUpgradeWarnings = new Set<string>();
   void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
     textureUpgradeWarnings.add(message);
-  }).catch((error) => {
+  }, Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096)).catch((error) => {
     textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
   });
   const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
@@ -13188,8 +13534,9 @@ async function createProductionRuntimeSceneRenderer(
   // live entries/device state — never cached intent.
   const buildDiagnostics = (): AuraRendererDiagnosticReport => {
     const shadowObservation = createProductionRuntimeShadowObservation(
-      createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights),
-      latestDeviceDiagnostics
+      { ...createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
+      latestDeviceDiagnostics,
+      productionRenderer.getShadowEvidence()
     );
     const spotCaster = productionRuntimeLights.find((light) => light.castsShadow);
     const spotAngle = spotCaster?.kind === "spot" ? spotCaster.spotAngle : undefined;
@@ -13284,6 +13631,28 @@ async function createProductionRuntimeSceneRenderer(
     );
   };
 
+  let preparedFrame: { readonly time: number; readonly input: ProductionRendererInput } | undefined;
+  const buildFrame = (time: number): ProductionRendererInput => {
+    runtimeWarnings.clear();
+    latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
+    return createProductionRuntimeRendererInput(
+      snapshot,
+      canvas,
+      actorEntries,
+      primitiveEntries,
+      time,
+      runtimeNodes,
+      runtimeWarnings,
+      currentEnvironmentLighting,
+      productionRuntimeLights
+    );
+  };
+  const takePreparedFrame = (time: number): ProductionRendererInput => {
+    const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;
+    preparedFrame = undefined;
+    return prepared ?? buildFrame(time);
+  };
+
   return {
     get backend() {
       return productionRenderer.backend;
@@ -13291,27 +13660,33 @@ async function createProductionRuntimeSceneRenderer(
     get diagnostics() {
       return buildDiagnostics();
     },
+    update(time) {
+      // Building the frame applies controller-bound actor clips, root-motion
+      // consumption, foot IK, morphs and imported-asset evidence. Discarding the
+      // returned input deliberately avoids a GPU/device submission.
+      preparedFrame = { time, input: buildFrame(time) };
+    },
     render(time) {
-      runtimeWarnings.clear();
-      latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
-      const input = createProductionRuntimeRendererInput(
-        snapshot,
-        canvas,
-        actorEntries,
-        primitiveEntries,
-        time,
-        runtimeNodes,
-        runtimeWarnings,
-        currentEnvironmentLighting,
-        productionRuntimeLights
-      );
+      const input = takePreparedFrame(time);
       const result = productionRenderer.renderInteractiveFrame(input);
       latestDeviceDiagnostics = result.diagnostics;
+      getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
+      latestFeatures = result.features;
+      return latestDeviceDiagnostics.drawCalls;
+    },
+    async renderAsync(time) {
+      const input = takePreparedFrame(time);
+      const result = await productionRenderer.renderInteractiveFrameAsync(input);
+      latestDeviceDiagnostics = result.diagnostics;
+      getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
       latestFeatures = result.features;
       return latestDeviceDiagnostics.drawCalls;
     },
     viewProjection(time) {
       return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+    },
+    resetTemporalHistory(reason) {
+      productionRenderer.resetTemporalHistory(reason);
     },
     resize(width, height) {
       productionRenderer.resize(width, height);
@@ -13330,7 +13705,8 @@ async function createProductionRuntimeSceneRenderer(
       productionRenderer.dispose();
       for (const { actor } of actorEntries) actor.dispose();
       for (const { resources } of primitiveEntries) {
-        for (const { geometry, material, texturedMaterial } of resources) {
+        for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
+          textureDisposer?.();
           geometry.dispose();
           material.dispose();
           texturedMaterial?.dispose();
@@ -13351,14 +13727,16 @@ function createProductionRuntimeRendererInput(
   environmentLighting: EnvironmentLightingOptions,
   collectedLights: readonly CollectedLight[]
 ): ProductionRendererInput {
-  const items: RenderItem[] = [];
+  const compatibility = getRootRenderSource(canvas);
+  const attachedItems: readonly RenderItem[] = compatibility ? [...(compatibility.source.collectRenderItems?.() ?? compatibility.source.renderItems ?? [])] : [];
+  const items: RenderItem[] = [...attachedItems];
   const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
   const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
-  for (const entry of actorEntries) {
-    const currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
-    const currentNode = currentState.node;
+  for (const [actorIndex, entry] of actorEntries.entries()) {
+    let currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
+    let currentNode = currentState.node;
     if (currentNode.visible === false) continue;
-    const modelMatrix = [...createModelMatrix(
+    let modelMatrix = [...createModelMatrix(
       currentNode,
       productionActorModelBounds(currentNode.asset, entry.actor),
       shouldNormalizeModelNode(currentNode),
@@ -13367,7 +13745,19 @@ function createProductionRuntimeRendererInput(
     // The foot-planting post-pass solves in the same world space this matrix draws into;
     // refresh its matrix before the clip plays so the solve uses this frame, not the last.
     applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
-    applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings);
+    if (currentState.animationPose) {
+      try {
+        entry.actor.applyRetargetedPose(currentState.animationPose, currentState.animationPoseTime ?? time);
+        entry.rootMotionCursors = undefined;
+      } catch (error) {
+        runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`);
+      }
+    } else applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings, modelMatrix, () => {
+      currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
+      currentNode = currentState.node;
+      modelMatrix = [...createModelMatrix(currentNode, productionActorModelBounds(currentNode.asset, entry.actor), shouldNormalizeModelNode(currentNode), time)];
+      applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
+    });
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
     // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
     // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.
@@ -13402,7 +13792,24 @@ function createProductionRuntimeRendererInput(
       }
     }
     if (currentNode.instancedModelWarning) runtimeWarnings.add(currentNode.instancedModelWarning);
-    items.push(...actorItems.map((item) => ({ ...item, castShadow: currentNode.castShadow, ...modelInstanceAttach })));
+    // A GLB mesh has its own authored local/world transform. Native instance
+    // transforms must apply the complete normalized node placement BEFORE that
+    // mesh transform, exactly like an individually mounted actor. The previous
+    // base(actorRoot * mesh) * instance(actorRoot) order normalized twice and
+    // rotated/scaled the instance translations in the mesh's coordinate system.
+    const localActorItems = modelInstanceAttach.instanceTransforms
+      ? entry.actor.collectRenderItems({ modelMatrix: identityMat4(), ...(wrinkleStrength === undefined ? {} : { wrinkleStrength }) })
+      : undefined;
+    items.push(...actorItems.map((item, itemIndex) => {
+      const nativeMatrices = modelInstanceAttach.instanceTransforms;
+      const localItem = localActorItems?.[itemIndex];
+      if (nativeMatrices && !localItem) throw new Error("Instanced GLB mesh collection changed within one frame");
+      return { ...item, label: `actor-${actorIndex}:mesh-${itemIndex}:${item.label ?? "mesh"}`, castShadow: currentNode.castShadow, ...modelInstanceAttach,
+        ...(nativeMatrices && localItem ? {
+          modelMatrix: identityMat4(),
+          instanceTransforms: composeModelInstanceMatrices(nativeMatrices, localItem.modelMatrix ?? identityMat4())
+        } : {}) };
+    }));
     attachProductionActorEvidence(currentNode, entry.actor, actorItems, runtimeNodes);
   }
   // G1 SDF occlusion test, built once per frame only when SDF quads exist
@@ -13412,10 +13819,10 @@ function createProductionRuntimeRendererInput(
   const sdfOcclusionTest = sdfEntries.length > 0
     ? createSceneLabelOcclusionTest(snapshot, cameraPosition, runtimeNodes)
     : undefined;
-  for (const entry of primitiveEntries) {
+  for (const [primitiveIndex, entry] of primitiveEntries.entries()) {
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     if (!currentState.visible) continue;
-    const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition);
+    const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition, getRootPerformanceQuality(canvas)?.lodBias ?? 1);
     if (resource.sdfText && resource.texturedMaterial) {
       // G1 per-frame SDF opacity: LOD fade from the live camera distance
       // times the scene occlusion policy, written to the quad material.
@@ -13444,32 +13851,40 @@ function createProductionRuntimeRendererInput(
       geometry: resource.geometry,
       material: resource.texturedMaterial ?? resource.material,
       modelMatrix: createModelMatrix(currentState.node, resource.bounds, false, time),
-      label: currentState.node.name ?? `aura-primitive-${currentState.node.primitive}`,
+      label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
       includeInAutoFrame: false,
       ...(currentState.node.instances ? { instanceTransforms: createProductionInstanceTransforms(currentState.node.instances, currentState.node), instanceColors: createProductionInstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });
   }
+  const unsupportedTemporal = items.find(item => {
+    const base = item.material && "baseMaterial" in item.material ? item.material.baseMaterial : item.material;
+    return Boolean(item.skinning || item.morphTargets?.length || item.instanceTransforms?.length || item.geometry.topology !== "triangles" || base?.renderState.blend);
+  });
+  const temporalRequested = groups.flatten(snapshot.nodes).some(node => node.kind === "effect" && (node.effect === "motion-blur" || (node.effect === "anti-alias" && node.mode === "taa")));
+  for (const warning of runtimeWarnings) if (warning.startsWith("TEMPORAL_UNSUPPORTED_GEOMETRY:")) runtimeWarnings.delete(warning);
+  if (temporalRequested && unsupportedTemporal) runtimeWarnings.add(`TEMPORAL_UNSUPPORTED_GEOMETRY: ${unsupportedTemporal.label}; requires opaque rigid noninstanced triangles`);
   const source: RenderSource = {
+    ...(compatibility?.source ?? {}),
     collectRenderItems: () => items,
-    cameraPolicy: "require",
-    staticBatching: true,
+    cameraPolicy: compatibility?.source.cameraPolicy ?? "require",
+    staticBatching: !temporalRequested,
     frustumCulling: true,
-    collectedLights,
-    environmentLighting,
+    collectedLights: [...collectedLights, ...(compatibility?.source.collectedLights ?? [])],
+    environmentLighting: compatibility?.source.environmentLighting ?? environmentLighting,
     // The production runtime owns the pixel-backed HDR target and pass chain for
     // routes that request effects. The diagnostics are device-observed, so a
     // compositor failure is reported as fallback rather than claimed as a pass.
-    postprocess: createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height),
-    shadow: createProductionRuntimeShadowOptions(snapshot, collectedLights),
-    environmentFog: createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
-    cameraPosition
+    postprocess: compatibility?.source.postprocess ?? createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal),
+    shadow: { ...createProductionRuntimeShadowOptions(snapshot, collectedLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
+    environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
+    ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { cameraPosition })
   };
   const cameraLike: CameraLike = { viewProjectionMatrix };
   return {
     source,
-    camera: cameraLike,
-    metadata: createProductionRuntimeMetadata(actorEntries, primitiveEntries)
+    ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { camera: cameraLike }),
+    metadata: includeRootSourceMetadata(createProductionRuntimeMetadata(actorEntries, primitiveEntries), attachedItems)
   };
 }
 
@@ -13496,6 +13911,9 @@ function blankProductionPrimitiveTextureState(): {
  * fetchable urls; procedural inputs have no rasterizer and are reported so
  * the caller can warn instead of silently dropping them.
  */
+const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", "clearcoatNormal", "sheenColor", "sheenRoughness", "iridescence", "iridescenceThickness", "anisotropy"] as const;
+type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[number];
+
 export function createProductionPrimitiveTextureIntent(materialSpec: AuraMaterialSpec | undefined): {
   readonly baseColorUrl?: string;
   readonly normalUrl?: string;
@@ -13503,6 +13921,12 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
   readonly metalnessUrl?: string;
   readonly occlusionUrl?: string;
   readonly emissiveUrl?: string;
+  readonly extensionMaps?: Readonly<Partial<Record<RootExtensionTextureSlot, {
+    readonly url: string;
+    readonly colorSpace: "srgb" | "linear";
+    readonly texCoord: 0 | 1;
+    readonly transform?: AuraTextureTransform;
+  }>>>;
   readonly proceduralInputs: readonly string[];
 } {
   const refUrl = (input: AuraMaterialTextureInput | AuraAssetRef<"texture"> | undefined): string | undefined =>
@@ -13526,6 +13950,25 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
   const metalnessUrl = refUrl(materialSpec?.metalnessMap);
   const occlusionUrl = refUrl(materialSpec?.occlusionMap);
   const emissiveUrl = refUrl(materialSpec?.emissiveMap);
+  const extensionMaps: NonNullable<ReturnType<typeof createProductionPrimitiveTextureIntent>["extensionMaps"]> = Object.fromEntries(
+    ROOT_EXTENSION_TEXTURE_SLOTS.flatMap((slot) => {
+      const input = materialSpec?.[`${slot}Map`];
+      if (input === undefined) return [];
+      if (!input || typeof input !== "object" || input.kind !== "aura-asset-ref" || input.type !== "texture") {
+        throw new AuraRuntimeError("unsupported-texture", `${slot}Map requires a typed texture asset reference`);
+      }
+      if (!["png", "jpg", "jpeg", "webp"].includes(input.format) || !input.url) {
+        throw new AuraRuntimeError("unsupported-texture", `${slot}Map requires a fetchable png, jpg, jpeg or webp texture`);
+      }
+      const texCoord = materialSpec?.texCoords?.[slot] ?? 0;
+      if (texCoord !== 0 && texCoord !== 1) throw new RangeError(`${slot} texCoord must be 0 or 1`);
+      const transform = materialSpec?.texTransforms?.[slot];
+      if (transform && [...(transform.offset ?? [0, 0]), ...(transform.scale ?? [1, 1]), transform.rotation ?? 0].some((value) => !Number.isFinite(value))) {
+        throw new RangeError(`${slot} texture transform must contain finite values`);
+      }
+      return [[slot, { url: input.url, colorSpace: slot === "sheenColor" ? "srgb" : "linear", texCoord, ...(transform ? { transform } : {}) }]];
+    })
+  );
   return {
     ...(baseColorUrl ? { baseColorUrl } : {}),
     ...(normalUrl ? { normalUrl } : {}),
@@ -13533,6 +13976,7 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
     ...(metalnessUrl ? { metalnessUrl } : {}),
     ...(occlusionUrl ? { occlusionUrl } : {}),
     ...(emissiveUrl ? { emissiveUrl } : {}),
+    ...(Object.keys(extensionMaps).length ? { extensionMaps } : {}),
     proceduralInputs: procedurals
   };
 }
@@ -13542,16 +13986,27 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
  * R = occlusion (unused here, forced to 255), G = roughness, B = metallic.
  * Missing channels fall back to the scalar spec values.
  */
+const productionPrimitiveBitmapPixels = new WeakMap<ImageBitmap, { readonly width: number; readonly height: number; readonly data: Uint8Array }>();
+
 async function loadProductionPrimitiveBitmap(url: string): Promise<ImageBitmap> {
   if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
     throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
   }
   const response = await fetch(url);
   if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
-  return await createImageBitmap(await response.blob());
+  const blob = await response.blob();
+  const bitmap = await createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  try {
+    const { decodePngTexturePixels } = await import("./PngTexturePixels.js");
+    const pixels = await decodePngTexturePixels(new Uint8Array(await blob.arrayBuffer()));
+    if (pixels) productionPrimitiveBitmapPixels.set(bitmap, pixels);
+    return bitmap;
+  } catch (error) { bitmap.close(); throw error; }
 }
 
 function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
+  const decoded = productionPrimitiveBitmapPixels.get(bitmap);
+  if (decoded) return decoded;
   if (typeof document === "undefined") throw new Error("texture compositing requires a DOM canvas");
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
@@ -13571,7 +14026,8 @@ function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number; readon
  */
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
-  warn: (message: string) => void
+  warn: (message: string) => void,
+  maxTextureSize = 4096
 ): Promise<void> {
   for (const entry of entries) {
     for (const resource of entry.resources) {
@@ -13584,14 +14040,14 @@ export async function upgradeProductionPrimitiveTextures(
           `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
         );
       }
-      const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl].filter(
+      const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
         (url): url is string => typeof url === "string" && url.length > 0
       );
       if (urls.length === 0) continue;
       if (resource.textureStatus !== "none") continue;
       resource.textureStatus = "pending";
       try {
-        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent);
+        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize);
       } catch (error) {
         resource.textureStatus = "fallback";
         const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
@@ -13669,143 +14125,206 @@ async function upgradeProductionPrimitiveResource(
   resource: ProductionRuntimePrimitiveResource,
   node: AuraPrimitiveNode,
   spec: AuraMaterialSpec | undefined,
-  intent: ReturnType<typeof createProductionPrimitiveTextureIntent>
+  intent: ReturnType<typeof createProductionPrimitiveTextureIntent>,
+  maxTextureSize: number
 ): Promise<void> {
   const fail = (message: string): Error => new Error(message);
-  if (resource.material instanceof InstancedPBRMaterial) {
-    throw fail(`instanced primitives have no textured material variant for "${resource.name}"`);
-  }
   if (!resource.geometry.vertexBuffer.format.hasAttribute("uv")) {
     throw fail(`"${resource.name}" geometry carries no uv set; textured upgrade needs generated uvs`);
   }
   const scalars = resolveProductionPrimitiveScalars(node);
-  const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = await Promise.all([
-    intent.baseColorUrl ? loadProductionPrimitiveBitmap(intent.baseColorUrl) : Promise.resolve(undefined),
-    intent.normalUrl ? loadProductionPrimitiveBitmap(intent.normalUrl) : Promise.resolve(undefined),
-    intent.roughnessUrl ? loadProductionPrimitiveBitmap(intent.roughnessUrl) : Promise.resolve(undefined),
-    intent.metalnessUrl ? loadProductionPrimitiveBitmap(intent.metalnessUrl) : Promise.resolve(undefined),
-    intent.occlusionUrl ? loadProductionPrimitiveBitmap(intent.occlusionUrl) : Promise.resolve(undefined),
-    intent.emissiveUrl ? loadProductionPrimitiveBitmap(intent.emissiveUrl) : Promise.resolve(undefined)
-  ]);
-  const slots: string[] = [];
-  const baseColorTexture = baseColorSource
-    ? new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` })
-    : undefined;
-  if (baseColorTexture) slots.push("baseColor");
-  const normalTexture = normalSource
-    ? new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` })
-    : undefined;
-  if (normalTexture) slots.push("normal");
-  let metallicRoughnessTexture: Texture | undefined;
-  if (roughnessSource ?? metalnessSource) {
-    const base = roughnessSource ?? metalnessSource!;
-    const size = { width: base.width, height: base.height };
-    const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
-      if (!bitmap) return undefined;
-      const decoded = bitmapRgbaPixels(bitmap);
-      if (decoded.width !== size.width || decoded.height !== size.height) {
-        const canvas = document.createElement("canvas");
-        canvas.width = size.width;
-        canvas.height = size.height;
-        const context = canvas.getContext("2d", { willReadFrequently: true });
-        if (!context) throw fail("2d canvas unavailable for texture compositing");
-        context.drawImage(bitmap, 0, 0, size.width, size.height);
-        return new Uint8Array(context.getImageData(0, 0, size.width, size.height).data);
-      }
-      return decoded.data;
-    };
-    const composited = compositeMetallicRoughnessPixels(
-      readPixels(roughnessSource),
-      readPixels(metalnessSource),
-      size.width * size.height,
-      spec?.roughness ?? 0.58,
-      spec?.metallic ?? spec?.metalness ?? 0
-    );
-    metallicRoughnessTexture = new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` });
-    slots.push("metallicRoughness");
+  const extensionEntries = Object.entries(intent.extensionMaps ?? {}) as [RootExtensionTextureSlot, NonNullable<NonNullable<typeof intent.extensionMaps>[RootExtensionTextureSlot]>][];
+  const needsScalarAtlas = extensionEntries.some(([slot]) => slot.startsWith("clearcoat"))
+    && extensionEntries.some(([slot]) => slot.startsWith("sheen") || slot === "anisotropy")
+    && extensionEntries.some(([slot]) => slot.startsWith("iridescence"));
+  if (extensionEntries.some(([, map]) => map.texCoord === 1) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) {
+    throw fail(`"${resource.name}" geometry carries no uv1 set requested by extension texture`);
   }
-  const occlusionTexture = occlusionSource
-    ? new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` })
-    : undefined;
-  if (occlusionTexture) slots.push("occlusion");
-  const emissiveTexture = emissiveSource
-    ? new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` })
-    : undefined;
-  if (emissiveTexture) slots.push("emissive");
-  if (slots.length === 0) throw fail(`no texture resolved for "${resource.name}"`);
-  // M2 streaming table: resident bytes from the decoded sources (base +
-  // full mip-chain estimate) with the chain keyed off the largest source.
-  const loadedDims = [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource]
-    .filter((source): source is ImageBitmap => source !== undefined)
-    .map((source) => ({ width: source.width, height: source.height }));
-  const loadedBaseBytes = loadedDims.reduce((total, dims) => total + dims.width * dims.height * 4, 0);
-  const largestDims = loadedDims.reduce(
-    (largest, dims) => (dims.width * dims.height > largest.width * largest.height ? dims : largest),
-    { width: 1, height: 1 }
-  );
-  resource.textureBytes = Math.round(loadedBaseBytes * (4 / 3));
-  resource.textureMipBytes = mipChainBytesCoarseToFine(largestDims.width, largestDims.height);
-  const texCoords = spec?.texCoords;
-  // C3: every root textured slot shares one capability-gated sampler request
-  // (default 8x where supported; the renderer clamps to the device maximum).
-  const textureSampler = new Sampler({
-    maxAnisotropy: resolveSamplerAnisotropy({ desired: spec?.textureAnisotropy }).applied
-  });
-  resource.texturedMaterial = new TexturedPBRMaterial({
-    name: `a3d-production-textured-primitive-${resource.name}`,
-    baseColor: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
-    metallic: clamp01(spec?.metallic ?? spec?.metalness ?? 0),
-    roughness: clamp01(spec?.roughness ?? 0.58),
-    emissiveColor: spec?.emissive
-      ? [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]]
-      : emissiveTexture ? [1, 1, 1] : [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]],
-    emissiveStrength: Math.max(0, spec?.emissiveIntensity ?? (spec?.emissive || emissiveTexture ? 1.35 : 0)),
-    occlusionStrength: clamp01(spec?.occlusionStrength ?? 1),
-    clearcoatFactor: scalars.clearcoat,
-    clearcoatRoughnessFactor: clamp01(spec?.clearcoatRoughness ?? 0.34),
-    sheenColorFactor: [scalars.sheenColor[0], scalars.sheenColor[1], scalars.sheenColor[2]],
-    sheenRoughnessFactor: clamp01(spec?.sheenRoughness ?? 0.3),
-    anisotropyStrength: scalars.anisotropy,
-    anisotropyRotation: spec?.anisotropyRotation ?? 0,
-    iridescenceFactor: scalars.iridescence,
-    iridescenceIor: Math.max(1, spec?.iridescenceIOR ?? 1.3),
-    ...(scalars.thicknessRange ? { iridescenceThicknessMinimum: scalars.thicknessRange[0], iridescenceThicknessMaximum: scalars.thicknessRange[1] } : {}),
-    transmissionFactor: scalars.transmission,
-    ...(spec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, spec.thickness) }),
-    ...(spec?.ior === undefined ? {} : { ior: Math.max(1, spec.ior) }),
-    ...(spec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(spec.attenuationColor) } : {}),
-    ...(spec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, spec.attenuationDistance) }),
-    environmentIntensity: scalars.environmentIntensity,
-    envMapIntensity: scalars.envMapIntensity,
-    renderState: {
-      blend: scalars.opacity < 0.999,
-      depthWrite: scalars.opacity >= 0.999,
-      cullMode: node.primitive === "plane" || scalars.opacity < 0.999 ? "none" : "back"
-    },
-    ...(baseColorTexture ? { baseColorTexture, baseColorSampler: textureSampler } : {}),
-    ...(normalTexture ? { normalTexture, normalSampler: textureSampler, normalScale: spec?.normalScale ?? 1 } : {}),
-    ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: textureSampler } : {}),
-    ...(occlusionTexture ? { occlusionTexture, occlusionSampler: textureSampler } : {}),
-    ...(emissiveTexture ? { emissiveTexture, emissiveSampler: textureSampler } : {}),
-    ...(spec?.texTransforms?.baseColor ? { baseColorTextureTransform: { ...spec.texTransforms.baseColor } } : {}),
-    ...(spec?.texTransforms?.normal ? { normalTextureTransform: { ...spec.texTransforms.normal } } : {}),
-    ...(spec?.texTransforms?.metallicRoughness ? { metallicRoughnessTextureTransform: { ...spec.texTransforms.metallicRoughness } } : {}),
-    ...(spec?.texTransforms?.occlusion ? { occlusionTextureTransform: { ...spec.texTransforms.occlusion } } : {}),
-    ...(spec?.texTransforms?.emissive ? { emissiveTextureTransform: { ...spec.texTransforms.emissive } } : {}),
-    ...((texCoords?.baseColor ?? 0) > 0 || (texCoords?.normal ?? 0) > 0 || (texCoords?.metallicRoughness ?? 0) > 0 || (texCoords?.occlusion ?? 0) > 0 || (texCoords?.emissive ?? 0) > 0
-      ? {
-        textureTexCoords: {
-          ...(baseColorTexture && (texCoords?.baseColor ?? 0) > 0 ? { baseColor: 1 as const } : {}),
-          ...(normalTexture && (texCoords?.normal ?? 0) > 0 ? { normal: 1 as const } : {}),
-          ...(metallicRoughnessTexture && (texCoords?.metallicRoughness ?? 0) > 0 ? { metallicRoughness: 1 as const } : {}),
-          ...(occlusionTexture && (texCoords?.occlusion ?? 0) > 0 ? { occlusion: 1 as const } : {}),
-          ...(emissiveTexture && (texCoords?.emissive ?? 0) > 0 ? { emissive: 1 as const } : {})
-        }
+  const ownedBitmaps: ImageBitmap[] = [];
+  const ownedTextures: Texture[] = [];
+  const bitmapLoads = new Map<string, Promise<ImageBitmap>>();
+  const load = (url: string): Promise<ImageBitmap> => {
+    let pending = bitmapLoads.get(url);
+    if (!pending) {
+      pending = loadProductionPrimitiveBitmap(url).then((bitmap) => {
+        ownedBitmaps.push(bitmap);
+        return bitmap;
+      });
+      bitmapLoads.set(url, pending);
+    }
+    return pending;
+  };
+  const own = (texture: Texture): Texture => { ownedTextures.push(texture); return texture; };
+  const disposeTextures = (): void => {
+    for (const texture of ownedTextures) texture.dispose();
+    for (const bitmap of ownedBitmaps) bitmap.close();
+    ownedTextures.length = 0;
+    ownedBitmaps.length = 0;
+  };
+  try {
+    const baseResults = await Promise.allSettled([
+      intent.baseColorUrl ? load(intent.baseColorUrl) : Promise.resolve(undefined),
+      intent.normalUrl ? load(intent.normalUrl) : Promise.resolve(undefined),
+      intent.roughnessUrl ? load(intent.roughnessUrl) : Promise.resolve(undefined),
+      intent.metalnessUrl ? load(intent.metalnessUrl) : Promise.resolve(undefined),
+      intent.occlusionUrl ? load(intent.occlusionUrl) : Promise.resolve(undefined),
+      intent.emissiveUrl ? load(intent.emissiveUrl) : Promise.resolve(undefined)
+    ]);
+    const failure = baseResults.find((result) => result.status === "rejected");
+    if (failure?.status === "rejected") throw failure.reason;
+    const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
+    const slots: string[] = [];
+    const extensionOptions: Record<string, unknown> = {};
+    const extensionSources: ImageBitmap[] = [];
+    const atlasPixels: Record<string, { readonly width: number; readonly height: number; readonly data: Uint8Array | Uint8ClampedArray }> = {};
+    for (const [slot, map] of extensionEntries) {
+      const source = await load(map.url);
+      extensionSources.push(source);
+      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+        Object.assign(atlasPixels, { [slot]: bitmapRgbaPixels(source) });
       }
-      : {})
-  });
-  resource.textureStatus = "textured";
-  resource.textureSlots = slots;
+      extensionOptions[`${slot}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
+      if (map.transform) extensionOptions[`${slot}TextureTransform`] = { ...map.transform };
+      slots.push(slot);
+    }
+    if (needsScalarAtlas) {
+      const { createExtensionScalarAtlas } = await import("@aura3d/rendering/extension-scalar-atlas");
+      const atlas = createExtensionScalarAtlas(atlasPixels, maxTextureSize);
+      own(atlas.texture);
+      extensionOptions.extensionScalarAtlas = atlas;
+    }
+    const baseColorTexture = baseColorSource
+      ? own(new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` }))
+      : undefined;
+    if (baseColorTexture) slots.push("baseColor");
+    const normalTexture = normalSource
+      ? own(new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` }))
+      : undefined;
+    if (normalTexture) slots.push("normal");
+    let metallicRoughnessTexture: Texture | undefined;
+    if (roughnessSource ?? metalnessSource) {
+      const base = roughnessSource ?? metalnessSource!;
+      const size = { width: base.width, height: base.height };
+      const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
+        if (!bitmap) return undefined;
+        const decoded = bitmapRgbaPixels(bitmap);
+        if (decoded.width !== size.width || decoded.height !== size.height) {
+          const canvas = document.createElement("canvas");
+          canvas.width = size.width;
+          canvas.height = size.height;
+          const context = canvas.getContext("2d", { willReadFrequently: true });
+          if (!context) throw fail("2d canvas unavailable for texture compositing");
+          context.drawImage(bitmap, 0, 0, size.width, size.height);
+          return new Uint8Array(context.getImageData(0, 0, size.width, size.height).data);
+        }
+        return decoded.data;
+      };
+      const composited = compositeMetallicRoughnessPixels(
+        readPixels(roughnessSource),
+        readPixels(metalnessSource),
+        size.width * size.height,
+        spec?.roughness ?? 0.58,
+        spec?.metallic ?? spec?.metalness ?? 0
+      );
+      metallicRoughnessTexture = own(new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` }));
+      slots.push("metallicRoughness");
+    }
+    const occlusionTexture = occlusionSource
+      ? own(new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` }))
+      : undefined;
+    if (occlusionTexture) slots.push("occlusion");
+    const emissiveTexture = emissiveSource
+      ? own(new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` }))
+      : undefined;
+    if (emissiveTexture) slots.push("emissive");
+    if (slots.length === 0) throw fail(`no texture resolved for "${resource.name}"`);
+    // M2 streaming table: resident bytes from the decoded sources (base +
+    // full mip-chain estimate) with the chain keyed off the largest source.
+    const loadedDims = [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource, ...extensionSources]
+      .filter((source): source is ImageBitmap => source !== undefined)
+      .map((source) => ({ width: source.width, height: source.height }));
+    const loadedBaseBytes = loadedDims.reduce((total, dims) => total + dims.width * dims.height * 4, 0);
+    const largestDims = loadedDims.reduce(
+      (largest, dims) => (dims.width * dims.height > largest.width * largest.height ? dims : largest),
+      { width: 1, height: 1 }
+    );
+    resource.textureBytes = Math.round(loadedBaseBytes * (4 / 3));
+    resource.textureMipBytes = mipChainBytesCoarseToFine(largestDims.width, largestDims.height);
+    const texCoords = spec?.texCoords;
+    // C3: every root textured slot shares one capability-gated sampler request
+    // (default 8x where supported; the renderer clamps to the device maximum).
+    const textureSampler = new Sampler({
+      maxAnisotropy: resolveSamplerAnisotropy({ desired: spec?.textureAnisotropy }).applied
+    });
+    for (const [slot] of extensionEntries) extensionOptions[`${slot}Sampler`] = textureSampler;
+    resource.texturedMaterial = new TexturedPBRMaterial({
+      name: `a3d-production-textured-primitive-${resource.name}`,
+      baseColor: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
+      metallic: clamp01(spec?.metallic ?? spec?.metalness ?? 0),
+      roughness: clamp01(spec?.roughness ?? 0.58),
+      emissiveColor: spec?.emissive
+        ? [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]]
+        : emissiveTexture ? [1, 1, 1] : [scalars.emissiveColor[0], scalars.emissiveColor[1], scalars.emissiveColor[2]],
+      emissiveStrength: Math.max(0, spec?.emissiveIntensity ?? (spec?.emissive || emissiveTexture ? 1.35 : 0)),
+      occlusionStrength: clamp01(spec?.occlusionStrength ?? 1),
+      clearcoatFactor: scalars.clearcoat,
+      clearcoatRoughnessFactor: clamp01(spec?.clearcoatRoughness ?? 0.34),
+      clearcoatNormalScale: Math.max(0, spec?.clearcoatNormalScale ?? 1),
+      ...extensionOptions,
+      sheenColorFactor: [scalars.sheenColor[0], scalars.sheenColor[1], scalars.sheenColor[2]],
+      sheenRoughnessFactor: clamp01(spec?.sheenRoughness ?? 0.3),
+      anisotropyStrength: scalars.anisotropy,
+      anisotropyRotation: spec?.anisotropyRotation ?? 0,
+      iridescenceFactor: scalars.iridescence,
+      iridescenceIor: Math.max(1, spec?.iridescenceIOR ?? 1.3),
+      ...(scalars.thicknessRange ? { iridescenceThicknessMinimum: scalars.thicknessRange[0], iridescenceThicknessMaximum: scalars.thicknessRange[1] } : {}),
+      transmissionFactor: scalars.transmission,
+      ...(spec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, spec.thickness) }),
+      ...(spec?.ior === undefined ? {} : { ior: Math.max(1, spec.ior) }),
+      ...(spec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(spec.attenuationColor) } : {}),
+      ...(spec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, spec.attenuationDistance) }),
+      environmentIntensity: scalars.environmentIntensity,
+      envMapIntensity: scalars.envMapIntensity,
+      renderState: {
+        blend: scalars.opacity < 0.999,
+        depthWrite: scalars.opacity >= 0.999,
+        cullMode: node.primitive === "plane" || scalars.opacity < 0.999 ? "none" : "back"
+      },
+      ...(baseColorTexture ? { baseColorTexture, baseColorSampler: textureSampler } : {}),
+      ...(normalTexture ? { normalTexture, normalSampler: textureSampler, normalScale: spec?.normalScale ?? 1 } : {}),
+      ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: textureSampler } : {}),
+      ...(occlusionTexture ? { occlusionTexture, occlusionSampler: textureSampler } : {}),
+      ...(emissiveTexture ? { emissiveTexture, emissiveSampler: textureSampler } : {}),
+      ...(spec?.texTransforms?.baseColor ? { baseColorTextureTransform: { ...spec.texTransforms.baseColor } } : {}),
+      ...(spec?.texTransforms?.normal ? { normalTextureTransform: { ...spec.texTransforms.normal } } : {}),
+      ...(spec?.texTransforms?.metallicRoughness ? { metallicRoughnessTextureTransform: { ...spec.texTransforms.metallicRoughness } } : {}),
+      ...(spec?.texTransforms?.occlusion ? { occlusionTextureTransform: { ...spec.texTransforms.occlusion } } : {}),
+      ...(spec?.texTransforms?.emissive ? { emissiveTextureTransform: { ...spec.texTransforms.emissive } } : {}),
+      ...((texCoords?.baseColor ?? 0) > 0 || (texCoords?.normal ?? 0) > 0 || (texCoords?.metallicRoughness ?? 0) > 0 || (texCoords?.occlusion ?? 0) > 0 || (texCoords?.emissive ?? 0) > 0 || extensionEntries.length > 0
+        ? {
+          textureTexCoords: {
+            ...Object.fromEntries(extensionEntries.map(([slot, map]) => [slot, map.texCoord])),
+            ...(baseColorTexture && (texCoords?.baseColor ?? 0) > 0 ? { baseColor: 1 as const } : {}),
+            ...(normalTexture && (texCoords?.normal ?? 0) > 0 ? { normal: 1 as const } : {}),
+            ...(metallicRoughnessTexture && (texCoords?.metallicRoughness ?? 0) > 0 ? { metallicRoughness: 1 as const } : {}),
+            ...(occlusionTexture && (texCoords?.occlusion ?? 0) > 0 ? { occlusion: 1 as const } : {}),
+            ...(emissiveTexture && (texCoords?.emissive ?? 0) > 0 ? { emissive: 1 as const } : {})
+          }
+        }
+        : {})
+    });
+    if (resource.material.disposed) {
+      resource.texturedMaterial.dispose();
+      resource.texturedMaterial = null;
+      throw fail("primitive disposed while texture upgrade was pending");
+    }
+    resource.textureDisposer = disposeTextures;
+    resource.textureStatus = "textured";
+    resource.textureSlots = slots;
+  } catch (error) {
+    disposeTextures();
+    throw error;
+  }
 }
 
 export function compositeMetallicRoughnessPixels(
@@ -14079,11 +14598,11 @@ function createProductionPrimitiveResources(node: AuraPrimitiveNode): readonly P
   });
 }
 
-function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode, cameraPosition: AuraVec3): ProductionRuntimePrimitiveResource {
+function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode, cameraPosition: AuraVec3, lodBias = 1): ProductionRuntimePrimitiveResource {
   if (!node.lod?.levels.length) return entry.resources[0]!;
   const position = node.position ?? [0, 0, 0];
   const distance = Math.hypot(cameraPosition[0] - position[0], cameraPosition[1] - position[1], cameraPosition[2] - position[2]);
-  const selection = selectAuraRootLodLevel(distance, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
+  const selection = selectAuraRootLodLevel(distance * lodBias, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
   entry.currentLodIndex = selection.levelIndex;
   return entry.resources[selection.levelIndex] ?? entry.resources[entry.resources.length - 1]!;
 }
@@ -14419,6 +14938,8 @@ function resolveProductionActorRuntimeState(
       animation: runtimeSnapshot.animation ?? entry.node.animation
     },
     animationBinding: runtimeSnapshot.animationBinding,
+    animationPose: runtimeSnapshot.animationPose,
+    animationPoseTime: runtimeSnapshot.animationPoseBinding?.localTime ?? runtimeSnapshot.animationPoseBinding?.captureTime,
     ...(Object.keys(morphTargets).length > 0 ? { morphTargets } : {})
   };
 }
@@ -14428,7 +14949,9 @@ function applyProductionActorAnimation(
   node: AuraModelNode,
   animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined,
   time: number,
-  runtimeWarnings: Set<string>
+  runtimeWarnings: Set<string>,
+  modelMatrix: readonly number[],
+  refreshAfterMovement: () => void
 ): void {
   const animation = node.animation;
   if (!animation?.clip || isModelTransformAnimationClip(animation.clip)) return;
@@ -14438,7 +14961,40 @@ function applyProductionActorAnimation(
     return;
   }
   try {
-    entry.actor.playClip(clipName, resolveProductionActorAnimationSeconds(animation, animationBinding, time));
+    const binding = animationBinding?.rootMotion;
+    if (binding && animationBinding) {
+      const observed = animationBinding.rootMotionSamples ?? [{
+        playbackId: animationBinding.playbackId ?? clipName, clipName,
+        time: animationBinding.rootMotionTime ?? 0, weight: 1,
+        loop: animationBinding.loop ?? animation.loop ?? true, additive: false
+      }];
+      if (observed.length === 0) { entry.rootMotionCursors = undefined; return; }
+      const cursors = entry.rootMotionCursors ?? new Map<string, number>();
+      const samples = observed.map(sample => {
+        if (!Number.isFinite(sample.time) || sample.time < 0) throw new Error("Root motion requires a finite nonnegative unwrapped controller time.");
+        const previous = cursors.get(sample.playbackId);
+        return { clipName: sample.clipName, target: binding.target,
+          fromTime: previous === undefined ? 0 : Math.min(previous, sample.time),
+          toTime: sample.time, weight: sample.weight, loop: sample.loop, additive: sample.additive };
+      });
+      const commitCursors = () => { entry.rootMotionCursors = new Map(observed.map(sample => [sample.playbackId, sample.time])); };
+      const result = entry.actor.playRootMotionClips(samples, {
+        worldFromLocal: [...modelMatrix] as Mat4,
+        move: requested => {
+          if (samples.every(sample => sample.fromTime === sample.toTime)) return [0, 0, 0];
+          const accepted = binding.move(requested);
+          // Advance cursors before pose/IK work: retrying a failed pose cannot move twice.
+          commitCursors();
+          refreshAfterMovement();
+          return accepted;
+        }
+      });
+      commitCursors();
+      binding.onSample?.(result.motion);
+    } else {
+      entry.rootMotionCursors = undefined;
+      entry.actor.playClip(clipName, resolveProductionActorAnimationSeconds(animation, animationBinding, time));
+    }
   } catch (error) {
     runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply clip "${clipName}": ${productionRenderErrorMessage(error)}`);
   }
@@ -14463,7 +15019,7 @@ function applyProductionActorFootPlanting(
     entry.actor.animation.setFootPlanting(
       (footPlanting === undefined
         ? undefined
-        : { ...footPlanting, ...spreadFootPlantingWorldMatrix(modelMatrix) }) as GLTFootPlantingConfig | undefined
+        : { ...footPlanting, legs: footPlanting.legs.map(leg => ({ ...leg, ...(leg.contactPhase ? { contact: leg.contactPhase(animationBinding?.localTime ?? 0) } : {}) })), ...spreadFootPlantingWorldMatrix(modelMatrix) }) as GLTFootPlantingConfig | undefined
     );
   } catch (error) {
     runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply foot planting: ${productionRenderErrorMessage(error)}`);
@@ -14551,6 +15107,9 @@ function createRuntimeEvidenceFromTypedGLBActor(
     lastFootPlantingTargetError: actorEvidence.lastFootPlantingTargetError,
     lastFootPlantingHipOffset: actorEvidence.lastFootPlantingHipOffset,
     lastFootPlantingMissingLegs: [...actorEvidence.lastFootPlantingMissingLegs],
+    lastFootPlantingFeet: actorEvidence.lastFootPlantingFeet,
+    lastFootPlantingSurfaces: actorEvidence.lastFootPlantingSurfaces,
+    lastFootPlantingDeformation: actorEvidence.lastFootPlantingDeformation,
     footPlantingConfigured: actorEvidence.footPlantingConfigured
   });
 }
@@ -15066,7 +15625,11 @@ function resolveCameraFrame(
 interface WebGLSceneRenderer {
   readonly backend: AuraBackend;
   readonly diagnostics: AuraRendererDiagnosticReport;
+  /** Update CPU-owned runtime actor state without issuing a device submission. */
+  update?(time: number): void;
   render(time: number): number;
+  renderAsync?(time: number): Promise<number>;
+  resetTemporalHistory?(reason: string): void;
   /**
    * View-projection matrix for a frame.
    *
@@ -17073,11 +17636,7 @@ function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time:
   const cameraSpec = snapshot.camera;
   const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
   const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
-  const halfHeight = Math.max(1e-4, cameraSpec.orthographicSize ?? 1.4);
-  const halfWidth = Math.max(1e-4, halfHeight * aspect);
-  const projection = isOrthographicCameraMode(cameraSpec.mode)
-    ? orthographicMat4(-halfWidth, halfWidth, -halfHeight, halfHeight, 0.05, 100)
-    : perspectiveMat4(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
+  const projection = createCameraProjection(cameraSpec, aspect);
   return new Float32Array(multiplyMat4(projection, view));
 }
 
@@ -17163,6 +17722,9 @@ function isModelTransformAnimationClip(clip: string | undefined): boolean {
 }
 
 function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
+  // SDF quad positions are already authored in world units by layoutSdfText.
+  // Applying the public text size again here shrinks/grows the GPU quad twice.
+  if (node.text3D?.backend === "sdf") return [1, 1, 1];
   if (typeof node.size === "number") return [node.size, node.size, node.size];
   return node.size ?? [1, 1, 1];
 }
@@ -17566,18 +18128,7 @@ function collectGeneratedCodeWarnings(snapshot: AuraSceneSnapshot): string[] {
   if (!snapshot.nodes.some((node) => node.kind === "interaction")) {
     warnings.push("Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.");
   }
-  // muse3jsparity-PRD A3: withheld postprocess intents must warn on the
-  // mounted channel too (plan-level warnings never reach app.diagnostics()).
   const flatNodes = groups.flatten(snapshot.nodes);
-  const hasEffect = (effect: AuraEffectType): boolean =>
-    flatNodes.some((node) => node.kind === "effect" && node.effect === effect);
-  if (hasEffect("motion-blur")) {
-    warnings.push("motion-blur is recorded but withheld: root has no velocity binding, so no motion-blur pass is submitted");
-  }
-  const antiAlias = flatNodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "anti-alias");
-  if (antiAlias && (antiAlias.mode ?? "fxaa") === "taa") {
-    warnings.push("anti-alias mode \"taa\" is recorded but withheld: root has no history binding, so no taa pass is submitted");
-  }
   // muse3jsparity-PRD C1: procedural texture inputs have no rasterizer. The
   // intent is compile-time known, so warn here; fetch outcomes stay dynamic.
   for (const node of flatNodes) {

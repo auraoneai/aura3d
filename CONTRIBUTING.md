@@ -1,6 +1,8 @@
 # Contributing Guide
 
-Version: 3.0.0
+Version: 3.0.1
+
+Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 

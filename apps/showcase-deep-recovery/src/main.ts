@@ -115,6 +115,8 @@ declare global {
     __DR_IMPACT__?: (speed: number) => void;
     __DR_SET_OXYGEN__?: (oxygen: number) => void;
     __DR_REPAIR__?: () => boolean;
+    __DR_CAPTURE_PAUSE__?: () => Promise<void>;
+    __DR_CAPTURE_RESUME__?: () => void;
   }
 }
 
@@ -913,7 +915,7 @@ function updateEvidence(): void {
   const tetheredMass = tetheredCrates.reduce((sum, crate) => sum + crate.mass, 0);
   window.__DEEP_RECOVERY_EVIDENCE__ = {
     mounted: true,
-    status: frameCount >= 90 && Number(diagnostics.drawCalls ?? 0) > 0 ? "ready" : "loading",
+    status: (visualReviewCapture || frameCount >= 90) && Number(diagnostics.drawCalls ?? 0) > 0 ? "ready" : "loading",
     state: gameState,
     missionStage: missionStage(),
     depth: Math.abs(subState.y),
@@ -1044,12 +1046,29 @@ window.__DR_SET_OXYGEN__ = (oxygen: number): void => {
 
 window.__DR_REPAIR__ = (): boolean => handleRepair();
 
+// Browser evidence captures the already-rendered compositor surface. Pausing
+// only the app render scheduler prevents a continuously submitted frame from
+// starving Chromium's screenshot command on software-backed remote runners;
+// mission state remains owned by the deterministic test pump above.
+window.__DR_CAPTURE_PAUSE__ = async (): Promise<void> => {
+  app.pause();
+  await app.ready();
+  await app.stepAsync(0);
+};
+window.__DR_CAPTURE_RESUME__ = (): void => {
+  // Evidence mode intentionally leaves the continuous scheduler paused. The
+  // route's deterministic __DR_PUMP__ owns mission advancement, and the next
+  // capture submits exactly one current-state render through stepAsync(0).
+};
+
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
     category: "application",
     subject: { position: visualReviewCapture ? [-11.5, -12, -7] : [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },
-    settleSubjectPose() {
+    async settleSubjectPose() {
+      app.pause();
+      await app.ready();
       compositionProbeActive = true;
       subState = visualReviewCapture
         ? { ...initialSubmarineState(), ...REVIEW_POSE }
@@ -1063,9 +1082,13 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       syncVisualNodes();
       syncHud();
       updateEvidence();
+      await app.stepAsync(0);
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      app.pause();
+      await app.ready();
       app.nodes.get("sub-root")?.setVisible(!suppressed);
+      await app.stepAsync(0);
     }
   }
 });

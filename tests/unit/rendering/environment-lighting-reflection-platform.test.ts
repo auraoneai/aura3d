@@ -283,7 +283,9 @@ describe("reflection surface contracts", () => {
 
     expect(ssr.report.status).toBe("unsupported");
     expect(ssr.report.requiresRendererPath).toContain("ssr-ray-march-pass");
-    expect(ssr.report.unsupportedRequests.join(" ")).toMatch(/SSR is unsupported/i);
+    expect(ssr.report.trueReflection).toBe(false);
+    expect(ssr.report.unsupportedRequests.join(" ")).toMatch(/requires a successfully executed ScreenSpaceReflectionPass/i);
+    expect(ssr.report.unsupportedRequests.join(" ")).toMatch(/live scene color\/depth and normal-mask targets/i);
     expect(glass.report.unsupportedRequests.join(" ")).toMatch(/scene-space refraction/i);
     expect(planar.report.requiresRendererPath).toContain("mirror-camera-render-target");
     expect(probe.probe).toEqual({ id: "unit-probe", position: [1, 2, 3], radius: 4, intensity: 0.8 });

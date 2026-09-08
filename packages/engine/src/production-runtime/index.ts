@@ -1,3 +1,5 @@
+export { createRootParticleWorkload, createRootGpuParticleWorkload, type RootGpuParticleWorkloadOptions } from "./RootGpuParticleWorkload.js";
+export { attachRootRenderSource, type RootRenderSourceBridge } from "./RootRenderSourceBridge.js";
 import {
   ProductionRuntimeRenderer,
   createContactShadowPass,

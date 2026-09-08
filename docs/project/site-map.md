@@ -1,6 +1,8 @@
 # Site Map
 
-Version: 3.0.0
+Version: 3.0.1
+
+Source candidate metadata; publication and route approval remain separately gated.
 
 Date: 2026-09-02
 Status: Aura3D 3.0.0 site map

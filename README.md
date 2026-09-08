@@ -90,7 +90,18 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 3.0.0 (candidate — publish gates pending)
+## Source Candidate: Aura3D 3.0.1 (verification pending)
+
+The 3.0.1 patch is undergoing integrated verification. It is not yet a published
+release or a claim that all parity requirements pass. The
+[3.0.1 release notes](docs/project/aura3d-301-release-notes.md) record supported
+surfaces, retained evidence, remaining losses and release conditions. Track
+completion in `muse3jsparity-3.0.1-PRD.md`; individual passing development checks
+do not replace final source, package, browser and independent artifact review.
+Installation instructions below continue to identify the published 3.0.0 train
+until 3.0.1 publication and registry verification complete.
+
+## Published Release: Aura3D 3.0.0
 
 Aura3D 3.0.0 is the agent-era major: the browser 3D engine for the agent era — prompt it, prove it, ship it. It carries forward the 2.0 runtime and animation evidence foundation plus the 2.0.4 Meshy CLI asset-pipeline patch, with the public API surface and parity evidence accumulated since 2.0. Every capability below is bounded by its evidence gate; showcase routes stay individually gated and promotion-blocked until hash-bound independent human review covers their exact final artifacts. See [the 3.0.0 release notes](docs/project/aura3d-300-release-notes.md) for scope, receipts, and explicit non-claims.
 
@@ -231,7 +242,7 @@ npm install @aura3d/engine@3.0.0
 npx create-aura3d@3.0.0 my-product --template product-viewer
 ```
 
-The current 3.0.0 candidate notes are in
+The retained 3.0.0 release notes are in
 [`docs/project/aura3d-300-release-notes.md`](docs/project/aura3d-300-release-notes.md),
 with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
@@ -259,7 +270,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 ## Aura3D 2.0 runtime launch track
 
 Aura3D 2.0 introduced the runtime and animation evidence foundation; 3.0.0 is
-the current package release candidate that carries it forward:
+the published package train that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
@@ -721,8 +732,8 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The 3.0.0 candidate packages carry the
-playable-route, catalog, and documentation corrections on this tag. The
+Retained 3.0.0 release context — The package train carries the
+playable-route, catalog, and documentation corrections described in its release notes. The
 historical exact-installed 2.0.0 comparison against
 `three@0.185.1` passes its bounded local checks across 15 workloads. That
 comparison is not a universal parity claim: clean-machine,

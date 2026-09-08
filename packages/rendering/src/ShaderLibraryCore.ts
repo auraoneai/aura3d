@@ -211,6 +211,8 @@ export const DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT = "transm
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT = "specular-sheen-anisotropy-textures";
 export const DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT = "iridescence-textures";
 export const DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT = "clearcoat-transmission-volume-textures";
+export const DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT = "clearcoat-sheen-anisotropy-textures";
+export const DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT = "clearcoat-iridescence-textures";
 export const DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT = "clearcoat-specular-textures";
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT = "specular-sheen-anisotropy-iridescence-textures";
 /**
@@ -898,3 +900,5 @@ export function createLeanCoreShaderLibrary(): ShaderLibrary {
   registerLeanEnvironmentBackgroundShader(library);
   return library;
 }
+
+export const DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT = "extension-scalar-atlas";

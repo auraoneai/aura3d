@@ -1,0 +1,1235 @@
+{
+  "schema": "aura3d-authored-locomotion/v1",
+  "source": "public/aura-assets/auraClashRivalRig.c8d844dc.glb",
+  "sourceSha256": "c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b",
+  "sourceProvenance": {
+    "sourcePath": "assets/source/fighters/aura-clash-rival-rig.glb",
+    "sourcePage": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+    "sourceUrl": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0 Universal",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "author": "Quaternius",
+    "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
+    "checkedAt": "2026-08-11T22:02:20.051Z"
+  },
+  "outputSha256": "fec4bdc90958c5ea40128c03e35d094dfcefaf4f393939f02af88319859d874c",
+  "tool": "tools/locomotion-301/author-translated-walk.mjs",
+  "toolSha256": "319a92ae5ca993a58cdb2fd554157889d6ed6be562c7da23f0f82600549fb0a0",
+  "originalClip": "Zombie_Walk_Fwd_Loop",
+  "clip": "Aura301_Translated_Walk",
+  "duration": 1.3333333730697632,
+  "cycleTravelMetres": 0.5,
+  "soleReweights": [
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 0,
+      "side": "l",
+      "original": [
+        0.9338864088058472,
+        0.06611359119415283,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 1,
+      "side": "l",
+      "original": [
+        0.9338864088058472,
+        0.06611359119415283,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 2,
+      "side": "l",
+      "original": [
+        0.9338864088058472,
+        0.06611359119415283,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 5,
+      "side": "l",
+      "original": [
+        0.8981902003288269,
+        0.10180981457233429,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 6,
+      "side": "l",
+      "original": [
+        0.8981902003288269,
+        0.10180981457233429,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 7,
+      "side": "l",
+      "original": [
+        0.7859005928039551,
+        0.21409940719604492,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 8,
+      "side": "l",
+      "original": [
+        0.7859005928039551,
+        0.21409940719604492,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 11,
+      "side": "l",
+      "original": [
+        0.6948564052581787,
+        0.3051435947418213,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 12,
+      "side": "l",
+      "original": [
+        0.6948564052581787,
+        0.3051435947418213,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 13,
+      "side": "l",
+      "original": [
+        0.6745849847793579,
+        0.3254149854183197,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 14,
+      "side": "l",
+      "original": [
+        0.6745849847793579,
+        0.3254149854183197,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 15,
+      "side": "l",
+      "original": [
+        0.6745849847793579,
+        0.3254149854183197,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 19,
+      "side": "l",
+      "original": [
+        0.8045533299446106,
+        0.19544664025306702,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 20,
+      "side": "l",
+      "original": [
+        0.8045533299446106,
+        0.19544664025306702,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 21,
+      "side": "l",
+      "original": [
+        0.8512927889823914,
+        0.14870721101760864,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 22,
+      "side": "l",
+      "original": [
+        0.8512927889823914,
+        0.14870721101760864,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 25,
+      "side": "l",
+      "original": [
+        0.9483375549316406,
+        0.05166245624423027,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 26,
+      "side": "l",
+      "original": [
+        0.9483375549316406,
+        0.05166245624423027,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 27,
+      "side": "l",
+      "original": [
+        0.9483375549316406,
+        0.05166245624423027,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 137,
+      "side": "l",
+      "original": [
+        0.9259540438652039,
+        0.07404596358537674,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 138,
+      "side": "l",
+      "original": [
+        0.9259540438652039,
+        0.07404596358537674,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 181,
+      "side": "l",
+      "original": [
+        0.9456479549407959,
+        0.0543520413339138,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 182,
+      "side": "l",
+      "original": [
+        0.9456479549407959,
+        0.0543520413339138,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 187,
+      "side": "l",
+      "original": [
+        0.7600987553596497,
+        0.23990122973918915,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 188,
+      "side": "l",
+      "original": [
+        0.7600987553596497,
+        0.23990122973918915,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 193,
+      "side": "l",
+      "original": [
+        0.7359898686408997,
+        0.26401013135910034,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 194,
+      "side": "l",
+      "original": [
+        0.820857048034668,
+        0.17914295196533203,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 195,
+      "side": "l",
+      "original": [
+        0.8861258029937744,
+        0.11387418955564499,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 196,
+      "side": "l",
+      "original": [
+        0.9013897180557251,
+        0.0986102819442749,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 244,
+      "side": "l",
+      "original": [
+        0.8433689475059509,
+        0.15663108229637146,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 245,
+      "side": "l",
+      "original": [
+        0.8433689475059509,
+        0.15663108229637146,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 252,
+      "side": "l",
+      "original": [
+        0.894180953502655,
+        0.10581900924444199,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 253,
+      "side": "l",
+      "original": [
+        0.894180953502655,
+        0.10581900924444199,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 258,
+      "side": "l",
+      "original": [
+        0.8311695456504822,
+        0.16883046925067902,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 259,
+      "side": "l",
+      "original": [
+        0.8653963208198547,
+        0.13460372388362885,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 390,
+      "side": "r",
+      "original": [
+        0.9338864088058472,
+        0.06611359864473343,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 391,
+      "side": "r",
+      "original": [
+        0.9338864088058472,
+        0.06611359864473343,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 392,
+      "side": "r",
+      "original": [
+        0.9338864088058472,
+        0.06611359864473343,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 395,
+      "side": "r",
+      "original": [
+        0.8981902003288269,
+        0.10180981457233429,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 396,
+      "side": "r",
+      "original": [
+        0.8981902003288269,
+        0.10180981457233429,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 397,
+      "side": "r",
+      "original": [
+        0.7859005928039551,
+        0.21409940719604492,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 398,
+      "side": "r",
+      "original": [
+        0.7859005928039551,
+        0.21409940719604492,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 401,
+      "side": "r",
+      "original": [
+        0.6948564648628235,
+        0.3051435947418213,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 402,
+      "side": "r",
+      "original": [
+        0.6948564648628235,
+        0.3051435947418213,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 403,
+      "side": "r",
+      "original": [
+        0.6745849847793579,
+        0.3254150152206421,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 404,
+      "side": "r",
+      "original": [
+        0.6745849847793579,
+        0.3254150152206421,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 405,
+      "side": "r",
+      "original": [
+        0.6745849847793579,
+        0.3254150152206421,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 409,
+      "side": "r",
+      "original": [
+        0.8045533299446106,
+        0.19544664025306702,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 410,
+      "side": "r",
+      "original": [
+        0.8045533299446106,
+        0.19544664025306702,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 411,
+      "side": "r",
+      "original": [
+        0.8512927889823914,
+        0.14870719611644745,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 412,
+      "side": "r",
+      "original": [
+        0.8512927889823914,
+        0.14870719611644745,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 415,
+      "side": "r",
+      "original": [
+        0.9483375549316406,
+        0.05166245251893997,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 416,
+      "side": "r",
+      "original": [
+        0.9483375549316406,
+        0.05166245251893997,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 417,
+      "side": "r",
+      "original": [
+        0.9483375549316406,
+        0.05166245251893997,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 527,
+      "side": "r",
+      "original": [
+        0.9259540438652039,
+        0.07404596358537674,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 528,
+      "side": "r",
+      "original": [
+        0.9259540438652039,
+        0.07404596358537674,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 571,
+      "side": "r",
+      "original": [
+        0.9456479549407959,
+        0.0543520413339138,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 572,
+      "side": "r",
+      "original": [
+        0.9456479549407959,
+        0.0543520413339138,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 577,
+      "side": "r",
+      "original": [
+        0.7600987553596497,
+        0.23990122973918915,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 578,
+      "side": "r",
+      "original": [
+        0.7600987553596497,
+        0.23990122973918915,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 583,
+      "side": "r",
+      "original": [
+        0.7359898686408997,
+        0.26401013135910034,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 584,
+      "side": "r",
+      "original": [
+        0.820857048034668,
+        0.17914295196533203,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 585,
+      "side": "r",
+      "original": [
+        0.8861258625984192,
+        0.11387419700622559,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 586,
+      "side": "r",
+      "original": [
+        0.9013897180557251,
+        0.0986102744936943,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 634,
+      "side": "r",
+      "original": [
+        0.8433688879013062,
+        0.15663108229637146,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 635,
+      "side": "r",
+      "original": [
+        0.8433688879013062,
+        0.15663108229637146,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 642,
+      "side": "r",
+      "original": [
+        0.894180953502655,
+        0.10581901669502258,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 643,
+      "side": "r",
+      "original": [
+        0.894180953502655,
+        0.10581901669502258,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 648,
+      "side": "r",
+      "original": [
+        0.8311695456504822,
+        0.16883046925067902,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mesh": "Male_Ranger_Feet_Boots",
+      "vertex": 649,
+      "side": "r",
+      "original": [
+        0.8653963208198547,
+        0.13460370898246765,
+        0,
+        0
+      ],
+      "authored": [
+        1,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "contactPhases": {
+    "left": [
+      [
+        0,
+        0.5
+      ]
+    ],
+    "right": [
+      [
+        0.5,
+        1
+      ]
+    ]
+  },
+  "ankleHeightMetres": 0.0905,
+  "changes": [
+    "Added a separate walk clip with authored half-metre forward root translation; original joint tracks and original clips retained.",
+    "Declared alternating half-cycle stance phases for FootIK authoring; 0.0905 m ankle target derives from bind ankle and admitted sole bounds. Passing stance quality must be independently measured."
+  ],
+  "acceptance": "unverified"
+}

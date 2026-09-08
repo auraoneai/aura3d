@@ -61,6 +61,7 @@ export interface AuraNavigationPeer {
       config: Record<string, number | string | boolean>
     ): {
       computePath(from: NavigationVec3, to: NavigationVec3): NavigationPathResult;
+      dispose(): void;
       createCrowd(maxAgents: number, maxAgentRadius: number): {
         readonly maxAgents: number;
         count(): number;
@@ -71,6 +72,7 @@ export interface AuraNavigationPeer {
         setTarget(agent: unknown, target: NavigationVec3): boolean;
         update(dt: number): void;
         agentStates(): readonly RecastCrowdAgentState[];
+        dispose(): void;
       };
     };
   }>;
@@ -156,6 +158,7 @@ async function navigationIsAvailable(loaders?: AuraNavigationPeerLoaders): Promi
 export const navigation = {
   bake: bakeNavMesh,
   path: queryPath,
+  dispose: (mesh: AuraNavMeshHandle): void => mesh.dispose(),
   isAvailable: navigationIsAvailable
 } as const;
 
@@ -173,6 +176,7 @@ function crowdAgents(crowd: AuraCrowdHandle): readonly RecastCrowdAgentState[] {
 
 export const crowds = {
   create: createCrowd,
+  dispose: (crowd: AuraCrowdHandle): void => crowd.dispose(),
   addAgent: (
     crowd: AuraCrowdHandle,
     position: NavigationVec3,
@@ -190,6 +194,7 @@ export const crowds = {
   agents: crowdAgents,
   count: (crowd: AuraCrowdHandle): number => crowd.count(),
   maxAgents: (crowd: AuraCrowdHandle): number => crowd.maxAgents,
+  bindRepresentations: bindCrowdRepresentations,
   diagnostics: describeCrowd
 } as const;
 
@@ -262,5 +267,78 @@ export function describeCrowd(crowd: AuraCrowdHandle, options: AuraCrowdLodOptio
     ...(atCap ? { capWarning: `Recast crowd is at capacity (${count}/${maxAgents} agents). Raise maxAgents at creation; extra addAgent calls throw instead of silently dropping agents.` } : {}),
     tiers,
     agents
+  };
+}
+
+/** A mounted render representation, retained across distance transitions. */
+export interface AuraCrowdRepresentation {
+  update(state: { readonly position: NavigationVec3; readonly heading: number; readonly selected: boolean }): void;
+  setVisible(visible: boolean): void;
+  dispose(): void;
+}
+export interface AuraCrowdRepresentationOptions {
+  readonly nearDistance?: number;
+  readonly farDistance?: number;
+  /** Absolute world-space dead band around each distance boundary. */
+  readonly hysteresis?: number;
+  /** Create real mounted meshes/billboards, not a diagnostic counter. */
+  readonly create: (agentIndex: number, tier: Exclude<AuraCrowdLodTier, "unknown">) => AuraCrowdRepresentation;
+}
+
+/** Lazily allocates each agent/tier once; switches visibility without resetting agent identity. */
+export function bindCrowdRepresentations(crowd: AuraCrowdHandle, options: AuraCrowdRepresentationOptions) {
+  const near = options.nearDistance ?? 6;
+  const far = options.farDistance ?? 14;
+  const band = options.hysteresis ?? 0.5;
+  if (!Number.isFinite(near) || near <= 0 || !Number.isFinite(far) || far <= near ||
+      !Number.isFinite(band) || band < 0 || band * 2 >= far - near) {
+    throw new RangeError("Crowd representation thresholds require 0 < near < far and non-overlapping hysteresis.");
+  }
+  type Tier = Exclude<AuraCrowdLodTier, "unknown">;
+  const entries = new Map<number, { tier: Tier; heading: number; resources: Map<Tier, AuraCrowdRepresentation> }>();
+  let disposed = false;
+  return {
+    update(camera: NavigationVec3, selected: ReadonlySet<number> = new Set(), hidden: ReadonlySet<number> = new Set()) {
+      if (disposed) throw new Error("Crowd representations have been disposed.");
+      if (camera.some(value => !Number.isFinite(value))) throw new TypeError("Crowd camera must be finite.");
+      const states = crowd.agentStates();
+      const result: Tier[] = [];
+      states.forEach((state, index) => {
+        const distance = Math.hypot(...state.position.map((value, axis) => value - camera[axis]!));
+        let entry = entries.get(index);
+        let tier: Tier = distance <= near ? "near" : distance <= far ? "mid" : "impostor";
+        if (entry) {
+          if (entry.tier === "near" && distance <= near + band) tier = "near";
+          if (entry.tier === "mid" && distance >= near - band && distance <= far + band) tier = "mid";
+          if (entry.tier === "impostor" && distance >= far - band) tier = "impostor";
+        } else {
+          entry = { tier, heading: 0, resources: new Map() };
+          entries.set(index, entry);
+        }
+        // Retain heading while stopped instead of snapping every stationary agent north.
+        if (Math.hypot(state.velocity[0], state.velocity[2]) > 1e-6) entry.heading = Math.atan2(state.velocity[0], state.velocity[2]);
+        let resource = entry.resources.get(tier);
+        if (!resource) {
+          resource = options.create(index, tier);
+          resource.setVisible(false);
+          entry.resources.set(tier, resource);
+        }
+        resource.update({ position: state.position, heading: entry.heading, selected: selected.has(index) });
+        for (const [candidate, mounted] of entry.resources) mounted.setVisible(candidate === tier && !hidden.has(index));
+        entry.tier = tier;
+        result.push(tier);
+      });
+      for (const [index, entry] of entries) if (index >= states.length) {
+        for (const resource of entry.resources.values()) resource.dispose();
+        entries.delete(index);
+      }
+      return result;
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const entry of entries.values()) for (const resource of entry.resources.values()) resource.dispose();
+      entries.clear();
+    }
   };
 }

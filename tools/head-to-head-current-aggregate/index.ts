@@ -1,3 +1,4 @@
+import { measuredDeployOutcome } from "./measured-outcomes";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -7,6 +8,7 @@ type Aggregate = {
   readonly pass?: boolean;
   readonly workload?: string;
   readonly verdict?: string;
+  readonly measurements?: unknown;
   readonly comparison?: {
     readonly observedLosses?: readonly string[];
     readonly claimBoundary?: string;
@@ -71,7 +73,7 @@ const checks = [
   { id: "every-workload-has-claim-boundary", pass: aggregates.every(({ report }) => typeof report.comparison?.claimBoundary === "string" && report.comparison.claimBoundary.length > 0) },
   { id: "frozen-asset-bytes-still-match", pass: Object.values(context.assets).every((asset) => sha256(asset.path) === asset.sha256) },
   {
-    id: "fresh-installed-2.0-packages-prove-all-workloads",
+    id: "fresh-installed-current-packages-prove-all-workloads",
     pass: installed.pass === true
       && installed.mode === "fresh-local-tarballs-installed-by-npm"
       && installed.commit === currentCommit
@@ -87,26 +89,27 @@ const checks = [
 ];
 const failures = checks.filter((entry) => !entry.pass);
 
-const wins = [
-  {
-    scope: "selected scaffold production output size",
-    workload: "scaffold-to-deploy",
-    aura: { javascriptBytes: 1_001_090, totalBytes: 2_591_121 },
-    three: { javascriptBytes: 1_182_449, totalBytes: 2_772_503 },
-    magnitude: { javascriptBytesSmaller: 181_359, javascriptPercentSmaller: 15.34, totalBytesSmaller: 181_382, totalPercentSmaller: 6.54 },
-    variance: "not measured; deterministic production artifacts from one clean local build per side",
-    environment: context.environment,
-    boundary: "One adapted product-viewer scaffold and frozen product asset only; it is not ecosystem-wide bundle superiority."
-  }
-];
+const deploy = measuredDeployOutcome(aggregates.find(entry => entry.workload === "scaffold-to-deploy")?.report.measurements);
+const deployObservation = {
+  scope: "selected scaffold production output size",
+  workload: "scaffold-to-deploy",
+  ...deploy,
+  variance: "not measured; deterministic production artifacts from one clean build per side",
+  environment: context.environment,
+  boundary: "One adapted product-viewer scaffold and frozen product asset only; it is not ecosystem-wide bundle superiority.",
+};
+const wins = deploy.verdict === "win" ? [deployObservation] : [];
 
 const parity = [
+  ...(deploy.verdict === "parity" ? [deployObservation] : []),
   { scope: "selected Rapier kinematic-character trace", workload: "physical-character", magnitude: "exact final position and 53 collisions on both adapters", variance: "deterministic single trace", boundary: "Not universal character-controller parity." },
   { scope: "selected Rapier ray-cast vehicle trace", workload: "physical-vehicle", magnitude: "exact final pose and speed on both adapters", variance: "deterministic single trace", boundary: "Not universal vehicle-physics parity." },
   { scope: "selected Recast six-agent crowd trace", workload: "navigation-crowd", magnitude: "exact six final positions on both adapters", variance: "deterministic single trace", boundary: "Not universal navigation/crowd parity." }
 ];
 
-const losses = aggregates.flatMap(({ workload, report }) =>
+const losses = [
+  ...(deploy.verdict === "loss" ? [deployObservation] : []),
+  ...aggregates.flatMap(({ workload, report }) =>
   (report.comparison?.observedLosses ?? []).map((observation) => ({
     workload,
     observation,
@@ -115,7 +118,7 @@ const losses = aggregates.flatMap(({ workload, report }) =>
     environment: "Frozen context environment and same browser session recorded in this aggregate.",
     scope: report.comparison?.claimBoundary
   }))
-);
+)];
 
 const unproven = [
   "Broad CPU/GPU/wall performance non-inferiority is not a 2.0 claim; incomplete directional timing probes cannot produce a performance win or parity verdict.",

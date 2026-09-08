@@ -1,3 +1,4 @@
+import { loadValidatedReleasePlan, inspectInstalledRelease } from "../release/exact-release-plan.mjs";
 import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
@@ -15,7 +16,10 @@ interface Check {
   readonly detail: string;
 }
 
-const cleanInstall = JSON.parse(readFileSync(cleanInstallReportPath, "utf8")) as { readonly pass?: boolean };
+const exactPlan = loadValidatedReleasePlan(root);
+const installedIdentity: unknown[] = [];
+const cleanInstall = JSON.parse(readFileSync(cleanInstallReportPath, "utf8")) as { readonly pass?: boolean; readonly releasePlan?: {path:string;sha256:string} };
+if (exactPlan && JSON.stringify(cleanInstall.releasePlan) !== JSON.stringify(exactPlan.reference)) throw new Error("Clean install report belongs to a different exact release plan");
 if (!cleanInstall.pass) {
   throw new Error("Installed tree-shaking requires a passing fresh `pnpm check:clean-install` report.");
 }
@@ -27,6 +31,7 @@ const measurements: Record<string, unknown> = {};
 try {
   for (const profile of ["product-viewer", "mini-game"] as const) {
     const projectRoot = resolve(templateRoot, profile, "demo");
+    if(exactPlan)installedIdentity.push(inspectInstalledRelease(root,projectRoot,exactPlan));
     const packageRoot = resolve(projectRoot, "node_modules/@aura3d/lean");
     const manifest = JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8")) as {
       readonly name: string;
@@ -117,7 +122,9 @@ const report = {
   schema: "aura3d.installed-tree-shaking/1.0",
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
-  source: "fresh local 2.0.0 tarballs installed by tests/reports/package-clean-install.json",
+  source: exactPlan ? "validated exact release plan archives" : `fresh local ${expectedPackedVersion} tarballs installed by tests/reports/package-clean-install.json`,
+  releasePlan: exactPlan?.reference,
+  installedIdentity,
   method: "Bundle the generated product and arcade entries from their clean npm-installed projects with esbuild treeShaking enabled; inspect the emitted metafile and retained bytes rather than source manifests alone.",
   checks,
   failures,

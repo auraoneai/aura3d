@@ -1,7 +1,9 @@
+import { inspectParticleCompletions, particleDiagnosticJSON } from "./particle-completion-diagnostics";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
+import { validateAcceptance, type ParticleAcceptance } from "../../tools/muse3jsparity-readiness/acceptance";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import {
   evaluateCurrentRoute,
@@ -9,6 +11,9 @@ import {
 } from "../../tools/current-routes-route-health/index";
 
 interface A4FpsRuntime {
+  readonly frameCount: number;
+  readonly error?: string;
+  readonly unsupportedReason?: string;
   readonly status: string;
   readonly selectedBackend: string;
   readonly adapterName: string;
@@ -299,6 +304,7 @@ test.describe("A4 GPU particle effects", () => {
         moved,
         cpuSpawn,
         gpuSpawn,
+        executedMasks: Array.from({length: count}, (_, i) => gpuAttributes[i * 8 + 5]),
       };
     }, `${server.origin}/packages/rendering/src/index.ts`);
 
@@ -315,6 +321,8 @@ test.describe("A4 GPU particle effects", () => {
     expect(result.maxAttributeDelta).toBeLessThan(2e-2);
     expect(result.maxTrailDelta).toBeLessThan(1e-2);
     expect(result.gpuSpawn).toEqual(result.cpuSpawn);
+    // Every lane must report the branches actually executed by the native shader.
+    expect(result.executedMasks).toEqual(Array(64).fill(510));
   });
 
   test("sub-emitter plus curl turbulence demo route passes route-health", async ({ browser }) => {
@@ -345,191 +353,205 @@ test.describe("A4 GPU particle effects", () => {
     }
   });
 
-  test("10k-particle scene with collision and trails holds 60fps on Apple Metal (sustained wall-clock)", async ({ browser }) => {
-    test.setTimeout(180_000);
-    let vite: ViteDevServer | null = null;
+  test("10k live rendered particles hold native Apple Metal thresholds for 60 wall-clock seconds", async ({ browser }, testInfo) => {
+    test.setTimeout(240_000);
+    const page = await newCurrentRouteHealthPage(browser);
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
     try {
-      vite = await createServer({ root: process.cwd(), logLevel: "error", server: { hmr: false } });
-      await vite.listen(0);
-      const origin =
-        vite.resolvedUrls?.local[0]?.replace(/\/$/, "") ??
-        vite.resolvedUrls?.network[0]?.replace(/\/$/, "") ??
-        "http://localhost:5180";
-      const page = await newCurrentRouteHealthPage(browser);
-      const errors: string[] = [];
-      page.on("pageerror", (error) => errors.push(error.stack ?? error.message));
-      page.on("console", (message) => {
-        if (message.type() === "error") errors.push(message.text());
-      });
-      await page.goto(`${origin}/apps/wow-webgpu-compute-particles/`, { waitUntil: "domcontentloaded" });
-      await page.waitForFunction(
-        () => {
-          const runtime = (window as unknown as { __a3dWowRuntime?: { status?: string } }).__a3dWowRuntime;
-          return runtime?.status === "running" || runtime?.status === "error" || runtime?.status === "unsupported";
-        },
-        undefined,
-        { timeout: 90_000 }
-      );
-      // Warm up past emitter ramp so the window measures the steady-state
-      // 10k-particle simulation with heightfield collision and ribbon trails.
-      await page.waitForFunction(
-        () => {
-          const runtime = (window as unknown as { __a3dWowRuntime?: { frameCount?: number } }).__a3dWowRuntime;
-          return (runtime?.frameCount ?? 0) >= 60;
-        },
-        undefined,
-        { timeout: 90_000 }
-      );
-      const runtime = await page.evaluate(
-        () => (window as unknown as { __a3dWowRuntime: A4FpsRuntime }).__a3dWowRuntime
-      );
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.bringToFront();
+      await page.goto(`${server.origin}/apps/wow-webgpu-compute-particles/`, { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => {
+        const runtime = (window as Window & { __a3dWowRuntime?: A4FpsRuntime }).__a3dWowRuntime;
+        if (runtime?.status === "error" || runtime?.status === "unsupported") throw new Error(runtime.error ?? runtime.unsupportedReason);
+        return (runtime?.frameCount ?? 0) >= 150 && Number(runtime?.fields?.Live ?? 0) >= 10_000;
+      }, undefined, { timeout: 120_000 });
+      const runtime = await page.evaluate(() => (window as Window & { __a3dWowRuntime?: A4FpsRuntime }).__a3dWowRuntime as A4FpsRuntime);
+      // WebGPU adapter.info can expose only a vendor (e.g. "apple"). Obtain the
+      // actual browser GPU-process renderer separately; never rewrite that vendor.
+      const cdp = await browser.newBrowserCDPSession();
+      let browserGpuInfo: { gpu: { devices: unknown[]; auxAttributes?: Record<string, unknown>; featureStatus?: Record<string, string> }; modelName?: string; modelVersion?: string };
+      try { browserGpuInfo = await cdp.send('SystemInfo.getInfo'); } finally { await cdp.detach(); }
+      const browserRenderer = String(browserGpuInfo.gpu.auxAttributes?.glRenderer ?? '');
+      const actualAdapterEvidence = `${runtime.adapterName}; browser GPU renderer: ${browserRenderer}`;
+      const nativeMetalIdentity = /apple/i.test(actualAdapterEvidence) && /metal/i.test(browserRenderer)
+        && !/swiftshader|llvmpipe|software rasterizer/i.test(actualAdapterEvidence);
 
-      // Sustained wall-clock probe: 180 consecutive rAF timestamps. The
-      // deltas are real frame-to-frame wall-clock times over a ~3s window,
-      // never a frame count divided by an assumed rate.
-      const sample = await page.evaluate(
-        () =>
-          new Promise<{ intervals: number[] }>((resolve) => {
-            const intervals: number[] = [];
-            const total = 180;
-            let last = -1;
-            const tick = (now: number): void => {
-              if (last >= 0) intervals.push(now - last);
-              last = now;
-              if (intervals.length >= total) {
-                resolve({ intervals });
-                return;
-              }
-              requestAnimationFrame(tick);
-            };
+      const sample = await page.evaluate(async () => {
+        type Frame = { frameId: number; completedAt: number; frameMs: number; renderFenceReadbackBytes: number; collisionContacts: number; live: number; renderedLive: number; trailCount: number;
+          ribbonVertices: number; faded: number; drawCalls: number; nativeSubmissions: number; width: number; height: number;
+          visible: boolean; backend: string; executionPath?: string; capacity: number; count: number; workgroups: number; readbackBytes: number;
+          computeAndReadbackMs: number; cpuSubmitAndReadbackMs: number; collision: number; trails: number; subemitters: number;
+          turbulence: number; curves: number; lighting: number; childRequests: number; queueCompletedAt:number;
+          counterSourceSubmission:number; counterSampleAge:number };
+        const capture = (window as unknown as { __a3dParticle301: { start(): void; stop(): Frame[]; frames: Frame[] } }).__a3dParticle301;
+        if (!capture) throw new Error("Missing actual particle completion capture");
+        const start = performance.now(), rafIntervals: number[] = [];
+        let previous = start;
+        capture.start();
+        await new Promise<void>((resolve, reject) => {
+          const tick = (now: number) => {
+            rafIntervals.push(now-previous); previous=now;
+            if (document.visibilityState !== "visible") { reject(new Error("Foreground rendering lost during measurement")); return; }
+            const frames=capture.frames, first=frames[0], last=frames[frames.length-1];
+            if (first && last && last.completedAt-first.completedAt >= 60_000) { resolve(); return; }
+            if (now-start > 120_000) { reject(new Error("No 60-second rendered completion window")); return; }
             requestAnimationFrame(tick);
-          })
-      );
-      await page.close();
-
-      expect(errors, errors.join("\n")).toEqual([]);
-      const sorted = [...sample.intervals].sort((a, b) => a - b);
-      const frameCount = sorted.length;
-      const windowMs = sorted.reduce((sum, value) => sum + value, 0);
-      const frameMs = {
-        mean: windowMs / Math.max(1, frameCount),
-        median: percentile(sorted, 0.5),
-        p50: percentile(sorted, 0.5),
-        p95: percentile(sorted, 0.95),
-        max: sorted[frameCount - 1] ?? Number.NaN,
+          };
+          requestAnimationFrame(tick);
+        });
+        return { frames: capture.stop(), rafIntervals,
+          userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency,
+          deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? null,
+          pixelRatio: devicePixelRatio, visibility: document.visibilityState,
+          timing: "Per-submission GPU queue-completion callback intervals; compact reduction counters map on a fixed 60-submission cadence with disclosed source/age; separate GPU timestamps are post-window diagnostics",
+          thermal: "Browser has no thermal sensor API; external runner hardware/thermal attestation is required" };
+      });
+      const frames=sample.frames;
+      // Retain every receipt before metrics, visual controls, or diagnostics can
+      // fail. Invalid clock values remain explicit; never nudge or drop a batch.
+      const pacing=inspectParticleCompletions(frames);
+      mkdirSync(resolve("tests/reports"),{recursive:true});
+      const rawCapturePath=resolve("tests/reports/gpu-particle-301-raw-completions.json");
+      writeFileSync(rawCapturePath,particleDiagnosticJSON({schema:"muse301-particle-raw-completions/v1",sample,pacing}));
+      await testInfo.attach("unmodified particle completion receipts",{path:rawCapturePath,contentType:"application/json"});
+      const intervals=frames.slice(1).map((f,i)=>f.completedAt-frames[i]!.completedAt);
+      const sorted=[...intervals].sort((a,b)=>a-b), raf=[...sample.rafIntervals].sort((a,b)=>a-b);
+      const windowMs=frames[frames.length-1]!.completedAt-frames[0]!.completedAt;
+      const frameMs={ p50: percentile(sorted,0.5), p95: percentile(sorted,0.95), p99: percentile(sorted,0.99), max: Math.max(...sorted) };
+      const { longestBelow55Ms, rollingFps, pacingError, timestampFailures, coalescedCompletions } = pacing;
+      const fixed=frames[0]!;
+      const frameFailures=frames.flatMap((f,i)=>{
+        const failures: string[]=[];
+        if (f.live<10_000 || f.renderedLive<10_000 || f.count<10_000) failures.push("live/rendered/dispatched below 10k");
+        if (![f.collision, f.trails, f.subemitters, f.turbulence, f.curves, f.lighting, f.faded].every(n => n > 0)) failures.push("missing submitted effect");
+        if (f.ribbonVertices<=0 || f.trailCount<=0 || f.workgroups<=0 || f.drawCalls<=0 || f.nativeSubmissions<=0) failures.push("missing device workload");
+        if (f.completedAt!==f.queueCompletedAt || f.counterSourceSubmission<1 || f.counterSourceSubmission>f.frameId || f.counterSampleAge!==f.frameId-f.counterSourceSubmission || f.counterSampleAge<0 || f.counterSampleAge>=60) failures.push("missing queue completion or stale periodic counters");
+        if (f.width!==fixed.width || f.height!==fixed.height || f.capacity!==fixed.capacity || f.executionPath!==fixed.executionPath) failures.push("workload adapted");
+        if (!f.visible || f.backend!=="webgpu") failures.push("not visible native WebGPU");
+        if (i>0 && f.frameId!==frames[i-1]!.frameId+1) failures.push("missing render frame receipt");
+        return failures.map(reason=>({frame:f.frameId,reason}));
+      });
+      const thresholds={ wallClockMs:60_000, minLiveRendered:10_000, medianFps:59, p95Ms:20, maxSustainedBelow55Ms:1000,
+        referenceAdapter:"Apple Metal", minWidth:1280, minHeight:720 };
+      const hardwareAttestation=process.env.AURA3D_REFERENCE_HARDWARE_ATTESTATION ?? "";
+      const acceptance: ParticleAcceptance = {
+        schema: "muse301-particles/v1", nativeWebGPU: runtime.selectedBackend === "webgpu" && frames.every(f => f.backend === "webgpu" && f.nativeSubmissions > 0),
+        adapter: actualAdapterEvidence, referenceDevice: hardwareAttestation,
+        thermalConditions: hardwareAttestation, foreground: sample.visibility === "visible" && frames.every(f => f.visible),
+        readbackBytes: frames.reduce((n, f) => n + f.readbackBytes + f.renderFenceReadbackBytes, 0),
+        samples: frames.map(f => ({ atMs: f.completedAt, frameId: f.frameId, frameMs: f.frameMs,
+          live: f.live, rendered: f.renderedLive, width: f.width, height: f.height,
+          features: { collision: f.collision, trails: Math.min(f.trails, f.trailCount), subemitters: f.subemitters,
+            turbulence: f.turbulence, lifeCurves: f.curves, lighting: f.lighting, softDepthFade: f.faded,
+            collisionContacts: f.collisionContacts, childRequests: f.childRequests, ribbonVertices: f.ribbonVertices } })),
       };
-      const fps = {
-        mean: 1000 / Math.max(frameMs.mean, 1e-6),
-        median: 1000 / Math.max(frameMs.median, 1e-6),
-        p50: 1000 / Math.max(frameMs.p50, 1e-6),
-        p95: 1000 / Math.max(frameMs.p95, 1e-6),
-      };
-      const requiredCapabilities = [
-        "webgpu-compute",
-        "a4-sub-emitters",
-        "a4-curl-turbulence",
-        "a4-heightfield-collision",
-        "a4-ribbon-trails",
-        "a4-life-curves",
-        "a4-particle-lighting",
-        "a4-soft-particles",
-      ];
-      const missingCapabilities = requiredCapabilities.filter(
-        (capability) => !runtime.capabilities.includes(capability)
-      );
-      const fields = runtime.fields ?? {};
-      const medianGate = fps.median >= 59;
-      const p95Gate = frameMs.p95 <= 20;
-      const pass =
-        runtime.status === "running" &&
-        runtime.selectedBackend === "webgpu" &&
-        /metal/i.test(runtime.adapterName) &&
-        missingCapabilities.length === 0 &&
-        runtime.readbackMode === "compute storage readback" &&
-        fields["Particles"] === 10_000 &&
-        typeof fields["Live"] === "number" &&
-        (fields["Live"] as number) > 1000 &&
-        fields["Particle backend"] === "webgpu" &&
-        String(fields["Collision"] ?? "").includes("heightfield") &&
-        String(fields["Trails"] ?? "").includes("ring depth 6") &&
-        frameCount >= 175 &&
-        windowMs >= 2500 &&
-        medianGate &&
-        p95Gate;
-      mkdirSync(resolve("tests/reports"), { recursive: true });
-      writeFileSync(
-        resolve("tests/reports/gpu-particle-a4-fps.json"),
-        `${JSON.stringify(
-          {
-            schema: "a3d-gpu-particle-a4-sustained-fps",
-            generatedAt: new Date().toISOString(),
-            pass,
-            gates: {
-              statusRunning: runtime.status === "running",
-              metalWebGPUBackend:
-                runtime.selectedBackend === "webgpu" && /metal/i.test(runtime.adapterName),
-              allFeatures: missingCapabilities.length === 0,
-              missingCapabilities,
-              computeReadback: runtime.readbackMode === "compute storage readback",
-              tenKParticles: fields["Particles"] === 10_000,
-              liveParticles: fields["Live"],
-              backendField: fields["Particle backend"],
-              collisionField: fields["Collision"],
-              trailsField: fields["Trails"],
-              sustainedWindow: { frames: frameCount, windowMs: Number(windowMs.toFixed(1)) },
-              medianFpsAtLeast59: medianGate,
-              p95FrameMsAtMost20: p95Gate,
-            },
-            measured: {
-              adapterName: runtime.adapterName,
-              frames: frameCount,
-              windowMs: Number(windowMs.toFixed(2)),
-              frameMs: {
-                mean: Number(frameMs.mean.toFixed(3)),
-                median: Number(frameMs.median.toFixed(3)),
-                p50: Number(frameMs.p50.toFixed(3)),
-                p95: Number(frameMs.p95.toFixed(3)),
-                max: Number(frameMs.max.toFixed(3)),
-              },
-              fps: {
-                mean: Number(fps.mean.toFixed(2)),
-                median: Number(fps.median.toFixed(2)),
-                p50: Number(fps.p50.toFixed(2)),
-                p95: Number(fps.p95.toFixed(2)),
-              },
-            },
-          },
-          null,
-          2
-        )}\n`
-      );
+      const acceptanceErrors = validateAcceptance("p01", acceptance, []);
+      const pass=runtime.selectedBackend==="webgpu" && nativeMetalIdentity && frameFailures.length===0 &&
+        windowMs>=thresholds.wallClockMs && 1000/frameMs.p50>=59 && frameMs.p95<=20 && longestBelow55Ms!==null && longestBelow55Ms<=1000 &&
+        fixed.width>=1280 && fixed.height>=720 && frames.some(f=>f.faded>0) && frames.some(f=>f.childRequests>0) && frames.some(f=>f.collisionContacts>0) &&
+        hardwareAttestation.length>0 && errors.length===0 && acceptanceErrors.length===0;
+      mkdirSync(resolve("tests/reports"),{recursive:true});
+      writeFileSync(resolve("tests/reports/gpu-particle-301-acceptance.json"), JSON.stringify(acceptance, null, 2));
+      await page.evaluate(async()=>{
+        const visual=(window as unknown as {__a3dParticle301Visual?:{control(o:Record<string,boolean>):Promise<void>}}).__a3dParticle301Visual;
+        if(!visual)throw new Error('Missing native particle visual control');
+        await visual.control({trails:true,softFade:true,lighting:true});
+      });
+      await page.screenshot({path:"tests/reports/gpu-particle-301-sustained.png"});
+      const nativeCanvasImage = await page.screenshot({path:"tests/reports/gpu-particle-301-canvas-analysis.png",style:"#app { visibility: hidden !important; }"});
+      // Analyze captured native pixels, excluding DOM telemetry. A white line with
+      // a large submitted count cannot prove rendered color/life/lighting effects.
+      const visual = await page.evaluate(async encoded => {
+        const blob=await(await fetch(`data:image/png;base64,${encoded}`)).blob();
+        const bitmap=await createImageBitmap(blob);const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;
+        const ctx=c.getContext('2d')!;ctx.drawImage(bitmap,0,0);bitmap.close();const data=ctx.getImageData(0,0,c.width,c.height).data;
+        let coloredPixels=0,litPixels=0,minX=c.width,minY=c.height,maxX=-1,maxY=-1;
+        for(let i=0;i<data.length;i+=4){const r=data[i]!,g=data[i+1]!,b=data[i+2]!;if(r>g*1.1&&r>b*1.2&&r>50){coloredPixels++;const x=(i/4)%c.width,y=Math.floor(i/4/c.width);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}if(r+g+b>180)litPixels++;}
+        return {width:c.width,height:c.height,coloredPixels,litPixels,colorSpanX:Math.max(0,maxX-minX+1),colorSpanY:Math.max(0,maxY-minY+1)};
+      },nativeCanvasImage.toString('base64'));
 
-      expect(runtime.status).toBe("running");
+      const controls:Record<string,{changedPixels:number;absoluteDifference:number}>={};
+      for(const feature of ['trails','softFade','lighting']){
+        await page.evaluate(async feature=>{await(window as unknown as {__a3dParticle301Visual:{control(o:Record<string,boolean>):Promise<void>}}).__a3dParticle301Visual.control({trails:true,softFade:true,lighting:true,[feature]:false});},feature);
+        const path=`tests/reports/gpu-particle-301-${feature}-disabled.png`;
+        const image=await page.screenshot({path,style:"#app { visibility: hidden !important; }"});
+        controls[feature]=await page.evaluate(async([a,b])=>{
+          const decode=async(encoded:string)=>{const bitmap=await createImageBitmap(await(await fetch(`data:image/png;base64,${encoded}`)).blob());const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;const ctx=c.getContext('2d')!;ctx.drawImage(bitmap,0,0);bitmap.close();return ctx.getImageData(0,0,c.width,c.height).data;};
+          const first=await decode(a!),second=await decode(b!);let changedPixels=0,absoluteDifference=0;
+          for(let i=0;i<first.length;i+=4){const d=Math.abs(first[i]!-second[i]!)+Math.abs(first[i+1]!-second[i+1]!)+Math.abs(first[i+2]!-second[i+2]!);absoluteDifference+=d;if(d>6)changedPixels++;}return {changedPixels,absoluteDifference};
+        },[nativeCanvasImage.toString('base64'),image.toString('base64')]);
+        await testInfo.attach(`native ${feature} disabled control`,{path,contentType:'image/png'});
+      }
+      await page.evaluate(async()=>{await(window as unknown as {__a3dParticle301Visual:{control(o:Record<string,boolean>):Promise<void>}}).__a3dParticle301Visual.control({trails:true,softFade:true,lighting:true});});
+      await testInfo.attach("full live particle and ribbon workload",{path:"tests/reports/gpu-particle-301-sustained.png",contentType:"image/png"});
+      // Diagnostic after the complete timed workload and all visual controls.
+      // Same browser/rAF/HUD/viewport; native clear+map only. Never acceptance.
+      const gpuTimingDiagnostic=await page.evaluate(async()=>{
+        const control=(window as unknown as {__a3dParticle301GPUTiming:{supported:boolean;start():void;stop():unknown[];frames:unknown[]}}).__a3dParticle301GPUTiming;
+        control.start();
+        try {
+          await new Promise<void>((resolve,reject)=>{
+            const start=performance.now();
+            const tick=()=>{
+              if(document.visibilityState!=='visible'){reject(new Error('GPU timing lost foreground'));return;}
+              if(control.frames.length>=120){resolve();return;}
+              if(performance.now()-start>30_000){reject(new Error('GPU timing diagnostic timeout'));return;}
+              requestAnimationFrame(tick);
+            };requestAnimationFrame(tick);
+          });
+        }finally{control.stop();}
+        return {supported:control.supported,completionFenceSupported:true,label:'Postwindow full-feature same-submission GPU queue-completion and counter-map callbacks; optional GPU timestamps, diagnostic only',frames:control.frames};
+      });
+      const gpuDiagnosticPath=resolve("tests/reports/gpu-particle-301-completion-fence-diagnostic.json");
+      writeFileSync(gpuDiagnosticPath,particleDiagnosticJSON(gpuTimingDiagnostic));
+      await testInfo.attach("same-submission GPU completion diagnostic",{path:gpuDiagnosticPath,contentType:"application/json"});
+      const pacingControl=await page.evaluate(async()=>{
+        type ControlFrame={completedAt:number;frameMs:number;kind:string;drawCalls:number;computeDispatches:number;width:number;height:number;foreground:boolean;cpuPhases:{encodeSubmitMs:number;mapWaitMs:number;validationWaitMs:number}};
+        const control=(window as unknown as {__a3dParticle301Pacing:{start():void;stop():ControlFrame[];frames:ControlFrame[]}}).__a3dParticle301Pacing;
+        const rafIntervals:number[]=[];let previous=performance.now();const start=previous;
+        control.start();
+        try{await new Promise<void>((resolve,reject)=>{
+          const tick=(now:number)=>{rafIntervals.push(now-previous);previous=now;
+            if(document.visibilityState!=='visible'){reject(new Error('Pacing control lost foreground'));return;}
+            const frames=control.frames;
+            if(frames.length>1&&frames.at(-1)!.completedAt-frames[0]!.completedAt>=10_000){resolve();return;}
+            if(now-start>30_000){reject(new Error('Pacing control completion timeout'));return;}
+            requestAnimationFrame(tick);
+          };requestAnimationFrame(tick);
+        });}finally{control.stop();}
+        return {label:'Postwindow native clear-and-map only; no particle acceptance claim',frames:control.frames,rafIntervals};
+      });
+      writeFileSync(resolve("tests/reports/gpu-particle-a4-fps.json"),JSON.stringify({
+        schema:"a3d-gpu-particle-a4-sustained-fps/3.0.1", generatedAt:new Date().toISOString(), pass:pass && visual.coloredPixels>1000 && visual.colorSpanY>visual.height*.1 && Object.values(controls).every(c=>c.changedPixels>100), thresholds,
+        adapterName:runtime.adapterName, browserRenderer, browserGpuInfo, actualAdapterEvidence, nativeMetalIdentity, hardwareAttestation, runtime, ...sample, frameFailures, acceptanceErrors, errors, windowMs,
+        frameMs, medianFps:1000/frameMs.p50, longestBelow55Ms, rollingFps, pacingError, timestampFailures, coalescedCompletions, visual, controls, pacingControl, gpuTimingDiagnostic,
+        droppedRefreshIntervals:intervals.reduce((n,ms)=>n+Math.max(0,Math.round(ms/(1000/60))-1),0),
+        rafPacing:{p50:percentile(raf,0.5),p95:percentile(raf,0.95),p99:percentile(raf,0.99)},
+      },null,2));
+      for(const [feature,control] of Object.entries(controls)) expect(control.changedPixels, `${feature} must change actual pixels at identical simulation state`).toBeGreaterThan(100);
+      expect(visual.coloredPixels,"native particles must show their colored life/lighting output, not a white trace").toBeGreaterThan(1000);
+      expect(visual.colorSpanY).toBeGreaterThan(visual.height*.1);
+      expect(errors).toEqual([]);
+      expect(pacingError,"invalid completion clocks remain an acceptance failure after diagnostic retention").toBeNull();
+      expect(acceptanceErrors).toEqual([]);
+      expect(frames.some(f=>f.collisionContacts>0), "native collision contacts must occur during the window").toBe(true);
       expect(runtime.selectedBackend).toBe("webgpu");
-      expect(
-        runtime.adapterName,
-        `BLOCKED: expected Apple Metal adapter, saw ${JSON.stringify(runtime.adapterName)}. See tests/reports/gpu-particle-a4-fps.json`
-      ).toMatch(/metal/i);
-      expect(missingCapabilities, `missing capabilities: ${missingCapabilities.join(",")}`).toEqual([]);
-      expect(runtime.readbackMode).toBe("compute storage readback");
-      expect(fields["Particles"]).toBe(10_000);
-      expect(fields["Live"] as number).toBeGreaterThan(1000);
-      expect(fields["Particle backend"]).toBe("webgpu");
-      expect(String(fields["Collision"] ?? "")).toContain("heightfield");
-      expect(String(fields["Trails"] ?? "")).toContain("ring depth 6");
-      expect(frameCount).toBeGreaterThanOrEqual(175);
-      expect(windowMs).toBeGreaterThanOrEqual(2500);
-      expect(
-        fps.median,
-        `BLOCKED: 10k-particle scene median ${fps.median.toFixed(2)}fps (p50 frame ${frameMs.p50.toFixed(2)}ms, p95 frame ${frameMs.p95.toFixed(2)}ms over ${frameCount} frames / ${windowMs.toFixed(0)}ms on ${runtime.adapterName}) cannot hold 60fps with collision+trails on. See tests/reports/gpu-particle-a4-fps.json`
-      ).toBeGreaterThanOrEqual(59);
-      expect(
-        frameMs.p95,
-        `BLOCKED: 10k-particle scene p95 frame ${frameMs.p95.toFixed(2)}ms (median ${fps.median.toFixed(2)}fps over ${frameCount} frames on ${runtime.adapterName}) is not a sustained 60fps hold with collision+trails on. See tests/reports/gpu-particle-a4-fps.json`
-      ).toBeLessThanOrEqual(20);
-    } finally {
-      await vite?.close();
-    }
+      expect(nativeMetalIdentity, "actual browser GPU process must report Apple Metal without a software rasterizer").toBe(true);
+      expect(frameFailures).toEqual([]);
+      expect(windowMs).toBeGreaterThanOrEqual(60_000);
+      expect(fixed.width).toBeGreaterThanOrEqual(1280);
+      expect(fixed.height).toBeGreaterThanOrEqual(720);
+      expect(frames.some(f=>f.faded>0),"soft fade must affect the measured workload").toBe(true);
+      expect(frames.some(f=>f.childRequests>0),"subemitters must request children during the window").toBe(true);
+      expect(1000/frameMs.p50).toBeGreaterThanOrEqual(59);
+      expect(frameMs.p95).toBeLessThanOrEqual(20);
+      expect(longestBelow55Ms).toBeLessThanOrEqual(1000);
+      expect(hardwareAttestation,"runner must disclose GPU/device and thermal/power conditions").not.toBe("");
+      expect(pass).toBe(true);
+    } finally { await page.close(); }
   });
 
   test("soft-particle depth fade changes rendered pixels (fade on vs off)", async ({ page }) => {
@@ -608,31 +630,34 @@ test.describe("A4 GPU particle effects", () => {
       }
       meanAbsAlphaDelta /= Math.max(1, on.sprites.length);
 
-      // Pixel proof: rasterize both batches to a real 2D canvas and diff.
-      const width = 256;
-      const height = 256;
-      const rasterize = (sprites: { position: { x: number; y: number }; color: { r: number; g: number; b: number; a: number }; size: number }[]): Uint8ClampedArray => {
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        if (!context) throw new Error("2D context unavailable for soft-particle pixel probe.");
-        context.clearRect(0, 0, width, height);
-        for (const sprite of sprites) {
-          const px = ((sprite.position.x + 3) / 6) * width;
-          const py = height - ((sprite.position.y + 1) / 4) * height;
-          const radius = Math.max(1.5, (sprite.size / 6) * width);
-          context.globalAlpha = Math.min(1, Math.max(0, sprite.color.a));
-          context.fillStyle = `rgb(${Math.round(sprite.color.r * 255)},${Math.round(sprite.color.g * 255)},${Math.round(sprite.color.b * 255)})`;
-          context.beginPath();
-          context.arc(px, py, radius, 0, Math.PI * 2);
-          context.fill();
+      // Pixel proof uses Aura's native renderer and the same per-sprite
+      // vertex color/alpha submission as the live fixture, not a 2D proxy.
+      const width = 256, height = 256;
+      const canvas = document.createElement("canvas");
+      canvas.width=width; canvas.height=height; document.body.append(canvas);
+      const gpuRenderer=await effects.Renderer.create({canvas,width,height,backend:"webgl2",
+        preserveDrawingBuffer:true,clearColor:[0,0,0,0],requiredFeatures:["basic-rendering","pixel-readback"]});
+      const format=new effects.VertexFormat([
+        {semantic:"position",components:3,offset:0},{semantic:"color",components:4,offset:12}
+      ],28);
+      const material=new effects.UnlitMaterial({color:[1,1,1,1],renderState:{blend:true,depthTest:false,depthWrite:false,cullMode:"none"}});
+      const rasterize=(sprites: {position:{x:number;y:number};color:{r:number;g:number;b:number;a:number};size:number}[]):Uint8Array=>{
+        const vertices=new effects.VertexBuffer(format,sprites.length*6);
+        let vertex=0;
+        for(const sprite of sprites){
+          const x=sprite.position.x/3,y=(sprite.position.y+1)/2-1,r=Math.max(1.5/128,sprite.size/3);
+          const corners=[[x-r,y-r,0],[x+r,y-r,0],[x+r,y+r,0],[x-r,y+r,0]];
+          for(const corner of [0,1,2,0,2,3]){
+            vertices.setAttribute(vertex,"position",corners[corner]!);
+            vertices.setAttribute(vertex++,"color",[sprite.color.r,sprite.color.g,sprite.color.b,sprite.color.a]);
+          }
         }
-        context.globalAlpha = 1;
-        return context.getImageData(0, 0, width, height).data;
+        gpuRenderer.render({cameraPolicy:"identity",renderItems:[{geometry:new effects.Geometry(vertices),material}]});
+        const pixels=gpuRenderer.device.readPixels(0,0,width,height); vertices.dispose(); return pixels;
       };
-      const pixelsOff = rasterize(off.sprites);
-      const pixelsOn = rasterize(on.sprites);
+      let pixelsOff:Uint8Array,pixelsOn:Uint8Array;
+      try { pixelsOff=rasterize(off.sprites); pixelsOn=rasterize(on.sprites); }
+      finally { gpuRenderer.dispose(); canvas.remove(); }
       let sumAbs = 0;
       let diffPixels = 0;
       for (let offset = 0; offset < pixelsOff.length; offset += 4) {

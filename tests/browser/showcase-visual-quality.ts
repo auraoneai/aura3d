@@ -346,7 +346,8 @@ export function analyzePngDifferenceBounds(
   visible: Buffer,
   hidden: Buffer,
   crop?: Partial<PngCrop>,
-  channelThreshold = 12
+  channelThreshold = 12,
+  componentMode: "all" | "dominant" = "all"
 ): PngDifferenceBounds {
   const first = decodePng(visible);
   const second = decodePng(hidden);
@@ -360,6 +361,9 @@ export function analyzePngDifferenceBounds(
   let maxX = -1;
   let maxY = -1;
   const colorBuckets = new Set<string>();
+  const differenceMask = componentMode === "dominant"
+    ? new Uint8Array(resolvedCrop.width * resolvedCrop.height)
+    : undefined;
   for (let y = resolvedCrop.y; y < resolvedCrop.y + resolvedCrop.height; y += 1) {
     for (let x = resolvedCrop.x; x < resolvedCrop.x + resolvedCrop.width; x += 1) {
       const a = pixelAt(first, x, y);
@@ -372,19 +376,28 @@ export function analyzePngDifferenceBounds(
       minY = Math.min(minY, y);
       maxX = Math.max(maxX, x);
       maxY = Math.max(maxY, y);
+      if (differenceMask) differenceMask[(y - resolvedCrop.y) * resolvedCrop.width + (x - resolvedCrop.x)] = 1;
     }
   }
-  const bounds = changedPixels > 0
-    ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
-    : undefined;
-  const clipped = bounds ? isBoundsClipped(bounds, resolvedCrop) : false;
+  const dominant = differenceMask ? selectForegroundComponent(first, resolvedCrop, differenceMask) : undefined;
+  if (componentMode === "dominant") {
+    changedPixels = dominant?.nonBlankPixels ?? 0;
+    colorBuckets.clear();
+  }
+  const bounds = componentMode === "dominant"
+    ? dominant?.foregroundBounds
+    : changedPixels > 0
+      ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+      : undefined;
+  const resolvedColorBuckets = componentMode === "dominant" ? dominant?.colorBuckets ?? 0 : colorBuckets.size;
+  const clipped = componentMode === "dominant" ? dominant?.clipped ?? false : bounds ? isBoundsClipped(bounds, resolvedCrop) : false;
   const nonBackgroundRatio = ratio(changedPixels, resolvedCrop.width * resolvedCrop.height);
   const foregroundAreaRatio = bounds
     ? ratio(bounds.width * bounds.height, resolvedCrop.width * resolvedCrop.height)
     : 0;
   const readabilityScore = Math.round(
     Math.min(35, nonBackgroundRatio * 700) +
-    Math.min(25, colorBuckets.size) +
+    Math.min(25, resolvedColorBuckets) +
     Math.min(25, foregroundAreaRatio * 500) +
     (clipped ? 0 : 15)
   );
@@ -393,7 +406,7 @@ export function analyzePngDifferenceBounds(
     height: first.height,
     crop: resolvedCrop,
     changedPixels,
-    colorBuckets: colorBuckets.size,
+    colorBuckets: resolvedColorBuckets,
     ...(bounds ? { bounds } : {}),
     clipped,
     nonBackgroundRatio,

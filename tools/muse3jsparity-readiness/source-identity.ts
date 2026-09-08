@@ -1,0 +1,46 @@
+/** Source capture is independent of receipt replay and CLI/package validators.
+ * Browser test collection must not initialize unrelated publication tooling. */
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
+
+export interface SourceIdentity { commit: string; tree: string; lockfileSha256: string; fingerprint: string }
+export interface Artifact { path: string; sha256: string }
+export const sha256 = (data: string | Uint8Array): string => createHash('sha256').update(data).digest('hex');
+export function artifact(root: string, path: string): Artifact {
+  const absolute = resolve(root, path);
+  return { path: relative(root, absolute), sha256: sha256(readFileSync(absolute)) };
+}
+export const isSourceInput = (path: string): boolean => !!path
+  && !/(^|\/)(node_modules|dist|coverage|test-results)(\/|$)/.test(path)
+  && !/^(tests\/reports\/|release-artifacts\/|\.goal(?:\/|$)|\.orchestrate(?:\/|$))/.test(path)
+  // Completion markers are administrative state. Their exact bytes are archived and
+  // replayed by administrative-lineage; including them here makes evidence invalidate
+  // itself when a verified checkbox is marked complete.
+  && path !== 'muse3jsparity-3.0.1-PRD.md'
+  // Generated from the exact release plan. Its own artifact hash is retained by
+  // release receipts, so hashing it as product source would make the plan
+  // invalidate itself when the manifest is regenerated.
+  && path !== 'docs/project/release-artifacts.json'
+  // Hash-bound review inputs are administrative evidence. Their own hashes are
+  // retained by audit receipts; editing a disposition must not change the
+  // product source identity of the artifacts being reviewed.
+  && path !== 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json'
+  && path !== 'benchmark/context/muse3jsparity-r185-matrix.json';
+/** Hash tracked source and untracked source; exclude only generated outputs, not dirty source. */
+export function sourceIdentity(root: string): SourceIdentity {
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  const paths = git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0')
+    .filter(isSourceInput);
+  const hash = createHash('sha256');
+  for (const path of [...new Set(paths)].sort()) {
+    hash.update(path).update('\0');
+    hash.update(existsSync(resolve(root, path)) ? readFileSync(resolve(root, path)) : '<deleted>');
+    hash.update('\0');
+  }
+  return { commit: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'),
+    lockfileSha256: artifact(root, 'pnpm-lock.yaml').sha256, fingerprint: hash.digest('hex') };
+}
+export const sameSource = (a: SourceIdentity, b: SourceIdentity): boolean =>
+  ['commit', 'tree', 'lockfileSha256', 'fingerprint'].every(key => a[key as keyof SourceIdentity] === b[key as keyof SourceIdentity]);

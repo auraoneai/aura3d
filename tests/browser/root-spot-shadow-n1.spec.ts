@@ -1,3 +1,4 @@
+import type {} from "./root-spot-shadow-n1-harness";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -63,30 +64,3 @@ test.describe("N1 spot shadow probes", () => {
     expect(checks.arenaBacked).toBe(true);
   });
 });
-
-declare global {
-  interface Window {
-    __AURA3D_N1_SPOT_SHADOW__?: {
-      readonly status: "ready" | "error" | "waiting";
-      readonly captures?: readonly {
-        readonly id: string;
-        readonly drawCalls: number;
-        readonly spot: {
-          readonly requested: boolean;
-          readonly casterIsSpot: boolean;
-          readonly casterName?: string;
-          readonly atlasResolution?: number;
-          readonly spotPixelBacked: boolean;
-          readonly reason: string;
-        };
-        readonly shadowRequested: boolean;
-        readonly shadowMapRendered: boolean;
-        readonly shadowMapSampled: boolean;
-        readonly checksum: number;
-        readonly nonDarkPixels: number;
-      }[];
-      readonly checks?: Record<string, boolean | number | string>;
-      readonly error?: string;
-    };
-  }
-}

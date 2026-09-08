@@ -18,7 +18,9 @@ claim a rendered postprocess effect only when:
   caused by the pass;
 - evidence records the backend and any fallback state.
 
-## What Root Currently Proves
+## Prior root evidence (revalidation required for 3.0.1)
+
+The measurements below describe the prior recorded workload, not acceptance of the changing 3.0.1 source. Fresh root browser receipts are required.
 
 `tests/browser/createAuraApp-postprocess-contract.spec.ts` retains the measured
 root evidence at
@@ -29,15 +31,15 @@ differs, so a measured delta is attributable to the pass.
 | Effect | Root status | Basis |
 | --- | --- | --- |
 | Tone mapping | Root-proven as a neutral always-on pixel-backed pass | The production bridge submits neutral tone mapping and the runtime reports `tone-mapping` in `actualPasses` with `pixelBacked: true`. |
-| Bloom | Root-proven | The `bloom` pass runs and changes 5.17% of the frame (mean channel delta 6.5714) versus an identical scene without `effects.bloom(...)`. Visual review also records that the probe's white bars clip aggressively, so this is execution proof rather than a polished quality example. |
-| Environment fog | Root-proven | `effects.fog(...)` reaches the forward pass and changes 68.82% of the frame (mean channel delta 15.5143). Visual review records that this probe setting nearly silhouettes the subject, so the screenshot is not used as a quality-parity claim. |
+| Bloom | Root-proven | The `bloom` pass runs and changes 4.41% of the frame (mean channel delta 6.4233) versus an identical scene without `effects.bloom(...)`. Visual review also records that the probe's white bars clip aggressively, so this is execution proof rather than a polished quality example. |
+| Environment fog | Root-proven | `effects.fog(...)` reaches the forward pass and changes 68.82% of the frame (mean channel delta 15.0343). Visual review records that this probe setting nearly silhouettes the subject, so the screenshot is not used as a quality-parity claim. |
 | Ambient / contact occlusion (SSAO) | Partial | The `ssao` pass genuinely executes and `ambientOcclusionPass` is true, but the measured on/off change is near zero. The pass runs; its visible contribution in the probe scene is not provable, so it is not claimed. |
 | Color grading | Root-proven (2026-09-03) | `effects.colorGrade(...)` submits the native pass: 99.85% frame delta (mean 34.01) on/off. contrast/saturation execute; exposure/shadows/highlights/lut are recorded and warned, never silently accepted. Receipt: `tests/reports/root-effects-a3/a3-probe.json`. |
-| FXAA | Root-proven (2026-09-03) | `effects.antiAlias({ mode: "fxaa" })` submits the native pass: 3.27% frame delta (mean 2.50) on/off. `mode: "taa"` is recorded but withheld with a warning (no history binding at root); `"off"` submits nothing. |
+| FXAA | Root-proven (2026-09-03) | `effects.antiAlias({ mode: "fxaa" })` submits the native pass: 3.27% frame delta (mean 2.50) on/off. TAA has new 3.0.1 history bindings under verification; `"off"` submits nothing. |
 | Outline | Root-proven (2026-09-03) | `effects.outline(...)` submits the native pass: 9.18% frame delta (mean 27.02) on/off, width clamped to the device range 1-6. |
 | SSR | Root-proven (2026-09-03) | `effects.screenSpaceReflections(...)` submits the native pass against renderer-owned depth: 37.49% frame delta (mean 85.92) on/off. Required a real fix: raw GL depth is nonlinear (0.1/1000 defaults park the play area past 0.97), so the native program linearizes depth with near/far uniforms while the CPU byte kernel keeps fixture-unit semantics (documented divergence, proven by the GL-depth contract in `native-outline-pixel.spec.ts`). |
 | Depth of field | Root-proven (2026-09-03) | `effects.depthOfField(...)` submits the native pass against renderer-owned depth: 7.12% frame delta (mean 7.42) on/off. focus is a linear-distance fraction (0 = near, 1 = far); same native/CPU contract split as SSR. |
-| Motion blur, TAA | Withheld at root (honest) | `effects.motionBlur(...)` and `effects.antiAlias({ mode: "taa" })` are constructible and appear in `requestedPasses` with an explicit `(withheld: ...)` marker plus a diagnostic warning on both plan and mounted channels, but submit no pass (no velocity/history binding at root). Withholding is proven by `root-effects-a3.spec.ts`: routes keep drawing with zero submitted pass. |
+| Motion blur, TAA | 3.0.1 implementation under verification | Root velocity/history bindings replace the previous withheld path. Fresh `root-effects-a3.spec.ts` sequence, negative-control, and lifecycle receipts must establish acceptance before these are described as root-proven. |
 
 The pass set and `pixelBacked` status are also verified to survive canvas resize
 and device-pixel-ratio change across three distinct backing stores, so a resize
@@ -151,9 +153,9 @@ when any constituent browser receipt is older than 30 minutes. Package-level
 proof does not promote unavailable effects into root `createAuraApp`; the root
 table above remains authoritative.
 
-## Superiority (K1 · 2026-09-04)
+## Historical K1 measurement (2026-09-04; not 3.0.1 performance acceptance)
 
-- WIN (directional, same-machine): full bloom chain — bright-extract 640x360 +
+- Recorded directional same-machine measurement: full bloom chain — bright-extract 640x360 +
   5-mip separable blur pyramid + composite — median **1.30 ms** over 25
   iterations with GPU completion on every iteration
   (`tests/reports/muse3jsparity/perf.json`, `bloomChain`). K1 specs
@@ -162,3 +164,25 @@ table above remains authoritative.
 - LOSS: single-machine directional number, not a universal claim; planar
   reflections (B4) retain no per-part files — live capture only
   (`tests/reports/muse3jsparity/game-visual-superiority.json` `b4Note`).
+
+## Root asynchronous submission (3.0.1 implementation)
+
+The `createAuraApp` root safe API provides `await app.stepAsync(dt)` for a
+serialized manual frame and `await app.disposeAsync()` for teardown that waits
+for pending submissions. `frameMode: "async"` selects asynchronous automatic
+frames; the default remains synchronous. Manual stepping awaits renderer mount,
+then advances the simulation once and awaits the native renderer submission.
+A missing production renderer or invalid delta rejects before simulation advances.
+
+Await the pending step before calling `step()`, `advance()` or `setScene()`;
+these synchronous mutations reject while an asynchronous frame owns the resources.
+Pause/resume resets temporal history after a pending submission. Automatic resize
+is deferred until submissions finish. Disposal prevents queued frames from starting
+and releases resources after the active submission settles. A rejected submission
+remains visible to its caller and does not poison subsequent manual submissions.
+
+`stepAsync()` performs rendering, not screenshot capture. Call `app.screenshot()`
+after awaiting it when readback is required. Native bloom equivalence is checked by
+`tests/browser/native-bloom-pyramid.spec.ts` through root imports on both paths.
+The 3.0.1 integrated browser run must provide fresh pixels and device diagnostics
+before asynchronous bloom parity is considered verified.

@@ -1188,3 +1188,6 @@ export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
 export * from "./animation/index.js";
+
+
+export * from "./effects/ResidentGPUParticleRenderer.js";

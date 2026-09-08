@@ -1,8 +1,36 @@
 {
   "schema": "aura3d.muse3jsparity-r185-matrix/1.0",
   "status": "frozen",
+  "coverageComplete": false,
+  "coverageBasis": "Curated source workload inventory, not universal addon parity or an executed runtime receipt. COVERED means the bounded named source exists; assigned GAP/PARTIAL work remains incomplete regardless of ownership.",
+  "runtimeParityVerified": false,
+  "command": "pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-matrix/index.ts",
+  "cwd": "/Users/gurbakshchahal/platforms/aura3d",
+  "sourceCommit": "bf32f18c404b7e202478e2eb67fe3044b243da2c",
+  "producerInputs": [
+    {
+      "path": "tools/muse3jsparity-matrix/index.ts",
+      "sha256": "039414f7168284d9f69bca0d81c667fe95eb5302f47c495b24a9c726b3e99d5f"
+    },
+    {
+      "path": "tools/muse3jsparity-matrix/decoder-alignment.ts",
+      "sha256": "07999c6f760bb2dc93654c561b0ce69de80720c06a6433d62a869fec1e3d13a8"
+    },
+    {
+      "path": "package.json",
+      "sha256": "6b36f70a7baf8442d9180a90f61c43ae91af49e58941456d0bdc38cafc178c51"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "92473ea060b00d7e38827dfe3cf33bf3e501f2460068f04077be2235b9e6e4bb"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "031f83de20bc083d548e43ac6f19d8811389c99b2c38915b92a309d5ddaa19ee"
+    }
+  ],
   "generatedBy": "tools/muse3jsparity-matrix/index.ts (never hand-edit; rerun on three-version change)",
-  "generatedAt": "2026-09-05T14:56:25.722Z",
+  "generatedAt": "2026-09-05T20:57:39.222Z",
   "three": {
     "version": "0.185.1",
     "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
@@ -18,25 +46,48 @@
       "repoPin": "^1.5.7",
       "installed": "1.5.7",
       "status": "aligned",
-      "reason": "Pin ^1.5.7 resolves to installed 1.5.7, equal to the r185 companion set."
+      "reason": "Installed consumer resolution 1.5.7 satisfies 1.5.7; compressed execution is separately verified."
     },
     {
       "lib": "meshoptimizer",
       "r185": "1.2.0",
-      "repoPin": "^1.1.1",
-      "installed": "1.1.1",
-      "status": "divergent",
-      "reason": "r185 companion set pins meshoptimizer 1.2.0; repo pin is ^1.1.1 (installed 1.1.1). Divergence accepted: the meshopt decode path is route-injected at runtime via createMeshoptDecoder (decoder-required, fail-closed without it — packages/assets/src/GLTFCompressionDecoders.ts), so the npm pin only serves node-side tooling/tests and does not gate the shipped decode path. Re-pin to ^1.2.0 with lockfile regen is a follow-up outside S-task scope (root package.json + pnpm-lock.yaml are not S-task touch targets)."
+      "repoPin": "1.2.0",
+      "installed": "1.2.0",
+      "status": "aligned",
+      "reason": "Installed consumer resolution 1.2.0 satisfies 1.2.0; compressed execution is separately verified."
     },
     {
       "lib": "ktx-parse",
-      "r185": null,
+      "r185": "1.0.1",
       "repoPin": null,
-      "installed": "0.7.1",
-      "status": "divergent",
-      "reason": "r185 vendors ktx-parse as a versionless module blob under examples/jsm/libs/ (no npm version to align to). Ours resolves via the @loaders.gl transitive ktx-parse plus BasisU transcoder URLs (packages/assets/src/KTX2BasisTextureTranscoder.ts); the KTX2 path is proven by tests/unit/rendering/texture-pipeline-c3.test.ts."
+      "installed": "1.0.1",
+      "status": "aligned",
+      "reason": "Installed consumer resolution 1.0.1 satisfies 1.0.1; compressed execution is separately verified."
     }
   ],
+  "ktxEquivalence": {
+    "version": "1.0.1",
+    "upstreamCommit": "12d85ad9c188c2ef71326a4f56d9a2581690b504",
+    "upstreamSource": "https://github.com/donmccurdy/ktx-parse/tree/12d85ad9c188c2ef71326a4f56d9a2581690b504",
+    "npmMetadata": "https://registry.npmjs.org/ktx-parse/1.0.1",
+    "npmIntegrity": "sha512-djwUWv/82Xc8LOVinJU4EBrVqYkO8OsUDSPEtY/OOVY8BSe3DMU7D7PlIAZ0pI7ZZtErj7mqpJcgffUTABvgaA==",
+    "upstreamModule": "https://unpkg.com/ktx-parse@1.0.1/dist/ktx-parse.modern.js",
+    "upstreamSha256": "a8ee3a22bcb47a1ad7e14d5c629fbfb700fedf73a972cb397998d94237b12764",
+    "vendoredSource": "https://github.com/mrdoob/three.js/blob/r185/examples/jsm/libs/ktx-parse.module.js",
+    "vendoredSha256": "f40c491f6c44dde511268121f778a0050e73b1a15fd844c1ae2c78c73213eafc",
+    "scope": "KTX2 parser exports, read/write and repository compressed corpus; does not certify every Basis transcoder format",
+    "containerMapping": "r185 adds redundant levelCount; upstream 1.0.1 exposes levels. Compare levelCount to the KTX2 header and levels.length=max(1,header levelCount), then compare all remaining fields exactly.",
+    "exportsCompared": 248,
+    "positiveFixtures": 1,
+    "malformedFixtures": 3,
+    "readWriteEquivalent": true,
+    "fixtures": [
+      {
+        "path": "tests/assets/corpus/ktx2/Rib_N.ktx2",
+        "sha256": "7bbd1d7776a087b48d3f7d50395d24840fd00dc5ab2622f8dce5685995df94d3"
+      }
+    ]
+  },
   "meshOps": {
     "mergeAdopted": true,
     "deindexAdopted": true,
@@ -424,7 +475,7 @@
       "verdict": "PARTIAL",
       "prdSection": "M2",
       "proof": null,
-      "closingSection": "M2 (vendored decoder alignment; see decoderLibs: draco3d aligned, meshoptimizer + ktx-parse divergences recorded with reason)",
+      "closingSection": "M2 compressed rendering coverage; installed decoder versions and KTX upstream/content equivalence are enforced separately",
       "outReason": null,
       "note": "Third-party vendored libs (draco, ktx-parse, meshopt...)."
     },
@@ -445,6 +496,8 @@
     "zeroGapsWithoutOwningSectionOrOutReason": true,
     "meshOpAdoptionLanded": true,
     "decoderLibsAlignedOrDivergenceRecorded": true,
+    "decoderLibsAligned": true,
+    "ktxContentEquivalenceVerified": true,
     "verdictCounts": {
       "covered": 7,
       "partial": 15,

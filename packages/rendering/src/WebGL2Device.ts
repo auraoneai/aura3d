@@ -1,3 +1,6 @@
+import { temporalAccumulationWeight } from "./TemporalMath";
+import { invertSsrProjection } from "./ProjectionMath";
+import type { TemporalGpuBindings } from "./TemporalHistory";
 import {
   type BufferUsage,
   type DrawCommand,
@@ -36,7 +39,9 @@ import {
 } from "./postprocess/NativeLdrEffectLuts";
 import {
   normalizeBloomQualityPreset,
+  resolveBloomPyramidBlurRadii,
   resolveBloomPyramidPlan,
+  resolveBloomPyramidResponseGain,
   type BloomPyramidPlan,
   type BloomQualityPreset,
 } from "./postprocess/NativeBloomPyramid";
@@ -226,6 +231,11 @@ interface NativeSsaoOptions {
 interface NativeSsrOptions {
   readonly intensity: number;
   readonly maxDistance: number;
+  readonly maxSteps?: number;
+  readonly thickness?: number;
+  readonly projection?: Float32Array;
+  readonly inverseProjection?: Float32Array;
+  readonly normalMask?: WebGLTexture;
 }
 
 interface NativeDepthOfFieldOptions {
@@ -237,12 +247,14 @@ interface NativeDepthOfFieldOptions {
 interface NativeMotionBlurOptions {
   readonly samples: number;
   readonly scale: number;
-  readonly velocity: Float32Array;
+  readonly velocity?: Float32Array;
+  readonly temporal?: TemporalGpuBindings;
 }
 
 interface NativeTaaOptions {
   readonly blend: number;
-  readonly history: Uint8Array;
+  readonly history?: Uint8Array;
+  readonly temporal?: TemporalGpuBindings;
 }
 
 export class WebGL2Device implements RenderDevice {
@@ -253,6 +265,8 @@ export class WebGL2Device implements RenderDevice {
   private readonly gl: WebGL2RenderingContext;
   private nextId = 1;
   private drawCalls = 0;
+  private nativeTemporalPasses = 0;
+  private nativeTemporalBindings = 0;
   private buffers = new Set<WebGL2Buffer>();
   private shaders = new Set<WebGL2ShaderProgram>();
   private renderTargets = new Set<WebGL2RenderTarget>();
@@ -278,6 +292,7 @@ export class WebGL2Device implements RenderDevice {
   private motionBlurVelocityTexture: WebGLTexture | null = null;
   private motionBlurVelocitySize: { readonly width: number; readonly height: number } | null = null;
   private taaProgram: WebGLProgram | null = null;
+  private taaPresentationProgram: WebGLProgram | null = null;
   private taaHistoryTexture: WebGLTexture | null = null;
   private taaHistorySize: { readonly width: number; readonly height: number } | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
@@ -712,7 +727,9 @@ export class WebGL2Device implements RenderDevice {
     this.renderTargets.add(target);
     // Shadow passes label their depth target after the shadow map texture, so the
     // label is the device-side signal that a shadow depth target was allocated.
-    if ((descriptor.label ?? "").toLowerCase().includes("shadow")) this.shadowRenderTargetsAllocated += 1;
+    // Cascaded maps use the established renderer-csm-cascade-* labels.
+    // Count their actual allocation too, including the first shadow frame.
+    if (/shadow|(?:^|-)csm(?:-|$)/i.test(descriptor.label ?? "")) this.shadowRenderTargetsAllocated += 1;
     this.textures.set(target.colorTexture, colorHandle);
     this.textureUploadModes.set(target.colorTexture, "rgba8");
     if (depthTexture && depthTextureHandle) {
@@ -826,6 +843,31 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
+  /** Executes the same native SSR kernel used by postprocessing into an owned target. */
+  executeReflectionSurfaceSsr(source: RenderTarget, normalMask: RenderTarget, output: RenderTarget,
+    options: { projection: Float32Array; inverseProjection: Float32Array; maxSteps: number; maxDistance: number; thickness: number; intensity: number }): void {
+    this.assertAlive();
+    for (const target of [source, normalMask, output]) {
+      if (!(target instanceof WebGL2RenderTarget) || !this.renderTargets.has(target) || target.disposed) {
+        throw new RenderDeviceError("SSR inputs must be live targets owned by this device", "INVALID_RESOURCE");
+      }
+    }
+    const color = source as WebGL2RenderTarget, normals = normalMask as WebGL2RenderTarget, destination = output as WebGL2RenderTarget;
+    if (!color.depthTextureHandle || color === destination || normals === destination
+      || color.width !== normals.width || color.height !== normals.height) {
+      throw new RenderDeviceError("SSR requires sampleable scene depth, matching normal-mask input, and a separate output", "INVALID_RESOURCE");
+    }
+    this.resolveMultisampleTarget(color);
+    this.resolveMultisampleTarget(normals);
+    const state = this.prepareFullscreenPresentation(destination.framebuffer, destination.width, destination.height);
+    try {
+      this.drawSsrKernel(color.colorHandle, color.depthTextureHandle, destination.width, destination.height,
+        { ...options, normalMask: normals.colorHandle }, this.ensurePresentationVertexArray(), { near: 0.1, far: 1000 });
+    } finally {
+      this.restoreFullscreenPresentationState(state, destination.width, destination.height);
+    }
+  }
+
   presentLdrPostprocess(source: RenderTarget, options: LdrPostprocessPresentationOptions): void {
     this.assertAlive();
     if (!(source instanceof WebGL2RenderTarget) || !this.renderTargets.has(source) || source.disposed) {
@@ -910,10 +952,10 @@ export class WebGL2Device implements RenderDevice {
     if (outlineOptions) {
       this.ensureOutlineBlendLutTexture(outlineOptions);
     }
-    if (motionBlurOptions) {
+    if (motionBlurOptions?.velocity) {
       this.ensureMotionBlurVelocityTexture(source.width, source.height, motionBlurOptions.velocity);
     }
-    if (taaOptions) {
+    if (taaOptions?.history) {
       this.ensureTaaHistoryTexture(source.width, source.height, taaOptions.history);
     }
     const outputWidth = webglOutputTarget?.width ?? (this.viewportWidth || this.gl.drawingBufferWidth);
@@ -959,7 +1001,10 @@ export class WebGL2Device implements RenderDevice {
           this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_blurred"), 1);
           this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_compositeLut"), 2);
           this.gl.uniform1i(this.gl.getUniformLocation(pyramidComposite, "u_hdr"), sourceIsHdr ? 1 : 0);
-          this.gl.uniform1f(this.gl.getUniformLocation(pyramidComposite, "u_intensity"), bloomOptions.intensity);
+          this.gl.uniform1f(
+            this.gl.getUniformLocation(pyramidComposite, "u_intensity"),
+            bloomOptions.intensity * resolveBloomPyramidResponseGain(plan)
+          );
           this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
           ldrSourceHandle = bloomResources.textures[1];
           // The composited result lives in texture B, so subsequent passes
@@ -1322,6 +1367,8 @@ export class WebGL2Device implements RenderDevice {
       ["actualViewportHeight", viewport[3] ?? 0],
       ["renderTarget", this.activeRenderTarget?.label ?? null],
       ["drawCalls", this.drawCalls],
+      ["nativeTemporalPasses", this.nativeTemporalPasses],
+      ["nativeTemporalBindings", this.nativeTemporalBindings],
       ["shaderProgramCreates", this.shaderProgramCreateCount],
       ["uniformLocationLookups", this.uniformLocationLookupCount],
       ["bufferUpdates", this.bufferUpdateCount],
@@ -1372,6 +1419,8 @@ export class WebGL2Device implements RenderDevice {
       shadowRenderTargetsAllocated: this.shadowRenderTargetsAllocated,
       nativeInstancedSubmissions: this.nativeInstancedSubmissions,
       bloom: this.lastBloomDiagnostics,
+      nativeTemporalPasses: this.nativeTemporalPasses,
+      nativeTemporalBindings: this.nativeTemporalBindings,
       samplerAnisotropyUploads: this.samplerAnisotropyUploadCount,
       maxTextureAnisotropy: this.maxTextureAnisotropy,
       stateCacheIssued: stateCacheStats.issued,
@@ -1483,6 +1532,10 @@ export class WebGL2Device implements RenderDevice {
     if (this.taaProgram) {
       this.gl.deleteProgram(this.taaProgram);
       this.taaProgram = null;
+    }
+    if (this.taaPresentationProgram) {
+      this.gl.deleteProgram(this.taaPresentationProgram);
+      this.taaPresentationProgram = null;
     }
     if (this.taaHistoryTexture) {
       this.gl.deleteTexture(this.taaHistoryTexture);
@@ -1953,6 +2006,7 @@ export class WebGL2Device implements RenderDevice {
   ): WebGLTexture {
     const plan = resources.plan;
     const mipCount = plan.mips.length;
+    const blurRadii = resolveBloomPyramidBlurRadii(plan, options.radius);
     const downsampleProgram = this.ensureBloomDownsampleProgram();
     const brightProgram = this.ensureBloomBrightExtractProgram();
     const blurProgram = this.ensureBloomBlurProgram();
@@ -1962,8 +2016,8 @@ export class WebGL2Device implements RenderDevice {
     const mipTexture = (level: number, slot: 0 | 1): WebGLTexture => resources.textures[level * 2 + slot]!;
     const mipFramebuffer = (level: number, slot: 0 | 1): WebGLFramebuffer => resources.framebuffers[level * 2 + slot]!;
     const mipSize = (level: number): { width: number; height: number } => plan.mips[level]!;
-    // Blurred result settles in slot 1 for level 0, slot 0 for levels >= 1.
-    const blurredSlot = (level: number): 0 | 1 => (level === 0 ? 1 : 0);
+    // Every level settles in slot 0 after the vertical blur.
+    const blurredSlot = (_level: number): 0 | 1 => 0;
 
     const drawDownsample = (
       fromTexture: WebGLTexture,
@@ -1983,6 +2037,11 @@ export class WebGL2Device implements RenderDevice {
         this.gl.getUniformLocation(downsampleProgram, "u_texelSize"),
         1 / fromWidth,
         1 / fromHeight
+      );
+      this.gl.uniform2f(
+        this.gl.getUniformLocation(downsampleProgram, "u_targetSize"),
+        toWidth,
+        toHeight
       );
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     };
@@ -2007,7 +2066,8 @@ export class WebGL2Device implements RenderDevice {
       tmpTexture: WebGLTexture,
       tmpFramebuffer: WebGLFramebuffer,
       outFramebuffer: WebGLFramebuffer,
-      size: { width: number; height: number }
+      size: { width: number; height: number },
+      radius: number
     ): void => {
       // Horizontal into the temp target, vertical back into the output target.
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, tmpFramebuffer);
@@ -2017,7 +2077,7 @@ export class WebGL2Device implements RenderDevice {
       this.bindFullscreenTexture(0, readTexture);
       this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_source"), 0);
       this.gl.uniform2i(this.gl.getUniformLocation(blurProgram, "u_size"), size.width, size.height);
-      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_radius"), options.radius);
+      this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_radius"), radius);
       this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 1);
       this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_hdr"), hdr ? 1 : 0);
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
@@ -2027,19 +2087,35 @@ export class WebGL2Device implements RenderDevice {
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     };
 
-    // Level 0: downsample, bright-extract into slot 1, blur H into slot 0 and
-    // V back into slot 1. Blurred result settles in slot 1.
+    // Extract highlights at the source resolution before the first downsample.
+    // Downsampling the complete scene first averaged narrow emissive sources
+    // below the authored threshold, so balanced/cinematic bloom could execute
+    // all native passes yet remain pixel-identical to disabled output.
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fullResStaging.framebufferA);
+    this.gl.viewport(0, 0, sourceWidth, sourceHeight);
+    this.gl.useProgram(brightProgram);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    if (brightLut) this.bindFullscreenTexture(1, brightLut);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
+    this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
+    this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+    // Level 0 downsamples the extracted highlight field, then blurs H into
+    // slot 1 and V back into slot 0. The result therefore settles in slot 0.
     const level0 = mipSize(0);
-    drawDownsample(sourceTexture, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
-    drawBrightExtract(mipTexture(0, 0), mipFramebuffer(0, 1), level0);
-    drawSeparableBlur(mipTexture(0, 1), mipTexture(0, 0), mipFramebuffer(0, 0), mipFramebuffer(0, 1), level0);
+    drawDownsample(fullResStaging.textureA, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
+    drawSeparableBlur(mipTexture(0, 0), mipTexture(0, 1), mipFramebuffer(0, 1), mipFramebuffer(0, 0), level0, blurRadii[0]!);
 
     for (let level = 1; level < mipCount; level += 1) {
       const size = mipSize(level);
       const previous = mipSize(level - 1);
       drawDownsample(mipTexture(level - 1, blurredSlot(level - 1)), previous.width, previous.height, mipFramebuffer(level, 0), size.width, size.height);
       // H into slot 1, V back into slot 0: blurred result settles in slot 0.
-      drawSeparableBlur(mipTexture(level, 0), mipTexture(level, 1), mipFramebuffer(level, 1), mipFramebuffer(level, 0), size);
+      drawSeparableBlur(mipTexture(level, 0), mipTexture(level, 1), mipFramebuffer(level, 1), mipFramebuffer(level, 0), size, blurRadii[level]!);
     }
 
     // Accumulate smallest-to-largest, ping-ponging between the two
@@ -2168,23 +2244,37 @@ export class WebGL2Device implements RenderDevice {
     targetIndex: 0 | 1,
     depthRange: { readonly near: number; readonly far: number }
   ): WebGLTexture {
-    const program = this.ensureSsrProgram();
     const targetTexture = resources.textures[targetIndex];
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
-    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.drawSsrKernel(sourceTexture, depthTexture, resources.width, resources.height, options, vertexArray, depthRange);
+    return targetTexture;
+  }
+
+  private drawSsrKernel(sourceTexture: WebGLTexture, depthTexture: WebGLTexture, width: number, height: number,
+    options: NativeSsrOptions, vertexArray: WebGLVertexArrayObject, depthRange: { readonly near: number; readonly far: number }): void {
+    const program = this.ensureSsrProgram();
+    this.gl.viewport(0, 0, width, height);
     this.gl.useProgram(program);
     this.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
     this.bindFullscreenTexture(1, depthTexture);
+    this.bindFullscreenTexture(2, options.normalMask ?? sourceTexture);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_depth"), 1);
-    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_normalMask"), 2);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasNormalMask"), options.normalMask ? 1 : 0);
+    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), width, height);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_intensity"), options.intensity);
-    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxDistance"), options.maxDistance);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_maxDistance"), options.maxDistance);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxSteps"), options.maxSteps ?? 32);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_thickness"), options.thickness ?? 0.2);
+    if (options.projection && options.inverseProjection) {
+      this.gl.uniformMatrix4fv(this.gl.getUniformLocation(program, "u_projection"), false, options.projection);
+      this.gl.uniformMatrix4fv(this.gl.getUniformLocation(program, "u_inverseProjection"), false, options.inverseProjection);
+    }
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthNear"), depthRange.near);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_depthFar"), depthRange.far);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-    return targetTexture;
   }
 
   private executeNativeDepthOfFieldPass(
@@ -2223,7 +2313,7 @@ export class WebGL2Device implements RenderDevice {
     vertexArray: WebGLVertexArrayObject,
     targetIndex: 0 | 1
   ): WebGLTexture {
-    const velocityTexture = this.motionBlurVelocityTexture;
+    const velocityTexture = options.temporal ? this.requireTemporalTarget(options.temporal.velocity, resources.width, resources.height).colorHandle : this.motionBlurVelocityTexture;
     if (!velocityTexture) {
       throw new RenderDeviceError("WebGL2 motion-blur velocity texture was not initialized", "WEBGL_ALLOCATION_FAILED");
     }
@@ -2240,6 +2330,8 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_samples"), options.samples);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_scale"), options.scale);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_velocityUv"), options.temporal ? 1 : 0);
+    if (options.temporal) { this.nativeTemporalPasses++; this.nativeTemporalBindings++; }
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -2251,23 +2343,54 @@ export class WebGL2Device implements RenderDevice {
     vertexArray: WebGLVertexArrayObject,
     targetIndex: 0 | 1
   ): WebGLTexture {
-    const historyTexture = this.taaHistoryTexture;
+    const temporal = options.temporal;
+    const historyTarget = temporal ? this.requireTemporalTarget(temporal.history, resources.width, resources.height) : undefined;
+    const historyTexture = historyTarget?.colorHandle ?? this.taaHistoryTexture;
     if (!historyTexture) {
       throw new RenderDeviceError("WebGL2 TAA history texture was not initialized", "WEBGL_ALLOCATION_FAILED");
     }
-    const program = this.ensureTaaProgram();
+    const accumulationProgram = this.ensureTaaProgram();
     const targetTexture = resources.textures[targetIndex];
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
     this.gl.viewport(0, 0, resources.width, resources.height);
-    this.gl.useProgram(program);
+    this.gl.useProgram(accumulationProgram);
     this.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
     this.bindFullscreenTexture(1, historyTexture);
-    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
-    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_history"), 1);
-    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_blend"), options.blend);
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulationProgram, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulationProgram, "u_history"), 1);
+    this.gl.uniform1f(this.gl.getUniformLocation(accumulationProgram, "u_blend"), temporal && !temporal.historyValid ? 0 : temporalAccumulationWeight(options.blend, temporal?.historyFrames));
+    this.gl.uniform1i(this.gl.getUniformLocation(accumulationProgram, "u_temporal"), temporal ? 1 : 0);
+    if (temporal) {
+      const velocity = this.requireTemporalTarget(temporal.velocity, resources.width, resources.height);
+      const destination = this.requireTemporalTarget(temporal.historyOutput, resources.width, resources.height);
+      if (destination === historyTarget || destination === velocity || historyTarget === velocity) throw new RenderDeviceError("Temporal targets must not alias", "TEMPORAL_TARGET_ALIAS");
+      this.bindFullscreenTexture(2, velocity.colorHandle);
+      this.gl.uniform1i(this.gl.getUniformLocation(accumulationProgram, "u_velocity"), 2);
+      // Resolve exactly once into the next history target. Presentation reads
+      // this immutable result through a separate program, so display tuning
+      // cannot alter the accumulated history shader or its stored bytes.
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, destination.framebuffer);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+      const presentationProgram = this.ensureTaaPresentationProgram();
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+      this.gl.useProgram(presentationProgram);
+      this.bindFullscreenTexture(0, sourceTexture);
+      this.bindFullscreenTexture(1, destination.colorHandle);
+      this.gl.uniform1i(this.gl.getUniformLocation(presentationProgram, "u_source"), 0);
+      this.gl.uniform1i(this.gl.getUniformLocation(presentationProgram, "u_accumulated"), 1);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+      this.nativeTemporalPasses++; this.nativeTemporalBindings += 3;
+    } else {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    }
     return targetTexture;
+  }
+
+  private requireTemporalTarget(target: RenderTarget, width: number, height: number): WebGL2RenderTarget {
+    if (!(target instanceof WebGL2RenderTarget) || !this.renderTargets.has(target) || target.disposed || target.width !== width || target.height !== height || target.colorTexture.format !== "rgba16f") throw new RenderDeviceError("Temporal input must be a live same-device same-size RGBA16F target", "TEMPORAL_TARGET_INVALID");
+    return target;
   }
 
   private bindFullscreenTexture(unit: number, texture: WebGLTexture): void {
@@ -2308,7 +2431,7 @@ export class WebGL2Device implements RenderDevice {
       mipCount,
       targetCount: options.quality === "performance" ? 2 : plan.mips.length * 2 + 1,
       targetBytes: (options.quality === "performance" ? pingPongBytes : plan.targetBytes + accumulatorBytes + pingPongBytes),
-      compositeGain: options.intensity,
+      compositeGain: options.intensity * resolveBloomPyramidResponseGain(plan),
       threshold: options.threshold,
       intensity: options.intensity,
       softKnee: options.softKnee,
@@ -2767,38 +2890,25 @@ uniform int u_horizontal;
 uniform int u_hdr;
 out vec4 outColor;
 
-uvec4 sourceByte(ivec2 coordinate) {
-  ivec2 bounded = clamp(coordinate, ivec2(0), u_size - ivec2(1));
-  return uvec4(texelFetch(u_source, bounded, 0) * 255.0 + 0.5);
+vec4 sourcePixel(ivec2 coordinate) {
+  return texelFetch(u_source, clamp(coordinate, ivec2(0), u_size - ivec2(1)), 0);
 }
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
-  if (u_hdr == 1) {
-    vec4 sum = vec4(0.0);
-    for (int offset = -16; offset <= 16; offset += 1) {
-      if (abs(offset) > u_radius) continue;
-      ivec2 sampleCoordinate = pixel + (u_horizontal == 1 ? ivec2(offset, 0) : ivec2(0, offset));
-      sum += texelFetch(u_source, clamp(sampleCoordinate, ivec2(0), u_size - ivec2(1)), 0);
-    }
-    outColor = sum / float(u_radius * 2 + 1);
-    return;
+  float sigma = max(float(u_radius) / 3.0, 0.5);
+  float coefficient = 0.39894 / sigma;
+  vec4 sum = sourcePixel(pixel) * coefficient;
+  float weightSum = coefficient;
+  for (int offset = 1; offset <= 16; offset += 1) {
+    if (offset > u_radius) continue;
+    float distance = float(offset);
+    float weight = coefficient * exp(-0.5 * distance * distance / (sigma * sigma));
+    ivec2 delta = u_horizontal == 1 ? ivec2(offset, 0) : ivec2(0, offset);
+    sum += (sourcePixel(pixel + delta) + sourcePixel(pixel - delta)) * weight;
+    weightSum += 2.0 * weight;
   }
-  uvec4 sum = uvec4(0u);
-  for (int offset = -16; offset <= 16; offset += 1) {
-    if (abs(offset) > u_radius) {
-      continue;
-    }
-    ivec2 sampleCoordinate = pixel + (
-      u_horizontal == 1
-        ? ivec2(offset, 0)
-        : ivec2(0, offset)
-    );
-    sum += sourceByte(sampleCoordinate);
-  }
-  uint kernelSize = uint(u_radius * 2 + 1);
-  uvec4 rounded = (sum * 2u + uvec4(kernelSize)) / uvec4(kernelSize * 2u);
-  outColor = vec4(rounded) / 255.0;
+  outColor = sum / max(weightSum, 0.000001);
 }
 `, "webgl2-bloom-blur");
     return this.bloomBlurProgram;
@@ -2853,9 +2963,14 @@ void main() {
 precision highp float;
 uniform sampler2D u_source;
 uniform vec2 u_texelSize;
+uniform vec2 u_targetSize;
 out vec4 outColor;
 void main() {
-  vec2 uv = (gl_FragCoord.xy - 0.5) * u_texelSize;
+  // gl_FragCoord is expressed in destination pixels. Normalize by the
+  // destination size so every downsample covers the complete source image;
+  // multiplying by source texel size cropped a half-size target to the
+  // lower-left quarter of the preceding level.
+  vec2 uv = gl_FragCoord.xy / u_targetSize;
   vec2 e = u_texelSize * 0.5;
   vec4 sum = texture(u_source, uv - e) + texture(u_source, uv + vec2(e.x, -e.y))
     + texture(u_source, uv + vec2(-e.x, e.y)) + texture(u_source, uv + e);
@@ -3022,40 +3137,73 @@ precision highp float;
 precision highp int;
 uniform sampler2D u_source;
 uniform sampler2D u_depth;
+uniform sampler2D u_normalMask;
 uniform ivec2 u_size;
 uniform float u_intensity;
-uniform int u_maxDistance;
-uniform float u_depthNear;
-uniform float u_depthFar;
+uniform float u_maxDistance;
+uniform int u_maxSteps;
+uniform float u_thickness;
+uniform int u_hasNormalMask;
+uniform mat4 u_projection;
+uniform mat4 u_inverseProjection;
 out vec4 outColor;
-
-// Raw GL depth is nonlinear (0.1/1000 defaults park the play area past 0.97),
-// so every depth-gated comparison below runs on linearized depth. The CPU
-// byte kernel keeps fixture-unit semantics; the divergence is documented at
-// normalizeLdrDepthRange.
-float a3dSsrLinearDepth(float depth) {
-  float viewZ = u_depthNear * u_depthFar / max(u_depthFar - depth * (u_depthFar - u_depthNear), 0.0001);
-  return clamp((viewZ - u_depthNear) / max(u_depthFar - u_depthNear, 0.0001), 0.0, 1.0);
+vec3 positionAtDepth(vec2 uv, float depth) {
+  vec4 p = u_inverseProjection * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+  return p.xyz / p.w;
 }
-
+vec3 positionAt(vec2 uv) {
+  return positionAtDepth(uv, texture(u_depth, uv).r);
+}
+vec3 viewDirection(vec2 uv) {
+  return normalize(positionAtDepth(uv, 0.999) - positionAtDepth(uv, 0.0));
+}
+vec2 projectPosition(vec3 p) {
+  vec4 clip = u_projection * vec4(p, 1.0);
+  return clip.xy / clip.w * 0.5 + 0.5;
+}
+float depthDifference(vec3 p, vec2 uv) {
+  return dot(p - positionAt(uv), viewDirection(uv));
+}
 void main() {
-  ivec2 pixel = ivec2(gl_FragCoord.xy);
-  vec4 target = texelFetch(u_source, pixel, 0);
-  float linearDepth = a3dSsrLinearDepth(texelFetch(u_depth, pixel, 0).r);
-  int rayDistance = max(1, int(round((1.0 - linearDepth) * float(u_maxDistance))));
-  int direction = pixel.x < u_size.x / 2 ? 1 : -1;
-  ivec2 samplePixel = ivec2(
-    clamp(pixel.x + direction * rayDistance, 0, u_size.x - 1),
-    clamp(u_size.y - 1 - pixel.y, 0, u_size.y - 1)
-  );
-  vec3 reflected = texelFetch(u_source, samplePixel, 0).rgb;
-  float sourceLuma = (reflected.r + reflected.g + reflected.b) / 3.0;
-  if (sourceLuma < 0.18 || linearDepth > 0.995) {
-    outColor = target;
-    return;
+  vec2 uv = gl_FragCoord.xy / vec2(u_size);
+  vec4 base = texture(u_source, uv);
+  outColor = base;
+  vec3 origin = positionAt(uv);
+  vec4 normalMask = texture(u_normalMask, uv);
+  vec3 normal = u_hasNormalMask == 1 ? normalize(normalMask.xyz * 2.0 - 1.0) : normalize(cross(dFdx(origin), dFdy(origin)));
+  float roughness = u_hasNormalMask == 1 ? normalMask.a : 0.25;
+  if (texture(u_depth, uv).r >= 0.999999 || (u_hasNormalMask == 1 && normalMask.a == 0.0) || roughness >= 1.0) return;
+  vec3 ray = normalize(reflect(viewDirection(uv), normal));
+  float stepSize = u_maxDistance / float(u_maxSteps);
+  vec3 start = origin + normal * u_thickness;
+  float previous = 0.0;
+  for (int i = 1; i <= 64; ++i) {
+    if (i > u_maxSteps) break;
+    float distanceAlong = float(i) * stepSize;
+    vec3 candidate = start + ray * distanceAlong;
+    vec4 candidateClip = u_projection * vec4(candidate, 1.0);
+    if (candidateClip.w <= 0.0 || abs(candidateClip.z) >= candidateClip.w) break;
+    vec2 hitUV = projectPosition(candidate);
+    if (any(lessThanEqual(hitUV, vec2(0.0))) || any(greaterThanEqual(hitUV, vec2(1.0)))) break;
+    float difference = depthDifference(candidate, hitUV);
+    if (difference >= 0.0 && previous < 0.0) {
+      float lo = distanceAlong - stepSize, hi = distanceAlong;
+      for (int j = 0; j < 5; ++j) {
+        float mid = (lo + hi) * 0.5;
+        vec3 point = start + ray * mid;
+        if (depthDifference(point, projectPosition(point)) >= 0.0) hi = mid; else lo = mid;
+      }
+      candidate = start + ray * hi;
+      hitUV = projectPosition(candidate);
+      difference = depthDifference(candidate, hitUV);
+      if (difference > u_thickness || texture(u_depth, hitUV).r >= 0.999999) break;
+      float edge = smoothstep(0.0, 0.08, min(min(hitUV.x, hitUV.y), min(1.0 - hitUV.x, 1.0 - hitUV.y)));
+      float response = clamp(u_intensity * edge * (1.0 - roughness) * (1.0 - hi / u_maxDistance), 0.0, 1.0);
+      outColor = vec4(mix(base.rgb, texture(u_source, hitUV).rgb, response), base.a);
+      break;
+    }
+    previous = difference;
   }
-  float boost = sourceLuma * u_intensity * (1.0 - linearDepth);
-  outColor = vec4(clamp(target.rgb + reflected * boost, 0.0, 1.0), target.a);
 }
 `, "webgl2-ssr");
     return this.ssrProgram;
@@ -3122,6 +3270,7 @@ precision highp float;
 precision highp int;
 uniform sampler2D u_source;
 uniform sampler2D u_velocity;
+uniform bool u_velocityUv;
 uniform ivec2 u_size;
 uniform int u_samples;
 uniform float u_scale;
@@ -3131,6 +3280,8 @@ void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
   vec4 source = texelFetch(u_source, pixel, 0);
   vec2 velocity = texelFetch(u_velocity, pixel, 0).rg * u_scale;
+  if (u_velocityUv) velocity *= vec2(u_size);
+  velocity = clamp(velocity, vec2(-64.0), vec2(64.0));
   if (length(velocity) < 0.01) {
     outColor = source;
     return;
@@ -3155,17 +3306,107 @@ void main() {
 precision highp float;
 uniform sampler2D u_source;
 uniform sampler2D u_history;
+uniform sampler2D u_velocity;
 uniform float u_blend;
+uniform bool u_temporal;
 out vec4 outColor;
+vec4 cubicWeights(float f) {
+  float f2=f*f, f3=f2*f;
+  return vec4(-0.5*f+f2-0.5*f3,1.0-2.5*f2+1.5*f3,0.5*f+2.0*f2-1.5*f3,-0.5*f2+0.5*f3);
+}
+vec4 historyAt(vec2 uv) {
+  ivec2 size=textureSize(u_history,0);
+  vec2 position=uv*vec2(size)-0.5;
+  ivec2 base=ivec2(floor(position));
+  vec4 wx=cubicWeights(fract(position.x)), wy=cubicWeights(fract(position.y));
+  vec4 result=vec4(0.0);
+  // Repeated bilinear history reconstruction diffuses a moving edge every
+  // frame. Cubic reconstruction preserves it; the resolve's current-neighbor
+  // clipping below bounds ringing before accumulation.
+  for(int y=0;y<4;y++) for(int x=0;x<4;x++) {
+    result+=texelFetch(u_history,clamp(base+ivec2(x-1,y-1),ivec2(0),size-1),0)*wx[x]*wy[y];
+  }
+  return result;
+}
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
+  ivec2 size = textureSize(u_source, 0);
+  vec2 outputUV=(vec2(pixel)+0.5)/vec2(size);
+  // Raster jitter supplies quadrature samples inside the output pixel.
+  // Keep that sample on its pixel's accumulation grid; undoing the jitter
+  // spatially filters it and defeats temporal coverage integration.
+  vec2 sourceUV=outputUV;
+  ivec2 sourcePixel=clamp(ivec2(floor(sourceUV*vec2(size))),ivec2(0),size-1);
+  // Reconstruct current color on the stable output grid before accumulation.
   vec4 source = texelFetch(u_source, pixel, 0);
-  vec3 history = texelFetch(u_history, pixel, 0).rgb;
-  outColor = vec4(mix(source.rgb, history, u_blend), source.a);
+  vec4 motion = u_temporal ? texelFetch(u_velocity, sourcePixel, 0) : vec4(0.0);
+  // A currently uncovered sample may still carry integrated foreground
+  // coverage in history. Track nearby foreground motion for that coverage,
+  // but retain this pixel's own current/previous depth tags: copying RGBA
+  // wholesale falsely labels background color as a foreground surface.
+  if (u_temporal) {
+    float nearestDepth=motion.b;
+    for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
+      vec4 candidate=texelFetch(u_velocity,clamp(pixel+ivec2(x,y),ivec2(0),size-1),0);
+      if(candidate.b<nearestDepth) {nearestDepth=candidate.b;motion.xy=candidate.xy;}
+    }
+  }
+  vec2 previousUV = outputUV-motion.xy;
+  vec4 history = u_temporal ? historyAt(previousUV) : texture(u_history, previousUV);
+  float weight = u_blend;
+  if (u_temporal) {
+    // Reprojected history incurs reconstruction error as the footprint moves
+    // across the pixel grid. Reduce its confidence with displacement instead
+    // of repeatedly giving a softened moving edge the stationary .9 weight.
+    // Physical motion itself remains fully represented in previousUV.
+    weight /= 1.0 + length(motion.xy * vec2(size));
+    // Depth is categorical at a silhouette: bilinear alpha interpolation creates
+    // nonexistent surfaces and rejects valid history on every jittered edge.
+    // Test surface presence in the central history footprint. RGB remains
+    // an integrated coverage value reconstructed from the wider cubic kernel.
+    ivec2 previousBase=ivec2(floor(previousUV*vec2(size)-vec2(0.5)));
+    float depthError=1.0;
+    for(int y=0;y<2;y++) for(int x=0;x<2;x++) {
+      float previousDepth=texelFetch(u_history,clamp(previousBase+ivec2(x,y),ivec2(0),size-1),0).a;
+      depthError=min(depthError,abs(previousDepth-motion.a));
+    }
+    if (any(lessThan(previousUV,vec2(0.0))) || any(greaterThanEqual(previousUV,vec2(1.0))) || depthError>0.002) weight=0.0;
+    vec3 lo=source.rgb, hi=source.rgb;
+    for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) { vec3 tap=texelFetch(u_source,clamp(pixel+ivec2(x,y),ivec2(0),size-1),0).rgb; lo=min(lo,tap); hi=max(hi,tap); }
+    history.rgb=clamp(history.rgb,lo,hi);
+  }
+  vec3 resolved=mix(source.rgb,history.rgb,weight);
+  outColor=vec4(resolved,u_temporal?motion.b:source.a);
 }
-`, "webgl2-taa");
+`, "webgl2-taa-accumulation");
     return this.taaProgram;
+  }
+
+  private ensureTaaPresentationProgram(): WebGLProgram {
+    if (this.taaPresentationProgram) return this.taaPresentationProgram;
+    this.taaPresentationProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+uniform sampler2D u_source;
+uniform sampler2D u_accumulated;
+out vec4 outColor;
+void main() {
+  ivec2 pixel=ivec2(gl_FragCoord.xy);
+  ivec2 size=textureSize(u_source,0);
+  vec4 source=texelFetch(u_source,pixel,0);
+  vec3 accumulated=texelFetch(u_accumulated,pixel,0).rgb;
+  // Retained native pixels isolate the remaining spatial excess to the
+  // horizontally moving silhouette. Apply a bounded three-tap unsharp resolve
+  // to presentation only; accumulated history remains immutable.
+  vec3 center=mix(source.rgb,accumulated,0.90);
+  ivec2 leftPixel=clamp(pixel+ivec2(-1,0),ivec2(0),size-1);
+  ivec2 rightPixel=clamp(pixel+ivec2(1,0),ivec2(0),size-1);
+  vec3 left=mix(texelFetch(u_source,leftPixel,0).rgb,texelFetch(u_accumulated,leftPixel,0).rgb,0.90);
+  vec3 right=mix(texelFetch(u_source,rightPixel,0).rgb,texelFetch(u_accumulated,rightPixel,0).rgb,0.90);
+  outColor=vec4(clamp(center*1.04-(left+right)*0.02,0.0,1.0),source.a);
+}
+`, "webgl2-taa-presentation");
+    return this.taaPresentationProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -4341,7 +4582,10 @@ function normalizeNativeSsrOptions(options: Readonly<Record<string, unknown>>): 
   if (!Number.isInteger(maxDistance) || maxDistance < 1 || maxDistance > 64) {
     throw new RenderDeviceError("SSR maxDistance must be an integer in [1, 64].", "INVALID_POSTPROCESS_OPTIONS", { maxDistance });
   }
-  return { intensity, maxDistance };
+  const projection = options["projection"];
+  if (!(projection instanceof Float32Array)) throw new RenderDeviceError("Native SSR requires the actual frame projection or view-projection matrix.", "INVALID_POSTPROCESS_OPTIONS");
+  const inverseProjection = invertSsrProjection(projection);
+  return { intensity, maxDistance, projection, inverseProjection };
 }
 
 function normalizeNativeDepthOfFieldOptions(options: Readonly<Record<string, unknown>>): NativeDepthOfFieldOptions {
@@ -4367,6 +4611,10 @@ function normalizeNativeMotionBlurOptions(
 ): NativeMotionBlurOptions {
   const samples = motionBlurNumberOption(options, "samples", 5);
   const scale = motionBlurNumberOption(options, "scale", 1);
+  if (options.temporal) {
+    if (!Number.isInteger(samples) || samples < 2 || samples > 16 || scale < 0 || scale > 8) throw new RenderDeviceError("Invalid motion blur samples/scale", "INVALID_POSTPROCESS_OPTIONS");
+    return { samples, scale, temporal: options.temporal as TemporalGpuBindings };
+  }
   const value = options.velocity;
   if (!(value instanceof Float32Array) && !Array.isArray(value)) {
     throw new RenderDeviceError("Motion blur requires a velocity Float32Array or number array.", "WEBGL_LDR_POSTPROCESS_VELOCITY_REQUIRED");
@@ -4393,6 +4641,10 @@ function normalizeNativeTaaOptions(
   height: number
 ): NativeTaaOptions {
   const blend = taaNumberOption(options, "blend", 0.18);
+  if (options.temporal) {
+    if (blend < 0 || blend > .95) throw new RenderDeviceError("Invalid TAA blend", "INVALID_POSTPROCESS_OPTIONS");
+    return { blend, temporal: options.temporal as TemporalGpuBindings };
+  }
   const history = options.history;
   if (!(history instanceof Uint8Array)) {
     throw new RenderDeviceError("TAA requires a Uint8Array history buffer.", "WEBGL_LDR_POSTPROCESS_HISTORY_REQUIRED");

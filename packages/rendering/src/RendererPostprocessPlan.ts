@@ -1,3 +1,5 @@
+import { invertSsrProjection } from "./ProjectionMath";
+import type { TemporalFrameOptions, TemporalGpuBindings } from "./TemporalHistory";
 import type {
   BloomOptions,
   ChromaticAberrationOptions,
@@ -15,6 +17,9 @@ import type {
   VolumetricLightOptions
 } from "./PostProcessPass";
 
+export interface RendererMotionBlurOptions { readonly samples?: number; readonly scale?: number; readonly temporal?: TemporalGpuBindings; }
+export interface RendererTaaOptions { readonly blend?: number; readonly temporal?: TemporalGpuBindings; }
+
 export type RendererPostprocessTargetFormat = "rgba8" | "rgba16f" | "rgba32f";
 
 export interface RendererPostprocessPlanOptions {
@@ -31,11 +36,12 @@ export interface RendererPostprocessPlanOptions {
   readonly filmGrain?: FilmGrainOptions | boolean;
   readonly volumetricLight?: VolumetricLightOptions | false;
   readonly depthOfField?: DepthOfFieldOptions | false;
-  readonly motionBlur?: MotionBlurOptions | false;
+  readonly temporal?: TemporalFrameOptions;
+  readonly motionBlur?: MotionBlurOptions | RendererMotionBlurOptions | false;
   readonly contactShadow?: ContactShadowPostProcessOptions | false;
   readonly ssao?: SSAOOptions | false;
   readonly ssr?: SSROptions | false;
-  readonly taa?: TAAOptions | false;
+  readonly taa?: TAAOptions | RendererTaaOptions | false;
   readonly outline?: OutlineOptions | boolean;
   readonly fxaa?: FXAAOptions | boolean;
 }
@@ -67,10 +73,12 @@ export interface RendererPostProcessPassPlan {
     | VolumetricLightOptions
     | DepthOfFieldOptions
     | MotionBlurOptions
+    | RendererMotionBlurOptions
     | ContactShadowPostProcessOptions
     | SSAOOptions
     | SSROptions
     | TAAOptions
+    | RendererTaaOptions
     | OutlineOptions
     | FXAAOptions;
 }
@@ -348,11 +356,11 @@ function postprocessPassHasNormals(options: RendererPostProcessPassPlan["options
 }
 
 function postprocessPassHasHistory(options: RendererPostProcessPassPlan["options"]): boolean {
-  return typeof options === "object" && options !== null && "history" in options && Boolean((options as { readonly history?: unknown }).history);
+  return hasTemporalGpuBindings(options) || typeof options === "object" && options !== null && "history" in options && Boolean((options as { readonly history?: unknown }).history);
 }
 
 function postprocessPassHasVelocity(options: RendererPostProcessPassPlan["options"]): boolean {
-  return typeof options === "object" && options !== null && "velocity" in options && Boolean((options as { readonly velocity?: unknown }).velocity);
+  return hasTemporalGpuBindings(options) || typeof options === "object" && options !== null && "velocity" in options && Boolean((options as { readonly velocity?: unknown }).velocity);
 }
 
 function missingPostprocessPassInputs(
@@ -455,4 +463,17 @@ function postprocessClarityWarnings(
 
 function round3(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+function hasTemporalGpuBindings(options: RendererPostProcessPassPlan["options"]): boolean {
+  if (!("temporal" in options) || !options.temporal) return false;
+  const {velocity, history, historyOutput} = options.temporal;
+  return [velocity, history, historyOutput].every(t => !t.disposed && t.width === velocity.width && t.height === velocity.height) && history !== historyOutput && velocity !== history && velocity !== historyOutput;
+}
+
+/** Bind the exact matrix used for this frame. VP is valid: reconstructed normals/rays then share world space. */
+export function bindRendererSsrProjection<T extends RendererPostprocessPlanOptions>(postprocess: T, matrix: Float32Array | readonly number[]): T {
+  if (!postprocess.ssr || postprocess.execution === "cpu-deterministic") return postprocess;
+  const projection = Float32Array.from(matrix);
+  return { ...postprocess, ssr: { ...postprocess.ssr, projection, inverseProjection: invertSsrProjection(projection) } };
 }

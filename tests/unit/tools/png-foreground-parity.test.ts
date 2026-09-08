@@ -1,6 +1,6 @@
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { analyzeForegroundPng } from "../../browser/showcase-visual-quality";
+import { analyzeForegroundPng, analyzePngDifferenceBounds } from "../../browser/showcase-visual-quality";
 // @ts-expect-error - untyped .mjs verifier module
 import { readPngForegroundMetrics } from "../../../tools/showcase-library/png-foreground.mjs";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -172,5 +172,31 @@ describe("png foreground producer/verifier parity", () => {
       expect(producer.nonBlankPixels).toBe(verifier.nonBlankPixels);
       expect(producer.readabilityScore).toBe(verifier.readabilityScore);
     });
+  });
+});
+
+
+describe("png difference subject isolation", () => {
+  it("selects one coherent subject without joining disconnected rerender scanlines", () => {
+    const width = 160;
+    const height = 120;
+    const hidden = new Uint8Array(width * height * 4);
+    const visible = new Uint8Array(width * height * 4);
+    for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
+      const index = (y * width + x) * 4;
+      for (const frame of [hidden, visible]) {
+        frame[index] = 12; frame[index + 1] = 18; frame[index + 2] = 28; frame[index + 3] = 255;
+      }
+      if (x >= 58 && x < 102 && y >= 42 && y < 86) {
+        visible[index] = 92; visible[index + 1] = 214; visible[index + 2] = 226;
+      }
+      if ((y === 9 && x < 130) || (x === 3 && y > 70)) {
+        visible[index] = 40; visible[index + 1] = 46; visible[index + 2] = 56;
+      }
+    }
+    const result = analyzePngDifferenceBounds(encodePng(width, height, visible), encodePng(width, height, hidden), undefined, 12, "dominant");
+    expect(result.bounds).toEqual({ x: 58, y: 42, width: 44, height: 44 });
+    expect(result.changedPixels).toBe(44 * 44);
+    expect(result.clipped).toBe(false);
   });
 });

@@ -1,15 +1,7 @@
-import type { RenderPass, RenderPassExecutionContext } from '../framegraph/RenderPass';
+import { assertValidPassContext, executeNativePass, type RenderPass, type RenderPassExecutionContext } from '../framegraph/RenderPass';
 
-/**
- * muse3jsparity-PRD T3 — DepthPrepass owns real logic.
- *
- * GPU work lives in the WebGL2Device native programs; this pass owns the
- * CPU-side contract: validated options, truthful resource edges
- * (reads/writes match the actual resource flow), resource-availability
- * validation, context validation on execute, and observable execution
- * bookkeeping. Emptying this file fails
- * `tests/unit/rendering/framegraph-passes-t3.test.ts`.
- */
+/** Compatibility adapter; rendering is dispatched to the canonical native pass.
+ * Allocation, shader compilation and device lifetime remain with that renderer. */
 export interface DepthPrepassOptions {
   readonly enabled?: boolean;
   readonly geometryResource?: string;
@@ -55,19 +47,10 @@ export class DepthPrepass implements RenderPass {
   execute(context: RenderPassExecutionContext): void {
     assertValidPassContext(this.id, context);
     if (!this.enabled) return;
+    executeNativePass(this, context);
     this.executedFrames += 1;
     this.lastFrame = context.frameIndex;
   }
 }
 
-export function assertValidPassContext(passId: string, context: RenderPassExecutionContext): void {
-  if (!Number.isInteger(context.frameIndex) || context.frameIndex < 0) {
-    throw new RangeError(`${passId} requires a non-negative integer frameIndex.`);
-  }
-  if (!Number.isFinite(context.width) || context.width <= 0) {
-    throw new RangeError(`${passId} requires a positive finite width.`);
-  }
-  if (!Number.isFinite(context.height) || context.height <= 0) {
-    throw new RangeError(`${passId} requires a positive finite height.`);
-  }
-}
+export { assertValidPassContext } from '../framegraph/RenderPass';

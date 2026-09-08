@@ -34,7 +34,7 @@ afterAll(() => rmSync(workDir, { recursive: true, force: true }));
 
 function runStrip(intent: string): { result: StripResult; png: Buffer } {
   const out = join(workDir, `${intent}.png`);
-  const stdout = execFileSync("npx", ["tsx", CLI, "--intent", intent, "--out", out], {
+  const stdout = execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", CLI, "--intent", intent, "--out", out], {
     cwd: REPO_ROOT,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]

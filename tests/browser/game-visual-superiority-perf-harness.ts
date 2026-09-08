@@ -1,3 +1,4 @@
+export {};
 /**
  * PART K1 lane-2 perf harness (muse3jsparity-PRD task 3).
  *
@@ -178,8 +179,9 @@ async function runPerf(): Promise<void> {
   if (!canvas) throw new Error("#perf canvas is missing.");
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
-  const gl = canvas.getContext("webgl2", { antialias: false });
-  if (!gl) throw new Error("WebGL2 is unavailable on this machine.");
+  const context = canvas.getContext("webgl2", { antialias: false });
+  if (!context) throw new Error("WebGL2 is unavailable on this machine.");
+  const gl: WebGL2RenderingContext = context;
   const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
   const renderer = debugInfo
     ? String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL))

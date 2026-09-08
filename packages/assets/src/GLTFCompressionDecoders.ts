@@ -7,6 +7,7 @@ import type {
 } from "./GLTFLoader";
 
 export interface GLTFMeshoptDecoderModule {
+  readonly supported?: boolean;
   readonly ready?: PromiseLike<void>;
   decodeGltfBuffer(
     target: Uint8Array,
@@ -61,19 +62,23 @@ export interface GLTFDracoDecoderModule {
 
 export function createMeshoptDecoder(module: GLTFMeshoptDecoderModule): GLTFMeshoptDecoder {
   return async (source, descriptor) => {
-    if (module.ready) {
-      await module.ready;
+    const label = `glTF Meshopt bufferView ${descriptor.bufferViewIndex}`;
+    if (module.supported === false) throw new Error(`${label}: decoder is unsupported in this environment`);
+    if (typeof module.decodeGltfBuffer !== "function") throw new Error(`${label}: decoder module is missing decodeGltfBuffer`);
+    if (!Number.isSafeInteger(descriptor.count) || descriptor.count < 0 ||
+        !Number.isSafeInteger(descriptor.byteStride) || descriptor.byteStride <= 0 ||
+        !Number.isSafeInteger(descriptor.count * descriptor.byteStride)) {
+      throw new Error(`${label}: invalid count or byteStride`);
     }
-    const target = new Uint8Array(descriptor.count * descriptor.byteStride);
-    module.decodeGltfBuffer(
-      target,
-      descriptor.count,
-      descriptor.byteStride,
-      source,
-      descriptor.mode,
-      descriptor.filter
-    );
-    return target;
+    try {
+      const ready = module.ready;
+      if (ready) await ready;
+      const target = new Uint8Array(descriptor.count * descriptor.byteStride);
+      module.decodeGltfBuffer(target, descriptor.count, descriptor.byteStride, source, descriptor.mode, descriptor.filter);
+      return target;
+    } catch (error) {
+      throw new Error(`${label}: decode failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
   };
 }
 

@@ -148,6 +148,39 @@ describe("projectWorldLabels", () => {
 });
 
 describe("resolveLabelCollisions", () => {
+  it("reserves HUD then annotations before ticks, with deterministic pairwise gaps", () => {
+    const input = projectWorldLabels([
+      { id: "tick", text: "Tick", role: "tick", anchor: [0, 0, 0] },
+      { id: "annotation", text: "Note", role: "annotation", anchor: [0, 0, 0] },
+      { id: "hud", text: "HUD", role: "hud", anchor: [0, 0, 0] }
+    ], lookDownNegativeZ(5), VIEWPORT).map(label => ({ ...label, width: 100, height: 20 }));
+    const resolved = resolveLabelCollisions(input, { viewport: VIEWPORT });
+    expect(resolved[2]!.y).toBe(input[2]!.y);
+    expect(Math.abs(resolved[1]!.y - resolved[2]!.y)).toBe(24);
+    expect(Math.abs(resolved[0]!.y - resolved[2]!.y)).toBe(22);
+    const reversed = resolveLabelCollisions([...input].reverse(), { viewport: VIEWPORT });
+    expect([...reversed].reverse()).toEqual(resolved);
+  });
+
+  it("uses measured text bounds, reflows changed fonts and suppresses overflow", () => {
+    const input = projectWorldLabels(Array.from({ length: 30 }, (_, i) => ({
+      id: `note-${i}`, text: "WWW", anchor: [0, 0, 0] as const
+    })), lookDownNegativeZ(5), VIEWPORT).map(label => ({ ...label, width: 180, height: 40 }));
+    const view = { width: 200, height: 120 };
+    const final = resolveLabelCollisions(input, { viewport: view });
+    const visible = final.filter(label => label.visible);
+    expect(visible.length).toBeGreaterThan(0);
+    expect(final.some(label => label.suppressed)).toBe(true);
+    for (const label of visible) {
+      expect(label.y - label.height! / 2).toBeGreaterThanOrEqual(0);
+      expect(label.y + label.height! / 2).toBeLessThanOrEqual(view.height);
+    }
+    for (let i = 0; i < visible.length; i++) for (let j = i + 1; j < visible.length; j++) {
+      expect(Math.abs(visible[i]!.y - visible[j]!.y)).toBeGreaterThanOrEqual(44);
+    }
+    const enlarged = resolveLabelCollisions(input.map(label => ({ ...label, height: 70 })), { viewport: view });
+    expect(enlarged.filter(label => label.visible).length).toBeLessThan(visible.length);
+  });
   it("separates overlapping labels so both stay readable", () => {
     const labels: readonly WorldLabel[] = [
       { id: "a", text: "Assembly zone", anchor: [0, 0, 0] },

@@ -1,3 +1,4 @@
+import type {} from "./input-browser-harness";
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -78,42 +79,3 @@ test.describe("input browser runtime", () => {
     expect(result?.touchPlatformButtons).toBeGreaterThan(0);
   });
 });
-
-declare global {
-  interface Window {
-    __AURA3D_INPUT_BROWSER_TEST__?: {
-      readonly status: "running" | "ready" | "error";
-      readonly keyboardBeforeBlur: boolean;
-      readonly keyboardAfterBlur: boolean;
-      readonly pointerButtonDown: boolean;
-      readonly touchCountDuringDown: number;
-      readonly touchCountAfterUp: number;
-      readonly gamepadAxis: number;
-      readonly gamepadButtonPressed: boolean;
-      readonly firstPersonMoved: boolean;
-      readonly remapRestored?: boolean;
-      readonly remapConflictCount?: number;
-      readonly comboFired?: boolean;
-      readonly hapticGateHonest?: boolean;
-      readonly hapticVia?: string;
-      readonly touchGenres?: readonly string[];
-      readonly touchFightButtons?: number;
-      readonly touchRaceButtons?: number;
-      readonly touchPlatformButtons?: number;
-      readonly accessibility: {
-        readonly focusable: boolean;
-        readonly role: string | null;
-        readonly label: string | null;
-        readonly describedBy: string | null;
-      };
-      readonly pointerLock: {
-        readonly available: boolean;
-        readonly requested: boolean;
-        readonly settled: boolean;
-        readonly granted: boolean;
-        readonly error?: string;
-      };
-      readonly error?: string;
-    };
-  }
-}

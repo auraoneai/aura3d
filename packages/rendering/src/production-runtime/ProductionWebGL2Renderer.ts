@@ -80,6 +80,15 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
     };
   }
 
+  async renderFrameAsync(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
+    this.validateImportedAsset(input);
+    const timing = createCurrentRoutesTimingAccumulator();
+    const renderStart = timing.now();
+    const diagnostics = await this.renderer.renderAsync(input.source, input.camera);
+    timing.addRender(renderStart);
+    return { backend: "webgl2", diagnostics, features: this.getInteractiveFeatures(diagnostics, input), timing: timing.snapshot() };
+  }
+
   renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     return this.renderInteractiveFrame(input);
   }
@@ -181,8 +190,17 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
     ];
   }
 
+  /** Resources actually selected by the latest submitted shadow pass. */
+  getShadowEvidence(): Readonly<Record<string, unknown>> | null {
+    return this.renderer.getShadowEvidence();
+  }
+
   getDiagnostics(): RenderDeviceDiagnostics {
     return this.renderer.getDiagnostics();
+  }
+
+  resetTemporalHistory(reason = "explicit-reset"): void {
+    this.renderer.resetTemporalHistory(reason);
   }
 
   dispose(): void {

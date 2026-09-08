@@ -728,6 +728,12 @@ function buildScene() {
 // ---------------- Game App Mount ----------------
 const gameApp = createGameApp("#canvas-host", {
   diagnostics: { overlay: false, performancePanel: false },
+  // The route-primary review keeps the required browser viewport and authored
+  // camera while bounding the production backing buffer. This prevents the
+  // two subject-isolation frames from turning into multi-minute SwiftShader
+  // submissions; the retained screenshots and acceptance thresholds remain at
+  // the producer's 1440x900 viewport.
+  pixelRatio: visualReviewCapture ? Math.min(1, 640 / Math.max(1, window.innerWidth)) : Math.min(window.devicePixelRatio || 1, 1.75),
   // Keep the exact capture on the same production GLB path as the standalone
   // asset probes.  The game runtime remains the gameplay owner, while the
   // renderer setting makes the route's typed athletes/court use the audited
@@ -1546,7 +1552,7 @@ app.onFrame((frame) => {
 // ---------------- Evidence & Deterministic Hooks ----------------
 function publishEvidence(): RooftopBucketsEvidence {
   const isGold = isCurrentPossessionGold(scoreState.possession);
-  const diagnostics = app.diagnostics() as { readonly drawCalls: number; readonly renderSize: readonly number[]; readonly runtimeBackend?: string };
+  const diagnostics = app.diagnostics();
   const ev: RooftopBucketsEvidence = {
     status: "ready",
     mounted: true,
@@ -1596,7 +1602,7 @@ function publishEvidence(): RooftopBucketsEvidence {
     systems: ROUTE_SYSTEMS,
     controls: ROUTE_CONTROLS,
     claimBoundary: "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",
-    renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.runtimeBackend ?? "unknown" },
+    renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.renderer?.runtime.backend ?? "unknown" },
     audioCues: [...audio.audioCuesHeard],
     ballPos: { x: ballState.x, y: ballState.y, z: ballState.z },
     hoopPos: { x: hoopState.x, y: hoopState.y, z: hoopState.z }
@@ -1755,16 +1761,20 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       rotation: [0, 0, 0],
       targetSize: BACKBOARD_POSITION.width
     },
-    settleSubjectPose() {
-      // The route-primary artifact is the public visual anchor for this lane.
-      // Stage the same deterministic pressure release used by the dedicated
-      // shot producer so reviewers see a live athlete → ball → hoop chain,
-      // while the composition probe still measures the typed backboard in its
-      // declared position.  This does not alter normal startup or user input;
-      // it only chooses a truthful gameplay moment for the evidence capture.
-      stageActiveReviewShot();
+    async settleSubjectPose() {
+      // The route-primary subject is the static typed backboard. Pause the game
+      // state, then complete one bounded production frame before the producer
+      // captures its visible baseline. Without this first presentation the
+      // visible canvas is still black and the later hidden frame is compared
+      // against the wrong state.
+      gameApp.pause();
+      app.pause();
+      await app.stepAsync(0);
+      publishEvidence();
     },
-    setSubjectSuppressed(suppressed: boolean) {
+    async setSubjectSuppressed(suppressed: boolean) {
+      gameApp.pause();
+      app.pause();
       const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
       node?.setVisible(!suppressed);
       // Suppression isolates the declared backboard subject only. Keep the
@@ -1774,6 +1784,11 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       rim?.setVisible(true);
       const rimReadability = app.nodes.get("rim-readability") as AuraRuntimeNodeHandle | undefined;
       rimReadability?.setVisible(true);
+      // Present the changed production frame without blocking the browser main
+      // thread. The probe already awaits this promise before taking the hidden
+      // screenshot. Restoration happens after that screenshot and needs no
+      // third submission.
+      if (suppressed) await app.stepAsync(0);
     }
   }
 });

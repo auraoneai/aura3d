@@ -35,7 +35,18 @@
     "@aura3d/product-studio": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*",
-    "@aura3d/workflows": "workspace:*"
+    "@aura3d/workflows": "workspace:*",
+    "@aura3d/editor-runtime": "workspace:*",
+    "@aura3d/input": "workspace:*",
+    "@aura3d/scripting": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "peerDependencies": {
+    "@aura3d/navigation-recast": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@aura3d/navigation-recast": {
+      "optional": true
+    }
+  }
 }

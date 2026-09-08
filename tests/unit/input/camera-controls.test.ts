@@ -193,7 +193,7 @@ describe("camera controls scene camera contracts", () => {
     const input = new InputSystem(target);
 
     input.attach(target);
-    expect([...active.values()].map((listeners) => listeners.size)).toEqual([1, 1, 1, 1, 1, 1, 1]);
+    expect([...active.values()].map((listeners) => listeners.size)).toEqual([1, 1, 1, 1, 1, 1, 1, 1]);
 
     input.dispose();
     expect([...active.values()].every((listeners) => listeners.size === 0)).toBe(true);

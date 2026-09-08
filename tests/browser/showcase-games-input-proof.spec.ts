@@ -1,9 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer } from "./example-dev-server";
 
-const SCRATCH = "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer";
+const SCRATCH = process.env.AURA3D_GAME_INPUT_SCRATCH_DIR
+  ?? join(tmpdir(), "aura3d-showcase-games-input-proof");
 const PRODUCTION = process.env.A3D_PUBLIC_DEMO_URL ?? "https://aura3d.auraone.ai";
 
 interface ClashProof {
