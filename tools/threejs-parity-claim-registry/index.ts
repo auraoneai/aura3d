@@ -3,9 +3,9 @@ import { readChecklistScope, readInventory, reportIssue, writeJson } from "../th
 const outputPath = "tests/reports/threejs-parity/claim-registry.json";
 const inventory = readInventory();
 const finalPrdScope = {
-  path: "1.6-FINAL-PRD-Finishes.md",
-  startHeading: "## 2. Definition of “direct, current, head-to-head competitor”",
-  endHeading: "## 3. Binding execution rules"
+  path: "muse3jsparity-3.0.1-PRD.md",
+  startHeading: "### V01. Implement the original feature-by-feature r185 visual comparison",
+  endHeading: "### V02. Measure end-to-end comparative game workloads"
 } as const;
 const checklistResult = readChecklistScope(finalPrdScope);
 const checklist = { checked: checklistResult.checked, unchecked: checklistResult.unchecked, total: checklistResult.total };
