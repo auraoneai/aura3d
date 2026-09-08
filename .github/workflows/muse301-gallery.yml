@@ -1,0 +1,103 @@
+name: Muse 3.0.1 Final Source Gallery 926465f2
+on:
+  push:
+    branches: [ops/muse301-gallery-926465f2]
+permissions: {contents: read}
+env: {SOURCE_COMMIT: 926465f2e7b450b1fb336dd46d647b6e09da6fec}
+jobs:
+  visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 926465f2e7b450b1fb336dd46d647b6e09da6fec, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:raw
+      - run: pnpm exec playwright test tests/browser/muse3jsparity-301-visual.spec.ts --reporter=line
+      - run: node tools/release/muse301-gallery.mjs receipt gallery-visual final-visual-review tests/reports/muse301-gallery/visual/receipt.json 60 tests/reports/muse3jsparity
+      - uses: actions/upload-artifact@v4
+        with: {name: gallery-visual, path: "tests/reports/muse3jsparity/visual-301-*\ntests/reports/muse301-gallery/visual/receipt.json", if-no-files-found: error}
+  routes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 926465f2e7b450b1fb336dd46d647b6e09da6fec, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:raw
+      - run: pnpm exec playwright test tests/browser/showcase-gameplay-proof.spec.ts --grep "turbo drift circuit|skyline runner" --reporter=line
+      - run: pnpm exec playwright test tests/browser/smart-city-composition-301.spec.ts --reporter=line
+      - run: node tools/release/muse301-gallery.mjs receipt gallery-routes final-route-review tests/reports/muse301-gallery/routes/receipt.json 20 tests/reports/showcase-gameplay tests/reports/smart-city-composition-301
+      - uses: actions/upload-artifact@v4
+        with: {name: gallery-routes, path: "tests/reports/showcase-gameplay/\ntests/reports/smart-city-composition-301/\ntests/reports/muse301-gallery/routes/receipt.json", if-no-files-found: error}
+  clash:
+    # Aura Clash's own Playwright config requires installed macOS Chrome for a
+    # real GPU path. Bundled Linux Chromium falls back to ~2 FPS SwiftShader
+    # and cannot satisfy the authored 90-second visual-state contract.
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 926465f2e7b450b1fb336dd46d647b6e09da6fec, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+      - run: test -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+      - run: pnpm build:raw
+      - run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/visual-regression.spec.ts --reporter=line
+      - run: node tools/release/muse301-gallery.mjs receipt gallery-clash aura-clash-final-review tests/reports/muse301-gallery/clash/receipt.json 12 apps/aura-clash-showcase/launch-evidence
+      - uses: actions/upload-artifact@v4
+        with: {name: gallery-clash, path: "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-*.png\ntests/reports/muse301-gallery/clash/receipt.json", if-no-files-found: error}
+  crowd:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 926465f2e7b450b1fb336dd46d647b6e09da6fec, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:raw
+      - run: pnpm exec playwright test tests/browser/crowd-instancing-adoption-301.spec.ts --grep "I03 smart-city" --reporter=line
+      - run: node tools/release/muse301-gallery.mjs receipt gallery-crowd crowd-adoption-final-review tests/reports/muse301-gallery/crowd/receipt.json 3 tests/reports/crowd-instancing-adoption-301/smart-city
+      - uses: actions/upload-artifact@v4
+        with: {name: gallery-crowd, path: "tests/reports/crowd-instancing-adoption-301/smart-city/\ntests/reports/muse301-gallery/crowd/receipt.json", if-no-files-found: error}
+  aggregate:
+    needs: [visual, routes, clash, crowd]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 926465f2e7b450b1fb336dd46d647b6e09da6fec, lfs: true}
+      - uses: actions/download-artifact@v4
+        with: {pattern: gallery-*, path: ., merge-multiple: true}
+      - run: node tools/release/muse301-gallery.mjs aggregate
+      - run: node tools/release/build-final-visual-review-index.mjs --version 3.0.1 --input release-artifacts/3.0.1-final-visual-review-input.json --output release-artifacts/3.0.1-final-visual-review-index.json
+      - run: node tools/release/build-final-visual-review-manifest.mjs --version 3.0.1 --artifact-index release-artifacts/3.0.1-final-visual-review-index.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: muse301-final-source-gallery-926465f2
+          path: |
+            release-artifacts/3.0.1-final-visual-review-*.json
+            tests/reports/muse301-gallery/**/receipt.json
+            tests/reports/muse3jsparity/visual-301-*.png
+            tests/reports/showcase-gameplay/*.png
+            tests/reports/smart-city-composition-301/*.png
+            tests/reports/crowd-instancing-adoption-301/smart-city/*.png
+            apps/aura-clash-showcase/launch-evidence/aura-clash-visual-*.png
+          if-no-files-found: error
