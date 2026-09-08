@@ -1,0 +1,54 @@
+name: Muse 3.0.1 Final Readiness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f3d786fe51ae4c0196e673ae3b9f103101128802
+          fetch-depth: 1
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Verify immutable candidate
+        run: |
+          test "$(git rev-parse HEAD)" = f3d786fe51ae4c0196e673ae3b9f103101128802
+          test -z "$(git status --short)"
+      - name: Install exact dependencies and Chromium
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Execute complete readiness infrastructure
+        env:
+          AURA_EVIDENCE_HARDWARE: GitHub Actions ubuntu-24.04 final-source aggregate
+        run: pnpm muse3jsparity:release
+      - name: Retain all readiness receipts and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-final-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            tests/reports/muse3jsparity/
+            tests/reports/agent-templates.json
+            tests/reports/installed-template-lifecycle.json
+            tests/reports/package-clean-install.json
+            tests/reports/bundle-size.json
+            tests/reports/installed-tree-shaking.json
+            tests/reports/release-tarballs/
+            benchmark/context/muse3jsparity-r185-matrix.json
+          retention-days: 14
+          if-no-files-found: error
