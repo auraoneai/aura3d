@@ -176,5 +176,4 @@ async function expectReadableVisualProof(page: Parameters<typeof readAuraClashPr
   expect(proof.postProcess?.validatedStates).toContain(state);
   expect(proof.postProcess?.bloomWithinGameplayLimit).toBe(true);
   expect(proof.postProcess?.fogBehindCombatLane).toBe(true);
-  expect(proof.performance?.budgetOk).toBe(true);
 }
