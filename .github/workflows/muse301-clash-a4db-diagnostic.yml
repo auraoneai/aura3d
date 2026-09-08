@@ -66,7 +66,28 @@ jobs:
           });
           TS
       - name: Run retained macOS Chrome diagnostic
+        id: browser
+        continue-on-error: true
         run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/a4db-boot-diagnostic.spec.ts --trace on --reporter=line
+      - name: Publish boot phase annotation
+        if: always()
+        run: |
+          python3 - <<'PY2'
+          import json
+          from pathlib import Path
+          candidates=list(Path('apps/aura-clash-showcase/test-results').rglob('a4db-boot-diagnostic.json'))
+          if not candidates:
+            print('::error title=Aura Clash diagnostic::diagnostic JSON missing')
+            raise SystemExit(1)
+          data=json.loads(candidates[0].read_text())
+          snapshot=data.get('snapshot') or {}
+          events=data.get('events') or []
+          compact=json.dumps({'phase':snapshot.get('phase'),'app':snapshot.get('app'),'renderStatus':snapshot.get('renderStatus'),'toast':snapshot.get('toast'),'proof':snapshot.get('proof'),'events':events[-12:]},separators=(',',':'))
+          print(f'::error title=Aura Clash boot phase::{compact}')
+          PY2
+      - name: Fail when browser diagnostic failed
+        if: steps.browser.outcome != 'success'
+        run: exit 1
       - name: Upload diagnostic artifacts
         if: always()
         uses: actions/upload-artifact@v4
