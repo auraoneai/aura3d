@@ -82,13 +82,13 @@ const FOOT_DROP = 0.72;
 /** Fixed simulation step — the determinism contract for replay hashes. */
 const FIXED_DT = 1 / 60;
 /**
- * Bound each presented frame to one second of deterministic catch-up. This
- * keeps software-rendered remote runs moving without advancing through whole
- * landings, site transitions, or a replay before evidence can observe them.
- * Any older backlog is dropped instead of creating a spiral of death.
+ * Human-controlled routes keep a narrow catch-up window so inputs and approach states remain
+ * observable. The deterministic drop producer can consume more elapsed time because it owns its
+ * controls and must complete the three-site campaign on software-rendered workers.
  */
-const MAX_CATCHUP_SECONDS = 1;
-const MAX_SUBSTEPS = Math.round(MAX_CATCHUP_SECONDS / FIXED_DT);
+const PLAYER_MAX_CATCHUP_SECONDS = 0.5;
+const DROP_EVIDENCE_MAX_CATCHUP_SECONDS = 2;
+const MAX_SUBSTEPS = Math.round(DROP_EVIDENCE_MAX_CATCHUP_SECONDS / FIXED_DT);
 /**
  * The opening approach is intentionally framed as a launch/deorbit hand-off:
  * a renderer-owned gantry sits under the typed lander while it is high above
@@ -162,6 +162,47 @@ const input: GameInputController = game.input({
     steer: { negative: "left", positive: "right" }
   },
   bufferMs: 80
+});
+
+// Preserve the real elapsed duration of held flight controls until the fixed-step simulation
+// consumes it. On a software renderer a complete key hold can begin and end between presented
+// frames; the input controller correctly records both edges, but a held-state-only integrator
+// would otherwise lose the control entirely.
+type TimedFlightControl = "thrust" | "left" | "right";
+const timedControlForCode: Readonly<Record<string, TimedFlightControl | undefined>> = {
+  KeyW: "thrust", ArrowUp: "thrust",
+  KeyA: "left", ArrowLeft: "left",
+  KeyD: "right", ArrowRight: "right"
+};
+const timedControlStartedAt = new Map<TimedFlightControl, number>();
+const timedControlSeconds = new Map<TimedFlightControl, number>();
+const addTimedControlSeconds = (control: TimedFlightControl, seconds: number): void => {
+  timedControlSeconds.set(control, Math.min(2, (timedControlSeconds.get(control) ?? 0) + Math.max(0, seconds)));
+};
+const syncTimedFlightControls = (nowMs: number): void => {
+  for (const [control, startedAt] of timedControlStartedAt) {
+    addTimedControlSeconds(control, (nowMs - startedAt) / 1000);
+    timedControlStartedAt.set(control, nowMs);
+  }
+};
+const consumeTimedFlightControl = (control: TimedFlightControl): number => {
+  const available = timedControlSeconds.get(control) ?? 0;
+  if (available <= 0) return 0;
+  const consumed = Math.min(FIXED_DT, available);
+  timedControlSeconds.set(control, Math.max(0, available - FIXED_DT));
+  return consumed / FIXED_DT;
+};
+window.addEventListener("keydown", (event) => {
+  const control = timedControlForCode[event.code];
+  if (!control || event.repeat || timedControlStartedAt.has(control)) return;
+  timedControlStartedAt.set(control, performance.now());
+});
+window.addEventListener("keyup", (event) => {
+  const control = timedControlForCode[event.code];
+  if (!control) return;
+  const startedAt = timedControlStartedAt.get(control);
+  if (startedAt !== undefined) addTimedControlSeconds(control, (performance.now() - startedAt) / 1000);
+  timedControlStartedAt.delete(control);
 });
 
 // ---- mutable route state -----------------------------------------------------
@@ -873,6 +914,7 @@ function resetAttempt(recordGhostStart = true): void {
   crashDebris = [];
   shockwaveAge = -1;
   input.clearReplay();
+  timedControlSeconds.clear();
   touchThrust = 0;
   const touchThrustControl = document.getElementById("touch-thrust") as HTMLInputElement | null;
   if (touchThrustControl) touchThrustControl.value = "0";
@@ -1080,7 +1122,9 @@ function gradeFromContact(context: GradingContext): void {
 
   const isLastSite = siteIndex >= SITES.length - 1;
   phase = isLastSite ? "campaign-clear" : "landed";
-  advanceTimer = isLastSite ? -1 : 1.8;
+  // A hard-drop evidence route must retain its graded contact for the acceptance reader. The
+  // campaign producer advances normally through all three sites.
+  advanceTimer = isLastSite || hardDropEvidenceMode ? -1 : 1.8;
   showBanner(
     hud,
     graded.grade === "soft" ? "grade-soft" : "grade-hard",
@@ -1109,8 +1153,8 @@ function spawnCrashDebris(): void {
 
 // ---- fixed-step simulation tick --------------------------------------------------
 function readControls(): Controls {
-  const thrust = Math.max(input.held("thrust") ? 1 : 0, touchThrust);
-  const rotate = (input.held("right") ? 1 : 0) - (input.held("left") ? 1 : 0);
+  const thrust = Math.max(consumeTimedFlightControl("thrust"), touchThrust);
+  const rotate = consumeTimedFlightControl("right") - consumeTimedFlightControl("left");
   return { thrust, rotate };
 }
 
@@ -1567,7 +1611,11 @@ function publishEvidence(): void {
 
 // ---- main loop -----------------------------------------------------------------
 app.onFrame((frame) => {
-  accumulator = Math.min(accumulator + frame.dt, MAX_CATCHUP_SECONDS);
+  syncTimedFlightControls(performance.now());
+  const maxCatchupSeconds = dropEvidenceMode
+    ? DROP_EVIDENCE_MAX_CATCHUP_SECONDS
+    : PLAYER_MAX_CATCHUP_SECONDS;
+  accumulator = Math.min(accumulator + frame.dt, maxCatchupSeconds);
   let substeps = 0;
   while (accumulator >= FIXED_DT && substeps < MAX_SUBSTEPS) {
     input.update(FIXED_DT);
