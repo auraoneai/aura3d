@@ -1,7 +1,7 @@
 /**
  * Capability-gated haptics: `navigator.vibrate` patterns plus gamepad rumble
  * (`vibrationActuator.playEffect`). Every entry point probes first and reports
- * `{ played: false, reason }` instead of fake success on unsupported hosts.
+ * `{ played: false, reason }` when a host does not support the requested effect.
  */
 
 export interface NavigatorVibrateLike {
