@@ -14,7 +14,7 @@
     "@aura3d/lean": "3.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "1.59.1",
     "typescript": "^5.8.3",
     "vite": "^7.3.2"
   }

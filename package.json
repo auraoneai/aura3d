@@ -704,7 +704,7 @@
     "@babylonjs/core": "^7.16.1",
     "@babylonjs/loaders": "^7.16.1",
     "@dimforge/rapier3d-compat": "0.20.0",
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "1.59.1",
     "@react-three/drei": "10.7.8",
     "@react-three/fiber": "9.7.0",
     "@size-limit/file": "^12.1.0",
