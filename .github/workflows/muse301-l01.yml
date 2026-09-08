@@ -6,7 +6,7 @@ permissions: {contents: read}
 env:
   SOURCE_COMMIT: db19feba44914d302f031c9820ebc6a4847dd14a
   AURA3D_REMOTE_PROVIDER: github-actions
-  AURA3D_REMOTE_WORKER_ID: muse301-l01-db19feba
+  AURA3D_REMOTE_WORKER_ID: muse301-l01-19871974
 jobs:
   l01:
     runs-on: ubuntu-24.04
@@ -20,13 +20,13 @@ jobs:
         with: {node-version: '22', cache: pnpm, registry-url: 'https://registry.npmjs.org'}
       - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/db19feba
+      - run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/19871974
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-l01-db19feba
+          name: muse301-l01-19871974
           path: |
-            tests/reports/muse3jsparity/l01/db19feba/
+            tests/reports/muse3jsparity/l01/19871974/
             tests/reports/release-tarballs/
             tests/reports/agent-templates.json
             tests/reports/installed-template-lifecycle.json
