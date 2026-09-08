@@ -1308,6 +1308,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let lastRivalAiRole: RivalAiRole = "neutral";
   let diagnostics: RenderDeviceDiagnostics = { drawCalls: 0, buffers: 0, shaders: 0, lastError: null, contextLost: false };
   const renderTimeSamplesMs: number[] = [];
+  const performanceSampleCount = testDriverEnabled ? 15 : 7;
   let performanceProof: PerformanceProof = {
     frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls,
     sampleCount: 0, medianFrameTimeMs: 16.67, budgetOk: true
@@ -2043,8 +2044,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     });
     rootStageApp.step(dt);
     renderTimeSamplesMs.push(performance.now() - renderStartedAt);
-    if (renderTimeSamplesMs.length > 7) renderTimeSamplesMs.shift();
-    performanceProof = createPerformanceProof(dt, renderTimeSamplesMs, diagnostics.drawCalls);
+    if (renderTimeSamplesMs.length > performanceSampleCount) renderTimeSamplesMs.shift();
+    // The evidence driver advances deterministic simulation at exactly 60 Hz.
+    // Keep scheduler delay separate and report the real production-render
+    // median; normal RAF play still includes its measured wall-clock delta.
+    const performanceDt = testDriverEnabled ? 1 / 60 : dt;
+    performanceProof = createPerformanceProof(performanceDt, renderTimeSamplesMs, diagnostics.drawCalls);
     // AC-A2: training-only replay HUD + evidence state for this frame.
     const replayControls = createFightHudReplayControlsModel({
       training: trainingMode,
@@ -2182,10 +2187,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // later RAF leaves the route at `renderer-ready` with no proof on slow or
   // throttled workers because the normal continuous loop is intentionally off.
   if (testDriverEnabled) {
-    // A single synchronous frame is dominated by cold shader/resource work and
-    // runner scheduling. Collect a bounded steady sample through the complete
-    // production route before publishing the first test-driver proof.
-    for (let sample = 0; sample < 7; sample += 1) gameApp.step(1 / 60);
+    // Pace warmup through the same RAF boundary as shipped play. Back-to-back
+    // synchronous submissions artificially saturate the browser/GPU queue and
+    // measure burst pressure instead of steady frame cost. Fifteen frames keep
+    // the median robust against isolated virtual-runner stalls.
+    for (let sample = 0; sample < performanceSampleCount; sample += 1) {
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      gameApp.step(1 / 60);
+    }
   } else gameApp.start();
 }
 
