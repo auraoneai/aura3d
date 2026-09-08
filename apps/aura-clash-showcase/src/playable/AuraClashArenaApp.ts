@@ -2059,6 +2059,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
     writeProof({
       root,
+      status: testDriverEnabled && renderTimeSamplesMs.length < performanceSampleCount
+        ? "loading"
+        : paused ? "paused" : "running",
       frame,
       roundTime,
       totalHits,
@@ -3746,6 +3749,7 @@ function updateBurstIndicator(root: HTMLElement, selector: string, fighter: Figh
 
 function writeProof(input: {
   root: HTMLElement;
+  status: "loading" | "running" | "paused";
   frame: number;
   roundTime: number;
   totalHits: number;
@@ -3787,7 +3791,7 @@ function writeProof(input: {
   const playerSnapshot = input.player.actor.evidence;
   const rivalSnapshot = input.rival.actor.evidence;
   const proof = createAuraClashArenaProof({
-    status: input.paused ? "paused" : "running",
+    status: input.status,
     error: null,
     frame: input.frame,
     roundTime: Number(input.roundTime.toFixed(2)),
