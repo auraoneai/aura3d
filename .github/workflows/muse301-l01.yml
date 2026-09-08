@@ -1,0 +1,65 @@
+name: Muse 3.0.1 Exact Package L01
+on:
+  push:
+    branches:
+      - ops/muse301-l01-3a445008
+permissions:
+  contents: read
+jobs:
+  l01:
+    name: Exact 29-package L01 on frozen source
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout frozen release source
+        uses: actions/checkout@v4
+        with:
+          ref: 3a445008de995dd51ab4c3de864ad09d97b1f638
+          fetch-depth: 0
+      - name: Assert frozen source
+        run: |
+          test "$(git rev-parse HEAD)" = "3a445008de995dd51ab4c3de864ad09d97b1f638"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium dependencies
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Produce exact L01 receipt and tarballs
+        env:
+          AURA3D_REMOTE_PROVIDER: github-actions
+          AURA3D_REMOTE_WORKER_ID: ${{ runner.name }}-${{ github.run_id }}
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/final-3a445008
+      - name: Verify source remained frozen
+        if: always()
+        run: test "$(git rev-parse HEAD)" = "3a445008de995dd51ab4c3de864ad09d97b1f638"
+      - name: Upload L01 exact artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-l01-3a445008
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tests/reports/muse3jsparity/l01/final-3a445008/
+            tests/reports/release-tarballs/
+            docs/project/release-artifacts.json
+            tests/reports/release-frozen-lock.json
+            tests/reports/agent-templates.json
+            tests/reports/installed-template-lifecycle.json
+            tests/reports/public-surface-diff-3.0.1.json
+            tests/reports/package-clean-install.json
+            tests/reports/import-smoke.json
+            tests/reports/exports.json
+            tests/reports/package-install-smoke.json
+            tests/reports/package-provenance.json
+            tests/reports/bundle-size.json
+            tests/reports/installed-tree-shaking.json
