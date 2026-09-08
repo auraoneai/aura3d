@@ -1,7 +1,7 @@
 name: Muse 3.0.1 Aura Clash 8b611b65
 on:
   push:
-    branches: [ops/muse301-clash-8b611b65]
+    branches: [ops/muse301-clash-adc0c3bf]
 permissions: {contents: read}
 env: {SOURCE_COMMIT: 8b611b6521006937b742ab679e2a960e6adcf25c}
 jobs:
