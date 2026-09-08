@@ -1177,7 +1177,7 @@ function tick(dtFixed: number): void {
     const ground = sampleGridHeight(field, state.x, state.z);
     const agl = state.y - FOOT_DROP - ground;
     const pad = currentSite.pads[0]!;
-    const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.34 - state.vx * 0.5));
+    const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.12 - state.vx * 0.5));
     effectiveControls = {
       thrust: 0,
       rotate: agl < 1.5 ? 0 : lateralCorrection
