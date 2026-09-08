@@ -1,7 +1,7 @@
 name: Muse 3.0.1 L01 7f91638f
 on:
   push:
-    branches: [ops/muse301-l01-7f91638f]
+    branches: [ops/muse301-l01-fa9e0507]
 permissions: {contents: read}
 env:
   SOURCE_COMMIT: 7f91638fb574d138ec4eaa32510085cc7d1d55af
