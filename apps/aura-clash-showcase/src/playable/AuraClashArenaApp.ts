@@ -1310,6 +1310,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const renderTimeSamplesMs: number[] = [];
   const performanceSampleCount = testDriverEnabled ? 15 : 7;
   const performanceWarmupCount = testDriverEnabled ? 15 : 0;
+  let performanceEvidenceReady = !testDriverEnabled;
   let performanceProof: PerformanceProof = {
     frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls,
     sampleCount: 0, medianFrameTimeMs: 16.67, budgetOk: true
@@ -2060,9 +2061,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
     writeProof({
       root,
-      status: testDriverEnabled && renderTimeSamplesMs.length < performanceSampleCount
-        ? "loading"
-        : paused ? "paused" : "running",
+      status: performanceEvidenceReady
+        ? paused ? "paused" : "running"
+        : "loading",
       frame,
       roundTime,
       totalHits,
@@ -2205,6 +2206,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // production frame crosses the same RAF boundary as normal play.
     for (let sample = 0; sample < performanceSampleCount; sample += 1) {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
   } else gameApp.start();
