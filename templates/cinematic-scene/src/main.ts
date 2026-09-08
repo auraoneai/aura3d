@@ -30,6 +30,10 @@ const app = createAuraApp("#app", {
 // Browser evidence needs one completed production frame, then a stable GPU.
 // A generated app outside WebDriver keeps the normal continuous render loop.
 if (evidenceMode) {
-  await app.ready();
-  app.step(0);
+  // Keep module evaluation complete while the production renderer loads its
+  // typed-GLB chunk. A top-level await here can deadlock the bundled module
+  // graph because that dynamic chunk imports engine modules from this graph.
+  void app.ready().then(() => app.step(0)).catch((error: unknown) => {
+    document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
+  });
 }
