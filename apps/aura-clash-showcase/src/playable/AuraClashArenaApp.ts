@@ -1508,11 +1508,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     pixelRatio: stageSpotlightProbeEnabled
       ? Math.min(1, 640 / Math.max(1, window.innerWidth))
       : testDriverEnabled
-        // The retained route runs at the governor's supported 0.5 resolution
-        // step. At the 800 px evidence viewport this produces a 400 px backing
-        // width, removing the software-renderer fill bottleneck while preserving
-        // the authored CSS viewport and camera composition.
-        ? Math.min(1, 400 / Math.max(1, window.innerWidth))
+        // The retained route uses the governor's supported resolution scaling.
+        // At the 800 px evidence viewport this produces a 360 px backing width,
+        // preserving the authored CSS viewport, camera composition, and complete
+        // postprocess pipeline while keeping native GPU work inside its budget.
+        ? Math.min(1, 360 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { mode: "production", qualityProfile: "production" },
     scene: createRootStageScene()
