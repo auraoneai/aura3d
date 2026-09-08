@@ -8,7 +8,11 @@ describe("optional Recast navigation boundary", () => {
     expect(engine.peerDependencies).toEqual(expect.objectContaining({ "@aura3d/navigation-recast": "workspace:*" }));
     expect(engine.peerDependenciesMeta?.["@aura3d/navigation-recast"]).toEqual({ optional: true });
 
-    for (const path of ["package.json", "packages/rendering/package.json", "packages/product-studio/package.json"]) {
+    const root = JSON.parse(readFileSync("package.json", "utf8"));
+    expect(root.dependencies).not.toHaveProperty("recast-navigation");
+    expect(root.optionalDependencies).toEqual({ "recast-navigation": "0.43.1" });
+
+    for (const path of ["packages/rendering/package.json", "packages/product-studio/package.json"]) {
       expect(readFileSync(path, "utf8"), path).not.toContain("@aura3d/navigation-recast");
       expect(readFileSync(path, "utf8"), path).not.toContain("recast-navigation");
     }

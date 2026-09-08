@@ -138,7 +138,13 @@ function runOptionalPeerConsumer(mode: "absent" | "present") {
   try {
     writePackage(dir, { name: `aura3d-optional-peer-${mode}`, private: true, type: "module", dependencies });
     writeFileSync(resolve(dir, "probe.mjs"), optionalPeerFixture(mode));
-    const install = run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"], dir);
+    const install = run("npm", [
+      "install",
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund",
+      ...(mode === "absent" ? ["--omit=optional"] : [])
+    ], dir);
     let runtime: CommandResult = install.ok ? run("node", ["probe.mjs"], dir) : { ok: false, output: "Install failed; runtime was not executed", seconds: 0 };
     let observation: unknown = null;
     let installedIdentity: unknown;

@@ -798,5 +798,8 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "optionalDependencies": {
+    "recast-navigation": "0.43.1"
   }
 }
