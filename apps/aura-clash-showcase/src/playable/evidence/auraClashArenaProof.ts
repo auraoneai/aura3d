@@ -29,6 +29,10 @@ export interface AuraClashPerformanceProof {
   readonly frameTimeMs: number;
   readonly fps: number;
   readonly drawCalls: number;
+  /** Number of real production frames represented by frameTimeMs/fps. */
+  readonly sampleCount?: number;
+  /** Sorted steady-frame median; retained separately to make the statistic explicit. */
+  readonly medianFrameTimeMs?: number;
   readonly budgetOk: boolean;
 }
 

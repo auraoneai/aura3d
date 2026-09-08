@@ -1307,7 +1307,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let rivalForcedGuardDepleted = false;
   let lastRivalAiRole: RivalAiRole = "neutral";
   let diagnostics: RenderDeviceDiagnostics = { drawCalls: 0, buffers: 0, shaders: 0, lastError: null, contextLost: false };
-  let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
+  const renderTimeSamplesMs: number[] = [];
+  let performanceProof: PerformanceProof = {
+    frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls,
+    sampleCount: 0, medianFrameTimeMs: 16.67, budgetOk: true
+  };
   let combatSnapshot = combatWorld.snapshot();
   const lowHealthTensionActive = (): boolean => {
     const lowestLivingHealth = Math.min(
@@ -2034,7 +2038,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       reducedMotion: reducedMotion || lowHealthTensionActive()
     });
     rootStageApp.step(dt);
-    performanceProof = createPerformanceProof(dt, performance.now() - renderStartedAt, diagnostics.drawCalls);
+    renderTimeSamplesMs.push(performance.now() - renderStartedAt);
+    if (renderTimeSamplesMs.length > 7) renderTimeSamplesMs.shift();
+    performanceProof = createPerformanceProof(dt, renderTimeSamplesMs, diagnostics.drawCalls);
     // AC-A2: training-only replay HUD + evidence state for this frame.
     const replayControls = createFightHudReplayControlsModel({
       training: trainingMode,
@@ -2171,8 +2177,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // production frame before a browser test can call the driver. Waiting for a
   // later RAF leaves the route at `renderer-ready` with no proof on slow or
   // throttled workers because the normal continuous loop is intentionally off.
-  if (testDriverEnabled) gameApp.step(1 / 60);
-  else gameApp.start();
+  if (testDriverEnabled) {
+    // A single synchronous frame is dominated by cold shader/resource work and
+    // runner scheduling. Collect a bounded steady sample through the complete
+    // production route before publishing the first test-driver proof.
+    for (let sample = 0; sample < 7; sample += 1) gameApp.step(1 / 60);
+  } else gameApp.start();
 }
 
 function installArenaPresentation(root: HTMLElement): void {
@@ -3560,14 +3570,18 @@ function updateSparks(sparks: Spark[], dt: number): void {
  * cost at all. They now come from `renderPreset.performanceBudget`, so the features and the budget
  * admitting them are declared in one place.
  */
-function createPerformanceProof(dt: number, renderMs: number, drawCalls: number): PerformanceProof {
-  const frameTimeMs = Number(Math.max(renderMs, dt * 1000).toFixed(2));
+function createPerformanceProof(dt: number, renderSamplesMs: readonly number[], drawCalls: number): PerformanceProof {
+  const sorted = [...renderSamplesMs].sort((left, right) => left - right);
+  const medianRenderMs = sorted.length === 0 ? 0 : sorted[Math.floor(sorted.length / 2)]!;
+  const frameTimeMs = Number(Math.max(medianRenderMs, dt * 1000).toFixed(2));
   const fps = Number((1000 / Math.max(frameTimeMs, 1)).toFixed(1));
   const budget = SIDE_VIEW_PERFORMANCE_BUDGET;
   return {
     frameTimeMs,
     fps,
     drawCalls,
+    sampleCount: sorted.length,
+    medianFrameTimeMs: Number(medianRenderMs.toFixed(2)),
     budgetOk: frameTimeMs <= budget.maxFrameTimeMs && fps >= budget.minFps && drawCalls <= budget.maxDrawCalls
   };
 }
