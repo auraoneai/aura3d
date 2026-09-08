@@ -700,7 +700,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const canvas = root.querySelector<HTMLCanvasElement>("#aura-clash-arena-canvas");
   if (!canvas) throw new Error("Missing #aura-clash-arena-canvas canvas");
   const arenaCanvas = canvas;
-  const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
+  const searchParams = new URLSearchParams(window.location.search);
+  const testDriverEnabled = searchParams.has("auraTestDriver");
+  const combatReviewCapture = searchParams.get("capture") === "combat-impact";
 
   const playerState = createFighter("player", "Mara Volt", "Player one", DEFAULT_PLAYER_X, 1, playerClips);
   const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", DEFAULT_RIVAL_X, -1, rivalClips);
@@ -1468,7 +1470,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // I03 owns the 28-instance spectator workload and proves it independently.
   // The I04 spotlight oracle omits those unrelated crowd GLBs so each four-state
   // readback measures lighting without spending minutes on the crowd matrix.
-  const rootStageSceneNodes = () => [...rootStageFurniture, ...(stageSpotlightProbeEnabled ? [] : publicCrowd.nodes)];
+  const rootStageSceneNodes = () => [
+    ...rootStageFurniture,
+    // I03 and the route screenshot contract own typed-crowd adoption. The
+    // critic-facing combat capture reviews fighters, stage, lighting, shadows,
+    // postprocess and effects, so omit the unrelated 28-copy spectator workload
+    // from that explicit capture mode while retaining it in shipped play.
+    ...((stageSpotlightProbeEnabled || combatReviewCapture) ? [] : publicCrowd.nodes)
+  ];
   const createRootStageScene = () => rootStageSceneNodes().reduce((builder, node) => builder.add(node), scene().background("#020406"))
     .add(lights.spot({
       name: "Aura Clash overhead stage spotlight", position: [-1.3, 4.4, 2.1],
