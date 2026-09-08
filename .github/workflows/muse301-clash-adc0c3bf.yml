@@ -1,16 +1,16 @@
-name: Muse 3.0.1 Aura Clash adc0c3bf
+name: Muse 3.0.1 Aura Clash 277bb5af
 on:
   push:
     branches: [ops/muse301-clash-adc0c3bf]
 permissions: {contents: read}
-env: {SOURCE_COMMIT: adc0c3bfffef21a864425602958a2080636b7ff3}
+env: {SOURCE_COMMIT: 277bb5afd4962cadf868edcf2d8f78f627642680}
 jobs:
   clash:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with: {ref: adc0c3bfffef21a864425602958a2080636b7ff3, lfs: true}
+        with: {ref: 277bb5afd4962cadf868edcf2d8f78f627642680, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -31,7 +31,7 @@ jobs:
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-clash-adc0c3bf
+          name: muse301-clash-277bb5af
           path: |
             apps/aura-clash-showcase/launch-evidence/aura-clash-visual-*.png
             apps/aura-clash-showcase/test-results/
