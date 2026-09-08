@@ -2049,10 +2049,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // decay, so every accepted hit has one visible FOV/distance kick.
     sharedPunch.update(confirmedHitThisFrame ? CAMERA_PUNCH_DURATION_SECONDS / 2 : cameraDt);
     const renderStartedAt = performance.now();
-    publicCrowd.update(rootStageApp, {
-      elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
-      reducedMotion: reducedMotion || lowHealthTensionActive()
-    });
+    if (!combatReviewCapture) {
+      publicCrowd.update(rootStageApp, {
+        elapsedSeconds: frame / 60, cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
+        reducedMotion: reducedMotion || lowHealthTensionActive()
+      });
+    }
     rootStageApp.step(dt);
     renderTimeSamplesMs.push(performance.now() - renderStartedAt);
     if (renderTimeSamplesMs.length > performanceSampleCount) renderTimeSamplesMs.shift();
