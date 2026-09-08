@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
 import { PhysicsWorld, Shape, type PhysicsShape } from "../../../packages/physics/src/index.js";
+import { toRapierHeightfieldHeights } from "../../../packages/physics-rapier/src/HeightfieldLayout.js";
+import { createRapierPhysicsSync } from "../../../packages/physics-rapier/src/index.js";
 
 /**
  * Defect class: **engine**, same family as the joint no-op recorded in
@@ -18,6 +20,43 @@ import { PhysicsWorld, Shape, type PhysicsShape } from "../../../packages/physic
  * cannot express is no longer a degradation — it throws. These assertions are the contract:
  * every shape the public API can construct is expressible on the production backend.
  */
+
+test("converts Aura row-major heightfields to Rapier column-major layout", () => {
+  const heights = toRapierHeightfieldHeights({
+    rows: 3,
+    columns: 4,
+    heights: [0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23]
+  });
+  assert.deepEqual([...heights], [0, 10, 20, 1, 11, 21, 2, 12, 22, 3, 13, 23]);
+  assert.throws(
+    () => toRapierHeightfieldHeights({ rows: 3, columns: 4, heights: [0, 1] }),
+    /rows\*columns samples/
+  );
+});
+
+test("Rapier samples an asymmetric Aura heightfield in authored X/Z order", () => {
+  const world = createRapierPhysicsSync({ gravity: [0, 0, 0] });
+  try {
+    const terrain = world.createRigidBody({ type: "fixed" });
+    world.createCollider(terrain, {
+      shape: {
+        kind: "heightfield",
+        rows: 3,
+        columns: 4,
+        cellSize: 1,
+        heights: [0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23]
+      }
+    });
+    world.step(1 / 60);
+    const near = world.raycast([-1.25, 50, -0.75], [0, -1, 0], 100);
+    const far = world.raycast([1.25, 50, 0.75], [0, -1, 0], 100);
+    assert.ok(near && far);
+    assert.ok(Math.abs(near.point[1] - 2.75) < 0.001, `near height ${near.point[1]}`);
+    assert.ok(Math.abs(far.point[1] - 20.25) < 0.001, `far height ${far.point[1]}`);
+  } finally {
+    world.dispose();
+  }
+});
 
 const SHAPES: readonly (readonly [string, PhysicsShape])[] = [
   ["box", Shape.box(0.5, 0.5, 0.5)],

@@ -134,13 +134,14 @@ describe('immutable producer lineage', () => {
   });
   it('fingerprints frozen opponent inputs and relevant untracked source but excludes explicit runtime outputs', () => {
     for (const file of ['benchmark/context/frozen-opponent.json', 'benchmark/context/reference/scene.ts', 'packages/new/src/new.ts', 'tests/browser/new-proof.spec.ts']) expect(isSourceInput(file)).toBe(true);
-    for (const file of ['.goal/state.json', '.orchestrate/run.json', 'tests/reports/new.json', 'muse3jsparity-3.0.1-PRD.md', 'docs/project/release-artifacts.json', 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json', 'benchmark/context/muse3jsparity-r185-matrix.json']) expect(isSourceInput(file)).toBe(false);
+    for (const file of ['.goal/state.json', '.orchestrate/run.json', 'tests/reports/new.json', 'muse3jsparity-3.0.1-PRD.md', 'docs/project/release-artifacts.json', 'BUNDLE_SIZES.md', 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json', 'benchmark/context/muse3jsparity-r185-matrix.json']) expect(isSourceInput(file)).toBe(false);
   });
   it('keeps administrative checklist edits outside runtime identity while code and lockfile edits invalidate it', () => {
     const repo = mkdtempSync(join(tmpdir(), 'muse301-source-identity-'));
     try {
       mkdirSync(join(repo, 'src'));
       writeFileSync(join(repo, 'muse3jsparity-3.0.1-PRD.md'), '- [ ] requirement\n');
+      writeFileSync(join(repo, 'BUNDLE_SIZES.md'), '# Generated bundle report\n');
       writeFileSync(join(repo, 'src/index.ts'), 'export const value = 1;\n');
       mkdirSync(join(repo, 'docs/project'), { recursive: true });
       writeFileSync(join(repo, 'docs/project/release-artifacts.json'), '{"version":"2.0.0"}\n');
@@ -152,6 +153,7 @@ describe('immutable producer lineage', () => {
       git('add', '.'); git('commit', '-m', 'fixture');
       const initial = sourceIdentity(repo);
       writeFileSync(join(repo, 'muse3jsparity-3.0.1-PRD.md'), '- [x] requirement\n');
+      writeFileSync(join(repo, 'BUNDLE_SIZES.md'), '# Regenerated on another runtime\n');
       writeFileSync(join(repo, 'docs/project/release-artifacts.json'), '{"version":"3.0.1"}\n');
       writeFileSync(join(repo, 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json'), '{"dispositions":[{"reviewed":true}]}\n');
       expect(sourceIdentity(repo)).toEqual(initial);
