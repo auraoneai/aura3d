@@ -23,6 +23,7 @@ test.describe('Q02 Smart City retains its typed primary subject through desktop/
       const source = sourceIdentity(process.cwd());
       const producer = { path: producerPath, sha256: hash(readFileSync(producerPath)) };
       const id = `${viewport.name}:${state}`;
+      const artifactId = `${viewport.name}-${state}`;
       const errors: string[] = [];
       mkdirSync(reportDirectory, { recursive: true });
       page.on('pageerror', error => errors.push(error.message));
@@ -49,8 +50,8 @@ test.describe('Q02 Smart City retains its typed primary subject through desktop/
         console.log(`[Q02 SmartCity] ${id} state-ready`);
         await page.evaluate(() => (window as any).__AURA3D_COMPOSITION_PROBE__.settleSubjectPose());
         console.log(`[Q02 SmartCity] ${id} settled`);
-        const visiblePath = `${reportDirectory}/${id}-visible.png`;
-        const suppressedPath = `${reportDirectory}/${id}-suppressed.png`;
+        const visiblePath = `${reportDirectory}/${artifactId}-visible.png`;
+        const suppressedPath = `${reportDirectory}/${artifactId}-suppressed.png`;
         const visiblePng = await page.screenshot({ path: visiblePath, scale: 'css', timeout: 150_000 });
         console.log(`[Q02 SmartCity] ${id} visible-captured`);
         const context = await page.evaluate(() => {
@@ -86,7 +87,7 @@ test.describe('Q02 Smart City retains its typed primary subject through desktop/
         const result = { id, viewport: { width: viewport.width, height: viewport.height }, state, ...context,
           visible: { path: visiblePath, sha256: hash(visiblePng) }, suppressed: { path: suppressedPath, sha256: hash(suppressedPng) },
           metrics, panels, maxPanelOverlap, controls, controlsInViewport, errors, source, producer };
-        writeFileSync(resolve(reportDirectory, `${id}.json`), JSON.stringify(result, null, 2));
+        writeFileSync(resolve(reportDirectory, `${artifactId}.json`), JSON.stringify(result, null, 2));
         expect(metrics.changedPixels).toBeGreaterThanOrEqual(thresholds.minNonBlankPixels);
         expect(metrics.colorBuckets).toBeGreaterThanOrEqual(thresholds.minColorBuckets);
         expect(metrics.bounds?.width).toBeGreaterThanOrEqual(thresholds.minForegroundWidth);
@@ -106,7 +107,7 @@ test.describe('Q02 Smart City retains its typed primary subject through desktop/
     const source = sourceIdentity(process.cwd());
     const producer = { path: producerPath, sha256: hash(readFileSync(producerPath)) };
     const expected = viewports.flatMap(viewport => states.map(state => `${viewport.name}:${state}`));
-    const cases = expected.map(id => JSON.parse(readFileSync(resolve(reportDirectory, `${id}.json`), 'utf8')));
+    const cases = expected.map(id => JSON.parse(readFileSync(resolve(reportDirectory, `${id.replace(':', '-')}.json`), 'utf8')));
     const errors = cases.flatMap(entry => entry.errors ?? []);
     expect(cases.map(entry => entry.id)).toEqual(expected);
     for (const entry of cases) {

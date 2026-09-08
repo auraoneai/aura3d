@@ -1489,7 +1489,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // the evidence readback bounded; normal users retain the authored DPR cap.
     // Keep the actual desktop/mobile viewport and camera composition while
     // bounding software-GPU readback cost for the four-state pixel oracle.
-    pixelRatio: stageSpotlightProbeEnabled ? Math.min(1, 640 / Math.max(1, window.innerWidth)) : Math.min(window.devicePixelRatio || 1, 1.75),
+    pixelRatio: stageSpotlightProbeEnabled
+      ? Math.min(1, 640 / Math.max(1, window.innerWidth))
+      : testDriverEnabled ? 1 : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { mode: "production", qualityProfile: "production" },
     scene: createRootStageScene()
   });
@@ -2161,7 +2163,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     }
   });
   installTestDriver();
-  if (!testDriverEnabled) gameApp.start();
+  // The evidence driver owns frame scheduling, so it must publish one real
+  // production frame before a browser test can call the driver. Waiting for a
+  // later RAF leaves the route at `renderer-ready` with no proof on slow or
+  // throttled workers because the normal continuous loop is intentionally off.
+  if (testDriverEnabled) gameApp.step(1 / 60);
+  else gameApp.start();
 }
 
 function installArenaPresentation(root: HTMLElement): void {
