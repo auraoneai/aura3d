@@ -81,7 +81,14 @@ const CONTACT_PROXY_RADIUS = 0.42;
 const FOOT_DROP = 0.72;
 /** Fixed simulation step — the determinism contract for replay hashes. */
 const FIXED_DT = 1 / 60;
-const MAX_SUBSTEPS = 5;
+/**
+ * Bound catch-up to ten seconds of simulation per presented frame. The route
+ * renders only after these lightweight deterministic ticks, so software GPU
+ * throughput cannot reduce gameplay speed to five ticks per several-second
+ * frame. The bound still prevents an unbounded catch-up after a suspended tab.
+ */
+const MAX_CATCHUP_SECONDS = 10;
+const MAX_SUBSTEPS = Math.round(MAX_CATCHUP_SECONDS / FIXED_DT);
 /**
  * The opening approach is intentionally framed as a launch/deorbit hand-off:
  * a renderer-owned gantry sits under the typed lander while it is high above
@@ -1560,7 +1567,7 @@ function publishEvidence(): void {
 
 // ---- main loop -----------------------------------------------------------------
 app.onFrame((frame) => {
-  accumulator += frame.dt;
+  accumulator += Math.min(frame.dt, MAX_CATCHUP_SECONDS);
   let substeps = 0;
   while (accumulator >= FIXED_DT && substeps < MAX_SUBSTEPS) {
     input.update(FIXED_DT);

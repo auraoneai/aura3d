@@ -12,7 +12,7 @@ it('Smart City publishes mounted control state while paused and ignores supersed
   const completions: Array<() => void> = [];
   const statuses: string[] = [];
   const stepAsync = vi.fn().mockResolvedValue(undefined);
-  const context = { sceneUpdateGeneration: 0, lastChanged: '', activeBuild: {},
+  const context = { sceneUpdateGeneration: 0, sceneSubmissionTail: Promise.resolve(), lastChanged: '', activeBuild: {},
     buildSmartCityScene: () => ({ snapshot: {} }), updateControlState: vi.fn(),
     publishEvidence: (status: string) => statuses.push(status), console,
     app: { setScene: vi.fn(), ready: () => new Promise<void>(resolve => completions.push(resolve)), stepAsync }
@@ -21,12 +21,14 @@ it('Smart City publishes mounted control state while paused and ignores supersed
   apply('district:core');
   expect(statuses).toEqual(['booting']);
   expect(stepAsync).not.toHaveBeenCalled();
+  await vi.waitFor(() => expect(completions).toHaveLength(1));
   completions[0]!();
   await vi.waitFor(() => expect(statuses).toEqual(['booting', 'ready']));
   expect(stepAsync).toHaveBeenCalledExactlyOnceWith(0);
   apply('camera:street'); apply('camera:flythrough');
+  await vi.waitFor(() => expect(completions).toHaveLength(2));
   completions[1]!();
-  await Promise.resolve(); await Promise.resolve();
+  await vi.waitFor(() => expect(completions).toHaveLength(3));
   expect(stepAsync).toHaveBeenCalledTimes(1);
   completions[2]!();
   await vi.waitFor(() => expect(statuses).toEqual(['booting', 'ready', 'booting', 'booting', 'ready']));
@@ -36,13 +38,13 @@ it('Smart City publishes mounted control state while paused and ignores supersed
 it('initial readiness is published after the first real submission without waiting for twelve animation frames', async () => {
   const source = readFileSync('apps/showcase-smart-city-control/src/main.ts', 'utf8');
   const parsed = ts.createSourceFile('main.ts', source, ts.ScriptTarget.Latest, true);
-  const declaration = parsed.statements.find(node => ts.isExpressionStatement(node) && node.getText(parsed).startsWith('void app.ready().then'));
+  const declaration = parsed.statements.find(node => ts.isExpressionStatement(node) && node.getText(parsed).startsWith('sceneSubmissionTail = app.ready().then'));
   if (!declaration) throw new Error('Missing actual initial mount completion path');
   const code = ts.transpileModule(declaration.getText(parsed), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   let completeMount!: () => void;
   const statuses: string[] = [];
   const stepAsync = vi.fn().mockResolvedValue(undefined);
-  runInNewContext(code, { sceneUpdateGeneration: 0, console,
+  runInNewContext(code, { sceneUpdateGeneration: 0, sceneSubmissionTail: Promise.resolve(), console,
     publishEvidence: (status: string) => statuses.push(status),
     app: { ready: () => new Promise<void>(resolve => { completeMount = resolve; }), stepAsync }
   });

@@ -1276,8 +1276,11 @@ function applyScene(change: string): Promise<void> {
   const submission = sceneSubmissionTail.catch(() => undefined).then(async () => {
     currentApp.setScene(nextScene);
     await currentApp.ready();
+    // A newer control change may supersede this scene while its resources load.
+    // Do not submit an obsolete frame before the queued replacement mounts.
+    if (generation !== sceneUpdateGeneration) return;
     await currentApp.stepAsync(0);
-    if (generation === sceneUpdateGeneration) publishEvidence("ready");
+    publishEvidence("ready");
   }).catch((error: unknown) => {
     if (generation === sceneUpdateGeneration) {
       console.error("Smart City scene update failed", error);
