@@ -1257,9 +1257,16 @@ function tick(dtFixed: number): void {
     }
     if (phase !== "flying" || !field || !surfaceQuery || !sample) continue;
 
-    // Cross-check: solver contact normal vs BVH surface normal at the same point.
+    // Cross-check the solver contact normal against the BVH surface normal at the same
+    // point. Contact normals are pair-oriented (A→B), so collider ordering may flip the
+    // sign; compare absolute alignment rather than assuming an upward-facing event normal.
     const queryNormal = surfaceQuery.sampleNormal(state.x, state.z);
-    contactQueryAgreement = Math.abs(queryNormal[1] - eventItem.normal[1]) < 0.25;
+    const normalAlignment = Math.abs(
+      queryNormal[0] * eventItem.normal[0]
+      + queryNormal[1] * eventItem.normal[1]
+      + queryNormal[2] * eventItem.normal[2]
+    );
+    contactQueryAgreement = normalAlignment >= 0.9;
     mountedEvidence.touchdown.contactQueryAgreement = contactQueryAgreement;
     mountedEvidence.touchdown.contactEventSeen = true;
 

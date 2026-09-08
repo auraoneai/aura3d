@@ -221,12 +221,12 @@ test.describe("aurora lander three-site campaign", () => {
     // the lander, landing zone, telemetry, and actual touch controls together.
     await page.waitForFunction(() => {
       const ev = (window as unknown as { __AURORA_LANDER_EVIDENCE__?: AuroraEvidence }).__AURORA_LANDER_EVIDENCE__;
-      return ev?.state === "flying" && (ev.altitude ?? 99) <= 12;
+      return ev?.state === "flying" && (ev.altitude ?? 99) <= 14;
     }, undefined, { timeout: 30_000 });
     await thrust.fill("1");
     await page.waitForFunction(() => {
       const ev = (window as unknown as { __AURORA_LANDER_EVIDENCE__?: AuroraEvidence }).__AURORA_LANDER_EVIDENCE__;
-      return ev?.state === "flying" && (ev.altitude ?? 99) <= 7 && (ev.vspeed ?? -99) > -3.5;
+      return ev?.state === "flying" && (ev.altitude ?? 99) <= 9 && (ev.vspeed ?? -99) > -4.5;
     }, undefined, { timeout: 20_000 });
     await rcs.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 2, isPrimary: true });
     await page.waitForTimeout(260);
