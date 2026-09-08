@@ -1,0 +1,56 @@
+name: Muse 3.0.1 Focused Exact Clean Install
+on:
+  push:
+    branches:
+      - ops/muse301-l01-3a445008
+permissions:
+  contents: read
+jobs:
+  clean-install:
+    name: Exact tarball clean install and preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout frozen release source
+        uses: actions/checkout@v4
+        with:
+          ref: 3412c59c8f44a897198b0b8ddb80309eea0fbcf0
+          fetch-depth: 0
+      - name: Assert frozen source
+        run: |
+          test "$(git rev-parse HEAD)" = "3412c59c8f44a897198b0b8ddb80309eea0fbcf0"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium dependencies
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build exact source
+        run: pnpm build
+      - name: Pack exact source
+        run: node tools/release/publish-all.mjs --pack-only
+      - name: Run exact clean-install lifecycle
+        run: pnpm check:clean-install
+      - name: Verify source remained frozen
+        if: always()
+        run: test "$(git rev-parse HEAD)" = "3412c59c8f44a897198b0b8ddb80309eea0fbcf0"
+      - name: Upload focused evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-clean-install-3412c59c
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            tests/reports/package-clean-install.json
+            tests/reports/package-clean-install.md
+            tests/reports/package-clean-install-workspace/templates/*/demo/tests/reports/
+            tests/reports/release-tarballs/release-plan.json
