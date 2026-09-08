@@ -1,16 +1,16 @@
-name: Muse 3.0.1 Final Source Gallery 7d1c70bb
+name: Muse 3.0.1 Final Source Gallery db19feba
 on:
   push:
     branches: [ops/muse301-gallery-926465f2]
 permissions: {contents: read}
-env: {SOURCE_COMMIT: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219}
+env: {SOURCE_COMMIT: db19feba44914d302f031c9820ebc6a4847dd14a}
 jobs:
   visual:
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -66,7 +66,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: actions/download-artifact@v4
         with: {pattern: gallery-*, path: ., merge-multiple: true}
       - run: node tools/release/muse301-gallery.mjs aggregate
@@ -91,7 +91,7 @@ jobs:
       - run: node tools/release/build-final-visual-review-manifest.mjs --version 3.0.1 --artifact-index release-artifacts/3.0.1-final-visual-review-index.json
       - uses: actions/upload-artifact@v4
         with:
-          name: muse301-final-source-gallery-7d1c70bb
+          name: muse301-final-source-gallery-db19feba
           path: |
             release-artifacts/3.0.1-final-visual-review-*.json
             tests/reports/muse301-gallery/**/receipt.json
