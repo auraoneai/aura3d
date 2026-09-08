@@ -3,14 +3,14 @@ on:
   push:
     branches: [ops/muse301-clash-adc0c3bf]
 permissions: {contents: read}
-env: {SOURCE_COMMIT: 7d1c70bbf9d1e0c30c77de7035711579a0223aa4}
+env: {SOURCE_COMMIT: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219}
 jobs:
   clash:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 7d1c70bbf9d1e0c30c77de7035711579a0223aa4, lfs: true}
+        with: {ref: 7d1c70bbe86fdcce2da314729d7d2ba2e3457219, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
