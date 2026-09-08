@@ -1666,6 +1666,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     setRivalGuardSuppressed(suppressed: boolean) {
       rivalPassive = suppressed === true;
       if (rivalPassive) {
+        rivalForceGuard = false;
+        rivalForcedGuardDepleted = false;
         rivalState.guard = false;
         rivalState.guardMeter = 100;
         rivalState.attack = null;

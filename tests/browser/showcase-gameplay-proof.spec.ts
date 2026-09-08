@@ -449,9 +449,10 @@ test.describe("showcase gameplay proof", () => {
     // seconds. This wall-clock allowance covers the earlier real-time checkpoint/
     // respawn journey, deterministic mounted-app simulation, WebGL rendering,
     // evidence serialization, and nineteen production PNG encodes. SwiftShader
-    // needs roughly eight minutes to reach the post-hazard continuation on the
-    // remote evidence worker; twelve minutes changes no simulated gameplay bound.
-    testInfo.setTimeout(720_000);
+    // needs roughly eight minutes to reach the post-hazard continuation on an
+    // unloaded worker. The final gallery runs this route on an isolated worker;
+    // eighteen minutes covers slow PNG encoding without changing the simulated bound.
+    testInfo.setTimeout(1_080_000);
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
     await page.setViewportSize({ width: 1440, height: 900 });
