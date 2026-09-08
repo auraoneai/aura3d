@@ -1,0 +1,78 @@
+name: Muse 3.0.1 Aura Clash a4db Diagnostic
+on:
+  push:
+    branches: [ops/muse301-clash-diag-a4db]
+permissions: {contents: read}
+env: {SOURCE_COMMIT: a4db3188533007fe273738713408b61ef61551bd}
+jobs:
+  diagnose:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: a4db3188533007fe273738713408b61ef61551bd, lfs: true}
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm}
+      - run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+      - run: pnpm build:raw
+      - name: Add boot phase markers and retained diagnostic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('apps/aura-clash-showcase/src/main.ts')
+          s=p.read_text()
+          s=s.replace('import "./showcaseProofBoot";', 'import "./showcaseProofBoot";\n(window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "main-start";')
+          s=s.replace('void import("./playable/AuraClashArenaApp").then((module) => module.mountAuraClashArenaApp());', 'void import("./playable/AuraClashArenaApp").then((module) => {\n  (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "module-loaded";\n  module.mountAuraClashArenaApp();\n}).catch((error) => {\n  (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = `module-error:${String(error)}`;\n  console.error("Aura Clash module load failed", error);\n});')
+          p.write_text(s)
+          p=Path('apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts')
+          s=p.read_text()
+          s=s.replace('const [playerActor, rivalActor, arenaActor] = await Promise.all([', '(window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "typed-glb-loading";\n  const [playerActor, rivalActor, arenaActor] = await Promise.all([')
+          s=s.replace('  const clipReadiness = assertAuraClashClipReadiness({', '  (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "typed-glb-loaded";\n  const clipReadiness = assertAuraClashClipReadiness({')
+          s=s.replace('  await rootStageApp.ready();', '  (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "renderer-mounting";\n  await rootStageApp.ready();\n  (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ = "renderer-ready";', 1)
+          p.write_text(s)
+          PY
+          cat > apps/aura-clash-showcase/tests/a4db-boot-diagnostic.spec.ts <<'TS'
+          import { expect, test } from "@playwright/test";
+          import { writeFile } from "node:fs/promises";
+
+          test("retains exact Aura Clash boot phase and browser failures", async ({ page }) => {
+            test.setTimeout(150_000);
+            const events: string[] = [];
+            page.on("console", message => events.push(`console:${message.type()}:${message.text()}`));
+            page.on("pageerror", error => events.push(`pageerror:${error.stack ?? error.message}`));
+            page.on("requestfailed", request => events.push(`requestfailed:${request.url()}:${request.failure()?.errorText ?? "unknown"}`));
+            page.on("response", response => { if (response.status() >= 400) events.push(`response:${response.status()}:${response.url()}`); });
+            await page.goto("/playable/?auraTestDriver=1&capture=combat-impact", { waitUntil: "domcontentloaded", timeout: 120_000 });
+            const startedAt = Date.now();
+            let snapshot: unknown = null;
+            while (Date.now() - startedAt < 120_000) {
+              snapshot = await page.evaluate(() => ({
+                phase: (window as unknown as Record<string, unknown>).__AURA_CLASH_BOOT_PHASE__ ?? null,
+                proof: (window as unknown as Record<string, unknown>).__AURA_CLASH_ARENA_PROOF__ ?? null,
+                app: Boolean(document.querySelector(".aca")),
+                renderStatus: document.querySelector("#render-status")?.textContent ?? null,
+                toast: document.querySelector("#toast")?.textContent ?? null
+              }));
+              if ((snapshot as {proof?: unknown}).proof) break;
+              await page.waitForTimeout(1000);
+            }
+            await page.screenshot({ path: "test-results/a4db-boot-diagnostic.png", fullPage: true });
+            await writeFile("test-results/a4db-boot-diagnostic.json", JSON.stringify({ snapshot, events }, null, 2));
+            console.log("AURA_CLASH_BOOT_DIAGNOSTIC", JSON.stringify({ snapshot, events }));
+            expect((snapshot as {proof?: unknown}).proof, JSON.stringify({ snapshot, events }, null, 2)).toBeTruthy();
+          });
+          TS
+      - name: Run retained macOS Chrome diagnostic
+        run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/a4db-boot-diagnostic.spec.ts --trace on --reporter=line
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-clash-a4db-diagnostic
+          path: |
+            apps/aura-clash-showcase/test-results/
+            apps/aura-clash-showcase/playwright-report/
+          if-no-files-found: warn
