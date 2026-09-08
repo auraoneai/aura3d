@@ -19,6 +19,14 @@ jobs:
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
       - run: test -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
       - run: pnpm build:raw
+      - name: Instrument retained first-frame telemetry
+        run: |
+          python3 - <<'PY2'
+          from pathlib import Path
+          p=Path('apps/aura-clash-showcase/tests/visual-regression.spec.ts')
+          s=p.read_text().replace('  expect(proof.lighting?.readable).toBe(true);', '  console.log("AURA_CLASH_VISUAL_TELEMETRY", JSON.stringify({state, performance: proof.performance, postProcess: proof.postProcess, renderer: proof.renderer}));\n  expect(proof.lighting?.readable).toBe(true);')
+          p.write_text(s)
+          PY2
       - run: pnpm --dir apps/aura-clash-showcase exec playwright test tests/visual-regression.spec.ts --reporter=line
       - if: always()
         uses: actions/upload-artifact@v4
