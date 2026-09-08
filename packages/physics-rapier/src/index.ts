@@ -1,4 +1,5 @@
 import type * as Rapier from "@dimforge/rapier3d-compat";
+import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
 const defaultRapierModule = await import("@dimforge/rapier3d-compat");
 const defaultRapierInit = (defaultRapierModule as unknown as { init?: (input?: unknown) => Promise<unknown> }).init;
@@ -242,7 +243,7 @@ export class RapierPhysicsWorld {
       collider = R.ColliderDesc.heightfield(
         shape.rows - 1,
         shape.columns - 1,
-        new Float32Array(shape.heights),
+        toRapierHeightfieldHeights(shape),
         { x: shape.cellSize * (shape.columns - 1), y: 1, z: shape.cellSize * (shape.rows - 1) }
       );
     }
