@@ -1496,7 +1496,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     pixelRatio: stageSpotlightProbeEnabled
       ? Math.min(1, 640 / Math.max(1, window.innerWidth))
       : testDriverEnabled
-        ? Math.min(1, 640 / Math.max(1, window.innerWidth))
+        // The retained route runs at an explicit production resolution step.
+        // At the 800 px evidence viewport, 448 px is a 0.56 scale: inside the
+        // preset governor's supported range and measured to remove the
+        // software renderer's fill bottleneck without changing composition.
+        ? Math.min(1, 448 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { mode: "production", qualityProfile: "production" },
     scene: createRootStageScene()
