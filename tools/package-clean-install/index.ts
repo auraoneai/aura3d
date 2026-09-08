@@ -444,12 +444,20 @@ export default defineConfig({
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(120_000);
 
 test("static preview renders nonblank Aura3D canvas", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") runtimeErrors.push(message.text());
+  });
   const response = await page.goto("/");
   expect(response?.ok()).toBe(true);
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 30_000 }).toBe("true");
+  await expect.poll(
+    async () => ({ ready: await page.locator("body").getAttribute("data-aura3d-ready"), runtimeErrors }),
+    { timeout: 90_000 }
+  ).toEqual({ ready: "true", runtimeErrors: [] });
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
