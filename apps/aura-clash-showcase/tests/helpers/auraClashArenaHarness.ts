@@ -209,7 +209,10 @@ export type AuraClashArenaProof = {
 export async function loadAuraClashArena(page: Page, search = ""): Promise<AuraClashArenaProof> {
   await page.goto(`/playable/${search}`, { waitUntil: "networkidle" });
   await page.locator(".aca").focus();
-  await page.waitForFunction(() => Boolean((window as Window & { __AURA_CLASH_ARENA_PROOF__?: unknown }).__AURA_CLASH_ARENA_PROOF__));
+  await page.waitForFunction(() => {
+    const proof = (window as Window & { __AURA_CLASH_ARENA_PROOF__?: AuraClashArenaProof }).__AURA_CLASH_ARENA_PROOF__;
+    return proof?.status === "running" || proof?.status === "error";
+  });
   const proof = await readAuraClashProof(page);
   expect(proof.error).toBeNull();
   expect(proof.status).not.toBe("error");
