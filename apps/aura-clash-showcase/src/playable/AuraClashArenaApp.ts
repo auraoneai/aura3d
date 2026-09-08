@@ -2220,6 +2220,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
+    // The deterministic warmup establishes the bounded performance receipt, then the same
+    // production frame loop must resume so keyboard input and authored gameplay continue to
+    // advance. Keeping the runtime stopped here published a valid first proof but left every
+    // subsequent test-driver input frozen at that frame.
+    gameApp.start();
   } else gameApp.start();
 }
 
