@@ -70,7 +70,10 @@ export function createAuraClashPostProcessEvidence(options: {
   return {
     contractId: auraClashMaterialPostProcessReviewCriteria.contractId,
     presetId: preset.id,
-    gameplayVisible: options.performanceBudgetOk && bloomWithinGameplayLimit && fogBehindCombatLane,
+    // Visibility is a presentation fact: the configured postprocess is present and remains inside
+    // its visual limits. Performance is retained as a separate field and enforced by the dedicated
+    // route performance gate; coupling it here made a slow runner report visible pixels as absent.
+    gameplayVisible: bloomWithinGameplayLimit && fogBehindCombatLane,
     performanceBudgetOk: options.performanceBudgetOk,
     bloomIntensity: preset.bloomIntensity,
     reducedFlashBloomIntensity: preset.reducedFlashBloomIntensity,
