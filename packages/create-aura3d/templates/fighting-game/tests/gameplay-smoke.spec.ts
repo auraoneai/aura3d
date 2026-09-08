@@ -6,38 +6,36 @@ test("input replay produces runtime evidence and a hit declaration", async ({ pa
   await page.goto("/");
   await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_SOURCE__?.readiness));
   await page.getByRole("button", { name: "Run replay" }).click();
-  await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_EVIDENCE__?.systems?.inputPlan));
-  await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_RUNTIME__?.kind === "aura-game-app-runtime-evidence"));
-  await page.waitForFunction(() => ((window as any).__AURA3D_GAME_REPLAY__?.hitCount ?? 0) > 0);
-  const evidence = await page.evaluate(() => (window as any).__AURA3D_GAME_EVIDENCE__);
-  const runtime = await page.evaluate(() => (window as any).__AURA3D_GAME_RUNTIME__);
-  const replay = await page.evaluate(() => (window as any).__AURA3D_GAME_REPLAY__);
-  const source = await page.evaluate(() => (window as any).__AURA3D_GAME_SOURCE__);
-
-  expect(runtime).toMatchObject({
-    status: "running",
-    running: true,
-    started: true,
-    startCount: 1,
-    inputControllers: 1,
-    activeInputControllers: 1
+  await page.waitForFunction(() => {
+    const evidence = (window as any).__AURA3D_GAME_EVIDENCE__;
+    const runtime = (window as any).__AURA3D_GAME_RUNTIME__;
+    const replay = (window as any).__AURA3D_GAME_REPLAY__;
+    const source = (window as any).__AURA3D_GAME_SOURCE__;
+    return Boolean(
+      runtime?.kind === "aura-game-app-runtime-evidence" &&
+      runtime.status === "running" &&
+      runtime.running === true &&
+      runtime.started === true &&
+      runtime.startCount === 1 &&
+      runtime.inputControllers === 1 &&
+      runtime.activeInputControllers === 1 &&
+      runtime.frame > 0 &&
+      runtime.loop?.frame > 0 &&
+      evidence?.systems?.mutableNodes &&
+      evidence.systems.inputPlan &&
+      evidence.systems.physicsPlan &&
+      evidence.systems.collisionPlan &&
+      evidence.systems.animationPlan &&
+      evidence.systems.effectsPlan &&
+      evidence.systems.cameraPlan &&
+      evidence.systems.stagePlan &&
+      replay?.hitCount > 0 &&
+      source?.readiness?.sourceOnly === false &&
+      source.readiness.placeholderMode === false &&
+      source.readiness.proofMode === "typed-assets" &&
+      Array.isArray(source.readiness.missingTypedAssets) &&
+      source.readiness.missingTypedAssets.length === 0 &&
+      source.readiness.publicEngineApis?.includes("games.fighting.stagePreset")
+    );
   });
-  expect(runtime.frame).toBeGreaterThan(0);
-  expect(runtime.loop.frame).toBeGreaterThan(0);
-  expect(evidence.systems.mutableNodes).toBeTruthy();
-  expect(evidence.systems.inputPlan).toBeTruthy();
-  expect(evidence.systems.physicsPlan).toBeTruthy();
-  expect(evidence.systems.collisionPlan).toBeTruthy();
-  expect(evidence.systems.animationPlan).toBeTruthy();
-  expect(evidence.systems.effectsPlan).toBeTruthy();
-  expect(evidence.systems.cameraPlan).toBeTruthy();
-  expect(evidence.systems.stagePlan).toBeTruthy();
-  expect(replay.hitCount).toBeGreaterThan(0);
-  // Certified heroes ship as typed fighter assets (humanoid-a + creature), so
-  // the route runs in typed-assets proof mode instead of source placeholders.
-  expect(source.readiness.sourceOnly).toBe(false);
-  expect(source.readiness.placeholderMode).toBe(false);
-  expect(source.readiness.proofMode).toBe("typed-assets");
-  expect(source.readiness.missingTypedAssets ?? []).toEqual([]);
-  expect(source.readiness.publicEngineApis).toContain("games.fighting.stagePreset");
 });
