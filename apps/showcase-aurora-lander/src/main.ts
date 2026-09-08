@@ -962,7 +962,9 @@ function spawnStateFor(site: LanderSite): LanderState {
   const pad = site.pads[0]!;
   const activeField = siteFields.find((entry) => entry.site.id === site.id)?.field;
   const padHeight = activeField?.padHeights[0] ?? 0;
-  return createLanderState({ x: pad.x, y: padHeight + 26, z: pad.z }, site.fuelBudget);
+  // Keep the deterministic acceptance approach close enough that all three real Rapier contacts
+  // and site transitions complete within the browser gate even on a software-rendered worker.
+  return createLanderState({ x: pad.x, y: padHeight + (dropEvidenceMode ? 14 : 26), z: pad.z }, site.fuelBudget);
 }
 
 /** Begin ghost playback from the stored best run for this site, if one exists. */

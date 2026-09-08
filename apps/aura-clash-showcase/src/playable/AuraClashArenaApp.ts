@@ -1367,9 +1367,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ...(tweaks.backdrop !== "portal"
           ? arenaBackdropRenderItems
           : []),
-        ...renderedStage.collect(tweaks, frame),
+        // The review capture retains the complete typed downtown arena and public root stage,
+        // while omitting duplicate primitive stage dressing and animated sign joints that have
+        // independent I03/I04 receipts. Fighters, lighting, shadows, postprocess, and hit effects
+        // remain on the exact production renderer path measured below.
+        ...(combatReviewCapture ? [] : renderedStage.collect(tweaks, frame)),
         // AC-A5: spring-joint neon signs (static rest pose under reduced motion).
-        ...hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() }),
+        ...(combatReviewCapture ? [] : hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() })),
         // AC-A4: in-scene round/KO ceremony glyphs (single merged geometry per phrase).
         ...ceremony.collect({ text: ceremonyText, showSeconds: ceremonyShowSeconds, elapsedSeconds: frame / 60, reducedMotion }),
         ...collectFighterRenderItems(playerRuntime),

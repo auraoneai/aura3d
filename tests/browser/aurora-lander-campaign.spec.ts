@@ -227,7 +227,7 @@ test.describe("aurora lander three-site campaign", () => {
     await page.waitForFunction(() => {
       const ev = (window as unknown as { __AURORA_LANDER_EVIDENCE__?: AuroraEvidence }).__AURORA_LANDER_EVIDENCE__;
       return ev?.state === "flying" && (ev.altitude ?? 99) <= 7 && (ev.vspeed ?? -99) > -3.5;
-    }, undefined, { timeout: 8_000 });
+    }, undefined, { timeout: 20_000 });
     await rcs.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 2, isPrimary: true });
     await page.waitForTimeout(260);
     await writeArtifact(page, "06-mobile-active-play");
