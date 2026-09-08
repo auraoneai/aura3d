@@ -1251,9 +1251,14 @@ function tick(dtFixed: number): void {
     contactEventsSeen += 1;
     const other = eventItem.a.id === collisions?.proxyId ? eventItem.b : eventItem.a;
     const partnerIsSensor = other.sensor || (collisions?.sensorIds.includes(other.id) ?? false);
-    if (partnerIsSensor && !padSensorArmed) {
-      padSensorArmed = true;
-      playCue("pad-lock");
+    if (partnerIsSensor) {
+      if (!padSensorArmed) {
+        padSensorArmed = true;
+        playCue("pad-lock");
+      }
+      // Sensors prove the pad-zone crossing but carry a center-to-center direction,
+      // not a solver surface normal. Grade only the subsequent solid terrain contact.
+      continue;
     }
     if (phase !== "flying" || !field || !surfaceQuery || !sample) continue;
 
