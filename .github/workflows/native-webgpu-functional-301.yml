@@ -51,7 +51,7 @@ jobs:
           PROBE_OUTPUT: ${{ runner.temp }}/native-functional/evidence/adapter
         run: |
           cd "$RUNNER_TEMP/native-functional/source"
-          node --input-type=module -e 'import fs from "node:fs"; const source=fs.readFileSync(process.env.RUNNER_TEMP+"/native-functional/orchestration/probe.mjs","utf8"); fs.writeFileSync("native-adapter-probe.mjs",source.replace("from '\''playwright'\''", "from '\''@playwright/test'\''"));'
+          node --input-type=module -e 'import fs from "node:fs"; const source=fs.readFileSync("tools/native-webgpu-probe/probe.mjs","utf8"); fs.writeFileSync("native-adapter-probe.mjs",source.replace("from '\''playwright'\''", "from '\''@playwright/test'\''"));'
           node native-adapter-probe.mjs
           rm native-adapter-probe.mjs
       - name: Native HDR numerical oracle
