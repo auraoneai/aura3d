@@ -1309,6 +1309,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let diagnostics: RenderDeviceDiagnostics = { drawCalls: 0, buffers: 0, shaders: 0, lastError: null, contextLost: false };
   const renderTimeSamplesMs: number[] = [];
   const performanceSampleCount = testDriverEnabled ? 15 : 7;
+  const performanceWarmupCount = testDriverEnabled ? 15 : 0;
+  let performanceEvidenceReady = !testDriverEnabled;
   let performanceProof: PerformanceProof = {
     frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls,
     sampleCount: 0, medianFrameTimeMs: 16.67, budgetOk: true
@@ -2059,9 +2061,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
     writeProof({
       root,
-      status: testDriverEnabled && renderTimeSamplesMs.length < performanceSampleCount
-        ? "loading"
-        : paused ? "paused" : "running",
+      status: performanceEvidenceReady
+        ? paused ? "paused" : "running"
+        : "loading",
       frame,
       roundTime,
       totalHits,
@@ -2190,12 +2192,21 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // later RAF leaves the route at `renderer-ready` with no proof on slow or
   // throttled workers because the normal continuous loop is intentionally off.
   if (testDriverEnabled) {
-    // Pace warmup through the same RAF boundary as shipped play. Back-to-back
-    // synchronous submissions artificially saturate the browser/GPU queue and
-    // measure burst pressure instead of steady frame cost. Fifteen frames keep
-    // the median robust against isolated virtual-runner stalls.
+    // Pace cold production frames through the same RAF boundary as shipped play,
+    // then discard them. Shader compilation, resource upload and the first GPU
+    // submissions are startup evidence, not steady gameplay performance.
+    for (let sample = 0; sample < performanceWarmupCount; sample += 1) {
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      gameApp.step(1 / 60);
+    }
+    renderTimeSamplesMs.length = 0;
+
+    // Retain a separate complete steady-state window. Back-to-back synchronous
+    // submissions artificially saturate the browser/GPU queue, so each measured
+    // production frame crosses the same RAF boundary as normal play.
     for (let sample = 0; sample < performanceSampleCount; sample += 1) {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      performanceEvidenceReady = sample === performanceSampleCount - 1;
       gameApp.step(1 / 60);
     }
   } else gameApp.start();
