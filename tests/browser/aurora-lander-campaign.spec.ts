@@ -90,7 +90,12 @@ test.describe("aurora lander three-site campaign", () => {
     await server.close();
   });
 
-  test("completes all three physical contacts and reaches the extraction tableau", async ({ page }) => {
+  test("completes all three physical contacts and reaches the extraction tableau", async ({ page }, testInfo) => {
+    // Three sequential software-rendered landings plus four production PNG encodes
+    // exceed the describe-level single-site budget on the remote SwiftShader worker.
+    // This changes only wall-clock allowance; simulated time, contacts and assertions
+    // remain unchanged.
+    testInfo.setTimeout(420_000);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width: 1280, height: 800 });
