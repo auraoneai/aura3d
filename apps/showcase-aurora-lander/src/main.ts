@@ -1177,10 +1177,10 @@ function tick(dtFixed: number): void {
     const ground = sampleGridHeight(field, state.x, state.z);
     const agl = state.y - FOOT_DROP - ground;
     const pad = currentSite.pads[0]!;
-    const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.34 - state.vx * 0.5));
+    const lateralCorrection = Math.max(-1, Math.min(1, (pad.x - state.x) * 0.12 - state.vx * 0.5));
     effectiveControls = {
       thrust: 0,
-      rotate: agl < 6 ? 0 : lateralCorrection
+      rotate: agl < 1.5 ? 0 : lateralCorrection
     };
     if (agl < 22) {
       const desiredVy = hardDropEvidenceMode
@@ -1191,7 +1191,7 @@ function tick(dtFixed: number): void {
         thrust: Math.min(1, Math.max(0, 0.52 + vyError * 0.32)),
         // Stop commanding lateral RCS near the deck so the same authored
         // self-righting path available to the player can meet the 12° limit.
-        rotate: agl < 6 ? 0 : lateralCorrection
+        rotate: agl < 1.5 ? 0 : lateralCorrection
       };
     }
   }
@@ -1251,9 +1251,14 @@ function tick(dtFixed: number): void {
     contactEventsSeen += 1;
     const other = eventItem.a.id === collisions?.proxyId ? eventItem.b : eventItem.a;
     const partnerIsSensor = other.sensor || (collisions?.sensorIds.includes(other.id) ?? false);
-    if (partnerIsSensor && !padSensorArmed) {
-      padSensorArmed = true;
-      playCue("pad-lock");
+    if (partnerIsSensor) {
+      if (!padSensorArmed) {
+        padSensorArmed = true;
+        playCue("pad-lock");
+      }
+      // Sensors prove the pad-zone crossing but carry a center-to-center direction,
+      // not a solver surface normal. Grade only the subsequent solid terrain contact.
+      continue;
     }
     if (phase !== "flying" || !field || !surfaceQuery || !sample) continue;
 
