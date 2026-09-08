@@ -312,7 +312,7 @@
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
-        "checkedAt": "2026-09-08T13:57:39.371Z"
+        "checkedAt": "2026-09-08T14:06:15.053Z"
       },
       "textures": [
         "T_MarbleFloor_BaseColor.png",
@@ -618,7 +618,7 @@
         "sourcePage": "https://quaternius.com/packs/ultimatedowntownpack.html",
         "license": "CC0-1.0",
         "author": "Quaternius",
-        "checkedAt": "2026-09-08T13:57:39.524Z"
+        "checkedAt": "2026-09-08T14:06:15.206Z"
       },
       "textures": [],
       "dependencies": [],
@@ -2346,7 +2346,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-09-08T13:57:38.999Z"
+        "checkedAt": "2026-09-08T14:06:14.680Z"
       },
       "textures": [
         "T_Ranger_Normal",
@@ -3446,7 +3446,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-09-08T13:57:39.153Z"
+        "checkedAt": "2026-09-08T14:06:14.896Z"
       },
       "textures": [
         "T_Ranger_Normal",
@@ -3628,11 +3628,11 @@
       "id": "auraClashSpectatorCard",
       "type": "model",
       "format": "glb",
-      "source": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
-      "outputPath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
-      "url": "/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
-      "hash": "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
-      "sizeBytes": 2047004,
+      "source": "assets/source/crowd/aura-clash-spectator-card.glb",
+      "outputPath": "public/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
+      "url": "/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
+      "hash": "sha256-a5b562b8a8880185033397fd751c5919801abe8dc4146ad166d02206eeac9a68",
+      "sizeBytes": 121356,
       "bounds": [
         0.667,
         1,
@@ -3736,7 +3736,7 @@
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+        "sourcePath": "assets/source/crowd/aura-clash-spectator-card.glb",
         "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
         "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
         "license": "CC0-1.0",
@@ -3744,7 +3744,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D art pipeline (OpenAI image generation)",
         "sourceFamily": "Aura3D Blockfall Reactor generated set dressing",
-        "checkedAt": "2026-09-08T13:57:39.681Z"
+        "checkedAt": "2026-09-08T14:06:15.360Z"
       },
       "textures": [
         "Blockfall Reactor Mechanic-image"

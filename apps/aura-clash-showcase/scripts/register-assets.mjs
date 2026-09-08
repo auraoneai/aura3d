@@ -20,7 +20,7 @@ const requiredAssets = [
   ["arenaRooftopBuilding", "assets/source/arenas/arena-rooftop-building.glb"],
   // Keep the spectator card inside this app's typed asset contract. The root
   // showcase manifest is not served by the standalone Aura Clash Vite app.
-  ["auraClashSpectatorCard", "../showcase-blockfall-reactor/generated/blockfallReactorMechanic.glb"],
+  ["auraClashSpectatorCard", "assets/source/crowd/aura-clash-spectator-card.glb"],
 ];
 
 function fail(message) {

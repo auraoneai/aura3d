@@ -150,7 +150,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
-        "checkedAt": "2026-09-08T13:57:39.371Z"
+        "checkedAt": "2026-09-08T14:06:15.053Z"
       },
       "sourcePath": "assets/source/arenas/arena-neon-downtown-textured.glb",
       "outputPath": "public/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
@@ -483,7 +483,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sourcePage": "https://quaternius.com/packs/ultimatedowntownpack.html",
         "license": "CC0-1.0",
         "author": "Quaternius",
-        "checkedAt": "2026-09-08T13:57:39.524Z"
+        "checkedAt": "2026-09-08T14:06:15.206Z"
       },
       "sourcePath": "assets/source/arenas/arena-rooftop-building.glb",
       "outputPath": "public/aura-assets/arenaRooftopBuilding.3e351f48.glb",
@@ -2201,7 +2201,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-09-08T13:57:38.999Z"
+        "checkedAt": "2026-09-08T14:06:14.680Z"
       },
       "sourcePath": "assets/source/fighters/aura-clash-player-rig.glb",
       "outputPath": "public/aura-assets/auraClashPlayerRig.3318d671.glb",
@@ -3317,7 +3317,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-09-08T13:57:39.153Z"
+        "checkedAt": "2026-09-08T14:06:14.896Z"
       },
       "sourcePath": "assets/source/fighters/aura-clash-rival-rig.glb",
       "outputPath": "public/aura-assets/auraClashRivalRig.c8d844dc.glb",
@@ -3531,14 +3531,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "auraClashSpectatorCard": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
-    hash: "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+    url: "/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
+    hash: "sha256-a5b562b8a8880185033397fd751c5919801abe8dc4146ad166d02206eeac9a68",
     bounds: [
       0.667,
       1,
       0.04
     ],
-    sizeBytes: 2047004,
+    sizeBytes: 121356,
     metadata: {
       "materials": [
         "Blockfall Reactor Mechanic-unlit-alpha"
@@ -3588,7 +3588,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+        "sourcePath": "assets/source/crowd/aura-clash-spectator-card.glb",
         "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
         "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
         "license": "CC0-1.0",
@@ -3596,10 +3596,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D art pipeline (OpenAI image generation)",
         "sourceFamily": "Aura3D Blockfall Reactor generated set dressing",
-        "checkedAt": "2026-09-08T13:57:39.681Z"
+        "checkedAt": "2026-09-08T14:06:15.360Z"
       },
-      "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
-      "outputPath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "sourcePath": "assets/source/crowd/aura-clash-spectator-card.glb",
+      "outputPath": "public/aura-assets/auraClashSpectatorCard.a5b562b8.glb",
       "license": "CC0-1.0",
       "author": "Aura3D art pipeline (OpenAI image generation)",
       "boundsMetadata": {
