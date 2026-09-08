@@ -1,0 +1,164 @@
+{
+  "id": "data-galaxy-core-blender",
+  "routeUse": "data-galaxy",
+  "routeLinkage": {
+    "routeId": "data-galaxy",
+    "app": "apps/advanced-examples-gallery",
+    "catalogAssetId": "data-galaxy-core-blender",
+    "runtimeRole": "support scenery and central-core context only"
+  },
+  "source": {
+    "sourceScript": "tools/advanced-gallery-assets/generate-data-galaxy-core-blender.py",
+    "generator": "Blender Python procedural mesh generator",
+    "inputAssets": [],
+    "derivativeOfExternalAsset": false,
+    "usesExternalTextures": false,
+    "usesEmbeddedGeneratedTextures": true
+  },
+  "outputs": {
+    "glb": {
+      "path": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
+      "exists": true,
+      "byteSize": 1681116,
+      "sha256": "53280acc82c540f10f5973511e5d40decf0e1f0d66f38eb7b4990ade5733a8fb"
+    },
+    "blend": {
+      "path": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.blend",
+      "exists": true,
+      "byteSize": 597138,
+      "sha256": "31368e3782e629774edc1a5cbab28c77eb57c8108df9fdaf44950e4e0bac96ee"
+    },
+    "manifest": {
+      "path": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json"
+    }
+  },
+  "generator": "tools/advanced-gallery-assets/generate-data-galaxy-core-blender.py",
+  "asset": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
+  "blend": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.blend",
+  "status": {
+    "generated": true,
+    "stub": false,
+    "derivative": false,
+    "textureBacked": true,
+    "generatedNoTexture": false,
+    "supportOnly": true,
+    "acceptableAsFocalHero": false,
+    "acceptedAsPremiumTextureBackedHero": false,
+    "visualReviewAccepted": false
+  },
+  "intendedRole": "Route-scoped support geometry for the Data Galaxy scene: central-core context, semantic clusters, controls, connection hints, and small emissive detail.",
+  "acceptanceBoundary": "This generated GLB includes embedded generated data-glyph textures on key materials, but it is still support-only and must not be used as premium focal hero proof until current-route screenshots pass human visual review and runtime diagnostics support that scoped claim.",
+  "authoredElements": [
+    "material-joined static mesh batches",
+    "generated support data core",
+    "small semantic seed clusters",
+    "embedded generated data-glyph emission materials",
+    "emissive signal beads"
+  ],
+  "counts": {
+    "meshObjects": 20,
+    "drawItems": 20,
+    "lightObjects": 4,
+    "cameraObjects": 1,
+    "materials": 13,
+    "textureImages": 3,
+    "textureBackedMaterials": 3,
+    "exportedMaterials": 9,
+    "exportedTextures": 3,
+    "exportedImages": 3,
+    "exportedMeshes": 20,
+    "exportedNodes": 25,
+    "exportedTextureBackedMaterials": 3,
+    "transparentMaterials": 3,
+    "emissiveMaterials": 8,
+    "semanticFocalDrawItems": 6,
+    "semanticSupportScaffoldDrawItems": 0,
+    "semanticDefaultExcludedDrawItems": 0
+  },
+  "exportedGlb": {
+    "materialCount": 9,
+    "textureCount": 3,
+    "imageCount": 3,
+    "meshCount": 20,
+    "nodeCount": 25,
+    "textureBackedMaterialCount": 3,
+    "semanticRoleCounts": {
+      "focal-core": 6,
+      "semantic-cluster": 9,
+      "signal-bead": 5
+    },
+    "scaffoldRoleNodeCount": 0
+  },
+  "semanticRoles": {
+    "description": "Roles are assigned before export and opaque batching preserves role boundaries by joining objects by (semantic role, material), not by material alone.",
+    "roleCounts": {
+      "focal-core": 6,
+      "semantic-cluster": 9,
+      "signal-bead": 5
+    },
+    "exportedRoleCounts": {
+      "focal-core": 6,
+      "semantic-cluster": 9,
+      "signal-bead": 5
+    },
+    "focalRoles": [
+      "focal-core",
+      "semantic-cluster"
+    ],
+    "supportScaffoldRoles": [],
+    "defaultExcludedRoles": [],
+    "focalDrawItems": 6,
+    "supportScaffoldDrawItems": 0,
+    "defaultExcludedDrawItems": 0,
+    "textureBackedFocalMaterials": [
+      "cyan neural emission",
+      "violet model-state emission",
+      "amber anomaly emission"
+    ],
+    "textureBackedSupportMaterials": []
+  },
+  "materials": {
+    "materialCount": 13,
+    "textureCount": 3,
+    "textureBackedMaterialCount": 3,
+    "transparentMaterialNames": [
+      "translucent amber alert glass",
+      "translucent cyan vector glass",
+      "translucent violet model glass"
+    ],
+    "emissiveMaterialNames": [
+      "amber anomaly emission",
+      "cyan neural emission",
+      "deep blue inference emission",
+      "translucent amber alert glass",
+      "translucent cyan vector glass",
+      "translucent violet model glass",
+      "violet model-state emission",
+      "white hot data pin"
+    ]
+  },
+  "batching": {
+    "staticMeshStrategy": "Opaque objects are joined by semantic role and first material before GLB export; transparent objects remain separate render-sort units for A3D alpha correctness.",
+    "semanticRolePreservation": "Opaque batching preserves source ownership by grouping on (a3d_semantic_role, material); support scaffold and focal-core meshes cannot collapse into one material-only batch.",
+    "runtimeParticleStrategy": "Dense particles are generated by the TypeScript route as point buffers; trail/link overlays are batched line geometry.",
+    "nativeGpuComputeParticles": false
+  },
+  "supportTruth": {
+    "role": "support-only",
+    "reason": "Generated procedural mesh fixture with embedded route-native data-glyph textures; still support-only until current screenshots and runtime diagnostics pass visual review.",
+    "cannotReplace": [
+      "accepted current-route visual-review screenshots",
+      "native GPU-compute particle implementation"
+    ],
+    "routeExclusionsMayApply": [
+      "Default scaffold/control-room roles are source-pruned before GLB export; any route exclusion is a backwards-compatible stale-fixture guard, not source-asset acceptance."
+    ]
+  },
+  "roadmap items": [
+    "Static authored GLB fixture only.",
+    "Generated support scenery with embedded procedural data-glyph textures on key materials; not accepted as premium focal hero proof.",
+    "The fixture is route-scoped authored scenery, not a particle solver.",
+    "Runtime particles, postprocess bloom, and any animation still depend on the gallery route.",
+    "No native GPU-compute particle path is provided by this asset."
+  ]
+}

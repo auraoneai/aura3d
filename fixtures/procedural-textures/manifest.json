@@ -1,0 +1,78 @@
+{
+  "schema": "a3d-procedural-texture-fixtures",
+  "generatedBy": "packages/rendering/src/ProceduralTextureFixtures.ts",
+  "fixtures": [
+    {
+      "id": "metallic-paint",
+      "width": 96,
+      "height": 96,
+      "hash": "a12486da"
+    },
+    {
+      "id": "metallic-roughness-map",
+      "width": 96,
+      "height": 96,
+      "hash": "904b46c5"
+    },
+    {
+      "id": "racing-stripes",
+      "width": 96,
+      "height": 96,
+      "hash": "3cd3361d"
+    },
+    {
+      "id": "racing-number-decal",
+      "width": 96,
+      "height": 96,
+      "hash": "0ab9f1eb"
+    },
+    {
+      "id": "carbon-fiber",
+      "width": 96,
+      "height": 96,
+      "hash": "72feb1cc"
+    },
+    {
+      "id": "tire-tread",
+      "width": 96,
+      "height": 96,
+      "hash": "93f41aef"
+    },
+    {
+      "id": "concrete-asphalt",
+      "width": 96,
+      "height": 96,
+      "hash": "fb76ecec"
+    },
+    {
+      "id": "sci-fi-panel",
+      "width": 96,
+      "height": 96,
+      "hash": "8e326f12"
+    },
+    {
+      "id": "wood-plank",
+      "width": 96,
+      "height": 96,
+      "hash": "c509f15d"
+    },
+    {
+      "id": "marble",
+      "width": 96,
+      "height": 96,
+      "hash": "7a444ef8"
+    },
+    {
+      "id": "starfield-nebula",
+      "width": 96,
+      "height": 96,
+      "hash": "15f9b17e"
+    },
+    {
+      "id": "normal-from-height",
+      "width": 96,
+      "height": 96,
+      "hash": "717e7283"
+    }
+  ]
+}

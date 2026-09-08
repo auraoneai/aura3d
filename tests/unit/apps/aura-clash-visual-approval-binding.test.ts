@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
@@ -51,9 +51,14 @@ let reviewPackagePath: string;
 beforeEach(() => {
   evidenceRoot = mkdtempSync(join(tmpdir(), "aura-clash-readiness-"));
   evidenceDir = resolve(evidenceRoot, "launch-evidence");
-  cpSync(resolve(appRoot, "launch-evidence"), evidenceDir, { recursive: true });
-  // `assets/source/aura-clash-launch-asset-evidence.json` is also inspected by the producer.
-  cpSync(resolve(appRoot, "assets/source"), resolve(evidenceRoot, "assets/source"), { recursive: true });
+  mkdirSync(resolve(evidenceRoot, "assets/source"), { recursive: true });
+  mkdirSync(evidenceDir, { recursive: true });
+  for (const file of ["local-gates.json", "first-frame.json", "vercel-deploy.json", "deployed-routes.json", "documentation-evidence.json", "evidence-wiring.json", "cross-runtime-evidence.json"]) {
+    writeFileSync(resolve(evidenceDir, file), `${JSON.stringify({ ok: true })}\n`);
+  }
+  writeFileSync(resolve(evidenceDir, "first-frame.png"), Buffer.from("isolated visual approval fixture"));
+  writeFileSync(resolve(evidenceDir, "review-package.md"), "# Isolated visual approval fixture\n");
+  writeFileSync(resolve(evidenceRoot, "assets/source/aura-clash-launch-asset-evidence.json"), `${JSON.stringify({ ok: true })}\n`);
   approvalPath = resolve(evidenceDir, "visual-approval.json");
   screenshotPath = resolve(evidenceDir, "first-frame.png");
   screenshotMetaPath = resolve(evidenceDir, "first-frame.json");

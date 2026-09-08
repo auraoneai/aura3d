@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "a3d-threejs-parity-assets/1.0",
+  "generatedAt": "2026-06-06T12:34:00.000Z",
+  "source": {
+    "kind": "repository-fixtures",
+    "root": "fixtures/threejs-parity/assets",
+    "claimBoundary": "Fixture inventory for route-corpus parity checks; visual approval and broad Three.js parity remain separate gates."
+  },
+  "assetCount": 7,
+  "assets": [
+    {
+      "id": "robot-expressive",
+      "category": "character",
+      "displayName": "Robot Expressive",
+      "localPath": "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/character/robot-expressive.glb",
+      "byteSize": 463988,
+      "sha256": "047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+      "features": ["character", "skinned-animation", "morph-or-expression-candidate"],
+      "routeUse": "robotics-lab",
+      "animated": true,
+      "routeCorpusProofCandidate": true
+    },
+    {
+      "id": "soldier",
+      "category": "character",
+      "displayName": "Soldier",
+      "localPath": "fixtures/threejs-parity/assets/character/soldier.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/character/soldier.glb",
+      "byteSize": 2160468,
+      "sha256": "dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
+      "features": ["character", "skinned-animation", "humanoid-rig-candidate"],
+      "routeUse": "robotics-lab",
+      "animated": true,
+      "routeCorpusProofCandidate": true
+    },
+    {
+      "id": "compare-transmission",
+      "category": "materials",
+      "displayName": "Compare Transmission",
+      "localPath": "fixtures/threejs-parity/assets/materials/compare-transmission.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/materials/compare-transmission.glb",
+      "byteSize": 357024,
+      "sha256": "012a3ace61050f4aef77b416c56b3f8f313e1fa68c9040ce3d5037f67eea484f",
+      "features": ["materials", "transmission"],
+      "routeCorpusProofCandidate": false
+    },
+    {
+      "id": "cesium-milk-truck",
+      "category": "physics",
+      "displayName": "Cesium Milk Truck",
+      "localPath": "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb",
+      "byteSize": 369980,
+      "sha256": "09371b34608116de5842d23abe260bf11acf3e1554daf334a647eb566eee5c49",
+      "features": ["vehicle", "physics-fixture"],
+      "routeCorpusProofCandidate": false
+    },
+    {
+      "id": "duck",
+      "category": "physics",
+      "displayName": "Duck",
+      "localPath": "fixtures/threejs-parity/assets/physics/duck.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/physics/duck.glb",
+      "byteSize": 120484,
+      "sha256": "65bf938f54d6073e619e76e007820bbf980cdc3dc0daec0d94830ffc4ae54ab5",
+      "features": ["khronos-style-fixture", "physics-fixture"],
+      "routeCorpusProofCandidate": false
+    },
+    {
+      "id": "littlest-tokyo",
+      "category": "showcase",
+      "displayName": "Littlest Tokyo",
+      "localPath": "fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
+      "byteSize": 4133072,
+      "sha256": "8375c2aa6808e28ad1cb9c0d43e1513f57ffd7865244bf66bbbd5bb0e907e06d",
+      "features": ["showcase", "environment"],
+      "routeCorpusProofCandidate": false
+    },
+    {
+      "id": "car-concept",
+      "category": "vehicles",
+      "displayName": "Car Concept",
+      "localPath": "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+      "publicPath": "/fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+      "byteSize": 15499812,
+      "sha256": "1d1df2377481bd7f6b9d5a746a997747347009826b68ff74753181b737c5cd50",
+      "features": ["vehicle", "product-configurator-reference"],
+      "routeCorpusProofCandidate": false
+    }
+  ]
+}

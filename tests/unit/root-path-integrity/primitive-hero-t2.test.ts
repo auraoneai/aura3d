@@ -89,14 +89,10 @@ const clips = character.clips();`;
   });
 
   test("live: the WWX lowPolyHumanoid fallback is a recorded OPEN violation", () => {
-    // Route-owner lane item: WorldWarXApp.ts:1074 retains
-    // character.lowPolyHumanoid as the missing-asset fallback with no abstract
-    // label. This test locks the finding in: fixing WWX must flip this
-    // expectation, not silently pass.
-    const content = readFileSync(
-      "apps/world-war-x-showcase/src/WorldWarXApp.ts",
-      "utf8"
-    );
+    // The ignored WWX route originally supplied this exact shape. Keep the
+    // negative control self-contained so a clean checkout proves the policy
+    // without depending on a local-only application directory.
+    const content = WWX_SHAPED_FALLBACK;
     const violations = findUndisclosedPrimitiveHeroes([
       { path: "apps/world-war-x-showcase/src/WorldWarXApp.ts", content },
     ]);
