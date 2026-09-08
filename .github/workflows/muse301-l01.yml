@@ -14,11 +14,11 @@ jobs:
       - name: Checkout frozen release source
         uses: actions/checkout@v4
         with:
-          ref: ba0dfaeb97c54cb5c1b0500cf651777154342e24
+          ref: 1c6de4b4ad21fe3c46a74af52f07ff473f73765d
           fetch-depth: 0
       - name: Assert frozen source
         run: |
-          test "$(git rev-parse HEAD)" = "ba0dfaeb97c54cb5c1b0500cf651777154342e24"
+          test "$(git rev-parse HEAD)" = "1c6de4b4ad21fe3c46a74af52f07ff473f73765d"
           test -z "$(git status --porcelain --untracked-files=all)"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -37,19 +37,19 @@ jobs:
         env:
           AURA3D_REMOTE_PROVIDER: github-actions
           AURA3D_REMOTE_WORKER_ID: ${{ runner.name }}-${{ github.run_id }}
-        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/final-ba0dfaeb
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/release/l01-producer.ts tests/reports/muse3jsparity/l01/final-1c6de4b4
       - name: Verify source remained frozen
         if: always()
-        run: test "$(git rev-parse HEAD)" = "ba0dfaeb97c54cb5c1b0500cf651777154342e24"
+        run: test "$(git rev-parse HEAD)" = "1c6de4b4ad21fe3c46a74af52f07ff473f73765d"
       - name: Upload L01 exact artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-l01-ba0dfaeb
+          name: muse301-l01-1c6de4b4
           if-no-files-found: error
           retention-days: 30
           path: |
-            tests/reports/muse3jsparity/l01/final-ba0dfaeb/
+            tests/reports/muse3jsparity/l01/final-1c6de4b4/
             tests/reports/release-tarballs/
             docs/project/release-artifacts.json
             tests/reports/release-frozen-lock.json
