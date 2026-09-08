@@ -14,11 +14,11 @@ jobs:
       - name: Checkout frozen release source
         uses: actions/checkout@v4
         with:
-          ref: 3412c59c8f44a897198b0b8ddb80309eea0fbcf0
+          ref: 1c6de4b4ad21fe3c46a74af52f07ff473f73765d
           fetch-depth: 0
       - name: Assert frozen source
         run: |
-          test "$(git rev-parse HEAD)" = "3412c59c8f44a897198b0b8ddb80309eea0fbcf0"
+          test "$(git rev-parse HEAD)" = "1c6de4b4ad21fe3c46a74af52f07ff473f73765d"
           test -z "$(git status --porcelain --untracked-files=all)"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -41,12 +41,12 @@ jobs:
         run: pnpm check:clean-install
       - name: Verify source remained frozen
         if: always()
-        run: test "$(git rev-parse HEAD)" = "3412c59c8f44a897198b0b8ddb80309eea0fbcf0"
+        run: test "$(git rev-parse HEAD)" = "1c6de4b4ad21fe3c46a74af52f07ff473f73765d"
       - name: Upload focused evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-clean-install-3412c59c
+          name: muse301-clean-install-1c6de4b4
           if-no-files-found: warn
           retention-days: 14
           path: |
