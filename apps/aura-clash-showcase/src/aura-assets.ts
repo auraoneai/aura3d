@@ -14,6 +14,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "auraClashPlayerRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashRivalRig": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashSpecialSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
+  readonly "auraClashSpectatorCard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auraClashUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
   readonly "auraClashUiToggleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
   readonly "auraClashWinSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "ogg"; readonly url: string; readonly hash: string; };
@@ -149,7 +150,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
-        "checkedAt": "2026-08-11T22:02:20.268Z"
+        "checkedAt": "2026-09-08T13:57:39.371Z"
       },
       "sourcePath": "assets/source/arenas/arena-neon-downtown-textured.glb",
       "outputPath": "public/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
@@ -482,7 +483,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sourcePage": "https://quaternius.com/packs/ultimatedowntownpack.html",
         "license": "CC0-1.0",
         "author": "Quaternius",
-        "checkedAt": "2026-08-11T22:02:20.470Z"
+        "checkedAt": "2026-09-08T13:57:39.524Z"
       },
       "sourcePath": "assets/source/arenas/arena-rooftop-building.glb",
       "outputPath": "public/aura-assets/arenaRooftopBuilding.3e351f48.glb",
@@ -2200,7 +2201,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T22:02:19.831Z"
+        "checkedAt": "2026-09-08T13:57:38.999Z"
       },
       "sourcePath": "assets/source/fighters/aura-clash-player-rig.glb",
       "outputPath": "public/aura-assets/auraClashPlayerRig.3318d671.glb",
@@ -3316,7 +3317,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T22:02:20.051Z"
+        "checkedAt": "2026-09-08T13:57:39.153Z"
       },
       "sourcePath": "assets/source/fighters/aura-clash-rival-rig.glb",
       "outputPath": "public/aura-assets/auraClashRivalRig.c8d844dc.glb",
@@ -3525,6 +3526,133 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/auraClashSpecialSfx.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
+    },
+  },
+  "auraClashSpectatorCard": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+    hash: "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+    bounds: [
+      0.667,
+      1,
+      0.04
+    ],
+    sizeBytes: 2047004,
+    metadata: {
+      "materials": [
+        "Blockfall Reactor Mechanic-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Blockfall Reactor Mechanic-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "sourceFamily": "Aura3D Blockfall Reactor generated set dressing",
+        "checkedAt": "2026-09-08T13:57:39.681Z"
+      },
+      "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "outputPath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.333,
+          -0.5,
+          -0.02
+        ],
+        "max": [
+          0.333,
+          0.5,
+          0.02
+        ],
+        "size": [
+          0.667,
+          1,
+          0.04
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Blockfall Reactor Mechanic-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "MASK",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Blockfall Reactor Mechanic-card"
+      ],
+      "textures": [
+        "Blockfall Reactor Mechanic-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auraClashSpectatorCard.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Static typed spectator card for Aura Clash native crowd instancing"
     },
   },
   "auraClashUiConfirmSfx": {

@@ -312,7 +312,7 @@
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
-        "checkedAt": "2026-08-11T22:02:20.268Z"
+        "checkedAt": "2026-09-08T13:57:39.371Z"
       },
       "textures": [
         "T_MarbleFloor_BaseColor.png",
@@ -618,7 +618,7 @@
         "sourcePage": "https://quaternius.com/packs/ultimatedowntownpack.html",
         "license": "CC0-1.0",
         "author": "Quaternius",
-        "checkedAt": "2026-08-11T22:02:20.470Z"
+        "checkedAt": "2026-09-08T13:57:39.524Z"
       },
       "textures": [],
       "dependencies": [],
@@ -2346,7 +2346,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T22:02:19.831Z"
+        "checkedAt": "2026-09-08T13:57:38.999Z"
       },
       "textures": [
         "T_Ranger_Normal",
@@ -3446,7 +3446,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T22:02:20.051Z"
+        "checkedAt": "2026-09-08T13:57:39.153Z"
       },
       "textures": [
         "T_Ranger_Normal",
@@ -3622,6 +3622,149 @@
       "thumbnailUrl": "/aura-assets/auraClashSpecialSfx.thumb.svg",
       "warnings": [
         "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashSpectatorCard",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "outputPath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "url": "/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+      "hash": "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+      "sizeBytes": 2047004,
+      "bounds": [
+        0.667,
+        1,
+        0.04
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.333,
+          -0.5,
+          -0.02
+        ],
+        "max": [
+          0.333,
+          0.5,
+          0.02
+        ],
+        "size": [
+          0.667,
+          1,
+          0.04
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": false
+      },
+      "materials": [
+        "Blockfall Reactor Mechanic-unlit-alpha"
+      ],
+      "materialMetadata": [
+        {
+          "name": "Blockfall Reactor Mechanic-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "MASK",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Blockfall Reactor Mechanic-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/auraClashSpectatorCard.e588d0f8.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "sourceFamily": "Aura3D Blockfall Reactor generated set dressing",
+        "checkedAt": "2026-09-08T13:57:39.681Z"
+      },
+      "textures": [
+        "Blockfall Reactor Mechanic-image"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Blockfall Reactor Mechanic-card"
+      ],
+      "thumbnailUrl": "/aura-assets/auraClashSpectatorCard.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Static typed spectator card for Aura Clash native crowd instancing",
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
     },
     {

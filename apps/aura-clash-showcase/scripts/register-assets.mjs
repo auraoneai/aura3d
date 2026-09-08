@@ -18,6 +18,9 @@ const requiredAssets = [
   // playable route binds.
   ["arenaNeonDowntownTextured", "assets/source/arenas/arena-neon-downtown-textured.glb"],
   ["arenaRooftopBuilding", "assets/source/arenas/arena-rooftop-building.glb"],
+  // Keep the spectator card inside this app's typed asset contract. The root
+  // showcase manifest is not served by the standalone Aura Clash Vite app.
+  ["auraClashSpectatorCard", "../showcase-blockfall-reactor/generated/blockfallReactorMechanic.glb"],
 ];
 
 function fail(message) {
@@ -48,7 +51,20 @@ for (const [name, relativePath] of requiredAssets) {
         "--role", "character",
         "--suitability", "Aura Clash 2.0 animated primary fighter; twelve-state browser visual suite machine-reviewed, human approval pending"
       ]
-    : [];
+    : name === "auraClashSpectatorCard"
+      ? [
+          "--license", "CC0-1.0",
+          "--license-name", "CC0-1.0",
+          "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+          "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
+          "--source-url", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+          "--author", "Aura3D art pipeline (OpenAI image generation)",
+          "--source-family", "Aura3D Blockfall Reactor generated set dressing",
+          "--quality", "release",
+          "--role", "set-dressing",
+          "--suitability", "Static typed spectator card for Aura Clash native crowd instancing"
+        ]
+      : [];
   const result = spawnSync(process.execPath, [cliEntry, "assets", "add", relative(appRoot, assetPath), "--name", name, ...provenanceArgs], {
     cwd: appRoot,
     stdio: "inherit",

@@ -28,7 +28,6 @@ import {
   type SecondaryMotionResult
 } from "./animation/fighterSecondaryMotion";
 import { assets } from "../aura-assets";
-import { assets as sharedAssets } from "../../../../src/aura-assets";
 import {
   assertAuraClashClipReadiness,
   auraClashPlayerClips as playerClips,
@@ -1110,7 +1109,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * connects and decays; `slamImpulse` carries one frame of slam energy into the sign springs,
    * signed toward the side the defender was on. Reduced motion freezes both (no bob, no swing).
    */
-  let publicCrowd = createPublicCrowdNodes(sharedAssets.blockfallReactorMechanicHero);
+  let publicCrowd = createPublicCrowdNodes(assets.auraClashSpectatorCard);
   let crowdCheer = 0;
   const hangingSigns = createHangingNeonSigns();
   let slamImpulse = 0;
@@ -1539,7 +1538,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       async capture(mode: "native" | "individual" | "hidden") {
         paused = true;
         gameApp.pause();
-        publicCrowd = createPublicCrowdNodes(sharedAssets.blockfallReactorMechanicHero, mode);
+        publicCrowd = createPublicCrowdNodes(assets.auraClashSpectatorCard, mode);
         rootStageApp.setScene(createRootStageScene());
         await rootStageApp.ready();
         publicCrowd.update(rootStageApp, { elapsedSeconds: 0, cheer: 0, reducedMotion: true });
