@@ -1666,6 +1666,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     setRivalGuardSuppressed(suppressed: boolean) {
       rivalPassive = suppressed === true;
       if (rivalPassive) {
+        rivalForceGuard = false;
+        rivalForcedGuardDepleted = false;
         rivalState.guard = false;
         rivalState.guardMeter = 100;
         rivalState.attack = null;
@@ -1946,6 +1948,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           defender.hitStopRemaining = Math.max(defender.hitStopRemaining, 0.1);
           clipImpulse = Math.min(1.4, clipImpulse + 0.45);
           audio.cue("guard-break");
+          // A guard break is a confirmed combat impact even though it applies guard damage
+          // instead of health damage. Honor the same capture latch so the renderer publishes
+          // and retains this exact guard-break frame before the next RAF advances its burst.
+          if (pauseOnNextHit) {
+            pauseOnNextHit = false;
+            paused = true;
+          }
         } else {
           callout = "BLOCK";
           calloutHoldSeconds = 0.8;
