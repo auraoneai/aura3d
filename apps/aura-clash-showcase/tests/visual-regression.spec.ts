@@ -100,6 +100,9 @@ test.describe("Aura Clash visual regression states", () => {
     await resumeFromCapture(page);
 
     await setFighterTestState(page, { playerX: -2.2, rivalX: 2.2, rivalHealth: 360, suppressRivalGuard: true });
+    await expect.poll(async () =>
+      (await readAuraClashProof(page)).presentation?.activeImpactKinds ?? [],
+    { message: "whiff capture must not retain impact pixels from the preceding hit" }).toEqual([]);
     await page.evaluate(() => {
       const driver = (window as Window & {
         __AURA_CLASH_ARENA_TEST_DRIVER__?: { pauseOnNextWhiff(): void };
