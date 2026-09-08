@@ -313,7 +313,7 @@ export async function queueNearKoHeavy(page: Page): Promise<void> {
     }).__AURA_CLASH_ARENA_TEST_DRIVER__;
     if (!driver) throw new Error("Aura Clash KO test driver was not installed.");
     driver.setPositions(-0.95, 0.5);
-    driver.setRivalHealth(9);
+    driver.setRivalHealth(1);
     driver.setPlayerMeter(100);
     driver.setRivalGuardSuppressed(true);
     driver.queuePlayerAttack("heavy");
