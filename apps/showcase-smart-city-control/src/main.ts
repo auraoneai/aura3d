@@ -377,6 +377,7 @@ let lastChanged = "initial-load";
 let sceneUpdateGeneration = 0;
 let activeBuild = buildSmartCityScene();
 let app: ReturnType<typeof createAuraApp> | undefined;
+let sceneSubmissionTail: Promise<void> = Promise.resolve();
 
 publishEvidence("booting");
 const compositionProbePixelRatio = new URLSearchParams(location.search).has("compositionProbe") ? 0.25 : 1;
@@ -407,12 +408,13 @@ updateControlState();
 // update. Publish its first actual submitted frame immediately; waiting for
 // the twelfth animation callback made a mounted scene look pending for up to
 // minutes on a software-rendered worker.
-void app.ready().then(() => app!.stepAsync(0)).then(() => {
+sceneSubmissionTail = app.ready().then(() => app!.stepAsync(0)).then(() => {
   if (sceneUpdateGeneration === 0) publishEvidence("ready");
 }).catch((error: unknown) => {
-  if (sceneUpdateGeneration !== 0) return;
-  console.error("Smart City initial mount failed", error);
-  publishEvidence("error");
+  if (sceneUpdateGeneration === 0) {
+    console.error("Smart City initial mount failed", error);
+    publishEvidence("error");
+  }
 });
 
 /*
@@ -1259,27 +1261,32 @@ function bindControls(): void {
   });
 }
 
-function applyScene(change: string): void {
+function applyScene(change: string): Promise<void> {
   const generation = ++sceneUpdateGeneration;
   lastChanged = change;
   activeBuild = buildSmartCityScene();
+  const nextScene = activeBuild.snapshot;
   const currentApp = app;
-  currentApp?.setScene(activeBuild.snapshot);
   updateControlState();
   publishEvidence("booting");
-  if (!currentApp) return;
-  // A paused evidence capture (or user-paused scene) has no animation callback
-  // to republish diagnostics after the asynchronous scene mount. Commit the
-  // actual frame and ready evidence as part of the control update itself.
-  void currentApp.ready().then(async () => {
-    if (generation !== sceneUpdateGeneration) return;
+  if (!currentApp) return Promise.resolve();
+  // Scene replacement is a synchronous mutation, while production frame
+  // submission is asynchronous. Serialize both operations so controls and
+  // evidence probes cannot call setScene while the previous frame is pending.
+  const submission = sceneSubmissionTail.catch(() => undefined).then(async () => {
+    currentApp.setScene(nextScene);
+    await currentApp.ready();
     await currentApp.stepAsync(0);
     if (generation === sceneUpdateGeneration) publishEvidence("ready");
   }).catch((error: unknown) => {
-    if (generation !== sceneUpdateGeneration) return;
-    console.error("Smart City scene update failed", error);
-    publishEvidence("error");
+    if (generation === sceneUpdateGeneration) {
+      console.error("Smart City scene update failed", error);
+      publishEvidence("error");
+    }
+    throw error;
   });
+  sceneSubmissionTail = submission.catch(() => undefined);
+  return submission;
 }
 
 function updateControlState(): void {
@@ -1410,9 +1417,7 @@ if (new URLSearchParams(location.search).has("crowdProbe")) {
       fleetMode = mode;
       fleetVisibleIndex = visibleIndex;
       mark("set-scene");
-      applyScene(`fleet-probe:${mode}`);
-      await bounded(app.ready(), "scene-ready");
-      await bounded(app.stepAsync(0), "render");
+      await bounded(applyScene(`fleet-probe:${mode}`), "scene-ready");
       mark("read-pixels");
       const canvas = document.querySelector<HTMLCanvasElement>("#aura-stage canvas, canvas#aura-stage");
       const gl = canvas?.getContext("webgl2");
