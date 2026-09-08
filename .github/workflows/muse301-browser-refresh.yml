@@ -1,17 +1,17 @@
-name: Muse 3.0.1 Aurora 560c98db
+name: Muse 3.0.1 Aurora db19feba
 on:
   push:
     branches: [ops/muse301-browser-refresh]
 permissions: {contents: read}
 env:
-  SOURCE_COMMIT: 560c98db83f197a22fea5d339074ef17a10e4ebb
+  SOURCE_COMMIT: db19feba44914d302f031c9820ebc6a4847dd14a
 jobs:
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
-        with: {ref: 560c98db83f197a22fea5d339074ef17a10e4ebb, lfs: true}
+        with: {ref: db19feba44914d302f031c9820ebc6a4847dd14a, lfs: true}
       - uses: pnpm/action-setup@v4
         with: {version: 11.1.3}
       - uses: actions/setup-node@v4
@@ -23,12 +23,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/aurora-560c98db.json pnpm exec playwright test tests/browser/aurora-lander-campaign.spec.ts tests/browser/aurora-lander-terrain.spec.ts --reporter=line,json
+          PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/aurora-db19feba.json pnpm exec playwright test tests/browser/aurora-lander-campaign.spec.ts tests/browser/aurora-lander-terrain.spec.ts --reporter=line,json
           pnpm --dir apps/showcase-aurora-lander evidence:route-health
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-aurora-560c98db
+          name: muse301-aurora-db19feba
           path: |
             tests/reports/
             apps/showcase-aurora-lander/route-health.json
