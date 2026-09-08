@@ -82,12 +82,12 @@ const FOOT_DROP = 0.72;
 /** Fixed simulation step — the determinism contract for replay hashes. */
 const FIXED_DT = 1 / 60;
 /**
- * Bound each presented frame to half a second of deterministic catch-up. This
+ * Bound each presented frame to one second of deterministic catch-up. This
  * keeps software-rendered remote runs moving without advancing through whole
  * landings, site transitions, or a replay before evidence can observe them.
  * Any older backlog is dropped instead of creating a spiral of death.
  */
-const MAX_CATCHUP_SECONDS = 0.5;
+const MAX_CATCHUP_SECONDS = 1;
 const MAX_SUBSTEPS = Math.round(MAX_CATCHUP_SECONDS / FIXED_DT);
 /**
  * The opening approach is intentionally framed as a launch/deorbit hand-off:
