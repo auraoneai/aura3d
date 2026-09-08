@@ -27,7 +27,16 @@ test("character controller route exposes a live locomotion proof", async ({ page
   expect(errors).toEqual([]);
   const canvas = page.locator("canvas").first();
   await expect(canvas).toBeVisible();
-  const canvasBounds = await canvas.boundingBox();
+  // Locator boundingBox() can block behind the continuously rendering main
+  // thread even after Playwright has resolved the canvas as visible. Read the
+  // same layout rectangle synchronously in the page, as the proof reads its
+  // runtime state above.
+  const canvasBounds = await page.evaluate(() => {
+    const element = document.querySelector("canvas");
+    if (!(element instanceof HTMLCanvasElement)) return null;
+    const bounds = element.getBoundingClientRect();
+    return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+  });
   expect(canvasBounds?.width ?? 0).toBeGreaterThan(0);
   expect(canvasBounds?.height ?? 0).toBeGreaterThan(0);
   mkdirSync(resolve("tests/reports"), { recursive: true });
