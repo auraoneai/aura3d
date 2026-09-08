@@ -331,8 +331,9 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   expect(box?.height ?? 0).toBeGreaterThan(100);
   expect(pageErrors).toEqual([]);
   if (!box) throw new Error("visible Aura3D canvas did not expose screenshot bounds");
-  const centerX = box.x + box.width / 2;
-  const centerY = box.y + box.height / 2;
+  const canvasBounds = box;
+  const centerX = canvasBounds.x + canvasBounds.width / 2;
+  const centerY = canvasBounds.y + canvasBounds.height / 2;
   const interactionEvents: string[] = [];
   // Drive input and capture through Chromium's protocol. DOM evaluation and
   // locator screenshots can starve behind a continuously-rendering game main
@@ -340,8 +341,8 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   // reaches the real page and avoids turning renderer load into a false timeout.
   const cdp = await page.context().newCDPSession(page);
   if (${template !== "fighting-game"}) {
-    const dragX = centerX + Math.min(80, box.width / 6);
-    const dragY = centerY + Math.min(36, box.height / 8);
+    const dragX = centerX + Math.min(80, canvasBounds.width / 6);
+    const dragY = centerY + Math.min(36, canvasBounds.height / 8);
     await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", x: centerX, y: centerY, button: "left", buttons: 1, clickCount: 1 });
     await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: dragX, y: dragY, button: "left", buttons: 1 });
     await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", x: dragX, y: dragY, button: "left", buttons: 0, clickCount: 1 });
@@ -355,7 +356,7 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     format: "png",
     fromSurface: true,
     captureBeyondViewport: false,
-    clip: { x: box.x, y: box.y, width: box.width, height: box.height, scale: 1 }
+    clip: { x: canvasBounds.x, y: canvasBounds.y, width: canvasBounds.width, height: canvasBounds.height, scale: 1 }
   });
   // The session is closed with the page. Explicit detach can itself block
   // behind a saturated renderer after the screenshot has already completed.
@@ -364,7 +365,7 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/release-screenshot.json"), JSON.stringify({
     bytes: screenshot.byteLength,
-    canvas: box,
+    canvas: canvasBounds,
     pageErrors,
     interactionEvents
   }, null, 2) + "\\n");
