@@ -109,6 +109,44 @@ registry metadata and compares tarball bytes to the packed candidates). Publicat
 writes 29 packages to the public npm registry and needs credentials; that is irreversible
 and outside the autonomous perimeter.
 
+## Execution log — 2026-09-09 (routes-shard evidence verified; non-browser gates pre-verified)
+
+**Routes shard evidence confirmed retained and green.** Downloaded artifact
+`browser-matrix-reports-node-22-routes` from run `34394359966`:
+`tests/reports/wow-showcase/route-health.json` reports `routeCount: 22`, `pass` with
+`failures: []`, and 44 retained screenshots. This proves two things at once — the LFS
+fixture publication fixed the three `Invalid GLB magic` routes, and the workflow retention
+change actually delivers producer evidence (an earlier passing shard uploaded only
+`browser.json`).
+
+**Probe staleness will clear on arrival, verified rather than assumed.** The current
+renderer fingerprint is `sha256-8213d6df8a4ca21e7ca530f0d08e41cbd...`, which is exactly the
+value the 22 stale probes expect, and `git diff` confirms none of the 10
+`RENDERER_FINGERPRINT_SOURCES` changed since the running shard's commit. So the incoming
+route-primary evidence is valid for this tree rather than immediately stale again.
+
+The one `primary-asset: removed` reason was also run to ground: probe
+`showcase-gravity-post.json` records `gravityPodSkiffMeshy`, but the route legitimately
+renamed its primary to `gravityPostCourierSkiff` (`primaryAssets` in
+`apps/showcase-gravity-post/src/main.ts`, and `route-gates.json` maps
+`gravityPostCourierSkiff` to `primary-vehicle`). The probe is stale evidence of a retired
+id, not a missing asset, and regeneration resolves it.
+
+**Non-browser aggregate gates pre-verified on current source**, so Step 3 has fewer
+unknowns left when it runs:
+
+| Gate | Result |
+| --- | --- |
+| `R-integration` | 11/11 passed |
+| `Q-reference-vectors` | 19/19 passed |
+| `S-matrix-generation` | `src=750 jsm=425 jsmTsl=61`, 36 rows, 0 GAP without `prdSection`, 0 OUT without `outReason` |
+| `docs-claims-audit` | exit 0 |
+| `bundle-size` | `pass: true`, 8 targets, 0 over budget |
+
+Combined with the 13 browser gates verified in the previous log entry, every aggregate gate
+except `R-unit` (blocked only by the probe chain), `template-lifecycle-*`,
+`package-clean-install` and `installed-tree-shaking` now has a current-source result.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
