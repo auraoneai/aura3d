@@ -1,0 +1,155 @@
+{
+  "assetId": "external-parity-morph-expression",
+  "loaderDiagnostics": {
+    "schemaVersion": "gltf-loader-diagnostics",
+    "features": [
+      "animations",
+      "gltf",
+      "indexed-geometry",
+      "material:double-sided",
+      "material:metallic",
+      "material:roughness",
+      "mesh",
+      "morph-targets",
+      "normals"
+    ],
+    "extensionsUsed": [],
+    "extensionsRequired": [],
+    "unsupportedExtensions": [],
+    "extensionSupport": {
+      "schemaVersion": "gltf-extension-support",
+      "requested": [],
+      "supported": [],
+      "runtimeSupported": [],
+      "parsedWithLimits": [],
+      "diagnosticOnly": [],
+      "unsupportedUsed": [],
+      "unsupportedRequired": [],
+      "notAcceptedUsed": [],
+      "decoderRequired": []
+    },
+    "unsupportedFeatures": [],
+    "meshCount": 1,
+    "primitiveCount": 1,
+    "vertexCount": 3,
+    "indexCount": 3,
+    "materialCount": 1,
+    "textureCount": 0,
+    "imageCount": 0,
+    "animationCount": 1,
+    "skinCount": 0,
+    "morphTargetCount": 1,
+    "materialFeatures": [
+      "double-sided",
+      "metallic",
+      "roughness"
+    ],
+    "textureSlots": [],
+    "compression": {
+      "draco": false,
+      "meshopt": false,
+      "ktx2Basis": false
+    },
+    "loadProfile": {
+      "schemaVersion": "gltf-loader-load-profile",
+      "documentBytes": 1628,
+      "binaryChunkBytes": 0,
+      "bufferBytes": 130,
+      "imageBytes": 0,
+      "embeddedImageBytes": 0,
+      "externalImageCount": 0,
+      "bufferViewImageCount": 0,
+      "accessorReadCount": 6,
+      "uniqueAccessorReadCount": 6,
+      "accessorCacheHitCount": 0,
+      "accessorRowsRead": 16,
+      "accessorValuesRead": 34,
+      "accessorReadMs": 0.037,
+      "dataViewCacheEntries": 1,
+      "largestAccessors": [
+        {
+          "accessorIndex": 0,
+          "count": 3,
+          "type": "VEC3",
+          "componentType": 5126,
+          "componentCount": 3,
+          "byteLength": 36,
+          "bufferView": 0
+        },
+        {
+          "accessorIndex": 1,
+          "count": 3,
+          "type": "VEC3",
+          "componentType": 5126,
+          "componentCount": 3,
+          "byteLength": 36,
+          "bufferView": 1
+        },
+        {
+          "accessorIndex": 2,
+          "count": 3,
+          "type": "VEC3",
+          "componentType": 5126,
+          "componentCount": 3,
+          "byteLength": 36,
+          "bufferView": 2
+        },
+        {
+          "accessorIndex": 4,
+          "count": 2,
+          "type": "SCALAR",
+          "componentType": 5126,
+          "componentCount": 1,
+          "byteLength": 8,
+          "bufferView": 4
+        },
+        {
+          "accessorIndex": 5,
+          "count": 2,
+          "type": "SCALAR",
+          "componentType": 5126,
+          "componentCount": 1,
+          "byteLength": 8,
+          "bufferView": 5
+        },
+        {
+          "accessorIndex": 3,
+          "count": 3,
+          "type": "SCALAR",
+          "componentType": 5123,
+          "componentCount": 1,
+          "byteLength": 6,
+          "bufferView": 3
+        }
+      ]
+    }
+  },
+  "inspection": {
+    "meshes": 1,
+    "materials": 1,
+    "textures": 0,
+    "animations": 1,
+    "skins": 0,
+    "morphTargets": 1,
+    "cameras": 0,
+    "lights": 0,
+    "warnings": [
+      "ASSET_VIEWER_ANIMATION_PLAYBACK_BOUNDED",
+      "ASSET_VIEWER_MORPH_ANIMATION_ACTIVE"
+    ]
+  },
+  "diagnostics": [
+    {
+      "code": "ASSET_VIEWER_ANIMATION_PLAYBACK_BOUNDED",
+      "severity": "warning",
+      "message": "glTF animation clips are imported and node transform plus morph-weight tracks can be sampled into the rendered scene, but skinning and animation pointer parity remain bounded.",
+      "nextAction": "Use viewer playback for TRS and morph-weight diagnostics; keep full animation parity claims blocked until skinned and extension-driven animation paths are rendered."
+    },
+    {
+      "code": "ASSET_VIEWER_MORPH_ANIMATION_ACTIVE",
+      "severity": "warning",
+      "message": "glTF morph target data is imported, slider-adjustable, and driven by imported morph-weight animation tracks in the asset viewer.",
+      "nextAction": "Keep broad morph parity scoped to the visible corpus and browser evidence; production character parity still requires broader assets and skinning integration."
+    }
+  ]
+}
