@@ -1,10 +1,7 @@
-name: Muse 3.0.1 Head-to-head installed
+name: Muse 3.0.1 H2H 53491ade
 on:
-  workflow_dispatch:
-    inputs:
-      source_commit:
-        description: Exact source commit to reproduce
-        required: true
+  push:
+    branches: [ops/muse301-h2h-53491ade]
 permissions: {contents: read}
 env:
   AURA3D_REMOTE_PROVIDER: github-actions
@@ -15,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_commit }}
+          ref: 53491adeebed63178ca2339e135c4e291626f9aa
           lfs: true
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
@@ -25,17 +22,17 @@ jobs:
       # The receipt binds to HEAD and to a clean tree; a dirty checkout would
       # produce a receipt that cannot be replayed against this source.
       - run: |
-          test "$(git rev-parse HEAD)" = "${{ inputs.source_commit }}"
+          test "$(git rev-parse HEAD)" = "53491adeebed63178ca2339e135c4e291626f9aa"
           test -z "$(git status --porcelain --untracked-files=all)"
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
       - name: Head-to-head installed reproduction
         env:
-          AURA3D_REMOTE_WORKER_ID: muse301-h2h-${{ inputs.source_commit }}
+          AURA3D_REMOTE_WORKER_ID: muse301-h2h-53491adeebed63178ca2339e135c4e291626f9aa
         run: pnpm head-to-head:installed
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: muse301-h2h-${{ inputs.source_commit }}
+          name: muse301-h2h-53491adeebed63178ca2339e135c4e291626f9aa
           path: |
             tests/reports/current-head-to-head-installed/report.json
             tests/reports/current-head-to-head/
