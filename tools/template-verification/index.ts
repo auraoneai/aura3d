@@ -300,7 +300,7 @@ const report = {
   boundary: [
     "Each template is copied to a fresh temporary directory.",
     "External framework and Vite dependencies are installed from npm.",
-    "The unpublished Aura3D 0.0.0-rebuild runtime packages are copied from local dist artifacts with workspace protocols sanitized.",
+    `The unpublished Aura3D ${packageVersion.version} runtime packages are copied from local dist artifacts with workspace protocols sanitized.`,
     "This is starter-template CI evidence, not registry publishing or independent clean-checkout evidence."
   ],
   templates: results

@@ -9,7 +9,7 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "@aura3d/engine": "0.1.0-alpha.0"
+    "@aura3d/engine": "3.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
