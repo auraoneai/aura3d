@@ -40,6 +40,33 @@ Three structural faults, now fixed, made the work look larger than it was.
 | `runtime-edge-coverage` (x2), `release-metrics-rollup` | A prior commit added `packages/physics-rapier/src/HeightfieldLayout.ts` without registering it in the edge-coverage audit or the ADR ownership registry | Added the `physics-rapier` suite mapping and the ADR-0004 registry entry |
 | `aura-clash-rendering-evidence` | **Self-inflicted.** An earlier commit of mine weakened `gameplayVisible` from `performanceBudgetOk && bloomWithinLimit && fogBehind` by dropping the performance term, retiring a deliberate anti-overclaim guard | Restored the conjunctive predicate and the `budgetOk` visual assertion; device-class scoping belongs in the harness that supplies `budgetOk` |
 
+## Execution log — 2026-09-09 (Step 2 and Step 3 pre-verification)
+
+**Step 2 half complete.** `head-to-head-current-aggregate` now PASSES. The receipt was
+re-earned on a new remote workflow (`.github/workflows/muse301-h2h.yml`, run
+`34395700465`) and binds commit `1c26634e` with `pass: true`, 29 packages all at
+`3.0.1`, 29 tarball digests, 15 workloads, `universalScore: null`,
+`comparisonComplete: false` and zero failures. Unit failures: 6 -> 5. Every remaining
+failure is the single route-primary probe-freshness chain.
+
+**Step 3 gates pre-verified rather than waited on.** All 13 aggregate browser gates were
+run directly instead of discovering their verdicts inside a long serial gate run:
+E (10/10), H+I (5/5), U context-loss/deep-recovery, K1 root-path-integrity (6/6),
+K1 library-parity-superiority (3/3), K1 game-visual-superiority (5/5), U1 resource soak.
+Only P01 `gpu-particle-a4` cannot pass here: it requires
+`AURA3D_REFERENCE_HARDWARE_ATTESTATION` from the native macOS workflow, and is already
+closed by native run `34045615840`.
+
+Four further defects were found and fixed at root cause:
+
+| Defect | Root cause | Fix |
+| --- | --- | --- |
+| U1 soak `heap drift 6.2-11 MiB` vs 4 MiB budget | `usedJSHeapSize` was read after a single `collectGarbage`. Measured at one instant with no work between samples: baseline `23295523` then `19682819` repeating; chunk-4 `30147932` x4 then `20074715` repeating. V8 needs a variable number of collections and repeats the same unsettled value first, so the gate was anchored to an unsettled sample and the maximum landed on the FIRST chunk then fell — the opposite shape of a leak | Read the settled floor across passes. Real drift is 0.374 MiB (~8.7 KiB/cycle) with drift rising smoothly 0.29 -> 0.374. **Budgets unchanged at 4 MiB and 2 MiB**; 8/8 consecutive runs pass |
+| B1 shadow family: `clearcoat-sheen-anisotropy-textures` reported 0 spot uniforms, expected 13 | The variant defines `A3D_PBR_NO_SPOT_SHADOW` (a deliberate sampler-budget opt-out) but the test's opt-out allow-list was a hardcoded literal naming only two variants. Added during 3.0.1, it made a correct opt-out look like a broken uniform insertion | Derive the opt-out set from the shader library, so the expectation cannot drift from source |
+| K1 freshness: 19 retained artifacts ~5.5 days old | The PRD 30-minute rule requires dependent producers inside one window; their producers had not been re-run | Re-ran shadow-family-b1, contact-shimmer-b1b2, clustered-lighting-b5, d4-flipbook-beam, gpu-particle-a4 and batch-consolidator-shootout, then K1 inside the window |
+| K1 freshness: `engine-perf-301.json` and `root-governor-301.json` **missing entirely** | Two required 3.0.1 producers had never been generated | Ran both producers (7/7) plus the visual matrix (8/8); K1 then passed 5/5 |
+| H2H `asset-hashes-current: 6 locked assets` | The locked `morph-expression` parity fixture lived under the gitignored `fixtures/` tree, so CI had no file. Same class as the WOW `Invalid GLB magic` defect | Committed the fixture and its manifest siblings. Audited all locked benchmark assets: 6 of 6 now present on the remote |
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
