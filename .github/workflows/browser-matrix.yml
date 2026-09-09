@@ -81,5 +81,12 @@ jobs:
             tests/reports/visual.json
             tests/reports/visual-browser.json
             tests/reports/pbr-environment-validation.json
+            # The route-primary probes and gallery route reports are the producer
+            # outputs the evidence-freshness gate audits. Without retaining them a
+            # passing shard proves the run happened but leaves the retained
+            # artifacts stale, so the aggregate can never observe fresh evidence.
+            tests/reports/showcase-route-primary-probes/
+            tests/reports/advanced-examples-gallery/
+            tests/reports/wow-showcase/
             test-results/
           if-no-files-found: ignore
