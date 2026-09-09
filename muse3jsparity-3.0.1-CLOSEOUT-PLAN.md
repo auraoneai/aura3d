@@ -147,6 +147,34 @@ Combined with the 13 browser gates verified in the previous log entry, every agg
 except `R-unit` (blocked only by the probe chain), `template-lifecycle-*`,
 `package-clean-install` and `installed-tree-shaking` now has a current-source result.
 
+## Execution log — 2026-09-09 (Step 2 complete: probe chain cleared, unit failures 6 -> 1)
+
+**The blocking chain is broken.** The `route-primary` shard PASSED and, because of the
+retention fix, delivered 45 probe artifacts. Installing them dropped
+`explain-staleness.mjs` from **22 stale of 22 audited to 0 stale of 22 audited**, with zero
+ordering cycles and zero ownership conflicts. `evidence-freshness` and
+`showcase-route-gates` now pass; `replicability-metrics` passes after regenerating its
+report, which reports `0 of 22 audited` freshness failures.
+
+**Full unit baseline: 4,966 tests, 1 failure** (from 10 at the start of this work). The one
+remaining failure is `head-to-head-current-aggregate`, and it is purely a commit binding:
+the receipt was earned at `1c26634e` and HEAD has since advanced. A run pinned to the
+current commit `04619322` is executing.
+
+**One more real defect found while clearing the chain.** After installing the fresh probes,
+`game-visual-qa` failed 2 tests with all 12 checks reporting `pass`. The report's own
+`blockers` field named the cause: `composition-screenshot-stale`. The regenerated probe
+correctly binds the new route screenshot `sha256-efc8cfdb...`, but the composition evidence
+still referenced the previous `sha256-5ad3ba85...`. This is the documented producer
+ordering — `producer-registry.mjs` records that `regenerate-game-composition-evidence`
+hashes the route-primary probe, so it must run after it. Running that regenerator rebound
+both routes to `efc8cfdb` and `game-visual-qa` passes 21/21.
+
+**Also verified this turn:** the routes-shard artifact proves WOW route health at
+`routeCount: 22`, `failures: []`, 44 screenshots; the `primary-asset: removed` reason was a
+legitimately renamed route primary (`gravityPodSkiffMeshy` -> `gravityPostCourierSkiff`),
+not a missing asset, and regeneration resolved it.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
