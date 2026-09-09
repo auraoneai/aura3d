@@ -11,12 +11,30 @@ on:
 jobs:
   chromium-browser-and-visual:
     name: Chromium Browser And Visual Checks
+    timeout-minutes: 330
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node:
-          - 22
+        # The two heavy specs dominate wall clock (route-primary probes ~86 min,
+        # advanced gallery ~47 min measured on the hosted software rasterizer),
+        # and the Playwright config runs a single worker. Give each heavy spec
+        # its own job so no shard approaches the six-hour job limit.
+        include:
+          - node: 22
+            shard: route-primary
+            specs: tests/browser/showcase-route-primary-probes.spec.ts
+          - node: 22
+            shard: gallery
+            specs: tests/browser/advanced-examples-gallery.spec.ts
+          - node: 22
+            shard: routes
+            specs: >-
+              tests/browser/wow-showcase-screenshots.spec.ts
+              tests/browser/current-routes-route-health.spec.ts
+              tests/browser/current-routes-parity-evidence.spec.ts
+              tests/browser/product-demos.spec.ts
+              tests/browser/loader-instancing-evidence.spec.ts
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,16 +65,17 @@ jobs:
         run: pnpm build:raw
 
       - name: Browser tests
-        run: pnpm test:browser
+        run: pnpm exec playwright test ${{ matrix.specs }}
 
       - name: Visual tests
+        if: matrix.shard == 'routes'
         run: pnpm test:visual
 
       - name: Upload browser reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-matrix-reports-node-${{ matrix.node }}
+          name: browser-matrix-reports-node-${{ matrix.node }}-${{ matrix.shard }}
           path: |
             tests/reports/browser.json
             tests/reports/visual.json
