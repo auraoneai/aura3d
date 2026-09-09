@@ -110,6 +110,7 @@ const CURRENT_WOW_ROUTES: readonly WowRoute[] = [
 const REPORT_DIR = "tests/reports/wow-showcase";
 const SCREENSHOT_DIR = `${REPORT_DIR}/screenshots`;
 const MOTION_SAMPLE_MS = 800;
+const PER_ROUTE_BUDGET_MS = process.env.CI ? 180_000 : 45_000;
 
 test.describe("authored WOW showcase screenshots", () => {
   let server: ViteDevServer;
@@ -123,7 +124,11 @@ test.describe("authored WOW showcase screenshots", () => {
   });
 
   test("visible authored WOW routes render current assets with screenshot, DPR, and motion evidence", async () => {
-    test.setTimeout(900_000);
+    // This single test sweeps every authored WOW route serially: mount, motion
+    // sample, and screenshot per route. The hosted CI rasterizer is software GL,
+    // so budget per route instead of assuming the whole sweep fits a fixed wall
+    // clock that was sized on hardware.
+    test.setTimeout(CURRENT_WOW_ROUTES.length * PER_ROUTE_BUDGET_MS);
     const browser = await chromium.launch({ headless: true });
     const results: WowRouteReport[] = [];
     try {

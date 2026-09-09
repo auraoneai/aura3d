@@ -170,6 +170,11 @@ test.describe("CurrentRoutes parity evidence", () => {
 
   for (const routeCase of cases) {
     test(`${routeCase.name} publishes scoped runtime and visual evidence`, async ({ page }) => {
+      // These routes mount a real renderer and then take a full-page capture.
+      // Under the hosted software rasterizer the postprocessing route exceeded
+      // the shared 60s default, so give every case explicit CI headroom rather
+      // than relying on the global default sized for hardware GL.
+      if (process.env.CI) test.setTimeout(300_000);
       const pageErrors: string[] = [];
       page.on("pageerror", (error) => pageErrors.push(error.message));
       await page.goto(`${server.origin}${routeCase.route}`, { waitUntil: "domcontentloaded" });
@@ -192,7 +197,7 @@ test.describe("CurrentRoutes parity evidence", () => {
 
       const screenshotPath = resolve(routeCase.screenshot);
       mkdirSync(dirname(screenshotPath), { recursive: true });
-      await page.screenshot({ path: screenshotPath, fullPage: true });
+      await page.screenshot({ path: screenshotPath, fullPage: true, timeout: process.env.CI ? 180_000 : 30_000 });
       writeFileSync(screenshotPath.replace(/\.png$/, ".json"), `${JSON.stringify({
         schema: "aura3d.current-route-runtime-evidence/1.0",
         generatedAt: new Date().toISOString(),

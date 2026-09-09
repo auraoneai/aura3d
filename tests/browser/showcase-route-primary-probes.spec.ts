@@ -201,6 +201,17 @@ interface CompositionProbeMeasurement {
   readonly cameraMode: string;
 }
 
+// Hosted CI runners rasterize in software (SwiftShader), where a full
+// renderer-owned frame encode is far slower than on hardware GL. Local hardware
+// runs keep the original allowance; CI gets the measured headroom it needs.
+const VISIBLE_SCREENSHOT_TIMEOUT_MS = process.env.CI ? 450_000 : 150_000;
+const DEFAULT_ROUTE_CAPTURE_TIMEOUT_MS = process.env.CI ? 1_500_000 : 600_000;
+const ROUTE_CAPTURE_TIMEOUT_MS: Record<string, number> = {
+  // Gallery renders two real renderer-owned 1440x900 frames, so it needs more
+  // than the shared route budget on either device class.
+  "showcase-gallery-shift": process.env.CI ? 1_800_000 : 900_000
+};
+
 test.describe("showcase route-primary probe generation", () => {
   // Each route has its own budget. The remote launcher runs independent capture
   // workers, then a separate aggregate process verifies all frozen receipts.
@@ -227,7 +238,7 @@ test.describe("showcase route-primary probe generation", () => {
       // deterministic LOS stage, visible frame and suppressed frame therefore
       // exceed the generic 10-minute route budget while every phase remains
       // within its own fail-closed limit.
-      test.setTimeout(route.id === "showcase-gallery-shift" ? 900_000 : 600_000);
+      test.setTimeout(ROUTE_CAPTURE_TIMEOUT_MS[route.id] ?? DEFAULT_ROUTE_CAPTURE_TIMEOUT_MS);
       if (PARALLEL_PHASE) currentSweepSource();
       const routePrimaryProbe = await importRoutePrimaryProbeModule();
       const context = routePrimaryProbe.createRoutePrimaryProbeContext(route);
@@ -439,7 +450,11 @@ async function writeRoutePrimaryProbe(
     failures.push(`route-load:${error instanceof Error ? error.message : String(error)}`);
   }
 
-  const screenshot = await phase("visible-screenshot", () => captureRoutePrimaryFrame(page, route.id, screenshotPath), 150_000);
+  // A hosted software rasterizer needs materially longer than hardware GL to
+  // encode a full renderer-owned frame. Three routes exceeded the original
+  // 150s allowance on the hosted runner while every other phase stayed inside
+  // its own limit, so this phase scales with the actual device class.
+  const screenshot = await phase("visible-screenshot", () => captureRoutePrimaryFrame(page, route.id, screenshotPath), VISIBLE_SCREENSHOT_TIMEOUT_MS);
   const screenshotHash = `sha256-${createHash("sha256").update(screenshot).digest("hex")}`;
   if (canvasCrop) {
     try {
@@ -1074,7 +1089,7 @@ async function captureRoutePrimaryFrame(page: Page, routeId: string, path: strin
     return output;
   }
   if (routeId !== "showcase-rooftop-buckets") {
-    return page.screenshot({ path, fullPage: false, scale: "css", timeout: 150_000 });
+    return page.screenshot({ path, fullPage: false, scale: "css", timeout: VISIBLE_SCREENSHOT_TIMEOUT_MS });
   }
   // Rooftop's software-rendered production frame can keep Chromium's CDP
   // compositor screenshot pending even after the WebGL canvas is complete.
