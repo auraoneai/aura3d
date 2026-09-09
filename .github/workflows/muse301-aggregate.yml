@@ -35,27 +35,6 @@ jobs:
       # fail with "Cannot find module .../dist/index.js" instead of executing.
       - name: Build workspace packages
         run: pnpm build:raw
-      # The K1 freshness gate enforces the PRD 30-minute rule against its
-      # dependent producers. Re-earn them immediately before the aggregate so the
-      # window is satisfied by execution order rather than by relaxing the rule.
-      - name: Re-earn K1 dependent producers
-        run: |
-          pnpm exec playwright test \
-            tests/browser/shadow-family-b1.spec.ts \
-            tests/browser/contact-shimmer-b1b2.spec.ts \
-            tests/browser/clustered-lighting-b5.spec.ts \
-            tests/browser/d4-flipbook-beam.spec.ts \
-            tests/browser/batch-consolidator-shootout.spec.ts \
-            tests/browser/muse3jsparity-301-visual.spec.ts \
-            tests/browser/muse3jsparity-301-engine-perf.spec.ts \
-            tests/browser/muse3jsparity-301-root-governor.spec.ts \
-            --reporter=line
-          # gpu-particle-a4 owns three K1 artifacts across separate tests. Run the
-          # two that are device-independent; the 60-second Apple Metal acceptance
-          # test is P01, already closed by native run 34045615840, and cannot pass
-          # on a Linux runner.
-          pnpm exec playwright test tests/browser/gpu-particle-a4.spec.ts \
-            -g "route-health|soft-particle" --reporter=line
       - name: Muse 3.0.1 readiness aggregate
         env:
           AURA3D_REMOTE_WORKER_ID: muse301-aggregate-${{ inputs.source_commit }}

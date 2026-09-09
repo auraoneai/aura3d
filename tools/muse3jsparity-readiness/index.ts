@@ -65,6 +65,22 @@ const downstream: Stage[] = [
   ...['physics-h1-promotions', 'physics-debug-draw'].map(spec => browser(spec, 'h', 'H')),
   ...['input-browser', 'audio-browser'].map(spec => browser(spec, 'i', 'I')),
   ...['resource-soak-u1', 'context-loss-recovery', 'deep-recovery-playable'].map(spec => browser(spec, 'u', 'U')),
+  /*
+   * K1's dependent producers run immediately before the K1 gates.
+   *
+   * `browser:game-visual-superiority` enforces the PRD 30-minute freshness rule against the
+   * retained feature evidence it relies on (shadow family, contact shimmer, clustered
+   * lighting, flipbook, particle and comparison receipts). Those producers cannot be run
+   * before the aggregate: the tarball lifecycle alone packs 29 packages and runs 19 installed
+   * scaffold lifecycles, so by the time K1 executes any earlier-earned evidence has aged well
+   * past the window. A first full run measured them at 226 minutes old and blocked.
+   *
+   * Scheduling them here satisfies the window by execution order, which is what the rule
+   * actually asks for, instead of relaxing the rule or pre-seeding stale artifacts. The
+   * existing capture-order validation still rejects a baseline that runs after a capture.
+   */
+  ...['shadow-family-b1', 'contact-shimmer-b1b2', 'clustered-lighting-b5', 'd4-flipbook-beam', 'batch-consolidator-shootout',
+    'muse3jsparity-301-visual', 'muse3jsparity-301-engine-perf', 'muse3jsparity-301-root-governor'].map(spec => browser(spec, 'k1-producers', 'K')),
   ...['game-visual-superiority', 'library-parity-superiority', 'root-path-integrity'].map(spec => browser(spec, 'k1', 'K'))
 ];
 const allStages = [...baseline, ...downstream];
