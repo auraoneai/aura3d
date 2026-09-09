@@ -211,6 +211,40 @@ failure is structural, not a defect: this receipt binds to `HEAD`, and every lat
 (including the commit that records this note) invalidates it. It must therefore be the last
 producer run before the aggregate, after the final source commit.
 
+## Execution log — 2026-09-09 (Steps 1 and 2 COMPLETE; aggregate executed for the first time)
+
+**Step 1 complete.** Browser Matrix run `34394359966` finished `success` with all three
+shards green: `routes`, `route-primary` and `gallery`. The shard split turned a job that had
+reached 241 minutes and was heading for the 6-hour ceiling into three parallel jobs that all
+completed.
+
+**Step 2 complete. Unit baseline: 4,966 tests, 0 failed, 0 pending, 0 todo.** The last
+failure was cleared by re-earning the head-to-head receipt on the exact final commit
+(`e950e132`, run `34407863681`: `pass: true`, 29 packages at `3.0.1`, 29 tarballs,
+15 workloads). `R-unit` is green, which unblocks the 22 downstream gates.
+
+**Step 3: the aggregate ran end to end for the first time.** `pnpm muse3jsparity:release`
+executed every gate rather than skipping them as `baseline failed`. Result: **20 of 22 gates
+`exit=0`**, including all of `Q-reference-vectors`, `S-matrix-generation`, `docs-claims-audit`,
+`bundle-size`, `package-clean-install`, `installed-tree-shaking`, `template-lifecycle-source`
+and 9 of the 10 browser gates. Two gates failed, and neither is a product defect:
+
+1. `template-lifecycle-tarball` — **12 installs killed by `SIGKILL`** with 3,629 free pages
+   on the machine. This is local memory exhaustion while packing 29 packages and running 19
+   installed scaffold lifecycles, exactly the workload class the standing policy says to run
+   remotely. Not a lifecycle failure: the same leg passes in L01 receipt `40dd2f41` with
+   19/19 `installedPassed` and `lifecycleAssertions: 149`.
+2. `browser:game-visual-superiority` — the K1 30-minute freshness rule, tripped by the
+   aggregate's own runtime. Its 19 dependent artifacts aged to ~226 minutes while the earlier
+   gates ran. Ordering problem, not a threshold problem.
+
+**Both are fixed by execution order, not by weakening anything.** New
+`.github/workflows/muse301-aggregate.yml` runs the aggregate on a dedicated remote runner and
+re-earns the K1 dependent producers immediately before it, so the 30-minute window is
+satisfied by sequencing. The device-independent `gpu-particle-a4` tests are included by name;
+its 60-second Apple Metal acceptance test is P01, already closed by native run `34045615840`
+and unable to pass on Linux. Dispatched as run `34414608666` pinned to `b8e002a1`.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
