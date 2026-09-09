@@ -30,6 +30,11 @@ jobs:
           test "$(git rev-parse HEAD)" = "${{ inputs.source_commit }}"
           test -z "$(git status --porcelain --untracked-files=all)"
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      # Browser specs resolve @aura3d/* through built dist output, so the
+      # workspace must be built before any spec runs. Without this the producers
+      # fail with "Cannot find module .../dist/index.js" instead of executing.
+      - name: Build workspace packages
+        run: pnpm build:raw
       # The K1 freshness gate enforces the PRD 30-minute rule against its
       # dependent producers. Re-earn them immediately before the aggregate so the
       # window is satisfied by execution order rather than by relaxing the rule.
