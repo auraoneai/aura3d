@@ -277,6 +277,34 @@ ordering has one owner. Readiness, lineage and requirements regressions pass **9
 
 Dispatched as run `34417699250` pinned to `08c0e967`.
 
+## Execution log — 2026-09-09 (aggregate must run locally; K1 ordering fix confirmed registered)
+
+**The aggregate cannot run on a fresh CI checkout, and this is by design.** The remote
+aggregate reported `R-unit` with **65 failures and only 4,950 of 4,966 tests loaded**, versus
+0 failures locally. Cause: `.gitignore` line 43 ignores `tests/reports/`, and only 57 files
+under it are tracked. The failing tests all read retained producer evidence — route-primary
+probes, screening reports, perceptual signatures, freshness audits — which does not exist on a
+clean clone. The aggregate is the consumer of accumulated evidence, so it must run in the
+worktree where that evidence lives. The remote workflow remains useful for isolated producers
+such as the head-to-head reproduction, which packs its own inputs.
+
+**The earlier local `SIGKILL` failures were contention, not a hard limit.** At the time of the
+first local run the machine had 3,629 free pages; measured again now it has roughly 63.5 GB
+free plus inactive. The tarball lifecycle is schedulable locally when not competing with other
+heavy work.
+
+**The K1 ordering fix is confirmed registered.** The remote run's readiness report lists the
+eight new producer gates by name (`browser:shadow-family-b1`, `browser:contact-shimmer-b1b2`,
+`browser:clustered-lighting-b5`, `browser:d4-flipbook-beam`,
+`browser:batch-consolidator-shootout`, and the three `browser:muse3jsparity-301-*`) ahead of
+the three K1 gates, so the freshness window is now satisfied by the aggregate's own execution
+order rather than by pre-seeding or threshold changes.
+
+**Remaining sequencing constraint, stated precisely.** `head-to-head-current-aggregate` binds
+its receipt to `HEAD`, so every commit invalidates it — including commits that only edit this
+plan document. The receipt must therefore be the final producer run before the aggregate, on
+frozen source. Re-earned at `53491ade` as run `34418848535`.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
