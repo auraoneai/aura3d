@@ -1,0 +1,474 @@
+{
+  "schema": "aura3d.final-visual-review-index/1.0",
+  "version": "3.0.1",
+  "source": {
+    "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+    "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+    "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+    "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+  },
+  "generatedAt": "2026-09-09T20:03:26.496Z",
+  "sections": [
+    {
+      "id": "flagship-routes",
+      "approvalScope": "Smart City desktop/mobile command and flythrough compositions",
+      "artifacts": [
+        {
+          "path": "tests/reports/smart-city-composition-301/desktop-command-visible.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "f56f8f7c76a0606373720fa67938db9514b7fa8a789b9009c8ba918e8ebb7aa0",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/smart-city-composition-301/desktop-flythrough-visible.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "bf8567600b7bbce52f86b8a972ad47df657c80a793b109e6d12a1d2f2f7ea695",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/smart-city-composition-301/mobile-command-visible.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "cf79bc061b8eed6638736a149796c2771f83d2a7ad693fd80e1628359d1968b3",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "showcase-games",
+      "approvalScope": "Turbo Drift and Skyline Runner input, progression and finish states",
+      "artifacts": [
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "ba20b0eae0bfb07116763e0654126619ace786683a6a07751a84c8ab75bba356",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-drift.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "52c18a78df034145dedfee832029e636fad9b992728a33271bac87fa6d541fb7",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-traversal.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "ec1e53d2b848dbb483eefe556ba71a368bae8c6267ef4b5fe9c28163196b4341",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-finish.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "ea39adb7a729e6b311f381fc5f00f317fe4ad5b8e02579ab5a8ba8413c2a6217",
+          "producer": {
+            "command": "github-actions muse301-gallery-routes",
+            "report": {
+              "path": "tests/reports/muse301-gallery/routes/receipt.json",
+              "sha256": "1ad81404713499b7f557420b1d4873248d948012b7fda34e6eb7af43c4587aa6"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "aura-clash",
+      "approvalScope": "Aura Clash landed-hit, special, KO/reset and mobile states",
+      "artifacts": [
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "75e7ab020fe2a3b3474bc2a1b114a7341e5f7cdc8fd26782f0772a693e78be1e",
+          "producer": {
+            "command": "github-actions muse301-gallery-clash",
+            "report": {
+              "path": "tests/reports/muse301-gallery/clash/receipt.json",
+              "sha256": "75e7429b5597fb5d470a8fd83e191bce325e42491df92be200c1c637a11eba66"
+            }
+          }
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-hit.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "05ce6a0da4c41e470ad5861fe7528c7c55acea4581c20cbf71e4dbcb63e7f5c6",
+          "producer": {
+            "command": "github-actions muse301-gallery-clash",
+            "report": {
+              "path": "tests/reports/muse301-gallery/clash/receipt.json",
+              "sha256": "75e7429b5597fb5d470a8fd83e191bce325e42491df92be200c1c637a11eba66"
+            }
+          }
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-ko-reset.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "de1584a0f42979d4ae88731d220b4c6a61a864c312e78920ba1cc7819fde455e",
+          "producer": {
+            "command": "github-actions muse301-gallery-clash",
+            "report": {
+              "path": "tests/reports/muse301-gallery/clash/receipt.json",
+              "sha256": "75e7429b5597fb5d470a8fd83e191bce325e42491df92be200c1c637a11eba66"
+            }
+          }
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-mobile.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "b418bbc58d3fa3bc8ac958ac6939a9a5d02d233c1cb9de9ff1ae89aa91d91df3",
+          "producer": {
+            "command": "github-actions muse301-gallery-clash",
+            "report": {
+              "path": "tests/reports/muse301-gallery/clash/receipt.json",
+              "sha256": "75e7429b5597fb5d470a8fd83e191bce325e42491df92be200c1c637a11eba66"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "night-adoption",
+      "approvalScope": "Architectural night lighting enabled, disabled and opponent controls",
+      "artifacts": [
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-night-lighting-aura-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "e73c20a169713bae5f0ab8fc44d7081b7c8ebce07cac305038bc792f820f1e95",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-night-lighting-aura-off.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "3817480e6e441a7f4e02d64875e8f626f4d825940c68f1a3e2916fe481dda018",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-night-lighting-three-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "695bc01d04e9bd2d5aff651231293cd037cc7d882ca5262eb967a907f28233a0",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "crowd-adoption",
+      "approvalScope": "Smart City native instancing, individual and hidden controls",
+      "artifacts": [
+        {
+          "path": "tests/reports/crowd-instancing-adoption-301/smart-city/native.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "864570492989d81f899190db018cddcf7b97cb65398c5b8cb09ffcc8a0fa809a",
+          "producer": {
+            "command": "github-actions muse301-gallery-crowd",
+            "report": {
+              "path": "tests/reports/muse301-gallery/crowd/receipt.json",
+              "sha256": "dd32013e6e75979c13cd2fa3813ca50435ac3fb8a660cc539208439b392428a0"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/crowd-instancing-adoption-301/smart-city/individual.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "c9ed1e4b78840b4f1b45961c3d664674a68d3323d233849db07917d325a68c6c",
+          "producer": {
+            "command": "github-actions muse301-gallery-crowd",
+            "report": {
+              "path": "tests/reports/muse301-gallery/crowd/receipt.json",
+              "sha256": "dd32013e6e75979c13cd2fa3813ca50435ac3fb8a660cc539208439b392428a0"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/crowd-instancing-adoption-301/smart-city/hidden.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "e8134dad474055f232420684fc90d1e355a278a2726a2fc9bc73acc7bcc0aa2f",
+          "producer": {
+            "command": "github-actions muse301-gallery-crowd",
+            "report": {
+              "path": "tests/reports/muse301-gallery/crowd/receipt.json",
+              "sha256": "dd32013e6e75979c13cd2fa3813ca50435ac3fb8a660cc539208439b392428a0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "selected-threejs-comparison",
+      "approvalScope": "Selected final Aura/Three paired workloads",
+      "artifacts": [
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-bloom-aura-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "613aefe135da33b00b94d790900a0306e7f43d40b5e70e0c86c8ed3e0ae0fddf",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-bloom-three-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "cfdda08cd8b28bda14a7c50aff9d6c91c7efdddca5b888ffd051bdd0e194842c",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-water-reflections-aura-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "f830ccb468f42e05de2d127d3b10a75339a1b6c5d681c2c0584a7ac40195715c",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-water-reflections-three-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "7908e5be33d7c610e9c4e64a13d8c9809a271625007882461c634cf4197f54ce",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-decals-aura-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "8d5656185e1f1c9af29161de46d8c1634a43e9afcd74a05aeb006a65dc1e8f60",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-decals-three-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "d417fca579805a4714d703048768bc248d7625ed9c0b54c42c1858714f3b186d",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-particles-aura-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "d759bcb8c7e8d50a3812f5ecc48ba7ecd974edfb4ffd2a7a975bfe4b9c9875ca",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        },
+        {
+          "path": "tests/reports/muse3jsparity/visual-301-particles-three-on.png",
+          "source": {
+            "commit": "f78eeec89c74effee98c01fb65a8aa6322d83e2c",
+            "tree": "559c170728cc197b50510b31a218bbec4d3df5e3",
+            "lockfileSha256": "f12ccd810e06d193e3f01b504491932d8ac6357658ab9ddde72f0852e734135f",
+            "fingerprint": "f8c15acbd0c0da67ec6435981915824abde2b6467c19809325ddf88d44f1abdc"
+          },
+          "sha256": "9a8beb69dc9049c27f1b1bd4ca3a86913c895ec8287cc4916c7abe00f1d12549",
+          "producer": {
+            "command": "github-actions muse301-gallery-visual",
+            "report": {
+              "path": "tests/reports/muse301-gallery/visual/receipt.json",
+              "sha256": "6cc302c05ffe7077a873d17d024bffcf5fecca3a128045460c53f15df4e726e9"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
