@@ -63,6 +63,7 @@
     "packages/materials/src/GameReadyMaterialLibrary.ts": "docs/architecture/adr/0013-game-visual-surface-first-party.md",
     "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
     "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+    "packages/physics-rapier/src/HeightfieldLayout.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
     "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
     "packages/physics/src/ArcadeCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
     "packages/physics/src/FightingCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",

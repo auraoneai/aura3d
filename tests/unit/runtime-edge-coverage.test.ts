@@ -122,6 +122,13 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
     edgeTerms: [/deterministic/i, /collision/i, /sensor/i, /raycast/i, /constraints?/i]
   },
+  // The optional Rapier adapter gained executable runtime source (heightfield
+  // layout transposition), so it owns edge behavior and must be audited here
+  // rather than counted as adapter-only glue.
+  "physics-rapier": {
+    suites: ["tests/unit/physics/rapier-shape-coverage.test.ts", "tests/unit/physics-rapier/rapier-adapter.test.ts"],
+    edgeTerms: [/column-major/i, /asymmetric/i, /dispose/i, /throw/i, /grounded/i]
+  },
   "product-studio": {
     suites: [
       "tests/unit/product-studio/product-asset-loader.test.ts",
