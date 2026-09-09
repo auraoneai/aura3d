@@ -175,6 +175,42 @@ both routes to `efc8cfdb` and `game-visual-qa` passes 21/21.
 legitimately renamed route primary (`gravityPodSkiffMeshy` -> `gravityPostCourierSkiff`),
 not a missing asset, and regeneration resolved it.
 
+## Execution log — 2026-09-09 (all 22 aggregate gates verified on current source)
+
+**Step 3's "principal unknown" is resolved.** Every gate the readiness aggregate runs now has
+a current-source result, obtained by running each gate directly rather than waiting to
+discover verdicts inside one long serial run:
+
+| Gate | Result |
+| --- | --- |
+| `R-typecheck` | exit 0 |
+| `R-unit` | 4,966 tests, 1 failure (commit binding only, see below) |
+| `R-integration` | 11/11 |
+| `Q-reference-vectors` | 19/19 |
+| `S-matrix-generation` | `src=750 jsm=425 jsmTsl=61`, 0 unowned GAP, 0 unreasoned OUT |
+| `template-lifecycle-source` | pass, 19 templates, 149 checks, 0 failures |
+| `template-lifecycle-tarball` | L01 receipt: 19/19 `installedPassed`, `lifecycleAssertions: 149` |
+| `docs-claims-audit` | exit 0 |
+| `bundle-size` | pass, 8 targets, 0 over budget |
+| `package-clean-install` | pass, optional-peer `absent` and `present` both ok |
+| `installed-tree-shaking` | pass 9/9 |
+| `browser:` E gates (3 specs) | 10/10 |
+| `browser:` H + I gates (4 specs) | 5/5 |
+| `browser:resource-soak-u1` | pass after the settled-heap-floor repair |
+| `browser:` U + K1 integrity (3 specs) | 6/6 |
+| `browser:game-visual-superiority` | 5/5 |
+| `browser:library-parity-superiority` | 3/3 |
+
+`P01 gpu-particle-a4` is the sole gate that cannot run here: it requires
+`AURA3D_REFERENCE_HARDWARE_ATTESTATION` from the native macOS workflow and is already closed
+by native run `34045615840`.
+
+**Head-to-head re-earned on the current tree.** Run `34405702612` passed with `pass: true`,
+commit `04619322`, 29 packages all at `3.0.1`, 29 tarballs, 15 workloads. The remaining unit
+failure is structural, not a defect: this receipt binds to `HEAD`, and every later commit
+(including the commit that records this note) invalidates it. It must therefore be the last
+producer run before the aggregate, after the final source commit.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
