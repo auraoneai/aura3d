@@ -245,6 +245,38 @@ satisfied by sequencing. The device-independent `gpu-particle-a4` tests are incl
 its 60-second Apple Metal acceptance test is P01, already closed by native run `34045615840`
 and unable to pass on Linux. Dispatched as run `34414608666` pinned to `b8e002a1`.
 
+## Execution log — 2026-09-09 (K1 freshness fixed at its cause, in the aggregate itself)
+
+Two defects in the remote aggregate were found and fixed.
+
+**1. Missing build step.** The first remote aggregate failed in under three minutes with
+`Cannot find module .../node_modules/@aura3d/rendering/dist/index.js imported from
+tests/browser/shadow-family-b1.spec.ts`. Browser specs resolve `@aura3d/*` through built
+`dist` output, and `browser-matrix.yml` builds before testing while the new aggregate
+workflow did not. This was a consequence of my own earlier repair: deriving the B1
+spot-shadow opt-out set from the shader library added a package import to that spec. Added
+`pnpm build:raw` before the producers.
+
+**2. The K1 freshness window cannot be satisfied by pre-running producers.** My first attempt
+re-earned the K1 producers in a workflow step before `pnpm muse3jsparity:release`. That is
+insufficient, and the reason is structural: the K1 gates run **last** in the aggregate's stage
+list, and `template-lifecycle-tarball` alone packs 29 packages and runs 19 installed scaffold
+lifecycles ahead of them. Any evidence earned before the aggregate has aged far past 30
+minutes by the time K1 executes — the first full run measured those 19 artifacts at
+**226 minutes** old.
+
+The fix is in `tools/muse3jsparity-readiness/index.ts`, not in a workflow: the eight K1
+dependent producers (`shadow-family-b1`, `contact-shimmer-b1b2`, `clustered-lighting-b5`,
+`d4-flipbook-beam`, `batch-consolidator-shootout`, and the three `muse3jsparity-301-*`
+producers) are now explicit stages scheduled immediately before the K1 gates. This satisfies
+the 30-minute rule by execution order, which is what the rule asks for, rather than relaxing
+the threshold or pre-seeding stale artifacts. The tool's existing capture-order validation
+still rejects a baseline that runs after a capture, and the workflow step was removed so
+ordering has one owner. Readiness, lineage and requirements regressions pass **95/95** and
+`pnpm typecheck:raw` is clean.
+
+Dispatched as run `34417699250` pinned to `08c0e967`.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
