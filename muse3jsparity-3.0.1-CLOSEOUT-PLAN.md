@@ -67,6 +67,48 @@ Four further defects were found and fixed at root cause:
 | K1 freshness: `engine-perf-301.json` and `root-governor-301.json` **missing entirely** | Two required 3.0.1 producers had never been generated | Ran both producers (7/7) plus the visual matrix (8/8); K1 then passed 5/5 |
 | H2H `asset-hashes-current: 6 locked assets` | The locked `morph-expression` parity fixture lived under the gitignored `fixtures/` tree, so CI had no file. Same class as the WOW `Invalid GLB magic` defect | Committed the fixture and its manifest siblings. Audited all locked benchmark assets: 6 of 6 now present on the remote |
 
+## Execution log — 2026-09-09 (Step 1 routes shard green; Step 4 review manifest built)
+
+**Step 1 partially closed.** The `routes` browser shard now PASSES, which is the shard that
+previously failed on the three WOW routes with `Invalid GLB magic`. That confirms the LFS
+fixture publication fixed a real CI-only defect. `gallery` and `route-primary` are still
+executing on run `34394359966`.
+
+**A further asset defect found and fixed.** `crowd-instancing-adoption-301` aura-clash
+failed with `Aura Clash root production mount failed:` and an empty reason. The empty
+message was the tell: the guard reports renderer warnings, and there were none. Direct
+instrumentation showed a single `HTTP 404` for
+`/aura-assets/auraClashSpectatorCard.a5b562b8.glb`. The file exists and is tracked under
+`apps/aura-clash-showcase/public/aura-assets/`, but the dev server resolves `/aura-assets/`
+from the repository root, where the two sibling Clash rigs are mirrored and the spectator
+card was not. Mirroring it (bytes verified: sha256 prefix `a5b562b8` matches the
+content-addressed filename) makes the route mount and the case passes.
+
+**Step 4 machine work is now complete up to the human boundary.** The three L02 artifacts
+were missing entirely. Working the real generator chain rather than hand-authoring:
+
+1. Ran the two missing gallery producers, `smart-city-composition-301` (8/8) and
+   `crowd-instancing-adoption-301`, which emit 6 of the required captures.
+2. Generated the four `muse301-gallery` producer receipts via
+   `muse301-gallery.mjs receipt` over their artifact directories.
+3. Built `release-artifacts/3.0.1-final-visual-review-input.json` (all six required scopes:
+   flagship-routes, showcase-games, aura-clash, night-adoption, crowd-adoption,
+   selected-threejs-comparison).
+4. Built `release-artifacts/3.0.1-final-visual-review-index.json`. This step is the real
+   check: it rejects any artifact that is not uniquely bound to a producer receipt with
+   `exitCode: 0` on the current source identity. It passed for all six scopes.
+5. Built `release-artifacts/3.0.1-final-visual-review-manifest.json` — 25 artifacts, schema
+   `aura3d.final-visual-review-manifest/2.0`, bound to source commit `f78eeec8`, with
+   `status: independent-human-approval-pending` and the explicit boundary "this producer
+   cannot approve them".
+
+**The remaining L02 obligations are owner actions, not agent actions.** Verified by reading
+the tooling: `l02-producer.ts` requires a `humanApproval` artifact input, and
+`verify-public-release.mjs` is strictly read-only post-publish verification (it fetches
+registry metadata and compares tarball bytes to the packed candidates). Publication itself
+writes 29 packages to the public npm registry and needs credentials; that is irreversible
+and outside the autonomous perimeter.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
