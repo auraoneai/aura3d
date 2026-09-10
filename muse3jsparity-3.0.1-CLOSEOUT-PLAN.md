@@ -723,6 +723,34 @@ fixture decoded first, and my edit inserted the preload into `waitForWarning` as
 does not have `colorSlot` in scope. That produced `ReferenceError: colorSlot is not defined`
 and 9 failures. Removed the stray insertion; the full spec then passed 13/13.
 
+## Execution log — 2026-09-10 (j2 fixed; j1 was my own orphaned process)
+
+**`j2` fixed — real capability gap in the harness.** `executeWebGPUBloom` composites
+unconditionally into an `rgba16f` target (bloom adds to scene radiance before tone mapping, so
+its composite is floating point by design), but the harness read every stage with
+`readPixelsAsync`, which supports only `rgba8` and throws
+`NATIVE_READBACK_FORMAT_UNSUPPORTED`. The device already exposes `readFloatPixelsAsync` with
+correct `rgba16f`/`rgba32f` decoding, so the harness now selects on the target's real format and
+scales float samples to bytes for the shared `analyze` metrics. `webgpu-post-j2.spec.ts` passes
+**3/3**, and gate `j2` produces a receipt with `valid: true` and zero errors.
+
+**`j1` was not a product defect — it was my own orphaned process.** The governor hold reported
+`wall-clock fps 11.54 < 55`. The rung data contradicted a GPU-bound explanation: fps *fell* as
+work shrank (16,384 instances -> 20.23 fps, but 1,638 instances -> 13.64 fps), which is
+impossible for a GPU limit. Checking machine state found load average 5.21 with a Python process
+at 99.4% CPU that had been running **4h58m**: PID 4767, my own `glob.glob('node_modules/**')`
+probe from an earlier turn, still recursively scanning. It had been stealing CPU from every
+benchmark measured since. After killing it, `game-performance-governor-hold.spec.ts` passes and
+gate `j1` produces a receipt with `valid: true` and zero errors.
+
+That orphan also means any timing-sensitive measurement taken while it ran is suspect. The two
+hardware-bound boundaries already identified separately (P01 native Apple Metal particles, and
+the `a4`/`p01` acceptance schemas requiring a Metal adapter) are unaffected, because those fail
+on adapter identity and attestation rather than on throughput.
+
+**Lesson applied:** long-running probes must be bounded. The recursive-glob probe was replaced
+with a direct path lookup at the time, but the process was never reaped.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
