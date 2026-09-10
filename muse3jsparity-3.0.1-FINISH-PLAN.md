@@ -256,6 +256,63 @@ non-hypothetical reason:**
 `archive` declares no tests and no typed contract, so it still needs an explicit
 ledger decision rather than a fabricated receipt.
 
+## Execution log — 2026-09-10 (L01 earned; source audit passed; Q02's real shape measured)
+
+**L01 PASSES on remote Linux.** Run `34535768991`, exact commit `87c733e1`:
+29 packages, 19 scaffolds, `lifecycleAssertions: 149`, receipt `valid: true` with
+zero errors. Three defects had to be fixed to get there, each a real one:
+
+1. **The two source-identity implementations had drifted.** The release pipeline has
+   a TypeScript owner (readiness, receipt validation) and a JavaScript copy
+   (`tools/release/source-identity.mjs`, package acceptance). The `.mjs` copy lacked
+   the plan-document and `tests/tooling-calibration/` exclusions, so L01 computed a
+   different fingerprint at build time than at validation time — measured as build
+   `17e16384` versus receipt `9fd4169b` **on the same commit** — and failed with
+   `package acceptance differs from canonical validation`. Realigned, plus a
+   regression test that compares both implementations over 21 paths.
+2. **The L01 workflow did not exist.** `package-acceptance.mjs` requires a remote
+   Linux worker with a provider-issued identity, so this gate cannot be earned on a
+   developer machine by design; there was no dispatchable producer. Added
+   `.github/workflows/muse301-l01.yml`, pinned to an exact commit with a clean-tree check.
+3. **My own regression test broke the remote build.** It imported the `.mjs` module,
+   which has no declaration file, so `tsc -p tsconfig.build.json` failed under
+   `noImplicitAny` and `pnpm build:raw` died. Annotated.
+
+**The Q02 source audit now passes: `source-audit-passed`, 0 unresolved of 1,167
+findings, 0 hard errors.** Three separate causes, each fixed at its own level:
+
+- **5 hard errors were a misclassification.** `raw-model-url` was error-severity for
+  any non-doc file, which flagged `apps/aura-clash-showcase/scripts/register-assets.mjs`
+  — a Node CLI script whose entire job is feeding source GLBs into `aura3d assets add`.
+  That is the sanctioned ingestion path, and 23 scripts use it. Since error-severity
+  findings can never be dispositioned by design, the audit could not pass while the
+  pipeline's front door looked like a bypass. Node build scripts are now review;
+  browser-facing routes with the same literal remain errors.
+- **198 dispositions cited evidence whose bytes changed** when their producers were
+  re-run during this work. Rebound to current bytes, with no change to any reasoning.
+- **462 findings had never been reviewed.** Each was verified against its actual
+  source line before writing a disposition: **zero** `raw-model-url` findings are
+  runtime bypasses, and every `hero-or-dom-role` finding is set dressing, an overlay
+  surface, or a multi-line expression whose flagged token is not the primary subject.
+
+**Three of Q02's four proof families now pass.** Typed-asset acceptance: 0 failures.
+Route acceptance: 0 failures, after regenerating two stale producers. Source audit:
+passed. New `tools/release/q02-producer.ts` earns all four families in one receipt.
+
+**The fourth family is the honest remaining blocker, and it is large.** The
+final-claims contract requires **every nonempty line of 28 controlled documents** to
+be explicitly classified: measured **8,032 nonempty lines, 520 structural, 7,512
+claim lines**, plus **130 historical `2.0.4`/`3.0.0` references** each needing a
+written reason. Every claim must additionally bind to a validated receipt for its
+requirement leaves and assert an exact value from that receipt's artifacts. The
+retained input is stale (19 documents against 28 expected) and its 8 claims carry
+empty `receipts` and `assertions` arrays, which the validator correctly rejects.
+This is authored review work, not a tooling defect.
+
+**One contention artifact worth recording:** `showcase-gameplay-proof` skyline
+landing failed at a 15 s poll under load average 12.4, then passed standalone in
+43 s. Timing-sensitive under parallel load, not a defect.
+
 ## Honest estimate
 
 T1-T5 is a few hours of engineering. T6-T13 is one uninterrupted collection run;
