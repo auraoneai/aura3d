@@ -82,10 +82,35 @@ async function renderVariant(id: C1VariantId): Promise<C1Capture> {
   const originalShaderSource=WebGL2RenderingContext.prototype.shaderSource;
   if(colorSlot)WebGL2RenderingContext.prototype.shaderSource=function(this:WebGL2RenderingContext,shader:WebGLShader,source:string){
     if(source.includes("out vec4 outColor;") && source.includes(`uniform sampler2D u_${colorSlot}Texture;`)){
-      const expression=colorSlot==="sheenRoughness"?`vec3(texture(u_${colorSlot}Texture,vec2(16.5/32.0)).a)`:`texture(u_${colorSlot}Texture,vec2(16.5/32.0)).rgb`;
+      /*
+       * Substitute the value the renderer actually reads, and route it through the same
+       * output encode the surface uses so the readback is comparable.
+       *
+       * Two faults made this oracle structurally unable to pass:
+       *
+       *  1. Wrong channel. The shader consumes one specific channel per slot — clearcoat
+       *     `.r`, clearcoatRoughness `.g`, sheenColor `.rgb`, sheenRoughness `.a`,
+       *     iridescence `.r`, iridescenceThickness `.g`, anisotropy `.rgb`. Emitting `.rgb`
+       *     for scalar slots compared channels the renderer never reads.
+       *  2. Un-encoded expectation. The previous override assigned after
+       *     `a3dTexturedPbrEncodeOutput`, so the written value skipped the encode while the
+       *     expectation was raw texel bytes. Calibration on this target measured
+       *     0.25 -> 152, 0.50 -> 197, 0.75 -> 216, i.e. ACES filmic plus sRGB rather than a
+       *     plain encode, so no raw-byte expectation could ever match.
+       *
+       * Passing the sampled value through `a3dTexturedPbrEncodeOutput` keeps the assertion a
+       * real statement about the uploaded texel while making both sides share one transform,
+       * instead of hard-coding a fitted tone curve into the expectation.
+       */
+      const SLOT_CHANNEL: Readonly<Record<string,string>> = { clearcoat:"r", clearcoatRoughness:"g",
+        clearcoatNormal:"rgb", sheenColor:"rgb", sheenRoughness:"a", iridescence:"r",
+        iridescenceThickness:"g", anisotropy:"rgb" };
+      const channel=SLOT_CHANNEL[colorSlot] ?? "rgb";
+      const sample=`texture(u_${colorSlot}Texture,vec2(16.5/32.0)).${channel}`;
+      const expression=channel==="rgb"?sample:`vec3(${sample})`;
       const assignment="outColor = vec4(a3dTexturedPbrEncodeOutput(fogged), alpha);";
       if(!source.includes(assignment))throw new Error("Root color oracle did not locate actual textured output");
-      source=source.replace(assignment,`${assignment}\nif(u_baseColor.a >= 0.0) { outColor=vec4(${expression},1.0); }`);shaderSubstitutions++;
+      source=source.replace(assignment,`if(u_baseColor.a >= 0.0) { outColor=vec4(a3dTexturedPbrEncodeOutput(${expression}),1.0); } else { ${assignment} }`);shaderSubstitutions++;
     }
     originalShaderSource.call(this,shader,source);
   };
@@ -122,8 +147,18 @@ async function renderVariant(id: C1VariantId): Promise<C1Capture> {
       renderer: String(gl.getParameter(gl.RENDERER)),
       ...(colorSlot?{colorOracle:(()=>{
         const texel=[24+((16*7+16*3)%220),20+((16*3+16*11)%230),32+((16*13+16*5)%208),30+((16*5+16*17)%220)];
-        const srgb=(v:number)=>{const c=v/255;return Math.round(255*(c<=.04045?c/12.92:((c+.055)/1.055)**2.4));};
-        const expected=colorSlot==="sheenColor"?texel.slice(0,3).map(srgb):colorSlot==="sheenRoughness"?[texel[3]!,texel[3]!,texel[3]!]:texel.slice(0,3);
+        // Sampler decode: the engine uploads sheenColor as srgb and every other extension
+        // slot as linear, so only sheenColor is linearised on sample.
+        const decodeSrgb=(v:number)=>{const c=v/255;return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;};
+        const encodeSrgb=(c:number)=>c<=.0031308?12.92*c:1.055*(c**(1/2.4))-.055;
+        // Mirror a3dTexturedPbrEncodeOutput: ACES filmic, then linear->sRGB.
+        const encodeOutput=(c:number)=>{const f=Math.min(1,Math.max(0,(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14)));return Math.round(255*encodeSrgb(f));};
+        const channelIndex: Readonly<Record<string,number>> = { clearcoat:0, clearcoatRoughness:1,
+          sheenRoughness:3, iridescence:0, iridescenceThickness:1 };
+        const sampled=(v:number)=>colorSlot==="sheenColor"?decodeSrgb(v):v/255;
+        const scalar=channelIndex[colorSlot];
+        const channels=scalar===undefined?texel.slice(0,3):[texel[scalar]!,texel[scalar]!,texel[scalar]!];
+        const expected=channels.map(v=>encodeOutput(sampled(v)));
         let matchingPixels=0;for(let i=0;i<pixels.length;i+=4)if(expected.every((v,c)=>Math.abs(pixels[i+c]!-v)<=1))matchingPixels++;
         return {slot:colorSlot,texel,expected,matchingPixels,shaderSubstitutions};
       })()}:{}),

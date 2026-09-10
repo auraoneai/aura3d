@@ -621,6 +621,42 @@ as if it were a contract, which is not evidence.
 I reverted my in-progress expectation-model edit rather than leave a partially correct
 transform in the tree. The assertion remains failing and unweakened.
 
+## Execution log — 2026-09-10 (C1 oracle fully explained: three independent defects)
+
+The C1 colour oracle is now explained end to end by measurement, with the final gap closed to
+one count. Three separate defects compound in it, and none is a renderer fault.
+
+**1. Wrong channel per slot (fixed).** The shader consumes one specific channel per extension
+slot — `clearcoat` `.r`, `clearcoatRoughness` `.g`, `sheenColor` `.rgb`, `sheenRoughness` `.a`,
+`iridescence` `.r`, `iridescenceThickness` `.g`, `anisotropy` `.rgb` — while the harness emitted
+`.rgb` for every slot except `sheenRoughness` and asserted an RGB triple for all of them. The
+substitution and the expectation now both use the renderer's channel.
+
+**2. Draw target encodes on write (measured, not inferred).** Writing known constants on the
+patched program and reading back the uniform 66,571-pixel subject region:
+`vec3(0.0)` -> `0`, `vec3(0.25)` -> `152`, `vec3(0.50)` -> `197`, `vec3(0.75)` -> `216`, and
+texture alpha `162/255` -> `209`. Substituting `vec4(1,0,0,1)` proved the branch executes
+(pure red across the same 66,571 px). The interior is exactly uniform, so this is a colour
+transform on write, not multisample resolve — an earlier resolve-blending hypothesis of mine
+was wrong and is discarded.
+
+**3. Wrong sampled texel (root cause of the residual gap).** With the encode bypassed, writing
+the raw sampled `.r` read back **215**. sRGB-encoding the assumed texel `184` gives `221`, a
+6-count miss. Solving backwards, `215` implies a written byte of ~`172` — and scanning the
+fixture shows `r == 172` at texel **(16,12)**, not the `(16,16)` the oracle's formula assumes
+(row 16 runs `...170, 177, 184, 191...`, so neighbouring rows are distinguishable). Encoding
+`172` gives **214** against the observed **215**: a one-count match, which the existing +/-1
+tolerance already accommodates.
+
+So the oracle's `texel` formula does not describe the texel that UV `16.5/32` actually samples.
+The correct fix is to derive the expectation from the same coordinate the sampler resolves
+(accounting for V orientation) rather than from an independent arithmetic formula, and to keep
+the strict +/-1 tolerance.
+
+The channel fix is retained in the tree. The tolerance and the 100-pixel floor were **not**
+touched, and the fitted tone-curve approach was rejected earlier for the same reason: a fitted
+constant is not a contract.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
