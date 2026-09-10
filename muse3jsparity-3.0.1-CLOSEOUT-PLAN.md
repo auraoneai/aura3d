@@ -657,6 +657,41 @@ The channel fix is retained in the tree. The tolerance and the 100-pixel floor w
 touched, and the fitted tone-curve approach was rejected earlier for the same reason: a fitted
 constant is not a contract.
 
+## Execution log — 2026-09-10 (C1: sampler proven correct; oracle target proven wrong)
+
+Replaced inference with a direct measurement and, in doing so, disproved two of my own earlier
+conclusions.
+
+**The sampler and the oracle's texel formula are both correct.** Built an isolated WebGL2
+context that uploads the same PNG as a linear RGBA texture with NEAREST filtering and reads UV
+`16.5/32` through a trivial passthrough shader — no tone mapping, no postprocess, no sRGB draw
+buffer. It returns exactly **`[184, 244, 112, 162]`**, which is precisely the value the oracle's
+arithmetic formula produces, and the fixture scan shows that value occurs at exactly one texel,
+`(16,16)`. So there is no UV or V-orientation bug.
+
+**Two earlier inferences of mine were wrong and are withdrawn:**
+
+- "The sampler reads texel (16,12)." That came from back-solving readback `215` through an
+  assumed sRGB encode. Writing a different single channel then implied row **22** instead
+  (readback `230` -> byte `202`, which occurs at `(16,22)`). Two writes implying two different
+  rows means the back-solve was invalid, not that the row changed.
+- "The residual gap is a wrong sampled texel." It is not; the sampler is exact.
+
+**What is actually proven about the harness canvas.** Writing `vec4(1,0,0,1)` reads back
+`[250,16,20]`: green and blue come back non-zero from a zero write, so the surface applies a
+transform with **channel crosstalk**, not an invertible per-channel curve. `vec4(0,0,0,1)`
+reads `[0,0,0]`, and the greyscale ramp measured earlier (`0.25 -> 152`, `0.50 -> 197`,
+`0.75 -> 216`) is consistent with ACES tone mapping plus encode rather than a plain OETF.
+
+**Conclusion.** An exact-byte assertion against this canvas is not satisfiable by any
+expectation model, because the transform is not per-channel invertible. The oracle must sample
+the texel from a linear, untransformed target — the isolated-context technique above is a
+working proof that such a probe is straightforward — rather than reading the tone-mapped,
+postprocessed presentation surface.
+
+The per-slot channel fix from the previous entry is retained and correct. The +/-1 tolerance and
+100-pixel floor remain untouched, and no fitted constant was introduced.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
