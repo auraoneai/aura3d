@@ -547,6 +547,40 @@ correct by the 12 other passing assertions in the same spec.
 Recorded as open work rather than adjusted: the assertion is a real claim about numerical
 channel vectors and must not be weakened to obtain a receipt.
 
+## Execution log — 2026-09-10 (C1 oracle root cause proven: sRGB-encoded draw target)
+
+Continued instrumenting until the mechanism was proven rather than inferred. Each step was a
+direct measurement on the program the harness patches:
+
+1. **The guard is not the cause.** Rewriting `if(u_baseColor.a >= 0.0) { outColor=` to an
+   unconditional `{ outColor=` left `matchingPixels: 0`.
+2. **The appended statement does execute and does win.** Substituting a constant
+   `vec4(1.0, 0.0, 1.0, 1.0)` produced `[247,40,228]` across exactly **66,571 px** — the same
+   pixel count as the subject region — so the override reaches the framebuffer.
+3. **Nothing composites over it.** Substituting `vec4(0.0,0.0,0.0,1.0)` read back as exactly
+   `[0,0,0]`, ruling out a later pass or alpha blending.
+4. **The draw target sRGB-encodes on write.** Emitting the texture's **alpha** channel — which
+   no colour transform touches — wrote `162/255` and read back **209**. sRGB OETF of `162/255`
+   is exactly **209**. The same transform explains the RGB case.
+
+So the harness writes the correct raw texel, and the framebuffer re-encodes it before
+readback. `matchingPixels` can never exceed 0 while the oracle compares readback bytes against
+un-encoded texel bytes.
+
+**The oracle is also internally inconsistent, which corroborates this.** Line 126 applies its
+`srgb()` helper only to `sheenColor`. That helper is a linearization, and its output for this
+fixture is `[122,231,41]` — precisely the `sheenColor` expectation. Meanwhile the engine
+uploads `sheenColor` as `colorSpace: "srgb"` and every other extension slot as `"linear"`
+(`packages/engine/src/agent-api/index.ts:13969`), and `WebGL2Device.ts:4067` maps that to
+`SRGB8_ALPHA8` vs `RGBA` correctly. The renderer's upload path is right; the oracle's
+expectation model is not.
+
+**Correct fix (open work):** the expectation must model the full path — sampler decode for
+sRGB-uploaded slots, identity for linear slots, then the draw target's sRGB encode on write —
+or the harness must read from a linear target. This is a real evidence defect in
+`efe051c0` that has never passed, and it is deliberately **not** being worked around by
+loosening the tolerance or lowering the 100-pixel floor.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
