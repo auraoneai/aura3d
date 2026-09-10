@@ -458,6 +458,7 @@ ${aliasEntries}
  * installed through its own CLI for its tests and Chromium to agree on a revision.
  */
 function installScaffoldChromium(targetDir: string): void {
+  const label = targetDir.split("/").at(-1);
   const attempts = 3;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
@@ -466,8 +467,33 @@ function installScaffoldChromium(targetDir: string): void {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const contended = /__dirlock|ETIMEDOUT|acquire lock/i.test(message);
-      if (!contended || attempt === attempts) throw error;
-      console.log(`[template ${targetDir.split("/").at(-1)}] chromium install blocked by the shared Playwright lock; retry ${attempt + 1}/${attempts}`);
+      if (!contended) throw error;
+      if (attempt < attempts) {
+        console.log(`[template ${label}] chromium install blocked by the shared Playwright lock; retry ${attempt + 1}/${attempts}`);
+        continue;
+      }
+      // The shared user cache is global to the machine, so an unrelated project can
+      // hold `__dirlock` indefinitely (observed: a foreign `playwright install` held
+      // it for over two days with no download progress). That is not evidence about
+      // this repository, and waiting cannot clear it. Install into a repository-local
+      // browser root instead: the lifecycle still performs a real install through the
+      // scaffold's own CLI at its own resolved revision, it simply stops sharing a
+      // lock with software this release does not control.
+      const browsersPath = resolve("tests/reports/create-aura3d-scaffold-smoke/.playwright-browsers");
+      mkdirSync(browsersPath, { recursive: true });
+      // Playwright leaves `__dirlock` behind when an install is interrupted, and it
+      // holds no handle, so a killed run would otherwise poison every later attempt
+      // in this repository-owned root. Clearing a lock we own is safe; the shared
+      // user cache is never touched, because a foreign lock may be genuinely active.
+      const localLock = resolve(browsersPath, "__dirlock");
+      if (existsSync(localLock)) {
+        rmSync(localLock, { recursive: true, force: true });
+        console.log(`[template ${label}] cleared an abandoned lock in the repository browser root`);
+      }
+      console.log(`[template ${label}] shared Playwright lock never cleared; installing into ${browsersPath}`);
+      runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir,
+        { timeoutMs: 600_000, env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: browsersPath } });
+      return;
     }
   }
 }

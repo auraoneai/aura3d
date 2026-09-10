@@ -24,7 +24,7 @@ export function runTemplateCommand(command,args,cwd,options={}) {
  const record={stage,command:[command,...args],cwd,startedAt:new Date().toISOString(),timeoutMs,log,status:'running'};
  writeFileSync(metadata,JSON.stringify(record,null,2)+'\n');console.log(`[template ${cwd.split('/').at(-1)}] ${stage} started; log=${log}`);
  const fd=openSync(log,'w');let result;
- try{result=spawnSync(command,args,{cwd,env:process.env,stdio:['ignore',fd,fd],timeout:timeoutMs,killSignal:'SIGKILL',detached:process.platform!=='win32'});}finally{closeSync(fd);}
+ try{result=spawnSync(command,args,{cwd,env:options.env??process.env,stdio:['ignore',fd,fd],timeout:timeoutMs,killSignal:'SIGKILL',detached:process.platform!=='win32'});}finally{closeSync(fd);}
  if(result.pid&&process.platform!=='win32'){try{process.kill(-result.pid,'SIGKILL');}catch{}}
  const completed={...record,status:result.status===0&&!result.error?'passed':'failed',endedAt:new Date().toISOString(),exitCode:result.status,signal:result.signal,error:result.error?.message};
  writeFileSync(metadata,JSON.stringify(completed,null,2)+'\n');console.log(`[template ${cwd.split('/').at(-1)}] ${stage} ${completed.status}; exit=${result.status}; signal=${result.signal??'none'}`);
