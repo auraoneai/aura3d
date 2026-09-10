@@ -13,7 +13,7 @@
  *
  * Usage: work-order-producer.ts <gate> <tests/reports/... output dir>
  */
-import { mkdirSync, readFileSync, writeFileSync, closeSync, openSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, closeSync, openSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -22,9 +22,34 @@ import { artifact, newRunId, sameSource, sourceIdentity, validateReceipt, writeI
 import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
 
 const root = process.cwd();
-const gate = process.argv[2];
-const outputArg = process.argv[3];
-if (!gate || !outputArg) throw new Error('Usage: work-order-producer.ts <gate> <tests/reports/dir>');
+const argv = process.argv.slice(2);
+/*
+ * Shared-evidence pool mode.
+ *
+ * Running this producer once per gate re-executes the same specs many times over:
+ * the 85 work-order gates name only 145 distinct test files (63 Playwright specs),
+ * yet gate-by-gate execution issues 465 browser spec invocations, and
+ * playwright.config.ts pins `workers: 1`. `--pool <dir>` reuses a hashed report
+ * that a prior run already retained for a file, and `--mint-only` refuses to
+ * execute anything, so a driver can run each file once and then mint every
+ * receipt from that one pool.
+ *
+ * This does not weaken the receipt contract. `validateReceipt` requires every
+ * proof to name a report listed in `receipt.artifacts` with a matching SHA-256
+ * and to bind to a uniquely-passing assertion inside it; it does not require the
+ * report to be exclusive to one gate. The same assertions prove the same
+ * obligations against the same bytes.
+ */
+const poolFlag = argv.indexOf('--pool');
+const pool = poolFlag >= 0 ? argv[poolFlag + 1] : undefined;
+const mintOnly = argv.includes('--mint-only');
+const positional = argv.filter((value, index) =>
+  !value.startsWith('--') && index !== poolFlag + 1);
+const gate = positional[0];
+const outputArg = positional[1];
+if (!gate || !outputArg) throw new Error('Usage: work-order-producer.ts <gate> <tests/reports/dir> [--pool <dir>] [--mint-only]');
+if (mintOnly && !pool) throw new Error('--mint-only requires --pool');
+if (pool && (!pool.startsWith('tests/reports/') || pool.includes('..'))) throw new Error('Pool must stay under tests/reports');
 const output = relative(root, resolve(root, outputArg));
 if (output.startsWith('..') || !output.startsWith('tests/reports/')) throw new Error('Output must stay under tests/reports');
 mkdirSync(resolve(root, output), { recursive: true });
@@ -84,15 +109,60 @@ const K1_DEPENDENCY_SPECS = ['tests/browser/shadow-family-b1.spec.ts',
 const reports: Artifact[] = [];
 const logs: Artifact[] = [];
 const reportPaths: string[] = [];
-if (vitestFiles.length) {
+/** A pooled report already covers `file` when it retains a passing assertion for it. */
+const pooledReport = (file: string): string | undefined => {
+  if (!pool) return undefined;
+  for (const candidate of poolReports()) {
+    try {
+      const report = JSON.parse(readFileSync(resolve(root, candidate), 'utf8'));
+      if (reportCovers(report, file)) return candidate;
+    } catch { continue; }
+  }
+  return undefined;
+};
+const poolReports = (): readonly string[] => {
+  const dir = resolve(root, pool!);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(name => name.endsWith('.json')).sort()
+    .map(name => pathInRoot(resolve(dir, name)));
+};
+/** True when `report` holds at least one passing assertion for `file`. */
+function reportCovers(report: any, file: string): boolean {
+  for (const suite of report.testResults ?? []) {
+    const name = String(suite.name ?? '').replace(/\\/g, '/');
+    if ((name === file || name.endsWith(`/${file}`))
+      && (suite.assertionResults ?? []).some((a: any) => a.status === 'passed')) return true;
+  }
+  const visit = (suites: any[]): boolean => (suites ?? []).some(suite =>
+    (suite.specs ?? []).some((spec: any) => {
+      const specFile = String(spec.file ?? suite.file ?? '').replace(/\\/g, '/');
+      if (specFile !== file && !file.endsWith(`/${specFile}`) && !specFile.endsWith(`/${file}`)) return false;
+      return (spec.tests ?? []).some((t: any) => (t.results ?? []).some((r: any) => r.status === 'passed'));
+    }) || visit(suite.suites ?? []));
+  return visit(report.suites ?? []);
+}
+const pooled = new Set<string>();
+for (const file of [...vitestFiles, ...otherFiles]) {
+  const candidate = pooledReport(file);
+  if (candidate) {
+    pooled.add(file);
+    if (!reportPaths.includes(candidate)) { reports.push(reference(candidate)); reportPaths.push(candidate); }
+  }
+}
+const remainingVitest = vitestFiles.filter(file => !pooled.has(file));
+const remainingBrowser = otherFiles.filter(file => !pooled.has(file));
+if (mintOnly && (remainingVitest.length || remainingBrowser.length)) {
+  throw new Error(`${gate}: --mint-only but the pool lacks ${[...remainingVitest, ...remainingBrowser].join(', ')}`);
+}
+if (remainingVitest.length) {
   const reportPath = pathInRoot(resolve(root, output, 'vitest.json'));
-  const executed = run(['pnpm', 'exec', 'vitest', 'run', ...vitestFiles, '--reporter=json',
+  const executed = run(['pnpm', 'exec', 'vitest', 'run', ...remainingVitest, '--reporter=json',
     `--outputFile=${reportPath}`], 'vitest');
   logs.push(executed.log);
   if (executed.code !== 0) throw new Error(`${gate}: named unit/integration suite failed`);
   reports.push(reference(reportPath)); reportPaths.push(reportPath);
 }
-if (otherFiles.some(file => K1_FRESHNESS_SPECS.includes(file))) {
+if (remainingBrowser.some(file => K1_FRESHNESS_SPECS.includes(file))) {
   // Refresh only; this run's verdict is not the gate's verdict. gpu-particle-a4 is included
   // because it owns three K1 artifacts, and its own 60-second Apple Metal acceptance test is
   // P01 evidence proven by its native receipt, not by this machine.
@@ -100,7 +170,7 @@ if (otherFiles.some(file => K1_FRESHNESS_SPECS.includes(file))) {
     'tests/browser/gpu-particle-a4.spec.ts', '--reporter=line'], 'k1-dependencies');
   logs.push(refresh.log);
 }
-if (otherFiles.length) {
+if (remainingBrowser.length) {
   const reportPath = pathInRoot(resolve(root, output, 'browser.json'));
   // playwright.config.ts pins the json reporter's outputFile, so the path must be
   // overridden per run. PLAYWRIGHT_JSON_OUTPUT_NAME is the same override the readiness
@@ -116,9 +186,9 @@ if (otherFiles.length) {
    * gate would be blocked by a device boundary rather than by its own evidence. Its sibling
    * tests in the same file still run and still prove their obligations.
    */
-  const grep = otherFiles.includes('tests/browser/gpu-particle-a4.spec.ts')
+  const grep = remainingBrowser.includes('tests/browser/gpu-particle-a4.spec.ts')
     ? ['--grep-invert', 'native Apple Metal thresholds'] : [];
-  const executed = run(['pnpm', 'exec', 'playwright', 'test', ...otherFiles, ...grep,
+  const executed = run(['pnpm', 'exec', 'playwright', 'test', ...remainingBrowser, ...grep,
     '--reporter=line,json'], 'browser', { PLAYWRIGHT_JSON_OUTPUT_NAME: resolve(root, reportPath) });
   logs.push(executed.log);
   if (executed.code !== 0) throw new Error(`${gate}: named browser suite failed`);
