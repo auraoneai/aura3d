@@ -376,6 +376,40 @@ KeepAlive, so launchd relaunched the aggregate the moment it exited, and overlap
 share `tests/reports`. Added a single-run stamp guard so a relaunch is a no-op. The aggregate
 correctly reported blocked rather than passing on damaged evidence.
 
+## Execution log — 2026-09-10 (work-order receipt producer built and proven)
+
+**The 757 blocked obligations now have a working, general path to closure.** New
+`tools/release/work-order-producer.ts` earns a work-order gate receipt the way the ledger
+requires: it runs exactly the test files each obligation names, retains the hashed JSON
+report, and binds every obligation to a real passing assertion inside it.
+
+It is deliberately generic. Proofs are derived from each requirement's own declared `tests`
+entries, never from a hardcoded task-to-file table, so it cannot credit an obligation to a
+test the ledger does not name for it. Obligations carrying typed acceptance contracts are
+excluded rather than fabricated.
+
+**Proven end to end on gate `m3`:** the producer emitted a receipt that
+`validateReceipt` accepts with **`valid: true` and zero errors** — 4 tasks, 4 proofs,
+`exitCode: 0`, each proof naming a real passing assertion in the retained report.
+
+**Coverage measured across all 85 work-order gates:**
+
+| Category | Gates |
+| --- | --- |
+| Provable by ledger-named tests (this producer) | **81** |
+| Require typed acceptance contracts (dedicated producers) | 3 — `l01`, `l02`, `q02` |
+| Neither (declares no tests) | 1 — `archive` |
+
+`l01` already has a passing receipt from run `34302077484`. `l02` requires a `humanApproval`
+artifact as a declared producer input, so it cannot be machine-closed. `q02` needs its
+source-audit acceptance contract.
+
+**Known sequencing constraint, re-confirmed.** A verification run failed `R-unit` on
+`head-to-head-current-aggregate` because the receipt binds `HEAD` and the plan-document
+commit advanced it (`eb4b6f39` receipt vs `f445ccab` HEAD). The aggregate aborts at the
+baseline, so the manifest is never reached. The head-to-head receipt must therefore be the
+last producer run before any aggregate attempt, on the frozen commit.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
