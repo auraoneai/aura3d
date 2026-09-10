@@ -47,12 +47,12 @@ const vitestFiles = [...new Set(testTasks.flatMap(item => item.tests ?? []))]
 const otherFiles = [...new Set(testTasks.flatMap(item => item.tests ?? []))]
   .filter(file => !/^tests\/(unit|integration)\//.test(file)).sort();
 
-function run(command: string[], name: string): { code: number; log: Artifact } {
+function run(command: string[], name: string, env: NodeJS.ProcessEnv = {}): { code: number; log: Artifact } {
   const logPath = resolve(root, output, `${name}.log`);
   const fd = openSync(logPath, 'w');
   let result;
   try {
-    result = spawnSync(command[0]!, command.slice(1), { cwd: root, env: process.env,
+    result = spawnSync(command[0]!, command.slice(1), { cwd: root, env: { ...process.env, ...env },
       stdio: ['ignore', fd, fd], timeout: 3_600_000, killSignal: 'SIGKILL' });
   } finally { closeSync(fd); }
   return { code: result!.status ?? 1, log: reference(logPath) };
@@ -71,8 +71,12 @@ if (vitestFiles.length) {
 }
 if (otherFiles.length) {
   const reportPath = pathInRoot(resolve(root, output, 'browser.json'));
+  // playwright.config.ts pins the json reporter's outputFile, so the path must be
+  // overridden per run. PLAYWRIGHT_JSON_OUTPUT_NAME is the same override the readiness
+  // aggregate uses for its own browser gates; without it every gate would overwrite the
+  // shared tests/reports/browser.json and no per-gate report would exist to hash.
   const executed = run(['pnpm', 'exec', 'playwright', 'test', ...otherFiles,
-    '--reporter=line,json'], 'browser');
+    '--reporter=line,json'], 'browser', { PLAYWRIGHT_JSON_OUTPUT_NAME: resolve(root, reportPath) });
   logs.push(executed.log);
   if (executed.code !== 0) throw new Error(`${gate}: named browser suite failed`);
   reports.push(reference(reportPath)); reportPaths.push(reportPath);
