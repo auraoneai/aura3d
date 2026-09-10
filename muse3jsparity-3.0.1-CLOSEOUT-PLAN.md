@@ -305,6 +305,35 @@ its receipt to `HEAD`, so every commit invalidates it — including commits that
 plan document. The receipt must therefore be the final producer run before the aggregate, on
 frozen source. Re-earned at `53491ade` as run `34418848535`.
 
+## Execution log — 2026-09-10 (installed-scaffold SIGKILL root-caused; aggregate run discipline)
+
+**The `SIGKILL` failures were a misclassified timeout, not memory pressure.** This was my
+earlier misdiagnosis, corrected by reading the retained command metadata. Each template's
+package install passed, then a *second* "install" was started and killed at exactly 180
+seconds (`product-viewer`: started `00:18:24.337Z`, killed `00:21:24.342Z`). That second
+command is `playwright install chromium` — a browser **download**.
+
+`tools/agent-templates/command.mjs` classified stages with an install-first test, so any
+argv containing the token `install` got the 180 s package budget, including the Chromium
+fetch. The browser stage already allows 480 s. Fix: classify the Playwright CLI before the
+generic `install` check. **No timeout value was raised**; the download now simply uses the
+stage that was always intended for it. Verified: `playwright cli install chromium -> browser`,
+`npm install <tarballs> -> install`, `npm run build -> build`.
+
+This also explains why 63.5 GB of free memory did not help, and why the same 12 kills
+reproduced on both the hosted runner and this machine.
+
+**Operational rule learned the hard way: never commit while the aggregate is running.** The
+run that reached 14 gates reported `source changed during execution` on every gate after the
+baseline, even though the underlying suites passed (for example
+`browser_certified-hero-rigs` logged `6 passed (1.2m)` and still recorded `exit=1`). The
+cause was mine: the aggregate started at `9d79ee1e` and I committed the Playwright fix
+(`85019a77`) while it was mid-flight, so `sameSource` correctly rejected every later gate.
+The tool is right and the discipline is the fix — freeze the tree, then run.
+
+The r185 matrix file is already excluded from source identity (it is a producer output), so
+its regeneration is not the cause; it is committed here to keep the tree clean.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
