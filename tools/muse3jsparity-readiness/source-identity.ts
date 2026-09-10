@@ -24,6 +24,12 @@ export const isSourceInput = (path: string): boolean => !!path
   // replayed by administrative-lineage; including them here makes evidence invalidate
   // itself when a verified checkbox is marked complete.
   && path !== 'muse3jsparity-3.0.1-PRD.md'
+  // Plan/closeout records are administrative, exactly like the PRD completion
+  // markers above. Editing an execution log while a collection run is in flight
+  // otherwise changes product source identity and makes every receipt minted
+  // afterwards fail `sameSource` — observed as h2/i02 exit 1 during collection.
+  && path !== 'muse3jsparity-3.0.1-FINISH-PLAN.md'
+  && path !== 'muse3jsparity-3.0.1-CLOSEOUT-PLAN.md'
   // Generated from the exact release plan. Its own artifact hash is retained by
   // release receipts, so hashing it as product source would make the plan
   // invalidate itself when the manifest is regenerated.

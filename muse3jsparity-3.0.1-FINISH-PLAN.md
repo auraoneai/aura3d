@@ -120,14 +120,14 @@ Expected effect on the browser lane: **465 invocations to 63**.
 
 ## Task list
 
-- [ ] T1 Confirm current status of the 6 open spec failures on HEAD (running)
-- [ ] T2 Fix each confirmed failure at root cause
-- [ ] T3 Add `--pool` / `--mint-only` to the work-order producer
-- [ ] T4 Add `collect-work-orders.ts` driver with dependency-ordered minting
-- [ ] T5 Verify pooled minting on 3 already-valid gates; receipts must still validate
-- [ ] T6 Freeze the tree at the final source commit
-- [ ] T7 Run the Node suite pool once
-- [ ] T8 Run the browser spec pool once (63 specs)
+- [x] T1 Confirm current status of the 6 open spec failures on HEAD — 3 real failures; `scatter-50k` and `game-performance-governor-hold` already passed
+- [x] T2 Fix each confirmed failure at root cause — commit `379437dc`
+- [x] T3 Add `--pool` / `--mint-only` to the work-order producer — commit `e495a9aa`
+- [x] T4 Add `collect-work-orders.ts` driver with dependency-ordered minting — commit `e495a9aa`
+- [x] T5 Verify pooled minting — `m3`, `r0`, `t2` (node) and `b4`, `c1` (browser) all minted `valid: true` from a pool
+- [x] T6 Freeze the tree at the final source commit — `e495a9aa`
+- [~] T7 Run the Node suite pool once — running
+- [~] T8 Run the browser spec pool once (63 specs) — running
 - [ ] T9 Mint the 82 pool-provable gates
 - [ ] T10 Mint `l01` and `q02` from their acceptance producers
 - [ ] T11 Re-earn K1 dependencies, then mint `k1`, `v01`, `v02` inside 30 minutes
@@ -148,6 +148,55 @@ did: an item is checked only with a source-bound receipt naming the run, exact
 commit and artifact hashes. Failures are fixed at root cause. Thresholds, budgets
 and scope are not lowered to obtain a green result. No automated result
 substitutes for the required human review.
+
+## Execution log — 2026-09-10 (four gate defects fixed at root cause; collection tooling built)
+
+**All four open work-order defects are fixed, and three were real.** Each was
+diagnosed by measurement rather than inference, and none was worked around.
+
+1. **`native-outline-pixel` (gate `a3`) — two stacked defects.** The harness called
+   the native SSR pass without a projection matrix, which the device rejects by
+   design (`tests/unit/rendering/render-state-leaks.test.ts` asserts that throw).
+   Supplying the real matrix then exposed the actual defect the throw had been
+   hiding: **native bloom no longer matched its CPU byte kernel** — 100 changed
+   channels, max delta 23. Cause: commit `efe051c0` upgraded the native
+   `webgl2-bloom-blur` program to a separable Gaussian per the PRD's own native
+   bloom item, while `blurBloomPixels{Horizontal,Vertical}` stayed a uniform box
+   average. The CPU mirror now derives its taps from the same expressions the
+   shader uses (`sigma = max(radius/3, 0.5)`, `coefficient = 0.39894/sigma`,
+   truncated at 16 taps), shared through a new exported `bloomBlurWeights`. Spec
+   passes 1/1; all 1,053 rendering unit tests pass.
+2. **`root-effects-a3` (gate `a3`) — the fixture had drifted out from under the
+   claim.** The spec asserts that temporal passes are *withheld* on a deforming
+   subject, but the subject was `robotcand`, whose typed asset metadata reports
+   `skinCount: 0, jointCount: 0`. It is rigid, so TAA legitimately executed on it
+   (measured `changedFraction` 0.0519). Switched to `showcaseAnimatedRunnerHero`
+   (`skinCount: 1, jointCount: 136`), which is what "requires opaque rigid
+   noninstanced triangles" actually means. That surfaced a second defect: the
+   withholding warning is raised by the production bridge onto
+   `diagnostics.renderer.warnings`, but the harness only forwarded top-level
+   `diagnostics.warnings`. Spec passes 2/2.
+3. **`route-gamefeel-adoption` (gates `f2`, `n1`) — a publication-order defect, not
+   a slow renderer.** The test timed out after 300 s waiting for
+   `status === "paused" && totalHits > 0`. Instrumentation showed the hit had
+   already landed: `totalHits: 1`, `callout: "HIT"` — but `status: "loading"`. The
+   test driver was installed *before* the 15-frame performance warmup, so a test
+   could act while `performanceEvidenceReady` was still false; `pauseOnNextHit`
+   set `paused`, the proof published `loading`, and the paused early-return in
+   `tickFrame` meant no later frame republished it. Moving `installTestDriver()`
+   to after the performance window fixed it. All 4 tests pass in 23 s, down from a
+   5-minute timeout. No workload, budget or gameplay changed.
+4. **`scatter-50k` (gate `d2`) and `game-performance-governor-hold` (gate `j1`)
+   already passed** on current HEAD; their retained failures predated the
+   orphaned-CPU-hog cleanup.
+
+**The collection method is now the fix for the schedule, not more grinding.**
+Measured: 85 gates name 145 distinct test files (63 Playwright specs, 82 Node
+suites), but minting gate by gate issues **465 browser spec invocations** against
+`workers: 1`. `--pool` plus `collect-work-orders.ts` runs each distinct file once
+and mints from that pool, avoiding **372 of 465** invocations. Verified on both
+lanes: `m3`, `r0`, `t2` (node) and `b4`, `c1` (browser) all minted `valid: true`
+from a pool, through the same `validateReceipt` the aggregate uses.
 
 ## Honest estimate
 
