@@ -581,6 +581,46 @@ or the harness must read from a linear target. This is a real evidence defect in
 `efe051c0` that has never passed, and it is deliberately **not** being worked around by
 loosening the tolerance or lowering the 100-pixel floor.
 
+## Execution log — 2026-09-10 (C1 draw-target transform measured; oracle fix scoped)
+
+Calibrated the draw target directly instead of inferring it. Emitting known constants on the
+patched program and reading back the dominant subject colour (66,571 px each time):
+
+| shader writes | reads back |
+| --- | --- |
+| `vec3(0.25)` | 152 |
+| `vec3(0.50)` | 197 |
+| `vec3(0.75)` | 216 |
+| `vec3(0.0)` | 0 |
+| texture alpha `162/255` | 209 |
+
+This rules out several candidates and pins the rest:
+
+- **Not a plain sRGB encode.** OETF predicts 137/188/225; the readback is 152/197/216, and the
+  0.75 case reads *below* the prediction, so the curve compresses at the top.
+- **Not compositing or blending.** `vec3(0.0)` reads exactly 0.
+- **Best fit is ACES filmic tone mapping plus sRGB encode with a small exposure factor**
+  (`k ≈ 0.83` reproduces 153/198/217 against the observed 152/197/216). That is consistent
+  with `a3dTexturedPbrEncodeOutput` plus the postprocess chain that `qualityProfile:
+  "production"` enables, and with the 3-draws-per-pass count for a 3-object scene.
+
+**A second, independent oracle defect was also found.** The renderer reads one specific channel
+per extension slot — `clearcoat` `.r`, `clearcoatRoughness` `.g`, `sheenColor` `.rgb`,
+`sheenRoughness` `.a`, `iridescence` `.r`, `iridescenceThickness` `.g`, `anisotropy` `.rgb` —
+but the harness substitution emits `.rgb` for every slot except `sheenRoughness`, and the
+expectation asserts an RGB triple for all of them. So even with a correct transform model the
+non-`.rgb` slots would compare the wrong channels.
+
+**Scope of the correct fix (open work).** The oracle must (1) emit and expect the same channel
+the renderer actually reads per slot, and (2) avoid asserting on a tone-mapped, exposure-scaled
+target — either by rendering the probe to a linear offscreen target or by writing the value
+through a path the postprocess chain does not transform. Modelling the tone curve numerically
+inside the expectation was tried and rejected: it would encode a fitted constant (`k ≈ 0.83`)
+as if it were a contract, which is not evidence.
+
+I reverted my in-progress expectation-model edit rather than leave a partially correct
+transform in the tree. The assertion remains failing and unweakened.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
