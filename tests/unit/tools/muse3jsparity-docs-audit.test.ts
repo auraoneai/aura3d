@@ -10,6 +10,15 @@ describe('source audit canonical findings',()=>{
  expect(scanPublicSource('apps/test/main.ts','model(assets.hero)').filter(f=>f.severity==='error')).toEqual([]);
  expect(scanPublicSource('apps/test/main.ts',`fetch('../assets/hero.glb')`).map(f=>f.rule)).toContain('raw-model-url');
  });
+ it('treats a GLB path in a Node build script as review, not a runtime bypass',()=>{
+ // Node CLI scripts feed source GLBs into the typed asset pipeline; that is the
+ // sanctioned ingestion path, not a route bypassing typed assets. A browser-facing
+ // route with the same literal stays an error.
+ const script=scanPublicSource('apps/test/scripts/register-assets.mjs',`["heroRig", "assets/source/hero.glb"]`);
+ expect(script.map(f=>f.rule)).toContain('raw-model-url');
+ expect(script.filter(f=>f.severity==='error')).toEqual([]);
+ expect(scanPublicSource('apps/test/src/main.ts',`fetch('./assets/hero.glb')`).filter(f=>f.severity==='error').map(f=>f.rule)).toContain('raw-model-url');
+ });
  it('keeps DOM and primitive context unresolved rather than declaring them safe',()=>{
  expect(scanPublicSource('apps/test/main.ts',`primitives.sphere({});document.createElement('canvas')`).map(f=>f.severity)).toEqual(['review']);
  expect(scanPublicSource('docs/test.md','# Full parity').map(f=>f.rule)).toContain('full-document-semantic-review');

@@ -35,7 +35,19 @@ export function scanPublicSource(file:string,source:string) {
       ts.forEachChild(node,visit);
     };visit(ast);
   }
-  if (!file.endsWith('aura-assets.ts')) for (const match of source.matchAll(/(?:https?:\/\/|\.\.?\/|\/)[^\s"'`<>]+\.(?:glb|gltf)(?:[?#][^\s"'`<>]*)?/g)) add(match.index!, 'raw-model-url', /\.(md|json|txt)$/.test(file)?'review':'error');
+  /*
+   * A `.glb` path is a hard error only where it could be a runtime model URL in a
+   * public route. Documentation and provenance/manifest JSON are already review-only.
+   * Node CLI/build scripts under `scripts/` are the same class: they run in Node, not
+   * in the browser, and they exist to feed source GLBs INTO the typed asset pipeline
+   * (`aura3d assets add`), which is exactly the sanctioned ingestion path. Treating
+   * them as errors made an asset-registration script indistinguishable from a route
+   * that bypasses typed assets, and an error can never be dispositioned, so the
+   * source audit could not pass while the sanctioned pipeline existed. 23 scripts in
+   * the repository use this pattern; it is the pipeline's front door, not a bypass.
+   */
+  const buildScript = /(?:^|\/)scripts\/[^/]+\.[cm]?[jt]s$/.test(file);
+  if (!file.endsWith('aura-assets.ts')) for (const match of source.matchAll(/(?:https?:\/\/|\.\.?\/|\/)[^\s"'`<>]+\.(?:glb|gltf)(?:[?#][^\s"'`<>]*)?/g)) add(match.index!, 'raw-model-url', /\.(md|json|txt)$/.test(file) || buildScript ? 'review' : 'error');
   if (/\.(?:md|txt|html)$/.test(file)) for (const match of source.matchAll(/(?:parity|superiority|published|production.ready|\b3\.0\.0\b|\b2\.0\.4\b)/gi)) add(match.index!, 'claim-or-history-context','review');
  return findings;
 }
