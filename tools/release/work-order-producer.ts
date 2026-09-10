@@ -42,10 +42,14 @@ if (!requirements.length) throw new Error(`No requirements declare gate ${gate}`
 // acceptance contract (l01/l02 release evidence, route/marketing/registry acceptance)
 // are owned by their dedicated producers and are not fabricated by this one.
 const testTasks = requirements.filter(item => (item.tests ?? []).length > 0);
+// Vitest owns every suite except the Playwright browser specs. `tests/assets/**` is a
+// vitest suite too, and treating it as a browser spec silently ran nothing: the gate then
+// failed with "no passing assertion retained" rather than reporting a real defect.
+const isBrowserSpec = (file: string): boolean => /^tests\/browser\//.test(file) || /\.spec\.ts$/.test(file);
 const vitestFiles = [...new Set(testTasks.flatMap(item => item.tests ?? []))]
-  .filter(file => /^tests\/(unit|integration)\//.test(file)).sort();
+  .filter(file => !isBrowserSpec(file)).sort();
 const otherFiles = [...new Set(testTasks.flatMap(item => item.tests ?? []))]
-  .filter(file => !/^tests\/(unit|integration)\//.test(file)).sort();
+  .filter(isBrowserSpec).sort();
 
 function run(command: string[], name: string, env: NodeJS.ProcessEnv = {}): { code: number; log: Artifact } {
   const logPath = resolve(root, output, `${name}.log`);

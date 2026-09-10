@@ -3,7 +3,13 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
+    // `tests/assets/**` is a vitest suite that the 3.0.1 obligation ledger names as
+    // production-path evidence (for example tests/assets/gltf-extension-support.test.ts for
+    // M1). It was absent from `include`, so passing such a file on the command line matched
+    // nothing: vitest treats positional arguments as filters against `include`, reported
+    // "No test files found", and existing scripts silently ran fewer files than they named
+    // (animation-runtime:unit:raw named three files and executed two).
+    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", "tests/assets/**/*.test.ts"],
     setupFiles: [],
     coverage: {
       reporter: ["text", "json"]
