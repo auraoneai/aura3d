@@ -107,7 +107,31 @@ const downstream: Stage[] = [
    */
   browserTests('gpu-particle-a4', 'route-health|soft-particle|60 wall-clock', 'k1-producers', 'K',
     'P01 native Apple acceptance is proven by its own native receipt; this stage only re-earns K1 artifacts'),
-  ...['game-visual-superiority', 'library-parity-superiority', 'root-path-integrity'].map(spec => browser(spec, 'k1', 'K'))
+  ...['game-visual-superiority', 'library-parity-superiority', 'root-path-integrity'].map(spec => browser(spec, 'k1', 'K')),
+  /*
+   * Capture-bound work-order receipts must be minted INSIDE this run.
+   *
+   * p01, r02, r03, k1, v01 and v02 are the six gates whose evidence this aggregate
+   * itself regenerates or time-bounds:
+   *   - `browser:gpu-particle-a4` above rewrites the p01 acceptance artifact, so a
+   *     receipt minted earlier records a stale hash ("artifact hash mismatch").
+   *   - r02/r03 acceptance carries a 30-minute capture window, so a receipt minted
+   *     before this run reports "capture timestamps invalid or stale".
+   *   - k1/v01/v02 are rejected by validateCaptureOrder when the baseline finishes
+   *     after their capture started, which is always true for a pre-minted receipt.
+   * Minting them here satisfies both rules by execution order rather than by
+   * relaxing a threshold or pre-seeding stale artifacts. Their proofs still come
+   * from the same named suites and the same canonical validators.
+   */
+  ...['root-effects-a3', 'webgpu-post-j2'].map(spec => browser(spec, 'capture-producers', 'R')),
+  ...['p01', 'r02', 'r03', 'k1', 'v01', 'v02'].map((gate): Stage => ({
+    gate: `work-order:${gate}`, group: 'capture-receipts', part: 'K',
+    command: ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json',
+      'tools/release/work-order-producer.ts', gate,
+      // Receipts are write-once (writeImmutableJson), so scope the output to this run.
+      `tests/reports/muse3jsparity/runs/${runId}/work-orders/${gate}`,
+      '--pool', 'tests/reports/muse3jsparity/pool-e495a9aa'],
+  })),
 ];
 const allStages = [...baseline, ...downstream];
 const wanted = (stage: Stage) => scope === 'full' || only.has(stage.group) || only.has(stage.gate);
