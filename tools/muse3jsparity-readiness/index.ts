@@ -50,6 +50,18 @@ const baseline: Stage[] = [
 ];
 const browser = (spec: string, group: string, part: string): Stage => ({ gate: `browser:${spec}`, group, part,
   command: ['pnpm', 'exec', 'playwright', 'test', `tests/browser/${spec}.spec.ts`, '--reporter=line,json'], browser: true });
+/**
+ * A browser stage restricted to named tests within one spec file.
+ *
+ * `gpu-particle-a4` owns three K1 artifacts plus the P01 acceptance test, and that
+ * P01 test requires `AURA3D_REFERENCE_HARDWARE_ATTESTATION` from the native Apple
+ * workflow. Running the whole file here would fail on any other device, while
+ * skipping the file entirely leaves its three K1 artifacts stale — measured at
+ * roughly 596 minutes old when K1 executed. Select only the device-independent
+ * tests so their evidence is re-earned inside the freshness window.
+ */
+const browserTests = (spec: string, grep: string, group: string, part: string): Stage => ({ gate: `browser:${spec}`, group, part,
+  command: ['pnpm', 'exec', 'playwright', 'test', `tests/browser/${spec}.spec.ts`, '-g', grep, '--reporter=line,json'], browser: true });
 // Baseline/build work precedes the comparison capture window.
 const downstream: Stage[] = [
   { gate: 'Q-reference-vectors', group: 'q', part: 'Q', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/unit/rendering/shader-brdf-reference.test.ts', 'tests/unit/rendering/shader-core-brdf-reference.test.ts', 'tests/unit/rendering/parity-deviations-q1.test.ts', '--maxWorkers=2'] },
@@ -81,6 +93,7 @@ const downstream: Stage[] = [
    */
   ...['shadow-family-b1', 'contact-shimmer-b1b2', 'clustered-lighting-b5', 'd4-flipbook-beam', 'batch-consolidator-shootout',
     'muse3jsparity-301-visual', 'muse3jsparity-301-engine-perf', 'muse3jsparity-301-root-governor'].map(spec => browser(spec, 'k1-producers', 'K')),
+  browserTests('gpu-particle-a4', 'route-health|soft-particle', 'k1-producers', 'K'),
   ...['game-visual-superiority', 'library-parity-superiority', 'root-path-integrity'].map(spec => browser(spec, 'k1', 'K'))
 ];
 const allStages = [...baseline, ...downstream];

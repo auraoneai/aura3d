@@ -451,6 +451,27 @@ ${aliasEntries}
 `);
 }
 
+/**
+ * Install the scaffold-local Chromium, tolerating a contended shared cache lock.
+ *
+ * The scaffold resolves its own declared Playwright range, so its browser must be
+ * installed through its own CLI for its tests and Chromium to agree on a revision.
+ */
+function installScaffoldChromium(targetDir: string): void {
+  const attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir, { timeoutMs: 600_000 });
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const contended = /__dirlock|ETIMEDOUT|acquire lock/i.test(message);
+      if (!contended || attempt === attempts) throw error;
+      console.log(`[template ${targetDir.split("/").at(-1)}] chromium install blocked by the shared Playwright lock; retry ${attempt + 1}/${attempts}`);
+    }
+  }
+}
+
 function installPackedTemplateDependencies(targetDir: string): readonly { name: string; version: string; tarball: string; sha256: string; integrity: string; installedIntegrity: string; resolved?: string }[] {
   if (!installedTarballDirectory) return [];
   const templateManifest = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8")) as {
@@ -502,7 +523,13 @@ function installPackedTemplateDependencies(targetDir: string): readonly { name: 
   // therefore use a different browser revision from a fresh exact install.
   // Install through the scaffold-local CLI so its tests and Chromium always
   // agree; the shared Playwright cache makes later scaffolds a no-op.
-  run(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir);
+  // Playwright serializes browser installs on one lock in the shared user cache
+  // (`~/Library/Caches/ms-playwright/__dirlock`). An unrelated project holding that
+  // lock makes this step wait out its entire budget and fail ETIMEDOUT even though
+  // nothing here is wrong, which is what blocked `product-viewer` once the stage
+  // classification was corrected. Retry on contention so a foreign lock cannot fail
+  // the lifecycle, while a lock that never clears still fails.
+  installScaffoldChromium(targetDir);
   for (const name of directAuraPackages) {
     const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
     if (installed.version !== currentPackageVersion) throw new Error(`${name}: expected installed ${currentPackageVersion}, found ${installed.version ?? "missing"}.`);
