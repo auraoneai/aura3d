@@ -692,6 +692,37 @@ postprocessed presentation surface.
 The per-slot channel fix from the previous entry is retained and correct. The +/-1 tolerance and
 100-pixel floor remain untouched, and no fitted constant was introduced.
 
+## Execution log — 2026-09-10 (C1 FIXED: 13/13 passing, no thresholds weakened)
+
+`tests/browser/root-textured-c1.spec.ts` now passes **13/13**. The colour-space assertion had
+never passed since it was authored in `efe051c0`.
+
+**The fix.** The oracle no longer asserts exact bytes against the presentation surface. It
+samples the same fixture the renderer binds through a trivial passthrough program into an RGBA8
+framebuffer with no tone mapping, no postprocess and no sRGB draw buffer, then compares that
+against the expected channel vector. This measures the upload and the sampler — exactly what
+the obligation claims — instead of measuring the tone-mapped composite.
+
+Why the presentation surface can never work, proven earlier by measurement: writing
+`vec4(1,0,0,1)` reads back `[250,16,20]`, i.e. non-zero green and blue from a zero write. The
+transform has channel crosstalk, so no per-channel expectation model can invert it. Every
+raw-byte and encoded-byte expectation measured exactly 0 matches for that reason.
+
+**Also corrected in this fix:** the per-slot channel binding. The renderer consumes one channel
+per slot (`clearcoat` `.r`, `clearcoatRoughness` `.g`, `sheenColor` `.rgb`, `sheenRoughness`
+`.a`, `iridescence` `.r`, `iridescenceThickness` `.g`, `anisotropy` `.rgb`), and the expectation
+now uses the same channel. `sheenColor` is the only slot uploaded as `srgb`, so it is the only
+one linearised on sample; the rest round-trip.
+
+**Guardrails held.** The `+/-1` per-channel tolerance and the `toBeGreaterThan(100)` floor are
+both unchanged. No fitted tone-curve constant was introduced — that approach was tried and
+rejected earlier precisely because a fitted constant is not a contract.
+
+**One regression I introduced and fixed within this turn:** the synchronous probe needed the
+fixture decoded first, and my edit inserted the preload into `waitForWarning` as well, which
+does not have `colorSlot` in scope. That produced `ReferenceError: colorSlot is not defined`
+and 9 failures. Removed the stray insertion; the full spec then passed 13/13.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
