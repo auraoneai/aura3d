@@ -390,20 +390,26 @@ describe("RenderGraph", () => {
       255, 255, 255, 255,
       0, 0, 0, 0
     ]);
+    // Separable Gaussian, mirroring the native `webgl2-bloom-blur` program:
+    // radius 1 gives sigma 0.5, taps [0.79788, 0.10798] and weightSum 1.01384,
+    // so the single bright pixel contributes round(255 * 0.10798 / 1.01384) = 27
+    // to each neighbour and keeps round(255 * 0.79788 / 1.01384) = 201 itself.
+    // These are the exact bytes the device pass produces; the previous 85 came
+    // from a uniform box average that the native path no longer uses.
     expect(Array.from(result.horizontalBlurPixels)).toEqual([
-      85, 85, 85, 85,
-      85, 85, 85, 85,
-      85, 85, 85, 85
+      27, 27, 27, 27,
+      201, 201, 201, 201,
+      27, 27, 27, 27
     ]);
     expect(Array.from(result.verticalBlurPixels)).toEqual([
-      85, 85, 85, 85,
-      85, 85, 85, 85,
-      85, 85, 85, 85
+      27, 27, 27, 27,
+      201, 201, 201, 201,
+      27, 27, 27, 27
     ]);
     expect(Array.from(result.pixels)).toEqual([
-      85, 85, 85, 255,
+      27, 27, 27, 255,
       255, 255, 255, 255,
-      85, 85, 85, 255
+      27, 27, 27, 255
     ]);
   });
 
@@ -423,14 +429,14 @@ describe("RenderGraph", () => {
 
     device.setRenderTarget(output);
     expect(Array.from(device.readPixels(0, 0, 3, 1))).toEqual([
-      85, 85, 85, 255,
+      27, 27, 27, 255,
       255, 255, 255, 255,
-      85, 85, 85, 255
+      27, 27, 27, 255
     ]);
-    expect(Array.from(pass.getLastResult()?.pixels.slice(0, 4) ?? [])).toEqual([85, 85, 85, 255]);
+    expect(Array.from(pass.getLastResult()?.pixels.slice(0, 4) ?? [])).toEqual([27, 27, 27, 255]);
     expect(pass.getLastResult()?.pipeline).toEqual(["bright-extract", "horizontal-blur", "vertical-blur", "composite"]);
     expect(pass.getLastResult()?.changedPixels).toBe(2);
-    expect(pass.getLastResult()?.maxChannelDelta).toBe(85);
+    expect(pass.getLastResult()?.maxChannelDelta).toBe(27);
     device.endFrame();
   });
 

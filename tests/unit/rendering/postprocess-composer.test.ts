@@ -31,10 +31,13 @@ describe("PostProcessComposer", () => {
     });
 
     device.setRenderTarget(output);
+    // Separable Gaussian bloom (radius 1 -> sigma 0.5, taps [0.79788, 0.10798],
+    // weightSum 1.01384), mirroring the native `webgl2-bloom-blur` program. The
+    // previous 85 came from a uniform box average the native path no longer uses.
     expect(Array.from(device.readPixels(0, 0, 3, 1))).toEqual([
-      85, 85, 85, 255,
+      27, 27, 27, 255,
       255, 255, 255, 255,
-      85, 85, 85, 255
+      27, 27, 27, 255
     ]);
     expect(diagnostics).toMatchObject({
       width: 3,

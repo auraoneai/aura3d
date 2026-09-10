@@ -1,4 +1,4 @@
-import { VertexFormat, bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels } from "@aura3d/rendering";
+import { VertexFormat, bloomPixels, createDepthTextureBinding, createPlanarProjectionMatrix, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -126,7 +126,12 @@ async function run(): Promise<void> {
     }).pixels;
     device.writeRenderTargetPixels(source, sourcePixels);
     device.presentLdrPostprocess(source, {
-      passes: [{ name: "ssr", options: ssrOptions }],
+      // The native SSR program reconstructs view-space positions from linearized GL depth,
+      // so it requires the actual frame projection matrix. Omitting it is rejected by
+      // design (asserted as a throw in tests/unit/rendering/render-state-leaks.test.ts).
+      // The CPU byte kernel works in fixture depth units and takes no projection, so the
+      // matrix belongs on the native options only.
+      passes: [{ name: "ssr", options: { ...ssrOptions, projection: createPlanarProjectionMatrix(Math.PI / 3, width / height, 0.1, 80) } }],
       outputTarget: output
     });
     device.setRenderTarget(output);

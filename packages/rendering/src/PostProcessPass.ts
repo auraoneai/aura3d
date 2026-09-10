@@ -1556,30 +1556,61 @@ export function extractBloomBrightPixels(
   return { pixels: brightPixels, brightPixelCount, brightEnergy };
 }
 
+/**
+ * Separable Gaussian weights shared by the CPU bloom kernels and the native
+ * WebGL2 `webgl2-bloom-blur` program, so the byte kernels remain the exact
+ * mirror of the device pass.
+ *
+ * The 3.0.1 parity contract (muse3jsparity-PRD, native bloom item 2) upgraded
+ * the native pass to a separable Gaussian; the CPU mirror was left as a uniform
+ * box average, which made the native-vs-CPU equality proof in
+ * tests/browser/native-outline-pixel.spec.ts unsatisfiable. `sigma`,
+ * `coefficient` and the truncation at 16 taps are the same expressions the
+ * shader uses.
+ */
+export function bloomBlurWeights(radius: number): { readonly weights: readonly number[]; readonly weightSum: number } {
+  const sigma = Math.max(radius / 3, 0.5);
+  const coefficient = 0.39894 / sigma;
+  const weights = [Math.fround(coefficient)];
+  let weightSum = Math.fround(coefficient);
+  for (let offset = 1; offset <= 16; offset += 1) {
+    if (offset > radius) {
+      weights.push(0);
+      continue;
+    }
+    const weight = Math.fround(coefficient * Math.exp(-0.5 * offset * offset / (sigma * sigma)));
+    weights.push(weight);
+    weightSum = Math.fround(weightSum + Math.fround(2 * weight));
+  }
+  return { weights, weightSum: Math.max(weightSum, 0.000001) };
+}
+
 export function blurBloomPixelsHorizontal(pixels: Uint8Array, width: number, height: number, radius: number): Uint8Array {
   validatePixelBuffer(pixels, width, height, "Bloom horizontal blur");
   validateBloomBlurRadius(radius);
-  const kernelSize = radius * 2 + 1;
+  const { weights, weightSum } = bloomBlurWeights(radius);
   const output = new Uint8Array(pixels.byteLength);
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const targetIndex = (y * width + x) * 4;
-      let red = 0;
-      let green = 0;
-      let blue = 0;
-      let alpha = 0;
-      for (let offsetX = -radius; offsetX <= radius; offsetX += 1) {
-        const sampleX = clampInt(x + offsetX, 0, width - 1);
-        const sampleIndex = (y * width + sampleX) * 4;
-        red += pixels[sampleIndex]!;
-        green += pixels[sampleIndex + 1]!;
-        blue += pixels[sampleIndex + 2]!;
-        alpha += pixels[sampleIndex + 3]!;
+      const centerIndex = (y * width + x) * 4;
+      let red = pixels[centerIndex]! * weights[0]!;
+      let green = pixels[centerIndex + 1]! * weights[0]!;
+      let blue = pixels[centerIndex + 2]! * weights[0]!;
+      let alpha = pixels[centerIndex + 3]! * weights[0]!;
+      for (let offsetX = 1; offsetX <= radius; offsetX += 1) {
+        const weight = weights[offsetX]!;
+        const lowIndex = (y * width + clampInt(x - offsetX, 0, width - 1)) * 4;
+        const highIndex = (y * width + clampInt(x + offsetX, 0, width - 1)) * 4;
+        red += (pixels[lowIndex]! + pixels[highIndex]!) * weight;
+        green += (pixels[lowIndex + 1]! + pixels[highIndex + 1]!) * weight;
+        blue += (pixels[lowIndex + 2]! + pixels[highIndex + 2]!) * weight;
+        alpha += (pixels[lowIndex + 3]! + pixels[highIndex + 3]!) * weight;
       }
-      output[targetIndex] = clampByte(red / kernelSize);
-      output[targetIndex + 1] = clampByte(green / kernelSize);
-      output[targetIndex + 2] = clampByte(blue / kernelSize);
-      output[targetIndex + 3] = clampByte(alpha / kernelSize);
+      output[targetIndex] = clampByte(red / weightSum);
+      output[targetIndex + 1] = clampByte(green / weightSum);
+      output[targetIndex + 2] = clampByte(blue / weightSum);
+      output[targetIndex + 3] = clampByte(alpha / weightSum);
     }
   }
   return output;
@@ -1588,27 +1619,29 @@ export function blurBloomPixelsHorizontal(pixels: Uint8Array, width: number, hei
 export function blurBloomPixelsVertical(pixels: Uint8Array, width: number, height: number, radius: number): Uint8Array {
   validatePixelBuffer(pixels, width, height, "Bloom vertical blur");
   validateBloomBlurRadius(radius);
-  const kernelSize = radius * 2 + 1;
+  const { weights, weightSum } = bloomBlurWeights(radius);
   const output = new Uint8Array(pixels.byteLength);
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const targetIndex = (y * width + x) * 4;
-      let red = 0;
-      let green = 0;
-      let blue = 0;
-      let alpha = 0;
-      for (let offsetY = -radius; offsetY <= radius; offsetY += 1) {
-        const sampleY = clampInt(y + offsetY, 0, height - 1);
-        const sampleIndex = (sampleY * width + x) * 4;
-        red += pixels[sampleIndex]!;
-        green += pixels[sampleIndex + 1]!;
-        blue += pixels[sampleIndex + 2]!;
-        alpha += pixels[sampleIndex + 3]!;
+      const centerIndex = (y * width + x) * 4;
+      let red = pixels[centerIndex]! * weights[0]!;
+      let green = pixels[centerIndex + 1]! * weights[0]!;
+      let blue = pixels[centerIndex + 2]! * weights[0]!;
+      let alpha = pixels[centerIndex + 3]! * weights[0]!;
+      for (let offsetY = 1; offsetY <= radius; offsetY += 1) {
+        const weight = weights[offsetY]!;
+        const lowIndex = (clampInt(y - offsetY, 0, height - 1) * width + x) * 4;
+        const highIndex = (clampInt(y + offsetY, 0, height - 1) * width + x) * 4;
+        red += (pixels[lowIndex]! + pixels[highIndex]!) * weight;
+        green += (pixels[lowIndex + 1]! + pixels[highIndex + 1]!) * weight;
+        blue += (pixels[lowIndex + 2]! + pixels[highIndex + 2]!) * weight;
+        alpha += (pixels[lowIndex + 3]! + pixels[highIndex + 3]!) * weight;
       }
-      output[targetIndex] = clampByte(red / kernelSize);
-      output[targetIndex + 1] = clampByte(green / kernelSize);
-      output[targetIndex + 2] = clampByte(blue / kernelSize);
-      output[targetIndex + 3] = clampByte(alpha / kernelSize);
+      output[targetIndex] = clampByte(red / weightSum);
+      output[targetIndex + 1] = clampByte(green / weightSum);
+      output[targetIndex + 2] = clampByte(blue / weightSum);
+      output[targetIndex + 3] = clampByte(alpha / weightSum);
     }
   }
   return output;

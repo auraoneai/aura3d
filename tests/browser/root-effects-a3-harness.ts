@@ -106,7 +106,11 @@ async function renderVariant(id: A3VariantId): Promise<A3Capture> {
       requestedPasses: [...(diagnostics.renderer?.postprocess?.requestedPasses ?? [])],
       pixelBacked: diagnostics.renderer?.postprocess?.pixelBacked ?? false,
       executionMode: diagnostics.renderer?.postprocess?.executionMode ?? "unknown",
-      warnings: [...(diagnostics.warnings ?? [])],
+      // The temporal withholding warning is raised by the production runtime
+      // bridge, so it lands on `renderer.warnings`; `diagnostics.warnings` only
+      // carries scene-authoring advice. Capture both so the A3 contract can
+      // assert on the runtime's own withholding reason.
+      warnings: [...(diagnostics.warnings ?? []), ...(diagnostics.renderer?.warnings ?? [])],
       drawCalls: diagnostics.drawCalls,
       pixels: Array.from(pixels),
       width: canvas.width,
@@ -125,7 +129,14 @@ function sceneForVariant(id: A3VariantId) {
       name: "a3 floor",
       material: material.pbr({ color: "#9aa2ae", roughness: 0.82, metallic: 0 })
     }).position(0, 0, 0).scale([9, 1, 9]))
-    .add(model(assets.robotcand, {
+    // The withholding half of this probe asserts that a deforming subject keeps
+    // drawing and warns instead of submitting a doomed temporal pass. That needs
+    // an actually skinned subject: `robotcand` reports skinCount 0 / jointCount 0
+    // in the typed asset metadata, so it is rigid and the temporal passes now
+    // legitimately execute on it. `showcaseAnimatedRunnerHero` carries a real
+    // skin (skinCount 1, jointCount 136), which is what the A3 contract means by
+    // "requires opaque rigid noninstanced triangles".
+    .add(model(assets.showcaseAnimatedRunnerHero, {
       name: "a3 typed subject",
       targetHeight: 1.5
     }).position(0, 0.78, 0).runtime({ id: "subject" }))
