@@ -478,6 +478,46 @@ This is recorded as open work. The oracle must target the atlas-variant program 
 the non-atlas variant) rather than assuming a `u_clearcoatTexture` sampler exists; the
 assertion was authored in `efe051c0` and has never passed.
 
+## Execution log — 2026-09-10 (K1 freshness generalized; receipt-source discipline established)
+
+**Process error found and corrected: receipts must all share one frozen source.** Auditing the
+36 receipts produced so far showed them spread across **six different source fingerprints**,
+because I committed fixes while the batch was running. `validateReceipt` enforces
+`sameSource`, so the aggregate accepts a manifest only when every receipt matches the same
+commit. Receipt `b1` had already recorded `exitCode: 1` from the producer's own
+source-stability guard, which is the tool behaving correctly. The batch was stopped; all
+source changes must land before a single uninterrupted collection run.
+
+**K1 freshness generalized in the producer.** `game-visual-superiority.spec.ts` enforces the
+PRD 30-minute rule against retained evidence it does not produce, and **18 work-order gates
+name it**: `a4, g01, g02, g03, j1, k1, k2, l01, l02, l7, master, p01, q01, q1, r03, r1, v01,
+v02`. Any of them run in isolation failed with `Stale feature evidence must be rerun by its
+full producer` (measured at 53 minutes for `p01`). The producer now re-earns the eight K1
+dependency producers plus `gpu-particle-a4` immediately before any gate naming that spec.
+Verified on `p01`: staleness cleared, K1's own five tests passed, and the suite improved from
+13 passed / 2 failed to **14 passed / 1 failed**.
+
+**P01 hardware boundary handled the same way as in the aggregate.** After K1 freshness was
+satisfied, the sole remaining `p01`/`a4` failure was
+`gpu-particle-a4.spec.ts` "10k live rendered particles hold native Apple Metal thresholds",
+which requires `AURA3D_REFERENCE_HARDWARE_ATTESTATION` and is already closed by native run
+`34045615840`. The producer now excludes that one test by title via `--grep-invert`; its
+sibling tests in the same file still run and still prove their obligations. The browser suite
+then passed.
+
+**`p01` and `a4` cannot be closed by this producer, and the reason is structural.**
+`ACCEPTANCE_SCHEMAS` requires a typed acceptance artifact for five gates — `p01`
+(`muse301-particles/v1`), `p02`, `v01`, `l01`, `l02`. Reading `acceptance.ts`, the `p01`
+contract demands an adapter matching `/metal/i`, explicitly rejects
+`swiftshader|software|llvmpipe`, and needs ≥60 seconds of contiguous frames at ≥10,000 live
+and rendered particles. That is provable only on native Apple hardware, which is precisely
+what the native receipt already provides. These five gates belong to their dedicated
+producers, not to the generic one.
+
+**Revised coverage:** 76 of 85 gates are closable by the generic producer; 5 need typed
+acceptance producers (`p01`, `p02`, `v01`, `l01`, `l02`), 1 declares no tests (`archive`), and
+`l02` additionally requires the human approval artifact.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
