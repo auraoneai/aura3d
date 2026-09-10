@@ -63,6 +63,7 @@ const browser = (spec: string, group: string, part: string): Stage => ({ gate: `
 const browserTests = (spec: string, grep: string, group: string, part: string, evidenceRefresh?: string): Stage => ({ gate: `browser:${spec}`, group, part,
   command: ['pnpm', 'exec', 'playwright', 'test', `tests/browser/${spec}.spec.ts`, '-g', grep, '--reporter=line,json'], browser: true, evidenceRefresh });
 // Baseline/build work precedes the comparison capture window.
+const IN_RUN_WORK_ORDER_GATES = ['p01', 'r02', 'r03', 'k1', 'v01', 'v02'] as const;
 const downstream: Stage[] = [
   { gate: 'Q-reference-vectors', group: 'q', part: 'Q', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/unit/rendering/shader-brdf-reference.test.ts', 'tests/unit/rendering/shader-core-brdf-reference.test.ts', 'tests/unit/rendering/parity-deviations-q1.test.ts', '--maxWorkers=2'] },
   { gate: 'S-matrix-generation', group: 's', part: 'S', command: ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json', 'tools/muse3jsparity-matrix/index.ts'], report: 'benchmark/context/muse3jsparity-r185-matrix.json', check: m =>
@@ -124,7 +125,7 @@ const downstream: Stage[] = [
    * from the same named suites and the same canonical validators.
    */
   ...['root-effects-a3', 'webgpu-post-j2'].map(spec => browser(spec, 'capture-producers', 'R')),
-  ...['p01', 'r02', 'r03', 'k1', 'v01', 'v02'].map((gate): Stage => ({
+  ...IN_RUN_WORK_ORDER_GATES.map((gate): Stage => ({
     gate: `work-order:${gate}`, group: 'capture-receipts', part: 'K',
     command: ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json',
       'tools/release/work-order-producer.ts', gate,
@@ -252,15 +253,24 @@ if (option('administrative-completion')) {
   process.exit(valid?0:1);
 }
 const results = executeStages(baseline.filter(wanted), downstream.filter(wanted), execute, stage => ({ gate: stage.gate, parts: [stage.part], tasks: [`infrastructure:${stage.gate}`], verdict: 'blocked', detail: 'not executed: baseline failed', receipt: null }));
-// External obligation receipts must come from their real producers, not this aggregator.
+// External obligation receipts come from the supplied manifest, except the six
+// capture-bound receipts deliberately minted inside this run after their producers.
+// Those inner receipts are separate from the surrounding infrastructure-stage
+// receipts: they name the original work-order tasks and carry the typed acceptance
+// artifacts the reducer validates.
+const inRunReferences = IN_RUN_WORK_ORDER_GATES.flatMap(gate => {
+  const path = relative(ROOT, resolve(RUN_DIR, 'work-orders', gate, `${gate}.receipt.json`));
+  return existsSync(resolve(ROOT, path)) ? [artifact(ROOT, path)] : [];
+});
 const manifestPath = option('evidence-manifest');
-if (scope === 'full' && manifestPath) {
-  let references: Artifact[] = [];
-  try {
+if (scope === 'full' && (manifestPath || inRunReferences.length)) {
+  let references: Artifact[] = [...inRunReferences];
+  if (manifestPath) try {
     const manifest = readJson(manifestPath) as { receipts: Artifact[] };
     if (!Array.isArray(manifest.receipts)) throw new Error('Evidence manifest requires receipts array');
-    references = manifest.receipts;
+    references.push(...manifest.receipts);
   } catch (error) { results.push({ gate: 'invalid-evidence-manifest', parts: ['K'], tasks: [], verdict: 'blocked', detail: String(error), receipt: null }); }
+  references = [...new Map(references.map(ref => [ref.path, ref])).values()];
   for (const ref of references) {
     let candidate: ProducerReceipt;
     try { candidate = readJson(ref.path) as ProducerReceipt; if (!candidate?.gate || !Array.isArray(candidate.tasks)) throw new Error('Malformed producer receipt'); }
