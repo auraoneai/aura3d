@@ -6,7 +6,7 @@
   "runtimeParityVerified": false,
   "command": "pnpm exec tsx --tsconfig tsconfig.base.json tools/muse3jsparity-matrix/index.ts",
   "cwd": "/Users/gurbakshchahal/platforms/aura3d",
-  "sourceCommit": "2662e349d2c037a11e2c249f5c30d426883239e0",
+  "sourceCommit": "eb4b6f3981986f1ce28986696566b5040b3f9b23",
   "producerInputs": [
     {
       "path": "tools/muse3jsparity-matrix/index.ts",
@@ -30,7 +30,7 @@
     }
   ],
   "generatedBy": "tools/muse3jsparity-matrix/index.ts (never hand-edit; rerun on three-version change)",
-  "generatedAt": "2026-09-10T07:14:22.976Z",
+  "generatedAt": "2026-09-10T08:38:20.302Z",
   "three": {
     "version": "0.185.1",
     "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
