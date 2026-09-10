@@ -146,6 +146,7 @@ describe('immutable producer lineage', () => {
    * Their exclusion sets must stay identical.
    */
   it('keeps both source-identity implementations byte-identical in what they exclude', async () => {
+    // @ts-expect-error Existing release module is JavaScript and has no declaration file.
     const js = await import('../../../tools/release/source-identity.mjs') as { isSourceInput: (path: string) => boolean };
     const cases = ['benchmark/context/frozen-opponent.json', 'packages/new/src/new.ts', 'tests/browser/new-proof.spec.ts',
       'src/app.ts', 'docs/guide.md', 'node_modules/x/index.js', 'dist/out.js', 'coverage/lcov.info', 'test-results/x.json',
