@@ -17,3 +17,8 @@ apps/showcase-*/art-review/external-source/**/*.png filter=lfs diff=lfs merge=lf
 apps/showcase-*/art-review/**/*.bin binary
 assets/source/**/*.glb filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/**/*.glb filter=lfs diff=lfs merge=lfs -text
+# Flagship glTF corpus fixtures resolved by CurrentRoutes/WOW routes. These are
+# multi-MB binaries served to the browser at test time, so remote CI must receive
+# real bytes: a missing file is fetched as an HTML 404 body and surfaces as
+# "Invalid GLB magic" rather than as a clear missing-asset error.
+fixtures/asset-corpus/*.glb filter=lfs diff=lfs merge=lfs -text

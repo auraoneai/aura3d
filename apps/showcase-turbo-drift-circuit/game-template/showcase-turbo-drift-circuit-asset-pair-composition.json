@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-5ad3ba8582ff74095441ff31da45b5cf14ef17842eef19b722e1d3af916b7030",
+    "sha256": "sha256-efc8cfdb96d4e7d070acd22dc605ea3f4e48862bc5aaab821e212313c9fd3dc1",
     "width": 1440,
     "height": 900
   },

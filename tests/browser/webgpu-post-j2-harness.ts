@@ -173,9 +173,27 @@ async function runHarness(): Promise<void> {
         renderTarget: sceneTarget,
         cameraPolicy: "identity"
       } as never);
+      /*
+       * Read whichever format the pass actually produced.
+       *
+       * `executeWebGPUBloom` composites unconditionally into an `rgba16f` target — bloom adds
+       * to scene radiance before tone mapping, so its composite is floating point by design
+       * (WebGPUDevice.ts) — while `readPixelsAsync` only supports `rgba8` and throws
+       * `NATIVE_READBACK_FORMAT_UNSUPPORTED` otherwise. The device already exposes
+       * `readFloatPixelsAsync` for `rgba16f`/`rgba32f`, so select on the target's real format
+       * instead of assuming 8-bit. Float samples are scaled to bytes with the same clamp the
+       * 8-bit path applies so the shared `analyze` metrics stay comparable across stages.
+       */
       const readTarget = async (target: unknown): Promise<Uint8Array> => {
         device.setRenderTarget(target as never);
-        return device.readPixelsAsync(0, 0, WIDTH, HEIGHT);
+        const format = (target as { colorTexture?: { format?: string } }).colorTexture?.format;
+        if (format !== "rgba16f" && format !== "rgba32f") return device.readPixelsAsync(0, 0, WIDTH, HEIGHT);
+        const floats = await device.readFloatPixelsAsync(0, 0, WIDTH, HEIGHT);
+        const bytes = new Uint8Array(floats.length);
+        for (let index = 0; index < floats.length; index += 1) {
+          bytes[index] = Math.max(0, Math.min(255, Math.round((floats[index] ?? 0) * 255)));
+        }
+        return bytes;
       };
       const scenePixels = await readTarget(sceneTarget);
       const sceneMetrics = analyze(scenePixels, scenePixels);

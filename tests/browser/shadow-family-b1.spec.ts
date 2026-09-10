@@ -2,6 +2,26 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import {
+  createDefaultShaderLibrary,
+  DEFAULT_TEXTURED_PBR_SHADER_NAME
+} from "@aura3d/rendering";
+
+/**
+ * Variant names that deliberately compile without the B1 spot-shadow path.
+ *
+ * Read from the shader library so the expectation cannot drift from the source of
+ * truth: a variant opts out exactly when it defines `A3D_PBR_NO_SPOT_SHADOW`,
+ * which the sampler-exhausted textured variants do to stay inside the driver's
+ * texture-unit budget.
+ */
+function spotShadowOptOutVariantNames(): readonly string[] {
+  const library = createDefaultShaderLibrary();
+  const variants = library.get(DEFAULT_TEXTURED_PBR_SHADER_NAME).variants ?? [];
+  return variants
+    .filter((variant) => variant.defines?.A3D_PBR_NO_SPOT_SHADOW === true)
+    .map((variant) => variant.name);
+}
 
 const REPORT_DIR = "tests/reports/shadow-family-b1";
 
@@ -63,10 +83,13 @@ test.describe("shadow family B1 pixel proofs", () => {
       expect(program.compiled, `${program.shader}:base ${program.error ?? ""}`).toBe(true);
       expect(program.spotUniformCount, program.shader).toBe(13);
     }
-    const spotOptOutVariants = new Set([
-      "clearcoat-transmission-volume-textures",
-      "specular-sheen-anisotropy-iridescence-textures",
-    ]);
+    // Derived from the shader library itself rather than hardcoded: a variant opts
+    // out of spot shadows exactly when it defines A3D_PBR_NO_SPOT_SHADOW. A literal
+    // list silently rots when a variant is added — `clearcoat-sheen-anisotropy-textures`
+    // was introduced with that define during 3.0.1 and reported 0 spot uniforms
+    // while the list still named only two opt-outs, so a correct sampler-budget
+    // opt-out was reported as a broken uniform insertion.
+    const spotOptOutVariants = new Set(spotShadowOptOutVariantNames());
     for (const program of result.shaders.programs) {
       if (program.compiled) {
         // Supported programs expose all 13 spot uniforms; the two

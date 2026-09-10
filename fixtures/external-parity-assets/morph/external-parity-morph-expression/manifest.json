@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "a3d-external-parity-local-asset",
+  "id": "external-parity-morph-expression",
+  "category": "morph",
+  "displayName": "Generated External parity Morph Expression",
+  "localFile": "external-parity-morph-expression.gltf",
+  "license": "CC0-1.0",
+  "source": {
+    "kind": "generated-local",
+    "generator": "tools/external-parity-asset-corpus/index.ts"
+  },
+  "features": [
+    "morph-target",
+    "morph-position-deltas",
+    "visible-morph-control",
+    "animated-morph-weights"
+  ],
+  "materialFeatures": [
+    "lit-morph-material"
+  ],
+  "textureCount": 0,
+  "animations": 1,
+  "skins": 0,
+  "morphTargets": 1,
+  "expectedScreenshot": "fixtures/external-parity-assets/morph/external-parity-morph-expression/screenshot-baseline.svg",
+  "loaderDiagnostics": "fixtures/external-parity-assets/morph/external-parity-morph-expression/loader-diagnostics-baseline.json",
+  "localPath": "fixtures/external-parity-assets/morph/external-parity-morph-expression/external-parity-morph-expression.gltf",
+  "unsupportedFeatures": [],
+  "inspection": {
+    "meshes": 1,
+    "materials": 1,
+    "textures": 0,
+    "animations": 1,
+    "skins": 0,
+    "morphTargets": 1,
+    "cameras": 0,
+    "lights": 0,
+    "warnings": [
+      "ASSET_VIEWER_ANIMATION_PLAYBACK_BOUNDED",
+      "ASSET_VIEWER_MORPH_ANIMATION_ACTIVE"
+    ]
+  }
+}

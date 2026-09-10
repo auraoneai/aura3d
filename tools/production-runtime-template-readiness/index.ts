@@ -12,6 +12,7 @@ const templates = [
   "production-architecture-viewer",
   "production-webgpu-starter"
 ] as const;
+const currentVersion = (JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { version: string }).version;
 const reportPath = resolve("tests/reports/production-runtime-template-readiness.json");
 const packDir = resolve("tests/reports/production-runtime-template-pack");
 const previewRoot = resolve("tests/reports/production-runtime-template-external-builds");
@@ -34,7 +35,7 @@ const templateReports = templates.map((template) => {
     filesPresent: ["package.json", "index.html", "src/main.ts", "asset-manifest.json", "README.md"].every((file) => existsSync(resolve(root, file))) &&
       ["package.json", "index.html", "src/main.ts", "asset-manifest.json", "README.md"].every((file) => existsSync(resolve(mirror, file))),
     publicImport: main.includes("from \"@aura3d/engine/workflows/production\"") && !main.includes("workspace:") && !main.includes("/packages/"),
-    packageReady: packageJson.dependencies?.["@aura3d/engine"] === "0.1.0-alpha.0" && packageJson.devDependencies?.vite !== undefined && !JSON.stringify(packageJson).includes("workspace:"),
+    packageReady: packageJson.dependencies?.["@aura3d/engine"] === currentVersion && packageJson.devDependencies?.vite !== undefined && !JSON.stringify(packageJson).includes("workspace:"),
     assetManifest: manifest.fetchInstructions?.includes("/fixtures/production-runtime") === true && (manifest.assets?.length ?? 0) >= 2 && manifest.assets?.every((asset) => typeof asset.sha256 === "string"),
     browserProof: runtime.runtime && obj(runtime.runtime).status === "ready" && obj(runtime.runtime).rendererBackend === "webgl2",
     screenshotPresent: existsSync(screenshotPath) && statSync(screenshotPath).size > 10_000

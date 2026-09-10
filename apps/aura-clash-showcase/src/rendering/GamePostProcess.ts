@@ -70,10 +70,12 @@ export function createAuraClashPostProcessEvidence(options: {
   return {
     contractId: auraClashMaterialPostProcessReviewCriteria.contractId,
     presetId: preset.id,
-    // Visibility is a presentation fact: the configured postprocess is present and remains inside
-    // its visual limits. Performance is retained as a separate field and enforced by the dedicated
-    // route performance gate; coupling it here made a slow runner report visible pixels as absent.
-    gameplayVisible: bloomWithinGameplayLimit && fogBehindCombatLane,
+    // Deliberately conjunctive: postprocess is only claimed visible for gameplay when it is
+    // inside its visual limits AND the route met its frame budget. A route that cannot hold
+    // its budget is not delivering these effects during play, so reporting them as visible
+    // would overclaim. Device-class scoping belongs in the harness that supplies budgetOk,
+    // not here; weakening this predicate would silently retire an anti-overclaim guard.
+    gameplayVisible: options.performanceBudgetOk && bloomWithinGameplayLimit && fogBehindCombatLane,
     performanceBudgetOk: options.performanceBudgetOk,
     bloomIntensity: preset.bloomIntensity,
     reducedFlashBloomIntensity: preset.reducedFlashBloomIntensity,

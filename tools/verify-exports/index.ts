@@ -169,6 +169,13 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
   const rootManifestPath = join(root, "package.json");
   if (existsSync(rootManifestPath)) {
     const rootManifest = readJson(rootManifestPath);
+    // The root workspace manifest is itself a published package (@aura3d/engine),
+    // and its exports are validated below. Without recording it here the report's
+    // inventory omits the published root, so a release check that requires every
+    // planned package to appear cannot be satisfied.
+    if (!packageFilter || packageFilter.has((rootManifest.name ?? "").replace("@aura3d/", ""))) {
+      if (rootManifest.name !== undefined && !packages.includes(rootManifest.name)) packages.push(rootManifest.name);
+    }
     const rootExports = rootManifest.exports;
     if (!rootExports || typeof rootExports !== "object") {
       violations.push({ packageName: rootManifest.name ?? "root", message: "Root package must define exports." });

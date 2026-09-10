@@ -42,17 +42,52 @@ test.describe("U1 resource soak", () => {
     });
 
     const cdp = await page.context().newCDPSession(page);
-    const gcHeap = async (): Promise<number | null> => {
+    const collectGarbage = async (): Promise<void> => {
       try {
         await cdp.send("HeapProfiler.enable");
         await cdp.send("HeapProfiler.collectGarbage");
       } catch {
         // CDP GC is best-effort; the readings below still compare like with like.
       }
-      return page.evaluate(() => {
-        const memory = (performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory;
-        return typeof memory?.usedJSHeapSize === "number" ? memory.usedJSHeapSize : null;
-      });
+    };
+    const readHeap = (): Promise<number | null> => page.evaluate(() => {
+      const memory = (performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory;
+      return typeof memory?.usedJSHeapSize === "number" ? memory.usedJSHeapSize : null;
+    });
+    // Number of collect-and-read passes per measurement. The settling curve below
+    // reaches its floor by the fifth pass at both measurement points; this leaves
+    // margin without making the seven readings in this test expensive.
+    const HEAP_SETTLE_PASSES = 16;
+    /**
+     * `usedJSHeapSize` must be read at its settled floor. Measured on this machine
+     * by sampling one instant twelve times with no work in between:
+     *
+     *   baseline point: 23295523, then 19682819 repeating
+     *   chunk-4 point:  30147932, 30147932, 30147932, 30147932, then 20074715 repeating
+     *
+     * V8 needs a variable number of collections to finish reclaiming and repeats the
+     * same unsettled value several times first. So "collect once" is a sample of an
+     * unsettled quantity, and "collect until two readings agree" latches that
+     * repeated unsettled value instead of the floor. Taking the minimum across
+     * enough passes reaches the floor at every measurement point symmetrically.
+     *
+     * At the floor the real 45-cycle drift is 0.374 MiB (about 8.7 KiB/cycle)
+     * against the 4 MiB budget. The unsettled reading fabricated roughly 10 MiB of
+     * drift and placed the maximum on the FIRST chunk, after which it fell — the
+     * opposite shape of a leak, which accumulates toward the last chunk.
+     *
+     * The 4 MiB bound is unchanged and deliberately not relaxed: genuine per-cycle
+     * retention raises the settled floor of every later chunk and still trips it.
+     */
+    const gcHeap = async (): Promise<number | null> => {
+      let floor: number | null = null;
+      for (let pass = 0; pass < HEAP_SETTLE_PASSES; pass += 1) {
+        await collectGarbage();
+        const reading = await readHeap();
+        if (reading === null) return null;
+        floor = floor === null ? reading : Math.min(floor, reading);
+      }
+      return floor;
     };
     const runRouteCycles = (cycles: number): Promise<{ cycles: { cycle: number; drawCalls: number }[] }> =>
       page.evaluate((count) => (() => { const runner = window.__AURA3D_RESOURCE_SOAK_U1__; if (!runner) throw new Error("Missing soak runner"); return runner.runRouteCycles(count); })(), cycles);

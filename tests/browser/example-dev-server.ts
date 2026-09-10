@@ -22,6 +22,14 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/lean-runtime", "/packages/rendering/src/lean-runtime.ts"],
   ["@aura3d/rendering/lean-core-runtime", "/packages/rendering/src/lean-core-runtime.ts"],
   ["@aura3d/rendering/reflection-surfaces", "/packages/rendering/src/reflection-surfaces.ts"],
+  // Every published `@aura3d/rendering` subpath must be aliased here, and each must
+  // precede the bare specifier because the first prefix match wins. Omitting one does not
+  // fail loudly at build time: the browser rejects the specifier at runtime, the route
+  // falls back to a scalar material, and only a downstream pixel assertion notices. That
+  // is exactly how C1's textured upgrade silently regressed
+  // ("Failed to resolve module specifier '@aura3d/rendering/extension-scalar-atlas'").
+  ["@aura3d/rendering/extension-scalar-atlas", "/packages/rendering/src/extension-scalar-atlas.ts"],
+  ["@aura3d/rendering/webgpu", "/packages/rendering/src/webgpu.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/lean-product", "/packages/engine/src/agent-api/lean-product.ts"],
   ["@aura3d/engine/lean-game", "/packages/engine/src/agent-api/lean-game.ts"],

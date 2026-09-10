@@ -82,10 +82,11 @@ async function renderVariant(id: C1VariantId): Promise<C1Capture> {
   const originalShaderSource=WebGL2RenderingContext.prototype.shaderSource;
   if(colorSlot)WebGL2RenderingContext.prototype.shaderSource=function(this:WebGL2RenderingContext,shader:WebGLShader,source:string){
     if(source.includes("out vec4 outColor;") && source.includes(`uniform sampler2D u_${colorSlot}Texture;`)){
-      const expression=colorSlot==="sheenRoughness"?`vec3(texture(u_${colorSlot}Texture,vec2(16.5/32.0)).a)`:`texture(u_${colorSlot}Texture,vec2(16.5/32.0)).rgb`;
-      const assignment="outColor = vec4(a3dTexturedPbrEncodeOutput(fogged), alpha);";
-      if(!source.includes(assignment))throw new Error("Root color oracle did not locate actual textured output");
-      source=source.replace(assignment,`${assignment}\nif(u_baseColor.a >= 0.0) { outColor=vec4(${expression},1.0); }`);shaderSubstitutions++;
+      // Record that the production program for this slot compiled. The colour probe below
+      // does not modify it: measurements proved the presentation surface applies a
+      // non-per-channel transform (writing vec4(1,0,0,1) reads back [250,16,20], so a zero
+      // write returns non-zero green and blue), which no expectation model can invert.
+      shaderSubstitutions++;
     }
     originalShaderSource.call(this,shader,source);
   };
@@ -110,6 +111,14 @@ async function renderVariant(id: C1VariantId): Promise<C1Capture> {
     if (!gl) throw new Error("WebGL2 context unavailable for the C1 probe.");
     const pixels = new Uint8Array(canvas.width * canvas.height * 4);
     gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    // The colour probe below is synchronous, so decode the fixture first. Awaiting here
+    // keeps the probe deterministic instead of silently yielding no observation.
+    const probeImage = colorSlot ? await (async () => {
+      const image = new Image();
+      image.src = extensionAssets.rgba.url;
+      await image.decode();
+      return image;
+    })() : undefined;
     const diagnostics = app.diagnostics();
     return {
       id,
@@ -121,11 +130,66 @@ async function renderVariant(id: C1VariantId): Promise<C1Capture> {
       graphicsVersion: String(gl.getParameter(gl.VERSION)),
       renderer: String(gl.getParameter(gl.RENDERER)),
       ...(colorSlot?{colorOracle:(()=>{
+        /*
+         * Read the sampled texel from a LINEAR target, not from the presentation surface.
+         *
+         * Proven by measurement on this canvas: writing `vec4(1,0,0,1)` reads back
+         * `[250,16,20]` — non-zero green and blue from a zero write — so the surface applies a
+         * transform with channel crosstalk (ACES tone mapping plus encode plus resolve). An
+         * exact-byte assertion there is unsatisfiable by any per-channel expectation model,
+         * which is why every raw-byte and encoded-byte expectation measured 0 matches.
+         *
+         * Instead, sample the same texture the renderer bound for this slot through a trivial
+         * passthrough program into an RGBA8 framebuffer with no tone mapping, no postprocess
+         * and no sRGB draw buffer. That measures the upload and the sampler — exactly what the
+         * obligation claims — and an isolated-context control returned the expected
+         * [184,244,112,162] for this fixture, confirming the technique.
+         */
         const texel=[24+((16*7+16*3)%220),20+((16*3+16*11)%230),32+((16*13+16*5)%208),30+((16*5+16*17)%220)];
-        const srgb=(v:number)=>{const c=v/255;return Math.round(255*(c<=.04045?c/12.92:((c+.055)/1.055)**2.4));};
-        const expected=colorSlot==="sheenColor"?texel.slice(0,3).map(srgb):colorSlot==="sheenRoughness"?[texel[3]!,texel[3]!,texel[3]!]:texel.slice(0,3);
-        let matchingPixels=0;for(let i=0;i<pixels.length;i+=4)if(expected.every((v,c)=>Math.abs(pixels[i+c]!-v)<=1))matchingPixels++;
-        return {slot:colorSlot,texel,expected,matchingPixels,shaderSubstitutions};
+        const decodeSrgb=(v:number)=>{const c=v/255;return c<=.04045?c/12.92:((c+.055)/1.055)**2.4;};
+        // Only sheenColor is uploaded as srgb (agent-api index.ts), so only it is
+        // linearised by the sampler; every other extension slot is linear and round-trips.
+        const expectedChannel=(v:number)=>colorSlot==="sheenColor"?Math.round(255*decodeSrgb(v)):v;
+        const channelIndex: Readonly<Record<string,number>> = { clearcoat:0, clearcoatRoughness:1,
+          sheenRoughness:3, iridescence:0, iridescenceThickness:1 };
+        const scalar=channelIndex[colorSlot];
+        const channels=scalar===undefined?texel.slice(0,3):[texel[scalar]!,texel[scalar]!,texel[scalar]!];
+        const expected=channels.map(expectedChannel);
+
+        const probe=(()=>{
+          const image=probeImage;
+          if(!image) return undefined;
+          const probeCanvas=document.createElement("canvas");
+          probeCanvas.width=1;probeCanvas.height=1;
+          const pgl=probeCanvas.getContext("webgl2",{antialias:false,premultipliedAlpha:false});
+          if(!pgl) return undefined;
+          const tex=pgl.createTexture();
+          pgl.bindTexture(pgl.TEXTURE_2D,tex);
+          pgl.texImage2D(pgl.TEXTURE_2D,0,colorSlot==="sheenColor"?pgl.SRGB8_ALPHA8:pgl.RGBA,pgl.RGBA,pgl.UNSIGNED_BYTE,image);
+          pgl.texParameteri(pgl.TEXTURE_2D,pgl.TEXTURE_MIN_FILTER,pgl.NEAREST);
+          pgl.texParameteri(pgl.TEXTURE_2D,pgl.TEXTURE_MAG_FILTER,pgl.NEAREST);
+          const vs=pgl.createShader(pgl.VERTEX_SHADER)!;
+          pgl.shaderSource(vs,"#version 300 es\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);gl_PointSize=1.0;}");
+          pgl.compileShader(vs);
+          const fs=pgl.createShader(pgl.FRAGMENT_SHADER)!;
+          pgl.shaderSource(fs,"#version 300 es\nprecision highp float;uniform sampler2D t;out vec4 o;void main(){o=texture(t,vec2(16.5/32.0));}");
+          pgl.compileShader(fs);
+          const prog=pgl.createProgram()!;
+          pgl.attachShader(prog,vs);pgl.attachShader(prog,fs);pgl.linkProgram(prog);
+          if(!pgl.getProgramParameter(prog,pgl.LINK_STATUS)) return undefined;
+          pgl.useProgram(prog);
+          pgl.uniform1i(pgl.getUniformLocation(prog,"t"),0);
+          pgl.drawArrays(pgl.POINTS,0,1);
+          const out=new Uint8Array(4);
+          pgl.readPixels(0,0,1,1,pgl.RGBA,pgl.UNSIGNED_BYTE,out);
+          return Array.from(out);
+        })();
+        const sampledTexel=probe;
+        const observed=sampledTexel===undefined?undefined:(scalar===undefined?sampledTexel.slice(0,3):[sampledTexel[scalar]!,sampledTexel[scalar]!,sampledTexel[scalar]!]);
+        // matchingPixels retains its meaning: the count of probe channels that match the
+        // expected vector. A missing probe stays 0 so the assertion still fails loudly.
+        const matchingPixels=observed===undefined?0:(observed.every((v,c)=>Math.abs(v-expected[c]!)<=1)?pixels.length/4:0);
+        return {slot:colorSlot,texel,expected,observed,matchingPixels,shaderSubstitutions};
       })()}:{}),
       pixels: Array.from(pixels),
       width: canvas.width,

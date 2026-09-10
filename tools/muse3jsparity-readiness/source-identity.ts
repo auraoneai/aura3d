@@ -15,6 +15,11 @@ export function artifact(root: string, path: string): Artifact {
 export const isSourceInput = (path: string): boolean => !!path
   && !/(^|\/)(node_modules|dist|coverage|test-results)(\/|$)/.test(path)
   && !/^(tests\/reports\/|release-artifacts\/|\.goal(?:\/|$)|\.orchestrate(?:\/|$))/.test(path)
+  // Scratch fixtures written by the deletion-safety calibration suite. They are created and
+  // removed inside a single test run, so hashing them made source identity change while a
+  // producer was executing its own named suite: the producer then wrote exitCode 1 with
+  // "source changed during run" even though no product source was touched.
+  && !/^tests\/tooling-calibration\//.test(path)
   // Completion markers are administrative state. Their exact bytes are archived and
   // replayed by administrative-lineage; including them here makes evidence invalidate
   // itself when a verified checkbox is marked complete.

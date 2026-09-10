@@ -1,0 +1,43 @@
+name: Muse 3.0.1 Head-to-head installed
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Exact source commit to reproduce
+        required: true
+permissions: {contents: read}
+env:
+  AURA3D_REMOTE_PROVIDER: github-actions
+jobs:
+  h2h:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          lfs: true
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with: {version: 11.1.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: pnpm, registry-url: 'https://registry.npmjs.org'}
+      # The receipt binds to HEAD and to a clean tree; a dirty checkout would
+      # produce a receipt that cannot be replayed against this source.
+      - run: |
+          test "$(git rev-parse HEAD)" = "${{ inputs.source_commit }}"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+      - name: Head-to-head installed reproduction
+        env:
+          AURA3D_REMOTE_WORKER_ID: muse301-h2h-${{ inputs.source_commit }}
+        run: pnpm head-to-head:installed
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-h2h-${{ inputs.source_commit }}
+          path: |
+            tests/reports/current-head-to-head-installed/report.json
+            tests/reports/current-head-to-head/
+            tests/reports/release-tarballs/
+          if-no-files-found: warn

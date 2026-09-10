@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#101820"/>
+  <rect x="36" y="36" width="888" height="468" fill="#151d24" stroke="#34424d" rx="8"/>
+  <rect x="36" y="36" width="12" height="468" fill="#62d68f"/>
+  <text x="78" y="102" fill="#eef2f6" font-family="ui-sans-serif, system-ui" font-size="34">Generated External parity Morph Expression</text>
+  <text x="78" y="148" fill="#b7c4ce" font-family="ui-sans-serif, system-ui" font-size="22">morph / morph-target, morph-position-deltas, visible-morph-control, animated-morph-weights</text>
+  <text x="78" y="208" fill="#dbe6ef" font-family="ui-sans-serif, system-ui" font-size="20">meshes 1 · materials 1 · textures 0</text>
+  <text x="78" y="246" fill="#dbe6ef" font-family="ui-sans-serif, system-ui" font-size="20">animations 1 · skins 0 · morph targets 1</text>
+  <text x="78" y="304" fill="#9fb1c1" font-family="ui-sans-serif, system-ui" font-size="18">Unsupported: none</text>
+</svg>

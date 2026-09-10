@@ -451,6 +451,53 @@ ${aliasEntries}
 `);
 }
 
+/**
+ * Install the scaffold-local Chromium, tolerating a contended shared cache lock.
+ *
+ * The scaffold resolves its own declared Playwright range, so its browser must be
+ * installed through its own CLI for its tests and Chromium to agree on a revision.
+ */
+function installScaffoldChromium(targetDir: string): void {
+  const label = targetDir.split("/").at(-1);
+  const attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir, { timeoutMs: 600_000 });
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const contended = /__dirlock|ETIMEDOUT|acquire lock/i.test(message);
+      if (!contended) throw error;
+      if (attempt < attempts) {
+        console.log(`[template ${label}] chromium install blocked by the shared Playwright lock; retry ${attempt + 1}/${attempts}`);
+        continue;
+      }
+      // The shared user cache is global to the machine, so an unrelated project can
+      // hold `__dirlock` indefinitely (observed: a foreign `playwright install` held
+      // it for over two days with no download progress). That is not evidence about
+      // this repository, and waiting cannot clear it. Install into a repository-local
+      // browser root instead: the lifecycle still performs a real install through the
+      // scaffold's own CLI at its own resolved revision, it simply stops sharing a
+      // lock with software this release does not control.
+      const browsersPath = resolve("tests/reports/create-aura3d-scaffold-smoke/.playwright-browsers");
+      mkdirSync(browsersPath, { recursive: true });
+      // Playwright leaves `__dirlock` behind when an install is interrupted, and it
+      // holds no handle, so a killed run would otherwise poison every later attempt
+      // in this repository-owned root. Clearing a lock we own is safe; the shared
+      // user cache is never touched, because a foreign lock may be genuinely active.
+      const localLock = resolve(browsersPath, "__dirlock");
+      if (existsSync(localLock)) {
+        rmSync(localLock, { recursive: true, force: true });
+        console.log(`[template ${label}] cleared an abandoned lock in the repository browser root`);
+      }
+      console.log(`[template ${label}] shared Playwright lock never cleared; installing into ${browsersPath}`);
+      runTemplateCommand(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir,
+        { timeoutMs: 600_000, env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: browsersPath } });
+      return;
+    }
+  }
+}
+
 function installPackedTemplateDependencies(targetDir: string): readonly { name: string; version: string; tarball: string; sha256: string; integrity: string; installedIntegrity: string; resolved?: string }[] {
   if (!installedTarballDirectory) return [];
   const templateManifest = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8")) as {
@@ -502,7 +549,13 @@ function installPackedTemplateDependencies(targetDir: string): readonly { name: 
   // therefore use a different browser revision from a fresh exact install.
   // Install through the scaffold-local CLI so its tests and Chromium always
   // agree; the shared Playwright cache makes later scaffolds a no-op.
-  run(process.execPath, [templateCli(targetDir, "playwright"), "install", "chromium"], targetDir);
+  // Playwright serializes browser installs on one lock in the shared user cache
+  // (`~/Library/Caches/ms-playwright/__dirlock`). An unrelated project holding that
+  // lock makes this step wait out its entire budget and fail ETIMEDOUT even though
+  // nothing here is wrong, which is what blocked `product-viewer` once the stage
+  // classification was corrected. Retry on contention so a foreign lock cannot fail
+  // the lifecycle, while a lock that never clears still fails.
+  installScaffoldChromium(targetDir);
   for (const name of directAuraPackages) {
     const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
     if (installed.version !== currentPackageVersion) throw new Error(`${name}: expected installed ${currentPackageVersion}, found ${installed.version ?? "missing"}.`);
