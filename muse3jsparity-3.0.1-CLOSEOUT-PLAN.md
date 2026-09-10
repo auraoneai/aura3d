@@ -410,6 +410,74 @@ commit advanced it (`eb4b6f39` receipt vs `f445ccab` HEAD). The aggregate aborts
 baseline, so the manifest is never reached. The head-to-head receipt must therefore be the
 last producer run before any aggregate attempt, on the frozen commit.
 
+## Execution log — 2026-09-10 (work-order receipts in production; two real defects surfaced)
+
+**15 of 15 unit-only work-order gates produced valid receipts.** `m3, r0, s, b2, f3, j3, n3,
+p1, t2, c3, o3, q0, t1, v1, p3` all validate with `valid: true` and **zero errors**. The
+producer scales, and its receipts are accepted by the same `validateReceipt` the aggregate
+uses.
+
+**Browser gates required one fix, then worked.** The first four browser gates failed with
+`ENOENT ... /wo/b4/browser.json`: `playwright.config.ts` pins the json reporter's
+`outputFile`, so every gate would otherwise overwrite the shared
+`tests/reports/browser.json` and leave no per-gate report to hash. Setting
+`PLAYWRIGHT_JSON_OUTPUT_NAME` per run — the same override the readiness aggregate uses —
+fixed it. Gate `b4` then validated with zero errors (8 tasks, 16 proofs).
+
+**Two genuine product defects found, both in specs the aggregate never exercised.** These
+are not tooling problems and not flakes; the 33 aggregate gates do not include these files,
+so this is the first time these obligations have been executed for 3.0.1:
+
+1. `c1` (`tests/browser/root-textured-c1.spec.ts`) — 2 failed, 11 passed.
+   `C1 textured upgrade never landed`, caused by
+   `Failed to resolve module specifier '@aura3d/rendering/extension-scalar-atlas'`, so the
+   subject falls back to a scalar material and the clearcoat channel-vector assertion fails.
+   The export exists in `packages/rendering/package.json` and both
+   `packages/rendering/dist/extension-scalar-atlas.js` and the `node_modules` symlink
+   resolve on disk, so this is a browser-side module resolution gap rather than a missing
+   build artifact.
+2. `j2` (`tests/browser/webgpu-post-j2.spec.ts`) — 1 failed, 3 passed.
+   `RenderDeviceError: Native WebGPU readback currently supports rgba8 render targets`.
+
+Both are recorded as open work rather than worked around; neither gate can hold a receipt
+until its named suite actually passes.
+
+## Execution log — 2026-09-10 (C1 module-resolution defect fixed; oracle defect isolated)
+
+**Fixed a real dev-server defect.** `tests/browser/example-dev-server.ts` aliased only three
+of the five published `@aura3d/rendering` subpaths, omitting `extension-scalar-atlas` and
+`webgpu`. The omission does not fail at build time: the browser rejects the specifier at
+runtime, `createAuraApp`'s dynamic `import("@aura3d/rendering/extension-scalar-atlas")`
+fails, the route silently falls back to a scalar material, and only a downstream pixel
+assertion notices. Both aliases are now registered ahead of the bare `@aura3d/rendering`
+entry, because the first prefix match wins. `root-textured-c1.spec.ts` improved from
+**11 passed / 2 failed to 12 passed / 1 failed**, and the
+`Failed to resolve module specifier` warning is gone.
+
+**Isolated the remaining C1 failure to a harness-oracle defect, not a renderer defect.**
+`root-textured-c1.spec.ts` "color-space uploads" fails on the first slot with
+`matchingPixels: 0`. Measured evidence:
+
+- The fixture texel is exactly what the oracle expects: reading
+  `tests/browser/fixtures/c1-extension/generated/rgba.3b557885.png` at the sampled UV
+  (pixel 16,16) returns `[184, 244, 112, 162]`, matching the oracle's computed
+  `[184, 244, 112, 162]`. The texture and its sampling coordinate are correct.
+- The dominant surface colour is `[216, 225, 197]`, which is the texel run through ACES
+  filmic tone mapping plus sRGB encode (`a3dTexturedPbrEncodeOutput`) to within 5/255
+  (`[221, 230, 199]`). So the pipeline's encoded output is reaching the framebuffer, not the
+  harness's raw-texel override.
+- Cause: the harness patches whichever fragment program declares
+  `uniform sampler2D u_clearcoatTexture;`, but that uniform only exists under
+  `#ifdef A3D_PBR_CLEARCOAT_TEXTURES` **and** `#ifndef A3D_PBR_EXTENSION_ATLAS`. With the
+  extension-atlas variant active the drawing program uses `u_clearcoatAtlasRect` instead, so
+  the substitution lands on a program that never draws. Confirmed by wrapping
+  `shaderSource`: the substituted colour disappeared entirely and `shaderSubstitutions`
+  dropped to 0, proving programs are compiled once and cached across the eight slots.
+
+This is recorded as open work. The oracle must target the atlas-variant program (or force
+the non-atlas variant) rather than assuming a `u_clearcoatTexture` sampler exists; the
+assertion was authored in `efe051c0` and has never passed.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
