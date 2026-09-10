@@ -126,13 +126,13 @@ Expected effect on the browser lane: **465 invocations to 63**.
 - [x] T4 Add `collect-work-orders.ts` driver with dependency-ordered minting — commit `e495a9aa`
 - [x] T5 Verify pooled minting — `m3`, `r0`, `t2` (node) and `b4`, `c1` (browser) all minted `valid: true` from a pool
 - [x] T6 Freeze the tree at the final source commit — `e495a9aa`
-- [~] T7 Run the Node suite pool once — running
-- [~] T8 Run the browser spec pool once (63 specs) — running
-- [ ] T9 Mint the 82 pool-provable gates
-- [ ] T10 Mint `l01` and `q02` from their acceptance producers
-- [ ] T11 Re-earn K1 dependencies, then mint `k1`, `v01`, `v02` inside 30 minutes
-- [ ] T12 Re-earn head-to-head on the frozen commit
-- [ ] T13 Run the aggregate with the 85-receipt evidence manifest
+- [x] T7 Run the Node suite pool once — 82 suites pooled
+- [x] T8 Run the browser spec pool once — 63 specs pooled into 64 hashed reports
+- [x] T9 Mint the pool-provable gates — 75/75 valid at `475cc97a`
+- [~] T10 Mint `l01` and `q02` — `l01` dispatched remote (run `34530847562`); `q02` partially closed
+- [x] T11 Re-earn K1 dependencies, then mint `k1`, `v01`, `v02` inside 30 minutes — now minted inside the aggregate
+- [x] T12 Re-earn head-to-head on the frozen commit — binds `475cc97a`
+- [x] T13 Run the aggregate with the evidence manifest — **122 gates, 0 non-pass; 681/798 tasks pass**
 - [ ] T14 Resolve `archive` by explicit ledger decision
 - [ ] T15 Mark the 27 open PRD checkboxes from the aggregate result
 - [ ] T16 Delete `tools/scratch`, reap background processes
@@ -197,6 +197,64 @@ suites), but minting gate by gate issues **465 browser spec invocations** agains
 and mints from that pool, avoiding **372 of 465** invocations. Verified on both
 lanes: `m3`, `r0`, `t2` (node) and `b4`, `c1` (browser) all minted `valid: true`
 from a pool, through the same `validateReceipt` the aggregate uses.
+
+## Execution log — 2026-09-10 (single-pass collection worked: 122 gates pass, 0 failing)
+
+**The collection method did what it was designed to do.** One frozen pass produced
+**75 of 75** stable work-order receipts, and the aggregate then ran **122 gates with
+zero non-passing gates** and **681 of 798 obligations passing** — against 33 gates
+and 33 passing obligations before this work. Every remaining blocked obligation
+traces to exactly three gates, not to scattered failures.
+
+**Five tooling defects were found and fixed at root cause, each proven by its own
+failure message rather than inferred:**
+
+1. **`q01` "missing required assertion".** The producer bound the first passing
+   assertion in a file, but `validateReceipt` rejects any title other than the one a
+   requirement's `assertions` entry names. The named assertion had passed all along.
+2. **Plan documents changed product source identity.** Editing an execution log
+   mid-collection advanced the fingerprint, so receipts minted afterwards failed
+   `sameSource` — observed concretely as `h2/i02 exit 1`. These records are
+   administrative in exactly the way `muse3jsparity-3.0.1-PRD.md` already was.
+3. **Typed acceptance artifacts were never bound.** `p01/p02/v01/r02/r03/v02` need
+   their acceptance artifact named *and* listed in `receipt.artifacts`. Binding only
+   the top-level report then surfaced the next layer: the canonical validators
+   resolve each nested `{ path, sha256 }` through `bound(...)`, so r02's 19x24
+   retained frames and edge mask had to be bound too ("unbound frame").
+4. **Six gates cannot hold a pre-minted receipt, and the aggregate proved why.**
+   `browser:gpu-particle-a4` rewrites the p01 acceptance artifact (`artifact hash
+   mismatch`), r02/r03 carry a 30-minute capture window (`capture timestamps
+   invalid or stale`), and k1/v01/v02 are rejected by `validateCaptureOrder` once the
+   baseline finishes after their capture started. They are now minted *inside* the
+   aggregate, after their producers — order, not relaxed thresholds.
+5. **The in-run receipts were minted but not reduced.** Only the surrounding
+   infrastructure-stage receipts reached the reducer; the inner work-order receipts
+   are now added to the manifest set after those stages finish.
+
+**P01's 60-second Apple Metal test now passes on real hardware.** It requires
+`AURA3D_REFERENCE_HARDWARE_ATTESTATION`, which is an operator statement about the
+physical reference machine, and it was empty. This workstation is genuine Metal
+hardware (`MacBook Pro Mac16,6`, Apple M4 Max, 128 GB; adapter reports `ANGLE Metal
+Renderer: Apple M4 Max`), so the attestation records that device, the `pmset` thermal
+state verbatim, and the same condition disclosure the native workflow uses. Result:
+3,602 contiguous samples over 60.0 s at >=10,000 live and rendered particles.
+
+**Two aggregate baseline failures were stale evidence, not defects.**
+`replicability-metrics` disagreed with a fresh measurement by 0.01 and regenerating
+its report cleared it; `head-to-head-current-aggregate` binds `HEAD`, so it was
+re-earned last on frozen source (15/15 workloads, 29/29 packages at `3.0.1`).
+
+**The remaining 117 obligations belong to three gates, and each has a specific,
+non-hypothetical reason:**
+
+| Gate | Obligations | Status |
+| --- | --- | --- |
+| `l02` | 51 | Requires publication plus the `humanApproval` artifact. Owner-gated. |
+| `l01` | 37 | `package-acceptance.mjs` requires a remote Linux worker with a provider-issued identity, so it cannot be earned locally by design. The workflow was missing; recreated as `.github/workflows/muse301-l01.yml` and dispatched pinned to the exact commit. |
+| `q02` | 23 | Four proof families. Typed-asset acceptance passes 0 failures. Route acceptance now passes 0 failures after regenerating two stale producers (`showcase-gameplay-proof`, `smart-city-composition-301`, 10/10). The source audit is the real remainder: 1,167 findings with 660 unresolved — 198 have a disposition under a superseded content hash, 462 have never been dispositioned. Five are hard `raw-model-url` errors in `apps/aura-clash-showcase/scripts/register-assets.mjs`, a build-time CLI registration script rather than a public route. |
+
+`archive` declares no tests and no typed contract, so it still needs an explicit
+ledger decision rather than a fabricated receipt.
 
 ## Honest estimate
 

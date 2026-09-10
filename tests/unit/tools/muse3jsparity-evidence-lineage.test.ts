@@ -136,6 +136,26 @@ describe('immutable producer lineage', () => {
     for (const file of ['benchmark/context/frozen-opponent.json', 'benchmark/context/reference/scene.ts', 'packages/new/src/new.ts', 'tests/browser/new-proof.spec.ts']) expect(isSourceInput(file)).toBe(true);
     for (const file of ['.goal/state.json', '.orchestrate/run.json', 'tests/reports/new.json', 'muse3jsparity-3.0.1-PRD.md', 'docs/project/release-artifacts.json', 'BUNDLE_SIZES.md', 'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json', 'benchmark/context/muse3jsparity-r185-matrix.json']) expect(isSourceInput(file)).toBe(false);
   });
+  /*
+   * The release pipeline has two implementations of source identity: the TypeScript
+   * owner used by the readiness aggregate and receipt validation, and the JavaScript
+   * copy `tools/release/source-identity.mjs` used by package acceptance. They drifted:
+   * the .mjs copy lacked the plan-document and calibration-fixture exclusions, so the
+   * L01 remote run computed a different fingerprint at build time than at validation
+   * time and failed with "package acceptance differs from canonical validation".
+   * Their exclusion sets must stay identical.
+   */
+  it('keeps both source-identity implementations byte-identical in what they exclude', async () => {
+    const js = await import('../../../tools/release/source-identity.mjs') as { isSourceInput: (path: string) => boolean };
+    const cases = ['benchmark/context/frozen-opponent.json', 'packages/new/src/new.ts', 'tests/browser/new-proof.spec.ts',
+      'src/app.ts', 'docs/guide.md', 'node_modules/x/index.js', 'dist/out.js', 'coverage/lcov.info', 'test-results/x.json',
+      '.goal/state.json', '.orchestrate/run.json', 'tests/reports/new.json', 'release-artifacts/plan.json',
+      'tests/tooling-calibration/scratch.json', 'muse3jsparity-3.0.1-PRD.md', 'muse3jsparity-3.0.1-FINISH-PLAN.md',
+      'muse3jsparity-3.0.1-CLOSEOUT-PLAN.md', 'docs/project/release-artifacts.json', 'BUNDLE_SIZES.md',
+      'docs/project/reviews/muse3jsparity-301-combined-source-dispositions.json',
+      'benchmark/context/muse3jsparity-r185-matrix.json'];
+    for (const file of cases) expect(js.isSourceInput(file), file).toBe(isSourceInput(file));
+  });
   it('keeps administrative checklist edits outside runtime identity while code and lockfile edits invalidate it', () => {
     const repo = mkdtempSync(join(tmpdir(), 'muse301-source-identity-'));
     try {
