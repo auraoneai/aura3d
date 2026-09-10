@@ -518,6 +518,35 @@ producers, not to the generic one.
 acceptance producers (`p01`, `p02`, `v01`, `l01`, `l02`), 1 declares no tests (`archive`), and
 `l02` additionally requires the human approval artifact.
 
+## Execution log — 2026-09-10 (C1 oracle defect fully characterized)
+
+Instrumented the WebGL layer to identify the drawing program by hooking `shaderSource`,
+`attachShader` and `drawElements`. Measured facts for `color:clearcoat`:
+
+- Four fragment programs compile. Only program **3** declares
+  `uniform sampler2D u_clearcoatTexture;` and only program **3** carries the harness patch
+  (`patched: true`). No program declares `u_clearcoatAtlasRect`, so the earlier
+  atlas-variant hypothesis was wrong and that speculative edit was reverted.
+- Draw order is `[0,1,1, 0,3,1, 0,3,1]` — three passes of three objects. The patched program
+  **is** bound and **is** drawn in the final two passes.
+- The box region (66,571 px) reads `[216,225,197]`, which is the fixture texel
+  `[184,244,112]` run through ACES filmic + sRGB encode (predicted `[221,230,199]`). The
+  floor reads `[52,59,70]`, consistent with its `#3a4350` material, so the floor is not
+  covering the box.
+- The fixture itself is correct: decoding
+  `tests/browser/fixtures/c1-extension/generated/rgba.3b557885.png` at the sampled UV returns
+  exactly `[184,244,112,162]`.
+
+So the substituted statement compiles into the program that draws the subject, yet the
+framebuffer still holds the encoded value. The remaining candidates are the override's guard
+(`if(u_baseColor.a >= 0.0)`) not being taken, or the appended statement being placed outside
+the emitting scope. This is a harness-oracle defect in evidence authored by `efe051c0` that
+has never passed; it is **not** a renderer defect, and the texture upload path is proven
+correct by the 12 other passing assertions in the same spec.
+
+Recorded as open work rather than adjusted: the assertion is a real claim about numerical
+channel vectors and must not be weakened to obtain a receipt.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
