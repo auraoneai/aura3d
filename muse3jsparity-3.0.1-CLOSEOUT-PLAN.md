@@ -334,6 +334,48 @@ The tool is right and the discipline is the fix — freeze the tree, then run.
 The r185 matrix file is already excluded from source identity (it is a producer output), so
 its regeneration is not the cause; it is committed here to keep the tree clean.
 
+## Execution log — 2026-09-10 (ALL 33 aggregate gates pass; the real remaining shape is now exact)
+
+**Every aggregate gate passes.** `tests/reports/muse3jsparity/readiness.json` reports
+`gates: 33`, **`non-pass: 0`**, `errors: []`. That includes the two that had never passed:
+
+- `template-lifecycle-tarball` — 149 checks, 0 failing, mode `fresh-local-3.0.1-tarballs`,
+  unblocked by removing the dead Playwright `__dirlock` (the foreign `episodeos` install had
+  held it for over two days at 0% CPU with no open handle).
+- `browser:game-visual-superiority` — passes now that the eight K1 producers plus the
+  `gpu-particle-a4` evidence-refresh stage run immediately before it, satisfying the PRD
+  30-minute freshness rule by execution order.
+
+**`overall` is still `blocked`, and the reason is structural rather than a failure.** With
+zero failing gates, the blocker is requirement coverage: `tasks` shows **33 pass and 757
+blocked**. Reading `contracts.ts`, a requirement passes only when every gate it names has
+exactly one result, that result is `pass`, its receipt hash is a valid SHA-256, and the
+receipt's `tasks` array lists that requirement id.
+
+The 757 blocked entries are the original PRD obligations, and they do not name the
+infrastructure gates the aggregate runs. They name **85 distinct work-order proof gates**:
+`a1..a5, b1..b5, c1..c4, d01..d4, e01..e3, f1..f4, g01..g03, h1, h2, i01..i04, j1..j3, k1,
+k2, l01, l02, l7, m1..m3, n1..n4, o1..o3, p01, p02, p1..p3, q01, q02, r01..r06, s, t1..t3,
+u1, u2, v01, v02, archive, master`. The most-referenced are `q01` (242), `g03` (197),
+`g01` (184), `g02` (65), `v01`/`q02`/`l02` (64 each), `l01` (63).
+
+**These are supplied through `--evidence-manifest`, not by running the aggregate.**
+`index.ts` accepts `--evidence-manifest`, reads each referenced producer receipt, and
+validates it with `validateReceipt`. That validation includes `sameSource(receipt.source,
+expected.source)`, so **every work-order receipt must be earned on the same frozen commit as
+the aggregate run**, and `k1`/`v01`/`v02` additionally carry `MAX_COMPARISON_AGE_MS`.
+
+This is why the PRD's per-work-order sections exist: L01 already has such a receipt from run
+`34302077484`, and L02's producer requires a `humanApproval` artifact as a declared input.
+The aggregate is the final reducer over those receipts, not a substitute for them.
+
+**Process defect found and fixed.** Two aggregates ran 11 minutes apart, both reporting
+`R-unit` failure with `STACK_TRACE_ERROR` and no assertion detail — the signature of a killed
+worker, not a defect (the test passes standalone). Cause: `launchctl submit` implies
+KeepAlive, so launchd relaunched the aggregate the moment it exited, and overlapping runs
+share `tests/reports`. Added a single-run stamp guard so a relaunch is a no-op. The aggregate
+correctly reported blocked rather than passing on damaged evidence.
+
 ## Remaining work
 
 ### Step 1 — Green the browser lane (in flight, run `34388538420`)
