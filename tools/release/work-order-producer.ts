@@ -268,6 +268,60 @@ const proofs = testTasks.flatMap(item => (item.tests ?? []).map(file => {
   return { task: item.id, report, testFile: file, testTitle: title };
 }));
 
+/*
+ * Typed acceptance artifacts.
+ *
+ * Five gates carry a contract in ACCEPTANCE_SCHEMAS (p01 particles, p02 shadows,
+ * v01 visual matrix, l01 packages, l02 release), r02/r03 carry temporal contracts,
+ * and v02 carries the root governor contract. `validateReceipt` requires the
+ * receipt to name the artifact AND to list it in `receipt.artifacts` so its bytes
+ * are hashed. The producer does not compute or relax any of these: the named
+ * browser suites above write them, and the canonical validators replay them.
+ * l01/l02/q02 stay with their dedicated producers.
+ */
+const ACCEPTANCE_ARTIFACTS: Readonly<Record<string, string>> = {
+  p01: 'tests/reports/gpu-particle-301-acceptance.json',
+  p02: 'tests/reports/contact-shimmer-b1b2/shadow-stability-301.json',
+  v01: 'tests/reports/muse3jsparity/visual-matrix-301.json',
+  r02: 'tests/reports/root-effects-a3/r02-temporal-sequences.json',
+  r03: 'tests/reports/webgpu-post-j2/r03-retained-sequences.json',
+};
+const GOVERNOR_ARTIFACTS: Readonly<Record<string, string>> = {
+  v02: 'tests/reports/muse3jsparity/root-governor-301.json',
+};
+const acceptancePath = ACCEPTANCE_ARTIFACTS[gate];
+const governorPath = GOVERNOR_ARTIFACTS[gate];
+const extraArtifacts: Artifact[] = [];
+for (const path of [acceptancePath, governorPath].filter((value): value is string => !!value)) {
+  if (!existsSync(resolve(root, path))) throw new Error(`${gate}: required acceptance artifact is missing: ${path}`);
+  extraArtifacts.push(reference(path));
+}
+/*
+ * Acceptance artifacts reference their own inputs by { path, sha256 }, and the
+ * canonical validators check each one through `bound(...)`, which asks whether the
+ * receipt lists it. r02 references 19 sequences x 24 retained frames plus an edge
+ * mask; r03 references its own frame set. Binding only the top-level report left
+ * every frame reported as "unbound frame". Collect the nested references so the
+ * receipt hashes exactly the bytes the validator replays.
+ */
+const nestedReferences = (value: unknown, seen = new Set<string>(), depth = 0): Artifact[] => {
+  if (depth > 6 || !value || typeof value !== 'object') return [];
+  const found: Artifact[] = [];
+  const record = value as Record<string, unknown>;
+  const path = record.path, digest = record.sha256;
+  if (typeof path === 'string' && typeof digest === 'string' && /^[a-f0-9]{64}$/.test(digest)
+    && !seen.has(path) && existsSync(resolve(root, path))) {
+    seen.add(path);
+    found.push(reference(path));
+  }
+  for (const child of Array.isArray(value) ? value : Object.values(record)) found.push(...nestedReferences(child, seen, depth + 1));
+  return found;
+};
+for (const path of [acceptancePath, governorPath].filter((value): value is string => !!value)) {
+  const seen = new Set(extraArtifacts.map(item => item.path));
+  extraArtifacts.push(...nestedReferences(JSON.parse(readFileSync(resolve(root, path), 'utf8')), seen));
+}
+
 const receiptPath = pathInRoot(resolve(root, output, `${gate}.receipt.json`));
 const receipt: ProducerReceipt = {
   schema: 'muse3jsparity-producer/v1', runId: newRunId(), gate,
@@ -279,7 +333,9 @@ const receipt: ProducerReceipt = {
   environment: { browser: otherFiles.length ? 'Chromium' : 'not applicable',
     backend: otherFiles.length ? 'browser and node' : 'node',
     hardware: process.env.AURA_EVIDENCE_HARDWARE ?? `local ${hostname()}` },
-  artifacts: [...reports, ...logs], packages: [], tarballs: [], proofs,
+  artifacts: [...reports, ...logs, ...extraArtifacts], packages: [], tarballs: [], proofs,
+  ...(acceptancePath ? { acceptance: acceptancePath } : {}),
+  ...(governorPath ? { governorAcceptance: governorPath } : {}),
 };
 if (!sameSource(source, sourceIdentity(root))) receipt.exitCode = 1;
 const written = writeImmutableJson(resolve(root, receiptPath), receipt);
