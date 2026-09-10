@@ -14,6 +14,7 @@ export interface GlDeviceClass {
   readonly source: "cdp-systeminfo-glrenderer";
   readonly glRenderer: string;
   readonly unmaskedRenderer: string;
+  readonly rendererIdentified: boolean;
   readonly softwareRasterizer: boolean;
   readonly hardwareAccelerated: boolean;
   readonly claimBoundary: string;
@@ -44,15 +45,24 @@ export async function readGlDeviceClass(browser: Browser, page: Page): Promise<G
     return debugInfo ? String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) ?? "") : "";
   }).catch(() => "");
   const combined = `${glRenderer} ${unmaskedRenderer}`;
-  const softwareRasterizer = SOFTWARE_GL.test(combined);
+  const rendererIdentified = combined.trim().length > 0;
+  // An unreadable renderer string is not evidence of hardware acceleration.
+  // Hosted runners can hide `WEBGL_debug_renderer_info` and refuse the CDP
+  // SystemInfo domain, and treating that silence as "hardware" asserted a
+  // hardware-calibrated frame budget against SwiftShader. Only a positively
+  // identified non-software renderer establishes hardware performance.
+  const softwareRasterizer = !rendererIdentified || SOFTWARE_GL.test(combined);
   return {
     source: "cdp-systeminfo-glrenderer",
     glRenderer,
     unmaskedRenderer,
+    rendererIdentified,
     softwareRasterizer,
-    hardwareAccelerated: !softwareRasterizer && combined.trim().length > 0,
+    hardwareAccelerated: rendererIdentified && !SOFTWARE_GL.test(combined),
     claimBoundary: softwareRasterizer
-      ? "Software GL rasterizer: functional and visual evidence only; hardware-calibrated frame budgets are not asserted here."
+      ? rendererIdentified
+        ? "Software GL rasterizer: functional and visual evidence only; hardware-calibrated frame budgets are not asserted here."
+        : "Unidentified GL renderer: functional and visual evidence only; hardware-calibrated frame budgets are not asserted here."
       : "Hardware GL renderer: hardware-calibrated frame budgets are asserted."
   };
 }

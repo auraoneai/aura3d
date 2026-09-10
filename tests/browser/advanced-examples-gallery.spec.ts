@@ -354,6 +354,15 @@ test.describe("ThreejsParity advanced examples gallery", () => {
         (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN = origin;
       }, server.origin);
       const errors = collectPageErrors(page);
+      // Classify the GL surface before navigating. A software rasterizer renders
+      // these dense scenes roughly an order of magnitude slower than the
+      // hardware the route budgets were sized on, and the capture itself can
+      // outlive the hardware-sized wall clock. Raising the allowance only after
+      // the scene settled meant the test had already timed out.
+      const deviceClass = await readGlDeviceClass(browser, page);
+      if (deviceClass.softwareRasterizer) {
+        test.setTimeout(captureTimeoutMs(demo) * SOFTWARE_GL_CAPTURE_TIMEOUT_FACTOR);
+      }
       try {
         if (!server) throw new Error("Vite dev server was not initialized.");
         await page.goto(`${server.origin}${ADVANCED_GALLERY_CONTEXTUAL_ROUTE}#${demo}`, { waitUntil: "domcontentloaded" });
@@ -371,14 +380,6 @@ test.describe("ThreejsParity advanced examples gallery", () => {
         }, { expectedDemo: demo, authoredRequired: isAuthoredRoute(demo), backgroundRequired: isRendererEnvironmentBackgroundRoute(demo) });
         await page.waitForTimeout(450);
         const runtime = await readRuntime(page);
-        const deviceClass = await readGlDeviceClass(browser, page);
-        if (deviceClass.softwareRasterizer) {
-          // A software rasterizer renders these dense scenes roughly an order of
-          // magnitude slower than the hardware the route budgets were sized on.
-          // Raise the wall-clock allowance so the capture still completes and is
-          // judged on its evidence rather than on rasterizer speed.
-          test.setTimeout(captureTimeoutMs(demo) * SOFTWARE_GL_CAPTURE_TIMEOUT_FACTOR);
-        }
         expect(errors).toEqual([]);
         expect(runtime.status).not.toBe("error");
         expect(runtime.error).toBeUndefined();
