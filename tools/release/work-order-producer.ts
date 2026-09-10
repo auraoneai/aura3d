@@ -195,8 +195,46 @@ if (remainingBrowser.length) {
   reports.push(reference(reportPath)); reportPaths.push(reportPath);
 }
 
-/** Find a passing assertion for `file` in the retained reports, or fail loudly. */
-const passingAssertion = (file: string): { report: string; title: string } => {
+/**
+ * Find a passing assertion for `file` in the retained reports, or fail loudly.
+ *
+ * `required` is the exact title a requirement's `assertions` entry names. When a
+ * requirement declares one, `validateReceipt` rejects any other title for that
+ * task, so picking merely the first passing assertion in the file produced
+ * "missing required assertion" even though the named assertion had passed.
+ */
+const passingAssertion = (file: string, required?: string): { report: string; title: string } => {
+  if (required) {
+    for (const reportPath of reportPaths) {
+      const report = JSON.parse(readFileSync(resolve(root, reportPath), 'utf8'));
+      for (const suite of report.testResults ?? []) {
+        const name = String(suite.name ?? '').replace(/\\/g, '/');
+        if (name !== file && !name.endsWith(`/${file}`)) continue;
+        if ((suite.assertionResults ?? []).some((a: any) => a.status === 'passed' && a.fullName === required))
+          return { report: reportPath, title: required };
+      }
+      const seek = (suites: any[]): { report: string; title: string } | undefined => {
+        for (const suite of suites ?? []) {
+          for (const spec of suite.specs ?? []) {
+            const specFile = String(spec.file ?? suite.file ?? '').replace(/\\/g, '/');
+            if (specFile !== file && !file.endsWith(`/${specFile}`) && !specFile.endsWith(`/${file}`)) continue;
+            if (spec.title !== required) continue;
+            if ((spec.tests ?? []).some((t: any) => (t.results ?? []).some((r: any) => r.status === 'passed')))
+              return { report: reportPath, title: required };
+          }
+          const nested = seek(suite.suites ?? []);
+          if (nested) return nested;
+        }
+        return undefined;
+      };
+      const found = seek(report.suites ?? []);
+      if (found) return found;
+    }
+    throw new Error(`${gate}: required assertion did not pass: ${file} / ${required}`);
+  }
+  return anyPassingAssertion(file);
+};
+const anyPassingAssertion = (file: string): { report: string; title: string } => {
   for (const reportPath of reportPaths) {
     const report = JSON.parse(readFileSync(resolve(root, reportPath), 'utf8'));
     for (const suite of report.testResults ?? []) {
@@ -225,7 +263,8 @@ const passingAssertion = (file: string): { report: string; title: string } => {
 };
 
 const proofs = testTasks.flatMap(item => (item.tests ?? []).map(file => {
-  const { report, title } = passingAssertion(file);
+  const required = (item.assertions ?? []).find(assertion => assertion.file === file)?.title;
+  const { report, title } = passingAssertion(file, required);
   return { task: item.id, report, testFile: file, testTitle: title };
 }));
 
