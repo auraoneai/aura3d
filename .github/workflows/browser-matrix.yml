@@ -8,6 +8,10 @@ on:
       - master
       - develop
 
+concurrency:
+  group: browser-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   chromium-browser-and-visual:
     name: Chromium Browser And Visual Checks
