@@ -18,6 +18,26 @@ completion ledger; these notes do not certify completion or publication.
 | CLI asset pipeline and package decoders | Decoder alignment and retained typed fixture provenance | Installed-version alignment plus real decode/fixture results |
 | Release tooling | Complete requirement coverage, fail-closed gates, immutable receipts and exact package lineage | Fresh full aggregate run and exact-installed package/scaffold lifecycles |
 
+## Measured outcomes
+
+These are the measured comparisons the candidate currently holds, reported with
+both directions rather than wins alone. Each number is the retained receipt's
+value, not a summary or a projection.
+
+Measured win: selected scaffold production JavaScript is smaller by `361546` bytes against the Three.js comparison, from `tests/reports/current-head-to-head/aggregate.json`.
+
+Scope: 1,132,696 JavaScript bytes against 1,494,242 for the same workload, one
+clean production build per side, variance not measured.
+
+Measured loss: isolated cold install-to-verified-cube is slower at `6638.6` ms against 5,047.9 ms, from `tests/reports/developer-friction.json`.
+
+Scope: three fresh projects per engine and cache state; the warm medians were
+3,199.5 ms against 2,297.7 ms.
+
+Both figures are bounded to their selected workloads. The 15-workload comparison
+records `1` win, `3` parity results and `39` disclosed losses, and reports
+`comparisonComplete: false`, so it establishes no universal performance ranking.
+
 ## Acceptance still required
 
 Sustained reference-hardware particle performance, rendered shadow-stability
