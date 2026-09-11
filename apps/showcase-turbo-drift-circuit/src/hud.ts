@@ -120,22 +120,24 @@ export function renderTurboHudPanel(debugMode: boolean): string {
       <article class="metric"><span>Pos</span><strong id="position-value">P2</strong></article>
       <article class="metric metric--status"><span>Race</span><strong id="status-value">Lights</strong></article>
     </section>
-    <section class="lap-times" aria-label="Lap times">
-      <article class="metric metric--compact"><span>Last</span><strong id="last-lap-value">--:--.--</strong></article>
-      <article class="metric metric--compact"><span>Best</span><strong id="best-lap-value">--:--.--</strong></article>
-      <article class="metric metric--compact"><span>Track</span><strong id="track-state-value">On track</strong></article>
-    </section>
-    <section class="lap-times" aria-label="Contact telemetry">
-      <article class="metric metric--compact"><span>Chassis Y</span><strong id="contact-chassis-value">--</strong></article>
-      <article class="metric metric--compact"><span>Road Y</span><strong id="contact-road-value">--</strong></article>
-      <article class="metric metric--compact"><span>Delta</span><strong id="contact-delta-value">--</strong></article>
-      <article class="metric metric--compact"><span>Wheels</span><strong id="contact-wheels-value">--</strong></article>
-      <article class="metric metric--compact"><span>Held</span><strong id="contact-held-value">live</strong></article>
-    </section>
-    <section class="lap-times" aria-label="Time-trial ghost">
-      <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
-      <article class="metric metric--compact"><span>Ghost best</span><strong id="ghost-best-value">--:--.--</strong></article>
-    </section>
+    <div class="lap-times-stack">
+      <section class="lap-times" aria-label="Lap times">
+        <article class="metric metric--compact"><span>Last</span><strong id="last-lap-value">--:--.--</strong></article>
+        <article class="metric metric--compact"><span>Best</span><strong id="best-lap-value">--:--.--</strong></article>
+        <article class="metric metric--compact"><span>Track</span><strong id="track-state-value">On track</strong></article>
+      </section>
+      <section class="lap-times" aria-label="Contact telemetry">
+        <article class="metric metric--compact"><span>Chassis Y</span><strong id="contact-chassis-value">--</strong></article>
+        <article class="metric metric--compact"><span>Road Y</span><strong id="contact-road-value">--</strong></article>
+        <article class="metric metric--compact"><span>Delta</span><strong id="contact-delta-value">--</strong></article>
+        <article class="metric metric--compact"><span>Wheels</span><strong id="contact-wheels-value">--</strong></article>
+        <article class="metric metric--compact"><span>Held</span><strong id="contact-held-value">live</strong></article>
+      </section>
+      <section class="lap-times" aria-label="Time-trial ghost">
+        <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
+        <article class="metric metric--compact"><span>Ghost best</span><strong id="ghost-best-value">--:--.--</strong></article>
+      </section>
+    </div>
     <section id="result-card" class="result-card result-card--hidden" aria-label="Race results" hidden>
       <h2>Race complete</h2>
       <dl>

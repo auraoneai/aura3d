@@ -128,12 +128,33 @@ button { font: inherit; }
 }
 
 .lap-times {
+  /*
+   * Three telemetry sections use this class (lap/gap, contact, ghost). Each was
+   * absolutely positioned at the same top/right, so all three painted on top of
+   * each other: "Ghost OFF" collided with the ghost-best time and the contact
+   * row overlapped the lap panel. Stack them in one flow column instead, so a
+   * section added later cannot silently overlap an existing one. The panel
+   * chrome moves here from the removed absolute rule, matching .metrics-row so
+   * the telemetry stays legible against a bright track.
+   */
+  display: grid;
+  grid-template-columns: repeat(3, 92px);
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(164, 213, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(5, 12, 24, 0.64);
+  box-shadow: 0 18px 50px rgba(1, 5, 12, 0.28);
+  backdrop-filter: blur(16px) saturate(1.15);
+}
+
+.lap-times-stack {
   position: absolute;
   top: 118px;
   right: 30px;
   display: grid;
-  grid-template-columns: repeat(3, 92px);
-  gap: 6px;
+  gap: 8px;
+  justify-items: end;
 }
 
 .metric--compact {
@@ -370,7 +391,7 @@ button { font: inherit; }
   opacity: 0;
 }
 
-.panel[data-capture="overview"] .lap-times {
+.panel[data-capture="overview"] .lap-times-stack {
   opacity: 0;
 }
 
@@ -418,7 +439,7 @@ button { font: inherit; }
   .race-brand { width: 300px; }
   .panel__lede { display: none; }
   .metrics-row { grid-template-columns: 100px repeat(3, 70px); }
-  .lap-times { display: none; }
+  .lap-times-stack { display: none; }
   .debug-section { display: none; }
 }
 
