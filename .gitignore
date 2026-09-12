@@ -369,3 +369,4 @@ marketing/public/aura-assets/
 tests/browser/fixtures/*
 !tests/browser/fixtures/c1-extension/
 !tests/browser/fixtures/c1-extension/**
+.local-evidence/
