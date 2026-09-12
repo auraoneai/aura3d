@@ -1668,6 +1668,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       if (rivalPassive) {
         rivalForceGuard = false;
         rivalForcedGuardDepleted = false;
+        // Passive evidence mode owns a fixed staged position. Clear any
+        // locomotion grace left by the preceding capture so the rival cannot
+        // coast through a dash after the test driver teleports both fighters.
+        rivalState.dashGrace = 0;
+        rivalState.jumpGrace = 0;
+        rivalState.downGrace = 0;
+        rivalState.moving = false;
         rivalState.guard = false;
         rivalState.guardMeter = 100;
         rivalState.attack = null;
@@ -2608,8 +2615,8 @@ function updateRivalAi(
   const strikeGate = aiDecision ? Math.max(0, aiDecision.strikeGate) : 1;
   updateFighterIntents(rival, desired, {
     down: false,
-    jump: role !== "meaty-wakeup" && !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
-    dash: shouldDash,
+    jump: !passive && role !== "meaty-wakeup" && !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
+    dash: !passive && shouldDash,
     // Guard appetite keeps its existing window (combat-feel coverage); the preset modulates
     // strike appetite, which is where measurable role differences live.
     guard: shouldGuard && !passive,
