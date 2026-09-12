@@ -11,6 +11,7 @@ const shardSpecs = Object.freeze({
   'route-primary': 'tests/browser/showcase-route-primary-probes.spec.ts',
   gallery: 'tests/browser/advanced-examples-gallery.spec.ts',
   q02: 'tests/browser/showcase-gameplay-proof.spec.ts tests/browser/smart-city-composition-301.spec.ts',
+  blockfall: 'tests/browser/showcase-gameplay-proof.spec.ts',
   routes: 'tests/browser/wow-showcase-screenshots.spec.ts tests/browser/current-routes-route-health.spec.ts tests/browser/current-routes-parity-evidence.spec.ts tests/browser/product-demos.spec.ts tests/browser/loader-instancing-evidence.spec.ts'
 });
 const requiredShards = Object.keys(shardSpecs);

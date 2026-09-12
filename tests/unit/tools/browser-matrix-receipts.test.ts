@@ -9,6 +9,7 @@ const shardSpecs = {
   'route-primary': 'tests/browser/showcase-route-primary-probes.spec.ts',
   gallery: 'tests/browser/advanced-examples-gallery.spec.ts',
   q02: 'tests/browser/showcase-gameplay-proof.spec.ts tests/browser/smart-city-composition-301.spec.ts',
+  blockfall: 'tests/browser/showcase-gameplay-proof.spec.ts',
   routes: 'tests/browser/wow-showcase-screenshots.spec.ts tests/browser/current-routes-route-health.spec.ts tests/browser/current-routes-parity-evidence.spec.ts tests/browser/product-demos.spec.ts tests/browser/loader-instancing-evidence.spec.ts'
 } as const;
 const roots: string[] = [];
@@ -47,12 +48,12 @@ afterEach(() => {
 });
 
 describe('exact-source Browser Matrix receipts', () => {
-  it('mints and aggregates all four canonical passing shards', () => {
+  it('mints and aggregates all five canonical passing shards', () => {
     const f = fixture();
     for (const shard of Object.keys(shardSpecs) as (keyof typeof shardSpecs)[]) expect(f.mint(shard).status).toBe(0);
     const result = f.run('verify');
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('Verified 4 exact-source Chromium Browser Matrix shards.');
+    expect(result.stdout).toContain('Verified 5 exact-source Chromium Browser Matrix shards.');
     const aggregate = JSON.parse(readFileSync(join(f.root, 'tests/reports/browser-matrix/aggregate.json'), 'utf8'));
     expect(aggregate.schema).toBe('aura3d.browser-matrix-aggregate/v1');
     expect(aggregate.shards.map((receipt: { shard: string }) => receipt.shard)).toEqual(Object.keys(shardSpecs));

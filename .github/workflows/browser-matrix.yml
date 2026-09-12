@@ -31,13 +31,19 @@ jobs:
           - node: 22
             shard: gallery
             specs: tests/browser/advanced-examples-gallery.spec.ts
-          # Q02 replays these producer outputs. Keep them in a dedicated shard so
-          # the long route-primary and gallery jobs cannot prevent their retention.
+          # Q02 replays these producer outputs. Blockfall gets its own fresh
+          # SwiftShader worker because its six synchronous PNG readbacks can
+          # otherwise exhaust the per-test budget after Turbo and Skyline.
           - node: 22
             shard: q02
             specs: >-
               tests/browser/showcase-gameplay-proof.spec.ts
               tests/browser/smart-city-composition-301.spec.ts
+            playwright_args: --grep-invert "blockfall reactor"
+          - node: 22
+            shard: blockfall
+            specs: tests/browser/showcase-gameplay-proof.spec.ts
+            playwright_args: --grep "blockfall reactor"
           - node: 22
             shard: routes
             specs: >-
@@ -82,7 +88,7 @@ jobs:
           # gallery run. This matrix shard executes all ten routes, so bind its
           # outputs to the full-gallery evidence contract explicitly.
           A3D_ADVANCED_GALLERY_EVIDENCE_MODE: ${{ matrix.shard == 'gallery' && 'full-gallery' || 'focused-route' }}
-        run: pnpm exec playwright test ${{ matrix.specs }}
+        run: pnpm exec playwright test ${{ matrix.specs }} ${{ matrix.playwright_args }}
 
       - name: Visual tests
         if: matrix.shard == 'routes'
