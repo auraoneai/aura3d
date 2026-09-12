@@ -68,12 +68,14 @@ const downstream: Stage[] = [
   { gate: 'Q-reference-vectors', group: 'q', part: 'Q', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/unit/rendering/shader-brdf-reference.test.ts', 'tests/unit/rendering/shader-core-brdf-reference.test.ts', 'tests/unit/rendering/parity-deviations-q1.test.ts', '--maxWorkers=2'] },
   { gate: 'S-matrix-generation', group: 's', part: 'S', command: ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json', 'tools/muse3jsparity-matrix/index.ts'], report: 'benchmark/context/muse3jsparity-r185-matrix.json', check: m =>
     m.three?.srcFiles === 750 && m.three?.jsmFiles === 425 && m.three?.jsmTslFiles === 61 && m.rows?.length > 0 && m.rows.every((r: any) => r.verdict !== 'GAP' || r.prdSection) && m.rows.every((r: any) => r.verdict !== 'OUT' || r.outReason) ? [] : ['matrix inventory/ownership invalid'] },
-  { gate: 'template-lifecycle-source', group: 'templates', part: 'V', command: ['pnpm', 'check:templates'], report: 'tests/reports/agent-templates.json' },
-  { gate: 'template-lifecycle-tarball', group: 'templates', part: 'L', command: ['pnpm', 'check:templates:installed'], report: 'tests/reports/installed-template-lifecycle.json', check: data => data.pass === true && data.mode === `fresh-local-${readJson('package.json').version}-tarballs` ? [] : ['installed tarball lifecycle invalid'] },
+  /*
+   * L01 owns source/installed template lifecycles, bundle budgets, clean-install,
+   * and installed tree-shaking. Its typed receipt hashes their exact reports and
+   * tarballs. Re-running those generators here would rewrite timestamped reports
+   * before the imported L01 receipt is replayed, making correct evidence fail its
+   * own hash check. The aggregate consumes the validated L01 leaf instead.
+   */
   { gate: 'docs-claims-audit', group: 'docs', part: 'K', command: ['pnpm', 'check:agent-docs'] },
-  { gate: 'bundle-size', group: 'bundle', part: 'J', command: ['pnpm', 'check:bundle-size'] },
-  { gate: 'package-clean-install', group: 'bundle', part: 'L', command: ['pnpm', 'check:clean-install'], report: 'tests/reports/package-clean-install.json', check: data => data.pass === true ? [] : ['clean installed-package lifecycle invalid'] },
-  { gate: 'installed-tree-shaking', group: 'bundle', part: 'J', command: ['pnpm', 'check:installed-tree-shaking'] },
   ...['certified-hero-rigs', 'foot-planting', 'animation-mixer-root-e3'].map(spec => browser(spec, 'e', 'E')),
   ...['physics-h1-promotions', 'physics-debug-draw'].map(spec => browser(spec, 'h', 'H')),
   ...['input-browser', 'audio-browser'].map(spec => browser(spec, 'i', 'I')),

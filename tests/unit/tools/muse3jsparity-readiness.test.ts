@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { validateAssertionInventory } from '../../../tools/muse3jsparity-readiness/contracts';
 import { loadMuse301ExecutionRequirements } from '../../../tools/muse3jsparity-readiness/requirements';
 import { describe, expect, it, vi } from 'vitest';
@@ -125,4 +126,16 @@ describe('baseline raw assertion accounting',()=>{
  it('accepts the complete executed inventory',()=>expect(validateAssertionInventory(report(),2)).toEqual([]));
  it('rejects failed assertion hidden by green aggregate counters',()=>{const d=report();d.testResults[0].assertionResults[1].status='failed';expect(validateAssertionInventory(d,2)).not.toEqual([]);});
  it('rejects inflated totals and missing raw assertions',()=>{const d=report();d.testResults[0].assertionResults.pop();expect(validateAssertionInventory(d,2)).not.toEqual([]);});
+});
+
+
+it('does not overwrite exact L01 artifacts before replaying their receipt', () => {
+  const source = readFileSync('tools/muse3jsparity-readiness/index.ts', 'utf8');
+  for (const command of [
+    "['pnpm', 'check:templates']",
+    "['pnpm', 'check:templates:installed']",
+    "['pnpm', 'check:bundle-size']",
+    "['pnpm', 'check:clean-install']",
+    "['pnpm', 'check:installed-tree-shaking']",
+  ]) expect(source).not.toContain(command);
 });
