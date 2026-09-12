@@ -111,6 +111,9 @@ test.describe("Aura Clash visual regression states", () => {
       driver.pauseOnNextWhiff();
     });
     await queuePlayerAttack(page, "heavy");
+    await expect.poll(async () => (await readAuraClashProof(page)).player.attacking, {
+      message: "whiff capture must queue the authored heavy attack"
+    }).toBe("heavy");
     // The evidence driver deliberately renders on demand. Let the authored attack
     // pass its wall-clock expiry, then submit one real production frame so
     // clearExpiredAttack can publish and freeze the out-of-range whiff.
@@ -124,7 +127,20 @@ test.describe("Aura Clash visual regression states", () => {
       if (!driver) throw new Error("Aura Clash test driver was not installed.");
       driver.advanceFrame();
     });
-    await expect.poll(async () => (await readAuraClashProof(page)).presentation?.lastOutcome, {
+    await expect.poll(async () => {
+      const proof = await readAuraClashProof(page);
+      return proof.presentation?.lastOutcome === "whiff"
+        ? "whiff"
+        : JSON.stringify({
+            outcome: proof.presentation?.lastOutcome,
+            status: proof.status,
+            playerX: proof.player.x,
+            rivalX: proof.rival.x,
+            attacking: proof.player.attacking,
+            action: proof.player.action,
+            engineEvents: proof.engineCombat.events
+          });
+    }, {
       message: "whiff capture must follow a real out-of-range attack",
       timeout: 15_000
     }).toBe("whiff");
