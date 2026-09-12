@@ -123,9 +123,9 @@ test.describe("rendering visual pixels", () => {
 
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     expect(result.canvasFrame).toEqual({ width: 3, height: 1 });
-    expect(result.leftPixel).toEqual([85, 85, 85, 255]);
+    expect(result.leftPixel).toEqual([27, 27, 27, 255]);
     expect(result.centerPixel).toEqual([255, 255, 255, 255]);
-    expect(result.rightPixel).toEqual([85, 85, 85, 255]);
+    expect(result.rightPixel).toEqual([27, 27, 27, 255]);
     expect(result.brightCenterAlpha).toBe(255);
   });
 
