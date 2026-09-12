@@ -112,7 +112,11 @@ test.describe("Aura Clash visual regression states", () => {
     });
     await queuePlayerAttack(page, "heavy");
     await expect.poll(async () => (await readAuraClashProof(page)).presentation?.lastOutcome, {
-      message: "whiff capture must follow a real out-of-range attack"
+      message: "whiff capture must follow a real out-of-range attack",
+      // A macOS GPU frame can take longer than the default five-second poll
+      // after the attack's wall-clock expiry. Wait for the next production
+      // frame to publish the real whiff rather than reading the prior hit.
+      timeout: 15_000
     }).toBe("whiff");
     await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
     const whiff = await readAuraClashProof(page);
