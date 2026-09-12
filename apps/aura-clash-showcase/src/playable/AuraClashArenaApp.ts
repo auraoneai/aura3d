@@ -2536,8 +2536,8 @@ function canUseHeldAttack(fighter: FighterState, controls: Controls, action: "li
  *   `hurt`/`recover` where jump and guard inputs are legitimately ignored. Tests verifying that a
  *   control is wired up were therefore racing the AI rather than testing the control.
  *
- * The rival still walks and faces the player, so movement and spacing behaviour stay live. This
- * never engages in normal play.
+ * The rival holds its staged position so slow evidence frames cannot turn a deliberately
+ * out-of-range attack into a hit by walking into range. This never engages in normal play.
  */
 function updateRivalAi(
   rival: FighterState,
@@ -2567,7 +2567,7 @@ function updateRivalAi(
     playerWakeupInvulnerable: player.invulnerableTimer > 0,
     playerGrounded: player.grounded
   });
-  const desired = !opponentAlive
+  const desired = !opponentAlive || passive
     ? 0
     : role === "approach"
       ? direction
