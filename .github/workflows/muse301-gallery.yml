@@ -143,6 +143,12 @@ jobs:
           fetch-depth: 0
       - name: Verify exact clean source
         run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Remove checked-in historical review derivatives
+        run: >-
+          rm -f
+          release-artifacts/3.0.1-final-visual-review-input.json
+          release-artifacts/3.0.1-final-visual-review-index.json
+          release-artifacts/3.0.1-final-visual-review-manifest.json
       # actions/upload-artifact archives paths relative to their least common
       # ancestor. Restore each producer at that same ancestor so the absolute
       # repository paths recorded in its source-bound receipt remain valid.

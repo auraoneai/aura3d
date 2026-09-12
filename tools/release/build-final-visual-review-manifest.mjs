@@ -5,7 +5,7 @@ import { dirname, resolve, relative, isAbsolute } from "node:path";
 import { execFileSync } from "node:child_process";
 
 import { buildModernVisualReviewManifest } from './visual-review-manifest.mjs';
-import { sourceIdentity } from './source-identity.mjs';
+import { assertCommittedReleaseSource, sourceIdentity } from './source-identity.mjs';
 
 const root = resolve(import.meta.dirname, "../..");
 const args = process.argv.slice(2);
@@ -20,8 +20,7 @@ if (version) {
   const indexPath = option('--artifact-index');
   if (!indexPath) throw new Error('--artifact-index is required with --version');
   const indexBytes = readFileSync(resolve(root, indexPath));
-  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-  if (git('status', '--porcelain', '--untracked-files=no')) throw new Error('Freeze tracked source before building the final review manifest');
+  assertCommittedReleaseSource(root);
   const source = sourceIdentity(root);
   const document = buildModernVisualReviewManifest({ version, source, indexPath, indexBytes, readBytes: path => readFileSync(resolve(root, path)), generatedAt: new Date().toISOString(), command: ['node', ...process.argv.slice(1)] });
   mkdirSync(dirname(resolve(root, output)), { recursive: true });
