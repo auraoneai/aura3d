@@ -21,8 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_commit }}
           fetch-depth: 0
+
+      - name: Checkout exact frozen source
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: git checkout --detach "$SOURCE_COMMIT"
 
       - uses: actions/setup-node@v4
         with:
@@ -58,7 +62,7 @@ jobs:
           import { loadValidatedReleasePlan } from './tools/release/exact-release-plan.mjs';
           const plan = loadValidatedReleasePlan(process.cwd(), 'tests/reports/release-tarballs/release-plan.json');
           const entry = plan.packages.find(({ name }) => name === 'create-aura3d');
-          if (plan.version !== '3.0.1' || plan.commit !== process.env.GITHUB_SHA && process.env.GITHUB_SHA === process.env.SOURCE_COMMIT) {
+          if (plan.version !== '3.0.1' || plan.commit !== process.env.SOURCE_COMMIT) {
             throw new Error('Unexpected release plan source');
           }
           if (!entry || entry.version !== '3.0.1' || entry.sha256 !== '22726af1688198b8993e3ab7ffaa913b23e577a4590f0c86882ee6dffc10165b') {
