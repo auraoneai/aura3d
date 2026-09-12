@@ -153,6 +153,14 @@ Earlier minor-release implementation notes have been consolidated into the 2.0 a
 
 ### Scoped Three.js comparisons
 
+#### Measured 3.0.1 outcomes
+
+Measured win: the `@aura3d/lean` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
+
+Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
+
+Both figures are measured on the exact 3.0.1 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
+
 #### Why Aura3D can beat Three.js in scoped workflows
 
 Aura3D can reduce authoring and packaging work in selected, reproducible

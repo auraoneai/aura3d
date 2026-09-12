@@ -14,7 +14,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -38,7 +38,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -101,7 +101,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -149,7 +149,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -229,7 +229,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -261,7 +261,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -277,7 +277,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -309,7 +309,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -333,7 +333,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -344,7 +344,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -456,7 +456,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
-          "sha256": "37c22ed0e6ca23efb22d2eb537d304f95e19687d7964069ef46f089c66de4485"
+          "sha256": "809b7307ddea18665007a50e0b652fe383a19386e195a63e9a71db559320d247"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -516,7 +516,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -559,7 +559,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -591,7 +591,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -623,7 +623,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -651,7 +651,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -663,7 +663,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -863,7 +863,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1047,7 +1047,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1079,7 +1079,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1191,7 +1191,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1207,7 +1207,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1255,7 +1255,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1295,7 +1295,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -1418,7 +1418,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1454,7 +1454,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1470,7 +1470,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1542,7 +1542,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -1573,7 +1573,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -1893,7 +1893,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -1953,7 +1953,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2141,7 +2141,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -2168,7 +2168,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
-          "sha256": "fc5d65d5be6af69817d3c9db6aabfe27589dad70ee89321a67c11be3156f448f"
+          "sha256": "ddb78ed28cc8161d2d1c2f8d11f9e5e230529211d6da05a200437933028ee287"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2192,7 +2192,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -2219,7 +2219,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2283,7 +2283,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2347,7 +2347,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2379,7 +2379,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2395,7 +2395,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2411,7 +2411,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2427,7 +2427,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2491,7 +2491,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2555,7 +2555,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2639,7 +2639,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2655,7 +2655,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2671,7 +2671,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2687,7 +2687,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2751,7 +2751,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2783,7 +2783,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2815,7 +2815,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2847,7 +2847,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -2967,7 +2967,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -3010,7 +3010,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3054,7 +3054,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -3097,7 +3097,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3225,7 +3225,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3241,7 +3241,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3421,7 +3421,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3437,7 +3437,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3461,7 +3461,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -3472,7 +3472,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3504,7 +3504,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3568,7 +3568,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3616,7 +3616,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3764,7 +3764,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3796,7 +3796,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3812,7 +3812,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -3920,7 +3920,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -3932,7 +3932,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4028,7 +4028,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4092,7 +4092,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4148,7 +4148,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -4287,7 +4287,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4319,7 +4319,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4383,7 +4383,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4399,7 +4399,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4483,7 +4483,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4499,7 +4499,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
-          "sha256": "fc5d65d5be6af69817d3c9db6aabfe27589dad70ee89321a67c11be3156f448f"
+          "sha256": "ddb78ed28cc8161d2d1c2f8d11f9e5e230529211d6da05a200437933028ee287"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4627,7 +4627,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4687,7 +4687,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4703,7 +4703,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4735,7 +4735,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4803,7 +4803,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4819,7 +4819,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4835,7 +4835,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -4915,7 +4915,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5027,7 +5027,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -5086,7 +5086,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5146,7 +5146,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -5174,7 +5174,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5242,7 +5242,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5274,7 +5274,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5318,7 +5318,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -5346,7 +5346,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5378,7 +5378,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5466,7 +5466,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -5493,7 +5493,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5573,7 +5573,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5637,7 +5637,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5661,7 +5661,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -5680,7 +5680,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -5755,7 +5755,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5815,7 +5815,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5935,7 +5935,7 @@
       "evidence": [
         {
           "path": "docs/project/aura3d-301-release-notes.md",
-          "sha256": "05a3ef4de8c01cedff50d4bb912756f0981466812e32d4b2b5a52856dde92754"
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -5999,7 +5999,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -6010,7 +6010,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6126,7 +6126,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6186,7 +6186,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6278,7 +6278,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6318,7 +6318,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -6537,7 +6537,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6625,7 +6625,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -6652,7 +6652,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6668,7 +6668,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6700,7 +6700,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6748,7 +6748,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6780,7 +6780,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6828,7 +6828,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6860,7 +6860,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6876,7 +6876,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6972,7 +6972,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -6988,7 +6988,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7036,7 +7036,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7220,7 +7220,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -7279,7 +7279,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7327,7 +7327,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7343,7 +7343,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7359,7 +7359,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7375,7 +7375,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7451,7 +7451,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7519,7 +7519,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7535,7 +7535,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7567,7 +7567,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7647,7 +7647,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7695,7 +7695,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7711,7 +7711,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7855,7 +7855,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7887,7 +7887,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -7995,7 +7995,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -8023,7 +8023,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8243,7 +8243,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8323,7 +8323,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8419,7 +8419,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -8438,7 +8438,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -8465,7 +8465,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8589,7 +8589,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8605,7 +8605,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8669,7 +8669,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8789,7 +8789,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8805,7 +8805,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8853,7 +8853,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8885,7 +8885,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -8973,7 +8973,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -9000,7 +9000,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9032,7 +9032,7 @@
       "evidence": [
         {
           "path": "docs/project/aura3d-301-release-notes.md",
-          "sha256": "05a3ef4de8c01cedff50d4bb912756f0981466812e32d4b2b5a52856dde92754"
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9188,7 +9188,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -9311,7 +9311,7 @@
       "evidence": [
         {
           "path": "docs/project/aura3d-301-release-notes.md",
-          "sha256": "05a3ef4de8c01cedff50d4bb912756f0981466812e32d4b2b5a52856dde92754"
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9439,7 +9439,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9519,7 +9519,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9535,7 +9535,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9639,7 +9639,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -9766,7 +9766,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9782,7 +9782,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9842,7 +9842,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -9853,7 +9853,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -9977,7 +9977,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10041,7 +10041,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
-          "sha256": "fc5d65d5be6af69817d3c9db6aabfe27589dad70ee89321a67c11be3156f448f"
+          "sha256": "ddb78ed28cc8161d2d1c2f8d11f9e5e230529211d6da05a200437933028ee287"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10137,7 +10137,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10185,7 +10185,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10217,7 +10217,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10249,7 +10249,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10489,7 +10489,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10521,7 +10521,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10553,7 +10553,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10593,7 +10593,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -10620,7 +10620,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10728,7 +10728,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -10815,7 +10815,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -10915,7 +10915,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11015,7 +11015,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11063,7 +11063,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11095,7 +11095,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11119,7 +11119,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -11154,7 +11154,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -11217,7 +11217,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11277,7 +11277,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11293,7 +11293,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11325,7 +11325,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11365,7 +11365,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -11392,7 +11392,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11512,7 +11512,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -11539,7 +11539,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11639,7 +11639,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11703,7 +11703,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11719,7 +11719,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -11775,7 +11775,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -11786,7 +11786,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12002,7 +12002,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -12125,7 +12125,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12173,7 +12173,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12189,7 +12189,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
-          "sha256": "fc5d65d5be6af69817d3c9db6aabfe27589dad70ee89321a67c11be3156f448f"
+          "sha256": "ddb78ed28cc8161d2d1c2f8d11f9e5e230529211d6da05a200437933028ee287"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12237,7 +12237,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12261,7 +12261,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -12272,7 +12272,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12288,7 +12288,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12352,7 +12352,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12432,7 +12432,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12464,7 +12464,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12512,7 +12512,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12604,7 +12604,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12652,7 +12652,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12668,7 +12668,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12684,7 +12684,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12732,7 +12732,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12756,7 +12756,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -12815,7 +12815,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -12927,7 +12927,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13079,7 +13079,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -13138,7 +13138,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13230,7 +13230,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -13310,7 +13310,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13422,7 +13422,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -13433,7 +13433,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13465,7 +13465,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13489,7 +13489,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -13584,7 +13584,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13616,7 +13616,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13632,7 +13632,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13712,7 +13712,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13744,7 +13744,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13776,7 +13776,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13896,7 +13896,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -13907,7 +13907,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -13987,7 +13987,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14051,7 +14051,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14107,7 +14107,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14319,7 +14319,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14383,7 +14383,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14443,7 +14443,7 @@
         },
         {
           "path": "tests/reports/root-effects-a3/a3-probe.json",
-          "sha256": "b8b8ad6d13da34ee9ebed7c0f9089f25b4f2c4d88d94c7e56042d10324f128ba"
+          "sha256": "dd98becc2d9cce9ff9697fa4aef7b1ca72004dccda0ffe807e9707dfd5b5d1bc"
         }
       ],
       "scope": "Source-context and historical measurement wording only; no fresh rendered acceptance."
@@ -14623,7 +14623,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -14698,7 +14698,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14714,7 +14714,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14778,7 +14778,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -14878,7 +14878,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -14961,7 +14961,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15089,7 +15089,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -15132,7 +15132,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15276,7 +15276,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15292,7 +15292,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15356,7 +15356,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15372,7 +15372,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15492,7 +15492,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15640,7 +15640,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -15667,7 +15667,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15763,7 +15763,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15795,7 +15795,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -15859,7 +15859,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16167,7 +16167,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -16434,7 +16434,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16450,7 +16450,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16466,7 +16466,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16490,7 +16490,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -16517,7 +16517,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16533,7 +16533,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16673,7 +16673,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16713,7 +16713,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -16772,7 +16772,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -16940,7 +16940,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -16975,7 +16975,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -17034,7 +17034,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17114,7 +17114,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17194,7 +17194,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -17293,7 +17293,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17377,7 +17377,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17409,7 +17409,7 @@
       "evidence": [
         {
           "path": "docs/project/aura3d-301-release-notes.md",
-          "sha256": "05a3ef4de8c01cedff50d4bb912756f0981466812e32d4b2b5a52856dde92754"
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17457,7 +17457,7 @@
       "evidence": [
         {
           "path": "marketing/docs/index.html",
-          "sha256": "740f1ffeee0df9ac68c29531e893251057f3458c20eb196d08b19a32247cba71"
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17533,7 +17533,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17549,7 +17549,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17653,7 +17653,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17669,7 +17669,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17741,7 +17741,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -17816,7 +17816,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -17952,7 +17952,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18060,7 +18060,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18084,7 +18084,7 @@
         },
         {
           "path": "tests/reports/api-docs.json",
-          "sha256": "905c04ae264264d915af45e3aa83bfd7f38e1723fed6ddf19211f4c87eb99d4b"
+          "sha256": "85709c2cd024bc46f0e3a17da04f81e3a8806c243f8f59751e6efa95112323ff"
         }
       ]
     },
@@ -18095,7 +18095,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
-          "sha256": "c24e0161f59c299b4aa34e4647d9d9998e3d4beab8be7a04a94064910b1a19f0"
+          "sha256": "064a806c0d7297c8b4c03176188b33687e24edc67608a73f4ef6418e24cb5a4e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18127,7 +18127,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18143,7 +18143,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18175,7 +18175,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18283,7 +18283,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",
-          "sha256": "bf2aabc2c0a36649afcfd575f415d343537a5fa3911231b26cadd277d296af4a"
+          "sha256": "1a4e7592f02156368e2f3375bb746c087ed34cc236b5c10f2e525e4672b0b8ee"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18299,7 +18299,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18347,7 +18347,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-siege-golf.json",
-          "sha256": "8e37f8c65c1cbc7714825c47f33ac61f959aad994beb4887263bc6b7ebfc3bd6"
+          "sha256": "2f76c389c2437d03bab001e4cb13572a95b08697b33e89d7f6379407b047c5af"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18363,7 +18363,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18379,7 +18379,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18459,7 +18459,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18567,7 +18567,7 @@
       "evidence": [
         {
           "path": "tests/reports/claim-lineage.json",
-          "sha256": "8f5237e6421f2142e2079bc4ce8f3a546c39a2d0c358b0b2dabb5f0d92b636d3"
+          "sha256": "9d3775cf75aa7f510aa073922e34929b3a0727129fa8a12831099f6c5823f8fd"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18599,7 +18599,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gravity-post.json",
-          "sha256": "2404b6ce3d5cfc45e5b365456528194ffefbb2e57e21d6c5e7e22648c28e8d5a"
+          "sha256": "44e079fa8d7d7b488fb4951861b66b5290af9aafeb3c6cc812970e74b6b3e0f8"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -18663,7 +18663,7 @@
       "evidence": [
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19259,7 +19259,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19279,7 +19279,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19299,7 +19299,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19319,7 +19319,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19339,7 +19339,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19359,7 +19359,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19379,7 +19379,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19399,7 +19399,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19419,7 +19419,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19439,7 +19439,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19459,7 +19459,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19479,7 +19479,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19499,7 +19499,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19519,7 +19519,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-aurora-lander.json",
-          "sha256": "0a6d8fe7bbfba050bca7c9d94fd4377c193894369e2a3e972af69d8f1fa15243"
+          "sha256": "0b1e6660461da686a83cbe0c10eaca3d3e21a6d6f44a47ebf6ed80b57161e72e"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19539,7 +19539,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19559,7 +19559,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19579,7 +19579,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19599,7 +19599,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19619,7 +19619,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19639,7 +19639,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19659,7 +19659,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
-          "sha256": "81a7b8b32b9e3e342ddd982d1f30c8e1e05fcda555c09a6391b8b3132fff91eb"
+          "sha256": "f96bb9a807e4d67ef905a7c7378af670d13d7809835b801cacdad8ba696c7aeb"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19679,7 +19679,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19699,7 +19699,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19719,7 +19719,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19739,7 +19739,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19759,7 +19759,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19779,7 +19779,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19799,7 +19799,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19819,7 +19819,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19839,7 +19839,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19859,7 +19859,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19879,7 +19879,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19899,7 +19899,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19919,7 +19919,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19939,7 +19939,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19959,7 +19959,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19979,7 +19979,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -19999,7 +19999,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20019,7 +20019,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20039,7 +20039,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
-          "sha256": "5bad26d96ce1c518fc86dc142f76e0efa576a5343023c9b4dacf913bcf00ab88"
+          "sha256": "676386a89d5265089eada801f1b0a8870fb6f6e9d03a4259c2db9a0d9140d79c"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20059,7 +20059,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20079,7 +20079,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20099,7 +20099,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20119,7 +20119,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20139,7 +20139,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20159,7 +20159,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20179,7 +20179,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20199,7 +20199,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20219,7 +20219,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20239,7 +20239,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20259,7 +20259,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20279,7 +20279,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20299,7 +20299,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20319,7 +20319,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20339,7 +20339,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20359,7 +20359,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20379,7 +20379,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20399,7 +20399,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20419,7 +20419,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20439,7 +20439,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20459,7 +20459,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20479,7 +20479,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-patrol-wing.json",
-          "sha256": "cafd2392ba63e607c0e9ff5faf4383dd164727443b98574e30b066f2bcff960a"
+          "sha256": "e477e5f055e03162290c8fcdf82bc14e0f3f2899b6480b7d45bfc20d0de71ea5"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20499,7 +20499,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20519,7 +20519,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20539,7 +20539,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20559,7 +20559,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20579,7 +20579,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20599,7 +20599,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20619,7 +20619,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20639,7 +20639,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20659,7 +20659,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20679,7 +20679,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20699,7 +20699,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20719,7 +20719,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20739,7 +20739,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20759,7 +20759,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20779,7 +20779,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20799,7 +20799,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20819,7 +20819,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20839,7 +20839,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20859,7 +20859,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20879,7 +20879,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20899,7 +20899,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20919,7 +20919,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20939,7 +20939,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20959,7 +20959,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20979,7 +20979,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -20999,7 +20999,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21019,7 +21019,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21039,7 +21039,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "sha256": "dbf6b14e4f21a00b67d719f8c690e8afdc510c56b75b3e0f352f27cfdeded09a"
+          "sha256": "bd8b0197621df39ee6428c01ffffd3fed9d4e6cd600405df304f9e78546e3252"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21059,7 +21059,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21079,7 +21079,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21099,7 +21099,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21119,7 +21119,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21139,7 +21139,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21159,7 +21159,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21179,7 +21179,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21199,7 +21199,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21219,7 +21219,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21239,7 +21239,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21259,7 +21259,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21279,7 +21279,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21299,7 +21299,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
-          "sha256": "9f4ad7e2588b15b301fd16557a5c7357320949f32d68bb62c4ac5a36e3acb4e1"
+          "sha256": "90818b43c6d75699e13330c96b8fbfa0f93aa66fc699810b1a884cde3a440651"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21319,7 +21319,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21339,7 +21339,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -21359,7 +21359,7 @@
         },
         {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "sha256": "ea0450dc6170183748db87c2be3be93a9488b41c6d2c7f21913df13c248de20c"
+          "sha256": "919fd3edb9e2cf86083fd958f58233e3838bdc44394e84379bf873630354bcd4"
         },
         {
           "path": "docs/agents/claims-and-boundaries.md",
@@ -26551,6 +26551,262 @@
         }
       ],
       "scope": "Current-source semantic disposition only; no rendered, performance, package, publication, or independent human acceptance."
+    },
+    {
+      "findingId": "0a748f242684c083eb72d1271c640728eb46fb53648b30ec26118d76b71b74bb",
+      "sourceSha256": "8aa5d1776662597de48c4726f8295ecfe4aadd8ef921ac23afc2748b715285f6",
+      "reason": "Reviewed apps/showcase-turbo-drift-circuit/src/styles.css as a whole document. It is a stylesheet or a candidate-labelled release document whose capability statements defer to their own receipts against the canonical claim boundary, rather than asserting fresh rendered, performance, registry, or human-review acceptance here.",
+      "evidence": [
+        {
+          "path": "apps/showcase-turbo-drift-circuit/src/styles.css",
+          "sha256": "8aa5d1776662597de48c4726f8295ecfe4aadd8ef921ac23afc2748b715285f6"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Documentation/source-context disposition only; no browser, performance, registry, deployment, or human-review acceptance."
+    },
+    {
+      "findingId": "15aa6428592591b2f2a85da0db7e0fdc855a29b1f623ce46e6a3fd97244e34bb",
+      "sourceSha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00",
+      "reason": "Reviewed docs/project/aura3d-301-release-notes.md as a whole document. It is a stylesheet or a candidate-labelled release document whose capability statements defer to their own receipts against the canonical claim boundary, rather than asserting fresh rendered, performance, registry, or human-review acceptance here.",
+      "evidence": [
+        {
+          "path": "docs/project/aura3d-301-release-notes.md",
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Documentation/source-context disposition only; no browser, performance, registry, deployment, or human-review acceptance."
+    },
+    {
+      "findingId": "b9eedc605c85c05cae8b3a052f36aaa9c20108f86acbe9dbf03692819ed5d787",
+      "sourceSha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00",
+      "reason": "Reviewed docs/project/aura3d-301-release-notes.md:3. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "docs/project/aura3d-301-release-notes.md",
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "53e5c4a245e07c5df0625503c551a193f29d34e229a4f31ba0649e0f4535634a",
+      "sourceSha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00",
+      "reason": "Reviewed docs/project/aura3d-301-release-notes.md:6. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "docs/project/aura3d-301-release-notes.md",
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "30072d538635fb9ad8ed2717670ea59f75060b204895daf57d9bdfb2faa366cb",
+      "sourceSha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00",
+      "reason": "Reviewed docs/project/aura3d-301-release-notes.md:38. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "docs/project/aura3d-301-release-notes.md",
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "b622e0c3de239bdc76e40dc8819a080517b13ee1714f0e31a2fce988c68110ba",
+      "sourceSha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00",
+      "reason": "Reviewed docs/project/aura3d-301-release-notes.md:57. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "docs/project/aura3d-301-release-notes.md",
+          "sha256": "f3b578abe243cb8f1de935ce392a12519e4e18a5af824cf91dec2950adadfd00"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "c58a4ea50b7f6766be66143e571afef6b5e9bb4faa912f5ee4975fb4d07d4c6a",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html as a whole document. It is a stylesheet or a candidate-labelled release document whose capability statements defer to their own receipts against the canonical claim boundary, rather than asserting fresh rendered, performance, registry, or human-review acceptance here.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Documentation/source-context disposition only; no browser, performance, registry, deployment, or human-review acceptance."
+    },
+    {
+      "findingId": "d61363c8ba3c1d1ef91dce68a8fe89c572628c7461e389d6eaec2ceb9b8fe0a2",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:7. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "e067d0c0bf3beb5d90e46996354a9945089d8b1e2cacdf99bd8116679a0b449c",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:14. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "e7f520d510f7be8f29f210a16c02bbe5ce979cdb5caa7bb5396a5574796f6bb8",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:19. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "8ad7cb73cab08c991b7be2bd4f465eef61e90b954e8b5cc41ab9019341a09f66",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:23. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "635711c51c3d05fbb591642214aaab329f300d4c84297f367cb06dee83b77431",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:27. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "b1b35e321ee1ec6514a569a3f9a3357a398a8ebf43e80ae592c5cbf055f98a0b",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:71. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "e96f2967500a4cd9f71ffe38b7ae0cab4e77c979d6aeb9d552a67a99d9b32d6a",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:89. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "536ad4f4c0ebd458f0ec74253e931cd35c26bf2926c2224e17eef3750869e1b5",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:91. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
+    },
+    {
+      "findingId": "2dbaca17ecea1f9a39fb72ee1fdf70a334ea6f2f29e954a6b8c3b7589a502759",
+      "sourceSha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a",
+      "reason": "Reviewed marketing/docs/index.html:117. The wording records the published 3.0.0 train, an explicitly candidate-labelled 3.0.1 status that defers acceptance, a measured figure already bound to its own retained receipt, or a historical archive reference. It asserts no new 3.0.1 capability and is not promoted into current rendered, package, or publication evidence.",
+      "evidence": [
+        {
+          "path": "marketing/docs/index.html",
+          "sha256": "6e323871a21260f43b6f3d48dc93070d8d4c175e54bb83a145a045d2f474a85a"
+        },
+        {
+          "path": "docs/agents/claims-and-boundaries.md",
+          "sha256": "275d6c807b98471c7b1c927575c9008b0792fec1045dd026d5b96dee4effb890"
+        }
+      ],
+      "scope": "Source-context disposition only; no rendered or release acceptance."
     }
   ]
 }

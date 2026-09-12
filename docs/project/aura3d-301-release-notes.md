@@ -24,19 +24,15 @@ These are the measured comparisons the candidate currently holds, reported with
 both directions rather than wins alone. Each number is the retained receipt's
 value, not a summary or a projection.
 
-Measured win: selected scaffold production JavaScript is smaller by `361546` bytes against the Three.js comparison, from `tests/reports/current-head-to-head/aggregate.json`.
+Measured win: the `@aura3d/lean` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
 
-Scope: 1,132,696 JavaScript bytes against 1,494,242 for the same workload, one
-clean production build per side, variance not measured.
+Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
 
-Measured loss: isolated cold install-to-verified-cube is slower at `6638.6` ms against 5,047.9 ms, from `tests/reports/developer-friction.json`.
+Both figures are measured on the exact 3.0.1 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
 
-Scope: three fresh projects per engine and cache state; the warm medians were
-3,199.5 ms against 2,297.7 ms.
-
-Both figures are bounded to their selected workloads. The 15-workload comparison
-records `1` win, `3` parity results and `39` disclosed losses, and reports
-`comparisonComplete: false`, so it establishes no universal performance ranking.
+The separate 15-workload Three.js comparison records one win, three parity
+results and 39 disclosed losses, and reports comparisonComplete false, so it
+establishes no universal performance ranking.
 
 ## Acceptance still required
 

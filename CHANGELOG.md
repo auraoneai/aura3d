@@ -8,6 +8,12 @@ Version metadata identifies the current 3.0.1 source candidate; it does not cert
 
 Remediation work and acceptance evidence are tracked in `muse3jsparity-3.0.1-PRD.md` and `docs/project/aura3d-301-release-notes.md`. Changes are undergoing integrated verification. Historical entries below remain release-specific records and do not certify this candidate.
 
+Measured win: the `@aura3d/lean` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
+
+Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
+
+Both figures are measured on the exact 3.0.1 packages and bound by SHA-256 to the L01 package receipt `tests/reports/muse3jsparity/l01/f4049f235500c8a98f7bc0a86ecf9f1a9d8cbe68/l01.receipt.json`; they establish bundle-size facts only, not a universal performance ranking.
+
 ## 3.0.0 (2026-09-05, candidate — K2/publish gates pending, see docs/project/aura3d-300-release-notes.md)
 
 Agent-era major: the public API surface, parity evidence, and claim boundaries accumulated since 2.0, coordinated across root + 28 packages:
