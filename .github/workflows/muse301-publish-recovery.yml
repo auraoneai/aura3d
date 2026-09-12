@@ -1,0 +1,81 @@
+name: Muse 3.0.1 Exact Package Recovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Exact frozen 3.0.1 source commit
+        required: true
+      l01_run_id:
+        description: Successful exact-source L01 pack-once run
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish-create-aura3d:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify exact successful L01 source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+          L01_RUN_ID: ${{ inputs.l01_run_id }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${L01_RUN_ID}")"
+          test "$(jq -r .head_sha <<<"$run_json")" = "$SOURCE_COMMIT"
+          test "$(jq -r .status <<<"$run_json")" = completed
+          test "$(jq -r .conclusion <<<"$run_json")" = success
+          test "$(jq -r .path <<<"$run_json")" = .github/workflows/muse301-l01.yml
+
+      - name: Restore exact L01 archives and release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: muse301-l01-${{ inputs.source_commit }}
+          path: .
+          run-id: ${{ inputs.l01_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate exact recovery archive
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { readFileSync } from 'node:fs';
+          import { loadValidatedReleasePlan } from './tools/release/exact-release-plan.mjs';
+          const plan = loadValidatedReleasePlan(process.cwd(), 'tests/reports/release-tarballs/release-plan.json');
+          const entry = plan.packages.find(({ name }) => name === 'create-aura3d');
+          if (plan.version !== '3.0.1' || plan.commit !== process.env.GITHUB_SHA && process.env.GITHUB_SHA === process.env.SOURCE_COMMIT) {
+            throw new Error('Unexpected release plan source');
+          }
+          if (!entry || entry.version !== '3.0.1' || entry.sha256 !== '22726af1688198b8993e3ab7ffaa913b23e577a4590f0c86882ee6dffc10165b') {
+            throw new Error('Unexpected create-aura3d release archive');
+          }
+          const bytes = readFileSync(entry.tarball);
+          if (createHash('sha256').update(bytes).digest('hex') !== entry.sha256) throw new Error('Archive hash mismatch');
+          NODE
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+
+      - name: Publish exact missing package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish tests/reports/release-tarballs/create-aura3d-3.0.1.tgz --access public --fetch-retries=5 --fetch-timeout=600000
+
+      - name: Verify registry integrity
+        run: |
+          test "$(npm view create-aura3d@3.0.1 version)" = 3.0.1
+          test "$(npm view create-aura3d@3.0.1 dist.integrity)" = 'sha512-YsVORHaoZQ1xfVW8QMBZFKionNuY2HEyhmgPdexo4nb390yby4VUG6IRWFKDyttcL1v2CZFDXqm5bgTXwsPe8g=='
