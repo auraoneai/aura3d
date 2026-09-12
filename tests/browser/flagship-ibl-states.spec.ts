@@ -32,16 +32,16 @@ interface FlagshipState {
   readonly error?: string;
 }
 
-const reportPath = "tests/reports/advanced-examples-gallery/visual-review-report.json";
+const reportPath = "tests/reports/external-parity-flagship-ibl-states.json";
 
 /**
  * FS-501: republishes flagship linear-HDR IBL state.
  *
- * The three flagship ids the HDR/IBL readiness audit requires were deleted with the
- * docs/examples consolidation, and nothing wrote
- * `advanced-examples-gallery/visual-review-report.json` afterwards, so the
- * `flagship-linear-hdr-ibl-state` blocker could not be closed by any renderer work. This
- * regenerates that report from a route that measures the environment's actual pixel
+ * The flagship ids the HDR/IBL readiness audit requires were deleted with the
+ * docs/examples consolidation, and nothing wrote a dedicated flagship IBL report
+ * afterwards, so the `flagship-linear-hdr-ibl-state`
+ * blocker could not be closed by any renderer work. This regenerates that report from
+ * a route that measures the environment's actual pixel
  * contribution rather than declaring it.
  */
 test.describe("flagship linear-HDR IBL states", () => {
@@ -71,18 +71,18 @@ test.describe("flagship linear-HDR IBL states", () => {
     if (state.error) throw new Error(state.error);
 
     mkdirSync(dirname(resolve(reportPath)), { recursive: true });
-    await page.screenshot({ path: "tests/reports/advanced-examples-gallery/flagship-ibl-states.png", fullPage: true });
+    await page.screenshot({ path: "tests/reports/external-parity-flagship-ibl-states.png", fullPage: true });
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "a3d-advanced-gallery-visual-review/2.0",
+      schema: "a3d-external-parity-flagship-ibl-states/1.0",
       generatedAt: new Date().toISOString(),
       producer: "tests/browser/flagship-ibl-states.spec.ts",
-      screenshot: "tests/reports/advanced-examples-gallery/flagship-ibl-states.png",
+      screenshot: "tests/reports/external-parity-flagship-ibl-states.png",
       claimBoundary: state.claimBoundary,
       entries: state.entries
     }, null, 2)}\n`);
 
     expect(state.status).toBe("ready");
-    // All three flagship ids the readiness audit names must be present.
+    // Every flagship id the readiness audit names must be present.
     expect(state.entries.map((entry) => entry.id)).toEqual([
       "product-configurator",
       "architecture-viewer"

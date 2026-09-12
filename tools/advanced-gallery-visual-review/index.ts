@@ -8,6 +8,7 @@ import {
   resolveAdvancedGalleryReportDir
 } from "../advanced-gallery-evidence-paths";
 import { legacyPathForContextualPath } from "../naming-taxonomy/contextualAliases";
+import { walkRetainedReportArtifacts } from "./artifactTraversal";
 import { acceptedMetadataBlockers, acceptedRuntimeEvidenceBlockers } from "./gateRules";
 
 type IssueSeverity = "blocker" | "warning";
@@ -695,7 +696,7 @@ function artifactInventoryEntry(
 function historicalArtifactCandidates(demoId: string, currentPaths: readonly string[]): readonly JsonRecord[] {
   const currentPathSet = new Set(currentPaths.map((path) => normalize(path)));
   const candidates: JsonRecord[] = [];
-  for (const path of walkFiles("tests/reports")) {
+  for (const path of walkRetainedReportArtifacts("tests/reports")) {
     const normalized = normalize(path);
     if (currentPathSet.has(normalized)) continue;
     if (!path.includes(demoId)) continue;
@@ -715,20 +716,6 @@ function historicalArtifactCandidates(demoId: string, currentPaths: readonly str
     });
   }
   return candidates.sort((left, right) => String(left.path).localeCompare(String(right.path)));
-}
-
-function walkFiles(root: string): readonly string[] {
-  if (!existsSync(root)) return [];
-  const entries: string[] = [];
-  for (const entry of readdirSync(root, { withFileTypes: true })) {
-    const path = join(root, entry.name);
-    if (entry.isDirectory()) {
-      entries.push(...walkFiles(path));
-    } else if (entry.isFile()) {
-      entries.push(path);
-    }
-  }
-  return entries;
 }
 
 function currentDefectNotes(demo: DemoVisualReviewEvidence): readonly string[] {

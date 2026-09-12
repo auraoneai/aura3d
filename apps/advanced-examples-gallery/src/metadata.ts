@@ -60,16 +60,13 @@ export interface DemoDefinition {
 export const DEMOS: readonly DemoDefinition[] = [
   {
     id: "water-lab",
-    title: "Interactive GPGPU-Style Water Lab",
+    title: "Interactive Procedural Water Lab",
     shortTitle: "Water Lab",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/water-lab.png",
-      screenshotSha256: "742a5ea233f567bba79afee290025dc8851f98e0fb13629cbcf7d2a388967739",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js water references: the marina scene shows readable animated water, docks, lanterns, boats, shoreline props, and pointer-ripple context. Bounded CPU/procedural water approximation is disclosed; no native GPGPU water, reflection, refraction, or caustics claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Cinematic marina lake with ripple interaction, floating props, docks, lights, and debug wave modes.",
     threeCategory: "GPGPU water / WebGL water",
@@ -90,16 +87,13 @@ export const DEMOS: readonly DemoDefinition[] = [
   },
   {
     id: "ocean-observatory",
-    title: "WebGPU/WebGL Ocean Surface Showcase",
+    title: "WebGL2 Procedural Ocean Surface Showcase",
     shortTitle: "Ocean Observatory",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/ocean-observatory.png",
-      screenshotSha256: "4a1f142ab0e1d695590591e3dcc054ea421947102aa882c648640a6e98fae863",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js ocean references: the observatory deck, railings, masts, equipment, lights, horizon layers, drones, and procedural ocean motion read as a distinct large-water showcase. Bounded WebGL2 wave approximation is disclosed; no native FFT ocean, screen-space reflection, refraction, or foam parity claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Futuristic coastal deck with layered ocean motion, horizon, drones, glass rails, beacon lights, and wind modes.",
     threeCategory: "WebGPU water / advanced shader scene",
@@ -124,12 +118,9 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Reactor Post",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/reactor-post.png",
-      screenshotSha256: "fe7ed3877c8c5f12c78902bc900c5800a443ad64597609de301c1a4917207e70",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js postprocessing references: the reactor scene has a clear central core, emissive rings, command-wall panels, particles, scanlines, and measured tone-map/color-grade/vignette/FXAA evidence. Bounded postprocess scope is disclosed; no native depth-of-field or motion-blur parity claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "AI command center with emissive reactor core, holographic panels, particles, scan rings, and effect toggles.",
     threeCategory: "Postprocessing / bloom / effects-composer",
@@ -150,16 +141,13 @@ export const DEMOS: readonly DemoDefinition[] = [
   },
   {
     id: "smart-city",
-    title: "Massive Instancing / Smart City Stress Test",
+    title: "Authored Smart City / Bounded Instancing",
     shortTitle: "Smart City",
     difficulty: "Flagship",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/smart-city.png",
-      screenshotSha256: "6539a67b335908c8cbdb8b3bac361d2652f41b56afe624e336d36a8b85954f38",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Reworked direct review target: the authored Smart City street grid now supplies visible roads, districts, yards, and transit infrastructure while route-owned traffic, cargo, sensor, and load overlays stay anchored to those surfaces. Bounded instancing and frame-pacing limits remain disclosed; no full stress-benchmark parity claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Authored street grid with visible roads, districts, logistics yards, and anchored traffic/sensor telemetry. Raise Object count to Extreme to stress instancing.",
     threeCategory: "Instancing / large-scene performance",
@@ -180,16 +168,13 @@ export const DEMOS: readonly DemoDefinition[] = [
   },
   {
     id: "data-galaxy",
-    title: "Particle Simulation / AI Data Galaxy",
+    title: "CPU Point-Buffer / AI Data Galaxy",
     shortTitle: "Data Galaxy",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/data-galaxy.png",
-      screenshotSha256: "d5b7ddb08f35fbe7acad48d0a808336c2636c522f339b110c5d042e796805b2b",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-24T19:43:00.000Z",
-      notes: "Accepted direct PNG review against comparable Three.js particle and galaxy composition references with bounded known limits: the current route-owned focal system presents a luminous nucleus, nested orbital structure, streams, arcs, clustered points, and layered depth while keeping the generated Data Galaxy GLB cataloged as support-only context. The accepted scope is CPU/static A3D point-buffer visualization; no accelerator-backed particle solver is claimed."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Dense data-particle visualization with formations, attractors, trails, connection hints, and camera flight.",
     threeCategory: "Particles / CPU point-buffer galaxy visualization",
@@ -214,12 +199,9 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Configurator",
     difficulty: "Advanced",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/product-configurator.png",
-      screenshotSha256: "00543b1c626bccb970fa4b23a159087f7fa6a4dc99ea2eb47de3ee1508d42931",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-25T09:28:19.435Z",
-      notes: "Accepted direct PNG review against comparable Three.js glTF product configurator references with bounded unsupported boundaries: the original texture-backed concept car is the sole hero on a controlled showroom platform, with clean red paint, glass, roof panels, wheels, tires, interior visibility, material-variant evidence, and no white shell, edge speckle, unrelated product props, or generated support asset carrying the hero proof."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Original texture-backed concept-car configurator with imported car variant controls, turntable, exploded view, and controlled reusable studio staging.",
     threeCategory: "PBR product viewer / configurator",
@@ -244,12 +226,9 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Robotics Lab",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/robotics-lab.png",
-      screenshotSha256: "a8def519da1419940baa6e8a05de2836dbf4212a2370044ae06589ecd87c3dea",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js character/skinning references: Soldier and Robot Expressive actors animate inside a detailed training lab with stage pads, safety zones, timeline evidence, workstations, and calibration traces. Bounded clip-state UI, IK, and retargeting limits are disclosed; no full character-state-machine parity claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Robot training lab with animated armatures, task zones, monitors, safety lanes, crates, and timeline controls.",
     threeCategory: "Animated glTF / skeletal animation scenes",
@@ -274,12 +253,9 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Physics Testbed",
     difficulty: "Advanced",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/physics-playground.png",
-      screenshotSha256: "a47bf4da92702226f5fa87db84d10dbc765a9ee5b51f72792e8d918b9aa543e2",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js physics references: the manipulation testbed shows conveyors, bins, ramps, robot tooling, sensors, target zones, runtime rigid bodies, contact evidence, and clear scoring context. Bounded primitive/proxy collider scope is disclosed; no articulated robot dynamics or mesh-collider parity claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Robotics manipulation testbed with bins, ramps, conveyors, stacked objects, gripper/pusher, scores, and debug overlays.",
     threeCategory: "Physics / collision playgrounds",
@@ -300,16 +276,13 @@ export const DEMOS: readonly DemoDefinition[] = [
   },
   {
     id: "fog-cathedral",
-    title: "Volumetric Fog / Light Shaft Cinematic Scene",
+    title: "Atmospheric Fog / Light-Shaft Cinematic Scene",
     shortTitle: "Fog Cathedral",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/fog-cathedral.png",
-      screenshotSha256: "f7043d299e6379945058e9dd294e0bed8520f8b3a31215286c6bcb325a62faa3",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js fog and light-shaft references: the Sponza-based interior presents clear foreground, midground, background, atmospheric depth, dust, tracery detail, and aperture-local shaft composition. Bounded transparent-geometry and uniform fog approximations are disclosed; no true volumetric raymarch or shadowed participating-media claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Sponza-based authored interior with atmospheric depth, light shaft approximations, dust, arches, and camera choreography.",
     threeCategory: "Volumetric fog / god rays / cinematic lighting",
@@ -334,12 +307,9 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Digital Twin",
     difficulty: "Flagship",
     visualReview: {
-      status: "accepted",
+      status: "candidate",
       screenshot: "tests/reports/advanced-examples-gallery/digital-twin.png",
-      screenshotSha256: "51a56d66fcf095ea2c53c945948036fc535d7ce72b02b014c529b9a31352a3e5",
-      reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js CAD and digital-twin references: the factory twin shows a cutaway industrial shell, gantry pickers, conveyors, inspection portals, robot arms, mobile robots, heatmap plates, sensor overlays, and operator stations. Bounded deterministic simulation and telemetry scope is disclosed; no live CAD import or real robot telemetry claim is made."
+      notes: "Candidate source route. Generate the exact-source screenshot and runtime report, then record an independent human decision for that artifact before promoting this route to accepted."
     },
     subtitle: "Enterprise robotics factory twin with work cells, robots, conveyors, lidar cones, status overlays, heatmap, and timeline.",
     threeCategory: "CAD viewers / robotics dashboards / digital twins",

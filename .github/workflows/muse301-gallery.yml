@@ -143,11 +143,25 @@ jobs:
           fetch-depth: 0
       - name: Verify exact clean source
         run: test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT" && test -z "$(git status --porcelain --untracked-files=all)"
+      # actions/upload-artifact archives paths relative to their least common
+      # ancestor. Restore each producer at that same ancestor so the absolute
+      # repository paths recorded in its source-bound receipt remain valid.
       - uses: actions/download-artifact@v4
         with:
-          pattern: gallery-*-${{ inputs.source_commit }}
+          name: gallery-visual-${{ inputs.source_commit }}
+          path: tests/reports
+      - uses: actions/download-artifact@v4
+        with:
+          name: gallery-routes-${{ inputs.source_commit }}
+          path: tests/reports
+      - uses: actions/download-artifact@v4
+        with:
+          name: gallery-crowd-${{ inputs.source_commit }}
+          path: tests/reports
+      - uses: actions/download-artifact@v4
+        with:
+          name: gallery-clash-${{ inputs.source_commit }}
           path: .
-          merge-multiple: true
       - name: Build source-bound review input
         run: node tools/release/muse301-gallery.mjs aggregate
       - name: Build source-bound review index

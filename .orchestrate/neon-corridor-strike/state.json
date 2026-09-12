@@ -1,0 +1,88 @@
+{
+  "rootSlug": "neon-corridor-strike",
+  "tasks": [
+    {
+      "name": "bootstrap-fps-bar",
+      "type": "worker",
+      "branch": "`orch/neon-corridor-strike/bootstrap-fps-bar` (pushed to origin, commit `d4cee3a6`)",
+      "startingRef": "main",
+      "dependsOn": [],
+      "agentId": "bc-6687b6d1-4e10-40fc-9f42-5df508c28e51",
+      "runId": "run-1b60ef01-5984-4bfa-af64-e48d87ee14a1",
+      "parentAgentId": "bc-8b38d1ec-9798-4a81-9e15-f28c0ad686ed",
+      "status": "handed-off",
+      "resultStatus": "finished",
+      "handoffPath": "handoffs/bootstrap-fps-bar.md",
+      "startedAt": "2026-08-17T10:28:37.384Z",
+      "finishedAt": "2026-08-17T10:32:06.816Z",
+      "lastUpdate": "2026-08-17T10:32:07.331Z",
+      "note": "respawned by self-planner (was error; attempts=1)",
+      "attempts": 2,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": "not-verified"
+    },
+    {
+      "name": "rebuild-or-delete",
+      "type": "worker",
+      "branch": "orch/neon-corridor-strike/rebuild-or-delete",
+      "startingRef": "main",
+      "dependsOn": [
+        "bootstrap-fps-bar"
+      ],
+      "agentId": "bc-238bba33-4e2d-4e8f-8058-98d5e47349bc",
+      "runId": "run-88b6028e-a5c5-4f42-9d3f-66533628d31f",
+      "parentAgentId": "bc-8b38d1ec-9798-4a81-9e15-f28c0ad686ed",
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-08-17T10:32:09.266Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-08-17T10:32:11.525Z",
+      "note": null,
+      "attempts": 1,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "verify-screenshots",
+      "type": "verifier",
+      "branch": "orch/neon-corridor-strike/verify-screenshots",
+      "startingRef": "orch/neon-corridor-strike/rebuild-or-delete",
+      "dependsOn": [
+        "rebuild-or-delete"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    }
+  ],
+  "attention": [
+    {
+      "at": "2026-08-17T10:27:24.430Z",
+      "message": "bootstrap-fps-bar: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-08-17T10:28:35.879Z",
+      "message": "bootstrap-fps-bar: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T10:32:07.332Z",
+      "message": "bootstrap-fps-bar: verification self-reported (not-verified)"
+    }
+  ]
+}

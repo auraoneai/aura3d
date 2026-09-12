@@ -50,7 +50,7 @@ rmSync(workspace, { recursive: true, force: true });
 mkdirSync(workspace, { recursive: true });
 // Aggregate tools consume the frozen Three.js baseline receipt. Produce it in
 // this clean remote lifecycle instead of relying on an untracked prior report.
-run("node", ["tools/current-threejs-baseline/index.mjs"], root);
+run("node", ["tools/current-threejs-baseline/index.mjs", "--online"], root);
 run("pnpm", ["build:raw"], root);
 // This reproduces an already published version, so it needs exact local
 // tarballs without the unpublished-version eligibility check used by a new

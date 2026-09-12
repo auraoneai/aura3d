@@ -21,5 +21,5 @@ export default defineConfig({
     viewport: { width: 800, height: 600 },
     launchOptions: chromiumLaunchOptions,
   },
-  reporter: [["list"], ["json", { outputFile: "tests/reports/browser.json" }]]
+  reporter: [["list"], ["json", { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ?? "tests/reports/browser.json" }]]
 });

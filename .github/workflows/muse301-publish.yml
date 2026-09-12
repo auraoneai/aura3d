@@ -1,0 +1,122 @@
+name: Muse 3.0.1 Exact Plan Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Exact frozen 3.0.1 source to publish
+        required: true
+      browser_run_id:
+        description: Successful exact-source Browser Matrix run
+        required: true
+      l01_run_id:
+        description: Successful exact-source L01 pack-once run
+        required: true
+      gallery_run_id:
+        description: Successful exact-source final gallery run
+        required: true
+      review_run_id:
+        description: Successful independent approved-review run
+        required: true
+      closure_run_id:
+        description: Successful exact-source evidence closure and aggregate run
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+env:
+  SOURCE_COMMIT: ${{ inputs.source_commit }}
+
+jobs:
+  publish-exact-plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: npm-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify exact successful prerequisite workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BROWSER_RUN_ID: ${{ inputs.browser_run_id }}
+          L01_RUN_ID: ${{ inputs.l01_run_id }}
+          GALLERY_RUN_ID: ${{ inputs.gallery_run_id }}
+          REVIEW_RUN_ID: ${{ inputs.review_run_id }}
+          CLOSURE_RUN_ID: ${{ inputs.closure_run_id }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          verify_run() {
+            run_id="$1"
+            expected_path="$2"
+            run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
+            test "$(jq -r .head_sha <<<"$run_json")" = "$SOURCE_COMMIT"
+            test "$(jq -r .status <<<"$run_json")" = completed
+            test "$(jq -r .conclusion <<<"$run_json")" = success
+            test "$(jq -r .path <<<"$run_json")" = "$expected_path"
+          }
+          verify_run "$BROWSER_RUN_ID" .github/workflows/browser-matrix.yml
+          verify_run "$L01_RUN_ID" .github/workflows/muse301-l01.yml
+          verify_run "$GALLERY_RUN_ID" .github/workflows/muse301-gallery.yml
+          verify_run "$REVIEW_RUN_ID" .github/workflows/muse301-final-review.yml
+          verify_run "$CLOSURE_RUN_ID" .github/workflows/muse301-evidence-closure.yml
+          review_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${REVIEW_RUN_ID}")"
+          test "$(jq -r .event <<<"$review_json")" = workflow_dispatch
+          test "$(jq -r .actor.type <<<"$review_json")" = User
+          printf 'EXPECTED_REVIEWER_ID=%s\n' "$(jq -r .actor.login <<<"$review_json")" >> "$GITHUB_ENV"
+
+      - name: Restore exact L01 archives and release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: muse301-l01-${{ inputs.source_commit }}
+          path: .
+          run-id: ${{ inputs.l01_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Restore approved exact gallery
+        uses: actions/download-artifact@v4
+        with:
+          name: muse301-final-review-${{ inputs.source_commit }}
+          path: .
+          run-id: ${{ inputs.review_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify exact plan, approved gallery, and authenticated reviewer
+        run: |
+          node --input-type=module - <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { loadValidatedReleasePlan } from './tools/release/exact-release-plan.mjs';
+          const plan = loadValidatedReleasePlan(process.cwd(), 'tests/reports/release-tarballs/release-plan.json');
+          if (plan.version !== '3.0.1' || plan.packages.length !== 29) throw new Error('Invalid exact 3.0.1 release plan');
+          const approval = JSON.parse(readFileSync('release-artifacts/3.0.1-final-visual-review-approval.json', 'utf8'));
+          if (approval.reviewer?.id !== process.env.EXPECTED_REVIEWER_ID) throw new Error('Approval reviewer differs from authenticated workflow dispatcher');
+          NODE
+          node tools/release/final-review-approval.mjs verify
+
+      - name: Publish only retained L01 tarballs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+        run: node tools/release/publish-all.mjs --from-plan tests/reports/release-tarballs/release-plan.json
+
+      - name: Upload immediate registry verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-publish-${{ inputs.source_commit }}
+          path: tests/reports/release-tarballs/registry-verification.json
+          if-no-files-found: error

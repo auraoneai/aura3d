@@ -53,6 +53,10 @@ jobs:
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           REQUESTED_VERSION=${REQUESTED_VERSION#v}
+          if [ "$REQUESTED_VERSION" = "3.0.1" ]; then
+            echo "Aura3D 3.0.1 must use the exact-plan publish coordinator; the legacy workflow may repack different bytes." >&2
+            exit 1
+          fi
           if [ "$REQUESTED_VERSION" != "$PACKAGE_VERSION" ]; then
             echo "Requested version $REQUESTED_VERSION does not match package.json $PACKAGE_VERSION" >&2
             exit 1

@@ -2,11 +2,11 @@
 
 Version: 2.0.3
 
-The advanced examples gallery is the current proof surface for the production-grade showcase work that was previously tracked in the root execution PRD. The durable source lives in `apps/advanced-examples-gallery/`, `tools/advanced-gallery-*`, `tools/advanced-gallery-assets/`, and the ignored generated local evidence directory `tests/reports/advanced-examples-gallery/`.
+The advanced examples gallery is the current evidence surface for the showcase work that was previously tracked in the root execution PRD. The durable source lives in `apps/advanced-examples-gallery/`, `tools/advanced-gallery-*`, `tools/advanced-gallery-assets/`, and the ignored generated local evidence directory `tests/reports/advanced-examples-gallery/`.
 
 ## What Was Created
 
-The gallery source metadata currently defines ten accepted advanced routes. That accepted state is reusable only after the ignored full-gallery evidence has been regenerated and the review/audit reports pass for the same artifacts.
+The gallery source metadata currently defines ten candidate advanced routes. Exact-source browser evidence, passing review/audit reports, and an independent human decision on the exact screenshots are required before any route is promoted to accepted.
 
 | Route id | Feature area | Primary source owners |
 |---|---|---|
@@ -90,7 +90,7 @@ Use this source map before changing the gallery:
 
 - Route composition: `apps/advanced-examples-gallery/src/proceduralRouteScenes.ts`, route-specific modules, and `sceneBuilders.ts`.
 - Authored GLB activation: `apps/advanced-examples-gallery/src/authoredLayer.ts`, `authoredAssets.ts`, and `authoredLayerPolicies.ts`.
-- Route metadata and accepted evidence hashes: `apps/advanced-examples-gallery/src/metadata.ts`.
+- Route metadata and candidate review state: `apps/advanced-examples-gallery/src/metadata.ts`.
 - Browser capture: `tests/browser/advanced-examples-gallery.spec.ts`.
 - Visual review: `tools/advanced-gallery-visual-review/index.ts`.
 - Structural audit: `tools/advanced-gallery-report-audit/index.ts`.

@@ -685,8 +685,8 @@ function renderShell(): void {
       <section class="gallery-home">
         <header>
           <span>A3D Advanced Gallery</span>
-          <h1>Production-Grade Aura3D Showcases</h1>
-          <p>Launch ten ambitious browser 3D experiences built with Aura3D 2.0.3—authored assets, real interaction, motion, physics, animation, controls, and live performance telemetry included.</p>
+          <h1>Evidence-Gated Aura3D Showcases</h1>
+          <p>Explore ten browser 3D candidate routes built with Aura3D 2.0.3. Each route discloses its implementation boundaries and requires exact-source evidence plus independent review before release acceptance.</p>
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
@@ -727,11 +727,11 @@ function renderShell(): void {
         <h1>${escapeHtml(selectedDemo.title)}</h1>
         <p>${escapeHtml(selectedDemo.subtitle)}</p>
       </header>
-      <section class="visual-review">
-        <h2>Scene</h2>
-        <strong>Aura3D 2.0.3</strong>
+      <section class="visual-review review-${escapeHtml(selectedDemo.visualReview.status)}">
+        <h2>Evidence state</h2>
+        <strong>${escapeHtml(selectedDemo.visualReview.status)}</strong>
         <p>${escapeHtml(selectedDemo.features.slice(0, 3).join(" · "))}</p>
-        <small>Interactive browser experience built with Aura3D 2.0.3</small>
+        <small>${escapeHtml(selectedDemo.visualReview.notes)}</small>
       </section>
       ${selectedDemo.id === "smart-city" ? `
           <section class="workload-legend">
@@ -764,6 +764,8 @@ function renderShell(): void {
         ${list(selectedDemo.interactions)}
         <h2>Live systems</h2>
         ${list(selectedDemo.systems)}
+        <h2>Claim boundary</h2>
+        ${list(selectedDemo.knownGaps)}
       </section>
     </aside>
     <div class="caption-strip" id="caption-strip">

@@ -16,15 +16,15 @@ http://127.0.0.1:5181/apps/advanced-examples-gallery/
 
 Direct demo routes:
 
-- `#water-lab` - Interactive GPGPU-style water lab.
-- `#ocean-observatory` - WebGL ocean surface showcase.
+- `#water-lab` - Interactive procedural water lab.
+- `#ocean-observatory` - WebGL2 procedural ocean surface showcase.
 - `#reactor-post` - Cinematic post-processing command center.
-- `#smart-city` - Massive instancing smart city stress test.
-- `#data-galaxy` - Particle simulation / AI data galaxy.
+- `#smart-city` - Authored smart city with bounded instancing workload.
+- `#data-galaxy` - CPU point-buffer / AI data galaxy.
 - `#product-configurator` - PBR product configurator.
 - `#robotics-lab` - Animated robotics training lab.
 - `#physics-playground` - Robotics manipulation physics-style testbed.
-- `#fog-cathedral` - Volumetric fog / light shaft cinematic scene.
+- `#fog-cathedral` - Atmospheric fog / light-shaft cinematic scene.
 - `#digital-twin` - CAD / robotics digital twin control room.
 
 Verification:
@@ -36,7 +36,7 @@ pnpm advanced-gallery:review
 pnpm advanced-gallery:audit
 ```
 
-`pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The source metadata currently marks the ten routes as accepted, but that status can be cited only when the generated full-gallery screenshots, route JSON, visual review report, and audit report are current in `tests/reports/advanced-examples-gallery/`.
+`pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The source metadata keeps all ten routes in candidate state until exact-source screenshots, route JSON, the visual review report, and the audit report are current in `tests/reports/advanced-examples-gallery/` and an independent human records the final artifact decision.
 
 `accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove low-level renderer code showcase quality.
 
@@ -59,18 +59,18 @@ Primary visual review artifacts:
 
 ## Source Acceptance State
 
-The source metadata currently describes ten accepted routes. Because `tests/reports/` is ignored by git, a checkout may not contain the full generated report set. Do not reuse accepted-gallery wording for release notes, public claims, or screenshots until `pnpm advanced-gallery:pipeline` regenerates the reports and both the review and audit pass for the same artifacts.
+The source metadata currently describes ten candidate routes. Because `tests/reports/` is ignored by git, a checkout may not contain the full generated report set. Promote a route only after `pnpm advanced-gallery:pipeline` regenerates its exact-source reports, the review and audit pass for the same artifacts, and an independent human approves the exact screenshot.
 
 | Demo | Status | Implementation mode | Evidence boundary |
 | --- | --- | --- | --- |
-| Water Lab | Accepted | CPU/procedural water, ripple interaction, marina props, and route instrumentation | No native GPGPU water solver is claimed. |
-| Ocean Observatory | Accepted | WebGL2 procedural ocean, observatory staging, drone overlays, and route instrumentation | WebGPU/FFT water, screen-space refraction, and caustics remain bounded approximations. |
-| Smart City | Accepted | Authored Smart City street-grid hero, grounded A3D street traffic, logistics-yard cargo, intersection sensors, batching, and route instrumentation. Flythrough-only aerial/rail motion stays out of the default view. | It is an accepted route, not the entire large-scale instancing benchmark. |
-| Data Galaxy | Accepted | Route-owned CPU/static data visualization geometry: nuclei, clusters, arcs, streams, and point batches | The generated Data Galaxy GLB is cataloged but inactive as focal hero proof. |
-| Product Configurator | Accepted | Original texture-backed concept-car GLB with bounded material/render-state stability and showroom staging | Hotspot-style triangle picking and authored exploded animation timelines remain bounded gaps. |
-| Physics Testbed | Accepted | A3D PhysicsWorld rigid bodies, primitive/proxy colliders, and route-level interactions | Mesh-derived colliders and articulated robot dynamics remain bounded gaps. |
-| Fog Cathedral | Accepted | Sponza-based atmospheric route with renderer fog plus transparent haze/shaft helpers | True volumetric raymarching and shadowed participating media are not claimed. |
-| Digital Twin | Accepted | Deterministic factory simulation overlays and digital-twin route instrumentation | CAD import, real robot telemetry, and physics-grade collision remain bounded gaps. |
+| Water Lab | Candidate | CPU/procedural water, ripple interaction, marina props, and route instrumentation | No native GPGPU water solver is claimed. |
+| Ocean Observatory | Candidate | WebGL2 procedural ocean, observatory staging, drone overlays, and route instrumentation | WebGPU/FFT water, screen-space refraction, and caustics remain bounded approximations. |
+| Smart City | Candidate | Authored Smart City street-grid hero, grounded A3D street traffic, logistics-yard cargo, intersection sensors, batching, and route instrumentation. Flythrough-only aerial/rail motion stays out of the default view. | It does not establish the entire large-scale instancing benchmark. |
+| Data Galaxy | Candidate | Route-owned CPU/static data visualization geometry: nuclei, clusters, arcs, streams, and point batches | The generated Data Galaxy GLB is cataloged but inactive as focal hero proof. |
+| Product Configurator | Candidate | Original texture-backed concept-car GLB with bounded material/render-state stability and showroom staging | Hotspot-style triangle picking and authored exploded animation timelines remain bounded gaps. |
+| Physics Testbed | Candidate | A3D PhysicsWorld rigid bodies, primitive/proxy colliders, and route-level interactions | Mesh-derived colliders and articulated robot dynamics remain bounded gaps. |
+| Fog Cathedral | Candidate | Sponza-based atmospheric route with renderer fog plus transparent haze/shaft helpers | True volumetric raymarching and shadowed participating media are not claimed. |
+| Digital Twin | Candidate | Deterministic factory simulation overlays and digital-twin route instrumentation | CAD import, real robot telemetry, and physics-grade collision remain bounded gaps. |
 
 ## Capability Boundaries
 

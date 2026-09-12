@@ -1,0 +1,105 @@
+name: Muse 3.0.1 Independent Final Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Exact frozen source whose gallery was reviewed
+        required: true
+      gallery_run_id:
+        description: Successful Final Source Gallery run that produced the reviewed bytes
+        required: true
+      decision:
+        description: Independent decision after reviewing every retained gallery artifact
+        required: true
+        type: choice
+        options: [approved, rejected]
+      statement:
+        description: Substantive human review statement; name any blocking issue when rejecting
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  SOURCE_COMMIT: ${{ inputs.source_commit }}
+  GALLERY_RUN_ID: ${{ inputs.gallery_run_id }}
+
+jobs:
+  record-human-decision:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+
+      - name: Verify exact successful gallery producer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GALLERY_RUN_ID}")"
+          test "$(jq -r .head_sha <<<"$run_json")" = "$SOURCE_COMMIT"
+          test "$(jq -r .status <<<"$run_json")" = completed
+          test "$(jq -r .conclusion <<<"$run_json")" = success
+          test "$(jq -r .path <<<"$run_json")" = ".github/workflows/muse301-gallery.yml"
+
+      - name: Restore exact gallery
+        uses: actions/download-artifact@v4
+        with:
+          name: muse301-final-source-gallery-${{ inputs.source_commit }}
+          path: .
+          run-id: ${{ inputs.gallery_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate gallery before recording a decision
+        run: node tools/release/final-review-approval.mjs validate-gallery
+
+      - name: Resolve authenticated human reviewer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          actor_json=""
+          actor_json="$(gh api "users/${GITHUB_ACTOR}")"
+          test "$(jq -r .type <<<"$actor_json")" = User
+          actor_name=""
+          actor_name="$(jq -r '.name // .login' <<<"$actor_json")"
+          test -n "$actor_name"
+          printf 'A3D_REVIEWER_ID=%s\n' "$(jq -r .login <<<"$actor_json")" >> "$GITHUB_ENV"
+          printf 'A3D_REVIEWER_NAME=%s\n' "$actor_name" >> "$GITHUB_ENV"
+
+      - name: Record immutable human-origin decision
+        env:
+          A3D_REVIEW_DECISION: ${{ inputs.decision }}
+          A3D_REVIEW_STATEMENT: ${{ inputs.statement }}
+          A3D_REVIEW_RECORD_ID: github:${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          date -u +A3D_REVIEWED_AT=%Y-%m-%dT%H:%M:%SZ >> "$GITHUB_ENV"
+          A3D_REVIEWED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          export A3D_REVIEWED_AT
+          node tools/release/final-review-approval.mjs record
+          if [ "${{ inputs.decision }}" = approved ]; then
+            node tools/release/final-review-approval.mjs verify
+          fi
+
+      - name: Upload exact review decision
+        uses: actions/upload-artifact@v4
+        with:
+          name: muse301-final-review-${{ inputs.source_commit }}
+          path: |
+            release-artifacts/3.0.1-final-visual-review-manifest.json
+            release-artifacts/3.0.1-final-visual-review-approval.json
+            release-artifacts/3.0.1-final-visual-review-origin.json
+            release-artifacts/3.0.1-final-visual-review-index.json
+            release-artifacts/3.0.1-final-visual-review-input.json
+            tests/reports/muse301-gallery/**/receipt.json
+            tests/reports/muse3jsparity/visual-301-*.png
+            tests/reports/showcase-gameplay/*.png
+            tests/reports/smart-city-composition-301/*.png
+            tests/reports/crowd-instancing-adoption-301/smart-city/*.png
+            apps/aura-clash-showcase/launch-evidence/aura-clash-visual-*.png
+          if-no-files-found: error

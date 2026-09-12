@@ -64,10 +64,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: browser-matrix-reports-node-22-*
+          # The artifact also includes root-level test-results, so upload-artifact
+          # preserves the tests/reports prefix. Restore at the repository root.
           path: .
           merge-multiple: true
           run-id: ${{ inputs.browser_run_id }}
           github-token: ${{ github.token }}
+
+      - name: Verify complete exact-source Browser Matrix
+        run: node tools/release/browser-matrix-receipts.mjs verify
 
       - name: Restore exact installed head-to-head evidence
         uses: actions/download-artifact@v4
@@ -129,6 +134,8 @@ jobs:
         with:
           name: muse301-evidence-closure-${{ inputs.source_commit }}
           path: |
+            tests/reports/browser-matrix/aggregate.json
+            tests/reports/browser-matrix/*/receipt.json
             tests/reports/muse3jsparity/evidence-manifest.json
             tests/reports/muse3jsparity/q02/
             tests/reports/muse3jsparity/readiness.json

@@ -26,17 +26,18 @@ const sourceFiles = [
   "apps/advanced-examples-gallery/src/productConfiguratorScene.ts",
   "apps/advanced-examples-gallery/src/proceduralRouteScenes.ts",
   "tests/browser/asset-material-fidelity-external-parity.spec.ts",
+  "tests/browser/flagship-ibl-states.spec.ts",
   "tests/unit/rendering/environment-map-resources.test.ts",
   "tests/unit/rendering/external-parity-render-preset.test.ts",
   "tests/reports/external-parity-asset-material-fidelity.json",
-  "tests/reports/advanced-examples-gallery/visual-review-report.json",
+  "tests/reports/external-parity-flagship-ibl-states.json",
 ] as const;
 
 export function createExternalParityHdrIblReadinessReport(root = process.cwd()): ExternalParityHdrIblReadinessReport {
   const materialFidelity = readJson(root, "tests/reports/external-parity-asset-material-fidelity.json");
-  const screenshotManifest = readJson(root, "tests/reports/advanced-examples-gallery/visual-review-report.json");
+  const flagshipIblReport = readJson(root, "tests/reports/external-parity-flagship-ibl-states.json");
   const materialEvidence = hasMaterialHdrIblEvidence(materialFidelity);
-  const flagshipEvidence = hasFlagshipHdrIblEvidence(screenshotManifest);
+  const flagshipEvidence = hasFlagshipHdrIblEvidence(flagshipIblReport);
   const supportedEvidence = [
     ...(materialEvidence ? ["asset-viewer-linear-hdr-ibl-material-response"] : []),
     ...(flagshipEvidence ? ["flagship-linear-hdr-ibl-screenshot-state"] : []),
@@ -53,7 +54,7 @@ export function createExternalParityHdrIblReadinessReport(root = process.cwd()):
     validation("asset-material-linear-hdr-ibl", materialEvidence, "tests/reports/external-parity-asset-material-fidelity.json:external-parity-material-fidelity-card", [
       "External parity material fidelity report does not prove a linear-HDR IBL resource, BRDF LUT, specular mips, diffuse irradiance, and material render state.",
     ]),
-    validation("flagship-linear-hdr-ibl-state", flagshipEvidence, "tests/reports/advanced-examples-gallery/visual-review-report.json", [
+    validation("flagship-linear-hdr-ibl-state", flagshipEvidence, "tests/reports/external-parity-flagship-ibl-states.json", [
       "Product, architecture, and game flagship screenshot states do not all publish linear-HDR environment resources and reflection evidence.",
     ]),
     validation("production-hdr-ibl-boundary", true, "tools/external-parity-hdr-ibl-readiness/index.ts", []),

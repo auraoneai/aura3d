@@ -76,11 +76,24 @@ jobs:
         run: pnpm build:raw
 
       - name: Browser tests
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: tests/reports/browser-matrix/${{ matrix.shard }}/browser.json
+          # The gallery audit rejects focused-route reports as a complete
+          # gallery run. This matrix shard executes all ten routes, so bind its
+          # outputs to the full-gallery evidence contract explicitly.
+          A3D_ADVANCED_GALLERY_EVIDENCE_MODE: ${{ matrix.shard == 'gallery' && 'full-gallery' || 'focused-route' }}
         run: pnpm exec playwright test ${{ matrix.specs }}
 
       - name: Visual tests
         if: matrix.shard == 'routes'
         run: pnpm test:visual
+
+      - name: Bind exact-source shard report
+        run: >-
+          node tools/release/browser-matrix-receipts.mjs receipt
+          "${{ matrix.shard }}"
+          "tests/reports/browser-matrix/${{ matrix.shard }}/browser.json"
+          "${{ matrix.specs }}"
 
       - name: Upload browser reports
         if: always()
@@ -88,7 +101,7 @@ jobs:
         with:
           name: browser-matrix-reports-node-${{ matrix.node }}-${{ matrix.shard }}
           path: |
-            tests/reports/browser.json
+            tests/reports/browser-matrix/${{ matrix.shard }}/
             tests/reports/visual.json
             tests/reports/visual-browser.json
             tests/reports/pbr-environment-validation.json
