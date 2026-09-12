@@ -1794,7 +1794,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       }
     },
     advanceFrame() {
-      scheduleEvidenceFrame();
+      // This is the deterministic manual-step hook used by evidence tests.
+      // Scheduling another RAF can coalesce behind an already pending runtime
+      // frame and return before any proof changes, leaving callers to observe
+      // the preceding capture state. GameAppRuntime.step emits the same normal
+      // production frame synchronously and remains valid while its loop runs.
+      gameApp.step(1 / 60);
     }
   };
   };
