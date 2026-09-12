@@ -1752,6 +1752,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       rivalState.flashActive = false;
       playerState.specialFreezeRemaining = 0;
       rivalState.specialFreezeRemaining = 0;
+      // `setPositions` is a test-driver teleport between independent capture states.
+      // Rebuild the canonical combat owner as part of that boundary so an active
+      // hitbox from the preceding state cannot survive after both route-local
+      // attacks were cleared and strike the newly positioned fighters. The next
+      // queued attack still travels through combatWorld and emits a real event.
+      resetCombatWorld(combatWorld, playerState, rivalState);
+      combatSnapshot = combatWorld.snapshot();
     },
     queuePlayerAttack(move: MoveId) {
       playerState.moveCooldown = 0;
