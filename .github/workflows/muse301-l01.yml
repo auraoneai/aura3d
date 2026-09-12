@@ -41,7 +41,24 @@ jobs:
         with:
           name: muse301-l01-${{ inputs.source_commit }}
           path: |
+            # The parent receipt hashes these generated reports. Retaining only
+            # the receipt directory makes remote replay fail with missing input
+            # files even when L01 itself passed.
+            BUNDLE_SIZES.md
+            docs/project/release-artifacts.json
             tests/reports/muse3jsparity/l01/
             tests/reports/release-tarballs/
+            tests/reports/agent-templates.json
+            tests/reports/bundle-size.json
+            tests/reports/exports.json
+            tests/reports/import-smoke.json
+            tests/reports/installed-template-lifecycle.json
+            tests/reports/installed-tree-shaking.json
+            tests/reports/package-clean-install-workspace/
+            tests/reports/package-clean-install.json
+            tests/reports/package-install-smoke.json
+            tests/reports/package-provenance.json
+            tests/reports/public-surface-diff-3.0.1.json
+            tests/reports/release-frozen-lock.json
             release-artifacts/
           if-no-files-found: warn

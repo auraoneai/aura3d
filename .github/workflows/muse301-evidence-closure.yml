@@ -69,20 +69,25 @@ jobs:
           run-id: ${{ inputs.browser_run_id }}
           github-token: ${{ github.token }}
 
-      - name: Restore exact L01 evidence
-        uses: actions/download-artifact@v4
-        with:
-          name: muse301-l01-${{ inputs.source_commit }}
-          path: .
-          run-id: ${{ inputs.l01_run_id }}
-          github-token: ${{ github.token }}
-
       - name: Restore exact installed head-to-head evidence
         uses: actions/download-artifact@v4
         with:
+          # H2H uploads only paths below tests/reports, so upload-artifact strips
+          # that common prefix. Restore beneath it explicitly.
           name: muse301-h2h-${{ inputs.source_commit }}
-          path: .
+          path: tests/reports
           run-id: ${{ inputs.h2h_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Restore exact L01 evidence
+        uses: actions/download-artifact@v4
+        with:
+          # L01 also uploads root-level files, so its archive preserves full
+          # repository-relative paths. Restore it last so its certified tarballs
+          # remain authoritative if H2H produced the same archives independently.
+          name: muse301-l01-${{ inputs.source_commit }}
+          path: .
+          run-id: ${{ inputs.l01_run_id }}
           github-token: ${{ github.token }}
 
       - name: Install dependencies and browser
