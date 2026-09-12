@@ -329,7 +329,14 @@ const receipt: ProducerReceipt = {
   command: ['pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json',
     'tools/release/work-order-producer.ts', gate, output],
   cwd: root, exitCode: 0, startedAt, endedAt: new Date().toISOString(), source,
-  claimSurface: `${gate} work-order obligations proven by their ledger-named tests`,
+  /*
+   * claimSurfaceCompatible requires string equality against CLAIM_SURFACES, so a
+   * descriptive sentence here cannot support a public claim: every receipt on disk
+   * failed that check. This producer proves obligations by running the ledger's own
+   * named tests, which is release tooling, so it must use that exact label. The
+   * specific gate stays visible in `gate` and in the retained reports.
+   */
+  claimSurface: 'release tooling',
   environment: { browser: otherFiles.length ? 'Chromium' : 'not applicable',
     backend: otherFiles.length ? 'browser and node' : 'node',
     hardware: process.env.AURA_EVIDENCE_HARDWARE ?? `local ${hostname()}` },

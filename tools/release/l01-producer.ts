@@ -164,7 +164,8 @@ const parentReceiptPath = pathInRoot(resolve(output, 'l01.receipt.json'));
 const parent: ProducerReceipt = {
   schema:'muse3jsparity-producer/v1',runId,gate:'l01',tasks:requirements.map(item=>item.id),
   command:['pnpm','exec','tsx','--tsconfig','tsconfig.base.json','tools/release/l01-producer.ts',pathInRoot(output)],cwd:root,exitCode:0,
-  startedAt,endedAt:new Date().toISOString(),source,claimSurface:'3.0.1 exact package, compatibility, scaffold, and release preflight contract',
+  startedAt,endedAt:new Date().toISOString(),source,// Exact CLAIM_SURFACES label: package/scaffold/preflight verification is release tooling.
+  claimSurface:'release tooling',
   environment:{browser:'scaffold/browser reports retained',backend:'remote Linux package and npm preflight',hardware:`${process.env.AURA3D_REMOTE_PROVIDER}:${process.env.AURA3D_REMOTE_WORKER_ID}@${hostname()}`},
   artifacts:[acceptanceRef,...parentArtifacts.filter(item=>item.path!==acceptanceRef.path)],packages:packageRefs,tarballs:tarballRefs,acceptance:acceptancePath,
   acceptanceProofs:acceptanceTasks.map(task=>({task,artifact:acceptancePath,schema:'muse301-packages/v1'})),
