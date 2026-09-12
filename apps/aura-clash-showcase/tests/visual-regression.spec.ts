@@ -111,11 +111,19 @@ test.describe("Aura Clash visual regression states", () => {
       driver.pauseOnNextWhiff();
     });
     await queuePlayerAttack(page, "heavy");
+    // The evidence driver deliberately renders on demand. Let the authored attack
+    // pass its wall-clock expiry, then submit one real production frame so
+    // clearExpiredAttack can publish and freeze the out-of-range whiff.
+    await page.waitForTimeout(1_000);
+    await page.evaluate(() => {
+      const driver = (window as Window & {
+        __AURA_CLASH_ARENA_TEST_DRIVER__?: { advanceFrame(): void };
+      }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+      if (!driver) throw new Error("Aura Clash test driver was not installed.");
+      driver.advanceFrame();
+    });
     await expect.poll(async () => (await readAuraClashProof(page)).presentation?.lastOutcome, {
       message: "whiff capture must follow a real out-of-range attack",
-      // A macOS GPU frame can take longer than the default five-second poll
-      // after the attack's wall-clock expiry. Wait for the next production
-      // frame to publish the real whiff rather than reading the prior hit.
       timeout: 15_000
     }).toBe("whiff");
     await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
