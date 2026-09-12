@@ -171,9 +171,12 @@ async function expectReadableVisualProof(page: Parameters<typeof readAuraClashPr
   expect(proof.lighting?.readable).toBe(true);
   expect(proof.lighting?.validatedStates).toContain(state);
   expect(proof.lighting?.minRimIntensity).toBeGreaterThanOrEqual(1.2);
+  expect(
+    proof.performance?.budgetOk,
+    `Aura Clash ${state} capture exceeded its declared route budget: ${JSON.stringify(proof.performance)}`
+  ).toBe(true);
   expect(proof.postProcess?.gameplayVisible).toBe(true);
   expect(proof.postProcess?.validatedStates).toContain(state);
   expect(proof.postProcess?.bloomWithinGameplayLimit).toBe(true);
   expect(proof.postProcess?.fogBehindCombatLane).toBe(true);
-  expect(proof.performance?.budgetOk).toBe(true);
 }
