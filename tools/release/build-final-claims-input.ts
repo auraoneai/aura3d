@@ -24,7 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { finalClaimsDocuments } from '../muse3jsparity-docs-audit/claims';
-import { isStructuralDocumentLine } from '../muse3jsparity-docs-audit/document-invariants';
+import { structuralDocumentLineNumbers, isDescriptiveDocumentLine } from '../muse3jsparity-docs-audit/document-invariants';
 import { artifact, sourceIdentity, type Artifact } from '../muse3jsparity-readiness/evidence-lineage';
 
 /** A measured claim names a direction and states a number the receipt can contradict. */
@@ -79,12 +79,16 @@ const l01Receipt = (() => {
 const source = sourceIdentity(root);
 
 const structuralLines: { file: string; sourceSha256: string; line: number; text: string }[] = [];
+const descriptiveLines: { file: string; sourceSha256: string; line: number; text: string }[] = [];
 const claims: Record<string, unknown>[] = [];
 for (const file of documents) {
   const sha = artifact(root, file).sha256;
-  readFileSync(resolve(root, file), 'utf8').split('\n').forEach((text, index) => {
+  const content = readFileSync(resolve(root, file), 'utf8');
+  const structural = structuralDocumentLineNumbers(content);
+  content.split('\n').forEach((text, index) => {
     if (!text.trim()) return;
-    if (isStructuralDocumentLine(text)) { structuralLines.push({ file, sourceSha256: sha, line: index + 1, text }); return; }
+    if (structural.has(index + 1)) { structuralLines.push({ file, sourceSha256: sha, line: index + 1, text }); return; }
+    if (isDescriptiveDocumentLine(text)) { descriptiveLines.push({ file, sourceSha256: sha, line: index + 1, text }); return; }
     /*
      * validateReleaseClaimCoverage requires each release-notes document to carry at
      * least one `performance` row describing a measured win and one describing a
@@ -125,7 +129,7 @@ for (const file of markdown) {
 }
 
 const config = { schema: 'muse301-final-claims/v1', source,
-  documents: documents.map(path => artifact(root, path)), claims, historicalInventory, structuralLines };
+  documents: documents.map(path => artifact(root, path)), claims, historicalInventory, structuralLines, descriptiveLines };
 writeFileSync(resolve(root, out), `${JSON.stringify(config, null, 2)}\n`);
 console.log(JSON.stringify({ out, documents: documents.length, structuralLines: structuralLines.length,
-  claims: claims.length, historicalInventory: historicalInventory.length }));
+  claims: claims.length, historicalInventory: historicalInventory.length, descriptiveLines: descriptiveLines.length }));

@@ -20,6 +20,67 @@ export function isStructuralDocumentLine(line:string):boolean {
   || /^#{1,6}\s+(?:Overview|Contents|Installation|Usage|Examples|References|Notes|Limitations|Evidence|History|Requirements|Verification|Release checklist)$/i.test(s)
   || /^<\/(?:div|section|main|article|nav|header|footer|ul|ol|li|p|span|body|html)>$/.test(s);
 }
+/**
+ * Document-aware structural classification.
+ *
+ * `isStructuralDocumentLine` is stateless, so it cannot recognise the interior of a
+ * fenced example. A line like `const app = await createAuraApp();` is illustrative
+ * code, not a release claim, and `pnpm check:docs-codeblocks` already compiles every
+ * fenced block against the real public surface. Markup and labels are likewise not
+ * claims on their own: an opening tag carries no assertion, a heading names the
+ * section whose prose beneath it still requires a receipt-bound row, and a bare link
+ * is navigation. Prose, tables and list items are deliberately NOT covered here, so
+ * every sentence that states a product fact still needs an explicit claim row.
+ */
+export function structuralDocumentLineNumbers(text:string):Set<number> {
+ const structural=new Set<number>();
+ let fence:string|null=null;
+ text.split('\n').forEach((line,index)=>{
+  const s=line.trim();
+  const number=index+1;
+  const delimiter=/^(`{3,}|~{3,})/.exec(s)?.[1];
+  if(fence){structural.add(number);if(delimiter&&s.startsWith(fence))fence=null;return;}
+  if(delimiter){structural.add(number);fence=delimiter;return;}
+  if(!s)return;
+  if(isStructuralDocumentLine(line)){structural.add(number);return;}
+  // A line that is exactly one markup tag asserts nothing.
+  if(/^<[^>]+>$/.test(s)){structural.add(number);return;}
+  // A heading is a label; the claim lives in the prose beneath it.
+  if(/^#{1,6}\s+\S/.test(s)){structural.add(number);return;}
+  // A bare link or image reference is navigation, not a behavioural claim.
+  if(/^[-*]?\s*!?\[[^\]]*\]\([^)]*\)[.,]?$/.test(s)){structural.add(number);return;}
+ });
+ return structural;
+}
+/**
+ * A line that provably carries no claim.
+ *
+ * The claim contract demands an exact receipt-bound value comparison for every
+ * claim row. That is the correct bar for a sentence asserting a product fact, but
+ * a purely descriptive sentence states no measurable value, so pointing it at a
+ * measurement would invent an evidence relationship rather than prove one.
+ *
+ * This predicate is therefore a NEGATIVE test, not a classifier of intent: it
+ * returns true only when the line contains no digit, no claim verb, no
+ * comparative or measurement word, and no capability noun. Anything that could
+ * be read as an assertion falls through and still requires a bound claim row, so
+ * a real claim cannot become exempt by being phrased as prose.
+ */
+const CLAIM_BEARING = [
+ /\d/,
+ /\b(?:support|provide|enable|deliver|guarantee|ensure|prove|proven|pass|passes|passed|verified|validate[sd]?|certif\w*|achiev\w*|meet[s]?|exceed\w*|comply|compliant|complete[sd]?|implement\w*|ship[sp]?\w*|available|production[- ]ready|stable|parity|equivalent|identical|matches?)\b/i,
+ /\b(?:faster|slower|improv\w*|reduc\w*|increas\w*|lower|higher|better|worse|best|fastest|regress\w*|win|loss|gain|budget|threshold|measured|benchmark\w*)\b/i,
+ /\b(?:all|every|none|no|zero|any|always|never|only|fully|entirely|guaranteed)\b/i,
+ // A finite verb asserts something about the product. A wrapped continuation
+ // fragment that still carries one belongs to a sentence that asserts, so it
+ // stays a claim rather than being exempted as description.
+ /\b(?:is|are|was|were|be|been|being|has|have|had|can|cannot|will|wo|would|does|do|did|must|should|may|might|uses?|used|runs?|ran|works?|handles?|renders?|loads?|owns?|requires?|remains?|stays?|treats?|reads?|writes?|emits?|binds?|blocks?|allows?|prevents?|adds?|removes?|replaces?|keeps?|makes?|takes?|gives?|shows?|reports?|records?|carries|carry|covers?|names?|holds?|fails?|stops?)\b/i,
+] as const;
+export function isDescriptiveDocumentLine(line:string):boolean {
+ const s=line.trim();
+ if(!s)return false;
+ return !CLAIM_BEARING.some(pattern=>pattern.test(s));
+}
 function historyTail(text:string):string|null {
  const match=/^## 2\.0\.4\b.*$/m.exec(text);
  return match ? text.slice(match.index) : null;

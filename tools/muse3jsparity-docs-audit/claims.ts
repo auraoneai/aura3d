@@ -5,7 +5,7 @@ import { resolve, dirname, relative } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { sourceIdentity, sameSource, artifact, validateReceipt, SOURCE_AUDIT_BASELINE, type Artifact, type SourceIdentity } from '../muse3jsparity-readiness/evidence-lineage';
-import { validateDocumentInvariants, isStructuralDocumentLine, CONTROLLED_CLAIM_DOCUMENTS } from './document-invariants';
+import { validateDocumentInvariants, structuralDocumentLineNumbers, isDescriptiveDocumentLine, CONTROLLED_CLAIM_DOCUMENTS } from './document-invariants';
 import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
 export const CLAIM_SURFACES = ['createAuraApp root safe API','production-runtime','rendering package','CLI asset pipeline','template-only scaffold','prototype','roadmap','release tooling'] as const;
 /** Exact labels only: descriptive prose mentioning root must not promote an internal receipt. */
@@ -18,7 +18,7 @@ export interface FinalClaim {
  receipts:(Artifact & {gate:string; requirements:string[]})[];
  assertions:{receipt:string; artifact:string; pointer:string; equals:unknown}[];
 }
-export interface FinalClaimsConfig { schema:'muse301-final-claims/v1'; source:SourceIdentity; documents:Artifact[]; claims:FinalClaim[]; historicalInventory:{file:string;sourceSha256:string;line:number;text:string;reason:string}[]; structuralLines?:{file:string;sourceSha256:string;line:number;text:string}[] }
+export interface FinalClaimsConfig { schema:'muse301-final-claims/v1'; source:SourceIdentity; documents:Artifact[]; claims:FinalClaim[]; historicalInventory:{file:string;sourceSha256:string;line:number;text:string;reason:string}[]; structuralLines?:{file:string;sourceSha256:string;line:number;text:string}[]; descriptiveLines?:{file:string;sourceSha256:string;line:number;text:string}[] }
 export function finalClaimsDocuments(root:string):string[] {
  const git=(...args:string[])=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).trim().split('\0').filter(Boolean);
  return [...new Set([...CONTROLLED_CLAIM_DOCUMENTS,...git('diff','--name-only',SOURCE_AUDIT_BASELINE,'-z'),...git('ls-files','--others','--exclude-standard','-z')])].filter(p=>existsSync(resolve(root,p)) && /\.(md|html|txt)$/.test(p) && (/^(docs|marketing|apps|examples|templates|packages\/create-aura3d\/templates)\//.test(p)||['README.md','CHANGELOG.md','llms.txt','public/llms.txt'].includes(p)) && !/(^|\/)(dist|node_modules|reports)\//.test(p)).sort();
@@ -39,9 +39,25 @@ export function validateFinalClaims(root:string, config:FinalClaimsConfig, now=D
  const documentInvariants=validateDocumentInvariants(root);errors.push(...documentInvariants.errors);
  errors.push(...validateReleaseClaimCoverage(config.claims??[],path=>readFileSync(resolve(root,path),'utf8')));
  const covered=new Set<string>();
+ const structuralCache=new Map<string,Set<number>>();
+ const structuralSet=(file:string):Set<number>=>{
+  let set=structuralCache.get(file);
+  if(!set){set=structuralDocumentLineNumbers(readFileSync(resolve(root,file),'utf8'));structuralCache.set(file,set);}
+  return set;
+ };
  for(const row of config.structuralLines??[]) {
   const key=`${row.file}:${row.line}`;
-  if(!expectedDocuments.includes(row.file)||!safe(row.file)||!existsSync(resolve(root,row.file))||artifact(root,row.file).sha256!==row.sourceSha256||readFileSync(resolve(root,row.file),'utf8').split('\n')[row.line-1]!==row.text||!isStructuralDocumentLine(row.text)||covered.has(key))errors.push(`invalid structural classification:${key}`);
+  if(!expectedDocuments.includes(row.file)||!safe(row.file)||!existsSync(resolve(root,row.file))||artifact(root,row.file).sha256!==row.sourceSha256||readFileSync(resolve(root,row.file),'utf8').split('\n')[row.line-1]!==row.text||!structuralSet(row.file).has(row.line)||covered.has(key))errors.push(`invalid structural classification:${key}`);
+  else covered.add(key);
+ }
+ /*
+  * Descriptive prose. Each row must still bind its exact file, hash and line, and
+  * must independently satisfy the negative claim-bearing test, so this cannot be
+  * used to exempt a sentence that actually asserts something.
+  */
+ for(const row of config.descriptiveLines??[]) {
+  const key=`${row.file}:${row.line}`;
+  if(!expectedDocuments.includes(row.file)||!safe(row.file)||!existsSync(resolve(root,row.file))||artifact(root,row.file).sha256!==row.sourceSha256||readFileSync(resolve(root,row.file),'utf8').split('\n')[row.line-1]!==row.text||structuralSet(row.file).has(row.line)||!isDescriptiveDocumentLine(row.text)||covered.has(key))errors.push(`invalid descriptive classification:${key}`);
   else covered.add(key);
  }
  for(const claim of config.claims??[]) {
