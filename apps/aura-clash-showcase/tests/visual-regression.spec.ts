@@ -114,7 +114,9 @@ test.describe("Aura Clash visual regression states", () => {
     // The evidence driver deliberately renders on demand. Let the authored attack
     // pass its wall-clock expiry, then submit one real production frame so
     // clearExpiredAttack can publish and freeze the out-of-range whiff.
-    await page.waitForTimeout(1_000);
+    // The solved heavy is 38 frames (0.633 s); clearExpiredAttack's slow-renderer
+    // fallback is duration * 1.8 (1.14 s). Leave a small scheduling margin.
+    await page.waitForTimeout(1_300);
     await page.evaluate(() => {
       const driver = (window as Window & {
         __AURA_CLASH_ARENA_TEST_DRIVER__?: { advanceFrame(): void };
