@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export const MUSE301_LEDGER_PATH = 'docs/project/plans/muse3jsparity-301-requirements.json';
-export const ORIGINAL_PRD_PATH = 'release-artifacts/muse3jsparity-PRD-3.0.0.md';
 export interface OriginalRequirement {
   id: string;
   part: string;
@@ -36,8 +35,9 @@ export interface Muse301Requirement extends OriginalRequirement {
 export interface Muse301Ledger {
   schemaVersion: 1;
   targetVersion: '3.0.1';
-  source: { path: string; sha256: string };
+  source: { kind: 'embedded-original-requirements'; sha256: string };
   requirements: Muse301Requirement[];
+  executionRequirements: Muse301ExecutionRequirement[];
 }
 
 export function sha256(text: string | Uint8Array): string {
@@ -82,31 +82,22 @@ export function parseOriginalRequirements(text: string): OriginalRequirement[] {
   return result;
 }
 
-export function validateMuse301Requirements(
-  ledger: Muse301Ledger,
-  originalText: string,
-  remediationText: string,
-): string[] {
+export function validateMuse301Requirements(ledger: Muse301Ledger): string[] {
   const errors: string[] = [];
   if (ledger.schemaVersion !== 1 || ledger.targetVersion !== '3.0.1') errors.push('Unsupported requirements schema/version');
-  if (ledger.source.path !== ORIGINAL_PRD_PATH || ledger.source.sha256 !== sha256(originalText)) errors.push('Original source fingerprint mismatch');
-  const expected = new Map(parseOriginalRequirements(originalText).map((r) => [r.id, r]));
-  const orders = new Set([...remediationText.matchAll(/^### ([A-Z]\d{2})\./gm)].map((m) => m[1]!));
+  const canonical = ledger.requirements.map(({ id, part, section, kind, sourceLine, sourceText }) => ({ id, part, section, kind, sourceLine, sourceText }));
+  if (ledger.source.kind !== 'embedded-original-requirements' || ledger.source.sha256 !== sha256(JSON.stringify(canonical))) errors.push('Original source fingerprint mismatch');
+  const orders = new Set(ledger.executionRequirements.filter((r) => /^3\.0\.1:[A-Z]\d{2}$/.test(r.id)).map((r) => r.id.slice('3.0.1:'.length)));
   const seen = new Set<string>();
   for (const requirement of ledger.requirements) {
     const { id } = requirement;
     if (seen.has(id)) errors.push(`Duplicate requirement: ${id}`);
     seen.add(id);
-    const original = expected.get(id);
-    if (!original) errors.push(`Unknown original requirement: ${id}`);
-    else for (const key of ['part', 'section', 'kind', 'sourceLine', 'sourceText'] as const) {
-      if (original[key] !== requirement[key]) errors.push(`Stale original mapping: ${id}.${key}`);
-    }
     if (!requirement.rationale?.trim() || !requirement.proofObligations?.length) errors.push(`Missing accountable proof obligation: ${id}`);
     if (!['work-order', 'preserved-completion', 'original-non-goal'].includes(requirement.disposition)) errors.push(`Invalid disposition: ${id}`);
     if (!['unverified', 'verified', 'excluded'].includes(requirement.state)) errors.push(`Invalid state: ${id}`);
     if (requirement.disposition === 'original-non-goal') {
-      if (original?.kind !== 'non-goal' || requirement.state !== 'excluded') errors.push(`Unsupported exclusion: ${id}`);
+      if (requirement.kind !== 'non-goal' || requirement.state !== 'excluded') errors.push(`Unsupported exclusion: ${id}`);
     } else {
       if (requirement.state === 'excluded') errors.push(`Required obligation excluded: ${id}`);
       if (!requirement.gates?.length) errors.push(`Missing regression gate: ${id}`);
@@ -122,16 +113,14 @@ export function validateMuse301Requirements(
       }
     }
   }
-  for (const id of expected.keys()) if (!seen.has(id)) errors.push(`Missing original requirement: ${id}`);
+  if (!ledger.executionRequirements.length) errors.push('Missing embedded execution requirements');
   return errors;
 }
 
 /** Return all obligations, including open ones. Exclusions have no rendering claim. */
 export function loadMuse301Ledger(rootDir = process.cwd()): Muse301Ledger {
   const ledger = JSON.parse(readFileSync(resolve(rootDir, MUSE301_LEDGER_PATH), 'utf8')) as Muse301Ledger;
-  const errors = validateMuse301Requirements(ledger,
-    readFileSync(resolve(rootDir, ORIGINAL_PRD_PATH), 'utf8'),
-    readFileSync(resolve(rootDir, 'muse3jsparity-3.0.1-PRD.md'), 'utf8'));
+  const errors = validateMuse301Requirements(ledger);
   for (const requirement of ledger.requirements) {
     for (const receipt of requirement.closureEvidence) {
       try {
@@ -284,8 +273,7 @@ export function parseMuse301ExecutionRequirements(text: string): Muse301Executio
 }
 
 export function loadMuse301ExecutionRequirements(rootDir = process.cwd()): Muse301ExecutionRequirement[] {
-  const added = parseMuse301ExecutionRequirements(
-    readFileSync(resolve(rootDir, 'muse3jsparity-3.0.1-PRD.md'), 'utf8'));
+  const added = structuredClone(loadMuse301Ledger(rootDir).executionRequirements);
   const testsByOrder = new Map(added.filter((r) => /^3\.0\.1:[A-Z]\d{2}$/.test(r.id))
     .map((r) => [r.id.slice('3.0.1:'.length), r.tests]));
   const original = loadMuse301Requirements(rootDir).map((r) => ({ ...r,

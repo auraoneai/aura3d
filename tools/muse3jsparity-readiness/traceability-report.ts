@@ -40,7 +40,7 @@ const report = {
   schema: 'muse301-traceability-inventory/v1',
   generatedAt: new Date().toISOString(),
   claim: 'Requirement inventory only; file presence and declared states do not prove behavior or release readiness.',
-  inputs: [MUSE301_LEDGER_PATH, ledger.source.path, 'muse3jsparity-3.0.1-PRD.md'].map(path => ({ path, sha256: sha256(readFileSync(resolve(root, path))) })),
+  inputs: [MUSE301_LEDGER_PATH].map(path => ({ path, sha256: sha256(readFileSync(resolve(root, path))) })),
   summary: {
     requiredObligations: requirements.length,
     originalObligations: requirements.filter(item => item.metadataScope === 'original-ledger').length,
