@@ -13,7 +13,7 @@
  * - nudge is a small impulse; tilt is a rule, not physics.
  *
  * Flipper joints use the same-sign axis-mirror workaround proven by the VB-01
- * spike (see ../SPIKE-FLIPPER.md): the right flipper's joint axis is [0,-1,0]
+ * spike (see the retained flipper regression tests): the right flipper's joint axis is [0,-1,0]
  * with negated limits so BOTH motors raise with the same positive speed.
  */
 import { physics } from "@aura3d/engine";

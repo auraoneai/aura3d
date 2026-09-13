@@ -2,7 +2,7 @@
 
 Version: 3.0.1
 
-Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
+Current release: Aura3D 3.0.1.
 
 ## Runtime
 

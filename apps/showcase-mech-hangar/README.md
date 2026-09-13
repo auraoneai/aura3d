@@ -1,6 +1,6 @@
 # Mech Hangar → Arena
 
-**Label:** `prototype` · **Route:** `/apps/showcase-mech-hangar/` · **PRD:** `NextGames-PRD/07-Mech-Hangar.md`
+**Label:** `prototype` · **Route:** `/apps/showcase-mech-hangar/` · **PRD:** `the Mech Hangar implementation contract`
 
 Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from the
 MH-2M slot contract (chassis / arms / legs / weapon, 4 options each), watch the stat

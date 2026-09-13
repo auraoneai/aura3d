@@ -33,7 +33,7 @@ The Meshy relic pilot uses the generated typed reference `assets.arenaRelic` thr
 
 The route is labeled `prototype`. Its collection mechanic uses an authored center-distance threshold. It is not evidence of imported collision geometry or a general collision system.
 
-The first independent exact-artifact review rejected clipped mobile framing. After the camera correction, a fresh review passed the hash-bound desktop, collected-state, and 390px mobile artifacts recorded in `MeshyPRD.md`.
+The first independent exact-artifact review rejected clipped mobile framing. After the camera correction, a fresh review passed the hash-bound desktop, collected-state, and 390px mobile artifacts recorded in the 2.0.4 release evidence.
 
 ## Claim boundary
 

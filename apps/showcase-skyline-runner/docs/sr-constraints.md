@@ -1,6 +1,6 @@
 # Skyline Runner incorporation constraints (SR-01)
 
-Read before touching this route again. Derived from `CurrentGames-PRD/05-Skyline-Runner.md`
+Read before touching this route again. Retained implementation constraints for Skyline Runner
 §1 and from a re-read of the owning sources on 2026-08-17.
 
 ## Hard contracts (nothing may break these)

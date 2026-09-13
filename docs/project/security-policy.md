@@ -2,7 +2,7 @@
 
 Version: 3.0.1
 
-Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
+Current release: Aura3D 3.0.1.
 
 ## Aura3D advantage
 
@@ -10,7 +10,7 @@ Security policy covers the source, packages, examples, templates, and generated 
 
 ## Supported Version
 
-The current documented source candidate is `3.0.1`. Include the installed package version and source commit when reporting an issue; candidate metadata does not change the publication status of any prior release.
+The supported release is `3.0.1`. Include the installed package version and source commit when reporting an issue.
 
 ## Reporting
 

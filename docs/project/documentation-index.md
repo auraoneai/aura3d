@@ -82,7 +82,6 @@ reproduction tool consumes them. They are data, not current public claims.
 - Completion verification: [`completion-audit.md`](./completion-audit.md)
 - Production renderer path: [`architecture/create-aura-app-production-bridge.md`](./architecture/create-aura-app-production-bridge.md)
 - Requirements trace: [`requirements-trace.md`](./requirements-trace.md)
-- Documentation audit ledger: [`docs-matrix-tracking.md`](./docs-matrix-tracking.md)
 - Website: [`marketing-site.md`](./marketing-site.md)
 - Security: [`security-policy.md`](./security-policy.md)
 - Support: [`support-policy.md`](./support-policy.md)

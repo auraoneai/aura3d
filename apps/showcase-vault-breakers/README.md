@@ -24,7 +24,7 @@ Proven here, with evidence:
 - **Player-actuated motorised joints.** Both flippers are `motorised-hinge`
   constraints driven by input at gameplay rate: they snap to their up limits in
   under 150 ms, hold as walls under ball load, and launch resting balls
-  up-slope. See `SPIKE-FLIPPER.md` for the spike report and tuning history.
+  up-slope. See the retained flipper regression tests for the spike report and tuning history.
 - **In-world extruded 3D text.** The back panel carries the live score as a
   physical score reel of `text3D` digit nodes (uppercase alphanumeric catalog);
   the DOM panel only mirrors it.
@@ -46,7 +46,7 @@ is held out of the public showcase index until then (see `route-health.json`).
   Two actively rotating motorised hinges with motor speeds of opposite sign
   collapse the first motor. This route mirrors the right flipper's joint axis
   (`[0, -1, 0]`, negated limits) so both motors share one sign — see
-  `SPIKE-FLIPPER.md`. Engine-level fix tracked as a library task.
+  the retained flipper regression tests. Engine-level fix tracked as a library task.
 - The adapter's velocity motor uses a fixed factor of 1, so flipper snappiness
   comes from the velocity target (60 rad/s) and light 0.18 kg bats rather than
   the torque ceiling.

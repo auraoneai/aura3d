@@ -1,7 +1,7 @@
 /**
  * Pulse Tunnel - mount, systems, evidence.
  *
- * Prototype route (PRD NextGames-PRD/06-Pulse-Tunnel.md). On-rails rhythm runner:
+ * Prototype route (PRD the Pulse Tunnel implementation contract). On-rails rhythm runner:
  * obstacles schedule against the AudioContext clock through src/beat-clock.ts, the
  * four synthesized stems mix through src/tunnel-audio.ts buses, and the whole look
  * builds on the proven prefabs.neonTunnel() kit with authored emissive geometry.

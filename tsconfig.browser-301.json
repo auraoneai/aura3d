@@ -1,5 +1,5 @@
 // Browser fixtures are not covered by tsconfig.build.json.
-// Roots: browser TypeScript files named in muse3jsparity-3.0.1-PRD.md,
+// Roots: browser TypeScript files covered by the 3.0.1 browser verification suite,
 // their conventionally paired harnesses, and every new 301 browser fixture.
 // TypeScript follows imports to check their full dependency closure.
 {

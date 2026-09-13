@@ -1,12 +1,10 @@
-# Aura3D 3.0.1 candidate release notes
+# Aura3D 3.0.1 release notes
 
-Status: implementation and verification in progress; unpublished candidate.
+Status: published September 12, 2026 across all 29 public packages.
 
-This patch addresses the uncovered requirements recorded in the
-[3.0.1 remediation PRD](../../muse3jsparity-3.0.1-PRD.md). The PRD is the
-completion ledger; these notes do not certify completion or publication.
+Release: https://github.com/auraoneai/aura3d/releases/tag/v3.0.1
 
-## Candidate change areas
+## Change areas
 
 | Surface | Work under verification | Required release evidence |
 | --- | --- | --- |

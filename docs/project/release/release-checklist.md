@@ -2,12 +2,10 @@
 
 Version: 3.0.1
 
-Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
-
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-Date: 2026-09-05
-Status: 3.0.1 candidate governance; retained checks below describe the previous 3.0.0 gate run and are not accepted 3.0.1 evidence. The active remediation ledger is `muse3jsparity-3.0.1-PRD.md`; every 3.0.1 release condition needs fresh exact-artifact verification.
+Date: 2026-09-12
+Status: 3.0.1 published. This checklist is retained for future releases.
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained

@@ -1,8 +1,7 @@
 # Siege Golf — "what feels cheap" baseline note
 
 SG-01 (P0), written before any route code, per the governing-docs pass
-(`llms.txt`, `AGENTS.md` tree, `docs/agents/claims-and-boundaries.md`,
-`docs/agents/world-class-four-games-prompt.md` Phase 0/7). This is an internal
+(`llms.txt`, `AGENTS.md` tree, and `docs/agents/claims-and-boundaries.md`). This is an internal
 player-experience target, not a public claim. Label stays `prototype`.
 
 What would make this game feel cheap if we got it wrong:

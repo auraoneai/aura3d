@@ -104,7 +104,7 @@ const routeHealth = {
   blockers: ["independent exact-artifact review pending"],
   audioFxPass: {
     schema: "aura3d-blockfall-audio-fx/1.0",
-    prd: "CurrentGames-PRD/04-Blockfall-Reactor.md",
+    prd: "the Blockfall Reactor implementation contract",
     labelUnchanged: true,
     audio: {
       generator: "apps/showcase-blockfall-reactor/scripts/build-sfx.mjs",

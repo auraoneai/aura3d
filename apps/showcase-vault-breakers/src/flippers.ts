@@ -4,7 +4,7 @@
  * Maps input edges onto the motorised-hinge rigs built by table.ts. Mode is
  * "joint": both flippers raise with the SAME positive motor speed (the VB-01
  * spike's axis-mirror workaround for the vendored-Rapier opposite-sign motor
- * defect — see ../SPIKE-FLIPPER.md). The kinematic fallback stays documented
+ * defect — see the retained flipper regression tests). The kinematic fallback stays documented
  * in the PRD but is not used.
  */
 import type { FlipperRig } from "./table";

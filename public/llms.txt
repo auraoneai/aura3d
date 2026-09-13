@@ -1,6 +1,6 @@
 Aura3D agent guide.
 
-Source candidate: Aura3D 3.0.1; not a publication claim. See docs/project/aura3d-301-release-notes.md.
+Current release: Aura3D 3.0.1.
 
 API topics: effects, camera rigs, gameFeel, SDF text, decal, rigid-body APIs. Preserve claim labels.
 

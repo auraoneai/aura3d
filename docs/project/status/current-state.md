@@ -1,23 +1,16 @@
 # Aura3D Current State
 
-Date: 2026-09-05
-Status: 3.0.1 remediation candidate in progress; source changes and targeted tests are not final release acceptance. Historical 3.0.0 K2 reports returned `supersede`, but the remediation audit found uncovered E/H/I/U obligations. Those historical results do not prove full PRD completion. Independent exact-artifact review remains required.
+Date: 2026-09-12
+Status: Aura3D 3.0.1 is published across all 29 public packages.
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
 normal TypeScript or JavaScript against public `@aura3d/engine` APIs and use the
 Aura3D CLI to register typed assets.
 
-This file separates source-level API availability, historical bounded workload evidence, and pending 3.0.1 acceptance. The August 9 public-renderer and animation reports support the prior root examples; their timestamps are not current-candidate validation. Showcase and marketing claims require fresh source-bound receipts.
-
-Aura3D is not currently a Unity or Unreal replacement. The worktree targets
-3.0.1; this is not a claim that 3.0.1 has been published. Historical release
-records and tags remain unchanged. Current implementation, unresolved acceptance
-criteria, and final evidence requirements are tracked in
-[`muse3jsparity-3.0.1-PRD.md`](../../../muse3jsparity-3.0.1-PRD.md) and the
-[3.0.1 candidate release notes](../aura3d-301-release-notes.md).
-Route, lighting, animation, and website changes require exact-artifact evidence
-and independent review before promotion as approved showcase artifacts.
+The current release is available at
+https://github.com/auraoneai/aura3d/releases/tag/v3.0.1. Claims remain scoped to
+the public API and evidence described in this document.
 
 ## Current Public Root API Strengths
 

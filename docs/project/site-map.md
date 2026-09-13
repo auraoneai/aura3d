@@ -2,10 +2,10 @@
 
 Version: 3.0.1
 
-Source candidate metadata; publication and route approval remain separately gated.
+Current release: Aura3D 3.0.1.
 
-Date: 2026-09-02
-Status: Aura3D 3.0.0 site map
+Date: 2026-09-12
+Status: Aura3D 3.0.1 site map
 
 ## Public Marketing Pages
 
@@ -43,7 +43,6 @@ copy boundary and must not present prototypes as public release examples.
 - [Showcase quality gates](showcase/quality-gates.md)
 - [Apps classification](showcase/apps-classification.md)
 - [`createAuraApp` production bridge architecture](architecture/create-aura-app-production-bridge.md)
-- [Docs matrix tracking](docs-matrix-tracking.md)
 - [Frozen benchmark release gates](frozen-benchmark-release-gates.md)
 - [Superiority evidence workflow](superiority-evidence-workflow.md)
 - [Marketing site](marketing-site.md)

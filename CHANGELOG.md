@@ -2,11 +2,9 @@
 
 Version: 3.0.1
 
-Version metadata identifies the current 3.0.1 source candidate; it does not certify publication, browser coverage, or completion of release gates.
+## 3.0.1 (2026-09-12)
 
-## 3.0.1 (unreleased candidate)
-
-Remediation work and acceptance evidence are tracked in `muse3jsparity-3.0.1-PRD.md` and `docs/project/aura3d-301-release-notes.md`. Changes are undergoing integrated verification. Historical entries below remain release-specific records and do not certify this candidate.
+Published across all 29 public packages with the GitHub release at https://github.com/auraoneai/aura3d/releases/tag/v3.0.1.
 
 Measured win: the `@aura3d/lean` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
 

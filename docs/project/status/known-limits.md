@@ -7,30 +7,12 @@ This file is the public limitations source for project docs, release copy, and
 showcase review. If a guide or README makes a claim narrowed by this file, the
 guide or README must include the narrower wording.
 
-## 3.0.1 candidate verification limits
+## 3.0.1 limits
 
-The [3.0.1 remediation PRD](../../../muse3jsparity-3.0.1-PRD.md) remains the
-acceptance ledger. Implementation or targeted unit success does not close a
-browser, comparative-performance, packaging, or independent-review obligation.
-Historical K2 `supersede` reports omitted required part coverage; they cannot be
-used to certify the complete 3.0.1 requirement set.
-
-- Root asynchronous rendering, motion blur/TAA, extension maps, and translated
-  locomotion require their exact root-only browser and lifecycle evidence.
-- Native WebGPU temporal effects require actual native-backend rendering proof;
-  WebGL2 tests do not establish that result.
-- Particle throughput and shadow stability require the specified sustained
-  rendered measurements. Configured capacity, short runs, analytic-only loops,
-  and software-adapter timings do not satisfy reference-hardware performance.
-- Crowd/instancing and camera/spotlight adoption require actual product-route
-  proof. A helper harness does not establish a shipped route integration.
-- Comparative wins require per-feature paired rendering and actual engine
-  workloads against locked Three.js r185. Microbenchmarks and primitive scene
-  comparisons do not establish all-feature parity or superiority.
-- Turbo Drift, Skyline Runner, and Smart City still require fresh desktop/mobile
-  framing, gameplay-camera, and hero/panel occlusion review on final artifacts.
-- Exact 3.0.1 tarballs, all scaffold lifecycles, immutable evidence lineage, and
-  independent final-artifact review remain separate release conditions.
+Aura3D 3.0.1 is published. Capability claims remain limited to the named public
+API, packages, routes, and retained evidence. The project does not claim a
+universal replacement for Three.js, Unity, or Unreal, and route-specific visual
+approval does not transfer automatically to other examples.
 
 ## Evidence dating
 

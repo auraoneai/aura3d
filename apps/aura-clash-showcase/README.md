@@ -71,7 +71,7 @@ npm run routes:check
 
 ## Capability incorporations (02-Aura-Clash-Arena)
 
-Implemented per `CurrentGames-PRD/02-Aura-Clash-Arena.md`. Label stays
+Implemented per `the Aura Clash implementation contract`. Label stays
 `production-runtime` / `development showcase` — never "flagship", no kit claims.
 The `@aura3d/engine/production-runtime` imports remain allowed on this app only.
 Frame data in `src/playable/combat/auraClashMoveData.ts` stayed byte-identical;
@@ -113,7 +113,6 @@ all proof-object additions are optional fields.
   role system. Deterministic for replay tests. Unit:
   `tests/unit/apps/clash-ai-roles.test.ts`.
 
-The AC-01 audit note lives at `docs/ac-01-ai-and-event-audit.md`.
 
 ## Human visual review
 

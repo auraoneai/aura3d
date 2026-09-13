@@ -90,22 +90,15 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Source Candidate: Aura3D 3.0.1 (verification pending)
+## Current Release: Aura3D 3.0.1
 
-The 3.0.1 patch is undergoing integrated verification. It is not yet a published
-release or a claim that all parity requirements pass. The
-[3.0.1 release notes](docs/project/aura3d-301-release-notes.md) record supported
-surfaces, retained evidence, remaining losses and release conditions. Track
-completion in `muse3jsparity-3.0.1-PRD.md`; individual passing development checks
-do not replace final source, package, browser and independent artifact review.
-Installation instructions below continue to identify the published 3.0.0 train
-until 3.0.1 publication and registry verification complete.
+Aura3D 3.0.1 is published across all 29 public packages. See the
+[GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1) for
+release assets and package details.
 
-## Published Release: Aura3D 3.0.0
+Aura3D 3.0.1 is the current agent-era release: the browser 3D engine for the agent era — prompt it, prove it, ship it. It carries forward the 2.0 runtime and animation evidence foundation plus the 2.0.4 Meshy CLI asset-pipeline patch, with the public API surface and parity evidence accumulated since 2.0. Claims remain scoped to the public API and evidence described in the release documentation. See the [3.0.1 release notes](docs/project/aura3d-301-release-notes.md) and [GitHub release](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1) for current scope and package details.
 
-Aura3D 3.0.0 is the agent-era major: the browser 3D engine for the agent era — prompt it, prove it, ship it. It carries forward the 2.0 runtime and animation evidence foundation plus the 2.0.4 Meshy CLI asset-pipeline patch, with the public API surface and parity evidence accumulated since 2.0. Every capability below is bounded by its evidence gate; showcase routes stay individually gated and promotion-blocked until hash-bound independent human review covers their exact final artifacts. See [the 3.0.0 release notes](docs/project/aura3d-300-release-notes.md) for scope, receipts, and explicit non-claims.
-
-### What ships in 3.0.0
+### What ships in 3.0.1
 
 - **Agent-era API surface.** Prompt→game and prompt→animation builders, game-feel triggers, follow/chase/platformer camera rigs, vehicle chassis + driver AI, GPU particles, SDF text, navmesh crowds, visual-scripting catalog, bounded editor surface — each `createAuraApp`-claimed only where root browser evidence exists.
 - **Rendering proofs.** Native fused LDR postprocess, multi-mip bloom with presets, exact sRGB output, anisotropic-GGX, cascaded shadows, GGX PMREM IBL, with shader-reference vectors pinning the math.
@@ -245,13 +238,13 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@3.0.0
+npm install @aura3d/engine@3.0.1
 # or scaffold an app
-npx create-aura3d@3.0.0 my-product --template product-viewer
+npx create-aura3d@3.0.1 my-product --template product-viewer
 ```
 
-The retained 3.0.0 release notes are in
-[`docs/project/aura3d-300-release-notes.md`](docs/project/aura3d-300-release-notes.md),
+The 3.0.1 release is available from
+[GitHub Releases](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1),
 with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
 

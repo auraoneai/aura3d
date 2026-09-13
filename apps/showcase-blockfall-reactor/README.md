@@ -4,7 +4,7 @@ Blockfall Reactor is a bounded Aura3D falling-block puzzle candidate: a typed
 catalog-sourced arcade cabinet framing a readable 10×20 playfield, hold/next
 grids, progression, event feedback, deterministic replay evidence, and
 keyboard/touch controls. This document covers the audio/FX pass
-(CurrentGames-PRD `04-Blockfall-Reactor.md`, tasks BF-A1..BF-A6).
+(retained Blockfall implementation tasks BF-A1..BF-A6).
 
 ## Remediation Status
 

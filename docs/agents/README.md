@@ -87,18 +87,3 @@ Release-facing examples must also satisfy the claim-boundary checklist: no raw
 model strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,
 `GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or
 renderer/game/WebGPU/animation claims that exceed root API evidence.
-
-## Copy-paste build prompts
-
-These are mission prompts for another coding agent. They are not extra public
-capability claims.
-
-- `docs/agents/world-class-four-games-prompt.md` — upgrade Neon Corridor
-  Strike, Turbo Drift, Skyline Runner, and Aura Clash from their current
-  playable baselines. Use this when all four titles are in scope.
-- `docs/agents/world-class-showcase-games-prompt.md` — older three-title
-  mission (Turbo / Skyline / Clash only). Prefer the four-games prompt.
-- `docs/agents/fps-shooter-build-prompt.md` — scaffold a new FPS prototype.
-  Do not use it to rewrite the shipped Corridor Strike example.
-- `docs/agents/full-public-example-audit-prompt.md` — operate and fix every
-  public example.
