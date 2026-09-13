@@ -86,63 +86,14 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --clobber
 
-      - name: Build exact npm publish payload
-        run: |
-          node --input-type=module <<'NODE'
-          import { createHash } from 'node:crypto';
-          import { execFileSync } from 'node:child_process';
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const path = 'tests/reports/release-tarballs/create-aura3d-3.0.1.tgz';
-          const bytes = readFileSync(path);
-          const manifest = JSON.parse(execFileSync('tar', ['-xOzf', path, 'package/package.json'], { encoding: 'utf8' }));
-          const sha256 = createHash('sha256').update(bytes).digest('hex');
-          const integrity = `sha512-${createHash('sha512').update(bytes).digest('base64')}`;
-          const shasum = createHash('sha1').update(bytes).digest('hex');
-          if (sha256 !== '22726af1688198b8993e3ab7ffaa913b23e577a4590f0c86882ee6dffc10165b' || integrity !== 'sha512-YsVORHaoZQ1xfVW8QMBZFKionNuY2HEyhmgPdexo4nb390yby4VUG6IRWFKDyttcL1v2CZFDXqm5bgTXwsPe8g==' || manifest.name !== 'create-aura3d' || manifest.version !== '3.0.1') throw new Error('Unexpected exact release archive');
-          manifest._id = 'create-aura3d@3.0.1';
-          manifest._nodeVersion = process.versions.node;
-          manifest._npmVersion = '12.0.2';
-          manifest.dist = { ...(manifest.dist ?? {}), integrity, shasum, tarball: 'http://registry.npmjs.org/create-aura3d/-/create-aura3d-3.0.1.tgz' };
-          delete manifest.patchedDependencies;
-          const metadata = {
-            _id: manifest.name,
-            name: manifest.name,
-            description: manifest.description,
-            'dist-tags': { latest: manifest.version },
-            versions: { [manifest.version]: manifest },
-            access: 'public',
-            _attachments: { 'create-aura3d-3.0.1.tgz': { content_type: 'application/octet-stream', data: bytes.toString('base64'), length: bytes.length } }
-          };
-          writeFileSync('/tmp/composio-publish-body.json', JSON.stringify({
-            endpoint: 'https://registry.npmjs.org/create-aura3d',
-            method: 'PUT',
-            connected_account_id: 'ca_wFVXSmU6Y5Vq',
-            parameters: [{ in: 'header', name: 'content-type', value: 'application/json' }],
-            body: metadata
-          }), { mode: 0o600 });
-          NODE
-
-      - name: Publish through the existing Composio npm account
+      - name: Publish exact archive with the Composio npm credential
         env:
-          COMPOSIO_USER_API_KEY: ${{ secrets.AURA3D_COMPOSIO_USER_API_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.AURA3D_COMPOSIO_NPM_TOKEN }}
         run: |
-          test -n "$COMPOSIO_USER_API_KEY"
-          curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 \
-            -X POST 'https://backend.composio.dev/api/v3.1/tools/execute/proxy' \
-            -H 'content-type: application/json' \
-            -H "x-user-api-key: $COMPOSIO_USER_API_KEY" \
-            -H 'x-org-id: ok_u_Gt9h9BHbSu' \
-            -H 'x-project-id: pr_RUpCnFHyMNFC' \
-            --data-binary @/tmp/composio-publish-body.json \
-            -o /tmp/composio-publish-response.json
-          node --input-type=module <<'NODE'
-          import { readFileSync, unlinkSync } from 'node:fs';
-          const result = JSON.parse(readFileSync('/tmp/composio-publish-response.json', 'utf8'));
-          unlinkSync('/tmp/composio-publish-body.json');
-          unlinkSync('/tmp/composio-publish-response.json');
-          if (![200, 201, 202].includes(result.status)) throw new Error(`npm publish failed: ${JSON.stringify(result)}`);
-          console.log(`npm registry accepted create-aura3d@3.0.1 with status ${result.status}`);
-          NODE
+          test -n "$NODE_AUTH_TOKEN"
+          npm publish tests/reports/release-tarballs/create-aura3d-3.0.1.tgz \
+            --access public \
+            --provenance=false
 
       - name: Verify registry integrity
         run: |
