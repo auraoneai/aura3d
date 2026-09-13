@@ -1,4 +1,4 @@
-// O2 node-catalog generator (muse3jsparity-PRD.md PART O, O2 docs box).
+// Visual node catalog generator for the public docs contract.
 // Generates docs/api/visual-scripting-catalog.json FROM packages/scripting
 // source via serializeVisualNodeCatalog(). Never hand-edit the JSON: rerun
 // this script when the catalog changes. Fails closed: every node must carry a

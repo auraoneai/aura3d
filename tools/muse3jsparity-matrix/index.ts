@@ -1,9 +1,9 @@
-// PART S matrix generator (muse3jsparity-PRD.md PART S, task 1).
+// Three.js r185 compatibility matrix generator.
 // Generates benchmark/context/muse3jsparity-r185-matrix.json FROM the installed
 // tree. Never hand-edit the JSON: rerun this script on three-version change.
-// Fails closed: measured counts must match the PRD basis, every COVERED row
+// Fails closed: measured counts must match the frozen compatibility basis, every COVERED row
 // must point at a proof file that exists, every GAP row must name an owning
-// PRD section or an OUT reason.
+// implementation section or an OUT reason.
 // Usage: npx tsx tools/muse3jsparity-matrix/index.ts (from the repo root)
 
 import { execFileSync } from "node:child_process";
@@ -21,7 +21,7 @@ const FROZEN_CONTEXT_PATH = resolve(ROOT, "benchmark/context/threejs-r185.1-2026
 const MATRIX_PATH = resolve(ROOT, "benchmark/context/muse3jsparity-r185-matrix.json");
 const ROOT_PKG_PATH = resolve(ROOT, "package.json");
 
-// PRD PART S basis (muse3jsparity-PRD.md:944). The curator updates these when
+// Frozen Three.js r185.1 inventory basis. The curator updates these when
 // the three version changes; the script refuses to emit a matrix otherwise.
 const EXPECTED_THREE_VERSION = "0.185.1";
 const EXPECTED_SRC_FILES = 750;
@@ -147,7 +147,7 @@ try {
   fail("git is required to stamp the matrix commit");
 }
 
-// --- PART S verdict table (curated from muse3jsparity-PRD.md PART S) ---
+// --- Compatibility verdict table curated from the frozen r185.1 scope ---
 type Verdict = "COVERED" | "PARTIAL" | "GAP" | "OUT";
 interface Row {
   readonly area: string;
