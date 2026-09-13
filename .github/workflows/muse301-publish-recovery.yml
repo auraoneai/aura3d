@@ -11,7 +11,7 @@ on:
         required: true
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
@@ -76,6 +76,15 @@ jobs:
           NODE
         env:
           SOURCE_COMMIT: ${{ inputs.source_commit }}
+
+      - name: Stage exact archive on the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v3.0.1 \
+            'tests/reports/release-tarballs/create-aura3d-3.0.1.tgz#Exact npm tarball for create-aura3d 3.0.1' \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber
 
       - name: Build exact npm publish payload
         run: |
