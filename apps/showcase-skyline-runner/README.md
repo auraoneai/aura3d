@@ -63,8 +63,7 @@ claim arbitrary GLB-to-game conversion or general engine parity.
 
 Additive capability work on top of the certified course. The 70-115s window,
 the generated surface map (`src/generated/game-geometry.ts`, byte-identical),
-and every existing assertion are unchanged; constraints live in
-`docs/sr-constraints.md`.
+and every existing assertion are unchanged.
 
 - **Speedrun ghost (SR-A1)** — a translucent echo of your best finish,
   recorded as input ticks and replayed through a separate kit instance in
@@ -94,9 +93,7 @@ and every existing assertion are unchanged; constraints live in
   each on its own bus; districts switch by traversal, and the summit theme ducks
   the active stem.
 
-Moving platforms were evaluated under SR-A7 and are deliberately NOT adopted;
-the decision record lives in
-`docs/sr-a7-moving-platforms-decision.md`.
+Moving platforms were evaluated under SR-A7 and are deliberately not adopted.
 
 ## Sound
 

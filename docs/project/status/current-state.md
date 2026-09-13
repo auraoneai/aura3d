@@ -142,4 +142,3 @@ No route may move to public-ready based only on boot success, nonblank screensho
 - Showcase gates: `docs/project/showcase/quality-gates.md`
 - Release tracks: `docs/project/release-tracks.md`
 - Launch positioning: `docs/project/launch-positioning.md`
-- Aura3D 2.0.0 release notes: `docs/project/aura3d-200-release-notes.md`

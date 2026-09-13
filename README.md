@@ -105,7 +105,7 @@ Aura3D 3.0.1 is the current agent-era release: the browser 3D engine for the age
 - **Bounded three.js comparison.** Repository-locked `three@0.185.1` head-to-head reports only; no universal superiority claim.
 - **2.0.4 carried forward.** Candidate-only `assets import-meshy`, fail-closed admission, profile diagnostics, spend/secret controls, and the relic `prototype` pilot, unchanged.
 
-See [the Meshy CLI guide](docs/meshy-cli.md) and [the 2.0.4 release notes](docs/project/aura3d-204-release-notes.md) for the 2.0.4 history.
+See [the Meshy CLI guide](docs/meshy-cli.md) for the current asset workflow.
 
 ### What shipped in 2.0.4 (history)
 
@@ -117,7 +117,7 @@ See [the Meshy CLI guide](docs/meshy-cli.md) and [the 2.0.4 release notes](docs/
 - **Bounded pilot.** The relic pilot proves typed candidate use, visible browser rendering, keyboard collection, score/reset state, and desktop/mobile route evidence. It remains a `prototype`; its route-local distance threshold is not collision-system proof.
 - **Claim boundary unchanged.** Meshy is an upstream asset-generation tool, not an Aura3D renderer, Prism model, or game-runtime API. This release does not broaden renderer, PBR, WebGPU, animation, physics, or universal Three.js claims.
 
-See [the Meshy CLI guide](docs/meshy-cli.md) and [the 2.0.4 release notes](docs/project/aura3d-204-release-notes.md).
+See [the Meshy CLI guide](docs/meshy-cli.md).
 
 ### Consolidated 2.0 outcomes
 

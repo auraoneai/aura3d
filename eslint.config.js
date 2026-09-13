@@ -7,8 +7,7 @@
  *
  *   1. No parser was configured for `.ts`. ESLint's default parser cannot read type annotations, so
  *      every TypeScript file failed to parse and its rules never produced a result. The
- *      `no-restricted-imports` rule below was therefore a no-op for the entire repository, despite
- *      AGENTS.md claiming it enforced package boundaries.
+ *      `no-restricted-imports` rule below was therefore a no-op for the entire repository, even though the repository expected it to enforce package boundaries.
  *   2. The pattern list contained `@aura3d/*​/*`, which blocks every documented public subpath
  *      (`@aura3d/engine/rendering`, `@aura3d/physics/world`, `@aura3d/assets/browser`, ...). Had it
  *      ever run, it would have failed 19 legitimate imports across `engine`, `workflows` and the

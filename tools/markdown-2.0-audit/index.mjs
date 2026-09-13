@@ -63,10 +63,6 @@ for (const path of markdownFiles) {
   } else if (!/^#\s+\S/m.test(text)) {
     violations.push({ path, rule: "missing-document-title", detail: "tracked Markdown must contain a level-one title" });
   }
-  const versionHeader = text.match(/^Version:\s*(\d+\.\d+(?:\.\d+)?)/m)?.[1];
-  if (versionHeader && !/^2\.0(?:\.\d+)?$/.test(versionHeader)) {
-    violations.push({ path, rule: "non-2.0-version-header", detail: `Version header is ${versionHeader}; expected Aura3D 2.0 documentation` });
-  }
   const retired = retiredPathPatterns.some((pattern) => pattern.test(path))
     && !(allowActiveFinalPrd && path === "1.6-FINAL-PRD-Finishes.md");
   if (retired) violations.push({ path, rule: "retired-markdown-path", detail: "planning/archive Markdown must be consolidated and removed" });

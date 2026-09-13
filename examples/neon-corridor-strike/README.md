@@ -68,8 +68,7 @@ proximity-rush enemy AI with an authored alarm (no nav mesh), hostiles pass
 through the player capsule (touch damage is proximity-authored), no
 bloom/SSAO/WebGPU claim, and catalog medkit is a gurney rather than a packed
 aid kit. Audio cues are synthesized in-repo (CC0) by
-`scripts/build-sfx.mjs` and registered through the asset CLI. See
-`KNOWN-LIMITS.md`.
+`scripts/build-sfx.mjs` and registered through the asset CLI.
 
 ## Verify
 

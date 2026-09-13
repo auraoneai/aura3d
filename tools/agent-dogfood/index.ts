@@ -91,10 +91,6 @@ const materialsVariantsShoe = {
 
 const allowedContextFiles = [
   "llms.txt",
-  "AGENTS.md",
-  ".claude/CLAUDE.md",
-  ".cursor/rules/aura3d.mdc",
-  ".github/copilot-instructions.md",
   "docs/agents/agent-context.md",
   "docs/agents/build-playbook.md",
   "docs/agents/claims-and-boundaries.md",

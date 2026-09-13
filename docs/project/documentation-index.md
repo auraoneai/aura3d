@@ -18,9 +18,6 @@ the archive.
 - Known limits: [`status/known-limits.md`](./status/known-limits.md)
 - Public API: [`docs/api/public-api.md`](../api/public-api.md)
 - Migration to 2.0: [`MIGRATION-2.0.md`](../../MIGRATION-2.0.md)
-- 2.0 release notes: [`aura3d-200-release-notes.md`](./aura3d-200-release-notes.md)
-- 2.0.1 release notes: [`aura3d-201-release-notes.md`](./aura3d-201-release-notes.md)
-- 2.0.3 release notes: [`aura3d-203-release-notes.md`](./aura3d-203-release-notes.md)
 
 ## Architecture
 
@@ -67,8 +64,6 @@ reproduction tool consumes them. They are data, not current public claims.
 - Showcase classifications: [`showcase/apps-classification.md`](./showcase/apps-classification.md)
 - Quality gates: [`showcase/quality-gates.md`](./showcase/quality-gates.md)
 - Visual quality standard: [`showcase/visual-quality-standard.md`](./showcase/visual-quality-standard.md)
-- Flagship visual audit: [`status/2.0-flagship-visual-audit.md`](./status/2.0-flagship-visual-audit.md)
-- Installed visual audit: [`status/2.0-installed-visual-audit.md`](./status/2.0-installed-visual-audit.md)
 - Each package, template, app, example, fixture, or evidence bundle retains a
   colocated `README.md` only when users or tools need that entry point.
 

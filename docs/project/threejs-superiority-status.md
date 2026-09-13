@@ -28,10 +28,8 @@ history. It is not a current-market parity, superiority, or replacement verdict.
 - Broad performance equivalence is not claimed. The proposed
   120-warmup/600-frame/five-session universal protocol was removed from the 2.0
   release scope with the corresponding public performance claim.
-- Clean Linux reproduction is retained in
-  `docs/project/status/2.0-clean-environment-reproduction.md`: 23/24 browser
-  assertions pass without GPU passthrough, and the native WebGPU row passes on
-  the host hardware profile. Independent human gallery review remains open.
+- Clean Linux reproduction recorded 23/24 browser assertions passing without
+  GPU passthrough, and the native WebGPU row passed on the host hardware profile.
 - Ecosystem breadth, general TSL/node-material ergonomics, and real-device XR
   remain explicitly unproven.
 

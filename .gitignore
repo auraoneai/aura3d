@@ -370,3 +370,9 @@ tests/browser/fixtures/*
 !tests/browser/fixtures/c1-extension/
 !tests/browser/fixtures/c1-extension/**
 .local-evidence/
+# Local AI-agent control files; public guidance lives in llms.txt and docs/agents/.
+AGENTS.md
+**/AGENTS.md
+.claude/
+.cursor/rules/
+.github/copilot-instructions.md

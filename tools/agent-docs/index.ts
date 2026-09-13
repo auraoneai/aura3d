@@ -17,11 +17,7 @@ const docs = [
   "docs/agents/templates.md",
   "docs/agents/deployment.md",
   "docs/agents/troubleshooting.md",
-  "docs/agents/anti-hallucination-rules.md",
-  "AGENTS.md",
-  ".claude/CLAUDE.md",
-  ".cursor/rules/aura3d.mdc",
-  ".github/copilot-instructions.md"
+  "docs/agents/anti-hallucination-rules.md"
 ];
 const pathBTerms = [
   "AuraScene" + "IR",

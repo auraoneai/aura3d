@@ -3,7 +3,7 @@
 Use this file before fixing a broken Aura3D example. The correct response to a
 bad screenshot is root-cause work, not another route-local illusion.
 
-Read `llms.txt`, `AGENTS.md`, and `docs/agents/claims-and-boundaries.md` first.
+Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
 ## Forbidden Shortcuts
 

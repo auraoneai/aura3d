@@ -21,8 +21,7 @@ import { EYE_HEIGHT, LOOK_AHEAD, PLAYER_START } from "./state";
  * Hostiles are solid against hitscan and the corridor hull, but NOT against the
  * player capsule: touch damage is proximity-authored in enemies.ts, and keeping
  * the player able to move through hostiles keeps the rush deterministic instead
- * of turning corpses into physics wedges. Route-local design, documented in
- * KNOWN-LIMITS.md.
+ * of turning corpses into physics wedges. This remains a route-local design.
  */
 export const layers = createCollisionLayers({
   player: ["wall", "pickup"],

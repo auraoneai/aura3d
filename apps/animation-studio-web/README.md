@@ -42,7 +42,6 @@ Everything lives under `verify/`:
   Run with the dev server up: `node verify/shoot.cjs` (override with `URL=...`).
 - `wiring.test.cjs` — tests the real `parseCliResult` (committed vs rejected) and
   `mapDocument` (sample EpisodeDocument → UI model). Run: `node --test verify/wiring.test.cjs`.
-- `UI-READINESS.md` — per-surface design comparison + real-wiring evidence.
 - `*.png` — the 7 committed surface screenshots.
 
 ## Build / typecheck
