@@ -7,8 +7,6 @@ settings:
 overrides:
   '@loaders.gl/textures>ktx-parse': 1.0.1
 
-pnpmfileChecksum: sha256-P4u/7etXHWLb/JYylRh3Nbm+ldXabQbCBov+wF4RiY0=
-
 importers:
 
   .:
