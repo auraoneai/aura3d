@@ -3358,6 +3358,51 @@ Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_CAPTURE_STEP__", {
   },
   configurable: true
 });
+/**
+ * Real-input deterministic pump for browser play verification. Headless
+ * software rendering can take 15s+ per presented frame, so wall-clock play is
+ * infeasible there; this runs `frames` fixed steps through the production
+ * onFrame path with the REAL held keyboard state, skipping only the redundant
+ * GPU presentations (mirrors the turbo `pumpRealInput` seam). Callers hold
+ * real keys via CDP input, pump, then read the evidence global to prove input
+ * changed game state. Test-only: no gameplay rules are altered.
+ */
+Object.defineProperty(window, "__AURA3D_SKYLINE_PUMP__", {
+  value: {
+    pump: (frameCount: number) => {
+      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+      app.pause();
+      for (let index = 0; index < bounded; index += 1) {
+        app.advance(1 / 60);
+      }
+      publishPlatformerEvidence();
+      app.resume();
+      return app.runtime.frame;
+    },
+    /** Pauses the live loop without advancing (for input-timing control). */
+    pause: () => { app.pause(); },
+    /** Advances N frames while paused (call after pause()). */
+    step: (frameCount: number) => {
+      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+      for (let index = 0; index < bounded; index += 1) {
+        app.advance(1 / 60);
+      }
+      publishPlatformerEvidence();
+      return app.runtime.frame;
+    },
+    /** Resumes the live loop (for input-timing control). */
+    resume: () => { app.resume(); },
+    /** Presents one production frame of the current (possibly pumped) state. */
+    present: async () => {
+      app.pause();
+      await app.stepAsync(0);
+      publishPlatformerEvidence();
+      app.resume();
+      return app.runtime.frame;
+    }
+  },
+  configurable: true
+});
 updatePlatformerHud();
 
 function publishPlatformerEvidence(): void {

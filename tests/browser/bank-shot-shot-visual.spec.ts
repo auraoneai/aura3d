@@ -61,24 +61,45 @@ async function presented(page: Page): Promise<void> {
   await page.waitForTimeout(1300);
 }
 
-function dataUrlVariance(dataUrl: string): number {
-  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-  let sum = 0;
-  let distinct = 0;
-  const counts = new Map<string, number>();
-  for (let index = 0; index < base64.length; index += 997) {
-    const char = base64[index]!;
-    counts.set(char, (counts.get(char) ?? 0) + 1);
-    sum += 1;
-  }
-  distinct = counts.size;
-  // A blank capture collapses to a handful of repeated base64 chars.
-  return distinct / Math.max(1, Math.min(64, sum));
+/**
+ * Real pixel variance of the live WebGL canvas, read back through a 2D probe.
+ * The previous base64-character heuristic passed a fully black renderer-owned
+ * frame as "nonblank" (PNG headers and structure bytes vary even when every
+ * pixel is identical), so a dead renderer was invisible to this gate. Reading
+ * quantized pixel colors instead makes a blank or flat frame fail loudly.
+ * Returns the fraction of 64 sampled color buckets observed (1 bucket = flat).
+ */
+async function rendererPixelVariance(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return 0;
+    const probe = document.createElement("canvas");
+    probe.width = 160;
+    probe.height = 90;
+    const ctx = probe.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return 0;
+    // The route mounts with preserveDrawingBuffer, so the readback reflects
+    // the last presented frame.
+    ctx.drawImage(canvas, 0, 0, probe.width, probe.height);
+    const data = ctx.getImageData(0, 0, probe.width, probe.height).data;
+    const colors = new Set<number>();
+    for (let i = 0; i < data.length; i += 4) {
+      // Quantize to 4 bits per channel to ignore dither and encode noise.
+      const key = ((data[i]! >> 4) << 8) | ((data[i + 1]! >> 4) << 4) | (data[i + 2]! >> 4);
+      colors.add(key);
+      if (colors.size >= 64) break;
+    }
+    return colors.size / 64;
+  });
 }
 
 test("bank shot renders, scatters visibly on the strike, and captures review shots", async ({ page }, testInfo) => {
   test.setTimeout(420_000);
   mkdirSync(REPORT_DIR, { recursive: true });
+  // The showcase matrix binds to a stable live-break probe path; the directory
+  // is not created by any other gate, so create it here instead of failing at
+  // the write below.
+  mkdirSync("tests/reports/showcase-route-primary-probes", { recursive: true });
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -100,7 +121,7 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
     // First load: renderer-owned capture must be nonblank.
     const firstLoad = await shot(page);
     expect(firstLoad.length, "renderer screenshot must produce data").toBeGreaterThan(1000);
-    expect(dataUrlVariance(firstLoad), "first load must not be a blank frame").toBeGreaterThan(0.4);
+    expect(await rendererPixelVariance(page), "first load must not be a flat frame").toBeGreaterThan(0.2);
     await page.screenshot({ path: join(REPORT_DIR, "first-load-desktop.png") });
 
     // Aim + charge view (meter mid-charge with the cue stick pulled back).
@@ -138,7 +159,9 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
       breakShot
     );
     const afterShot = await shot(page);
-    expect(dataUrlVariance(afterShot), "mid-break capture must not be blank").toBeGreaterThan(0.4);
+    // Pixel-backed blank check: a real break frame shows felt, rails, balls,
+    // and shadows (dozens of quantized colors). A dead renderer shows one.
+    expect(await rendererPixelVariance(page), "mid-break capture must not be a flat frame").toBeGreaterThan(0.2);
     expect(afterShot, "the break must visibly change the rendered frame").not.toBe(beforeShot);
 
     // Mid-rack view: pump until the break resolves, then capture the leave.

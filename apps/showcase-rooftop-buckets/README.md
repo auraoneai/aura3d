@@ -1,6 +1,6 @@
 # Rooftop Buckets
 
-Rooftop Buckets is a root-safe Aura3D prototype: one public `createGameApp(...)` mount presents a five-heat summer-night shooting session. Shot flight, composed rim/backboard/defender regions, the bounded first-flight guide, heat objectives, clocks, score, streak, fire, gold outcome, and outcome fixtures are route-local TypeScript. They are not Rapier bodies and do not establish a reusable basketball, rim-physics, defender, or sports kit.
+Rooftop Buckets is a root-safe Aura3D prototype: one public `createGameApp(...)` mount presents a five-heat summer-night shooting session. Shot flight and rim/backboard/defender contact are Rapier-owned: the ball is a dynamic Rapier sphere, the rim is 24 static Rapier sphere segments, the backboard, bracket, and floor are static Rapier bodies, the score region is a non-solid downward Rapier sensor, and the defender is a kinematic Rapier body. The world steps a fixed 1/60 with adaptive-substep CCD and the renderer follows solver poses. Heat objectives, clocks, score, streak, fire, gold outcome, and outcome fixtures are route-local TypeScript rules. They do not establish a reusable basketball, rim-physics, defender, or sports kit.
 
 The route remains `prototype-blocked` and is not a public showcase card. Machine evidence does not grant visual approval; promotion requires independent review of the exact hash-bound desktop, mobile, and reduced-motion artifacts recorded by route health.
 
@@ -10,7 +10,7 @@ Use `A`/`D` to choose one of six marked spots, `W`/`S` to adjust the bounded arc
 
 The session escalates through five exact modes: an open six-point heat, three unique required spots, a shorter-clock pressure heat with a visible defender telegraph, a three-consecutive-make fire heat, and one gold-ball finale attempt. A gold make wins; a gold miss or finale clock violation fails. Terminal outcomes lock further scoring until reset.
 
-The preview and the actual pre-contact ball path call the same deterministic free-flight integrator. The guide deliberately stops at the hoop plane and promises nothing after the first rim or board contact. A make is accepted only after the ball arms above the rim and crosses downward through the inner scoring region. All contacts and rebounds are authored route-local approximations, not generic physical simulation.
+The preview guide and the live ball share the same Rapier-owned hoop simulation: the solver integrates the dynamic ball at a fixed 1/60 step, so the pre-contact path, rim and board contacts, and rebounds are physical simulation, not authored approximations. The guide deliberately stops at the hoop plane and promises nothing after the first rim or board contact. A make is accepted only after the ball arms above the rim and crosses downward through the inner scoring sensor.
 
 ## Typed assets and audio
 

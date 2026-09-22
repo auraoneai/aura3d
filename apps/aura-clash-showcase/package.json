@@ -17,6 +17,7 @@
     "assets:build-lightweight-arena": "node scripts/build-lightweight-arena-glb.mjs",
     "assets:build-textured-arena": "node scripts/build-textured-arena-glb.mjs",
     "test": "playwright test",
+    "test:copy-boundary": "node tests/copy-boundary.test.mjs",
     "test:route-health": "playwright test tests/route-health.spec.ts",
     "test:playable": "playwright test tests/playable-smoke.spec.ts --workers=1",
     "test:flagship": "playwright test tests/flagship-readiness.spec.ts",

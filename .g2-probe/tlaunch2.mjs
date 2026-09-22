@@ -1,0 +1,12 @@
+import { chromium } from "@playwright/test";
+console.log("1 launching");
+const browser = await chromium.launch({ args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-gl=angle", "--autoplay-policy=no-user-gesture-required"] });
+console.log("2 newContext");
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+console.log("3 newPage");
+const page = await ctx.newPage();
+console.log("4 goto");
+await page.goto("http://localhost:5199/apps/showcase-turbo-drift-circuit/", { waitUntil: "domcontentloaded", timeout: 90000 });
+console.log("5 loaded");
+await browser.close();
+console.log("6 done");

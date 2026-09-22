@@ -4205,6 +4205,32 @@ async function advanceTurboAcceptanceTo(milestone: TurboAcceptanceMilestone): Pr
   mountedEvidence.diagnostics = app.diagnostics();
   return { milestone, steps, frame: app.runtime.frame, time: app.runtime.time };
 }
+/**
+ * Real-input deterministic pump for browser play verification. Headless
+ * software rendering can take 15s+ per presented frame, so wall-clock play is
+ * infeasible there; this runs `frames` fixed steps through the production
+ * onFrame path with the REAL held keyboard state (no input override, no
+ * evidence driver), skipping only the redundant GPU presentations -- the same
+ * separation `advanceTurboAcceptanceTo` already uses. Callers hold real keys
+ * via CDP input, pump, then read the evidence global to prove input changed
+ * game state.
+ */
+async function pumpTurboRealInput(frames: number): Promise<{ steps: number; frame: number; time: number }> {
+  await claimTurboAcceptanceClock();
+  const bounded = Math.max(0, Math.min(30_000, Math.floor(frames)));
+  const previousOverride = turboAcceptanceInputOverride;
+  turboAcceptanceInputOverride = null;
+  let steps = 0;
+  try {
+    for (; steps < bounded; steps += 1) {
+      app.advance(1 / 60);
+    }
+  } finally {
+    turboAcceptanceInputOverride = previousOverride;
+  }
+  mountedEvidence.diagnostics = app.diagnostics();
+  return { steps, frame: app.runtime.frame, time: app.runtime.time };
+}
 Object.defineProperty(window, "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__", {
   value: {
     holdOpeningGrid: async () => {
@@ -4212,6 +4238,7 @@ Object.defineProperty(window, "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__", {
       mountedEvidence.diagnostics = app.diagnostics();
     },
     advanceTo: advanceTurboAcceptanceTo,
+    pumpRealInput: pumpTurboRealInput,
     presentInput: async () => {
       await claimTurboAcceptanceClock();
       // A retained drift frame holds its solved tableau. A subsequent real
@@ -5499,6 +5526,13 @@ app.onFrame(({ dt }) => {
     system: "engine.createVehicleChassis",
     routePinsCarHeightToLiteral: false,
     grounded: playerChassisPose.grounded,
+    // Truthful chassis pose for browser probes: position (x, z) and heading (radians).
+    // Exposed so input->movement and steering->heading are measurable without guessing.
+    position: {
+      x: round(playerChassisPose.groundedPosition[0]),
+      z: round(playerChassisPose.groundedPosition[2])
+    },
+    heading: round(playerChassisPose.rotation[1]),
     groundedWheels: chassisTelemetry.groundedWheels,
     maxContactGap: round(chassisTelemetry.maxContactGap),
     pitch: round(chassisTelemetry.pitch),

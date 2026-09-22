@@ -19,7 +19,8 @@ import {
   scene,
   ui,
   type AuraRuntimeNodeHandle,
-  type AuraSceneNode
+  type AuraSceneNode,
+  type AuraDiagnostics
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { VaultFlow, type VaultGameEvent } from "./ball-flow";
@@ -705,7 +706,7 @@ function syncDoor(dt: number): void {
 function publishEvidence(): void {
   const snap = flow.snapshot();
   const flipperSnap = flippers.snapshot();
-  const diagnostics = app.diagnostics() as { readonly drawCalls: number; readonly renderSize: readonly number[]; readonly runtimeBackend?: string };
+  const diagnostics: AuraDiagnostics = app.diagnostics();
   const evidence = {
     // Contract keys from the PRD evidence section.
     mounted: true,
@@ -729,7 +730,17 @@ function publishEvidence(): void {
     targetHandleCount: targetHandles.size,
     bankLampCount: bankLampHandles.size,
     mechanismVisualState: snap.phase === "game-over" ? "game-over" : snap.tiltLocked ? "tilt" : snap.multiball ? "multiball" : snap.vaultOpen ? "vault-open" : snap.banksDown > 0 ? "bank-progress" : "guarded",
-    renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.runtimeBackend ?? "unknown" },
+    renderer: {
+      // AuraDiagnostics.backend is the engine-owned render backend
+      // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
+      // `runtimeBackend` field did not exist, so evidence always read
+      // "unknown". The quality profile names the active renderer tier.
+      backend: diagnostics.backend,
+      qualityProfile: diagnostics.renderer?.qualityProfile.id ?? "unknown",
+      rendererMode: diagnostics.renderer?.rendererMode ?? "unknown",
+      drawCalls: diagnostics.drawCalls,
+      renderSize: [...diagnostics.renderSize]
+    },
     lastShotHash: flow.lastShotHash,
     resetHashMatch: flow.resetHashMatch,
     audioCues: audioCueLog.slice(),

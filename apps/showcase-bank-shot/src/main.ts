@@ -22,7 +22,8 @@ import {
   scene,
   ui,
   type AuraRuntimeNodeHandle,
-  type AuraSceneNode
+  type AuraSceneNode,
+  type AuraDiagnostics
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "./cue";
@@ -839,11 +840,7 @@ function syncVisuals(): void {
 function publishEvidence(): void {
   const snap = rules.snapshot();
   const cueState = cueController.state();
-  const diagnostics = app.diagnostics() as {
-    readonly drawCalls: number;
-    readonly renderSize: readonly number[];
-    readonly runtimeBackend?: string;
-  };
+  const diagnostics: AuraDiagnostics = app.diagnostics();
   const evidence = {
     // Contract keys from the PRD evidence section.
     status: "ready",
@@ -864,9 +861,15 @@ function publishEvidence(): void {
     sensorEventCount,
     physicsBodyCount: sim.world.snapshot().bodies,
     renderer: {
-      backend: diagnostics.runtimeBackend ?? "unknown",
+      // AuraDiagnostics.backend is the engine-owned render backend
+      // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
+      // `runtimeBackend` field did not exist, so evidence always read
+      // "unknown". The quality profile names the active renderer tier.
+      backend: diagnostics.backend,
+      qualityProfile: diagnostics.renderer?.qualityProfile.id ?? "unknown",
+      rendererMode: diagnostics.renderer?.rendererMode ?? "unknown",
       drawCalls: diagnostics.drawCalls,
-      renderSize: diagnostics.renderSize
+      renderSize: [...diagnostics.renderSize]
     },
     audioCues: audioCueLog.slice(),
     // Route-local extras consumed by specs and route-health.

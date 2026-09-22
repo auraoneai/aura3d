@@ -94,6 +94,8 @@ type BlockfallWindow = Window & {
     readonly apply: (scenario: BlockfallAcceptanceScenario) => unknown;
     readonly resume: () => unknown;
     readonly unfreeze: () => void;
+    /** Evidence staging: boxes the active piece in so the next rotate press is refused. */
+    readonly stageRotationTrap: () => boolean;
   };
 };
 
@@ -868,6 +870,16 @@ const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
 // named frame after the burst had already disappeared, leaving a technically
 // correct line count but no visible feedback for the event.
 const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.9 };
+/**
+ * Rotation-denied feedback (round 7): the kit refuses a rotate press when no
+ * wall kick lands. The refusal has no manifest audio cue (the authored SFX set
+ * is typed asset-bound with no denial sound), so the feedback is a short
+ * visible pulse on the rotate buttons plus a proof counter. Under
+ * prefers-reduced-motion the pulse never arms; the counter still records the
+ * event so evidence stays truthful.
+ */
+const ROTATE_DENIED_FLASH_SECONDS = 0.28;
+let rotateDeniedFlash = 0;
 let lastObservedLevel = 1;
 let burstRowY = BOARD_CENTER_Y;
 let lastClearSize = 0;
@@ -884,6 +896,7 @@ const observedGameplayProof = {
   levelProgression: false,
   gameOver: false,
   reset: false,
+  rotateDenied: 0,
   eventCounts: {
     lock: 0,
     lineClear: 0,
@@ -1019,6 +1032,28 @@ blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
   unfreeze() {
     acceptanceScenario = null;
     app.resume();
+  },
+  /**
+   * Evidence staging (round 7): boxes the active piece in through real kit
+   * transitions so the next rotate press is genuinely refused — every wall
+   * kick collides, so the kit emits no "rotate" event and the rotation-denied
+   * feedback path fires. Locked cells fill the whole well except the active
+   * piece's own cells, which keep their current state.
+   */
+  stageRotationTrap() {
+    const snapshot = fallingBlocks.snapshot();
+    const active = snapshot.active;
+    if (!active || snapshot.gameOver || paused) return false;
+    const occupied = new Set(
+      pieceCells({ kind: active.kind, x: active.x, y: active.y, rotation: active.rotation }).map(
+        (cell) => `${cell.x},${cell.y}`
+      )
+    );
+    const trapped = snapshot.board.map((row, y) =>
+      row.map((cell, x) => (occupied.has(`${x},${y}`) ? cell : "I"))
+    );
+    fallingBlocks.setBoard(trapped);
+    return true;
   }
 };
 
@@ -1177,6 +1212,13 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     if (action.type === "rotate" && accepted.has("rotate")) void reactorAudio.cue("rotate");
     if (action.type === "hold" && accepted.has("hold")) void reactorAudio.cue("hold-swap");
     if (action.type === "hardDrop" && accepted.has("hard-drop")) void reactorAudio.cue("hard-drop");
+    // Rotation-denied feedback: a rotate press the kit refuses (no wall kick
+    // lands) pulses the rotate buttons so "blocked" reads differently from
+    // "accepted". Edge-triggered per refused press via the event absence.
+    if (action.type === "rotate" && !accepted.has("rotate")) {
+      observedGameplayProof.rotateDenied += 1;
+      if (!reducedMotion) rotateDeniedFlash = ROTATE_DENIED_FLASH_SECONDS;
+    }
     lastMove = formatBlockfallAction(action);
     countFallingBlockEvents(lastFallingEvents, rowsBeforeAction);
   }
@@ -1485,6 +1527,14 @@ function syncAll(force: boolean, dt = 0): void {
   }
   // Beats animate continuously, so they advance outside the checksum gate.
   syncBeats(dt);
+  // Rotation-denied pulse: decays here so the flash is frame-driven even when
+  // the board checksum is unchanged.
+  if (rotateDeniedFlash > 0) {
+    rotateDeniedFlash = Math.max(0, rotateDeniedFlash - Math.max(0, dt));
+  }
+  const deniedPulseOn = rotateDeniedFlash > 0;
+  rotateLeftButton.classList.toggle("rotate-denied", deniedPulseOn);
+  rotateRightButton.classList.toggle("rotate-denied", deniedPulseOn);
   publishEvidence();
 }
 

@@ -117,7 +117,7 @@ button { font: inherit; }
   top: 28px;
   right: 30px;
   display: grid;
-  grid-template-columns: 104px repeat(5, 66px);
+  grid-template-columns: 104px repeat(5, 80px);
   gap: 6px;
   padding: 6px;
   border: 1px solid rgba(164, 213, 255, 0.2);
@@ -155,6 +155,10 @@ button { font: inherit; }
   display: grid;
   gap: 8px;
   justify-items: end;
+}
+
+.lap-times-stack .metric {
+  min-width: max-content;
 }
 
 .metric--compact {

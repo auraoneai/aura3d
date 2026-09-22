@@ -27,7 +27,6 @@ export interface MechStats {
  */
 export function aggregateStats(selection: BuildSelection): MechStats {
   const [chassis, arms, legs, weapon] = selectedParts(selection);
-  const armor = chassis.stats.armor + legs.stats.armor;
   const speed = legs.stats.speed - chassis.stats.speed;
   const guard = arms.stats.guard;
   const power = weapon.stats.power;
