@@ -9,7 +9,8 @@ import {
   primitives,
   material,
   model,
-  effects
+  effects,
+  type AuraDiagnostics
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import {
@@ -83,7 +84,7 @@ export interface DeepRecoveryEvidence {
   readonly primaryAssets: readonly string[];
   readonly primaryAssetHashes: readonly string[];
   readonly recoveryInventory: {
-    readonly backend: string | undefined;
+    readonly backend: string;
     readonly drawCalls: number;
     readonly readyAssets: number;
     readonly renderSize: readonly number[] | undefined;
@@ -898,26 +899,10 @@ function updateEvidence(): void {
   const currentZone = getDepthZone(subState.y);
   const cargoVal = tetheredCrates.reduce((sum, c) => sum + Math.round(c.baseValue * currentZone.valueMultiplier), 0);
 
-  const diagnostics = app.diagnostics() as {
-    readonly backend?: string;
-    readonly drawCalls?: number;
-    readonly renderSize?: readonly number[];
-    readonly runtimeBackend?: string;
-    readonly assets?: readonly { readonly status?: string }[];
-    readonly evidence?: { readonly animation?: { readonly animatedNodes?: number } };
-    readonly renderer?: {
-      readonly runtime?: {
-        readonly backend?: string;
-        readonly mounted?: boolean;
-        readonly bloom?: { readonly targetBytes?: number } | null;
-      };
-      readonly postprocess?: { readonly actualPasses?: readonly string[]; readonly targetFormat?: string };
-      readonly shadows?: { readonly shadowRenderTargetsAllocated?: number; readonly mapRendered?: boolean };
-      readonly textures?: { readonly residentEntries?: number };
-      readonly text?: { readonly sdfTexts?: number; readonly quadCount?: number };
-      readonly fog?: { readonly preset?: string };
-    };
-  };
+  // Engine-typed diagnostics: backend is the engine-owned render backend
+  // ("webgl2" | "webgpu" | "canvas2d" | "headless"); renderer.* probes below
+  // map 1:1 onto AuraRendererDiagnosticReport — no fictional fields.
+  const diagnostics: AuraDiagnostics = app.diagnostics();
   const tetheredMass = tetheredCrates.reduce((sum, crate) => sum + crate.mass, 0);
   window.__DEEP_RECOVERY_EVIDENCE__ = {
     mounted: true,
@@ -975,22 +960,22 @@ function updateEvidence(): void {
     // residency) sampled every evidence publish so a post-loss remount can be
     // diffed against it. Recovery stays app-owned pause + explicit remount.
     recoveryInventory: {
-      backend: diagnostics.backend ?? diagnostics.runtimeBackend,
+      backend: diagnostics.backend,
       drawCalls: Number(diagnostics.drawCalls ?? 0),
       readyAssets: (diagnostics.assets ?? []).filter((asset) => asset.status === "ready").length,
       renderSize: diagnostics.renderSize,
       recoveryContract: "app-owned-pause_explicit-remount" as const,
-      runtimeBackend: diagnostics.renderer?.runtime?.backend ?? diagnostics.runtimeBackend ?? "unknown",
-      postPasses: [...(diagnostics.renderer?.postprocess?.actualPasses ?? [])],
-      postTargetFormat: diagnostics.renderer?.postprocess?.targetFormat,
-      shadowTargetsAllocated: diagnostics.renderer?.shadows?.shadowRenderTargetsAllocated ?? 0,
-      shadowMapRendered: diagnostics.renderer?.shadows?.mapRendered ?? false,
-      bloomTargetBytes: diagnostics.renderer?.runtime?.bloom?.targetBytes ?? 0,
-      textureResidentEntries: diagnostics.renderer?.textures?.residentEntries ?? 0,
-      sdfTexts: diagnostics.renderer?.text?.sdfTexts ?? 0,
-      textQuadCount: diagnostics.renderer?.text?.quadCount ?? 0,
-      fogPreset: diagnostics.renderer?.fog?.preset ?? "none",
-      animatedNodes: diagnostics.evidence?.animation?.animatedNodes ?? 0
+      runtimeBackend: diagnostics.renderer?.runtime.backend ?? "unknown",
+      postPasses: [...(diagnostics.renderer?.postprocess.actualPasses ?? [])],
+      postTargetFormat: diagnostics.renderer?.postprocess.targetFormat,
+      shadowTargetsAllocated: diagnostics.renderer?.shadows.shadowRenderTargetsAllocated ?? 0,
+      shadowMapRendered: diagnostics.renderer?.shadows.mapRendered ?? false,
+      bloomTargetBytes: diagnostics.renderer?.runtime.bloom?.targetBytes ?? 0,
+      textureResidentEntries: diagnostics.renderer?.textures.residentEntries ?? 0,
+      sdfTexts: diagnostics.renderer?.text.sdfTexts ?? 0,
+      textQuadCount: diagnostics.renderer?.text.quadCount ?? 0,
+      fogPreset: diagnostics.renderer?.fog.preset ?? "none",
+      animatedNodes: diagnostics.evidence?.animation.animatedNodes ?? 0
     },
     renderer: diagnostics
   };

@@ -1,0 +1,14 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { chromium } from "@playwright/test";
+const log = (...a) => process.stderr.write(a.join(" ") + "\n");
+log("a");
+const browser = await chromium.launch({ args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist", "--use-gl=angle", "--autoplay-policy=no-user-gesture-required"] });
+log("b launched");
+const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+log("c page");
+const consoleErrors = [];
+page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 250)); });
+log("d handlers");
+await browser.close();
+log("e done");

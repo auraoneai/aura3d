@@ -173,6 +173,16 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
   box-shadow: 0 0 16px rgba(116, 255, 145, 0.18);
 }
 
+/* Rotation-denied feedback (round 7): a rotate press the kit refuses flashes
+   the rotate buttons amber-red so "blocked" reads differently from "accepted".
+   Toggled from the frame loop; the 0.28 s pulse matches the flash timer. */
+.hud-panel--actions button.rotate-denied,
+.touch-root button.rotate-denied {
+  border-color: #ff6b4a;
+  background: linear-gradient(180deg, rgba(127, 52, 40, 0.92), rgba(58, 19, 14, 0.96));
+  box-shadow: 0 0 18px rgba(255, 107, 74, 0.45);
+}
+
 .hud-panel--evidence {
   position: absolute;
   right: 26px;

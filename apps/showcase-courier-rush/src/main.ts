@@ -75,6 +75,8 @@ declare global {
     __COURIER_RUSH_DEBUG__?: {
       placeVan(x: number, z: number, heading?: number): void;
       vanSnapshot(): { x: number; z: number; heading: number; speed: number };
+      pump(frameCount: number): number;
+      present(): Promise<number>;
     };
     __AURA3D_ROUTE_READY__?: CourierRouteReadyFlag;
     __AURA3D_COMPOSITION_PROBE__?: {
@@ -742,6 +744,33 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
     vanSnapshot(): { x: number; z: number; heading: number; speed: number } {
       const snap = vanVehicle.snapshot();
       return { x: snap.x, z: snap.z, heading: snap.heading, speed: snap.speed };
+    },
+    /**
+     * Real-input deterministic pump for browser play verification. Headless
+     * software rendering can take 15s+ per presented frame, so wall-clock play
+     * is infeasible there; this runs `frameCount` fixed steps through the
+     * production onFrame path with the REAL held keyboard state, skipping only
+     * the redundant GPU presentations (mirrors the patrol `__PW_PUMP__` seam).
+     * Callers hold real keys via CDP input, pump, then read the evidence
+     * global to prove input changed game state. Test-only: no rules altered.
+     */
+    pump(frameCount: number): number {
+      const bounded = Math.max(0, Math.min(30_000, Math.floor(frameCount)));
+      app.pause();
+      for (let index = 0; index < bounded; index += 1) {
+        app.advance(1 / 60);
+      }
+      updateMountedEvidence();
+      app.resume();
+      return app.runtime.frame;
+    },
+    /** Presents one production frame of the current (possibly pumped) state. */
+    async present(): Promise<number> {
+      app.pause();
+      await app.stepAsync(0);
+      updateMountedEvidence();
+      app.resume();
+      return app.runtime.frame;
     }
   } satisfies NonNullable<Window["__COURIER_RUSH_DEBUG__"]>,
   configurable: true

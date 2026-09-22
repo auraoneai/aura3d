@@ -31,6 +31,7 @@ import {
   text3D,
   ui,
   type AuraAnimationAssetLike,
+  type AuraDiagnostics,
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
 } from "@aura3d/engine";
@@ -1574,7 +1575,11 @@ function syncDebugOverlay(): void {
 // ------------------------------------------------------------- evidence ------
 function publishEvidence(): void {
   const snap = runtime.thief.snapshot();
-  const diagnostics = app.diagnostics() as { readonly drawCalls?: number; readonly renderSize?: readonly number[]; readonly runtimeBackend?: string };
+  // AuraDiagnostics.backend is the engine-owned render backend
+  // ("webgl2" | "webgpu" | "canvas2d" | "headless"); the previous
+  // `runtimeBackend` field did not exist, so evidence always read
+  // "unknown". The quality profile names the active renderer tier.
+  const diagnostics: AuraDiagnostics = app.diagnostics();
   const renderSize = diagnostics.renderSize ?? [0, 0];
   const rendererDrawn = (diagnostics.drawCalls ?? 0) > 0 && (renderSize[0] ?? 0) > 0 && (renderSize[1] ?? 0) > 0;
   // The review producer stages its own bounded deterministic live encounter
@@ -1673,8 +1678,10 @@ function publishEvidence(): void {
     },
     renderer: {
       drawCalls: diagnostics.drawCalls ?? 0,
-      renderSize: diagnostics.renderSize ?? [0, 0],
-      backend: diagnostics.runtimeBackend ?? "unknown"
+      renderSize: [...diagnostics.renderSize],
+      backend: diagnostics.backend,
+      qualityProfile: diagnostics.renderer?.qualityProfile.id ?? "unknown",
+      rendererMode: diagnostics.renderer?.rendererMode ?? "unknown"
     },
     audio: audio.proof(),
     navigationOwnership: "authored deterministic two-floor waypoint patrols; no Recast/navmesh claim",

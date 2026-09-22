@@ -15,10 +15,10 @@ export interface TitleScreenModel {
 }
 
 export const auraClashTitleScreen: TitleScreenModel = {
-  eyebrow: "Aura3D flagship game showcase",
+  eyebrow: "Aura3D development showcase",
   title: "Aura Clash",
   subtitle:
-    "A premium browser fighting game built with typed GLB assets, cinematic arenas, responsive combat UI, accessibility controls, and deploy-ready TypeScript.",
+    "A browser fighting-game demo built with typed GLB assets, arenas, responsive combat UI, accessibility controls, and deploy-ready TypeScript.",
   proofLine: "Quaternius CC0 fighters + Downtown City MegaKit arena + Aura3D typed asset workflow.",
   ctas: [
     {

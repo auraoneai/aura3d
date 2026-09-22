@@ -115,20 +115,23 @@ export function createHangarController(audio: HangarAudioController, callbacks: 
     }
   }
 
-  function attachPointer(target: HTMLElement): () => void {
+  function attachPointer(target: HTMLElement, isActive?: () => boolean, onChange?: () => void): () => void {
+    const active = (): boolean => !isActive || isActive();
     const down = (event: PointerEvent) => {
+      if (!active()) return;
       dragging = true;
       lastPointerX = event.clientX;
       lastPointerY = event.clientY;
     };
     const move = (event: PointerEvent) => {
-      if (!dragging || locked) return;
+      if (!dragging || locked || !active()) return;
       const dx = event.clientX - lastPointerX;
       const dy = event.clientY - lastPointerY;
       lastPointerX = event.clientX;
       lastPointerY = event.clientY;
       orbitYaw -= dx * 0.008;
       orbitPitch = Math.max(-0.1, Math.min(1.1, orbitPitch + dy * 0.005));
+      onChange?.();
     };
     const up = () => {
       dragging = false;

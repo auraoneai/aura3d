@@ -118,6 +118,19 @@ const hangar = createHangarController(
   { reducedMotion }
 );
 
+// The hangar preview is an orbitable turntable (mouse/touch drag). The
+// controller's pointer binding was previously never attached, so the claimed
+// "pointer drag" orbit control silently did nothing; wire it to the app host
+// and gate it to hangar mode so arena camera work stays untouched.
+{
+  const appHost = document.getElementById("app");
+  // Hangar orbit affordance: drag the preview to inspect the authored mech.
+  // Gated to hangar mode so it never disturbs the bout, and republishes
+  // evidence on change so the orbit state stays honest even when the frame
+  // loop is not presenting.
+  if (appHost) hangar.attachPointer(appHost, () => mode === "hangar", () => publishEvidence());
+}
+
 // ---- panels -----------------------------------------------------------------
 const panelHost = document.getElementById("panel")!;
 const hangarHud: HangarHudHandles = setupHangarHud(panelHost, hangar.selection);
@@ -1093,6 +1106,11 @@ function startBout(): void {
     seed: 20260821 + boutIndex * 7919
   });
   hideKoCard(arenaHud);
+  // Reset the cached fighter evidence with the fresh bout: the display loop
+  // rewrites these every frame, but without this the first published frames
+  // after a rematch still report the previous bout's KO positions/health.
+  lastFighterPositions = { playerX: -1.9, rivalX: 1.9 };
+  lastFighterVitals = { playerHp: 1, rivalHp: 1, playerGuard: 1, playerPower: 0.5 };
   mountSide("player", hangar.selection, arenaX(-1.9), Math.PI / 2, playerNodes);
   mountSide("rival", RIVAL_FIXED_LOADOUT.selection, arenaX(1.9), -Math.PI / 2, rivalNodes);
 }
@@ -1258,6 +1276,8 @@ interface MechHangarEvidence {
   fighterPositions: { playerX: number; rivalX: number };
   fighterVitals: { playerHp: number; rivalHp: number; playerGuard: number; playerPower: number };
   feel: unknown;
+  /** Hangar preview orbit angles — runtime proof the pointer-drag orbit is live. */
+  orbitAngles: { yaw: number; pitch: number };
   heroAsset: { ref: "assets.mechHeroDecimated"; url: string; hash: string; bounds: readonly [number, number, number]; quality: "candidate" };
 }
 
@@ -1328,7 +1348,8 @@ let timeWarp = 1;
     phase: bout.snapshot().phase,
     vitals: { ...lastFighterVitals },
     positions: { ...lastFighterPositions },
-    koEvents: publishedKoEvents.length
+    koEvents: publishedKoEvents.length,
+    preset: bout.preset().id
   };
 };
 
@@ -1351,6 +1372,7 @@ let timeWarp = 1;
 function publishEvidence(snapshot?: BoutSnapshot): void {
   const diagnostics = app.diagnostics();
   const selected = selectedParts(hangar.selection);
+  const orbitSnapshot = hangar.snapshot();
   const evidence: MechHangarEvidence = {
     status: mode === "hangar" ? (catalogReady ? "ready" : "curation-pending") : paused ? "paused" : "playing",
     label: CLAIM_BOUNDARY.label,
@@ -1386,6 +1408,7 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     fighterPositions: lastFighterPositions,
     fighterVitals: lastFighterVitals,
     feel: feel.snapshot(),
+    orbitAngles: { yaw: orbitSnapshot.orbitYaw, pitch: orbitSnapshot.orbitPitch },
     heroAsset: {
       ref: "assets.mechHeroDecimated",
       url: rootAssets.mechHeroDecimated.url,

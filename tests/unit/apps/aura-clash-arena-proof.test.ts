@@ -70,6 +70,7 @@ const baseProofInput: AuraClashArenaProofInput = {
     distinct: true,
     releaseReady: true
   },
+  physics: "none (authored arcade fighting; hitboxes are typed clip-event windows and knockback is deterministic bout state, not rigid-body contacts)",
   renderer: { surface: "aura3d-production-gltf-animation", backend: "webgl2", drawCalls: 42 },
   player: {
     name: "Flux Vanta",

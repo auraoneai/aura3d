@@ -114,7 +114,7 @@ export interface RooftopBucketsEvidence {
 
 const APP_ID = "showcase-rooftop-buckets";
 const ROUTE_SYSTEMS = {
-  flight: "route-local deterministic authored ballistic integrator shared by preview and actual first flight",
+  flight: "Rapier-owned hoop simulation (fixed 1/60, adaptive-substep CCD) shared by preview and live ball flight",
   scoring: "route-local five-heat objective, sensor-sequence, streak, gold, clock, and shot-lock rules",
   contest: "visible deterministic defender telegraph creates a documented pre-launch aim offset",
   presentation: "typed court, backboard, rim, ball, and pose-authored athletes with renderer-owned trajectory markers",

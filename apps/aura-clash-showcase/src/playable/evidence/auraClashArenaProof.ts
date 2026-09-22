@@ -120,6 +120,13 @@ export interface AuraClashArenaProof {
     readonly releaseReady: boolean;
   };
   readonly noPrimitiveFighters: true;
+  /**
+   * Machine-readable physics classification. Aura Clash is authored arcade
+   * fighting: hit windows come from typed clip-event tracks and knockback is
+   * deterministic bout state, not rigid-body contacts. The route must not
+   * advertise a solver surface it does not create.
+   */
+  readonly physics: string;
   readonly renderer: {
     readonly surface: "aura3d-production-gltf-animation";
     readonly backend: string;
@@ -293,6 +300,7 @@ export function createAuraClashArenaProof(input: AuraClashArenaProofInput): Aura
     callout: input.callout,
     visibleFighterAsset: input.visibleFighterAsset,
     fighterAssets: input.fighterAssets,
+    physics: input.physics,
     renderer: input.renderer,
     player: input.player,
     rival: input.rival,
