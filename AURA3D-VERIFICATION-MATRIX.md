@@ -118,3 +118,20 @@ the renderer's `rgba16f` postprocessing framebuffer; black canvas. §40 visual r
 
 All typechecks PASS. All browser mount smokes PASS (0 errors).
 Visual/playable assertions requiring rendered pixels: NOT RUN (environment-blocked).
+
+## Full unit suite — regression comparison (2026-09-22 ~14:00–14:27 PDT)
+
+**Merged integration (aura3d-game-upgrade/integration @ 78d0317f):**
+4,868 passed | 146 failed | 5,014 total — 41 failed files / 613 passed files, exit 1.
+
+**Pristine base (main @ 5362b3d5, fresh clone, unbuilt):**
+Ran the exact 41 failing files: **all 41 fail on base too**.
+- 38 per-test-failure files: 148 failed tests on base vs 146 on merged.
+- 3 file-level failures (tools/developer-value, tools/honest-public-claims,
+  tools/parity-consumers): fail at file level on base as well.
+- **Zero regressions** — no file passes on base and fails on merged.
+- Net delta: merged has 2 FEWER failures (aura3d-cli/admission-geometry-fixtures 7→6,
+  create-aura3d/showcase-game-geometry-probe 2→1).
+
+**Verdict:** every unit-test failure in the integration is pre-existing on main.
+The lane work introduces no new test failures. Raw totals preserved (4,868 / 146 / 5,014).
