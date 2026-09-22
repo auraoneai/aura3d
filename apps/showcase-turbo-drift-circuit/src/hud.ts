@@ -92,6 +92,21 @@ export function bindTurboHudElements(): TurboHudElements {
 }
 
 export function renderTurboHudPanel(debugMode: boolean): string {
+  /*
+   * Raw solver coordinates are evidence, not player HUD. The route already documents
+   * "?debug=1" for telemetry, so the contact panel honours that same gate. The nodes are
+   * rendered hidden rather than omitted: `requireHudElement` resolves them at setup and
+   * the per-frame writer updates them unconditionally.
+   */
+  const contactAttributes = debugMode ? "" : ' hidden aria-hidden="true" class="debug-section--hidden"';
+  const contactBlock = `<section${contactAttributes} class="lap-times" aria-label="Contact telemetry">
+        <article class="metric metric--compact"><span>Chassis Y</span><strong id="contact-chassis-value">--</strong></article>
+        <article class="metric metric--compact"><span>Road Y</span><strong id="contact-road-value">--</strong></article>
+        <article class="metric metric--compact"><span>Delta</span><strong id="contact-delta-value">--</strong></article>
+        <article class="metric metric--compact"><span>Wheels</span><strong id="contact-wheels-value">--</strong></article>
+        <article class="metric metric--compact"><span>Held</span><strong id="contact-held-value">live</strong></article>
+      </section>`;
+
   const debugBlock = debugMode ? `
     <section id="debug-section" class="debug-section" aria-label="Debug telemetry">
       <span id="alignment-status" class="contract-status" data-state="locked"><i aria-hidden="true"></i><strong id="alignment-value">Road locked</strong></span>
@@ -126,13 +141,7 @@ export function renderTurboHudPanel(debugMode: boolean): string {
         <article class="metric metric--compact"><span>Best</span><strong id="best-lap-value">--:--.--</strong></article>
         <article class="metric metric--compact"><span>Track</span><strong id="track-state-value">On track</strong></article>
       </section>
-      <section class="lap-times" aria-label="Contact telemetry">
-        <article class="metric metric--compact"><span>Chassis Y</span><strong id="contact-chassis-value">--</strong></article>
-        <article class="metric metric--compact"><span>Road Y</span><strong id="contact-road-value">--</strong></article>
-        <article class="metric metric--compact"><span>Delta</span><strong id="contact-delta-value">--</strong></article>
-        <article class="metric metric--compact"><span>Wheels</span><strong id="contact-wheels-value">--</strong></article>
-        <article class="metric metric--compact"><span>Held</span><strong id="contact-held-value">live</strong></article>
-      </section>
+      ${contactBlock}
       <section class="lap-times" aria-label="Time-trial ghost">
         <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
         <article class="metric metric--compact"><span>Ghost best</span><strong id="ghost-best-value">--:--.--</strong></article>

@@ -197,12 +197,22 @@ test("courier rush is a playable delivery shift", async ({ page, browser }) => {
   writeFileSync(resolve(REPORT_DIR, "timer-fail-summary.png"), await page.screenshot({ fullPage: false }));
 
   await page.keyboard.press("KeyR");
+  // Reset is applied inside the frame loop, so a single immediate read races the
+  // next animation frame and intermittently observes the pre-reset `shiftOver`.
+  // Wait on the route's own proof that a reset landed after an ended shift, then
+  // assert the restored values.
+  await expect
+    .poll(async () => (await readEvidence(page)).gameplay.resetRestoresShift, { timeout: 15_000 })
+    .toBe(true);
   const reset = await readEvidence(page);
   expect(reset.state).toBe("awaitingPickup");
   expect(reset.strikes).toBe(0);
   expect(reset.deliveryIndex).toBe(0);
-  // The scaled clock keeps ticking after reset, so allow one tick of drift.
-  expect(reset.timerMs).toBeGreaterThan(55_000);
+  // The clock is scaled 8x in this scenario, so it drains ~8 ms of game time per
+  // real millisecond while the poll waits. The property under test is that reset
+  // refilled the window from 0, not sub-second timing, so the lower bound allows
+  // for scaled drift while still failing any reset that left the clock expired.
+  expect(reset.timerMs).toBeGreaterThan(45_000);
   expect(reset.timerMs).toBeLessThanOrEqual(60_000);
   expect(reset.gameplay.resetRestoresShift).toBe(true);
 

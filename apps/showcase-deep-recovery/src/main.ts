@@ -78,6 +78,7 @@ export interface DeepRecoveryEvidence {
   readonly sonarContacts: readonly { readonly id: string; readonly kind: string; readonly position: readonly [number, number, number]; readonly distance: number }[];
   readonly systems: readonly string[];
   readonly controls: readonly string[];
+  readonly physics: string;
   readonly claimBoundary: string;
   readonly primaryAssets: readonly string[];
   readonly primaryAssetHashes: readonly string[];
@@ -251,16 +252,21 @@ const sceneDef = scene()
   // windows and cyan sonar returns establish the focal hierarchy. The typed
   // submarine remains readable against this darker field while distant reefs
   // recede instead of flattening the whole frame into one teal wash.
-  .background(visualReviewCapture ? "#10424a" : "#082f3a")
+  // The live route previously ran a saturated #155968 fog under a #3f7d86
+  // inscatter, which dyed the submarine, the wreck and the reefs the same teal
+  // and destroyed the focal hierarchy the comment above describes. Depth cueing
+  // now comes from a darker, less saturated water column so warm sub surfaces and
+  // cyan sonar returns are the brightest things on screen.
+  .background("#04141c")
   .add(effects.fog({
     name: "deep recovery suspended-particle haze",
-    color: visualReviewCapture ? "#28666a" : "#155968",
-    density: visualReviewCapture ? 0.024 : 0.026,
-    intensity: visualReviewCapture ? 0.48 : 0.5
+    color: "#0a2e3a",
+    density: 0.02,
+    intensity: 0.42
   }))
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
-    intensity: 0.1,
+    intensity: 0.16,
     threshold: 0.72,
     maxIntensity: 0.42,
     antiBlowout: true,
@@ -268,13 +274,13 @@ const sceneDef = scene()
     softKnee: 0.5,
     shoulder: 0.6
   }))
-  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }))
+  .add(effects.colorGrade({ exposure: 1.04, contrast: 1.1, saturation: 1.06 }))
   .add(effects.antiAlias({ mode: "fxaa" }))
   .add(effects.volumetricFog({
     name: "water-column light inscatter",
     density: 0.12,
-    color: "#3f7d86",
-    intensity: 0.55
+    color: "#1d4b57",
+    intensity: 0.38
   }))
   .camera(
     camera.follow({
@@ -955,6 +961,7 @@ function updateEvidence(): void {
       "keyboard-touch-pause-reset-reduced-motion"
     ],
     controls: ["W/S thrust", "A/D turn", "Q/E dive/surface", "Shift sprint", "Space sonar", "F grapple/drop", "C repair at buoy", "P pause", "R reset", "touch movement/actions"],
+    physics: "none (deterministic route-local motion, collision, sonar, grapple and tow are authored, not solver-simulated)",
     claimBoundary: "createAuraApp root-safe prototype with deterministic route-local motion, collision, sonar, oxygen, breach, repair, grapple, tow, bank, and mission rules; no Rapier, Recast, fluid/acoustic simulation, reusable game kit, production-runtime-only, or engine-parity claim",
     primaryAssets: [
       "assets.deepRecoverySub",

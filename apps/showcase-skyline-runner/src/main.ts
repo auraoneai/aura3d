@@ -29,6 +29,13 @@ import {
 } from "./act-palette";
 import { SKYLINE_AUDIO_CUE_WISHLIST } from "./audio-cues";
 import {
+  createSkylineCharacterWorld,
+  type SkylineCharacterWorld,
+  type SkylineLiftPose,
+  type SkylineLiftSpec,
+  type SkylinePhysicalPlatform
+} from "./character-world";
+import {
   SKYLINE_BACKDROP_CLOSE_TRIANGLES,
   SKYLINE_BACKDROP_DISTANT_TRIANGLES,
   SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA,
@@ -482,6 +489,264 @@ const initialPlayerPose = platformerScene.toScenePlayer(state.player);
 let playerFacing = 1;
 
 /**
+ * Rapier owns the runner's transform.
+ *
+ * The collider world is built from `platforms` and `SKYLINE_MOVING_PLATFORMS` through
+ * `platformerScene.surfaceToSceneRect(...)` — the same transform the renderer uses to place
+ * the ledge art — so a collider cannot sit beside its own art. The character is a kinematic
+ * capsule moved by `PhysicsCharacterController.move()`, which means grounding, auto-step,
+ * slope limits, snap-to-ground and every contact come back from the solver.
+ *
+ * What the route keeps authoring is *intent*: the horizontal drive, the gravity-integrated
+ * vertical velocity, coyote time and jump buffering all still come out of `game.platformer`,
+ * handed over as this step's desired displacement (the capsule is kinematic, which is what
+ * Rapier's character controller requires, so a solver-side gravity would integrate the same
+ * acceleration twice). Checkpoints, collectibles, sentries, the finish line and the act gates
+ * stay authored rectangle/circle tests. They read the solver's position; none of them writes
+ * one. `advancePhysicalCharacter` is the only place a player position is published.
+ *
+ * Classification: **hybrid authored gameplay + Rapier collision**.
+ */
+const skylineCharacterWorld: SkylineCharacterWorld = createSkylineCharacterWorld({
+  scene: platformerScene,
+  platforms: platforms.map((surface): SkylinePhysicalPlatform => ({
+    id: surface.id,
+    x: surface.x,
+    y: surface.y,
+    width: surface.width,
+    height: surface.height
+  })),
+  lifts: SKYLINE_MOVING_PLATFORMS.map((platform): SkylineLiftSpec => ({
+    id: platform.id,
+    x: platform.x,
+    y: platform.y,
+    width: platform.width,
+    height: platform.height,
+    axis: platform.axis,
+    amplitude: platform.amplitude,
+    periodSeconds: platform.period,
+    phase: platform.phase ?? 0
+  })),
+  characterHeight: SKYLINE_CHARACTER_HEIGHT,
+  characterWidth: SKYLINE_CHARACTER_WIDTH,
+  authoredGravity: solvedMotion.gravity,
+  spawn: { x: state.player.x, y: state.player.y }
+});
+/**
+ * How far the authored analytic answer and the solver's answer are allowed to sit apart
+ * before the route treats it as a lost contact rather than ordinary quantization.
+ *
+ * The authored kit integrates on the frame's variable dt while the solver advances in fixed
+ * 1/60 ticks, so up to one tick of travel of disagreement is expected and honest; a whole
+ * body-height of disagreement means the two are resolving different worlds, and the solver
+ * has to be re-anchored to the rule that just teleported it.
+ */
+const SKYLINE_AUTHORITY_DESYNC_GAME_UNITS = SKYLINE_CHARACTER_HEIGHT * 2.5;
+const skylinePhysicsProof = {
+  /** Peak disagreement between the authored analytic answer and the solver's answer. */
+  maxAuthorityDriftGameUnits: 0,
+  lastAuthorityDriftGameUnits: 0,
+  /** Fixed solver ticks actually taken since mount. */
+  solverSteps: 0,
+  /** Frames where the solver, not the route, said "standing". */
+  solverGroundedFrames: 0,
+  solverAirborneFrames: 0,
+  /** Frames where the solver reported at least one blocked contact. */
+  solverCollisionFrames: 0,
+  /** Kit rule teleports the solver had to be re-placed for. */
+  respawnTeleportsApplied: 0,
+  /** Times the authored answer and the solver had diverged far enough to re-anchor. */
+  desyncRecoveries: 0,
+  /** Fixed ticks the runner was carried by a scripted lift. */
+  liftCarriedSteps: 0,
+  /** Jumps whose arc the solver resolved end to end, and the highest take-off clearance. */
+  airborneTransitions: 0,
+  solverLandings: 0,
+  lastJumpApexGameUnits: 0,
+  maxJumpApexGameUnits: 0,
+  /** Fastest downward clearance the solver absorbed, i.e. the hardest landing. */
+  maxDescentSpeedGameUnitsPerSecond: 0
+};
+/** The last velocity the solver actually measured. Never the request. */
+let skylineSolverVelocity = { x: 0, y: 0 };
+/** Height of the surface the runner was last standing on, game units. */
+let skylineLastSupportedY = state.player.y;
+let skylineWasAirborne = false;
+/** Clearance above `skylineLastSupportedY` reached during the airborne phase in progress. */
+let skylineCurrentArcApexGameUnits = 0;
+
+/**
+ * Publishes the solver's answer as the route's player state.
+ *
+ * Every read of `state.player` after this point — hero transform, camera follow, contact
+ * alignment, HUD, challenge scoring, evidence — is reading Rapier's position, which is what
+ * makes it the single transform authority. The authored kit's own position is left behind
+ * here on purpose: it stays the author of *intent* and of the rules that fire off it.
+ */
+function advancePhysicalCharacter(frameSeconds: number, authored: typeof state): typeof state {
+  const teleported = authored.events.some(
+    (event) => event.type === "respawn" || event.type === "reset"
+  );
+  const solverPosition = skylineCharacterWorld.position();
+  const driftFromRules = Math.hypot(
+    authored.player.x - solverPosition.x,
+    authored.player.y - solverPosition.y
+  );
+  const desynced = !teleported && !Number.isFinite(driftFromRules)
+    ? true
+    : !teleported && driftFromRules > SKYLINE_AUTHORITY_DESYNC_GAME_UNITS;
+  if (teleported || desynced) {
+    if (desynced) skylinePhysicsProof.desyncRecoveries += 1;
+    if (teleported) skylinePhysicsProof.respawnTeleportsApplied += 1;
+    // A full physical re-placement, not a mesh move: the queued kinematic step is dropped
+    // and the scripted lifts are re-placed at the route's own clock so the cards the player
+    // can see and the surfaces the solver supports stay on the same path.
+    skylineCharacterWorld.place({ x: authored.player.x, y: authored.player.y }, authored.time);
+    skylineSolverVelocity = { x: 0, y: 0 };
+    skylineLastSupportedY = authored.player.y;
+    skylineWasAirborne = false;
+  }
+  // The authored kit stops emitting intent once the course is completed; so does the solver,
+  // which keeps the runner parked exactly where the finish contact left them.
+  const intent = authored.status === "completed"
+    ? { vx: 0, vy: 0 }
+    : { vx: authored.player.vx, vy: authored.player.vy };
+  const steps = skylineCharacterWorld.advance(frameSeconds, intent);
+  const last = steps[steps.length - 1];
+  skylinePhysicsProof.solverSteps += steps.length;
+  if (last) {
+    const drift = Math.hypot(last.position.x - authored.player.x, last.position.y - authored.player.y);
+    skylinePhysicsProof.lastAuthorityDriftGameUnits = drift;
+    skylinePhysicsProof.maxAuthorityDriftGameUnits = Math.max(
+      skylinePhysicsProof.maxAuthorityDriftGameUnits,
+      drift
+    );
+    skylineSolverVelocity = last.velocity;
+    if (last.collisions > 0) skylinePhysicsProof.solverCollisionFrames += 1;
+    if (last.ridingLiftId) skylinePhysicsProof.liftCarriedSteps += 1;
+    skylinePhysicsProof.maxDescentSpeedGameUnitsPerSecond = Math.max(
+      skylinePhysicsProof.maxDescentSpeedGameUnitsPerSecond,
+      Math.max(0, -last.velocity.y)
+    );
+  }
+  const grounded = skylineCharacterWorld.grounded();
+  const pose = skylineCharacterWorld.position();
+  if (grounded) {
+    skylinePhysicsProof.solverGroundedFrames += 1;
+    if (skylineWasAirborne) {
+      // The arc just closed was resolved by the solver: it decided where the descent
+      // ended, and the runner is standing on a contact rather than a hand-placed y.
+      skylinePhysicsProof.solverLandings += 1;
+      skylinePhysicsProof.lastJumpApexGameUnits = skylineCurrentArcApexGameUnits;
+      skylinePhysicsProof.maxJumpApexGameUnits = Math.max(
+        skylinePhysicsProof.maxJumpApexGameUnits,
+        skylineCurrentArcApexGameUnits
+      );
+      skylineCurrentArcApexGameUnits = 0;
+      skylineWasAirborne = false;
+    }
+    skylineLastSupportedY = pose.y;
+  } else {
+    skylinePhysicsProof.solverAirborneFrames += 1;
+    if (!skylineWasAirborne) skylinePhysicsProof.airborneTransitions += 1;
+    skylineWasAirborne = true;
+    skylineCurrentArcApexGameUnits = Math.max(
+      skylineCurrentArcApexGameUnits,
+      pose.y - skylineLastSupportedY
+    );
+  }
+  return {
+    ...authored,
+    player: {
+      ...authored.player,
+      x: pose.x,
+      y: pose.y,
+      vx: skylineSolverVelocity.x,
+      vy: skylineSolverVelocity.y,
+      grounded,
+      ridingPlatformId: last?.ridingLiftId ?? undefined
+    }
+  };
+}
+
+/**
+ * Resets every piece of physical and run state a restart has to restore.
+ *
+ * Split out of the frame handler so `R` and any future restart button cannot leave one
+ * authority behind: the solver's capsule, the scripted lift clock, the intent velocity, the
+ * contact/apex counters and the rule-side timers all return to their start-of-run values.
+ */
+function resetSkylinePhysicalCharacter(): void {
+  skylineCharacterWorld.place({ x: state.player.x, y: state.player.y }, state.time);
+  skylineSolverVelocity = { x: 0, y: 0 };
+  skylineLastSupportedY = state.player.y;
+  skylineWasAirborne = false;
+  skylineCurrentArcApexGameUnits = 0;
+  skylinePhysicsProof.lastAuthorityDriftGameUnits = 0;
+  skylinePhysicsProof.lastJumpApexGameUnits = 0;
+  renderSkylineLiftCards();
+}
+
+/**
+ * The typed ice-ledge tile family, selected from the *collision* surface width.
+ *
+ * Extracted so a scripted lift and a certified ledge cannot pick different art for the
+ * same width: the sprite and its collider come from one function now.
+ */
+function skylineLedgeAsset(collisionWidth: number) {
+  return collisionWidth >= 1.25
+    ? assets.skylineIceLedgeLong
+    : collisionWidth >= 0.82
+      ? assets.skylineIceLedgeMedium
+      : assets.skylineIceLedgeCompact;
+}
+/** Authored pixel aspect of each tile in the family, so the fitted height matches the art. */
+function skylineLedgeAspect(collisionWidth: number) {
+  return collisionWidth >= 1.25
+    ? 1461 / 251
+    : collisionWidth >= 0.82
+      ? 1014 / 261
+      : 630 / 270;
+}
+
+/**
+ * The three scripted lift cards the runner can stand on.
+ *
+ * These surfaces existed only as an analytic support test before the solver world: the
+ * player could be held up by a card that was never drawn, which is precisely the
+ * visible-world / collision-world disagreement the collider set is meant to remove. Each
+ * card is placed from `skylineCharacterWorld.liftPoses()` — the same authored rect its
+ * collider is at — with the same fitted-surface alignment the certified ledges use.
+ */
+function skylineLiftCardMetrics(pose: SkylineLiftPose) {
+  const rect = platformerScene.surfaceToSceneRect(pose);
+  // Same overhang the certified ice ledges use, so a lift reads as the same tile family.
+  const targetWidth = rect.size[0] * 1.2;
+  return {
+    x: rect.center[0],
+    y: rect.center[1] + rect.size[1] / 2
+      - targetWidth / skylineLedgeAspect(rect.size[0]) * SKYLINE_LEDGE_SURFACE_ALIGNMENT,
+    targetWidth
+  };
+}
+const skylineLiftCardNodes = skylineCharacterWorld.liftPoses().map((pose, index) => {
+  const rect = platformerScene.surfaceToSceneRect(pose);
+  const metrics = skylineLiftCardMetrics(pose);
+  return model(skylineLedgeAsset(rect.size[0]), {
+    name: `Skyline scripted lift card ${index + 1}`,
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: metrics.targetWidth,
+    castShadow: false,
+    receiveShadow: false
+  })
+    .position(metrics.x, metrics.y, SKYLINE_LEDGE_PRESENTATION_DEPTH)
+    .runtime(game.runtimeNode(`skyline-lift-card-${pose.id}`, {
+      tags: ["typed-environment", "platform-presentation", "solver-collider-aligned", "moving-surface", "kinematic-collider-backed"]
+    }));
+});
+
+/**
  * Exact-review terrain presentation. These typed alpha-GLB islands are derived
  * from the certified platform rectangles: each sprite's width and snow-line Y
  * are computed from the real collision surface, while the legacy typed world
@@ -501,19 +766,9 @@ const skylineReviewLedgeNodes = platforms
         // gaps between adjacent surfaces and made the path read as a collection
         // of decorative stickers rather than one traversable route.
         const targetWidth = rect.size[0] * 1.2;
-        const asset = rect.size[0] >= 1.25
-          ? assets.skylineIceLedgeLong
-          : rect.size[0] >= 0.82
-            ? assets.skylineIceLedgeMedium
-            : assets.skylineIceLedgeCompact;
-        const aspect = rect.size[0] >= 1.25
-          ? 1461 / 251
-          : rect.size[0] >= 0.82
-            ? 1014 / 261
-            : 630 / 270;
-        const renderedHeight = targetWidth / aspect;
+        const renderedHeight = targetWidth / skylineLedgeAspect(rect.size[0]);
         const surfaceTop = rect.center[1] + rect.size[1] / 2;
-        return model(asset, {
+        return model(skylineLedgeAsset(rect.size[0]), {
           name: `Skyline certified ice ledge ${index + 1}`,
           role: "setDressing",
           scaleMode: "fit",
@@ -1676,6 +1931,7 @@ const app = createAuraApp("#app", {
     }).position(initialPlayerPose.position[0] - 0.35, initialPlayerPose.position[1] + 0.65, GAMEPLAY_ACTOR_DEPTH + 0.7))
     .addMany(skylineWorldNodes)
     .addMany(skylineReviewLedgeNodes)
+    .addMany(skylineLiftCardNodes)
     .addMany(skylineLedgeUnderlayNodes)
     .addMany(skylineCompositionNodes)
     .addMany(skylineSentryNodes)
@@ -1844,6 +2100,28 @@ const app = createAuraApp("#app", {
 });
 
 const player = app.nodes.require("platformer-player");
+const skylineLiftCardHandles = skylineCharacterWorld.liftPoses().map((pose) => ({
+  id: pose.id,
+  node: app.nodes.require(`skyline-lift-card-${pose.id}`)
+}));
+/**
+ * Draws every scripted lift card on the authored rect its own collider occupies this tick.
+ *
+ * Called from the evidence publish point, so the card the player sees and the surface
+ * `PhysicsCharacterController` resolves against are read from one clock and one formula.
+ * A lift card that drifted from its collider is the exact defect this route is meant to
+ * remove, and it would be invisible in a screenshot until someone stood on it.
+ */
+function renderSkylineLiftCards(): void {
+  const poses = skylineCharacterWorld.liftPoses();
+  for (let index = 0; index < skylineLiftCardHandles.length; index += 1) {
+    const pose = poses[index];
+    const card = skylineLiftCardHandles[index];
+    if (!pose || !card) continue;
+    const metrics = skylineLiftCardMetrics(pose);
+    card.node.setPosition(metrics.x, metrics.y, SKYLINE_LEDGE_PRESENTATION_DEPTH);
+  }
+}
 const skylineAccessoryHandles: RuntimeNodeHandleLike[] = [];
 const skylineLegacyWorldHandle = app.nodes.require("platformer-bound-level-one-world");
 // The certified world remains mounted as the collision/evidence owner, but its
@@ -2688,6 +2966,9 @@ function rootRendererIntegrationEvidence() {
 }
 
 function routeDiagnostics() {
+  const solverScenePosition = skylineCharacterWorld.scenePosition();
+  const renderedPose = platformerScene.toScenePlayer(state.player).position;
+  const solverShape = skylineCharacterWorld.evidence();
   return {
     ...app.diagnostics(),
     snapshot: {
@@ -2697,6 +2978,27 @@ function routeDiagnostics() {
       grounded: state.player.grounded,
       facing: playerFacing,
       facingYaw: playerYawForFacing(playerFacing)
+    },
+    /**
+     * Rapier's own capsule centre next to the pose the renderer is about to draw, plus
+     * the distance between them. A route with two transform authorities shows a gap here
+     * that grows; this route writes the hero from the solver's answer, so the residual is
+     * the presentation offset (feet origin to capsule centre) and nothing else.
+     */
+    physicalCharacter: {
+      backend: "rapier" as const,
+      solverScenePosition,
+      renderedScenePosition: renderedPose,
+      feetToCapsuleCentreScene: solverShape.capsuleHalfHeightScene + solverShape.capsuleRadiusScene,
+      solverToRenderedSceneDistance: Math.abs(
+        solverScenePosition[1] - renderedPose[1]
+        - (solverShape.capsuleHalfHeightScene + solverShape.capsuleRadiusScene)
+      ),
+      grounded: skylineCharacterWorld.grounded(),
+      solverSteps: skylinePhysicsProof.solverSteps,
+      lastAuthorityDriftGameUnits: skylinePhysicsProof.lastAuthorityDriftGameUnits,
+      finite: solverScenePosition.every((value) => Number.isFinite(value))
+        && renderedPose.every((value) => Number.isFinite(value))
     },
     sceneBinding: platformerScene.evidence,
     surfaceContact: platformerScene.contactPointForPlayer(state.player),
@@ -2770,11 +3072,52 @@ const mountedEvidence = {
   controls: { keyboard: ["ArrowLeft", "ArrowRight", "KeyA", "KeyD", "Space", "ArrowUp", "KeyW", "KeyR"] },
   systems: {
     input: "game.input",
-    simulation: "game.platformer",
+    // `game.platformer` authors intent (drive, gravity-integrated vertical velocity,
+    // coyote time, jump buffering, dash) and the level's rules; it no longer owns the
+    // transform. See `physicalCharacter` below for who does.
+    simulation: "game.platformer (authored intent + rules) -> physics.world:Rapier (character transform)",
+    characterTransform: "physics.world:Rapier PhysicsCharacterController (kinematic capsule)",
     geometry: "certified-platformer-surfaces",
     camera: "game.platformerCameraRig",
     // Motion is derived from the level's own geometry rather than hand-tuned.
     motion: "engine.solvePlatformerMotion"
+  },
+  /**
+   * Machine-readable physics identity, in the same `<surface>:Rapier(<what it owns>)`
+   * shape the sibling routes publish.
+   */
+  physics: "physics.world:Rapier(kinematic character capsule collider world: grounding, auto-step, slope limit, snap-to-ground, lift contact and landing are solver-resolved; authored game.platformer intent + level rules drive it, so this route is hybrid authored gameplay + Rapier collision, not a rigid-body character)",
+  /**
+   * What the solver owns, what the route still authors, and what was observed.
+   *
+   * Published as data rather than prose because the interesting failure this route had
+   * is invisible in a screenshot: a character whose feet were placed by hand, on ledges
+   * whose collision was described a second time somewhere else.
+   */
+  physicalCharacter: {
+    kind: "aura3d-rapier-physical-character" as const,
+    owns: [
+      "character position",
+      "grounded / support contact",
+      "how much of a requested move the world allowed",
+      "auto-step over certified ledge lips",
+      "snap-to-ground on descent",
+      "slope climb limit",
+      "respawn placement (position, velocity, queued step, lift clock)"
+    ],
+    authoredByRoute: [
+      "intent velocity from game.platformer (drive, gravity-integrated vertical, dash)",
+      "coyote time and jump buffering (rules that shape intent, not the transform)",
+      "checkpoints, collectibles, sentry hazards, finish line and act gates",
+      "scripted lift sine paths (kinematic bodies; the solver still decides support)"
+    ],
+    classification: "hybrid authored gameplay + Rapier collision",
+    solver: skylineCharacterWorld.evidence(),
+    observed: skylinePhysicsProof,
+    /** Expected apex for this level's own geometry, for comparison against the observed arc. */
+    expectedApexGameUnits: solvedMotion.apex,
+    transformAuthority: "rapier",
+    handIntegratedPlayerTransform: false
   },
   /**
    * Jump tuning against the level's own platform geometry.
@@ -2823,7 +3166,7 @@ const mountedEvidence = {
   cameraReadability: skylineCameraReadabilityEvidence(),
   motionPreferences: skylineMotionPreferenceEvidence(),
   visualLanguage: buildSkylineVisualLanguageEvidence(),
-  claimBoundary: "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
+  claimBoundary: "Bounded certified-surface platformer presentation: a Rapier kinematic character controller owns the runner's transform, grounding and landing, while jump tuning, coyote time, jump buffering, hazards, relays and scoring stay authored game.platformer rules. No rigid-body character, no automatic GLB-to-game, and no unsupported skinned-animation claim.",
   platformerStateStatus: state.status,
   /**
    * Player kinematic state, including grounded.
@@ -3019,6 +3362,7 @@ updatePlatformerHud();
 
 function publishPlatformerEvidence(): void {
   rememberAnimationState();
+  renderSkylineLiftCards();
   const scenePlayer = platformerScene.toScenePlayer(state.player);
   if (Math.abs(state.player.vx) > 0.01) playerFacing = state.player.vx >= 0 ? 1 : -1;
   const presentedPlayer = skylineDensityCaptureGameX === null
@@ -3136,6 +3480,9 @@ function publishPlatformerEvidence(): void {
             : idleScale);
   mountedEvidence.status = "running";
   mountedEvidence.platformerStateStatus = state.status;
+  // Refreshed rather than snapshotted at mount: `steps`, `droppedSteps` and the lift clock
+  // inside the solver evidence only mean anything as observations of a running world.
+  mountedEvidence.physicalCharacter.solver = skylineCharacterWorld.evidence();
   mountedEvidence.player = {
     x: state.player.x,
     y: state.player.y,
@@ -3274,6 +3621,10 @@ app.onFrame(({ dt }) => {
   }
   if (input.pressed("reset")) {
     state = platformerState.reset();
+    // A reset that only moved the mesh would leave the solver's queued kinematic step,
+    // the scripted lift clock and the measured intent velocity in flight, and the runner
+    // would be dragged back toward wherever the pre-reset movement was headed.
+    resetSkylinePhysicalCharacter();
     challengeEvidence = runnerChallenge.reset();
     emberVolleys.length = 0;
     spentEmberCharges = 0;
@@ -3373,13 +3724,17 @@ app.onFrame(({ dt }) => {
   for (let index = emberVolleys.length - 1; index >= 0; index -= 1) {
     if ((emberVolleys[index]?.life ?? 0) <= 0) emberVolleys.splice(index, 1);
   }
-  state = platformerState.step(step, {
+  const authoredState = platformerState.step(step, {
     moveX: input.axis("moveX"),
     jumpPressed: input.pressed("jump"),
     jumpHeld: input.held("jump"),
     dashPressed,
     clearHazardIds: clearedThisFrame
   });
+  // The authored kit produced this step's *intent* and fired its rules; the solver decides
+  // where that intent was allowed to go. Everything below reads the returned state, so the
+  // hero transform, the camera, the contact diagnostics and the evidence all follow Rapier.
+  state = advancePhysicalCharacter(step, authoredState);
   for (const event of state.events) {
     const [eventSceneX, eventSceneY] = platformerScene.toScenePoint({ x: event.x, y: event.y });
     const eventScenePoint = [eventSceneX, eventSceneY, GAMEPLAY_ACTOR_DEPTH] as const;

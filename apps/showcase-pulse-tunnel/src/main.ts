@@ -1803,6 +1803,7 @@ const evidence = {
     collision: "deterministic gate geometry with graze, pass, shield, invulnerability, fail, and reset rules",
     presentation: "release-validated typed spacecraft duel inside a release-probed typed reactor arena shell, with renderer-owned combat feedback and state-driven typed audio"
   },
+  physics: "none (deterministic rhythm lane and obstacle pattern; deliberately non-physical to preserve beat reproducibility)",
   claimBoundary: "Root-safe prototype with the original release-validated typed pulseRunnerCraft, pulseTerminalSentry, and pulseReactorEncounterWorld. Beat accuracy is claimed only when the measured clock stays within 80 ms; otherwise the same chart continues in deterministic pattern mode. Does not claim physical spacecraft simulation, production-renderer parity, HDR/IBL, native WebGPU, or a reusable rhythm kit.",
   player: { lane: 1, targetLane: 1, x: 0, y: 0, airborne: false, sliding: false, colliderTop: 0.72 },
   paused: false,

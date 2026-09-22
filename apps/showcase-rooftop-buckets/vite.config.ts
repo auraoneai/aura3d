@@ -1,14 +1,34 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
-import { resolve } from "node:path";
+import rootConfig from "../../vite.config";
+
+const appDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  plugins: rootConfig.plugins ?? [],
+  resolve: rootConfig.resolve,
+  optimizeDeps: rootConfig.optimizeDeps,
+  // Typed assets resolve as /aura-assets/<name>.<hash>.<ext>. Without the shared
+  // public dir a production bundle emits no copy of them, the request falls through
+  // to the SPA index.html, and the GLTF parse dies on `<!DOCTYPE`.
+  publicDir: path.resolve(appDir, "../../public"),
   server: {
+    host: "127.0.0.1",
     port: 5189,
-    strictPort: true
+    strictPort: false
   },
-  resolve: {
-    alias: {
-      "@aura3d/engine": resolve(__dirname, "../../packages/engine/src/index.ts")
+  preview: {
+    host: "127.0.0.1",
+    port: 4189,
+    strictPort: false
+  },
+  build: {
+    target: "es2022",
+    outDir: "dist",
+    emptyOutDir: true,
+    rollupOptions: {
+      input: path.resolve(appDir, "index.html")
     }
   }
 });

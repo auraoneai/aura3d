@@ -62,7 +62,13 @@ describe("Rooftop Buckets - five heat presentation and flight contract", () => {
     expect(testHoopCollision(now, before, velocity, hoop, 0.12, true).scored).toBe(true);
   });
 
-  it("pins prediction to the exact actual no-contact integrator", () => {
+  /**
+   * The guide must be the flight, not a decorative curve.
+   *
+   * Both sides run the same Rapier solver from the same body state, so exact equality is
+   * the right bar and is kept. A mismatched preview diverges by ~0.125 m over these frames.
+   */
+  it("pins prediction to the actual solver-driven no-contact flight", () => {
     const spot = COURT_SPOTS[1]!;
     const hoop = initialHoopState(1);
     const predicted = predictFirstFlight(spot, spot.sweetPower, 0, hoop, 36, 1);

@@ -177,10 +177,13 @@ h1 { margin: 0; color: #fff; font-size: 22px; line-height: 1; letter-spacing: -0
   position: absolute;
   right: 26px;
   bottom: 24px;
-  display: flex;
+  /* Hidden in normal play; the checksums it shows are evidence, not HUD.
+     Revealed by ?debug=1 via html[data-evidence-mode]. */
+  display: none;
   gap: 6px;
   padding: 7px;
 }
+html[data-evidence-mode] .hud-panel--evidence { display: flex; }
 .hud-panel--evidence code { color: #9eeeb3; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .touch-root { display: none; }
@@ -419,9 +422,13 @@ html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece span {
 }
 
 @media (max-width: 620px) {
-  /* The control dock owns real layout space; it never covers the cabinet. */
-  .stage { bottom: 126px; }
-  .overlay-shell { bottom: 126px; }
+  /* The control dock owns real layout space; it never covers the cabinet.
+     Its height is declared once and consumed by the dock, the stage and the
+     overlay shell, because those three drifting apart is what previously
+     squeezed the session row to 40 px and made Pause/Reset/Replay unhittable. */
+  :root { --bf-touch-bar: 135px; }
+  .stage { bottom: var(--bf-touch-bar); }
+  .overlay-shell { bottom: var(--bf-touch-bar); }
 
   .hud-panel--status {
     top: 8px;
@@ -475,9 +482,9 @@ html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece span {
     z-index: 4;
     display: grid;
     grid-template-columns: 1fr 1.25fr;
-    grid-template-rows: 72px 40px;
+    grid-template-rows: 72px 44px;
     gap: 5px 8px;
-    height: 126px;
+    height: var(--bf-touch-bar);
     padding: 7px 8px max(7px, env(safe-area-inset-bottom));
     border-top: 1px solid rgba(197, 255, 214, 0.16);
     background: linear-gradient(180deg, rgba(8, 4, 13, 0.96), rgba(3, 7, 7, 0.99));
@@ -487,7 +494,10 @@ html[data-review-capture="blockfall"] .hud-panel--preview .mini-piece span {
   .touch-cluster--left { grid-template-columns: repeat(3, 1fr); }
   .touch-cluster--right { grid-template-columns: repeat(4, 1fr); }
   .touch-cluster--session { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-  .touch-root button { min-height: 0; padding: 3px; border-radius: 8px; font-size: 9px; }
+  /* `min-height: 0` here cancelled the 42 px desktop floor so seven buttons
+     would fit, leaving the session row 40 px tall. Keep the compact padding
+     and font but restore a real thumb floor. */
+  .touch-root button { min-height: 44px; padding: 3px; border-radius: 8px; font-size: 9px; }
 }
 
 @media (max-width: 370px) {

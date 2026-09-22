@@ -12,10 +12,16 @@ let bundle = Buffer.alloc(0);
 let bundleRequests = 0;
 
 test.beforeAll(async () => {
+  // `@aura3d/physics-rapier` is an ESM module that performs its one-time Rapier WASM
+  // initialization with a top-level await (see packages/physics-rapier/package.json,
+  // `"type": "module"`, and `createRapierPhysicsSync`, which backs the synchronous
+  // `new PhysicsWorld()` ergonomics in `@aura3d/physics`). Top-level await is only
+  // representable in a module, so an `iife` bundle cannot express this package at all —
+  // esbuild rejects it outright. Bundle as `esm` and load it with `<script type="module">`.
   const output = await build({
     entryPoints: [resolve("tests/fixtures/optional-rapier-browser.ts")],
     bundle: true,
-    format: "iife",
+    format: "esm",
     platform: "browser",
     target: "es2022",
     write: false,
@@ -30,7 +36,9 @@ test.beforeAll(async () => {
       response.end(bundle); return;
     }
     response.writeHead(200, { "content-type": "text/html", "cache-control": "no-store" });
-    response.end("<!doctype html><script>window.__auraRapierLoadStart=performance.now()</script><script src='/bundle.js'></script>");
+    // The bundle is a module, so it must be loaded as one; the top-level await that
+    // performs Rapier's WASM initialization is only legal inside a module script.
+    response.end("<!doctype html><script>window.__auraRapierLoadStart=performance.now()</script><script type=\"module\" src='/bundle.js'></script>");
   });
   await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
   const address = server.address();
@@ -39,7 +47,10 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await new Promise<void>((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose()));
+  // `beforeAll` can fail before the server is bound (a build error, for example). Closing
+  // an undefined server throws a second, unrelated TypeError that buries that real cause;
+  // this mirrors the guard in tests/browser/optional-recast-navigation.spec.ts.
+  if (server) await new Promise<void>((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose()));
 });
 
 test("optional Rapier package loads, caches, steps, queries, controls, and disposes in Chromium", async ({ browser }) => {

@@ -32,8 +32,6 @@ export const BALL_MASS = 0.08;
 export const SLOPE_ANGLE = 0.113;
 /** Downhill acceleration from slope: g * sin(angle) ≈ 9.81 * 0.113 ≈ 1.11 m/s² */
 export const SLOPE_ACCELERATION = 9.81 * Math.sin(SLOPE_ANGLE);
-/** Cross-slope damping to keep the ball from drifting sideways unrealistically. */
-export const SLOPE_CROSS_DAMPING = 0.98;
 /**
  * Flipper pivots at |x| = 0.85: the resting tips leave a 0.32 m surface gap
  * (a 0.28 m ball falls through to the drain), while the raised tips close to
@@ -118,6 +116,21 @@ export interface FlipperRig {
   yaw(): number;
 }
 
+/**
+ * Rapier writes `body.rotation` back directly, bypassing the descriptor's
+ * quaternion validation. A non-finite component here would propagate into a
+ * node transform and silently drop the mesh from the frame, so the pose reader
+ * fails closed to identity rather than handing the renderer a NaN.
+ */
+function readBallRotation(body: SimBody): readonly [number, number, number, number] {
+  const q = body.rotation;
+  const out = [q[0], q[1], q[2], q[3]] as number[];
+  if (out.some((value) => !Number.isFinite(value))) return [0, 0, 0, 1];
+  const length = Math.hypot(out[0], out[1], out[2], out[3]);
+  if (!(length > 1e-6)) return [0, 0, 0, 1];
+  return [out[0] / length, out[1] / length, out[2] / length, out[3] / length];
+}
+
 export function eulerToQuat(e: Euler): readonly [number, number, number, number] {
   const cx = Math.cos(e.x / 2);
   const sx = Math.sin(e.x / 2);
@@ -191,6 +204,19 @@ export interface TableSimulation {
   poseHash(): string;
   activity(): { movingBodies: number; settled: boolean };
   consumeImpacts(): readonly ImpactEvent[];
+  /**
+   * Per-ball position + velocity + sleep state. Reviewers ask for proof that a
+   * fast ball never crosses a wall in one step, which needs the solver's own
+   * transform rather than a re-derived render pose.
+   */
+  kinematics(): readonly {
+    index: number;
+    state: string;
+    position: readonly [number, number, number];
+    velocity: readonly [number, number, number];
+    speed: number;
+    sleeping: boolean;
+  }[];
   consumeSensorEvents(): readonly SensorEvent[];
   parkAll(): void;
   /** Test hook: raw body for a live ball, for deterministic sensor/kick probes. */
@@ -308,9 +334,21 @@ export function createTableSimulation(): TableSimulation {
   addStaticBox("lane-inner-wall", [0.09, 0.32, 3.3], [2.2, 0.32, 0.7], { visible: false, restitution: 0.42 });
   // Habitrail deflector INSIDE the lane top: a ball arriving at full speed hits
   // this diagonal and is guided left into the playfield instead of rebounding
-  // off the top wall back down the lane. Long enough to embed both ends deep
-  // into the side walls so no gap lets the ball squeeze past.
-  addStaticBox("lane-guide", [0.45, 0.14, 0.08], [2.44, 0.3, -3.05], { rotationY: 2.11, visible: false, restitution: 0.6 });
+  // off the top wall back down the lane. Its upper end is embedded in the
+  // corner where wall-right meets wall-top, so nothing can squeeze past.
+  //
+  // The plate is laid from that corner down-left to a free mouth at
+  // (1.45, -2.15) — deliberately left of lane-inner-wall's outer face (x=2.29)
+  // and past its end (z=-2.6). That orientation is the whole point: the plate's
+  // long axis runs (-0.54, +0.84) in (x, z), so the +Z slope force that presses
+  // a stalled ball into the wall's end-cap corner instead resolves along the
+  // plate toward -X. A ball that arrives slowly, or is nudged back down here,
+  // slides off the mouth into the open playfield rather than coming to rest on
+  // the corner. The previous, shorter plate stopped above the wall end and left
+  // a bare end-cap facing straight into the downhill force: the served ball
+  // wedged on that corner at (2.20, -2.74) with zero velocity and the table was
+  // dead from the first serve.
+  addStaticBox("lane-guide", [0.75, 0.2, 0.12], [2.35, 0.26, -3.15], { rotationY: -0.785, visible: false, restitution: 0.6 });
   // Lane arrow visual provided by GLB mechanisms model
 
   // ---- bumpers (pop bumpers: restitution + authored kick impulse) ------------
@@ -487,16 +525,25 @@ export function createTableSimulation(): TableSimulation {
   const left = makeFlipper("left");
   const right = makeFlipper("right");
 
-  // Ball visuals are pre-registered (parked below the cabinet) so the mount-
-  // time scene graph contains a node for every possible live ball; a live ball
-  // is posed onto its node each frame, a parked one never renders in view.
+  // Ball visuals are pre-registered so the mount-time scene graph contains a
+  // node for every possible live ball; a live ball is posed onto its node each
+  // frame and an unused node is hidden by the renderer's pose sync.
+  //
+  // They are mounted ON the playfield, not stowed far below the cabinet. A GLB
+  // instance keeps the world-space bounds it computed at load, so a node
+  // authored at y = -5 stayed outside the camera frustum for the rest of the
+  // session no matter where the solver later put it: the hero ball never drew
+  // at any size or position. Parking is now a visibility concern, and the
+  // physics bodies are still teleported below the table when drained.
+  const BALL_MOUNT_POSITIONS: readonly (readonly [number, number, number])[] =
+    Array.from({ length: 8 }, (_, index) => [-1.9 + (index % 4) * 1.27, BALL_RADIUS, 3.62 + Math.floor(index / 4) * 0.32] as [number, number, number]);
   for (let index = 0; index < 8; index += 1) {
     trackVisual({
       name: `ball-${index}`,
       source: "model",
       typedAsset: "vaultBreakersBall",
       targetMaxDimension: BALL_RADIUS * 2,
-      position: [0, -5 - index * 0.4, 0],
+      position: BALL_MOUNT_POSITIONS[index]!,
       rotation: { x: 0, y: 0, z: 0 },
       dynamic: true
     }, true);
@@ -635,10 +682,15 @@ export function createTableSimulation(): TableSimulation {
       const dt = 1 / 60;
       for (const entry of balls) {
         if (entry.state === "drained") continue;
-        if (!entry.body.sleeping) {
-          const v = entry.body.velocity;
-          entry.body.setVelocity([v[0] * SLOPE_CROSS_DAMPING, v[1], v[2] + SLOPE_ACCELERATION * dt]);
-        }
+        // A ball is never genuinely at rest on a tilted playfield. Rapier's
+        // canSleep is world-global here, so an in-play ball that stopped would
+        // sleep mid-table and the authored slope (a velocity edit a sleeping
+        // body ignores) could never move it again: the table deadlocked with a
+        // live, asleep ball and a score that could never change. Keeping in-play
+        // balls awake makes "stopped ball rolls downhill and drains" true.
+        if (entry.body.sleeping) entry.body.wake();
+        const v = entry.body.velocity;
+        entry.body.setVelocity([v[0], v[1], v[2] + SLOPE_ACCELERATION * dt]);
       }
       const events = world.step(1 / 60);
       for (const event of events) {
@@ -747,6 +799,9 @@ export function createTableSimulation(): TableSimulation {
       out.push({
         name: `ball-${entry.index}`,
         position: [...entry.body.position] as [number, number, number],
+        // Rapier owns the ball's orientation. Reporting identity here made the
+        // renderer spin a solver-owned body by fiat, so a rolling ball never
+        // visibly rolled; the solver's quaternion is the only authority.
         rotation: [0, 0, 0, 1]
       });
     }
@@ -776,6 +831,19 @@ export function createTableSimulation(): TableSimulation {
     }
     return { movingBodies, settled: movingBodies === 0 };
   };
+
+  const kinematics = () => balls.map((entry) => {
+    const velocity = entry.body.velocity;
+    return {
+      index: entry.index,
+      state: entry.state,
+      position: [...entry.body.position] as [number, number, number],
+      rotation: readBallRotation(entry.body),
+      velocity: [...velocity] as [number, number, number],
+      speed: Math.hypot(velocity[0], velocity[1], velocity[2]),
+      sleeping: entry.body.sleeping
+    };
+  });
 
   const trackedPoseNames = (): string[] => {
     const names = ["flipper-left", "flipper-right"];
@@ -820,6 +888,7 @@ export function createTableSimulation(): TableSimulation {
     poses,
     poseHash,
     activity,
+    kinematics,
     consumeImpacts(): readonly ImpactEvent[] {
       const out = pendingImpacts;
       pendingImpacts = [];

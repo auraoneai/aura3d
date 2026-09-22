@@ -224,13 +224,21 @@ const FLOOR_1: FloorLayout = {
   guards: [
     {
       id: "guard-1",
-      x: -7.5,
-      z: -5.5,
+      // Re-phased, not re-shaped: this is the same four-corner perimeter, the same
+      // route length and the same speed, entered at the corner where the guard's
+      // back is to the foyer. The previous entry point put guard-1 on a leg that
+      // walked straight toward `thiefSpawn`, so the infiltrator was inside its cone
+      // within about two seconds of the round starting — the review frames showed
+      // "LIVE CONTACT // GUARD-1 HAS LOS" on the first painted frame and the probe
+      // reached CAUGHT before it had taken a single evasive action. A stealth round
+      // needs an opening; the sweep still arrives, one leg later.
+      x: -9.0,
+      z: 5.5,
       route: [
-        { x: -7.5, z: -5.5 },
-        { x: -7.5, z: 5.5 },
         { x: -9.0, z: 5.5 },
-        { x: -9.0, z: -5.5 }
+        { x: -9.0, z: -5.5 },
+        { x: -7.5, z: -5.5 },
+        { x: -7.5, z: 5.5 }
       ],
       baseSpeed: 1.5
     },

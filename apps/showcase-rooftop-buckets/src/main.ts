@@ -31,6 +31,7 @@ import {
   calculateLaunchVelocity,
   predictFirstFlight,
   stepBall,
+  readHoopBodyCount,
   type BallState
 } from "./shot";
 import {
@@ -96,6 +97,7 @@ export interface RooftopBucketsEvidence {
   contestAimOffset: number;
   sensorEventCount: number;
   physicsBodyCount: number;
+  physicsSolver: string;
   simulationOwner: string;
   predictionPointCount: number;
   primaryAssets: readonly string[];
@@ -1594,14 +1596,15 @@ function publishEvidence(): RooftopBucketsEvidence {
     defenderClips: DEFENDER_CLIPS,
     contestAimOffset: hoopState.contestAimOffset,
     sensorEventCount,
-    physicsBodyCount: 0,
-    simulationOwner: "route-local authored deterministic ballistic integrator; composed rim/board/defender regions are not Rapier bodies",
+    physicsBodyCount: readHoopBodyCount(),
+    simulationOwner: "canonical Rapier-backed world in hoop-sim.ts: dynamic ball body, static rim/backboard/bracket/floor colliders, downward-pass score sensor, kinematic defender",
+    physicsSolver: "rapier",
     predictionPointCount: AIM_POINT_COUNT,
     primaryAssets: ["assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
     presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender", "assets.rooftopShooterMeshyV1"],
     systems: ROUTE_SYSTEMS,
     controls: ROUTE_CONTROLS,
-    claimBoundary: "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",
+    claimBoundary: "Root-safe prototype on the canonical Rapier-backed public physics surface: dynamic basketball body, compound static rim/backboard/bracket/floor colliders, downward-pass scoring sensor, and adaptive-substep CCD, with five-heat authored scoring. Authored: the solved launch vector and the kinematic defender pose. No reusable sports, physics, rim, or defender kit claimed.",
     renderer: { drawCalls: diagnostics.drawCalls, renderSize: diagnostics.renderSize, backend: diagnostics.renderer?.runtime.backend ?? "unknown" },
     audioCues: [...audio.audioCuesHeard],
     ballPos: { x: ballState.x, y: ballState.y, z: ballState.z },

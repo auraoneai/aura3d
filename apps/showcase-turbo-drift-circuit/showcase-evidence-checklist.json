@@ -13897,9 +13897,6 @@
   },
   "blockers": [
     "evidence:gameplay-proof:racing:visual-review-verdict-not-pass:needs-work",
-    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch",
-    "evidence:release-asset-probe:showcaseCc0FormulaRaceCar:missing-file",
-    "evidence:release-asset-probe:showcaseCcByFormulaOpponent:missing-file",
-    "evidence:release-asset-probe:turboFormulaCircuit:missing-file"
+    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch"
   ]
 }

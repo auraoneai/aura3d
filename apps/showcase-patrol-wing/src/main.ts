@@ -454,8 +454,12 @@ const chaseCameraSpec = camera.follow({
 type MutableCameraSpec = { offset?: readonly [number, number, number]; targetOffset?: readonly [number, number, number]; fov?: number };
 
 function buildScene(): ReturnType<typeof scene> {
-  const atmosphereMaterial = material.glass({ name: "review flight atmosphere", color: "#6ac8ff", opacity: 0.14, transmission: 0.08, roughness: 0.3 });
-  const atmosphereAccent = material.emissive({ name: "review flight atmosphere accent", color: "#7ef8ff", emissive: "#3b82f6", emissiveIntensity: 0.5, opacity: 0.52 });
+  // Same compositing constraint as the sky ribbons: sub-1 `opacity` on these
+  // emissive/glass haze volumes rendered as dark shells over the horizon instead
+  // of atmosphere, so the preflight frame carried black wedges. The haze is now
+  // opaque and reads as layered colour bands; the accent slivers are dropped
+  // entirely because at 0.08 unit scale they were invisible except as artifacts.
+  const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
   const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
     const side = index % 2 === 0 ? -1 : 1;
     const lane = Math.floor(index / 2);
@@ -464,19 +468,23 @@ function buildScene(): ReturnType<typeof scene> {
     return [
       primitives.sphere({ name: `flight haze bank ${index}`, material: atmosphereMaterial })
         .position(x, 5.2 + (lane % 2) * 1.2, z)
-        .scale([3.8 + (lane % 2) * 0.8, 0.42 + (lane % 3) * 0.15, 1.15]),
-      primitives.box({ name: `flight horizon accent ${index}`, material: atmosphereAccent })
-        .position(x - side * 2.2, 3.8 + lane * 0.28, z + 0.15)
-        .scale([0.08, 0.08, 1.25])
+        .scale([3.8 + (lane % 2) * 0.8, 0.42 + (lane % 3) * 0.15, 1.15])
     ];
   }).flat();
   // Layered, renderer-owned sky ribbons replace the flat single-color field
   // with a readable arcade-flight horizon. They are shallow 3D geometry behind
   // the route, never a DOM or screenshot overlay.
+  //
+  // These must stay opaque. Measured on the preflight frame, the previous
+  // 0.26-0.46 `opacity` values did not produce soft haze: an emissive material
+  // with alpha below 1 blends against the sky *clear* rather than scene
+  // geometry in this renderer, so each ribbon composited as a solid black slab
+  // and hung a black wedge off the top-left and top-right of the horizon. The
+  // softness now comes from three stacked tones of decreasing emissive drive.
   const skyRibbonMaterials = [
-    material.emissive({ name: "sky ribbon cobalt", color: "#2148ad", emissive: "#102c88", emissiveIntensity: 0.32, opacity: 0.46 }),
-    material.emissive({ name: "sky ribbon azure", color: "#2c74d6", emissive: "#1f6fe2", emissiveIntensity: 0.28, opacity: 0.38 }),
-    material.emissive({ name: "sky ribbon cyan", color: "#29c6df", emissive: "#17b8d6", emissiveIntensity: 0.26, opacity: 0.26 })
+    material.emissive({ name: "sky ribbon cobalt", color: "#2f5fb8", emissive: "#1d4ed8", emissiveIntensity: 0.55 }),
+    material.emissive({ name: "sky ribbon azure", color: "#3f8ae0", emissive: "#2563eb", emissiveIntensity: 0.45 }),
+    material.emissive({ name: "sky ribbon cyan", color: "#5fd2e8", emissive: "#22d3ee", emissiveIntensity: 0.5 })
   ];
   const skyRibbons = [
     [-8, 15.5, -42, 19, 0.72, 3.2, -0.14, 0],
@@ -495,8 +503,8 @@ function buildScene(): ReturnType<typeof scene> {
   // flight corridor. They give the chase lens the layered, high-energy read
   // of an arcade flight scene without claiming particle or propulsion effects.
   const streakMaterials = [
-    material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 0.56, opacity: 0.58 }),
-    material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.42, opacity: 0.44 })
+    material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 1.15 }),
+    material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.9 })
   ];
   const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
     const lane = index % 8;
@@ -974,6 +982,9 @@ function publishEvidence(): void {
       sensors: "Rapier-backed route-local ring, pad, and return-fire sensor proxies",
       ghost: "route-local visual input replay with no collision or scoring effect"
     },
+    // Machine-readable physics identity, deliberately scoped to what Rapier actually owns
+    // here: sensor proxies only. Flight remains authored arcade motion.
+    physics: "physics.world:Rapier(ring, pad, and return-fire sensor proxies only; no flight or aerodynamic simulation)",
     claimBoundary: "Root-safe Aura3D prototype: authored arcade flight only, with no aerodynamic or reusable flight-kit claim; Rapier owns only ring, pad, and return-fire sensor proxies; drone pursuit and ghost replay are route-local.",
     mountedAtEpochMs: Date.now()
   };

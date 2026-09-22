@@ -209,21 +209,21 @@ function reviewCorridorNodes(): AuraNodeInput[] {
       size: [1, 1, 1],
       transforms: ribGlowTransforms,
       colors: ribGlowColors,
-      material: material.emissive({ name: "courier review rib glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 1.32 })
+      material: material.emissive({ name: "courier review rib glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
     }),
     instances.box({
       name: "courier review practical lights",
       size: [1, 1, 1],
       transforms: practicalTransforms,
       colors: practicalColors,
-      material: material.emissive({ name: "courier review practical", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 1.05 })
+      material: material.emissive({ name: "courier review practical", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
     }),
     instances.box({
       name: "courier review lane dashes",
       size: [1, 1, 1],
       transforms: laneTransforms,
       colors: laneColors,
-      material: material.emissive({ name: "courier review lane paint", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 1.08, opacity: 0.9 })
+      material: material.emissive({ name: "courier review lane paint", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 0.85, opacity: 0.9 })
     }),
     instances.box({
       name: "courier review converging rails",
@@ -233,7 +233,7 @@ function reviewCorridorNodes(): AuraNodeInput[] {
         { position: [3.82, 0.055, -2], scale: [0.055, 0.028, 34] }
       ],
       colors: ["#8af7ff", "#ff9aaa"],
-      material: material.emissive({ name: "courier review rail glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 1.65 })
+      material: material.emissive({ name: "courier review rail glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
     }),
     instances.box({
       name: "courier review road reflections",
@@ -263,8 +263,8 @@ function skylineDressingNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [];
   const towerMaterial = material.pbr({ name: "courier skyline concrete", color: "#27526a", roughness: 0.62, metallic: 0.2 });
   const glassMaterial = material.pbr({ name: "courier skyline blue glass", color: "#347b92", roughness: 0.18, metallic: 0.48, clearcoat: 0.46, clearcoatRoughness: 0.14 });
-  const cyanWindow = material.emissive({ name: "courier skyline cyan windows", color: "#8af7ff", emissive: "#2dd4bf", emissiveIntensity: 1.85, opacity: 0.9 });
-  const coralWindow = material.emissive({ name: "courier skyline coral windows", color: "#ffb199", emissive: "#fb7185", emissiveIntensity: 1.55, opacity: 0.86 });
+  const cyanWindow = material.emissive({ name: "courier skyline cyan windows", color: "#8af7ff", emissive: "#2dd4bf", emissiveIntensity: 0.85, opacity: 0.9 });
+  const coralWindow = material.emissive({ name: "courier skyline coral windows", color: "#ffb199", emissive: "#fb7185", emissiveIntensity: 0.85, opacity: 0.86 });
   const towers = [
     { x: -11, z: -10, width: 3.5, depth: 3.1, height: 8.4, glass: true },
     { x: 11, z: -10, width: 3.1, depth: 3.4, height: 6.6, glass: false },
@@ -302,8 +302,8 @@ function skylineDressingNodes(): AuraNodeInput[] {
       );
     }
   }
-  const signMaterial = material.emissive({ name: "courier dispatch signage", color: "#f5d0fe", emissive: "#e879f9", emissiveIntensity: 1.7 });
-  const aquaSignMaterial = material.emissive({ name: "courier aqua signage", color: "#cffafe", emissive: "#22d3ee", emissiveIntensity: 1.8 });
+  const signMaterial = material.emissive({ name: "courier dispatch signage", color: "#f5d0fe", emissive: "#e879f9", emissiveIntensity: 0.85 });
+  const aquaSignMaterial = material.emissive({ name: "courier aqua signage", color: "#cffafe", emissive: "#22d3ee", emissiveIntensity: 0.85 });
   const signPostMaterial = material.pbr({ name: "courier sign post", color: "#101c2c", roughness: 0.6, metallic: 0.4 });
   nodes.push(
     primitives.box({ name: "courier dispatch billboard", material: signMaterial }).position(-7.3, 4.1, -14.8).rotate(0, 0.08, 0).scale([1.45, 0.78, 0.05]),
@@ -324,8 +324,8 @@ function skylineDressingNodes(): AuraNodeInput[] {
   // the existing streets; the delivery route and strike colliders remain
   // entirely driven by STREET_SEGMENTS and buildPropColliders().
   const portalBody = material.pbr({ name: "courier portal body", color: "#172f49", roughness: 0.42, metallic: 0.64 });
-  const portalCyan = material.emissive({ name: "courier portal cyan", color: "#75ecff", emissive: "#22d3ee", emissiveIntensity: 1.28 });
-  const portalCoral = material.emissive({ name: "courier portal coral", color: "#ff9ca6", emissive: "#fb7185", emissiveIntensity: 1.12 });
+  const portalCyan = material.emissive({ name: "courier portal cyan", color: "#75ecff", emissive: "#22d3ee", emissiveIntensity: 0.85 });
+  const portalCoral = material.emissive({ name: "courier portal coral", color: "#ff9ca6", emissive: "#fb7185", emissiveIntensity: 0.85 });
   for (let portal = 0; portal < 4; portal += 1) {
     const z = 13.2 - portal * 7.1;
     nodes.push(
@@ -337,7 +337,7 @@ function skylineDressingNodes(): AuraNodeInput[] {
     );
   }
 
-  const curbCyan = material.emissive({ name: "courier curb cyan", color: "#8af7ff", emissive: "#2dd4bf", emissiveIntensity: 0.92, opacity: 0.86 });
+  const curbCyan = material.emissive({ name: "courier curb cyan", color: "#8af7ff", emissive: "#2dd4bf", emissiveIntensity: 0.85, opacity: 0.86 });
   const curbCoral = material.emissive({ name: "courier curb coral", color: "#ffafba", emissive: "#fb7185", emissiveIntensity: 0.8, opacity: 0.82 });
   // Instanced curb markers: identical positions, scales, and materials to the
   // former per-marker primitives, in one draw per side.
@@ -357,25 +357,35 @@ function skylineDressingNodes(): AuraNodeInput[] {
   // tunnel language that the typed van needs in a still pressure frame. They
   // are static non-colliding set dressing around the street; no DOM overlay,
   // vehicle state, or delivery rule is represented by these marks.
-  const rainCool = material.emissive({ name: "courier rain cool", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 1.35, opacity: 0.58 });
-  const rainWarm = material.emissive({ name: "courier rain warm", color: "#fecdd3", emissive: "#fb7185", emissiveIntensity: 1.18, opacity: 0.5 });
+  //
+  // These used to be 0.7-1.0 m emissive bars tilted off-vertical and hung at
+  // 1.8-4.0 m in mid-air with no attachment to any building. Under the route's
+  // bloom they rendered as a scatter of glowing pink/cyan rectangles floating
+  // in the sky - the single most "unfinished debug scene" thing in the frame.
+  // They are now true precipitation: hairline, near-white, strictly vertical,
+  // falling through the street volume the player actually drives through, and
+  // dim enough that bloom leaves them as weather instead of turning them into
+  // signage. Node count is unchanged so route geometry evidence is stable.
+  const rainCool = material.emissive({ name: "courier rain cool", color: "#cfeef7", emissive: "#8fd3e8", emissiveIntensity: 0.2, opacity: 0.3 });
+  const rainWarm = material.emissive({ name: "courier rain warm", color: "#f7dfe3", emissive: "#e8a0ac", emissiveIntensity: 0.16, opacity: 0.26 });
   const rainNodes: AuraNodeInput[] = [];
   for (let streak = 0; streak < 30; streak += 1) {
     const lane = streak % 10;
     const band = Math.floor(streak / 10);
     const x = -7.2 + lane * 1.6 + (band % 2) * 0.35;
     const z = 15.6 - lane * 3.25 - band * 1.8;
-    const y = 1.8 + (lane % 4) * 0.72;
-    const length = 0.7 + (lane % 3) * 0.3;
+    // Anchor the fall inside the street canyon rather than floating it at a
+    // random height, and drop the tilt so nothing reads as a leaning bar.
+    const length = 0.34 + (lane % 3) * 0.1;
+    const y = 1.15 + ((streak * 0.37) % 1) * 2.3;
     rainNodes.push(
       primitives.box({ name: `courier rain trace ${streak + 1}`, material: streak % 4 === 0 ? rainWarm : rainCool })
         .position(x, y, z)
-        .rotate(0.08, 0, (lane % 2 === 0 ? -1 : 1) * 0.12)
-        .scale([0.028, length, 0.028])
+        .scale([0.014, length, 0.014])
     );
   }
   nodes.push(...rainNodes);
-  const guideGlow = material.emissive({ name: "courier overhead guide glow", color: "#cffafe", emissive: "#22d3ee", emissiveIntensity: 1.35, opacity: 0.74 });
+  const guideGlow = material.emissive({ name: "courier overhead guide glow", color: "#cffafe", emissive: "#22d3ee", emissiveIntensity: 0.85, opacity: 0.74 });
   for (let guide = 0; guide < 3; guide += 1) {
     const z = 9.8 - guide * 8.6;
     nodes.push(
@@ -395,8 +405,8 @@ function skylineDressingNodes(): AuraNodeInput[] {
   // producer does not look down an empty side of the city when the van turns
   // toward its first delivery. These are visual architecture only.
   const crossPortalBody = material.pbr({ name: "courier cross-street portal body", color: "#2f5f80", roughness: 0.34, metallic: 0.58, emissive: "#124f70", emissiveIntensity: 0.34 });
-  const crossPortalGlow = material.emissive({ name: "courier cross-street portal glow", color: "#d5fbff", emissive: "#22d3ee", emissiveIntensity: 1.82, opacity: 0.9 });
-  const crossPortalWarm = material.emissive({ name: "courier cross-street portal warm", color: "#ffd2d8", emissive: "#fb7185", emissiveIntensity: 1.48, opacity: 0.88 });
+  const crossPortalGlow = material.emissive({ name: "courier cross-street portal glow", color: "#d5fbff", emissive: "#22d3ee", emissiveIntensity: 0.85, opacity: 0.9 });
+  const crossPortalWarm = material.emissive({ name: "courier cross-street portal warm", color: "#ffd2d8", emissive: "#fb7185", emissiveIntensity: 0.85, opacity: 0.88 });
   for (let portal = 0; portal < 4; portal += 1) {
     const x = 1.5 + portal * 6.4;
     nodes.push(
@@ -465,14 +475,14 @@ function courierStreetSignatureNodes(): AuraNodeInput[] {
     name: "courier wayfinding cyan",
     color: "#c7f9ff",
     emissive: "#22d3ee",
-    emissiveIntensity: 1.62,
+    emissiveIntensity: 0.85,
     opacity: 0.92
   });
   const coral = material.emissive({
     name: "courier wayfinding coral",
     color: "#ffd1d8",
     emissive: "#fb7185",
-    emissiveIntensity: 1.42,
+    emissiveIntensity: 0.85,
     opacity: 0.88
   });
   const crosswalkTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
@@ -642,14 +652,14 @@ function pressureMomentNodes(
     name: "courier pressure warning laser",
     color: "#ffd3a3",
     emissive: "#fb7185",
-    emissiveIntensity: 1.72,
+    emissiveIntensity: 0.85,
     opacity: 0.86
   });
   const cyanGlow = material.emissive({
     name: "courier pressure cyan laser",
     color: "#b9f7ff",
     emissive: "#22d3ee",
-    emissiveIntensity: 1.45,
+    emissiveIntensity: 0.85,
     opacity: 0.8
   });
   return [
@@ -714,14 +724,17 @@ function ringNodes(kind: "pickup" | "drop", displayName: string, color: string, 
   return [
     primitives.torus({
       name: displayName + " ground ring",
-      material: material.emissive({ color, emissive, emissiveIntensity: 1.55 })
+      material: material.emissive({ color, emissive, emissiveIntensity: 0.85 })
     }).position(-999, 0.06, -999).scale([ZONE_RADIUS * 1.12, ZONE_RADIUS * 1.12, 0.42])
       .rotate(1.5708, 0, 0)
       .runtime({ id: "courier-" + kind + "-ring", tags: ["zone-sensor", "renderer-owned"] }),
     primitives.cylinder({
       name: displayName + " beacon column",
-      material: material.emissive({ color, emissive, emissiveIntensity: 0.8, opacity: 0.14 })
-    }).position(-999, 2.6, -999).scale([0.44, 5.2, 0.44])
+      // A 0.44-wide translucent tube at 0.14 opacity read as a hollow glass
+      // drum hanging in the air. A narrower, brighter core over the ring
+      // instead reads as a light column rising out of the painted sensor pad.
+      material: material.emissive({ color, emissive, emissiveIntensity: 1.15, opacity: 0.08 })
+    }).position(-999, 2.35, -999).scale([0.2, 4.7, 0.2])
       .runtime({ id: "courier-" + kind + "-beacon", tags: ["zone-sensor", "renderer-owned"] })
   ];
 }
@@ -783,15 +796,21 @@ export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false):
       );
       primitiveCount += 1;
     }
-    // One awning propped at the site rim facing outward.
+    // One awning at the site rim facing inward. It used to be placed at
+    // 0.72 * ZONE_RADIUS - i.e. out over the live roadway at 2.35 m with no
+    // wall, post or roof behind it - so the corrugated underside read as a
+    // sheet of roofing floating across the street. It now sits out at the
+    // bollard rim, clear of the delivery lane and the sensor, scaled to a
+    // believable storefront canopy.
     staticNodes.push(
       model(assets.courierZoneAwning, {
         name: "zone awning " + site.id,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 3.4,
-        castShadow: false
-      }).position(site.x + ZONE_RADIUS * 0.72, 2.35, site.z + ZONE_RADIUS * 0.72).rotate(0, Math.PI / 4, 0)
+        targetMaxDimension: 2.3,
+        castShadow: false,
+        receiveShadow: true
+      }).position(site.x + BOLLARD_RING_RADIUS * 0.72, 2.75, site.z + BOLLARD_RING_RADIUS * 0.72).rotate(0, Math.PI / 4, 0)
     );
     primitiveCount += 1;
   }

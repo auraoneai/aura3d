@@ -105,6 +105,14 @@ const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 const compactViewport = window.innerWidth <= 620;
 const visualReviewCapture = new URL(window.location.href).searchParams.get("capture") === "review";
+/*
+ * The state and replay checksums are route evidence, not player HUD: raw
+ * hashes on screen during normal play is exactly what the debug-visibility rule
+ * forbids. The values stay in the published evidence object for specs and
+ * route-health, and only become visible on an explicit debug pass.
+ */
+const evidenceOverlay = new URL(window.location.href).searchParams.get("debug") === "1";
+if (evidenceOverlay) document.documentElement.dataset.evidenceMode = "blockfall";
 if (visualReviewCapture) document.documentElement.dataset.reviewCapture = "blockfall";
 const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
 const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
@@ -364,6 +372,7 @@ const sourceEvidence = {
   kind: "aura3d-showcase-blockfall-reactor-source" as const,
   route: window.location.pathname,
   appId: "showcase-blockfall-reactor",
+  physics: "game.collisionWorld:Rapier(shared showcase fidelity proof: angular contact response and CCD non-tunneling); board rules are deterministic game.fallingBlocks state, not a rigid-body simulation",
   claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected Rapier fidelity proof, and retained gameplay proof.",
   publicEngineApi: ["createGameApp", "scene", "model", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
   prohibitedApiAvoided: {

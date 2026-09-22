@@ -48,6 +48,10 @@ const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+// Physics identity (backend / flipper mode / sensor + joint counts) is evidence a
+// reviewer asks for, not HUD a player receives. Opt in with `?evidence=1`.
+document.body.dataset.evidence =
+  new URLSearchParams(window.location.search).get("evidence") === "1" ? "on" : "off";
 
 const APP_ID = "showcase-vault-breakers";
 
@@ -362,10 +366,22 @@ function buildScene(): ReturnType<typeof scene> {
       // itself remained playable.
       // The explicit review lens presents the playable surface as the hero
       // while retaining enough cabinet silhouette to read as a physical table.
-      // Normal visitors keep the roomier cabinet-and-controls composition.
-      position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 3.8, 10.8],
-      target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.4, 0.0],
-      fov: visualReviewCapture ? 46 : 54
+      //
+      // Normal play used to sit at [0, 3.8, 10.8] for a "roomier cabinet-and-controls
+      // composition", but at that distance and height the playfield occupied about a
+      // quarter of the canvas and the ball was an almost invisible grey dot. A pinball
+      // table lives or dies on tracking the ball, so normal play now borrows most of
+      // the review lens - closer and higher, still a little wider so the cabinet legs
+      // and the vault assembly stay in shot.
+      //
+      // A steeper/shorter lens was tried and rejected by inspection: raising the eye
+      // to 7.05 at 5.55 depth cropped both the flipper pair and the near drain apron,
+      // so the ball left frame exactly where a player most needs to track it. The
+      // framing below is the tightest lens that still keeps the whole playable surface
+      // - backbox to drain gap - inside the canvas.
+      position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 5.15, 7.35],
+      target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.05, -0.38],
+      fov: visualReviewCapture ? 46 : 50
     }));
 }
 
@@ -623,12 +639,23 @@ function syncVisuals(): void {
   // nodes (physics Y=0 is playfield level; scene nodes sit 0.28 above to appear
   // on the cabinet GLB playfield surface).
   const VISUAL_Y_OFFSET = 0.28;
+  const live = new Set<string>();
   for (const pose of flow.sim.poses()) {
     const handle = dynamicHandles.get(pose.name);
     if (!handle) continue;
+    live.add(pose.name);
     const e = quatToEuler(pose.rotation);
-    handle.setPosition(pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2]);
-    handle.setRotation(e.x, e.y, e.z);
+    handle.setPosition(pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2])
+      .setRotation(e.x, e.y, e.z);
+  }
+  // A drained ball leaves the pose list, so its node kept the last pose it was
+  // given and a phantom ball stayed painted on the playfield until the next
+  // serve. Anything the solver no longer reports is parked far below the
+  // cabinet and hidden; live nodes are explicitly re-shown because a node that
+  // was hidden on a previous frame stays hidden until something says otherwise.
+  for (const [name, handle] of dynamicHandles) {
+    if (live.has(name)) continue;
+    if (name.startsWith("ball-")) handle.setVisible(false);
   }
   const banksDown = flow.snapshot().banksDown;
   for (const [index, handle] of bankLampHandles) {
@@ -716,6 +743,10 @@ function publishEvidence(): void {
     phase: snap.phase,
     activeBalls: snap.activeBalls,
     tiltLocked: snap.tiltLocked,
+    // Solver truth for the "no tunnelling / ball settles / one transform
+    // authority" claims: positions and speeds straight from Rapier bodies.
+    ballStates: flow.sim.ballStates(),
+    ballPoses: flow.sim.kinematics(),
     orbitLoops: snap.orbitLoops,
     missionLine: snap.missionLine,
     flipperLeftRaised: flipperSnap.leftRaised,
@@ -725,6 +756,9 @@ function publishEvidence(): void {
     frameCount,
     controls: ["A/Left left flipper", "D/Right right flipper", "hold Space plunger", "S nudge", "R reset", "P pause", "touch buttons"],
     systems: ["Rapier ball/contact/sensor world", "two motorised-hinge flippers", "route-local five-bank vault mission", "text3D scoreboard", "typed CC0 audio controller"],
+    // Machine-readable physics identity, mirroring the prose above so route evidence can be
+    // verified against the surfaces actually imported rather than read by hand.
+    physics: "physics.world:Rapier(ball, bumpers, walls, target and drain sensors, motorised flipper hinges)",
     touchControlEvents: touchControlEvents.slice(-16),
     claimBoundary: "Aura3D prototype: route-local pinball on the public physics surface with motorised flipper joints (same-sign axis-mirror workaround); no reusable pinball kit claimed.",
     mountedAtEpochMs: Date.now()

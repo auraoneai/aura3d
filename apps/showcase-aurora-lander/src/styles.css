@@ -42,8 +42,10 @@ html, body {
 
 .hud {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  /* Spanning the play area (not just hugging the top-left) lets the grade banner
+     anchor to the bottom-centre of the canvas rather than the whole window, which
+     includes the briefing column. */
+  inset: 12px 12px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -87,15 +89,30 @@ html, body {
   transition: width 120ms linear;
 }
 
+/*
+ * The grade banner previously inherited the full HUD column width and a 40px
+ * monospace face, so a crash rendered as a ~130px slab across the whole play
+ * area and hid the terrain the player needed to read. It is now a compact
+ * bottom-centre pill: still the primary fail signal, but it no longer covers
+ * the world.
+ */
 .banner {
-  font-size: clamp(20px, 4vw, 40px);
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  max-width: min(560px, 82%);
+  font-size: clamp(13px, 1.5vw, 18px);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-align: center;
+  letter-spacing: 0.06em;
   text-shadow: 0 0 18px rgba(110, 231, 215, 0.45);
-  padding: 8px 18px;
-  border-radius: 8px;
-  background: var(--panel-bg);
+  padding: 9px 18px;
+  border-radius: 10px;
+  background: rgba(6, 12, 20, 0.9);
   border: 1px solid var(--aurora-dim);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 }
 
 .banner.grade-soft { color: var(--good); }
@@ -115,7 +132,7 @@ html, body {
 }
 
 .panel {
-  width: 300px;
+  width: 252px;
   padding: 14px;
   background: var(--panel-bg);
   border-left: 1px solid var(--aurora-dim);
@@ -207,12 +224,18 @@ body[data-capture="review"] .fuel-track {
 }
 
 .touch-controls {
-  display: grid;
-  grid-template-columns: 56px 56px 1fr 56px 56px;
+  /* A fixed five-column grid overflowed the narrower panel and clipped the RCS
+     buttons. Flex-wrap keeps every control reachable at panel width. */
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
   margin-top: 4px;
 }
+
+.touch-controls > span:not(.fuel-track) { display: none; }
+
+.touch-button { flex: 1 1 68px; min-width: 0; }
 
 .touch-slider {
   writing-mode: vertical-lr;
@@ -230,6 +253,14 @@ body[data-capture="review"] .fuel-track {
   padding: 10px 6px;
   font-size: 12px;
   cursor: pointer;
+  /* Rotation, boost, abort and pause are held or tapped during a descent, and
+     with no min-height these came out 36-40 px tall on a phone. The height is
+     declared rather than left to padding so the tap floor survives a font or
+     padding change. */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .touch-button:active { border-color: var(--aurora-teal); color: var(--aurora-teal); }
@@ -288,3 +319,23 @@ body[data-capture="review"] .fuel-track {
   }
   .banner { font-size: 20px; }
 }
+
+.panel-hint { font-size: 11px; opacity: 0.78; margin: 4px 0 8px; }
+.panel-toggle {
+  appearance: none;
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.42);
+  border-radius: 6px;
+  color: #9ff3e4;
+  cursor: pointer;
+  min-height: 44px;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  text-transform: uppercase;
+  width: 100%;
+}
+.panel-toggle:hover { background: rgba(94, 234, 212, 0.18); }
+.panel-toggle:focus-visible { outline: 2px solid #67e8f9; outline-offset: 2px; }

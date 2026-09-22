@@ -119,8 +119,11 @@ test("real keyboard aim, charge, release, authored flight, score, pause, and res
   expect(boot.heat).toBe(1);
   expect(boot.state).toBe("playing");
   expect(boot.target).toBe(6);
-  expect(boot.physicsBodyCount).toBe(0);
-  expect(boot.simulationOwner).toContain("authored deterministic ballistic integrator");
+  // The ball now flies on the canonical Rapier-backed world rather than a route-local
+  // integrator, so the evidence census must show live bodies.
+  expect(boot.physicsSolver).toBe("rapier");
+  expect(boot.physicsBodyCount).toBeGreaterThanOrEqual(30);
+  expect(boot.simulationOwner).toContain("Rapier-backed world");
   expect(boot.primaryAssets).toEqual([
     "assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"
   ]);

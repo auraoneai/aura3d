@@ -1,37 +1,37 @@
 {
   "schema": "aura3d.optional-rapier-browser/1.0",
-  "generatedAt": "2026-08-08T22:12:26.252Z",
+  "generatedAt": "2026-09-22T05:08:40.206Z",
   "pass": true,
   "package": "@aura3d/physics-rapier",
   "backend": "@dimforge/rapier3d-compat@0.20.0",
   "browser": "Chromium",
   "bundle": {
-    "rawBytes": 2861520,
-    "gzipBytes": 1087568,
-    "brotliBytes": 798356,
+    "rawBytes": 2871398,
+    "gzipBytes": 1090349,
+    "brotliBytes": 800767,
     "requestsAcrossColdAndCachedNavigation": 1
   },
   "cold": {
     "pass": true,
-    "loadToReadyMs": 117,
-    "initMs": 11.699999988079071,
-    "stepMs220Bodies": 0.13499999990065892,
+    "loadToReadyMs": 116.3999999994412,
+    "initMs": 4,
+    "stepMs220Bodies": 0.1274999999984478,
     "rayHit": true,
     "nativeCharacterController": true,
     "nativeVehicleController": true,
     "repeatedDisposals": 20,
-    "usedJSHeapSize": 48478591
+    "usedJSHeapSize": 48500775
   },
   "cached": {
     "pass": true,
-    "loadToReadyMs": 114.5,
-    "initMs": 11.5,
-    "stepMs220Bodies": 0.1366666667163372,
+    "loadToReadyMs": 114.80000000074506,
+    "initMs": 4,
+    "stepMs220Bodies": 0.1300000000046566,
     "rayHit": true,
     "nativeCharacterController": true,
     "nativeVehicleController": true,
     "repeatedDisposals": 20,
-    "usedJSHeapSize": 48502039
+    "usedJSHeapSize": 48533047
   },
   "consoleErrors": [],
   "claimBoundary": "Optional physical-simulation browser lifecycle only; no renderer, arcade-game, or universal performance claim."

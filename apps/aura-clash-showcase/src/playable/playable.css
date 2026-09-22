@@ -257,8 +257,11 @@ input {
 
 .aca-card,
 .aca-clock {
-  min-block-size: 124px;
-  padding: clamp(14px, 1.5vw, 20px);
+  /* 124px of floor per card plus the nav row cost the header ~285px of a 720px
+     viewport. The vitals content itself needs far less, and every pixel returned
+     here is a pixel the fight gets. */
+  min-block-size: 96px;
+  padding: clamp(10px, 1.2vw, 18px);
 }
 
 .aca-card {
@@ -449,7 +452,17 @@ input {
 .aca-stage-shell {
   position: relative;
   overflow: hidden;
-  block-size: 660px;
+  /*
+   * A fixed 660px shell does not fit a 720px-tall viewport once the nav (~60px)
+   * and the HUD card row (~150px) are subtracted, so the arena ran past the fold
+   * and the measured play frame showed only its top slice. The fighters were
+   * centred *inside* the 660px volume, which put them at the very bottom edge of
+   * the screenshot and left the dark storefront facade to own the frame.
+   *
+   * Resolving the shell against the viewport keeps the whole ring on screen with
+   * no scrolling, so the combat camera's framing is what the player actually sees.
+   */
+  block-size: clamp(380px, calc(100vh - 262px), 660px);
   border: 1px solid var(--aca-line);
   border-radius: 20px;
   background: #030507;

@@ -1432,6 +1432,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // Compatibility-rendered fighters and set dressing still share this renderer, but they
   // cannot be the only shadow participants: the root light must visibly affect geometry
   // owned by the same public scene in normal play and in the negative-control probe.
+  //
+  // The receiver panel and pylon below are shadow evidence, not set dressing. They were
+  // placed at z=+0.92/+1.34, which is between the camera and the stage, so a 1.25 x 2.1
+  // slate covered the left third of the frame and hid the arena from the player. Evidence
+  // geometry must not dominate normal play, so both now sit behind the fighter lane and
+  // out at the frame edge: still lit by the same stage spot, and the pylon's shadow still
+  // lands on the panel in the final pixels, which is the only thing either was here to prove.
   const rootStageFurniture = [
     primitives.box({
       name: "Aura Clash public stage floor receiver",
@@ -1449,7 +1456,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     primitives.box({
       name: "Aura Clash public arena-edge receiver panel",
       size: [1.25, 2.1, 0.12],
-      position: [-2.15, 1.05, 0.92],
+      position: [-5.35, 0.92, -1.35],
       material: material.pbr({ color: "#273248", roughness: 0.76, metallic: 0.08 }),
       castShadow: false,
       receiveShadow: true
@@ -1457,8 +1464,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     primitives.box({
       name: "Aura Clash public arena-edge pylon caster",
       size: [0.34, 1.1, 0.34],
-      position: [-1.78, 1.82, 1.34],
-      material: material.pbr({ color: "#6d2636", roughness: 0.42, metallic: 0.28 }),
+      position: [-4.98, 1.68, -0.95],
+      // Saturated crimson read as a debug marker against the dusk palette; this is a shadow
+      // caster, so it belongs in the stage's own metal range.
+      material: material.pbr({ color: "#3a3f4d", roughness: 0.42, metallic: 0.55 }),
       castShadow: true,
       receiveShadow: true
     }),
@@ -3869,6 +3878,12 @@ function writeProof(input: {
     callout: input.callout,
     visibleFighterAsset: assets.auraClashPlayerRig.url,
     fighterAssets: activeFighterAssetsProof(),
+    // Section-7 machine-readable classification. Aura Clash is authored arcade
+    // fighting: hit windows come from typed clip-event tracks and knockback is
+    // deterministic bout state, so the route must not advertise a solver surface
+    // it does not create. `physics` in the app descriptor above is the runtime's
+    // bounded-step configuration, not a rigid-body world.
+    physics: "none (authored arcade fighting; hitboxes are typed clip-event windows and knockback is deterministic bout state, not rigid-body contacts)",
     renderer: {
       surface: "aura3d-production-gltf-animation",
       backend: input.backend,

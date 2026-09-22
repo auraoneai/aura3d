@@ -247,9 +247,35 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
 }
 .evidence-strip code { color: #9feefc; font-variant-numeric: tabular-nums; }
 
+/* Phone play: the heist needs movement, sneak and lift reachable without
+ * scrolling a side panel mid-stealth, so the control row leaves the document
+ * flow and is pinned above the home indicator. The shell reserves the bar's
+ * height instead of letting it cover the playfield or the objective rail. */
 @media (max-width: 860px) {
-  .shell { display: flex; flex-direction: column; padding: 8px; gap: 8px; height: 100dvh; }
+  :root { --gs-touch-bar: 122px; }
+  .shell {
+    display: flex; flex-direction: column; padding: 8px 8px calc(8px + var(--gs-touch-bar));
+    gap: 8px; height: 100dvh;
+  }
   .viewport { flex: 1 1 auto; min-height: 0; }
-  .panel { flex: 0 0 auto; max-height: 42vh; width: auto; }
+  .panel { flex: 0 1 auto; min-height: 0; max-height: 42vh; width: auto; }
   .detection-wrap { width: 150px; }
+
+  .action-row {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(5, 7, 12, 0.94);
+    border-top: 1px solid rgba(126, 248, 255, 0.22);
+  }
+  .action-row button {
+    min-width: 0; min-height: 44px; padding: 6px 4px; font-size: 11px; letter-spacing: 0.04em;
+  }
 }
+/* Review capture owns the whole frame: the bar returns to flow inside the
+ * hidden panel and the reserved apron disappears, so the museum fills the
+ * canvas edge to edge. */
+body[data-capture="review"] .shell { padding-bottom: 8px; }
+body[data-capture="review"] .action-row { position: static; background: none; border: 0; padding: 0; }
+
+

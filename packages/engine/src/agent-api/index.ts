@@ -47,6 +47,15 @@ import type {
   RaycastOptions,
   RigidBody,
   RigidBodyDescriptor,
+  PhysicsVehicleController,
+  PhysicsWheelSpec,
+  PhysicsWheelState,
+  PhysicsWheelCommand,
+  PhysicsWheelTuning,
+  PhysicsVehicleAxis,
+  PhysicsCharacterController,
+  PhysicsCharacterControllerDescriptor,
+  PhysicsCharacterMovement,
   RigidBodyType,
   ScenePhysicsNode,
   SphereCastHit
@@ -2000,11 +2009,32 @@ export interface AuraPhysicsSceneSummary {
   readonly snapshot: PhysicsSnapshot;
 }
 
+/** Public vehicle/character aliases. Named `Aura*` so a route never imports the solver package. */
+export type AuraPhysicsWheelSpec = PhysicsWheelSpec;
+export type AuraPhysicsWheelTuning = PhysicsWheelTuning;
+export type AuraPhysicsWheelCommand = PhysicsWheelCommand;
+export type AuraPhysicsWheelState = PhysicsWheelState;
+export type AuraPhysicsVehicleAxis = PhysicsVehicleAxis;
+export type AuraPhysicsVehicleController = PhysicsVehicleController;
+export type AuraPhysicsCharacterDescriptor = PhysicsCharacterControllerDescriptor;
+export type AuraPhysicsCharacterMovement = PhysicsCharacterMovement;
+export type AuraPhysicsCharacterController = PhysicsCharacterController;
+
 export interface AuraPhysicsWorldController {
   readonly kind: "aura-physics-world";
   createBody(options?: RigidBodyDescriptor & { readonly shape?: PhysicsShape; readonly sensor?: boolean; readonly material?: ColliderDescriptor["material"] }): RigidBody;
   createCollider(body: RigidBody | number, descriptor: ColliderDescriptor): Collider;
   createConstraint(descriptor: ConstraintDescriptor): Constraint;
+  /**
+   * Suspension-backed physical vehicle on a chassis body.
+   *
+   * The controller is replayed on `reset()`, so a restart rebuilds the wheels and
+   * their tuning against the fresh world instead of leaving a stale solver handle
+   * bound to a destroyed chassis.
+   */
+  createVehicleController(chassis: RigidBody | number, wheels?: readonly AuraPhysicsWheelSpec[]): AuraPhysicsVehicleController;
+  /** Solver-backed character: grounding, slope limits, auto-step and snap-to-ground. */
+  createCharacterController(body: RigidBody | number, descriptor?: AuraPhysicsCharacterDescriptor): AuraPhysicsCharacterController;
   bindNode(body: RigidBody | number, node: ScenePhysicsNode, mode?: "dynamic" | "kinematic"): void;
   step(options?: number | AuraPhysicsStepOptions): readonly CollisionEvent[];
   reset(): void;
@@ -4903,6 +4933,37 @@ function createPhysicsWorldController(descriptor: PhysicsWorldDescriptor = {}): 
   }> = [];
   let resetCount = 0;
 
+  // Vehicle and character controllers are recorded and rebuilt on reset(). Bodies,
+  // colliders and constraints were already replayed, but a controller left pointing
+  // at a destroyed chassis would hand a game a handle that silently does nothing -
+  // which is exactly how a restart ends up with a car that will not drive. Ids are
+  // stable across the replay, so re-attaching by id is enough.
+  const vehicleRecords: Array<{
+    readonly chassisId: number;
+    readonly wheels: PhysicsWheelSpec[];
+    axes: { up: 0 | 1 | 2; forward: 0 | 1 | 2 } | null;
+    readonly live: { handle: PhysicsVehicleController };
+  }> = [];
+  const characterRecords: Array<{
+    readonly bodyId: number;
+    readonly descriptor: PhysicsCharacterControllerDescriptor;
+    readonly live: { handle: PhysicsCharacterController };
+  }> = [];
+
+  const rebuildPhysicalControllers = (): void => {
+    for (const record of vehicleRecords) {
+      record.live.handle = world.createVehicleController(record.chassisId);
+      for (const spec of record.wheels) record.live.handle.addWheel(spec);
+      // Axides are chassis-frame state the solver needs to project tyre forces at all.
+      // Replaying only the wheels would hand a reset car back its springs with the
+      // default frame, which reads as a car that drives sideways or not at all.
+      if (record.axes) record.live.handle.setAxes(record.axes.up, record.axes.forward);
+    }
+    for (const record of characterRecords) {
+      record.live.handle = world.createCharacterController(record.bodyId, record.descriptor);
+    }
+  };
+
   const controller: AuraPhysicsWorldController = {
     kind: "aura-physics-world",
     createBody(options: AuraPhysicsBodyOptions = {}) {
@@ -4925,6 +4986,67 @@ function createPhysicsWorldController(descriptor: PhysicsWorldDescriptor = {}): 
       const bodyId = typeof body === "number" ? body : body.id;
       colliderDescriptors.push({ bodyId, descriptor });
       return collider;
+    },
+    createVehicleController(chassis, wheels = []) {
+      const chassisId = typeof chassis === "number" ? chassis : chassis.id;
+      const handle = world.createVehicleController(chassisId);
+      for (const spec of wheels) handle.addWheel(spec);
+      const record = { chassisId, wheels: [...wheels], axes: null as { up: 0 | 1 | 2; forward: 0 | 1 | 2 } | null, live: { handle } };
+      vehicleRecords.push(record);
+      const target = () => record.live.handle;
+      const proxy: PhysicsVehicleController = {
+        get wheelCount() { return target().wheelCount; },
+        addWheel: (spec) => { record.wheels.push(spec); target().addWheel(spec); return proxy; },
+        setWheelTuning: (i, t) => { target().setWheelTuning(i, t); return proxy; },
+        setWheelCommand: (i, c) => { target().setWheelCommand(i, c); return proxy; },
+        setBrakes: (b) => { target().setBrakes(b); return proxy; },
+        setAxes: (up, forward) => { record.axes = { up, forward }; target().setAxes(up, forward); return proxy; },
+        wheelState: (i) => target().wheelState(i),
+        wheelStates: () => target().wheelStates(),
+        isGrounded: () => target().isGrounded(),
+        groundedWheelCount: () => target().groundedWheelCount(),
+        currentSpeed: () => target().currentSpeed(),
+        step: (dt) => target().step(dt),
+        position: () => target().position(),
+        rotation: () => target().rotation(),
+        linearVelocity: () => target().linearVelocity(),
+        angularVelocity: () => target().angularVelocity(),
+        resetToPose: (pose) => { target().resetToPose(pose); return proxy; },
+        clearCommands: () => { target().clearCommands(); return proxy; },
+        dispose: () => {
+          const at = vehicleRecords.indexOf(record);
+          if (at >= 0) vehicleRecords.splice(at, 1);
+          target().dispose();
+        },
+      };
+      return proxy;
+    },
+    createCharacterController(body, descriptor = {}) {
+      const bodyId = typeof body === "number" ? body : body.id;
+      const handle = world.createCharacterController(bodyId, descriptor);
+      const record = { bodyId, descriptor, live: { handle } };
+      characterRecords.push(record);
+      const target = () => record.live.handle;
+      const proxy: PhysicsCharacterController = {
+        get bodyId() { return record.bodyId; },
+        setAutoStep: (h, w, d) => { target().setAutoStep(h, w, d); return proxy; },
+        setMaxSlopeClimbAngle: (r) => { target().setMaxSlopeClimbAngle(r); return proxy; },
+        setMinSlopeSlideAngle: (r) => { target().setMinSlopeSlideAngle(r); return proxy; },
+        setSnapToGround: (d) => { target().setSnapToGround(d); return proxy; },
+        setSlideEnabled: (e) => { target().setSlideEnabled(e); return proxy; },
+        setCharacterMass: (m) => { target().setCharacterMass(m); return proxy; },
+        setApplyImpulsesToDynamicBodies: (e) => { target().setApplyImpulsesToDynamicBodies(e); return proxy; },
+        move: (desired) => target().move(desired),
+        position: () => target().position(),
+        grounded: () => target().grounded(),
+        resetTo: (position) => target().resetTo(position),
+        dispose: () => {
+          const at = characterRecords.indexOf(record);
+          if (at >= 0) characterRecords.splice(at, 1);
+          target().dispose();
+        },
+      };
+      return proxy;
     },
     createConstraint(descriptor) {
       const constraint = world.createConstraint(descriptor);
@@ -4985,6 +5107,7 @@ function createPhysicsWorldController(descriptor: PhysicsWorldDescriptor = {}): 
           axis: constraintDescriptor.axis
         });
       }
+      rebuildPhysicalControllers();
       bridge.pullDynamic(world, 1);
       resetCount += 1;
     },
@@ -17966,8 +18089,15 @@ function applyDefaultCanvasMountLayout(target: HTMLElement): void {
     document.body.style.overflow ||= "hidden";
   }
   target.style.width ||= "100%";
-  target.style.height ||= "100vh";
-  target.style.minHeight ||= "100vh";
+  // `100vh` is only the right default for a mount that owns the whole page. A mount
+  // nested inside a layout container already has a definite height from that container,
+  // and forcing viewport height onto it overflows the parent by the parent's own
+  // padding - which `overflow: hidden` on the body then silently amputates, so the
+  // bottom of the playfield becomes unreachable. Nested mounts fill their parent.
+  const ownsPageLayout = target.parentElement === document.body;
+  const mountHeight = ownsPageLayout ? "100vh" : "100%";
+  target.style.height ||= mountHeight;
+  target.style.minHeight ||= mountHeight;
   target.style.position ||= "relative";
   target.style.overflow ||= "hidden";
 }

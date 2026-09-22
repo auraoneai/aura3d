@@ -1,7 +1,7 @@
 import type { CameraLike, RenderSource } from "@aura3d/rendering";
-import { GLTFLoader, type GLTFAsset, type GLTFDracoDecoder, type GLTFLoaderDiagnostics, type GLTFMeshoptDecoder } from "../GLTFLoader";
+import type { GLTFAsset, GLTFDracoDecoder, GLTFLoaderDiagnostics, GLTFMeshoptDecoder } from "../GLTFLoader";
 import { createGLTFRenderResources, type GLTFImageDecoder, type GLTFRenderResourceOptions, type GLTFRenderResources, type GLTFRendererInputOptions } from "../GLTFRenderResources";
-import { LoadContext } from "../LoadContext";
+import { acquireParsedGLTFAsset } from "../GLTFAssetParseCache";
 
 export interface ProductionGLTFRenderPipelineOptions {
   readonly url: string;
@@ -73,26 +73,43 @@ export interface ProductionGLTFRenderPipeline {
 }
 
 export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRenderPipelineOptions): Promise<ProductionGLTFRenderPipeline> {
-  const asset = await new GLTFLoader({
+  /*
+   * The parsed GLB is shared through a reference-counted cache (see `GLTFAssetParseCache`); the
+   * render resources below stay per-pipeline because actors mutate their own scene graph, materials
+   * and geometries. `dispose()` releases the one reference this pipeline took.
+   */
+  const lease = await acquireParsedGLTFAsset({
+    url: options.url,
     ...(options.dracoDecoder ? { dracoDecoder: options.dracoDecoder } : {}),
     ...(options.meshoptDecoder ? { meshoptDecoder: options.meshoptDecoder } : {})
-  }).load({ url: options.url }, new LoadContext());
-  const resources = await createGLTFRenderResources(asset, {
-    ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
-    ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
-    ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
-    ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
-    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
-    ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
-  const rendererInput = resources.toRendererInput(
-    { width: options.width ?? 512, height: options.height ?? 512 },
-    {
-      qualityPreset: "hdr-studio-preview",
-      cameraPolicy: "require",
-      ...options.rendererInput
-    }
-  );
+  let resources: GLTFRenderResources;
+  let rendererInput: ReturnType<GLTFRenderResources["toRendererInput"]>;
+  try {
+    resources = await createGLTFRenderResources(lease.asset, {
+      ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
+      ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
+      ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
+      ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
+      ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
+      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
+    });
+    rendererInput = resources.toRendererInput(
+      { width: options.width ?? 512, height: options.height ?? 512 },
+      {
+        qualityPreset: "hdr-studio-preview",
+        cameraPolicy: "require",
+        ...options.rendererInput
+      }
+    );
+  } catch (error) {
+    // Resource creation failed after the parse succeeded: give the reference back so the shared
+    // asset is not pinned by a pipeline that does not exist.
+    lease.release();
+    throw error;
+  }
+  const asset = lease.asset;
+  let disposed = false;
   return {
     asset,
     resources,
@@ -100,10 +117,10 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
     camera: rendererInput.camera,
     metadata: createProductionGLTFRenderMetadata(asset, options.assetId, options.assetName ?? options.assetId),
     dispose: () => {
+      if (disposed) return;
+      disposed = true;
       resources.dispose();
-      if ("dispose" in asset && typeof asset.dispose === "function") {
-        asset.dispose();
-      }
+      lease.release();
     }
   };
 }

@@ -678,7 +678,17 @@
     "test:browser:route-primary:parallel": "tsx --tsconfig tsconfig.base.json tools/showcase-library/run-route-primary-parallel.ts",
     "release:gallery-index": "node tools/release/build-final-visual-review-index.mjs --version 3.0.1",
     "release:gallery-manifest": "node tools/release/build-final-visual-review-manifest.mjs --version 3.0.1",
-    "release:l02": "tsx --tsconfig tsconfig.base.json tools/release/l02-producer.ts"
+    "release:l02": "tsx --tsconfig tsconfig.base.json tools/release/l02-producer.ts",
+    "game:play-probe": "node tools/showcase-library/game-play-probe.mjs",
+    "game:play-probe:first-load": "node tools/showcase-library/game-play-probe.mjs --first-load-only --out tests/reports/game-play-probe/first-load",
+    "game:production-probe": "node tools/showcase-library/game-production-probe.mjs",
+    "game:mobile-audit": "node tools/showcase-library/game-mobile-touch-audit.mjs",
+    "check:production-render": "node tools/showcase-library/game-production-probe.mjs",
+    "game:contact-sheets": "node tools/showcase-library/game-contact-sheets.mjs",
+    "game:capture-parity": "node tools/showcase-library/game-capture-parity.mjs --json tests/reports/game-capture-parity/report.json",
+    "check:capture-parity": "node tools/showcase-library/game-capture-parity.mjs --json tests/reports/game-capture-parity/report.json --fail-on-art",
+    "game:viewport-probe": "node tools/showcase-library/game-viewport-probe.mjs",
+    "game:audit-matrix": "node tools/showcase-library/game-audit-matrix.mjs"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",

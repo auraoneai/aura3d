@@ -137,11 +137,31 @@ body[data-capture="review"] .review-flight-hud { display: block; }
 .evidence-strip code { color: #9feefc; font-size: 11px; }
 
 @media (max-width: 860px) {
+  /* Phone play. The panel was a bottom sheet capped at 38vh, so all eleven
+     flight verbs - pitch, roll, yaw, throttle, fire - spilled to y=879..1037
+     and you could not fly the aircraft at all without scrolling a document
+     column. The deck is now the sheet's only job, and the canvas is shortened
+     to make room instead of being covered by it. Altitude, speed and rings
+     stay readable because the in-canvas `review-flight-readout` carries the
+     same live values, so dropping the duplicated brand and stats loses no
+     information. */
+  :root { --pw-deck: 178px; }
   .shell { padding: 8px; }
-  .viewport { inset: 8px; }
-  .panel { top: auto; right: 14px; bottom: 14px; left: 14px; width: auto; max-height: 38vh; }
+  .viewport { inset: 8px 8px calc(8px + var(--pw-deck)); }
+  .panel {
+    position: fixed; top: auto; right: 0; bottom: 0; left: 0; width: auto;
+    max-height: none; overflow: visible; gap: 8px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    border: 0; border-top: 1px solid rgba(126, 248, 255, 0.34); border-radius: 0;
+    box-shadow: none; backdrop-filter: none;
+    background: linear-gradient(180deg, rgba(5, 25, 51, 0.97), rgba(2, 15, 30, 0.99));
+  }
+  .panel > :not(.action-row):not(.flight-pad) { display: none; }
+  /* Five actions across, so the row does not orphan `pause` onto a second line
+     and push the deck past the height the canvas reserves for it. */
+  .action-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .action-row button { min-width: 0; padding: 8px 2px; font-size: 10.5px; }
   .flight-banner { font-size: 11px; }
-  .panel { gap: 10px; padding: 12px; }
   .controls-list { display: none; }
   .review-flight-brand { top: 14px; left: 14px; min-width: 190px; }
   .review-flight-readout { top: 14px; right: 14px; }

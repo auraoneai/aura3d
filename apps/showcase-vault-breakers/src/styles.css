@@ -67,7 +67,14 @@ body { overflow: hidden; }
 .action-row button:active { transform: translateY(1px); }
 .action-row button:focus-visible { outline: 3px solid #7ef8ff; outline-offset: 2px; }
 
-.evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
+/* Raw physics identity (backend, flipper mode, sensor/joint counts) is route
+   evidence, not player HUD. It previously sat in the panel during normal play,
+   which is exactly the telemetry leak the HUD standard forbids, and was only
+   hidden in `?capture=review`. It is now hidden by default and opt-in through
+   `?evidence=1`, so the numbers stay machine-readable without being shown to a
+   player who did not ask for them. */
+.evidence-strip { display: none; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
+body[data-evidence="on"] .evidence-strip { display: flex; }
 .evidence-strip code { color: #9feefc; font-size: 11px; }
 
 /* Exact blind-review framing: gameplay remains renderer-owned and the same
@@ -98,6 +105,30 @@ body[data-capture="review"] .hole-banner { top: 18px; }
 
 @media (max-width: 860px) {
   .shell { flex-direction: column; padding: 8px; }
-  .panel { flex: 0 0 auto; max-height: 42vh; }
+  /* Two stages, one real defect. Without min-height: 0 a column flex item
+     refuses to shrink below its content height, so max-height never applied,
+     the panel ran past the viewport bottom, and body { overflow: hidden }
+     meant there was no scroll to recover it - the flipper and plunge buttons
+     at y=920 were genuinely unreachable in an 844 px viewport. Making the
+     panel scroll fixed reachability but not playability: you would have to
+     scroll a documentation column mid-rally. Primary controls therefore pin
+     to the bottom of the viewport as an overlay, clear of the home indicator,
+     and the panel reserves padding so its remaining content stays visible. */
+  .viewport { min-height: 0; flex: 1 1 auto; }
+  .panel { flex: 0 1 auto; min-height: 0; max-height: 42vh; overflow-y: auto; padding-bottom: 84px; }
   .hole-banner { font-size: 11px; }
+
+  .action-row {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    gap: 6px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(5, 7, 12, 0.94);
+    border-top: 1px solid rgba(126, 248, 255, 0.22);
+  }
+  .action-row button { flex: 1 1 0; min-width: 0; min-height: 44px; }
 }

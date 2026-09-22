@@ -65,7 +65,7 @@ export class RigidBody {
       throw new Error("RigidBody id must be a positive integer.");
     }
     this.id = id;
-    this.type = descriptor.type ?? "dynamic";
+    this.type = normalizeRigidBodyType(descriptor.type);
     this.position = cloneVec3(descriptor.position ?? vec3());
     this.previousPosition = cloneVec3(this.position);
     this.rotation = normalizeQuat(descriptor.rotation ?? [0, 0, 0, 1]);
@@ -106,28 +106,44 @@ export class RigidBody {
     this.accumulatedTorque = vec3();
   }
 
+  /**
+   * A caller wrote the pose since the solver last owned it.
+   *
+   * The world step used to copy Aura state into the solver unconditionally, which
+   * overwrote whatever the solver produced — including the velocity a vehicle
+   * controller had just integrated from its suspension and tyres. These flags make
+   * the write an explicit teleport request instead of a per-step clobber, so the
+   * solver is the only transform authority unless a game deliberately takes it back.
+   */
+  poseOverridden = false;
+  velocityOverridden = false;
+
   setPosition(position: Vec3): void {
     validateFiniteVec3(position, "body position");
     this.previousPosition = cloneVec3(this.position);
     this.position = cloneVec3(position);
+    this.poseOverridden = true;
     this.wake();
   }
 
   setVelocity(velocity: Vec3): void {
     validateFiniteVec3(velocity, "body velocity");
     this.velocity = cloneVec3(velocity);
+    this.velocityOverridden = true;
     this.wake();
   }
 
   setRotation(rotation: Quat): void {
     this.previousRotation = cloneQuat(this.rotation);
     this.rotation = normalizeQuat(rotation);
+    this.poseOverridden = true;
     this.wake();
   }
 
   setAngularVelocity(angularVelocity: Vec3): void {
     validateFiniteVec3(angularVelocity, "body angularVelocity");
     this.angularVelocity = cloneVec3(angularVelocity);
+    this.velocityOverridden = true;
     this.wake();
   }
 
@@ -149,12 +165,21 @@ export class RigidBody {
     this.wake();
   }
 
+  /**
+   * Impulse, applied as a velocity change.
+   *
+   * The wrapper copy is up to date whenever this runs — it is re-read from the solver
+   * at the end of every `PhysicsWorld.step` — so adding the delta here and handing the
+   * result to the solver below is the same arithmetic the solver would do, without the
+   * wrapper keeping a second copy of the motion for itself.
+   */
   applyImpulse(impulse: Vec3): void {
     validateFiniteVec3(impulse, "impulse");
     if (this.type !== "dynamic") {
       return;
     }
     this.velocity = addVec3(this.velocity, scaleVec3(impulse, this.inverseMass));
+    this.velocityOverridden = true;
     this.wake();
   }
 
@@ -164,6 +189,7 @@ export class RigidBody {
       return;
     }
     this.angularVelocity = addVec3(this.angularVelocity, this.multiplyInverseInertiaWorld(impulse));
+    this.velocityOverridden = true;
     this.wake();
   }
 
@@ -245,6 +271,28 @@ export class RigidBody {
 
 function cloneQuat(value: Quat): [number, number, number, number] {
   return [value[0], value[1], value[2], value[3]];
+}
+
+/**
+ * Reject a body type that is not one of Aura3D's three.
+ *
+ * The constructor used to fall through to `"dynamic"` for anything it did not
+ * recognise, so the very common solver spelling `"fixed"` — and `"kinematic-position"`,
+ * `"static-body"`, a stray capital — silently produced a *dynamic* floor. That is the
+ * worst version of this bug: the level still holds because a 30 m box barely moves, and
+ * the defect only shows up as the world drifting when something heavy hits it.
+ */
+function normalizeRigidBodyType(type: RigidBodyType | string | undefined): RigidBodyType {
+  if (type === undefined) return "dynamic";
+  if (type === "dynamic" || type === "static" || type === "kinematic") return type;
+  const suggestion =
+    type === "fixed" || type === "static-body" || type === "kinematic-position" || type === "kinematic-velocity"
+      ? ` Did you mean '${type === "fixed" || type === "static-body" ? "static" : "kinematic"}'?`
+      : "";
+  throw new Error(
+    `Unknown rigid body type '${String(type)}'. Aura3D bodies are 'dynamic', 'static' or 'kinematic'.${suggestion} ` +
+    "Guessing 'dynamic' here would make a level floor fall under its own load."
+  );
 }
 
 function normalizeQuat(value: Quat): [number, number, number, number] {

@@ -26,6 +26,7 @@ import {
 import { AGGRESSION_PRESETS, RIVAL_LOADOUTS, aggregateStats, presetForBout } from "./stats";
 import { createHangarAudio, AMBIENT_LOOP_SECONDS, HANGAR_AUDIO_CUES } from "./hangar-audio";
 import { createHangarController } from "./hangar";
+import { createMechHangarFeel } from "./arena/feel";
 import {
   setupArenaHud,
   setupHangarHud,
@@ -60,6 +61,7 @@ const reducedMotion = typeof window !== "undefined"
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+
 
 // ---- world layout -----------------------------------------------------------
 /** Hangar set sits at the origin; the pit is offset in -z so mode changes glide. */
@@ -474,7 +476,14 @@ const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
 
 const pitFloorBuilder = primitives.box({
   name: "arena armored floor",
-  material: material.pbr({ name: "pit floor steel", color: "#182f43", roughness: 0.36, metallic: 0.68, clearcoat: 0.22, clearcoatRoughness: 0.2 })
+  // The deck is a scuffed armored plate, not a mirror. The previous
+  // metallic 0.68 / roughness 0.36 / clearcoat 0.22 treatment turned the pit
+  // centre into a polished specular mirror: both arena floodlights reflected
+  // straight back into the follow camera and produced a pure-white radial
+  // blowout that swamped the combat ring and both fighters' lower bodies.
+  // Roughness is raised and the clearcoat layer dropped so the sheen stays a
+  // readable gradient instead of clipping to white.
+  material: material.pbr({ name: "pit floor steel", color: "#182f43", roughness: 0.62, metallic: 0.26, clearcoat: 0.06, clearcoatRoughness: 0.5 })
 // The review camera is a three-quarter follow view rather than an orthographic
 // top-down shot.  Keep the authored combat envelope centred under that view so
 // the active frame reads as an arena instead of ending at the canvas midpoint.
@@ -499,10 +508,12 @@ const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
 const pitDeckPanelMaterial = material.pbr({
   name: "pit deck panel finish",
   color: "#203b50",
-  roughness: 0.42,
-  metallic: 0.72,
-  clearcoat: 0.2,
-  clearcoatRoughness: 0.24
+  // Matches the de-polished `pit floor steel` above: these plates sit directly
+  // under the floodlights and blew out to white at metallic 0.72 / roughness 0.42.
+  roughness: 0.66,
+  metallic: 0.3,
+  clearcoat: 0.06,
+  clearcoatRoughness: 0.5
 });
 const pitDeckSeamMaterial = material.emissive({
   name: "pit deck seam light",
@@ -589,10 +600,14 @@ const arenaWarningBuilders = [-3.9, 3.9].flatMap((x, side) =>
 const pitFloorInlay = material.pbr({
   name: "pit center inlay",
   color: "#274761",
-  roughness: 0.28,
-  metallic: 0.78,
-  clearcoat: 0.3,
-  clearcoatRoughness: 0.16
+  // This is the brightest reflector in the pit: metallic 0.78 / roughness 0.28
+  // with a 0.3 clearcoat sat exactly on the floodlights' mirror angle to the
+  // follow camera and was the core of the arena blowout. Kept as a lightly
+  // polished plate, but far outside the mirror regime.
+  roughness: 0.6,
+  metallic: 0.3,
+  clearcoat: 0.06,
+  clearcoatRoughness: 0.5
 });
 const pitFloorGlow = material.emissive({
   name: "pit center glow seam",
@@ -683,7 +698,7 @@ const app = createAuraApp("#app", {
     .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.bloom({ name: "hangar workshop bloom", intensity: 0.2, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", radius: 0.38, softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.08 }),
       effects.antiAlias({ mode: "fxaa" }),
       effects.contactOcclusion({ name: "fighter deck contact", intensity: 0.4, radius: 0.6 }),
@@ -691,13 +706,17 @@ const app = createAuraApp("#app", {
       lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
       lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),
       lights.point({ name: "workshop frontal fill", position: [-2.9, 3.2, 3.4], intensity: 3.75, color: "#a9e1ff" }),
-      lights.ambient({ name: "global fill", intensity: 1.22, color: "#89a9c4" }),
-      // Arena floodlights over the pit.
-      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: visualReviewCapture ? 2.05 : 2.65, color: "#eaf4ff" }),
-      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: visualReviewCapture ? 1.6 : 2.05, color: "#cfe2ff" }),
-      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: visualReviewCapture ? 3.35 : 5.1, color: "#d8ecff" }),
-      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 3.35, color: "#47cfff" }),
-      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 3.0, color: "#ff7a5c" }),
+      lights.ambient({ name: "global fill", intensity: 0.72, color: "#89a9c4" }),
+      // Arena floodlights over the pit. These two directionals are the pair
+      // that drove the pit-floor specular blowout: at 1.85 / 1.35 they pushed
+      // the polished deck past pure white across the whole combat ring. They
+      // are reduced, not removed, so the pit keeps its overhead modelling and
+      // the fighters still separate from the back wall.
+      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.1, color: "#eaf4ff" }),
+      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 0.8, color: "#cfe2ff" }),
+      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: 2.1, color: "#d8ecff" }),
+      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 2.4, color: "#47cfff" }),
+      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 2.0, color: "#ff7a5c" }),
       turntableBuilder,
       turntableContactBuilder,
       hangarFloorBuilder,
@@ -756,7 +775,12 @@ const app = createAuraApp("#app", {
 });
 
 // ---- runtime handles --------------------------------------------------------
-await app.ready();
+// No `await app.ready()` here. A top-level await in this entry deadlocks the
+// bundled chunk graph under `vite build` — the module halts before the scene
+// mounts, so the canvas stays black with zero console errors, while the dev
+// server's module graph hides it. Node handles resolve without waiting (see
+// AuraAppHandle.onDeviceLost), and the work that genuinely needs a mounted
+// renderer awaits ready() inside its own async body below.
 const anchor = app.nodes.require("mech-cam-anchor") as RuntimeNodeHandleLike;
 const playerNodes = new Map<string, RuntimeNodeHandleLike>();
 const rivalNodes = new Map<string, RuntimeNodeHandleLike>();
@@ -815,7 +839,6 @@ const contactShadowNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>(
 let compositionSubjectSuppressed = false;
 let compositionProbeActive = false;
 
-const { createMechHangarFeel } = await import("./arena/feel");
 const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
 
 // ---- mounting ---------------------------------------------------------------
@@ -1209,6 +1232,8 @@ interface MechHangarEvidence {
   status: string;
   label: string;
   claimBoundary: typeof CLAIM_BOUNDARY;
+  /** Section-7 physics classification claim. Published so route-health can bind it. */
+  physics: string;
   controls: typeof ROUTE_CONTROLS;
   systems: typeof ROUTE_SYSTEMS;
   playerMoveId: string | null;
@@ -1330,6 +1355,9 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     status: mode === "hangar" ? (catalogReady ? "ready" : "curation-pending") : paused ? "paused" : "playing",
     label: CLAIM_BOUNDARY.label,
     claimBoundary: CLAIM_BOUNDARY,
+    // Section-7 classification: the bout is authored arcade fighting. Hit windows,
+    // guard breaks and knockback are deterministic game state, not solver contacts.
+    physics: "none (authored arcade mech fighting; hitboxes, guard and knockback are deterministic bout state, not rigid-body contacts)",
     controls: ROUTE_CONTROLS,
     systems: ROUTE_SYSTEMS,
     playerMoveId: snapshot?.player.move?.id ?? null,

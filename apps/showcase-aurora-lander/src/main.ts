@@ -404,45 +404,131 @@ Object.defineProperty(window, "__AURORA_LANDER_EVIDENCE__", {
 });
 
 // ---- scene construction ------------------------------------------------------
+/**
+ * Authored aurora sheets. Each entry keeps the exact rotation the sheet is built
+ * with, because the per-frame sway used to write a fresh `setRotation(index * 0.4)`
+ * for the Y axis. A sheet is a wide, tall, 1.5-thick box whose face normal is +Z
+ * (toward the chase camera), so any real Y rotation turns it edge-on: bands 4 and
+ * 5 were being rotated 69deg and 92deg and rendered as invisible knife edges. That
+ * is why the route's signature aurora never appeared in play.
+ */
+interface AuroraSheet {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly w: number;
+  readonly h: number;
+  readonly tiltX: number;
+  readonly tiltY: number;
+  readonly tiltZ: number;
+  readonly alpha: number;
+  readonly drive: number;
+  readonly colorIndex: number;
+}
+
+/**
+ * Three stacked sheets per curtain (core + two softer shoulders) so an emissive
+ * box reads as a diffuse light gradient instead of a neon plank, and the whole
+ * family hangs low enough to sit inside the chase frustum above the terrain
+ * silhouette while still clearing the 96m terrain field.
+ *
+ * IMPORTANT renderer constraint measured on these frames: `material.emissive`
+ * with a low `opacity` composites to near-black, not to a soft glow. The old
+ * 0.10-0.16 sheets therefore read as a black slab across the top of the sky
+ * (the same artifact Patrol Wing's 0.26-0.46 "sky ribbons" produce). Softness
+ * is built from geometry instead: many narrow opaque rays with sky visible in
+ * the gaps between them, which is also how a real aurora curtain is structured.
+ */
+function auroraCurtains(entry: LanderSite): readonly AuroraSheet[] {
+  // The band is authored to hug the terrain ridge, not to tile the whole sky. From
+  // the chase camera the ridge sits near -39deg elevation, so a curtain spanning
+  // roughly -30deg..-5deg reads as light standing up behind the valley instead of a
+  // slab pasted across the frame.
+  const curtainCentres = [
+    { x: -96, y: 20, z: -126, w: 44, h: 62, tilt: 0.14, color: 0, rays: 7 },
+    { x: -34, y: 26, z: -138, w: 38, h: 70, tilt: -0.1, color: 1, rays: 6 },
+    { x: 30, y: 22, z: -130, w: 42, h: 66, tilt: 0.18, color: 2, rays: 7 },
+    { x: 96, y: 30, z: -148, w: 34, h: 74, tilt: -0.16, color: 3, rays: 6 },
+    { x: -2, y: 36, z: -166, w: 56, h: 80, tilt: 0.06, color: 4, rays: 8 }
+  ];
+  const sheets: AuroraSheet[] = [];
+  for (const curtain of curtainCentres) {
+    const pitch = curtain.w / curtain.rays;
+    for (let r = 0; r < curtain.rays; r += 1) {
+      // Centre rays are taller and hotter, edge rays fade out, so the curtain
+      // has a soft vertical and lateral falloff without any alpha blending.
+      const edge = 1 - Math.abs((r - (curtain.rays - 1) / 2) / ((curtain.rays - 1) / 2));
+      const soft = 0.45 + edge * 0.55;
+      sheets.push({
+        x: curtain.x + (r - (curtain.rays - 1) / 2) * pitch,
+        y: curtain.y + (soft - 1) * curtain.h * 0.16,
+        z: curtain.z - edge * 6,
+        w: pitch * 0.52,
+        h: curtain.h * (0.62 + soft * 0.38),
+        tiltX: curtain.tilt,
+        tiltY: curtain.tilt * 0.18,
+        tiltZ: curtain.tilt * 0.5 + (r - (curtain.rays - 1) / 2) * 0.012,
+        alpha: 1,
+        drive: 0.85 + soft * 1.5,
+        colorIndex: curtain.color
+      });
+    }
+  }
+  void entry;
+  return sheets;
+}
+
+const AURORA_SHEETS: readonly AuroraSheet[] = auroraCurtains(SITES[0]!);
+const AURORA_SHEET_NAMES: readonly string[] = AURORA_SHEETS.map((_, i) => `aurora-band-${i + 1}`);
+
 function auroraBandNodes(entry: LanderSite) {
   const bands = [];
   const colors = [entry.auroraColor, "#818cf8", "#38bdf8", "#ec4899", "#34d399"];
-  // Celestial gas giant with planetary ring in celestial backdrop
+  // Celestial gas giant with planetary ring in celestial backdrop.
+  // Its surface was authored as `#0f172a` with a weak `#0284c7` emissive, which is
+  // effectively black; once the body was pulled into the chase frustum it read as a
+  // black disc punched out of the sky. A gas giant is lit by its own hemisphere and
+  // its star, so give it a real banded tone plus a strong key-facing emissive.
   bands.push(
     primitives.sphere({
       name: "celestial planet",
       material: material.pbr({
         name: "planet-surface",
-        color: "#0f172a",
-        emissive: "#0284c7",
-        roughness: 0.5,
-        metallic: 0.3
+        color: "#2f6f8f",
+        emissive: "#0ea5e9",
+        emissiveIntensity: 0.55,
+        roughness: 0.62,
+        metallic: 0.08
       })
     })
-      .position(-36, 145, -65)
-      .scale([14, 14, 14])
+      .position(-104, 86, -196)
+      .scale([15, 15, 15])
       .runtime(game.runtimeNode("celestial-planet", { tags: ["environment", "space"] })),
     primitives.torus({
       name: "planet ring",
       material: material.emissive({
         name: "ring-glow",
-        color: "#ca8a04",
+        color: "#fbbf24",
         emissive: "#f59e0b",
-        opacity: 0.85
+        emissiveIntensity: 1.6,
+        opacity: 1
       })
     })
-      .position(-36, 145, -65)
-      .rotate(0.55, 0.35, 0.2)
-      .scale([30, 30, 0.9])
+      .position(-104, 86, -196)
+      .rotate(1.32, 0.35, 0.2)
+      .scale([30, 30, 0.7])
       .runtime(game.runtimeNode("planet-ring", { tags: ["environment", "space"] }))
   );
 
   // Field of glowing stars
+  // The chase camera sits above and behind the lander looking down its own
+  // forward axis, so the readable sky band is far out along -Z and only modestly
+  // above ground - not straight up. Everything here lives inside that frustum.
   const starPositions = [
-    [-45, 155, -50], [35, 148, -48], [-18, 158, -54], [42, 132, -52],
-    [-38, 122, -45], [20, 126, -42], [-48, 136, -55], [32, 156, -58],
-    [-12, 142, -46], [26, 140, -50], [-28, 152, -52], [36, 120, -44],
-    [-8, 118, -40], [12, 150, -48], [-52, 146, -56], [48, 138, -52]
+    [-92, 44, -142], [74, 38, -150], [-44, 52, -158], [108, 34, -138],
+    [-128, 46, -152], [38, 56, -162], [-74, 28, -134], [126, 48, -156],
+    [-18, 60, -166], [58, 24, -132], [-112, 50, -146], [88, 54, -160],
+    [-58, 22, -130], [16, 42, -154], [-138, 52, -164], [138, 30, -140]
   ];
   starPositions.forEach((pos, idx) => {
     bands.push(
@@ -451,30 +537,46 @@ function auroraBandNodes(entry: LanderSite) {
         material: material.emissive({
           name: `star-glow-${idx}`,
           color: idx % 2 === 0 ? "#bae6fd" : "#fef08a",
-          emissive: idx % 2 === 0 ? "#38bdf8" : "#fbbf24"
+          emissive: idx % 2 === 0 ? "#38bdf8" : "#fbbf24",
+          emissiveIntensity: 2.2
         })
       })
         .position(pos[0]!, pos[1]!, pos[2]!)
-        .scale([0.35, 0.35, 0.35])
+        .scale([1.5, 1.5, 1.5])
         .runtime(game.runtimeNode(`star-${idx}`, { tags: ["environment", "stars"] }))
     );
   });
 
-  // Aurora curtains
-  for (let i = 0; i < 4; i += 1) {
+  // Aurora curtains. Real aurora reads as vertical light falling from the sky, so
+  // each band is a tall thin sheet hung well behind the terrain ridge and tilted a
+  // little off vertical. Flat horizontal slabs at this scale look like neon planks
+  // laid across the scene rather than atmosphere.
+  //
+  // These previously sat at 0.12-0.2 opacity with no emissive drive, which against
+  // the #0b1120 sky made the route's signature feature invisible in play: the game
+  // is called Aurora Lander and showed no aurora. Opacity alone cannot carry an
+  // emissive sheet through bloom, so the bands are driven by emissiveIntensity and
+  // kept translucent only for layering.
+  for (let i = 0; i < AURORA_SHEETS.length; i += 1) {
+    const c = AURORA_SHEETS[i]!;
+    const sheetColor = colors[c.colorIndex % colors.length]!;
+    // `opacity` is deliberately omitted: passing it (even at 1) routes the material
+    // through the transparent pass, where these sheets contributed no light at all
+    // and the curtain never appeared. Opaque emissive is what the pad ring and the
+    // stars use, and those are the two reliably visible emissive surfaces here.
     bands.push(
       primitives.box({
         name: `aurora band ${i + 1}`,
         material: material.emissive({
           name: `aurora glow ${i + 1}`,
-          color: colors[i % colors.length]!,
-          emissive: colors[i % colors.length]!,
-          opacity: 0.35
+          color: sheetColor,
+          emissive: sheetColor,
+          emissiveIntensity: c.drive
         })
       })
-        .position(-30 + i * 20, 130 + i * 6, -55 - i * 8)
-        .rotate(0.22, i * 0.12, 0.05 * (i - 1))
-        .scale([120, 8 + i * 2, 8])
+        .position(c.x, c.y, c.z)
+        .rotate(c.tiltX, c.tiltY, c.tiltZ)
+        .scale([c.w, c.h, 1.5])
         .runtime(game.runtimeNode(`aurora-band-${i + 1}`, { tags: ["environment", "aurora-band", "renderer-owned"] }))
     );
   }
@@ -489,8 +591,12 @@ interface SiteFieldEntry {
 const siteFields: SiteFieldEntry[] = [];
 
 function buildWorldScene() {
+  // The sky previously read as a #0b1120 near-black void (measured mean luma ~23
+  // mid-descent), which is the wrong first impression for a night-aurora landing
+  // game. A lifted indigo keeps the night mood while giving the aurora sheets and
+  // stars something to read against.
   const builder = scene()
-    .background("#0b1120")
+    .background("#16283f")
     .addMany(auroraBandNodes(SITES[0]!));
 
   // Every site's world group is built up-front and toggled by visibility on site
@@ -582,6 +688,38 @@ function buildWorldScene() {
           .runtime(game.runtimeNode(`${prefix}-pad-light-${i + 1}`, { tags: ["pad", "approach-lights", "renderer-owned"] }))
       );
     }
+
+    // Objective light column. The campaign opens 72m directly above the pad, so a
+    // chase camera looking down its own forward axis cannot fit both the lander and
+    // the pad in frame — the measured defect was "the entire objective is off
+    // screen at spawn". A diegetic landing beam keeps the objective findable without
+    // adding a debug marker or moving authored flight/contact state.
+    //
+    // Low `opacity` on an emissive material also composites against the sky
+    // *clear* rather than scene geometry here, which is why the first two passes
+    // produced a black slab across the top of frame. Sky-facing geometry is opaque
+    // and gets its softness from nested radii plus bloom instead.
+    const beamLayers = [
+      { radius: 0.13, height: 24, drive: 2.6, color: "#99f6e4" },
+      { radius: 0.34, height: 19, drive: 1.4, color: nextSite.auroraColor },
+      { radius: 0.7, height: 14, drive: 0.55, color: "#134e4a" }
+    ];
+    beamLayers.forEach((layer, i) => {
+      builder.add(
+        primitives.cylinder({
+          name: `${prefix} pad landing beam ${i + 1}`,
+          material: material.emissive({
+            name: `${prefix} landing beam glow ${i + 1}`,
+            color: layer.color,
+            emissive: layer.color,
+            emissiveIntensity: visible ? layer.drive : 0.001
+          })
+        })
+          .position(pad.x, padHeight + layer.height / 2, pad.z)
+          .scale([layer.radius, layer.height, layer.radius])
+          .runtime(game.runtimeNode(`${prefix}-landing-beam-${i + 1}`, { tags: ["pad", "objective-beam", "renderer-owned"] }))
+      );
+    });
 
     // text3D site marker above the pad — real depth-bearing geometry, not a DOM label.
     builder.add(
@@ -770,13 +908,17 @@ function buildWorldScene() {
   // Shared night lighting: one neutral aurora grade that reads across all three
   // sites so no live scene swaps are ever needed.
   builder
-    .add(effects.fog({ name: "valley haze", color: "#0b1120", density: 0.0021, intensity: 0.42 }))
+    .add(effects.fog({ name: "valley haze", color: "#16283f", density: 0.0021, intensity: 0.42 }))
     .add(effects.bloom({ name: "aurora sky bloom", intensity: 0.22, threshold: 0.72, maxIntensity: 0.6, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
+    .add(effects.colorGrade({ exposure: 1.06, contrast: 1.05, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.95 }))
-    .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.1 }).position(-38, 62, -22))
-    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.05 }).position(30, 40, 36))
+    // Ambient-only teal wash at 0.95 flattened the regolith into a single bright
+    // silhouette and blew the typed probe out into a white disc. Drop the flat
+    // fill, keep a cool sky bounce, and let the moon key carry the shaping.
+    .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.4 }))
+    .add(lights.directional({ name: "regolith bounce fill", color: "#2f4a3d", intensity: 0.55 }).position(14, -26, 18))
+    .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.35, shadow: true }).position(-38, 62, -22))
+    .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.35 }).position(30, 40, 36))
     .add(lights.point({
       name: "final extraction warm practical",
       color: "#ffb454",
@@ -789,16 +931,21 @@ function buildWorldScene() {
     }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
     .camera(camera.follow({
       targetNode: "lander",
-      distance: visualReviewCapture ? 10.6 : 14,
+      distance: visualReviewCapture ? 10.6 : 15,
       // The opening approach is still a wide three-quarter chase, but the
       // previous 17m default left the typed probe at roughly 100px in the
       // route-primary frame.  Bring the eye in one measured step so the
       // lander's antenna, cabin, legs, and the scaffold's runway cues read as
       // one intentional focal unit without changing any world coordinates or
       // authored flight/contact state.
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 6.4, 12.4],
+      //
+      // Desktop pitch was 27deg with a 54deg cone, which put the frame's top edge at
+      // the world horizon and clipped the sky band out of shot. A slightly shallower
+      // 23deg pitch inside a 58deg cone admits the sky without the 64deg version's
+      // side effect of shrinking the typed probe to a dot at spawn altitude.
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],
       targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
-      fov: visualReviewCapture ? 46 : 54,
+      fov: visualReviewCapture ? 46 : 58,
       smoothing: visualReviewCapture ? 0 : 0.05
     }));
 
@@ -833,7 +980,7 @@ function captureNodeHandles(): void {
   plumeNode = requireNode("thrust-plume");
   shockwaveNode = requireNode("impact-shockwave");
   predictionNode = requireNode("landing-prediction");
-  auroraBands = [1, 2, 3].map((i) => requireNode(`aurora-band-${i}`));
+  auroraBands = AURORA_SHEET_NAMES.map((name) => requireNode(name));
   dustNodes = Array.from({ length: 12 }, (_, i) => requireNode(`dust-${i + 1}`));
   debrisNodes = Array.from({ length: 10 }, (_, i) => requireNode(`debris-${i + 1}`));
   whiteoutNodes = Array.from({ length: 72 }, (_, i) => requireNode(`whiteout-${i + 1}`));
@@ -1012,18 +1159,28 @@ function updatePanelBrief(): void {
 function setupPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) throw new Error("Aurora Lander panel #panel is missing.");
+  // The reference sheet (briefing prose, key list, grading formulas, campaign
+  // multipliers) is documentation, not a player HUD, so it starts collapsed behind an
+  // explicit control instead of permanently eating a quarter of the frame. Touch
+  // controls stay outside the collapsed region because they are gameplay surface.
+  // Review capture expands it so retained evidence still shows the full contract.
+  const reviewCapture = document.body.dataset.capture === "review";
   panel.innerHTML = `
     <h1>AURORA LANDER</h1>
     <div class="prototype-tag">prototype · authored arcade dynamics</div>
-    <h2>Site briefing</h2>
-    <p id="panel-site-brief"></p>
-    <h2>Controls</h2>
-    <ul>
-      <li><kbd>W</kbd>/<kbd>↑</kbd> main thrust</li>
-      <li><kbd>A</kbd>/<kbd>D</kbd> rotate (RCS puffs)</li>
-      <li><kbd>Space</kbd>/<kbd>R</kbd> quick-restart site</li>
-      <li><kbd>G</kbd> ghost overlay · <kbd>P</kbd> pause</li>
-    </ul>
+    <p class="panel-hint"><kbd>W</kbd> thrust · <kbd>A</kbd>/<kbd>D</kbd> rotate · <kbd>Space</kbd>/<kbd>R</kbd> restart · <kbd>G</kbd> ghost · <kbd>P</kbd> pause</p>
+    <button id="panel-reference-toggle" class="panel-toggle" type="button" aria-expanded="${reviewCapture ? "true" : "false"}" aria-controls="panel-reference">Briefing &amp; grading</button>
+    <div id="panel-reference"${reviewCapture ? "" : " hidden"}>
+      <h2>Site briefing</h2>
+      <p id="panel-site-brief"></p>
+      <h2>Controls</h2>
+      <ul>
+        <li><kbd>W</kbd>/<kbd>↑</kbd> main thrust</li>
+        <li><kbd>A</kbd>/<kbd>D</kbd> rotate (RCS puffs)</li>
+        <li><kbd>Space</kbd>/<kbd>R</kbd> quick-restart site</li>
+        <li><kbd>G</kbd> ghost overlay · <kbd>P</kbd> pause</li>
+      </ul>
+    </div>
     <h2>Touch</h2>
     <div class="touch-controls">
       <input id="touch-thrust" class="touch-slider" type="range" min="0" max="1" step="0.05" value="0" aria-label="Thrust slider" />
@@ -1039,16 +1196,28 @@ function setupPanel(): void {
       <span></span>
       <span></span>
     </div>
-    <h2>Grading</h2>
-    <table class="score-table">
-      <tr><td>Soft touchdown (&lt;${SOFT_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>1000 × fuel × site</td></tr>
-      <tr><td>Hard touchdown (&lt;${HARD_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>400 × fuel × site</td></tr>
-      <tr><td>Attitude &gt;12° · off-zone · slope</td><td>crash</td></tr>
-    </table>
-    <h2>Campaign</h2>
-    <p id="panel-campaign">${SITES.map((entry) => `Site ${entry.id} ${entry.name} ×${entry.multiplier}`).join(" · ")}</p>
-    <p class="prototype-tag">Static heightfield terrain (non-deformable). Gravity/thrust are authored arcade values — not a physical simulation.</p>
+    <div id="panel-reference-tail"${reviewCapture ? "" : " hidden"}>
+      <h2>Grading</h2>
+      <table class="score-table">
+        <tr><td>Soft touchdown (&lt;${SOFT_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>1000 × fuel × site</td></tr>
+        <tr><td>Hard touchdown (&lt;${HARD_TOUCHDOWN_MAX_VSPEED} m/s)</td><td>400 × fuel × site</td></tr>
+        <tr><td>Attitude &gt;12° · off-zone · slope</td><td>crash</td></tr>
+      </table>
+      <h2>Campaign</h2>
+      <p id="panel-campaign">${SITES.map((entry) => `Site ${entry.id} ${entry.name} ×${entry.multiplier}`).join(" · ")}</p>
+      <p class="prototype-tag">Static heightfield terrain (non-deformable). Gravity/thrust are authored arcade values — not a physical simulation.</p>
+    </div>
   `;
+
+  const referenceToggle = document.getElementById("panel-reference-toggle");
+  const referenceTail = document.getElementById("panel-reference-tail");
+  referenceToggle?.addEventListener("click", () => {
+    const body = document.getElementById("panel-reference");
+    const expanded = referenceToggle.getAttribute("aria-expanded") === "true";
+    referenceToggle.setAttribute("aria-expanded", String(!expanded));
+    if (body) body.hidden = expanded;
+    if (referenceTail) referenceTail.hidden = expanded;
+  });
 
   updatePanelBrief();
 
@@ -1502,8 +1671,17 @@ function renderUpdate(dtFrame: number): void {
   }
 
   // Aurora sway — subtle, driven by sim time so pause freezes it too.
+  // The sway is authored as a DELTA on each sheet's own rotation. Writing an
+  // absolute rotation here previously discarded the per-sheet tilt and spun the
+  // wide faces edge-on to the chase camera, which is what made the aurora vanish.
   auroraBands.forEach((node, index) => {
-    node.setRotation(0.3 + Math.sin(simSeconds * 0.35 + index) * 0.02, index * 0.4, 0.06 * (index - 1));
+    const sheet = AURORA_SHEETS[index];
+    if (!sheet) return;
+    node.setRotation(
+      sheet.tiltX + Math.sin(simSeconds * 0.35 + index) * 0.012,
+      sheet.tiltY + Math.sin(simSeconds * 0.21 + index * 0.7) * 0.02,
+      sheet.tiltZ + Math.cos(simSeconds * 0.17 + index * 0.5) * 0.015
+    );
   });
 
   // Crash debris burst + impact shockwave.

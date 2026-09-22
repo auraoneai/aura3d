@@ -230,10 +230,10 @@ export function setupArenaHud(host: HTMLElement): ArenaHudHandles {
   // visible chassis/arms/legs/weapon sockets remain the actual subjects.
   const playerIdentity = el("div", "mech-fighter-identity mech-section-title");
   playerIdentity.dataset.testid = "fighter-player-identity";
-  playerIdentity.textContent = "YOU // SELECTED MH-2M LOADOUT";
+  playerIdentity.textContent = "YOUR MECH";
   const rivalIdentity = el("div", "mech-fighter-identity mech-section-title");
   rivalIdentity.dataset.testid = "fighter-rival-identity";
-  rivalIdentity.textContent = "RIVAL // BULWARK FIXED MH-2M LOADOUT";
+  rivalIdentity.textContent = "RIVAL MECH";
   leftCol.append(playerIdentity, hpPlayer.root, guardPlayer.root, powerPlayer.root);
   rightCol.append(rivalIdentity, hpRival.root, guardRival.root, powerRival.root);
   topRow.append(leftCol, rightCol);
@@ -287,7 +287,7 @@ export function updateArenaHud(
   handles.guardRival.update(args.rivalGuardFraction);
   handles.powerPlayer.update(args.playerPowerFraction);
   handles.powerRival.update(args.rivalPowerFraction);
-  handles.aggressionCard.textContent = "REMATCH " + (args.boutIndex + 1) + " - RIVAL " + args.preset.label;
+  handles.aggressionCard.textContent = "REMATCH " + (args.boutIndex + 1) + " - RIVAL " + args.preset.hudLabel;
   handles.aggressionCard.dataset.preset = args.preset.id;
   handles.boutCard.textContent = args.phase.toUpperCase();
 }

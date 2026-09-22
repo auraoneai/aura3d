@@ -77,7 +77,7 @@ export function setupHud(
   container.innerHTML = [
     '<section class="ns-panel ns-panel--top-left">',
     '  <span class="ns-eyebrow">Neon Swarm</span>',
-    '  <h1 class="ns-title">Rain-slick courier district</h1>',
+    '  <h1 class="ns-title">Drone swarm containment grid</h1>',
     '  <div class="ns-stats">',
     '    <span>Wave</span><strong id="ns-wave">1</strong>',
     '    <span>Score</span><strong id="ns-score">0</strong>',

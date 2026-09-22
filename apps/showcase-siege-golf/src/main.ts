@@ -10,6 +10,7 @@ import {
   camera,
   createGameApp,
   effects,
+  environments,
   game,
   lights,
   material,
@@ -102,7 +103,7 @@ ui.html("#panel", `
     <article><span>Par</span><strong id="stat-par">-</strong></article>
     <article><span>Strokes</span><strong id="stat-strokes">0</strong></article>
     <article><span>Targets</span><strong id="stat-targets">0/1</strong></article>
-    <article><span>Sensors</span><strong id="stat-sensors">0</strong></article>
+    <article><span>Sunk</span><strong id="stat-sensors">0</strong></article>
     <article><span>Round</span><strong id="stat-round">E</strong></article>
   </section>
   <div class="power-meter" aria-label="Shot power"><span id="sg-power-fill"></span></div>
@@ -292,6 +293,8 @@ function authoredAsset(
     role: "setDressing",
     scaleMode: "fit",
     targetMaxDimension,
+    castShadow: true,
+    receiveShadow: true,
     ...(painted ? { material: paintedTimberMaterial } : {})
   })
     .position(...position)
@@ -315,6 +318,11 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
         name: v.name,
         role: v.name === "golf-ball" ? "primaryCharacter" : "setDressing",
         scaleMode: "fit",
+        // Destructibles and the ball must sit in the scene optically, not
+        // float above it: they both cast into the sun key and receive the
+        // stack shadows of their neighbours.
+        castShadow: true,
+        receiveShadow: true,
         targetMaxDimension: v.name === "golf-ball" && visualReviewCapture
           ? (v.targetMaxDimension ?? 1) * 1.65
           : v.targetMaxDimension ?? 1,
@@ -436,7 +444,12 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const stoneCap = material.pbr({ name: "siege garden sunlit coping", color: "#eadcae", roughness: 0.82 });
   const hedge = material.pbr({ name: "clipped courtyard hedge", color: "#2f765c", roughness: 0.97 });
   const hedgeLight = material.pbr({ name: "sunlit clipped hedge", color: "#60a878", roughness: 0.96 });
-  const coral = material.pbr({ name: "siege coral paint", color: "#f5654d", roughness: 0.48, clearcoat: 0.24 });
+  // Decorative heraldry is deliberately cool indigo. It used to be `#f5654d`
+  // coral - within a few hue degrees of the `#f26b4f` paint on the live
+  // destructibles - so the eye could not tell "props I can smash" apart from
+  // "bunting I can ignore". Warm saturated amber now belongs to interactive
+  // bodies alone.
+  const coral = material.pbr({ name: "siege indigo heraldry", color: "#2f4a86", roughness: 0.62, metallic: 0.06, clearcoat: 0.2 });
   const contact = material.pbr({ name: "grounded course contact", color: "#075244", roughness: 1, opacity: 0.42 });
   // A saturated arcade-teal ribbon and lemon coping form the one visual
   // sentence the player should read first: tee -> obstacle -> goal. The
@@ -459,15 +472,15 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const firstCup = hole.cups[0]!;
 
   // One continuous painted causeway follows the real interaction chain. Its
-  // Five overlapping sections are derived from the current tee, first Rapier
-  // structure and sensor cup rather than screenshot coordinates. Alternating
-  // offsets make this feel like a playful authored hole instead of a broad
-  // straight corridor while preserving the exact physics surface.
+  // sections are derived from the current tee, first Rapier structure and
+  // sensor cup rather than screenshot coordinates. The waypoints are
+  // deliberately collinear along the tee -> structure -> cup polyline: the
+  // previous alternating lateral offsets made each rotated slab meet its
+  // neighbour at a kink, which rendered as a torn zig-zag rip down the middle
+  // of the fairway rather than as a mown lane.
   const routePoints: readonly (readonly [number, number])[] = [
     hole.tee,
-    [hole.tee[0] - 0.9, (hole.tee[1] + structureZ) * 0.52],
-    [structureX + 0.38, structureZ],
-    [firstCup.x - 0.72, (structureZ + firstCup.z) * 0.5],
+    [structureX, structureZ],
     [firstCup.x, firstCup.z]
   ];
   for (let index = 1; index < routePoints.length; index += 1) {
@@ -475,7 +488,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
     const to = routePoints[index]!;
     const dx = to[0] - from[0];
     const dz = to[1] - from[1];
-    const length = Math.hypot(dx, dz) + 0.42;
+    const length = Math.hypot(dx, dz) + 0.62;
     const yaw = Math.atan2(dx, dz);
     const x = (from[0] + to[0]) * 0.5;
     const z = (from[1] + to[1]) * 0.5;
@@ -488,7 +501,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.box({ name: `causeway-turf-${index}`, material: routeTurf })
         .position(x, 0.024, z)
         .rotate(0, yaw, 0)
-        .scale([2.04, 0.018, length + 0.08])
+        .scale([2.04, 0.018, length + 0.16])
         .toJSON()
     );
   }
@@ -611,12 +624,15 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
         [0, -0.2, 0]
       ),
       primitives.box({ name: `flag-pole-${cup.id}`, material: material.pbr({ name: "flag iron", color: "#374e47", roughness: 0.32, metallic: 0.7 }) })
-        .position(cup.x, 1.5, cup.z)
-        .scale([0.055, 3.0, 0.055])
+        .position(cup.x, 1.12, cup.z)
+        // 3.0 m of 55 mm pole read as a stray debug axis line escaping the top
+        // of the frame at the flight camera. A short flagstaff keeps the
+        // minigolf-flags silhouette inside the composed frame.
+        .scale([0.07, 2.24, 0.07])
         .toJSON(),
       primitives.box({ name: `flag-banner-${cup.id}`, material: coral })
-        .position(cup.x + 0.48, 2.55, cup.z)
-        .scale([0.9, 0.52, 0.04])
+        .position(cup.x + 0.44, 1.98, cup.z)
+        .scale([0.82, 0.46, 0.05])
         .toJSON(),
       primitives.torus({
         name: `goal-beacon-${cup.id}`,
@@ -625,7 +641,7 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.box({
         name: `goal-beacon-spire-${cup.id}`,
         material: material.emissive({ name: "sensor goal spire", color: "#fff0bd", emissive: "#ffb646", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.92 })
-      }).position(cup.x, 1.35, cup.z + 0.12).scale([0.07, 2.45, 0.07]).toJSON(),
+      }).position(cup.x, 0.95, cup.z + 0.12).scale([0.11, 1.7, 0.11]).toJSON(),
       primitives.torus({
         name: `target-ring-${cup.id}`,
         material: material.emissive({ name: "coral cup halo", color: complete ? "#fff3b0" : "#ff6a58", emissive: complete ? "#ffe45e" : "#f13d44", emissiveIntensity: complete ? 1.2 : 0.72, opacity: 0.98 })
@@ -720,6 +736,65 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
   });
 }
 
+function buildValleyEnvironment(hole: HoleDefinition): AuraSceneNode[] {
+  // The typed course world is a ~10 x 17 m island. Before this pass the route
+  // rendered it over a flat mint `background()`, so every camera angle that
+  // cleared the platform edge showed empty sky underneath and the hole read as
+  // a floating toy tray. These are non-gameplay distance surfaces only:
+  // `structures.ts` remains the sole Rapier collider owner and nothing here is
+  // reachable by the ball.
+  const nodes: AuraSceneNode[] = [];
+  const valleyFloor = material.pbr({ name: "valley meadow floor", color: "#4f8f57", roughness: 0.98, metallic: 0 });
+  const hillNear = material.pbr({ name: "near hedge hill", color: "#2f6b4a", roughness: 0.97 });
+  const hillFar = material.pbr({ name: "distant ridge hill", color: "#6f9fae", roughness: 0.99 });
+  const treeCanopy = material.pbr({ name: "distance tree canopy", color: "#26543f", roughness: 0.96 });
+  const courseMidZ = (hole.tee[1] + hole.cups[0]!.z) * 0.5;
+
+  nodes.push(
+    primitives.plane({ name: "valley meadow floor", material: valleyFloor })
+      .position(0, -1.35, courseMidZ)
+      .scale([70, 1, 70])
+      .toJSON()
+  );
+
+  // Two hill bands at different depths give the horizon real parallax: a dark
+  // clipped-hedge ring close in, and a cool atmospheric ridge behind it that
+  // fog pulls toward the sky colour.
+  for (let index = 0; index < 14; index += 1) {
+    const angle = (index / 14) * Math.PI * 2 + 0.21;
+    const near = index % 2 === 0;
+    const radius = near ? 15.5 + (index % 3) * 1.9 : 27 + (index % 4) * 2.6;
+    const rise = near ? 1.9 + (index % 3) * 0.5 : 4.4 + (index % 4) * 1.1;
+    nodes.push(
+      primitives.sphere({ name: `valley hill ${index}`, material: near ? hillNear : hillFar })
+        .position(
+          Math.sin(angle) * radius,
+          -1.2 + rise * 0.42,
+          courseMidZ + Math.cos(angle) * radius * 0.82
+        )
+        .scale([7.4 + (index % 3) * 2.2, rise, 6.2 + (index % 2) * 2.4])
+        .toJSON()
+    );
+  }
+
+  // A loose treeline ring sits between the platform and the hills so the gap
+  // under the course edge is never bare.
+  for (let index = 0; index < 12; index += 1) {
+    const angle = (index / 12) * Math.PI * 2 + 0.52;
+    nodes.push(
+      primitives.sphere({ name: `distance tree ${index}`, material: treeCanopy })
+        .position(
+          Math.sin(angle) * (10.6 + (index % 3) * 0.9),
+          -0.35 + (index % 2) * 0.25,
+          courseMidZ + Math.cos(angle) * (9.4 + (index % 4) * 1.1)
+        )
+        .scale([1.5 + (index % 3) * 0.35, 2.3 + (index % 2) * 0.7, 1.5 + (index % 2) * 0.4])
+        .toJSON()
+    );
+  }
+  return nodes;
+}
+
 function buildCourseWorld(): AuraSceneNode[] {
   // The world stays at authored metre scale. Its companion surface mapping
   // documents why the route's static Rapier floor and containment rails remain
@@ -728,7 +803,11 @@ function buildCourseWorld(): AuraSceneNode[] {
   return [model(SIEGE_MODEL_ASSETS.siegeGolfCourseWorld, {
     name: "siege-golf-continuous-course-world",
     role: "primaryWorld",
-    scaleMode: "world"
+    scaleMode: "world",
+    // The fairway is the shadow receiver for the whole hole: without it the
+    // ball, stacks and keep cast nothing and every surface sat on the plane.
+    receiveShadow: true,
+    castShadow: true
   // The synthesised model's mown fairway finishes at +0.11 m while the
   // validated Rapier floor, ball, cup sensors and guide run at y=0.  Register
   // the visual surface to that real play plane: this keeps the ball grounded
@@ -740,7 +819,10 @@ function buildCourseWorld(): AuraSceneNode[] {
 function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening"): ReturnType<typeof scene> {
   const teeZ = hole.tee[1];
   return scene()
-    .background("#b9ebe4")
+    // A real daytime sky value instead of the old flat mint wash. The course
+    // island, its hills and the treeline all read against this now.
+    .background("#8ecfe8")
+    .addMany(buildValleyEnvironment(hole))
     .addMany(buildCourseWorld())
     // These are placed from the live HoleDefinition, so the tee, first
     // destructible, and real sensor cup occupy one visual fairway rather than
@@ -749,17 +831,31 @@ function buildHoleScene(hole: HoleDefinition, phase: SiegeCameraPhase = "opening
     .addMany(buildSetDressing(hole, phase))
     .addMany(visualNodes(phase))
     .addMany([
-      effects.neonBloom({ intensity: reducedMotion ? 0.025 : 0.07, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
-      effects.fog({ name: "golden-hour distance haze", density: 0.009, color: "#9fd7d1", intensity: 0.12 }),
-      effects.colorGrade({ exposure: 1.04, contrast: 1.05, saturation: 1.08 }),
+      // Image-based lighting: the previous scene was ambient-only in practice,
+      // so paint, timber, chalk and metal all reflected the same flat wash and
+      // the whole course read as one matte pastel slab. A warm studio probe
+      // gives every PBR material a real specular gradient.
+      environments.studio({
+        name: "golden-hour courtyard sky IBL",
+        intensity: 0.72,
+        color: "#ffe2b8"
+      }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.02 : 0.055, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+      effects.fog({ name: "golden-hour distance haze", density: 0.016, color: "#a9d6e6", intensity: 0.42 }),
+      effects.colorGrade({ exposure: 1.02, contrast: 1.12, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
-      lights.ambient({ name: "blue-sky ambient wash", color: "#e0fff3", intensity: 0.7 }),
-      lights.directional({ name: "low golden sun key", color: "#ffd28a", intensity: 2.55 }).position(-7.5, 8.2, 5.0),
-      lights.directional({ name: "cool hill fill", color: "#9fc9d2", intensity: 0.4 }).position(5.5, 6.0, -hole.halfLength * 0.5),
-      lights.point({ name: "warm timber bounce", color: "#ef9f5a", intensity: 0.58 }).position(0, 2.2, -hole.halfLength * 0.46),
-      lights.point({ name: "tee readability fill", color: "#fff1c9", intensity: 0.78 }).position(hole.tee[0], 2.0, teeZ + 1.0),
-      lights.point({ name: "red target cloth bounce", color: "#d95848", intensity: 0.38 }).position(0, 2.3, -hole.halfLength * 0.75),
-       lights.point({ name: "stack lane readability", color: "#ffd08a", intensity: 0.9 }).position(0, 1.5, -4.6)
+      // Ambient dropped from 0.7 to a thin sky fill so the key light is
+      // actually doing the shaping; 0.7 washed out every contact and shadow.
+      lights.ambient({ name: "open-sky ambient wash", color: "#bfe4f5", intensity: 0.24 }),
+      lights.directional({ name: "low golden sun key", color: "#ffd28a", intensity: 2.9, shadow: true }).position(-7.5, 8.2, 5.0),
+      lights.directional({ name: "cool hill fill", color: "#9fc9d2", intensity: 0.55 }).position(5.5, 6.0, -hole.halfLength * 0.5),
+      // Cool back/rim separation so the timber stacks and the white ball lift
+      // off the pale fairway instead of melting into it.
+      lights.directional({ name: "sky rim back-light", color: "#cfe9ff", intensity: 0.9 }).position(2.4, 3.4, 11.5),
+      lights.point({ name: "warm timber bounce", color: "#ef9f5a", intensity: 0.5 }).position(0, 2.2, -hole.halfLength * 0.46),
+      lights.point({ name: "tee readability fill", color: "#fff1c9", intensity: 0.7 }).position(hole.tee[0], 2.0, teeZ + 1.0),
+      lights.point({ name: "red target cloth bounce", color: "#d95848", intensity: 0.34 }).position(0, 2.3, -hole.halfLength * 0.75),
+       lights.point({ name: "stack lane readability", color: "#ffd08a", intensity: 0.8 }).position(0, 1.5, -4.6)
     ])
     .camera(cameraForPhase(hole, phase));
 }
@@ -955,12 +1051,18 @@ function syncHud(): void {
     ui.setText("#stat-round", "E");
   }
   const chargeState = shot.state;
-  powerFill.style.width = Math.round(chargeState.charge * 100) + "%";
+  // The meter used to sit at literally 0% width whenever Space was not held,
+  // so the most important readout on the HUD looked like an empty black slot
+  // for the entire time the player was choosing a shot. Outside of a live
+  // charge it now reports the power the shot will actually use.
+  const shownPower = shot.charging ? chargeState.charge : previewPowerFraction();
+  const shownPowerPct = Math.round(shownPower * 100);
+  powerFill.style.width = shownPowerPct + "%";
   const mobilePowerFill = document.getElementById("sg-mobile-power-fill")!;
   const mobilePowerLabel = document.getElementById("sg-mobile-power-label")!;
   const mobileState = document.getElementById("sg-mobile-state")!;
-  mobilePowerFill.style.width = Math.round(chargeState.charge * 100) + "%";
-  mobilePowerLabel.textContent = Math.round(chargeState.charge * 100) + "%";
+  mobilePowerFill.style.width = shownPowerPct + "%";
+  mobilePowerLabel.textContent = shownPowerPct + "%";
   mobileState.textContent = paused
     ? "Paused"
     : flow.phase === "simulating"
@@ -969,8 +1071,8 @@ function syncHud(): void {
         ? "Target sunk"
         : shot.charging ? "Charging" : "Aim";
   powerLabel.textContent = shot.charging
-    ? "Power " + Math.round(chargeState.charge * 100) + "%"
-    : flow.phase === "simulating" ? "Ball in motion" : "Power";
+    ? "Power " + shownPowerPct + "%"
+    : flow.phase === "simulating" ? "Ball in motion" : "Power " + shownPowerPct + "%";
   ui.setText("#sg-ev-backend", flow.sim.backend);
   ui.setText("#sg-ev-bodies", String(flow.sim.bodyCount));
   ui.setText("#sg-ev-sensors", String(flow.snapshot().sensorEventCount));
@@ -1247,6 +1349,17 @@ function syncTrail(dt: number): void {
   }
 }
 
+/**
+ * Fraction of the shot-power range the player is about to commit to: live
+ * charge while Space is held, otherwise the precision dial value. Read from the
+ * DOM directly so this stays valid regardless of module-initialisation order.
+ */
+function previewPowerFraction(): number {
+  const dial = document.getElementById("sg-power-dial") as HTMLInputElement | null;
+  const set = dial && Number.isFinite(Number(dial.value)) ? Number(dial.value) : 1.9;
+  return Math.min(1, Math.max(0, (set - 0.55) / (2.3 - 0.55)));
+}
+
 function syncAim(): void {
   const aiming = flow.phase === "aiming" && !paused;
   const dirX = Math.sin(shot.state.angle);
@@ -1299,17 +1412,23 @@ function syncAim(): void {
     chevron.setRotation(0, Math.atan2(dirX, dirZ), Math.PI / 4);
     chevron.setScale([0.25 + charge * 0.12, 0.045, 0.25 + charge * 0.12]);
   }
+  // Power has to be readable in the world, not only in the DOM meter: the
+  // guide used to occupy the same fixed 5.5 m regardless of charge, so a
+  // 12% tap and a full-power drive looked identical from the tee.
+  const previewPower = shot.charging ? charge : previewPowerFraction();
+  const guideSpread = 0.34 + previewPower * 0.52;
   for (let i = 0; i < AIM_NODE_COUNT; i += 1) {
     const handle = aimHandles[i]!;
+    const fade = 1 - (i / AIM_NODE_COUNT) * 0.62;
     if (!aiming || (visualReviewCapture && i % 2 === 1)) {
       handle.setVisible(false);
       continue;
     }
+    const reach = 0.5 + i * guideSpread;
     handle.setVisible(true);
-    const reach = 0.52 + i * 0.55;
     handle.setPosition(base[0] + dirX * reach, 0.04, base[2] + dirZ * reach);
     handle.setRotation(0, Math.atan2(dirX, dirZ), 0);
-    handle.setScale([0.12 + (i / (AIM_NODE_COUNT - 1)) * 0.13, 0.035, 0.23]);
+    handle.setScale([(0.12 + (i / (AIM_NODE_COUNT - 1)) * 0.13) * fade, 0.035, 0.23 * fade]);
   }
 }
 

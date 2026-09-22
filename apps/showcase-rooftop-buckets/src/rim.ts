@@ -103,7 +103,11 @@ export interface BallCollisionOutcome {
 }
 
 /**
- * Checks ball physics interactions with composed rim, backboard, defender, and net sensor.
+ * Legacy analytic contact model. It is retained for the heat-state determinism test
+ * that exercises it directly, but it is NOT the gameplay authority: live flight runs on
+ * the Rapier-backed world in `hoop-sim.ts`, which owns the ball transform and derives
+ * rim/backboard/defender/sensor facts from solver collision events. Nothing in the
+ * playable route calls this.
  */
 export function testHoopCollision(
   ballPos: { x: number; y: number; z: number },

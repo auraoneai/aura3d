@@ -181,9 +181,14 @@ tmp/
 temp/
 downloads/
 *.tmp
+*.tmp.*
 *.temp
 *.bak
 *.backup
+.probe-scratch/
+scratchpad/
+tmp-*
+vb-lane-probe.ts
 
 # ============================================================================
 # Documentation Builds

@@ -167,9 +167,13 @@ body { overflow: hidden; }
   .power-meta { font-size: 9px; }
   .mission-line { padding: 6px 8px; font-size: 9px; line-height: 1.35; }
   .controls-list { display: none; }
-  .action-row { gap: 5px; }
+  /* Aim, charge, spin and reset are live-shot verbs. This row was compressed
+     to 38 px to make seven of them fit, but a thumb needs 44 px and a mis-hit
+     on the charge button is a bad shot, not a wasted click. `gap` shrinks
+     instead so all seven still fit. */
+  .action-row { gap: 4px; }
   .action-row button {
-    min-height: 38px;
+    min-height: 44px;
     padding: 6px 8px;
     font-size: 11px;
     touch-action: manipulation;

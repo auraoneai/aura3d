@@ -72,6 +72,7 @@ export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
 
 // --- 5. Character controllers ---
+export * from "./PhysicalCharacterController.js";
 export * from "./ArcadeCharacterController.js";
 export * from "./FightingCharacterController.js";
 export * from "./KinematicBody.js";
@@ -79,6 +80,7 @@ export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
 
 // --- 6. Vehicle, and the racing layer above the solver ---
+export * from "./PhysicalVehicleController.js";
 export * from "./ArcadeVehicleTelemetry.js";
 
 // --- 7. Deterministic stepping ---

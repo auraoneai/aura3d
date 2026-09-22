@@ -1496,9 +1496,17 @@ function syncLocalizedEncounter(objective: Vec2): void {
 /** Synchronize presentation-only hierarchy from the current FloorRuntime. */
 function syncLiveHierarchy(): void {
   const thief = runtime.thief.snapshot();
-  // Labels are compact, upright museum-security callouts in the locked
-  // oblique review camera. Their positions follow the live actors/objective,
-  // while LOS, detection, and objective truth remain owned by the runtime.
+  /*
+   * The PLAYER / GUARD 1 / GUARD 2 / LIFT / EXIT world-space text callouts are
+   * telemetry, not art direction: at review distance they rendered as five large
+   * glowing words floating over the floor plan, which is the single strongest
+   * "engineering demo" tell on this route. They now follow the same explicit
+   * debug/evidence flag as the collider overlay, so normal play keeps the
+   * diegetic feedback (objective ring, guard footprint rings, objective practical
+   * light) and loses the labels.
+   */
+  const labelsVisible = showDebugOverlay;
+  app.nodes.get("live-player-label")?.setVisible(labelsVisible);
   app.nodes.get("live-player-label")?.setPosition(thief.x + 1.02, 3.34, thief.z + 0.54);
 
   const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
@@ -1516,15 +1524,15 @@ function syncLiveHierarchy(): void {
   app.nodes.get("live-objective-ring")?.setPosition(objective.x, 0.13, objective.z);
   app.nodes.get("live-objective-practical")?.setPosition(objective.x, 1.55, objective.z);
   const objectiveLabel = exiting ? app.nodes.get("live-exit-label") : app.nodes.get("live-lift-label");
-  app.nodes.get("live-lift-label")?.setVisible(!exiting);
-  app.nodes.get("live-exit-label")?.setVisible(exiting);
+  app.nodes.get("live-lift-label")?.setVisible(labelsVisible && !exiting);
+  app.nodes.get("live-exit-label")?.setVisible(labelsVisible && exiting);
   objectiveLabel?.setPosition(objective.x - 0.74, 2.3, objective.z + 0.08);
 
   for (const guardId of ["guard-1", "guard-2"]) {
     const guard = runtime.guards.find((candidate) => candidate.id === guardId);
     const visible = Boolean(guard);
     app.nodes.get(`${guardId} live ring`)?.setVisible(visible);
-    app.nodes.get(`${guardId} live label`)?.setVisible(visible);
+    app.nodes.get(`${guardId} live label`)?.setVisible(visible && labelsVisible);
     if (guard) {
       app.nodes.get(`${guardId} live ring`)?.setPosition(guard.x, 0.11, guard.z);
       // Push guard labels toward the outside edges of the plan. In the staged
@@ -1625,6 +1633,9 @@ function publishEvidence(): void {
       "exact-entry-camera-laser-exhibit-exit-transitions", "three-exhibit-two-floor-mission",
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
+    // Machine-readable physics identity so route evidence can be checked against the
+    // surfaces actually imported rather than read from prose.
+    physics: "physics.world:Rapier(floor colliders, guard line-of-sight raycasts, objective sensors)",
     primaryAssets: [
       "assets.galleryShiftCutawayMuseumWorld", "assets.galleryThief", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
       "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",

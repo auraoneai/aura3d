@@ -270,19 +270,43 @@ const app = createAuraApp("#app", {
     .addMany(dressing.staticNodes)
     .addMany(dressing.pickupZone)
     .addMany(dressing.dropZone)
-    // Aurora Noir / Midnight Slate city night lighting
-    .add(effects.fog({ name: "night city haze", color: "#090714", density: visualReviewCapture ? 0.0042 : 0.0018, intensity: visualReviewCapture ? 0.58 : 0.44 }))
-    .add(effects.neonBloom({ intensity: reducedMotion ? 0.18 : visualReviewCapture ? 0.64 : 0.78, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
-    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.07, saturation: 1.12 }))
+    // Aurora Noir / Midnight Slate city night lighting.
+    // These values used to differ between play and `?capture=review`, which meant
+    // the reviewed screenshots were not the game: the live path ran ambient at
+    // 1.72 over emissive city dressing and blew the whole frame - including the
+    // player's own van - into a white core. Art direction is now a single set of
+    // values so evidence and gameplay cannot drift apart again.
+    .add(effects.fog({ name: "night city haze", color: "#090714", density: 0.0018, intensity: 0.44 }))
+    // Bloom was authored at 0.5, which is a screenshot-kernel value, not a
+    // gameplay one. At that strength the typed van's white livery, its own
+    // headlight cones and every rain trace merged into one white mass: the
+    // vehicle silhouette, the road and the objectives all disappeared behind
+    // the glow. Halved so neon stays neon without eating the scene.
+    //
+    // `softKnee` is a HARD device contract, not a taste dial: the WebGL2 bloom
+    // validator throws `Bloom softKnee must be finite and in [0, 0.5]` above
+    // 0.5 (packages/rendering/src/WebGL2Device.ts). That throw happens inside
+    // the very first `renderer.render()`, so the route mounted, ran exactly one
+    // frame callback, drew nothing (drawCalls 0), and never scheduled another
+    // animation frame - a black canvas with zero console or page errors,
+    // because the engine records it in `diagnostics.errors` instead of
+    // rethrowing. 0.5 is the maximum legal value and the repo-wide convention.
+    .add(effects.neonBloom({ intensity: reducedMotion ? 0.26 : 0.44, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
+    .add(effects.colorGrade({ exposure: 1.05, contrast: 1.1, saturation: 1.12 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .add(lights.ambient({ name: "night city fill", color: "#718da5", intensity: visualReviewCapture ? 0.42 : 1.72 }))
-    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: visualReviewCapture ? 3.8 : 2.55 }).position(-18, 26, 8))
-    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: visualReviewCapture ? 1.9 : 1.42 }).position(20, 18, 16))
-    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: visualReviewCapture ? 5.4 : 4.8 }).position(-1.6, 2.4, 6.5))
-    .add(lights.point({ name: "courier hero rim", color: "#ff557f", intensity: visualReviewCapture ? 4.0 : 0 }).position(2.2, 1.8, 3.5))
-     .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 2.4 }).position(0, 3.8, 0))
-     .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.8 }).position(0, 3.4, 8.5))
-     .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 2.2 }).position(0, 2.6, 12.8))
+    // The street itself was reading as black-on-black void with a few floating
+    // signs. A lifted cool ambient plus a stronger moon key gives the kit
+    // towers, kerbs and lane paint actual form between the practicals.
+    .add(lights.ambient({ name: "night city fill", color: "#7f9cb5", intensity: 1.25 }))
+    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: 2.5, shadow: true }).position(-18, 26, 8))
+    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: 1.35 }).position(20, 18, 16))
+    // Hero practicals used to sit at 2.6/1.8 directly on the van, which is what
+    // turned the typed Meshy livery into a featureless white slab.
+    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: 1.9 }).position(-1.6, 2.4, 6.5))
+    .add(lights.point({ name: "courier hero rim", color: "#ff557f", intensity: 1.1 }).position(2.2, 1.8, 3.5))
+     .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 1.9 }).position(0, 3.8, 0))
+     .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.1 }).position(0, 3.4, 8.5))
+     .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 1.7 }).position(0, 2.6, 12.8))
     .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.25 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
     // Van fleet: every moving part is a top-level runtime node (the mutable
@@ -382,8 +406,15 @@ function vanHeadlightPools() {
   return ["left", "right"].map((side) =>
     primitives.box({
       name: "van headlight pool " + side,
-      material: material.emissive({ color: "#ffe9b8", emissive: "#ffd98a", emissiveIntensity: 1.05, opacity: 0.85 })
-    }).position(-999, 0.055, -999).scale([2.3, 0.02, 0.72])
+      // These sat at emissiveIntensity 1.05 on a 2.3 x 0.72 slab, two abreast,
+      // directly down the centre of the chase lens. The route's bloom threshold
+      // is 0.68, so both pools clipped straight through it and merged into one
+      // white mass that swallowed the van, the lane paint and the road ahead -
+      // exactly the "giant white bloom blob" failure this route keeps hitting.
+      // Held below the threshold and narrowed to a real beam footprint, so they
+      // read as two separate pools raking the wet asphalt instead of a flare.
+      material: material.emissive({ color: "#ffe9b8", emissive: "#ffd98a", emissiveIntensity: 0.5, opacity: 0.6 })
+    }).position(-999, 0.055, -999).scale([1.9, 0.02, 0.34])
       .runtime({ id: "courier-headlight-" + side, tags: ["headlight", "renderer-owned"] })
   );
 }
@@ -574,6 +605,9 @@ const mountedEvidence = {
   status: "ready" as string,
   claimLabel: "prototype" as const,
   mounted: true,
+  // Machine-readable section-7 classification. The prose below already disclaimed
+  // physical tyres; publishing the class explicitly is what lets a gate check it.
+  physics: "none (route-local createGameArcadeVehicle kinematic ground car with authored steering, grip and courtesy-stop AI; no solver world is created, so no physical tyre, suspension, mass or damage claim)",
   claimBoundary:
     "Authored arcade delivery van over the cityBlock night kit: createGameArcadeVehicle integrates the delivery tune, createVehicleDriverAi cars hold seeded lane loops with courtesy stops, and sensor zones score pickups and drops. No racing-kit or certified-topology inheritance, no physical suspension or tyre simulation, no damage physics beyond strike counting, no police/pursuit or open-world claims.",
   controls: {

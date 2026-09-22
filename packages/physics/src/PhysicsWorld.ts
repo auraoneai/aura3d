@@ -3,13 +3,17 @@ import {
   type RapierBodyHandle,
   type RapierColliderHandle,
   type RapierJointHandle,
-  type RapierPhysicsWorld
+  type RapierPhysicsWorld,
+  type RapierVehicleControllerHandle,
+  type RapierCharacterControllerHandle
 } from "@aura3d/physics-rapier";
 import { Collider, type ColliderDescriptor } from "./Collider.js";
 import { CollisionEventQueue, type CollisionEvent, type Contact } from "./CollisionEvents.js";
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
+import type { PhysicsCharacterController, PhysicsCharacterControllerDescriptor } from "./PhysicalCharacterController.js";
+import type { PhysicsVehicleController } from "./PhysicalVehicleController.js";
 import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 import { timeOfImpact } from "./TimeOfImpact.js";
 
@@ -142,6 +146,8 @@ export class PhysicsWorld {
   private readonly rapierBodiesByAuraId = new Map<number, RapierBodyHandle>();
   private readonly rapierCollidersByAuraId = new Map<number, RapierColliderHandle>();
   private readonly rapierJointsByConstraint = new Map<Constraint, RapierJointHandle>();
+  private readonly vehicleControllers = new Set<RapierVehicleControllerHandle>();
+  private readonly characterControllers = new Set<RapierCharacterControllerHandle>();
   private nextBodyId = 1;
   private nextColliderId = 1;
   private lastEvents: readonly CollisionEvent[] = [];
@@ -250,6 +256,184 @@ export class PhysicsWorld {
     this.constraintsList.push(constraint);
     this.rapierJointsByConstraint.set(constraint, this.createRapierJoint(constraint));
     return constraint;
+  }
+
+  /**
+   * Attach a suspension-backed vehicle to a chassis body.
+   *
+   * The returned controller is the transform authority for the chassis: a game
+   * calls `step(dt)` then `world.step()` and renders from the body, rather than
+   * integrating its own velocity.
+   */
+  createVehicleController(chassis: RigidBody | number): PhysicsVehicleController {
+    const bodyId = typeof chassis === "number" ? chassis : chassis.id;
+    const body = this.bodiesById.get(bodyId);
+    if (!body) throw new Error(`Cannot create a vehicle for missing body ${bodyId}.`);
+    if (body.type !== "dynamic") {
+      throw new Error(
+        `Vehicle chassis body ${bodyId} is '${body.type}', but a suspension-backed vehicle needs a dynamic ` +
+        "chassis. A static or kinematic chassis cannot be pushed by its own tyres, so the wheels would report " +
+        "contact while the car stayed where the route put it — two transform authorities again."
+      );
+    }
+    const rapierBody = this.rapierBodiesByAuraId.get(bodyId);
+    if (!rapierBody) throw new Error(`Cannot create a vehicle for missing body ${bodyId}.`);
+    const handle = this.rapierWorld.createVehicleController(rapierBody);
+    const controller: PhysicsVehicleController = {
+      get wheelCount() { return handle.wheelCount(); },
+      addWheel: (spec) => { handle.addWheel(spec); return controller; },
+      setWheelTuning: (index, tuning) => { handle.setWheelTuning(index, tuning); return controller; },
+      // Drive input clears the wrapper's sleep flag too. Rapier sleeps a chassis that
+      // has been sitting still, and `syncRapierFromAura` pushes the wrapper's sleep
+      // state onto the solver every step — so without this the world would immediately
+      // put the car back to sleep and the throttle would do nothing.
+      setWheelCommand: (index, command) => { body.wake(); handle.setWheelCommand(index, command); return controller; },
+      setBrakes: (brake) => { body.wake(); handle.setBrakes(brake); return controller; },
+      setAxes: (up, forward) => { handle.upAxis = up; handle.forwardAxis = forward; return controller; },
+      wheelState: (index) => {
+        const state = handle.wheelState(index);
+        return {
+          index: state.index,
+          grounded: state.isInContact,
+          contactPoint: state.contactPoint,
+          contactNormal: state.contactNormal,
+          engineForce: state.engineForce,
+          brake: state.brake,
+          steering: state.steering,
+          suspensionLength: state.suspensionLength,
+          rotation: state.rotation,
+          frictionSlip: state.frictionSlip,
+          suspensionForce: state.suspensionForce,
+          forwardImpulse: state.forwardImpulse,
+          sideImpulse: state.sideImpulse,
+          groundColliderHandle: state.groundColliderHandle,
+        };
+      },
+      wheelStates: () => handle.wheelStates().map((state) => controller.wheelState(state.index)),
+      isGrounded: () => handle.isGrounded(),
+      groundedWheelCount: () => handle.groundedWheelCount(),
+      currentSpeed: () => handle.currentVehicleSpeed(),
+      step: (dt) => {
+        // Wheel rays are scene queries, so a car built this frame would otherwise find
+        // no road under any of its four tyres and drop through the circuit.
+        this.rapierWorld.refreshQueries();
+        handle.update(dt);
+      },
+      position: () => handle.chassisPosition(),
+      rotation: () => handle.chassisRotation(),
+      linearVelocity: () => handle.chassisLinearVelocity(),
+      angularVelocity: () => handle.chassisAngularVelocity(),
+      resetToPose: (pose) => {
+        validateFiniteVec3(pose.position, "vehicle reset position");
+        handle.setChassisPose(pose.position, pose.rotation, pose.linearVelocity, pose.angularVelocity);
+        // The public wrapper copy has to agree with the solver immediately, or a route
+        // reading `body.position` between the reset and the next step renders the old
+        // crash pose for one frame.
+        syncAuraFromRapier(rapierBody, body);
+        return controller;
+      },
+      clearCommands: () => { handle.clearWheelCommands(); return controller; },
+      dispose: () => { this.vehicleControllers.delete(handle); handle.dispose(); },
+    };
+    this.vehicleControllers.add(handle);
+    return controller;
+  }
+
+  /**
+   * Attach a solver-backed character controller to a capsule body.
+   *
+   * `move` returns the displacement the world allowed; callers must render from
+   * the reported position instead of applying their own request a second time.
+   */
+  createCharacterController(body: RigidBody | number, descriptor: PhysicsCharacterControllerDescriptor = {}): PhysicsCharacterController {
+    const bodyId = typeof body === "number" ? body : body.id;
+    const wrapper = this.bodiesById.get(bodyId);
+    if (!wrapper) throw new Error(`Cannot create a character controller for missing body ${bodyId}.`);
+    if (wrapper.type !== "kinematic") {
+      throw new Error(
+        `Character body ${bodyId} is '${wrapper.type}', but Aura3D's physical character controller is a kinematic ` +
+        "character controller: the game supplies a desired displacement and Rapier resolves it against the world. " +
+        "A dynamic body is moved by forces instead, which would give the transform two owners."
+      );
+    }
+    const rapierBody = this.rapierBodiesByAuraId.get(bodyId);
+    if (!rapierBody) throw new Error(`Cannot create a character controller for missing body ${bodyId}.`);
+    const colliders = this.rapierCollidersOf(bodyId);
+    if (colliders.length === 0) throw new Error(`Character body ${bodyId} needs a collider before it can move.`);
+    const handle = this.rapierWorld.createCharacterController(descriptor.offset ?? 0.01);
+    if (descriptor.autoStepHeight !== undefined) {
+      handle.enableAutostep(descriptor.autoStepHeight, descriptor.autoStepMinWidth ?? 0.2, descriptor.autoStepIncludeDynamicBodies ?? false);
+    }
+    if (descriptor.maxSlopeClimbAngle !== undefined) handle.setMaxSlopeClimbAngle(descriptor.maxSlopeClimbAngle);
+    if (descriptor.minSlopeSlideAngle !== undefined) handle.setMinSlopeSlideAngle(descriptor.minSlopeSlideAngle);
+    if (descriptor.snapToGroundDistance !== undefined) handle.enableSnapToGround(descriptor.snapToGroundDistance);
+    if (descriptor.slideEnabled !== undefined) handle.setSlideEnabled(descriptor.slideEnabled);
+    if (descriptor.characterMass !== undefined) handle.setCharacterMass(descriptor.characterMass);
+    if (descriptor.applyImpulsesToDynamicBodies !== undefined) handle.setApplyImpulsesToDynamicBodies(descriptor.applyImpulsesToDynamicBodies);
+    this.characterControllers.add(handle);
+
+    const characterCollider = colliders[0]!;
+    const controller: PhysicsCharacterController = {
+      bodyId,
+      setAutoStep: (height, minWidth, includeDynamicBodies) => { handle.enableAutostep(height, minWidth, includeDynamicBodies ?? false); return controller; },
+      setMaxSlopeClimbAngle: (radians) => { handle.setMaxSlopeClimbAngle(radians); return controller; },
+      setMinSlopeSlideAngle: (radians) => { handle.setMinSlopeSlideAngle(radians); return controller; },
+      setSnapToGround: (distance) => { handle.enableSnapToGround(distance); return controller; },
+      setSlideEnabled: (enabled) => { handle.setSlideEnabled(enabled); return controller; },
+      setCharacterMass: (mass) => { handle.setCharacterMass(mass); return controller; },
+      setApplyImpulsesToDynamicBodies: (enabled) => { handle.setApplyImpulsesToDynamicBodies(enabled); return controller; },
+      move: (desired) => {
+        validateFiniteVec3(desired, "character movement");
+        // Rapier only rebuilds its scene-query structure inside `step()`. Without this,
+        // the first move after the character and level are created queries a world the
+        // solver cannot see yet and walks the character straight through the floor it is
+        // standing on — with no error, and with `grounded: false` to confirm it.
+        this.rapierWorld.refreshQueries();
+        const movement = handle.move(characterCollider, [desired[0], desired[1], desired[2]]);
+        const position: Vec3 = [movement.nextPosition[0], movement.nextPosition[1], movement.nextPosition[2]];
+        // The wrapper tracks the solver's answer in place rather than waiting for the
+        // next `step()`, so a route that renders the character before stepping still
+        // renders where the world said it is.
+        wrapper.position = [position[0], position[1], position[2]];
+        wrapper.poseOverridden = false;
+        return {
+          requested: [movement.requested[0], movement.requested[1], movement.requested[2]],
+          applied: [movement.applied[0], movement.applied[1], movement.applied[2]],
+          grounded: movement.grounded,
+          collisions: movement.collisions,
+          position
+        };
+      },
+      position: () => {
+        const rapier = this.rapierBodiesByAuraId.get(bodyId);
+        if (!rapier) return [0, 0, 0];
+        const p = rapier.position();
+        return [p[0], p[1], p[2]];
+      },
+      grounded: () => handle.lastGrounded,
+      resetTo: (position) => {
+        validateFiniteVec3(position, "character reset position");
+        const reset = handle.setPosition(characterCollider, [position[0], position[1], position[2]]);
+        wrapper.position = [reset[0], reset[1], reset[2]];
+        wrapper.previousPosition = [reset[0], reset[1], reset[2]];
+        wrapper.velocity = [0, 0, 0];
+        wrapper.angularVelocity = [0, 0, 0];
+        wrapper.poseOverridden = false;
+        wrapper.velocityOverridden = false;
+        return reset;
+      },
+      dispose: () => { this.characterControllers.delete(handle); handle.dispose(); },
+    };
+    return controller;
+  }
+
+  private rapierCollidersOf(bodyId: number): RapierColliderHandle[] {
+    const out: RapierColliderHandle[] = [];
+    for (const colliderId of this.bodyColliders.get(bodyId) ?? []) {
+      const rapier = this.rapierCollidersByAuraId.get(colliderId);
+      if (rapier) out.push(rapier);
+    }
+    return out;
   }
 
   /**
@@ -429,6 +613,8 @@ export class PhysicsWorld {
   /** Release the selected native solver and every world-owned handle. Idempotent. */
   dispose(): void {
     this.rapierWorld.dispose();
+    this.vehicleControllers.clear();
+    this.characterControllers.clear();
     this.rapierJointsByConstraint.clear();
     this.rapierCollidersByAuraId.clear();
     this.rapierBodiesByAuraId.clear();
@@ -833,10 +1019,29 @@ function encodeRapierCollisionGroups(layer: number, mask: number): number {
 /** Mirror the public Aura body state onto its sole physical-simulation owner. */
 function syncRapierFromAura(body: RigidBody, rapierBody: RapierBodyHandle): void {
   const raw = rapierBody.unsafeRapierBody();
+  // The pose is re-written every step; ONLY the velocity is gated behind an explicit
+  // request. The distinction matters because the two writes have different meanings to
+  // the solver. `setLinvel`/`setAngvel` overwrite the motion the solver integrated, so
+  // pushing them unconditionally made the Aura wrapper the *velocity* authority and a
+  // vehicle whose tyres had just written chassis velocity in Rapier never accelerated —
+  // hence `velocityOverridden`, which keeps the solver authoritative for motion.
+  //
+  // `setTranslation`/`setRotation`, however, write the pose the solver itself produced
+  // last step (the wrapper copy is re-read from Rapier at the end of every `step`), so
+  // for a free body they are not a second authority — they are a per-step refresh of the
+  // solver's own transform bookkeeping. Dropping them (an over-broad first pass at the
+  // velocity fix) subtly changed how the multi-substep contact solver warm-started a
+  // fast dynamic-on-dynamic impact, so a golf ball striking a crate stack no longer flung
+  // the top crate into the pin. Pose is therefore always re-written; the `poseOverridden`
+  // flag still marks an explicit teleport, but is not required for the routine refresh.
   raw.setTranslation(toRapierVector(body.position), false);
   raw.setRotation({ x: body.rotation[0], y: body.rotation[1], z: body.rotation[2], w: body.rotation[3] }, false);
-  raw.setLinvel(toRapierVector(body.velocity), false);
-  raw.setAngvel(toRapierVector(body.angularVelocity), false);
+  body.poseOverridden = false;
+  if (body.velocityOverridden) {
+    raw.setLinvel(toRapierVector(body.velocity), false);
+    raw.setAngvel(toRapierVector(body.angularVelocity), false);
+    body.velocityOverridden = false;
+  }
   raw.setLinearDamping(body.linearDamping);
   raw.setAngularDamping(body.angularDamping);
   if (body.sleeping) raw.sleep();
@@ -932,7 +1137,14 @@ function pushPotentialPair(pairs: PotentialPair[], seen: Set<string>, a: Broadph
   if (a.collider.bodyId === b.collider.bodyId || !a.collider.canCollideWith(b.collider)) {
     return;
   }
-  if (a.body.type !== "dynamic" && b.body.type !== "dynamic") {
+  // A sensor is a question, not an impulse: a gameplay volume has to answer even when
+  // the thing crossing it is a kinematic character or a scripted lift, neither of which
+  // any solver will ever push. Requiring a dynamic partner here meant checkpoint,
+  // pickup and hazard volumes reported nothing at all for the one body type a platformer
+  // character actually uses.
+  if (a.collider.sensor || b.collider.sensor) {
+    // no motion requirement
+  } else if (a.body.type !== "dynamic" && b.body.type !== "dynamic") {
     return;
   }
   const first = a.collider.id < b.collider.id ? a : b;

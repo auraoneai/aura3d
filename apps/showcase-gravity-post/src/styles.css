@@ -356,3 +356,11 @@ body {
     font-size: 11px;
   }
 }
+
+/* Warp, retry, next, pause and both correction verbs are live decisions, and
+   none of them ever declared a tap floor - they measured 28 px tall on a
+   phone. Keyed on pointer capability rather than width so tablets inherit the
+   floor and a desktop mouse keeps the compact density. */
+@media (pointer: coarse) {
+  .gp-actions button { min-height: 44px; }
+}

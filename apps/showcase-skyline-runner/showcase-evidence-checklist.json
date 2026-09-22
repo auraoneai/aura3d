@@ -367,8 +367,6 @@
   "blockers": [
     "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
     "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
-    "evidence:release-asset-probe:skylineArcticRunnerHero:missing-file",
-    "evidence:release-asset-probe:showcaseKenneyVerdantPlatformerWorld:missing-file",
     "evidence:deploy-artifact:not-passing",
     "evidence:deploy-artifact:has-warnings",
     "evidence:deploy-artifact:has-failures"

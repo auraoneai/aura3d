@@ -264,6 +264,16 @@ export interface GamePlatformerSceneBinding {
     readonly notes: string;
   };
   toScenePoint(point: GameKitVec2, yOffset?: number): Vec3;
+  /**
+   * Inverse of {@link toScenePoint} for the playable plane: scene X/Y back to game units.
+   *
+   * The racing binding has had this since routes needed to ask "where on the circuit am
+   * I" from a solver-owned position. A platformer needs the identical thing the moment
+   * Rapier owns the character's scene transform and the level's checkpoint, hazard and
+   * HUD maths are still written in game units. Reconstructing the mapping route-side is
+   * how a second copy of the transform appears and quietly drifts from the first.
+   */
+  toGamePoint(sceneX: number, sceneY: number, yOffset?: number): GameKitVec2;
   toScenePlayer(player: GamePlatformerPlayerState): {
     readonly position: Vec3;
     readonly facing: 1 | -1;
@@ -638,6 +648,12 @@ export function createGamePlatformerSceneBinding(options: GamePlatformerSceneBin
       notes: surfaceMap.evidence.notes
     },
     toScenePoint,
+    toGamePoint(sceneX, sceneY, yOffset = 0) {
+      return {
+        x: (sceneX - transform.offsetX - worldModelSceneOffset.x) / transform.scale,
+        y: (sceneY - transform.elevation - worldModelSceneOffset.y) / transform.scale - yOffset
+      };
+    },
     toScenePlayer(player) {
       return {
         position: toScenePlayerPosition(player),

@@ -113,6 +113,7 @@ interface NeonSwarmEvidence {
   }[];
   readonly systems: Readonly<Record<string, string>>;
   readonly controls: readonly string[];
+  readonly physics: string;
   readonly claimBoundary: string;
 }
 
@@ -265,7 +266,10 @@ const appScene = scene()
     position: [0, -0.26, 0],
     // A lifted blue-gray base preserves the wet-street value structure under
     // emissive lanes and gives the typed courier a grounded shadow plane.
-    material: material.pbr({ color: "#233e45", roughness: 0.46, metallic: 0.24, emissive: "#0a2630", emissiveIntensity: 0.12 })
+    // At the previous value the street was effectively black, so the rain-garden
+    // blades and the typed courier read as objects floating in a void. Lifting the
+    // base and its self-illumination gives the arena an actual floor to sit on.
+    material: material.pbr({ color: "#33565f", roughness: 0.42, metallic: 0.3, emissive: "#123845", emissiveIntensity: 0.42 })
   }))
   .add(instances.box({
     name: "neon lane strips",
@@ -303,7 +307,12 @@ const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactD
       name: `central rain-garden blade material ${index}`,
       color: index % 3 === 0 ? "#285d58" : index % 2 === 0 ? "#1b4550" : "#343052",
       roughness: 0.5 + (index % 3) * 0.08,
-      metallic: 0.18
+      metallic: 0.18,
+      // Flat dark slabs on a black floor read as unlit debug boxes. A faint rim in the
+      // arena's own two-tone key makes the radial language legible without competing
+      // with swarm actors, which stay the brightest thing in frame.
+      emissive: index % 2 === 0 ? "#0d4a55" : "#3d1140",
+      emissiveIntensity: 0.55
     })
   })
     .position(Math.sin(angle) * radius, 0.035, 3 + Math.cos(angle) * radius)
@@ -324,7 +333,10 @@ appScene.addMany(rainGardenBlades);
 // set dressing: they sit outside the authored play rectangle, never collide,
 // and only provide the layered near/mid/far value structure that the swarm
 // composition otherwise lacks at 320 live instances.
-const districtFrameNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 14 }, (_, index) => {
+// The compact default frame had the same black-horizon problem this block exists to
+// solve, but was switched off entirely. It now renders a reduced ring so the arena sits
+// in a place rather than floating in a void.
+const districtFrameNodes = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 8 : 14 }, (_, index) => {
   const side = index % 2 === 0 ? -1 : 1;
   const lane = Math.floor(index / 2);
   const z = -14 + lane * 4.35;
@@ -1134,6 +1146,13 @@ function chooseDoor(kind: string): void {
   hud.markDoorChosen(kind);
   audio.cue("pickup").catch(() => undefined);
   gameEffects.spawn("ring-shockwave", [door.x, 0.6, door.z], { color: "#ffc857", intensity: 0.8, duration: 0.5, radius: 2.2 });
+  // An intermission choice can arrive from a HUD button click instead of the fixed
+  // simulation step. Evidence is normally republished at the end of update(), so without
+  // this the accepted choice - and its "pickup" cue - would be invisible to the published
+  // gameplay truth until the next frame, and not at all while rAF is suspended in a
+  // backgrounded tab. Re-publish here so the projection can never contradict gameplay
+  // state, exactly as the staged evidence paths below already do.
+  publishEvidence();
 }
 
 function collectRiskPickup(): void {
@@ -1748,6 +1767,18 @@ function publishEvidence(): void {
       audio: "createGameAudio typed assets"
     },
     controls,
+    // Machine-readable physics identity for mission section 7, published in the same `physics:`
+    // evidence field shape that gravity-post, deep-recovery and vault-breakers use, so
+    // tools/showcase-library/game-audit-matrix.mjs can cross-check the claim against the
+    // surfaces the route actually imports instead of reading prose by hand. Nothing here
+    // reaches a solver: game.input drives authored kinematic steering, and every pulse hit,
+    // graze, contact and pickup-door result is a deterministic typed-array overlap query in
+    // swarm.ts. The honest section-7 category is therefore "intentionally non-physical
+    // deterministic game" - stated, not converted into a solver claim to fill a column.
+    // The value below deliberately names no solver package: the audit derives its
+    // classification by grepping this src tree, so writing a package specifier here would
+    // fabricate a dependency the route does not have.
+    physics: "none (intentionally non-physical deterministic game: authored kinematic swarm steering plus deterministic typed-array overlap queries for pulse hits, grazes, contact damage and pickup doors; no solver surface is imported, no rigid-body simulation or physical-parity claim)",
     claimBoundary
   };
   window.__NEON_SWARM_EVIDENCE__ = evidence;

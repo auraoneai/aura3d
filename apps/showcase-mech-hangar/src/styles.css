@@ -367,3 +367,24 @@ body[data-capture="review"] .mech-ko-card {
     border-top: 1px solid var(--mech-edge);
   }
 }
+
+/* The build screen is played with a thumb: the four part slots measured 25 px
+   and lock-build 35 px, so a mis-tap silently swaps a chassis or starts the
+   arena without the intended loadout. Declared on the coarse pointer rather
+   than a width breakpoint because it is the input device, not the screen size,
+   that makes 44 px the floor. */
+@media (pointer: coarse) {
+  .mech-slot-button,
+  .mech-lock-button { min-height: 44px; }
+  .mech-slot-button { display: flex; align-items: center; justify-content: center; }
+  /* Four 44 px slots stacked in one column is 200 px of build screen, which
+     pushed LOCK BUILD past the bottom of the panel and made the one control
+     that starts the arena scroll-only. The slots read as a 2x2 choice grid on
+     a phone anyway, so pair them up instead of keeping the tap floor and
+     losing the button. */
+  .mech-slots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 8px;
+  }
+}

@@ -88,7 +88,10 @@ export function rivalLoadoutForBout(boutIndex: number): RivalLoadout {
  */
 export interface AggressionPreset {
   readonly id: string;
+  /** Evidence label: keeps the authored attack-bias value visible to reviewers. */
   readonly label: string;
+  /** Player-facing name. `label` embeds a raw float, which is telemetry, not HUD. */
+  readonly hudLabel: string;
   /** Authored preset value from the PRD (0.35 / 0.55 / 0.8). */
   readonly attackBias: number;
   /** createCombatAi aggression profile. */
@@ -102,6 +105,7 @@ export interface AggressionPreset {
 export const AGGRESSION_PRESETS: readonly AggressionPreset[] = [
   {
     id: "keep-away",
+    hudLabel: "Marksman - keeps you at range",
     label: "KEEP-AWAY 0.35",
     attackBias: 0.35,
     engineAggression: "defensive",
@@ -111,6 +115,7 @@ export const AGGRESSION_PRESETS: readonly AggressionPreset[] = [
   },
   {
     id: "balanced",
+    hudLabel: "Even - trades blows",
     label: "BALANCED 0.55",
     attackBias: 0.55,
     engineAggression: "balanced",
@@ -120,6 +125,7 @@ export const AGGRESSION_PRESETS: readonly AggressionPreset[] = [
   },
   {
     id: "rushdown",
+    hudLabel: "Aggressive - comes at you",
     label: "RUSHDOWN 0.8",
     attackBias: 0.8,
     engineAggression: "aggressive",

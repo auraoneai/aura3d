@@ -241,6 +241,7 @@ interface GravityPostEvidence {
   }[];
   readonly systems: readonly string[];
   readonly controls: readonly string[];
+  readonly physics: string;
   readonly claimBoundary: string;
   readonly lastDockHash: number | null;
 }
@@ -1317,7 +1318,18 @@ const input = app.input({
     warp: ["Space"],
     next: ["KeyN"],
     retry: ["KeyR"],
-    pause: ["KeyP"]
+    pause: ["KeyP"],
+    // Keyboard dispatch rig. The route was pointer-only for its one core
+    // action: `drag anywhere to aim the launch` was the only way to leave the
+    // station, so a keyboard player could read the whole HUD and still never
+    // fly, and no keyboard-driven play session could reach coast, assist,
+    // dock or fail state at all. These rotate/trim the launch vector while the
+    // skiff is `ready`; the drag gesture is unchanged and still authoritative
+    // while a pointer is down.
+    aimCounterClockwise: ["ArrowLeft", "KeyA"],
+    aimClockwise: ["ArrowRight", "KeyD"],
+    powerDown: ["KeyZ"],
+    powerUp: ["KeyX"]
   }
 });
 
@@ -1394,6 +1406,58 @@ function currentAimVector(): { readonly dirX: number; readonly dirZ: number; rea
   if (lengthPx < 6) return null;
   const power = Math.min(1, lengthPx / AIM_DRAG_PIXEL_RANGE);
   return { dirX: dx / lengthPx, dirZ: dy / lengthPx, power };
+}
+
+/**
+ * Keyboard launch aim. Bearing is measured in the play plane exactly like the
+ * drag vector and power is the same 0..1 fraction a drag distance produces, so
+ * one prediction integrator and one launch path serve both inputs. It is
+ * seeded to the contract's origin -> destination bearing, which means the very
+ * first Space press is a genuine dispatch attempt down the briefed route
+ * instead of a blind radial guess.
+ */
+let keyboardAimBearing = 0;
+let keyboardAimPower = 0.6;
+const KEYBOARD_AIM_RATE = 1.05;
+const KEYBOARD_POWER_RATE = 0.5;
+
+function resetKeyboardAim(): void {
+  const from = originStation();
+  const to = destinationStation();
+  const dx = to.x - from.x;
+  const dz = to.z - from.z;
+  keyboardAimBearing = Math.hypot(dx, dz) > 1e-6 ? Math.atan2(dx, dz) : 0;
+  keyboardAimPower = 0.6;
+}
+resetKeyboardAim();
+
+function keyboardAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } {
+  return {
+    dirX: Math.sin(keyboardAimBearing),
+    dirZ: Math.cos(keyboardAimBearing),
+    power: keyboardAimPower
+  };
+}
+
+/** The one aim the player is currently looking at: live drag, else keyboard. */
+function activeAimVector(): { readonly dirX: number; readonly dirZ: number; readonly power: number } | null {
+  return aiming ? currentAimVector() : keyboardAimVector();
+}
+
+function steerKeyboardAim(dt: number): void {
+  if (input.held("aimCounterClockwise")) keyboardAimBearing -= KEYBOARD_AIM_RATE * dt;
+  if (input.held("aimClockwise")) keyboardAimBearing += KEYBOARD_AIM_RATE * dt;
+  if (input.held("powerUp")) keyboardAimPower = Math.min(1, keyboardAimPower + KEYBOARD_POWER_RATE * dt);
+  if (input.held("powerDown")) keyboardAimPower = Math.max(0.08, keyboardAimPower - KEYBOARD_POWER_RATE * dt);
+}
+
+/** Launch along whatever the prediction line is currently showing. */
+function launchActiveAim(): boolean {
+  const vector = activeAimVector();
+  if (!vector || vector.power < MIN_LAUNCH_POWER) return false;
+  const speed = MIN_LAUNCH_POWER + vector.power * (MAX_LAUNCH_SPEED - MIN_LAUNCH_POWER);
+  launchWithPrediction([vector.dirX, vector.dirZ], speed);
+  return true;
 }
 
 const canvas = app.canvas;
@@ -2222,6 +2286,7 @@ function publishEvidence(): void {
       "solar-system presentation kit"
     ],
     controls: CONTROLS,
+    physics: "none (authored inverse-distance arcade gravity; no orbital-mechanics or n-body claim)",
     claimBoundary: CLAIM_BOUNDARY,
     lastDockHash
   };

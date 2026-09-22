@@ -32,12 +32,19 @@ html, body {
   position: relative;
   width: 100%;
   height: 100vh;
+  /* `.viewport` below already asks for `flex: 1 1 auto`, and the phone block
+     already asks for `flex-direction: column`, but neither did anything until
+     the shell was actually a flex container - so the playfield collapsed to
+     195 px tall on a phone and the course disappeared into body background. */
+  display: flex;
+  flex-direction: column;
 }
 
 .viewport {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
 }
 
 .stage,
@@ -165,10 +172,14 @@ body[data-capture="review"] .result-card {
 /* Power meter: fill width is driven by real charge each frame. */
 .power-meter {
   margin-top: 14px;
-  height: 16px;
+  height: 18px;
   border-radius: 999px;
   border: 1px solid var(--panel-edge);
-  background: rgba(0, 0, 0, 0.45);
+  /* The old flat rgba(0,0,0,0.45) track on the near-black panel read as a
+     broken/empty slot in every screenshot where Space was not held. A lit
+     inset groove keeps the meter legible as an instrument at rest. */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.34)), #221c15;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.62);
   overflow: hidden;
 }
 
@@ -176,7 +187,9 @@ body[data-capture="review"] .result-card {
   display: block;
   height: 100%;
   width: 0%;
+  min-width: 7%;
   background: linear-gradient(90deg, #7dd87d 0%, var(--accent) 55%, var(--danger) 100%);
+  box-shadow: 0 0 12px rgba(255, 193, 91, 0.5);
   transition: width 40ms linear;
 }
 
@@ -340,14 +353,33 @@ body[data-capture="review"] .result-card {
   .shell { flex-direction: column; }
   .panel {
     display: flex;
-    top: 10px; right: 10px; left: 10px; bottom: auto;
-    width: auto; max-height: 24vh;
+    flex-direction: column;
+    /* The hole banner owns the top strip, so the card started below it. At
+       top: 10px the two overlapped and "Hole / Strokes / Round" rendered on
+       top of the banner text as unreadable doubled type. The card was also a
+       flex ROW here, which squeezed the two-column stat grid until "HOLE"/
+       "STROKES"/"SENSORS" printed on top of each other across the whole
+       phone width. Column flow plus a real width cap makes every stat legible
+       again while keeping Reset/Pause reachable by touch. */
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    right: 10px; left: auto; bottom: auto;
+    width: min(212px, calc(100vw - 20px));
+    max-height: min(46vh, 330px);
     padding: 8px 10px; gap: 6px;
-    overflow: hidden;
-    background: rgba(35, 31, 26, 0.52);
+    /* `hidden` here amputated "Strike set shot (J)" at the bottom of the card:
+       the control was mounted but no scroll could reveal it. */
+    overflow-y: auto;
+    background: rgba(24, 21, 17, 0.9);
   }
   .panel .sg-brand, .panel .control-legend, .panel .telemetry, .panel .claim-boundary { display: none; }
+  /* The precision dials are a desktop aiming aid; on a phone they were the
+     content that pushed the reachable buttons out of the card. The touch bar
+     at the foot of the screen owns aim and power there instead. */
+  .panel .precision-shot { display: none; }
   .panel .stat-grid { margin-top: 0; }
+  .stat-grid strong, .sg-stat strong { font-size: 1.05rem; }
+  .action-row { margin-top: 8px; gap: 6px; }
+  .action-row button { flex: 1 1 46%; padding: 8px 6px; font-size: 0.76rem; }
   .hole-banner {
     margin-top: max(10px, env(safe-area-inset-top));
     max-width: calc(100vw - 24px);
@@ -369,7 +401,7 @@ body[data-capture="review"] .result-card {
     gap: 8px;
     border: 1px solid rgba(255, 232, 190, 0.42);
     border-radius: 16px;
-    background: rgba(39, 34, 28, 0.88);
+    background: rgba(28, 24, 19, 0.93);
     box-shadow: 0 8px 30px rgba(24, 19, 14, 0.28);
     backdrop-filter: blur(7px);
     pointer-events: auto;
@@ -385,15 +417,17 @@ body[data-capture="review"] .result-card {
   }
   .mobile-shot-readout strong { text-align: right; }
   .mobile-power-meter {
-    height: 9px;
+    height: 11px;
     overflow: hidden;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.42);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.34)), #221c15;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 240, 212, 0.28);
   }
   .mobile-power-meter > span {
     display: block;
     width: 0;
+    min-width: 7%;
     height: 100%;
     background: linear-gradient(90deg, #f8d56b 0%, #ed9b4a 58%, #c9473a 100%);
   }
