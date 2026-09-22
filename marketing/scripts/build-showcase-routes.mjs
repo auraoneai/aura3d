@@ -222,6 +222,20 @@ function copyAuraAssets() {
   if (ignoredTokens.size > 0) {
     console.log(`Ignored non-asset documentation tokens: ${Array.from(ignoredTokens).sort().join(", ")}.`);
   }
+
+  /*
+   * GLB-embedded companion textures (e.g. `Textures/texture-e.png` referenced
+   * by URI inside showcaseRunnerGirl) are invisible to the `assets.*` source
+   * collector above, so they would 404 in production (seen live 2026-09-22 on
+   * Gallery Shift). Mirror the whole companion directory when present.
+   */
+  const companionTextures = path.join(repoRoot, "public", "aura-assets", "Textures");
+  if (existsSync(companionTextures)) {
+    const target = path.join(distDir, "aura-assets", "Textures");
+    mkdirSync(target, { recursive: true });
+    cpSync(companionTextures, target, { recursive: true });
+    console.log(`Mirrored GLB companion textures to aura-assets/Textures/.`);
+  }
 }
 
 function resolveShowcaseAssetBaseUrl() {
