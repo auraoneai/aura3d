@@ -310,7 +310,7 @@ Phase 5:
 Every phase:
 - [x] T6.1 `docs/agents/README.md` and `prompt-to-3d-workflow.md` skill routing updates.
 - [x] T6.2 One worked example log per skill (commands run, validator output, evidence references) under `docs/agents/skills-examples/`.
-- [ ] T6.3 Unit tests for writer, sync, and gate; `check:skills`, `check:agent-docs`, `check:templates`, CLI typecheck/build pass.
+- [x] T6.3 Unit tests for writer, sync, and gate; `check:skills`, `check:agent-docs`, `check:templates`, CLI typecheck/build pass.
 
 Success measures: an agent dropped into a fresh `create-aura3d` project with only skills installed completes the template's golden path (`build`, `test`, `assets validate`, `check-deploy`) with correct claim labels and no forbidden patterns. This is measured on at least three templates by a neutral reviewer, per the benchmark rules in `verification.md`.
 
