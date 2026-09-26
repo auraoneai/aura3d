@@ -9,6 +9,7 @@ import {
   createAssetThumbnails,
   doctor,
   initAgentFiles,
+  initAgentSetup,
   inspectAsset,
   importMeshyAsset,
   listAssets,
@@ -234,7 +235,10 @@ async function main(): Promise<void> {
   } else if (command === "init") {
     const agent = readOption("--agent") ?? "generic";
     if (!["claude", "cursor", "copilot", "generic", "all"].includes(agent)) throw new Error(`Unsupported agent target: ${agent}`);
-    console.log(JSON.stringify({ written: initAgentFiles({ agent: agent as "claude" | "cursor" | "copilot" | "generic" | "all" }) }, null, 2));
+    const skills = readOption("--skills") ?? "core";
+    if (!["core", "all", "none"].includes(skills)) throw new Error(`Unsupported --skills mode: ${skills}. Use core, all, or none.`);
+    const setup = initAgentSetup({ agent: agent as "claude" | "cursor" | "copilot" | "generic" | "all", skills: skills as "core" | "all" | "none", template: readOption("--template") });
+    console.log(JSON.stringify(setup, null, 2));
   } else {
     console.log(mainHelp(profileUsage()));
   }
