@@ -42,7 +42,9 @@ jobs:
       - name: Skills gate
         run: pnpm check:skills
       - name: Skills unit tests
-        run: pnpm exec vitest run tests/unit/create-aura3d/agent-skills.test.ts tests/unit/create-aura3d/templates.test.ts tests/unit/aura3d-cli/assets.test.ts --reporter=dot
+        run: pnpm exec vitest run tests/unit/create-aura3d/agent-skills.test.ts tests/unit/create-aura3d/templates.test.ts --reporter=dot
+      - name: aura3d init test
+        run: pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts -t "writes agent instruction files" --reporter=dot
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Agent docs gate (includes skills gate)
