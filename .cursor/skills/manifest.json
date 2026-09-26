@@ -1,0 +1,48 @@
+{
+  "schema": "aura3d.skills/1.0",
+  "cliVersion": "3.0.1",
+  "docsBase": "https://github.com/auraoneai/aura3d/blob/main/",
+  "coreSet": ["aura3d-core", "aura3d-assets", "aura3d-evidence-review", "aura3d-scene-authoring"],
+  "skills": {
+    "aura3d-core": { "tier": "core", "prd": "C1" },
+    "aura3d-scene-authoring": { "tier": "core", "prd": "C2" },
+    "aura3d-assets": { "tier": "core", "prd": "C3" },
+    "aura3d-evidence-review": { "tier": "core", "prd": "C4" },
+    "aura3d-browser-game": { "tier": "domain", "prd": "D1" },
+    "aura3d-character-animation": { "tier": "domain", "prd": "D2" },
+    "aura3d-animation-studio": { "tier": "domain", "prd": "D3" },
+    "aura3d-threejs-migration": { "tier": "domain", "prd": "D4" },
+    "meshy-cli": { "tier": "asset", "prd": "P1" },
+    "aura3d-materials-environments": { "tier": "asset", "prd": "P2" },
+    "aura3d-game-art": { "tier": "asset", "prd": "P3" },
+    "aura3d-retexture": { "tier": "asset", "prd": "P4" },
+    "aura3d-performance": { "tier": "later", "prd": "L1" }
+  },
+  "templates": {
+    "product-viewer": ["aura3d-materials-environments", "aura3d-retexture", "meshy-cli"],
+    "cinematic-scene": ["aura3d-materials-environments", "aura3d-character-animation"],
+    "mini-game": ["aura3d-browser-game", "aura3d-game-art"],
+    "racing-starter": ["aura3d-browser-game", "aura3d-game-art"],
+    "falling-blocks-starter": ["aura3d-browser-game", "aura3d-game-art"],
+    "fighting-game": ["aura3d-browser-game", "aura3d-character-animation", "aura3d-game-art"],
+    "character-controller": ["aura3d-browser-game", "aura3d-character-animation"],
+    "animation-channel": ["aura3d-character-animation", "aura3d-animation-studio"],
+    "prompt-animation-channel": ["aura3d-character-animation", "aura3d-animation-studio"],
+    "animation-studio": ["aura3d-character-animation", "aura3d-animation-studio"],
+    "episode-builder": ["aura3d-character-animation", "aura3d-animation-studio"],
+    "three-compat-premium-product-viewer": ["aura3d-threejs-migration", "aura3d-materials-environments"],
+    "three-compat-architecture-interior": ["aura3d-threejs-migration", "aura3d-materials-environments"],
+    "three-compat-material-authoring": ["aura3d-threejs-migration", "aura3d-materials-environments"],
+    "three-compat-asset-inspector": ["aura3d-threejs-migration"],
+    "three-compat-character-viewer": ["aura3d-threejs-migration", "aura3d-character-animation"],
+    "three-compat-postprocess-scene": ["aura3d-threejs-migration"],
+    "three-compat-custom-threejs-migration": ["aura3d-threejs-migration"],
+    "three-compat-large-scene": ["aura3d-threejs-migration", "aura3d-performance"]
+  },
+  "clients": {
+    "claude": ".claude/skills",
+    "cursor": ".cursor/skills",
+    "generic": ".agents/skills",
+    "copilot": ".github/skills"
+  }
+}

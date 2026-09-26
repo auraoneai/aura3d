@@ -1,6 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeAgentSkills } from "./agent-skills.js";
 
 export const CREATE_AURA3D_TEMPLATES = [
   "product-viewer",
@@ -30,12 +31,16 @@ export interface CreateA3DProjectOptions {
   readonly template?: CreateA3DTemplate;
   readonly packageVersion?: string;
   readonly rootDir?: string;
+  /** Write Aura3D agent skills + llms.txt for these clients after scaffolding. Omit to skip. */
+  readonly agent?: import("./agent-skills.js").AuraAgentTarget;
+  readonly skills?: import("./agent-skills.js").AuraSkillMode;
 }
 
 export interface CreateA3DProjectResult {
   readonly targetDir: string;
   readonly template: CreateA3DTemplate;
   readonly files: readonly string[];
+  readonly agentSkills?: import("./agent-skills.js").WriteAgentSkillsResult;
 }
 
 export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult {
@@ -66,10 +71,14 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   }
   packageJson.dependencies = dependencies;
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  const agentSkills = options.agent
+    ? writeAgentSkills({ projectDir: targetDir, agent: options.agent, skills: options.skills ?? "core", template })
+    : undefined;
   return {
     targetDir,
     template,
-    files: listTemplateFiles(targetDir)
+    files: listTemplateFiles(targetDir),
+    ...(agentSkills ? { agentSkills } : {})
   };
 }
 
@@ -128,3 +137,18 @@ export {
   type ShowcaseAssetPairCompositionReport,
   type ValidateShowcaseAssetPairCompositionFromDiskOptions
 } from "./showcase-spec-asset-pair-composition.js";
+
+export {
+  AURA_AGENT_CLIENTS,
+  AURA_SKILLS_LEDGER,
+  findBundledSkillsDir,
+  readSkillsManifest,
+  selectSkills,
+  writeAgentSkills,
+  type AuraAgentClient,
+  type AuraAgentTarget,
+  type AuraSkillMode,
+  type AuraSkillsManifest,
+  type WriteAgentSkillsOptions,
+  type WriteAgentSkillsResult
+} from "./agent-skills.js";

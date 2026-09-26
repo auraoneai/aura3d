@@ -54,5 +54,6 @@ Commands:
   aura3d animation scene <new|show|cast add|prop add|set|block|camera|shot|dialogue|render|...>  (agent-native Scene-Tool CLI)
   aura3d doctor
   aura3d check-deploy --dist dist [--release] [--source [src]] [--asset assetId|--no-assets]
-  aura3d init --agent all`;
+  aura3d init --agent all [--skills core|all|none] [--template <create-aura3d template>]
+      Writes agent instruction files, Aura3D agent skills (per client skills dir), and llms.txt; never overwrites user-edited files.`;
 }

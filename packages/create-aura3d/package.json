@@ -7,6 +7,8 @@
   },
   "files": [
     "README.md",
+    "skills",
+    "!skills/AUTHORING.md",
     "dist",
     "templates/product-viewer",
     "templates/cinematic-scene",
