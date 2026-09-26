@@ -49,3 +49,5 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Agent docs gate (includes skills gate)
         run: pnpm check:agent-docs
+      - name: Templates gate (scaffold, vite build, Playwright per template)
+        run: pnpm check:templates

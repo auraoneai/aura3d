@@ -279,37 +279,37 @@ Phase 0:
 - [x] T0.1 Resolve open questions (section 11) with recorded defaults.
 
 Phase 1 (foundation):
-- [ ] T1.1 Canonical `packages/aura3d-cli/skills/` directory + `manifest.json`; `"skills"` added to CLI package `files`.
-- [ ] T1.2 `pnpm skills:sync` generating `.cursor/skills`, `.claude/skills`, `.agents/skills` copies.
-- [ ] T1.3 `pnpm check:skills` gate (frontmatter, CLI commands/flags, animation-scene verbs, engine APIs, links, forbidden content, sync drift, init smoke), wired into `check:agent-docs`.
-- [ ] T1.4 `aura3d init --skills core|all|none` writer with user-edit protection + bundled `llms.txt`.
-- [ ] T1.5 `genericAgentText` points at skills and published docs instead of missing `./docs/agents/README.md`.
-- [ ] T1.6 C1 `aura3d-core` + `references/boundaries.md`.
-- [ ] T1.7 C3 `aura3d-assets`.
-- [ ] T1.8 C4 `aura3d-evidence-review`.
-- [ ] T1.9 P1 `meshy-cli` moved to canonical source and extended.
+- [x] T1.1 Canonical `packages/aura3d-cli/skills/` directory + `manifest.json`; `"skills"` added to CLI package `files`.
+- [x] T1.2 `pnpm skills:sync` generating `.cursor/skills`, `.claude/skills`, `.agents/skills` copies.
+- [x] T1.3 `pnpm check:skills` gate (frontmatter, CLI commands/flags, animation-scene verbs, engine APIs, links, forbidden content, sync drift, init smoke), wired into `check:agent-docs`.
+- [x] T1.4 `aura3d init --skills core|all|none` writer with user-edit protection + bundled `llms.txt`.
+- [x] T1.5 `genericAgentText` points at skills and published docs instead of missing `./docs/agents/README.md`.
+- [x] T1.6 C1 `aura3d-core` + `references/boundaries.md`.
+- [x] T1.7 C3 `aura3d-assets`.
+- [x] T1.8 C4 `aura3d-evidence-review`.
+- [x] T1.9 P1 `meshy-cli` moved to canonical source and extended.
 
 Phase 2 (authoring and domains):
-- [ ] T2.1 C2 `aura3d-scene-authoring`.
-- [ ] T2.2 D1 `aura3d-browser-game`.
-- [ ] T2.3 D2 `aura3d-character-animation`.
-- [ ] T2.4 `create-aura3d` writes manifest-selected skills after scaffolding.
+- [x] T2.1 C2 `aura3d-scene-authoring`.
+- [x] T2.2 D1 `aura3d-browser-game`.
+- [x] T2.3 D2 `aura3d-character-animation`.
+- [x] T2.4 `create-aura3d` writes manifest-selected skills after scaffolding.
 
 Phase 3 (studio and migration):
-- [ ] T3.1 D3 `aura3d-animation-studio`.
-- [ ] T3.2 D4 `aura3d-threejs-migration`.
+- [x] T3.1 D3 `aura3d-animation-studio`.
+- [x] T3.2 D4 `aura3d-threejs-migration`.
 
 Phase 4 (asset authoring):
-- [ ] T4.1 P2 `aura3d-materials-environments`.
-- [ ] T4.2 P3 `aura3d-game-art`.
-- [ ] T4.3 P4 `aura3d-retexture`.
+- [x] T4.1 P2 `aura3d-materials-environments`.
+- [x] T4.2 P3 `aura3d-game-art`.
+- [x] T4.3 P4 `aura3d-retexture`.
 
 Phase 5:
-- [ ] T5.1 L1 `aura3d-performance`.
+- [x] T5.1 L1 `aura3d-performance`.
 
 Every phase:
-- [ ] T6.1 `docs/agents/README.md` and `prompt-to-3d-workflow.md` skill routing updates.
-- [ ] T6.2 One worked example log per skill (commands run, validator output, evidence references) under `docs/agents/skills-examples/`.
+- [x] T6.1 `docs/agents/README.md` and `prompt-to-3d-workflow.md` skill routing updates.
+- [x] T6.2 One worked example log per skill (commands run, validator output, evidence references) under `docs/agents/skills-examples/`.
 - [ ] T6.3 Unit tests for writer, sync, and gate; `check:skills`, `check:agent-docs`, `check:templates`, CLI typecheck/build pass.
 
 Success measures: an agent dropped into a fresh `create-aura3d` project with only skills installed completes the template's golden path (`build`, `test`, `assets validate`, `check-deploy`) with correct claim labels and no forbidden patterns. This is measured on at least three templates by a neutral reviewer, per the benchmark rules in `verification.md`.
