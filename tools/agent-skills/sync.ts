@@ -1,7 +1,7 @@
 // Regenerates skill mirrors from packages/aura3d-cli/skills (canonical). Run: pnpm skills:sync
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree } from "./shared.ts";
+import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree } from "./shared";
 
 const repoRoot = process.cwd();
 const expected = expectedMirror(repoRoot);

@@ -2,8 +2,8 @@
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { CREATE_AURA3D_TEMPLATES, writeAgentSkills, selectSkills, readSkillsManifest } from "../../packages/create-aura3d/src/index.ts";
-import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree, skillNames } from "./shared.ts";
+import { CREATE_AURA3D_TEMPLATES, writeAgentSkills, selectSkills, readSkillsManifest } from "../../packages/create-aura3d/src/index";
+import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree, skillNames } from "./shared";
 
 const repoRoot = process.cwd();
 const skillsRoot = resolve(repoRoot, CANONICAL_SKILLS_DIR);
