@@ -9,6 +9,8 @@
   },
   "files": [
     "README.md",
+    "skills",
+    "!skills/AUTHORING.md",
     "LICENSE",
     "dist"
   ],

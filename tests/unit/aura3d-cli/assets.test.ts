@@ -1992,7 +1992,7 @@ describe("@aura3d/cli assets", () => {
 
   test("writes agent instruction files", () => {
     const projectDir = createProject();
-    const written = initAgentFiles({ projectDir, agent: "all" });
+    const written = initAgentFiles({ projectDir, agent: "all", skills: "none" });
     expect(written.map((path) => path.replace(projectDir, ""))).toEqual([
       "/AGENTS.md",
       "/.claude/CLAUDE.md",

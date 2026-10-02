@@ -87,3 +87,28 @@ Release-facing examples must also satisfy the claim-boundary checklist: no raw
 model strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,
 `GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or
 renderer/game/WebGPU/animation claims that exceed root API evidence.
+
+## Agent Skills
+
+Load-on-demand procedures live in `packages/aura3d-cli/skills/` (canonical;
+`pnpm skills:sync` mirrors them to `.cursor/skills`, `.claude/skills`,
+`.agents/skills`, and the `create-aura3d` bundle; `pnpm check:skills` gates
+them). Downstream projects get them from `npx @aura3d/cli@latest init --agent all
+--skills core|all|none` or from `create-aura3d` (default `--agent all --skills
+core`). Worked example logs are in `docs/agents/skills-examples/`.
+
+| Task | Skill |
+| --- | --- |
+| Any Aura3D task, public examples, claims | `aura3d-core` (shared rules in `aura3d-core/references/boundaries.md`) |
+| Prompt to scene or route | `aura3d-scene-authoring` |
+| Named real object or user GLB | `aura3d-assets` |
+| Before calling work done, public, or shippable | `aura3d-evidence-review` |
+| `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, Aura Clash | `aura3d-browser-game` |
+| Rigged humanoids, clips, morphs, visemes, assembled characters | `aura3d-character-animation` |
+| `animation-studio` episodes (Scene-Tool CLI) | `aura3d-animation-studio` |
+| three.js ports, `three-compat-*` templates | `aura3d-threejs-migration` |
+| Materials, textures, HDRI, sky, weather, water | `aura3d-materials-environments` |
+| Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
+| Restyling a finished mesh | `aura3d-retexture` |
+| Paid Meshy generation | `meshy-cli` |
+| Slow or heavy routes, performance claims | `aura3d-performance` |
