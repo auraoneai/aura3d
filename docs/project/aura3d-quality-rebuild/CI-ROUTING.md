@@ -130,7 +130,7 @@ Spending rules:
 
 ## Open risks
 
-- **GitLab plan.** The namespace reports `plan: ultimate` and `trial: false`, but also `trial_ends_on: 2026-10-25`. If Ultimate lapses, the macOS runners (Premium/Ultimate only) and the 50,000-minute quota go away, and every lane falls back to GitHub macos-14 at 5 concurrent jobs. Confirm the plan in GitLab billing before 2026-10-25.
+- **GitLab plan: confirmed.** Subscription A-S00170445 is "[EDU Program] SaaS - Ultimate - 1 Year", 20 seats, valid 2026-09-25 to 2027-09-24 (GitLab receipt INV00637229, account AuraOne). The API's `trial_ends_on: 2026-10-25` is a stale trial marker, not the subscription end. Renew before 2027-09-24. If it lapses, the macOS runners (Premium/Ultimate only) and the 50,000-minute quota go away, and every lane falls back to GitHub macos-14 at 5 concurrent jobs. This is an EDU-program licence, so confirm that commercial product CI is within its usage terms.
 - **PR visibility.** GitLab results attach to a PR only through the commit-tag path. Dispatch runs do not attach.
 - **Cancellation.** Cancelling the GitHub bridge job does not cancel the GitLab pipeline, because the read-only token cannot cancel. Only the operator can cancel: `glab ci cancel pipeline <id> -R chahal-foundation-group/github-auraoneai/aura3d`. Remote agents let the pipeline finish or ask the operator.
 - **Public artifacts.** Artifacts are re-uploaded to the public GitHub repo, so keep secrets and personal data out of capture output. The bridge strips user objects from the GitLab job list it uploads.
