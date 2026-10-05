@@ -56,7 +56,10 @@ const strict = flag("--strict");
 const validateOnly = flag("--validate");
 const includeMobile = !flag("--no-mobile") && !truthy(process.env.QRC_NO_MOBILE);
 const includeAlt = !flag("--no-alt-routes");
-const channel = opt("--channel", "QRC_CHANNEL", "chromium");
+// QRC_CHANNEL=headless-shell selects Playwright's chromium-headless-shell (no channel). GitLab
+// saas-macos runners need it: full Chromium crashes on the second page there (gpu-probe.mjs).
+const channelOpt = opt("--channel", "QRC_CHANNEL", "chromium");
+const channel = channelOpt === "headless-shell" ? "" : channelOpt;
 const executablePath = opt("--executable", "QRC_EXECUTABLE", "");
 const gpuArgs = opt("--gpu-args", "QRC_GPU_ARGS", "--use-angle=metal --enable-gpu --ignore-gpu-blocklist")
   .split(/\s+/).filter(Boolean);
@@ -857,7 +860,10 @@ async function main() {
   const environment = {
     platform: `${os.platform()} ${os.release()} ${os.arch()}`, cpus: os.cpus()[0]?.model ?? null, cpuCount: os.cpus().length,
     memoryGB: Math.round(os.totalmem() / 1073741824), node: process.version, launch: { ...launchOptions },
-    runner: process.env.RUNNER_NAME ?? null, githubRun: process.env.GITHUB_RUN_ID ?? null, sha: process.env.GITHUB_SHA ?? gitSha()
+    runner: process.env.RUNNER_NAME ?? process.env.CI_RUNNER_DESCRIPTION ?? null, githubRun: process.env.GITHUB_RUN_ID ?? null,
+    ciProvider: process.env.GITLAB_CI ? "gitlab" : process.env.GITHUB_ACTIONS ? "github" : "local",
+    gitlabPipeline: process.env.CI_PIPELINE_ID ?? null, browserChannel: channelOpt,
+    sha: process.env.GITHUB_SHA ?? process.env.CI_COMMIT_SHA ?? gitSha()
   };
 
   const report = {

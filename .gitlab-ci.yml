@@ -40,6 +40,10 @@ variables:
   HOMEBREW_NO_INSTALL_CLEANUP: "1"
   QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
   QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+  # Full Chromium (new headless) crashes on the 2nd page on saas-macos runners (CVDisplayLink, SEGV);
+  # chromium-headless-shell is stable there with the same ANGLE Metal paravirtual GPU (gpu-probe, pipeline 2915365880).
+  QRC_CHANNEL: "headless-shell"
+  QR_BENCH_CHANNEL: "headless-shell"
 
 stages: [capture]
 
