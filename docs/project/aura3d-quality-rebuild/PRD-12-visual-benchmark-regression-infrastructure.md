@@ -1,0 +1,1589 @@
+# PRD 12 — Visual Benchmark + Regression Infrastructure
+
+Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit`.
+Status: proposed. Owner area: `benchmarks/quality-rebuild/`, `tools/quality-rebuild-capture/`, new `tools/quality-gate/`,
+`.github/workflows/quality-rebuild-capture.yml`, removal of the fabricated and label-only evidence suites in `tools/`,
+`tests/browser/`, `benchmarks/three-compat/`, `benchmarks/production-runtime/` and `package.json` scripts.
+
+Evidence base: research `14-evidence-fake-parity.md` and `15-threejs-comparison-infra.md` (primary),
+`01-history-chronology.md`, `19-claim-verification.md` (C18 and the corrected C1 count: ambient-zeroes-IBL hits 15 of 18
+games), `22-benchmark-pass1-code-metrics.md` (harness fairness verified, skeptic harness fixes),
+`23-benchmark-vision-judgment.md` (authoritative benchmark scores), `21-game-vision-judgment.md` (authoritative game
+visual scores), `20-game-scorecards-code-pixelstats.md` (non-visual categories), `18-completeness-critic.md` §4 and Q9,
+`_sections/E-debt-delete-qualitybar.md` (the Aura3D Quality Bar this PRD makes executable). Raw evidence:
+`evidence/benchmark/report.json` and `<scene>-side-by-side.jpg`, `evidence/games/report.slim.json` and
+`<id>-{contact,mid}.jpg` (GitHub Actions run 37289688772, `macos-14`, sha `c08d8acb`).
+
+Rule for this PRD: a gate that cannot fail is not a gate. Every new gate must show, in CI, that it rejects a
+deliberately broken control before it may block anything. Test passes, HTTP 200, non-blank canvases and green parity
+matrices are liveness signals. They are never reported as quality. The release-blocking quality decision is a panel
+judgment of the shipped default path against references that look current. This PRD builds the machinery that
+produces that judgment, records it over time, and stops quality from silently regressing once it improves.
+
+---
+
+## 1. Problem statement
+
+Aura3D renders measurably worse than three.js r185 on the same inputs, and its shipped games look like early
+tech demos. The release process never registered this. Four things went wrong.
+
+1. **The gates measured liveness and labels, not appearance.**
+   - Of 449 tool directories with code, 340 (76%) only read JSON from `tests/reports/` and check fields. Only 40
+     decode a pixel and only 34 launch a browser (research 14 §1.1).
+   - "Visual QA PASS 17/17" means a non-blank canvas, zero console errors and an input that changed state. The same
+     document calls Turbo Drift "washed-out grey", Courier Rush "bloom blowout" and Aurora Lander "mostly empty sky".
+     All three pass (research 14 §3.9).
+   - There is no golden-image regression anywhere: no `toHaveScreenshot` and no perceptual metric used as a pass
+     criterion. `pnpm test:visual` (`package.json:251` → `tools/visual-baseline/index.ts`) checks that one fixture
+     JSON has two differing pixels (research 14 §0.7).
+2. **Several parity suites are fabricated, label-backed or unfailable.**
+   - `three-compat:compare-threejs` (`package.json:335`, gates `three-compat:release` at `:340`) scores
+     hard-coded constants. Its "Aura3D", "three.js" and "diff" screenshots are Canvas2D paintings. Neither engine
+     runs (research 19 C18, confirmed by both skeptics).
+   - The "54/54 three.js examples matched" matrix comes from literal `"matched"` strings. `visualStatus: "accepted"`
+     is derived from that same label (`tools/threejs-parity-threejs-inventory/index.ts:251-256`).
+   - `tools/compare-engines` renders grids of boxes instead of the named scenes and gates on
+     `maxChangedPixelRatio: 1` (`tools/compare-engines/index.ts:2110`), which cannot fail.
+   - The 3.0.1 `superiorityTargetsMet` check is vacuously true (`tests/browser/muse3jsparity-301-visual.spec.ts:127-129`).
+   - The PBR and shadow "visual parity" gates pass at 82%/86% changed pixels and MAE 64/72 (research 14 §2.1).
+3. **The reference was a 2012-era three.js scene.** The frozen head-to-head contract disables shadows in every
+   workload that mentions them, uses `AmbientLight 0.35` and has no AO, AA pass or atmosphere. Retained three.js
+   frames have mean luma 7.6–22.3 and 87–99% near-black pixels (research 14 §3.4, research 15 §0.2). The loop
+   optimized Aura3D to match a flat scene, including *removing* Aura's studio environment (research 15 §7).
+4. **No comparison ever looked at a game, and no human scored anything against a rubric.** A grep for all 18 game
+   `appDir`s across every comparison tool returns 0 hits (research 15 §0.1). The only human record is a single
+   "ship" bit two days after a machine `needs-work` on every route (research 14 §3.10).
+
+The audit built the first two pieces of infrastructure that measure appearance:
+
+- `benchmarks/quality-rebuild/` renders 18 scenes from one `SceneSpec` in Aura3D (public API, `createAuraApp`) and
+  three@0.185.1. Research 22 verified it fair.
+- `tools/quality-rebuild-capture/` plays the 18 shipped games with real input on the default URL.
+
+Both run on `macos-14` (ANGLE Metal). Their first results:
+
+- **Benchmark (research 23, vision-judged).** Aura3D mean 3.6/10, three.js mean 5.4/10. Only 2 of 18 scenes are
+  within 0.5 points (03 helmet 6.5 vs 7.0, 11 multi-light 5 vs 5). 16 of 18 carry `major-aura3d-deficiency` or
+  `implementation-bug`. The three.js scores are themselves capped at 4–7 by programmer-art scene content.
+- **Games (research 21, vision-judged).** `overall_visual_quality` 1.5–4, median 3, no game at 5.
+- **Performance (report.slim.json).** 15 of 18 games run below 30 fps at 1920×1080 on the runner. Deep Recovery runs
+  at 0.5 fps. Only Aurora Lander (52), Vault Breakers (57) and Orbital Defense (60) are near 60.
+
+These tools are not yet gates.
+
+- Both jobs use `continue-on-error: true` (`.github/workflows/quality-rebuild-capture.yml:78,83,137`).
+- `capture.mjs` exits non-zero only when nothing rendered at all (`benchmarks/quality-rebuild/capture.mjs:374`).
+- They compute only whole-frame metrics. Whole-frame luma SSIM is ≥ 0.95 on 14 of 18 scenes even where the vision
+  gap is 1–3 points. SSIM only collapses where the subject is missing (14 particles 0.558, 16 instancing 0.399;
+  `evidence/benchmark/report.json`).
+- There are no goldens, no masks, no rubric records, no score history and no broken-control calibration.
+- In pass 1, the judges could not see the images. The Read tool returned empty for every PNG (research 22, every
+  scene), so "judging" fell back to pixel statistics.
+
+**Goal.** Make `benchmarks/quality-rebuild` (18 scenes plus the reference-tier and PRD-contributed scenes) and
+`tools/quality-rebuild-capture` (18 games) the canonical, blocking quality gates:
+
+- golden-image regression with region-masked perceptual metrics, calibrated per scene so they can fail;
+- a required panel review (2 named humans plus 1 vision model) using the research 21/23 rubric, with scores tracked
+  over time;
+- three.js reference scenes upgraded to how a competent r185 developer ships them;
+- captures taken only from the player's frame, on a GPU runner;
+- deletion or quarantine of the fabricated suites and of the report-aggregator layer, and retirement of
+  label/claim gates.
+
+## 2. Evidence from current code
+
+All paths are relative to `/Users/gurbakshchahal/platforms/aura3d`. Line numbers were checked at HEAD `3a51cba3` unless a
+research file is cited.
+
+### 2.1 The new harnesses: what they do today
+
+| # | Finding | Location |
+|---|---|---|
+| H1 | Scenes are a single typed `SceneSpec` that both translators read. Resolution is fixed at 1280×720 DPR 1. Tone mapping is limited to `"aces-filmic"`. | `benchmarks/quality-rebuild/shared/types.ts:5,8,191-212` |
+| H2 | `ReadyPayload` carries `capabilityLog`, `drawCalls`, `warnings`, `errors`, `loadMs` and a free-form `extra`. It has no shadow, exposure, light-unit or frame-hash fields. | `shared/types.ts:222-233` |
+| H3 | One engine per page load, routed by `index.html?engine=aura3d\|three&scene=<id>`. Avoids dual-context interference. | `benchmarks/quality-rebuild/main.ts`, research 15 §10.2 |
+| H4 | Metrics are whole-frame only: MAD, PSNR, luma SSIM (8×8 uniform windows, stride 4), changed-pixel ratio at Δ>16, mean luma. Computed in a browser page by Canvas2D decode. | `benchmarks/quality-rebuild/capture.mjs:157-283` |
+| H5 | Exit code is 0 unless no scene produced metrics. Capture failures are "audit data". | `capture.mjs:371-374` |
+| H6 | Linux falls back to SwiftShader. | `capture.mjs:80-82` |
+| H7 | The three.js translator is the *contract* reference: `antialias:true`, ACES, `PCFSoftShadowMap` (deprecated in r185, silently remapped to `PCFShadowMap`, `node_modules/three/src/renderers/webgl/WebGLShadowMap.js:99-101`), PMREM, `UnrealBloomPass` only when requested, `CSM` only when requested. No AO, no SMAA/TAA, no AgX/Neutral, no contact shadows, no anisotropy setting. | `benchmarks/quality-rebuild/three/common.ts:1-10,122-160` |
+| H8 | The workflow triggers on `workflow_dispatch` and on push to the audit branch only. Capture and bench steps use `continue-on-error: true`. A final step fails the job only if the capture step failed. | `.github/workflows/quality-rebuild-capture.yml:6-27,76-84,135-159` |
+| H9 | Game capture uses real keyboard/pointer timelines, never `?capture=` lenses or debug hooks. Shots are **viewport** `page.screenshot` PNGs (no `fullPage`; the DOM HUD over the canvas is included). The FPS sample is a 5 s rAF trace. Default desktop viewports are `1920x1080,1280x720` plus a mobile run. | `tools/quality-rebuild-capture/README.md:3-5,58-111`; `capture-games.mjs:65,413-442,534` |
+| H10 | 17 games are captured from production `https://aura3d.auraone.ai`. Orbital Defense is built from source. A source-build mode already exists (`--local-build`, `--build-only`, `--skip-build`; `buildGame()` at `capture-games.mjs:198`; workflow input `local_build_all`), but it is off by default, so a PR is never judged on its own build. | `tools/quality-rebuild-capture/README.md:13-30`; workflow `:13-17,76-84` |
+| H11 | Runner GPU: `ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device)`, Apple M1 (Virtual), 3 vCPU, 7 GB, `maxSamples 4`, `EXT_color_buffer_float` present. | `evidence/benchmark/report.json` environment.gpu; `evidence/games/report.slim.json` environment |
+| H12 | Benchmark load times: Aura3D 1.3–13× slower than three on 14 of 18 scenes (06: 2,892 ms vs 218 ms; 13: 2,905 vs 385). Duplicate `net::ERR_ABORTED` GLB/HDR fetches on both sides. | `evidence/benchmark/report.json`; research 22 scenes 02-09 |
+| H13 | Draw calls (Aura vs three) match exactly on 9 of 18 scenes (01–04, 06–08, 15, 16). Exceptions: 05 transmission 5 vs 8, 09 outdoor 35 vs 36, 10 indoor 26 vs 23, 11 multi-light 32 vs 14, 12 shadows 11 vs 16, 13 IBL-only 7 vs 5, 14 particles 1 vs 2 (Aura draws no particles), 17 large-environment 1,135 vs 2,395, 18 game 24 vs 38. | `evidence/benchmark/report.json` `engines.*.payload.drawCalls` |
+| H14 | Confirmed engine bug found by the benchmark: `createProductionInstanceTransforms` builds the instance node from `{kind, primitive, ...transform}` and drops `node.size`, so instanced boxes render at unit size (scene 16). | `packages/engine/src/agent-api/index.ts:14747-14753`; research 22 §16 |
+| H15 | `benchmarks/quality-rebuild` is **not** a pnpm workspace member (`pnpm-workspace.yaml` lists only `packages/*`, `workers/*`). `@aura3d/engine` resolves to `packages/engine/src/index.ts` through the repo-root Vite alias table, so the Aura side always renders the checked-out source. | `benchmarks/quality-rebuild/package.json` `description`; `vite.config.ts:9-11` |
+| H16 | Scene implementations are discovered by `import.meta.glob(["./aura3d/*.ts", "!./aura3d/common.ts"])` (same for `three/`), keyed by scene id. Any new helper file placed directly in `aura3d/` or `three/` is treated as a scene module. Subdirectories are not matched. | `benchmarks/quality-rebuild/main.ts:21-22,40-41` |
+| H17 | 16 of 18 game routes read `?capture` unconditionally at boot (`new URLSearchParams(...).get("capture") === "review"`) and branch on it 395 times (rooftop 81 … turbo 0, orbital 0). PRD 09's `captureFromUrl()` will keep reading `capture` in order to ignore it and warn. A "was the key read" probe would therefore fail every route on every run, before and after PRD 09. | research 16 §0 item 3 and the per-route counts; PRD 09 §7.4 (`captureFromUrl`) |
+
+### 2.2 Whole-frame metrics do not discriminate (from `evidence/benchmark/report.json`)
+
+| Scene | SSIM | ssimMinWindow | MAD | Vision score Aura / three (research 23) | Vision class |
+|---|---:|---:|---:|---|---|
+| 01-simple-geometry | 0.984 | −0.05 | 4.4 | 3.5 / 4.5 | implementation-bug (missing cylinder cap) + major shadow deficiency |
+| 02-pbr-product | 0.969 | −0.42 | 4.2 | 3.5 / 6 | major (broken plinth, no shadow) |
+| 05-transmission | 0.946 | −0.64 | 12.1 | 3 / 6 | implementation-bug (black glass) |
+| 06-metal-roughness-sweep | 0.964 | −0.46 | 4.3 | 4 / 7 | major (rough end loses ~25% energy) |
+| 07-sheen-fabric | 0.954 | −0.26 | 6.4 | 3 / 6 | implementation-bug (sheen sweep missing) |
+| 08-skinned-character | 0.989 | 0.05 | 2.6 | 3.5 / 5 | major (no cast shadow) |
+| 12-shadows | 0.984 | −0.83 | 7.3 | 3.5 / 5.5 | major (shadows nearly invisible) |
+| 14-particles | 0.558 | −0.39 | 12.9 | 1 / 4 | missing-capability (zero particles) |
+| 16-instancing | 0.399 | −0.71 | 34.2 | 2.5 / 4.5 | implementation-bug (`node.size`) |
+
+The subject covers 5–26% of the frame in most scenes, and the rest is an identical flat background (research 22:
+02 ≈ 5%, 03 ≈ 17.8%, 05 ≈ 26%, 06 ≈ 12%). Research 22 skeptics asked for region-masked metrics for 02, 03, 04, 05, 06,
+07 and 08. Example: on 03 the helmet-only MAD is about 15.4, against 2.91 for the whole frame.
+
+### 2.3 Fabricated, label-only and unfailable suites (all paths verified to exist)
+
+| Item | What it does | Location | Research |
+|---|---|---|---|
+| three-compat visual/runtime parity | Hard-coded `visualScore` 0.82–0.93, frame times and draw calls. Canvas2D paintings. Gate `visualScore >= 0.85` on constants. | `benchmarks/three-compat/{shared,aura3d,threejs}/`, `tests/browser/three-compat-threejs-visual-parity.spec.ts`, `tests/browser/three-compat-threejs-runtime-parity.spec.ts`, `tools/three-compat-threejs-visual-parity/index.ts:20-28`, `tools/three-compat-threejs-runtime-parity/index.ts:16-23`; consumers `tools/three-compat-broad-replacement-readiness/index.ts:16,42`, `tools/three-compat-completion-audit/index.ts:37-38`, `tools/three-compat-release-readiness/index.ts:39-40,62-79`; scripts `package.json:335,340` | 19 C18; 14 §3.1 |
+| external-parity same-scene | Pass = PNGs > 8,000 bytes, diff > 2,000 bytes, draw calls > 0 and a `visualScore >= 58`. | `tests/browser/external-parity-threejs-visual-parity.spec.ts:21-30`, `benchmarks/external-parity/shared/threejs-visual-parity-scenes.ts`; script `external-parity:compare-threejs` (`package.json:314`) | 15 §6.6 (same class as same-scene "proof") |
+| production-runtime parity | `renderA3DScene = s => 'a3d:' + s`; `pass: meanDelta <= 18 && maxDelta <= 255`; reports copy `readiness.pass`. | `benchmarks/production-runtime/`, `tools/production-runtime-threejs-parity/`, `tools/production-runtime-report-bridge/shared.ts:160` | 15 §6.2 |
+| compare-engines visual | Box grids instead of the named scenes. `maxChangedPixelRatio: 1`. Timing from a raw WebGL2 triangle. | `tools/compare-engines/index.ts:1734-1770,1818-1856,2110-2112` | 15 §3.3, §6.5 |
+| 54/54 inventory | Literal `"matched"`. `visualStatus` derived from the label. WebXR rows backed by an injected session and a Canvas2D preview. | `tools/threejs-parity-threejs-inventory/index.ts:177-179,251-256`; `docs/project/parity/threejs/parity-matrix.md`; `README.md:218` | 14 §3.2 |
+| superiority decisions | `visualStatus === "accepted"` → `decision: "parity"`. | `tools/superiority-*` (11 dirs) e.g. `tools/superiority-visual-quality/index.ts:7-22` | 14 §3.2 |
+| same-scene "proof" | Pass = PNG pair larger than 8,000 bytes. | `tools/threejs-parity-same-scene-render/index.ts:36-45` | 15 §6.6 |
+| "SSIM proxy" | `1 - meanDelta/255`, named `structuralSimilarityProxy`. Gated ≥ 0.8, ≥ 0.75 and ≥ 0.4. **52 files** use it (23 under `tools/`, 29 under `tests/browser/`), not 3: the `threejs-parity-*-parity` family (16 tools + 16 specs), `runtime-parity-*` specs and helpers (10 files), `tools/renderer-{animation,lighting-environment-color,pbr-gltf-correctness,postprocessing}`, `tools/webgpu-visual-parity`, `tools/current-routes-threejs-parity` + spec, `tools/production-runtime-threejs-parity-readiness` and `tests/browser/production-runtime-threejs-parity{.spec,}.ts`. Full list: `rg -l structuralSimilarityProxy tools tests`. | e.g. `tools/current-routes-threejs-parity/index.ts:357`, `tests/browser/production-runtime-threejs-parity.spec.ts:71`, `tools/threejs-parity-shadowmap-parity/index.ts:338` | 14 §2.1, 15 §6.3 |
+| roadmap visual quality | Score = resolution + PNG bytes + category name. | `tools/external-parity-roadmap-visual-quality/index.ts:15-31` | 14 §2.2 |
+| Unity/Unreal baselines | Self-hosted runners that never ran. Every audit step `\|\| true`. | `.github/workflows/external-parity-external-engine-baselines.yml:111-117,185-191,264-297`, `tools/external-parity-unity-unreal-parity/` (1,239 LOC) | 15 §6.7 |
+| vacuous superiority | `superiorityClaims.every(...)` over filtered wins. The same flag is re-consumed by `tools/muse3jsparity-readiness/acceptance.ts:20,105` (a directory on the keep list), asserted in `tests/browser/game-visual-superiority.spec.ts:452` and fixtured in `tests/unit/tools/muse3jsparity-acceptance.test.ts:95`. | `tests/browser/muse3jsparity-301-visual.spec.ts:124-129` | 14 §3.3 |
+| head-to-head verdict literals | "Personal inspection … Aura is visibly darker" is a string literal that contradicts the pixels (Aura luma 0.112 vs three 0.052). | `tools/head-to-head-gltf-product-viewer/index.ts:31-35` (20 `tools/head-to-head-*` dirs) | 15 §4.2 |
+| status-quo-calibrated game QA | Flat-region budget measured on the current retained frames and set so one known-bad frame (Skyline pre-fix) fails while Turbo and Blockfall "keep passing with real headroom". No reference frame, so it cannot say what good looks like. | `tools/showcase-library/game-visual-qa.mjs:205-235` | 14 §2.2 |
+| liveness as visual QA | "Mac GPU Visual QA 17/17 PASS" in the header (`:6-12`), a `Visual QA` column in every lane table (`:16,27,46`, …) and the section at `:161-207`. | `AURA3D-VERIFICATION-MATRIX.md` | 14 §3.9 |
+| CI visual baseline | Fixture JSON with 2 differing pixels. Runs on `ubuntu-latest` (software GL). | `tools/visual-baseline/index.ts:21-30,101-114`; `.github/workflows/browser-matrix.yml:19,101` | 14 §2.2 |
+| apps/threejs-parity-lab | 33 lines, Aura only. | `apps/threejs-parity-lab/` | 15 §6.8 |
+
+### 2.4 Assets worth keeping (verified)
+
+- `tests/visual/rendering-pixels.spec.ts:62-94`: analytic pixel checks, for example shadow < plane − 120 (research 14 §6).
+- Human-review workflow shape: `.github/workflows/muse301-final-review.yml` and
+  `tools/release/final-review-approval.mjs:22-75` (authenticated reviewer, hash-bound manifest). It has no rubric
+  today.
+- `tools/flagship-visual-comparison/index.mjs:61-160`: OCR/HUD masking and ImageMagick AE/MAE/RMSE wrappers
+  (research 15 §10.3).
+- Premium-indie reference stills: `tests/reports/_visual-critic-refs/` (Art of Rally, Brawlhalla, Neon White,
+  Celeste, 20 Minutes Till Dawn, …), fetched by `tools/premium-indie-reference/*.mjs`. These are copyrighted game
+  screenshots in an ignored folder. Nothing reads them.
+- three r185 addons present locally: `GTAOPass`, `SAOPass`, `SSAOPass`, `SMAAPass`, `TAARenderPass`, `SSRPass`,
+  `OutputPass`, `UnrealBloomPass`, `RoomEnvironment`, `GroundedSkybox`, `Reflector`, `Sky`
+  (`node_modules/three/examples/jsm/{postprocessing,environments,objects}/`).
+- HDRIs available: three 1k equirects (`fixtures/environment-corpus/hdri/{studio_small_08,autumn_field_puresky,kloppenheim_06_puresky}_1k.hdr`).
+  No 2k/4k and no interior HDRI (research 15 §9.1).
+- Hero assets available: `fixtures/threejs-parity/assets/vehicles/car-concept.glb` (213k tris; clearcoat, iridescence,
+  transmission), `fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb` (142k, Draco, 1 animation),
+  `fixtures/asset-corpus/{damaged-helmet,antique-camera,boom-box}.glb`, `fixtures/threejs-parity/assets/character/soldier.glb`
+  (research 15 §9.2).
+
+### 2.5 Process evidence
+
+- 562 of 1,207 commits (47%) are evidence/claims/gates/receipts/PRD/amendment commits. Only 6.9% touched rendering
+  source (research 01 §1).
+- At least eight "parity"/"world-class" pushes were each followed by an audit that found the claims false. "The fix
+  for each failure was another evidence layer, not better pixels" (research 01 §0.2).
+- `package.json` holds 560 scripts: 77 `verify:*`, 53 `check:*`, 22 `external-parity:*`, 20 `head-to-head:*`,
+  17 `threejs-parity:*`, 12 `superiority:*`, and only 10 `renderer:*` (research 01). 7 scripts reference missing
+  files (research 14 §4 #30).
+- `tests/reports` is 9.5 GB, git-ignored, with 60 tracked files, so almost no evidence is reproducible
+  (research 14 §0.10).
+- The 1.0-era bar was amended 25 times in 13 failing rounds (research 01 row 3, via `_sections/E`).
+- The repository is **public** (`gh repo view` → `auraoneai/aura3d`, `PUBLIC`). Hosted `macos-14` minutes are free.
+  Copyrighted reference stills must not be committed. Workflows that run on `pull_request` may not use secrets.
+- Two workflows can publish packages: `.github/workflows/release.yml` (a manual "legacy repack" workflow; its own
+  header says 3.0.1 shipped through the exact-plan coordinator) and `.github/workflows/muse301-publish.yml`. A release
+  gate that wires only one of them can be bypassed through the other.
+- Repo TypeScript imports carry no `.ts` extension (commit `45955a0d`), so `node --experimental-strip-types` cannot
+  run multi-file tools. Multi-file tools run through `pnpm exec tsx --tsconfig tsconfig.base.json`, as the existing
+  scripts do.
+
+## 3. Root cause
+
+1. **Gates encoded "does it render, is the claim bounded", never "is the frame competitive".** No metric, reference
+   or threshold represents a modern look (research 14 §5). Where a gate did measure a gap, its pass/fail ignored it
+   (head-to-head verdicts that admit losses still pass).
+2. **No gate was required to fail on a known-bad input.** Thresholds started loose (`19698382`). One tight threshold
+   was removed (`f44dd136`). Game QA was calibrated on the current frames. Without a broken-control test, any
+   threshold can be set to pass.
+3. **References were chosen at their minimum.** Matching a dark, unshadowed three.js test card is easy. Fixes then
+   moved Aura3D toward that card.
+4. **Evidence came from a different frame than the player sees.** Harnesses used `Renderer.render({cameraPolicy:"identity"})`
+   with bespoke lighting (15 tool/test files), and 16 of 18 games stage a different look under `?capture=review`
+   (research 16 §3). So evidence proved paths the games do not take.
+5. **Software GL in CI.** Most browser jobs run on `ubuntu-latest`/SwiftShader, which produced black canvases and
+   "No visual QA possible in VM" (research 14 §3.9). Visual gates therefore ran on whatever rendered, not on a GPU.
+6. **Aggregators of aggregators.** Pass/fail sits many JSON hops from a pixel. A literal `"matched"` at the bottom
+   becomes "graphics-and-visual-quality: parity" at the top.
+7. **No persistent record.** Without tracked scores per round, regressions and improvements could not be seen, and
+   claims could be rewritten in later commits.
+
+## 4. Affected packages
+
+| Package / area | Change |
+|---|---|
+| `benchmarks/quality-rebuild` (private package, not a pnpm workspace member; resolves `@aura3d/*` to source via root Vite aliases, H15) | Becomes the canonical renderer gate: scene registry, reference tiers, mask pass, broken-control variants, goldens, frame strips |
+| `tools/quality-rebuild-capture` | Becomes the canonical game gate: PR-build mode (existing `--local-build` made the PR default), deterministic scenario stills, frame strips, shot-level masks for HUD, capture-branch differential probe, GPU timing |
+| new `tools/quality-gate` (TypeScript orchestration + Python metrics, not published) | Metrics, calibration, golden store, verdict engine, rubric records, score history, report renderer |
+| `@aura3d/engine` | Read-only diagnostics additions consumed by the harness (`diagnostics().frameTiming`, `diagnostics().appliedLook`). Implementation is owned by PRD 01/02/11; this PRD defines the fields it reads |
+| `@aura3d/game` (new, PRD 09) | Capture contract `captureFromUrl()`, consumed by the game harness for scenario stills |
+| root `package.json` | Delete fabricated/label scripts; reduce 560 scripts to ≤ 80; replace `test:visual` |
+| `.github/workflows` | Rewrite `quality-rebuild-capture.yml` into a gate; delete `external-parity-external-engine-baselines.yml`; remove `pnpm test:visual` from `browser-matrix.yml`; retire `muse301-*` jobs that run deleted tools; add the release-gate precondition to **both** publishing workflows (`release.yml`, `muse301-publish.yml` or its successor) |
+| `tools/*` evidence families | Delete or quarantine the fabricated/label/aggregator dirs (§2.3, §10.2) |
+| `docs/`, `README.md`, `AURA3D-VERIFICATION-MATRIX.md` | Remove parity/quality claims backed by deleted gates; relabel liveness as liveness |
+
+## 5. Affected files and directories
+
+New (helpers go in `three/lib/` and `aura3d/lib/` so the `./three/*.ts` / `./aura3d/*.ts` scene globs in `main.ts`
+never pick them up as scenes, H16):
+
+```
+benchmarks/quality-rebuild/shared/registry.ts        scene registry with owner, tier, purpose, masks, broken controls
+benchmarks/quality-rebuild/shared/reference.ts       ReferenceProfile ("contract" | "showcase") definitions
+benchmarks/quality-rebuild/shared/fetch-once.ts      module-level Map<url, Promise<ArrayBuffer>> used by both engines
+benchmarks/quality-rebuild/three/lib/showcase.ts     well-built three.js r185 reference pipeline (section 9.1)
+benchmarks/quality-rebuild/three/lib/mask.ts         object-id / shadow-receiver / sky / metal / edge mask passes
+benchmarks/quality-rebuild/three/lib/contact-shadows.ts  contact-shadow helper ported from the r185 webgl_shadow_contact example
+benchmarks/quality-rebuild/three/lib/variants.ts     three-side broken-control variants
+benchmarks/quality-rebuild/aura3d/lib/variants.ts    broken-control and diagnostic variants (Aura side, public API only)
+benchmarks/quality-rebuild/aura3d/ref-0{1..6}-*.ts   Aura side of the showcase scenes (section 9.3)
+benchmarks/quality-rebuild/three/ref-0{1..6}-*.ts    three.js side of the showcase scenes (section 9.3)
+benchmarks/quality-rebuild/goldens/manifest.json     tracked golden index (sha256, round, approval record id)
+benchmarks/quality-rebuild/goldens/**.png            Git LFS (approved Aura frames + masks)
+benchmarks/quality-rebuild/history/index.jsonl       one line per scored round per item (tracked)
+benchmarks/quality-rebuild/history/rounds/<round>.json  full panel records (tracked, no images)
+benchmarks/quality-rebuild/history/baselines/3.0.1-detectors.json  detector numbers on the 3.0.1 baseline (T1.12)
+benchmarks/quality-rebuild/history/calibration-baseline.json       frozen judge-calibration baseline (T4.5)
+benchmarks/quality-rebuild/refs/manifest.json        reference-still index: sha256, licence, storage URI (no copyrighted pixels in git)
+benchmarks/quality-rebuild/refs/canary-01.png        in-repo vision-judge canary frame (T4.3)
+tools/quality-gate/package.json                      private, "type":"module" (not a workspace member, like benchmarks/quality-rebuild)
+tools/quality-gate/src/cli.ts                        subcommands: gate | calibrate | report | classify-tools | propose-golden
+tools/quality-gate/src/types.ts                      schemas (section 7)
+tools/quality-gate/src/calibrate.ts                  noise floor + broken-control separation
+tools/quality-gate/src/golden.ts                     golden store read/write/approve
+tools/quality-gate/src/verdict.ts                    gate evaluation, enum verdicts
+tools/quality-gate/src/rubric.ts                     rubric templates (research 21/23), record validation
+tools/quality-gate/src/history.ts                    append/score trend
+tools/quality-gate/src/report.ts                     HTML + $GITHUB_STEP_SUMMARY renderer
+tools/quality-gate/src/judge-prism.ts                vision-model judge via Kiro Prism /v1/messages (opt-in)
+tools/quality-gate/src/classify-tools.ts             mechanical classifier for tools/ and benchmarks/ (aggregator detection)
+tools/quality-gate/metrics/requirements.lock         pinned + hashed Python deps
+tools/quality-gate/metrics/metrics.py                FLIP, SSIM (Gaussian, MS), LPIPS, ΔE2000, region stats, detectors
+tools/quality-gate/metrics/test_metrics.py           pytest
+tests/unit/quality-gate/*.test.ts                    vitest for TS modules (matched by the root vitest include tests/unit/**/*.test.ts)
+.github/workflows/quality-gate.yml                   PR/main gate (no secrets)
+.github/workflows/quality-review.yml                 panel round (workflow_dispatch, environment-protected)
+.github/workflows/quality-devices.yml                real-device lane (Phase 5)
+```
+
+Changed:
+
+```
+benchmarks/quality-rebuild/main.ts                   read shared/registry.ts; route &profile=, &variant=, &pass=mask, &dpr=
+benchmarks/quality-rebuild/shared/types.ts           SceneSpec/ReadyPayload extensions (section 7.1)
+benchmarks/quality-rebuild/shared/scenes.ts          registry entries, region-mask hints, dpr variants, ref-* specs
+benchmarks/quality-rebuild/three/common.ts           PCFShadowMap explicit; use fetchOnce; contract tier only
+benchmarks/quality-rebuild/aura3d/common.ts          record applied exposure/shadow/light units; use fetchOnce
+benchmarks/quality-rebuild/capture.mjs               multi-pass capture (frame, mask, variants, strips); repeat runs; strict exit
+benchmarks/quality-rebuild/ci.sh                     LFS include list for new assets/goldens; metrics hand-off
+tools/quality-rebuild-capture/capture-games.mjs      --local-build default on PRs, scenario stills, canvas-only crops, differential capture probe, GPU timing, --strict
+tools/quality-rebuild-capture/games.json             scenario definitions per game; per-shot HUD mask selectors; captureContractMigrated flag
+.github/workflows/quality-rebuild-capture.yml        becomes reusable workflow_call capture job (sharded)
+.github/workflows/browser-matrix.yml                 remove `pnpm test:visual` (line 101)
+.github/workflows/release.yml, muse301-publish.yml   release-gate precondition (T5.7)
+.gitattributes                                       LFS rule for benchmarks/quality-rebuild/goldens/**/*.png and new 2k HDRIs
+package.json                                         scripts (section 10.3)
+AURA3D-VERIFICATION-MATRIX.md                        "Visual QA" → "Liveness"; remove PASS-as-quality language
+README.md                                            remove 54/54 and parity claims (line 218 and related)
+```
+
+Deleted or quarantined: see §10.2 (exact list).
+
+## 6. Architecture proposal
+
+### 6.1 Three gate types, one evidence record
+
+```
+                 ┌──────────────── capture (macos-14, ANGLE Metal, real GPU) ───────────────┐
+ SceneSpec ──▶   benchmarks/quality-rebuild   → frame.png, mask.png, variants/*.png, strip/*.png, ready.json
+ games.json ─▶   tools/quality-rebuild-capture → shots/*.png (player frame), scenario/*.png, strip/*.png, run.json
+                 └───────────────────────────────────────────────────────────────────────────┘
+                                         │ artifact (lossless PNG, sha256-bound)
+                                         ▼
+                 tools/quality-gate/metrics (ubuntu, CPU, Python) → metrics.json per item
+                                         │
+           ┌─────────────────────────────┼──────────────────────────────┐
+           ▼                             ▼                              ▼
+  G-REG  regression gate        G-REF  reference-gap gate        G-PANEL  panel review
+  Aura vs approved Aura golden  Aura vs three (contract and      2 named humans + 1 vision model,
+  region-masked FLIP/SSIM/ΔE    showcase), region metrics +      research 21/23 rubric, blind A/B,
+  thresholds calibrated per     appearance detectors; trend +    calibration set; release-blocking;
+  scene; blocks PRs             release-blocking at bar R1–R3    tracked in history/
+           └─────────────────────────────┴──────────────────────────────┘
+                                         ▼
+                 EvidenceRecord (commit sha, run id, runner image, GPU string, asset hashes, verdict enums)
+```
+
+- **G-REG (regression)** answers one question: did this change make an already-approved frame worse? It compares
+  Aura to Aura, so it never certifies the first frame as good. It blocks PRs.
+- **G-REF (reference gap)** tracks how far Aura is from three.js on the same input, per region, using appearance
+  detectors. It blocks a release when bar items R1–R3 fail (`_sections/E`). On PRs it reports only.
+- **G-PANEL (panel)** is the only quality decision. It is required for a release, for every golden update and for
+  every public quality claim.
+
+### 6.2 Reference profiles (fix the 2012 baseline)
+
+Every benchmark scene declares a `referenceProfile`:
+
+- **`contract`**: today's 18 scenes, unchanged in content. Same inputs on both sides, used to prove fairness and to
+  attribute defects ("Aura drops the cylinder cap"). three.js is configured exactly as the spec says. Fixes from the
+  research 22 skeptics:
+  - `PCFShadowMap` set explicitly instead of the deprecated `PCFSoftShadowMap`;
+  - the duplicate `ERR_ABORTED` fetches deduplicated;
+  - a `ReadyPayload` written next to each PNG.
+- **`showcase`**: the same scene content plus every scene in `ref-01..ref-06`, with three.js built the way a
+  competent r185 developer ships it.
+
+  | Area | three.js setting |
+  |---|---|
+  | Renderer | `WebGLRenderer({ antialias: true })` at `setPixelRatio(min(devicePixelRatio, 2))` (capture at DPR 1 and DPR 2) |
+  | Shadows | `shadowMap.type = PCFShadowMap` with a tuned shadow camera, `bias`/`normalBias`, `mapSize` 2048, `shadow.radius` 2–4; `VSMShadowMap` where the soft look fits |
+  | IBL and background | PMREM environment at intensity 1 from a 2k HDRI; `scene.background` from the HDRI, or `GroundedSkybox` outdoors |
+  | Post chain | `EffectComposer`: `RenderPass` → `GTAOPass` → `UnrealBloomPass` (only scenes with emissives > 1.0) → `SMAAPass` → `OutputPass` |
+  | Tone mapping | `AgXToneMapping` or `NeutralToneMapping`, chosen per scene and recorded |
+  | Textures | `anisotropy = renderer.capabilities.getMaxAnisotropy()` on all textures |
+  | Product scenes | Contact shadows ported from the r185 `webgl_shadow_contact` example (depth silhouette + H/V blur; not an addon class, §9.1) |
+
+  The Aura side of a `showcase` scene uses **engine defaults plus the scene's high-level intent only**: `createAuraApp`,
+  `scene()`, `model()`, `environments.hdri()`, `lights.*`, and the quality tier preset once PRD 11 provides one. No
+  shadow strength, bias, shader or `qualityProfile` overrides are allowed. A `showcase` gap is a defaults or
+  capability gap by definition. This matches bar R4 and the agent rule A3 in `_sections/E`.
+- **`aura3d-tuned`** (diagnostic column only, never scored): the strongest Aura configuration reachable through public
+  API, for example a zero-intensity directional light to suppress the fallback rig in scene 03 (research 22 §03
+  skeptic). It separates "capability exists but the default is wrong" from "capability missing" and is recorded in
+  the capability log.
+
+Content ceiling: the vision judges capped three.js at 4–7 because the content is programmer art (research 23:
+01, 08, 10, 16, 17, 18). The `ref-*` scenes use real hero assets and must score **≥ 7 in three.js** under the panel
+before they are admitted as references. A reference that scores lower is reworked, not lowered.
+
+### 6.3 Region masks from the reference geometry
+
+Both engines render the same `SceneSpec` from the same camera, so silhouettes coincide wherever Aura renders the
+geometry correctly. Masks are rendered once, by the three.js side, and applied to both images. That assumption is
+**checked per item, never presumed**: scene 16 (`node.size` bug) and scene 01 (missing cylinder cap) are known
+exceptions. `three/lib/mask.ts` renders extra passes from the same `SceneSpec`.
+
+| Mask | How it is produced | Used by |
+|---|---|---|
+| `object-id` | Per mesh, swap in `MeshBasicMaterial({ color, toneMapped: false, fog: false, blending: NoBlending })` (not `scene.overrideMaterial`, so each mesh gets its own id). `Points` get `PointsMaterial({ size, sizeAttenuation, toneMapped: false })` with the same id; `Line`s are skipped. Mask renderer: separate `WebGLRenderer({ antialias: false })`, `toneMapping = NoToneMapping`, `outputColorSpace = LinearSRGBColorSpace`, `scene.background = null` with clear colour 0. **The id colour is set with `color.setRGB(r/255, g/255, b/255, THREE.LinearSRGBColorSpace)`**: a hex `new Color(0x..)` is treated as sRGB and converted to linear by `ColorManagement`, so the written byte would not equal the id. Background id 0 | per-object FLIP/ΔE/specular energy, subject-only SSIM |
+| `shadow-receiver` | Two renders by three into a `HalfFloatType` target with tone mapping off: (a) normal, (b) every light's `castShadow = false` (this changes the lights-state hash, so three recompiles programs without `needsUpdate`). Pixel is in the mask when linear luma(b) − luma(a) > max(0.02, 0.05·luma(b)) | shadow-contrast ratio (bar R3) |
+| `sky` | Background id 0 ∩ (spec.background.kind === "hdri") | sky-variance detector (flat-sky detection, scenes 09, 13) |
+| `metal` | Per-mesh harness `ShaderMaterial` writing `metalness * texture(metalnessMap, uv).b` (1.0 when no map) to R8; mask = object-id ∩ value ≥ 0.9. Factor-only tests are wrong for glTF assets, whose metalness lives in the map (DamagedHelmet) | specular-energy detector (06, 02, 03) |
+| `silhouette-edge` | Morphological gradient of object-id (2 px) | edge-aliasing detector |
+| `hud` (games only) | DOM rects of `games.json` `hudSelectors`, rasterized to the shot | excludes HUD from scene metrics, includes it in rubric |
+
+Mask passes run in the same page load after the READY frame, so the camera and assets are identical. Mask PNGs are
+written with a `.mask.png` suffix and hashed into the record.
+
+**Alignment check (per item, both DPRs).** Aura has no public mask API, so the Aura silhouette is derived from its
+shaded frame:
+- colour-background scenes: Aura subject = pixels whose sRGB colour differs from `spec.background.color` by > 6 levels
+  in any channel; alignment metric = IoU(Aura subject, three object-id ≠ 0);
+- HDRI-background scenes: Canny edges of the Aura frame (σ = 1.5) vs the three `silhouette-edge` mask; alignment
+  metric = symmetric chamfer distance in pixels.
+
+Pass: IoU ≥ 0.98, or chamfer ≤ 1.5 px. Otherwise the item is `mask-misaligned`: per-object metrics are skipped for it,
+the whole-frame metric is used, and the misalignment itself is reported as a G-REF finding (it usually means missing
+or mis-sized geometry, as in scenes 01 and 16).
+
+### 6.4 Calibrated thresholds that can fail
+
+**Distance convention.** Every gated quantity is a distance `d(x, y) ≥ 0` where 0 means identical:
+- FLIP mean, LPIPS and ΔE2000 are distances already;
+- SSIM and MS-SSIM are gated as `1 − SSIM`;
+- a detector `D` (§6.5) is gated as `|D(x) − D(y)|`, or as a relative change `|D(x) − D(y)| / max(|D(y)|, ε)` for
+  ratio detectors (`shadowContrast`, `highlightEnergy`).
+
+For G-REG, `y` is the approved golden and `x` is the new capture.
+
+For every (item, metric, region) triple, `calibrate.ts` computes:
+
+1. **Noise floor `N`.** Capture the same commit 5 times with fresh browser contexts (10 pairwise comparisons).
+   `N` is the **maximum** pairwise distance. A percentile over so few samples is meaningless.
+2. **Broken-control distances `B_c`.** One variant `c` per look feature, rendered from the approved build with that
+   feature removed. A variant is applied only where the scene uses the feature (`spec.brokenControls`). `B_c` is
+   `d(variant c, golden)` on that metric and region.
+
+   | Variant | What it removes |
+   |---|---|
+   | `no-shadows` | `castShadow` off on every light |
+   | `no-ibl` | environment intensity 0 |
+   | `dpr-half` | render at 0.5× and upscale |
+   | `no-aa` | MSAA 0 and post AA off |
+   | `no-tonemap` | linear clamp |
+   | `flat-sky` | solid background instead of the HDRI |
+   | `albedo-only` | unlit material override |
+
+3. **Threshold `T`.** `T = max(3·N, floor[metric])`. The triple **discriminates control `c`** when `T ≤ 0.5·B_c`. The
+   triple is *active* when it discriminates at least one applicable control; otherwise it is `non-discriminating`
+   and dropped from the item's gate. Each drop is listed in the PR summary, so it is never silent.
+4. **Coverage rule.** For every item and every applicable control `c`, at least one active triple must discriminate
+   `c`. An uncovered (item, control) pair makes the item `calibration-broken`. It is not silently handed to the panel.
+   The fix is a new metric/region or a scene change, recorded as a PRD 01–07 task (§23).
+5. **Self-test.** The self-test re-renders every applicable broken control in a **separate capture run**; it never
+   reuses the calibration images. It checks that each covered control is still rejected by G-REG. A gate whose
+   self-test fails blocks *itself*: the job fails with `calibration-broken`.
+
+Notes:
+- Because a shadow metric is not expected to notice `no-tonemap`, discrimination is judged per control, not against
+  the smallest `B` over all controls. A single global `Bmin` would mark almost every region metric non-discriminating.
+- When a variant cannot be expressed through Aura public API (§8.3), `B_c` is measured on the three side (three
+  variant vs three default). That proves the metric can see the feature at all. Coverage for that control is then
+  marked `three-proxy` in `calibration.json`.
+
+Metric floors (initial G-REG floors; tightened only by a new PRD revision):
+
+| Metric | Floor |
+|---|---|
+| FLIP mean | 0.02 |
+| 1 − SSIM (Gaussian 11×11, σ 1.5, luma) | 0.005 |
+| ΔE2000 mean on lit object mask | 0.5 |
+| LPIPS (AlexNet) | 0.01 |
+| Detector relative change (ratio detectors) | 0.05 |
+| Detector absolute change (`skyVariance`, `dynamicRange`, luma units 0–255) | 1.0 |
+
+These floors are PRD 12 proposals. Bar R3 in `_sections/E` sets the G-REF limits (FLIP ≤ 0.10 per object, ΔE2000 ≤ 3,
+shadow ratio ±15%, specular ±20%), not G-REG floors.
+
+### 6.5 Appearance detectors (no-reference and reference-relative)
+
+All detectors run in `metrics.py` on linear-light luminance derived from sRGB PNGs. Each one reports a value for
+Aura, a value for three.js, and their ratio.
+
+| Detector | Definition | Catches (evidence) |
+|---|---|---|
+| `shadowContrast` | median luma(shadow-receiver mask) / median luma(lit receiver ring 8–24 px outside the mask) | 01, 02, 08, 12, 17, 18: shadows 7–10% darker vs 49–80% in three (research 22) |
+| `contactDarkening` | luma ratio in a 6 px band under each caster's lowest silhouette row vs the receiver mean | floating objects (research 23 01, 10, 18) |
+| `highlightEnergy` | p99 luma and the clipped (≥ 250) fraction in the `metal` and `object-id` masks | 04 hotter lobes, 02 clipping, 06 rough-metal energy loss |
+| `roughnessResponse` | luma std per sphere in a sweep; monotonicity of mean vs roughness | 06 dielectric darkening inverse of correct |
+| `textureDetail` | variance of the Laplacian inside the object mask | tint override wiping textures (research 21 Aura Clash; 19 C3) |
+| `edgeAliasing` | high-frequency energy along `silhouette-edge`, normalized by edge length | AA quality |
+| `dynamicRange` | p1–p99 luma in the scene region (HUD excluded) | lifted blacks / washed-out (09, 17; Turbo Drift) |
+| `skyVariance` | luma std in the `sky` mask | flat fallback sky, std 0.0 (research 22 §09) |
+| `subjectPresence` | fraction of the three object mask whose Aura colour differs from `spec.background.color` by > 6 levels (colour-background scenes); for HDRI backgrounds, from the Aura `flat-sky` variant at the same pixel | missing particles (14), missing cap (01) |
+| `temporalFlicker` | mean abs frame-to-frame luma delta of static pixels in an 8-frame strip with a slow orbit | shimmer, TAA instability |
+| `blankOrBlack` | fraction of pixels with luma < 4 in the canvas region | Courier Rush black frames on the primary platform (research 21) |
+
+Detectors feed G-REF and the panel packet. They do not replace the panel.
+
+### 6.6 Player-frame-only capture
+
+- **Games.** The harness loads the default route URL with no query string except the PRD 09 capture contract
+  parameters (`?scenario=`, `?seed=`, `?freezeAt=`, `?cameraPose=`). Under that contract, capture may change only
+  camera pose, clock, seed and scenario state. Three checks enforce this.
+  - **URL check (fails the run).** `capture-games.mjs` asserts that every navigated URL carries only contract keys.
+    Any other key (`capture`, `review`, `debug`, `juiceProbe`, `evidence`, …) marks the run `forbidden-capture-flag`.
+    This guards the harness itself.
+  - **Differential probe (fails the game).** A "was the key read" probe cannot work: 16 of 18 routes read `capture` at
+    boot, and PRD 09's `captureFromUrl()` keeps reading it in order to ignore it (H17). So, once per game per run, the
+    harness captures `01-title` at the default URL and again at the same URL plus `?capture=review`, with identical
+    clock and seed. If FLIP(default, review) on the canvas crop exceeds 3× that game's title noise floor (FLIP between two default-URL title captures in the same run), the route still
+    changes its look under a capture flag and is marked `forbidden-capture-flag`. Turbo Drift and Orbital Defense
+    (0 capture ternaries) are the expected negatives; Rooftop Buckets (81) is the expected positive (V17).
+  - **Read log (informational).** An init script wraps `URLSearchParams.prototype.get/has/getAll` and records the keys
+    read into `run.json`. It is never a failure condition.
+  - Shots stay **viewport** screenshots (H9), because the HUD is part of the player frame and the rubric scores
+    `ui_hud`.
+  - Scene metrics use the canvas crop with the `hud` mask removed.
+  - `games.json` gets `captureContractMigrated: boolean` per game. Before migration (PRD 09), a game flagged by the
+    differential probe is reported, not blocking, and none of its shots is golden-eligible. After migration, a flag
+    fails the gate.
+- **Benchmark.** Aura scenes may use only the public `@aura3d/engine` API (enforced today by README policy and
+  research 22 review). The base tsconfig maps every `@aura3d/*` package to source, so a `paths` override would not
+  catch deep imports. Instead, `tests/unit/quality-gate/benchmark-imports.test.ts` parses every import specifier in
+  `benchmarks/quality-rebuild/aura3d/**/*.ts` with the TypeScript compiler API. Each specifier must be one of:
+  - `@aura3d/engine`;
+  - an `@aura3d/engine/<subpath>` whose `./<subpath>` key exists in `packages/engine/package.json` `exports`;
+  - a relative import that resolves inside `benchmarks/quality-rebuild/{shared,aura3d}/`.
+
+  Anything else fails the test, including `packages/*/src/**` paths and other `@aura3d/*` packages.
+- **No harness-only paths.** `cameraPolicy: "identity"`, `createExternalParityEnvironmentLighting` and
+  `Renderer.render(...)` direct calls are banned from gate harnesses. The same import test also greps the gate
+  harness directories for those three strings.
+
+### 6.7 Deterministic stills vs gameplay strips (games)
+
+Gameplay timelines run on wall-clock time against live physics, so pixel goldens on those shots would be flaky. Game
+gates are split:
+
+- **Scenario stills** (PRD 09 capture contract): `?scenario=<id>&seed=<n>&freezeAt=<s>&cameraPose=<name>`, with 3
+  scenarios per game declared in `games.json` (`establishing`, `action`, `hero`). These are deterministic and get
+  G-REG goldens.
+- **Gameplay shots and strips** (real input timeline, unchanged): `02-opening`, `03-mid`, `04-action`, plus a 12-frame
+  strip at 100 ms intervals around `04-action` and a 5 s WebM. These go only to G-PANEL and to non-golden detectors:
+  `blankOrBlack`, `dynamicRange`, measured fps. PRD 08 uses the same strips for camera and feel judgment.
+- **Viewports.** 1920×1080 @1, 1280×720 @1, **1440×900 @2** (PRD 03 "DSF-2" desktop run) and 390×844 @3 mobile
+  emulation. Scenario stills are golden-eligible at 1920×1080 @1 and 390×844 @3 only. The other viewports go to the
+  panel.
+
+### 6.8 Panel review (G-PANEL)
+
+- **Judges per round.** Two named humans (one art director, one rendering engineer) plus one vision model. The vision
+  model is `claude-opus-5.5` through Kiro Prism `/v1/messages`, using the research 21/23 prompt verbatim, versioned
+  in `tools/quality-gate/src/rubric.ts`.
+  - The item score is the median of the three judges.
+  - A difference class stands if 2 of 3 judges assign it.
+  - The vision model alone can never produce a pass (`_sections/E` scoring protocol).
+- **Blind A/B.** Benchmark pairs are presented with randomized left/right and engine labels removed. The key is
+  stored in the round record and revealed only after scoring.
+- **Image-delivery canary.** Pass-1 judges could not see images (research 22). The first item of every vision-model
+  session is a canary frame with known content, for example "three coloured primitives, red cube left". If the
+  model's description does not match, the round is invalid and is not recorded.
+- **Calibration set** (scored blind at the start of each round):
+
+  | Group | Frames |
+  |---|---|
+  | Known-bad | Orbital Defense 3.0.1 (1.5), benchmark 14 Aura (1.0) |
+  | Known-mid | three r185 contract frames (4–7) |
+  | Known-good | `ref-*` three showcase frames (≥ 7) and licensed reference stills |
+  | Broken controls | must score ≥ 2 points below their source |
+
+  A judge whose calibration scores drift more than 1.0 from the frozen baseline is replaced for that round.
+- **Spread and reconciliation.** Any category with a judge spread > 2 is re-scored after a written reconciliation
+  note.
+- **Admitted loss fails.** If a judge's prose or a harness verdict records a visible loss on an item, the item cannot
+  pass (research 14 §7.7). Verdicts are enums (§7.3), never free strings in producers.
+- **Frozen thresholds.** Thresholds are frozen per round. Changing them requires a PRD revision.
+
+### 6.9 Score history
+
+`history/index.jsonl` gets one line per (round, item, judge-aggregate), with the commit SHA, run ID, runner image
+version and per-category scores. `report.ts` renders trend charts (per scene and per game, overall plus the worst 3
+categories) into the job artifact and the step summary. Round 0 is seeded from research 21 and 23 and flagged
+`panel: "vision-only-single-judge"` so that it is never treated as a passing baseline.
+
+### 6.10 Major recommendations: cost and fallback
+
+| # | Recommendation | Visual benefit | GPU cost | CPU cost | Memory | Bundle | Mobile impact | Fallback |
+|---|---|---|---|---|---|---|---|---|
+| R-1 | Region masks + appearance detectors | Indirect: makes shadow/IBL/sheen/transmission regressions visible that whole-frame SSIM hides (§2.2) | Mask pass: about 1 extra draw per object per pass, on the CI runner only | Python metrics ~2–6 s per image pair on a CI CPU (estimate; measured in Phase 1) | ~200 MB peak per worker (LPIPS weights + float images) | 0 KB engine bundle; harness only | none at runtime | If the alignment check fails (IoU < 0.98 or chamfer > 1.5 px, §6.3), fall back to the whole-frame metric and mark the item `mask-misaligned` |
+| R-2 | Calibrated per-scene thresholds with broken controls | Prevents any unfailable gate; locks in every approved improvement | 7 variants × scene renders + 5 repeats on CI: ~+90–120% capture GPU time on calibration runs only | Calibration runs only on golden update or runner-image change | goldens + variants ~1 MB/PNG; ≤ 150 MB LFS total | 0 | none | A non-discriminating triple is dropped visibly; an uncovered control makes the item `calibration-broken` (§6.4) |
+| R-3 | Showcase reference tier + `ref-01..06` | Raises the target from "dark test card" to modern r185 output; the content ceiling moves from 4–7 to ≥ 7 | three side only, CI | negligible | +2k HDRIs (~6–24 MB each, LFS) | 0 | none | If an addon breaks under ANGLE Metal, fall back to the contract tier for that scene and record `reference-degraded` (the scene is not admitted to the bar) |
+| R-4 | Golden-image regression (G-REG) | Approved looks cannot silently regress | capture already paid | ~1 s per comparison | LFS goldens | 0 | none | Golden-update PRs need a G-PANEL record; emergency revert restores the previous manifest |
+| R-5 | Panel rubric gate (G-PANEL) + history | The only quality decision; scores tracked over time | none | Prism calls: 18 benchmark + 18 game packets per round (vision model) | jsonl < 1 MB/year | 0 | rubric includes `mobile_presentation` | If Prism is unavailable, the round is human-only and flagged `vision-missing`; no pass without 2 humans |
+| R-6 | Player-frame-only + PR-build game capture | Evidence equals what players see; PRs judged on their own build | macos-14 time: 18 games × 4 viewports, sharded | Vite build per game (~6 s each for small apps; Orbital Defense built in 6 s, report.slim.json) + LFS pull | 1.7 GB `public/` must not be copied per app (already solved by `publicDir:false`) | 0 | Mobile emulation run kept; real-device lane in Phase 5 | When the local build fails, capture production and mark `source: production-fallback`; G-REG is skipped for that game and the PR fails the strict gate |
+| R-6b | Differential capture-flag probe (§6.6) | Proves that the frame judged is the frame shipped; catches the 395 `?capture=review` look branches | +1 title capture per game per run | negligible | negligible | 0 | Probe also runs at 390×844 | Before PRD 09 migration the flag is reported only (`captureContractMigrated: false`); never silently passed |
+| R-7 | Delete fabricated/label suites; collapse aggregators | Removes false "parity" signals that hid the gap | none | CI time drops (fewer jobs) | `tests/reports` shrinks | none | none | Deletions are per-family commits; `git revert` restores any family |
+| R-8 | GPU-runner-only visual gates | No more black SwiftShader frames treated as evidence | macos-14 hosted | — | — | — | — | If macos-14 is unavailable, the gate is `blocked-runner` (fail closed), never a SwiftShader rerun |
+
+Runtime cost to shipped apps is zero for every row. The harness ships no code into `@aura3d/engine` except the
+diagnostics fields that PRD 01/02/11 already own (§7.4). Those are tree-shaken when unused.
+
+## 7. APIs to add / change / remove
+
+All harness APIs are internal: they are not exported from any published `@aura3d/*` package. Engine-facing
+fields are listed in §7.4, and the packages that own them must implement them.
+
+### 7.1 `benchmarks/quality-rebuild/shared/types.ts` (change)
+
+```ts
+/** Tone mapping requested by a scene. "contract" scenes keep "aces-filmic" (three/common.ts:127); showcase scenes may pick agx/neutral. */
+export type ToneMappingId = "aces-filmic" | "agx" | "neutral";
+
+export type ReferenceProfile = "contract" | "showcase";
+
+/**
+ * Who owns a scene in the registry. Bare numbers 19+ collide across PRD 02 (19-reflection-probe), PRD 03 (19-25),
+ * PRD 04 (19-28), PRD 05 (19-asset-lod-transition, 20-lookdev-hero) and PRD 06 (19-22); owner-prefixed ids resolve it.
+ */
+export type SceneOwner = "prd12" | "prd01" | "prd02" | "prd03" | "prd04" | "prd05" | "prd06" | "prd07" | "prd08" | "prd10" | "prd11";
+
+export type BrokenControlId =
+  | "no-shadows" | "no-ibl" | "dpr-half" | "no-aa" | "no-tonemap" | "flat-sky" | "albedo-only";
+
+export type MaskId = "object-id" | "shadow-receiver" | "sky" | "metal" | "silhouette-edge";
+
+/** Defined here (benchmark side) and re-exported by tools/quality-gate/src/types.ts. */
+export type RegionId = "frame" | "subject" | `object:${number}` | MaskId | "scene-minus-hud";
+
+export interface StripSpec {
+  /** Frames captured after READY. */
+  readonly frames: number;            // default 8
+  readonly intervalMs: number;        // default 100 (deterministic clock: app.step(intervalMs/1000))
+  /** Camera orbit over the strip, degrees around spec.camera.target (0 = static). */
+  readonly orbitDegrees: number;
+}
+
+export interface SceneSpec {
+  // ...existing fields unchanged (resolution stays RESOLUTION = 1280x720 @1; the capture DPR is passed as &dpr=
+  //    and applied by each translator's setPixelRatio, so spec.resolution.devicePixelRatio is the DPR-1 base)...
+  readonly owner: SceneOwner;                          // NEW
+  readonly referenceProfile: ReferenceProfile;         // NEW
+  /** Device pixel ratios captured. Default [1]; showcase scenes [1, 2] (PRD 03 "DSF-2"). */
+  readonly dprs?: readonly (1 | 2)[];                  // NEW
+  readonly masks: readonly MaskId[];                   // NEW: which masks the three side must render
+  readonly brokenControls: readonly BrokenControlId[]; // NEW: variants rendered for calibration (only features the scene uses)
+  readonly strip?: StripSpec;                          // NEW: temporal capture
+  /** Free-text, one line: the single visual behaviour this scene exists to test (judged first). */
+  readonly primaryCriterion: string;                   // NEW
+  /** Mask region on which primaryCriterion is measured (used by the Phase 2 coverage exit criterion). */
+  readonly primaryRegion: RegionId;                    // NEW, e.g. "object:0" for 05's sphere, "shadow-receiver" for 12
+}
+
+/** One entry of the canonical registry (benchmarks/quality-rebuild/shared/registry.ts). */
+export interface RegistryEntry {
+  readonly id: string;               // "01-simple-geometry" | "ref-03-character-hero" | "prd03-bloom-hdr-threshold"
+  readonly spec: SceneSpec;
+  /** Panel admission: a showcase reference must score >= 7 in three.js before it is used as a bar. */
+  readonly admittedAsReference: boolean;
+  readonly status: "active" | "quarantined" | "retired";
+}
+
+export interface ShadowReport {
+  readonly mapRendered: boolean;
+  readonly mapSampled: boolean;
+  readonly mapSize: number | null;
+  readonly strength: number | null;     // Aura: applied strength (today 0.24-0.38, research 19 C11)
+  readonly casterName: string | null;   // e.g. "aura3d-root-production-fallback-key-shadow"
+}
+
+export interface ReadyPayload {
+  // ...existing fields unchanged...
+  /** Variants that public API cannot express are never captured; they appear in capabilityLog as
+   *  { feature: "broken-control:<id>", status: "missing" } and are measured on the three side only (§8.3). */
+  readonly variant: "default" | "aura3d-tuned" | BrokenControlId;   // NEW
+  readonly dpr: 1 | 2;                                               // NEW
+  readonly appliedExposure: number | null;                           // NEW (Aura: from diagnostics().appliedLook)
+  readonly appliedToneMapping: string | null;                        // NEW
+  readonly lightUnits: "three-physical" | "aura-internal" | "unknown";// NEW
+  readonly shadows: ShadowReport | null;                             // NEW
+  readonly fallbackLightsActive: boolean | null;                     // NEW (research 22 §03)
+  readonly frameTiming?: FrameTimingSample;                          // NEW (§7.4)
+  readonly assetHashes: Readonly<Record<string, string>>;            // NEW sha256 per served asset
+}
+```
+
+### 7.2 `tools/quality-gate/src/types.ts` (new)
+
+```ts
+export type ItemKind = "benchmark-scene" | "game-scenario" | "game-shot" | "game-strip";
+
+export interface CaptureRef {
+  readonly path: string;               // artifact-relative PNG path
+  readonly sha256: string;
+  readonly width: number;
+  readonly height: number;
+  readonly dpr: number;
+}
+
+export interface EvidenceEnvironment {
+  readonly commitSha: string;
+  readonly githubRunId: string;
+  readonly runnerImage: string;        // ImageOS + ImageVersion env from the hosted runner
+  readonly gpuRenderer: string;        // UNMASKED_RENDERER_WEBGL
+  readonly browserVersion: string;
+  readonly launchArgs: readonly string[];
+}
+
+export interface CapturedItem {
+  readonly itemId: string;             // "bench:16-instancing@dpr1" | "game:showcase-bank-shot:scenario:action@1920x1080"
+  readonly kind: ItemKind;
+  readonly aura: CaptureRef;
+  readonly reference?: CaptureRef;     // three.js frame for benchmark items
+  readonly masks: Readonly<Partial<Record<MaskId | "hud", CaptureRef>>>;
+  readonly variants: Readonly<Partial<Record<BrokenControlId | "aura3d-tuned", CaptureRef>>>;
+  readonly repeats: readonly CaptureRef[];   // 4 extra captures (5 total) on calibration runs; [] otherwise
+  readonly env: EvidenceEnvironment;
+}
+
+export type MetricId =
+  | "flip" | "ssim" | "msssim" | "lpips" | "deltaE2000"
+  | "shadowContrast" | "contactDarkening" | "highlightEnergy" | "roughnessResponse"
+  | "textureDetail" | "edgeAliasing" | "dynamicRange" | "skyVariance"
+  | "subjectPresence" | "temporalFlicker" | "blankOrBlack";
+
+export type RegionId = import("../../../benchmarks/quality-rebuild/shared/types").RegionId; // re-export
+
+export interface MetricValue {
+  readonly metric: MetricId;
+  readonly region: RegionId;
+  readonly aura: number;
+  readonly reference: number | null;   // value on the three.js frame (detectors) or null for pairwise metrics
+  readonly pairwise: number | null;    // distance (§6.4 convention) aura-vs-reference or aura-vs-golden
+}
+
+export interface CalibratedThreshold {
+  readonly itemId: string;
+  readonly metric: MetricId;
+  readonly region: RegionId;
+  readonly noiseMax: number;           // max over 10 pairwise repeat distances (5 captures)
+  readonly brokenControls: Readonly<Partial<Record<BrokenControlId, { readonly distance: number; readonly source: "aura" | "three-proxy" }>>>;
+  readonly threshold: number;          // max(3*noiseMax, floor)
+  readonly rejects: readonly BrokenControlId[];  // controls c with threshold <= 0.5 * distance_c
+  readonly active: boolean;            // rejects.length > 0
+  readonly calibratedAt: { readonly commitSha: string; readonly runnerImage: string };
+}
+
+export interface CalibrationReport {
+  readonly itemId: string;
+  readonly thresholds: readonly CalibratedThreshold[];
+  /** Applicable controls that no active threshold rejects; non-empty => item verdict "calibration-broken". */
+  readonly uncoveredControls: readonly BrokenControlId[];
+}
+
+export interface GoldenEntry {
+  readonly itemId: string;
+  readonly image: CaptureRef;          // LFS path under benchmarks/quality-rebuild/goldens/
+  readonly masks: Readonly<Partial<Record<MaskId | "hud", CaptureRef>>>;
+  readonly thresholds: readonly CalibratedThreshold[];
+  readonly approvedBy: string;         // PanelRoundRecord.roundId that approved this golden
+  readonly supersedes: string | null;  // previous golden sha256
+}
+
+export interface GoldenManifest {
+  readonly schema: "aura3d.quality-gate.goldens/1";
+  readonly runnerImage: string;        // goldens are only valid on this runner image + GPU string
+  readonly gpuRenderer: string;
+  readonly entries: readonly GoldenEntry[];
+}
+```
+
+### 7.3 Verdicts and rubric records (new; replaces every free-string verdict)
+
+```ts
+/** research 23 six-class taxonomy. */
+export type DifferenceClass =
+  | "equivalent" | "aura3d-better" | "minor-aura3d-deficiency"
+  | "major-aura3d-deficiency" | "implementation-bug" | "missing-capability";
+
+export type GateVerdict =
+  | "pass"
+  | "regression"                 // G-REG threshold exceeded
+  | "reference-gap"              // G-REF bar R1-R3 failed
+  | "admitted-loss"              // any judge or detector recorded a visible loss
+  | "calibration-broken"         // threshold failed to reject a broken control
+  | "non-discriminating"         // metric dropped for this item (informational)
+  | "mask-misaligned"
+  | "forbidden-capture-flag"
+  | "blocked-runner"             // no GPU runner / SwiftShader detected
+  | "capture-failed";
+
+export const GAME_VISUAL_CATEGORIES = [
+  "environment_world", "modeling_assets", "texture_quality", "material_quality", "pbr_credibility",
+  "lighting", "shadows", "ambient_lighting", "ibl_reflections", "tone_mapping", "color_management",
+  "anti_aliasing", "postprocessing", "vfx", "particles", "animation_quality", "character_presentation",
+  "camera", "composition", "scale_depth_perception", "atmospheric_effects", "gameplay_readability",
+  "ui_hud", "typography", "polish_juice", "mobile_presentation", "overall_visual_quality"
+] as const;                                                    // 27, research 21
+export const GAME_NONVISUAL_CATEGORIES = [
+  "sound_audio", "controls", "physics_feel", "game_feel", "loading_transitions", "performance"
+] as const;                                                    // research 20; performance filled from measured rAF
+
+export interface JudgeIdentity {
+  readonly id: string;                                         // GitHub login for humans; model id for the vision judge
+  readonly kind: "human-art-director" | "human-rendering-engineer" | "vision-model";
+  readonly promptVersion?: string;                             // vision judge only (rubric.ts RUBRIC_PROMPT_VERSION)
+}
+
+export interface BenchmarkJudgement {
+  readonly itemId: string;
+  readonly judge: JudgeIdentity;
+  readonly blindKey: "A-is-aura" | "B-is-aura";
+  readonly descriptions: { readonly aura: string; readonly reference: string };
+  readonly differences: readonly { readonly text: string; readonly cls: DifferenceClass; readonly cause: string }[];
+  readonly scores: { readonly aura: number; readonly reference: number };   // 0-10, 0.5 steps
+  readonly harnessFairness: { readonly fair: boolean; readonly notes: string };
+}
+
+export interface GameJudgement {
+  readonly itemId: string;                                     // game id + viewport
+  readonly judge: JudgeIdentity;
+  readonly scores: Readonly<Record<(typeof GAME_VISUAL_CATEGORIES)[number], number>>;
+  readonly dominantCauses: readonly { readonly cause: string; readonly percent: number }[];
+  readonly competitiveWithModernThree: boolean;
+  readonly critique: string;                                   // required, >= 200 chars
+}
+
+export interface PanelRoundRecord {
+  readonly schema: "aura3d.quality-gate.panel/1";
+  readonly roundId: string;                                    // "2026-11-02-r1"
+  readonly env: EvidenceEnvironment;
+  readonly thresholdsFrozenAt: string;                         // PRD revision id
+  readonly calibration: readonly { readonly judgeId: string; readonly drift: number; readonly accepted: boolean }[];
+  readonly canaryPassed: boolean;                              // vision judge saw the canary correctly
+  readonly benchmark: readonly BenchmarkJudgement[];
+  readonly games: readonly GameJudgement[];
+  readonly aggregates: readonly { readonly itemId: string; readonly median: number; readonly classes: readonly DifferenceClass[]; readonly verdict: GateVerdict }[];
+}
+```
+
+### 7.4 Engine diagnostics read by the harness (fields owned by other PRDs)
+
+```ts
+// @aura3d/engine — returned by app.diagnostics(); read-only; no behaviour change
+export interface FrameTimingSample {                  // PRD 11 owns implementation
+  readonly source: "rAF" | "gpu-timer-query";         // gpu-timer-query only when EXT_disjoint_timer_query_webgl2 exists
+  readonly frames: number;
+  readonly cpuMsP50: number; readonly cpuMsP95: number;
+  readonly gpuMsP50: number | null; readonly gpuMsP95: number | null;
+  readonly rafFps: number;                            // measured; replaces self-reported fps (research 20: engine says 60 at 0.5)
+}
+export interface AppliedLookReport {                  // PRD 01/02/03 own implementation
+  readonly exposure: number;                          // value actually sent to the tone-map pass
+  readonly toneMapping: "aces-filmic" | "agx" | "neutral" | "reinhard" | "none";
+  readonly environment: { readonly specularIntensity: number; readonly diffuseIntensity: number; readonly background: "color" | "hdri" | "sky" };
+  readonly shadows: ShadowReport | null;
+  readonly fallbackLightsActive: boolean;
+  readonly renderPath: "production" | "safe-basic" | "lean" | "compat-preset";   // research 18 Q4: 4 live pipelines
+  readonly pixelRatio: number;
+}
+export interface AuraDiagnostics { /* existing */ readonly frameTiming?: FrameTimingSample; readonly appliedLook?: AppliedLookReport; }
+```
+
+The harness fails an item with `capture-failed` when `appliedLook.renderPath !== "production"` on a scene that did
+not request another path. This catches the silent `safe-basic` fallback (`_sections/E` D1).
+
+### 7.5 Entry points
+
+```ts
+// tools/quality-gate/src/calibrate.ts
+export function calibrate(item: CapturedItem, metrics: readonly MetricValue[][], floors: Readonly<Record<MetricId, number>>): CalibrationReport;
+// tools/quality-gate/src/golden.ts
+export function loadGoldens(manifestPath: string): GoldenManifest;
+export function compareToGolden(item: CapturedItem, golden: GoldenEntry, metrics: readonly MetricValue[]): { verdict: GateVerdict; failures: MetricValue[] };
+export function proposeGoldenUpdate(items: readonly CapturedItem[], round: PanelRoundRecord): GoldenManifest; // refuses without a passing panel aggregate
+// tools/quality-gate/src/verdict.ts
+export function evaluateGates(input: { items: CapturedItem[]; metrics: Map<string, MetricValue[]>; goldens: GoldenManifest; bar: QualityBar }): { itemVerdicts: Map<string, GateVerdict[]>; exitCode: 0 | 1 };
+// tools/quality-gate/src/judge-prism.ts
+export async function judgeWithPrism(packet: JudgePacket, opts: { baseUrl: string; apiKeyEnv: "PRISM_API_KEY"; model: "claude-opus-5.5" }): Promise<BenchmarkJudgement | GameJudgement>;
+// tools/quality-gate/src/history.ts
+export function appendRound(round: PanelRoundRecord, indexPath: string): void;
+export function trend(indexPath: string, itemId: string): readonly { roundId: string; median: number }[];
+```
+
+```python
+# tools/quality-gate/metrics/metrics.py  (CLI: python -m metrics run --items items.json --out metrics.json)
+def flip(ref: np.ndarray, test: np.ndarray, mask: np.ndarray | None) -> float: ...           # NVlabs flip-evaluator, "LDR" mode, explicit ppd=67.0 (FLIP default viewing conditions) recorded in metrics.json; mask applied to the returned error map, mean over mask
+def ssim(ref, test, mask=None, gaussian_sigma=1.5, win=11) -> float: ...                     # skimage.metrics.structural_similarity(gaussian_weights=True, sigma=1.5, use_sample_covariance=False, data_range=1.0) on linear-light luma; full=True map averaged over mask; gated as 1 - ssim
+def lpips_alex(ref, test) -> float: ...                                                       # lpips==0.1.4, net='alex', CPU, inputs scaled to [-1, 1]
+def delta_e2000(ref, test, mask) -> float: ...                                                # skimage.color.rgb2lab then deltaE_ciede2000, mean over mask
+def detectors(img, masks: dict[str, np.ndarray], ref_img: np.ndarray | None) -> dict[str, float]: ...
+```
+
+### 7.6 Remove
+
+| Symbol / file | Replacement |
+|---|---|
+| `THREE_COMPAT_COMPARISON_SCENES` (`benchmarks/three-compat/shared/scenes.ts`) and the `visualScore`, `a3dFrameMs`, `threeFrameMs`, `setupLines` constants | none: deleted |
+| `EXTERNAL_PARITY_THREEJS_PARITY_SCENES` consumer `tests/browser/external-parity-threejs-visual-parity.spec.ts` (byte-size + `visualScore >= 58` gate) | none: deleted |
+| `setupLines` constants in `benchmarks/external-parity/shared/threejs-visual-parity-scenes.ts:19` | none: deleted (fabricated ergonomics metric) |
+| `structuralSimilarityProxy` field and every assertion on it (52 files, §2.3) | `ssim` / `flip` from `metrics.py`; kept tools report `meanDelta` only, ungated |
+| `superiorityTargetsMet` (`tests/browser/muse3jsparity-301-visual.spec.ts:127`, `tools/muse3jsparity-readiness/acceptance.ts:20,105`, `tests/browser/game-visual-superiority.spec.ts:452`, `tests/unit/tools/muse3jsparity-acceptance.test.ts:95`) | none (specs deleted, field removed from `acceptance.ts` and its fixture, §10.2) |
+| `visualStatus` derivation (`tools/threejs-parity-threejs-inventory/index.ts:251-256`) | none (tool deleted) |
+| free-string `verdict:` / `observedLosses` literals in `tools/head-to-head-*/index.ts` | `GateVerdict` + measured detector text |
+| `renderA3DScene` / `renderThreeJsScene` string stubs, `compareImages` (`benchmarks/production-runtime/`) | none |
+| `pnpm test:visual` → `tools/visual-baseline/index.ts` | `pnpm quality:gate` (G-REG) |
+
+## 8. Shader changes
+
+This PRD changes **no production shader**: no GLSL/WGSL in `packages/rendering` or `packages/engine`. Engine shader
+work is owned by PRD 01–04, 07 and 11. The harness adds four small shader-level pieces, all confined to the
+benchmark page and the three.js side:
+
+1. **Object-ID mask material** (`three/lib/mask.ts`). `MeshBasicMaterial` with `toneMapped: false`, `fog: false`,
+   `blending: NoBlending`, `depthWrite: true`, swapped per mesh (`PointsMaterial` for `Points`).
+   - **Id encoding.** `idColor(i)` is an 8-bit RGB encoding of the object index: `r = (i*37) % 251 + 1`, `g = i >> 8`,
+     `b = 0`, with collisions rejected at build time. It is written with
+     `material.color.setRGB(r/255, g/255, b/255, THREE.LinearSRGBColorSpace)`.
+   - **Renderer settings.** A separate `WebGLRenderer({ antialias: false })` with `toneMapping = NoToneMapping` and
+     `outputColorSpace = LinearSRGBColorSpace`. With the id specified in linear space and a linear output, the byte
+     written equals the id. A hex colour would be colour-managed from sRGB and would not survive.
+   - **Unit test.** T-U9 renders 3 ids and reads them back.
+   - **Skinned and instanced meshes.** They keep their geometry and skinning/instancing attributes. In r185 skinning
+     is chosen from `object.isSkinnedMesh`, not from a material flag, so the standard vertex chunks place id pixels
+     where the shaded frame has them.
+2. **Metalness mask material.** A harness `ShaderMaterial` per mesh that outputs `metalness * texture(metalnessMap, vUv).b`
+   (`metalnessMap` absent → factor only), using the same skinning/instancing chunks (`#include <skinning_pars_vertex>`
+   etc.) so that it aligns with the shaded frame.
+3. **Shadow-receiver mask**: two three.js renders into a `HalfFloatType` `WebGLRenderTarget` with
+   `toneMapping = NoToneMapping` (linear values, before any tone map): (a) default, (b) every light's
+   `castShadow = false`. Toggling `castShadow` changes three's lights-state hash, so programs refresh without
+   `material.needsUpdate`. Read back with `readRenderTargetPixels` into a `Uint16Array`; half-float readback relies on
+   `EXT_color_buffer_float`, which is present on the runner (H11). Pixel ∈ mask when linear luma(b) − luma(a) >
+   max(0.02, 0.05·luma(b)). No custom shader.
+4. **Broken-control variants on the Aura side** use only public API (`castShadow: false`, `environments.hdri({ intensity: 0 })`,
+   a `renderer.pixelRatio` override, `antialias: false`, tone-map selection once PRD 03 exposes it). A variant that
+   public API cannot express is not captured. It is logged as `{ feature: "broken-control:<id>", status: "missing" }`
+   in `capabilityLog` and rendered on the three side only. Calibration then uses the three-side variant for that
+   control (`source: "three-proxy"`, §6.4). That proves the metric can tell "has shadows" from "has none". It does
+   not prove the Aura-side gate sees it, which is why the coverage report lists it separately.
+
+No shader in this PRD is performance-relevant to shipped apps.
+
+## 9. Rendering changes
+
+### 9.1 three.js `showcase` pipeline (`benchmarks/quality-rebuild/three/lib/showcase.ts`)
+
+```ts
+export interface ShowcaseOptions {
+  readonly toneMapping: "agx" | "neutral" | "aces-filmic";
+  readonly ao: { readonly kind: "gtao"; readonly radius: number; readonly distanceExponent: number } | null;
+  readonly bloom: { readonly strength: number; readonly radius: number; readonly threshold: number } | null; // threshold in HDR units (>= 1.0)
+  readonly aa: "msaa4+smaa" | "msaa4";
+  readonly shadows: { readonly type: "pcf" | "vsm"; readonly mapSize: 2048 | 4096; readonly radius: number; readonly bias: number; readonly normalBias: number } | null;
+  readonly contactShadows: { readonly size: number; readonly blur: number; readonly darkness: number } | null; // product scenes
+  readonly background: "hdri" | "grounded-skybox" | "color";
+  readonly anisotropy: "max";
+}
+export async function runThreeShowcase(spec: SceneSpec, opts: ShowcaseOptions, host: HTMLElement): Promise<ReadyPayload>;
+```
+
+Composer order: `RenderPass` → `GTAOPass` (when `ao`) → `UnrealBloomPass` (when `bloom`) → `SMAAPass` (when
+`aa === "msaa4+smaa"`) → `OutputPass`. Constraints:
+
+- **Explicit composer target.** `EffectComposer` creates a `HalfFloatType` target **without** multisampling by
+  default (`examples/jsm/postprocessing/EffectComposer.js:69`), and `WebGLRenderer({ antialias: true })` does not
+  apply to off-screen targets. The composer is therefore constructed as `new EffectComposer(renderer, new
+  WebGLRenderTarget(w*dpr, h*dpr, { type: HalfFloatType, samples: 4 }))`. Without this, "msaa4" silently means no
+  MSAA.
+- **Tone mapping and encode once.** When rendering into the composer target, `RenderPass` leaves output linear.
+  `OutputPass` applies `renderer.toneMapping` / `toneMappingExposure` and the sRGB encode exactly once.
+- **ContactShadows is not a three.js addon class.** `three/lib/contact-shadows.ts` ports the r185
+  `webgl_shadow_contact` example:
+  - an orthographic camera looking up from the ground renders a `MeshDepthMaterial` silhouette into a 512² target;
+  - two blur passes use `HorizontalBlurShader` / `VerticalBlurShader` from `examples/jsm/shaders/`;
+  - the result is applied as a plane with `opacity = darkness`.
+- **CSM.** `examples/jsm/csm/CSM.js` (WebGL path; `CSMShadowNode` is the WebGPU one), with `csm.setupMaterial(m)` on
+  every material.
+
+The addons are present locally (§2.4).
+
+### 9.2 Contract-tier fixes (`three/common.ts`, `aura3d/common.ts`, `capture.mjs`)
+
+These implement the research 22 skeptic fixes:
+
+- `renderer.shadowMap.type = THREE.PCFShadowMap` explicitly (removes the r185 deprecation remap).
+- Deduplicate GLB/HDR fetches on both sides with a module-level `Map<url, Promise<ArrayBuffer>>`. Today
+  `net::ERR_ABORTED` appears on scenes 02, 03, 04, 05, 06, 08 and 09.
+- Write `ready.json` (the full `ReadyPayload`) next to each PNG.
+- Aura side: populate `appliedExposure`, `shadows`, `fallbackLightsActive` and `lightUnits` from
+  `diagnostics().appliedLook`. Record `unknown` until §7.4 lands.
+- Scene 02: add a diagnostic variant that builds the plinth with `.scale([1.6,0.1,1.6])` instead of `size`, to locate
+  the plinth offset (research 22 §02 skeptic).
+- Scene 08: add `prd06-skinned-character-walk` (ID policy §9.4; files `aura3d/prd06-skinned-character-walk.ts`,
+  `three/prd06-skinned-character-walk.ts`) with the Walk clip at t = 1.25 s, so the DepthPass-ignores-skinning
+  defect (research 19 C4) is visible. Owner `prd06`.
+- Scene 01 and 06: add a three-side control at `SphereGeometry(16,12)` and `CylinderGeometry(...,24)` (diagnostic,
+  not scored) to separate tessellation from shading.
+- Scene 16 stays as is. The `node.size` bug (`index.ts:14747`) is an engine bug for PRD 01/15 to fix. The harness
+  must not work around it.
+
+### 9.3 Showcase reference scenes `ref-01..ref-06` (new)
+
+The content is chosen so a well-built three.js render scores ≥ 7. Assets are already tracked unless marked NEW.
+NEW HDRIs come from Poly Haven (CC0) at 2k, admitted through the PRD 05 asset pipeline with a licence record.
+
+| id | Content | Assets | three.js showcase settings | Judged primary criterion | Feeds |
+|---|---|---|---|---|---|
+| `ref-01-automotive-studio` | Car on a turntable floor, studio HDRI, key + rim | `fixtures/threejs-parity/assets/vehicles/car-concept.glb` (213k tris; clearcoat, iridescence, transmission) + NEW 2k studio HDRI | AgX, GTAO, PCF 4096 radius 3, ContactShadows, SMAA, HDRI background blurred (`backgroundBlurriness 0.4`) | Clearcoat/flake paint reads as lacquer; glass transmits; grounded contact | PRD 02, 03, 04 |
+| `ref-02-diorama` | Animated diorama, warm key, interior bounce | `fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb` (Draco, 1 clip) + `RoomEnvironment` | Neutral, GTAO, PCF 2048, SMAA, bloom (threshold 1.0) on lamps | Readable detail at 1280×720; AO in crevices; no aliasing on thin geometry | PRD 01, 03, 05, 06 |
+| `ref-03-character-hero` | Soldier idle → walk strip on a textured ground under an outdoor HDRI | `fixtures/threejs-parity/assets/character/soldier.glb` + NEW 2k outdoor HDRI + PRD 05 ground texture set | AgX, CSM 3 cascades 2048, GTAO, SMAA, `GroundedSkybox` | Skinned shadow matches pose; rim/key separation; ground detail with anisotropy | PRD 02, 06, 10 |
+| `ref-04-night-street` | Wet asphalt street, emissive signs, practical point lights, fog | PRD 05 street kit (the Aura Clash brownstone kit is the candidate) + NEW 2k night HDRI | ACES, `Reflector` or `SSRPass` on the floor, bloom threshold 1.0 on emissives > 1, FogExp2 0.015, GTAO | Emissives glow without blooming mid-tones; floor reflects; fog separates depth | PRD 02, 03, 07, 14 (Aura Clash) |
+| `ref-05-arena-game` | Third-person arena with 20+ props, pickups, particles, CSM, fog | soldier, `propRockA/B`, `deepRecoveryCrateStandard`, procedural particles | AgX, CSM 4 cascades, GTAO, bloom, SMAA, additive soft particles | Grounding at gameplay distance; particles present and lit; contrast and readability | PRD 02, 03, 07, 08, 14 |
+| `ref-06-product-turntable-motion` | DamagedHelmet + AntiqueCamera on a slow 8-frame orbit strip | `fixtures/asset-corpus/{damaged-helmet,antique-camera}.glb` + `studio_small_08` | Neutral, GTAO, ContactShadows, MSAA4 + SMAA | Temporal stability (`temporalFlicker`), specular aliasing in motion | PRD 03, 04 |
+
+### 9.4 Registry and ID policy
+
+- `shared/registry.ts` is the single scene list. `main.ts` routing and `capture.mjs` discovery read it, not
+  `import.meta.glob` file names.
+- Existing IDs `01..18` are frozen. New scenes use `<owner>-<slug>`, for example `prd03-bloom-hdr-threshold` and
+  `prd04-clearcoat-carpaint`. The "19–25" (PRD 03 §14) and "19–28" (PRD 04) numbers are remapped to owner-prefixed
+  IDs at registration. Motion scenes M1–M6 (PRD 08 §16) register as `prd08-motion-m1..m6`.
+- A scene enters `active` only after its first calibration run proves that at least one metric is discriminating, or
+  after its panel admission for `ref-*`.
+
+### 9.5 Capture pipeline (`capture.mjs` rewrite, same CLI flags plus new ones)
+
+For each `(scene, engine, dpr)` the capture sequence is:
+
+1. Load the page, wait for READY, screenshot `#stage` → `frame.png`.
+2. Run the mask passes (three only) → `*.mask.png`.
+3. Capture a frame strip if `spec.strip` is set.
+4. Reload for each broken-control and diagnostic variant.
+5. Reload twice more for repeat captures (noise floor). Repeats run only when `--calibrate` is set, or when the scene
+   has no calibrated golden.
+
+New flags: `--calibrate`, `--variants all|none|<ids>`, `--dprs 1,2`, `--strict`. With `--strict` the exit code is 1
+when any item is not READY, any GPU string contains `SwiftShader` or `llvmpipe`, or any mask is misaligned. The
+in-browser metric code in `compareInBrowser` (`capture.mjs:157-283`) is kept only for the side-by-side/diff composite.
+All metrics move to `metrics.py`.
+
+### 9.6 Game capture changes (`capture-games.mjs`)
+
+- `--pr-build` builds every selected game from the checked-out commit using the existing wrapper-config path
+  (`README.md:20-30`) and serves it locally. It is the default when `GITHUB_EVENT_NAME == pull_request`. Production
+  capture stays available as `--source production` for post-deploy verification.
+- `scenarios` per game in `games.json`: `[{ id, query: { scenario, seed, freezeAt, cameraPose } }]`. Captured at
+  1920×1080 and 390×844@3. Golden-eligible.
+- `hudSelectors` per game: CSS selectors whose bounding rects form the `hud` mask.
+- The forbidden-param probe (§6.6) is installed as an init script.
+- Strip capture: `{"strip": {"frames": 12, "intervalMs": 100}}` timeline step, plus `page.video` recording for 5 s
+  around `04-action`.
+- GPU timing: read `diagnostics().frameTiming` when present, otherwise the existing rAF sampler. Report both.
+  Disagreement > 20% between engine-reported and rAF fps is recorded as `fps-self-report-mismatch`.
+
+## 10. Migration plan
+
+### 10.1 Order of cutover
+
+1. **Stand up before tearing down.** Phases 1–3 make the new gates real (metrics, masks, calibration, goldens,
+   panel). They run in **report-only** mode for 2 panel rounds.
+2. **Delete fabricated suites immediately** (Phase 0). They are not gates anyone should rely on, and keeping them
+   lets claims be re-cited. Nothing depends on their output except other fabricated or aggregator tools
+   (research 19 C18 scope: no app imports them).
+3. **Quarantine, then delete, the aggregator layer** (Phase 4). `classify-tools.ts` re-runs the research 14 §1.1
+   classifier (browser launch, pixel decode, reads `tests/reports`, imports three). Every directory classified
+   "aggregator-only" moves to `tools/_quarantine/<name>/` in one commit per family. Its `package.json` scripts are
+   removed. CI references are listed. After one release cycle with no consumer restored, the quarantine is deleted.
+4. **Flip to blocking.** G-REG blocks PRs once goldens exist for all 18 contract scenes plus 3 scenarios per
+   deployable game. G-PANEL and G-REF bar items block releases.
+
+### 10.2 Delete / quarantine list (exact)
+
+Phase 0, delete now (fabricated or stub):
+
+- `benchmarks/three-compat/` (entire tree), `tests/browser/three-compat-threejs-visual-parity.spec.ts`,
+  `tests/browser/three-compat-threejs-runtime-parity.spec.ts`, `tools/three-compat-threejs-visual-parity/`,
+  `tools/three-compat-threejs-runtime-parity/`. Remove the consumers' references in
+  `tools/three-compat-broad-replacement-readiness/index.ts:16`, `tools/three-compat-completion-audit/index.ts:37` and
+  `tools/three-compat-release-readiness/index.ts:39,62-64`. Those three tools go to quarantine in Phase 4. Delete the
+  scripts `three-compat:compare-threejs` (`package.json:335`) and its use inside `three-compat:release` (`:340`).
+- `benchmarks/production-runtime/` (entire tree), `tools/production-runtime-threejs-parity/`, and the
+  `writeThreeJsParityReports` path in `tools/production-runtime-report-bridge/shared.ts:160`.
+- `tools/external-parity-roadmap-visual-quality/`.
+- `tools/external-parity-unity-unreal-parity/` and `.github/workflows/external-parity-external-engine-baselines.yml`.
+- `tools/threejs-parity-threejs-inventory/` (the label-derived matrix), `docs/project/parity/threejs/parity-matrix.md`,
+  and the "54 selected example-level rows, all marked matched" text in `README.md:218` and
+  `docs/project/threejs-superiority-status.md`.
+- `tools/superiority-*` (11 directories): every decision is derived from labels or from prior `pass` flags.
+- `tools/threejs-parity-same-scene-render/` and its script at `package.json:490`.
+- `tests/browser/muse3jsparity-301-visual.spec.ts`, `-visual-cases.ts` and `game-visual-superiority.spec.ts`
+  (vacuous superiority; micro scenes at 600×380). Before deleting, keep their defect detectors (`clipping`,
+  `replayInstability`) as candidate detectors in `metrics.py`, reimplemented on the new item format.
+- The visual-render section of `tools/compare-engines/index.ts` (`:1734-1856`) and its thresholds (`:2110-2112`). The
+  remaining bundle-size comparison may stay as a non-visual check.
+- `apps/threejs-parity-lab/` (no three.js code).
+
+Phase 0, relabel (keep the behaviour, remove the quality claim):
+
+- `AURA3D-VERIFICATION-MATRIX.md:160-203`: "Mac GPU Visual QA 17/17 PASS" becomes "Liveness 17/17". The `§41 quality
+  floor` notes move into the round-0 history record as admitted losses.
+- `tests/browser/current-routes-route-health.spec.ts`: rename its report key from any `visual` wording to `liveness`.
+- `tools/showcase-library/game-visual-qa.mjs`: keep it as a detector input. Delete the status-quo calibration comment
+  and thresholds (`:207-235`) and re-derive them from `ref-*` frames in Phase 2.
+- `tools/head-to-head-*` (20 dirs): convert `verdict:` literals to `GateVerdict`. Delete hard-coded `observedLosses`
+  prose (`tools/head-to-head-gltf-product-viewer/index.ts:31-35` and siblings). Keep the paired pages and
+  `muse301-h2h.yml` as a reproducer, not a gate.
+
+Phase 4, quarantine then delete:
+
+- Every `tools/` directory that `classify-tools.ts` classifies as aggregator-only (estimated 340 of 449 at research 14
+  time) and that is not on the keep list below.
+- The 141 source-substring unit tests (`readFileSync` + `toContain`/`toMatch` on app or package source; research 14
+  §1.2). A test survives only if it guards a real invariant (forbidden import, licence header, public export list).
+  Each survivor carries a `// invariant:` comment that states the invariant.
+- `muse301-*` workflow jobs that invoke deleted or quarantined tools (`muse301-aggregate.yml`,
+  `muse301-evidence-closure.yml`, `muse301-final-readiness.yml`, `muse301-gallery.yml`, `muse301-l01.yml`,
+  `muse301-publish.yml`, `remote-browser-301.yml`, `native-*-301.yml`). For each file: delete it, or reduce it to the
+  steps that still run kept tools. `muse301-final-review.yml` is replaced by `quality-review.yml`.
+
+Keep list (never quarantined by the classifier):
+
+- `tools/release/*` hash binding, `tools/evidence-freshness`, `tools/muse3jsparity-readiness/evidence-lineage.ts`.
+  They are folded into `EvidenceEnvironment` binding over Phases 3–4.
+- `tools/flagship-visual-comparison`: its OCR mask and IM wrappers are ported to `metrics.py`.
+- `tools/premium-indie-reference`, reworked so it no longer writes into the repo (§20.3).
+- `tests/visual/rendering-pixels.spec.ts`, `tests/visual/shadow-cascade-motion.spec.ts`,
+  `tests/visual/skinned-animation-pixels.spec.ts`: analytic GPU pixel tests. They move to the macos-14 job.
+- `tools/quality-rebuild-capture`, `benchmarks/quality-rebuild`, `tools/quality-gate`.
+
+### 10.3 `package.json` scripts
+
+- Add:
+  - `quality:capture` → `bash benchmarks/quality-rebuild/ci.sh`
+  - `quality:games` → `node tools/quality-rebuild-capture/capture-games.mjs`
+  - `quality:metrics` → `python -m metrics run` (cwd `tools/quality-gate/metrics`)
+  - `quality:gate` → `node --experimental-strip-types tools/quality-gate/src/cli.ts gate`
+  - `quality:calibrate`
+  - `quality:report`
+  - `quality:classify-tools`
+- Replace `test:visual` (`package.json:251`) with `quality:gate`.
+- Delete all scripts that point at deleted or quarantined tools, plus the 7 scripts that point at missing files.
+  Target ≤ 80 scripts in total, matching `_sections/E`. A unit test `tests/unit/quality-gate/scripts.test.ts` fails
+  when any script references a path that does not exist.
+
+## 11. Backward compatibility
+
+- **Published packages.** No `@aura3d/*` public API is removed by this PRD. The §7.4 diagnostics fields are optional
+  additions. `@aura3d/three-compat`'s `ThreeCompatibilityMatrix`/`ApproximationLedger` exports are not touched here;
+  PRD 15 owns the package surface.
+- **Scripts and CI.** Removing `three-compat:compare-threejs`, `three-compat:release`, `threejs-parity:*`,
+  `superiority:*` and `test:visual` breaks any external automation that calls them. None of them is invoked by the
+  published CLI or templates (verified with `rg` as part of task T0.9). Each removal is listed in the release notes
+  with its replacement or with "none: fabricated".
+- **Reports.** Consumers of `tests/reports/*.json` produced by deleted tools lose those files. Nothing in
+  `packages/` or `apps/` reads them (research 19 C18 scope). `aura3d-evidence-review` skill text that cites
+  `check-deploy`/route-health as visual QA is rewritten by PRD 13. This PRD supplies the replacement commands.
+- **Benchmark IDs.** Scene IDs 01–18 and the `index.html?engine=&scene=` URL contract are unchanged. `ReadyPayload`
+  gains fields and drops none.
+- **Game routes.** The only route-facing change is that `?capture=`/`?review` reads now fail the capture. Removing
+  those branches is PRD 09 work. Until PRD 09 lands, affected games are captured and marked
+  `forbidden-capture-flag`. They are not silently passed.
+- **Claims.** Every README/doc sentence that cites a deleted gate is removed in the same PR as the gate, so no claim
+  outlives its evidence.
+
+## 12. Dependencies on other PRDs
+
+| PRD | This PRD needs from it | It needs from this PRD |
+|---|---|---|
+| 01 Rendering core / color / HDR / PBR | `diagnostics().appliedLook` (exposure, tone map, render path, pixelRatio); fix for `createProductionInstanceTransforms` `node.size` (benchmark 16) | Scene hosting for PRD 01 §17 scenes (`prd01-*`), region metrics, tone-map A/B harness |
+| 02 Lighting / IBL / shadows | `ShadowReport` fields; shadow strength default change (moves `shadowContrast` toward 1.0 ratio) | `shadowContrast`/`contactDarkening`/`skyVariance` detectors, `prd06-skinned-character-walk` animated-shadow scene |
+| 03 Post / AA / tone mapping | Public tone-map/AA selection (enables Aura-side `no-aa`/`no-tonemap` controls); DPR-2 behaviour | Scenes `prd03-*` (were "19–25"), DPR-2 ("DSF-2") capture, `edgeAliasing` and `temporalFlicker` |
+| 04 Materials / glTF fidelity | Correct transmission/sheen/clearcoat (scenes 04, 05, 07) | Scenes `prd04-*` (were "19–28"), per-object ΔE/FLIP masks |
+| 05 Asset pipeline | Admission of the 2k HDRIs, ground textures and street kit used by `ref-*` | Licence/provenance fields in `refs/manifest.json` |
+| 06 Animation / skinning | Animated-pose correctness | `prd06-skinned-character-walk`, `ref-03` strips, shadow-pose metric |
+| 07 VFX / particles | Particle rendering (scene 14 `subjectPresence`) | `ref-05` particle criterion |
+| 08 Camera / game feel | Motion scenes M1–M6 | Strip/video capture infrastructure, `prd08-motion-*` registry slots |
+| 09 Shared game runtime | `@aura3d/game/capture` contract (`captureFromUrl`), removal of `?capture=review` branches, `hudSelectors` stability | Forbidden-param probe, scenario stills, game gates |
+| 10 World building | Sky/terrain features judged in `ref-03`, `ref-05` | Outdoor reference scenes |
+| 11 WebGPU / perf tiers | `FrameTimingSample`, tier presets used by showcase Aura side, measured fps replacing self-report | Measured per-tier budget table (§17), mismatch flag |
+| 13 Agent authoring / skills | Rewrite of `aura3d-evidence-review` to use `quality:*` commands | A remote screenshot loop agents can call (`quality:capture --scenes`) |
+| 14 18-game rebuild | Rebuilt games | Per-game gates, panel rounds, history; acceptance of every PRD 14 game goes through G-PANEL |
+| 15 API / package consolidation | Removal of evidence types from the root export, `exports`-based import lint list | Deletion list of `tools/` and scripts |
+
+This PRD has no hard prerequisite to start. Phases 0–3 depend on nothing. Phase 5 game gates depend on PRD 09 for
+scenario stills. Until then, game G-REG is limited to `01-title` shots, which are deterministic for the 11 games
+whose title shot shows no motion. That set is determined in Phase 1 by repeat captures.
+
+## 13. Implementation phases
+
+### Phase 0: Remove false signals (1 week)
+
+Delete the fabricated suites and relabel liveness (§10.2, Phase 0 lists).
+
+Exit criteria:
+- `rg -n "THREE_COMPAT_COMPARISON_SCENES|structuralSimilarityProxy|superiorityTargetsMet|visualScore >=|maxChangedPixelRatio: 1"`
+  over `tools/ tests/ benchmarks/ package.json` returns 0 hits.
+- `tests/unit/quality-gate/scripts.test.ts` passes, so no script references a missing path.
+- README and docs contain no "54/54", "parity matrix" or "visual parity" claims backed by deleted tools.
+- CI on `main` is green.
+
+### Phase 1: Real metrics, masks, strict capture (2 weeks)
+
+`metrics.py`, `three/lib/mask.ts`, `ReadyPayload` extensions, `capture.mjs --strict`, the GPU-string guard, and the
+contract-tier fixes (§9.2).
+
+Exit criteria: on the 3.0.1 baseline commit, the automated detectors reproduce the research 22/23 major findings
+without any human input (acceptance V1, §16). Mask silhouette IoU between engines is ≥ 0.98 on every contract
+scene, except 16 (instancing bug), which is reported as `mask-misaligned`.
+
+### Phase 2: Showcase tier, reference scenes, calibration (3 weeks)
+
+`three/lib/showcase.ts`, `ref-01..06`, the 2k HDRIs through PRD 05, broken-control variants, and `calibrate.ts`.
+
+Exit criteria:
+- Each `ref-*` three.js frame scores ≥ 7.0 (panel median) and is marked `admittedAsReference: true`.
+- Every contract and `ref-*` scene has at least one discriminating metric on its `primaryCriterion` region.
+  Non-discriminating pairs are listed in the calibration report.
+- The self-test rejects all applicable broken controls on all active scenes.
+
+### Phase 3: Goldens + blocking PR gate (2 weeks)
+
+`golden.ts`, LFS goldens, `quality-gate.yml` on `pull_request`, `verdict.ts`, and `report.ts` step summaries.
+
+Exit criteria:
+- **Noise.** 10 consecutive reruns of an unchanged commit produce 0 G-REG failures.
+- **Injected regressions.** A branch that injects each regression below is blocked by G-REG on the stated scenes,
+  and each block is recorded as a test run.
+
+  | Injected regression | Must be blocked on |
+  |---|---|
+  | Directional shadow strength halved | 01, 12 |
+  | IBL intensity 0 | 03, 06, 13 |
+  | DPR 0.5 | all scenes |
+
+- **Golden updates need a panel.** A golden update without a panel record is refused by `proposeGoldenUpdate`.
+
+### Phase 4: Panel rounds, history, aggregator quarantine (3 weeks, overlaps Phase 3)
+
+`quality-review.yml`, `rubric.ts`, `judge-prism.ts`, `history.ts`, round 0 seeding, `classify-tools.ts`,
+quarantine commits and script reduction.
+
+Exit criteria:
+- **Round 1.** Recorded with 2 named humans plus the vision model. The canary passed, calibration drift is ≤ 1.0 for
+  every judge, and trend charts appear in the artifact.
+- **Aggregator quarantine.** Aggregator-only tool directories are in `tools/_quarantine/`, and `package.json` has
+  ≤ 80 scripts.
+- **CI.** CI still green.
+
+### Phase 5: Games on PR builds, scenarios, real devices, release gate (3 weeks; scenario stills after PRD 09)
+
+`--pr-build`, scenarios, HUD masks, the forbidden-param probe, strips and video, the real-device lane, and the
+release gate wiring.
+
+Exit criteria:
+- **PR games.** A PR's games are captured from its own build. 3 scenario stills per game have goldens.
+- **Real devices.** Real-device captures exist for 2 iOS and 2 Android devices, with measured rAF fps.
+- **Release gate.** The release workflow refuses to publish without a passing G-PANEL round on the release commit.
+  The refusal is proven by a dry run on the 3.0.1 commit, which must be refused because 0/18 games pass G1.
+
+## 14. Task checklist
+
+Phase 0:
+
+- [ ] T0.1 Delete `benchmarks/three-compat/` (all three subdirectories), `tests/browser/three-compat-threejs-visual-parity.spec.ts`, `tests/browser/three-compat-threejs-runtime-parity.spec.ts`, `tools/three-compat-threejs-visual-parity/`, `tools/three-compat-threejs-runtime-parity/` in one commit titled `delete fabricated three-compat parity suite (research 19 C18)`.
+- [ ] T0.2 In `package.json`, delete `three-compat:compare-threejs` (line 335) and remove the `pnpm three-compat:compare-threejs` segment from `three-compat:release` (line 340). If `three-compat:release` then calls only quarantined tools, delete it too.
+- [ ] T0.3 Edit `tools/three-compat-broad-replacement-readiness/index.ts:16`, `tools/three-compat-completion-audit/index.ts:37` and `tools/three-compat-release-readiness/index.ts:39,62-64` so they no longer read the deleted reports. If the remaining logic only checks flags, move each directory to `tools/_quarantine/`.
+- [ ] T0.4 Delete `benchmarks/production-runtime/`, `tools/production-runtime-threejs-parity/`, and the parity-report writer at `tools/production-runtime-report-bridge/shared.ts:160`. Update any script that called them.
+- [ ] T0.5 Delete `tools/external-parity-roadmap-visual-quality/`, `tools/external-parity-unity-unreal-parity/`, `.github/workflows/external-parity-external-engine-baselines.yml` and their scripts.
+- [ ] T0.6 Delete `tools/threejs-parity-threejs-inventory/`, `docs/project/parity/threejs/parity-matrix.md`, `tools/threejs-parity-same-scene-render/`, all 11 `tools/superiority-*` dirs and their scripts (including `package.json:486,490`). Remove the "54 selected example-level rows" sentence from `README.md:218` and `docs/project/threejs-superiority-status.md`.
+- [ ] T0.7 Delete `tests/browser/muse3jsparity-301-visual.spec.ts`, `tests/browser/muse3jsparity-301-visual-cases.ts` and `tests/browser/game-visual-superiority.spec.ts`. Copy the `clipping` and `replayInstability` formulas into `tools/quality-gate/metrics/legacy_detectors.md` as a spec for T1.9.
+- [ ] T0.8 Remove the box-grid visual render (`tools/compare-engines/index.ts:1734-1856`) and its thresholds (`:2110-2112`). Keep the bundle-size comparison. Add `tests/unit/quality-gate/compare-engines-no-visual.test.ts`, which asserts that the output JSON has no `visual` key.
+- [ ] T0.9 Run `rg -n "three-compat:compare-threejs|threejs-parity:inventory|superiority:" packages templates apps .github`. Each hit is removed or documented in the PR body.
+- [ ] T0.10 Delete `apps/threejs-parity-lab/` and any route/catalog entries for it.
+- [ ] T0.11 Rewrite `AURA3D-VERIFICATION-MATRIX.md:160-203`: heading "Liveness (route alive, canvas non-blank, input changes state)". Delete "Visual QA PASS". Move the §41 quality-floor notes to `benchmarks/quality-rebuild/history/rounds/round-0.json` as `admittedLosses`.
+- [ ] T0.12 In each `tools/head-to-head-*/index.ts` (20 dirs), replace the `verdict:` string with a `GateVerdict` value and delete the `observedLosses` string literals. Add `tests/unit/quality-gate/no-verdict-literals.test.ts`, which greps those files for `observedLosses: \[` with string literals and fails on any match.
+- [ ] T0.13 Add `tests/unit/quality-gate/scripts.test.ts`: parse `package.json` scripts, extract every `tools/…`, `tests/…` and `benchmarks/…` path, and assert that each exists.
+
+Phase 1:
+
+- [ ] T1.1 Extend `benchmarks/quality-rebuild/shared/types.ts` exactly as in §7.1, and set `owner`, `referenceProfile: "contract"`, `masks`, `brokenControls` and `primaryCriterion` for scenes 01–18 in `shared/scenes.ts`. Use research 23's verdict sentence as the `primaryCriterion` (e.g. 05: "KHR_materials_transmission sphere shows the checker refracted through it").
+- [ ] T1.2 Create `shared/registry.ts` exporting `REGISTRY: readonly RegistryEntry[]`. Switch `main.ts` routing and `capture.mjs` discovery (`window.__QR_SCENES__`) to read it.
+- [ ] T1.3 In `three/common.ts:130`, set `THREE.PCFShadowMap`. Add the `fetchOnce(url)` cache, use it in `loadHdri` and the GLTF loader, and verify that `failedRequests` is empty for scenes 02–09 in the CI report.
+- [ ] T1.4 In `aura3d/common.ts`, add the `ReadyPayload` fields from §7.1. Read `app.diagnostics().appliedLook` if present, otherwise `null`/`"unknown"`. Use the same `fetchOnce` cache.
+- [ ] T1.5 Implement `three/lib/mask.ts` `renderMasks(spec, scene, camera, kinds: MaskId[]): Promise<Record<MaskId, Uint8Array>>` with a separate non-AA `WebGLRenderer`, as in §8.1–8.2. Expose it at `index.html?engine=three&scene=<id>&pass=mask`.
+- [ ] T1.6 Rewrite `capture.mjs`:
+  - capture `frame.png`, `*.mask.png` and `ready.json` per (scene, engine, dpr);
+  - add the `--strict`, `--calibrate`, `--variants` and `--dprs` flags;
+  - fail on GPU strings matching `/SwiftShader|llvmpipe|Software/i`;
+  - write `items.json` in the `CapturedItem[]` format.
+- [ ] T1.7 Create `tools/quality-gate/metrics/requirements.lock`, generated with `pip-compile --generate-hashes`, with exact pins: `lpips==0.1.4`, `torch` (CPU wheel), `numpy`, `scikit-image`, `Pillow`, and NVlabs `flip-evaluator` (the official FLIP pip package). Record each exact version in the lock after checking it on PyPI. No unpinned ranges.
+- [ ] T1.8 Implement `metrics.py` `flip`, `ssim`, `msssim`, `lpips_alex` and `delta_e2000` with optional masks. Add the CLI `python -m metrics run --items items.json --out metrics.json`.
+- [ ] T1.9 Implement every detector in §6.5 in `metrics.py` `detectors()`, each as a pure function on numpy arrays with unit tests (T-U2).
+- [ ] T1.10 Add a `metrics` job (ubuntu-latest, CPU) to the workflow. It downloads the capture artifact, runs `quality:metrics`, and uploads `metrics.json`.
+- [ ] T1.11 Write `tools/quality-gate/src/types.ts` (§7.2–7.3) and `verdict.ts` `evaluateGates` with G-REF bar R3 checks:
+  - `shadowContrast` ratio within ±15%;
+  - FLIP on object masks ≤ 0.10;
+  - ΔE2000 ≤ 3 in lit regions;
+  - specular energy on metal masks within ±20%.
+
+  These run in report-only mode.
+- [ ] T1.12 Run the strict benchmark on the 3.0.1 baseline commit (`c08d8acb` engine) on `macos-14`. Commit `benchmarks/quality-rebuild/history/baselines/3.0.1-detectors.json` (numbers only) and confirm acceptance V1.
+
+Phase 2:
+
+- [ ] T2.1 Implement `three/lib/showcase.ts` `runThreeShowcase` (§9.1). Route `index.html?engine=three&scene=<id>&profile=showcase`.
+- [ ] T2.2 Through PRD 05 admission, add 2k CC0 HDRIs (studio, outdoor, night) under `fixtures/environment-corpus/hdri/` as LFS, with `manifest.json` provenance. Add them to the `ci.sh` LFS include list.
+- [ ] T2.3 Implement `scenes/ref-01..ref-06.ts` per §9.3, with registry entries `referenceProfile: "showcase"`, `dprs: [1, 2]`, and a strip on `ref-03` and `ref-06`.
+- [ ] T2.4 Implement Aura-side broken-control variants in `aura3d/variants.ts` using only public API. Variants that cannot be expressed set `variant: "unavailable"` in the capability log.
+- [ ] T2.5 Implement the three-side broken-control variants (`no-shadows`, `no-ibl`, `dpr-half`, `no-aa`, `no-tonemap`, `flat-sky`, `albedo-only`) in `three/common.ts` and `showcase.ts`, selected by the `&variant=` query parameter.
+- [ ] T2.6 Implement `calibrate.ts` `calibrate()` per §6.4 and write `calibration.json`. Add the self-test that exits 1 with `calibration-broken`.
+- [ ] T2.7 Hold a panel admission round for `ref-*` three.js frames. Record it in `history/rounds/`, and set `admittedAsReference` only where the median is ≥ 7.0.
+- [ ] T2.8 Re-derive `tools/showcase-library/game-visual-qa.mjs` thresholds from admitted `ref-*` and reference stills. Delete the comment block at `:207-235`.
+
+Phase 3:
+
+- [ ] T3.1 Implement `golden.ts` (`loadGoldens`, `compareToGolden`, `proposeGoldenUpdate`). `proposeGoldenUpdate` throws unless a `PanelRoundRecord` aggregate for each item is `pass`, or is no worse than the current golden's aggregate.
+- [ ] T3.2 Track `benchmarks/quality-rebuild/goldens/**/*.png` in LFS via `.gitattributes`, and add `goldens/manifest.json` (tracked, non-LFS).
+- [ ] T3.3 Create `.github/workflows/quality-gate.yml` (§15.3): `pull_request` + `push: main` + `workflow_call`, with no secrets. Jobs:
+  - `capture-bench` (macos-14)
+  - `capture-games-{1,2,3}` (macos-14, 6 games each)
+  - `metrics` (ubuntu-latest)
+  - `gate` (ubuntu-latest, runs `quality:gate`)
+- [ ] T3.4 Remove `continue-on-error: true` from `.github/workflows/quality-rebuild-capture.yml:78,83,137` and convert it into the reusable capture workflow called by `quality-gate.yml`.
+- [ ] T3.5 Make `report.ts` write a `$GITHUB_STEP_SUMMARY` table containing, for each item: verdict, failing metric/region, value vs threshold, and links to the side-by-side and diff images.
+- [ ] T3.6 Create the test branch `qr/injected-regressions` with three commits (shadow strength halved, IBL 0, DPR 0.5) through public options or test-only engine flags. Assert in `tests/unit/quality-gate/injected-regressions.test.ts`, which reads the recorded gate outputs, that each commit is blocked on the scenes listed in Phase 3.
+- [ ] T3.7 Check runner drift. Record `ImageOS` and `ImageVersion` in `EvidenceEnvironment`. When they differ from `GoldenManifest.runnerImage`, the gate prints `runner-image-changed`, runs calibration, and blocks only on failures that exceed the re-calibrated thresholds.
+- [ ] T3.8 Remove `pnpm test:visual` from `.github/workflows/browser-matrix.yml:101`. Replace `test:visual` in `package.json:251` with `quality:gate`. Delete `tools/visual-baseline/`.
+- [ ] T3.9 Move `tests/visual/rendering-pixels.spec.ts`, `shadow-cascade-motion.spec.ts` and `skinned-animation-pixels.spec.ts` into a macos-14 job in `quality-gate.yml`. They must fail on SwiftShader (GPU-string guard).
+
+Phase 4:
+
+- [ ] T4.1 Implement `rubric.ts` with `RUBRIC_PROMPT_VERSION`, the research 23 benchmark template and the research 21 game template, verbatim from those files, plus validators for `BenchmarkJudgement` and `GameJudgement`. The `critique` field must be ≥ 200 chars.
+- [ ] T4.2 Implement `judge-prism.ts` using Kiro Prism `/v1/messages`. Send base64 `image` blocks: Aura and reference as separate 1280×720 JPEG q90 images, never one 2560-wide composite, because Prism resizes images over 2,000 px on the longest edge and allows ≤ 4 images per turn within an 800,000-byte image lane (`/Users/gurbakshchahal/kiro-prism/API.md:289-301`). Set headers `X-Prism-Client: aura3d-quality-gate` and `X-Prism-Job-Type: image-review`. Read the key from env `PRISM_API_KEY`. Never log it.
+- [ ] T4.3 Make canary item 0 of each vision session a fixed frame `benchmarks/quality-rebuild/refs/canary-01.png` (generated in-repo: three primitives, known colours). If the model's description fails 3 required tokens, abort the round with `canaryPassed: false`.
+- [ ] T4.4 Implement blind A/B in `rubric.ts` `buildPacket(item, seed)`: randomize left/right, strip labels, and store `blindKey` in the record only.
+- [ ] T4.5 Implement the calibration set in `rubric.ts` `CALIBRATION_ITEMS` (§6.8) and a drift computation against the frozen baseline in `history/calibration-baseline.json`.
+- [ ] T4.6 Create `.github/workflows/quality-review.yml`:
+  - `workflow_dispatch` only;
+  - `environment: quality-review` with required reviewers;
+  - downloads artifacts from a named `quality-gate` run, runs the vision judge, opens a PR adding `history/rounds/<round>.json` plus the human-judgement stubs;
+  - humans fill their judgements through a JSON form validated by `rubric.ts` in that PR.
+
+  Operator action, recorded and not performed by agents: create a dedicated Prism key as the `quality-review` environment secret `PRISM_API_KEY`.
+- [ ] T4.7 Implement `history.ts` `appendRound` and `trend`. Have `report.ts` render per-item trend SVGs (median per round, worst 3 categories). Seed round 0 from research 21/23 with `panel: "vision-only-single-judge"`.
+- [ ] T4.8 Implement `classify-tools.ts`: walk `tools/*`, flag browser-launch, pixel-decode, reads-`tests/reports` and imports-three per research 14 §1.1 regexes, and write `tools/_quarantine/CLASSIFICATION.json`.
+- [ ] T4.9 For each family (`external-parity-*`, `production-runtime-*`, `foundation-*`, `threejs-parity-*`, `three-compat-*`, `animation-studio-*`, `head-to-head-*` aggregators, `product-*`, `prompt-*`), make one commit `quarantine <family> aggregator-only tools` that moves the dirs to `tools/_quarantine/` and removes their scripts and workflow steps.
+- [ ] T4.10 Triage the 141 source-substring unit tests. Delete each test without an invariant, and add the `// invariant:` comment to each survivor. `tests/unit/quality-gate/source-substring-audit.test.ts` fails if a `readFileSync(...apps|packages|templates...)` + `toContain` test lacks the comment.
+- [ ] T4.11 Reduce `package.json` scripts to ≤ 80. `scripts.test.ts` asserts the count.
+- [ ] T4.12 Delete or trim the `muse301-*.yml`, `remote-browser-301.yml` and `native-*-301.yml` steps that call quarantined tools. Replace `muse301-final-review.yml` with `quality-review.yml`.
+
+Phase 5:
+
+- [ ] T5.1 In `capture-games.mjs`, add `--pr-build` as the default on `pull_request`, using `buildGame()` for every selected game. A failed build marks `source: production-fallback` and fails `--strict`.
+- [ ] T5.2 Install the forbidden-param init script: wrap `URLSearchParams.prototype.get/has/getAll` and record the keys read. Fail runs with reads of `capture`, `review` or `debug`.
+- [ ] T5.3 Extend `games.json` with `scenarios[]` (3 per game: `establishing`, `action`, `hero`) and `hudSelectors[]`, and validate them in `--validate`. Scenario stills are enabled per game once its PRD 09 migration lands.
+- [ ] T5.4 Add the timeline `strip` step and 5 s `recordVideo` around `04-action`. Upload them as artifacts.
+- [ ] T5.5 Read `diagnostics().frameTiming`. Flag `fps-self-report-mismatch` when it differs from the rAF sampler by more than 20%.
+- [ ] T5.6 Real-device lane: provision AWS Device Farm (technical fit; no Azure equivalent) through `/Users/gurbakshchahal/AuraOne/scripts/setup-auraone-shared-aws.sh`, profile `auraone-production-operator`, tagged `project=aura3d-quality-gate`, ephemeral. Add `.github/workflows/quality-devices.yml` (`workflow_dispatch`), which runs the 18 games' `03-mid` timeline on 2 iOS Safari and 2 Android Chrome devices. If provisioning is denied, record the denial and the minimal grant in the PR (policy §2), and keep the emulated lane.
+- [ ] T5.7 Wire the release: `.github/workflows/release.yml` must call `quality-gate.yml` on the release commit and require `history/rounds/<latest>.json` with `aggregates[*].verdict === "pass"` for every bar item. Dry-run on 3.0.1, which must be refused.
+
+## 15. Test requirements
+
+### 15.1 Unit tests (vitest, `tests/unit/quality-gate/`; ubuntu-latest, no GPU needed)
+
+- **T-U1 schema.** Every type in §7.2–7.3 has a validator. Round-trip fixtures in `tests/unit/quality-gate/fixtures/`.
+- **T-U2 metrics (pytest, `tools/quality-gate/metrics/test_metrics.py`).**
+  - Identical images give FLIP 0, SSIM 1, ΔE 0.
+  - Shifting a 64×64 synthetic shadow from luma 30 to 120 changes `shadowContrast` from ≈0.25 to ≈0.95.
+  - A flat sky gives `skyVariance` 0, and a gradient sky > 5.
+  - Empty particle masks give `subjectPresence` 0.
+  - A 1-px stair-step edge gives higher `edgeAliasing` than a 4× supersampled edge.
+  - Synthetic 8-frame strips with and without ±10-level noise separate `temporalFlicker` by ≥ 5×.
+- **T-U3 calibration.** Synthetic metric sets where `3·N > 0.5·Bmin` yield `discriminating: false`. The self-test
+  exits 1 when any active threshold accepts a broken control.
+- **T-U4 golden.** `proposeGoldenUpdate` throws without a panel record and throws when the new median is below the
+  old one. The manifest's `supersedes` chain is preserved.
+- **T-U5 verdict.** An item with `admitted-loss` can never be `pass`, even when all metrics pass. A run with
+  `gpuRenderer` matching SwiftShader yields `blocked-runner`.
+- **T-U6 rubric.** Validators reject a missing category, a score outside 0–10 or not in 0.5 steps, and a critique
+  under 200 chars. `buildPacket` with the same seed is deterministic, and with different seeds the A/B order flips
+  for about 50% of items over 100 seeds.
+- **T-U7 repo hygiene.** `scripts.test.ts`, `no-verdict-literals.test.ts`, `compare-engines-no-visual.test.ts` and
+  `source-substring-audit.test.ts` (T0.8, T0.12, T0.13, T4.10).
+- **T-U8 classifier.** `classify-tools.ts` against a fixture tree with one tool per class.
+
+### 15.2 Browser tests (remote only: GitHub Actions `macos-14`, ANGLE Metal; never on a developer Mac, never SwiftShader)
+
+- **T-B1 contract capture.** All 18 contract scenes × 2 engines produce READY. Masks align (IoU ≥ 0.98, except 16
+  until PRD 01 fixes it). `ready.json` validates.
+- **T-B2 showcase capture.** `ref-01..06` × 2 engines × DPR 1/2 produce READY with no console errors on the three.js
+  side.
+- **T-B3 variants.** Each declared broken control renders, and its `ReadyPayload.variant` matches.
+- **T-B4 noise.** 3 repeat captures per scene have FLIP ≤ floor on every scene (determinism check).
+- **T-B5 game capture.** `--strict --pr-build` for the 18 games at 1920×1080, 1280×720 and 390×844@3. The
+  forbidden-param probe is active. Each game produces the `requiredShots` (`02-opening`, `03-mid`, `04-action`) or a
+  named failure.
+- **T-B6 analytic pixels.** The moved `tests/visual/*` specs (T3.9).
+
+### 15.3 Workflow layout
+
+| Workflow | Trigger | Runners | Secrets | Blocking |
+|---|---|---|---|---|
+| `quality-gate.yml` | `pull_request`, `push: main`, `workflow_call` | macos-14 ×4 (bench + 3 game shards), ubuntu-latest ×2 (metrics, gate) | none (safe on fork PR code) | G-REG blocks PRs from Phase 3; G-REF report-only on PRs |
+| `quality-rebuild-capture.yml` | `workflow_call`, `workflow_dispatch` | macos-14 | none | via caller |
+| `quality-review.yml` | `workflow_dispatch` only | ubuntu-latest | `PRISM_API_KEY` in protected environment `quality-review` | produces panel records |
+| `quality-devices.yml` | `workflow_dispatch` | ubuntu-latest + AWS Device Farm | `auraone-production-operator` role via OIDC (never a stored key; never on `pull_request`) | report-only until Phase 5 exit |
+| `release.yml` | existing | existing | existing | refuses publish without a passing round |
+
+Shard sizing must respect the hosted macOS concurrency limit for the account's plan. Shards queue rather than fail.
+Wall-time budget: bench job ≤ 45 min, each game shard ≤ 60 min, metrics ≤ 20 min.
+
+## 16. Visual acceptance tests
+
+These test the **infrastructure**. Each one requires the gate to reach a known answer on known inputs. The visual
+quality of Aura3D itself is accepted by PRD 01–11 and 14 through the gates built here.
+
+| ID | Input | Reference | Criterion (automated) | Threshold | Human/vision review |
+|---|---|---|---|---|---|
+| V1 | 3.0.1 baseline, contract scenes 01, 02, 08, 12, 17, 18 | three r185 contract frames | `shadowContrast` Aura/three ratio flags `reference-gap` | Aura ratio ≥ 0.85 vs three ≤ 0.55 (research 22: Aura shadows 7–10% darker, three 49–80%) → all 6 flagged | Panel confirms flag ↔ research 23 class `major-aura3d-deficiency` on ≥ 5 of 6 |
+| V2 | 3.0.1, scenes 09, 13 | three (HDRI background) | `skyVariance` Aura < 1.0 while three > 5 | both flagged | — |
+| V3 | 3.0.1, scene 14 | three | `subjectPresence` Aura < 0.05 | flagged | — |
+| V4 | 3.0.1, scene 16 | three | object-mask IoU < 0.5 → `mask-misaligned` + FLIP frame > 0.3 | flagged | — |
+| V5 | 3.0.1, scene 05 transmission-sphere object mask | three | ΔE2000 on sphere mask > 10 (luma 91 vs 174) | flagged | — |
+| V6 | 3.0.1, scene 07 swatch masks | three | ΔE2000 > 6 and green-channel gradient missing | flagged | — |
+| V7 | 3.0.1, scene 06 rough half (r ≥ 0.6) masks | three | `roughnessResponse` monotonicity fails or mean luma ratio < 0.85 | flagged | — |
+| V8 | 3.0.1, scenes 03, 11 | three | no `major` detector flags | ≤ 1 minor flag each (vision: 6.5 vs 7.0; 5 vs 5) | Panel agrees within ±1.0 |
+| V9 | Any active scene's approved golden + each broken control | golden | G-REG rejects every applicable broken control | 100% | — |
+| V10 | Unchanged commit × 10 reruns | golden | G-REG false-positive rate | 0 / 10 | — |
+| V11 | Games 3.0.1: Courier Rush 1920×1080 shots | — | `blankOrBlack` > 0.9 on the black frames research 21 reports | flagged | Panel `overall_visual_quality` ≤ 2.5 |
+| V12 | Games 3.0.1: all 18 at 1920×1080 | — | measured rAF fps reported; Deep Recovery < 2 fps flagged against the Low-desktop proxy target (≥ 55 fps) | 15 of 18 below 30 fps reproduced (report.slim.json) | — |
+| V13 | Panel round 1 on 3.0.1 benchmark | three contract | Panel medians vs research 23 scores | |Δ| ≤ 1.0 on ≥ 15 of 18 scenes; class agreement ≥ 14 of 18 | 2 humans + vision required |
+| V14 | Panel round 1 on 3.0.1 games | — | Panel `overall_visual_quality` vs research 21 | |Δ| ≤ 1.0 on ≥ 15 of 18 | required |
+| V15 | Calibration set | known-bad / known-good / broken controls | broken controls score ≥ 2 below source; known-bad ≤ 2.5; `ref-*` ≥ 7 | all | required |
+| V16 | `ref-01..06` three showcase | — | admission | panel median ≥ 7.0 each | required |
+
+A failing V1–V8 or V11–V12 means the infrastructure is blind to a defect the vision judges already found. Phase 1
+cannot exit until all of them pass.
+
+## 17. Performance budgets
+
+### 17.1 What the gate enforces on shipped apps (targets from `_sections/E` Performance tiers; owned by PRD 11)
+
+The harness measures and reports these. They become blocking when PRD 11 declares a tier preset and a named device
+exists for that tier. Until then they are report-only, except on the CI runner (Low-desktop proxy).
+
+| Budget | Low | Medium (default) | High | Ultra |
+|---|---|---|---|---|
+| Frame time p95 (rAF, measured) | ≤ 16.7 ms desktop / ≤ 33.3 ms mobile | ≤ 16.7 ms at 1080p | ≤ 16.7 ms at 1440p | ≤ 33.3 ms realtime |
+| GPU ms p95 (timer query when available, else `null`) | ≤ 12 | ≤ 12 | ≤ 13 | ≤ 28 |
+| CPU main-thread ms p95 | ≤ 8 | ≤ 6 | ≤ 6 | ≤ 10 |
+| GPU memory (estimated: textures + targets, from diagnostics) | ≤ 256 MB | ≤ 768 MB | ≤ 1.5 GB | ≤ 3 GB |
+| Transfer before first interactive frame | ≤ 8 MB | ≤ 20 MB | ≤ 40 MB | no limit |
+| Engine bundle (gzip, published package) | core ≤ three r185 core gzip × 1.2, measured by the gate on the same build tool; tier features as lazy chunks | same | same | same |
+| Mobile | 30 fps floor on Low mobile devices; DPR ≤ 1.0 | 60 fps on iPhone 14-class | n/a | n/a |
+| CI runner proxy (macos-14 paravirtual M1, 3 vCPU) | ≥ 55 fps p50 for Low-tier games (Orbital Defense 59.6, Vault Breakers 57.4 already meet it) | report-only | report-only | report-only |
+
+GPU timer queries (`EXT_disjoint_timer_query_webgl2`) may be unavailable under ANGLE Metal in Chromium. When absent,
+`gpuMsP50/P95` is `null` and only rAF frame time is used. GPU numbers are never estimated from CPU time.
+
+### 17.2 Harness overhead budgets
+
+| Item | Budget |
+|---|---|
+| Bytes added to `@aura3d/engine` production bundle by this PRD | 0 KB (diagnostics fields are owned by PRD 01/11 and must stay ≤ 1 KB gzip combined) |
+| Bytes added to game bundles | 0 KB (capture contract lives in `@aura3d/game`, PRD 09, ≤ 2 KB gzip) |
+| Benchmark CI job | ≤ 45 min wall on macos-14 including variants; ≤ 20 min without `--calibrate` |
+| Game shard job | ≤ 60 min each |
+| Metrics job | ≤ 20 min on ubuntu-latest CPU; peak RSS ≤ 4 GB |
+| Artifact size per run | ≤ 2 GB; PNG for gating, JPEG q90 only for judge packets |
+| LFS goldens + masks | ≤ 150 MB total; re-baselines replace, they do not accumulate (history keeps hashes, not images) |
+| Vision-judge payload | ≤ 4 images/turn, ≤ 800,000 bytes image lane, ≤ 1,500,000 bytes request (Prism limits) |
+
+## 18. Browser coverage
+
+| Browser / backend | Runner | Role |
+|---|---|---|
+| Chromium (Playwright full Chromium, new headless), ANGLE Metal | macos-14 | **Gate.** All goldens and thresholds are bound to this runner image + GPU string |
+| Chromium DPR 2 | macos-14 | Gate for `showcase` scenes and game 1920×1080 retina run |
+| WebKit (Playwright) | macos-14 | Report-only trend; separate goldens; becomes gating for scenes where PRD 01/03 claim WebKit support |
+| Firefox (Playwright) | macos-14 | Report-only trend |
+| Chromium WebGPU (`--enable-unsafe-webgpu`) | macos-14 | Report-only for PRD 11 scenes; no WebGPU visual claims until PRD 11 makes it a production path |
+| Real Safari / Chrome on devices | AWS Device Farm (Phase 5) | Report-only for perf + `mobile_presentation` judging |
+| Linux/Windows hosted runners (SwiftShader/WARP) | — | **Excluded** from every visual gate (`blocked-runner` if attempted) |
+
+Playwright WebKit is not shipping Safari. Safari claims require the device lane.
+
+## 19. Mobile coverage
+
+- **Emulated (every PR).** 390×844, `isMobile`, `hasTouch`, DPR 3 on macos-14 Chromium, as today (README "Runs per
+  game"). This checks layout, touch-control presence and the `mobile_presentation` rubric category. It is **not**
+  performance evidence for mobile.
+- **Real devices (Phase 5, `quality-devices.yml`).** iPhone 13 and iPhone 15 (Safari), Pixel 7 and Galaxy A54
+  (Chrome). Each runs the `03-mid` timeline per game, a 5 s rAF fps sample, a screenshot and a short video. The
+  results feed the Low/Medium mobile rows in §17.1 and the panel's `mobile_presentation` score.
+- **Mobile rubric hard checks** (automated, reported to the panel):
+  - canvas covers ≥ 85% of the viewport;
+  - no keyboard-only prompts when `hasTouch` is set (detected by `games.json` `keyboardHintSelectors`);
+  - touch controls are present.
+
+  These come from the research 21 findings on Aura Clash, Mech Hangar, Gravity Post, Vault Breakers and Orbital
+  Defense.
+
+## 20. Screenshots / evidence required
+
+### 20.1 Per PR (artifact `quality-gate-<run>`, retained 30 days)
+
+- For each benchmark item:
+  - `frame.png` (Aura) and `three.png`
+  - `*.mask.png`
+  - `side-by-side.png`
+  - `diff.png`
+  - `golden-diff.png` (Aura vs golden, FLIP heat map)
+  - `ready.json`
+  - `metrics.json`
+- For each game:
+  - every shot PNG (full page)
+  - the canvas crop
+  - the HUD mask
+  - scenario stills
+  - `run.json` (fps, timings, GPU string, forbidden-param log)
+- `items.json`, `calibration.json` (when run) and `verdicts.json`.
+- Step summary table (T3.5).
+
+### 20.2 Per panel round (tracked in git, no images)
+
+- `history/rounds/<round>.json` (`PanelRoundRecord`), with every image bound by sha256 to the artifact of the named
+  `quality-gate` run.
+- Updated `history/index.jsonl`, plus trend SVGs in the round's artifact.
+- Golden updates referencing the round ID.
+
+### 20.3 Reference stills
+
+The repo is public. Copyrighted stills (the `tests/reports/_visual-critic-refs/` premium-indie frames) are **never
+committed**.
+
+- `refs/manifest.json` records each still's sha256, source URL, rights status and storage URI. Storage is a private,
+  access-controlled container (provider-neutral → Azure Blob via `az-auraone-gurbaksh`, per the funding snapshot)
+  that only the `quality-review` environment can read.
+- Committed references are limited to:
+  - frames this repo renders itself (three.js `ref-*`, canary);
+  - CC0 or explicitly licensed images.
+- `tools/premium-indie-reference/*.mjs` is changed to write only into that private store, never into the working
+  tree.
+
+## 21. Completion criteria
+
+1. Phase 0–5 exit criteria are met, each with a linked CI run ID.
+2. No tool, test, script or workflow in the repository produces a "visual", "parity", "superiority" or "quality"
+   claim from constants, labels, file sizes or aggregation of other `pass` flags (`classify-tools.ts` report shows 0
+   in those classes outside `_quarantine/`, and `_quarantine/` is deleted).
+3. G-REG blocks PRs on the macos-14 GPU runner. It has goldens for 18 contract scenes, `ref-01..06` and 3 scenario
+   stills per game whose PRD 09 migration has landed. The false-positive rate over the last 20 `main` runs is 0.
+4. Every active threshold has a recorded calibration that rejects its broken controls, and the self-test runs on
+   every golden update and runner-image change.
+5. At least two panel rounds are recorded in `history/` with 2 named humans plus the vision model, canary passed,
+   and V13–V16 met.
+6. The release workflow refuses publication without a passing panel round on the release commit (dry run proven).
+7. README, docs and skills cite only `quality:*` outputs and panel rounds for visual quality. They describe route
+   health, tests and non-blank checks as liveness only.
+8. `package.json` has ≤ 80 scripts and every script path exists.
+
+## 22. Rollback considerations
+
+- **Deletions (Phase 0, 4).** One commit per family, so `git revert <sha>` restores any family. Quarantine before
+  delete in Phase 4 gives one release cycle to restore a tool someone still needs. Fabricated suites are not
+  restored without a new PRD, because restoring them restores false claims.
+- **Blocking gate.** `quality-gate.yml` reads `QUALITY_GATE_MODE` from a repository variable (`blocking` |
+  `report-only`). Flipping it to `report-only` disables blocking without deleting evidence. Each flip is recorded in
+  the step summary. The flip is allowed for runner outages and harness bugs only. It must not be used to ship a known
+  visual regression.
+- **Goldens.** `goldens/manifest.json` is append-only through `supersedes`. To roll back a golden, revert the
+  manifest commit. The LFS objects remain.
+- **Runner image change.** If GitHub updates `macos-14` and the GPU string or image version changes, the gate
+  re-calibrates (T3.7). If re-calibration fails, it holds in `runner-image-changed` report-only mode for at most
+  7 days while goldens are re-approved by a panel round.
+- **Vision judge.** If Prism or the model is unavailable or changes behaviour, the canary detects it. The round
+  proceeds human-only, flagged `vision-missing`. History is not rewritten.
+
+## 23. Risks
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| The vision model drifts or prefers certain styles | Scores move without pixel changes | Canary + calibration set each round; vision can never pass alone; prompt versioned; humans decide ties |
+| Goodhart on detectors (agents tune for metrics, not looks) | Metric-green, panel-red frames | Detectors are report signals for G-REF; only G-PANEL is release-blocking; detectors are rotated/added per round without notice to authoring agents |
+| Paravirtual M1 GPU not representative of user hardware | Perf numbers misleading; some features (timer queries) unavailable | Treated as the Low-desktop proxy only; real-device lane for mobile; tier budgets need named devices before blocking |
+| Hosted runner image updates churn goldens | Spurious failures | Bind goldens to `ImageVersion` + GPU string; re-calibration path T3.7 |
+| Wall-clock game timelines are nondeterministic | Flaky gameplay goldens | Goldens only on deterministic scenario stills; gameplay shots go to the panel only |
+| Human panel availability and cost | Rounds delayed; releases blocked | Rounds scheduled per release, not per PR; PRs gated by G-REG; two humans minimum is fixed, not waived |
+| Copyright of reference stills in a public repo | Legal exposure | Never committed; private store; hashes only in git (§20.3) |
+| LFS storage/bandwidth quota (goldens, HDRIs, assets pulled per job) | CI failures when quota exhausted | Goldens ≤ 150 MB; `actions/cache` keyed by LFS oid; only the include list in `ci.sh` is pulled |
+| Deleting ~340 tool dirs breaks an unknown consumer | Broken script/CI | Classifier + quarantine cycle + `scripts.test.ts`; CI references removed in the same commit |
+| PR captures of 18 games exceed macOS concurrency/time | Slow PR feedback | 3 shards; game shards run only when `apps/**`, `packages/**`, `templates/**` or `public/aura-assets/**` change; benchmark always |
+| Prism key exposure | Credential leak | Only in protected `quality-review` environment on `workflow_dispatch`; never on `pull_request`; never logged; operator-provisioned |
+| A threshold is non-discriminating for an important feature | Feature regressions undetected by G-REG | Reported visibly per PR; panel round must cover it; a PRD 01–07 task is opened to add a scene that isolates the feature |
+
+## 24. Explicitly out of scope
+
+- Fixing any rendering, material, lighting, post, VFX, animation or camera defect the gates expose (PRDs 01–08, 10,
+  11). This includes the `node.size` instancing bug and shadow strength.
+- Rebuilding the games (PRD 14) and removing route `?capture=review` branches (PRD 09).
+- The agent-authoring benchmark in `benchmark/` (10 prompts, round-50), and agent-output scoring (bar A1–A4). Both
+  belong to PRD 13, which reuses `G-PANEL`.
+- Unity/Unreal comparisons (deleted, not replaced).
+- WebGPU visual parity beyond report-only capture (PRD 11).
+- Babylon.js comparisons (`benchmarks/babylon` stays untouched and ungated).
+- Publishing benchmark results as marketing. No quality claim may be made until a passing panel round exists, and
+  even then claims cite the round ID and the exact items that passed.
