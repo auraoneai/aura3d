@@ -1900,7 +1900,7 @@ export interface CaptureStepPlugin { readonly name: string; readonly owner: stri
 ```
 
 Semantics:
-- Captures run remotely only: macos-14, Chromium, ANGLE Metal. Local browser runs are not evidence.
+- Captures run remotely only, on macOS with Chromium and ANGLE Metal, routed per `CI-ROUTING.md`. Judged frames (lane evidence, checkpoints, G-PANEL) run on GitLab `saas-macos-medium-m1` with `chromium-headless-shell`. PR sentinel checks run on GitHub `macos-14`. Reports record `ciProvider` and `browserChannel`, and frames from different providers are never compared. Local browser runs are not evidence.
 - Readiness is `window.__AURA3D_GAME__?.state === "playing"` (C-24) when present, else the existing readiness probe.
 - `?capture=review|overview` URL keys are forbidden in migrated routes (`forbidden-capture-flag`).
 
@@ -2387,9 +2387,7 @@ PRs, so a slip in one does not hold the others:
    No pre-existing test is modified, except import paths in tests that import moved internals.
 2. `tests/unit/public-api-contracts.test.ts` is green. Exports are a superset of the `85aafcd0` exports.
 3. Every conformance suite passes on stubs.
-4. **IC-0 identity run**: `.github/workflows/quality-rebuild-capture.yml` with `qr_flags=none` on all 18 games and
-   the 18 base benchmark scenes. Per-image ΔE2000 p99 must stay at or below the run-to-run noise measured by two
-   captures of `85aafcd0`. Run 37289688772 is the reference run id and gets one fresh re-run as the noise baseline.
+4. **IC-0 identity run** on GitLab macOS: `.github/workflows/qr-gitlab-ci.yml` with suite `all` and `qr_flags=none`, covering all 18 games and the 18 base benchmark scenes. Per-image ΔE2000 p99 must stay at or below the run-to-run noise from two GitLab captures of `85aafcd0`. GitHub run 37289688772 is historical audit evidence. Because it used a different provider and browser channel (`CI-ROUTING.md`), it is not the comparison baseline.
 5. `tools/qr-ownership/check.mjs` passes. Moved line counts equal source line counts, checked by a script in the PR
    description.
 
@@ -2486,6 +2484,7 @@ Contributors who are not the owner change these files only through the named sea
 | `tools/quality-rebuild-capture/capture-games.mjs` | 01,02,06,11,12,14 | 12 | `steps/*.mjs` plugins (C-33) |
 | `tools/quality-rebuild-capture/games.json` | 02,06,09,11,12,14 | 14 | schema owned by 12 (R22) |
 | `.github/workflows/quality-rebuild-capture.yml` | 01,02,04,09,11,12,14,15 | 12 | `qr_flags`/`strict` inputs |
+| `.gitlab-ci.yml`, `.github/workflows/qr-gitlab-ci.yml` | 12, 15 | 12 | new suites via `QR_SUITE` values (CCR-free additions by 12; others send `qr-request`) |
 | `.github/workflows/browser-matrix.yml` | 05,06,07,08,12 | 12 | lanes add `qr-prdNN-*.yml` |
 | `packages/rendering/src/DepthPass.ts` | 02,06,10 | 02 | C-11 `registerDepthVariantFeature` |
 | `packages/rendering/src/Sampler.ts` | 02,04 | 04 | C-12 fields pre-declared |
@@ -2687,7 +2686,7 @@ With the flag off, nothing changes for anyone. Consumers never change code to sw
 | G-PANEL rounds | IC-4, IC-8, IC-12, … (every 4th) | human plus vision panel; the only rounds that can accept |
 
 **Each checkpoint run**, dispatched by PRD 12 on the main HEAD at 00:00 UTC Thursday:
-1. `.github/workflows/quality-rebuild-capture.yml` with `qr_flags=all` and with `qr_flags=none`. It covers:
+1. `.github/workflows/qr-gitlab-ci.yml` (GitLab macOS, `CI-ROUTING.md`), with suite `all` and both `qr_flags=all` and `qr_flags=none`. The GitHub fallback is `quality-rebuild-capture.yml`. A checkpoint is captured entirely on one provider. It covers:
    - Every `active` C-30 registry scene in both engines (the 18 base scenes plus lane scenes).
    - All 18 games on the desktop and mobile viewports from `games.json`.
    - Each route also with its own `qrFlags`.

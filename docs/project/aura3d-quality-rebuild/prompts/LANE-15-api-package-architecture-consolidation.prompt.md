@@ -42,6 +42,8 @@ Aura3D 3.0.1 renders far behind three.js r185 on identical inputs (vision-judged
   - line 2068: ## Appendix A: Deletion list with safety checks
 2. `docs/project/aura3d-quality-rebuild/CONTRACTS.md` — §1 principle, §2 entries for every contract you provide or consume (listed below), §3 extension points in hot files, §3.9 PR 0, §4 ownership, §5 flags, §6 merge protocol, §7 integration checkpoints, §8 soft dependencies.
 3. `docs/project/aura3d-quality-rebuild/AURA3D-QUALITY-MASTER-PLAN.md` — §1 execution model, your rows in §2A/§2B, §4 checkpoint calendar, §8 first PRs.
+   Also read `docs/project/aura3d-quality-rebuild/CI-ROUTING.md`, which says where each kind of run goes (GitHub vs GitLab), how to trigger GitLab runs, and the minute budget.
+   Where your PRD says "remote GH Actions macos-14" for captures or visual tests, read it as the GitLab macOS route in `CI-ROUTING.md`. PR gates and the sentinel check stay on GitHub.
 4. The research files your PRD cites under `docs/project/aura3d-quality-rebuild/research/`, and the actual source files before changing them.
 
 ## Your lane at a glance
@@ -72,7 +74,11 @@ Then continue through the PRD's implementation phases and task checklist in orde
 2. **Contracts, not waiting.** Consume other lanes only through `contracts/` modules and public entry points (§6.2). Build against the PR 0 stub; when you provide a contract, swap with `slot.provide(real)` in your lane barrel plus a green conformance run (§6.3). Need a contract change? Open a `ccr` PR (§6.4): additive only; breaking changes become `C-NNv2`.
 3. **Flags.** All behaviour lands behind your lane's `A3D_QR_*` flag(s). No PR may change flag-off behaviour, except correctness fixes explicitly declared in the PR description (§5, §6.1).
 4. **Trunk stays green.** Merge to `main` whenever your PR is green; any red-making PR is reverted immediately and re-landed by its owner.
-5. **Remote execution only.** Browser tests, Playwright, captures, heavy builds and test suites run in GitHub Actions (macos-14 for judged frames; the repo is public). Never start local Docker or run Playwright locally. Quick local `tsc` on touched packages and targeted unit tests are fine. Reuse the capture workflow `.github/workflows/quality-rebuild-capture.yml` and `benchmarks/quality-rebuild/`.
+5. **Remote execution only, routed per `CI-ROUTING.md`.** Never start local Docker, local Playwright or local captures (quick local `tsc` on touched packages and targeted unit tests are fine). GitHub is the source of truth; never push to, commit in or open MRs on the GitLab mirror.
+   - **PR gates** (typecheck, lint, unit, conformance, ownership) run on GitHub Actions ubuntu. The flag-off sentinel identity check runs on GitHub `macos-14`.
+   - **Visual evidence, captures, benchmark and perf runs** go to **GitLab macOS** through the bridge. Add a tag to your head commit message so the result shows as a check on your PR, for example `[qr-gitlab:games games=<ids you touched> flags=<your flag>]` or `[qr-gitlab:benchmark]`. Or dispatch: `gh workflow run qr-gitlab-ci.yml --ref <branch> -f suite=games -f games=<ids> -f qr_flags=<flags> -f requester=prd15`. Download results with `gh run download <run-id>` (artifact `gitlab-<suite>-<pipelineId>`).
+   - **Budget:** your lane gets about 2,400 GitLab compute minutes per month. A full 18-game capture costs about 150 and the benchmark about 42, so prefer targeted runs: only the games or scenes you touched, one viewport. If the group's monthly usage is above 85%, use the GitHub fallback (`quality-rebuild-capture.yml`) and say so in the PR.
+   - **Never compare frames across providers.** GitHub runs full Chromium; GitLab runs `chromium-headless-shell`. Before/after pairs and goldens must come from the same provider and channel; check `ciProvider` and `browserChannel` in `report.json`.
 6. **Pixels decide.** Tests passing, routes returning 200, non-blank screenshots or green matrices are engineering gates, not quality. Never write that anything is "Three.js-quality" or "parity" unless a G-PANEL round (human + vision judges) says so. Look at your own screenshots (download the Actions artifact and view the images) before claiming a visual result.
 7. **Honest evidence.** Commit evidence under `docs/project/aura3d-quality-rebuild/evidence/prd15/`: run IDs, before/after screenshots, metric JSON. Report anything not run as NOT RUN with the reason.
 8. **Large files.** PRDs and hot files are huge: read them with `rg -n` plus offset/limit reads. Keep each Write/Edit tool call under ~250 lines (larger calls get dropped). Never rewrite a whole large file in one call.
@@ -81,7 +87,7 @@ Then continue through the PRD's implementation phases and task checklist in orde
 
 ## Integration checkpoints (never blocking)
 
-Weekly integration runs IC-1.. (Thursdays from 2026-10-15) capture all 18 benchmark scenes and 18 games with all flags on and off; G-PANEL rounds (IC-4, IC-8, IC-12, …) are the only place integrated acceptance and visual claims are decided. If a checkpoint files a `qr-ic-regression` against your lane, fix it in your lane; it never blocks anyone else, and you never wait for a checkpoint to keep working.
+Weekly integration runs IC-1.. (Thursdays from 2026-10-15, on GitLab macOS) capture all 18 benchmark scenes and 18 games with all flags on and off; G-PANEL rounds (IC-4, IC-8, IC-12, …) are the only place integrated acceptance and visual claims are decided. If a checkpoint files a `qr-ic-regression` against your lane, fix it in your lane; it never blocks anyone else, and you never wait for a checkpoint to keep working.
 
 ## Definition of done for each PR
 

@@ -4,14 +4,20 @@ name: QR GitLab CI bridge
 # (gitlab.com/chahal-foundation-group/github-auraoneai/aura3d, 50,000 compute min/month)
 # and brings the result and artifacts back to GitHub.
 #
-#   push to qr/** or aura3d-quality-rebuild/**  -> sync that branch to GitLab only (no minutes spent)
-#   workflow_dispatch                            -> sync, trigger a GitLab pipeline, wait, mirror the
-#                                                   result as this job's status, re-upload artifacts
+#   push to qr/** or aura3d-quality-rebuild/**     -> sync that branch to GitLab only (no GitLab minutes)
+#   push whose head commit message contains a tag  -> sync + run a GitLab pipeline; the result shows as a
+#     [qr-gitlab:<suite>]                             check on that commit/PR. Optional in the same tag:
+#     [qr-gitlab:<suite> games=a,b flags=all]          games=<ids> flags=<A3D_QR set> viewports=<WxH,..>
+#   workflow_dispatch                               -> same, with explicit inputs
+#
+# The pipeline job waits for GitLab, mirrors its status as this job's conclusion and re-uploads the
+# GitLab job artifacts as a GitHub artifact named gitlab-<suite>-<pipelineId> (download with
+# `gh run download <run-id>`).
 #
 # GitHub stays the source of truth: this only pushes GitHub refs one way, using the existing
 # per-repo GITLAB_MIRROR_URL secret. Policy and budgets: docs/project/aura3d-quality-rebuild/CI-ROUTING.md
 #
-# Secrets (all GitLab-scoped, this repo only):
+# Secrets (all GitLab-scoped, this repo only; never exposed to fork PRs because no pull_request trigger):
 #   GITLAB_MIRROR_URL        existing mirror push URL (project token, read/write_repository)
 #   GITLAB_QR_TRIGGER_TOKEN  pipeline trigger token for project 87152020
 #   GITLAB_QR_API_TOKEN      project access token, read_api, Reporter (status + artifacts only)
@@ -51,7 +57,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: qr-gitlab-${{ github.ref }}-${{ github.event_name }}-${{ inputs.suite || 'sync' }}
+  group: qr-gitlab-${{ github.ref }}-${{ github.event_name }}-${{ inputs.suite || github.sha }}
   cancel-in-progress: false
 
 env:
@@ -82,47 +88,73 @@ jobs:
           echo "synced ${BRANCH} @ $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
   pipeline:
-    name: GitLab ${{ inputs.suite }} pipeline
-    if: github.event_name == 'workflow_dispatch'
+    name: GitLab pipeline
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[qr-gitlab:')
     needs: sync
     runs-on: ubuntu-latest
     timeout-minutes: 240
     steps:
-      - name: Validate inputs
+      - name: Resolve parameters
+        id: plan
         env:
-          GAMES: ${{ inputs.games }}
-          VIEWPORTS: ${{ inputs.viewports }}
-          QR_FLAGS: ${{ inputs.qr_flags }}
-          REQUESTER: ${{ inputs.requester }}
+          EVENT: ${{ github.event_name }}
+          MSG: ${{ github.event.head_commit.message }}
+          IN_SUITE: ${{ inputs.suite }}
+          IN_GAMES: ${{ inputs.games }}
+          IN_VIEWPORTS: ${{ inputs.viewports }}
+          IN_LOCAL: ${{ inputs.local_build_all }}
+          IN_FLAGS: ${{ inputs.qr_flags }}
+          IN_REQ: ${{ inputs.requester }}
+          REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          [[ "$GAMES" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::games must match ^[a-z0-9,-]*$"; exit 1; }
-          [[ "$VIEWPORTS" =~ ^[0-9x,]+$ ]] || { echo "::error::viewports must match ^[0-9x,]+$"; exit 1; }
-          [[ "$QR_FLAGS" =~ ^[A-Za-z0-9_,.-]+$ ]] || { echo "::error::invalid qr_flags"; exit 1; }
-          [[ "$REQUESTER" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo "::error::invalid requester"; exit 1; }
+          suite="${IN_SUITE:-all}"; games="${IN_GAMES:-}"; viewports="${IN_VIEWPORTS:-1920x1080,1280x720}"
+          local_build="${IN_LOCAL:-false}"; flags="${IN_FLAGS:-none}"; requester="${IN_REQ:-manual}"
+          if [ "$EVENT" = "push" ]; then
+            tag="$(printf '%s' "$MSG" | grep -o '\[qr-gitlab:[^]]*\]' | head -1 | tr -d '[]')"
+            body="${tag#qr-gitlab:}"
+            suite="$(printf '%s' "$body" | awk '{print $1}')"
+            for kv in $(printf '%s' "$body" | cut -s -d' ' -f2-); do
+              case "$kv" in
+                games=*) games="${kv#games=}" ;;
+                flags=*) flags="${kv#flags=}" ;;
+                viewports=*) viewports="${kv#viewports=}" ;;
+                local=*) local_build="${kv#local=}" ;;
+              esac
+            done
+            requester="$(printf '%s' "$REF" | grep -o 'prd[0-9][0-9]' | head -1 || true)"; requester="${requester:-push}"
+          fi
+          [[ "$suite" =~ ^(all|games|benchmark|unit|probe)$ ]] || { echo "::error::suite must be all|games|benchmark|unit|probe"; exit 1; }
+          [[ "$games" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::games must match ^[a-z0-9,-]*$"; exit 1; }
+          [[ "$viewports" =~ ^[0-9x,]+$ ]] || { echo "::error::viewports must match ^[0-9x,]+$"; exit 1; }
+          [[ "$flags" =~ ^[A-Za-z0-9_,.-]+$ ]] || { echo "::error::invalid flags"; exit 1; }
+          [[ "$requester" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo "::error::invalid requester"; exit 1; }
+          [[ "$local_build" =~ ^(true|false)$ ]] || { echo "::error::local must be true|false"; exit 1; }
+          { echo "suite=$suite"; echo "games=$games"; echo "viewports=$viewports"; echo "local=$local_build"; echo "flags=$flags"; echo "requester=$requester"; } >> "$GITHUB_OUTPUT"
+          echo "suite=$suite games=${games:-all} flags=$flags viewports=$viewports local=$local_build requester=$requester" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Trigger GitLab pipeline
         id: trigger
         env:
           TRIGGER_TOKEN: ${{ secrets.GITLAB_QR_TRIGGER_TOKEN }}
           REF: ${{ github.ref_name }}
-          SUITE: ${{ inputs.suite }}
-          GAMES: ${{ inputs.games }}
-          VIEWPORTS: ${{ inputs.viewports }}
-          LOCAL_BUILD: ${{ inputs.local_build_all }}
-          QR_FLAGS: ${{ inputs.qr_flags }}
-          REQUESTER: ${{ inputs.requester }}
+          SUITE: ${{ steps.plan.outputs.suite }}
+          GAMES: ${{ steps.plan.outputs.games }}
+          VIEWPORTS: ${{ steps.plan.outputs.viewports }}
+          LOCAL_BUILD: ${{ steps.plan.outputs.local }}
+          QR_FLAGS: ${{ steps.plan.outputs.flags }}
+          REQUESTER: ${{ steps.plan.outputs.requester }}
         run: |
           set -euo pipefail
           test -n "$TRIGGER_TOKEN" || { echo "::error::GITLAB_QR_TRIGGER_TOKEN secret missing"; exit 1; }
-          resp="$(curl -fsS -X POST "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" \
+          resp="$(curl -sS -X POST "$GITLAB_API/projects/$GITLAB_PROJECT_ID/trigger/pipeline" \
             -F "token=$TRIGGER_TOKEN" -F "ref=$REF" \
             -F "variables[QR_SUITE]=$SUITE" -F "variables[QRC_GAMES]=$GAMES" \
             -F "variables[QRC_VIEWPORTS]=$VIEWPORTS" -F "variables[QRC_LOCAL_BUILD]=$LOCAL_BUILD" \
             -F "variables[QR_FLAGS]=$QR_FLAGS" -F "variables[QR_REQUESTER]=$REQUESTER" \
             -F "variables[QR_GITHUB_RUN]=$GITHUB_RUN_ID")"
-          id="$(echo "$resp" | jq -r .id)"; url="$(echo "$resp" | jq -r .web_url)"
-          test "$id" != "null" || { echo "::error::trigger failed: $resp"; exit 1; }
+          id="$(echo "$resp" | jq -r '.id // empty')"; url="$(echo "$resp" | jq -r '.web_url // empty')"
+          test -n "$id" || { echo "::error::GitLab trigger failed: $resp"; exit 1; }
           echo "id=$id" >> "$GITHUB_OUTPUT"
           echo "GitLab pipeline: $url" | tee -a "$GITHUB_STEP_SUMMARY"
 
@@ -133,8 +165,9 @@ jobs:
           PIPELINE_ID: ${{ steps.trigger.outputs.id }}
         run: |
           set -euo pipefail
-          for i in $(seq 1 280); do
-            status="$(curl -fsS -H "PRIVATE-TOKEN: $API_TOKEN" "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID" | jq -r .status)"
+          status=unknown
+          for _ in $(seq 1 300); do
+            status="$(curl -fsS -H "PRIVATE-TOKEN: $API_TOKEN" "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID" | jq -r .status)" || status=unknown
             case "$status" in success|failed|canceled|skipped) break ;; esac
             sleep 45
           done
@@ -150,21 +183,26 @@ jobs:
           set -euo pipefail
           mkdir -p gitlab-artifacts
           curl -fsS -H "PRIVATE-TOKEN: $API_TOKEN" "$GITLAB_API/projects/$GITLAB_PROJECT_ID/pipelines/$PIPELINE_ID/jobs?per_page=50" > jobs.json
-          jq -r '.[] | "\(.id) \(.name) \(.status) \(.duration // 0)"' jobs.json | tee -a "$GITHUB_STEP_SUMMARY"
+          { echo '| job | status | duration s |'; echo '|---|---|---|'; jq -r '.[] | "| \(.name) | \(.status) | \(.duration // 0 | floor) |"' jobs.json; } >> "$GITHUB_STEP_SUMMARY"
           for jid in $(jq -r '.[] | select((.artifacts // []) | length > 0) | .id' jobs.json); do
-            name="$(jq -r --argjson j "$jid" '.[] | select(.id==$j) | .name' jobs.json | tr ':/' '__')"
-            curl -fsSL -H "PRIVATE-TOKEN: $API_TOKEN" -o "a-$jid.zip" "$GITLAB_API/projects/$GITLAB_PROJECT_ID/jobs/$jid/artifacts" \
-              && mkdir -p "gitlab-artifacts/$name" && unzip -q -o "a-$jid.zip" -d "gitlab-artifacts/$name" || echo "no artifacts for $jid"
+            name="$(jq -r --argjson j "$jid" '.[] | select(.id==$j) | .name' jobs.json | tr ':/ []' '_____')"
+            if curl -fsSL -H "PRIVATE-TOKEN: $API_TOKEN" -o "a-$jid.zip" "$GITLAB_API/projects/$GITLAB_PROJECT_ID/jobs/$jid/artifacts"; then
+              mkdir -p "gitlab-artifacts/$name" && unzip -q -o "a-$jid.zip" -d "gitlab-artifacts/$name"
+            else
+              echo "no artifacts for job $jid"
+            fi
           done
           cp jobs.json gitlab-artifacts/gitlab-jobs.json
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.trigger.outputs.id != ''
         with:
-          name: gitlab-${{ inputs.suite }}-${{ steps.trigger.outputs.id }}
+          name: gitlab-${{ steps.plan.outputs.suite }}-${{ steps.trigger.outputs.id }}
           path: gitlab-artifacts/
           retention-days: 30
           if-no-files-found: warn
 
       - name: Mirror GitLab result
-        run: test "${{ steps.wait.outputs.status }}" = "success"
+        env:
+          STATUS: ${{ steps.wait.outputs.status }}
+        run: test "$STATUS" = "success"

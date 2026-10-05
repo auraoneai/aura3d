@@ -74,13 +74,19 @@ Each 0b PR description must include a script that shows moved line counts equal 
 2. `tests/unit/public-api-contracts.test.ts` is green, and exports are a superset of `85aafcd0`.
 3. Every conformance suite passes on stubs.
 4. `node tools/qr-ownership/check.mjs` passes.
-5. **IC-0 identity run.** Dispatch `.github/workflows/quality-rebuild-capture.yml` with `qr_flags=none`: 18 games and 18 base benchmark scenes. Also re-run one fresh capture of `85aafcd0` as the noise baseline; the reference run is 37289688772. Per-image ΔE2000 p99 must be at or below that noise. Record both run IDs in `docs/project/aura3d-quality-rebuild/evidence/prd15/baselines/phase0.json`.
+5. **IC-0 identity run on GitLab macOS**, the canonical judged-frame provider (see `docs/project/aura3d-quality-rebuild/CI-ROUTING.md`).
+   - Run `gh workflow run qr-gitlab-ci.yml --ref <pr0 branch> -f suite=all -f qr_flags=none -f requester=prd15`: 18 games and 18 base benchmark scenes.
+   - Also run the same suite twice on a branch at `85aafcd0` to measure the GitLab noise floor.
+   - Per-image ΔE2000 p99 must be at or below that noise floor.
+   - Do not compare against GitHub run 37289688772. It is a different provider and browser channel; keep it as historical evidence and as the GitHub sentinel baseline.
+   - Record all pipeline ids and run ids in `docs/project/aura3d-quality-rebuild/evidence/prd15/baselines/phase0.json`.
+6. **Sentinel baseline on GitHub.** Capture the 6 sentinel scenes once on GitHub `macos-14` from `main`. This becomes the baseline for every PR's flag-off sentinel identity check.
 
 Size budget: about 2,500 new lines and about 9,000 moved lines. Do not exceed it by adding behaviour.
 
 ## Rules
 
-- Remote execution only. Never use local Docker, local Playwright or local captures; quick local `tsc` is fine. Keep each Write/Edit tool call under about 250 lines.
+- Remote execution only, routed per `CI-ROUTING.md`: PR gates on GitHub Actions; captures and IC-0 on GitLab macOS through `qr-gitlab-ci.yml`. Never use local Docker, local Playwright or local captures; quick local `tsc` is fine. Never push to the GitLab mirror directly. Keep each Write/Edit tool call under about 250 lines.
 - Stage specific files, don't force-push, and don't skip hooks. End commits with the repo's attribution convention.
 - Ignore chat messages addressed to a coordinator if you are running inside an orchestrated workflow.
 - Never describe PR 0 as a quality improvement. It is pixel-neutral by definition.

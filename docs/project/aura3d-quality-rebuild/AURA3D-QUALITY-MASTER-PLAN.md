@@ -52,9 +52,9 @@ There is no serial order between lanes (`00-AURA3D-AUTOPSY.md:137-146`). The pro
 - **Acceptance of each part, remote only:** `pnpm typecheck:raw` (tsconfig.build.json), `pnpm lint`, `pnpm test:unit`,
   `pnpm test:integration` green with no pre-existing test changed except import paths; `tests/unit/public-api-contracts.test.ts` green
   with exports a superset of `85aafcd0`; every conformance suite green on stubs; `tools/qr-ownership/check.mjs` passes with moved line
-  counts equal to source line counts; and the **IC-0 identity run** (`quality-rebuild-capture.yml`, `qr_flags=none`, 18 games + 18 base
-  scenes) with per-image ΔE2000 p99 at or below the noise of two captures of `85aafcd0` (run 37289688772 plus one fresh re-run)
-  (`CONTRACTS.md:2385-2394`).
+  counts equal to source line counts; and the **IC-0 identity run** on GitLab macOS (`qr-gitlab-ci.yml`, suite `all`, `qr_flags=none`,
+  18 games + 18 base scenes), with per-image ΔE2000 p99 at or below the noise of two GitLab captures of `85aafcd0`. Run 37289688772 is
+  GitHub-provider historical evidence and not the baseline (`CI-ROUTING.md`, `CONTRACTS.md:2385-2394`).
 
 ### 1.3 What lanes do before their 0b part lands
 
@@ -81,7 +81,7 @@ Every lane writes its replacement code in a new lane-owned module on day 0 and w
 | Root `package.json` belongs to 15; lane dependencies go into the lane's own workspace manifest with exact versions; root changes ride a daily batch PR | `CONTRACTS.md:2534-2541` |
 | Generated files (`aura.assets.json`, lockfile, resolution maps, extension matrix) are written only by their generator, re-run with `--check` in CI | `CONTRACTS.md:2523-2532` |
 | Route `main.ts` files: only lane 14 writes them (other lanes ship codemods/reports); templates and skills: only lane 13 (others send C-40 facts) | `CONTRACTS.md:50-51` (R20, R21) |
-| Remote execution only: all captures, browser tests and heavy builds on GitHub Actions macos-14 / remote runners; never local Docker, never SwiftShader for judged frames | `00-AURA3D-AUTOPSY.md:2056-2058` |
+| Remote execution only, routed per `CI-ROUTING.md`. PR gates run on GitHub Actions; the PR sentinel check runs on GitHub macos-14. Captures, benchmarks, perf runs, checkpoints and G-PANEL frames run on GitLab macOS via `qr-gitlab-ci.yml`. Never local Docker, never SwiftShader for judged frames, never compare frames across providers | `00-AURA3D-AUTOPSY.md:2056-2058`, `CI-ROUTING.md` |
 
 ---
 
@@ -240,7 +240,7 @@ gantt
 
 ### 4.1 What every checkpoint runs (`CONTRACTS.md:2689-2707`)
 
-Dispatched by lane 12 on main HEAD at 00:00 UTC Thursday, entirely on GitHub Actions macos-14 (Chromium ANGLE Metal):
+Dispatched by lane 12 on main HEAD at 00:00 UTC Thursday, entirely on GitLab macOS (`saas-macos-medium-m1`, chromium-headless-shell, ANGLE Metal) through `qr-gitlab-ci.yml`, per `CI-ROUTING.md`. The fallback is GitHub macos-14, used for the whole checkpoint and never mixed with GitLab:
 
 1. **Benchmark scenes.** `benchmarks/quality-rebuild/`: the 18 base same-input scenes (identical GLBs, HDRIs, cameras; Aura3D vs
    `three@0.185.1`), plus every `active` lane scene registered through C-30 (`benchmarks/quality-rebuild/scenes/prdNN/`), plus the six
