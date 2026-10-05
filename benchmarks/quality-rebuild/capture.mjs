@@ -312,6 +312,7 @@ async function main() {
       githubRunId: process.env.GITHUB_RUN_ID ?? null,
       ciProvider: process.env.GITLAB_CI ? "gitlab" : process.env.GITHUB_ACTIONS ? "github" : "local",
       gitlabPipeline: process.env.CI_PIPELINE_ID ?? null,
+      githubTriggerRun: process.env.QR_GITHUB_RUN || null,
       browserChannel: process.env.QR_BENCH_CHANNEL || "chromium",
       browserVersion: browser.version(),
       launchArgs: launchArgs(),

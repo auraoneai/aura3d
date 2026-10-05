@@ -862,7 +862,7 @@ async function main() {
     memoryGB: Math.round(os.totalmem() / 1073741824), node: process.version, launch: { ...launchOptions },
     runner: process.env.RUNNER_NAME ?? process.env.CI_RUNNER_DESCRIPTION ?? null, githubRun: process.env.GITHUB_RUN_ID ?? null,
     ciProvider: process.env.GITLAB_CI ? "gitlab" : process.env.GITHUB_ACTIONS ? "github" : "local",
-    gitlabPipeline: process.env.CI_PIPELINE_ID ?? null, browserChannel: channelOpt,
+    gitlabPipeline: process.env.CI_PIPELINE_ID ?? null, githubTriggerRun: process.env.QR_GITHUB_RUN || null, browserChannel: channelOpt,
     sha: process.env.GITHUB_SHA ?? process.env.CI_COMMIT_SHA ?? gitSha()
   };
 
