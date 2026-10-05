@@ -1,16 +1,36 @@
 # PRD 14 — 18-Game Rebuild Program
 
-Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit` @ `3a51cba3` (audit capture sha `c08d8acb`).
-Status: proposed. Owner area: `apps/aura-clash-showcase` plus the 17 game dirs `apps/showcase-{blockfall-reactor,skyline-runner,turbo-drift-circuit,
-siege-golf,aurora-lander,neon-swarm,gravity-post,courier-rush,pulse-tunnel,mech-hangar,vault-breakers,rooftop-buckets,gallery-shift,deep-recovery,
-patrol-wing,bank-shot,orbital-defense}` (the other `apps/showcase-*` dirs are non-game showcases, out of scope §24), `tools/quality-rebuild-capture/`,
-`.github/workflows/quality-rebuild-capture.yml`, `apps/showcase-index`, each route's `route-health.json`. The 18 ids are exactly the `games[].id` list in
-`tools/quality-rebuild-capture/games.json`.
+Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit` @ `3a51cba3` (audit capture sha `c08d8acb`); revised for
+contracts-first parallel execution against `CONTRACTS.md` @ `85aafcd0`.
+Status: proposed, parallel-ready. Lane: **PRD 14**. Starts day 0 (2026-10-05) on PR 0a contract types and stubs only; never waits for another lane
+(§12A). Owned paths are exactly CONTRACTS.md §4.1 row "14" (listed in §12A.2). Game work targets `apps/aura-clash-showcase` plus the 17 game dirs
+`apps/showcase-{blockfall-reactor,skyline-runner,turbo-drift-circuit,siege-golf,aurora-lander,neon-swarm,gravity-post,courier-rush,pulse-tunnel,
+mech-hangar,vault-breakers,rooftop-buckets,gallery-shift,deep-recovery,patrol-wing,bank-shot,orbital-defense}`. The other `apps/showcase-*` dirs are
+owned by this lane but are non-game showcases and out of scope (§24). The 18 ids are exactly the `games[].id` list in
+`tools/quality-rebuild-capture/games.json`. `tools/quality-rebuild-capture/capture-games.mjs` and `.github/workflows/quality-rebuild-capture.yml`
+belong to PRD 12; this PRD consumes them (C-33) and files requests (§12A.6).
 
 Path conventions used below: bare `index.ts:<n>` means `packages/engine/src/agent-api/index.ts` (18,733 lines at `3a51cba3`); `GameRenderPreset.ts` and
 `TypedGLBActor.ts` are under `packages/engine/src/production-runtime/`; `GameRuntime.ts` and `GameFeel.ts` under `packages/engine/src/agent-api/`;
 `WebGL2Device.ts`, `DepthPass.ts` and `MeshConsolidation.ts` under `packages/rendering/src/`; bare `main.ts`/`environment.ts`/… inside a game row or
 plan are `apps/<that game's dir>/src/…`. Line numbers are at `3a51cba3`; a task that cites a line must re-locate it by the quoted symbol if lines moved.
+After the Phase 1 dispatcher task (§14.1, T1.10) moves each route's current `src/main.ts` to `src/legacy/main.ts`, every route line cited here refers to
+the same line in `src/legacy/main.ts`. Contract ids (C-NN), flags (`A3D_QR_*`), checkpoints (IC-k, G-PANEL) and ownership are as defined in
+`CONTRACTS.md`; where this PRD and CONTRACTS.md disagree, CONTRACTS.md wins and this PRD is wrong. Ids without a hyphen (`C9`, `C10`, `C13`,
+`C14`, `C16`, `C19`) are research/19 claim ids; ids with a hyphen (`C-09`, `C-35`) are CONTRACTS.md contracts.
+
+Reviewer spot-check (2026-10-05, `85aafcd0`, read-only `sed`/`rg`): 40+ cited anchors re-verified. Corrections applied in this revision: Courier's
+ambient is at `main.ts:302` (inside the previously cited 270-313 block); Pulse Tunnel has **9** versioned `scripts/build-*-v*.py` scripts (10 `.py`
+total), not 11; Aura Clash's DPR clamp is `Math.min(window.devicePixelRatio || 1, 1.75)` at `AuraClashArenaApp.ts:1530`; Orbital's per-frame
+`hud.innerHTML` write is at `main.ts:342` inside `renderHud` (`:341`); `apps/aura-clash-showcase` has no `route-health.json` (it must be created);
+`capture-games.mjs` has no `validateGames()` (existing validators are `validateTimeline` :103 and `evaluateExpression` :450); `packages/game` and
+`tools/quality-gate` do not exist at `85aafcd0` (PR 0a creates their skeletons, CONTRACTS §3.8/§3.9); the §16 shot names now use the real
+`games.json` shot ids. Anchors confirmed unchanged include `index.ts:4256,10664,12705,12743,13570,13723,14747`, `GameRenderPreset.ts:373`,
+`WebGL2Device.ts:1906`, `MeshConsolidation.ts:109`, bank-shot `main.ts:234-247,741-745`, gallery `main.ts:347,1353-1357`, gravity
+`main.ts:1447,1455,2378`, siege `main.ts:111,329,441,739,975`, deep `main.ts:280,305`, turbo `hud.ts:146`, `scenery.ts:39`, `main.ts:3002,3076,3383`,
+skyline `main.ts:1879,1964,3960`, `hud.ts:176`, `level.ts:372`, neon `main.ts:688,1326,1667`, mech `main.ts:200,228,247,892,938`, vault
+`environment.ts:61`, `main.ts:131-139`, patrol `main.ts:136,520`, `sky.ts:136,329`, aurora `sites.ts:50-52` (65 cells × 1.5 m = 96 m), blockfall
+`reactor-scene.ts:44,516`, `main.ts:482,630`, Aura Clash `AuraClashArenaApp.ts:837-844,872,920,942,1179,1239,1443,3371`.
 
 Evidence base: `research/21-game-vision-judgment.md` (authoritative for every visual category), `research/20-game-scorecards-code-pixelstats.md`
 (authoritative only for sound, controls, physics feel, game feel, loading, performance), `research/17-games-g1..g5.md` (code forensics per game),
@@ -22,8 +42,10 @@ Apple paravirtual GPU, production origin `https://aura3d.auraone.ai`).
 Rule for this PRD: a game is done only when the shipped default route, captured by `tools/quality-rebuild-capture` with real input on the remote
 runner and on the human-review devices, is judged **competitive with a well-built modern three.js browser game** by both a vision-model pass using
 the research/21 rubric and a human review panel, at overall ≥ 7/10. Passing unit tests, route 200s, non-blank screenshots, green parity matrices,
-`release` asset labels and self-reported 60 fps do not count. A game that cannot reach the bar after two full review rounds is withdrawn from the
-public showcase, not relabelled.
+`release` asset labels and self-reported 60 fps do not count. A game that cannot reach the bar after two counted G-PANEL review rounds (§6.3) is
+withdrawn from the public showcase, not relabelled. That judgement is **integrated acceptance** (§16.2): it is evaluated only at G-PANEL
+checkpoints (CONTRACTS §7) and never blocks starting or merging work. Merges are gated only by **standalone acceptance** (§16.1), which this lane
+can pass alone on the current renderer plus PR 0a stubs. Neither a standalone pass nor any engineering gate is a claim of three.js quality.
 
 ---
 
@@ -51,8 +73,13 @@ art direction, camera, VFX, audio and juice on top of a correct renderer. This P
 and the acceptance gate that closes the whole quality program.
 
 It also fixes the process failure that produced the current fleet. Content iterated against broken defaults gets tuned around the defects: Pulse Tunnel
-agents rejected Quaternius CC0 PBR kits because the renderer showed them black (17-g4 §3.3) and shipped a 128² NEAREST kitbash instead. Rebuilding art
-before the default fixes land would repeat that, so the program begins by re-baselining every game on fixed defaults (Wave 0) before any art spend.
+agents rejected Quaternius CC0 PBR kits because the renderer showed them black (17-g4 §3.3) and shipped a 128² NEAREST kitbash instead. The
+parallel program must not repeat that while engine lanes are still on stubs, so three rules apply from day 0: (1) every v2 route is authored to
+physical intent from its art-direction contract (no ambient fill, shadow strength 1, authored exposure EV, HDR emissive only on light sources), never
+tuned until it looks right on the stubbed renderer; `auditArtDirection` (§7.1) fails compensations such as ambient lights, emissive fill and fake
+contact discs; (2) assets are accepted or rejected on a three r185 look-dev turntable (§6.4, `apps/showcase-kits/lookdev`), never on how they render
+under an Aura stub; (3) the legacy route stays frozen behind the route flag (§10) so every checkpoint measures the same legacy content with flags
+`none` and `all`, which is the clean "what do engine defaults alone recover" measurement the old Wave 0 tried to get by waiting.
 
 ## 2. Evidence from current code
 
@@ -68,8 +95,8 @@ before the default fixes land would repeat that, so the program begins by re-bas
 | Aurora Lander | `apps/showcase-aurora-lander` (1,857) | 2.5 | 3.1 | 52.2 | substantial | no sky; opaque aurora boxes (alpha-over only, `main.ts:555-566`); 460-tri probe; ghost opacity dropped by tint path; 96 m terrain tile (`sites.ts:50-54`) |
 | Neon Swarm | `apps/showcase-neon-swarm` (2,054) | 2.5 | 3.1 | 25.8 | substantial | `cameraDirector` result discarded (`main.ts:1667-1671`); 7 `gameEffects.spawn` never rendered; courier tint-wiped (`main.ts:688-701`); enemies 18/22-tri discs |
 | Gravity Post | `apps/showcase-gravity-post` (2,489) | 3 | 2.7 | 6.4 | substantial (visual layer) | ~330 un-instanced primitives, 471+ draws; HUD `innerHTML` per frame (`main.ts:2378`); gate PBR wiped (`main.ts:492-499`); keyboard launch never called (`main.ts:1447-1461`) |
-| Courier Rush | `apps/showcase-courier-rush` (1,492) | 2 | 2.8 | 7.1 | substantial | context loss with no restore; ~1,530 draws; ambient 1.25 (`main.ts:270-313`); traffic tint-wiped (`main.ts:391-398`); engine/ambience loops never cued (`courier-audio.ts:105-106`) |
-| Pulse Tunnel | `apps/showcase-pulse-tunnel` (2,628) | 3 | 2.9 | 23.5 | substantial (presentation) | camera is one literal (`main.ts:1589-1591`); world static; 128² NEAREST textures (`build-encounter-finish-v11.py:74-107`); particles review-only (`main.ts:1264-1467`); 65% evidence code |
+| Courier Rush | `apps/showcase-courier-rush` (1,492) | 2 | 2.8 | 7.1 | substantial | context loss with no restore; ~1,530 draws; ambient 1.25 (`main.ts:302`); traffic tint-wiped (`main.ts:391-398`); engine/ambience loops never cued (`courier-audio.ts:105-106`) |
+| Pulse Tunnel | `apps/showcase-pulse-tunnel` (2,628) | 3 | 2.9 | 23.5 | substantial (presentation) | camera is one literal (`main.ts:1589-1591`); world static; 128² NEAREST textures (`scripts/build-encounter-finish-v11.py:74-107`); particles review-only (`main.ts:1264-1467`); 65% evidence code |
 | Mech Hangar | `apps/showcase-mech-hangar` (1,577) | 3.5 | 3.2 | 9.3 | substantial | 144–608-tri JS-generated parts (`scripts/build-models.mjs`); no animation (yaw only, `main.ts:892,938`); 27.3 MB unrigged hero ×2; 4 directionals light both sets |
 | Vault Breakers | `apps/showcase-vault-breakers` (986) | 2.5 | 2.8 | 57.4 | substantial (whole visual layer) | 1,012-tri synth `vaultBreakersTable` under a "Real catalog pinball cabinet — textured" comment (`environment.ts:61-69`); Sketchfab cabinet (12 PBR maps) unused; chrome ball under no IBL |
 | Rooftop Buckets | `apps/showcase-rooftop-buckets` (1,799) | 4 | 3.8 | 7.6 | substantial (art layer) | box sky bands (`environment.ts:22-55`); skinned 191-joint players only under `?debug=animation` (`main.ts:502-536`); `setMaterial` every frame (`:1184,1223,1239`); raw `new Audio` (`buckets-audio.ts:44-48`) |
@@ -79,22 +106,22 @@ before the default fixes land would repeat that, so the program begins by re-bas
 | Bank Shot | `apps/showcase-bank-shot` (1,139) | 3 | 3.0 | 14.9 | substantial | balls never rotate (`main.ts:741-745`, verified position-only); directional outranks lamp for shadow (`index.ts:13227,13244,13267`); no renderer option → DPR 1 |
 | Orbital Defense | `apps/showcase-orbital-defense` (430) | 1.5 | 1.8 | 59.6 | **full rebuild** (visual layer) | 0 GLB / 0 textures; opaque 1.13× emissive shell hides planet (`main.ts:82-131`); HUD `innerHTML` per frame (`:313,341-377`); no audio; false "particle-heavy" claim (`:74`) |
 
-### 2.2 Engine defects that every rebuild depends on (research/19 corrected; owners in §12)
+### 2.2 Engine defects the games hit (research/19 corrected). Other lanes fix them behind contracts (§12); this lane never edits engine files
 
-| Tag | Code | Games hit |
-|---|---|---|
-| ambient-kills-IBL | `packages/engine/src/agent-api/index.ts:12693-12707` (zeros at :12705) | 15 of 18 (not Aura Clash; Siege Golf and Turbo author `environments.studio`, a 128×64 LDR probe, C10) |
-| exposure-dropped | root tone map fixed ACES exposure 1, `index.ts:12898-12904` | 16 pass `colorGrade.exposure` |
-| DPR-1 | safe-basic `pixelRatio: 1`, `index.ts:4256` | ~13–14 |
-| tint-wipe | `replaceSurfaceTextures: true`, `index.ts:13570`; `TypedGLBActor.ts:477-507` | Aura Clash, Skyline, Siege, Neon, Gravity, Courier, Deep, Aurora (opacity), Patrol (ghost) |
-| effects-zero-px | particles/rain/snow/flipbook/beam non-pixel-backed on production bridge, `index.ts:13723`; `game.effects`/`gameFeel` data-only (`GameRuntime.ts:2800-2879`, `GameFeel.ts:1-17`); `rg '\.nodes\(\)'` = 0 hits in routes | all |
-| shadow-0.32 | `index.ts:12966-12968`; depth pass ignores skinning/instancing/alpha (`DepthPass.ts:59-87`); single map fit over all casters; no CSM on root | all |
-| no-sky | root never draws environment background (C9) | all |
-| bloom-knee | softKnee 0.5 × "balanced" gain blooms mid-tones; threshold clamped ≤1 (C13) | all 17 that author `neonBloom` |
-| fake-AA/AO | "FXAA" is a 4-tap cross blur on 4× MSAA; SSAO ≈0 at gameplay depth (C14) | all that author `antiAlias`/`ambientOcclusion` |
-| instancing size | `createProductionInstanceTransforms` omits `node.size` (`index.ts:14747`, research/22 §16) | Blockfall, Neon, Turbo (43 `instances.*`), Rooftop |
-| light cap | `pbr-textured` caps at 16 direct lights (research/04 §4) | Gallery (31), Courier (~20), Deep (16) |
-| no runtime node add | `AuraRuntimeNodeRegistry`, `index.ts:10664-10670` | forces parked pools (y=-50/-60) that inflate shadow fit |
+| Tag | Code | Games hit | Fixed behind (contract, owner lane) |
+|---|---|---|---|
+| ambient-kills-IBL | `packages/engine/src/agent-api/index.ts:12693-12707` (zeros at :12705) | 15 of 18 (not Aura Clash; Siege Golf and Turbo author `environments.studio`, a 128×64 LDR probe, C10) | C-09/C-10, PRD 02 |
+| exposure-dropped | root tone map fixed ACES exposure 1, `index.ts:12898-12904` | 16 pass `colorGrade.exposure` | C-05, PRD 01 |
+| DPR-1 | safe-basic `pixelRatio: 1`, `index.ts:4256` | ~13–14 | C-27, PRD 11 |
+| tint-wipe | `replaceSurfaceTextures: true`, `index.ts:13570`; `TypedGLBActor.ts:477-507` | Aura Clash, Skyline, Siege, Neon, Gravity, Courier, Deep, Aurora (opacity), Patrol (ghost) | C-15, PRD 04 |
+| effects-zero-px | particles/rain/snow/flipbook/beam non-pixel-backed on production bridge, `index.ts:13723`; `game.effects`/`gameFeel` data-only (`GameRuntime.ts:2800-2879`, `GameFeel.ts:1-17`); `rg '\.nodes\(\)'` = 0 hits in routes | all | C-20, PRD 07 |
+| shadow-0.32 | `index.ts:12966-12968`; depth pass ignores skinning/instancing/alpha (`DepthPass.ts:59-87`); single map fit over all casters; no CSM on root | all | C-10/C-11, PRD 02 |
+| no-sky | root never draws environment background (C9) | all | C-05 `background({environment:true})`, C-21, PRDs 02/07 |
+| bloom-knee | softKnee 0.5 × "balanced" gain blooms mid-tones; threshold clamped ≤1 (C13) | all 17 that author `neonBloom` | C-13, PRD 03 |
+| fake-AA/AO | "FXAA" is a 4-tap cross blur on 4× MSAA; SSAO ≈0 at gameplay depth (C14) | all that author `antiAlias`/`ambientOcclusion` | C-13, PRD 03 |
+| instancing size | `createProductionInstanceTransforms` omits `node.size` (`index.ts:14747`, research/22 §16) | Blockfall, Neon, Turbo (43 `instances.*`), Rooftop | R18, PRD 15 (unflagged correctness fix) |
+| light cap | `pbr-textured` caps at 16 direct lights (research/04 §4) | Gallery (31), Courier (~20), Deep (16) | C-10 clustered lights, PRD 02 |
+| no runtime node add | `AuraRuntimeNodeRegistry`, `index.ts:10664-10670` | forces parked pools (y=-50/-60) that inflate shadow fit | C-37, PRD 15 |
 
 ### 2.3 Route composition (research/16)
 
@@ -145,20 +172,28 @@ before the default fixes land would repeat that, so the program begins by re-bas
 
 ## 4. Affected packages
 
-| Package | Change in this PRD |
-|---|---|
-| `apps/aura-clash-showcase`, `apps/showcase-*` (17) | Rebuilt per §6.9. Gameplay modules kept, presentation and evidence rewritten on `@aura3d/game` (PRD 09) |
-| `tools/quality-rebuild-capture` | `games.json` fields on top of PRD 12 (§7.2): required conditions, canvas-region black check, acceptance and budgets |
-| `tools/quality-gate` (PRD 12, internal) | `src/scorecard.ts` scorecard builder and verdict (§7.3), human-review form export |
-| `.github/workflows/quality-rebuild-capture.yml` | Per-game matrix jobs, PR-triggered capture for touched `apps/<id>/**`, artifact retention 30 days |
-| `apps/showcase-index` | Lists only `qualityGate.status === "accepted"` games publicly |
-| `@aura3d/game` (PRD 09) | Consumer; adds `art` subpath types (§7.1) |
-| `aura.assets.json` / `public/aura-assets/` | Kits K1–K9 (§6.4) admitted through PRD 05 verbs; buried assets promoted; synth release models demoted |
-| `packages/create-aura3d/templates/*` | Receive the pilot patterns via PRD 13 (not edited here) |
+| Package / path | Owner | Change in this PRD |
+|---|---|---|
+| `apps/aura-clash-showcase`, `apps/showcase-*` (17 games) | 14 | Rebuilt per §6.9 as `src/v2/**` behind `A3D_QR_ROUTE_<ID>`; current code moved verbatim to `src/legacy/**`; gameplay modules kept and moved to `src/gameplay/**`; v2 presentation built on `@aura3d/game` (C-24, C-25) |
+| `apps/showcase-kits` (new) | 14 (`apps/showcase-*/` prefix) | Kit staging K1–K7, K9 (sources, `kit.json` licences, hashes) and the three r185 + Aura look-dev turntable page `lookdev/`; never deployed publicly |
+| `apps/showcase-index` | 14 | Lists only `qualityGate.status === "accepted"` games publicly |
+| `packages/game/src/art/` | 14 | Real implementation of C-35: validator, `auditArtDirection`, acceptance evaluators (`requiredConditions`, `canvasBlankCheck`) (§7.1); the frozen C-35 surface file stays custodian-owned (§12) |
+| `tools/quality-rebuild-capture/games.json` | 14 (data; schema `games.schema.json` is 12, R22) | C-35 `GameEntryV2` fields and `qrFlags` for all 18 (§7.2) |
+| `tools/quality-gate/src/scorecard.ts`, `tools/quality-gate/forms/` | 14 (rest of `tools/quality-gate/` is 12) | Scorecard builder and verdict (§7.3); offline human-review form |
+| `scripts/check-art-direction.mjs`, `scripts/check-route-health.mjs` | 14 | Art-direction audit, capture-branch scan of `src/v2/**`, route-health gate |
+| `.github/workflows/qr-prd14-*.yml`, `tests/qr/prd14/**`, `tests/unit/contracts/impl/prd14-*`, `docs/project/aura3d-quality-rebuild/evidence/{prd14,games-after}/` | 14 (lane NN rule) | Lane CI on macos-14, lane tests, evidence |
+| `@aura3d/game` (rest of `packages/game/`) | 09 | Consumed through C-24/C-25; not edited |
+| `tools/quality-rebuild-capture/capture-games.mjs`, `steps/`, `.github/workflows/quality-rebuild-capture.yml` | 12 | Consumed (C-33); changes are requests R-14-01/02 |
+| `aura.assets.json`, `src/aura-assets.ts`, `public/aura-assets/` | 05 (generated, CONTRACTS §4.3) | This lane commits only regenerated diffs for its own asset ids, produced by `aura3d assets …` and re-checked with `--check` |
+| `packages/create-aura3d/templates/*` | 13 | Receive pilot patterns as C-40 facts and requests; not edited here |
+| Root `package.json` | 15 | New root scripts through the root-manifest batch (R-14-04); lane runs tools directly meanwhile |
 
 ## 5. Affected files and directories
 
-Per game, the files kept (gameplay) and deleted or rewritten (presentation/evidence). Paths are under `apps/<dir>/`.
+Per game, the files kept (gameplay), rewritten and deleted. Paths are under `apps/<dir>/`. Under the parallel plan (§10): "Keep" modules move to
+`src/gameplay/` and are imported by both `src/legacy/` and `src/v2/` (pure moves, no behaviour change, so legacy stays frozen); "Rewrite" means a new
+file under `src/v2/` replaces the legacy file's role, and the legacy file stays untouched until Phase 6; "Delete" items are never ported to v2 and
+are deleted with `src/legacy/` in Phase 6 (§13), except the declared P0 correctness fixes, which also land in legacy (§14.1).
 
 | Game | Keep (gameplay, tests) | Rewrite | Delete |
 |---|---|---|---|
@@ -175,30 +210,36 @@ Per game, the files kept (gameplay) and deleted or rewritten (presentation/evide
 | Vault Breakers | `table.ts`, `flippers.ts`, `ball-flow.ts`, `missions.ts`, `scoring.ts` | `src/main.ts`, `environment.ts`, `scoreboard.ts` | `vaultBreakersTable` synth as visual (keep as collider source only), false "textured" comment (`environment.ts:61`) |
 | Blockfall Reactor | `rules.ts`, instanced tile pools, stem audio system, `board-view.ts` logic | `src/main.ts`, `reactor-scene.ts`, `clear-fx.ts`, `camera-feel.ts` | `createLockedBlockNodes` 200 boxes (`reactor-scene.ts:516`, mount `main.ts:630`) and the A/B probe (`main.ts:763-826`), 3 unlit card GLBs, marquee occluder boxes (`main.ts:548-567`) |
 | Neon Swarm | `swarm.ts`, `waves.ts`, input buffer, instancing approach | `src/main.ts`, `environment.ts`, `combat-feel.ts`, `hud.ts`, `player.ts` visuals | arena card, moth cards, 272k-tri lamp props (replace), review dressing branch |
-| Pulse Tunnel | `beat-clock.ts`, `patterns.ts`, `gates.ts`, audio stems | `src/main.ts`, `player.ts` visuals, `hud.ts`, `styles.css` | `art-review/` (82 MB), 11 `build-*-v*.py` scripts, 128² NEAREST textures |
+| Pulse Tunnel | `beat-clock.ts`, `patterns.ts`, `gates.ts`, audio stems | `src/main.ts`, `player.ts` visuals, `hud.ts`, `styles.css` | `art-review/` (82 MB), 9 `scripts/build-*-v*.py` scripts, 128² NEAREST textures |
 | Aurora Lander | `lander.ts`, `terrain.ts` height function, Rapier heightfield, `prediction.ts`, `ghost.ts`, `touchdown.ts`, campaign | `src/main.ts`, `sites.ts` visuals, `hud.ts` | `auroraLanderProbe` (460-tri), `auroraPadBeacon` (66-tri), 72 snow spheres, aurora boxes, image cards |
 | Gravity Post | `wells.ts`, `pod.ts`, `contracts.ts`, `scoring.ts`, `prediction.ts` | `src/main.ts:274-1240` scene graph, HUD | `gravityPostCourierSkiff`/`FreightDistrict` synth (32² stripes), 84+24 in-volume star/dust spheres, 78 bead spheres, `freightway.ts` review set |
 | Gallery Shift | `floor.ts`, `vision.ts`, `guard.ts` FSM, detection meter | `src/main.ts`, `environment.ts` (695), `thief.ts` visuals | `showcaseRunnerGirl` (72-tri unlit), synth pedestals/cases/exhibits, box harnesses, world-text labels, emissive light-pool discs (`main.ts:743-771`) |
 | Deep Recovery | `sub.ts`, `sonar.ts`, `salvage.ts`, `oxygen.ts`, HUD structure | `src/main.ts`, `deep-audio.ts` | `environment.ts` (953), all `scripts/build-models.mjs` outputs, `volumetricFog` node |
 
-All 18: delete `?capture=review` branches, `window.__*__` route globals (replaced by PRD 09 beacon), `scripts/write-performance-report.ts`, and
-route-local audio wrappers; adopt `createGame` (PRD 09 §7.1).
+All 18 v2 routes: no `?capture=review` branches, no `window.__*__` route globals (the C-24 beacon `window.__AURA3D_GAME__` and
+`window.__AURA3D_GAME_EVIDENCE__[route]` replace them), no `scripts/write-performance-report.ts` (13 copies today), no route-local audio wrappers;
+every v2 route boots through `createGame` (C-24). Aura Clash additionally gains a `route-health.json` (none exists today). Legacy copies of these are
+deleted with `src/legacy/` in Phase 6.
 
 ## 6. Architecture proposal
 
 ### 6.1 The rebuild unit
 
-Each game is rebuilt as one unit with five parts. A game is not scheduled until its engine dependencies (§12) are merged and verified on the
-benchmark scenes listed for it in §16.
+Each game is rebuilt as one unit with five parts. Every game can start on day 0: the unit is written against PR 0a contract types and stubs, and
+the real engine implementations arrive later behind their own flags with no route code change (CONTRACTS §6.3). Which engine lanes must be real
+for the game's **integrated** targets to be reachable is informational and listed per game in §12.3; it never gates scheduling.
 
 1. **Art direction contract** `apps/<id>/art/direction.ts` (typed, §7.1): one-sentence fantasy, reference board, palette, key-light design, environment
    (HDRI asset key or sky preset), camera framing targets, asset roles with budgets, VFX list, audio list, HUD theme. Reviewed by a human before
    any asset spend. The vision judge receives it, so "matches its own direction" is judgeable.
-2. **Scene modules** `apps/<id>/src/scene/{world,lighting,camera,fx,materials}.ts`, each importing only `@aura3d/engine` and `@aura3d/game`.
-3. **Asset kit**: assets admitted via PRD 05 (`aura3d assets admit`, look-dev turntable, budgets), drawn from shared kits K1–K9 (§6.4) first.
-4. **Shell adoption**: `createGame` (PRD 09): full-bleed canvas, session, sound engine, FX layer, HUD kit, touch, capture contract, evidence beacon.
-5. **Acceptance**: capture with `tools/quality-rebuild-capture` (schema v2), vision + human review, perf gates, scorecard committed under
-   `apps/<id>/art/scorecards/<sha>.json`.
+2. **Scene modules** `apps/<id>/src/v2/scene/{world,lighting,camera,fx,materials}.ts`, each importing only `@aura3d/engine` (public entry and
+   `@aura3d/engine/contracts`) and `@aura3d/game` (CONTRACTS §6.2: no import of another lane's non-contract module).
+3. **Asset kit**: kit assets staged in `apps/showcase-kits/<Kn>/`, approved on the three r185 look-dev turntable, admitted with
+   `aura3d assets add` (C-17 1.0 writer today, 1.1 when PRD 05 is real), drawn from shared kits K1–K9 (§6.4) first.
+4. **Shell adoption**: `createGame` (C-24; PR 0a stub wraps `createGameApp`, `index.ts:11818`): full-bleed canvas, session, sound (C-25), FX layer,
+   HUD, touch, capture context, evidence beacon.
+5. **Acceptance**: standalone checks on every PR (§16.1); integrated judgement at G-PANEL checkpoints (§16.2) with the scorecard committed under
+   `apps/<id>/art/scorecards/<round>-<sha>.json`.
 
 Standard layout after rebuild:
 
@@ -206,12 +247,14 @@ Standard layout after rebuild:
 apps/<id>/
   art/direction.ts            GameArtDirection (§7.1)
   art/references/             ≥3 reference images + references.json (source URL, licence or "internal mood board", why it was chosen)
-  art/scorecards/<sha>.json   GameScorecard (§7.3), one per review round
-  src/main.ts                 ≤ 400 LOC: createGame(), scene mount, gameplay loop wiring
-  src/scene/*.ts              world, lighting, camera, fx, materials
-  src/gameplay/**             kept modules (moved, not rewritten)
-  src/scenarios/*.ts          named capture scenarios (PRD 09 §6.4): state only
-  src/evidence/*.ts           lazy evidence sections (PRD 09 §6.5)
+  art/scorecards/<round>-<sha>.json   GameScorecard (§7.3), one per checkpoint round
+  src/main.ts                 ≤ 30 LOC route-flag dispatcher (§10): dynamic import of ./v2/boot.ts or ./legacy/main.ts
+  src/legacy/**               the pre-rebuild route, moved verbatim (frozen except declared P0 fixes, §14.1)
+  src/v2/boot.ts              ≤ 400 LOC: createGame(), scene mount, gameplay loop wiring
+  src/v2/scene/*.ts           world, lighting, camera, fx, materials
+  src/gameplay/**             kept modules (moved, not rewritten; shared by legacy and v2)
+  src/v2/scenarios/*.ts       named capture scenarios (C-24 GameScenario): state only
+  src/v2/evidence/*.ts        lazy route evidence sections published under window.__AURA3D_GAME_EVIDENCE__[route]
   route-health.json           qualityGate block (§7.4); no self-graded claims
 ```
 
@@ -225,101 +268,135 @@ decides effort and scheduling.
 |---|---|---|---|---|
 | S-presentation | Scene topology and the hero assets survive; lighting, materials, camera, VFX, HUD and audio are rebuilt | gameplay, world layout, hero GLBs | look, camera, FX, HUD, audio | Aura Clash, Bank Shot, Pulse Tunnel, Blockfall Reactor, Skyline Runner |
 | S-world | Gameplay survives; the visible world and most assets are replaced | gameplay, physics, rules, input | world, assets, look, camera, FX, HUD, audio | Turbo Drift, Siege Golf, Courier Rush, Patrol Wing, Rooftop Buckets, Vault Breakers, Neon Swarm, Mech Hangar, Gallery Shift, Deep Recovery, Gravity Post, Aurora Lander |
-| F (full) | Only the rules module survives; the route is regenerated from the PRD 13 game template | `waves.ts` logic | everything else | Orbital Defense |
+| F (full) | Only the rules module survives; `src/v2/` is written fresh on `createGame` (offered back to PRD 13 as a template reference, R-14-08) | `waves.ts` logic | everything else | Orbital Defense |
 
-"Save-through-polish" is not available to any game. Wave 0 (§6.5) measures how much each game gains from engine defaults alone; no game is
-expected to clear 5 from Wave 0 (research/21 estimates Pulse Tunnel at ~6 reachable "if IBL works", the highest such estimate).
+"Save-through-polish" is not available to any game. The frozen legacy routes, captured at every checkpoint with flags `none` and `all`
+(CONTRACTS §5.4), measure how much each game gains from engine defaults alone; no game is expected to clear 5 that way (research/21 estimates
+Pulse Tunnel at ~6 reachable "if IBL works", the highest such estimate).
 
-### 6.3 Acceptance gate (applies to every game)
+### 6.3 Acceptance gate (applies to every game; integrated, evaluated only at G-PANEL checkpoints)
+
+This is the game's **integrated acceptance** (§16.2). It is evaluated only on G-PANEL rounds (IC-4 2026-11-05, IC-8, IC-12, …; CONTRACTS §7) on
+the checkpoint's main HEAD, with the route flag on and `qr_flags=all`. It never blocks a merge. The standalone gate that does block merges is §16.1.
 
 A game is **accepted** when all hold on the same commit:
 
-1. Vision judge (research/21 prompt and 27 visual categories, unchanged so scores are comparable) on the v2 capture set (§20): overall ≥ 7, every
-   visual category ≥ 5, the genre-critical categories in §6.10 at their target, and the answer to "competitive with a well-built modern three.js
-   browser game?" is **Yes**. The judge model id is pinned per wave and recorded in `JudgeIdentity`; each viewport is judged **3 times** and the
-   per-category **median** is used; the round is void (re-judge, not accept) if the PRD 12 calibration canaries judged in the same session drift by
-   more than ±1.0 from their recorded scores, or if the three runs for any critical category span more than 2 points.
-2. Human panel: ≥ 3 reviewers, at least one not on the implementing team, play the route for ≥ 5 minutes on a High-tier desktop and a Medium-tier
-   phone, score the same rubric blind to the vision score. Median overall ≥ 7; no reviewer below 6.
-3. Non-visual (research/20 rubric, judged by the human panel with the evidence beacon): sound ≥ 6, controls ≥ 7, game feel ≥ 6.5, loading ≥ 6,
-   physics feel ≥ 6 where physics is gameplay (Siege, Vault, Bank, Rooftop, Turbo, Courier, Patrol, Aurora, Gravity).
-4. Performance gates of §17 on the runner and on the reference devices; p50/p95 from rAF intervals only (PRD 09 §6.5 `perf` section).
-5. Production health: 0 page errors, 0 console errors, canvas-region not uniformly black in any shot, `lookSignature` identical across play and every
-   scenario URL (PRD 09 §6.4), no debug/evidence/marketing text in the play view.
+1. Vision judge (research/21 prompt and 27 visual categories, unchanged so scores are comparable; C-32 `GAME_VISUAL_CATEGORIES`,
+   `RUBRIC_PROMPT_VERSION`) on the v2 capture set (§20): overall ≥ 7, every visual category ≥ 5, the genre-critical categories in §6.10 at their
+   target, and the answer to "competitive with a well-built modern three.js browser game?" is **Yes**. The judge model id is pinned per round and
+   recorded in C-32 `JudgeIdentity`; each viewport is judged **3 times** and the per-category **median** is used; the round is void (re-judge, not
+   accept) if the PRD 12 calibration canaries judged in the same session drift by more than ±1.0 from their recorded scores, or if the three runs for
+   any critical category span more than 2 points.
+2. Human panel: the C-32 G-PANEL judges (2 humans + 1 vision model, median of record) **plus** this PRD's play sessions so that ≥ 3 humans in total
+   score the game, at least one not on the implementing team. Each plays the route for ≥ 5 minutes on a High-tier desktop and a Medium-tier phone
+   and scores the same rubric blind to the vision score. Median overall ≥ 7; no reviewer below 6.
+3. Non-visual (research/20 rubric, C-32 `GAME_NONVISUAL_CATEGORIES`, judged by the human panel with the evidence beacon): sound ≥ 6, controls ≥ 7,
+   game feel ≥ 6.5, loading ≥ 6, physics feel ≥ 6 where physics is gameplay (Siege, Vault, Bank, Rooftop, Turbo, Courier, Patrol, Aurora, Gravity).
+4. Performance gates of §17 on the runner and on the reference devices; p50/p95 from rAF intervals only (C-28 FrameStats via C-31 `frame` section).
+5. Production health: 0 page errors, 0 console errors, canvas-region not uniformly black in any shot, the look identical across play and every
+   scenario URL (C-31 `appliedLook` equal), no debug/evidence/marketing text in the play view.
 6. The scorecard is committed and `route-health.json` `qualityGate.status` is set to `"accepted"` by the reviewer, not by the implementing agent.
 
-Rejection loop: a rejected game gets a written finding list (judge §3 "what looks poor" + human notes) and one more round. After two rejected rounds
-it is removed from `apps/showcase-index` and `qualityGate.status` becomes `"withdrawn"` until a new plan is approved.
+Rejection loop: a rejected game gets a written finding list (judge §3 "what looks poor" + human notes) and one more round. A rejected round
+**counts** toward withdrawal only if every contract listed for that game in §12.3 as integrated-critical was real (provided and flag at least
+`standalone-accepted`, per `diagnostics().qrFlags` and `degradations` in the capture) in that round's `all` run; otherwise it is recorded as
+`engine-pending` and does not count, so a game is never withdrawn for another lane's lateness. After two counted rejected rounds the game is
+removed from `apps/showcase-index` and `qualityGate.status` becomes `"withdrawn"` until a new plan is approved.
 
 ### 6.4 Shared kits (built once, consumed by ≥ 2 games)
 
-All kits are admitted through PRD 05 (`assets admit` with look-dev turntable under `studioSmall08`, measured texel density, tri budget, KTX2).
-Licence per file is mandatory (CC0 or a licence that allows bundled web redistribution). Agent-synthesized geometry is not admissible as a hero or
-world asset.
+Kits are sourced and staged by this lane, starting day 0, in `apps/showcase-kits/<Kn>/` (owned by 14 through the `apps/showcase-*/` prefix) with a
+`kit.json` per kit: per-file source URL, licence (CC0 or a licence that allows bundled web redistribution), SHA-256, triangle count, texture
+sizes, and the look-dev verdict. Each candidate is approved on the `apps/showcase-kits/lookdev/` turntable, which renders the same asset in
+three r185 (`three@0.185.1`, exact version in that app's `package.json`) and in Aura under the K1 `studioSmall08` HDRI; **approval is decided on
+the three r185 view** so no asset is rejected for an Aura stub defect (the Pulse Tunnel failure, §1). Approved files are admitted per consuming
+route with `aura3d assets add --type model|texture|environment|audio` (C-17: 1.0 writer today, 1.1 with `admission`/`lookDev` records once PRD 05
+is real), which regenerates the PRD 05-owned `aura.assets.json` only for this lane's ids (CONTRACTS §4.3). When PRD 05 hosts kits in
+`assets/library/kits/` (request R-14-07), staging moves there and `apps/showcase-kits/<Kn>/` keeps only `kit.json` pointers. Agent-synthesized
+geometry is not admissible as a hero or world asset.
 
 | Kit | Contents (minimum) | Consumers | Budget per kit | Visual benefit | Fallback |
 |---|---|---|---|---|---|
-| K1 HDRI set | Existing benchmark HDRIs `studioSmall08`, `autumnFieldPuresky`, `kloppenheim06Puresky` (`benchmarks/quality-rebuild/shared/assets.ts:180-197`; these are **1k** `.hdr` files under `fixtures/environment-corpus/hdri/`, so the game library admits the 2k/4k versions of the same Poly Haven CC0 sources, not the 1k fixtures); new: night-city street, pool-hall/bar interior, industrial hangar, dusk rooftop city, sunset ocean, deep-space starfield (8k equirect), museum interior | all 18 | 2k RGBE `.hdr` per HDRI for IBL (≤ 6 MB), 4k AVIF (or KTX2 UASTC) LDR background plate (≤ 3 MB; not JPEG-XL, which Chrome does not decode); Low tier 1k | Real specular, Fresnel, sky; ends ambient-only lighting | PRD 02 neutral default environment |
+| K1 HDRI set | Existing benchmark HDRIs `studioSmall08`, `autumnFieldPuresky`, `kloppenheim06Puresky` (`benchmarks/quality-rebuild/shared/assets.ts:180-197`; these are **1k** `.hdr` files under `fixtures/environment-corpus/hdri/`, so the game library admits the 2k/4k versions of the same Poly Haven CC0 sources, not the 1k fixtures); new: night-city street, pool-hall/bar interior, industrial hangar, dusk rooftop city, sunset ocean, deep-space starfield (8k equirect), museum interior | all 18 | 2k RGBE `.hdr` per HDRI for IBL (≤ 6 MB), 4k AVIF (or KTX2 UASTC) LDR background plate (≤ 3 MB; not JPEG-XL, which Chrome does not decode); Low tier 1k | Real specular, Fresnel, sky; ends ambient-only lighting | Standalone: the three 1k fixture HDRIs through today's `environments.hdri`; superseded by PRD 05's 2k HDRI library (C-17) when it lands (R-14-07) |
 | K2 Neon-night kit | Wet asphalt + puddle mask PBR (2k tiling), emissive window-atlas buildings (4 variants, instanced), signage atlas, street props (bollard, lamp ≤ 5k tris, AC unit), rain/steam flipbooks | Aura Clash, Courier, Neon, Rooftop, Pulse, Vault | ≤ 25 MB raw → ≤ 8 MB KTX2 | Coherent neon look with reflections instead of emissive boxes | Medium tier drops puddle SSR to env-only |
 | K3 Outdoor nature kit | Terrain splat set (grass/rock/sand/dirt, 2k each, ORM+N), 3 conifer + 3 deciduous trees with 3 LODs + impostor, rocks ×6, grass card clumps, hedge modules | Turbo, Siege, Patrol, Skyline | ≤ 30 MB → ≤ 10 MB | Replaces sphere-on-stick trees and flat planes | Low: impostors only beyond 40 m |
 | K4 Interior kit | Plaster, marble (veined), parquet, walnut, brushed steel, felt (sheen), leather, glass; trims; lamps; frames with licensed art | Bank, Gallery, Mech, Blockfall | ≤ 20 MB → ≤ 7 MB | Textured rooms instead of flat-colour boxes | 1k textures on Low |
 | K5 Space kit | Planet albedo/normal/night-lights/clouds (Earth-like, gas giant, rocky, ice; 4k/2k), starfield HDRI (K1), nebula layer, asteroid set | Orbital, Gravity, Aurora (sky) | ≤ 24 MB → ≤ 8 MB | Lit planets with terminators | 2k maps on Low |
 | K6 Character set | Rigged humanoids (Quaternius UBC family already in Aura Clash), clip library (locomotion, melee, sports, sneak), 1 mech rig, crowd LOD (vertex-animated, ≤ 800 tris) | Aura Clash, Rooftop, Gallery, Skyline, Mech, Neon | hero ≤ 40k tris, ≤ 4 MB each | Animated, lit characters instead of cards and statues | Crowd → silhouette cards on Low |
 | K7 Vehicle set | Formula car hero ≥ 30k tris with BC/N/ORM, van with separate wheels, aircraft (existing Meshy 60k), drones ×2 ≥ 5k, sub, lander ≥ 3k | Turbo, Courier, Patrol, Deep, Aurora, Orbital | ≤ 6 MB each | Readable heroes | LOD1 on Low |
-| K8 SFX core | PRD 09 §6.9 `game-sfx-core` library | all 18 | ≤ 1.5 MB per game + streamed music | Replaces oscillator WAVs | silent + logged, never a synth beep |
-| K9 VFX flipbooks | spark, smoke, dust, explosion (3 sizes), muzzle, splash, bubble, electric arc, confetti; 8×8 sheets, 2k, premultiplied | all 18 | ≤ 6 MB total KTX2 | Real VFX instead of moved primitives | `game.fx` primitive backend (PRD 09 §6.7 backend A) |
+| K8 SFX core | PRD 09's `assets/packs/game-sfx-core/` (C-25 real) when it lands; until then licensed samples staged in `apps/showcase-kits/K8/` (starting with the 11 Kenney samples Aura Clash already ships) and referenced as C-25 `AudioAssetRef` with `provenance: "sample"` | all 18 | ≤ 1.5 MB per game + streamed music | Replaces oscillator WAVs | silent + logged, never a synth beep |
+| K9 VFX flipbooks | spark, smoke, dust, explosion (3 sizes), muzzle, splash, bubble, electric arc, confetti; 8×8 sheets, 2k, premultiplied | all 18 | ≤ 6 MB total KTX2 | Real VFX instead of moved primitives (pixels only once C-20 `particle-pass` is real) | `game.fx` `backend: "primitive-pool"` (C-24 stub over C-20 stub) |
 
-### 6.5 Rebuild order
+### 6.5 Rebuild order (review targets, not start gates)
 
-| Wave | Games | Why this order | Entry condition |
-|---|---|---|---|
-| Phase 0 infra (no game changes) | — | Contracts, gates and scorecards must exist before any game is re-judged | PRD 09 `packages/game` package skeleton merged (so `@aura3d/game/art` has a home) and PRD 12 `tools/quality-gate/src/types.ts` merged (`GAME_VISUAL_CATEGORIES`, `GameJudgement`, `PanelRoundRecord`) |
-| 0 Re-baseline | all 18 | Measure what engine defaults alone recover; strip debug UI and dead code; no art spend | PRD 01 DPR/exposure/HDR/blend, PRD 02 ambient-additive IBL + shadow strength 1 + caster fit + spot priority, PRD 03 bloom threshold/knee + real AA, PRD 04 texture-preserving tint merged and green on benchmarks 01, 02, 12, 13, 18; **plus** the PRD 09 pieces the Wave 0 tasks call (HUD kit diffed bindings, auto-mounted `game.fx`, `GameSoundEngine`, the `__AURA3D_GAME__` beacon, scenario/capture contract, `check:capture-parity --fail-on-any` — today the script only accepts `--fail-on-art`, `tools/showcase-library/game-capture-parity.mjs:30`) and PRD 12 capture v2 + panel record. The §17 runner gate is measured in Wave 0 but only enforced once PRD 11 forced-Medium/`adaptive=0` lands |
-| 1 Pilots | Bank Shot, Turbo Drift, Aura Clash, Orbital Defense | Each exercises a distinct engine stack: interior IBL + spot shadows + clearcoat/sheen (Bank); outdoor HDRI sky + CSM + terrain + particles + vehicle camera (Turbo); skinned shadows + combat VFX + fighting camera + HUD shell (Aura Clash); greenfield on `createGame` + PRD 13 template (Orbital, 430 LOC) | Wave 0 done; PRD 05 admit/optimize, PRD 07 particle + sky pixel path, PRD 08 rigs, PRD 09 `createGame`, PRD 11 tiers, PRD 12 capture/regression infra |
-| 2 Neon-night + table/sports | Vault Breakers, Rooftop Buckets, Courier Rush, Neon Swarm, Pulse Tunnel, Siege Golf | Reuse K2 (from Aura Clash), K4 (from Bank), K3 (from Turbo); SSR wet floors | ≥ 3 of 4 pilots accepted; pilot learnings merged into PRD 13 templates/skills |
-| 3 Sky / atmosphere / space / water | Patrol Wing, Aurora Lander, Gravity Post, Deep Recovery | Need PRD 10 terrain/ocean/underwater and PRD 07 atmospherics that land later | PRD 07 sky/fog/god-rays, PRD 10 water + terrain, K5 |
-| 4 Characters / interiors | Skyline Runner, Blockfall Reactor, Mech Hangar, Gallery Shift | Need PRD 06 retarget/IK fixes (C16), skinned shadow casters, multiple shadow casters | PRD 06 merged; PRD 02 multi-caster |
+Every game starts day 0 (§12A.1). Waves only decide (a) which G-PANEL round a game's first counted review targets, (b) the order in which shared kits
+are staged, and (c) staffing priority when agents are scarce. No wave waits for another wave or another lane. Columns "integrated-critical
+contracts" list what must be real for the game's integrated targets to be reachable; they feed the `engine-pending` rule (§6.3), never a gate.
 
-Waves 2–4 may run in parallel once their entry conditions hold. Within a wave, games are independent and are assigned to separate agents.
+| Wave | Games | Why this grouping | First counted review target | Integrated-critical contracts (informational) |
+|---|---|---|---|---|
+| 0 Baseline | all 18 legacy routes | Frozen legacy captured with `none` and `all` at every checkpoint measures engine-default gains; P0 correctness fixes land in legacy (§14.1) | IC-0 (2026-10-08) records round-0 scorecards | none |
+| 1 Pilots | Bank Shot, Turbo Drift, Aura Clash, Orbital Defense | Each exercises a distinct engine stack: interior IBL + spot shadows + clearcoat/sheen (Bank); outdoor HDRI sky + CSM + terrain + particles + vehicle camera (Turbo); skinned shadows + combat VFX + fighting camera + HUD shell (Aura Clash); greenfield on `createGame` (Orbital, 430 LOC) | G-PANEL IC-4 (2026-11-05) | per game in §12.3 |
+| 2 Neon-night + table/sports | Vault Breakers, Rooftop Buckets, Courier Rush, Neon Swarm, Pulse Tunnel, Siege Golf | Reuse K2, K4, K3 staged for the pilots; SSR wet floors | G-PANEL IC-8 (2026-12-03) | per game in §12.3 |
+| 3 Sky / atmosphere / space / water | Patrol Wing, Aurora Lander, Gravity Post, Deep Recovery | Heaviest on PRD 07 atmospherics and PRD 10 terrain/ocean/underwater, which are likely to be real later | G-PANEL IC-12 (2026-12-31) | per game in §12.3 |
+| 4 Characters / interiors | Skyline Runner, Blockfall Reactor, Mech Hangar, Gallery Shift | Heaviest on PRD 06 (C16 empty pose, skinned shadows) and PRD 02 multi-caster shadows | G-PANEL IC-12 (2026-12-31) | per game in §12.3 |
+
+A game may be put up for any earlier G-PANEL round once its standalone acceptance (§16.1) passes; an early round that is `engine-pending` costs
+nothing. Pilot learnings reach later waves as C-40 fact rows and the pilot retrospective issues (§14.5 T5.3), not as a gate.
 
 ### 6.6 Review protocol
 
-- Capture: `tools/quality-rebuild-capture/capture-games.mjs` on `macos-14` (ANGLE Metal) with v2 timelines that must reach the game's action
-  condition (`requiredConditions`, §7.2). Capture fails if the condition is not reached, rather than shipping an "action" frame with no action
-  (Aurora, Neon, Bank, Rooftop, Patrol failed this in run 37289688772).
-- Vision judge: same prompt as research/21 with three additions: the art direction contract, the reference board, and the previous round's
-  scorecard. The judge must list "what looks poor" before scoring.
-- Human panel: reviewers use the deployed Vercel preview URL on their own devices (one High desktop, one Medium phone minimum), fill
-  `GameScorecard.human[]`, and record device, browser and measured fps from the beacon overlay (`?dev=1` shows rAF p50/p95).
+- Capture: `tools/quality-rebuild-capture/capture-games.mjs` (PRD 12, C-33) on `macos-14` (ANGLE Metal) with v2 timelines that must reach the
+  game's action condition (`requiredConditions`, §7.2). A shot whose condition is not reached is `capture-failed` (C-32 `GateVerdict`), rather than
+  an "action" frame with no action (Aurora, Neon, Bank, Rooftop, Patrol failed this in run 37289688772). Until PRD 12 wires the evaluator into a
+  capture step plugin (R-14-01), this lane evaluates the same conditions in its own remote spec `tests/qr/prd14/browser/required-conditions.spec.ts`
+  and the scorecard builder refuses a round whose spec run failed.
+- Flags: every capture of a v2 route records the resolved `qrFlags` (C-30 `ReadyPayloadV2`, C-31 `qrFlags`). Standalone runs use
+  `none` + the route flag; checkpoint runs use `all` + the route flag (and `none`, for attribution).
+- Vision judge: same prompt as research/21 (C-32 `RUBRIC_PROMPT_VERSION`) with three additions: the art direction contract, the reference board, and
+  the previous round's scorecard. The judge must list "what looks poor" before scoring. Vision-only rounds (IC-1..3, 5..7, …) are screening and
+  cannot accept (C-32).
+- Human panel: reviewers use the Vercel preview URL of the checkpoint commit with the route flag on, on their own devices (one High desktop, one
+  Medium phone minimum), fill `GameScorecard.human[]`, and record device, browser and measured fps from the beacon overlay (`?dev=1` shows rAF
+  p50/p95 from C-28 FrameStats).
 - Comparables: each reference board contains ≥ 3 shipped three.js/WebGL browser games or demos chosen by a human in the same genre. The judge scores
   "gap to references" per category; the gap must be ≤ 1.5 on the genre-critical categories.
 
 ### 6.7 Quality tiers per game
 
-Every game runs on the PRD 11 tier API (`low | medium | high | ultra`) with automatic selection and a settings override. Tier changes may reduce
-resolution, sample counts, particle counts, shadow cascades and LOD distances; they may not remove the key light's shadow, the environment, or the
-art direction's signature effect (e.g. Aurora's aurora, Courier's wet reflections at env-only quality). Budgets are in §17.
+Every v2 game reads the C-27 tier (`app.quality`, `low | medium | high | ultra`; `"auto"` only in options) with automatic selection and a settings
+override. Under the C-27 stub, `"auto"` resolves to `high` on desktop and `medium` on coarse-pointer devices; the PRD 11 governor replaces that
+without route changes. Routes read tier-dependent values only from `app.quality.settings` (e.g. `particleBudget`, `shadow.mapSize`, `drawBudget`) and
+from their art-direction `tiers` block. Tier changes may reduce resolution, sample counts, particle counts, shadow cascades and LOD distances; they
+may not remove the key light's shadow, the environment, or the art direction's signature effect (e.g. Aurora's aurora, Courier's wet reflections at
+env-only quality). Budgets are in §17.
 
 ### 6.8 Cost of the cross-game recommendations
 
 | # | Recommendation | Visual benefit | GPU cost | CPU cost | Memory | Bundle | Mobile impact | Fallback |
 |---|---|---|---|---|---|---|---|---|
-| G1 | Delete `lights.ambient`; HDRI environment (K1) as IBL + background per game | Specular, Fresnel and sky return in 15 games; fixes the black metals (Pulse, Vault, Mech) | +0.2–0.5 ms (sky pass + IBL fetches) | 0 | 2k RGBE prefiltered ≈ 12 MB GPU; background 4k ≈ 32 MB → Low 1k/2k | 0 JS; 3–9 MB assets per game | Low: 1k HDRI, background at half res | PRD 02 neutral environment |
-| G2 | One shadowed key per scene, frustum fitted to play bounds or CSM (outdoor), contact shadows; delete fake discs/cylinders | Grounding (shadows 1.6 → ≥ 6) | +0.6–1.5 ms (2–3 cascades 2048) | +0.1 ms | 16–48 MB shadow maps | 0 | Low: 1 cascade 1024, PCF 4 | blob contact shadow from PRD 02, never emissive discs |
+| G1 | Delete `lights.ambient`; HDRI environment (K1) as IBL + background per game | Specular, Fresnel and sky return in 15 games; fixes the black metals (Pulse, Vault, Mech) | +0.2–0.5 ms (sky pass + IBL fetches) | 0 | 2k RGBE prefiltered ≈ 12 MB GPU; background 4k ≈ 32 MB → Low 1k/2k | 0 JS; 3–9 MB assets per game | Low: 1k HDRI, background at half res | Standalone: 1k fixture HDRI via `environments.hdri`; IBL correctness arrives with C-09/C-10 real (PRD 02) |
+| G2 | One shadowed key per scene, frustum fitted to play bounds or CSM (outdoor), contact shadows; delete fake discs/cylinders | Grounding (shadows 1.6 → ≥ 6) | +0.6–1.5 ms (2–3 cascades 2048) | +0.1 ms | 16–48 MB shadow maps | 0 | Low: 1 cascade 1024, PCF 4 | Standalone: one shadowed key with `shadow: { fit: { center, extent } }` (C-10 field; not guaranteed honoured by the stub, so the route also keeps caster bounds tight: no parked nodes, `castShadow: false` on backdrops); `decals.blobShadow` (C-10) when real; never emissive discs |
 | G3 | Replace synth/card assets with kit assets at budget | Assets 3.1 → ≥ 7; largest single content lift | +0.5–2 ms (more triangles, textures) | +0.2 ms (more draws if not batched) | +50–200 MB GPU (KTX2 bounded) | 0 JS; assets per §17 | LOD + 1k textures on Low | LOD1 meshes |
-| G4 | Genre camera rig (PRD 08 `rigs.*`) with framing targets | Subject legibility; composition 3.1 → ≥ 7 | 0 | +0.05 ms | 0 | 0 (engine) | Per-orientation framing | `rigs.static` with authored pose |
-| G5 | Pixel-backed VFX via `game.fx` + PRD 07 particles, K9 flipbooks | VFX 2.2 / particles 1.4 → ≥ 6.5 | +0.3–1.2 ms (overdraw-bound) | +0.1–0.3 ms | 4–16 MB (atlases + buffers) | +0 (engine) | Low caps live particles at 25% | PRD 09 backend A primitive pool |
+| G4 | Genre camera rig (C-22 `app.camera.rigs.*`) with framing targets | Subject legibility; composition 3.1 → ≥ 7 | 0 | +0.05 ms | 0 | 0 (engine) | Per-orientation framing | Standalone: route-local `AuraCameraRig` object in `src/v2/scene/camera.ts` passed to `app.camera.use()` (C-22 stub honours any rig object); swapped to the PRD 08 factory only when the framing test still passes with `A3D_QR_CAMERA` on |
+| G5 | Pixel-backed VFX via `game.fx` + PRD 07 particles, K9 flipbooks | VFX 2.2 / particles 1.4 → ≥ 6.5 | +0.3–1.2 ms (overdraw-bound) | +0.1–0.3 ms | 4–16 MB (atlases + buffers) | +0 (engine) | Low caps live particles at 25% | `game.fx` `primitive-pool` (C-24/C-20 stubs). Because the C-37 stub implements `add` as a remount (`RUNTIME_ADD_REMOUNT`), a route whose p95 rises > 50 ms during bursts mounts its pool once at scene build (§6.8 G13) |
 | G6 | `createGame` shell: full-bleed canvas, HUD kit, delete debug/marketing UI | HUD 5.2 → ≥ 7; canvas from 43–60% to ≥ 95% of viewport | up to ×2.3 fill for formerly boxed games (absorbed by tiers) | ≤ 0.05 ms | DOM ≤ 300 nodes | ≤ 14 KB (PRD 09) | Largest mobile win | `layout: "letterbox-16x9"` |
 | G7 | Sampled audio (K8) on `GameSoundEngine` | Audio 2.7 → ≥ 6 | 0 | ≤ 0.2 ms | decoded SFX ≤ 24 MB High, ≤ 10 MB Low | ≤ 10 KB | gesture unlock on title | silent + logged |
 | G8 | Look preset per art direction: HDR emissive 2–8, bloom threshold ≥ 1.0, knee ≤ 0.2, no FXAA over MSAA, exposure authored | Ends milky mid-tone bloom and blur; neon reads as light | 0 to −0.3 ms (FXAA removed) | 0 | 0 | 0 | Low: bloom at quarter res | PRD 03 defaults |
-| G9 | Batch/instance repeated geometry; budget draws per tier | Fixes the 5–15 fps games (Courier ~1,530, Gravity 1,200+, Mech ~190 unbatched, Blockfall 460 nodes) | −2 to −10 ms on the runner | −2 to −8 ms | −(per-node overhead) | 0 | Required for Low tier | engine static batching (PRD 11 `planBatches`, which wraps `consolidateStaticMeshes` from `@aura3d/rendering` `MeshConsolidation.ts:109`; routes do not import `@aura3d/rendering` directly) |
+| G9 | Batch/instance repeated geometry; budget draws per tier | Fixes the 5–15 fps games (Courier ~1,530, Gravity 1,200+, Mech ~190 unbatched, Blockfall 460 nodes) | −2 to −10 ms on the runner | −2 to −8 ms | −(per-node overhead) | 0 | Required for Low tier | Standalone: route-authored reduction (delete hidden nodes, `instances.*` for repeats with per-instance scale in the transform rather than `size`, which `createProductionInstanceTransforms` ignores until PRD 15's R18 fix at `index.ts:14747`, fewer merged GLBs); integrated: engine static batching (PRD 11 `A3D_QR_TIERS_BATCHING`, wrapping `consolidateStaticMeshes`, `MeshConsolidation.ts:109`; routes never import `@aura3d/rendering` internals) |
 | G10 | Remove capture forks; scenarios drive state only | Review frames equal play frames; no tuning of a different game | 0 | 0 | 0 | −(6–8k LOC fleet-wide, research/16) | 0 | none needed |
+| G11 | Route-flag dispatcher (`src/main.ts` → dynamic `import("./v2/boot.ts")` or `import("./legacy/main.ts")`) | Lets every v2 route merge to main from day 0 without changing the shipped default | 0 | one extra module fetch before boot (< 5 ms) | 0 | +0.3 KB gzip; legacy and v2 are separate chunks, only one is fetched | 0 | flag off = legacy route, byte-identical behaviour |
+| G12 | Route-local camera rigs implementing C-22 `AuraCameraRig` (temporary) | Correct framing while PRD 08 rigs are stubs | 0 | ≤ 0.05 ms | 0 | ≤ 3 KB gzip per route, deleted when the PRD 08 factory passes the same framing test | per-orientation framing table | `app.camera.rigs.static(pose)` (real in the stub) |
+| G13 | Pre-mounted FX pool adapter with the C-24 `GameFxLayer` shape (temporary, only where G5's remount cost shows) | FX visible without per-burst remounts | +0.05–0.2 ms (hidden pooled nodes still culled per frame) | +0.05 ms | ≤ 2 MB | ≤ 2 KB gzip, shared in `apps/showcase-kits/src/fx/prewarmedFxLayer.ts` | pool size from `app.quality.settings.particleBudget` | plain `game.fx` once C-37/C-20 are real |
 
 ### 6.9 Per-game plans
 
 Scores quoted as "now" are research/21 (visual) and research/20 (non-visual, rounded per `_sections/B`). Targets are in the consolidated table §6.10.
+Reading rule for the plans below: "PRD NN <feature>" names the lane whose real implementation, behind the contract listed for that game in §12.3,
+makes the bullet fully true. The v2 route always calls the contract surface (§7.6) and ships the standalone fallback from that game's change table or
+the §8 index until the real implementation arrives; no bullet is a reason to wait. Line references in the plans point into `src/legacy/` after T1.10.
 Every plan inherits: G1 (no ambient; HDRI/sky environment), G6 (shell, debug UI deleted), G7 (sampled audio), G8 (look preset), G10 (no capture
-forks), and the acceptance gate §6.3. Only game-specific work is listed. Cost tables cover the game-specific recommendations; G1–G10 costs are in §6.8.
+forks), and the acceptance gate §6.3. Only game-specific work is listed. Cost tables cover the game-specific recommendations; G1–G13 costs are in §6.8.
 
 #### 6.9.1 Bank Shot (`showcase-bank-shot`) — Wave 1 pilot P1, S-presentation
 
@@ -338,8 +415,8 @@ felt, the room falls into darkness.* Keep `rules.ts`, `racks.ts`, `table.ts`, `c
 - **Camera:** aim phase `rigs.orbit({ target: "cue-ball", distance: 1.1–2.0, pitchLimits: [18°, 38°] })` with yaw bound to aim angle; roll phase blends
   (0.4 s) to a 3/4 overhead `rigs.static`; optional pocket cam on the final ball.
 - **Animation:** balls rotate: in `syncVisuals` (`main.ts:741-745`, which today calls only `setScale`/`setPosition`) convert each Rapier body quaternion to
-  Euler XYZ and call `handle.setRotation(...)` (the Euler form used at `apps/showcase-mech-hangar/src/main.ts:892`), or the quaternion `teleport` of PRD 08
-  §7.1 when merged. Put the conversion in a pure helper `src/gameplay/ball-visuals.ts` (`ballEulerFromBody(q)`) so it is unit-testable. Cue pull-back scales with
+  Euler XYZ and call `handle.setRotation(...)` (the Euler form used at `apps/showcase-mech-hangar/src/main.ts:892`), or the C-37 `teleport(x, y, z, rotation)`
+  extension (C-23, PRD 08) once real; the stub `teleport` is `setPosition` plus one non-interpolated frame, so v2 uses `setRotation` until then. Put the conversion in a pure helper `src/gameplay/ball-visuals.ts` (`ballEulerFromBody(q)`) so it is unit-testable. Cue pull-back scales with
   power; forward stroke 80 ms; pocket drop lowers the ball 6 cm over 120 ms.
 - **VFX:** chalk puff on strike (K9 dust, 12 particles), felt dust on break (24), no other effects (restraint is the art direction).
 - **World population:** GPU spot-cone haze (PRD 07 volumetric, High/Ultra only).
@@ -362,8 +439,8 @@ felt, the room falls into darkness.* Keep `rules.ts`, `racks.ts`, `table.ts`, `c
 Now: overall 3, mean 3.5, 19.7 fps. Feel 5, controls 5, physics 4, audio 3. Fantasy: *sunset alpine circuit: golden low sun, long shadows, tyre smoke.*
 Keep lap/race logic, `opponent-ai.ts` (or migrate to `VehicleDriverAi`, research/16 row 17), `ghost.ts`, `feel.ts` start lights.
 
-- **Environment:** replace `turboCircuitEnvironmentV2` (75.5k tris, 28 flat materials, 0 textures) with a spline-extruded road (PRD 10 road/spline
-  generator) carrying UV'd 2k asphalt, a rubbered racing-line mask, kerb and run-off decals; K3 splat terrain around it (grass/dirt/rock by slope);
+- **Environment:** replace `turboCircuitEnvironmentV2` (75.5k tris, 28 flat materials, 0 textures) with a spline-extruded road (PRD 10 world content when real; standalone: the
+  road is extruded offline from the existing centreline data into a UV'd GLB staged in `apps/showcase-kits/K3/turbo-road/`) carrying UV'd 2k asphalt, a rubbered racing-line mask, kerb and run-off decals; K3 splat terrain around it (grass/dirt/rock by slope);
   K1 sunset HDRI as sky and IBL; distant mountain impostor ring beyond fog. Delete the 500-unit box ground and `#df967d` clear colour
   (`scenery.ts:39`). Fog density ~0.02 at track scale (17-g2 §1.10).
 - **Assets:** hero car ≥ 30k tris, BC/N/ORM, separate wheel and brake meshes (replaces the 5.4k BC-only hero). Trackside: instanced barrier, tyre-wall,
@@ -408,7 +485,10 @@ secondary motion, clip-event bridge, hit-stop, victim-flash pulse (17-g1 §7).
   (`rim: { color, power: 3, intensity: 1.5 }`) or a material variant; neon signs at emissive strength 4–8 (HDR).
 - **Lighting:** delete the per-fighter camera-side 4.7/4.45 point keys (`:942-952`) and per-fighter rim points (`:920-930`); rig = warm overhead spot
   key (shadow, strength 1, frustum fitted to the fighter envelope `:1179-1207`) + cool back-rim directional + two neon practicals at sign positions;
-  K1 night-city HDRI at 1.0. Requires the side-view preset on rgba16f + ACES (PRD 01; `GameRenderPreset.ts:372-386`).
+  K1 night-city HDRI at 1.0. The side-view preset forces `targetFormat: "rgba8"` (`GameRenderPreset.ts:373`, owned by PRD 11), so v2 does not use it: the route sets
+  `app.setOutput({ toneMapping: "aces", exposure })` (C-05) and the `arena-fight` post preset (C-13), and files R-14-06 so the preset follows
+  C-05 `probeHdrTargetFormat`. The HDR target itself becomes real with `A3D_QR_CORE=v2` (C-05, PRD 01). Delete the DPR clamp
+  `Math.min(window.devicePixelRatio || 1, 1.75)` (`AuraClashArenaApp.ts:1530`); DPR comes from C-27.
 - **Camera:** `rigs.fighting({ fighters: ["p1", "p2"], framing: { subjectHeightFraction: 0.5 }, fov: 32 })`, pitch −6°, separation dolly (today 60°
   orthogonal side view, `:1239`).
 - **Animation:** anticipation and follow-through by clip time-scale curves on heavy attacks; landing squash through juice tween.
@@ -417,7 +497,7 @@ secondary motion, clip-event bridge, hit-stop, victim-flash pulse (17-g1 §7).
 - **Shaders:** rim term (§8.10); SSR wet floor (PRD 02) with puddle mask from the arena textures.
 - **World population:** rain (PRD 07) 1,500 High / 400 Low; two steam vents.
 - **Audio:** keep the 11 Kenney samples; add music bed, announcer (round/fight/KO from K8), crowd bed, per-move whooshes.
-- **Juice:** per-actor hit-stop (`session.hitStop(0.07, { actors })`, PRD 09 §6.3); "2 HIT"/"3 HIT" plates move to the top HUD band, off the impact point.
+- **Juice:** per-actor hit-stop (`session.hitStop(0.07, { actors })`, C-24 delegating to C-23 `app.time.hitStop` with an actor scope); "2 HIT"/"3 HIT" plates move to the top HUD band, off the impact point.
 - **HUD:** full-bleed; slanted health bars, timer medallion, portraits; self-hosted Saira `@font-face` (named in `playable.css:15,191,294,413`, never
   loaded); delete nav, prose cards, control strip, evidence `<details>`. Wire the unreferenced `TitleScreen`, `CharacterSelect`, `ResultsPanel`, `PauseMenu`
   through the shell menus or delete them.
@@ -434,7 +514,9 @@ secondary motion, clip-event bridge, hit-stop, victim-flash pulse (17-g1 §7).
 
 Now: overall 1.5, mean 1.8, 59.6 fps on an empty scene; audio 0; `route-health.json` "blocked", `publicShowcase:false`. Fantasy: *low-orbit defense
 at the planet's terminator; drones streak in against the Milky Way; every kill explodes.* Keep only the wave, heat and shield rules, extracted to
-`src/gameplay/waves.ts`. Regenerate the route from the PRD 13 arena-shooter template on `createGame`; this pilot validates that template path.
+`src/gameplay/waves.ts`. Build `src/v2/` directly on `createGame` (C-24) on day 0; it does not wait for PRD 13's arena-shooter template. When that template exists,
+  the pilot's v2 code is offered to PRD 13 as the template's reference implementation (R-14-08, C-40 rows), and any template/route divergence is a
+  PRD 13 finding, not a route blocker.
 
 - **Environment:** K1 deep-space starfield HDRI as background and IBL; sun directional matched to the HDRI's bright source; asteroid belt 300 instanced
   K5 rocks.
@@ -519,7 +601,9 @@ Now: overall 4, mean 3.8 (fleet best), 7.6 fps; physics 6. Fantasy: *dusk street
 Now: overall 2 (working frame alone ~3.5), mean 2.8, 7.1 fps 1920 / 5.0 1280; audio 1.5; context loss went black in the 1920 run. Fantasy: *rain-slick
 night city, delivery van threading traffic between pools of sodium and neon.* Keep dispatch, `traffic.ts`, `van.ts` on `createGameArcadeVehicle`.
 
-- **Robustness (P0, before art):** context-loss UI from the PRD 09 shell plus PRD 01 GPU resource restore; capture fails when the canvas region is
+- **Robustness (P0, before art):** context-loss UI from the C-24 session state `"context-lost"` (stub shell) plus
+  GPU resource restore from C-29 `ResourceRegistry` (PRD 11, R19) when real; standalone, the legacy route gets a declared fix that listens for
+  `webglcontextlost`/`webglcontextrestored` on its canvas and shows a "Restoring graphics…" overlay that reloads the route state on restore; capture fails when the canvas region is
   uniformly black (§7.2) even if the HUD draws. Batch ~1,530 draws to ≤ 300 (static consolidation of the city, instanced traffic headlights).
 - **Environment:** replace `city.block` (primitive boxes with emissive "light pool" slabs, `index.ts:5842-5935`) and the 10 box towers with a K2 modular
   city: textured facades, emissive window atlas, sidewalks, curbs, street furniture; K1 night-city HDRI; height fog density ~0.03.
@@ -713,9 +797,9 @@ shallows into a dark wreck basin; the sub's searchlight cuts the murk.* Keep `su
 - **Lighting:** attach the searchlight spot (shadow) and headlight to the sub as runtime nodes updated in `syncVisualNodes` (today fixed in world at
   `environment.ts:53-69`); surface key directional for the shallows only.
 - **Camera:** chase at 15–25° pitch, smoothing 0.12–0.2 with look-ahead (today smoothing 0 "for harness determinism", `main.ts:302-305`; determinism
-  now comes from the PRD 09 fixed-step loop, not a rigid camera).
+  now comes from the C-23 fixed-step loop and seeded C-24 scenarios, not a rigid camera).
 - **VFX:** bubbles on thrust, silt kick-up near the seabed, breach shake and red light flicker; sonar ping as a screen-space ring with depth test.
-- **Audio:** move from raw `HTMLAudioElement` (`deep-audio.ts:18-40`) to `GameSoundEngine` with `underwater` reverb preset (PRD 09 §6.8); sonar return
+- **Audio:** move from raw `HTMLAudioElement` (`deep-audio.ts:18-40`) to C-25 `createGameSoundEngine` with `reverb: "underwater"`; sonar return
   scheduled on the audio clock, not `setTimeout(250)`.
 - **HUD:** keep the structure (HUD 6); add a diegetic sonar panel.
 
@@ -732,7 +816,7 @@ Now: overall 4, mean 3.6, 11.4 fps; char 5. Fantasy: *winter-dusk rooftop platfo
 
 - **Gameplay bug:** Lives reads 0 while play continues because the HUD computes `max(0, lives − deaths)` (`hud.ts:176`) from a hard-coded
   `lives: 3` (`main.ts:3960`) while nothing ends the run when deaths reach it. Fix: read `lives` from the level config (`level.ts:372`), and when
-  `state.deaths >= lives` transition the session to `results` (PRD 09 shell) with Restart; the HUD never shows 0 during `playing`.
+  `state.deaths >= lives` transition the session to `results` (C-24 `shell.showResults`) with Restart; the HUD never shows 0 during `playing`.
 - **Environment:** one art style: lit 3D foreground (K3 snow-adapted platform kit with textures) in front of the painted backdrop, which is re-cut into
   3–4 parallax layers with matched fog and key direction (today one card stretched 1.9× vertically, `main.ts:1244`); delete the floating untextured tree
   slab and the grey bars under platforms.
@@ -810,7 +894,8 @@ Now: overall 3, mean 3.0, 10.1 fps; characters frozen (C16: `AnimationController
 never faces movement. Fantasy: *night heist in a private gallery: pools of light, sweeping guard flashlights, marble and glass.* Keep `floor.ts`,
 `vision.ts`, `guard.ts` FSM, detection meter.
 
-- **Correctness (P0):** fix the empty-pose path (PRD 06); add thief facing in `syncCharacterVisuals` (`main.ts:1353-1357`): yaw =
+- **Correctness (P0):** drive clips through C-19 `crossFadeTo` (the stub maps it to `node.play`,
+  `index.ts:10970-10973`), never through `AnimationController({ clipRegistry })`, whose empty pose (C16, `index.ts:13871` area) is PRD 06's fix; add thief facing in `syncCharacterVisuals` (`main.ts:1353-1357`): yaw =
   `atan2(moveX, moveZ)` with slerp halflife 0.08 s.
 - **Environment:** re-author the museum with K4 tiling marble, parquet and plaster (normal + ORM) replacing 14 flat-colour materials and ~200 merged
   detail boxes (`environment.ts:42-330`); real exhibits (licensed statues, vases, framed paintings) replacing 24–284-tri synth exhibits; display-case glass
@@ -857,20 +942,27 @@ Genre-critical categories (bold) must reach the target; every other visual categ
 | Mech Hangar | 2.5→7 | **3.5→7.5** | 3.5→7.5 | 3.5→7 | 2→7 | 2.5→7 | 4→7 | 1.5→7 | **3→7** | 3.5→7 | 1.5→6 | 4.5→7 | 2→7 | 3→7 | 2→7 | 1.5→6.5 | 2→7 | 3.5→**7** |
 | Gallery Shift | 4→7.5 | 3→7 | 3→7 | **4→7.5** | **2→7** | 1→6.5 | 4→7 | 2→6.5 | **3→7** | 4→7 | 1→6.5 | 4→7 | 2.5→7 | 2.5→7 | 2→6.5 | 2→6.5 | 2→7 | 3→**7** |
 
-Fleet acceptance: all 18 overall ≥ 7 (or withdrawn per §6.3), fleet mean ≥ 7.2, no fleet category mean below 6.0 (today particles 1.4,
+Fleet acceptance (integrated, §21.2): all 18 overall ≥ 7 (or withdrawn per §6.3), fleet mean ≥ 7.2, no fleet category mean below 6.0 (today particles 1.4,
 atmosphere 1.4, IBL 1.5).
 
 ## 7. APIs to add, change and remove
 
-This PRD owns route-level contracts and review data. Engine and runtime APIs are owned by PRDs 01–13 and are consumed, not redefined (§7.6).
-Judgement records reuse PRD 12 §7 types (`GameJudgement`, `PanelRoundRecord`, `GAME_VISUAL_CATEGORIES`, `GAME_NONVISUAL_CATEGORIES`).
+This PRD provides **C-35** (art direction and game acceptance schema) and the route flags `A3D_QR_ROUTE_<ID>`. Engine and runtime APIs are
+consumed through contracts, never redefined (§7.6, §12). Judgement records reuse C-32 types (`GameJudgement`, `PanelRoundRecord`,
+`JudgeIdentity`, `GAME_VISUAL_CATEGORIES`, `GAME_NONVISUAL_CATEGORIES`) from `tools/quality-gate/src/contracts.ts` (PRD 12).
 
-### 7.1 Art direction contract — `@aura3d/game/art` (new subpath of the PRD 09 package; types + validator only, 0 runtime bytes in play)
+### 7.1 Art direction contract (C-35) — `@aura3d/game/art` (subpath reserved in PR 0a; types + validator only, 0 runtime bytes in play)
+
+Files: the frozen C-35 surface is created by PR 0a at `packages/engine/src/contracts/art.ts` (custodian PRD 15; changes only by CCR) and
+re-exported by `packages/game/src/art/index.ts` (owner 14). The block below is the "PRD 14 provides list" that C-35 freezes. The real
+implementation lives in this lane's files `packages/game/src/art/{define,audit,snapshot}.ts` and `packages/game/src/art/acceptance/{requiredConditions,canvasBlankCheck}.ts`;
+`packages/game/src/art/index.ts` switches its exports from the PR 0a stub (`auditArtDirection` returns `[]` with a `PENDING` marker) to them.
+C-35 has no runtime slot and no flag ("data"): the validator is tooling and ships unflagged.
 
 ```ts
-import type { AuraQualityTier } from "@aura3d/engine";          // PRD 01/03/11
+import type { AuraQualityTier } from "@aura3d/engine/contracts"; // C-27: "low" | "medium" | "high" | "ultra" ("auto" only in option types, R1)
 
-/** Mirrors GAME_VISUAL_CATEGORIES in tools/quality-gate/src/types.ts (PRD 12, internal). A unit test asserts the two lists are identical. */
+/** Mirrors C-32 GAME_VISUAL_CATEGORIES in tools/quality-gate/src/contracts.ts (PRD 12, internal). T1.2 asserts the two lists are identical. */
 export type GameVisualCategory =
   | "environment_world" | "modeling_assets" | "texture_quality" | "material_quality" | "pbr_credibility" | "lighting" | "shadows"
   | "ambient_lighting" | "ibl_reflections" | "tone_mapping" | "color_management" | "anti_aliasing" | "postprocessing" | "vfx" | "particles"
@@ -909,12 +1001,12 @@ export interface ArtLightingDesign {
   readonly fill: "ibl" | "ibl+bounce";   // never "ambient"
   readonly practicals: number;           // ≤ 6 point/spot lights besides the key
   readonly environment: { readonly hdri?: string; readonly preset?: string; readonly background: "hdri" | "sky" | "enclosed" };
-  readonly exposureEV: number;           // authored; honoured after PRD 01
+  readonly exposureEV: number;           // authored; applied via C-05 setOutput({ exposure: 2 ** exposureEV }); honoured exactly once C-05 is real
 }
 
 export interface ArtFraming {
-  readonly rig: "chase" | "flight" | "fighting" | "shoulder" | "orbit" | "topDown" | "altitude" | "rail" | "static";
-  readonly subjectHeightFraction: readonly [min: number, max: number]; // measured by the PRD 08 camera evidence
+  readonly rig: "chase" | "flight" | "follow2d" | "fighting" | "shoulder" | "orbit" | "topDown" | "altitude" | "rail" | "static"; // = C-22 factory names
+  readonly subjectHeightFraction: readonly [min: number, max: number]; // C-22 evidence().subjectScreenHeightFraction when real; route `framing` section until then
   readonly fovDeg: readonly [min: number, max: number];
   readonly mobile: "landscape" | "portrait" | "both";
 }
@@ -933,14 +1025,16 @@ export interface GameArtDirection {
   readonly vfx: readonly { readonly event: string; readonly kind: string; readonly flipbook?: string }[];
   readonly audio: readonly { readonly event: string; readonly cue: string; readonly variants: number }[];
   readonly signatureEffect: string;      // survives every tier (§6.7)
+  /** Route-local stand-ins for engine features still on stubs (§12A.4); validator requires `request` to match /^R-14-\d{2}$/. */
+  readonly standIns?: readonly { readonly feature: string; readonly file: string; readonly request: string; readonly removeWhen: string }[];
   readonly criticalCategories: readonly GameVisualCategory[]; // bold columns of §6.10
-  readonly tiers: Readonly<Record<Exclude<AuraQualityTier, "auto">, { readonly particles: number; readonly shadowMap: number; readonly cascades: number; readonly textureMax: 1024 | 2048 | 4096 }>>;
+  readonly tiers: Readonly<Record<AuraQualityTier, { readonly particles: number; readonly shadowMap: number; readonly cascades: number; readonly textureMax: 1024 | 2048 | 4096 }>>;
 }
 
 /** Validates at build time; throws AuraArtDirectionError listing every violation. */
 export function defineArtDirection(direction: GameArtDirection): GameArtDirection;
 
-/** Used by `pnpm check:art-direction`: compares the mounted scene (app.diagnostics()) with the contract. */
+/** Used by `scripts/check-art-direction.mjs`: compares the mounted scene (snapshotForAudit) with the contract. */
 export function auditArtDirection(direction: GameArtDirection, snapshot: ArtDirectionSnapshot): readonly ArtDirectionViolation[];
 
 export interface ArtDirectionSnapshot {
@@ -955,91 +1049,123 @@ export interface ArtDirectionViolation {
   readonly rule:
     | "ambient-light" | "missing-environment" | "no-shadowed-key" | "too-many-practicals"
     | "asset-under-min-triangles" | "asset-unlit-card" | "asset-texture-override" | "asset-not-in-contract"
-    | "draws-over-tier-budget";
+    | "draws-over-tier-budget" | "emissive-fill" | "capture-branch";
   readonly detail: string;
 }
+
+/** Builds the snapshot from the authored scene (AuraSceneSnapshot), asset metadata in aura.assets.json, and diagnostics().drawCalls.
+ *  Works on PR 0a stubs: it reads authored intent and measured draw counts only, never stub-reported GPU features. */
+export interface AuraAssetManifestLike { readonly assets: Readonly<Record<string, { readonly triangles?: number; readonly textures?: number; readonly unlit?: boolean; readonly role?: string }>>; }
+export function snapshotForAudit(app: AuraApp, assets: AuraAssetManifestLike): ArtDirectionSnapshot;
+
+// packages/game/src/art/acceptance/requiredConditions.ts
+/** Restricted evaluator: property paths, numeric/string/boolean literals, === !== < <= > >=, && || !, parentheses. No eval/Function.
+ *  Scope = { beacon: window.__AURA3D_GAME__, ...window.__AURA3D_GAME_EVIDENCE__[route] }. Unknown path => { ok: false, reason: "unknown-path" }. */
+export function evaluateRequiredCondition(expr: string, scope: Readonly<Record<string, unknown>>): { readonly ok: boolean; readonly reason?: "false" | "unknown-path" | "parse-error" };
+
+// packages/game/src/art/acceptance/canvasBlankCheck.ts
+/** rgba = sRGB RGBA8 pixels of the canvas rect; mask = HUD rects to exclude. Dark = Rec.709 luma < 10/255; colours counted after 5-bit quantisation. */
+export function canvasBlankCheck(rgba: Uint8ClampedArray, width: number, height: number, mask: readonly { x: number; y: number; w: number; h: number }[],
+  limits: { readonly maxDarkFraction: number; readonly minDistinctColors: number }): { readonly pass: boolean; readonly darkFraction: number; readonly distinctColors: number };
 ```
 
 Validator rules (all fatal): `references.length >= 3`; no `lights.ambient` in the mounted scene; exactly one light with `shadow: true` unless
 `lighting.key.type === "spot"` and the genre is `stealth` or `underwater-salvage` (up to 3 shadowed spots); every hero/character/vehicle/enemy role
 has `minTriangles` and a texture set other than `BC`; no role resolves to a `KHR_materials_unlit` 4-triangle asset; `fill !== "ambient"`.
+Audit rules added for the parallel plan (§1): `emissive-fill` fails any non-practical material with `emissiveIntensity > 0.1` whose node is not
+listed as a light source in the art direction; `capture-branch` fails any `src/v2/**` source containing `capture=review`, `visualReviewCapture` or a
+`window.__*__` evidence global other than the C-24 beacon (static scan in `scripts/check-art-direction.mjs`).
 
-### 7.2 `tools/quality-rebuild-capture/games.json` — fields added on top of PRD 12 §9.6
+### 7.2 `tools/quality-rebuild-capture/games.json` — C-35 `GameEntryV2` fields (data owned by 14; schema `games.schema.json` owned by 12, R22)
+
+PR 0a creates `games.schema.json` with every C-33/C-35 field optional, so this lane can write the data on day 0 without waiting for PRD 12 to make
+fields required. The TypeScript below is C-35 as frozen in CONTRACTS.md, plus one additive field requested by CCR-14-1.
 
 ```ts
-export interface GameEntryV2 /* extends PRD 12 game entry: id, route, scenarios, hudSelectors, timeline */ {
+// C-35 (frozen), packages/engine/src/contracts/art.ts
+export interface GameEntryV2 /* merged into the existing games.json entry: id, route, timeline, evidenceGlobal, hudSelectors, scenarios (C-33) */ {
   readonly wave: 0 | 1 | 2 | 3 | 4;
   readonly rebuildTier: "S-presentation" | "S-world" | "F";
   readonly artDirection: string;                       // "apps/<dir>/art/direction.ts"
-  /** Conditions the timeline must reach; capture fails (verdict "capture-failed") if one is not met by its deadline. */
+  /** Conditions the timeline must reach; the shot is "capture-failed" (C-32 GateVerdict) if one is not met by its deadline. */
   readonly requiredConditions: readonly {
-    readonly shot: string;                             // e.g. "04-action"
-    readonly expr: string;                             // evaluated against window.__AURA3D_GAME__ + evidence sections, e.g. "fx.live > 0 && session.state === 'playing'"
+    readonly shot: string;                             // an existing games.json shot id, e.g. "04-action"
+    readonly expr: string;                             // evaluateRequiredCondition grammar (§7.1); scope = beacon + route evidence sections
     readonly deadlineMs: number;
   }[];
   /** Fails a shot when the canvas region (HUD masked) is uniformly dark, independent of DOM HUD pixels.
-   *  "Dark" = Rec.709 luma < 10/255 on the sRGB PNG. Distinct colours counted after 5-bit-per-channel quantisation.
-   *  Defaults 0.9 and 2,000. A per-game override is allowed only with `reason` (space/underwater/night games, see §7.2.1),
+   *  Defaults 0.9 and 2,000. A per-game override is allowed only with `reason` (space/underwater/night games, §7.2.1),
    *  and never above maxDarkFraction 0.97 (the Courier black frame measures 0.968 and must still fail on Courier). */
   readonly canvasBlankCheck: { readonly maxDarkFraction: number; readonly minDistinctColors: number; readonly reason?: string };
-  readonly acceptance: {
-    readonly minOverall: 7;
-    readonly minVisualCategory: 5;
-    readonly critical: Readonly<Record<string, number>>; // from §6.10 bold columns
-    readonly minNonVisual: { readonly sound_audio: 6; readonly controls: 7; readonly game_feel: 6.5; readonly loading_transitions: 6; readonly physics_feel?: 6 };
-  };
-  readonly budgets: GameBudgets;                       // §17
+  readonly acceptance: GameAcceptance;                 // minOverall 7, minVisualCategory 5, critical (§6.10 bold), minNonVisual
+  readonly budgets: GameBudgets;
 }
-
 export interface GameBudgets {
-  readonly transferToPlayableMB: Readonly<Record<"low" | "medium" | "high" | "ultra", number>>;
+  readonly transferToPlayableMB: number;               // Medium tier (C-35 frozen as a single number)
   readonly routeJsGzipKB: number;                      // route chunk only, excluding engine and @aura3d/game
-  readonly drawCalls: Readonly<Record<"low" | "medium" | "high" | "ultra", number>>;
+  readonly drawCalls: Readonly<Record<AuraQualityTier, number>>;
   readonly gameLogicCpuMs: number;                     // ≤ 4 (PRD 11 §17.1 separates engine CPU)
+  /** CCR-14-1 (additive optional): per-tier transfer budgets from §17. Until merged, the scorecard reads them from the §17 table constant
+   *  in tools/quality-gate/src/scorecard.ts. */
+  readonly transferToPlayableMBByTier?: Readonly<Record<AuraQualityTier, number>>;
 }
+// C-33 field this lane also writes per entry: qrFlags: string[] = [ "A3D_QR_ROUTE_<ID>" ]  (CONTRACTS §5.4: same list the route passes to createGame)
 ```
 
 Shot ids are the ones already in `games.json` (`defaults.requiredShots = ["02-opening", "03-mid", "04-action"]`, `mobileStopAfterShot: "03-mid"`, plus
-each game's existing `05-*`/`02b-*`). This PRD does not rename shots; it adds the state each shot must prove. `expr` reads the PRD 09 beacon
-`window.__AURA3D_GAME__` and the evidence sections each route publishes through `publishEvidence` (field names below are the contract the route must publish).
+each game's existing `05-*`/`02b-*`: Aura Clash `05-special`, Siege `05-charge`, Neon `05-burst`, Gravity `05-late-coast`, Mech `02b-arena-opening`
+and `05-special`, Rooftop `05-charge`, Deep `05-grapple`, Patrol `05-banked-fire`, Bank `05-charge`, Orbital `05-shield`). This PRD does not rename
+shots; it adds the state each shot must prove. Expression scope: `beacon` is `window.__AURA3D_GAME__` (C-24 `GameBeacon`: `route`, `state`,
+`frame`, …); every other top-level name is a section of `window.__AURA3D_GAME_EVIDENCE__[route]`. The shell owns `session`, `sound`, `juice`,
+`hud`, `perf`, `capture`; route sections use other names (`fx`, `framing`, `render`, `loading`, and gameplay names), so stub and real shells never
+collide. Field names below are the contract each v2 route must publish.
 
-#### 7.2.1 Per-game capture contract and budgets (seeds `games.json`; Medium draws ≤ 300 because the §17.2 runner gate runs forced Medium)
+#### 7.2.1 Per-game capture contract, route flag and budgets (seeds `games.json`; Medium draws ≤ 300 because the PRD 11 §17.2 runner gate runs forced Medium)
 
-| Game (`games.json` id) | `04-action` required condition (`expr`, deadline) | Other required conditions | Touch preset / orientation | `canvasBlankCheck` override | Draws Low / Med / High | Transfer to playable, Medium |
-|---|---|---|---|---|---|---|
-| `aura-clash-showcase` | `combat.hitStopActive === true && fx.live > 0`, 12 s | `03-mid`: both fighters' bbox height 0.45–0.6 of frame (`camera.subjectHeightFraction`) | `dpad-2btn` / landscape | — | 150 / 150 / 150 | ≤ 15 MB |
-| `showcase-blockfall-reactor` | `board.linesClearedThisRound >= 1 && fx.live > 0`, 20 s | `03-mid`: `board.stackHeight >= 4` | `dpad-2btn` / both | — | 120 / 150 / 150 | ≤ 12 MB |
-| `showcase-skyline-runner` | `player.airborne === true && fx.live > 0` (jump with snow/landing FX), 10 s | `03-mid`: `level.act >= 2` or `player.x` past act-1 boundary | `dpad-2btn` / landscape | — | 150 / 250 / 250 | ≤ 15 MB |
-| `showcase-turbo-drift-circuit` | `car.drifting === true && fx.live > 0` (smoke visible), 15 s | `03-mid`: `car.speedKph >= 120` | `dpad-2btn` (steer + throttle/brake) / landscape | — | 150 / 300 / 350 | ≤ 15 MB |
-| `showcase-siege-golf` | `structures.toppledThisShot >= 1`, 12 s | `05-charge`: `shot.power > 0.5`; no `setScene` between `02` and `04` (`session.sceneSwaps === 0`) | `aim-drag` / both | — | 120 / 200 / 200 | ≤ 15 MB |
-| `showcase-aurora-lander` | `lander.touchdown === "landed"`, 40 s | `03-mid`: `lander.altitude < 30 && camera.padInFrame === true` | `aim-drag` (thrust + rotate) / both | `{ 0.95, 1500, "night sky" }` | 120 / 150 / 150 | ≤ 15 MB |
-| `showcase-neon-swarm` | `swarm.killsThisWave >= 3 && fx.live > 0`, 15 s | `05-burst`: `fx.live >= 20` | `twin-stick` / both | — | 120 / 150 / 150 | ≤ 15 MB |
-| `showcase-gravity-post` | `pod.state === "in-flight"` via keyboard-only launch, 10 s | `03-mid`: every planet's mean luma on its lit half ≥ 40/255 (no black planets) | `aim-drag` / both | `{ 0.95, 1500, "space" }` | 100 / 120 / 120 | ≤ 15 MB (from 46.8 MB) |
-| `showcase-courier-rush` | `delivery.completed >= 1`, 45 s | every shot: default canvas check (no override) | `dpad-2btn` / landscape | — (must fail on the 0.968 black frame) | 150 / 300 / 300 | ≤ 15 MB |
-| `showcase-pulse-tunnel` | `gates.passedOnBeat >= 2 && fx.live > 0`, 12 s | mobile `03-mid`: canvas CSS size = viewport ± 1 px | `dpad-2btn` (lanes) / both | — | 120 / 200 / 200 | ≤ 12 MB |
-| `showcase-mech-hangar` | `combat.lastHit.kind === "heavy" && fx.live > 0`, 20 s | `02b-arena-opening`: `scene.id === "pit"`; hero GLB fetched once (`assets.fetchCount.mechHeroDecimated === 1`) | `dpad-2btn` / landscape | — | 150 / 250 / 250 | ≤ 15 MB (from 28.5 MB) |
-| `showcase-vault-breakers` | `table.bumperHitsThisBall >= 1 && fx.live > 0`, 20 s | `03-mid`: `ball.inPlay === true` | flipper zones + plunger drag / portrait | — | 100 / 100 / 100 | ≤ 15 MB |
-| `showcase-rooftop-buckets` | `shot.result === "make"` with skinned athletes visible (`characters.skinnedVisible >= 2`), 20 s | `05-charge`: `shot.meter > 0.5` | `aim-drag` / both | — | 150 / 200 / 200 | ≤ 15 MB |
-| `showcase-gallery-shift` | `guard.state === "alert"` with ≥ 1 cone rendered (`fx.cones >= 1`), 30 s | `03-mid`: `thief.boneDeltaSinceLastFrame > 0` (not frozen) and thief yaw within 15° of move direction | `twin-stick` (move only) / both | `{ 0.93, 1500, "night interior" }` | 150 / 250 / 250 | ≤ 15 MB |
-| `showcase-deep-recovery` | `salvage.grappled >= 1`, 40 s | every shot: `perf.readbacksThisFrame === 0` | `twin-stick` / both | `{ 0.95, 1500, "deep water" }` | 150 / 200 / 200 | ≤ 15 MB |
-| `showcase-patrol-wing` | `drones.hitsThisSortie >= 1 && fx.live > 0`, 30 s | `03-mid`: `rings.inFrame >= 1 && flight.throttle > 0.4` | tilt/drag flight preset / landscape | — | 150 / 230 / 230 | ≤ 15 MB |
-| `showcase-bank-shot` | `table.pottedThisShot >= 1`, 15 s (today's `until` on `__BANK_SHOT_EVIDENCE__.potted` moves to the beacon) | `03-mid`: `balls.maxAngularSpeed > 0` (balls roll) | `aim-drag` / both | — | 100 / 120 / 120 | ≤ 12 MB |
-| `showcase-orbital-defense` | `fx.explosionsLive >= 1`, 20 s | `03-mid`: no drone bbox overlaps a HUD selector rect | `twin-stick` / both | `{ 0.95, 1500, "space" }` | 80 / 80 / 80 | ≤ 12 MB |
+Route flag naming (CONTRACTS §5.1, owner 14): `A3D_QR_ROUTE_` + the `games.json` id with a leading `showcase-` or trailing `-showcase` removed,
+upper snake case; URL/capture short name `route-` + the same suffix in kebab case (`route-bank-shot`, `route-aura-clash`). `--flags route-<id>`
+means every lane flag at its registry default (off while `dev`) plus the route flag; `all,route-<id>` turns every lane flag on. Touch presets are
+C-24 `TouchPreset` values only. `fx.liveCount` is C-24 `GameFxLayer.liveCount`, republished by the route in its
+`fx` section.
+
+| Game (`games.json` id) | Route flag | `04-action` required condition (`expr`, deadline) | Other required conditions | Touch preset / orientation | `canvasBlankCheck` override | Draws Low / Med / High | Transfer to playable, Medium |
+|---|---|---|---|---|---|---|---|
+| `aura-clash-showcase` | `A3D_QR_ROUTE_AURA_CLASH` | `combat.hitStopActive === true && fx.liveCount > 0`, 12 s | `03-mid`: `framing.subjectHeightFraction >= 0.45 && framing.subjectHeightFraction <= 0.6` (both fighters) | `dpad-4btn` / landscape | — | 150 / 150 / 150 | ≤ 15 MB |
+| `showcase-blockfall-reactor` | `A3D_QR_ROUTE_BLOCKFALL_REACTOR` | `board.linesClearedThisRound >= 1 && fx.liveCount > 0`, 20 s | `03-mid`: `board.stackHeight >= 4` | `dpad-4btn` / both | — | 120 / 150 / 150 | ≤ 12 MB |
+| `showcase-skyline-runner` | `A3D_QR_ROUTE_SKYLINE_RUNNER` | `player.airborne === true && fx.liveCount > 0` (jump with snow/landing FX), 10 s | `03-mid`: `level.act >= 2` | `dpad-2btn` / landscape | — | 150 / 250 / 250 | ≤ 15 MB |
+| `showcase-turbo-drift-circuit` | `A3D_QR_ROUTE_TURBO_DRIFT_CIRCUIT` | `car.drifting === true && fx.liveCount > 0` (smoke), 15 s | `03-mid`: `car.speedKph >= 120` | `steer-pedals` / landscape | — | 150 / 300 / 350 | ≤ 15 MB |
+| `showcase-siege-golf` | `A3D_QR_ROUTE_SIEGE_GOLF` | `structures.toppledThisShot >= 1`, 12 s | `05-charge`: `shot.power > 0.5`; `04-action`: `loading.sceneSwaps === 0` (no `setScene` between `02` and `04`) | `aim-drag` / both | — | 120 / 200 / 200 | ≤ 15 MB |
+| `showcase-aurora-lander` | `A3D_QR_ROUTE_AURORA_LANDER` | `lander.touchdown === "landed"`, 40 s | `03-mid`: `lander.altitude < 30 && framing.padInFrame === true` | `aim-drag` (thrust + rotate) / both | `{ 0.95, 1500, "night sky" }` | 120 / 150 / 150 | ≤ 15 MB |
+| `showcase-neon-swarm` | `A3D_QR_ROUTE_NEON_SWARM` | `swarm.killsThisWave >= 3 && fx.liveCount > 0`, 15 s | `05-burst`: `fx.liveCount >= 20` | `twin-stick` / both | — | 120 / 150 / 150 | ≤ 15 MB |
+| `showcase-gravity-post` | `A3D_QR_ROUTE_GRAVITY_POST` | `pod.state === "in-flight" && pod.launchedBy === "keyboard"`, 10 s | `03-mid`: image check in the scorecard builder, every planet rect in `framing.planetRects` has lit-half mean luma ≥ 40/255 (no black planets) | `aim-drag` / both | `{ 0.95, 1500, "space" }` | 100 / 120 / 120 | ≤ 15 MB (from 46.8 MB) |
+| `showcase-courier-rush` | `A3D_QR_ROUTE_COURIER_RUSH` | `delivery.completed >= 1`, 45 s | every shot: default canvas check (no override) | `steer-pedals` / landscape | — (must fail on the 0.968 black frame) | 150 / 300 / 300 | ≤ 15 MB |
+| `showcase-pulse-tunnel` | `A3D_QR_ROUTE_PULSE_TUNNEL` | `gates.passedOnBeat >= 2 && fx.liveCount > 0`, 12 s | mobile `03-mid`: `framing.canvasMatchesViewport === true` (CSS size = viewport ± 1 px) | `lane-swipe` / both | — | 120 / 200 / 200 | ≤ 12 MB |
+| `showcase-mech-hangar` | `A3D_QR_ROUTE_MECH_HANGAR` | `combat.lastHit === "heavy" && fx.liveCount > 0`, 20 s | `02b-arena-opening`: `loading.sceneId === "pit"`; every shot: `loading.fetchCount.mechHeroDecimated === 1` | `dpad-4btn` / landscape | — | 150 / 250 / 250 | ≤ 15 MB (from 28.5 MB) |
+| `showcase-vault-breakers` | `A3D_QR_ROUTE_VAULT_BREAKERS` | `table.bumperHitsThisBall >= 1 && fx.liveCount > 0`, 20 s | `03-mid`: `ball.inPlay === true` | `flippers` / portrait | — | 100 / 100 / 100 | ≤ 15 MB |
+| `showcase-rooftop-buckets` | `A3D_QR_ROUTE_ROOFTOP_BUCKETS` | `shot.result === "make" && characters.skinnedVisible >= 2`, 20 s | `05-charge`: `shot.meter > 0.5` | `aim-drag` / both | — | 150 / 200 / 200 | ≤ 15 MB |
+| `showcase-gallery-shift` | `A3D_QR_ROUTE_GALLERY_SHIFT` | `guard.state === "alert" && fx.conesVisible >= 1`, 30 s | `03-mid`: `characters.thiefTracksApplied > 0 && characters.thiefYawErrorDeg <= 15` (C-19 `animationState().tracksApplied`) | `twin-stick` (move only) / both | `{ 0.93, 1500, "night interior" }` | 150 / 250 / 250 | ≤ 15 MB |
+| `showcase-deep-recovery` | `A3D_QR_ROUTE_DEEP_RECOVERY` | `salvage.grappled >= 1`, 40 s | every shot: `render.readbacksThisFrame === 0` (C-28 counter via C-31 `frame`) | `twin-stick` / both | `{ 0.95, 1500, "deep water" }` | 150 / 200 / 200 | ≤ 15 MB |
+| `showcase-patrol-wing` | `A3D_QR_ROUTE_PATROL_WING` | `drones.hitsThisSortie >= 1 && fx.liveCount > 0`, 30 s | `03-mid`: `rings.inFrame >= 1 && flight.throttle > 0.4` | `flight` / landscape | — | 150 / 230 / 230 | ≤ 15 MB |
+| `showcase-bank-shot` | `A3D_QR_ROUTE_BANK_SHOT` | `table.pottedThisShot >= 1`, 15 s (today's `until` on `__BANK_SHOT_EVIDENCE__.potted` moves to the route `table` section) | `03-mid`: `balls.maxAngularSpeed > 0` (balls roll) | `aim-drag` / both | — | 100 / 120 / 120 | ≤ 12 MB |
+| `showcase-orbital-defense` | `A3D_QR_ROUTE_ORBITAL_DEFENSE` | `fx.explosionsLive >= 1`, 20 s | `03-mid`: `framing.dronesUnderHud === 0` (drone screen bboxes vs `hudSelectors` rects) | `twin-stick` / both | `{ 0.95, 1500, "space" }` | 80 / 80 / 80 | ≤ 12 MB |
 
 A route that cannot publish a listed field must add it to its evidence section in the same PR; renaming a field requires updating this table.
 
-### 7.3 Scorecard — `apps/<id>/art/scorecards/<sha>.json` (schema in `tools/quality-gate/src/scorecard.ts`, internal)
+### 7.3 Scorecard — `apps/<id>/art/scorecards/<round>-<sha>.json` (schema in `tools/quality-gate/src/scorecard.ts`, owner 14, internal)
 
 ```ts
-import type { GameJudgement, JudgeIdentity, EvidenceEnvironment } from "./types";  // tools/quality-gate/src/types.ts, PRD 12 §7
+import type { GameJudgement, JudgeIdentity, PanelRoundRecord } from "./contracts";  // C-32, tools/quality-gate/src/contracts.ts (PRD 12, PR 0a)
 
 export interface GameScorecard {
   readonly schema: "aura3d.game-scorecard/1";
   readonly gameId: string;
   readonly commit: string;
-  readonly round: number;                              // 1 or 2 (§6.3 rejection loop)
+  readonly round: string;                              // checkpoint id, e.g. "IC-4" (C-32 PanelRoundRecord.round)
+  readonly countedRound: 0 | 1 | 2;                    // 0 = baseline or engine-pending (§6.3); 1 or 2 = counted rejection-loop round
+  readonly qrFlags: readonly string[];                 // resolved flags of the judged capture (C-31)
+  readonly enginePending: readonly string[];           // integrated-critical contracts still on stubs in this round (§12.3), from diagnostics().degradations
   readonly captureRunId: string;                       // GitHub Actions run id
-  readonly env: EvidenceEnvironment;
+  readonly env: { readonly runner: string; readonly gpu: string; readonly browser: string };   // from capture report.environment
   readonly vision: readonly GameJudgement[];           // one per viewport
   readonly human: readonly {
     readonly judge: JudgeIdentity;
@@ -1058,8 +1184,12 @@ export interface GameScorecard {
 }
 ```
 
-`pnpm exec tsx --tsconfig tsconfig.base.json tools/quality-gate/src/scorecard.ts --game <id> --run <runId>` (new file; `tools/*` is not a pnpm workspace member, so `--filter` does not apply; wired as root script `quality:scorecard`) builds the file from the capture run, the PRD 12 panel record and the human-review form export,
-computes the §6.3 verdict, and refuses to write `accepted` if any required field is missing.
+`pnpm exec tsx --tsconfig tsconfig.base.json tools/quality-gate/src/scorecard.ts --game <id> --run <runId> --round <IC-k>` (new file; `tools/*`
+is not a pnpm workspace member, so `--filter` does not apply; the root script `quality:scorecard` is a root-manifest request to PRD 15, R-14-04,
+and the direct command works without it) builds the file from the capture run, the C-32 `PanelRoundRecord` of that checkpoint
+(`benchmarks/quality-rebuild/history/rounds/IC-<k>.json`, PRD 12), and the human-review form exports. It computes the §6.3 verdict, runs
+`canvasBlankCheck` on the shot PNGs with the `hudSelectors` rects masked, sets `countedRound`/`enginePending`, and refuses to write `accepted` if
+any required field is missing or the round is not a G-PANEL round. Standalone use (no PRD 12 record yet): `--panel tests/qr/prd14/fixtures/<file>.panel.json`.
 
 ### 7.4 `route-health.json` change (every game)
 
@@ -1079,9 +1209,9 @@ Removed from `route-health.json`: free-text quality claims (`claim`, `systems` p
 ### 7.5 Removed from routes (all 18)
 
 - `?capture=review`, `?capture=overview`, `?capture=combat-impact`, `?auraTestDriver`, `?spotlightProbe`, `?juiceProbe`, `?venuePlate`, `?arena=candidate`,
-  `?debug=animation` code paths (ignored with a warning by PRD 09 `captureFromUrl`).
-- Route evidence globals (`__AURA_CLASH_ARENA_PROOF__`, `__MECH_HANGAR_EVIDENCE__`, `__COURIER_RUSH_EVIDENCE__`, … 31+), kept one release as PRD 09 legacy
-  aliases, then deleted.
+  `?debug=animation` code paths (ignored with a warning by C-24 `captureFromUrl`, real in the PR 0a stub).
+- Route evidence globals (`__AURA_CLASH_ARENA_PROOF__`, `__MECH_HANGAR_EVIDENCE__`, `__COURIER_RUSH_EVIDENCE__`, … 31+): never in `src/v2/`;
+  they remain only in the frozen `src/legacy/` (which `games.json` `evidenceGlobal` keeps reading for flag-off captures) and are deleted with it.
 - `scripts/write-performance-report.ts` (13 copies), route `*-audio.ts` wrappers (17), route spark pools (≥ 9), route `togglePause` (11), route
   `matchMedia('(prefers-reduced-motion)')` (17).
 - `scripts/build-models.mjs` / `build-*.py` outputs registered as release hero/world assets (Mech, Deep, Bank, Vault, Gallery, Siege, Aurora, Patrol,
@@ -1089,30 +1219,52 @@ Removed from `route-health.json`: free-text quality claims (`claim`, `systems` p
   art-direction validator as visible assets.
 - `scripts/build-sfx.mjs` / `build-music.mjs` synthesized audio, except where the art direction declares a chiptune style (none of the 18 does).
 
-### 7.6 Engine APIs consumed (owned elsewhere)
+### 7.6 Engine APIs consumed (owned elsewhere; full contract table in §12)
 
-| Need | Owner | API (as specified there) |
-|---|---|---|
-| `createGame`, shell, session hit-stop, capture contract, evidence beacon, `game.fx`, `GameSoundEngine`, HUD kit, touch presets | PRD 09 | `createGame(options)` §7.1, `session.hitStop`, `captureFromUrl`, `publishEvidence`, `sound.engine` |
-| Camera rigs and layers | PRD 08 | `rigs.chase/flight/fighting/shoulder/orbit/topDown/altitude/static`, `addLayer`, `AuraTraumaLayer`, `AuraPunchLayer` |
-| Quality tiers, governor, frame timing | PRD 11 | `quality.set/lock/onChange`, `diagnostics().frameTiming` |
-| HDR, exposure, DPR policy, additive blend, primitive tessellation, crease normals, context-loss restore | PRD 01 | `AuraQualityTier`, renderer options |
-| Ambient additive to IBL, environment background, shadow strength 1, caster fit, CSM on root, spot priority, multi-caster, SSR, contact shadows, clustered lights | PRD 02 | `environments.hdri/preset`, `effects.screenSpaceReflections`, `effects.contactShadows`, `lights.*({ shadow })` |
-| Bloom threshold/knee, real AA, AO, look presets, speed streaks | PRD 03 | `effects.*`, post tiers |
-| Texture-preserving tint with opacity, material variants, rim term, sheen, clearcoat, transmission, KTX2 | PRD 04 | `AuraModelMaterialOverride`, `setMaterialVariant` |
-| Asset admit/optimize/look-dev/budget; kits K1–K9 admission | PRD 05 | `aura3d assets admit|optimize|lookdev|budget` |
-| Skinned shadows, empty-pose fix (C16), retarget, IK | PRD 06 | `AuraActorAnimationFrame` |
-| Particles, flipbooks, trails, sky, fog, god rays, rain/snow | PRD 07 | `effects.particles/flipbook/trail`, sky presets |
-| Terrain, scatter, spline roads, ocean, underwater, kits | PRD 10 | `world.terrain`, `world.water`, `world.kit` |
-| Capture PR-build, scenarios, HUD masks, judge records | PRD 12 | `capture-games.mjs --pr-build`, `PanelRoundRecord` |
-| Templates and skills carrying pilot patterns | PRD 13 | `create-aura3d` game templates |
-| `@aura3d/game` packaging, deprecation calendar | PRD 15 | package layout |
+Names used in the per-game plans map to contracts as follows: "HUD kit" = C-24 `Hud`/`HudMountOptions`; "`GameSoundEngine`" = C-25
+`createGameSoundEngine`/`GameSound`; "`game.fx`" = C-24 `GameFxLayer`; "`rigs.*`" = C-22 `app.camera.rigs`; "`sound.engine`" = C-25 `engine()`.
+
+| Need | Contract (provider lane) | Surface used by v2 routes | What the PR 0a stub gives this lane on day 0 |
+|---|---|---|---|
+| Shell, session, hit-stop, HUD, touch, capture context, beacon, `game.fx` | C-24 (09) | `createGame`, `session.hitStop/slowMo`, `hud.set`, `captureFromUrl`, `fx.burst/trail` | wraps `createGameApp`; DOM HUD; beacon published; `fx` primitive-pool |
+| Game audio | C-25 (09) | `GameSoundOptions.cues` with `asset` refs, `loop`, `engine`, `music` | wraps `GameAudio.ts`; `engine()` restarts voice on rate change |
+| Camera rigs and layers | C-22 (08) | `app.camera.use(rig)`, `shake`, `punch`, `fovKick`, `rigs.static/fromSpec` | layers and `static`/`fromSpec` real; other factories static + degraded |
+| Time, feel bus | C-23 (08) | `app.time.hitStop`, `app.feel.define/emit` | time controller real; feel channels count only real executions |
+| Quality tier | C-27 (11) | `app.quality.settings`, `?aura3d-quality=` | table real; `auto` → high/medium |
+| Output, exposure, environment background | C-05 (01) | `app.setOutput`, `scene().background({ environment: true })` | maps to today's tone map; Reinhard default at `WebGL2Device.ts:1906` until real |
+| Lighting | C-10 (02) | `lights.*({ shadow })`, `shadow.fit`, `app.lighting.diagnostics()` | `legacy-3.0` model; today's shadow strengths (0.65 default at `ForwardPass.ts:913`, 0.32–0.38 root presets at `index.ts:12966-12968`) until `A3D_QR_LIGHTING` |
+| Post presets, bloom, AA | C-13 (03) | `postPresets["neon-night" \| "arena-fight" \| …]`, `effects.bloom/antiAlias` | preset ids with empty values + `PRESET_PENDING`; legacy chain runs |
+| Materials and overrides | C-15 (04) | `materialOverrides` (`colorMode: "multiply"`), `setMaterialVariant`, `inspectMaterials` | `color` lowers to `setTint`; other fields diagnostic-only |
+| Asset manifest, admission | C-17 (05) | `aura3d assets add/inspect`, 1.1 fields when real | 1.0 writer; reader accepts 1.1 |
+| Animation | C-19 (06) | `crossFadeTo`, `animationState()`, `socket()` | `crossFadeTo` → `node.play`; `socket` valid:false |
+| VFX, sky, fog | C-20, C-21 (07) | `app.effects.*`, `sky.gradient/preetham/hdri`, `app.atmosphere.setFog` | primitive bursts; sky → `sky.dayNight`; linear fog |
+| World queries | C-26 (10) | `app.world.ground()/height()/describeBiome()` | physics raycast or y=0 plane; height 0 |
+| Runtime nodes | C-37 (15) | `app.nodes.add/remove`, `teleport`, `setInstanceTransforms` | `add/remove` remount (`RUNTIME_ADD_REMOUNT`) |
+| Diagnostics | C-31 (12 schema, sections by owners) | `diagnostics().frame/appliedLook/qrFlags/degradations` | `qrFlags`, `degradations` real; other sections null |
+| Looks and lint | C-34 (13) | `lookLint` findings in `check:art-direction` | host real; registered rules only |
+| Capture, rubric, benchmarks | C-33, C-32, C-30 (12) | `capture-games.mjs`, `PanelRoundRecord`, scene G-REF results | today's capture script + `--flags`; types |
+| Codemods | C-39 (15 registry; codemods by lanes, R21) | `core-v2`, `post-v2`, `pin-emissive-defaults`, `animation-3.1`, `camera-cast`, `prd11-batch-optout`, lighting migration | none until each lane ships its codemod |
 
 ## 8. Shader changes
 
-Routes import only `@aura3d/engine` and `@aura3d/game`; there is no route-level GLSL. Every shader below is implemented as a named engine preset by
-the owning PRD, with this PRD supplying the requirement, the consumers and the acceptance shot. GLSL is WebGL2 (`#version 300 es`); the WGSL port
-follows PRD 11.
+Routes import only `@aura3d/engine` and `@aura3d/game`; there is no route-level GLSL and this lane edits no shader file. Each shader below is a
+**request** to the owning lane (R-14-14, §12A.6), filed day 0 with this section as its spec, implemented there behind that lane's flag through
+its contract (C-03 material lobes, C-13 post passes, C-20 particles/ribbons, C-21 sky/fog). The route never waits for it: every subsection names the
+standalone fallback the v2 route ships with on stubs, and the full effect is judged only at checkpoints (integrated). GLSL is WebGL2
+(`#version 300 es`); the WGSL port follows PRD 11.
+
+| § | Effect | Owner / contract | Standalone fallback in the v2 route (no shader) |
+|---|---|---|---|
+| 8.1 | Planet surface, atmosphere, shield | 04 C-03 (+ 01 C-04 additive blend) | K5 albedo + normal maps, night-lights as `emissiveMap` at ≤ 0.6, cloud layer as a second slightly larger sphere with alpha; no rim shell |
+| 8.2 | Aurora ribbon | 07 C-20 ribbons | 2–4 emissive alpha-blended ribbon meshes (authored GLB, UV-scrolled emissive map) |
+| 8.3 | Underwater absorption, caustics, god rays | 07 C-21 (`mode: "absorption"`), C-13; 10 preset | exp2 fog colour-matched to depth bands; no caustics; no god rays |
+| 8.4 | Emissive grid floor | 04 C-03 | grid baked into the floor's emissive texture (2k, mipmapped) |
+| 8.5 | Pinball inserts | none (instances) | as specified |
+| 8.6 | Felt, lacquer, car paint | 04 C-03 sheen/clearcoat | C-15 `clearcoat`/`roughness` fields (diagnostic-only on the stub, recorded) |
+| 8.7 | Synthwave sky | 07 C-21 `sky.gradient` | stub lowers `sky.gradient` to `sky.dayNight` (degraded); route also mounts a backdrop dome GLB with the gradient baked |
+| 8.8 | Ocean | 10 | normal-mapped flat water plane to the fog line |
+| 8.9 | Vision cone | 07 C-20 | additive-free cone mesh with alpha gradient texture, depth write off (C-15 `depthWrite`), no soft depth |
+| 8.10 | Rim term | 04 C-03 | team identity through C-15 material variants only (no tint over MR maps) |
 
 ### 8.1 Planet surface + atmosphere shell (Orbital Defense, Gravity Post) — owner PRD 04 (material preset `material.planet`, `material.atmosphere`)
 
@@ -1123,7 +1275,7 @@ follows PRD 11.
   Terminator band: multiply by `smoothstep(-0.25, 0.1, dot(N, L))` and add a warm tint `vec3(1.0, 0.45, 0.2) * rim * (1.0 - abs(dot(N, L)) * 4.0)` clamped.
 - Shield variant (Orbital): same shell with a hex mask texture, `alpha = rim * hex(uv * 24.0) * (0.3 + hitPulse)`, `hitPulse` a uniform array of 4 impact
   points with `exp(-distance(P, hit_i) * 8.0) * fade_i`.
-- Fallback: no clouds on Low; shell alpha-blended if additive is unavailable (never, after PRD 01).
+- Fallback: no clouds on Low; shell alpha-blended while C-04 additive blending is not real; standalone fallback per the §8 index.
 
 ### 8.2 Aurora ribbon (Aurora Lander) — owner PRD 07 (`effects.auroraRibbon`)
 
@@ -1186,7 +1338,8 @@ albedo and MR maps survive (replaces the tint at `AuraClashArenaApp.ts:3371-3425
 
 ## 9. Rendering changes
 
-No renderer code is changed by this PRD. Each rebuilt route changes only its rendering configuration:
+No renderer code is changed by this PRD. Each rebuilt v2 route changes only its own rendering configuration, through public builders and the
+contracts in §7.6; the same configuration is correct on stubs and on real implementations because it states physical intent:
 
 1. No `lights.ambient`. One shadowed key. `environments.hdri` or a PRD 10 environment preset with `background` per the art direction.
 2. No `renderer.pixelRatio` overrides (delete Skyline's 0.7, Aura Clash's `min(DPR, 1.75)`, Rooftop's review 640 px width); DPR comes from the tier.
@@ -1195,280 +1348,569 @@ No renderer code is changed by this PRD. Each rebuilt route changes only its ren
    ≤ 0.1 on base materials). Remove emissive used as fill light (Deep Recovery rock 0.26–0.46, Mech emissive strips 0.42–2.35, Gallery light-pool discs).
 5. Fog authored in world units with the art direction's visibility distance (e.g. Turbo ~0.02, Courier ~0.03 at scene scale); one fog node per scene.
 6. `castShadow: false` on backdrops, sky plates and distant scatter; no parked nodes far from the play area (PRD 09 FX layer hides instead of parking).
-7. Draw budget per tier enforced by `pnpm check:art-direction` against `diagnostics().drawCalls`.
+7. Draw budget per tier enforced by `node scripts/check-art-direction.mjs` (root alias `pnpm check:art-direction` via R-14-04) against
+   `diagnostics().drawCalls` (C-28 counters, measured).
+8. Every v2 route passes its flag list to `createGame({ qualityRebuild: { flags } })` (C-24) and writes the same list to `games.json` `qrFlags`.
 
 ## 10. Migration plan
 
-1. **Per game branch** `rebuild/<id>` from `main`; one agent owns one game. The rebuild happens in place in `apps/<dir>` (URLs unchanged).
-2. **Preview, not production:** every PR deploys a Vercel preview of the route; capture runs with PRD 12 `--pr-build`. Production keeps the old build
-   until acceptance.
-3. **Showcase visibility:** at Wave 0 every game is set to `qualityGate.status: "in-rebuild"` and `publicShowcase: false` (no exceptions; §7.4 makes
-   `publicShowcase: true` require `accepted`, and `check:route-health` enforces it). `apps/showcase-index` lists in-rebuild games only in a separate
-   "In development" section with no quality claims and no thumbnail taken from a review capture; that section is not a public-showcase listing.
-4. **Swap:** merge to `main` after acceptance; production deploy follows `/Users/gurbakshchahal/AuraOne/AuraOne-Deploy-Final-PERMANENT.md`
-   for any AuraOne-hosted target (this PRD does not define deployment). Tag the pre-rebuild commit `pre-rebuild/<id>`.
-5. **Assets:** promoted assets (§2.4) move to the shared library first; synth release assets are re-tagged `greybox` in the same PR that removes
-   their visible use; byte deletion of unused GLBs happens in Phase 6 after all consumers are gone.
-6. **Kits** are built during the first wave that needs them and admitted before the consuming game starts.
+1. **Route-flag dispatcher, day 0 (T1.10).** In each of the 18 routes: `git mv src/main.ts src/legacy/main.ts` (relative imports re-pathed only);
+   kept gameplay modules moved to `src/gameplay/` with legacy imports re-pathed (no logic change); a new `src/main.ts` (≤ 30 LOC) resolves flags and
+   dynamically imports one entry:
+
+   ```ts
+   // apps/<dir>/src/main.ts — owner 14
+   import { resolveQrFlags } from "@aura3d/engine/contracts";        // packages/engine/src/contracts/flags.ts (CONTRACTS §1.1, PR 0a)
+   const ROUTE_FLAG = "A3D_QR_ROUTE_BANK_SHOT" as const;              // §7.2.1
+   const DEFAULT_ON = false;                                          // flipped to true only after G-PANEL acceptance (step 5)
+   const flags = resolveQrFlags({ url: location.href, env: { VITE_A3D_QR: import.meta.env.VITE_A3D_QR }, options: { [ROUTE_FLAG]: routeFlagFromUrl(location, ROUTE_FLAG) ?? DEFAULT_ON } });
+   void (flags.on(ROUTE_FLAG) ? import("./v2/boot") : import("./legacy/main"));
+   ```
+
+   `routeFlagFromUrl` accepts `?a3d-qr=…,route-bank-shot` and `?a3d-qr=…,A3D_QR_ROUTE_BANK_SHOT` (returns `undefined` when absent). It exists
+   because PR 0a's short-name table has no route names; CCR-14-2 asks for `route-<id>` short names in `resolveQrFlags` (additive), after which
+   the helper is deleted. v2 then passes its own list to `createGame({ qualityRebuild: { flags } })`.
+2. **Trunk-based merges.** No long-lived `rebuild/<id>` branches. Every v2 PR (`qr/prd14/<id>/<topic>`) merges to `main` as soon as its standalone
+   acceptance (§16.1) passes; with the flag off the shipped route is the frozen legacy route, so a v2 merge never changes production.
+3. **Preview, not production:** every PR deploys a Vercel preview; `?a3d-qr=route-<id>` (or `all,route-<id>`) selects v2. The lane workflow
+   `.github/workflows/qr-prd14-games.yml` captures changed routes with `capture-games.mjs` (`QRC_GAMES=<id>`, `QRC_LOCAL_BUILD=true`,
+   `--flags route-<id>`) on macos-14.
+4. **Showcase visibility:** in Phase 1 every game is set to `qualityGate.status: "in-rebuild"` and `publicShowcase: false` (no exceptions; §7.4 makes
+   `publicShowcase: true` require `accepted`, and `scripts/check-route-health.mjs` enforces it). `apps/showcase-index` lists in-rebuild games only in a
+   separate "In development" section with no quality claims and no thumbnail taken from a review capture; that section is not a public-showcase
+   listing.
+5. **Swap:** when a G-PANEL round accepts a game (§6.3), this lane sets `DEFAULT_ON = true` in that route's dispatcher in one PR, and PRD 15 records the
+   route flag's state change at the next checkpoint (CONTRACTS §5.3). Production deploy follows
+   `/Users/gurbakshchahal/AuraOne/AuraOne-Deploy-Final-PERMANENT.md` for any AuraOne-hosted target (this PRD does not define deployment). Tag the
+   pre-swap commit `pre-rebuild/<id>`.
+6. **Legacy removal (Phase 6).** After a route's default has been on for two checkpoints with no attributed regression, delete `src/legacy/`, the
+   dispatcher and `routeFlagFromUrl`; `v2/boot.ts` becomes `main.ts`; the flag is added to `REMOVED_QR_FLAGS` by PRD 15.
+7. **Assets:** promoted assets (§2.4) are admitted for v2 use without touching legacy; synth release assets are re-tagged `greybox` once only legacy
+   uses them; byte deletion of unused GLBs happens in Phase 6 after legacy is gone.
+8. **Kits** are staged from day 0 (Phase 3) in `apps/showcase-kits/`; a game's content tasks (Phase 4) consume whatever is approved and fall back to
+   the §6.4 fallback column for the rest.
+9. **Other lanes' codemods** (R21: core-v2, post-v2, pin-emissive-defaults, animation-3.1, camera-cast, prd11-batch-optout, lighting migration) are
+   run by this lane on `src/v2/**` within 2 working days of each landing. They run on `src/legacy/**` only when a codemod is required to keep legacy
+   compiling, as a declared no-visual-change PR.
 
 ## 11. Backward compatibility
 
+- Flag off (the default until acceptance) serves the frozen legacy route; its only changes are the declared P0 correctness fixes (§14.1), each listed
+  in its PR as a CONTRACTS §6.1 correctness exception so PRD 12 re-baselines that game's flag-off capture.
 - Route URLs are unchanged. `vercel.json` rewrites (`/showcase/aura-clash/:path*`) are kept.
-- Removed query params are ignored with a console warning (PRD 09), not errors, so old links still load the game.
-- `localStorage` best scores, ghosts and settings: keys are versioned (`a3g:<route>:<key>:v2`); v1 values are read once and migrated where the rules did
-  not change (Turbo laps, Aurora best runs, Neon best score); invalidated where physics tuning changes results (Bank Shot rolling resistance, Patrol
-  stall model, Siege one-scene flow), with a one-time "records reset" toast.
-- Legacy evidence globals stay as aliases for one release (PRD 09 §6.5), so `tools/showcase-library/*` gates keep running during migration.
+- Removed query params are ignored with a console warning by C-24 `captureFromUrl` in v2, not errors, so old links still load the game. Legacy keeps
+  honouring them until Phase 6.
+- `localStorage` best scores, ghosts and settings: v2 keys are versioned (`a3g:<route>:<key>:v2`); v1 values are read once and migrated where the rules
+  did not change (Turbo laps, Aurora best runs, Neon best score); invalidated where physics tuning changes results (Bank Shot rolling resistance,
+  Patrol stall model, Siege one-scene flow), with a one-time "records reset" toast. Legacy never reads v2 keys.
+- Legacy evidence globals stay in `src/legacy/` (and `games.json` `evidenceGlobal`) until Phase 6, so `tools/showcase-library/*` gates keep running.
 - Input bindings are unchanged unless a plan says otherwise (Gravity Post gains Enter launch; Gallery facing; nothing is removed).
 
-## 12. Dependencies on other PRDs
+## 12. Contracts consumed / provided (see CONTRACTS.md)
 
-| Game(s) | Blocking (must be merged and green on its benchmark scenes) | Soft (improves target, not blocking) |
+This PRD never depends on another PRD being merged. It consumes contracts, built against their PR 0a stubs, and provides C-35 and the route flags.
+
+### 12.1 Provided
+
+| ID | Surface | Consumers | Stub that must keep working | Real (this lane) | Conformance |
+|---|---|---|---|---|---|
+| C-35 | `GameArtDirection`, `defineArtDirection`, `auditArtDirection`, `ArtDirectionSnapshot`, `ArtDirectionViolation` (§7.1), `GameEntryV2`, `GameAcceptance`, `GameBudgets`, `RouteHealthQualityGate` (§7.2, §7.4) | 12 (scorecards, gates), 13 (templates follow pilot patterns) | PR 0a `packages/engine/src/contracts/art.ts` types + `auditArtDirection` returning `[]` with `PENDING`; `packages/game/src/art/index.ts` keeps exporting every C-35 name with the frozen signature at all times | `packages/game/src/art/{define,audit,snapshot}.ts`, `acceptance/*.ts`; ships unflagged (data/tooling) | `tests/unit/contracts/C-35-art.test.ts` (PRD 15) on stub and real; lane cases `tests/unit/contracts/impl/prd14-art.test.ts` |
+| `A3D_QR_ROUTE_<ID>` ×18 | route flags (§7.2.1) | 12 (checkpoint captures via `games.json` `qrFlags`), 15 (flag-state file, `REMOVED_QR_FLAGS`) | flag off = frozen legacy route, captured at every checkpoint | `src/v2/**` per route | lane browser spec: flag off and flag on both boot to `playing` with 0 errors |
+| C-40 rows `F-14-*` | facts handoff (pilot patterns: art-direction fields, framing values, FX/audio cue sets, tier budgets) | 13 | rows stay `proposed` until a capture run id is cited | appended to CONTRACTS Appendix B | PRD 13 consumes only `verified` rows |
+
+### 12.2 Consumed (all built against PR 0a stubs; no consumption needs a PR 0b seam except where marked)
+
+| ID | Provider | Used for | Stub behaviour this lane relies on (honest) | Effect when real (integrated only) |
+|---|---|---|---|---|
+| C-05 | 01 | `app.setOutput` exposure/tone map, environment background | existing tone map (Reinhard default `WebGL2Device.ts:1906`); DOM overlay; 0b seam for `setOutput` | HDR target, authored exposure honoured, one tone map |
+| C-10 | 02 | key light `shadow`, `fit`, hemisphere, `app.lighting.diagnostics()` | legacy model; unknown fields null | strength 1, CSM, contact shadows, ambient additive to IBL (15 of 18 games) |
+| C-13 | 03 | `postPresets`, bloom threshold/knee, AA mode | preset ids with `PRESET_PENDING`; legacy chain; 0b seam | real bloom threshold, no FXAA over MSAA, AO/SSR |
+| C-15 | 04 | `materialOverrides` with `colorMode: "multiply"`, variants, `inspectMaterials` | `color` → `setTint`; other fields diagnostic-only | textures preserved under tint; clearcoat/sheen/transmission |
+| C-17 | 05 | asset admission for kits and per-game assets | 1.0 writer, 1.1 reader | KTX2/Meshopt derived assets, admission and look-dev records |
+| C-19 | 06 | clip playback, `animationState().tracksApplied` | `crossFadeTo` → `node.play` (immediate switch) | inertialized blends, IK, skinned shadows via C-11 |
+| C-20 | 07 | `app.effects`, behind `game.fx` | primitive-pool bursts via C-37 `add` (remount) | particle pass, flipbooks, ribbons, decals |
+| C-21 | 07 | `sky.*`, `app.atmosphere.setFog` | sky → `sky.dayNight` (degraded); linear fog | Preetham/gradient sky, height/absorption fog |
+| C-22 | 08 | `app.camera.use(rig)`, layers, `rigs.static/fromSpec` | layers real; most factories static + degraded | genre rigs with framing, collision probe |
+| C-23 | 08 | `app.time.hitStop/slowMo`, `app.feel` | time controller real; feel counts only real channels | feel channels execute VFX/audio/post |
+| C-24 | 09 | `createGame`, session, HUD, touch, capture context, beacon, `game.fx` | wraps `createGameApp` (`index.ts:11818`), DOM HUD/shell, beacon published | `packages/game` shell, HUD kit, touch presets |
+| C-25 | 09 | sampled cues, loops, engine RPM, music | wraps `GameAudio.ts`; `engine()` restarts voice | spatial HRTF, limiter, `game-sfx-core` pack |
+| C-26 | 10 | `ground()`, `height()`, `describeBiome()` for terrain-heavy games | physics raycast or y=0; height 0 | terrain, scatter, water, biome rigs |
+| C-27 | 11 | `app.quality.settings`, tier URL | table real; `auto` → high/medium | governor, calibrated tiers, forced-Medium runner gate |
+| C-30 | 12 | read-only: benchmark G-REF results named in §16.2 | registry wraps today's 18 scenes | — |
+| C-31 | 12 schema | `diagnostics().frame/appliedLook/qrFlags/degradations` in evidence and scorecards | `qrFlags`, `degradations` real; others null; 0b seam | measured sections from each owner |
+| C-32 | 12 | `PanelRoundRecord`, `GameJudgement`, categories, verdicts | types + verbatim category list | G-PANEL records at IC-4/8/12 |
+| C-33 | 12 | `capture-games.mjs`, `games.schema.json`, `--flags` | today's script; plugin loading + `--flags` arrive with 0b-3 | step plugins (R-14-01) |
+| C-34 | 13 | `lookLint` findings folded into `check:art-direction` | host real after 0b-1; registered rules only | full rule set |
+| C-37 | 15 | `app.nodes.add/remove` (FX pools), `teleport`, `setInstanceTransforms` | remount with `RUNTIME_ADD_REMOUNT`; 0b seam | subtree add/remove without remount |
+| C-38, C-39 | 15 | app surface members; codemod registry | infrastructure | lanes' codemods (§10 step 9) |
+
+Reached only indirectly, through the public builders and contracts above (this lane imports none of them): C-03 material lobes, C-04 blend
+modes, C-07 tessellation/crease normals, C-09 environment sources, C-11 shadow casters, C-14 temporal history, C-18 deformation, C-28 device
+counters/FrameStats (read through C-31 `frame`), C-29 device lifecycle (surfaced through the C-24 `context-lost` state).
+
+### 12.3 Per-game integrated-critical contracts (replaces the old "blocking dependencies" table; feeds only the §6.3 `engine-pending` rule)
+
+| Game(s) | Integrated-critical (round counts only if these are real in the `all` run) | Integrated-helpful (improve targets; never affect counting) |
 |---|---|---|
-| All (Wave 0) | 01 (DPR, exposure, HDR, blend), 02 (ambient + IBL, shadow 1, fit, spot priority), 03 (bloom, AA), 04 (tint keeps maps + opacity) | 11 tiers |
-| All (Waves 1–4) | 05, 08, 09, 11, 12 | 13, 15 |
-| Bank Shot | 02 spot shadows, 04 sheen/clearcoat | 07 volumetric spot |
-| Turbo Drift | 02 CSM + instanced casters, 07 particles/trails, 10 spline road + terrain + scatter | 03 speed streaks |
-| Aura Clash | 01 side-view preset HDR, 02 skinned casters + SSR, 04 rim, 06 skinned shadows, 07 flipbooks/rain | 10 kit |
-| Orbital Defense | 01 tessellation + additive, 04 planet/atmosphere presets, 07 particles, 13 arena-shooter template | — |
-| Vault Breakers | 02 area/spot key, 04 transmission plastics | 07 trails |
-| Rooftop Buckets | 06 skinned playback + shadows, 07 ribbon, 10 skyline kit | 02 SSR court |
-| Courier Rush | 01 context-loss restore + scene-graph scale, 02 SSR + clustered lights + CSM, 07 rain, 10 city kit | 11 batching |
-| Neon Swarm | 02 SSR + instanced casters, 04 grid floor, 07 particles | 06 player locomotion |
-| Pulse Tunnel | 07 sky gradient + particles, 02 planar/SSR | 10 spline tunnel |
-| Siege Golf | 10 terrain + scatter, 07 debris/dust | 02 CSM |
-| Patrol Wing | 10 ocean + terrain, 07 clouds + trails, 02 CSM | 03 heat haze |
-| Aurora Lander | 07 aurora + particles, 10 terrain extension, 04 tint opacity | — |
-| Gravity Post | 04 planet/atmosphere, 07 ribbons, 11 instancing | 10 space preset |
-| Deep Recovery | 07 underwater fog + god rays + snow, 10 underwater preset + terrain, 02 attached shadowed spot | — |
-| Skyline Runner | 06 rig/playback, 07 snow + per-act fog | 10 parallax backdrop |
-| Blockfall Reactor | 01 crease normals, 02 rect area light + instanced casters, 07 bursts | — |
-| Mech Hangar | 06 mech rig + IK, 02 per-scene lights | 07 smoke |
-| Gallery Shift | 06 empty-pose fix (C16), 02 ≥ 2 shadowed spots + clustered lights, 07 cones | 04 glass transmission |
+| All | C-05 (exposure/HDR), C-10 (IBL + shadow 1), C-13 (bloom/AA), C-15 (texture-preserving tint), C-24, C-25, C-27 | C-22, C-23, C-34 |
+| Bank Shot | C-10 spot shadow, C-03 via C-15 sheen/clearcoat (PRD 04) | C-21 volumetric spot |
+| Turbo Drift | C-10 CSM + instanced casters, C-20 particles/ribbons, C-26 + PRD 10 road/terrain/scatter | C-13 speed streaks |
+| Aura Clash | C-05 HDR, C-10 skinned casters (with C-19), C-13 SSR, C-20 flipbooks, C-21 rain | PRD 10 kit |
+| Orbital Defense | C-04 additive (via C-15 `blend`), C-03 planet/atmosphere (PRD 04), C-20 | — |
+| Vault Breakers | C-10 spot/area key, C-15 transmission | C-20 trails |
+| Rooftop Buckets | C-19 skinned playback, C-10 skinned casters, C-20 ribbons | C-13 SSR court |
+| Courier Rush | C-29 context restore (PRD 11), C-10 clustered lights + CSM, C-13 SSR, C-21 rain | PRD 11 batching |
+| Neon Swarm | C-13 SSR, C-10 instanced casters, C-03 grid floor, C-20 | C-19 locomotion |
+| Pulse Tunnel | C-21 gradient sky, C-20 particles, C-13 SSR | PRD 10 spline tunnel |
+| Siege Golf | C-26 + PRD 10 terrain/scatter, C-20 debris/dust | C-10 CSM |
+| Patrol Wing | PRD 10 ocean + C-26 terrain, C-20 trails, C-21 clouds, C-10 CSM | C-13 heat haze |
+| Aurora Lander | C-20 aurora ribbons + particles, C-26 terrain, C-15 tint opacity | — |
+| Gravity Post | C-03 planet/atmosphere, C-20 ribbons | PRD 10 space preset |
+| Deep Recovery | C-21 absorption fog, C-13 god rays, C-20 snow, PRD 10 underwater preset, C-10 shadowed spot | — |
+| Skyline Runner | C-19 rig playback, C-20 snow, C-21 per-act fog | PRD 10 parallax |
+| Blockfall Reactor | PRD 01 crease normals (C-07), C-10 rect area light + instanced casters, C-20 bursts | — |
+| Mech Hangar | C-19 rig + IK, C-10 per-scene lights | C-20 smoke |
+| Gallery Shift | C-19 empty-pose fix (C16), C-10 ≥ 2 shadowed spots + clustered lights, C-20 cones | C-15 glass transmission |
+
+## 12A. Parallel execution
+
+### 12A.1 Day-0 start conditions
+
+- Required: **PR 0a only** (CONTRACTS §3.9): contract types and stubs, the `packages/game` skeleton with `src/art/index.ts` re-exporting C-35,
+  `tools/quality-gate/src/contracts.ts` (C-32), `tools/quality-rebuild-capture/games.schema.json` with every field optional, lane barrels,
+  `.github/QR_OWNERSHIP.json`. The lane branches from the PR 0a branch the day it is pushed; it does not wait for PR 0a to merge.
+- Not required: any PR 0b part, any other lane's real implementation, PRD 13 templates, PRD 05 admission, PRD 12 step plugins.
+- Calls into C-05, C-13, C-31, C-33 plugins, C-34 and C-37 compile on day 0 against PR 0a types; their browser checks pass once the corresponding 0b
+  part merges (scheduled 2026-10-06..07). No Phase 1 exit criterion depends on them.
+- Agent fan-out on day 0 (all independent, no ordering): 1 infrastructure agent (§14.1 T1.1–T1.9), 18 game agents (one per route: T1.10–T1.12 then
+  that game's Phase 2 and 4 tasks), up to 9 kit agents (K1–K9, Phase 3). Within a game, Phase 4 follows that game's Phase 2; nothing crosses lanes.
+
+### 12A.2 Owned files and directories (exactly CONTRACTS §4.1 row "14" plus the lane-NN rule)
+
+- `apps/showcase-*/` (every showcase app, including `showcase-index`, `showcase-webgpu-particle-lab`, `showcase-cinematic-architecture`, and the new
+  `showcase-kits`), `apps/aura-clash-showcase/`, `apps/world-war-x-showcase/` (owned, not modified by this PRD).
+- `packages/game/src/art/` (except the custodian-owned frozen surface, which PR 0a places at `packages/engine/src/contracts/art.ts`).
+- `tools/quality-rebuild-capture/games.json`; `tools/quality-gate/src/scorecard.ts`; `tools/quality-gate/forms/`.
+- `scripts/check-art-direction.mjs`, `scripts/check-route-health.mjs`.
+- `docs/project/aura3d-quality-rebuild/evidence/games-after/`, `…/evidence/prd14/`, this PRD file.
+- Lane-NN paths: `packages/*/src/lanes/prd14.ts`, `agent-api/compiler/diagnosticOnly.prd14.ts`, `packages/aura3d-cli/src/commands/prd14/`,
+  `.github/workflows/qr-prd14-*.yml`, `tests/qr/prd14/**`, `tests/unit/contracts/impl/prd14-*`.
+- Not owned, and therefore not edited by any task here: `capture-games.mjs`, `steps/`, `games.schema.json`, `quality-rebuild-capture.yml` (12);
+  the rest of `tools/quality-gate/` (12); `packages/game/` outside `src/art/`, `tools/showcase-library/`, `eslint/qr/no-route-capture-flags.js`,
+  `assets/packs/game-sfx-core/` (09); `GameRenderPreset.ts` (11); `aura.assets.json`, `src/aura-assets.ts`, `public/aura-assets/` (05, generated:
+  only regenerated diffs for this lane's ids); root `package.json` (15); `packages/create-aura3d/**` (13); every engine/rendering file.
+  Each former task that edited one of these is now a request in §12A.6 plus an owned-file alternative in §14.
+
+### 12A.3 Feature flags
+
+- 18 route flags `A3D_QR_ROUTE_<ID>` (§7.2.1), owner 14, state file entries maintained by PRD 15 from checkpoint records (CONTRACTS §5.3):
+  `dev` until the game's standalone acceptance passes, `standalone-accepted` after, `integrated-accepted` when a G-PANEL round accepts it,
+  `default-on` after two clean checkpoints (§10 steps 5–6).
+- v2 routes opt into engine lane flags explicitly per CONTRACTS §5.4 (`createGame({ qualityRebuild: { flags } })`, same list in `games.json`
+  `qrFlags`); checkpoints also capture each route with `all` and `none`.
+- No other flag is introduced. The C-35 validator and the scorecard tooling are unflagged (data/tooling).
+
+### 12A.4 Stubs used and how standalone results stay honest
+
+All C-NN stubs in §12.2. Rules: (1) every scorecard records `qrFlags` and the `degradations` list from the capture (C-31), so a standalone frame is
+never mistaken for an integrated one; (2) standalone visual changes are reported as "standalone screening", never as quality claims; (3) where a
+stub is known to cost performance (C-37 remount, C-25 `engine()` restart), the route measures it and uses the §6.8 G13 fallback rather than
+hiding the cost; (4) route-local stand-ins for missing engine features (G12 rigs, G13 FX pool, baked gradients in §8) are listed in each route's
+`art/direction.ts` `standIns[]` field (validator-checked) and deleted when the real contract passes the same test.
+
+### 12A.5 Integration checkpoints (where integrated acceptance is evaluated; never blocks)
+
+| Checkpoint | What PRD 14 gets evaluated | Effect |
+|---|---|---|
+| IC-0 2026-10-08 | 18 legacy routes, flags `none`, vs `85aafcd0` (identity) | round-0 scorecards (`countedRound: 0`) |
+| IC-1..IC-3, IC-5..7, IC-9..11 (weekly Thursdays) | every route with `none`, `all`, and its own `qrFlags`; vision screening only | findings into scorecards; `qr-ic-regression` issues filed against the owning lane by leave-one-out |
+| G-PANEL IC-4 2026-11-05 | Wave 1 pilots (and any game whose standalone acceptance passed) | §6.3 accept / reject / `engine-pending` |
+| G-PANEL IC-8 2026-12-03 | Wave 2 + round 2 of rejected pilots | same |
+| G-PANEL IC-12 2026-12-31 and later | Waves 3–4 + round 2s | same; fleet criteria §21.2 evaluated from IC-12 on |
+
+### 12A.6 Requests to other lanes (non-blocking; `qr-request`, `to:prdNN`, CONTRACTS §6.5) and CCRs
+
+| Id | To | File / surface | Exact change | Serves | Meanwhile (this lane, owned files) |
+|---|---|---|---|---|---|
+| R-14-01 | 12 | `tools/quality-rebuild-capture/steps/acceptance.mjs` (new, 12) + `capture-games.mjs` | step plugin that calls `@aura3d/game/art` `evaluateRequiredCondition` before each named shot and `canvasBlankCheck` per shot; emit `capture-failed` with expr and last scope | C-33, C-35 | `tests/qr/prd14/browser/required-conditions.spec.ts`; scorecard builder runs `canvasBlankCheck` on PNGs |
+| R-14-02 | 12 | `.github/workflows/quality-rebuild-capture.yml` | add `workflow_call` with `games`, `qr_flags`, `strict` inputs; 30-day artifact retention; `apps/**` path filter computes changed game ids | C-33 | `.github/workflows/qr-prd14-games.yml` runs `capture-games.mjs` directly on macos-14 |
+| R-14-03 | 12 | G-PANEL schedule | include this lane's supplemental human play sessions (≥ 3 humans total, §6.3) in the IC-4/8/12 rounds; publish `history/rounds/IC-<k>.json` within 2 days | C-32 | scorecards accept `--panel` fixture files |
+| R-14-04 | 15 | root `package.json` (root-manifest batch) | scripts `check:art-direction`, `check:route-health`, `quality:scorecard` | — | run `node scripts/…` / `pnpm exec tsx …` directly |
+| R-14-05 | 09 | `tools/showcase-library/game-capture-parity.mjs` | `--fail-on-any` and `--routes` (today only `--fail-on-art`, `:30`; root script at `package.json:691`) | C-24 | `check-art-direction.mjs` `capture-branch` static scan of `src/v2/**` |
+| R-14-06 | 11 | `packages/engine/src/production-runtime/GameRenderPreset.ts:373` (and `:450`) | side-view/game presets take `targetFormat` from C-05 `probeHdrTargetFormat` instead of `"rgba8"` | C-05, C-27 | Aura Clash v2 does not use the preset (§6.9.3) |
+| R-14-07 | 05 | `assets/library/kits/`, admission | host K1–K7/K9 kits; admit K1 at 2k; confirm `public/aura-assets/` writes by `aura3d assets add` for lane-14 ids fall under the §4.3 generated-file rule | C-17 | stage in `apps/showcase-kits/`; three r185 look-dev page |
+| R-14-08 | 13 | arena-shooter and other game templates | adopt Orbital/pilot v2 code as template references; consume `F-14-*` rows | C-40 | Orbital v2 built on `createGame` directly |
+| R-14-09 | 09 | `assets/packs/game-sfx-core/` | include cues named in the 18 art directions' `audio[]` | C-25 | per-route licensed samples in `apps/showcase-kits/K8/` |
+| R-14-10 | 08 | rig factories | `chase/flight/follow2d/fighting/shoulder/orbit/topDown/altitude` accept `framing.subjectHeightFraction`; evidence fills `subjectScreenHeightFraction` | C-22 | route-local rigs (G12) |
+| R-14-11 | 07 | `effects.auroraRibbon`, vision-cone volume, `sky.gradient` bands, absorption fog, god rays | §8.2, §8.3, §8.7, §8.9 specs | C-20, C-21, C-13 | §8 fallback column |
+| R-14-12 | 04 | `material.planet`, `material.atmosphere`, `material.gridFloor`, `rim` | §8.1, §8.4, §8.10 specs | C-03, C-15 | §8 fallback column |
+| R-14-13 | 10 | ocean (`world.water({ mode: "ocean" })`), spline road, terrain splat, underwater preset | §8.8, §6.9.2, §6.9.14 | C-26 | flat normal-mapped water; offline road GLB; exp2 fog |
+| R-14-14 | 01, 04, 07, 10 | §8 shader index | file each §8 row as its own issue on day 0 | as listed | as listed |
+| CCR-14-1 | 15 + 14 + 12 | `packages/engine/src/contracts/art.ts` | add optional `GameBudgets.transferToPlayableMBByTier` | C-35 | scorecard reads §17 table constant |
+| CCR-14-2 | 15 + 01 + 12 | `packages/engine/src/contracts/flags.ts` | `resolveQrFlags` URL list accepts `route-<id>` short names for `A3D_QR_ROUTE_*` | flags | `routeFlagFromUrl` helper (§10 step 1) |
 
 ## 13. Implementation phases
 
-1. **Phase 0 — Program infrastructure.** `@aura3d/game/art` types and validator; `games.json` acceptance fields; scorecard builder; human-review form;
-   `check:art-direction`, `check:route-health`; reference boards and art direction contracts drafted for all 18 and approved by a human.
-   *Entry:* Phase 0 row of §6.5.
-   *Exit:* 18 `art/direction.ts` files validate; the scorecard builder, fed the fixture `tests/fixtures/quality-gate/run-37289688772.panel.json`
-   (research/21 visual scores and research/20 non-visual scores transcribed verbatim into a PRD 12 `PanelRoundRecord`), writes 18 `rejected`
-   scorecards whose per-category values equal `_sections/B` §1 exactly (rounding ±0.05); a fixture route with an ambient light fails `check:art-direction`;
-   the Courier black-frame fixture fails `canvasBlankCheck`.
-2. **Phase 1 — Wave 0 re-baseline.** After the Wave 0 engine set (§6.5) merges: delete debug/marketing UI, dead modules, capture forks and hidden
-   legacy nodes in all 18; fix the P0 correctness bugs (Gallery facing, Bank rotation, Gravity keyboard launch, Skyline lives, Turbo label, Pulse
-   mobile canvas, Siege scene rebuild, Deep volumetric fog, Courier draw count); no art changes. Re-capture and judge.
-   *Exit:* 18 round-0 scorecards committed; per-game delta vs research/21 recorded; 0 console/page errors on all 18; the five P0 performance
-   fixes measured on the runner at 1920×1080 (Deep Recovery p50 ≤ 50 ms per PRD 11's interim exit, Siege p95 ≤ 50 ms, Courier and Gravity
-   ≤ 300 draws, Blockfall hidden nodes gone); the full PRD 11 §17.2 gate is recorded for every game and enforced only after PRD 11 forced-Medium lands;
-   games still failing it are listed by name in their scorecard `findings[]` with the wave that fixes them.
-3. **Phase 2 — Pilots (Wave 1).** Bank Shot, Turbo Drift, Aura Clash, Orbital Defense rebuilt per §6.9.1–6.9.4; kits K1 (subset), K2, K3, K4, K5 (subset),
-   K7 (subset), K8, K9 admitted.
-   *Exit:* ≥ 3 of 4 pilots accepted (§6.3); a written pilot retrospective (what engine gaps blocked, which defaults were still wrong) filed as issues
-   against PRDs 01–13; PRD 13 templates updated from the pilot code.
-4. **Phase 3 — Wave 2.** Vault, Rooftop, Courier, Neon, Pulse, Siege. *Exit:* ≥ 5 of 6 accepted; the sixth either accepted in round 2 or withdrawn (each withdrawal counts against §21's fleet limit of 3).
-5. **Phase 4 — Wave 3.** Patrol, Aurora, Gravity, Deep. *Exit:* all 4 accepted or withdrawn after round 2.
-6. **Phase 5 — Wave 4.** Skyline, Blockfall, Mech, Gallery. *Exit:* all 4 accepted or withdrawn after round 2.
-7. **Phase 6 — Fleet sign-off and regression lock.** Golden captures of every accepted game registered with PRD 12 G-REG; perf budgets in CI;
-   unused GLBs deleted; legacy evidence aliases removed. *Exit:* fleet criteria §21 met on one commit; two consecutive green capture runs.
+Every phase below starts on day 0 except where a dependency is inside this lane (marked "after <phase> for the same game"). Exit criteria are
+standalone unless labelled "integrated"; integrated criteria are evaluated at checkpoints and never gate a merge or the next phase.
+
+1. **Phase 1 — Program infrastructure, flags and baseline (day 0; target exit 2026-10-12).** C-35 implementation, scorecard builder, human form,
+   lane CI, `games.json` V2 data, route-health gate, route-flag dispatchers in all 18 routes, art-direction contracts and reference boards for all 18,
+   declared P0 correctness fixes in legacy.
+   *Exit (standalone):* 18 `art/direction.ts` files validate; `tests/unit/contracts/C-35-art.test.ts` passes on stub and real; the scorecard builder fed
+   `tests/qr/prd14/fixtures/run-37289688772.panel.json` (research/21 visual and research/20 non-visual scores transcribed verbatim into a C-32
+   `PanelRoundRecord`) writes 18 `rejected` scorecards whose per-category values equal `_sections/B` §1 within ±0.05; the ambient-route fixture fails
+   `check-art-direction.mjs`; the Courier black-frame fixture fails `canvasBlankCheck`; all 18 routes boot to `playing`-equivalent readiness with
+   the flag off and match their pre-move capture (same `evidenceGlobal` values, no new console errors); each P0 fix passes its test (§14.1).
+   *Integrated:* IC-0 round-0 scorecards recorded.
+2. **Phase 2 — v2 shell port, all 18 in parallel (day 0, one agent per game).** `src/v2/boot.ts` on `createGame`; kept gameplay wired; scene modules
+   authored to the art direction using existing admitted or greybox assets; no ambient, no capture branches, no debug UI; route-local rigs (G12);
+   `game.fx` FX; sampled audio from existing route samples; HUD on C-24; `requiredConditions` sections published.
+   *Exit (standalone, per game):* §16.1 S1–S9 pass with flags `route-<id>`; `src/v2/boot.ts` ≤ 400 LOC; legacy untouched (diff limited to
+   moves). *Integrated:* screening scores recorded at the next weekly IC.
+3. **Phase 3 — Kits (day 0, kit agents).** K1–K9 sourced, licensed, staged in `apps/showcase-kits/`, approved on the three r185 look-dev page,
+   admitted per consumer with `aura3d assets add`.
+   *Exit (standalone, per kit):* `kit.json` complete (licence, source, hash, tris, texture sizes per file); every file approved on the three r185
+   turntable by a human; budgets in §6.4 met; zero agent-synthesized hero/world geometry.
+4. **Phase 4 — Per-game content and genre work (after Phase 2 for the same game).** The §6.9 plan for that game: asset swaps, materials (C-15),
+   lighting (C-10), camera framing, VFX, audio, juice, HUD, tech-art budgets; stand-ins listed in `standIns[]`.
+   *Exit (standalone, per game):* §16.1 S1–S12 pass; §17 standalone budgets met with flags `none`; every §6.9 bullet either done or listed as a
+   stand-in with its R-14-xx. *Integrated:* first counted G-PANEL round per §6.5.
+5. **Phase 5 — Review rounds (integrated, checkpoint-driven).** Each G-PANEL round (IC-4, IC-8, IC-12, …) judges every game whose Phase 4 exit
+   passed; rejected games get a findings list and one more counted round; `engine-pending` rounds do not count. Pilot retrospective after IC-4
+   (filed as `qr-ic-regression` / `qr-request` issues and C-40 rows).
+   *Exit (integrated):* each game accepted or withdrawn per §6.3.
+6. **Phase 6 — Fleet lock and legacy removal (per game, after that game's acceptance + two clean checkpoints).** Route default flipped, then
+   `src/legacy/` deleted; goldens registered with PRD 12 G-REG (request, R-14-03 thread); unused GLBs deleted; fleet budgets in lane CI.
+   *Exit (integrated):* §21.2 fleet criteria met on one commit; two consecutive green fleet capture runs.
 
 ## 14. Task checklist
 
-### 14.1 Phase 0 — infrastructure
+Conventions: every task is executable by one agent in owned files only. "Test" names the file that must exist and pass; unit tests under
+`tests/qr/prd14/` run in `.github/workflows/qr-prd14-games.yml` (`pnpm exec vitest run tests/qr/prd14`, macos-14); browser specs under
+`tests/qr/prd14/browser/` run there with Playwright against a local build of the route (remote runner only, never local). `<dir>` = route dir,
+`<id>` = `games.json` id, `<ID>` = route flag suffix (§7.2.1).
 
-- [ ] Create `packages/game/src/art/index.ts` exporting `GameArtDirection`, `GameVisualCategory`, `ArtAssetRole`, `defineArtDirection`, `auditArtDirection`
-      (§7.1); add `./art` to `packages/game/package.json` exports. Test `packages/game/src/art/art.test.ts`: one failing fixture per validator rule
-      (fewer than 3 references, `fill: "ambient"`, hero without `minTriangles`, `textureSet: "BC"` on a hero, 2 shadowed directionals) and one passing fixture.
-- [ ] Add test `packages/game/src/art/categories.test.ts` asserting `GameVisualCategory` equals `GAME_VISUAL_CATEGORIES` from `tools/quality-gate/src/types.ts`.
-- [ ] Implement `auditArtDirection(direction, snapshot)` reading `app.diagnostics()` lights, environment, model stats and draw calls; unit test with a
-      synthetic snapshot containing `hasAmbient: true` and an unlit 4-tri model returns `ambient-light` and `asset-unlit-card`.
-- [ ] Add `scripts/check-art-direction.mjs` + `pnpm check:art-direction --routes <ids>`: builds each route, mounts it headless on the remote browser lane,
-      runs `auditArtDirection`, exits 1 on any violation. Fixture route `tests/fixtures/art-direction/ambient-route/` must fail.
-- [ ] Add `scripts/check-route-health.mjs` + `pnpm check:route-health`: fails when `publicShowcase: true` and `qualityGate.status !== "accepted"`, or
-      `acceptedBy` is empty, or free-text `claim`/`systems` fields remain. Fixture tests under `tests/unit/scripts/check-route-health.test.ts`.
-- [ ] Extend `tools/quality-rebuild-capture/games.json` entries with `wave`, `rebuildTier`, `artDirection`, `requiredConditions`, `canvasBlankCheck`,
-      `acceptance`, `budgets` (§7.2) for all 18; validate in `capture-games.mjs` `validateGames()` (fail on missing fields).
-- [ ] In `capture-games.mjs`, evaluate each `requiredConditions[i].expr` in page context before the named shot; on timeout record verdict
-      `capture-failed` with the expression and last beacon state. Unit test with a stub page.
-- [ ] In `capture-games.mjs`, compute `canvasBlankCheck` on the canvas bounding rect with `hudSelectors` masked; a frame with dark fraction ≥ 0.9 and
-      < 2,000 colours fails even if `likelyBlank` is false. Regression fixture: Courier Rush 1920 `03-mid` from run 37289688772 (meanLuma 1.7,
-      darkFraction 0.968) must fail.
-- [ ] Add `tools/quality-gate/src/scorecard.ts` (§7.3) with `buildScorecard(runId, panelRecord, humanForms)` and `verdict(scorecard, acceptance)`;
-      tests: all-7 vision + all-7 human → accepted; one critical category at target − 0.5 → rejected; missing human notes → throws.
-- [ ] Add `tools/quality-gate/forms/human-review.schema.json` and a static form page `tools/quality-gate/forms/index.html` that exports the `human[]`
-      entry JSON (no network calls).
-- [ ] `.github/workflows/quality-rebuild-capture.yml`: matrix over `games.json` ids filtered by changed paths (`apps/<dir>/**`), PR-build mode (PRD 12),
-      artifacts `evidence/games/<id>/<run>/` retained 30 days; job summary links the contact sheet.
-- [ ] Write `apps/<dir>/art/direction.ts` and `apps/<dir>/art/references/references.json` (≥ 3 entries) for all 18 games from §6.9; human approval
-      recorded as a PR review on each file.
-- [ ] Seed `apps/<dir>/art/scorecards/c08d8acb.json` for all 18 from research/20/21 data with `verdict: "rejected"` (baseline).
+### 14.1 Phase 1 — infrastructure, flags, baseline (day 0)
 
-### 14.2 Phase 1 — Wave 0 (all 18; one PR per game)
+Infrastructure agent:
+- [ ] T1.1 `packages/game/src/art/define.ts`: `defineArtDirection(direction)` implementing every §7.1 validator rule; throws `AuraArtDirectionError`
+      listing all violations. `packages/game/src/art/index.ts` re-exports it in place of the PR 0a stub. Test `tests/unit/contracts/impl/prd14-art.test.ts`:
+      one failing fixture per rule (fewer than 3 references; `fill: "ambient"`; hero without `minTriangles`; `textureSet: "BC"` on a hero; 2 shadowed
+      directionals in a non-stealth genre; `standIns[].request` not matching `R-14-NN`) and one passing fixture.
+- [ ] T1.2 Same test file: assert the `GameVisualCategory` union (as a runtime list exported for tests, `GAME_VISUAL_CATEGORY_LIST`) deep-equals C-32
+      `GAME_VISUAL_CATEGORIES` imported from `tools/quality-gate/src/contracts.ts`, in order, 27 entries.
+- [ ] T1.3 `packages/game/src/art/snapshot.ts` `snapshotForAudit(app, manifest)` and `audit.ts` `auditArtDirection(direction, snapshot)`; lights from the
+      authored scene snapshot, `hasAmbient` from any `lights.ambient` node, models from the manifest's triangle/texture metadata, `drawCalls` from
+      `app.diagnostics()`. Test `tests/qr/prd14/unit/audit.test.ts`: a synthetic snapshot with `hasAmbient: true`, a 4-tri unlit model and an
+      `emissiveIntensity: 0.4` non-practical material returns exactly `ambient-light`, `asset-unlit-card`, `emissive-fill`.
+- [ ] T1.4 `packages/game/src/art/acceptance/requiredConditions.ts` `evaluateRequiredCondition` (grammar §7.1; hand-written tokenizer + Pratt parser,
+      no `eval`/`Function`). Test `tests/qr/prd14/unit/required-conditions.test.ts`: every `expr` in §7.2.1 parses; `fx.liveCount > 0` is true for
+      `{ fx: { liveCount: 3 } }`; unknown path returns `unknown-path`; `constructor`/`__proto__` path segments are rejected as `parse-error`.
+- [ ] T1.5 `packages/game/src/art/acceptance/canvasBlankCheck.ts` per §7.1. Test with fixtures `tests/qr/prd14/fixtures/courier-1920-03-mid.png`
+      (from run 37289688772: meanLuma 1.7, darkFraction 0.968) fails with the defaults (0.9, 2,000); the `games.json` test (T1.13) asserts
+      Courier has no override; `bank-shot-1920-03-mid.png` passes with the defaults; an override above 0.97 is rejected by the validator.
+- [ ] T1.6 `tools/quality-gate/src/scorecard.ts`: `buildScorecard({ runReport, panel, humanForms, round })` and `verdict(scorecard, acceptance,
+      integratedCritical)` implementing §6.3 including `countedRound` and `enginePending` from capture `degradations`; CLI per §7.3. Tests
+      `tests/qr/prd14/unit/scorecard.test.ts`: all-7 vision + all-7 humans on a G-PANEL round → `accepted`; same on a screening round → refuses;
+      one critical category at target − 0.5 → `rejected`; integrated-critical contract listed in `degradations` → `countedRound: 0`; missing human
+      notes → throws.
+- [ ] T1.7 `tools/quality-gate/forms/human-review.schema.json` + `tools/quality-gate/forms/index.html` (static, no network calls; exports one
+      `human[]` entry as a JSON download). Test: the schema validates the exported example `tools/quality-gate/forms/example.json`.
+- [ ] T1.8 `scripts/check-route-health.mjs`: fails when `publicShowcase: true` and `qualityGate.status !== "accepted"`, when `acceptedBy` is empty or
+      contains an agent id, or when free-text `claim`/`systems` fields remain. Test `tests/qr/prd14/unit/check-route-health.test.ts` with fixture dirs.
+- [ ] T1.9 `scripts/check-art-direction.mjs --routes <ids>`: (a) static `capture-branch` scan of `apps/<dir>/src/v2/**`; (b) builds the route, then
+      in the lane workflow's Playwright job mounts it with flags `route-<id>`, collects `snapshotForAudit` + `lookLint` findings (C-34), runs
+      `auditArtDirection`, exits 1 on any violation. Fixture route `tests/qr/prd14/fixtures/ambient-route/` must fail. Lane workflow
+      `.github/workflows/qr-prd14-games.yml`: on PRs touching owned paths, runs T1.x unit tests, `check-route-health`, `check-art-direction` for
+      changed routes, and `capture-games.mjs` with `QRC_GAMES=<changed ids>`, `QRC_LOCAL_BUILD=true`, `--flags route-<id>`; uploads
+      `evidence/prd14/<run>/` artifacts.
+- [ ] T1.13 `tools/quality-rebuild-capture/games.json`: add `wave`, `rebuildTier`, `artDirection`, `requiredConditions`, `canvasBlankCheck`,
+      `acceptance`, `budgets`, `qrFlags` for all 18 from §6.10 and §7.2.1. Test `tests/qr/prd14/unit/games-json.test.ts`: validates against
+      `games.schema.json` (PR 0a) and against the C-35 types (every field present, shots exist in each timeline, Courier has no override).
+- [ ] T1.14 `tests/qr/prd14/fixtures/run-37289688772.panel.json`: research/21 and research/20 scores transcribed verbatim into a C-32
+      `PanelRoundRecord` (`round: "baseline-c08d8acb"`); seed `apps/<dir>/art/scorecards/baseline-c08d8acb.json` for all 18 with `verdict: "rejected"`.
+- [ ] T1.15 Append `F-14-01` (art-direction schema fields) and `F-14-02` (route-flag pattern) to CONTRACTS Appendix B as `proposed`.
+- [ ] T1.16 File R-14-01 … R-14-14 and CCR-14-1/2 as issues on day 0 with the §12A.6 text.
 
-- [ ] All routes: delete every `URLSearchParams(...).get("capture") === "review"` branch (395 total, research/16) keeping the play value; run
-      `pnpm check:capture-parity --fail-on-any` (PRD 09) → 0.
-- [ ] All routes: delete `lights.ambient(...)` calls and add the art direction's `environments.hdri(...)`/preset; for routes whose K1 HDRI is not yet
-      admitted use PRD 02's neutral default environment.
-- [ ] All routes: delete `effects.antiAlias({ mode: "fxaa" })`, `renderer.pixelRatio` overrides, `effects.contactOcclusion` dead nodes, and duplicate bloom
-      nodes (Gravity Post keeps one of `neonBloom`/kit `bloom`, `main.ts:281`).
-- [ ] Aura Clash: delete `rendering/GamePostProcess.ts`, `rendering/GameLighting.ts`, `rendering/HitSparkVfx.ts`, `fighters/AuraBurstDirector.ts`, and the six
-      roster GLB references; evidence must no longer report `bloomIntensity: 0.58` (`GamePostProcess.ts:62-77`).
-- [ ] Blockfall: delete `createLockedBlockNodes` and its probe (`main.ts:763-826`); replace ~80 digit `text3D` nodes with one node per score field.
-- [ ] Bank Shot: in `syncVisuals` (`main.ts:741-745`) set ball rotation from the Rapier body quaternion; unit test in `tests/` that a ball rolling 1 m along
-      +x rotates ~`1 / r` rad about z; delete `.evidence-strip` markup and `styles.css:105`.
-- [ ] Gallery Shift: in `syncCharacterVisuals` (`main.ts:1353-1357`) apply `setRotation(0, yaw, 0)` with yaw from movement direction, slerp halflife 0.08 s;
-      unit test: moving +x for 10 frames yields yaw within 5° of π/2. Delete the Rapier/LOS evidence strip (`main.ts:347-351`) and guard route telemetry
-      (`:1231-1241`).
-- [ ] Gravity Post: call `steerKeyboardAim` and `launchActiveAim` from the input update (`main.ts:1447-1461`); bind Enter to launch; browser test: keyboard-only
-      launch changes pod state to `in-flight`. Replace per-frame `renderHud` `innerHTML` (`:2378`) with HUD kit bindings.
-- [ ] Orbital Defense: replace per-frame `innerHTML` HUD (`main.ts:313,341-377`) with HUD kit; delete "Checksum"/"Systems" output and the `:74` claim.
-- [ ] Siege Golf: replace `app.setScene(buildHoleScene(...))` in `applyCameraPhase` (`main.ts:975-985`) with one scene per hole and a camera rig switch;
-      browser test: p95 frame interval across a full shot ≤ 50 ms on the runner at 1280×720; delete the debug sliders (`main.ts:111-117`).
-- [ ] Deep Recovery: delete `effects.volumetricFog` (`main.ts:280-285`); attach searchlight and headlight nodes to the sub in `syncVisualNodes`; set camera
-      smoothing 0.15; runner test: 1920×1080 p50 ≤ 33 ms.
-- [ ] Courier Rush: consolidate static city meshes and instance traffic headlights to ≤ 300 draws (`diagnostics().drawCalls`); cue `engine` and
-      `ambient-city` loops (`courier-audio.ts:105-106`); delete traffic overrides (`main.ts:391-398`).
-- [ ] Pulse Tunnel: make the canvas 100dvh full-bleed and anchor the HUD; browser test on 390×844@3: canvas CSS size equals viewport ± 1 px.
-- [ ] Skyline Runner: fix the lives counter so `lives === 0` ends the run; delete `pixelRatio: 0.7` and `guideVisibility: "public"` (`main.ts:1960-1971`);
-      delete the floating tree slab.
-- [ ] Turbo Drift: fix the "GGhost OFF" label string in `hud.ts`; delete the 92 `visualCaptureCamera` branches and capture-only mounts.
-- [ ] Rooftop Buckets: stop per-frame `setMaterial` (`main.ts:1184,1223,1239`); move audio from `new Audio` (`buckets-audio.ts:44-48`) to `createGame` sound.
-- [ ] Mech Hangar: load `mechHeroDecimated` once; remove parked nodes at y=-60/-70 (`main.ts:200,228,247`); delete the asset-passport panel.
-- [ ] Neon Swarm: apply `cameraDirector` output to the camera (delete `void cameraState`, `main.ts:1667-1671`); mount `game.fx` so the 7 spawns render.
-- [ ] Patrol Wing: delete the evidence strip (`main.ts:136-140`); keep throttle in the v2 capture timeline so rings appear in 03–05.
-- [ ] Aurora Lander: delete "PROTOTYPE" sidebar and luma-chasing emissive nudges (`main.ts:594-597`); v2 timeline completes a landing.
-- [ ] Re-capture all 18 on the runner; judge with the PRD 12 panel; commit round-0 scorecards; record per-category deltas vs research/21 in each scorecard
-      `findings[]`.
+Per-game agents (all 18, independent):
+- [ ] T1.10 Dispatcher: `git mv src/main.ts src/legacy/main.ts`; move the §5 "Keep" modules to `src/gameplay/` (imports re-pathed only); add the §10
+      step 1 `src/main.ts` with this route's flag; add `src/v2/boot.ts` that mounts `createGame({ id: "<id>", target, scene, qualityRebuild: { flags:
+      ["A3D_QR_ROUTE_<ID>"] } })` with an empty scene and publishes the beacon. Test `tests/qr/prd14/browser/<id>-dispatch.spec.ts`: flag off boots
+      legacy with the same `evidenceGlobal` keys as before the move and 0 new console errors; `?a3d-qr=route-<id>` boots v2 to
+      `window.__AURA3D_GAME__.state === "playing"`.
+- [ ] T1.11 `apps/<dir>/art/direction.ts` and `apps/<dir>/art/references/references.json` (≥ 3 entries, ≥ 3 shipped three.js/WebGL comparables) from
+      §6.9; human approval recorded as a PR review on the file. `route-health.json`: `qualityGate.status: "in-rebuild"`, `publicShowcase: false`,
+      free-text claims removed (Aura Clash: create the file).
+- [ ] T1.12 Declared P0 correctness fixes in `src/legacy/` (each PR body: "CONTRACTS §6.1 correctness fix; PRD 12 re-baseline <id>"), each with a test:
+  - [ ] Bank Shot: in `syncVisuals` (`legacy/main.ts:741-745`) call `handle.setRotation(...ballEulerFromBody(q))` with
+        `src/gameplay/ball-visuals.ts` `ballEulerFromBody`. Test `tests/qr/prd14/bank-shot/ball-visuals.test.ts`: rolling 1 m along +x with radius r
+        rotates −1/r rad about z within 1%.
+  - [ ] Gallery Shift: in `syncCharacterVisuals` (`legacy/main.ts:1353-1357`) `app.nodes.get("thief")?.setRotation(0, yaw, 0)` with yaw from
+        `src/gameplay/facing.ts` `facingYaw(prevYaw, moveX, moveZ, dt, halflife = 0.08)`. Test: moving +x for 10 frames at 60 Hz yields yaw within
+        5° of π/2.
+  - [ ] Gravity Post: call `steerKeyboardAim(dt)` (`:1447`) from the input update and `launchActiveAim()` (`:1455`) on Space/Enter keydown. Browser
+        test: keyboard-only launch reaches `pod.state === "in-flight"` within 3 s.
+  - [ ] Skyline Runner: read `lives` from the level config (`level.ts:372`) instead of the literal at `main.ts:3960`; when `state.deaths >= lives` end
+        the run (results overlay + Restart). Test `tests/qr/prd14/skyline-runner/lives.test.ts`: HUD `livesRemaining` never shows 0 while
+        `phase === "playing"`.
+  - [ ] Turbo Drift: in `hud.ts:146` replace `<b aria-hidden="true">G</b>` with `<kbd class="keycap" aria-hidden="true">G</kbd>` + CSS
+        `margin-inline-end: 0.4em`; hidden on `(pointer: coarse)`. Test: rendered text of `#ghost-toggle-control` reads "G Ghost OFF" (with a gap).
+  - [ ] Pulse Tunnel: `styles.css:16-47` `.pulse-shell` becomes 100dvh full-bleed on `(max-width: 900px)`. Browser test at 390×844@3: canvas CSS
+        size equals viewport ± 1 px.
+  - [ ] Siege Golf: replace `app.setScene(buildHoleScene(...))` inside `applyCameraPhase` (`:975`) with one scene per hole plus a camera pose change.
+        Browser test: p95 rAF interval across a scripted shot ≤ 50 ms at 1280×720 on macos-14; delete the debug slider section (`:111-117`).
+  - [ ] Deep Recovery: delete `effects.volumetricFog` (`:280-285`), keep `effects.fog`. Browser test: 1920×1080 p50 ≤ 50 ms and C-28 readbacks
+        0 per frame after warm-up.
+  - [ ] Courier Rush: canvas `webglcontextlost` (preventDefault) / `webglcontextrestored` handlers with a "Restoring graphics…" overlay that
+        re-mounts the scene. Browser test via `WEBGL_lose_context`: overlay appears, then canvas-region `canvasBlankCheck` passes after restore.
+  - [ ] Gravity Post and Orbital Defense: render the HUD only when a displayed value changed (string compare before `innerHTML`, Gravity `:2378`,
+        Orbital `:342`). Test: 300 frames with constant state cause ≤ 1 DOM write.
+  - [ ] Neon Swarm: apply `cameraDirector.update(...)` output (`:1667`) to the camera instead of discarding it. Browser test: camera pose changes
+        while the player moves.
+  - [ ] Rooftop Buckets: call `setMaterial` (`:1184,1223,1239`) only on state change. Test: 300 frames with constant `isGold` → 0 calls.
+  - [ ] Mech Hangar: fetch `mechHeroDecimated` once and share the handle. Browser test: one network request for its URL.
+  - [ ] Debug/marketing UI shipped to players (declared fix): Siege sliders (above), Bank `.evidence-strip` (`styles.css:105` + markup), Gallery
+        evidence strip (`:347`), Patrol evidence strip (`:136`), Orbital "Checksum"/"Systems" and the `:74` claim text, Aurora "PROTOTYPE" sidebar.
+        Test: browser text scan of the play view finds none of these strings.
 
-### 14.3 Phase 2 — pilots
+### 14.2 Phase 2 — v2 shell port (each game, day 0, in `apps/<dir>/src/v2/`)
+
+For each of the 18 games:
+- [ ] T2.1 `src/v2/boot.ts`: `createGame` with `layout: "full-bleed"`, `hud` widgets from the art direction (`maxScreenFraction` 0.15 on phones),
+      `touch.preset` from §7.2.1, `sound.cues` with `asset` refs only (C-25; existing route samples or `apps/showcase-kits/K8/`), `juice` map from
+      §6.9; wire `src/gameplay/**` to `game.session.scaledDt`. No `?capture=` reads; scenarios in `src/v2/scenarios/*.ts` set state only.
+- [ ] T2.2 `src/v2/scene/{world,lighting,camera,fx,materials}.ts` from the art direction: no `lights.ambient`; exactly one shadowed key (stealth and
+      underwater ≤ 3 spots); `environments.hdri` (K1 or the 1k fixture) with `scene().background({ environment: true })`; `app.setOutput({ exposure })`
+      from `exposureEV`; post via `postPresets[<preset>]`; no `effects.antiAlias({ mode: "fxaa" })`; no `renderer.pixelRatio`; emissive ≤ 0.1 on
+      non-light materials; `castShadow: false` on backdrops; no parked nodes. Existing admitted assets only in this phase; tinted models use
+      `materialOverrides` with `colorMode: "multiply"`, never `replaceTextures`.
+- [ ] T2.3 `src/v2/scene/camera.ts`: a route-local `AuraCameraRig` (G12) implementing the art direction's `framing` (subject fraction, FOV, mobile
+      orientation) passed to `app.camera.use(rig, { blend })`; listed in `standIns[]` with R-14-10. Test `tests/qr/prd14/browser/<id>-framing.spec.ts`:
+      route `framing.subjectHeightFraction` within the art-direction range in `03-mid` at 1920×1080 and 390×844.
+- [ ] T2.4 `src/v2/scene/fx.ts`: every gameplay event in the art direction's `vfx[]` calls `game.fx.burst/trail`; measure p95 during the `04-action`
+      burst; if > 50 ms with `RUNTIME_ADD_REMOUNT` in `degradations`, switch to `apps/showcase-kits/src/fx/prewarmedFxLayer.ts` (G13, written once by the
+      first game that needs it) and list it in `standIns[]`.
+- [ ] T2.5 `src/v2/evidence/*.ts`: publish the §7.2.1 route sections (`fx`, `framing`, `render`, `loading`, gameplay sections) under
+      `window.__AURA3D_GAME_EVIDENCE__["<id>"]`, lazily computed, no per-frame allocation > 1 KB.
+- [ ] T2.6 Browser spec `tests/qr/prd14/browser/<id>-v2.spec.ts` with flags `route-<id>`: boot to `playing`; 0 console/page errors over a 60 s
+      scripted timeline; every §7.2.1 condition reached by its deadline (`evaluateRequiredCondition`); `canvasBlankCheck` passes on every shot;
+      keyboard-only and touch-only playthrough of the first objective; `visibilitychange` → `session.paused === true`; `appliedLook` equal between play
+      URL and every scenario URL.
+
+### 14.3 Phase 3 — kits (day 0, kit agents)
+
+- [ ] T3.1 `apps/showcase-kits/package.json` (`three@0.185.1` exact, private, no deploy target), `apps/showcase-kits/lookdev/index.html` + `main.ts`:
+      loads one GLB/HDRI/texture set by query, renders side by side in three r185 (`MeshStandardMaterial`/`MeshPhysicalMaterial` from glTF,
+      `PMREMGenerator` on the chosen HDRI, ACES, sRGB output) and Aura (`createAuraApp`, same HDRI, flags `all`); turntable 8 frames; export PNG strip.
+      Browser test (remote): the damaged-helmet fixture renders non-blank in both panes.
+- [ ] T3.2 For each kit K1–K7, K9: `apps/showcase-kits/<Kn>/kit.json` (schema `apps/showcase-kits/kit.schema.json`: per file `source`, `licence`,
+      `sha256`, `triangles`, `textures[]`, `lookdev: { runId, reviewer, verdict }`) and the source files (Git LFS per `.gitattributes`, request to PRD 12
+      if a new pattern is needed). Test `tests/qr/prd14/unit/kits.test.ts`: every file has a licence in the allow-list, a hash that matches, and an
+      `accept` verdict before any route references it.
+- [ ] T3.3 K8: `apps/showcase-kits/K8/cues.json` mapping each art-direction `audio[]` cue to licensed samples (`provenance: "sample"`); loudness
+      normalized to −16 LUFS integrated (measured with `ffmpeg -af ebur128` on the remote runner, values recorded).
+- [ ] T3.4 Admission per consumer: `aura3d assets add --type <kind> <file> --id <id>` from the consuming route's PR; commit only the regenerated
+      `aura.assets.json`/`src/aura-assets.ts` diff for that id; CI `--check` identical.
+
+### 14.4 Phase 4 — per-game content (each game, after its own Phase 2)
+
+Common to every game (each a separate PR, each re-running T2.6 and `check-art-direction`):
+- [ ] T4.0 Replace greybox/synth/card assets with kit or promoted assets per §6.9 "Assets"; update `art/direction.ts` `assets[]`; the audit must report
+      0 `asset-*` violations.
 
 Bank Shot
-- [ ] Admit K4 pool-hall set and K1 pool-hall HDRI via `aura3d assets admit` with look-dev turntables; record licences.
-- [ ] Replace `src/environment.ts` primitives with `src/scene/world.ts` mounting the K4 set; delete the 16 `ball-shadow-NN` cylinders (`main.ts:234-247`).
-- [ ] Re-author 16 balls on one 1k atlas (numbers/stripes), table ≥ 20k tris with UVs, cue ≥ 3k tris; update `aura.assets.json` roles.
-- [ ] `src/scene/lighting.ts`: one `lights.spot({ shadow: true, angle: 0.75, penumbra: 0.5 })` over the table; delete the rim directional and three tinted rim points.
-- [ ] `src/scene/materials.ts`: felt sheen 0.6 + fibre normal; walnut clearcoat 0.8; ball clearcoat 1.0 roughness 0.05.
-- [ ] `src/scene/camera.ts`: `rigs.orbit` aim rig bound to aim yaw, 0.4 s blend to roll view; browser test: ball subject fraction in aim view 0.08–0.2.
-- [ ] Cue strike animation (pull-back ∝ power, 80 ms stroke); pocket drop 6 cm over 120 ms; chalk puff + break dust via `game.fx`.
-- [ ] K8 billiard cues with impact-speed gain/pitch mapping; unit test: two clacks at speeds 1 and 4 m/s differ by ≥ 6 dB.
-- [ ] Juice map in `createGame({ juice })`: `break` (trauma 0.25, hit-stop 30 ms), `eight-ball` (slow-mo 0.5× 0.6 s).
-- [ ] Capture, judge, commit round-1 scorecard.
+- [ ] Admit K4 pool-hall set and the K1 pool-hall HDRI; `src/v2/scene/world.ts` mounts them; no `ball-shadow-NN` cylinders (legacy `main.ts:234-247`
+      not ported).
+- [ ] 16 balls on one 1k atlas (numbers/stripes), table ≥ 20k tris with UVs, cue ≥ 3k tris; `art/direction.ts` roles updated.
+- [ ] `lighting.ts`: one `lights.spot({ shadow: { mapSize: 2048 }, angle: 0.75, penumbra: 0.5 })` over the table; no rim directional or tinted rim points.
+- [ ] `materials.ts`: felt `sheen` 0.6 + fibre normal at 8× tiling; walnut `clearcoat` 0.8; ball `clearcoat` 1.0, `roughness` 0.05 (C-15 fields).
+- [ ] `camera.ts`: aim rig bound to aim yaw, 0.4 s blend to the roll view. Browser test: cue-ball subject fraction in `05-charge` 0.08–0.2.
+- [ ] Cue strike (pull-back ∝ power, 80 ms stroke); pocket drop 6 cm over 120 ms; chalk puff (12) + break dust (24) via `game.fx`.
+- [ ] Cue gain/pitch from impact speed. Test `tests/qr/prd14/bank-shot/audio-map.test.ts`: speeds 1 and 4 m/s differ by ≥ 6 dB.
+- [ ] `juice`: `break` (trauma 0.25, hit-stop 30 ms), `eight-ball` (slow-mo 0.5× for 0.6 s) via `session.hitStop/slowMo`.
 
 Turbo Drift Circuit
-- [ ] Build the circuit with PRD 10 spline road from the existing centreline data; asphalt, racing-line mask and kerb decals; delete `turboCircuitEnvironmentV2` visual use.
-- [ ] K3 terrain splat around the track; ~1,200 instanced trees with LODs; mountain impostor ring; delete the 500-unit ground and `#df967d` clear.
-- [ ] Admit hero car ≥ 30k tris with separate wheels; wheel spin/steer and body roll spring in `src/scene/car-visuals.ts`; unit test: roll angle sign matches lateral acceleration.
-- [ ] Sun directional aligned to HDRI sun; CSM 3 cascades; delete points and ambient; browser test: car shadow occupies ≥ 30 px at 1920×1080 chase view.
-- [ ] `rigs.chase` per §6.9.2; delete composition-gate tuning (`main.ts:2696-2700`).
-- [ ] Tyre smoke (emission ∝ slip) and ribbon skids via PRD 07; delete `driftParticleCloud` and box decals; delete the drift ellipse.
-- [ ] K8 `car-sport` engine layers via `sound.engine`; skid loop ∝ slip; unit test: RPM 3,000→7,000 raises playback rate monotonically.
-- [ ] Racing HUD (tach, gear, lap, position, minimap) on the HUD kit; `src/main.ts` ≤ 600 LOC.
-- [ ] Capture, judge, commit round-1 scorecard.
+- [ ] Road GLB extruded offline from the existing centreline data (UV'd 2k asphalt, racing-line mask, kerb decals) in `apps/showcase-kits/K3/turbo-road/`;
+      `turboCircuitEnvironmentV2` not used by v2; K3 terrain splat; ~1,200 instanced trees via `instances.model` with per-instance scale; mountain
+      impostor ring; no 500-unit ground; no `#df967d` clear (`scenery.ts:39`).
+- [ ] Hero car ≥ 30k tris with separate wheels; `src/v2/scene/car-visuals.ts` wheel spin/steer + body roll spring (halflife 0.12 s). Test
+      `tests/qr/prd14/turbo/car-visuals.test.ts`: roll sign matches lateral acceleration sign.
+- [ ] Sun directional aligned to the HDRI sun with `shadow: { cascades: 3 }` (C-10; one map on the stub); no point lights, no ambient (legacy
+      `main.ts:3383` not ported). Browser test with flags `all`: car shadow ≥ 30 px at 1920×1080 chase view (integrated check, recorded only).
+- [ ] Chase rig per §6.9.2 (route-local until R-14-10); tyre smoke ∝ slip and skid trails via `game.fx`; no drift ellipse gizmo.
+- [ ] Engine cue via `sound.engine({ cue: "car-sport", rpmRange: [900, 8000], pitchRange: [0.6, 1.8] })`. Test: RPM 3,000→7,000 raises rate monotonically.
+- [ ] Racing HUD (tach, gear, lap, position, minimap) on C-24 `hud`; `src/v2/boot.ts` ≤ 400 LOC.
 
 Aura Clash Arena
-- [ ] Switch the side-view preset to rgba16f + ACES (PRD 01 change verified in the route via `diagnostics().appliedLook`).
-- [ ] Set `arenaScale = 1.0`, recompose the fight plane and camera bounds; restore `Prop_ACUnit_*`/`Prop_Bollard_*` as foreground layer (`:872-877`).
-- [ ] Remove fighter material overrides in `collectFighterFlashMaterials` (`:3371-3425`); add PRD 04 rim per team; keep the victim-flash pulse.
-- [ ] Replace per-fighter point keys (`:920-952`) with spot key + rim directional + 2 neon practicals; K1 night-city HDRI.
-- [ ] `rigs.fighting` with `subjectHeightFraction: 0.5`, fov 32; browser test: fighter bounding box height 45–60% of frame in `03-mid`.
-- [ ] Hit VFX (flipbook + 0.08 s point light + ring + landing dust), dash trail, rain 1,500/400, SSR floor.
-- [ ] Shell: full-bleed canvas, HUD kit health bars/timer/portraits, self-hosted Saira; delete nav, prose cards, control strip.
-- [ ] Music, announcer and crowd bed through K8; replace rival walk clip.
-- [ ] Capture, judge, commit round-1 scorecard.
+- [ ] Do not use the side-view `GameRenderPreset`; `app.setOutput({ toneMapping: "aces", exposure: 2 ** exposureEV })` and `postPresets["arena-fight"]`;
+      no DPR clamp (legacy `AuraClashArenaApp.ts:1530`). Browser test: `diagnostics().appliedLook.toneMapping` is `"aces-filmic"`.
+- [ ] `arenaScale = 1.0` (legacy computes 0.5876 at `:837-844`), fight plane and camera bounds recomposed; `Prop_ACUnit_*`/`Prop_Bollard_*`
+      (filtered at `:872-877`) restored as a foreground layer.
+- [ ] No baseColor/MR/emissive overrides (legacy `collectFighterFlashMaterials`, `:3371-3425`); team identity by C-15 material variant; victim-flash
+      pulse kept via `materialOverrides` `emissiveIntensity` only during the pulse.
+- [ ] Spot key + rim directional + 2 neon practicals; no per-fighter point keys (legacy `:920-952`); K1 night-city HDRI.
+- [ ] Fighting framing: subject fraction 0.5, fov 32. Browser test: both fighters' bbox height 45–60% of frame in `03-mid`.
+- [ ] Hit VFX (burst + 0.08 s point light + ring + landing dust), dash trail, rain; full-bleed shell with HUD health bars/timer/portraits;
+      self-hosted Saira `@font-face` from `apps/aura-clash-showcase/public/fonts/` (licence file alongside).
+- [ ] Music, announcer, crowd bed through C-25 cues; replace the rival `Zombie_Walk_Fwd_Loop` clip with a walk clip from K6.
 
 Orbital Defense
-- [ ] Generate the route from the PRD 13 arena-shooter template; move wave/heat/shield logic to `src/gameplay/waves.ts` with existing behaviour covered by a unit test (spawn cadence 1.8 s, shield segments 5).
-- [ ] Planet with `material.planet` + `material.atmosphere` (§8.1) and K5 maps; starfield HDRI; asteroid belt 300 instances.
-- [ ] Admit station, interceptor and two drone GLBs (≥ 5k tris each, PBR).
-- [ ] Bolts, explosions (3 sizes), shield ripple, muzzle flash via `game.fx` + PRD 07; hit-stop 40 ms on multi-kill.
-- [ ] Camera 25–35° above the plane, planet 65–75% of frame height; HUD safe areas keep drones outside panels (browser test on 1920×1080 and 390×844).
-- [ ] K8 audio set + music; capture, judge, commit round-1 scorecard.
+- [ ] `src/gameplay/waves.ts` extracted from legacy `main.ts` with a unit test (spawn cadence 1.8 s, shield segments 5); v2 on `createGame` directly.
+- [ ] Planet: K5 maps on a 128×64-segment sphere, night lights as `emissiveMap`, cloud sphere (§8.1 fallback) until R-14-12 lands; starfield HDRI;
+      asteroid belt 300 instances.
+- [ ] Station, interceptor and two drone GLBs ≥ 5k tris each, PBR, from K7.
+- [ ] Bolts, explosions (3 sizes), shield ripple, muzzle flash via `game.fx`; 40 ms hit-stop on multi-kill.
+- [ ] Camera 25–35° above the plane, planet 65–75% of frame height; drones kept out of HUD rects. Browser test at 1920×1080 and 390×844:
+      `framing.dronesUnderHud === 0`.
+- [ ] C-25 cue set + music.
 
-### 14.4 Phases 3–5 — per game (each game is one epic; tasks map to §6.9 bullets)
+Phases 4 for Waves 2–4 (one epic per game; each bullet of the game's §6.9 plan is one PR; standalone tests named here):
+- [ ] Vault Breakers: promote `vaultBreakersCabinet` + `vaultBreakersFlipperReal`; 4k playfield on a UV'd plane aligned to `table.ts` (test: insert
+      positions in texture space match `missions.ts` insert coordinates within 2 mm); chrome ball without emissive (legacy `main.ts:131-139` not
+      ported); instanced insert lamps driven by mission state; DMD backglass; `flippers` touch preset.
+- [ ] Rooftop Buckets: skinned `rooftopLayupScorer`/`rooftopDefender` in play via C-19 `crossFadeTo` (test: `characters.skinnedVisible >= 2` and
+      `animationState().tracksApplied > 0` on both); open skyline (K1/K2); glass backboard, rim, vertex-animated net; arc ribbon via `game.fx.trail`;
+      shoulder framing; unused athlete GLBs dropped from the art direction.
+- [ ] Courier Rush: K2 modular city replacing `city.block` usage (not ported); ≤ 300 draws Medium measured; van with separate wheels; rain via
+      `game.fx`/`app.effects`; chase framing ~6 m/12°; mobile HUD ≤ 15% of screen (browser test: HUD rect area / viewport ≤ 0.15 at 390×844).
+- [ ] Neon Swarm: plaza with baked grid emissive (§8.4 fallback) until R-14-12; rigged K6 player with run/strafe/fire; 2–3 drone meshes ≥ 3k tris;
+      top-down framing with look-ahead; ≤ 5k-tri lamps in frame.
+- [ ] Pulse Tunnel: segment conveyor in `src/gameplay/conveyor.ts` (test: recycling keeps ≤ N live segments, N from the tier); baked synthwave dome
+      (§8.7 fallback) plus `sky.gradient`; chase framing with FOV kick and ±6° roll; review-only VFX re-authored as `game.fx` calls; 1–2k mipmapped
+      textures; `art-review/` not referenced by v2.
+- [ ] Siege Golf: K3 terrain + castle kit; K1 golden-hour HDRI; crate/plank maps restored (no `paintedTimberMaterial`); one scene per hole with aim /
+      flight / settle rigs; splinter debris via `game.fx`; test `loading.sceneSwaps === 0` across a shot.
+- [ ] Patrol Wing: normal-mapped water plane to the fog line (R-14-13 for ocean); island heightfield ≥ 128 with splat; HDRI-aligned sun key; flight
+      framing; stall model in `src/gameplay/flight.ts` (test: at throttle 0 and level attitude, airspeed never drops below `minAirspeed` without
+      altitude loss); contrails via `game.fx.trail`; drones ≥ 5k tris.
+- [ ] Aurora Lander: emissive ribbon meshes (§8.2 fallback); terrain far rings + horizon skirt; textured lander 3–5k tris; nozzle point light ∝
+      thrust (0–8, range 12 m); plume/dust/snow via `game.fx`; framing keeps the pad in frame (test: `framing.padInFrame` in 100% of `03`/`04` shots);
+      translucent ghost via `materialOverrides` `opacity` 0.35.
+- [ ] Gravity Post: instanced stars/dust/beads (≤ 120 draws Medium); K5 planets ≥ 32k tris; sun point light with distance falloff; K7 craft; flight
+      path as `game.fx.trail`; follow-and-zoom framing; dock gate maps restored (no override, legacy `main.ts:492-499` not ported).
+- [ ] Deep Recovery: exp2 depth-band fog (§8.3 fallback); heightfield seabed + instanced rocks/coral + textured wreck; textured sub with propeller;
+      emissive on base materials ≤ 0.1; searchlight + headlight spots attached to the sub and updated each frame; camera smoothing 0.15; C-25 cues
+      with `reverb: "underwater"`.
+- [ ] Skyline Runner: rig and animate `skylineHeroRunner` (C-19); textured platform kit; backdrop re-cut into 3–4 parallax layers; one act rig
+      mounted at a time; per-act fog via `app.atmosphere.setFog`; snowfall via `game.fx`; no card assets, no `lights.studio`.
+- [ ] Blockfall Reactor: no `createLockedBlockNodes` (legacy `main.ts:630`) or A/B probe (`:763-826`); one text node per score field; one WebGL
+      context; lit 3D arcade room; cabinet re-textured without occluders; tilted (8–12°) drifting camera, fov 40–50; lock flash, hard-drop trail, clear
+      bursts; sampled stems.
+- [ ] Mech Hangar: rigged animated mechs (walk/strike/recoil/hit/KO via C-19); hangar kit; hangar and pit as separate scenes via `game.setScene`
+      with a fade transition (test: `loading.sceneId === "pit"` in `02b-arena-opening`); combat VFX; sampled audio.
+- [ ] Gallery Shift: thief and guards from one K6 family animated via C-19 `crossFadeTo` (test: `characters.thiefTracksApplied > 0`); textured
+      museum + exhibits + alpha/Fresnel glass; flashlight spots that follow the guards (≤ 3 shadowed); cone meshes (§8.9 fallback); follow framing.
+- [ ] Every game: request its first counted G-PANEL round by adding the game id to `evidence/prd14/review-queue.json` with the commit.
 
-- [ ] Vault Breakers: promote `vaultBreakersCabinet` and `vaultBreakersFlipperReal` into `src/scene/world.ts`; author the 4k playfield texture on a UV'd
-      plane aligned to `table.ts` physics plane (test: insert positions in texture space match `missions.ts` insert coordinates within 2 mm); chrome ball
-      material without emissive; instanced insert lamps driven by mission state; DMD backglass; K8 pinball cues.
-- [ ] Rooftop Buckets: render `rooftopLayupScorer`/`rooftopDefender` with clips in play (delete the `?debug=animation` gate, `main.ts:502-536`); open
-      skyline with K1/K2; glass backboard + rim + vertex-animated net; arc ribbon; shoulder rig; delete unused athlete GLBs.
-- [ ] Courier Rush: K2 modular city replacing `city.block` and `city.ts` boxes; van with separate wheels; IBL + SSR wet road; rain particles;
-      `rigs.chase` at ~6 m/12°; mobile HUD ≤ 15% of screen (browser test measures HUD rect area / viewport).
-- [ ] Neon Swarm: SSR plaza + `material.gridFloor`; rigged K6 player with run/strafe/fire; 2–3 drone meshes; `rigs.topDown` with director layers;
-      replace 272k-tri lamps; delete card assets.
-- [ ] Pulse Tunnel: segment conveyor for rings/pylons/rocks (unit test: segment recycling keeps ≤ N live segments); `sky.gradient` synthwave; chase rig with
-      FOV kick and roll; ship review-only VFX to play; 1–2k linear-mipmapped textures; delete `art-review/`.
-- [ ] Siege Golf: K3 terrain + castle kit; K1 golden-hour HDRI; restore crate/plank maps; aim/flight/settle rigs with blends; splinter debris; delete
-      `siegeGolfCourseWorld` visual use and the 26 spheres.
-- [ ] Patrol Wing: `world.water({ mode: "ocean" })`; island heightfield ≥ 128 with splat; HDRI sun-aligned key + CSM; `rigs.flight`; stall model in
-      `flight.ts` (unit test: at throttle 0 and level attitude airspeed never drops below `minAirspeed` without altitude loss); contrails; drones ≥ 5k.
-- [ ] Aurora Lander: `effects.auroraRibbon` (§8.2); extended triplanar terrain with horizon skirt; textured lander; nozzle light ∝ thrust; GPU plume, dust
-      and snow; `rigs.altitude` (browser test: pad inside frame in 100% of 03/04 shots); translucent ghost.
-- [ ] Gravity Post: instanced stars/dust/beads (≤ 120 draws); K5 planets ≥ 32k tris with `material.atmosphere`; sun point light; K7 craft; ribbon flight path;
-      follow-and-zoom camera; restore dock gate maps.
-- [ ] Deep Recovery: underwater stack (§8.3); heightfield seabed + instanced rocks/coral + textured wreck; textured sub with propeller; emissive cut 3–5×;
-      `GameSoundEngine` with `underwater` reverb; delete `environment.ts`.
-- [ ] Skyline Runner: rig and animate `skylineHeroRunner`; textured platform kit; parallax-cut backdrop; one mounted act rig at a time; per-act fog;
-      snowfall; delete card assets and `lights.studio`.
-- [ ] Blockfall Reactor: lit 3D arcade room; re-textured cabinet without occluders; crease normals on `BLOCK_TILE_GEOMETRY`; tilted drifting camera;
-      lock flash, hard-drop trail, clear bursts; sampled stems and SFX.
-- [ ] Mech Hangar: rigged animated mechs (walk/strike/recoil/hit/KO); hangar kit; split hangar/pit scenes via `game.setScene`; per-scene rigs; combat VFX;
-      sampled audio.
-- [ ] Gallery Shift: PRD 06 empty-pose fix verified in route (browser test: thief bone transforms change between frames while walking); textured
-      museum + exhibits + glass; K6 thief and guards; following shadowed flashlights; vision cones (§8.9); follow camera; delete harnesses and labels.
-- [ ] For each game above: capture, judge, commit scorecard; on rejection, file findings and run round 2.
+### 14.5 Phase 5 — review rounds (integrated; checkpoint-driven)
 
-### 14.5 Phase 6 — fleet lock
+- [ ] T5.1 After each G-PANEL record lands: `scorecard.ts --round IC-<k>` for every queued game; commit `art/scorecards/IC-<k>-<sha>.json`.
+- [ ] T5.2 Rejected: write `findings[]` into a `qr/prd14/<id>/round-2` issue with one task per finding; `engine-pending`: list the stubbed contracts
+      and leave the game queued for the next G-PANEL round.
+- [ ] T5.3 After IC-4: pilot retrospective recorded as issues and rows only: each engine gap → a `qr-ic-regression` issue against the owning
+      lane with the capture run id; each reusable pattern → a C-40 row `F-14-1x` for PRD 13.
+- [ ] T5.4 Accepted: reviewer sets `qualityGate.status: "accepted"` with `acceptedBy` human logins; this lane flips `DEFAULT_ON` (§10 step 5).
 
-- [ ] Register accepted captures as PRD 12 goldens (`tools/quality-gate` golden manifest) for every game and viewport.
-- [ ] Delete GLBs no longer referenced by any route (`aura.assets.json` entries with 0 consumers), including synth release models and the 82 MB
+### 14.6 Phase 6 — fleet lock and legacy removal (per game)
+
+- [ ] T6.1 Two checkpoints after the default flip with no attributed regression: delete `src/legacy/`, the dispatcher and `routeFlagFromUrl`;
+      rename `src/v2/boot.ts` to `src/main.ts`; ask PRD 15 to add the flag to `REMOVED_QR_FLAGS`.
+- [ ] T6.2 Request PRD 12 to register the accepted captures as G-REG goldens for every viewport.
+- [ ] T6.3 Remove assets with 0 consumers through `aura3d assets` (regenerated manifest diff), including synth release models and the 82 MB
       `apps/showcase-pulse-tunnel/art-review/`.
-- [ ] Remove PRD 09 legacy evidence aliases from all 18 routes.
-- [ ] Update `apps/showcase-index` to list accepted games with their scorecard date; withdrawn games removed from the index.
+- [ ] T6.4 `apps/showcase-index` lists accepted games with their scorecard date; withdrawn games removed.
 
 ## 15. Test requirements
 
-- **Unit (Vitest, runs in `.github/workflows/test.yml` on ubuntu):** art-direction validator rules; scorecard verdict logic; games.json field
-  validation; `requiredConditions` evaluator; canvas blank check against the Courier black-frame fixture; per-game gameplay tests named in §14
-  (ball rotation, thief facing, keyboard launch, stall model, segment conveyor, wave cadence, engine RPM mapping, impact-speed audio mapping). Existing
-  gameplay unit tests in each kept module must pass unchanged, or their changes must be listed in the PR.
-- **Browser (Playwright, remote only — GH Actions `macos-14`, ANGLE Metal, per policy; never local):** per game: boot to `session.state === "playing"`
-  via the PRD 09 beacon; 0 console/page errors over a 60 s scripted timeline; `lookSignature` equal between default and every scenario URL; framing
-  assertions named in §14 (subject fraction, pad in frame, HUD area on mobile); keyboard-only and touch-only playthrough of the first objective;
-  `visibilitychange` pauses the session; context-loss simulation via `WEBGL_lose_context` shows the recovery UI and restores rendering (Courier first,
-  then all).
-- **Capture + judge (macos-14):** `quality-rebuild-capture.yml` per changed game on every PR; full fleet nightly on `main` once Phase 1 lands.
-- **Audio:** `GameSoundEngine` evidence section shows every cue in the art direction as `provenance: "sample"`; no synth cues (PRD 09 §6.8).
+All runs are remote. Lane workflow `.github/workflows/qr-prd14-games.yml` (owner 14) runs on GitHub Actions `macos-14` (Chromium, ANGLE Metal, the
+same runner class as `quality-rebuild-capture.yml` run 37289688772). Nothing in this section runs a browser or a heavy build locally.
+
+- **Contract conformance (required check `qr-contracts.yml`, PRD 15):** `tests/unit/contracts/C-35-art.test.ts` on stub and real;
+  `tests/unit/contracts/impl/prd14-art.test.ts` (T1.1–T1.2).
+- **Lane unit (Vitest, `pnpm exec vitest run tests/qr/prd14`, macos-14):** audit (T1.3), condition evaluator (T1.4), canvas blank check (T1.5),
+  scorecard verdict incl. `countedRound`/`enginePending` (T1.6), route-health (T1.8), `games.json` (T1.13), kits (T3.2), and the per-game gameplay
+  tests named in §14 (ball rotation, thief facing, lives, stall model, segment conveyor, wave cadence, RPM mapping, impact-speed audio, car roll,
+  ghost label). Existing tests that import kept gameplay modules must pass unchanged after the `src/gameplay/` move; only import paths may change.
+- **Lane browser (Playwright, macos-14):** per game, both flag states: `<id>-dispatch.spec.ts` (T1.10) and `<id>-v2.spec.ts` (T2.6): boot to
+  `window.__AURA3D_GAME__.state === "playing"`; 0 console/page errors over a 60 s scripted timeline; every §7.2.1 condition reached by its deadline;
+  `canvasBlankCheck` on every shot; C-31 `appliedLook` equal between play URL and every scenario URL; framing assertions (T2.3); keyboard-only and
+  touch-only playthrough of the first objective; `visibilitychange` pauses; `WEBGL_lose_context` round-trip shows recovery UI and restores a
+  non-blank canvas (Courier legacy in Phase 1; all v2 routes once C-24's `context-lost` state is real, integrated).
+- **Capture (macos-14):** `capture-games.mjs` for each changed game on every PR via the lane workflow (flags `route-<id>`); checkpoint captures
+  (`none`, `all`, route `qrFlags`) are dispatched by PRD 12.
+- **Audio:** C-25 `proof()` shows `synthCues === 0` and every art-direction cue backed by an `AudioAssetRef` with `provenance: "sample"`.
+- **Static:** `scripts/check-art-direction.mjs` `capture-branch` scan returns 0 for every `src/v2/**`; `scripts/check-route-health.mjs` passes;
+  `.github/QR_OWNERSHIP.json` check passes (no edits outside §12A.2).
 
 ## 16. Visual acceptance tests
 
-| Game | Benchmark scenes that must pass PRD 12 G-REF before the game enters review (Aura ≥ three − 0.5) | Game shots (games.json) | Reference | Criterion and threshold | Review |
-|---|---|---|---|---|---|
-| Bank Shot | 04 clearcoat, 07 sheen, 10 indoor, 12 shadows | 02-opening rack, 03-aim, 04-break, 05-pocket | art/references + research/21 Bank Shot | §6.3; shadows ≥ 8, materials ≥ 8, lighting ≥ 8 | vision + 3 humans |
-| Turbo Drift | 09 outdoor, 12 shadows, 14 particles, 17 large env | 02-grid, 03-straight, 04-drift (smoke visible) | same | env ≥ 7.5, shadows ≥ 7.5, VFX ≥ 7 | vision + 3 humans |
-| Aura Clash | 08 skinned, 12 shadows, 14 particles, 15 animation | 02-round-intro, 03-exchange, 04-hit (during hit-stop) | same | light ≥ 7.5, VFX ≥ 7.5, anim ≥ 7.5, camera ≥ 7.5 | vision + 3 humans |
-| Orbital Defense | 13 IBL only, 14 particles | 02-wave-1, 03-mid, 04-kill (explosion visible) | same | env ≥ 7, assets ≥ 7, VFX ≥ 7.5 | vision + 3 humans |
-| Vault Breakers | 04 clearcoat, 05 transmission, 13 IBL | 02-plunge, 03-play, 04-bumper-hit | same | assets ≥ 7.5, materials ≥ 7.5 | vision + 3 humans |
-| Rooftop Buckets | 08 skinned, 09 outdoor, 15 animation | 02-ready, 03-release, 04-make | same | env ≥ 7, anim ≥ 7 | vision + 3 humans |
-| Courier Rush | 11 multiple lights, 17 large env, 14 particles | 02-depot, 03-street (no black canvas), 04-drop | same | env ≥ 7, IBL ≥ 7, atmo ≥ 7 | vision + 3 humans |
-| Neon Swarm | 11 multiple lights, 14 particles, 16 instancing | 02-wave, 03-mid, 04-kill | same | env ≥ 7, VFX ≥ 7.5, juice ≥ 7.5 | vision + 3 humans |
-| Pulse Tunnel | 13 IBL, 14 particles | 02-launch, 03-run, 04-gate-pass; mobile 03 | same | post ≥ 7.5, camera ≥ 7, mobile ≥ 6.5 | vision + 3 humans |
-| Siege Golf | 09 outdoor, 12 shadows, 18 game scene | 02-tee, 03-flight, 04-topple | same | env ≥ 7.5, assets ≥ 7 | vision + 3 humans |
-| Patrol Wing | 09 outdoor, 13 IBL, 17 large env | 02-pad, 03-airborne (rings in frame), 04-drone-hit | same | env ≥ 7.5, camera ≥ 7.5, atmo ≥ 7.5 | vision + 3 humans |
-| Aurora Lander | 09 outdoor, 14 particles | 02-descent, 03-approach, 04-touchdown | same | env ≥ 7, atmo ≥ 7.5 | vision + 3 humans |
-| Gravity Post | 13 IBL, 16 instancing | 02-board, 03-aim, 04-flight | same | lighting ≥ 7 | vision + 3 humans |
-| Deep Recovery | 09 outdoor (fog), 12 shadows, 14 particles | 02-shallows, 03-descent, 04-wreck | same | lighting ≥ 7, atmo ≥ 7.5, perf ≥ 7 | vision + 3 humans |
-| Skyline Runner | 08 skinned, 15 animation | 02-act-1, 03-jump, 04-act-3 | same | anim ≥ 7 | vision + 3 humans |
-| Blockfall Reactor | 10 indoor, 16 instancing | 02-board, 03-stack, 04-line-clear | same | VFX ≥ 7, camera ≥ 7, juice ≥ 7.5 | vision + 3 humans |
-| Mech Hangar | 08 skinned, 10 indoor, 15 animation | 02-hangar, 03-pit, 04-strike | same | assets ≥ 7.5, anim ≥ 7 | vision + 3 humans |
-| Gallery Shift | 10 indoor, 12 shadows, 08 skinned | 02-lobby, 03-sneak (cone visible), 04-alert | same | lighting ≥ 7.5, shadows ≥ 7, anim ≥ 7 | vision + 3 humans |
+### 16.1 Standalone acceptance (passable by this lane alone; gates every merge)
 
-Each shot is captured at 1920×1080, 1280×720 and 390×844@3 (mobile stops after `03-*` per `games.json` defaults). Every judged frame is a player frame:
-no scenario overrides of look (PRD 09 §6.4); scenarios may only set state, clock, seed and camera pose for deterministic stills.
+Evaluated in the lane workflow with flags `none` + the route flag, on the current renderer plus PR 0a stubs. These are engineering and
+composition checks. They do not and cannot show three.js-level quality, and no standalone result is reported as a visual-quality claim.
+
+| # | Check | Threshold | Tool |
+|---|---|---|---|
+| S1 | Route boots with flag off (legacy) and on (v2) | `playing`, 0 console/page errors over 60 s, both states | `<id>-dispatch.spec.ts` |
+| S2 | Required conditions | every §7.2.1 condition true by its deadline | `<id>-v2.spec.ts` + `evaluateRequiredCondition` |
+| S3 | Canvas not black | `canvasBlankCheck` passes on every shot at 1920×1080, 1280×720, 390×844@3 | scorecard builder on capture PNGs |
+| S4 | Art direction honoured | `auditArtDirection` returns 0 violations; `lookLint` 0 errors | `check-art-direction.mjs` |
+| S5 | No capture forks / debug UI | 0 `capture-branch` hits; play-view text scan finds no debug/evidence/marketing strings | `check-art-direction.mjs`, `<id>-v2.spec.ts` |
+| S6 | Look identical across scenarios | C-31 `appliedLook` deep-equal between play URL and every scenario URL | `<id>-v2.spec.ts` |
+| S7 | Framing | route `framing.subjectHeightFraction` inside `art/direction.ts` range in `03-mid` (desktop and 390×844) | `<id>-framing.spec.ts` |
+| S8 | Draws and readbacks | `diagnostics().drawCalls` ≤ §7.2.1 Medium budget at `?aura3d-quality=medium`; C-28 readbacks 0/frame after warm-up | `<id>-v2.spec.ts` |
+| S9 | Stall-free | p95 rAF interval ≤ 50 ms at 1280×720 on macos-14 across the 60 s timeline (relative runner gate; real-device numbers are integrated) | `<id>-v2.spec.ts` |
+| S10 | Assets admitted | every `art/direction.ts` asset role resolves to an admitted id whose kit file has an `accept` look-dev verdict on the three r185 pane | `kits.test.ts`, `check-art-direction.mjs` |
+| S11 | Audio | `proof().synthCues === 0`; every cue in `audio[]` plays at least once in the timeline (`voicesPlayed`) | `<id>-v2.spec.ts` |
+| S12 | Stand-ins tracked | every route-local stand-in listed in `standIns[]` with an open R-14-NN | validator |
+
+### 16.2 Integrated acceptance (evaluated only at checkpoints; never blocks starting or merging)
+
+Evaluated on the checkpoint's main HEAD with `qr_flags=all` + the route flag. Screening rounds record scores; only G-PANEL rounds (IC-4, IC-8,
+IC-12, …) can accept (§6.3). "Benchmark context" lists the PRD 12 benchmark scenes (C-30) whose G-REF result in the same round is reported next to
+the game score for attribution; a failing scene makes the round `engine-pending` for the game only if the scene's owning contract is in the game's
+§12.3 integrated-critical list. Shot ids are the real `games.json` ids (§7.2).
+
+| Game | Benchmark context (same round) | Judged shots (`games.json` id: content) | Reference | Criterion and threshold (plus §6.3 for all) | Review |
+|---|---|---|---|---|---|
+| Bank Shot | 04-clearcoat, 07-sheen-fabric, 10-indoor-environment, 12-shadows | `02-opening`: rack; `05-charge`: aim; `03-mid`: roll; `04-action`: pot | `art/references` + research/21 Bank Shot | shadows ≥ 8, materials ≥ 8, lighting ≥ 8 | vision ×3 + ≥ 3 humans |
+| Turbo Drift | 09-outdoor-environment, 12-shadows, 14-particles, 17-large-environment | `02-opening`: grid; `03-mid`: straight ≥ 120 kph; `04-action`: drift with smoke | same | env ≥ 7.5, shadows ≥ 7.5, VFX ≥ 7 | same |
+| Aura Clash | 08-skinned-character, 12-shadows, 14-particles, 15-animation-skinning | `02-opening`: round intro; `03-mid`: exchange; `04-action`: hit during hit-stop; `05-special` | same | light ≥ 7.5, VFX ≥ 7.5, anim ≥ 7.5, camera ≥ 7.5 | same |
+| Orbital Defense | 13-ibl-only, 14-particles | `02-opening`: wave 1; `03-mid`; `04-action`: explosion; `05-shield` | same | env ≥ 7, assets ≥ 7, VFX ≥ 7.5 | same |
+| Vault Breakers | 04-clearcoat, 05-transmission, 13-ibl-only | `02-opening`: plunge; `03-mid`: play; `04-action`: bumper hit | same | assets ≥ 7.5, materials ≥ 7.5 | same |
+| Rooftop Buckets | 08-skinned-character, 09-outdoor-environment, 15-animation-skinning | `02-opening`: ready; `05-charge`; `03-mid`: release; `04-action`: make | same | env ≥ 7, anim ≥ 7 | same |
+| Courier Rush | 11-multiple-lights, 17-large-environment, 14-particles | `02-opening`: depot; `03-mid`: street (no black canvas); `04-action`: drop-off | same | env ≥ 7, IBL ≥ 7, atmo ≥ 7 | same |
+| Neon Swarm | 11-multiple-lights, 14-particles, 16-instancing | `02-opening`: wave; `03-mid`; `04-action`: kills; `05-burst` | same | env ≥ 7, VFX ≥ 7.5, juice ≥ 7.5 | same |
+| Pulse Tunnel | 13-ibl-only, 14-particles | `02-opening`: launch; `03-mid`: run (mobile too); `04-action`: gate pass | same | post ≥ 7.5, camera ≥ 7, mobile ≥ 6.5 | same |
+| Siege Golf | 09-outdoor-environment, 12-shadows, 18-game-scene | `02-opening`: tee; `05-charge`; `03-mid`: flight; `04-action`: topple | same | env ≥ 7.5, assets ≥ 7 | same |
+| Patrol Wing | 09-outdoor-environment, 13-ibl-only, 17-large-environment | `02-opening`: pad; `03-mid`: airborne, rings in frame; `04-action`: drone hit; `05-banked-fire` | same | env ≥ 7.5, camera ≥ 7.5, atmo ≥ 7.5 | same |
+| Aurora Lander | 09-outdoor-environment, 14-particles | `02-opening`: descent; `03-mid`: approach; `04-action`: touchdown | same | env ≥ 7, atmo ≥ 7.5 | same |
+| Gravity Post | 13-ibl-only, 16-instancing | `02-opening`: board; `03-mid`: aim; `04-action`: flight; `05-late-coast` | same | lighting ≥ 7 | same |
+| Deep Recovery | 09-outdoor-environment (fog), 12-shadows, 14-particles | `02-opening`: shallows; `03-mid`: descent; `04-action`: wreck; `05-grapple` | same | lighting ≥ 7, atmo ≥ 7.5, perf ≥ 7 | same |
+| Skyline Runner | 08-skinned-character, 15-animation-skinning | `02-opening`: act 1; `03-mid`: act ≥ 2; `04-action`: jump with FX | same | anim ≥ 7 | same |
+| Blockfall Reactor | 10-indoor-environment, 16-instancing | `02-opening`: board; `03-mid`: stack ≥ 4; `04-action`: line clear | same | VFX ≥ 7, camera ≥ 7, juice ≥ 7.5 | same |
+| Mech Hangar | 08-skinned-character, 10-indoor-environment, 15-animation-skinning | `02-opening`: hangar; `02b-arena-opening`: pit; `03-mid`; `04-action`: heavy strike; `05-special` | same | assets ≥ 7.5, anim ≥ 7 | same |
+| Gallery Shift | 10-indoor-environment, 12-shadows, 08-skinned-character | `02-opening`: lobby; `03-mid`: sneak, cone visible; `04-action`: alert | same | lighting ≥ 7.5, shadows ≥ 7, anim ≥ 7 | same |
+
+Each shot is captured at 1920×1080, 1280×720 and 390×844@3 (mobile stops after `03-mid` per `games.json` defaults). Every judged frame is a player
+frame: scenarios set only state, clock, seed and camera pose (C-24 `GameScenario`, `CaptureContext`), never look. Fleet-level integrated criteria
+are in §21.2.
 
 ## 17. Performance budgets
 
 Engine budgets per tier are PRD 11 §17.1 (GPU 12/16 ms p50/p95 Medium–Ultra; Low 28/33 ms mobile; engine CPU 5/8 ms; draws ≤ 150/300/600/1,500;
-GPU memory ≤ 256 MB/512 MB/1 GB/2 GB). This PRD adds the game share and the content budgets:
+GPU memory ≤ 256 MB/512 MB/1 GB/2 GB; tier settings are the frozen C-27 table). This PRD adds the game share and the content budgets. Game caps
+are at or below the C-27 values (e.g. live particles here vs C-27 `particleBudget` 2,000/10,000/50,000/100,000; draws here vs C-27 `drawBudget`
+150/300/600/1,500), so a game never relies on an engine cap to stay in budget.
+
+Which budgets are standalone and which are integrated:
+- **Standalone (gate merges, §16.1 S8/S9):** draw calls per tier from C-28 counters, 0 readbacks, game-logic CPU p95 ≤ 4 ms (measured with
+  `performance.now()` around the route's update, reported in the route `render` section), transfer to playable and route JS chunk size (measured
+  from the build output and the capture network log), decoded audio resident (C-25 `proof()` plus buffer sizes), p95 ≤ 50 ms at 1280×720 on the
+  runner.
+- **Integrated (checkpoints only):** the PRD 11 §17.2 runner gate under forced Medium, GPU ms and GPU memory per tier (need C-28 timer queries and
+  C-27 governor real), real-device fps from the human panel, KTX2-resident texture memory (needs C-16/C-17 real).
 
 | Budget | Low | Medium | High | Ultra |
 |---|---|---|---|---|
@@ -1482,11 +1924,11 @@ GPU memory ≤ 256 MB/512 MB/1 GB/2 GB). This PRD adds the game share and the co
 | GPU texture memory per game (KTX2 resident) | ≤ 128 MB | ≤ 256 MB | ≤ 512 MB | ≤ 1 GB |
 | Decoded audio resident | ≤ 10 MB | ≤ 16 MB | ≤ 24 MB | ≤ 24 MB |
 | Route JS chunk (gzip, excluding engine and `@aura3d/game`) | ≤ 80 KB | same | same | same |
-| Total critical-path JS (gzip) | ≤ 650 KB today (engine root 575 KB, `BUNDLE_SIZES.md`); ≤ 400 KB after PRD 15 | same | same | same |
+| Total critical-path JS (gzip) | ≤ 650 KB today (engine root 575 KB, `BUNDLE_SIZES.md`); ≤ 400 KB once PRD 15's consolidation is real (integrated) | same | same | same |
 | Mobile | primary phone tier; landscape for vehicle/fighting games; touch preset mandatory | flagship phones | not auto-selected on phones | never on phones |
 
 Runner gate: PRD 11 §17.2 (1280×720 p50 ≤ 20 ms, p95 ≤ 34 ms; 1920×1080 p50 ≤ 33 ms, p95 ≤ 50 ms; 390×844 p50 ≤ 33 ms; 0 readbacks; ≤ 300 draws),
-for all 18 games, two consecutive runs. Today 13 games fail it (§1). Per-game current → required (1920×1080 runner; current = 1000 / mean fps from `report.slim.json`, required = p50): Deep Recovery 1,917 ms → ≤ 33;
+for all 18 games, two consecutive runs (integrated). Today 13 games fail it (§1). Per-game current → required (1920×1080 runner; current = 1000 / mean fps from `report.slim.json`, required = p50): Deep Recovery 1,917 ms → ≤ 33;
 Gravity 156 → ≤ 33; Siege 141 → ≤ 33 and p95 1,100 → ≤ 50; Courier 141 → ≤ 33; Rooftop 132 → ≤ 33; Mech 108; Blockfall 102; Gallery 99; Aura Clash 90;
 Skyline 88; Bank 67; Patrol 63; Turbo 51; Pulse 43; Neon 39 → all ≤ 33; Aurora, Vault, Orbital must stay ≤ 33 after their scenes get heavier.
 
@@ -1495,75 +1937,98 @@ M1–M3 Pro or RTX 3060 laptop; Ultra — RTX 4070+ desktop. Measured from the b
 
 ## 18. Browser coverage
 
-| Browser | Lane | Required |
-|---|---|---|
-| Chrome stable (ANGLE Metal on macOS, D3D11 on Windows) | GH Actions macos-14 capture + human panel | all 18, every review round |
-| Safari 17+ macOS | human panel; remote WebKit lane (`playwright.audio-webkit.config.ts` pattern, macos-14) | all 18 before acceptance |
-| Firefox stable | remote browser-matrix lane (`.github/workflows/browser-matrix.yml`) | boot + 60 s timeline, 0 errors |
-| Edge stable (Windows) | human panel, one reviewer | pilots and any game with SSR/CSM |
-| WebGPU path | only if PRD 11 selects it for the tier; must match WebGL2 look signature within PRD 12 tolerance | informational until PRD 11 makes it default |
+| Browser | Lane / runner | Standalone (gates merge) | Integrated (checkpoints) |
+|---|---|---|---|
+| Chrome stable (ANGLE Metal on macOS) | `qr-prd14-games.yml` on macos-14; checkpoint captures by PRD 12 | S1–S12 for every changed game | all 18, every round |
+| Safari 17+ macOS (WebKit) | lane job using a lane config `tests/qr/prd14/playwright.webkit.config.ts` (copied pattern of `playwright.audio-webkit.config.ts`, which PRD 12 owns), macos-14; human panel | S1, S2, S11 (boot, conditions, audio unlock) | all 18 before acceptance (human) |
+| Firefox stable | lane job on macos-14 with Playwright Firefox (lanes add `qr-prdNN-*.yml` rather than editing `browser-matrix.yml`, CONTRACTS §4.2) | S1 boot + 60 s timeline, 0 errors | same, all 18 |
+| Edge stable (Windows) | human panel, one reviewer | — | pilots and any game whose art direction uses SSR or CSM |
+| WebGPU | only if PRD 11 selects it for the tier (C-29 `backend: "auto"`, `A3D_QR_WEBGPU`) | — | informational; `appliedLook` must match WebGL2 within PRD 12 tolerance |
 
 ## 19. Mobile coverage
 
-- iOS Safari (iPhone 11 Low, iPhone 13–15 Medium) and Android Chrome (Pixel 6a Low, Pixel 8 / Galaxy S23 Medium), by the human panel on real devices;
-  emulated 390×844@3 on the runner for every capture.
-- Requirements per game: full-bleed canvas at the tier DPR (never fixed at 1 on 3× screens except Low); touch preset from PRD 09 (`twin-stick`,
-  `dpad-2btn`, `aim-drag`, flipper zones for Vault); no keyboard prompts on touch devices (Vault's "HOLD SPACE" today); HUD ≤ 15% of screen area in play;
-  orientation guidance for landscape-only games (Aura Clash, Turbo, Courier, Patrol, Mech); audio unlock on the title tap; thermal: 10-minute session
-  holds ≥ 27 fps p50 on Low devices.
-- Mobile score ≥ 6.5 in every game (fleet 2.5 today).
+- iOS Safari (iPhone 11 Low, iPhone 13–15 Medium) and Android Chrome (Pixel 6a Low, Pixel 8 / Galaxy S23 Medium), by the human panel on real devices
+  (integrated); emulated 390×844@3 on the runner for every lane capture (standalone).
+- Standalone requirements per game: full-bleed canvas at the C-27 tier DPR (never fixed at 1 on 3× screens except Low); C-24 touch preset from
+  §7.2.1 (`twin-stick`, `dpad-2btn`, `dpad-4btn`, `steer-pedals`, `aim-drag`, `flight`, `lane-swipe`, `flippers`); no keyboard prompts on touch devices
+  (Vault's "HOLD SPACE" today); HUD ≤ 15% of screen area in play (C-24 `hud.snapshot().widgets[].screenFraction` sum); orientation guidance for
+  landscape-only games (Aura Clash, Turbo, Courier, Patrol, Mech); audio unlock on the title tap (C-25 `unlock()`).
+- Integrated: thermal, a 10-minute session holds ≥ 27 fps p50 on Low devices; mobile score ≥ 6.5 in every game (fleet 2.5 today).
 
 ## 20. Screenshots and evidence required
 
-Per review round per game, committed or attached to the PR:
+Standalone, per merged v2 PR (artifacts of `qr-prd14-games.yml`, retained 30 days, linked in the PR):
+1. Changed game's shots at 1920×1080, 1280×720, 390×844@3 with flags `route-<id>`, plus the same shots with the flag off (legacy) for S1.
+2. Lane `report.json`: rAF p50/p95/p99, draws, readbacks, console/page errors, `requiredConditions` results, `canvasBlankCheck` results,
+   `appliedLook` per URL, resolved `qrFlags`, `degradations`.
+3. `check-art-direction.mjs` and `check-route-health.mjs` output.
+4. Kit PRs: the three r185 / Aura look-dev strip for every new hero/character/vehicle/enemy asset with the reviewer's verdict in `kit.json`.
 
-1. Capture set: every `games.json` shot at 1920×1080, 1280×720, 390×844@3; contact sheet `evidence/games/<id>-contact.jpg`; 5 s video around
-   `04-action` (PRD 12 strip capture).
-2. `report.json` with rAF p50/p95/p99, draws, console/page errors, `requiredConditions` results, canvas blank check results, look signatures.
-3. PRD 12 panel record with vision judgements per viewport and the human entries; `GameScorecard` JSON.
-4. Side-by-side: round-0 (Wave 0) frame vs current frame for each shot, and current frame vs the closest reference-board image.
-5. Asset look-dev turntables (PRD 05) for every new hero/character/vehicle/enemy asset.
-6. Art-direction audit output (`pnpm check:art-direction --routes <id>`) and `pnpm check:capture-parity --fail-on-any --routes <id>`.
+Integrated, per checkpoint round per game (committed under `apps/<dir>/art/scorecards/` and `docs/project/aura3d-quality-rebuild/evidence/games-after/`):
+5. Capture set from the PRD 12 checkpoint run (`none`, `all`, route `qrFlags`); contact sheet `evidence/games-after/<id>-IC-<k>-contact.jpg`; 5 s
+   video around `04-action` (PRD 12 strip/webm steps, C-33).
+6. The C-32 `PanelRoundRecord` reference and the `GameScorecard` JSON (with `countedRound`, `enginePending`).
+7. Side-by-side: IC-0 legacy frame vs current v2 frame per shot, and current frame vs the closest reference-board image.
 
 ## 21. Completion criteria
 
-- All 18 games have `qualityGate.status` `accepted` or `withdrawn`; at least 15 are accepted.
-- Every accepted game: vision overall ≥ 7 and "competitive" = Yes; human median ≥ 7, no reviewer < 6; every visual category ≥ 5; critical categories at
-  their §6.10 targets; non-visual thresholds of §6.3; PRD 11 runner gate and §17 budgets met; 0 console/page errors; mobile ≥ 6.5.
+### 21.1 Standalone (this lane alone)
+- All 18 routes have dispatchers, art-direction contracts, reference boards and `qualityGate.status` set; 0 debug/evidence/marketing text in
+  either flag state; the P0 correctness fixes of §14.1 merged with tests.
+- All 18 v2 routes pass §16.1 S1–S12 with flags `none` + route flag; 0 `capture-branch` hits; 0 `lights.ambient`; 0 visible synthesized hero/world
+  assets; `proof().synthCues === 0`.
+- C-35 implemented; its conformance suite passes on stub and real; scorecard tooling, form and gates run in lane CI.
+- Every stand-in listed in `standIns[]` with an open R-14-NN; every request in §12A.6 filed.
+
+### 21.2 Integrated (evaluated at G-PANEL checkpoints; the program's actual goal)
+- All 18 games have `qualityGate.status` `accepted` or `withdrawn` (withdrawal only after two counted rounds); at least 15 are accepted.
+- Every accepted game: §6.3 met on one commit (vision overall ≥ 7 and "competitive" = Yes; human median ≥ 7, no reviewer < 6; every visual
+  category ≥ 5; critical categories at their §6.10 targets; non-visual thresholds; PRD 11 runner gate and §17 integrated budgets; 0 console/page
+  errors; mobile ≥ 6.5).
 - Fleet: mean overall ≥ 7.2 across accepted games; no fleet category mean < 6.0.
-- Zero `?capture=` look branches (`check:capture-parity --fail-on-any` exits 0), zero `lights.ambient` in game routes, zero visible synthesized hero/world
-  assets, zero synthesized audio cues, zero debug/evidence/marketing text in play views.
-- PRD 12 goldens registered for every accepted game; two consecutive green fleet capture runs on `main`.
+- Legacy removed for every accepted game; route flags in `REMOVED_QR_FLAGS`; PRD 12 goldens registered for every accepted game; two consecutive
+  green fleet capture runs on `main`.
 
 ## 22. Rollback considerations
 
-- Each game ships independently; production keeps the previous build until acceptance, and `pre-rebuild/<id>` tags allow a route-level revert.
-- If an engine dependency regresses after a game is accepted (PRD 12 G-REG fails on a golden), the engine change is reverted, not the game.
-- If a game is accepted and later fails on a real device class (e.g. thermal drop on Low), the tier mapping for that game is lowered (PRD 11 `quality.lock`
-  per device class) before any content is cut.
-- Withdrawn games are hidden from `apps/showcase-index` and keep serving at their URL with the old build and an "in development" banner; nothing is
-  deleted until Phase 6.
-- Kit assets are shared: a kit change requires re-capture of every consuming game (consumers listed in §6.4); a kit regression is rolled back by
-  pinning the previous asset hash in `aura.assets.json`.
+- **Before acceptance:** flag off is the frozen legacy route, so rolling back a v2 change never touches production. A v2 PR that breaks main is
+  reverted at once (CONTRACTS §6.1).
+- **After the default flip, before legacy removal:** set `DEFAULT_ON = false` in the route's dispatcher (one-line PR) to serve legacy again;
+  `?a3d-qr=-route-<id>` does the same per session for diagnosis.
+- **After legacy removal:** revert to the `pre-rebuild/<id>` tag at route level.
+- If an engine change regresses an accepted game (PRD 12 G-REG on a golden), the route opts out of that lane's flag (`all,-<lane>` in its
+  `qualityRebuild.flags`) and a `qr-ic-regression` issue goes to the owning lane; the game is not rolled back.
+- If an accepted game fails on a real device class (e.g. thermal drop on Low), its tier mapping is lowered through C-27 `app.quality.set` +
+  `lock()` per device class before any content is cut.
+- Withdrawn games are hidden from `apps/showcase-index` and keep serving the legacy route at their URL with an "in development" banner.
+- Kit assets are shared: a kit change requires re-capture of every consuming game (§6.4 consumers); a kit regression is rolled back by pinning the
+  previous asset hash through `aura3d assets` (regenerated manifest diff).
 
 ## 23. Risks
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Engine PRDs land late; games get rebuilt against broken defaults again (the Pulse Tunnel failure) | high | high | Hard entry conditions per wave (§6.5); benchmark G-REF gate before review (§16) |
-| Content cost: ~18 hero sets, 9 kits, licensed HDRIs and audio | high | high | Kits shared across waves (§6.4); catalog/CC0 first; Meshy promotion path (PRD 05) for gaps; withdraw games rather than ship weak art |
-| Vision judge drift or leniency between rounds | medium | high | Same prompt as research/21; PRD 12 calibration canaries; human panel is co-equal and blind |
-| Agents optimise for the judge instead of the player (new form of capture forks) | medium | high | Look-signature equality, player-frame-only capture, human play sessions on own devices, judge receives references not just the frame |
-| Performance regresses as content grows (scenes were cheap only because empty: Orbital, Vault) | high | medium | Draw/particle/texture budgets per tier enforced in `check:art-direction`; PRD 11 governor |
-| Runner GPU is paravirtual and far below Low class | certain | medium | Runner gate is relative (PRD 11 §17.2); real-device numbers from the human panel are authoritative for tiers |
-| Licence errors in admitted assets or HDRIs | medium | high | Per-file licence required at admission (PRD 05); reference images marked "reference-only" are never shipped |
-| Shared kit changes break accepted games | medium | medium | Kit consumers re-captured on kit PRs; asset hash pinning |
-| Some games cannot reach 7 within two rounds | medium | medium | Explicit withdrawal; completion requires ≥ 15 accepted, not 18 |
-| Human reviewer availability | medium | medium | Panel scheduled per wave; review form works offline; one external reviewer minimum |
+| Content is tuned around stub defects while engine lanes are not yet real (the Pulse Tunnel failure, now in parallel form) | high | high | Physical-intent authoring enforced by `auditArtDirection` (`ambient-light`, `emissive-fill`, no fake discs); asset approval on the three r185 pane (§6.4); `engine-pending` rounds do not count (§6.3) |
+| Engine lanes land late, so integrated targets slip | high | medium | Nothing here waits; standalone work completes regardless; first counted rounds are per-wave targets, and early rounds that are engine-pending cost nothing |
+| Stub costs mislead performance work (C-37 remount per FX burst, C-25 engine voice restarts) | medium | medium | S9 measures p95 under bursts; G13 pre-mounted pool fallback; costs recorded in scorecards with `degradations` |
+| Route-local stand-ins (rigs, FX pool, baked gradients) linger and become a second engine | medium | medium | `standIns[]` validator requires an open R-14-NN; Phase 6 refuses legacy removal while any stand-in remains whose contract is real |
+| Two code paths per route (legacy + v2) double maintenance | certain | low | Legacy frozen except declared P0 fixes; shared `src/gameplay/`; legacy deleted per game in Phase 6 |
+| Ownership ambiguity for asset bytes in `public/aura-assets/` | medium | low | R-14-07 asks PRD 05 to confirm the §4.3 generated-file rule covers them; until confirmed, assets stay staged in `apps/showcase-kits/` |
+| Content cost: ~18 hero sets, 9 kits, licensed HDRIs and audio | high | high | Kit agents start day 0; catalog/CC0 first; Meshy promotion path through PRD 05 when real; withdraw games rather than ship weak art |
+| Vision judge drift or leniency between rounds | medium | high | Same prompt as research/21 (C-32 `RUBRIC_PROMPT_VERSION`); calibration canaries; human panel co-equal and blind |
+| Agents optimise for the judge instead of the player (new form of capture forks) | medium | high | `appliedLook` equality across scenarios, player-frame-only capture, human play on own devices, judge receives references |
+| Performance regresses as content grows (scenes were cheap only because empty: Orbital, Vault) | high | medium | Standalone draw/readback/CPU budgets in S8/S9; C-27 tiers |
+| Runner GPU is paravirtual and far below Low class | certain | medium | Runner gates are relative; real-device numbers from the human panel are authoritative for tiers |
+| Licence errors in admitted assets or HDRIs | medium | high | Per-file licence in `kit.json` with an allow-list test; reference images marked "reference-only" are never shipped |
+| Some games cannot reach 7 within two counted rounds | medium | medium | Explicit withdrawal; completion requires ≥ 15 accepted, not 18 |
+| Human reviewer availability | medium | medium | G-PANEL schedule fixed (IC-4/8/12); offline form; one external reviewer minimum |
 
 ## 24. Explicitly out of scope
 
-- Engine, renderer, shader-library, asset-pipeline and runtime implementation (PRDs 01–13, 15). This PRD specifies requirements and consumes them.
+- Engine, renderer, shader-library, asset-pipeline and runtime implementation (PRDs 01–13, 15), and every file outside §12A.2. This PRD consumes
+  contracts and files requests (§12A.6); it never edits another lane's file and never waits on another lane.
+- Changing any frozen contract except through the CCRs listed in §12A.6.
+- Claims that any game or the engine matches three.js, other than G-PANEL judgements cited with round id, rubric version and capture run id.
 - New games beyond the 18, and non-game showcases (`showcase-data-galaxy`, `showcase-product-configurator`, `showcase-webgpu-particle-lab`, etc.).
 - Gameplay redesign beyond the bugs and tuning named in §6.9 (rules, levels, progression stay as they are).
 - Production deployment procedure (governed by `/Users/gurbakshchahal/AuraOne/AuraOne-Deploy-Final-PERMANENT.md` for AuraOne targets).
