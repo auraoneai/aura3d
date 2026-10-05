@@ -1,10 +1,18 @@
 # PRD 05 — Asset Pipeline + Technical-Art Toolchain
 
 Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit` @ `c08d8acb`.
-Status: proposed. Owner area: `packages/aura3d-cli` (assets verbs, release gates, Meshy import), `packages/assets`
-(loaders, decoders, preflight, mesh optimization), `packages/asset-index` (catalog adapters, ranking),
-`packages/engine/src/production-runtime/TypedGLBActor.ts` (decoder wiring), new `tools/asset-optimize/`,
-new `apps/asset-lookdev/`, root `aura.assets.json` / `src/aura-assets.ts` / `public/aura-assets/`.
+Status: proposed, parallelized against `CONTRACTS.md` (lane 05, flag `A3D_QR_ASSETS`, sub-flags `_LOD`,
+`_DECODERS`). Owner area (exact list in "Parallel execution", matching CONTRACTS §4.1 row **05**):
+`packages/aura3d-cli` (default: assets verbs, release gates, Meshy import), `packages/assets` (default: loaders,
+decoders, preflight, mesh optimization, `gltf/ImageDecode.ts`), `packages/asset-index`, `packages/physics-rapier`
+(except `HeightfieldLayout.ts`), `packages/rendering/src/webgl2/TextureFormats.ts`, `performance/LOD.ts`,
+`shaders/{lod-dither,debug-view}.glsl.ts`, `packages/engine/src/agent-api/AssetDecoders.ts`,
+`production-runtime/LodSelector.ts`, `production-runtime/actor/TypedGLBActorLod.ts`, new `tools/asset-optimize/`,
+`apps/{asset-lookdev,loader-ktx2}/`, `assets/` (default), root `aura.assets.json` / `aura.library.json` /
+`src/aura-assets.ts` / `public/{aura-assets,aura-decoders}/`.
+Provides contracts **C-16** (compressed textures + decoder registry) and **C-17** (asset manifest 1.1 /
+AssetOptimize / admission). Every other lane is reached only through contracts (§12) or non-blocking
+`qr-request` issues (§12.3); no task in this PRD waits on another lane.
 
 Evidence base: research `11-asset-pipeline.md` (primary; every GLB the games reference was parsed there),
 `03-pbr-materials-gltf.md` §5–6 (KTX2 colour space, tangents, decoders), `09-animation-characters.md` §6–7
@@ -125,19 +133,24 @@ Template starters inherit the floor: `product-viewer` product is 968 tris with 1
 - `public/aura-assets/` is 1.7 GB / 1,393 files with 529 orphans (490 MB); each app's `dist/aura-assets` copies
   all of it.
 
-### 2.6 Render-time asset destruction owned by other PRDs (blocking dependencies)
+### 2.6 Render-time asset destruction in other lanes' code (integrated, never blocking)
 
 - `model(asset, { material })` with any colour sets `replaceSurfaceTextures: true` (hard-coded,
-  `packages/engine/src/agent-api/index.ts:13567-13580`), disabling base-colour and metal-rough maps on every
-  material (`TypedGLBActor.ts:484-514`); `material.pbr()` always injects `#d7dee8` (`index.ts:2415-2417`).
-  Confirmed by 19 C3. Owned by PRD 04.
+  `packages/engine/src/agent-api/index.ts:13570`, inside the tint bridge `:13560-13580` that PR 0b-1 carves to
+  `compiler/modelMaterials.ts`, owner 04), disabling base-colour and metal-rough maps on every material
+  (`TypedGLBActor.ts:484-514`); `material.pbr()` always injects `#d7dee8` (`index.ts:2416`). Confirmed by
+  19 C3. Fixed by lane 04 behind `A3D_QR_MATERIALS` through contract C-15.
 - `lights.ambient()` without an `environments.*` node zeroes IBL (`index.ts:12693-12707`): 15 of 18 games
-  (18 §1 C1; Aura Clash avoids it through the compatibility RenderSource path). Owned by PRD 02.
-- Instanced boxes ignore `node.size` in `createProductionInstanceTransforms` (`index.ts:14747-14753`;
-  research 22/23 `16-instancing`). Owned by PRD 11; blocks instanced library props.
+  (19 corrected claim; Aura Clash avoids it through the compatibility RenderSource path). Fixed by lane 02
+  behind `A3D_QR_LIGHTING` through C-09/C-10.
+- Instanced boxes ignore `node.size` in `createProductionInstanceTransforms` (`index.ts:14747-14754`;
+  research 22/23 `16-instancing`). CONTRACTS §0 R18: fixed by lane 15 in `compiler/primitives.ts` as an unflagged
+  correctness fix (C-36).
 
-Optimized assets will still look flat until PRD 04 (tint) and PRD 02 (IBL) land. This PRD's visual acceptance
-is therefore sequenced after those fixes (§12, §16).
+These do not gate any task here. Lane 05's standalone acceptance (§16.0) is measured on the **three r185
+adapter** of the look-dev viewer and on optimized-vs-source equivalence in Aura3D, neither of which needs those
+fixes. Aura3D-rendered quality of optimized assets in games is integrated acceptance (§16.4), scored only at
+CONTRACTS §7 checkpoints with `qr_flags=all`.
 
 ---
 
@@ -167,37 +180,65 @@ is therefore sequenced after those fixes (§12, §16).
 
 | Package | Change |
 |---|---|
-| `@aura3d/cli` (`packages/aura3d-cli`) | New verbs `assets optimize`, `assets lookdev`, `assets budget`, `assets library`, `assets admit`; replace release gates; Meshy promotion; manifest schema 1.1; per-route typegen; deploy subset |
-| `@aura3d/assets` (`packages/assets`) | Delete/replace `MeshOptimization`, `AssetImportPreflight` stubs, `KTX2LoaderThreeCompat`; local basis transcoder; target-format detection; sRGB compressed formats (shared with PRD 04); MSFT_lod parse; texture level cap per tier |
-| `@aura3d/engine` (`packages/engine`) | `createTypedGLBActor` decoder injection; `model()` `lod` option; quality-tier texture cap; collider sidecar consumption; `ensureAssetDecoders` defaults on |
-| `@aura3d/rendering` (`packages/rendering`) | sRGB compressed internal formats in `WebGL2Device` and WebGPU device; LOD dither cross-fade; look-dev debug views |
+| `@aura3d/cli` (`packages/aura3d-cli`) | New verbs `assets optimize`, `assets lookdev`, `assets review`, `assets budget`, `assets library`, `assets admit`, `assets prune`; replace release gates; Meshy promotion; manifest schema 1.1 (C-17); per-route typegen; deploy subset; codemod `assets-route-modules` (C-39) |
+| `@aura3d/assets` (`packages/assets`) | Delete/replace `MeshOptimization`, `AssetImportPreflight` stubs, `KTX2LoaderThreeCompat`; `AssetDecoderRegistry` + vendored basis/draco (C-16 real); `KTX2TargetSelection.ts`; MSFT_lod parse in `GLTFLoader.ts`; tier texture cap in carved `gltf/ImageDecode.ts` |
+| `@aura3d/engine` (`packages/engine`) | Lane-05 files only: `agent-api/AssetDecoders.ts` (registry per app, `prepareModelDecoders`), `production-runtime/LodSelector.ts`, `production-runtime/actor/TypedGLBActorLod.ts` (TypedGLBActor extension), `lanes/prd05.ts`, `compiler/diagnosticOnly.prd05.ts`. The actor's pipeline call (`TypedGLBActor.ts`, 04) and model-node compile (`compiler/renderer.ts`, 15) are reached by requests Q-04-1 / Q-15-1 |
+| `@aura3d/rendering` (`packages/rendering`) | Lane-05 files only: `webgl2/TextureFormats.ts` (carve-out of `WebGL2Device.ts:4117-4133`, sRGB + BPTC + gated ETC2), `shaders/lod-dither.glsl.ts`, `shaders/debug-view.glsl.ts` (C-02 chunks), `performance/LOD.ts`. WebGPU compressed upload is request Q-11-1 |
 | `@aura3d/asset-index` (`packages/asset-index`) | Poly Haven HDRI + texture adapters (direct 1k/2k files), ambientCG texture adapter, library catalog source, visual-signal ranking |
-| `@aura3d/physics-rapier` | Consume generated collider sidecars |
-| `create-aura3d` templates + skills | Replace starter assets; update `aura3d-assets`, `meshy-cli`, `aura3d-performance`, `aura3d-materials-environments` skills |
-| New: `tools/asset-optimize` | Node pipeline on `@gltf-transform/*` + meshoptimizer + KTX-Software + MikkTSpace; runs in CI/remote |
+| `@aura3d/physics-rapier` | `createCollidersFromSidecar` consuming generated collider sidecars |
+| `create-aura3d` templates + skills (owner 13) | Not edited here: facts F-05-* (C-40) and requests Q-13-1..3 |
+| New: `tools/asset-optimize` (own `package.json`) | Node pipeline on `@gltf-transform/*` + meshoptimizer + KTX-Software + MikkTSpace; runs in CI/remote |
 | New: `apps/asset-lookdev` | Look-dev viewer route + capture script (both Aura3D and three r185 adapters) |
 
 ---
 
 ## 5. Affected files / directories
 
-- `packages/aura3d-cli/src/cli.ts` (verb dispatch), `cli-help.ts`, `cli-options.ts`
-- `packages/aura3d-cli/src/index.ts` — `createRoleAwareReleaseQualityWarnings` (:3210-3272), `requiresTextureEvidence` (:3376-3382, delete), `hasHashBoundFlatColorMaterialEvidence` (:3164-3178, delete), release-primary check (:3005), `retainedGameSubjectCertificationBlockers` (:702-760), `addAsset` (:313), `validateAssets` (:875)
-- `packages/aura3d-cli/src/asset-core-types.ts` (schema 1.1 types), `asset-manifest.ts` (`writeTypedAssets` :37, per-route typegen), `asset-role-admission.ts`
+### 5.1 Owned by lane 05: modify
+
+- `packages/aura3d-cli/src/cli.ts` (verb dispatch; C-39 fallthrough seam lands in PR 0b-3), `cli-help.ts`, `cli-options.ts`
+- `packages/aura3d-cli/src/index.ts` — `createRoleAwareReleaseQualityWarnings` (:3210-3272), `requiresTextureEvidence` (:3376-3382, delete; call site :3252), `hasHashBoundFlatColorMaterialEvidence` (:3164-3178, delete; uses :3005, :3158), release-primary check (:3005), `retainedGameSubjectCertificationBlockers` (:702-760), `addAsset` (:313), `validateAssets` (:875), `inspectGltfAnimations` (:2112, request Q-05-1 from lane 06)
+- `packages/aura3d-cli/src/asset-core-types.ts` (schema 1.1 types, re-exporting C-17), `asset-manifest.ts` (`writeTypedAssets` :37, per-route typegen), `asset-role-admission.ts`, `asset-source-validation.ts` (route AST scan)
 - `packages/aura3d-cli/src/meshy/import.ts:42`, `meshy/admission.ts:100-137`
 - `packages/aura3d-cli/src/pull-bridge/scoring.ts`, `packages/asset-index/src/ranking.ts`, `adapters/poly-haven.ts`
-- `packages/assets/src/MeshOptimization.ts`, `AssetImportPreflight.ts`, `loaders/KTX2Loader.ts`, `KTX2BasisTextureTranscoder.ts` (incl. `ensureCompressedTextureSupport` :277-293), `GLTFCompressionDecoders.ts` (`createMeshoptDecoder` :63, `createDracoDecoder` :85), `GLTFLoader.ts`, `GLTFRenderResources.ts` (:2196-2237 decode/sampler), `GLTFExtensionSupport.ts`, `asset-corpus/ProductionGLTFRenderPipeline.ts`
-- `packages/engine/src/production-runtime/TypedGLBActor.ts:183-191`, `packages/engine/src/agent-api/AssetDecoders.ts`, `packages/engine/src/agent-api/index.ts` (`AuraModelOptions` :1235-1257, `AuraAssetDefinition` :951-960, model node → actor :13540-13600)
-- `packages/rendering/src/Texture.ts:1` (`TextureCompressedFormat` union), `packages/rendering/src/WebGL2Device.ts` (:4066-4068, :4117-4133 compressed formats), `packages/rendering/src/WebGPUDevice.ts` (new compressed upload path; none exists today), `ShaderLibraryCore.ts` / `ShaderLibrary.ts` (LOD dither)
-- `apps/loader-ktx2/src/main.ts` (only direct low-level KTX2 caller; migrate to `transcoderUrl`)
-- `packages/rendering/src/performance/LOD.ts` (delete `createDefaultPerformanceLodLevels` or back it with real meshes)
-- New `tools/asset-optimize/{index.ts,profiles.ts,steps/*.ts,checks/*.ts,README.md}`
-- New `apps/asset-lookdev/{index.html,src/main.ts,src/three-adapter.ts,src/aura-adapter.ts,capture.mjs}`
-- New `.github/workflows/asset-optimize.yml`, `.github/workflows/asset-lookdev.yml`
-- `aura.assets.json`, `src/aura-assets.ts`, `public/aura-assets/`, new `assets/library/` + `aura.library.json`
-- `apps/showcase-*/scripts/build-models.mjs`, `build-review-art.mjs`, `register-models.mjs`, `register-assets.mjs` (demotion)
-- `packages/create-aura3d/templates/*/aura.assets.json` (product-viewer, racing-starter, mini-game, fighting-game, character-controller, falling-blocks-starter)
-- `packages/aura3d-cli/skills/aura3d-assets/SKILL.md` (:109 rule enforcement), `packages/aura3d-cli/skills/meshy-cli/SKILL.md` (:56-66 profile budget table), `packages/aura3d-cli/skills/aura3d-performance/SKILL.md`, `packages/aura3d-cli/skills/aura3d-materials-environments/SKILL.md` (:9-10). These are canonical; the `.agents/`, `.claude/`, `.cursor/` and `packages/create-aura3d/skills/` copies are mirrors regenerated by `pnpm skills:sync` and checked by `pnpm check:skills` — never edit mirrors by hand. There is no root `skills/` directory.
+- `packages/assets/src/MeshOptimization.ts`, `AssetImportPreflight.ts`, `loaders/KTX2Loader.ts`, `KTX2BasisTextureTranscoder.ts` (incl. `ensureCompressedTextureSupport` :277-293), `GLTFCompressionDecoders.ts` (`createMeshoptDecoder` :63, `createDracoDecoder` :85), `GLTFLoader.ts` (Draco throw :1312; MSFT_lod parse)
+- `packages/assets/src/gltf/ImageDecode.ts` (verbatim carve of `decodeImageInBrowser`, `GLTFRenderResources.ts:2216-2241`, in PR 0b-3; CONTRACTS §3.6)
+- `packages/rendering/src/webgl2/TextureFormats.ts` (verbatim carve of `resolveCompressedTextureFormat`, `WebGL2Device.ts:4117-4133`, call site :3922, in PR 0b-2; C-16 slot)
+- `packages/rendering/src/performance/LOD.ts` (delete `createDefaultPerformanceLodLevels` :13-20 or back it with real meshes)
+- `packages/engine/src/agent-api/AssetDecoders.ts` (:10-25)
+- `packages/physics-rapier/src/index.ts` (`ColliderDesc.trimesh`/`convexHull` :555-557)
+- `apps/loader-ktx2/src/main.ts:85-90` (only direct low-level KTX2 caller; migrate to `transcoderUrl`)
+- `aura.assets.json` (generator-only, CONTRACTS §4.3), `src/aura-assets.ts`, `public/aura-assets/`
+
+### 5.2 Owned by lane 05: add
+
+- `packages/assets/src/{AssetDecoderRegistry,KTX2TargetSelection,KTX2TranscodeWorker}.ts`, `packages/assets/vendor/{basis,draco}/`
+- `packages/engine/src/production-runtime/{LodSelector.ts,actor/TypedGLBActorLod.ts}`
+- `packages/rendering/src/shaders/{lod-dither,debug-view}.glsl.ts` (+ WGSL twins in the same files' `wgsl` field, C-02)
+- `packages/aura3d-cli/src/{optimize,lookdev,admission}/`, `packages/aura3d-cli/src/commands/prd05/`
+- `tools/asset-optimize/{package.json,index.ts,profiles.ts,steps/*.ts,checks/*.ts,extensions/msft-lod.ts,migrate-1.1.ts,review-vision.ts,measure-tiers.mjs,tool-versions.json,blender/*.py,README.md}`
+- `apps/asset-lookdev/{index.html,src/main.ts,src/three-adapter.ts,src/aura-adapter.ts,capture.mjs,lookdev.stage.json}`
+- `.github/workflows/{asset-optimize,asset-lookdev}.yml`, `.github/workflows/qr-prd05-{gates,assets-browser}.yml`
+- `assets/library/` + `aura.library.json`, `assets/art-direction/`, `public/aura-decoders/`
+- Lane-generic: `packages/{assets,engine,rendering,aura3d-cli}/src/lanes/prd05.ts`, `agent-api/compiler/diagnosticOnly.prd05.ts`, `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/`, `tests/qr/prd05/`, `tests/unit/contracts/impl/prd05-*`, `docs/project/aura3d-quality-rebuild/evidence/prd05/` (all evidence below lives under `evidence/prd05/assets/`; `evidence/` default is lane 12's)
+
+### 5.3 Not edited by lane 05 (seam, extension point, or request)
+
+| File (owner) | Earlier draft edit | Now |
+|---|---|---|
+| `packages/engine/src/production-runtime/TypedGLBActor.ts:183-191` (04) | pass decoders to `loadProductionGLTFRenderPipeline` | pre-declared `TypedGLBActorOptions.decoders?/maxTextureSize?/lod?` (PR 0a) + request Q-04-1; LOD via `registerTypedGLBActorExtension` from `actor/TypedGLBActorLod.ts` |
+| `packages/assets/src/GLTFRenderResources.ts` (04) | `decodeImageInBrowser`, `u_baseColorTextureSize` | carved `gltf/ImageDecode.ts` (05); debug view uses GLSL `textureSize()` so no new uniform |
+| `packages/assets/src/{GLTFExtensionSupport.ts, asset-corpus/ProductionGLTFRenderPipeline.ts}` (04) | register `MSFT_lod`; decoders option | request Q-04-2 (generated matrix); pipeline already accepts decoders (E9) |
+| `packages/engine/src/agent-api/index.ts`, `compiler/renderer.ts` (15) | `AuraModelOptions`/`AuraAssetDefinition` fields, model-node decoder await, `collider: "auto"` | fields pre-declared in PR 0a (C-17, DIAGNOSTIC_ONLY until wired); requests Q-15-1, Q-15-2 |
+| `packages/rendering/src/WebGL2Device.ts` (01) | sRGB compressed formats | carved region `webgl2/TextureFormats.ts` (05) |
+| `packages/rendering/src/WebGPUDevice.ts` (11) | compressed upload path | request Q-11-1 |
+| `packages/rendering/src/Texture.ts:1` (06) | `TextureCompressedFormat` members | pre-declared in PR 0a (C-16) |
+| `ShaderLibraryCore.ts` / `ShaderLibrary.ts` (01, frozen legacy §3.7) | `A3D_LOD_DITHER`, `A3D_DEBUG_VIEW` | C-02 chunks + features `prd05.lodDither`, `prd05.debugView`; C-11 depth feature |
+| `benchmarks/quality-rebuild/shared/assets.ts` (12) | `optimized` variants | `benchmarks/quality-rebuild/scenes/prd05/assets.ts` + C-30 lane scenes |
+| `.github/workflows/{browser-matrix,ci}.yml` (12/15) | Windows job; `--legacy-release-gates` grep | `qr-prd05-assets-browser.yml`, `qr-prd05-gates.yml` |
+| root `package.json` (15) | devDependencies; `draco3d` pin | `tools/asset-optimize/package.json`, `packages/assets/package.json`; root pin via `root-manifest` request Q-15-3 |
+| `packages/aura3d-cli/skills/**`, `packages/create-aura3d/templates/**` (13) | skill text, starter assets | facts F-05-* (C-40), requests Q-13-1..3 |
+| `apps/showcase-*/**`, `tools/quality-rebuild-capture/games.json` (14) | register scripts, route imports, pilot swaps | requests Q-14-1..4; codemod `assets-route-modules` (C-39) |
 
 ---
 
@@ -258,7 +299,7 @@ settings (E4). Triangle numbers are LOD0 targets/ceilings; floors are admission 
 | `world-chunk` | world, environment | — / 120k / 250k per chunk | 1, 0.4, 0.12 per chunk | ETC1S + tiling detail | UASTC | ETC1S | 2048 atlas / 1024 tiling | meshopt + quantize; `join` per material | trimesh from LOD1 |
 | `track` | track | — / 60k / 150k | 1, 0.4 | ETC1S tiling | UASTC tiling | ETC1S tiling | 1024 tiling | meshopt + quantize | trimesh from LOD0 drivable surface |
 | `backdrop` | new role `backdrop` (far plates, skyline cards) | 4 / — / 2k | none | ETC1S (UASTC if gradients band) | — | — | 2048 | quantize | none |
-| `hdri` | environment type | — | — | RGBE `.hdr` 2k (+ 4k Ultra) kept; KTX2 `R16G16B16A16_SFLOAT`/UASTC-HDR only after PRD 02 supports it | — | — | 2048×1024 | — | — |
+| `hdri` | environment type | — | — | RGBE `.hdr` 2k (+ 4k Ultra) kept; KTX2 `R16G16B16A16_SFLOAT`/UASTC-HDR only when a C-09 `EnvironmentSource` advertises that input (request Q-02-2; RGBE meanwhile) | — | — | 2048×1024 | — | — |
 
 Normal maps always use UASTC (ETC1S block artefacts are visible in normals). UASTC uses RDO + Zstd
 supercompression (`--encode uastc --uastc-quality 2 --uastc-rdo --uastc-rdo-l 1.0 --zstd 18`); ETC1S uses
@@ -327,7 +368,7 @@ the **derived** file. Warnings become failures for `release`; `candidate` record
 | **G6 Texture sanity** | Normal maps: linear, not sRGB-tagged; decoded vector length within [0.9, 1.1] for ≥ 95 % texels; mean B ≥ 0.7. ORM: R/G/B not all constant; a channel with σ < 0.004 is flagged "replace texture with factor". Non-metal base colour sRGB luminance within [30, 240] on ≥ 95 % texels; metal (metallic ≥ 0.9) base colour luminance ≥ 140. No texture > profile max; no non-power-of-two after optimize. | decode at 256² proxy, histogram |
 | **G7 Budget** | Derived file bytes, GPU bytes (High tier) and draw calls ≤ role budget (§17.2). | measure step |
 | **G8 Tangents** | Primitive with normal map has TANGENT (authored or MikkTSpace-generated). | attribute scan |
-| **G9 Look-dev approval** | A look-dev record bound to `derived.hash` with rubric score ≥ 6.5/10 (hero roles: vision model **and** named human; other roles: vision model, human spot-check of ≥ 10 % sampled weekly). The G9 score is computed on the **three r185 adapter frames** (the file reference, §6.7), so asset admission does not wait on PRDs 01–04; the Aura-adapter score is recorded alongside and an Aura-minus-three gap > 1.5 files a renderer issue against PRDs 01–04 without blocking the asset. Rubric axes: silhouette, surface detail, material believability under three HDRIs, texel sharpness at gameplay distance, LOD transitions, artefacts (seams, faceting, flipped normals, shading errors); score = unweighted mean of the 6 axes, any single axis < 4 fails regardless of mean. | `apps/asset-lookdev` capture + review record (§6.7) |
+| **G9 Look-dev approval** | A look-dev record bound to `derived.hash` with rubric score ≥ 6.5/10 (hero roles: vision model **and** named human; other roles: vision model, human spot-check of ≥ 10 % sampled weekly). The G9 score is computed on the **three r185 adapter frames** (the file reference, §6.7), so asset admission never waits on the renderer lanes 01–04; the Aura-adapter score is recorded alongside and an Aura-minus-three gap > 1.5 files a `qr-ic-regression`-style renderer issue (attributed by C-31 diagnostics) without blocking the asset. Reviews use the C-32 judgement schema and `judgeWithPrism`. Rubric axes: silhouette, surface detail, material believability under three HDRIs, texel sharpness at gameplay distance, LOD transitions, artefacts (seams, faceting, flipped normals, shading errors); score = unweighted mean of the 6 axes, any single axis < 4 fails regardless of mean. | `apps/asset-lookdev` capture + review record (§6.7) |
 | **G10 Art direction** | Every release asset references `artDirection: <id>` (file `assets/art-direction/<id>.json`: palette, shading model `pbr-realistic`/`pbr-stylized`/`stylized-flat`, texel-density target, reference images). `stylized-flat` is the **only** structured replacement for the deleted regex: still needs UVs, G1 floor, G4, G9, and a reviewer name. Route admission (`assets validate --release --route <app>`) fails if the route's rendered assets reference more than one art-direction id without an explicit `mix` entry, and requires a group look-dev sheet judged ≥ 6 for coherence. | manifest + group contact sheet |
 | **G11 Optimized** | `release` requires a `derived` record from `assets optimize` (or `derived.optimize = "not-needed"` with measurements proving every budget passes on the source). | manifest |
 
@@ -390,9 +431,9 @@ required). Library entries are admitted through §6.4 exactly like route assets.
 | `props/sports-tabletop` | pool table + cue + numbered balls; basketball + hoop + backboard; golf ball/club/flag; pinball flippers/bumpers/rails | Bank Shot, Rooftop Buckets, Siege Golf, Vault Breakers |
 | `props/industrial-urban` | crates, barrels, barriers, lamps, signs, cones, dumpsters (≤ 5k tris each) | Courier Rush, Neon Swarm, Siege Golf, Mech Hangar |
 | `environments/modular` | city block kit, hangar/interior kit, museum interior kit, seabed rock/coral set, track kit (asphalt, kerb, barrier) | Courier Rush, Mech Hangar, Gallery Shift, Deep Recovery, Turbo |
-| `textures/tiling` | ≥ 16 PBR sets (asphalt, concrete ×2, painted metal, brushed metal, rubber, felt, wood ×2, leather, fabric, sand, rock, grass, tiles, plastic) at 1024 + 2048, UASTC normal/ORM | PRD 04 materials, PRD 10 terrain/world |
+| `textures/tiling` | ≥ 16 PBR sets (asphalt, concrete ×2, painted metal, brushed metal, rubber, felt, wood ×2, leather, fabric, sand, rock, grass, tiles, plastic) at 1024 + 2048, UASTC normal/ORM | lane 04 materials (C-15 texture inputs), lane 10 terrain/world (C-17 `texture-set`) |
 | `planets-space` | planet albedo/normal/night/cloud sets at 2048/4096 (existing NASA sources, re-encoded), starfield cube | Gravity Post, Orbital Defense, Aurora Lander |
-| `hdri` | ≥ 6 at 2k (+4k for Ultra/product): studio soft, studio high-contrast, outdoor midday, outdoor golden hour, overcast, night city; plus the 3 repo HDRIs re-sourced at 2k (`studio_small_08`, `autumn_field_puresky`, `kloppenheim_06_puresky`) | PRD 02 default environment, look-dev, every game |
+| `hdri` | ≥ 6 at 2k (+4k for Ultra/product): studio soft, studio high-contrast, outdoor midday, outdoor golden hour, overcast, night city; plus the 3 repo HDRIs re-sourced at 2k (`studio_small_08`, `autumn_field_puresky`, `kloppenheim_06_puresky`) | lane 02 default environment (C-09 consumes `type: "environment"` entries), lane 12 reference scenes, look-dev, every game |
 
 Sourcing rules: CC0 first (Poly Haven models/textures/HDRIs, ambientCG textures, Kenney, Quaternius,
 Khronos glTF-Sample-Assets), CC-BY with attribution second (curated Sketchfab, human-selected), Meshy/generated
@@ -415,7 +456,9 @@ route. Missing textures for a texture-required role excludes the candidate inste
 Aura3D (`aura-adapter.ts`, public `createAuraApp` path only) and with three r185 (`three-adapter.ts`, reusing the
 `benchmarks/quality-rebuild/three/common.ts` conventions: PMREM from the same HDRI, ACES, same exposure).
 three is the **file reference**: if the three frame looks bad, the asset fails; if only the Aura frame looks bad,
-the issue is filed against PRDs 01–04, not the asset.
+the issue is a renderer issue (lanes 01–04, attributed through C-31 sections), not an asset failure. The three
+adapter needs nothing from any other lane, so look-dev is fully standalone; the Aura adapter runs on whatever
+renderer flags are on (`?a3d-qr=` passthrough, C-33) and its scores are integrated evidence only.
 
 Standard stage (`lookdev.stage.json`, versioned):
 - HDRIs: `studio-soft-2k`, `outdoor-midday-2k`, `night-city-2k` (library §6.6); background visible at 0.6 blur.
@@ -432,10 +475,17 @@ through a new `asset-lookdev.yml` workflow; matrix fan-out by asset id (batches 
 
 ### 6.8 Runtime: decoders on the typed-GLB path
 
-- New `AssetDecoderRegistry` in `@aura3d/assets`, created once per `createAuraApp`. `createTypedGLBActor`
-  reads `asset.requiredDecoders` (emitted by typegen from `extensionsUsed`) and awaits
-  `registry.require([...])` before `loadProductionGLTFRenderPipeline`, passing `meshoptDecoder`, `dracoDecoder`
-  and a KTX2-aware `imageDecoder` (fixes E9–E11).
+- New `AssetDecoderRegistry` (`packages/assets/src/AssetDecoderRegistry.ts`, the C-16 real behind
+  `createAssetDecoderRegistry`, provided from `packages/assets/src/lanes/prd05.ts`), created once per app by
+  `agent-api/AssetDecoders.ts` from the pre-declared `AuraCreateAppOptions.assets` (C-17/C-38, PR 0a).
+  `prepareModelDecoders(asset, registry)` (also in `AssetDecoders.ts`) reads `asset.requiredDecoders`
+  (emitted by typegen from `extensionsUsed`) and resolves `registry.require([...])` into the pre-declared
+  `TypedGLBActorOptions.decoders` (CONTRACTS §3.6). The two call sites are not lane-05 files: the actor forwards
+  `options.decoders` to `loadProductionGLTFRenderPipeline` (`TypedGLBActor.ts:184`, request Q-04-1; the pipeline
+  already accepts all three decoders, `ProductionGLTFRenderPipeline.ts:6-25`), and the model-node compile awaits
+  `prepareModelDecoders` before actor creation (`compiler/renderer.ts`, ex-`index.ts:13540-13841`, request
+  Q-15-1). Until both land, lane tests call `prepareModelDecoders` + the pipeline directly, which proves E9–E11
+  fixed end to end without either file (§16.0 S3), and the look-dev Aura adapter renders the `source` variant.
 - Meshopt decoder: `meshoptimizer@1.2.0` `MeshoptDecoder`, dynamic-imported chunk; budget ≤ 20 KB gz, measured
   in Phase 1 (the module embeds SIMD and scalar WASM as base64, 29,256 B raw in the three copy).
 - Draco: `draco3d@1.5.7` decoder WASM copied to `/aura-decoders/draco/`, loaded only when an asset requires it.
@@ -443,16 +493,26 @@ through a new `asset-lookdev.yml` workflow; matrix fan-out by asset id (batches 
   `node_modules/three/examples/jsm/libs/basis/` at three 0.185.1, sha256 recorded, upstream Apache-2.0),
   served from `/aura-decoders/basis/`. **Delete** the unpkg fallback (`KTX2BasisTextureTranscoder.ts:22`).
 - Transcoding in a worker pool (`workerCount`: 1 on Low/mobile, 2 on Medium+; never raised automatically).
-- Target selection per device and slot: UASTC → ASTC 4×4 → BC7 → ETC2 RGBA8 → RGBA8; ETC1S → ETC2 RGB8 (opaque)
+- Target selection per device and slot (`selectKTX2TargetFormat`, `KTX2TargetSelection.ts`, real in PR 0a
+  because it is pure; CONTRACTS §0 R6): UASTC → ASTC 4×4 → BC7 → ETC2 RGBA8 → RGBA8; ETC1S → ETC2 RGB8 (opaque)
   / ETC2 RGBA8 (alpha) → BC1 (opaque) / BC3 (alpha) → RGBA8. ETC1S never targets the legacy `ETC1` format
   because WebGL has no sRGB ETC1 internal format; ETC2 RGB8 is a bit-exact superset. sRGB variants for colour
-  slots; transcode only the selected target (no second RGBA8 transcode unless the upload fails).
-- Tier texture cap: skip KTX2 levels above `maxTextureSize`; for PNG/JPEG sources use
+  slots; transcode only the selected target (no second RGBA8 transcode unless the upload fails). Device
+  capabilities come from `probeCompressedTextureCapabilities(gl)` in `webgl2/TextureFormats.ts` (lane 05).
+- Tier texture cap: `maxTextureSize = min(C-27 tier.maxTextureSize, role cap §17.1)`; skip KTX2 levels above it;
+  for PNG/JPEG sources the carved `gltf/ImageDecode.ts` uses
   `createImageBitmap(blob, { resizeWidth, resizeHeight, resizeQuality: "high" })` when larger than the cap (E14).
-- LOD: production runtime selects `MSFT_lod` level by projected bounding-sphere height fraction each frame
-  with 10 % hysteresis and optional dithered cross-fade (§8); shadow casters use one level coarser.
-- Colliders: `model(asset, { physics, collider: "auto" })` loads `collision.glb` and builds Rapier
-  `ColliderDesc.convexHull`/`trimesh` (`physics-rapier/src/index.ts:555-557`) instead of bounds boxes.
+- LOD (`A3D_QR_ASSETS_LOD`): `production-runtime/LodSelector.ts` selects the `MSFT_lod` level by projected
+  bounding-sphere height fraction each frame with 10 % hysteresis; `actor/TypedGLBActorLod.ts` registers
+  `registerTypedGLBActorExtension({ id: "prd05.lod", owner: "prd05", flag: "A3D_QR_ASSETS_LOD", onLoad,
+  collectRenderItems, dispose })` and its `collectRenderItems` keeps only the active level's items (plus the
+  outgoing level during a fade, with the pre-declared `RenderItem.lodFade`). Dithered cross-fade (§8) needs the
+  C-02 generator; on the stub it degrades to a hard switch (the Low-tier behaviour). Shadow casters one level
+  coarser: request Q-02-1 (C-11); meanwhile casters use the active level.
+- Colliders: `packages/physics-rapier` gains `createCollidersFromSidecar(world, url | bytes, transform)` building
+  `ColliderDesc.convexHull`/`trimesh` (`physics-rapier/src/index.ts:555-557`). Binding it to
+  `model(asset, { physics, collider: "auto" })` is request Q-15-2; the option stays DIAGNOSTIC_ONLY
+  (`diagnosticOnly.prd05.ts`) until then and the lane physics test calls the API directly.
 
 ### 6.9 Packaging
 
@@ -462,7 +522,9 @@ through a new `asset-lookdev.yml` workflow; matrix fan-out by asset id (batches 
   provenance strings (they stay in the manifest and in a generated `CREDITS.md`/`credits.json` per route).
 - Per-route deploy subset: `check-deploy` copies only referenced derived files to `dist/aura-assets`; orphan
   prune (`assets prune --dry-run` then apply) removes the 529 stale files from `public/aura-assets`.
-- Coordinate the module split with PRD 15 (package/API consolidation); this PRD owns the generator.
+- Lane 05 owns the generator and `src/aura-assets.ts`; the export shape of route modules is offered to lane 15
+  as request Q-15-4 (package boundary), and route imports are switched by lane 14 running the C-39 codemod
+  `assets-route-modules` (Q-14-2). The monolithic module keeps being generated meanwhile, so nothing waits.
 
 ### 6.10 Art authored as code
 
@@ -482,12 +544,12 @@ replaced with measured values in Phase 5 (no performance tier has ever been meas
 |---|---|---|---|---|---|---|---|---|
 | R1 | `assets optimize` (weld/dedup/join/quantize/meshopt) | Indirect: enables 4–10× more geometric detail within the same budget; removes 2,150-primitive draw explosions | Fewer draws after `join`; quantized attributes cut vertex fetch bandwidth ~40 % | Meshopt decode in main thread or worker; target ≤ 15 ms per 5 MB GLB on M1 | Vertex memory −40–60 % (quantized) | +≤ 20 KB gz lazy decoder chunk; 0 KB in initial bundle | Large: download and memory dominate mobile | Ship `source` variant via `typegen --variant source` |
 | R2 | KTX2 UASTC/ETC1S + resize | Sharper hero textures at gameplay distance via correct budgets; no washed-out base colour once sRGB formats land | Compressed sampling is cheaper than RGBA8 (bandwidth ÷4–8) | Transcode in worker; one target only | Meshy hero 201 MB → ~17 MB (3× 2048 UASTC); Gravity Post > 500 MB → < 80 MB target | +527 KB raw basis WASM, lazy, cached, same-origin | Essential: ASTC/ETC2 native on mobile | RGBA8 transcode (always available) with tier cap |
-| R3 | MikkTSpace tangents offline | Removes normal-map seam/shading errors on 98 of 120 GLBs | +16 B/vertex (8 B quantized) | Removes runtime Lengyel generation at load | +8–16 B/vertex | 0 | Neutral | Runtime derivative TBN (PRD 04) |
+| R3 | MikkTSpace tangents offline | Removes normal-map seam/shading errors on 98 of 120 GLBs | +16 B/vertex (8 B quantized) | Removes runtime Lengyel generation at load | +8–16 B/vertex | 0 | Neutral | Runtime Lengyel tangents today; derivative TBN if lane 04 ships it (not required) |
 | R4 | LOD generation (MSFT_lod) + screen-coverage selection | Allows dense hero/world assets without popping; dither cross-fade | −30–70 % triangles in wide shots (estimate) | ≤ 0.2 ms/frame selection for 500 nodes | +40–60 % geometry bytes (LOD chain) | +~2 KB gz selector | Large win on vertex-bound GPUs | `lod: false` per model; LOD0 only |
-| R5 | Collider generation | None directly; correct contacts/grounding feed game feel (PRD 08) | 0 | Rapier hull build at load (≤ 5 ms/asset) | +5–20 % of geometry bytes in sidecar | 0 | Neutral | Bounds box colliders (current behaviour) |
+| R5 | Collider generation | None directly; correct contacts/grounding feed game feel (lane 08 consumer) | 0 | Rapier hull build at load (≤ 5 ms/asset) | +5–20 % of geometry bytes in sidecar | 0 | Neutral | Bounds box colliders (current behaviour) |
 | R6 | Visual-quality gates G1–G11, delete regex waiver | Stops programmer art and cards reaching release; forces PBR-complete assets | 0 | CI only | 0 | 0 | 0 | `candidate` label; no runtime effect |
 | R7 | Generated-asset promotion (remesh + bake) | Best available 3D for the games (judge: Meshy mech ~6, Meshy plane ~7) becomes shippable at web budgets | Lower than today (27 MB raw heroes) | Remote Blender only | Hero 27 MB file → ≤ 6 MB target | 0 | Required for mobile | Keep as `candidate` |
-| R8 | Curated hero library + 2k HDRIs | Coherent art direction per game; fixes style clashes judged in 5 games | Neutral | Neutral | Bounded by profiles | 0 (assets are not JS) | Mobile variants per kit | Existing assets until replaced (PRD 14) |
+| R8 | Curated hero library + 2k HDRIs | Coherent art direction per game; fixes style clashes judged in 5 games | Neutral | Neutral | Bounded by profiles | 0 (assets are not JS) | Mobile variants per kit | Existing assets until lane 14 swaps them (Q-14-3) |
 | R9 | Look-dev viewer | Catches bad assets before they reach a game; separates asset vs renderer faults | Remote runner only | Remote only | — | 0 (separate app) | Captures 390×844 DPR 3 | Manual review on contact sheet |
 | R10 | Decoder wiring + local transcoder | Makes R1/R2 usable from `model()`; removes third-party CDN | 0 | Worker transcode | Worker heap ≤ 32 MB | +≤ 3 KB gz registry glue in core | Same | Fail loud with `AssetDecoderUnavailable` diagnostic (no silent fallback) |
 | R11 | Per-route typegen + deploy subset | Faster first frame | 0 | Parse 3.78 MB module removed | −3.6 MB JS heap per route | −~3.5 MB raw JS per route (281 suitability strings gone) | Large: mobile JS parse | Monolithic module generator kept behind `--all` for one minor |
@@ -497,13 +559,39 @@ replaced with measured values in Phase 5 (no performance tier has ever been meas
 
 ## 7. APIs to add / change / remove
 
+### 7.0 Relationship to the frozen contracts
+
+The wire shapes of C-16 (`packages/assets/src/contracts/decoders.ts`, `packages/rendering/src/contracts/textureFormats.ts`)
+and C-17 (`packages/aura3d-cli/src/contracts/assetManifest.ts`, `packages/engine/src/contracts/assets.ts`) are
+frozen in CONTRACTS §2 and created by PR 0a; those contract files are lane 15's. Everything below either
+re-exports those types unchanged or **extends** them additively in lane-05 files. Where this PRD needs more than
+the contract carries, the extension lives here and the contract field stays as specified:
+
+| Contract type | Contract shape (authoritative) | Lane-05 extension (own file) |
+|---|---|---|
+| `AssetQualityCheck` | `{ gate, verdict: "pass"\|"fail"\|"waived-by-role", measured: unknown, message }` | `AssetQualityCheckDetail` narrows `measured` to `Record<string, number\|string\|boolean>` (`admission/types.ts`); "not applicable for this role" is `waived-by-role` |
+| `OptimizeStepRecord` | `{ step, ms, bytesBefore, bytesAfter }` | `OptimizeStepDetail extends OptimizeStepRecord { tool; settings }` (`optimize/types.ts`) |
+| `AssetBudgetMeasurement` | `{ triangles, drawCalls, gpuBytesByTier, downloadBytes }` | `AssetBudgetMeasurementDetail` adds `fileBytes, vertices, primitives, materials, textures{count,maxDimension}` |
+| `AuraCliAdmissionRecord` | `{ status, checks, at }` | adds `derivedHash`, `quality` |
+| `AuraCliLookDevRecord` | `{ runUrl, reviews[{ reviewer, verdict, notes, at }] }` | adds `derivedHash`, `stageVersion`, `contactSheet`, `metrics`; each review adds optional `judge`, `score`, `axes` (C-32 `JudgeIdentity` for `judge`) |
+| `optimizeAssets` | `({ ids?, dryRun?, profile? }) => Promise<{ rows[{ id, budget, checks }] }>` | `AssetOptimizeOptions` is a superset (same `ids` name); rows add the detail fields |
+| `AssetDecoderRegistry` | `require(...)`, `diagnostics(): { loaded, failed[{id,url}] }`, `dispose()` | unchanged; registry options identical to `createAssetDecoderRegistry` |
+| `AuraQualityTier` | C-27, `packages/rendering/src/contracts/quality.ts` (CONTRACTS §0 R1) | imported, never redefined |
+
+Any further change to a contract file is a CCR (CONTRACTS §6.4: optional fields only), labelled `ccr`, filed by
+lane 05 and approved by lane 15 plus one consumer. One is filed on day 0: **CCR-05-1** adds optional
+`RenderItem.lodLevel?: number` and `lodLevels?: number` beside the pre-declared `lodFade?` (used only by the
+integrated shadow-LOD request Q-02-1). No standalone phase needs a CCR.
+
 ### 7.1 CLI (`@aura3d/cli`)
 
 ```ts
 // packages/aura3d-cli/src/optimize/types.ts (new)
-export type AssetOptimizeProfileId =
+// C-17 declares AssetOptimizeProfileId = string; the known ids live in tools/asset-optimize/profiles.ts.
+export type AssetOptimizeProfileName =
   | "hero-character" | "npc-character" | "hero-vehicle" | "traffic-vehicle" | "product" | "weapon"
   | "prop-large" | "prop-small" | "world-chunk" | "track" | "backdrop" | "hdri";
+export type { AssetOptimizeProfileId } from "../contracts/assetManifest";
 
 export type AssetGeometryCompression = "meshopt" | "draco" | "none";
 export type AssetTextureEncoding = "ktx2" | "webp" | "source";
@@ -511,7 +599,7 @@ export type AssetColliderMode = "auto" | "convex" | "trimesh" | "box" | "capsule
 
 export interface AssetOptimizeOptions {
   readonly projectDir?: string;
-  readonly assetIds: readonly string[];            // or ["*"] for the whole manifest
+  readonly ids?: readonly string[];                // C-17 name; omitted or ["*"] = whole manifest
   readonly profile?: AssetOptimizeProfileId;       // default: derived from role + bounds
   readonly geometry?: AssetGeometryCompression;    // default "meshopt"
   readonly textures?: AssetTextureEncoding;        // default "ktx2"
@@ -523,45 +611,37 @@ export interface AssetOptimizeOptions {
   readonly remote?: "github-actions" | "remote-worker" | false; // heavy steps refuse to run locally unless false + --allow-local-small
 }
 
-export interface AssetBudgetMeasurement {
+import type { AuraQualityTier } from "@aura3d/rendering/contracts/quality";          // C-27 (R1)
+import type { AssetBudgetMeasurement, OptimizeStepRecord, AssetQualityCheck } from "../contracts/assetManifest"; // C-17
+
+export interface AssetBudgetMeasurementDetail extends AssetBudgetMeasurement {     // triangles = LOD0
   readonly fileBytes: number;
-  readonly triangles: number;                      // LOD0
   readonly vertices: number;
   readonly primitives: number;
   readonly materials: number;
-  readonly drawCallsEstimate: number;
-  readonly textures: {
-    readonly count: number;
-    readonly maxDimension: number;
-    readonly downloadBytes: number;
-    readonly gpuBytesByTier: Readonly<Record<AuraQualityTier, number>>;
-  };
+  readonly textures: { readonly count: number; readonly maxDimension: number };
 }
 
-export interface OptimizeStepRecord {
-  readonly step: "weld" | "dedup" | "prune" | "join" | "palette" | "resize" | "tangents" | "lod"
-    | "colliders" | "quantize" | "meshopt" | "draco" | "ktx2" | "remesh" | "bake";
+export interface OptimizeStepDetail extends OptimizeStepRecord {
+  // step ∈ "weld" | "dedup" | "prune" | "join" | "palette" | "resize" | "tangents" | "lod"
+  //      | "colliders" | "quantize" | "meshopt" | "draco" | "ktx2" | "remesh" | "bake"
   readonly tool: string;                           // e.g. "@gltf-transform/functions@4.x.y"
   readonly settings: Readonly<Record<string, unknown>>;
-  readonly durationMs: number;
 }
 
-export interface AssetQualityCheck {
-  readonly gate: "G1" | "G2" | "G3" | "G4" | "G5" | "G6" | "G7" | "G8" | "G9" | "G10" | "G11";
-  readonly verdict: "pass" | "fail" | "not-applicable";
+export interface AssetQualityCheckDetail extends AssetQualityCheck {   // verdict "pass" | "fail" | "waived-by-role"
   readonly measured: Readonly<Record<string, number | string | boolean>>;
-  readonly message: string;
 }
 
 export interface AssetOptimizeRow {
-  readonly assetId: string;
+  readonly id: string;                             // C-17 row key
   readonly sourceHash: string;
   readonly derivedHash: string;
   readonly profile: AssetOptimizeProfileId;
-  readonly before: AssetBudgetMeasurement;
-  readonly after: AssetBudgetMeasurement;
-  readonly steps: readonly OptimizeStepRecord[];
-  readonly checks: readonly AssetQualityCheck[];
+  readonly budget: AssetBudgetMeasurementDetail;   // C-17 field = "after"
+  readonly before: AssetBudgetMeasurementDetail;
+  readonly steps: readonly OptimizeStepDetail[];
+  readonly checks: readonly AssetQualityCheckDetail[];
   readonly outputs: { readonly glb: string; readonly mobileGlb?: string; readonly collisionGlb?: string };
 }
 
@@ -575,22 +655,20 @@ export interface AssetLookDevOptions {
   readonly stage?: string;                         // default "lookdev.stage.json@1"
   readonly runner: "github-actions-macos-14";      // only accepted value; local capture is refused
 }
-export interface AuraCliLookDevRecord {
+// C-17 AuraCliLookDevRecord = { runUrl, reviews[{ reviewer, verdict, notes, at }] }; lane-05 extension:
+export interface AuraCliLookDevRecordDetail extends AuraCliLookDevRecord {
   readonly derivedHash: string;
   readonly stageVersion: string;
   readonly contactSheet: string;                   // artifact path/URL
   readonly metrics: { readonly threeVsAuraMaskedSsim: number; readonly gameplayTexelsPerPixelP50: number };
-  readonly reviews: readonly {
-    readonly judge: "human" | "vision-model";
-    readonly judgeId: string;                      // person name or model id
-    readonly score: number;                        // 0-10 rubric mean
-    readonly axes: Readonly<Record<"silhouette" | "surfaceDetail" | "materials" | "texelSharpness" | "lod" | "artifacts", number>>;
-    readonly notes: string;
-    readonly reviewedAt: string;
-  }[];
+  readonly reviews: readonly (AuraCliLookDevRecord["reviews"][number] & {
+    readonly judge?: JudgeIdentity;                // C-32 { kind: "human" | "vision-model", id, model? }; reviewer = judge.id
+    readonly score?: number;                       // 0-10 rubric mean; verdict = score >= 6.5 && min(axes) >= 4 ? "accept" : "reject"
+    readonly axes?: Readonly<Record<"silhouette" | "surfaceDetail" | "materials" | "texelSharpness" | "lod" | "artifacts", number>>;
+  })[];
 }
 export function captureAssetLookDev(options: AssetLookDevOptions): Promise<{ readonly runUrl: string }>;
-export function recordAssetLookDevReview(assetId: string, review: AuraCliLookDevRecord["reviews"][number]): AssetCliResult;
+export function recordAssetLookDevReview(assetId: string, review: AuraCliLookDevRecordDetail["reviews"][number]): AssetCliResult;
 
 // packages/aura3d-cli/src/admission/types.ts (new)
 export interface AssetAdmitOptions {
@@ -601,16 +679,19 @@ export interface AssetAdmitOptions {
   readonly fovDegrees?: number;
   readonly viewport?: readonly [number, number];
 }
-export interface AuraCliAdmissionRecord {
+// C-17 AuraCliAdmissionRecord = { status: "admitted" | "rejected" | "pending", checks, at }; lane-05 extension:
+export interface AuraCliAdmissionRecordDetail extends AuraCliAdmissionRecord {
   readonly derivedHash: string;
   readonly quality: AuraAssetQuality;
-  readonly checks: readonly AssetQualityCheck[];
-  readonly admittedAt: string;
 }
-export function admitAsset(options: AssetAdmitOptions): AssetCliResult & { readonly admission: AuraCliAdmissionRecord };
+export function admitAsset(options: AssetAdmitOptions): AssetCliResult & { readonly admission: AuraCliAdmissionRecordDetail };
 ```
 
-CLI verbs (dispatch in `cli.ts`):
+CLI verbs. Dispatch for the existing verbs stays in `cli.ts` (lane 05 owns it); every new verb is registered
+through C-39 `registerCliCommand({ name: "assets optimize", owner: "prd05", ... })` from
+`packages/aura3d-cli/src/commands/prd05/index.ts`, so other lanes' commands (`animation inspect-clips` 06,
+`assets bake-impostor` 10, `environments bake` 02, `assets transcode-audio` 09) register beside them without
+touching `cli.ts`:
 
 ```
 aura3d assets optimize <id...|--all> [--profile P] [--geometry meshopt|draco|none] [--textures ktx2|webp|source]
@@ -625,49 +706,53 @@ aura3d assets prune [--dry-run]
 aura3d assets typegen [--route apps/<app>] [--variant optimized|source|mobile] [--all]
 ```
 
-### 7.2 Manifest schema 1.1 (`asset-core-types.ts`)
+### 7.2 Manifest schema 1.1 (`asset-core-types.ts`, re-exporting C-17)
 
 ```ts
-export type AuraCliAssetRole = /* existing */ | "backdrop" | "proxy";
+// AuraCliAssetRole: the C-17 union ("hero" | "character" | "vehicle" | "enemy" | "world" | "prop" | "set-dressing"
+// | "backdrop" | "proxy" | "hdri" | "texture-set" | "vfx-atlas" | "audio"), re-exported; existing role strings
+// outside it (e.g. "product", "weapon", "track", "environment") stay valid for 1.0 entries and map to profiles.
+export type { AuraCliAssetRole, AuraCliDerivedAsset, AuraCliAssetEntry1_1 } from "./contracts/assetManifest";
 
-export interface AuraCliDerivedAsset {
-  readonly hash: string;
+// C-17 AuraCliDerivedAsset = { url, hash, mobileUrl?, collisionUrl?, profile, steps }; lane-05 extension:
+export interface AuraCliDerivedAssetDetail extends AuraCliDerivedAsset {
   readonly sourceHash: string;
-  readonly profile: AssetOptimizeProfileId;
   readonly outputPath: string;
-  readonly url: string;
-  readonly mobileUrl?: string;
-  readonly collisionUrl?: string;
   readonly extensionsUsed: readonly string[];
   readonly requiredDecoders: readonly ("meshopt" | "draco" | "ktx2")[];
   readonly lods: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[];
-  readonly measurements: { readonly before: AssetBudgetMeasurement; readonly after: AssetBudgetMeasurement };
-  readonly steps: readonly OptimizeStepRecord[];
+  readonly measurements: { readonly before: AssetBudgetMeasurementDetail; readonly after: AssetBudgetMeasurementDetail };
   readonly optimize?: "not-needed";
 }
 
 export interface AuraCliAssetManifest {
-  readonly schema: "aura3d.assets/1.0" | "aura3d.assets/1.1";
+  readonly schema: "aura3d.assets/1.0" | "aura3d.assets/1.1";   // reader accepts both; writer emits 1.1 only with A3D_QR_ASSETS on (C-17 stub rule)
   // ...existing fields
 }
 
 export interface AuraCliAssetEntry {
   // ...existing fields (unchanged, including provenance and suitabilityReason)
-  readonly derived?: AuraCliDerivedAsset;
-  readonly admission?: AuraCliAdmissionRecord;
-  readonly lookDev?: AuraCliLookDevRecord;
+  readonly derived?: AuraCliDerivedAssetDetail;
+  readonly admission?: AuraCliAdmissionRecordDetail;
+  readonly lookDev?: AuraCliLookDevRecordDetail;
   readonly artDirection?: string;
   readonly aliasOf?: string;                       // byte-identical source dedup
   readonly gameplayCamera?: { readonly distance: number; readonly fovDegrees: number }; // G2 override (§6.4)
+  readonly animationClips?: readonly { readonly name: string; readonly duration: number; readonly channelCount: number }[]; // C-17, for lane 06 (Q-05-1)
+  readonly audio?: { readonly loudnessLufs?: number; readonly truePeakDb?: number; readonly author?: string; readonly sourceUrl?: string }; // for lane 09 (request received R-09-1)
 }
 ```
 
 ### 7.3 Engine (`@aura3d/engine`)
 
-```ts
-// packages/engine/src/agent-api/index.ts
-export type AuraQualityTier = "low" | "medium" | "high" | "ultra";   // shared with PRD 11; defined there if it lands first
+All engine-side fields below are **pre-declared in PR 0a** (CONTRACTS C-17 "engine" block and §3.6) as optional
+and inert, listed in `diagnosticOnly.prd05.ts` until lane 05 wires them. Lane 05 does not edit
+`agent-api/index.ts` or `TypedGLBActor.ts`; it wires behaviour from its own files (§5.3).
 
+```ts
+// AuraQualityTier: imported from C-27 (packages/rendering/src/contracts/quality.ts, re-exported by engine). Not redefined.
+
+// Pre-declared on AuraAssetDefinition (index.ts:951-960 today) by PR 0a:
 export interface AuraAssetDefinition {
   readonly type: AuraAssetType;
   readonly format: string;
@@ -701,20 +786,23 @@ export interface AuraAppAssetOptions {
   readonly variant?: "optimized" | "source" | "mobile";   // default "optimized"; "mobile" auto on Low tier
   readonly maxTextureSize?: number;               // default from tier (§17)
 }
-// createAuraApp(options: { ...existing; readonly assets?: AuraAppAssetOptions })
+// createAuraApp(options: { ...existing; readonly assets?: AuraAppAssetOptions })   // AuraCreateAppOptions.assets, pre-declared (C-38)
 
-// packages/engine/src/production-runtime/TypedGLBActor.ts
-export interface TypedGLBActorOptions {
-  // ...existing
-  readonly decoders?: AuraAssetDecoderSet;
-  readonly maxTextureSize?: number;
-  readonly lod?: { readonly mode: "auto" | "fixed"; readonly level?: number; readonly bias?: number; readonly crossFadeSeconds?: number };
+// TypedGLBActorOptions (TypedGLBActor.ts, owner 04): decoders?, maxTextureSize?, lod?, variant? pre-declared by PR 0a (§3.6).
+// The actor interface itself is not extended; LOD control is exposed by lane 05's extension module:
+// packages/engine/src/production-runtime/actor/TypedGLBActorLod.ts
+export interface TypedGLBActorLodHandle {
+  readonly levels: number;
+  readonly level: number;
+  setLevel(level: number, fadeSeconds?: number): void;     // forces "fixed" mode
+  setMode(mode: "auto" | "fixed", options?: { readonly bias?: number; readonly crossFadeSeconds?: number }): void;
 }
-export interface TypedGLBActor {
-  // ...existing
-  setLodLevel(level: number, fade?: number): void;
-  readonly lodLevels: number;
-}
+export function getTypedGLBActorLod(actor: TypedGLBActor): TypedGLBActorLodHandle | undefined;   // undefined when the asset has no MSFT_lod
+export function registerTypedGLBActorLodExtension(): () => void;   // calls registerTypedGLBActorExtension({ id: "prd05.lod", owner: "prd05", flag: "A3D_QR_ASSETS_LOD", ... })
+
+// packages/engine/src/agent-api/AssetDecoders.ts (lane 05)
+export function createAppAssetDecoders(options: AuraAppAssetOptions | undefined, caps: CompressedTextureCapabilities, tier: AuraQualityTierSettings): AssetDecoderRegistry;
+export function prepareModelDecoders(asset: AuraAssetDefinition, registry: AssetDecoderRegistry): Promise<AuraAssetDecoderSet>;   // throws AssetDecoderUnavailable
 ```
 
 `ensureAssetDecoders` (`AssetDecoders.ts`, wrapping `ensureCompressedTextureSupport` at
@@ -735,9 +823,9 @@ export interface AssetDecoderRegistryOptions {
   readonly maxTextureSize: number;
   readonly workerCount: number;
 }
-export interface AssetDecoderRegistry {
+export interface AssetDecoderRegistry {   // C-16, exact
   require(decoders: readonly ("meshopt" | "draco" | "ktx2")[]): Promise<AuraAssetDecoderSet>;
-  readonly diagnostics: readonly { readonly decoder: string; readonly status: "ready" | "failed"; readonly detail?: string }[];
+  diagnostics(): { readonly loaded: readonly string[]; readonly failed: readonly { id: string; url: string }[] };
   dispose(): void;
 }
 export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions): AssetDecoderRegistry;
@@ -751,8 +839,9 @@ export interface CompressedTextureCapabilities {
 }
 export type KTX2BasisTargetFormat =
   | "astc-4x4-rgba-unorm" | "bc7-rgba-unorm" | "etc2-rgba8unorm" | "etc2-rgb8unorm" | "bc3-rgba-unorm" | "bc1-rgb-unorm" | "rgba8";
-// Rendering side: `TextureCompressedFormat` (packages/rendering/src/Texture.ts:1) gains
-// "bc7-rgba-unorm" | "etc2-rgb8unorm"; the existing "bc1-rgba-unorm" is reused for BC1 targets.
+// Rendering side: `TextureCompressedFormat` (packages/rendering/src/Texture.ts:1, owner 06) gains
+// "bc7-rgba-unorm" | "etc2-rgb8unorm" in PR 0a (C-16, declaration only, throwing defaults in exhaustive switches);
+// lane 05 does not edit Texture.ts. The existing "bc1-rgba-unorm" is reused for BC1 targets.
 // Colour slots on a device with s3tc but not s3tcSrgb select bptc if available, else rgba8 (never linear BC1/BC3
 // for an sRGB slot).
 export function selectKTX2TargetFormat(
@@ -771,12 +860,18 @@ export interface KTX2BasisTextureTranscoderOptions {
 ```
 
 `DecodedGLTFImage.colorSpace` is set from the slot (`"srgb"` for base colour/emissive/sheenColor/specularColor),
-and `WebGL2Device` maps sRGB + compressed format to `COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR`,
+and the lane-05 real of the C-16 slot `resolveCompressedTextureFormatSlot()` (provided from
+`packages/rendering/src/lanes/prd05.ts`, implemented in `webgl2/TextureFormats.ts`, whose stub is the verbatim
+moved `WebGL2Device.ts:4117-4133`) maps sRGB + compressed format to `COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR`,
 `COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT`, `COMPRESSED_SRGB8_ALPHA8_ETC2_EAC`, `COMPRESSED_SRGB8_ETC2`,
 `COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT` / `COMPRESSED_SRGB_S3TC_DXT1_EXT` (BC1 for ETC1S opaque). Every ETC2 format
-is gated on `getExtension("WEBGL_compressed_texture_etc")` (today `0x9278` is uploaded unconditionally, E13).
-`WebGPUDevice` gets a new compressed upload path (`writeTexture` per mip level with block-aligned
-`bytesPerRow`) for the `-srgb`/`-unorm` variants, gated on `device.features`.
+is gated on `getExtension("WEBGL_compressed_texture_etc")` (today `0x9278` is uploaded unconditionally,
+`WebGL2Device.ts:4128`, E13). With `A3D_QR_ASSETS_DECODERS` off the slot returns the stub (today's mapping).
+Lane 04 reviews the mapping (shared review, conflict map row PRD-05→PRD-04) but does not block its merge.
+`WebGPUDevice.ts` (owner 11) needs a compressed upload path (`writeTexture` per mip level with block-aligned
+`bytesPerRow`, `-srgb`/`-unorm` variants, gated on `device.features`): request Q-11-1 with the exact format table
+from §8 item 1; until it lands, WebGPU keeps uploading the RGBA8 fallback levels, which the transcoder produces on
+demand when `capabilities` reports no WebGPU compressed feature.
 
 ### 7.5 Removed
 
@@ -795,21 +890,30 @@ is gated on `getExtension("WEBGL_compressed_texture_etc")` (today `0x9278` is up
 
 ## 8. Shader changes
 
-This PRD is mostly offline. Shader work is limited to what optimized assets and look-dev need.
+This PRD is mostly offline. Shader work is limited to what optimized assets and look-dev need, and it is
+delivered only as C-02 chunks/features in lane-05 files (`shaders/lod-dither.glsl.ts`,
+`shaders/debug-view.glsl.ts`); the legacy `ShaderLibraryCore.ts` / `ShaderLibrary.ts` / `ShaderChunks.ts` are
+frozen (CONTRACTS §3.7) and are not edited. On the C-02 stub (`generateProgram` throws
+`PROGRAM_GENERATOR_PENDING`) the chunks are compiled and unit-tested through `testing/ChunkHarness.ts`; their
+pixels appear on screen only when lane 01's generator is real (integrated).
 
 1. **Compressed sRGB sampling (GLSL/WGSL).** No math change: `a3dTexturedPbrDecodeSrgb` stays the identity
    (`ShaderLibrary.ts:2470-2472`, returns `max(encodedColor, 0)`) because decode happens in hardware sRGB
-   formats (§7.4), exactly as for today's `SRGB8_ALPHA8` RGBA8 uploads. Required test: a KTX2 base
-   colour texture and the same PNG render within ΔE2000 ≤ 2 mean (§15). WGSL: map to
+   formats (§7.4), exactly as for today's `SRGB8_ALPHA8` RGBA8 uploads (`WebGL2Device.ts:4067`). Required test:
+   a KTX2 base colour texture and the same PNG render within ΔE2000 ≤ 2 mean (§15). WGSL (request Q-11-1): map to
    `astc-4x4-unorm-srgb`, `bc7-rgba-unorm-srgb`, `etc2-rgba8unorm-srgb`, `etc2-rgb8unorm-srgb`,
    `bc1-rgba-unorm-srgb`, `bc3-rgba-unorm-srgb` texture formats; no shader change.
 2. **Quantized attributes.** Vertex shaders unchanged; `vertexAttribPointer(..., normalized = true)` for
-   `KHR_mesh_quantization` SHORT/BYTE accessors (WebGL2) and `snorm16x4`/`unorm16x2`/`snorm8x4` vertex formats
-   (WebGPU). Positions dequantize through the node matrix gltf-transform writes; the instance path must compose
-   node scale correctly (depends on PRD 11 fixing `createProductionInstanceTransforms`, `index.ts:14747-14753`).
+   `KHR_mesh_quantization` SHORT/BYTE accessors (WebGL2, already "runtime-supported",
+   `GLTFExtensionSupport.ts:44`) and `snorm16x4`/`unorm16x2`/`snorm8x4` vertex formats (WebGPU, Q-11-1).
+   Positions dequantize through the node matrix gltf-transform writes. Instanced library props additionally need
+   the `node.size` composition fix (`index.ts:14747-14754`), which CONTRACTS §0 R18 assigns to lane 15 as an
+   unflagged correctness fix; lane 05 ships quantized assets regardless, and instanced-prop pixels are integrated.
    Skinned positions stay float (§6.3 step 8).
-3. **LOD dither cross-fade.** New define `A3D_LOD_DITHER` in the opaque PBR, skinned-lit, unlit and depth/shadow
-   variants (`ShaderLibraryCore.ts`):
+3. **LOD dither cross-fade.** Chunk `a3d_prd05_lod_dither` + feature `prd05.lodDither` registered with
+   `registerShaderChunk` / `registerShaderFeature` at hook `fragment:alpha` (C-02), plus the same chunk as a C-11
+   `registerDepthVariantFeature("prd05.lodDither")` for depth/shadow programs. Driven by the pre-declared
+   `RenderItem.lodFade` (CONTRACTS §3.3 `RenderItem` row):
    ```glsl
    uniform float u_lodFade;            // 0 = fully visible; (0,1] fading out; [-1,0) fading in
    float a3dBayer4(vec2 p) {
@@ -822,38 +926,49 @@ This PRD is mostly offline. Shader work is limited to what optimized assets and 
      if (u_lodFade > 0.0 ? t < u_lodFade : (u_lodFade < 0.0 && t > 1.0 + u_lodFade)) discard;
    #endif
    ```
-   WGSL: same table in a `const` array, `@builtin(position)` for the pixel coordinate. Both LOD levels draw
-   during the fade (complementary masks), default 0.25 s; disabled on Low tier (hard switch).
-4. **Look-dev debug views** (`A3D_DEBUG_VIEW` integer define, compiled only into `apps/asset-lookdev` builds,
-   never into game bundles):
+   WGSL: same table in a `const` array, `@builtin(position)` for the pixel coordinate, in the chunk's `wgsl`
+   field. Both LOD levels draw during the fade (complementary masks), default 0.25 s; disabled on Low tier (hard
+   switch, also the behaviour while the generator is a stub).
+4. **Look-dev debug views** (chunk `a3d_prd05_debug_view`, feature `prd05.debugView` at `fragment:end`, active
+   only when the pre-declared `AuraCreateAppRendererOptions.debugView` is set by `apps/asset-lookdev`; never
+   compiled into game bundles):
    - 1 base colour (post-decode linear → sRGB display), 2 world normal `n*0.5+0.5`, 3 roughness, 4 metallic,
      5 occlusion, 6 facet view `normalize(cross(dFdx(v_worldPos), dFdy(v_worldPos)))`.
-   - 7 texel density: `vec2 t = fwidth(v_uv0 * u_baseColorTextureSize); float tpp = max(t.x, t.y);`
+   - 7 texel density: `vec2 t = fwidth(v_uv0 * vec2(textureSize(u_baseColorTexture, 0))); float tpp = max(t.x, t.y);`
      colour ramp on `log2(tpp)`: red < −1 (under 0.5 texels/pixel, blurry), green [−1, 2], blue > 2 (over 4,
-     wasted). Requires a new `u_baseColorTextureSize` (vec2) uniform set by `GLTFRenderResources`.
+     wasted). GLSL ES 3.00 `textureSize` replaces the earlier `u_baseColorTextureSize` uniform, so
+     `GLTFRenderResources.ts` (owner 04) needs no change.
    - 8 mip level: `0.5 * log2(max(dot(dFdx(uvTex), dFdx(uvTex)), dot(dFdy(uvTex), dFdy(uvTex))))` bucketed.
-5. **No changes** to BRDF, IBL or tone mapping here (PRDs 01–04).
+   Until the generator is real, the Aura adapter's debug views are skipped and the same views are computed in
+   the three adapter (`ShaderMaterial` with the identical GLSL), so G2/G6 visual checks stay standalone.
+5. **No changes** to BRDF, IBL or tone mapping here (lanes 01–04 via C-02, C-03, C-05, C-09).
 
 ---
 
 ## 9. Rendering changes
 
-- `createTypedGLBActor` awaits decoders and passes them to the pipeline (E9). Assets without compression
-  extensions skip the registry (no added latency).
+- Model loading awaits decoders and passes them to the pipeline (E9) once Q-04-1 and Q-15-1 land; assets
+  without compression extensions skip the registry (no added latency). Before that, the decoder path is exercised
+  by lane tests calling `prepareModelDecoders` + `loadProductionGLTFRenderPipeline`.
 - Texture uploads: compressed formats with full mip chain from KTX2 (no `generateMipmap` for compressed);
-  tier cap skips top levels; RGBA8 fallback only when the selected compressed upload fails (`readError()` path
-  in `WebGL2Device.ts:3925-3946` kept, but transcoding to RGBA8 happens lazily, not up front).
-- LOD selection runs in the production runtime per frame before culling: projected bounding-sphere height /
-  viewport height vs `MSFT_screencoverage`, `bias` multiplies coverage, hysteresis 10 %, max one LOD step per
-  frame per actor. Shadow pass uses `min(level + 1, maxLevel)` (coordinate with PRD 02's depth-shader rewrite,
-  which must also add skinning; research 19 C4).
+  tier cap skips top levels; RGBA8 fallback only when the selected compressed upload fails (the
+  `COMPRESSED_TEXTURE_UNSUPPORTED` / `uploadRgba8FallbackTexture` path in `WebGL2Device.ts:3921-3946` is kept
+  untouched, but transcoding to RGBA8 happens lazily, not up front). Mip-chain sampling follows C-12 (a single-level
+  texture downgrades `linear-mipmap-linear` to `linear`).
+- LOD selection runs per frame in `LodSelector.ts`, invoked from the `prd05.lod` actor extension's
+  `collectRenderItems`: projected bounding-sphere height / viewport height vs `MSFT_screencoverage`, `bias`
+  (default = C-27 `lodBias` × model `bias`) multiplies coverage, hysteresis 10 %, max one LOD step per frame per
+  actor. Shadow casters one level coarser (`min(level + 1, maxLevel)`) is request Q-02-1 against C-11; until it
+  lands, casters use the active level (correct, slightly more shadow triangles).
 - Render-item count drops wherever `join` merges primitives; the draw-call estimate in `metrics.json` is checked
-  against the renderer's measured draw calls in the look-dev capture (difference > 10 % fails the capture).
+  against the renderer's measured draw calls (C-28 `counters()`) in the look-dev capture (difference > 10 % fails
+  the capture).
 - Collision sidecars are never rendered or uploaded to the GPU.
-- HDRI entries (type `environment`) are consumed by PRD 02's `environments.hdri` chain; this PRD supplies files,
-  metadata (`sunDirection`, `luminanceP99`, `whiteBalanceK`), and 2k resolution. Background visibility is PRD 02.
+- HDRI entries (type `environment`, role `hdri`) are published as C-17 manifest entries with metadata
+  (`sunDirection`, `luminanceP99`, `whiteBalanceK`) at 2k; lane 02 consumes them through its C-09
+  `EnvironmentSource` (`environments.hdri`). Background visibility and PMREM are lane 02's.
 - No change to sampler state: GLB textures already use `linear-mipmap-linear`, `repeat`, anisotropy 8
-  (`GLTFRenderResources.ts:2196-2213`, research 03 §5.2).
+  (`GLTFRenderResources.ts:2196-2213`, research 03 §5.2); tiered anisotropy is lane 04/02 via C-12 (R9).
 
 ---
 
@@ -865,7 +980,7 @@ This PRD is mostly offline. Shader work is limited to what optimized assets and 
 |---|---:|---|---|
 | A. Real PBR sources (Objaverse/Sketchfab 34, NASA 5, OpenGameArt 1, Kenney 3) | 43 | `assets optimize` with role profile; re-admit through G1–G11; replace if G1/G9 fail (e.g. `siegeGolfBall`, `siegePlankSet`, `neonStreetLampProp`, `showcaseRoboticWeldingWorkcell` 704,582 tris) | `release` only after look-dev |
 | B. Meshy (8) | 8 | §6.5 promotion: remesh 15–30k, bake, optimize; `pulseArena`, `mechHeroDecimated`, `patrolAircraftMeshy`, `skylineHeroRunner`, `galleryThief`, `courierVanMeshyV2Decimated`, `gravityPostMeshyFreight`, `rooftopShooterMeshyV1` | `candidate` → `release` on pass |
-| C. Scripted geometry (`aura3d-original` + "procedural world") | 50 | reclassify role `proxy`, quality `prototype`; replace in game by library asset (PRD 14 per game) | `prototype` |
+| C. Scripted geometry (`aura3d-original` + "procedural world") | 50 | reclassify role `proxy`, quality `prototype`; per-game replacement list published as C-40 facts + C-17 entries for lane 14 (Q-14-3) | `prototype` |
 | D. 4-tri cards standing in for 3D subjects: character/vehicle roles (`skylineArcticRunnerHero`, `neonRainCourierHero`, `neonCrownMothElite`, `auroraExtractionLanderHero`), card "heroes/rivals" in set-dressing (`blockfallReactorMechanicHero`, `blockfallReactorPlasmaRival`), and gameplay platforms (`skylineIceLedgeCompact/Medium/Long`) | 9 | downgrade to `prototype`; replace with rigged/modelled library assets and modelled platform kit | `prototype` |
 | E. Far plates (`auroraExtractionBayBackdrop`, `blockfallReactorArenaBackdrop`, `neonRainGardenArenaBackdrop`, `skylineWinterParallaxBackdrop`, `turboAlpineVenueBackdrop`) | 5 | role `backdrop`, `extras.aura3dBackdrop.minDistance`, re-encode KTX2 (the Skyline plate is the one element the judge rated excellent, research 21 line 1756) | `release` as backdrop |
 | F. No-family Blender procedural kits with 128² palettes (`pulseReactorEncounterWorld`, `pulseRunnerCraft`, `pulseTerminalSentry`, `turboCircuitEnvironmentV2`) plus Blender-py kits inside class C with 32² palettes (`gravityPostCourierSkiff`, `gravityPostFreightDistrict`) | ~5 (+2 in C) | G2/G3 will fail; keep as `candidate` until replaced or re-textured with library tiling sets | `candidate` |
@@ -876,28 +991,39 @@ before any label change is committed; the script's table, not this one, is autho
 
 ### 10.2 Steps
 
-1. Ship schema 1.1 reader (accepts 1.0) and the `backdrop`/`proxy` roles.
+1. Ship schema 1.1 reader (accepts 1.0) and the `backdrop`/`proxy` roles (C-17 stub: writer stays 1.0 until
+   `A3D_QR_ASSETS` is on; the root manifest is regenerated with the flag on in lane 05's own commits).
 2. Run `assets optimize --all --dry-run` remotely; publish the before/after budget report as a CI artifact.
 3. Run the migration script: compute G1–G11 for every `release` asset; write `admission` records; downgrade
    failing assets (`release` → `candidate`/`prototype`) in one reviewed commit with the report attached. No
-   asset keeps `release` without passing.
+   asset keeps `release` without passing. Labels change; URLs and pixels do not (routes keep the same files).
 4. Optimize class A/B/E; capture look-dev; review; re-admit.
-5. Switch typegen to per-route modules and derived URLs (`variant: "optimized"`).
-6. Hand per-game replacement lists (class C/D/F) to PRD 14.
-7. Replace template starter assets (product-viewer, racing-starter, mini-game, fighting-game,
-   character-controller, falling-blocks-starter) with library entries; regenerate template typed modules.
-8. Delete stubs and the waiver (§7.5); update skills (PRD 13 owns wording; this PRD supplies rules).
+5. Switch typegen to per-route modules and derived URLs (`variant: "optimized"` default only when
+   `A3D_QR_ASSETS` is on; flag off keeps source URLs).
+6. Publish per-game replacement lists (class C/D/F) as `evidence/prd05/assets/replacement-lists.json` + C-40 rows;
+   lane 14 applies them per route (Q-14-3).
+7. Template starter assets: publish library replacements and the regenerated template manifests' expected diff
+   as request Q-13-2 (lane 13 owns `packages/create-aura3d/templates/*/aura.assets.json`).
+8. Delete stubs and the waiver (§7.5); skill wording is lane 13's (facts F-05-01..06, C-40; request Q-13-1).
 
 ---
 
 ## 11. Backward compatibility
 
+- Runtime: with `A3D_QR_ASSETS` off (default until `integrated-accepted`, CONTRACTS §5.3) every route renders
+  exactly as at `85aafcd0`: source URLs, stub decoder registry (wraps today's `GLTFCompressionDecoders.ts`),
+  stub texture-format slot (verbatim moved function), no LOD extension registered, no collider sidecars. The
+  flag-off sentinel identity check (CONTRACTS §6.1) runs on every lane-05 PR touching `packages/rendering/**` or
+  `packages/engine/**`.
+- The release-gate change (Phase 0) is CLI-only and declared in its PR as a correctness fix in the sense of
+  CONTRACTS §6.1 (it changes labels, never pixels).
 - `model(assets.x)` keeps its signature. URLs change (new derived hash); typed module consumers are unaffected.
 - Manifest 1.0 files are read unchanged; `assets add` on a 1.0 manifest upgrades it to 1.1 in place with no
   field removal. `suitabilityReason`, `renderedProbe`, `provenance` are preserved.
 - Release semantics change: third-party projects whose `--release` validation passed via the stylized regex will
   now fail. For one minor version, `--legacy-release-gates` restores 1.0 behaviour with a deprecation warning
-  and an `admission.legacy: true` marker; the repo's own CI rejects that flag (grep check in `ci.yml`).
+  and an `admission.legacy: true` marker; the repo's own lane workflow `qr-prd05-gates.yml` greps the repo for
+  that flag and fails if found.
 - `ensureAssetDecoders` default change (meshopt on) is additive: uncompressed assets behave identically.
 - `KTX2BasisTextureTranscoderOptions.targetFormat` becomes required and the CDN fallback is removed: callers of
   the low-level transcoder must pass a target and transcoder URL (breaking for direct callers). The one in-repo
@@ -909,66 +1035,271 @@ before any label change is committed; the script's table, not this one, is autho
 
 ---
 
-## 12. Dependencies on other PRDs
+## 12. Contracts consumed / provided
 
-| PRD | Dependency | Direction / blocking |
+The earlier "Dependencies on other PRDs" table is replaced by contracts. Lane 05 builds against each consumed
+contract's PR 0a/0b stub and never waits for a provider's real implementation. What a stub can and cannot show
+decides whether a criterion is standalone (§16.0) or integrated (§16.4). Facts from the old table that were
+consumer relationships (lanes 07, 10, 13, 14 using assets) are now rows of §12.1 and §12.4.
+
+### 12.1 Contracts provided
+
+| ID | Name | Surface lane 05 provides | Stub that must keep working (PR 0a, CONTRACTS) | Real (lane 05) | Consumers |
+|---|---|---|---|---|---|
+| C-16 | Compressed textures + decoder registry | `selectKTX2TargetFormat`, `KTX2BasisTextureTranscoderOptions` (required `targetFormat`, same-origin `transcoderUrl`), `createAssetDecoderRegistry`, `AssetDecoderUnavailable`, `resolveCompressedTextureFormatSlot()`, `CompressedTextureCapabilities`, `TextureCompressedFormat` members `bc7-rgba-unorm`/`etc2-rgb8unorm` | `selectKTX2TargetFormat` real (pure table); registry wraps `GLTFCompressionDecoders.ts` loaders; slot stub = verbatim `resolveCompressedTextureFormat` (`WebGL2Device.ts:4117-4133`) | `AssetDecoderRegistry.ts` + `vendor/{basis,draco}` + `KTX2TranscodeWorker.ts`; sRGB/BPTC/gated-ETC2 in `webgl2/TextureFormats.ts`; `slot.provide` in `packages/{assets,rendering}/src/lanes/prd05.ts`; flag `A3D_QR_ASSETS_DECODERS` | 04 (KTX2 material textures, R6), 07 (KTX2 flipbook atlases), 10 (terrain/foliage KTX2) |
+| C-17 | Asset manifest 1.1 / AssetOptimize / admission | schema `aura3d.assets/1.1`, roles, `AuraCliDerivedAsset`, `AuraCliAdmissionRecord`, `AuraCliLookDevRecord`, `optimizeAssets`, gates G1–G11, engine fields (`variants`, `requiredDecoders`, `lods`, `colliderUrl`, `budget`; `AuraModelOptions.lod/collider`; `AuraCreateAppOptions.assets`) | reader accepts 1.1 and ignores unknown fields; writer emits 1.0 until `A3D_QR_ASSETS` on; engine fields DIAGNOSTIC_ONLY (owner 5); clip consumers use `AuraCliAnimationClipInspection` | `tools/asset-optimize/`, `packages/aura3d-cli/src/{admission,lookdev,optimize}/`, `apps/asset-lookdev/`, `assets/library` (≥ 6 HDRIs at 2k) | 06 (clip metadata, rigged heroes), 07 (VFX atlas admission), 09 (SFX pack provenance), 10 (world content), 13 (templates, catalog phrases), 14 (kits K1–K9, replacement lists), 15 (manifest stops emitting lean imports) |
+
+Registry entries lane 05 provides into other contracts: C-02 chunks `a3d_prd05_lod_dither`, `a3d_prd05_debug_view`
+and features `prd05.lodDither`, `prd05.debugView`; C-11 depth feature `prd05.lodDither`; C-14/`RenderItem.lodFade`
+values; C-31 section `assets` (decoders loaded/failed, selected KTX2 target per slot, LOD level histogram,
+texture bytes by format); C-36 `diagnosticOnly.prd05.ts` entries for every C-17 engine field until wired, plus
+option-coverage rows (`model.lod`, `model.collider`, `createAuraApp.assets.variant`, `.maxTextureSize`); C-39
+commands `assets optimize|lookdev|review|admit|budget|library|prune` and codemod `assets-route-modules`; C-30 lane
+scenes `prd05-asset-lod-transition`, `prd05-lookdev-hero`, `prd05-optimized-{damaged-helmet,pbr-product,skinned,
+outdoor,game-scene}`; C-40 facts `F-05-*`; TypedGLBActor extension `prd05.lod` (CONTRACTS §3.6).
+
+Conformance suites that must pass for both `stub` and `real` (lane 15-owned): `tests/unit/contracts/C-16-ktx2.test.ts`
+(driven by `tests/unit/assets/ktx2-target-format.table.json`, which lane 05 authors: 128 rows), and
+`tests/unit/contracts/C-17-manifest.test.ts` (1.0/1.1 round trip; gate purity). Lane 05 adds
+`tests/unit/contracts/impl/prd05-{decoders,texture-formats,manifest,gates}.test.ts` for its real implementations.
+
+### 12.2 Contracts consumed
+
+| ID | Name | Provider | What lane 05 uses | Day-0 stub behaviour relied on | Effect on acceptance |
+|---|---|---|---|---|---|
+| C-02 | ProgramFeatures, chunk registry, ProgramCache | 01 | `registerShaderChunk`, `registerShaderFeature` (`fragment:alpha`, `fragment:end`), `ChunkHarness` | registries real (store/validate); `generateProgram` throws `PROGRAM_GENERATOR_PENDING`; ChunkHarness real | chunk compile + Bayer mask unit test standalone; on-screen dither/debug views integrated |
+| C-05 | Output (tone map, exposure) | 01 | Aura adapter output settings matching the three adapter (ACES, same exposure) | today's output path | three-adapter G9 standalone; Aura-vs-three gap integrated |
+| C-09 | EnvironmentSource | 02 | Aura adapter loads the look-dev HDRIs through `environments.hdri` | legacy environment path | Aura look-dev frames integrated; HDRI files themselves standalone |
+| C-11 | Depth-variant hook | 02 | `registerDepthVariantFeature("prd05.lodDither")` | features stored, applied once lane 02's `DepthPass` consumes them | shadow dither/LOD+1 integrated |
+| C-12 | Sampler descriptors | 02 | single-mip downgrade rule; KTX2 mip chains | fields inert; `resolveSamplerAnisotropy` real | standalone |
+| C-15 | Model material overrides | 04 | tint must multiply, not strip maps (E-§2.6) | today's `replaceSurfaceTextures: true` | game asset visuals integrated only |
+| C-27 | QualityTier settings | 11 | `tier`, `maxTextureSize`, `textureBudgetBytes`, `lodBias` | real data (pure table); `"auto"` → high desktop / medium coarse pointer | standalone |
+| C-28 | Device capabilities | 11 | `DeviceProbe.maxTextureSize`, `counters()` (draw calls, texture uploads) | probe real; counters partial | standalone (lane harness counts draws itself where counters are partial) |
+| C-29 | Renderer factory / WebGPU | 11 | WebGPU decode runs | today's backend selection | WebGPU compressed formats integrated (Q-11-1) |
+| C-30 | Benchmark scene registry | 12 | lane scene index `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/`, `ReadyPayloadV2.qrFlags` | registry wraps 18 base scenes + lane indices | standalone (own scenes) |
+| C-31 | Diagnostics sections | 12 | `registerDiagnosticsSection({ key: "assets" })` | section present with null values | standalone |
+| C-32 / C-33 | Rubric + capture harness | 12 | `judgeWithPrism`, `JudgeIdentity`, step plugins, `--flags` passthrough | today's capture scripts + plugin loading + `a3d-qr=` passthrough | standalone screening; acceptance only at G-PANEL |
+| C-35 | Art direction + game acceptance schema | 14 | `assets/art-direction/<id>.json` shares the C-35 palette/shading fields | schema file (data) | standalone |
+| C-36 | SceneCompiler extension points | 15 | `SceneCompileContext.quality/flags`, `degrade("texture-upgrade-failed" \| "capability-degraded")`, `DIAGNOSTIC_ONLY_FIELDS`, `registerOptionCoverage` | wraps the moved legacy compiler | standalone |
+| C-38 | App surface registry | 15 | pre-declared `AuraCreateAppOptions.assets`, `AuraCreateAppRendererOptions.debugView` | real in PR 0 | standalone |
+| C-39 | CLI command / codemod registry | 15 | `registerCliCommand`, `registerCodemod` | real in PR 0 (fallthrough in 0b-3) | standalone |
+| C-19 | AnimationPlayback API | 06 | library character kits: clip strip in look-dev (`tracksApplied > 0`) | `crossFadeTo` = `node.play`; `animationState()` reads today's result | clip presence (inspection) standalone; moving characters in games integrated |
+| C-40 | Facts handoff | each lane → 13 | rows `F-05-*` | n/a | — |
+
+Resolved conflicts from CONTRACTS §0 that changed this PRD: R1 (`AuraQualityTier` imported from C-27, not defined
+here), R6 (this PRD's 4-argument `selectKTX2TargetFormat` is the contract; lane 04 consumes it), R18 (instance
+`node.size` fix is lane 15's), R20 (skills/templates written by lane 13 from facts), R21 (route `main.ts` edits are
+lane 14's; lane 05 ships codemods and lists).
+
+### 12.3 Requests to other lanes (non-blocking)
+
+Filed on day 0 as `qr-request` + `to:prdNN` issues (CONTRACTS §6.5). Lane 05 never waits: each row names what
+lane 05 does meanwhile; any criterion that needs the change is evaluated at the next checkpoint after it lands.
+
+| ID | To | File / exact change | Contract | Meanwhile |
+|---|---|---|---|---|
+| Q-02-1 | 02 | `DepthPass.ts`: compose the registered `prd05.lodDither` depth feature; select caster LOD `min(level + 1, maxLevel)` from `RenderItem.lodLevel`/`lodLevels` (optional fields added by CCR-05-1, §7.0) | C-11 | casters use the active level; shadow dither absent (hard switch) |
+| Q-02-2 | 02 | `EnvironmentSource`: advertise whether KTX2 `R16G16B16A16_SFLOAT`/UASTC-HDR input is accepted | C-09 | `hdri` profile keeps RGBE `.hdr` |
+| Q-04-1 | 04 | `TypedGLBActor.ts:184-191`: forward the pre-declared `options.decoders.{meshopt,draco,imageDecoder}` and `options.maxTextureSize` into `loadProductionGLTFRenderPipeline` (one-line spread; the pipeline already accepts them, `ProductionGLTFRenderPipeline.ts:6-25`); confirm the `registerTypedGLBActorExtension` hook runs `collectRenderItems` after material overrides | C-16, §3.6 | lane tests and look-dev call the pipeline directly with registry decoders |
+| Q-04-2 | 04 | `GLTFExtensionSupport.ts` via `tools/generate-extension-matrix.mjs`: register `MSFT_lod` (`runtime-supported`, `GLTFLoader` + `TypedGLBActorLod`), `KHR_texture_basisu` and `EXT_meshopt_compression` as `runtime-supported` when the registry is real | §4.3 generated-file | lane-05 `GLTFLoader.ts` parses `MSFT_lod` regardless of the matrix |
+| Q-04-3 | 04 | Review (not approve-gate) the sRGB compressed-format mapping in `webgl2/TextureFormats.ts` | C-16 | merges on lane 05 tests; review comments land as follow-ups |
+| Q-11-1 | 11 | `WebGPUDevice.ts`: compressed upload path (`writeTexture` per mip, block-aligned `bytesPerRow`) for the §8 item 1 format table; request `texture-compression-astc|bc|etc2` at device creation; report them through `CompressedTextureCapabilities`; quantized vertex formats `snorm16x4`/`unorm16x2`/`snorm8x4` | C-16, C-29 | WebGPU capabilities report none → transcoder emits RGBA8 levels (correct, more VRAM) |
+| Q-11-2 | 11 | C-27 table: confirm `maxTextureSize` stays the device ceiling and lane 05 applies per-role caps (§17.1) below it; confirm `lodBias` semantics (coverage multiplier) | C-27 | lane 05 uses `min(C-27 cap, role cap)` and `lodBias` as coverage multiplier |
+| Q-12-1 | 12 | Include `prd05-*` lane scenes in checkpoint captures (automatic via C-30 registry); add `public/aura-decoders/**`, `assets/library/**` LFS paths to `ci.sh`; rubric prompt lines for asset texel sharpness and LOD pops | C-30, C-32 | lane workflows capture their own scenes |
+| Q-13-1 | 13 | Rewrite `packages/aura3d-cli/skills/{aura3d-assets/SKILL.md:109, meshy-cli/SKILL.md:56-66, aura3d-performance/SKILL.md, aura3d-materials-environments/SKILL.md:9-10}` from facts F-05-01..06, then `pnpm skills:sync` / `pnpm check:skills` | C-40 | facts published `proposed` → `verified` |
+| Q-13-2 | 13 | Replace starters in `packages/create-aura3d/templates/{product-viewer,racing-starter,mini-game,fighting-game,character-controller,falling-blocks-starter}/aura.assets.json` with library ids (exact entries published in `evidence/prd05/assets/template-starters.json`); copy `/aura-decoders/` into template builds | C-17, C-40 | lane fixture project `tests/qr/prd05/fixtures/template-starter/` proves the entries pass G1–G11 |
+| Q-13-3 | 13 | Template opt-in to `A3D_QR_ASSETS` once `standalone-accepted` | §5.4 | none needed |
+| Q-14-1 | 14 | `apps/showcase-*/scripts/{register-models,register-assets}.mjs`: pass `--quality prototype --role proxy` for scripted geometry so re-runs cannot re-register `release` | C-17 | `assets add --quality release` already errors (Phase 0), so the scripts cannot re-promote |
+| Q-14-2 | 14 | Run `aura3d codemod assets-route-modules --write` on every `apps/showcase-*/src/main.ts` (import `src/aura-assets.route.ts`) | C-39 | monolithic module still generated; report attached |
+| Q-14-3 | 14 | Apply per-game replacement lists (§10.1 classes C/D/F) and the six pilot swaps (Skyline Runner, Mech Hangar, Courier Rush, Vault Breakers, Gravity Post, Bank Shot) | C-17, C-35 | lane scenes show the library assets in isolation |
+| Q-14-4 | 14 | `tools/quality-rebuild-capture/games.json`: add `qrFlags: ["A3D_QR_ASSETS"]` for swapped routes | C-33 | checkpoint `all` run covers them |
+| Q-15-1 | 15 | `compiler/renderer.ts` (ex-`index.ts:13540-13841`), model-node actor creation: `await prepareModelDecoders(asset, app.assetDecoders)` from `agent-api/AssetDecoders.ts` and pass the result as `TypedGLBActorOptions.decoders`; on `AssetDecoderUnavailable` call `ctx.degrade({ code: "capability-degraded" })` (throw under strict) | C-16, C-36 | lane tests drive the pipeline directly |
+| Q-15-2 | 15 | Model physics binding: when `physics` is set and `asset.colliderUrl` exists and `collider !== "bounds"`, call `createCollidersFromSidecar` (physics-rapier, lane 05) instead of the bounds box | C-17, C-36 | option DIAGNOSTIC_ONLY; lane physics test calls the API directly |
+| Q-15-3 | 15 | `root-manifest` batch: pin `draco3d` `^1.5.7` → `1.5.7` in root `package.json:731`; root script `"assets:optimize": "aura3d assets optimize"` | §4.4 | tools pin `draco3d@1.5.7` in their own `package.json` |
+| Q-15-4 | 15 | Agree the export shape of `src/aura-assets.route.ts` (package boundary) and that `assets/GLTFLoader.ts` stays the single glTF parser | C-17 | generator emits the shape in §6.9 |
+
+### 12.4 Requests received (lane 05 delivers; no other lane waits on them)
+
+| From | Request (conflict map) | Lane 05 delivery | Consumer meanwhile |
+|---|---|---|---|
+| 06 (Q-05-1) | clip `duration`, `hasRootMotionCandidate`, `frameRate?` in inspection/typegen | Phase 0: `inspectGltfAnimations` (`index.ts:2112`) calls lane 06's `commands/prd06/inspectAnimationClips.ts`; `asset-manifest.ts` emits C-17 `animationClips` | runtime durations (06 T0.6) |
+| 06 (Q-05-2) | rigged `hero` humanoid (≥ 15k tris, ≥ 50 joints, clip set), fighter pair, ARKit-52 head, hero LODs | Phase 5 library `characters/humanoid-pbr` + `robots-mechs`; head asset candidate list | repo rigs by path |
+| 09 (R-09-1) | `assets add --type audio` with licence/sourceUrl/author/loudness metadata; audio provenance rule in `validate --release` | Phase 0: C-17 `audio` field + release rule (synth allowlist); transcode is lane 09's own command `assets transcode-audio` registered via C-39 in `commands/prd09/` | lane 09 records metadata in its pack manifest |
+| 10 | `texture-set`, `hdri`, 16-bit/R32F/EXR height textures; KTX2 encode; Meshopt + LOD1 GLBs; impostor atlas registration | Phases 2 and 5 (profiles + roles); `assets bake-impostor` is lane 10's C-39 command | lane 10 commits pinned one-off encodes |
+| 04 | KTX2/UASTC/ETC1S, Draco, Meshopt fixtures; MikkTSpace tangent bake | Phase 2 `tools/asset-optimize` outputs published as fixtures under `tests/qr/prd05/fixtures/encoded/` (lane 04 copies into its `fixtures/asset-corpus/`) | lane 04's pinned one-off CI encode |
+| 07 | K9 VFX atlas sheets as KTX2 `vfx-atlas` role | Phase 5 admission | existing transcoder |
+| 12 | 2k CC0 HDRIs (studio, outdoor, night), ground texture set, street kit, provenance format | Phase 5 `assets/library/hdri/` + `credits.json`; lane 12 references them from its own `fixtures/environment-corpus/hdri/manifest.json` | lane 12's existing 1k HDRIs |
+| 13 | HDRIs and curated game packs with profile targets; skill rule facts | Phase 5; facts F-05-01..06 | typed catalog assets |
+| 14 | `assets admit/optimize/lookdev/budget` verbs to admit kits K1–K9 | Phases 2–4 | current `assets add` |
+
+Third-party code vendored by this lane: `basis_transcoder.{js,wasm}` (three 0.185.1 copy, Apache-2.0, sha256 in
+`vendor/basis/README.md`) and `draco3d@1.5.7` decoder (Apache-2.0). Both appear in the generated
+`LICENSE-THIRD-PARTY` (lane-05 generator, §4.3).
+
+---
+
+## Parallel execution
+
+### Day-0 start conditions
+
+Lane 05 starts on 2026-10-05 from the PR 0a branch (CONTRACTS §3.9). The only prerequisites are PR 0a artifacts:
+`packages/assets/src/contracts/decoders.ts`; `packages/rendering/src/contracts/{core,program,shadows,sampling,
+textureFormats,quality,device,renderItem,index}.ts` and `testing/ChunkHarness.ts`;
+`packages/engine/src/contracts/{flags,assets,diagnostics,compiler,app,index}.ts` and `stubs/*`;
+`packages/aura3d-cli/src/contracts/{assetManifest,commands}.ts` and `src/commands/{registry.ts,prd05/index.ts}`;
+the C-16/C-17 pre-declared fields on `Texture.ts`, `index.ts` (`AuraAssetDefinition`, `AuraModelOptions`,
+`AuraCreateAppOptions.assets`), `TypedGLBActorOptions` and `RenderItem.lodFade`; the lane barrels
+`packages/{assets,engine,rendering,aura3d-cli}/src/lanes/prd05.ts`, `agent-api/compiler/diagnosticOnly.prd05.ts`,
+`benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/index.ts`; the conformance harness.
+Nothing from any other lane's real implementation is needed.
+
+Work in files lane 05 owns outright starts on day 0: all of Phase 0 (CLI gates, manifest 1.1, migration report),
+`tools/asset-optimize/**`, `packages/assets/src/{AssetDecoderRegistry,KTX2TargetSelection,KTX2TranscodeWorker,
+KTX2BasisTextureTranscoder,GLTFCompressionDecoders,GLTFLoader,MeshOptimization,AssetImportPreflight}.ts`,
+`loaders/`, `vendor/`, `agent-api/AssetDecoders.ts`, `LodSelector.ts`, `shaders/{lod-dither,debug-view}.glsl.ts`,
+`physics-rapier`, `asset-index`, `apps/{asset-lookdev,loader-ktx2}`, library sourcing, lane scenes and tests.
+Edits to carved regions start when the PR 0b part containing them merges (≤ 2026-10-07); until then the
+replacement is written in the new lane module and wired after the merge:
+- PR 0b-2: `webgl2/TextureFormats.ts` (carve of `WebGL2Device.ts:4117-4133`), C-16 slot seam, C-11 seam.
+- PR 0b-3: `gltf/ImageDecode.ts` (carve of `GLTFRenderResources.ts:2216-2241`), TypedGLBActor extension hook
+  (`actor/TypedGLBActorLod.ts` registration), C-39 CLI fallthrough.
+- PR 0b-1: C-31/C-36/C-38 seams (diagnostics section, option coverage).
+
+### Owned files and directories (must match CONTRACTS §4.1)
+
+`packages/assets/` default (decoders, `KTX2*`, `KTX2TargetSelection.ts`, `GLTFLoader.ts`, `MeshOptimization.ts`,
+`AssetImportPreflight.ts`, `vendor/`, `loaders/`, `gltf/ImageDecode.ts`); `packages/rendering/src/webgl2/TextureFormats.ts`,
+`performance/LOD.ts`, `shaders/{lod-dither,debug-view}.glsl.ts`; `packages/engine/src/agent-api/AssetDecoders.ts`,
+`production-runtime/LodSelector.ts`, `production-runtime/actor/TypedGLBActorLod.ts`; `packages/aura3d-cli/` default
+(`cli.ts`, `cli-help.ts`, `index.ts`, `asset-*`, `admission/`, `lookdev/`, `optimize/`, `meshy/`, `pull-bridge/`,
+`cli-options.ts`, `tests/`); `packages/asset-index/`; `packages/physics-rapier/` (except `HeightfieldLayout.ts`);
+`apps/{asset-lookdev,loader-ktx2}/`; `assets/` default (`library/`, `art-direction/`); `public/{aura-assets,aura-decoders}/`;
+`aura.assets.json`, `aura.library.json`, `src/aura-assets.ts`, `LICENSE-THIRD-PARTY` (generated); `tools/asset-optimize/`;
+`.github/workflows/{asset-lookdev,asset-optimize}.yml`.
+Lane-generic (CONTRACTS §4.1 "lane NN"): this PRD file, `docs/project/aura3d-quality-rebuild/evidence/{prd05,prd-05}/`,
+`packages/*/src/lanes/prd05.ts`, `agent-api/compiler/diagnosticOnly.prd05.ts`, `packages/aura3d-cli/src/commands/prd05/`,
+`benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/`, `.github/workflows/qr-prd05-*.yml`,
+`tests/qr/prd05/`, `tests/unit/contracts/impl/prd05-*`. New test files elsewhere under `tests/` belong to this lane
+by the creator rule.
+
+Exclusions inside lane-05 defaults that belong to others (longest prefix): `packages/assets/src/{GLTFRenderResources,
+GLTFExtensionSupport,MikkTSpaceTangents}.ts` and `asset-corpus/ProductionGLTFRenderPipeline.ts` (04);
+`packages/assets/src/GLTFAnimationRuntime.ts` (06); `packages/assets/src/{asset-corpus/ (default),AdvancedAssetCorpus.ts}`
+and all `contracts/` folders (15); `packages/aura3d-cli/src/{animation-asset-validator,asset-inspection-types}.ts` (06);
+`packages/aura3d-cli/skills/**`, `src/look/` (13); `packages/aura3d-cli/src/{migrate-three,codemods}/`,
+`src/commands/registry.ts` (15); `packages/physics-rapier/src/HeightfieldLayout.ts` (10); `assets/packs/game-sfx-core/` (09).
+
+Tasks of the earlier draft that edited files owned by other lanes were converted (table §5.3): to extension points
+(`TypedGLBActor.ts` LOD → actor extension; `ShaderLibraryCore.ts`/`ShaderLibrary.ts` → C-02 chunks + C-11 depth feature;
+`WebGL2Device.ts` → carved `webgl2/TextureFormats.ts`; `GLTFRenderResources.ts` decode → carved `gltf/ImageDecode.ts`;
+`u_baseColorTextureSize` → GLSL `textureSize`; `Texture.ts` union → PR 0a pre-declaration; `index.ts` option/asset
+fields → PR 0a pre-declarations + C-36 DIAGNOSTIC_ONLY; `shared/assets.ts` → lane scene dir; `browser-matrix.yml`/
+`ci.yml` → `qr-prd05-*.yml`; root devDependencies → workspace manifests; CLI verbs → C-39) or to §12.3 requests
+(`TypedGLBActor.ts` decoder forwarding, `GLTFExtensionSupport.ts`, `WebGPUDevice.ts`, `DepthPass.ts`,
+`compiler/renderer.ts`, model physics binding, root `package.json`, skills, templates, showcase scripts and routes,
+`games.json`).
+
+### Extension points used in files owned by others
+
+| Host file (owner) | Extension point | Lane-05 registrant |
 |---|---|---|
-| 01 Rendering Core / Color / HDR / PBR | Correct linear workflow and output transform so look-dev frames are judgeable | Blocks G9 reviews being meaningful for Aura frames (three frames are judged regardless) |
-| 02 Lighting / IBL / Reflections / Shadows | Ambient must not zero IBL (`index.ts:12693-12707`); PMREM mip sampling; `environments.hdri` default; skinned/instanced depth shader | Blocks game visual acceptance (§16.2). This PRD supplies the 2k HDRI library to 02 |
-| 03 Postprocessing / AA / Tone Mapping | Tone-map operator and exposure wiring for look-dev parity | Soft |
-| 04 Materials / Textures / glTF Fidelity | Tint must multiply, not strip maps (`index.ts:13567-13580`); sRGB compressed formats (shared ownership: 05 implements device mapping, 04 reviews); MikkTSpace/derivative TBN fallback | Hard block for any game acceptance |
-| 06 Animation / Characters | Library characters need GLB clip playback to work on root (`AnimationController` empty-pose freeze, research 09 §4) | Blocks character kit acceptance in games |
-| 07 VFX / Particles | Flipbook sheets admitted as KTX2 texture assets | Consumer |
-| 08 Camera / Controls / Game Feel | Gameplay camera definitions per role feed G2; collider sidecars feed contacts | Soft |
-| 09 Shared Game Runtime | Route-local asset references for per-route typegen | Soft |
-| 10 World Building | Consumes `environments/modular` and `textures/tiling` kits; terrain splat textures | Consumer |
-| 11 WebGPU / Performance Tiers | Defines `AuraQualityTier` and tier selection; instancing `node.size` bug (`index.ts:14747`); WebGPU compressed formats | Blocks tier budgets being enforced at runtime |
-| 12 Visual Benchmark + Regression | Adds benchmark scenes 19/20 (§16.1), vision-judge harness, evidence lanes | Blocks visual acceptance automation |
-| 13 Agent Authoring / Skills / Templates | Skill text and template defaults that teach optimize/admit/look-dev | Consumer |
-| 14 18-Game Rebuild | Executes per-game asset replacement lists from §10.1 | Consumer |
-| 15 API / Package Consolidation | Package boundaries for `tools/asset-optimize`, per-route typed module exports | Coordination |
+| generated programs (01) | C-02 `registerShaderChunk("a3d_prd05_lod_dither" \| "a3d_prd05_debug_view")`, `registerShaderFeature("prd05.lodDither" @ fragment:alpha, "prd05.debugView" @ fragment:end)` | `shaders/{lod-dither,debug-view}.glsl.ts`, `packages/rendering/src/lanes/prd05.ts` |
+| `WebGL2Device.ts` (01) | C-16 `resolveCompressedTextureFormatSlot().provide(real)` at the 0b-2 seam (call site :3922) | `webgl2/TextureFormats.ts` |
+| `DepthPass.ts` (02) | C-11 `registerDepthVariantFeature("prd05.lodDither")` | `shaders/lod-dither.glsl.ts` |
+| `TypedGLBActor.ts` (04) | `registerTypedGLBActorExtension({ id: "prd05.lod", owner: "prd05", flag: "A3D_QR_ASSETS_LOD", onLoad, collectRenderItems, dispose })` | `actor/TypedGLBActorLod.ts` |
+| `GLTFRenderResources.ts` (04) | 0b-3 carve: `decodeImageInBrowser` → `gltf/ImageDecode.ts` (default `imageDecoder` at `:397`) | `gltf/ImageDecode.ts` |
+| `app/createAuraApp.ts` (15) | C-38 pre-declared `AuraCreateAppOptions.assets`, renderer `debugView`; registry created in `AssetDecoders.ts` from the lane barrel's app hook | `packages/engine/src/lanes/prd05.ts` |
+| `app/diagnostics.ts` (15) | C-31 `registerDiagnosticsSection({ key: "assets" })` | same |
+| compiler (15) | C-36 `DIAGNOSTIC_ONLY_FIELDS` (`diagnosticOnly.prd05.ts`), `registerOptionCoverage`, `ctx.degrade` | `diagnosticOnly.prd05.ts`, `lanes/prd05.ts` |
+| `aura3d-cli/src/commands/registry.ts` (15) | C-39 `registerCliCommand`, `registerCodemod("assets-route-modules")` | `commands/prd05/index.ts` |
+| `capture-games.mjs` (12) | C-33 `--flags` passthrough (no step plugin needed) | — |
+| `shared/registry.ts` (12) | C-30 lane scene index | `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/index.ts` |
+
+### Feature flags (CONTRACTS §5)
+
+| Flag | Values | Gates | PRD-local alias |
+|---|---|---|---|
+| `A3D_QR_ASSETS` | bool | manifest writer 1.1, derived URLs in typegen (`variant: "optimized"`), engine C-17 fields wired, per-route modules, tier texture cap, mobile variant on Low, C-31 `assets` values | `assets.variant: 'optimized' \| 'source'` (off = `source`) |
+| `A3D_QR_ASSETS_DECODERS` | bool | real C-16 registry (vendored decoders, worker transcode, single target), real texture-format slot (sRGB/BPTC/gated ETC2) | `assets.decoders.*` |
+| `A3D_QR_ASSETS_LOD` | bool | `prd05.lod` actor extension, `prd05.lodDither` chunk/feature registration | `model({ lod })`, `assets.lod: false` |
+
+CLI-only changes (gates G1–G11, `assets optimize/lookdev/admit/...`, migration) ship directly behind CLI options,
+like lane 12's tooling. Flag state transitions happen only at checkpoints (CONTRACTS §5.3).
+
+### Stubs used
+
+C-02 (`PROGRAM_GENERATOR_PENDING`; ChunkHarness real), C-05 (today's output), C-09 (legacy environment), C-11
+(features stored, not applied), C-12 (fields inert; anisotropy table real), C-15 (today's tint bridge), C-19 (node.play
+facade), C-27 (real data), C-28 (probe real, counters partial), C-29, C-30, C-31, C-32, C-33, C-35 (data), C-36,
+C-38/C-39 (real). Lane 05's own stubs (C-16 registry wrapping `GLTFCompressionDecoders.ts`, verbatim format slot;
+C-17 1.0 writer, DIAGNOSTIC_ONLY engine fields) stay the flag-off path until CONTRACTS §5.4 removal.
+
+### Integration checkpoints (CONTRACTS §7)
+
+Integrated acceptance (§16.4) is evaluated only at checkpoints with `A3D_QR_ASSETS` (and sub-flags) on inside
+`qr_flags=all`, and never blocks a lane-05 merge:
+- IC-0 (2026-10-08): flags `none` baseline; lane 05 records per-game ready bytes, model counts, texture bytes by
+  format and `modeling_assets` scores (should reproduce research 21: games 1.5–4/10, mean ≈ 3.0).
+- IC-1 (2026-10-15), IC-2 (10-22), IC-3 (10-29): screening (vision-only, recorded, cannot accept). First expected
+  integrated signal: derived URLs + real decoders on routes that opted in (needs Q-04-1, Q-15-1).
+- IC-4 (2026-11-05), IC-8 (2026-12-03), IC-12 (2026-12-31): G-PANEL rounds; the only rounds that can move
+  `A3D_QR_ASSETS` to `integrated-accepted`. Leave-one-out (`all,-assets`) attributes deltas between asset work and
+  renderer lanes (01–04) on the same routes.
+A checkpoint failure becomes a `qr-ic-regression` issue against the owning lane (CONTRACTS §7). Unresolved Q-*
+requests are listed in each checkpoint report.
 
 ---
 
 ## 13. Implementation phases
 
 Each phase ends only when its exit criteria are met on the remote lanes named in §15. "Tests pass" alone never
-satisfies a phase whose criterion is visual.
+satisfies a phase whose criterion is visual. Every exit criterion below is **standalone** (lane-05 files + PR 0
+stubs only); integrated outcomes are §16.4 and never gate a phase. Phases 0, 1, 2 and 4 have no ordering between
+them beyond shared code and are staffed in parallel from day 0; Phase 3 needs Phase 2's simplifier output for its
+exit test only (its runtime half starts day 0 on synthetic `MSFT_lod` fixtures); Phase 5 needs Phase 4's look-dev
+for admission; Phase 6 needs Phase 2's derived files.
 
-**Phase 0 — Gate honesty (no new tooling).**
+**Phase 0 — Gate honesty (no new tooling). Starts day 0 after PR 0a; all files lane-05-owned.**
 Delete the regex waiver and flat-colour evidence waiver; schema 1.1 types; `backdrop`/`proxy` roles; offline
 G1, G3, G4, G5, G8, G11 checks computed from GLB JSON; migration report; downgrade commit.
 Exit: `tools/asset-optimize/migrate-1.1.ts --report` artifact committed under
-`docs/project/aura3d-quality-rebuild/evidence/assets/migration-1.1.json`; 0 assets in root and template manifests
-hold `release` while failing G1/G3/G4/G5; unit tests for each gate with the shipped failing examples
-(`rooftopBackboard`, `skylineArcticRunnerHero`, `mechChassisA`, `vaultBreakersTable`) as fixtures.
+`docs/project/aura3d-quality-rebuild/evidence/prd05/assets/migration-1.1.json`; 0 assets in the root manifest
+hold `release` while failing G1/G3/G4/G5 (template manifests are reported in the same file and applied by lane 13,
+Q-13-2); unit tests for each gate with the shipped failing examples
+(`rooftopBackboard`, `skylineArcticRunnerHero`, `mechChassisA`, `vaultBreakersTable`) as fixtures; C-17
+conformance green for stub and real.
 
-**Phase 1 — Decode path the games use.**
-`AssetDecoderRegistry`; meshopt/draco/KTX2 decoders injected in `createTypedGLBActor`; vendored basis
-transcoder, CDN removed; target selection; sRGB compressed formats (WebGL2 + WebGPU); single transcode; tier
-texture cap.
-Exit: browser test on macos-14 loads Khronos DamagedHelmet in three encodings (source PNG, meshopt+KTX2 UASTC,
-draco+KTX2 ETC1S) through `model(assets.x)`; mean ΔE2000 between encodings ≤ 2.0 inside the object mask; zero
-requests to origins other than the test server (network log); compressed internal format reported by the
-device equals the expected sRGB format.
+**Phase 1 — Decode path. Starts day 0 (registry, transcoder, target table, vendoring); carved files after PR 0b-2/0b-3.**
+`AssetDecoderRegistry` (C-16 real); `prepareModelDecoders`; vendored basis transcoder, CDN removed; target
+selection; sRGB compressed formats in `webgl2/TextureFormats.ts`; single transcode; tier texture cap in
+`gltf/ImageDecode.ts`. Wiring into `createTypedGLBActor` and the model compile is requests Q-04-1 / Q-15-1.
+Exit (standalone): browser test on macos-14 loads Khronos DamagedHelmet in three encodings (source PNG,
+meshopt+KTX2 UASTC, draco+KTX2 ETC1S) through `prepareModelDecoders` + `loadProductionGLTFRenderPipeline` rendered
+by the current renderer with `A3D_QR_ASSETS_DECODERS` on; mean ΔE2000 between encodings ≤ 2.0 inside the object
+mask; zero requests to origins other than the test server (network log); compressed internal format reported by
+the device equals the expected sRGB format; C-16 conformance green for stub and real; flag-off sentinel identity
+check green. The same test through `model(assets.x)` is integrated (needs Q-04-1, Q-15-1).
 
-**Phase 2 — Optimize stage.**
-`tools/asset-optimize` steps 1–12, profiles, `assets optimize` verb, `asset-optimize.yml` workflow; dry-run over
-all 226 models.
+**Phase 2 — Optimize stage. Starts day 0.**
+`tools/asset-optimize` steps 1–12, profiles, `assets optimize` verb (C-39), `asset-optimize.yml` workflow; dry-run
+over all 226 models.
 Exit: budget report artifact for all 120 game-referenced models (before/after bytes, tris, GPU bytes per tier);
 deterministic-output test (same input + profile ⇒ byte-identical GLB twice); benchmark assets optimized and
-§16.1 criteria (a)–(c) pass for scenes 02, 03, 08, 09, 15, 18.
+§16.1 criteria (a)–(c) pass for lane scenes `prd05-optimized-*` (equivalents of base scenes 02, 03, 08, 09, 15, 18).
 
-**Phase 3 — LOD and colliders.**
-`MSFT_lod` writer, runtime selection with hysteresis, dither cross-fade, shadow LOD+1; collision sidecars and
-`collider: "auto"`.
-Exit: benchmark scene 19 (§16.1, Phase-3 variant using the optimized existing `courierTrafficSedan`, since the
-library does not exist until Phase 5) passes; Rapier contact test: the optimized benchmark `crate` (convex hull)
-dropped on the optimized `racing-starter` template track (trimesh from LOD0) rests within 1 cm of the visual
-surface in a deterministic 120-step simulation. Scene 19 is re-run with the library hero vehicle in Phase 5.
+**Phase 3 — LOD and colliders. Runtime half starts day 0 on synthetic `MSFT_lod` fixtures; exit needs Phase 2.**
+`MSFT_lod` writer, `LodSelector.ts` with hysteresis, `prd05.lod` actor extension (after PR 0b-3), `prd05.lodDither`
+chunk; collision sidecars and `createCollidersFromSidecar`.
+Exit (standalone): lane scene `prd05-asset-lod-transition` (§16.1, using the optimized existing
+`courierTrafficSedan`, since the library does not exist until Phase 5) passes criteria (d)–(f) with the hard switch
+(dither is integrated, C-02); Rapier contact test: the optimized benchmark `crate` (convex hull) dropped on the
+optimized `racing-starter` track (trimesh from LOD0) rests within 1 cm of the visual surface in a deterministic
+120-step simulation, through `createCollidersFromSidecar` directly. The scene is re-run with the library hero
+vehicle in Phase 5.
 
-**Phase 4 — Look-dev viewer and visual gates.**
-`apps/asset-lookdev`, `asset-lookdev.yml`, `assets lookdev|review|admit`; G2, G6, G7, G9, G10 enforced.
+**Phase 4 — Look-dev viewer and visual gates. Starts day 0 (three adapter needs no other lane).**
+`apps/asset-lookdev`, `asset-lookdev.yml`, `assets lookdev|review|admit`; G2, G6, G7, G9, G10 enforced; G9 scored on
+the three adapter.
 Exit: contact sheets for 10 assets (3 good: DamagedHelmet, AntiqueCamera, Soldier; 7 shipped: `mechHeroDecimated`,
 `patrolAircraftMeshy`, `courierTrafficSedan`, `showcaseHeadphones`, `bankShotTable`, `skylineArcticRunnerHero`,
 `siegeGolfBall`); the 3 good assets pass G9 and the 4 known-bad ones (`bankShotTable`, `skylineArcticRunnerHero`,
@@ -977,22 +1308,25 @@ the gate is defective. The other 3 (`patrolAircraftMeshy`, `courierTrafficSedan`
 unlabelled probes: their scores are recorded and a named human states agree/disagree per asset; > 1 disagreement
 blocks the phase until the rubric prompt is revised.
 
-**Phase 5 — Library, HDRIs, generated-asset promotion.**
+**Phase 5 — Library, HDRIs, generated-asset promotion. Sourcing and adapters start day 0; admission needs Phase 4.**
 Kits of §6.6 admitted; Poly Haven HDRI/texture adapters; ranking rewrite; §6.5 Meshy pre-stage.
-Exit: every kit in §6.6 has ≥ the listed minimum admitted at `release` with look-dev approval; 6 HDRIs at 2k
-admitted as `environment` assets; each of the 8 Meshy assets is promoted or rejected with recorded G-failures;
-scene 19 re-run with the `vehicles/road` hero car passes the same thresholds.
+Exit: every kit in §6.6 has ≥ the listed minimum admitted at `release` with look-dev approval (three adapter);
+6 HDRIs at 2k admitted as `environment` assets; each of the 8 Meshy assets is promoted or rejected with recorded
+G-failures; `prd05-asset-lod-transition` re-run with the `vehicles/road` hero car passes the same thresholds;
+facts F-05-01..06 published (C-40).
 
-**Phase 6 — Packaging, templates, measurement.**
-Per-route typegen and deploy subset; prune orphans; template starter replacement; tier measurement on named
-devices (§17).
-Exit: every showcase route's main JS no longer contains `suitabilityReason`/`licenseRaw` strings; the 120 ids (or
-their replacements) total ≤ 80 MB; template `product-viewer` and `racing-starter` starters pass G1–G11; measured
-tier table committed with device names.
+**Phase 6 — Packaging, measurement.**
+Per-route typegen and deploy subset; prune orphans; codemod `assets-route-modules`; template starter entries
+published (applied by lane 13); tier measurement on named devices (§17).
+Exit: per-route modules generated for all 18 games and the codemod's dry-run report attached (lane 14 applies it,
+Q-14-2); a lane fixture route built with its route module contains 0 `suitabilityReason`/`licenseRaw` strings;
+the 120 ids (or their replacements) total ≤ 80 MB derived; the published `product-viewer` and `racing-starter`
+starter entries pass G1–G11 in `tests/qr/prd05/fixtures/template-starter/`; measured tier table committed with
+device names.
 
-**Phase 7 — Pilot game acceptance (executed with PRD 14, after PRD 02 and 04 fixes land).**
-Six pilot games re-captured with optimized/library assets.
-Exit: §16.2 thresholds met and reviewed by a named human.
+**Phase 7 — Pilot game support (integrated; no lane-05 exit gate).**
+Lane 05 delivers the six pilot replacement lists and admitted kits (Q-14-3). The pilot games are re-captured by
+lane 14 and scored at checkpoints; results are §16.4 integrated acceptance and never hold a lane-05 merge.
 
 ---
 
@@ -1006,29 +1340,33 @@ Exit: §16.2 thresholds met and reviewed by a named human.
 - [ ] `packages/aura3d-cli/src/asset-manifest.ts`: reader accepts 1.0 and 1.1; writer emits 1.1; test round-trips the root `aura.assets.json` with no field loss (compare JSON minus new fields).
 - [ ] New `packages/aura3d-cli/src/admission/gates.ts`: implement G1 (triangle band from profile), G3 (PBR slot coverage by primitive area), G4 (card detection: ≤ 12 tris, unlit > 10 % area, thinness ratio < 0.02), G5 (no TEXCOORD_0 > 10 % area; factor-only; generator matches in-repo builder list), G8 (TANGENT when normal map), G11 (derived present) as pure functions over parsed glTF JSON + accessor counts.
 - [ ] Unit tests in `tests/unit/aura3d-cli/admission-gates.test.ts` with real repo GLBs as fixtures: `rooftopBackboard` fails G1; `skylineArcticRunnerHero` fails G4; `mechChassisA` fails G5; `vaultBreakersTable` fails G3/G5; `fixtures/asset-corpus/damaged-helmet.glb` passes G1/G3/G4/G5.
-- [ ] New `tools/asset-optimize/migrate-1.1.ts --report|--apply`: computes gates for every entry in root and template manifests, writes `docs/project/aura3d-quality-rebuild/evidence/assets/migration-1.1.json`, and with `--apply` downgrades failing `release` assets to `candidate` (or `prototype` + role `proxy` for G5 failures).
-- [ ] Apply migration in one commit; attach report; update `apps/showcase-*/scripts/register-models.mjs` and `register-assets.mjs` so re-running them cannot re-register scripted geometry as `release` (they pass `--quality prototype --role proxy`).
-- [ ] `packages/aura3d-cli/src/cli.ts`: `assets add --quality release` now errors with "use `assets admit`"; `--legacy-release-gates` flag accepted with deprecation warning; `ci.yml` step greps the repo for `--legacy-release-gates` and fails if found.
+- [ ] New `tools/asset-optimize/migrate-1.1.ts --report|--apply`: computes gates for every entry in root and template manifests, writes `docs/project/aura3d-quality-rebuild/evidence/prd05/assets/migration-1.1.json`, and with `--apply` downgrades failing `release` assets to `candidate` (or `prototype` + role `proxy` for G5 failures).
+- [ ] Apply migration to the root `aura.assets.json` in one commit (regenerated by the CLI, §4.3 `--check`); attach report; publish the template-manifest rows for lane 13 (Q-13-2) and file Q-14-1 so `apps/showcase-*/scripts/register-models.mjs` / `register-assets.mjs` pass `--quality prototype --role proxy`.
+- [ ] `packages/aura3d-cli/src/cli.ts`: `assets add --quality release` now errors with "use `assets admit`"; `--legacy-release-gates` flag accepted with deprecation warning; new `.github/workflows/qr-prd05-gates.yml` (lane-owned) greps the repo for `--legacy-release-gates` and fails if found, and runs the gate unit tests.
+- [ ] `packages/aura3d-cli/src/index.ts:2112` `inspectGltfAnimations` (request Q-05-1 from lane 06): call `inspectAnimationClips(json, bin)` exported by `commands/prd06/inspectAnimationClips.ts` when present (dynamic import; fall back to today's names-only inspection) and add `duration`, `hasRootMotionCandidate`, `frameRate?`; `asset-manifest.ts` emits C-17 `animationClips` objects in typegen.
+- [ ] Audio metadata (request from lane 09): `assets add --type audio` accepts `--license --source-url --author --loudness-lufs --true-peak-db`, writes `entry.audio`; `assets validate --release` fails an `audio` entry whose provenance is `synthesized` unless its id is on `admission/audio-synth-allowlist.ts`. Unit test with one licensed and one synthesized WAV fixture.
+- [ ] Day 0: open issues Q-02-1..Q-15-4 (§12.3) and CCR-05-1 (§7.0); publish C-40 rows F-05-01..06 as `proposed` (Appendix B).
+- [ ] `packages/aura3d-cli/src/commands/prd05/index.ts`: register every new verb through C-39 `registerCliCommand`; `cli.ts` keeps the existing verbs.
 
 ### Phase 1
-- [ ] New `packages/assets/src/AssetDecoderRegistry.ts`: `createAssetDecoderRegistry` (§7.4) with lazy dynamic imports; one in-flight promise per decoder; `diagnostics` array; `dispose` terminates workers.
+- [ ] New `packages/assets/src/AssetDecoderRegistry.ts`: `createAssetDecoderRegistry` (§7.4) with lazy dynamic imports; one in-flight promise per decoder; `diagnostics()` returning `{ loaded, failed[{ id, url }] }` (C-16 exact); `dispose` terminates workers; `slot.provide` in `packages/assets/src/lanes/prd05.ts` behind `A3D_QR_ASSETS_DECODERS`; C-16 conformance green for stub and real.
 - [ ] Meshopt: dynamic `import("meshoptimizer")` → `MeshoptDecoder.ready` → wrap with existing `createMeshoptDecoder` (`GLTFCompressionDecoders.ts:63`).
 - [ ] Draco: copy `node_modules/draco3d/draco_decoder.wasm` + JS glue to `packages/assets/vendor/draco/` at build; wrap with `createDracoDecoder` (`GLTFCompressionDecoders.ts:85`); loaded only on `require(["draco"])`.
 - [ ] Basis: vendor `basis_transcoder.{js,wasm}` from `node_modules/three/examples/jsm/libs/basis/` into `packages/assets/vendor/basis/` with `README.md` (upstream, version, sha256, licence); Vite/tsup copy to `/aura-decoders/basis/` in app builds and `create-aura3d` templates.
 - [ ] `packages/assets/src/KTX2BasisTextureTranscoder.ts`: remove `DEFAULT_BROWSER_CDN` (:22) and loaders.gl dynamic import; use the vendored transcoder in a worker (`KTX2TranscodeWorker.ts`); `targetFormat` required; return `colorSpace` from options; transcode RGBA8 fallback only on demand; honour `maxDimension` by skipping levels.
-- [ ] `selectKTX2TargetFormat(caps, source, hasAlpha, colorSpace)`: UASTC → astc-4x4 > bc7 > etc2-rgba8 > rgba8; ETC1S → etc2-rgb8 (opaque) / etc2-rgba8 (alpha) > bc1 (opaque) / bc3 (alpha) > rgba8; sRGB slot on s3tc-without-s3tcSrgb never picks bc1/bc3; unit test is an exhaustive truth table over all 128 combinations (2⁵ capability sets × 2 sources × 2 alpha × 2 colour spaces) with expected outputs checked into `tests/unit/assets/ktx2-target-format.table.json`.
-- [ ] `packages/rendering/src/Texture.ts:1`: extend `TextureCompressedFormat` with `"bc7-rgba-unorm" | "etc2-rgb8unorm"`; update every exhaustive `switch` over it (TypeScript `never` check must pass in `pnpm typecheck`).
-- [ ] `packages/rendering/src/WebGL2Device.ts` (:4117-4133 `resolveCompressedTextureFormat`): take `texture.colorSpace` and return sRGB internal formats (`COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR`, `COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT`, `COMPRESSED_SRGB8_ALPHA8_ETC2_EAC`, `COMPRESSED_SRGB8_ETC2`, `COMPRESSED_SRGB_S3TC_DXT1_EXT`, `COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT`) when `colorSpace === "srgb"`; add `bc7-rgba-unorm` (`EXT_texture_compression_bptc`) and `etc2-rgb8unorm`; replace the unconditional `0x9278` with a `WEBGL_compressed_texture_etc` query (return `null` when absent so the existing fallback path runs); query `WEBGL_compressed_texture_s3tc_srgb` for sRGB BC1/BC3. Unit test with a mocked `gl` asserts the internal-format enum for each (format, colorSpace) pair.
-- [ ] `packages/rendering/src/WebGPUDevice.ts`: add a compressed texture upload path (none exists today): map each `TextureCompressedFormat` × colour space to `astc-4x4-unorm(-srgb)`, `bc7-rgba-unorm(-srgb)`, `etc2-rgba8unorm(-srgb)`, `etc2-rgb8unorm(-srgb)`, `bc1-rgba-unorm(-srgb)`, `bc3-rgba-unorm(-srgb)`; request `texture-compression-astc|bc|etc2` features at device creation when the adapter offers them; upload each mip with `writeTexture` using block-aligned `bytesPerRow`; fall back to the RGBA8 levels when the feature is absent.
+- [ ] `packages/assets/src/KTX2TargetSelection.ts` `selectKTX2TargetFormat(caps, source, hasAlpha, colorSpace)` (PR 0a ships it real because it is pure; lane 05 owns the file and its table thereafter): UASTC → astc-4x4 > bc7 > etc2-rgba8 > rgba8; ETC1S → etc2-rgb8 (opaque) / etc2-rgba8 (alpha) > bc1 (opaque) / bc3 (alpha) > rgba8; sRGB slot on s3tc-without-s3tcSrgb never picks bc1/bc3; unit test is an exhaustive truth table over all 128 combinations (2⁵ capability sets × 2 sources × 2 alpha × 2 colour spaces) with expected outputs checked into `tests/unit/assets/ktx2-target-format.table.json`.
+- [ ] Verify (no edit) that PR 0a pre-declared `TextureCompressedFormat` members `"bc7-rgba-unorm" | "etc2-rgb8unorm"` in `packages/rendering/src/Texture.ts:1` (owner 06) with throwing defaults; if missing, file a CCR against C-16 rather than editing the file.
+- [ ] `packages/rendering/src/webgl2/TextureFormats.ts` (verbatim carve of `WebGL2Device.ts:4117-4133` in PR 0b-2; until it merges, write `resolveCompressedTextureFormatReal` in this new file and wire it after): real for `resolveCompressedTextureFormatSlot()` taking `texture.colorSpace` and returning sRGB internal formats (`COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR`, `COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT`, `COMPRESSED_SRGB8_ALPHA8_ETC2_EAC`, `COMPRESSED_SRGB8_ETC2`, `COMPRESSED_SRGB_S3TC_DXT1_EXT`, `COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT`) when `colorSpace === "srgb"`; add `bc7-rgba-unorm` (`EXT_texture_compression_bptc`) and `etc2-rgb8unorm`; replace the unconditional `0x9278` (`:4128`) with a `WEBGL_compressed_texture_etc` query (return `null` when absent so the existing fallback path at `:3921-3946` runs); query `WEBGL_compressed_texture_s3tc_srgb` for sRGB BC1/BC3; add `probeCompressedTextureCapabilities(gl): CompressedTextureCapabilities`; `slot.provide` from `packages/rendering/src/lanes/prd05.ts` behind `A3D_QR_ASSETS_DECODERS`. Unit test `tests/unit/contracts/impl/prd05-texture-formats.test.ts` with a mocked `gl` asserts the internal-format enum for each (format, colorSpace, extension-set) triple.
+- [ ] File Q-11-1 with the WebGPU format table (`astc-4x4-unorm(-srgb)`, `bc7-rgba-unorm(-srgb)`, `etc2-rgba8unorm(-srgb)`, `etc2-rgb8unorm(-srgb)`, `bc1-rgba-unorm(-srgb)`, `bc3-rgba-unorm(-srgb)`, block-aligned `bytesPerRow`); in `AssetDecoders.ts` report all-false capabilities on the WebGPU backend until the device advertises them, so the transcoder emits RGBA8.
 - [ ] `apps/loader-ktx2/src/main.ts:90`: pass `transcoderUrl` and a target from `selectKTX2TargetFormat` (device caps); route-health test unchanged.
-- [ ] `packages/assets/src/GLTFRenderResources.ts` `decodeImageInBrowser` (:2222-2237): route `image/ktx2` to the registry image decoder with the slot colour space; for PNG/JPEG larger than `maxTextureSize` pass `resizeWidth/resizeHeight/resizeQuality: "high"` to `createImageBitmap`.
-- [ ] `packages/engine/src/production-runtime/TypedGLBActor.ts:183-191`: accept `decoders`, `maxTextureSize`; pass `meshoptDecoder`, `dracoDecoder`, `imageDecoder` to `loadProductionGLTFRenderPipeline`.
-- [ ] `packages/engine/src/agent-api/index.ts`: `createAuraApp` creates one registry from `options.assets.decoders` and device capabilities; model-node actor creation (near :13540-13600) awaits `registry.require(asset.requiredDecoders ?? extensionsFromHead)` before actor creation; on failure throws `AssetDecoderUnavailable` with decoder id and URL (no silent fallback to the safe-basic renderer).
-- [ ] `packages/assets/src/KTX2BasisTextureTranscoder.ts` `ensureCompressedTextureSupport` (:277-293) and its wrapper `packages/engine/src/agent-api/AssetDecoders.ts`: defaults meshopt on, draco lazy, ktx2 on; probes come from the registry (no `async () => false` defaults); `chosenKtx2Target` comes from `selectKTX2TargetFormat` instead of the `"etc2-rgba8unorm"` default; update both doc comments.
-- [ ] Browser test `tests/browser/assets-compressed-typed-glb.spec.ts` (macos-14): DamagedHelmet ×3 encodings through `model()`; assert ΔE2000 ≤ 2.0 masked; assert `performance.getEntriesByType("resource")` origins ⊆ test origin; assert device-reported internal format.
+- [ ] `packages/assets/src/gltf/ImageDecode.ts` (verbatim carve of `decodeImageInBrowser`, `GLTFRenderResources.ts:2216-2241`, in PR 0b-3): route `image/ktx2` to the registry image decoder with the slot colour space; for PNG/JPEG larger than `maxTextureSize` pass `resizeWidth/resizeHeight/resizeQuality: "high"` to `createImageBitmap` (today `:2233`); behaviour change only with `A3D_QR_ASSETS` on.
+- [ ] `packages/engine/src/agent-api/AssetDecoders.ts`: add `createAppAssetDecoders(options.assets, caps, C-27 tier)` and `prepareModelDecoders(asset, registry)` (§7.3); resolve `asset.requiredDecoders ?? extensionsUsed` from the GLB JSON header; throw `AssetDecoderUnavailable` with decoder id and URL; the engine lane barrel `packages/engine/src/lanes/prd05.ts` creates the registry once per app (C-38 options) and exposes it to the compiler request (Q-15-1).
+- [ ] File Q-04-1 (`TypedGLBActor.ts:184-191` forwards `options.decoders` / `maxTextureSize`) and Q-15-1 (model compile awaits `prepareModelDecoders`, `degrade("capability-degraded")` on failure, throw under strict).
+- [ ] `packages/assets/src/KTX2BasisTextureTranscoder.ts` `ensureCompressedTextureSupport` (:277-293) and its wrapper `packages/engine/src/agent-api/AssetDecoders.ts` (:10-25): defaults meshopt on, draco lazy, ktx2 on; probes come from the registry (no `async () => false` defaults); `chosenKtx2Target` comes from `selectKTX2TargetFormat` instead of the `"etc2-rgba8unorm"` default (:288); update both doc comments.
+- [ ] Browser test `tests/qr/prd05/assets-compressed-glb.spec.ts` (macos-14, `qr-prd05-assets-browser.yml`): DamagedHelmet ×3 encodings through `prepareModelDecoders` + `loadProductionGLTFRenderPipeline` on the current renderer; assert ΔE2000 ≤ 2.0 masked; assert `performance.getEntriesByType("resource")` origins ⊆ test origin; assert device-reported internal format. A second, integrated variant `assets-compressed-typed-glb.spec.ts` drives `model(assets.x)` and is marked `integrated` (runs at checkpoints; skipped in lane CI until Q-04-1/Q-15-1 land).
 
 ### Phase 2
-- [ ] Add pinned exact devDependencies: `@gltf-transform/core`, `@gltf-transform/functions`, `@gltf-transform/extensions` (same exact 4.x version), `mikktspace` (exact), `sharp` (exact); change `draco3d` from `^1.5.7` to `1.5.7`; record KTX-Software `ktx` CLI version in `tools/asset-optimize/tool-versions.json`; workflow installs that exact release and verifies its sha256.
+- [ ] Create `tools/asset-optimize/package.json` (lane-owned workspace manifest, CONTRACTS §4.4) with exact pins: `@gltf-transform/core`, `@gltf-transform/functions`, `@gltf-transform/extensions` (same exact 4.x version), `mikktspace` (exact), `sharp` (exact), `meshoptimizer@1.2.0`, `draco3d@1.5.7`; add `meshoptimizer@1.2.0` and `draco3d@1.5.7` to `packages/assets/package.json`; file Q-15-3 for the root `draco3d` caret (`package.json:731`) and the lockfile batch; record KTX-Software `ktx` CLI version in `tools/asset-optimize/tool-versions.json`; workflow installs that exact release and verifies its sha256.
 - [ ] `tools/asset-optimize/extensions/msft-lod.ts`: custom gltf-transform `Extension` for `MSFT_lod` (read/write node `extensions.MSFT_lod.ids` and `extras.MSFT_screencoverage`); round-trip unit test on a 3-level synthetic node.
 - [ ] `tools/asset-optimize/profiles.ts`: encode §6.2 table as `Record<AssetOptimizeProfileId, AssetOptimizeProfile>`; `profileForRole(role, bounds)`; unit test that every profile has floor ≤ target ≤ ceiling and normal = UASTC.
 - [ ] `tools/asset-optimize/steps/{weld,dedup,join,palette,resize,tangents,quantize,compress,ktx2}.ts`: one function per step `(doc: Document, profile, log) => Promise<void>`, each appending an `OptimizeStepRecord`.
@@ -1038,31 +1376,32 @@ Exit: §16.2 thresholds met and reviewed by a named human.
 - [ ] `steps/compress.ts`: meshopt via `meshopt({ encoder: MeshoptEncoder, level: "medium" })` default; Draco via `draco({ ... })` with `draco3d` encoder only with `--geometry draco` and only for non-skinned meshes.
 - [ ] `tools/asset-optimize/measure.ts`: `AssetBudgetMeasurement` incl. `gpuBytesByTier` (format arithmetic with tier caps) and `drawCallsEstimate` (primitives × materials after join).
 - [ ] `tools/asset-optimize/index.ts`: pipeline runner writing `public/aura-assets/<id>.<derivedHash8>.glb` (+ `.mobile.glb`), updating `derived` in the manifest; refuses KTX2/bake steps outside CI unless `--allow-local-small` and source < 5 MB.
-- [ ] `packages/aura3d-cli/src/cli.ts`: `assets optimize` dispatch to `optimizeAssets`; help text in `cli-help.ts`.
+- [ ] `packages/aura3d-cli/src/commands/prd05/optimize.ts`: `assets optimize` registered via C-39 calling `optimizeAssets`; usage text in the command's `usage` field and `cli-help.ts`.
 - [ ] `.github/workflows/asset-optimize.yml`: `workflow_dispatch` + PR path filter (`aura.assets.json`, `tools/asset-optimize/**`); ubuntu-latest for CPU steps (KTX encode, simplify), LFS checkout, artifact upload of derived files + report; matrix by asset batch.
 - [ ] Determinism test `tests/unit/asset-optimize/determinism.test.ts`: optimize `fixtures/asset-corpus/damaged-helmet.glb` twice with profile `product` ⇒ identical sha256.
-- [ ] Dry-run all 226 models; commit `evidence/assets/optimize-dry-run.json` (before/after per id, aggregate for the 120 game ids).
-- [ ] Optimize benchmark assets (`damagedHelmet`, `antiqueCamera`, `soldier`, `cesiumMan`, `fox`, `rockA`, `rockB`, `crate`) and add `optimized` variants to `benchmarks/quality-rebuild/shared/assets.ts` with sha256.
+- [ ] Dry-run all 226 models; commit `evidence/prd05/assets/optimize-dry-run.json` (before/after per id, aggregate for the 120 game ids).
+- [ ] Optimize benchmark assets (`damagedHelmet`, `antiqueCamera`, `soldier`, `cesiumMan`, `fox`, `rockA`, `rockB`, `crate`) and register them with sha256 in `benchmarks/quality-rebuild/scenes/prd05/assets.ts`; add lane scenes `prd05-optimized-{damaged-helmet,pbr-product,skinned,outdoor,game-scene}` (Aura + three sides under `{aura3d,three}/scenes/prd05/`) that load the same scene content as base scenes 02/03/08/09/15/18 with the optimized files (C-30 registry; `shared/assets.ts` is lane 12's and is not edited).
 
 ### Phase 3
 - [ ] `tools/asset-optimize/steps/lod.ts`: `MeshoptSimplifier.simplifyWithAttributes` per primitive per ratio with `targetError` per level, flag `LockBorder` for multi-primitive nodes, attribute weights normal 0.5 / UV0 1.0; record `lod-target-missed` when achieved index count > 1.2 × target; skinned: max 2 levels (JOINTS/WEIGHTS preserved because vertices are reused); write `MSFT_lod` + `extras.MSFT_screencoverage` through the custom extension.
-- [ ] `packages/assets/src/GLTFLoader.ts`: parse `MSFT_lod` into `GLTFNode.lods: { nodeIndex, screenCoverage }[]`; `GLTFExtensionSupport.ts`: register `MSFT_lod` "runtime-supported".
-- [ ] `packages/engine/src/production-runtime/TypedGLBActor.ts`: `setLodLevel`, `lodLevels`; `collectRenderItems` emits only the active level (and the outgoing level during fade with `u_lodFade`).
-- [ ] Production runtime LOD selector (new `packages/engine/src/production-runtime/LodSelector.ts`): per-frame coverage, hysteresis 10 %, bias, one step per frame; shadow casters use `min(level+1, max)`; unit test with synthetic camera distances.
-- [ ] Shader: add `A3D_LOD_DITHER` block (§8 item 3) to opaque PBR, skinned-lit, unlit, depth variants in `ShaderLibraryCore.ts`/`ShaderLibrary.ts` and the WGSL equivalents; `u_lodFade` uniform plumbed per render item.
+- [ ] `packages/assets/src/GLTFLoader.ts`: parse `MSFT_lod` into `GLTFNode.lods: { nodeIndex, screenCoverage }[]`; file Q-04-2 to register `MSFT_lod` "runtime-supported" in the generated extension matrix (`GLTFExtensionSupport.ts`, owner 04).
+- [ ] `packages/engine/src/production-runtime/actor/TypedGLBActorLod.ts`: `registerTypedGLBActorLodExtension()` calling `registerTypedGLBActorExtension({ id: "prd05.lod", owner: "prd05", flag: "A3D_QR_ASSETS_LOD", onLoad, collectRenderItems, dispose })` (hook lands in PR 0b-3); `onLoad` builds level → render-item index from `GLTFNode.lods`; `collectRenderItems` returns only the active level (and the outgoing level during fade with `lodFade` set); `getTypedGLBActorLod(actor)` handle (§7.3). Registered from `packages/engine/src/lanes/prd05.ts`.
+- [ ] `packages/engine/src/production-runtime/LodSelector.ts`: per-frame coverage, hysteresis 10 %, bias (C-27 `lodBias` × model bias), one step per frame; unit test with synthetic camera distances. Shadow-caster level `min(level+1, max)` is emitted as CCR-05-1 `lodLevel`/`lodLevels` values and consumed only when Q-02-1 lands.
+- [ ] `packages/rendering/src/shaders/lod-dither.glsl.ts`: chunk `a3d_prd05_lod_dither` (§8 item 3, GLSL + `wgsl` field), `registerShaderFeature({ id: "prd05.lodDither", hooks: ["fragment:pars", "fragment:alpha"] })`, `registerDepthVariantFeature("prd05.lodDither")`; ChunkHarness test compiles both stages and checks the Bayer masks are complementary (every pixel covered exactly once at any fade value). `ShaderLibraryCore.ts`/`ShaderLibrary.ts` are not edited (frozen, §3.7).
 - [ ] `tools/asset-optimize/steps/colliders.ts`: convex hull per node from the profile's LOD (≤ 64 verts via simplify), trimesh for world/track, box/capsule from bounds; write `<id>.<hash8>.collision.glb`.
-- [ ] `packages/engine/src/agent-api/index.ts` + `packages/physics-rapier/src/index.ts`: `model(asset, { physics, collider: "auto" })` loads `colliderUrl` and builds `ColliderDesc.convexHull`/`trimesh` (:555-557); default when `physics` is set and `colliderUrl` exists.
-- [ ] Physics test `tests/unit/physics/generated-collider-contact.test.ts`: optimized benchmark `crate` convex hull resting on the optimized `racing-starter` track trimesh within 1 cm after 120 fixed steps (Rapier, fixed `dt = 1/60`, seed fixed).
-- [ ] Remove `createDefaultPerformanceLodLevels` usage; deprecate export in `packages/rendering/src/performance/LOD.ts`.
+- [ ] `packages/physics-rapier/src/index.ts`: `createCollidersFromSidecar(world, source, transform)` reading `extras.aura3dCollider` and building `ColliderDesc.convexHull`/`trimesh` (:555-557); file Q-15-2 for the `model(asset, { physics, collider: "auto" })` binding; add `model.collider` / `model.lod` rows to `diagnosticOnly.prd05.ts` until wired.
+- [ ] Physics test `tests/unit/physics/generated-collider-contact.test.ts`: optimized benchmark `crate` convex hull resting on the optimized `racing-starter` track trimesh within 1 cm after 120 fixed steps (Rapier, fixed `dt = 1/60`, seed fixed), built through `createCollidersFromSidecar`.
+- [ ] Lane scene `prd05-asset-lod-transition` (`benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd05/asset-lod-transition.ts`): hero vehicle ×3 at 5/25/80 m, 120-frame dolly; three side uses a `MSFT_lod` `GLTFLoader` plugin in the lane's three scene file.
+- [ ] `packages/rendering/src/performance/LOD.ts`: mark `createDefaultPerformanceLodLevels` (:13-20) `@deprecated` with a one-time runtime warning; keep the export (re-exported by `packages/rendering/src/index.ts`, owner 15, and used by `tests/performance/external-parity-performance-baselines.ts`, owner 12 by the creator rule) for one minor, so no other lane's file changes.
 
 ### Phase 4
-- [ ] `apps/asset-lookdev/`: Vite app with `?asset=<id>&stage=<v>&view=<n>&engine=aura|three`; `aura-adapter.ts` uses only public `createAuraApp` + `environments.hdri` + `model()`; `three-adapter.ts` uses `GLTFLoader` + `MeshoptDecoder` + `KTX2Loader` + `PMREMGenerator` with the same HDRI, ACES, exposure.
+- [ ] `apps/asset-lookdev/`: Vite app with `?asset=<id>&stage=<v>&view=<n>&engine=aura|three`; `aura-adapter.ts` uses only public `createAuraApp` + `environments.hdri` + `model()` (derived compressed files once Q-04-1/Q-15-1 land; the `source` variant before that, recorded in `metrics.json`); `three-adapter.ts` uses `GLTFLoader` + `MeshoptDecoder` + `KTX2Loader` + `PMREMGenerator` with the same HDRI, ACES, exposure.
 - [ ] `apps/asset-lookdev/lookdev.stage.json` v1 (§6.7) checked in; any change bumps version and invalidates `lookDev` records.
-- [ ] Debug view shader define `A3D_DEBUG_VIEW` (§8 item 4) compiled only when the look-dev app sets `renderer.debugView`; `u_baseColorTextureSize` uniform added in `GLTFRenderResources`.
+- [ ] `packages/rendering/src/shaders/debug-view.glsl.ts`: chunk `a3d_prd05_debug_view` + feature `prd05.debugView` at `fragment:end` (§8 item 4), active only when the pre-declared renderer option `debugView` is set by the look-dev app; texel density uses GLSL `textureSize()` (no `GLTFRenderResources` change); ChunkHarness compile test. Same views implemented in `apps/asset-lookdev/src/three-adapter.ts` as `ShaderMaterial` overrides so debug sheets are produced standalone.
 - [ ] `apps/asset-lookdev/capture.mjs`: Playwright capture of 3 HDRIs × 8 yaws + top + gameplay (1920×1080 DPR 1, 390×844 DPR 3) + debug views; composes `contact.jpg`, `debug.jpg`, `gameplay.jpg`; writes `metrics.json` with three-vs-Aura masked SSIM per view and renderer draw calls.
 - [ ] `.github/workflows/asset-lookdev.yml`: macos-14, Chromium `--use-angle=metal --enable-gpu --ignore-gpu-blocklist` (same args as `quality-rebuild-capture.yml`), fails if the probe renderer string contains "SwiftShader"; matrix batches of 10 assets; uploads artifacts.
 - [ ] `packages/aura3d-cli/src/lookdev/`: `assets lookdev` dispatches the workflow via `gh workflow run` and prints the run URL; `assets review` appends a review to `lookDev.reviews` bound to `derived.hash`.
-- [ ] Vision-model review script `tools/asset-optimize/review-vision.ts`: sends `contact.jpg` + `gameplay.jpg` + rubric prompt through Kiro Prism (per policy §4; read `/Users/gurbakshchahal/kiro-prism/{README,API,SETUP,LLM}.md` first) and records `judge: "vision-model"` with model id; two independent runs, mean recorded, disagreement > 1.5 flags human review.
+- [ ] Vision-model review script `tools/asset-optimize/review-vision.ts`: calls C-32 `judgeWithPrism` (Kiro Prism; per policy §4 read `/Users/gurbakshchahal/kiro-prism/{README,API,SETUP,LLM}.md` first) with `contact.jpg` + `gameplay.jpg` + the asset rubric prompt and records a C-32 `JudgeIdentity { kind: "vision-model", id, model }`; two independent runs, mean recorded, disagreement > 1.5 flags human review. If lane 12's real `judgeWithPrism` is not merged yet, the C-32 stub's Prism call path is used unchanged.
 - [ ] `packages/aura3d-cli/src/admission/gates.ts`: implement G2 (texel density from UV/world area with role camera defaults and route overrides), G6 (texture sanity on 256² decoded proxies), G7 (budget §17.2), G9 (record exists for current hash with three-adapter score ≥ 6.5 and no axis < 4; hero roles require a human review; Aura-minus-three gap > 1.5 emits a renderer-issue record, not a failure), G10 (art-direction file exists; route coherence sheet ≥ 6).
 - [ ] `assets admit` verb; `assets validate --release --route apps/<app>` runs G1–G11 for every asset the route's default path references (AST scan) and fails the route if any rendered asset is below `release` or is `proxy`.
 - [ ] Broken-control test in CI: look-dev + vision review of `skylineArcticRunnerHero` and `siegeGolfBall` must score < 6.5; if they pass, the review pipeline job fails.
@@ -1072,36 +1411,48 @@ Exit: §16.2 thresholds met and reviewed by a named human.
 - [ ] New `packages/asset-index/src/adapters/ambientcg.ts` (textures, CC0) with direct download of 1k/2k PNG/JPG sets.
 - [ ] `packages/aura3d-cli/src/pull-bridge/scoring.ts` + `packages/asset-index/src/ranking.ts`: licence/provenance become filters; new score terms (G1 fit, G3 pre-check, G2 estimate, look-dev approval, library membership, art-direction match); remove "missing texture −6" in favour of exclusion for texture-required roles; update ranking tests.
 - [ ] `assets/library/` + `aura.library.json`; `assets library add|list|sync`; library entries resolved first by `assets search/resolve`.
-- [ ] Admit kits of §6.6 (each item: source, licence, optimize profile, look-dev, review); `assets/art-direction/<kit>.json` per kit.
-- [ ] Admit 6 HDRIs at 2k (+4k for `studio-soft` and `outdoor-midday`) as `type: "environment"` entries with `sunDirection`, `luminanceP99`, `whiteBalanceK` metadata; replace the three 1k fixture HDRIs in the look-dev stage and hand them to PRD 02.
+- [ ] Admit kits of §6.6 (each item: source, licence, optimize profile, look-dev, review); `assets/art-direction/<kit>.json` per kit (fields aligned with the C-35 art-direction schema).
+- [ ] For lane 06 (Q-05-2): admit at least one `hero`-role rigged humanoid (≥ 15k tris, ≥ 50 joints, clip set idle/walk/run/jump/fall/land/punch×2/kick/hit/block/KO with C-17 `animationClips`), a combat fighter pair (candidates `auraClashPlayerRig`/`auraClashRivalRig` if licensing allows), and hero LODs (2 levels, skinned); record the outcome in `evidence/prd05/assets/character-kit.json`.
+- [ ] Admit 6 HDRIs at 2k (+4k for `studio-soft` and `outdoor-midday`) as `type: "environment"` entries with `sunDirection`, `luminanceP99`, `whiteBalanceK` metadata; replace the three 1k fixture HDRIs in the look-dev stage; publish them for lane 02 (C-09 consumer) and lane 12 (reference scenes) as C-17 entries plus C-40 fact F-05-05 (ids, paths, metadata).
 - [ ] `packages/aura3d-cli/src/meshy/import.ts:42`: replace throw with: `release` requires `derived` from `--from-generated` optimize and G1–G11 pass; message lists missing gates.
-- [ ] `tools/asset-optimize/steps/remesh.ts` + `bake.ts`: Blender LTS headless scripts (`tools/asset-optimize/blender/remesh_quadriflow.py`, `bake_highpoly.py`) run only on the remote worker; Meshy remesh API path documented in `packages/aura3d-cli/skills/meshy-cli/SKILL.md`; sliver-ratio pre-check rejects collapse-decimated input.
-- [ ] Promote or reject each of the 8 Meshy assets; record outcomes in `evidence/assets/meshy-promotion.json`.
-- [ ] `packages/aura3d-cli/skills/meshy-cli/SKILL.md:56-66`: replace the 100k–500k / 4096–8192 profile ceilings with §6.2 profile targets (supply text to PRD 13), then `pnpm skills:sync` and `pnpm check:skills`.
+- [ ] `tools/asset-optimize/steps/remesh.ts` + `bake.ts`: Blender LTS headless scripts (`tools/asset-optimize/blender/remesh_quadriflow.py`, `bake_highpoly.py`) run only on the remote worker; Meshy remesh API path written as fact F-05-03 (C-40) for lane 13's `meshy-cli` skill; sliver-ratio pre-check rejects collapse-decimated input.
+- [ ] Promote or reject each of the 8 Meshy assets; record outcomes in `evidence/prd05/assets/meshy-promotion.json`.
+- [ ] Publish C-40 facts F-05-01 (gate table G1–G11 and the deleted waivers), F-05-02 (§6.2 profile targets replacing the 100k–500k / 4096–8192 ceilings in `meshy-cli/SKILL.md:56-66`), F-05-03 (Meshy promotion path), F-05-04 (decoder base path and `variant` option), F-05-05 (HDRI library ids), F-05-06 (`aura3d-assets/SKILL.md:109` rule: `model(assets.x)` only from admitted entries); file Q-13-1. Lane 13 edits the skills and runs `pnpm skills:sync` / `pnpm check:skills`.
 
 ### Phase 6
 - [ ] `packages/aura3d-cli/src/asset-manifest.ts` `writeTypedAssets`: `--route` mode emits `src/aura-assets.route.ts` with only referenced ids and fields `type, format, url, hash, bounds, sizeBytes, requiredDecoders, lods, colliderUrl, budget`; credits written to `dist/credits.json`.
-- [ ] Switch every `apps/showcase-*/src/main.ts` import from `src/aura-assets.ts` to its route module (mechanical change, coordinate with PRD 09/15).
+- [ ] Codemod `assets-route-modules` in `packages/aura3d-cli/src/commands/prd05/codemods/assetsRouteModules.ts`, registered via C-39 `registerCodemod` (pure `source → code + rows`): rewrites `import { assets } from "../../../src/aura-assets"`-style imports to the route module; fixture test on two copied `main.ts` files under `tests/qr/prd05/fixtures/routes/`; file Q-14-2 with the `--report` output for every `apps/showcase-*/src/main.ts`.
 - [ ] `check-deploy`: copy only referenced derived files into `dist/aura-assets`; fail when the dist contains unreferenced files.
 - [ ] `assets prune --dry-run|--apply`: remove `public/aura-assets` files not referenced by any manifest `outputPath`/`derived.outputPath` (529 files / 490 MB today); LFS pointers updated.
-- [ ] Bundle test `tests/unit/build/route-bundle-no-asset-metadata.test.ts`: built Courier Rush JS contains 0 occurrences of `suitabilityReason` and `licenseRaw`.
-- [ ] Replace starters in `packages/create-aura3d/templates/{product-viewer,racing-starter,mini-game,fighting-game,character-controller,falling-blocks-starter}/aura.assets.json` with library entries; templates' generated typed modules regenerated; template tests updated.
-- [ ] Tier measurement harness `tools/asset-optimize/measure-tiers.mjs` (remote): loads the 6 pilot games per tier, records texture VRAM estimate (from uploaded formats), visible triangles, draw calls, ready bytes, long tasks during load; commit `evidence/assets/tier-measurements.json` with device/GPU strings.
+- [ ] Bundle test `tests/qr/prd05/route-bundle-no-asset-metadata.test.ts`: a lane fixture route (`tests/qr/prd05/fixtures/route-bundle/`, a copy of Courier Rush's asset imports) built with its route module contains 0 occurrences of `suitabilityReason` and `licenseRaw`. The same assertion on the real Courier Rush bundle is integrated (after Q-14-2).
+- [ ] Template starters: write `evidence/prd05/assets/template-starters.json` (library replacement entries for `product-viewer`, `racing-starter`, `mini-game`, `fighting-game`, `character-controller`, `falling-blocks-starter`), prove them in `tests/qr/prd05/fixtures/template-starter/` (G1–G11 pass, typegen output), and file Q-13-2; lane 13 edits the template manifests.
+- [ ] Tier measurement harness `tools/asset-optimize/measure-tiers.mjs` (remote): loads the 6 pilot games per tier, records texture VRAM estimate (from uploaded formats), visible triangles, draw calls, ready bytes, long tasks during load; commit `evidence/prd05/assets/tier-measurements.json` with device/GPU strings.
 
-### Phase 7
-- [ ] With PRD 14: swap assets in Skyline Runner, Mech Hangar, Courier Rush, Vault Breakers, Gravity Post, Bank Shot; capture via `tools/quality-rebuild-capture` (default URLs, no `?capture=review`); run vision judgment with the research-21 prompt; record human review.
+### Phase 7 (integrated support; no lane-05 merge gate)
+- [ ] Publish the six pilot replacement lists (Skyline Runner, Mech Hangar, Courier Rush, Vault Breakers, Gravity Post, Bank Shot) in `evidence/prd05/assets/replacement-lists.json` with admitted library ids and expected `qrFlags`; file Q-14-3 / Q-14-4.
+- [ ] At each G-PANEL checkpoint, read the lane-14 captures (`tools/quality-rebuild-capture`, default URLs, no `?capture=review`) from the checkpoint record and append the per-game asset deltas to `evidence/prd05/assets/pilot-review.json` (named human sign-off per game); misses become `qr-ic-regression` issues attributed by leave-one-out.
 
 ---
 
 ## 15. Test requirements
 
-Where tests run (policy: browser/GPU work is remote):
-- Unit tests (vitest): `test.yml` on GitHub Actions; may also run locally because they are light (pure functions
-  over GLB JSON and small fixtures).
-- Optimize pipeline tests that encode KTX2 or simplify > 100k triangles: `asset-optimize.yml` (ubuntu-latest).
+Where tests run (policy: browser/GPU work is remote; nothing heavy runs on the Mac):
+- Unit tests (vitest): `qr-contracts.yml` and `test.yml` on GitHub Actions; may also run locally because they are
+  light (pure functions over GLB JSON and small fixtures).
+- Lane workflows (lane-owned): `qr-prd05-gates.yml` (ubuntu-latest: gates, manifest, migration report, grep
+  guard), `qr-prd05-assets-browser.yml` (**macos-14** Chromium ANGLE Metal + WebKit + Firefox projects; plus a
+  `windows-latest` non-visual job for BC-format selection with a capability mock), `asset-optimize.yml`
+  (ubuntu-latest CPU encode/simplify with LFS checkout), `asset-lookdev.yml` (**macos-14**).
 - Browser tests and all screenshots: GitHub Actions **macos-14** (ANGLE Metal), same launch args as run
-  37289688772; WebKit and Firefox Playwright projects on macos-14 for decode correctness. Never SwiftShader for
-  visual criteria; Windows/Linux GPU-less runners only for non-visual decode tests.
+  37289688772. Never SwiftShader for visual criteria (the job fails if the renderer string contains
+  "SwiftShader"); GPU-less runners only for non-visual decode tests.
+- Every lane-05 PR touching `packages/rendering/**` or `packages/engine/**` also runs the CONTRACTS §6.1
+  flag-off sentinel identity check, and the conformance matrix runs with flags `none`, `all`, and
+  `A3D_QR_ASSETS` alone.
+
+Contract conformance (lane 15-owned suites; must pass for `stub` and lane-05 `real`):
+- `tests/unit/contracts/C-16-ktx2.test.ts` (128-row table), `tests/unit/contracts/C-17-manifest.test.ts`.
+- Lane impl suites `tests/unit/contracts/impl/prd05-{decoders,texture-formats,manifest,gates}.test.ts`.
 
 Unit:
 - Gates G1, G3, G4, G5, G6, G8, G11 with real repo GLB fixtures (pass and fail cases listed in §14 Phase 0).
@@ -1120,10 +1471,12 @@ Unit:
 - Ranking: library entry outranks an Objaverse entry with better keyword match; untextured candidate excluded
   for `vehicle`.
 
-Browser (macos-14):
-- `assets-compressed-typed-glb.spec.ts` (Phase 1 exit).
-- `assets-lod-transition.spec.ts`: dolly camera over 120 frames; render-item count switches at the expected
-  coverage; no frame with zero items for an LOD-ed actor; dither enabled on Medium+.
+Browser (macos-14, `qr-prd05-assets-browser.yml`; files under `tests/qr/prd05/`):
+- `assets-compressed-glb.spec.ts` (Phase 1 exit, standalone S3); `assets-compressed-typed-glb.spec.ts` (same
+  assertions through `model(assets.x)`, tagged `integrated`, runs at checkpoints).
+- `assets-lod-transition.spec.ts`: dolly camera over 120 frames on `prd05-asset-lod-transition`; render-item count
+  switches at the expected coverage; no frame with zero items for an LOD-ed actor; dither enabled on Medium+ only
+  when the C-02 generator is real (otherwise the spec asserts the hard switch and records `lodDither: "pending"`).
 - `assets-tier-texture-cap.spec.ts`: with `maxTextureSize: 1024`, a 2048 KTX2 texture uploads level 1 as level 0
   (reported dimensions 1024).
 - `assets-decoder-failure.spec.ts`: blocked `/aura-decoders/basis/` URL produces `AssetDecoderUnavailable`, not
@@ -1132,13 +1485,35 @@ Browser (macos-14):
 
 ---
 
-## 16. Visual acceptance tests
+## 16. Acceptance: standalone and integrated
 
 All judgments use captured images from the remote macos-14 lane. Each criterion needs a vision-model judgment
 (two independent runs, mean) and, where stated, a named human reviewer. Engineering counters (draw calls equal,
 non-blank pixels, SSIM alone) never satisfy a visual criterion; SSIM thresholds below are necessary, not sufficient.
+Per the CONTRACTS §7 honesty rule, none of the standalone items below supports a claim that Aura3D's rendering of
+assets matches three.js; they establish that the pipeline preserves and budgets the content.
 
-### 16.1 `benchmarks/quality-rebuild` scenes
+### 16.0 Standalone acceptance (lane 05 alone, PR 0 stubs only; gates lane-05 merges and `standalone-accepted`)
+
+| # | Criterion | Measured by | Needs from other lanes |
+|---|---|---|---|
+| S1 | Regex and flat-colour waivers deleted; 0 root-manifest `release` assets fail G1–G11; broken-control fixtures fail the right gates | `qr-prd05-gates.yml`, `migration-1.1.json` | none |
+| S2 | C-16 and C-17 conformance suites green for `stub` and `real`; flag-off sentinel identity check green | `qr-contracts.yml` | PR 0 only |
+| S3 | DamagedHelmet ×3 encodings via `prepareModelDecoders` + pipeline: ΔE2000 ≤ 2.0 masked, 0 third-party requests, sRGB internal format reported (Chromium; WebKit/Firefox decode-correct) | `qr-prd05-assets-browser.yml` | none (current renderer) |
+| S4 | `assets-decoder-failure`: blocked `/aura-decoders/basis/` → `AssetDecoderUnavailable`, never a silent untextured frame | same | none |
+| S5 | Determinism: same source + profile ⇒ byte-identical derived GLB; budget report for all 120 game ids | `asset-optimize.yml` | none |
+| S6 | §16.1 rows for `prd05-optimized-*` scenes (a)–(c) pass | lane scenes, vision ×2 | C-30 stub registry |
+| S7 | `prd05-asset-lod-transition` (d)–(f) pass with hard switch; collider contact ≤ 1 cm | lane scene + physics unit test | none (dither is integrated) |
+| S8 | Look-dev broken control: 3 good assets pass G9 and 4 known-bad fail it on the three adapter; ≤ 1 human disagreement on the 3 probes | `asset-lookdev.yml`, C-32 `judgeWithPrism` | C-32 stub |
+| S9 | Library kits and 6 HDRIs at 2k admitted with three-adapter look-dev approval; 8 Meshy decisions recorded | `aura.library.json`, `meshy-promotion.json` | none |
+| S10 | Route-module fixture bundle has 0 metadata strings; 120 ids ≤ 80 MB derived; template starter fixtures pass G1–G11 | `tests/qr/prd05/` | none |
+| S11 | Bundle budgets of §17.1 (decoder glue ≤ 3 KB gz, meshopt chunk ≤ 20 KB gz) on a lane fixture app | `qr-prd05-assets-browser.yml` | none |
+
+### 16.1 Benchmark scenes (lane scenes via C-30; standalone except `prd05-lookdev-hero`)
+
+Rows 02–18 are lane scenes `prd05-optimized-*` that reuse the base scene content with optimized files; Aura
+frames are rendered by whatever renderer is current (flags `none` for standalone), and the criteria compare
+optimized vs source **within each engine**, so no renderer-lane fix is needed.
 
 | Scene | Variant | Reference | Criterion | Threshold | Review |
 |---|---|---|---|---|---|
@@ -1148,37 +1523,39 @@ non-blank pixels, SSIM alone) never satisfy a visual criterion; SSIM thresholds 
 | 15-animation-skinning | optimized soldier + fox | three(opt) | same as 08 for both characters | same | vision ×2 |
 | 09-outdoor-environment | optimized rocks + crates (ETC1S base, UASTC normal) | three(opt) | (a)–(c); no block artefacts visible on rock albedo at 1280×720 | (a),(b) ≥ 0.95 (ETC1S is lossier than UASTC; 0.97 would reject correct output); (c) as 03; "no visible artefacts" yes in both runs | vision ×2 |
 | 18-game-scene | optimized crates/rocks/soldier | three(opt) | (a)–(c) | as 03 | vision ×2 |
-| **19-asset-lod-transition** (new, PRD 12 adds harness) | hero vehicle ×3 at 5/25/80 m, 120-frame dolly: optimized `courierTrafficSedan` in Phase 3, library `vehicles/road` hero car in Phase 5 | three r185 with the same `MSFT_lod` levels via a loader plugin | (d) visible pops in the frame strip; (e) far-copy triangle reduction; (f) per-frame render-item log shows the LOD switch happened (guards against a pass where LOD never engages) | (d) ≤ 1 pop judged visible across the strip; (e) ≥ 60 % at 80 m; (f) ≥ 2 level changes logged per copy at 25/80 m | vision ×2 + human |
-| **20-lookdev-hero** (new) | library `hero-character` under `studio-soft-2k` | three r185 same file | Aura vision score; gap to three | Aura ≥ 6.5 and gap ≤ 1.0 (depends on PRDs 01–04) | vision ×2 + human |
+| **prd05-asset-lod-transition** (new lane scene, C-30) | hero vehicle ×3 at 5/25/80 m, 120-frame dolly: optimized `courierTrafficSedan` in Phase 3, library `vehicles/road` hero car in Phase 5 | three r185 with the same `MSFT_lod` levels via a loader plugin | (d) visible pops in the frame strip; (e) far-copy triangle reduction; (f) per-frame render-item log shows the LOD switch happened (guards against a pass where LOD never engages) | (d) ≤ 1 pop judged visible across the strip (hard switch standalone; dithered variant integrated); (e) ≥ 60 % at 80 m; (f) ≥ 2 level changes logged per copy at 25/80 m | vision ×2 + human |
+| **prd05-lookdev-hero** (new lane scene; **integrated**) | library `hero-character` under `studio-soft-2k` | three r185 same file | Aura vision score; gap to three | Aura ≥ 6.5 and gap ≤ 1.0, evaluated only at G-PANEL with `qr_flags=all` (renderer lanes 01–04 contribute through C-02/C-05/C-09/C-15) | G-PANEL |
 
-### 16.2 Games (`tools/quality-rebuild-capture`, default URLs, 1920×1080 + 390×844)
+### 16.2 Games (integrated; `tools/quality-rebuild-capture`, default URLs, 1920×1080 + 390×844)
 
-Reference: the research-21 baseline frames (`evidence/games/<id>-contact.jpg`, `<id>-mid.jpg`) as the "before",
-and the per-genre reference stills owned by PRD 12 as the target. Judged with the research-21 prompt and scoring
-scale so scores are comparable.
+Integrated only: scored at CONTRACTS §7 G-PANEL checkpoints on lane-14 routes that opted into `A3D_QR_ASSETS`
+with `qr_flags=all`; never blocks a lane-05 merge. Reference: the research-21 baseline frames
+(`evidence/games/<id>-contact.jpg`, `<id>-mid.jpg`) as the "before", and the per-genre reference stills
+(lane 12, C-32) as the target. Judged with the research-21 prompt and scoring scale so scores are comparable.
 
 | Game | Today `modeling_assets` (21) | Asset change | Criterion | Threshold |
 |---|---:|---|---|---|
 | showcase-skyline-runner | 4 (backdrop masks a 2–3 3D layer) | 4-tri card hero → rigged library character; ice-ledge cards → modelled platform kit; ghost Meshy runner removed or promoted | `modeling_assets`; "character likely a sprite" no longer cited | ≥ 6.5; human confirms player is a 3D rigged model in motion strip |
 | showcase-mech-hangar | 3.5 (mech ~6 buried in cubes ~1.5) | box part assemblies → library modular mech parts (textured, UV'd); Meshy hero promoted (remesh/bake) or replaced | `modeling_assets`; no "placeholder cube" comments | ≥ 6.5 |
-| showcase-courier-rush | 4 | traffic cars/van optimized and **not** tinted flat (needs PRD 04); city kit replaces primitive buildings | `modeling_assets`; style coherence | ≥ 6.5; no "asset inconsistency" finding |
+| showcase-courier-rush | 4 | traffic cars/van optimized and **not** tinted flat (lane 04 C-15 real in `all`); city kit replaces primitive buildings | `modeling_assets`; style coherence | ≥ 6.5; no "asset inconsistency" finding |
 | showcase-vault-breakers | 2 | primitive playfield → pinball kit (bumpers, rails, flippers, playfield art) | `modeling_assets` | ≥ 6.0 |
 | showcase-gravity-post | 3 (three asset languages clash) | planets re-encoded, skiff/freight replaced, station ring LOD/optimized | `modeling_assets`; ready download | ≥ 6.0; ready download ≤ 15 MB (today 46.8 MB, 20 line 2015) |
 | showcase-bank-shot | 3 (no cue judged visible) | table/cue/numbered balls from sports kit with felt/wood PBR | `modeling_assets`; cue visible in action frame | ≥ 6.5; cue present in 04-action (human) |
 | all 18 | — | optimize only (no replacement) | no visual category in research-21 format regresses by > 0.5; ready download within tier budget §17 | per-game table committed |
 
-Human review: a named reviewer signs `evidence/assets/pilot-review.json` per pilot game (pass/fail + notes).
+Human review: a named reviewer signs `evidence/prd05/assets/pilot-review.json` per pilot game (pass/fail + notes).
 A pilot passes only with vision ≥ threshold **and** human pass.
 
-### 16.3 Per-game asset impact (all 18 games)
+### 16.3 Per-game asset impact (all 18 games; integrated)
 
 Inputs: research 11 §2.3 (models, MB, untextured, 4-tri cards), research 21 `modeling_assets`. The migration
 report (`migration-1.1.json`) regenerates the class columns and is authoritative; this table is the expected
-shape. "Post-optimize only" is the minimum outcome before PRD 14 swaps assets; "with library" is the PRD 14
-target. Every game row is checked by the "all 18" criterion in §16.2 (no category regresses > 0.5, ready
-download within tier budget).
+shape. "Post-optimize only" is the minimum outcome lane 05 can deliver alone (derived files, measured
+standalone); "with library" is the target once lane 14 applies the replacement lists (Q-14-3). Every game row is
+checked at checkpoints by the "all 18" criterion in §16.2 (no category regresses > 0.5, ready download within
+tier budget).
 
-| Game | Today: models / MB / untextured / cards; `modeling_assets` | Expected downgrades (§10.1 classes) | Post-optimize only | With library (PRD 14) | Ready download target (Medium) |
+| Game | Today: models / MB / untextured / cards; `modeling_assets` | Expected downgrades (§10.1 classes) | Post-optimize only | With library (lane 14) | Ready download target (Medium) |
 |---|---|---|---|---|---|
 | aura-clash-showcase | not in research 11 table (compat RenderSource path); 4 | to be measured by migration script | fighter GLBs optimized, tangents added | `characters/humanoid-pbr` | ≤ 15 MB |
 | showcase-blockfall-reactor | 4 / 8.2 / 0 / 3; 3 | 2 card "hero/rival" → D; arena backdrop → E | backdrop re-encoded KTX2 | robot/mech kit replaces cards | ≤ 15 MB |
@@ -1188,7 +1565,7 @@ download within tier budget).
 | showcase-aurora-lander | 4 / 3.4 / 2 / 2; 4 | lander hero card → D; bay plate → E; probe/beacon → C | bay plate KTX2 | `vehicles/air-space-sea` lander | ≤ 15 MB |
 | showcase-neon-swarm | 7 / 23.8 / 2 / 3; 3 | 3 cards: `neonRainCourierHero`, `neonCrownMothElite` → D, `neonRainGardenArenaBackdrop` → E; street lamp (272k tris) → A replace | lamp replaced, 23.8 MB → ≤ 12 MB | robot enemies + industrial-urban props | ≤ 15 MB |
 | showcase-gravity-post | 14 / 126.2 / 1 / 0; 3 | skiff/freight district → F/C; station ring 458k tris → A optimize | planets 4096 → 2048 KTX2, ring joined + LOD | air-space-sea + planets-space (pilot) | ≤ 15 MB (§16.2) |
-| showcase-courier-rush | 7 / 31.5 / 0 / 0; 4 | parcel/bollard texture-waste flags; van → B | 31.5 MB → ≤ 12 MB; tint fix needs PRD 04 | road vehicles + city kit (pilot) | ≤ 15 MB |
+| showcase-courier-rush | 7 / 31.5 / 0 / 0; 4 | parcel/bollard texture-waste flags; van → B | 31.5 MB → ≤ 12 MB; flat-tint look until lane 04's C-15 real is in `all` | road vehicles + city kit (pilot) | ≤ 15 MB |
 | showcase-pulse-tunnel | 4 / 33.6 / 0 / 0; 3 | reactor world/craft/sentry → F; `pulseArena` → B | 33.6 MB → ≤ 15 MB | Meshy arena promoted or modular kit | ≤ 15 MB |
 | showcase-mech-hangar | 17 / 28.4 / 16 / 0; 3.5 | 16 box parts → C; hero → B | 27 MB hero → ≤ 6 MB after §6.5 | robots-mechs kit (pilot) | ≤ 15 MB |
 | showcase-vault-breakers | 5 / 0.8 / 5 / 0; 2 | all 5 → C | no change (nothing to optimize) | pinball kit (pilot) | ≤ 15 MB |
@@ -1200,16 +1577,34 @@ download within tier budget).
 | showcase-orbital-defense | not in research 11 table; 1 | to be measured by migration script | — | planets-space + robot enemies | ≤ 15 MB |
 
 Games whose "post-optimize only" column says "no change" (Vault Breakers, Deep Recovery, Bank Shot) gain
-nothing visually from this PRD until PRD 14 swaps assets; their §16.2 "all 18" row must still show no
-regression after the Phase 0 downgrade (labels change, pixels must not).
+nothing visually from lane 05 alone; their §16.2 "all 18" row must still show no regression after the Phase 0
+downgrade (labels change, pixels must not).
+
+### 16.4 Integrated acceptance (checkpoints only; never blocks a lane-05 merge)
+
+Evaluated only at CONTRACTS §7 G-PANEL rounds (IC-4 2026-11-05, IC-8, IC-12, …) with `A3D_QR_ASSETS` on inside
+`qr_flags=all`; passing moves `A3D_QR_ASSETS` to `integrated-accepted` (§5.3). Leave-one-out (`all,-assets`)
+separates asset deltas from renderer-lane deltas.
+
+| # | Criterion | Integrated with (contract) |
+|---|---|---|
+| I1 | `prd05-lookdev-hero`: Aura ≥ 6.5 and gap to three ≤ 1.0 | 01 (C-02, C-05), 02 (C-09), 04 (C-03, C-15) |
+| I2 | §16.2 six pilot games at their thresholds (vision + named human) | 14 (route swaps, Q-14-3), 04 (C-15 tint), 02 (C-09/C-10 ambient-vs-IBL, 15 of 18 games) |
+| I3 | §16.2 "all 18" row: no category regresses > 0.5; ready download within §17.1 Medium | 14 (route opt-in), 15 (Q-15-1 model compile) |
+| I4 | S3 equivalent through `model(assets.x)` on real routes (`assets-compressed-typed-glb.spec.ts`) | 04 (Q-04-1), 15 (Q-15-1) |
+| I5 | Dithered LOD cross-fade with ≤ 1 visible pop; shadow casters one level coarser | 01 (C-02 generator), 02 (C-11, Q-02-1) |
+| I6 | WebGPU decode with compressed formats; ΔE2000 ≤ 2.0 vs WebGL2 | 11 (Q-11-1, C-29) |
+| I7 | Library characters move in games (`tracksApplied > 0` in motion strips) | 06 (C-19), 14 |
+| I8 | Real Courier Rush bundle has 0 asset-metadata strings | 14 (Q-14-2) |
 
 ---
 
 ## 17. Performance budgets
 
 These are targets. They become binding only after Phase 6 measures them on named devices; until then they
-are design limits for gates G7 and the tier texture cap. Tier selection and full-frame budgets are owned by
-PRD 11; the rows below are the asset-attributable share.
+are design limits for gates G7 and the tier texture cap. Tier selection, tier ceilings (C-27: `maxTextureSize`
+1024/2048/4096/4096, `textureBudgetBytes` 128/256/512/1024 MiB) and full-frame budgets are lane 11's; the rows
+below are the asset-attributable share and always sit at or below the C-27 ceilings.
 
 ### 17.1 Per tier
 
@@ -1251,7 +1646,7 @@ texture memory; the tier cap then drops one more mip level so the VRAM budget st
 | world-chunk | 8 MB (4 MB) | 32 MB |
 | track | 6 MB (3 MB) | 24 MB |
 | backdrop | 1.5 MB (0.6 MB) | 6 MB |
-| hdri (2k RGBE; 1k on Low) | 7 MB (1.7 MB) | PRD 02 (PMREM output) |
+| hdri (2k RGBE; 1k on Low) | 7 MB (1.7 MB) | lane 02 (PMREM output, C-09) |
 
 Aggregate target: the 120 game-referenced ids (or their replacements) ≤ 80 MB derived, from 463 MB today.
 Reference arithmetic: one Meshy hero's 2× 4096² + 1× 2048² RGBA8 with mips ≈ 201 MB VRAM today (research 11
@@ -1266,7 +1661,7 @@ Reference arithmetic: one Meshy hero's 2× 4096² + 1× 2048² RGBA8 with mips �
 | Chromium stable, macOS (ANGLE Metal) | GH Actions macos-14 (`asset-lookdev.yml`, `quality-rebuild-capture.yml`) | All visual acceptance; decode; compressed sRGB formats; LOD; look-dev |
 | WebKit (Safari engine) | Playwright WebKit on macos-14 | Decode correctness (meshopt, KTX2 target selection, sRGB), worker transcoding, ΔE test |
 | Firefox stable | Playwright Firefox on macos-14 | Decode correctness; ΔE test; capability probe log |
-| Chromium, Windows (D3D11) | new `windows-latest` job added to `browser-matrix.yml` (today that workflow runs only on `ubuntu-latest`; hosted runners have no GPU) | Non-visual: decoder load, format selection with BC formats via capability mock; visual criteria not judged here |
+| Chromium, Windows (D3D11) | `windows-latest` job in lane-owned `qr-prd05-assets-browser.yml` (`browser-matrix.yml` is lane 12's and is not edited; hosted runners have no GPU) | Non-visual: decoder load, format selection with BC formats via capability mock; visual criteria not judged here |
 | Safari 17+/18 desktop, Edge stable | manual on named hardware, Phase 6 | Load, VRAM, first-playable time for the 6 pilot games |
 
 Each run logs the device's compressed-format extensions and the selected KTX2 target per texture slot; a run
@@ -1290,16 +1685,17 @@ where the selected target is `rgba8` on a device that advertises a compressed fo
 
 ## 20. Screenshots / evidence required
 
-All under `docs/project/aura3d-quality-rebuild/evidence/assets/` (large binaries as CI artifacts with links):
+All under `docs/project/aura3d-quality-rebuild/evidence/prd05/assets/` (large binaries as CI artifacts with links):
 - `migration-1.1.json` — gate results for every manifest entry and every downgrade.
 - `optimize-dry-run.json` and `optimize-report.json` — per-id before/after measurements; aggregate for the 120 ids.
 - `lookdev/<id>/<derivedHash8>/{contact.jpg, debug.jpg, gameplay.jpg, metrics.json, review.json}` for every
   `release` asset, plus the broken-control assets.
-- Benchmark side-by-side JPGs for scenes 02, 03, 08, 09, 15, 18 (optimized variant) and new 19, 20, in the
-  existing `evidence/benchmark/<scene>-side-by-side.jpg` format, with `report.json` including the
-  optimized-vs-source SSIM and vision scores.
-- Pilot game before/after contact sheets (`<id>-contact.before.jpg`, `<id>-contact.after.jpg`) from default
-  routes, the vision judgment markdown, and `pilot-review.json` signed by a named human.
+- Standalone: side-by-side JPGs for lane scenes `prd05-optimized-*` (equivalents of base scenes 02, 03, 08, 09,
+  15, 18) and `prd05-asset-lod-transition` frame strips, in the `<scene>-side-by-side.jpg` format, with a C-30
+  `report.json` including the optimized-vs-source SSIM and vision scores.
+- Integrated (from checkpoint records, linked not copied): `prd05-lookdev-hero` G-PANEL scores; pilot game
+  before/after contact sheets (`<id>-contact.before.jpg`, `<id>-contact.after.jpg`) from default routes, the vision
+  judgment markdown, and `pilot-review.json` signed by a named human.
 - `tier-measurements.json` with device/GPU strings and the §17 metrics.
 - `meshy-promotion.json` — per Meshy asset: remesh/bake settings, gates, decision.
 Evidence captured under `?capture=review` or any non-default route mode does not count.
@@ -1308,22 +1704,30 @@ Evidence captured under `?capture=review` or any non-default route mode does not
 
 ## 21. Completion criteria
 
-1. The regex waiver and flat-colour waiver are deleted; no manifest in the repo has a `release` asset failing
-   G1–G11 (CI-enforced).
-2. `aura3d assets optimize`, `lookdev`, `review`, `admit`, `budget`, `prune`, per-route `typegen` exist, are
-   documented in `cli-help.ts`, and run on the remote lanes.
-3. `model(assets.x)` loads meshopt + KTX2 (+ Draco on demand) assets with correct sRGB on Chromium, WebKit and
-   Firefox with no third-party network requests.
-4. LOD chains and collider sidecars are generated and consumed; scene 19 passes.
-5. The library kits and 6 HDRIs of §6.6 are admitted at `release` with look-dev approvals; all 8 Meshy assets
-   have a promotion decision.
-6. Benchmark scenes 02/03/08/09/15/18 optimized variants pass §16.1; scene 20 passes once PRDs 01–04 land.
-7. The 120 game-referenced ids (or replacements) total ≤ 80 MB derived; every showcase route's JS is free of
-   asset metadata strings; `dist` contains only referenced assets.
-8. The 6 pilot games pass §16.2 (vision + named human), executed with PRD 14; the §16.3 per-game table is
-   regenerated from the migration report and committed for all 18 games, and the "all 18" no-regression row passes.
+Lane-05 completion (standalone; reached without any other lane's real implementation; moves `A3D_QR_ASSETS` to
+`standalone-accepted`):
+
+1. The regex waiver and flat-colour waiver are deleted; no `release` asset in the root manifest or the library
+   fails G1–G11 (`qr-prd05-gates.yml`-enforced); template-manifest rows are published for lane 13.
+2. `aura3d assets optimize`, `lookdev`, `review`, `admit`, `budget`, `prune`, per-route `typegen` exist (C-39),
+   are documented in `cli-help.ts`, and run on the remote lanes.
+3. The C-16 decoder path (registry + vendored decoders + sRGB format slot) loads meshopt + KTX2 (+ Draco on
+   demand) assets with correct sRGB on Chromium, WebKit and Firefox with no third-party network requests (S3, S4).
+4. LOD chains and collider sidecars are generated and consumed by lane-05 code; `prd05-asset-lod-transition`
+   passes with the hard switch (S7).
+5. The library kits and 6 HDRIs of §6.6 are admitted at `release` with three-adapter look-dev approvals; all 8
+   Meshy assets have a promotion decision (S9).
+6. `prd05-optimized-*` lane scenes pass §16.1 (S6).
+7. The 120 game-referenced ids (or replacements) total ≤ 80 MB derived; route-module fixtures are free of asset
+   metadata strings; `check-deploy` copies only referenced assets (S10).
+8. C-16/C-17 conformance green for stub and real; every §12.3 request filed; facts F-05-01..06 published.
 9. Tier budgets measured on named devices and committed; any budget exceeded has a filed issue against the
-   owning PRD.
+   owning lane.
+
+Program completion (integrated, §16.4; evaluated at G-PANEL checkpoints and never holding a lane-05 merge):
+`prd05-lookdev-hero` (I1), the six pilot games and the "all 18" row (I2, I3), `model(assets.x)` on real routes
+(I4), dithered LOD (I5), WebGPU (I6), moving library characters (I7), real route bundles (I8); the §16.3 per-game
+table regenerated from the migration report and committed for all 18 games.
 
 Not completion: tests green, all routes 200, non-blank probes, parity matrices green, or a "release" label count.
 
@@ -1331,6 +1735,9 @@ Not completion: tests green, all routes 200, non-blank probes, parity matrices g
 
 ## 22. Rollback considerations
 
+- Flag rollback: `A3D_QR_ASSETS=off` (or `_DECODERS` / `_LOD` alone) returns every route to stub behaviour
+  (source URLs, today's decoders and format mapping, no LOD extension) with no code revert; a lane-05 PR that
+  turns main red is reverted by anyone (CONTRACTS §6.1).
 - Source files and provenance are never modified; derived files are additive. `aura3d assets typegen --variant
   source` (or `createAuraApp({ assets: { variant: "source" } })`) points every route back at sources with no
   data loss.
@@ -1342,7 +1749,7 @@ Not completion: tests green, all routes 200, non-blank probes, parity matrices g
 - LOD issues: `lod: false` per model or a global `assets.lod: false` flag in `createAuraApp` disables selection
   (LOD0 only) without re-optimizing.
 - Colliders: `collider: "bounds"` restores today's behaviour per model.
-- Library swaps in games are per-route commits owned by PRD 14 and revert independently.
+- Library swaps in games are per-route commits owned by lane 14 and revert independently.
 
 ---
 
@@ -1350,7 +1757,9 @@ Not completion: tests green, all routes 200, non-blank probes, parity matrices g
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| PRD 04 (tint strips maps) or PRD 02 (ambient zeroes IBL) slips | Optimized PBR assets still render flat; pilot games cannot pass | §16.2 sequenced after both; look-dev uses three as file reference so asset work proceeds in parallel |
+| Renderer lanes' fixes (04 tint C-15, 02 ambient-vs-IBL C-09/C-10) are late | Optimized PBR assets still render flat in games; integrated I1–I3 miss checkpoints | Nothing in lane 05 waits: standalone acceptance is three-adapter look-dev + within-engine equivalence; integrated results are re-scored at every checkpoint and misses become `qr-ic-regression` issues against the attributed lane |
+| Requests Q-04-1 / Q-15-1 declined or slow | `model(assets.x)` keeps loading uncompressed sources; derived files unused by routes | Owners must answer within 2 working days (CONTRACTS §6.5); meanwhile `variant: "source"` stays the route default and lane tests prove the decoder path directly |
+| A PR 0b carve (0b-2 `TextureFormats.ts`, 0b-3 `ImageDecode.ts` / actor hook) is dropped for not being verbatim | Lane 05 cannot edit that region | CONTRACTS §3.9: the region stays with the hot-file owner; lane 05 converts the change to a §12.3 request with the code attached |
 | UASTC files larger than source JPEGs for some textures | Download grows on specific assets | Per-slot choice (ETC1S for base/ORM on props), RDO + Zstd; G7 measured per file; WebP fallback encoding allowed for backdrops |
 | ETC1S artefacts on gradients (skies, backdrops) | Banding visible | Backdrops default UASTC when gradient detector fires; look-dev review catches |
 | MikkTSpace tangents mismatched with how a source normal map was baked | Shading seams | Look-dev normal debug view + G9; keep authored TANGENT when present |
@@ -1361,22 +1770,24 @@ Not completion: tests green, all routes 200, non-blank probes, parity matrices g
 | AI-image cards labelled CC0 by prompt file | Rights ambiguity | `rightsReview: "required"` flag; cards limited to `backdrop` |
 | Blender/remote bake capacity and cost | Phase 5 delay | Batch per kit; reuse one remote worker; cache by source hash |
 | LFS storage growth from derived files | Repo/LFS quota | Prune orphans (490 MB) first; derived files deduplicated by hash |
-| Over-attributing performance to assets | Wrong priorities | Deep Recovery runs 0.5 fps with 0.4 MB of geometry (report.slim.json; research 11 §2.4): frame cost there is not asset-driven; PRD 11 owns frame performance |
+| Over-attributing performance to assets | Wrong priorities | Deep Recovery runs 0.5 fps with 0.4 MB of geometry (report.slim.json; research 11 §2.4): frame cost there is not asset-driven; lane 11 owns frame performance (C-27/C-28) |
 | Gate tuning too strict for stylized games | Valid stylized art blocked | `stylized-flat` art-direction path with UVs + look-dev review (G10) instead of text waivers |
 
 ---
 
 ## 24. Explicitly out of scope
 
-- BRDF, IBL, shadow, tone-mapping and post fixes (PRDs 01–03) and material/tint semantics (PRD 04), except the
-  sRGB compressed-format mapping implemented here.
-- Per-game scene rebuilds, layout and art direction beyond asset swaps (PRD 14).
-- Animation playback, retargeting and clip authoring (PRD 06); this PRD only requires library characters to ship
-  with clips.
+- BRDF, IBL, shadow, tone-mapping and post fixes (lanes 01–03; C-02, C-05, C-09–C-13) and material/tint semantics
+  (lane 04; C-03, C-15), except the sRGB compressed-format mapping implemented here in `webgl2/TextureFormats.ts`.
+- Per-game scene rebuilds, layout and art direction beyond asset swaps (lane 14; C-35).
+- Animation playback, retargeting and clip authoring (lane 06; C-19); lane 05 only requires library characters to
+  ship with clips and emits C-17 `animationClips`.
 - Runtime texture streaming, virtual texturing, cluster/meshlet LOD (`meshopt_clusterizer`), GPU-driven culling
-  (PRD 11).
-- Lightmap/AO baking for worlds and terrain splat authoring (PRD 10); this PRD bakes per-asset AO only.
-- Native FBX/USD/USDZ/DAE import (remains "convert-required", `AssetImportPreflight.ts:142-144`).
-- Audio assets (17 of 18 games use oscillator-synthesized WAVs, research 18 C12) — separate audio pipeline work.
+  (lane 11).
+- Lightmap/AO baking for worlds and terrain splat authoring (lane 10); lane 05 bakes per-asset AO only.
+- Native FBX/USD/USDZ/DAE import (remains "convert-required", `AssetImportPreflight.ts:142-143`).
+- Audio synthesis, transcoding (Opus/AAC) and playback (lane 09; its `assets transcode-audio` command registers
+  via C-39). Lane 05 only stores audio provenance/loudness metadata and enforces the release provenance rule
+  (17 of 18 games use oscillator-synthesized WAVs, research 18 C12).
 - DCC exporter plugins (Blender/Maya add-ons) and an in-browser asset editor.
 - Commissioning contracts and art budgets; this PRD defines the admission bar commissioned art must meet.
