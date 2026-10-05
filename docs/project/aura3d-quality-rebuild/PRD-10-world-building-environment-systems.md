@@ -1,11 +1,13 @@
 # PRD 10: World Building / Environment Systems
 
 Program: Aura3D visual-quality autopsy and rebuild. Branch `aura3d-quality-rebuild/audit`.
-Status: proposed. Owner area: `packages/rendering/src/{TerrainHeightfield,TerrainTiles,VegetationScatter,WaterSurface,OceanSurface,EnvironmentPlatform,EnvironmentPreset,EnvironmentPresetPack,SpaceEnvironment}.ts`,
-new `packages/rendering/src/world/`, `packages/engine/src/agent-api/{index,Scatter,LayeredSceneComposition}.ts`,
-new `packages/engine/src/agent-api/world/` and `packages/engine/src/production-runtime/world/`, `packages/environments`,
-`packages/physics-rapier/src/HeightfieldLayout.ts` (consumer only), `fixtures/environment-corpus/`,
-`fixtures/three-compat/environments/manifest.json`, `benchmarks/quality-rebuild/`.
+Status: proposed, parallelized against `CONTRACTS.md` (2026-10-05). Lane: **PRD 10 World**, flag `A3D_QR_WORLD`.
+Owned paths are exactly CONTRACTS §4.1 row 10 (repeated in "Parallel execution"). This PRD provides contract **C-26**
+and consumes C-01, C-02, C-03, C-06, C-07, C-08, C-09, C-10, C-11, C-12, C-13, C-15, C-16, C-17, C-21, C-27, C-30,
+C-31, C-33, C-34, C-36, C-37, C-38, C-39 and C-40, always against the PR 0 stub. It never waits for another lane; the
+earlier draft's "PRD NN owns / after PRD NN lands" wording is replaced by contract IDs (§12) and non-blocking requests
+(§12.3). Where this document names another PRD it is attribution of evidence or of a contract's provider, not a
+dependency.
 
 Evidence base: research `08-vfx-atmos-environments.md` §5, §8, §9, §12 (primary for code facts), `11-asset-pipeline.md`
 (textures, HDRIs, kits, optimization), `17-games-g1..g5.md` (per-game world construction), `16-route-local-extraction.md`
@@ -22,7 +24,9 @@ production path, in a shipped game, at gameplay scale. Descriptors, planners, te
 boundaries, unit tests, and fixtures that only exist as oracles count as zero. The completion gate is a human plus
 vision-model judgment that the shipped games' worlds (ground, vegetation, water, set dressing, sky and light mood) look
 competitive with a well-built three.js r185 browser game. Nothing in this document may be cited as evidence that Aura3D
-is three.js-quality until the thresholds in §16 are met.
+is three.js-quality until the integrated thresholds in §16.2 are met at a G-PANEL checkpoint (CONTRACTS §7). Standalone
+acceptance (§16.1), conformance tests and engineering gates prove interfaces and determinism only; they are never
+quality claims.
 
 ---
 
@@ -229,63 +233,103 @@ Lines marked "read" were opened on this branch while writing this PRD. Others ci
 
 | Package | Change |
 |---|---|
-| `@aura3d/rendering` | New `world/` module: terrain CDLOD + `TerrainMaterial`; `InstanceChunkGrid`, `FoliageMaterial`, `ImpostorMaterial`, `GrassField`, `WindField`; `WaterMaterial`, `ReflectionViewPass`, `GerstnerWaves`; `SpaceSkyBake`; shared GLSL/WGSL chunks (`a3d_wind`, `a3d_terrain_splat`, `a3d_gerstner`, `a3d_caustics`). Fix `sampleTerrainHeightfield` interpolation. Delete `TerrainTiles.createTerrainTileGrid`, `EnvironmentPreset.ts`, `createProceduralSkyDome`, and the `EnvironmentPresetPack` night normalization. |
-| `@aura3d/engine` agent-api | New `world` namespace (`world.biome`, `world.timeOfDay`, `world.terrain`, `world.scatter`, `world.grass`, `world.water`, `world.kit`, `world.spline`, `world.extrude`, `world.placeAlong`, `world.room`, `world.street`, `world.wind`); `material.foliage`, `material.terrainLayer`, `material.planet`; `alphaCutoff`/`alphaMode` on `AuraMaterialSpec`; `app.world` runtime handle; deprecation of `water.surface`, `weather.wetGround`, `prefabs.cityBlock`/`city.block`; instance-size fix; world diagnostics from observed draws. |
-| `@aura3d/engine` production-runtime | `production-runtime/world/{TerrainRuntime,ScatterRuntime,GrassRuntime,WaterRuntime,TimeOfDayRuntime,BiomeResolver}.ts`, which lower world nodes to render items with world materials. |
-| `@aura3d/environments` | Biome HDRI registry (`BiomeEnvironmentRegistry.ts`) replacing aliased manifest entries; quality floors enforced at load (`PMREMPreset.ts` checks become errors for biome assets). |
-| `@aura3d/physics` / `@aura3d/physics-rapier` | Consumer only: `world.terrain({ collider: true })` registers a `HeightfieldShape` (`physics/src/Shape.ts:37`) through the existing Rapier path. No new physics code beyond the root facade wiring. |
-| `@aura3d/aura3d-cli` | `assets bake-impostor` and `assets add --type texture-set/--type hdri` verbs use the PRD 05 pipeline. This PRD supplies the bakers and the asset contracts. |
-| `packages/engine/assets/world/` (new) | Shipped CC0 content: terrain layer sets, foliage, rocks, water normals, caustics, wind noise, biome HDRIs, starter kits (city, interior, trackside). Budget in §17. |
-| `benchmarks/quality-rebuild` | New world scenes (§16.1) with Aura and three r185 adapters. The 16-instancing spec is unchanged (it must pass after V4). |
-| `tools/impostor-bake/`, `tools/world-content-bake/` (new) | Offline deterministic bakers (impostor atlases, wind vertex weights, space cubemaps for CI fixtures). Node only, no network. |
-| `apps/*` | Migration owned by PRD 14. Per-game acceptance subset in §16.2. |
-| `packages/aura3d-cli/skills/aura3d-materials-environments`, `aura3d-scene-authoring`, `aura3d-performance` | Skill text delivered by PRD 13. This PRD supplies the API facts and the "do not use" list. |
+| `@aura3d/rendering` | New `world/` module (subpath `@aura3d/rendering/world`, reserved in PR 0a): terrain CDLOD + `TerrainMaterial`; `InstanceChunkGrid`, `FoliageMaterial`, `ImpostorMaterial`, `GrassField`, `WindField`; `WaterMaterial`, `ReflectionViewPass`, `GerstnerWaves`, `SceneCopyFallback`; `SpaceSkyBake`; chunks registered through C-02 (`a3d_prd10_wind`, `a3d_prd10_terrain_splat`, `a3d_prd10_gerstner`, `a3d_prd10_caustics`, `a3d_prd10_world_light_fallback`). Fix `sampleTerrainHeightfield` interpolation. Delete `TerrainTiles.createTerrainTileGrid`, `EnvironmentPreset.ts` and the `EnvironmentPresetPack` night normalization (all PRD 10-owned). |
+| `@aura3d/engine` agent-api | New `world` namespace in `agent-api/world/` (`world.biome`, `world.timeOfDay`, `world.terrain`, `world.scatter`, `world.grass`, `world.water`, `world.kits`, `world.spline`, `world.extrude`, `world.placeAlong/placeGrid/placePoisson`, `world.room`, `world.street`, `world.wind`, `world.materials.{foliage,terrainLayer,planet}`); `practical` semantics on `AuraMaterialSpec` (field pre-declared in PR 0a, C-15); `app.world` via C-38; world node handlers via C-36; builders in PRD 10-owned carve-outs `nodes/{instances,water,environments.world}.ts` and `nodes/prefabs/cityBlock.ts`; world diagnostics section via C-31. The instance-size fix (V4) is PRD 15's (CONTRACTS R18, unflagged); `alphaMode/alphaCutoff` semantics are PRD 04's (R12). |
+| `@aura3d/engine` production-runtime | `production-runtime/world/{TerrainRuntime,ScatterRuntime,GrassRuntime,WaterRuntime,TimeOfDayRuntime,BiomeResolver,WorldFramePasses,WorldDiagnostics}.ts`: C-36 node handlers lower world nodes; `WorldFramePasses` registers the `prd10.world` C-01 contributor. |
+| `@aura3d/environments` | New `BiomeEnvironmentRegistry.ts` only (biome HDRI ids, quality floors checked at load inside this file). `EnvironmentRegistry/HDRIEnvironment/PMREMPreset.ts` are PRD 02's and are not edited. |
+| `@aura3d/physics` / `@aura3d/physics-rapier` | Consumer only. `world.terrain({ collider: true })` builds a `HeightfieldShape` (`physics/src/Shape.ts:37`) through the existing public physics API from PRD 10's own `agent-api/world/terrain.ts`. PRD 10 owns `physics-rapier/src/HeightfieldLayout.ts` (row-major converter, `:12`). |
+| `@aura3d/aura3d-cli` | `assets bake-impostor`, `world bake-content` registered through C-39 from `packages/aura3d-cli/src/commands/prd10/`. Texture-set/HDRI/height admission types are C-17 (PRD 05); PRD 10 calls them, never edits `cli.ts`. |
+| `packages/engine/assets/world/` (new) | Shipped CC0 content: terrain layer sets, foliage, rocks, water normals, caustics, wind noise, biome HDRIs, starter kits (city, interior, trackside, space). Budget in §17.3. |
+| `benchmarks/quality-rebuild` | Lane scenes only, in `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd10/` (C-30 ids `prd10-*`). The shared 16-instancing spec is PRD 12's and is unchanged. |
+| `tools/impostor-bake/`, `tools/world-content-bake/` (new) | Offline deterministic bakers (impostor atlases, wind vertex weights, water/noise textures, space cubemaps). Bake pages run on the remote macos-14 runner only. |
+| `apps/*` | Not edited by this lane. PRD 14 owns routes (R21) and applies the `prd10-world-migrate` codemod/report shipped via C-39. |
+| `packages/aura3d-cli/skills/**`, templates | Not edited. PRD 13 writes skill text from PRD 10's C-40 facts rows `F-10-*`. |
 
 ---
 
 ## 5. Affected files / directories
 
-Modify:
+Every path below is classified by CONTRACTS §4 ownership. PRD 10 commits only to "Owned" paths. "Extension point"
+rows are reached from PRD 10 files through a PR 0 registry or seam, without editing the host file. "Request" rows are
+changes in files owned by other lanes, filed non-blocking (§12.3). Line numbers were re-checked at `7992a0dd`.
 
-- `packages/engine/src/agent-api/index.ts`:
-  - `createProductionInstanceTransforms` `:14747-14754` (pass `size`).
-  - `AuraMaterialSpec` `:1027-1110` (alpha fields).
-  - `instances.model` `:2241-2286` (static flag, chunking, shadow LOD).
-  - `water` `:3859-3909` and `weather.wetGround` `:3807-3843` (deprecate, then re-implement on `world.water` / PRD 07 wetness).
-  - `environments` `:4123-4190` (add `environments.outdoor`, `environments.room`, `environments.space`, `environments.underwater` as thin aliases to biome environments).
-  - `prefabs.cityBlock` `:5842-5901` and `city` `:9241-9245` (re-implement on `world.kit(cityKit)`).
-  - Scene-kit evidence strings `:9683-9796` (report observed draws).
-  - `createProductionRuntimeEnvironment` `:12628-12720` (resolve the biome environment before ambient or category fallback; coordinate with PRD 02 for the ambient fix).
-  - `createProductionRuntimeSceneRenderer` `:13540+` (world node lowering hook).
-  - Render-source build `:13990-14005` (world passes).
-  - App object `:11126+` (`app.world`).
-- `packages/rendering/src/TerrainHeightfield.ts:133-141` (bilinear `sampleTerrainHeightfield`), `:143-217` (keep; add `toHeightTexture`).
-- `packages/rendering/src/TerrainTiles.ts` (delete `createTerrainTileGrid` and the header claim; keep `planScatterInstances`, `enforceFrameBudget` and `queryTerrainHeight` as budget/query utilities).
-- `packages/rendering/src/VegetationScatter.ts` (keep the L-system/placement math as an offline tool input; fix the claim boundary to name the new runtime).
-- `packages/rendering/src/OceanSurface.ts:170-300` (move the Gerstner evaluation into `world/water/GerstnerWaves.ts`, shared CPU/GPU parameters); `:389-455` (delete the CPU composite capture after `ReflectionViewPass` lands).
-- `packages/rendering/src/WaterSurface.ts` (delete after migration).
-- `packages/rendering/src/ForwardPass.ts` (register world material shader keys; split opaque/transparent so water draws after an opaque scene-colour/depth copy; shared with PRD 04 transmission and PRD 07 particles).
-- `packages/rendering/src/DepthPass.ts:59-87` (instanced + alpha-tested + wind-deformed casters; owned with PRD 02, §12).
-- `packages/rendering/src/EnvironmentPresetPack.ts:25-46` (remove night exposure normalization).
-- `packages/rendering/src/EnvironmentPlatform.ts:395-415`, `EnvironmentPreset.ts` (delete).
-- `packages/rendering/src/SpaceEnvironment.ts` (becomes the input to `SpaceSkyBake`).
-- `packages/environments/src/{EnvironmentRegistry,HDRIEnvironment,PMREMPreset}.ts`.
-- `fixtures/three-compat/environments/manifest.json` (delete aliased entries `industrial-sunset-puresky`, `spruit-sunrise`, `venice-sunset`, or add the real files).
-- `benchmarks/quality-rebuild/shared/{scenes,types,assets,procedural}.ts`, `aura3d/common.ts`, `three/common.ts`, plus new per-scene files.
+Owned, modify (CONTRACTS §4.1 row 10):
 
-Create:
+- `packages/engine/src/agent-api/nodes/instances.ts` (verbatim carve-out of `index.ts:2222-2287`, PR 0b-1): new options
+  `static`, `chunkSize`, `shadowLod`, `wind`, `impostor` on `instances.model` (`index.ts:2241-2286` today). With
+  `A3D_QR_WORLD` on and any of those options set, the builder emits a `scatter` node with explicit placements (handled by
+  PRD 10's `ScatterRuntime`) instead of a `model` node; flag off emits today's node unchanged.
+- `packages/engine/src/agent-api/nodes/water.ts` (carve-out of `index.ts:3870-3909`): `water.surface` deprecated; with the
+  flag on it returns a `world.water({ kind: "lake" })` node (§7.3).
+- `packages/engine/src/agent-api/nodes/environments.world.ts` (new, empty in PR 0b-1, spread into `environments`):
+  `environments.outdoor/room/space/underwater` (§7.1.2).
+- `packages/engine/src/agent-api/nodes/prefabs/cityBlock.ts` (carve-out of `index.ts:5842-5901`): re-implemented on
+  `world.kits.city` + `world.street` behind the flag (Phase 5). The `city.block` alias (`index.ts:9241-9245`) calls
+  `prefabs.cityBlock` and needs no edit.
+- `packages/engine/src/agent-api/LayeredSceneComposition.ts`: `planSkyBackdrop` (`:503-543`) deprecated (§7.3).
+- `packages/rendering/src/TerrainHeightfield.ts:133-141` (bilinear `sampleTerrainHeightfield`; today `Math.round` at
+  `:134-135`), `:143-217` (keep; add `toHeightTexture`).
+- `packages/rendering/src/TerrainTiles.ts` (324 lines): delete `createTerrainTileGrid` (`:47-96`) and the header claim
+  (`:1-13`); keep `planScatterInstances` (from `:135`), `enforceFrameBudget` and `queryTerrainHeight` (`:116-133`).
+- `packages/rendering/src/VegetationScatter.ts` (claim boundary at `:134` rewritten to name the new runtime).
+- `packages/rendering/src/OceanSurface.ts` (601 lines): `oceanPresetWaves` `:170` and `evaluateWaves` `:213` move to
+  `world/water/GerstnerWaves.ts`; `WaterReflectionRefractionCapture` (`:389-455`) deleted after Phase 4.
+- `packages/rendering/src/WaterSurface.ts` (deleted after 0 call sites), `EnvironmentPresetPack.ts:25-46` (night
+  `exposureFactor` removed), `EnvironmentPreset.ts` (deleted), `SpaceEnvironment.ts` (input to `SpaceSkyBake`).
+- `fixtures/three-compat/environments/manifest.json` (delete aliased `industrial-sunset-puresky`, `spruit-sunrise`,
+  `venice-sunset`, L10).
+- `packages/physics-rapier/src/HeightfieldLayout.ts` (only if hole support needs a mask parameter; additive).
 
-- `packages/rendering/src/world/terrain/`: `TerrainCdlod.ts` (quadtree selection, morph ranges), `TerrainPatchGeometry.ts` (shared N×N grid), `TerrainHeightTexture.ts` (R32F upload + manual bilinear contract), `TerrainMaterial.ts`, `shaders/terrain.vert.glsl.ts`, `shaders/terrain.frag.glsl.ts`, `shaders/terrain.wgsl.ts`.
-- `packages/rendering/src/world/vegetation/`: `InstanceChunkGrid.ts` (static GPU instance buffers per spatial cell), `FoliageMaterial.ts`, `ImpostorMaterial.ts`, `GrassField.ts`, `WindField.ts`, `shaders/{wind,foliage,impostor,grass}.{glsl,wgsl}.ts`.
-- `packages/rendering/src/world/water/`: `WaterMaterial.ts`, `GerstnerWaves.ts`, `ReflectionViewPass.ts`, `Caustics.ts`, `UnderwaterState.ts`, `shaders/water.{glsl,wgsl}.ts`, `shaders/caustics.glsl.ts`.
+Owned, create:
+
+- `packages/rendering/src/world/terrain/`: `TerrainCdlod.ts`, `TerrainPatchGeometry.ts`, `TerrainHeightTexture.ts`
+  (R32F upload + manual bilinear contract), `TerrainMaterial.ts`, `shaders/terrain.{vert,frag}.glsl.ts`,
+  `shaders/terrain.wgsl.ts`.
+- `packages/rendering/src/world/vegetation/`: `InstanceChunkGrid.ts`, `FoliageMaterial.ts`, `ImpostorMaterial.ts`,
+  `GrassField.ts`, `WindField.ts`, `shaders/{wind,foliage,impostor,grass}.{glsl,wgsl}.ts`.
+- `packages/rendering/src/world/water/`: `WaterMaterial.ts`, `GerstnerWaves.ts`, `ReflectionViewPass.ts`,
+  `SceneCopyFallback.ts`, `Caustics.ts`, `UnderwaterState.ts`, `shaders/{water,caustics}.{glsl,wgsl}.ts`.
 - `packages/rendering/src/world/space/`: `SpaceSkyBake.ts`, `PlanetMaterial.ts`, `shaders/{space-bake,planet}.glsl.ts`.
-- `packages/rendering/src/world/index.ts` (subpath export `@aura3d/rendering/world`).
-- `packages/engine/src/agent-api/world/`: `index.ts`, `biomes.ts`, `timeOfDay.ts`, `terrain.ts`, `scatter.ts`, `grass.ts`, `water.ts`, `kits.ts`, `spline.ts`, `placement.ts`, `room.ts`, `street.ts`, `wind.ts`, `types.ts`.
-- `packages/engine/src/production-runtime/world/`: `BiomeResolver.ts`, `TerrainRuntime.ts`, `ScatterRuntime.ts`, `GrassRuntime.ts`, `WaterRuntime.ts`, `TimeOfDayRuntime.ts`, `WorldDiagnostics.ts`.
-- `packages/engine/assets/world/`: `manifest.json` plus `terrain/`, `foliage/`, `rocks/`, `water/`, `noise/`, `hdri/`, `kits/{city,interior,trackside,space}/` (contents in §6.6).
-- `tools/impostor-bake/` (index.ts plus a Playwright-driven bake page; WebGL2 readback of atlas tiles; runs on the remote
-  macos-14 runner, never locally), `tools/world-content-bake/`.
-- Tests listed in §15.
+- `packages/rendering/src/world/lighting/WorldLightFallback.ts` (chunk `a3d_prd10_world_light_fallback`, §8.0).
+- `packages/rendering/src/world/index.ts` (entry of the reserved subpath `@aura3d/rendering/world`).
+- `packages/engine/src/agent-api/world/`: `index.ts`, `types.ts`, `biomes.ts`, `timeOfDay.ts`, `wind.ts`, `terrain.ts`,
+  `scatter.ts`, `grass.ts`, `water.ts`, `kits.ts`, `spline.ts`, `placement.ts`, `room.ts`, `street.ts`, `materials.ts`,
+  `queries.ts` (C-26 real), `runtime.ts` (`AuraWorldRuntime`), `register.ts` (all `register*` calls).
+- `packages/engine/src/agent-api/compiler/world.ts` (C-36 node handlers for `biome`, `time-of-day`, `wind`, `terrain`,
+  `scatter`, `grass`, `water`).
+- `packages/engine/src/production-runtime/world/`: `BiomeResolver.ts`, `TerrainRuntime.ts`, `ScatterRuntime.ts`,
+  `GrassRuntime.ts`, `WaterRuntime.ts`, `TimeOfDayRuntime.ts`, `WorldFramePasses.ts`, `WorldDiagnostics.ts`.
+- `packages/environments/src/BiomeEnvironmentRegistry.ts`.
+- `packages/engine/assets/world/`: `manifest.json`, `terrain/`, `foliage/`, `rocks/`, `water/`, `noise/`, `hdri/`,
+  `kits/{city,interior,trackside,space}/` (§6.6).
+- `tools/impostor-bake/`, `tools/world-content-bake/` (bake pages run on the remote macos-14 runner only).
+- Lane-generic: `packages/{rendering,engine,assets,animation}/src/lanes/prd10.ts`,
+  `agent-api/compiler/diagnosticOnly.prd10.ts`, `packages/aura3d-cli/src/commands/prd10/`,
+  `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd10/`, `.github/workflows/qr-prd10-world.yml`,
+  `tests/qr/prd10/`, `tests/unit/contracts/impl/prd10-*`, `docs/project/aura3d-quality-rebuild/evidence/prd-10/`.
+
+Reached through extension points (host file not edited by PRD 10):
+
+| Host file (owner) | What PRD 10 needs there | Extension point |
+|---|---|---|
+| `agent-api/index.ts` `createProductionRuntimeSceneRenderer` `:13540` / `compiler/renderer.ts` (15) | world node lowering | C-36 `registerNodeHandler` for the 7 world kinds pre-declared in `AuraNodeKindMap` |
+| `index.ts` render-source build `:13990` / `compiler/renderInput.ts` (15) | `reflectionViews`, `sceneColorCopy`, `worldUniforms` | C-36 `RenderSourceContributions.set`; fields pre-declared on `RenderSource` in PR 0a (CONTRACTS §3.5) |
+| `createAuraApp` `index.ts:11126` / `app/createAuraApp.ts` (15) | `app.world` | C-38 `registerAppExtension({ member: "world" })` |
+| `createProductionRuntimeEnvironment` `index.ts:12628` / `compiler/environment.ts` (02) | biome and time-of-day environment selection | C-09 `registerEnvironmentSource` (`prd10.biome` priority 300, `prd10.timeOfDay` 250) |
+| `ForwardPass.ts` (01) | world draws, water after opaque | C-01 `registerFrameContributor("prd10.world")`; C-02 chunks/features; C-07 `instanceBufferSlot` |
+| `DepthPass.ts:59-87` (02) | wind-deformed, instanced, alpha-tested casters | C-11 `registerDepthVariantFeature("prd10.wind")` |
+| shared PBR lighting (01) | caustics, practical scale, foliage translucency | C-02 `registerShaderFeature` (`prd10.caustics`, `prd10.practical`), C-03 lobe `prd10.foliageTranslucency` |
+| `AuraMaterialSpec` `index.ts:1027` (15, types) | `alphaMode`, `alphaCutoff`, `alphaToCoverage`, `doubleSided`, `practical` | pre-declared in PR 0a (C-15); `practical` semantics PRD 10 |
+| `AuraDiagnostics` `index.ts:10377` (15) | `world` section | C-31 `registerDiagnosticsSection({ key: "world" })` |
+| `packages/aura3d-cli/src/cli.ts` (05) | `assets bake-impostor`, `world bake-content`, codemod | C-39 `registerCliCommand`, `registerCodemod` |
+| `benchmarks/quality-rebuild/shared/*` (12) | world scenes | C-30 lane scene index `scenes/prd10/index.ts` |
+| `looks/generatedCodeWarnings.ts` (13) | world lint rules | C-34 `registerLookLintRule` (`look/world-void`, `look/primitive-trees`) |
+
+Request only (non-blocking, §12.3): `index.ts:14747-14754` instance size (R18, PRD 15), `devtools/sceneKitBudgets.ts`
+evidence strings from `index.ts:9683-9796` (11), `nodes/weather.ts` `wetGround` (07), `EnvironmentPlatform.ts:395-415`
+`createProceduralSkyDome` (02), `WebGPUDevice.ts` WGSL program registration `:3179` (11),
+`packages/materials/src/TextureSet.ts:40` `THREE_COMPAT_TEXTURE_SETS` (15), `nodes/material.ts` aliases (04),
+engine subpath `@aura3d/engine/world` (15).
 
 ---
 
@@ -294,51 +338,58 @@ Create:
 ### 6.1 Target architecture
 
 ```
-agent API (packages/engine/src/agent-api/world)                           runtime handle
+agent API (agent-api/world, PRD 10)                                        runtime handle (C-38 member "world")
   world.biome / world.timeOfDay / world.wind                                app.world.timeOfDay.set(h)
-  world.terrain / world.scatter / world.grass / world.water                 app.world.wind.set(...)
-  world.kit / world.spline / world.extrude / world.placeAlong               app.world.terrain(n).heightAt(x,z)
-  world.room / world.street                                                 app.world.water(n).heightAt(x,z,t)
-        │ emits typed scene nodes: kind "biome" | "time-of-day" | "terrain" | "scatter" | "grass" | "water" | "wind"
-        │ kits/spline/room/street resolve at build time to instances.model groups + extruded custom geometry
-        ▼
-production bridge (createProductionRuntimeSceneRenderer)
-  BiomeResolver ──► PRD 07 SkyBackgroundPass spec + HeightFog spec
-              ──► PRD 02 environment source (sky-capture | HDRI) + sun + CSM config
-              ──► PRD 03 post preset (tone map, exposure, bloom, grade)
-  TerrainRuntime ─► CDLOD node selection (CPU, per frame) ─► 1 instanced draw per LOD level, TerrainMaterial
-                 ─► Rapier HeightfieldShape (same R32F data)
-  ScatterRuntime ─► InstanceChunkGrid (static GPU buffers) ─► per-chunk frustum cull ─► mesh LOD / impostor / culled
-  GrassRuntime   ─► camera-centred chunk ring, instance data generated in VS from gl_InstanceID + chunk seed
-  WaterRuntime   ─► WaterMaterial (after opaque, reads SceneColorCopy + depth) ─► optional ReflectionViewPass
-  TimeOfDayRuntime ► per-frame uniforms (sun dir, sky, fog colour, exposure); amortized IBL re-capture via PRD 02
-        ▼
-@aura3d/rendering world/: TerrainMaterial, FoliageMaterial, ImpostorMaterial, GrassField, WaterMaterial,
-  ReflectionViewPass, WindField UBO, shared chunks (a3d_wind, a3d_gerstner, a3d_terrain_splat, a3d_caustics)
-        ▼
-ForwardPass: opaque (terrain, scatter, kits) → SceneColorCopy/DepthCopy (PRD 04 resource) → water → transparents/particles (PRD 07)
-DepthPass (PRD 02): instanced + alpha-tested + wind-deformed casters
+  world.terrain / world.scatter / world.grass / world.water                 app.world.setWind(...)
+  world.kits / world.spline / world.extrude / world.place*                  app.world.terrain(n).heightAt(x,z)
+  world.room / world.street                                                 app.world.ground()/height()/biome()  (C-26)
+        | emits typed nodes: "biome" | "time-of-day" | "wind" | "terrain" | "scatter" | "grass" | "water"
+        | (all 7 kinds pre-declared in C-36 AuraNodeKindMap); kits/placement/room/street emit "scatter" nodes
+        | with explicit placements plus extruded custom geometry; never group() hierarchies
+        v
+compiler (PRD 15) -> C-36 registerNodeHandler -> agent-api/compiler/world.ts (PRD 10)
+  BiomeResolver   -> C-21 AuraSkySpec + AuraHeightFogSpec (app.atmosphere.setSky/setFog, PRD 07 stub or real)
+                  -> C-09 environment source "prd10.biome" (priority 300) / "prd10.timeOfDay" (250)
+                  -> C-13 post preset id + exposure override; C-10 sun light node
+  TerrainRuntime  -> CDLOD node selection (CPU, per frame) -> 1 instanced draw per LOD level; HeightfieldShape (same R32F)
+  ScatterRuntime  -> InstanceChunkGrid (static GPU buffers, C-07 instanceBufferSlot or own buffers) -> cell cull -> LOD/impostor
+  GrassRuntime    -> camera-centred chunk ring, blade data generated in VS from gl_InstanceID + chunk seed
+  WaterRuntime    -> WaterMaterial (reads scene colour/depth copy) -> optional ReflectionViewPass (C-08 CameraLike)
+  TimeOfDayRuntime-> per-frame uniforms; amortized sky re-capture through C-21 skyBackgroundSlot + C-09 fromScene
+        v
+draw path selected once at mount (§9.1):
+  Path S (standalone, stubs): C-01 contributor "prd10.world": phase "background" (world opaque after sky, before
+          ForwardPass), "after-opaque" (prd10 scene colour/depth copy), "transparent" (water TransparentQueueItems);
+          PRD 10-owned complete GLSL programs + a3d_prd10_world_light_fallback (sun + SH stub + sky horizon), no shadows
+  Path G (generator real: programCacheSlot.provided && A3D_QR_CORE=v2): world RenderItems added in C-01 "collect";
+          surface/vertex chunks as C-02 ShaderFeatures; lighting, IBL (C-09), shadows (C-11), fog (C-21) shared
 ```
 
 Design rules:
 
-1. **One world node, one renderer consumer.** Every `world.*` node kind has a production lowering, a safe-basic
-   degraded lowering (documented and diagnosed) and an observed-draw diagnostic. A node with no consumer is a build-time
-   error, not a warning (same principle as PRD 07 §3).
-2. **Static content is uploaded once.** Terrain height textures, scatter instance buffers, kit instance buffers and
-   extruded geometry are GPU-resident and are not rebuilt per frame. Today root instance matrices are recomputed every
-   frame in JS (07 §3.3). World instances carry `static: true` and skip that path.
+1. **One world node, one renderer consumer.** Every world node kind has a C-36 handler, a safe-basic degraded lowering
+   (diagnosed as a C-36 `capability-degraded` degradation) and an observed-draw diagnostic in the C-31 `world` section. A
+   node with no consumer is a build-time error under `A3D_QR_STRICT`, an `option-ignored` degradation otherwise.
+2. **Static content is uploaded once.** Terrain height textures, scatter/kit instance buffers and extruded geometry are
+   GPU-resident and are not rebuilt per frame. Today root instance matrices are recomputed every frame in JS (07 §3.3).
+   World instances live in PRD 10's `InstanceChunkGrid` and never pass through `createProductionInstanceTransforms`.
 3. **One source for physics and pixels.** Terrain height, water height (Gerstner) and placement ground-snapping use the
-   same data and the same interpolation on CPU and GPU. This fixes T2.
-4. **Rigs are data, not code.** A biome is a frozen `AuraBiomeRig` object that composes specs owned by PRD 02, 03 and 07.
-   This PRD owns the values and the visual acceptance of each rig, not the passes.
+   same data and the same interpolation on CPU and GPU. This fixes T2 and is the C-26 `heightAt` semantics.
+4. **Rigs are data, not code.** A biome is a frozen `AuraBiomeRigDetail` (superset of C-26 `AuraBiomeRig`) that composes
+   C-21 sky/fog specs, a C-13 post preset id and a C-09 environment resolution. PRD 10 owns the values and the visual
+   acceptance of each rig, not the passes.
 5. **Content ships with the engine.** Each world system ships at least one licence-clean default asset set, so a call
-   without asset arguments still renders a textured, credible result (§6.6). Defaults are judged visually (§16), not by
+   without asset arguments still renders a textured result (§6.6). Defaults are judged visually (§16.2), not by
    existence.
-6. **Matrix-correct placement.** Kits, placement and splines compose full 4×4 matrices themselves and emit flat
-   instance lists. They never rely on `group()` composition until PRD 01 fixes 19 C6.
-7. **Tier-scaled, not tier-gated.** Every system renders on Low (mobile) with reduced parameters (§17). Features that
-   cannot run on Low (planar reflection, triplanar on all layers, grass beyond 20 m) degrade to defined fallbacks.
+6. **Matrix-correct placement.** Kits, placement and splines compose full 4x4 matrices themselves and emit flat
+   instance lists. They never rely on `group()` composition, whatever the state of C-06 (19 C6).
+7. **Tier-scaled, not tier-gated.** Every system renders on Low (mobile) with reduced parameters read from C-27
+   `QUALITY_TIERS` (`lodBias`, `maxTextureSize`, `shadow.*`, `environmentSize`) plus the PRD 10 tables in §17.
+   Features that cannot run on Low (planar reflection, triplanar on all layers, grass beyond 20 m) degrade to defined
+   fallbacks.
+8. **Two draw paths, one look target.** Path S proves geometry, determinism, textures and queries on today's renderer
+   with stubs. Path G adds shared lighting, shadows and IBL when C-02/C-09/C-11 are real. Visual acceptance is judged
+   only on Path G at checkpoints (§16.2); Path S renders are reported, never claimed as quality.
 
 ### 6.2 Recommendations with cost profile
 
@@ -348,18 +399,18 @@ in §17.3.
 
 #### R1. Biome rigs + environment defaults (§6.3)
 
-- What: 10 packaged rigs (sky, IBL source, sun, shadows, fog, post, exposure, practical-light scale) and scene-category
+- What: 11 packaged rigs (the 11 C-26 `AuraBiomeId`s: sky, IBL source, sun, shadows, fog, post, exposure, practical-light scale) and scene-category
   default biomes, so `createAuraApp` never renders a void with zero IBL.
 - Visual benefit: **highest per unit effort.** It addresses the top-1 change in the vision judgments for patrol-wing,
   siege-golf, orbital-defense, deep-recovery and turbo-drift ("Sky plus IBL in one move", 21), and benchmarks 09 and 13.
-- GPU: no new passes beyond PRD 02/03/07. Sky-capture IBL costs 1 cube render (6×128² sky-only) + prefilter
+- GPU: no new passes; rigs drive C-21 sky/fog, C-09 environment and C-13 post. Sky-capture IBL costs 1 cube render (6×128² sky-only) + prefilter
   ≈ 1.5–3 ms **once** at load; with time-of-day, amortized ≤ 0.2 ms/frame (§6.7).
 - CPU: < 0.05 ms/frame (uniform writes).
 - Memory: HDRI rigs use a 2k RGBE equirect (8 MB GPU as RGBA16F 2048×1024) + PMREM 256² cube RGBA16F with mips
   (≈ 2.1 MB). Sky-capture rigs use only the PMREM.
 - Bundle: +4 KB (rig tables + resolver).
 - Mobile: Low uses 1k equirect background, 128² PMREM faces, sky-capture preferred over HDRI.
-- Fallback: if the HDRI fails to load, the rig's procedural sky (PRD 07 Preetham or gradient) is captured instead,
+- Fallback: if the HDRI fails to load, the rig's procedural sky (C-21 `preetham` or `gradient` spec) is captured instead,
   with a warning. It is never a flat colour and never zero IBL.
 
 #### R2. Terrain: CDLOD heightfield + layered splat material (§8.1)
@@ -380,8 +431,8 @@ in §17.3.
 - Mobile: Low uses 4 layers at 512², no triplanar (slope uses stretched planar with rock UV scale ×0.5), 32² patches,
   4 LOD levels, splat 512². ≈ 1.0 ms on an A15-class GPU at 1170×2532×0.5 render scale (target, unmeasured).
 - Fallback: safe-basic path renders `createTerrainHeightfieldGeometry` with vertex-colour splat weights (no textures) and
-  reports `world.terrain.degraded`. WebGPU: until PRD 11's shader IR exists, terrain registers a hand-written WGSL
-  program. If that is missing, the app selects WebGL2 (§18).
+  reports `world.terrain.degraded`. WebGPU: every PRD 10 chunk ships a hand-written `ShaderChunk.wgsl` twin (C-02); a
+  missing twin yields `WGSL_PROGRAM_MISSING` and the C-26 world section reports it (§18).
 
 #### R3. Instanced scatter + foliage material + wind + impostors (§8.2–8.4)
 
@@ -423,7 +474,7 @@ in §17.3.
 - What: `world.water` with kinds `ocean | lake | river | pool`. The vertex shader evaluates Gerstner waves (4 Low, 8 High)
   shared with CPU buoyancy. The fragment shader uses dual scrolling normal maps, Schlick Fresnel with F0 0.02,
   refraction from `SceneColorCopy` with a depth-checked offset, Beer-Lambert absorption from scene depth, a sun GGX
-  highlight, shoreline and crest foam, and fog. Reflection comes from sky/IBL (all tiers), SSR (when PRD 03 lands) or a
+  highlight, shoreline and crest foam, and fog. Reflection comes from sky/IBL (all tiers), SSR (C-13 `post.ssr` when real) or a
   planar `ReflectionViewPass` (High+). When the camera is below the surface, an underwater mode switches fog, colour
   absorption, caustics and a surface-from-below Snell window.
 - Visual benefit: very high where water exists (patrol-wing, deep-recovery, any coastal or lake scene). Water is one of
@@ -445,14 +496,15 @@ in §17.3.
 - What: `defineKit` and `world.kit(kit).place/fill` with snap grid, rotation steps and sockets; `world.spline` +
   `world.extrude` (road, track, rail, tunnel, curb, fence profiles); `world.placeAlong`, `world.placeGrid`,
   `world.placePoisson`; `world.room` (walls, floor, ceiling, openings, lighting grid) and `world.street` (road, sidewalks,
-  lamps, props, decal markings via PRD 07). Every placement resolves to static `instances.model` groups keyed by asset.
+  lamps, props, decal markings via the public `decals` API). Every placement resolves to `scatter` nodes with explicit
+  placements, one per unique asset, drawn from static instance buffers.
 - Visual benefit: high for city, interior and track games (courier, neon-swarm, aura-clash, gallery, mech-hangar,
   bank-shot, vault, turbo, pulse-tunnel). It replaces primitive dressing and gives density.
 - GPU: depends on content. Instancing keeps draw calls ≤ number of unique kit pieces visible (target ≤ 150 draws for
   a city block).
 - CPU: build-time only (placement and extrusion run once at scene build, ≤ 30 ms for 5k placements). No per-frame cost
   beyond culling.
-- Memory: kit GLBs (KTX2 + Meshopt per PRD 05) ≈ 6–15 MB per kit GPU.
+- Memory: kit GLBs (KTX2 + Meshopt, C-16/C-17) ≈ 6–15 MB per kit GPU.
 - Bundle: +6 KB (API, extrusion, Poisson); kit assets are lazy-loaded.
 - Mobile: same; kits are authored with LOD1 and are trimmed by cull distance.
 - Fallback: none needed for API. Missing kit assets fail loudly at build with the asset id (no primitive substitution).
@@ -460,7 +512,8 @@ in §17.3.
 #### R7. Time of day (§6.7)
 
 - What: `world.timeOfDay` drives sun direction (solar position from hour, latitude and day of year, or a simple arc),
-  PRD 07 sky uniforms, sun colour and intensity, fog colour (from the sky horizon), exposure (PRD 03), practical/emissive
+  C-21 sky spec (`app.atmosphere.setSky`), sun colour and intensity, fog colour (C-21 `color: "sky"`), exposure (C-13 preset
+  override), practical/emissive
   scale (night windows and street lamps) and stars. IBL re-capture is amortized. Keyframes can interpolate between biome
   rigs (dawn → day → golden → dusk → night).
 - Visual benefit: medium–high. It gives racing, flight and city games mood control and a dawn/dusk look without
@@ -476,7 +529,7 @@ in §17.3.
 
 - What: `SpaceSkyBake` turns `SpaceEnvironment` star, nebula and dust descriptors into a GPU-baked RGBA16F cubemap
   (stars as magnitude-scaled point splats with colour temperature, nebula as domain-warped fBm with 2 colour ramps).
-  It is used as background (PRD 07 cubemap mode) and IBL (PRD 02). `material.planet` provides albedo/night/cloud layers
+  It is used as background (C-21 `model: "cubemap"`) and IBL (C-09 `fromCube`). `material.planet` provides albedo/night/cloud layers
   with a Fresnel atmosphere rim and terminator wrap. A ring material uses alpha-textured bands with planet shadow.
 - Visual benefit: high for orbital-defense, gravity-post and pulse-tunnel (21: "No starfield, skybox, nebula, or distant
   bodies"; orbital-defense atmospheric 0/10).
@@ -500,31 +553,38 @@ in §17.3.
 ### 6.3 Biome rigs (values are the shipped defaults; tuned only via §16 visual review)
 
 Intensities are in the engine's current units, matching the values the quality-rebuild harness passes to both engines
-(`benchmarks/quality-rebuild/shared/scenes.ts`, e.g. `sun(4, …)` with environment intensity 1). If PRD 01/02 change the
-light-unit convention, this table is re-expressed in the new units. The look targets do not change.
+(`benchmarks/quality-rebuild/shared/scenes.ts`, e.g. `sun(4, …)` with environment intensity 1). If C-10 real (physical light units, PRD 02) changes the
+light-unit convention, this table is re-expressed in the new units through a C-40 fact row (`F-10-02`). The look targets do not change.
 
-| Biome id | Sky (PRD 07) | Environment source | Sun / key | Shadows | Fog (PRD 07 height fog) | Post (PRD 03) | Look target |
+| Biome id | Sky (C-21 `AuraSkySpec`) | Environment source (C-09) | Sun / key | Shadows (C-11) | Fog (C-21 `AuraHeightFogSpec`) | Post (C-13 preset + overrides) | Look target |
 |---|---|---|---|---|---|---|---|
 | `outdoor-day` | Preetham, turbidity 2.5, sun elevation 48°, clouds coverage 0.35 | sky-capture (HDRI `outdoor-day-meadow-2k` optional) intensity 1.0 | directional 3.5, 5800 K | CSM 3 cascades, 120 m, strength 1.0 | density 0.0025, height falloff 0.08, colour from horizon | ACES (or PRD 03 default), exposure 1.0, bloom threshold 1.2 strength 0.04, grade neutral | saturated sky gradient, blue-tinted shadow fill, readable terminators (fixes 23 §09 diffs 1–4) |
 | `golden-hour` | Preetham, turbidity 4, sun elevation 9°, warm Mie g 0.8 | sky-capture; HDRI candidate Poly Haven `venice_sunset` or `industrial_sunset_puresky` (verify at admission) | directional 3.0, 3300 K | CSM 3, 150 m, long shadows | density 0.004, warm horizon inscatter | exposure +0.3 EV, bloom threshold 1.0 strength 0.06, grade warm highlights / cool shadows | long warm shadows, glowing horizon, rim light on vehicles |
 | `overcast` | gradient zenith `#9aa6b2` horizon `#c9cfd4` + cloud coverage 0.9 | sky-capture intensity 1.2 | directional 1.0 (diffuse sky dominates), 6500 K | CSM 2, soft (PCSS radius ×2), strength 0.85 | density 0.006 | exposure +0.2 EV, low contrast grade | soft shadows, wet-looking materials (pairs with PRD 07 wetness) |
 | `night-city` | gradient zenith `#03050c` horizon `#1a1f3a` + city glow band, stars off | HDRI candidate Poly Haven night street (verify) intensity 0.6; else sky-capture + emissive-card capture | moon directional 0.25, 7500 K; practicals ×1.0 | CSM 2, 60 m; point/spot shadows for ≤ 4 hero lights (PRD 02) | density 0.012, colour `#1a2238` | exposure +0.8 EV, bloom threshold 0.9 strength 0.12, grade teal/orange | reflective wet asphalt (PRD 07 + SSR PRD 03), lit windows, pools of light |
-| `polar-night` | gradient + stars + aurora band (PRD 07 sky layer request) | sky-capture intensity 0.5 | moon 0.35, 8000 K | CSM 2, 80 m | density 0.008, colour `#1b2a44` | exposure +0.6 EV, bloom threshold 0.9 | aurora-lander brief (21: "has no aurora") |
+| `polar-night` | gradient + stars + aurora band (C-21 `stars`/`bands`; aurora layer is request Q-07-2) | sky-capture intensity 0.5 | moon 0.35, 8000 K | CSM 2, 80 m | density 0.008, colour `#1b2a44` | exposure +0.6 EV, bloom threshold 0.9 | aurora-lander brief (21: "has no aurora") |
 | `alpine-snow` | Preetham turbidity 2, sun elevation 22° | sky-capture intensity 1.1 | directional 3.2, 6000 K | CSM 3, 150 m | density 0.003, falloff 0.05, cool | exposure −0.2 EV (snow albedo), bloom threshold 1.3 | skyline-runner, turbo alpine: bright snow without clipping |
-| `interior-warm` | none (enclosed) | room-capture: `RoomEnvironment`-equivalent procedural room (PRD 02) tinted 2900 K, intensity 0.8 | no sun; 1 key spot 2700 K with shadow + practical lamps | spot/point shadows on key lights (PRD 02) | density 0.01 (haze), height falloff 0.4 | exposure +0.4 EV, bloom threshold 1.0 | bank-shot pool hall: pool of light over table, dark falloff |
+| `interior-warm` | none (enclosed) | room-capture: `RoomEnvironment`-equivalent procedural room (C-09 neutral-room / `RoomEnvironmentScene`) tinted 2900 K, intensity 0.8 | no sun; 1 key spot 2700 K with shadow + practical lamps | spot/point shadows on key lights (C-11) | density 0.01 (haze), height falloff 0.4 | exposure +0.4 EV, bloom threshold 1.0 | bank-shot pool hall: pool of light over table, dark falloff |
 | `interior-neutral` | none | room-capture 4500 K intensity 1.0 | ceiling grid area/point lights | spot/point shadows on 2 hero lights | density 0 | exposure 0 EV | gallery, arcade (blockfall, vault) |
-| `interior-industrial` | none | room-capture with large window softbox, 5600 K, intensity 1.1 | directional "window" key 2.0 through openings | CSM 1 cascade or spot | density 0.015 (dust), volumetric when PRD 07 GPU volumetric lands | exposure +0.2 EV, cool grade | mech-hangar: shafts of light, metal reflections |
+| `interior-industrial` | none | room-capture with large window softbox, 5600 K, intensity 1.1 | directional "window" key 2.0 through openings | CSM 1 cascade or spot | density 0.015 (dust), volumetric via C-21 `AuraVolumetricFogSpec` when real | exposure +0.2 EV, cool grade | mech-hangar: shafts of light, metal reflections |
 | `space` | none; background = `SpaceSkyBake` cube | same cube, intensity 0.35 (stars contribute little; nebula tints) | star directional 4.0, 5778 K, no fill | CSM 2 on hero bodies only | none | exposure +0.5 EV, bloom threshold 1.0 strength 0.08 | orbital-defense, gravity-post: hard terminator, rim atmosphere |
 | `underwater` | none; background = depth-graded gradient (surface `#2a8fb0` → deep `#021018`) | sky-capture of the gradient, intensity 0.6 | directional "surface sun" 1.5 with caustics (§8.7) | CSM 1, 40 m | exponential absorption fog density 0.035, colour by depth | exposure +0.3 EV, bloom threshold 1.1 | deep-recovery: turquoise→navy falloff, god-ray look via PRD 07 volumetric |
 
 Rules every rig enforces:
 
 - `ambientPolicy: "ibl-only"`. A biome never relies on a flat `lights.ambient`, and it suppresses the
-  ambient-zeros-IBL branch (L2) for its scene. PRD 02 owns the general fix.
+  ambient-zeros-IBL branch (L2) for its scene: its C-09 source returns `ambient: null` and IBL intensity > 0. The
+  general fix is the C-09 additive-ambient invariant (provider PRD 02).
 - Shadow strength is 1.0 (contrast comes from IBL fill, not from a 0.32 multiplier, L7).
 - Fog colour is derived from the sky horizon at the view azimuth unless overridden. This avoids the fog/background seam
   of 08 §3.1.
 - Every rig has a Low-tier variant (1 cascade fewer, half shadow distance, no volumetric, 128² PMREM).
+- C-26 `AuraBiomeRig.post` is a frozen C-13 `AuraPostPresetId`. The EV/bloom/grade values in the table are
+  `postOverrides` on top of that preset (`AuraBiomeRigDetail`, §7.1.2). Mapping: `outdoor-day`, `golden-hour`,
+  `overcast`, `alpine-snow` → `daylight-outdoor`; `night-city`, `polar-night` → `neon-night`; `interior-neutral` →
+  `product-studio`; `interior-warm`, `interior-industrial` → `cinematic-film`; `space` → `space`; `underwater` →
+  `underwater`. C-26 `environment` kinds map as: sky-capture → `"sky-capture"`, HDRI → `"hdri"`, room-capture →
+  `"room"`, `SpaceSkyBake` → `"space-bake"`.
 
 Default biome when a scene declares none (applied by `BiomeResolver`; overridden by any `environments.*` or `world.biome`):
 
@@ -535,12 +595,12 @@ Default biome when a scene declares none (applied by `BiomeResolver`; overridden
 | scene category `space` (existing `AuraSceneCategory`) | `space` |
 | category `city-night` / `neon` | `night-city` |
 | category `city-day` | `outdoor-day` |
-| category `product` / `material` | no biome (PRD 02 studio default) |
+| category `product` / `material` | no biome (the C-09 resolution of lower-priority sources applies) |
 | anything else | `interior-neutral` room capture (never zero IBL, never a void clear colour when a sky can be drawn) |
 
 ### 6.4 Terrain design
 
-- Height source: an `AuraHeightSource` is one of: a 16-bit PNG / R32F raw / EXR asset (admitted via PRD 05), a
+- Height source: an `AuraHeightSource` is one of: a 16-bit PNG / R32F raw / EXR asset (admitted through C-17), a
   procedural function (`fbm`, `ridged`, `terraced`, plus `flattenAreas` for runways, tracks and pads), or an existing
   `TerrainHeightfieldFixture`. The CPU keeps a `Float32Array`. The GPU gets an R32F texture of the same data.
 - Geometry: CDLOD (Strugar 2009). One shared patch mesh of `(N+1)²` vertices (N = 32 Low, 64 High) is drawn instanced,
@@ -549,7 +609,7 @@ Default biome when a scene declares none (applied by `BiomeResolver`; overridden
   grid over the morph range. This removes popping and T-junction cracks without skirts.
 - Normals: computed in the fragment shader from the height texture (central differences at the texel scale of the
   current LOD) for large-scale shape, plus layer detail normals. No baked normal map is required. An optional baked
-  normal map (from PRD 05 bake) is used on Ultra for sub-texel detail.
+  normal map (baked by `tools/world-content-bake`) is used on Ultra for sub-texel detail.
 - Layers: up to 8 `TerrainLayer`s, each with albedo (RGB) + height (A), normal (RG), ORM, UV scale, triplanar flag,
   height-blend contrast, tint and roughness bias. They are stored in three `sampler2DArray`s (WebGL2 core) built at load
   from per-layer KTX2. All layers in one terrain share a resolution.
@@ -577,8 +637,8 @@ Default biome when a scene declares none (applied by `BiomeResolver`; overridden
   (WebGL2 has no base instance: bind the attribute pointer at `rangeStart * 32` bytes).
 - Material: `FoliageMaterial` is PBR with `alphaCutoff` (default 0.5), two-sided with back-face normal flip,
   translucency (wrap diffuse plus `transmissionColor * pow(saturate(dot(-L, V)), 4) * thickness`), per-instance colour
-  variation (hue ±4%, value ±10%), and alpha-to-coverage when MSAA is on (PRD 04 owns A2C generally; this PRD consumes
-  it). Bark and opaque rocks use the standard PBR material with wind weight 0.
+  variation (hue ±4%, value ±10%), and alpha-to-coverage when MSAA is on (C-15 `alphaToCoverage`, semantics PRD 04 per R12; C-04 state; ignored by the stub,
+  so Path S uses alpha test). Bark and opaque rocks use the standard PBR material with wind weight 0.
 - Impostors: octahedral (hemi-octahedral for ground-standing assets) 8×8 views at 256², with albedo+alpha and
   normal+depth atlases, baked offline by `tools/impostor-bake` (§9.6). Runtime blends the 3 nearest views by
   barycentric weights in octahedral space, with depth-based parallax offset. Crossfade between LOD1 and the impostor
@@ -587,15 +647,15 @@ Default biome when a scene declares none (applied by `BiomeResolver`; overridden
 - Wind: `WindField` UBO `{ direction.xz, strength, gustStrength, gustScale, time }` plus a 64×64 RG8 tiling gust noise
   texture shipped as an asset. Vertex weights come from the asset's vertex colour (R: trunk/branch bend weight, G: leaf
   flutter weight, B: phase). If absent, `tools/world-content-bake` derives R from normalized height and G from
-  alpha-tested material membership at admission. The same vertex function runs in the depth pass (PRD 02 dependency, §12).
+  alpha-tested material membership at admission. The same vertex function runs in the depth pass through the C-11 depth feature `prd10.wind` (§12).
 
-### 6.6 Shipped world content (engine assets; CC0 or MIT only, admitted through PRD 05 with provenance)
+### 6.6 Shipped world content (engine assets; CC0 or MIT only, admitted through C-17 with provenance)
 
 | Set | Contents | Candidate sources (verify licence and availability at admission) | GPU memory budget |
 |---|---|---|---|
 | Terrain layers | grass-meadow, grass-dry, dirt-path, rock-cliff, rock-scree, sand-beach, snow, forest-floor, asphalt, gravel (10 layers; albedo+height, normal, ORM at 1k + 512) | ambientCG / Poly Haven textures (CC0) | ≤ 1.4 MB/map/layer at 1k (KTX2) |
 | Foliage | pine (3 variants), broadleaf (3), bush (3), fern, grass-card atlas, flower-card atlas, each with LOD0/LOD1 + impostor atlas | Quaternius nature packs / Kenney Nature Kit (CC0); Poly Haven plants (CC0) | ≤ 8 MB per species incl. impostor |
-| Rocks | 6 rocks + 2 cliff chunks with LOD1 | Poly Haven rocks (CC0); existing `propRockA/B` after PRD 05 optimization | ≤ 4 MB total |
+| Rocks | 6 rocks + 2 cliff chunks with LOD1 | Poly Haven rocks (CC0); existing `propRockA/B` after `assets optimize` (C-17) | ≤ 4 MB total |
 | Water | 2 water normal maps 512² (tileable), foam 512², caustics 256² 16-frame atlas | procedurally baked by `tools/world-content-bake` (no third-party art) | 1.5 MB |
 | Noise | wind gust 64², macro variation 512², blue noise 64² | baked in-repo | 0.3 MB |
 | HDRIs | outdoor-day, golden-hour, overcast, night-city, interior-room (procedural, no file), 2k + 1k each | Poly Haven (CC0); replaces the 3 × 1k fixtures for biome use | 8 MB (2k RGBA16F) each when active; only one active |
@@ -606,7 +666,7 @@ Default biome when a scene declares none (applied by `BiomeResolver`; overridden
 
 Content rules: no 4-triangle unlit image cards for world objects (19 C19). Every model must have base colour and
 normal maps (or an explicit stylized-material decision recorded in the kit manifest and judged visually), plus LOD1.
-Textures must be KTX2 (PRD 05 encode) with PNG fallback. The `suitabilityReason` texture waiver regex
+Textures must be KTX2 (C-16 target table, C-17 optimize) with PNG fallback. The `suitabilityReason` texture waiver regex
 (`aura3d-cli/src/index.ts:3376-3382`, 19 C19) does not apply to `packages/engine/assets/world`.
 
 ### 6.7 Time of day
@@ -614,13 +674,22 @@ Textures must be KTX2 (PRD 05 encode) with PNG fallback. The `suitabilityReason`
 - Sun direction: `solarPosition(hour, latitudeDeg, dayOfYear, northOffsetDeg)` (NOAA simplified algorithm, ±0.5°), or
   `arc` mode (`elevation = sin(π·(hour−6)/12) · maxElevation`, azimuth linear) for stylized games.
 - Keyframes: a sorted list `{ hour, biome }`. Between keyframes the rig values are interpolated: colours in linear RGB,
-  intensities in log space, fog density linearly, exposure in EV. Sky parameters come from PRD 07's sky spec.
-- IBL: the rig's sky is re-captured into a back-buffer PMREM. A capture triggers when the sun has moved ≥ 1.5° or the
-  keyframe weight has changed ≥ 0.05. One cube face renders per frame, and prefilter mips are spread over subsequent
-  frames (≤ 0.2 ms/frame budget). The swap is atomic on completion, with a 0.5 s crossfade via a two-texture lerp
-  uniform (`u_envBlend`) owned by PRD 02.
+  intensities in log space, fog density linearly, exposure in EV. Sky parameters are C-21 `AuraSkySpec` values.
+- IBL: the rig's sky is re-captured into a back-buffer probe. `TimeOfDayRuntime` builds an `EnvironmentCaptureRequest`
+  whose `renderFace` calls C-21 `skyBackgroundSlot.get(flags).renderToCubeFace` and hands it to C-09
+  `environmentProbeFactorySlot.get(flags).fromScene`. A capture triggers when the sun has moved ≥ 1.5° (or on C-21
+  `onSkyChanged`) or the keyframe weight has changed ≥ 0.05. One cube face renders per frame and prefilter mips are spread
+  over subsequent frames (≤ 0.2 ms/frame budget). The `prd10.timeOfDay` C-09 source returns the new probe atomically on
+  completion. A 0.5 s two-probe crossfade needs a C-09 field that does not exist; it is filed as CCR-10-1
+  (`AuraEnvironmentSourceResolution.blendFrom?: { probe, weight }`). Until it lands, the swap is a hard cut and
+  diagnostics report `world.biome.iblCrossfade: "pending-CCR-10-1"`. With the stubs (sky clears to the horizon colour,
+  legacy PMREM wrapper) the re-captured probe is a horizon-colour cube: it is reported, never claimed as sky IBL.
 - Practicals: `practicalScale(hour)` multiplies emissive intensity of materials tagged `practical: true` (windows, lamps,
-  signs) and the intensity of lights tagged `practical`, via one uniform. Lights are not rebuilt.
+  signs) and the intensity of lights tagged `practical`, via one uniform. Lights are not rebuilt. Mechanism: C-02
+  `ShaderFeature` `prd10.practical` (hook `fragment:emissive`, uniform `u_a3dPrd10PracticalScale`), active only on
+  Path G. On Path S it applies to PRD 10 world programs and to the practical lights PRD 10 itself emits (kit, room and
+  street lights, re-emitted with scaled intensity by the C-36 handler `update()`); emissive on non-world materials stays
+  unscaled and is reported as `practicalScale: "world-only"`.
 - Runtime: `app.world.timeOfDay.set(hour)`, `.animate({ hoursPerSecond })`, `.pause()`, `.get()`. These write uniforms
   only and never remount the scene.
 
@@ -628,10 +697,15 @@ Textures must be KTX2 (PRD 05 encode) with PNG fallback. The `suitabilityReason`
 
 ## 7. APIs to add, change and remove
 
-All new agent-API symbols live in `packages/engine/src/agent-api/world/` and are exported as `world` from
-`@aura3d/engine`. The renderer pieces are also exported from the subpath `@aura3d/engine/world`, so routes that do not
-use world systems do not pay the bundle cost (§17.4). Final placement in the public namespace is subject to PRD 15
-consolidation. Names here are binding unless PRD 15 renames them, in which case it maps them 1:1.
+All new agent-API symbols live in `packages/engine/src/agent-api/world/` (PRD 10) and are exported as `world` from
+`@aura3d/engine` through the lane barrel `packages/engine/src/lanes/prd10.ts`. The barrel registers handlers and the
+app extension with **lazy factories** (`() => import("../agent-api/world/runtime.js")`), so routes that never create a
+world node load no world runtime code (§17.4). Renderer pieces are exported from the reserved subpath
+`@aura3d/rendering/world` (entry `packages/rendering/src/world/index.ts`). An `@aura3d/engine/world` subpath is not
+reserved in PR 0a; it is request Q-15-3 and nothing depends on it. If PRD 15's consolidation renames a symbol it maps
+1:1 (CONTRACTS §6.4 rules); names here are otherwise binding. Types that C-26 freezes (`AuraBiomeId`, `AuraBiomeRig`,
+`AuraWindSpec`, `AuraWorldQueries`, `GroundRaycaster`, `AuraHeightQuery`, `WIND_CHUNK`) are imported from
+`packages/engine/src/contracts/world.ts` and never redeclared.
 
 ### 7.1 `@aura3d/engine` agent API
 
@@ -639,13 +713,11 @@ consolidation. Names here are binding unless PRD 15 renames them, in which case 
 
 ```ts
 // packages/engine/src/agent-api/world/types.ts
-export type AuraWorldQualityTier = "low" | "medium" | "high" | "ultra"; // resolved from PRD 11 tiers
-export type AuraBiomeId =
-  | "outdoor-day" | "golden-hour" | "overcast" | "night-city" | "polar-night" | "alpine-snow"
-  | "interior-warm" | "interior-neutral" | "interior-industrial" | "space" | "underwater";
+export type { AuraBiomeId, AuraBiomeRig, AuraWindSpec, AuraWorldQueries, GroundRaycaster, AuraHeightQuery } from "../../contracts/world.js"; // C-26
+export type AuraWorldQualityTier = import("../../contracts/world.js").AuraWorldQualityTier; // = C-27 AuraQualityTier
 
 export interface AuraTierValue<T> { readonly low?: T; readonly medium?: T; readonly high?: T; readonly ultra?: T }
-export type AuraTiered<T> = T | AuraTierValue<T>; // scalar applies to all tiers
+export type AuraTiered<T> = T | AuraTierValue<T>; // scalar applies to all tiers; resolved against app.quality.tier (C-27)
 
 export interface AuraWorldNodeBase {
   readonly name?: string;
@@ -658,56 +730,68 @@ export interface AuraWorldNodeBase {
 
 ```ts
 // packages/engine/src/agent-api/world/biomes.ts
+import type { AuraSkySpec, AuraHeightFogSpec } from "../../contracts/atmosphere.js";   // C-21
+import type { AuraPostPresetId } from "../../contracts/post.js";                         // C-13
 export interface AuraBiomeSunSpec {
   readonly elevationDeg: number; readonly azimuthDeg: number;
   readonly intensity: number; readonly colorTemperatureK?: number; readonly color?: AuraColor;
   readonly castShadow?: boolean;
 }
-export interface AuraBiomeRig {
-  readonly id: AuraBiomeId;
-  readonly sky: AuraSkySpec | null;                 // type owned by PRD 07 (preetham | gradient | hdri | cubemap)
-  readonly environment:
-    | { readonly source: "sky-capture"; readonly intensity: number; readonly faceSize: AuraTiered<64 | 128 | 256> }
-    | { readonly source: "hdri"; readonly hdri: AuraAssetRef<"texture">; readonly intensity: number; readonly rotationDeg: number }
-    | { readonly source: "room"; readonly colorTemperatureK: number; readonly intensity: number }
-    | { readonly source: "space-bake"; readonly intensity: number };
-  readonly sun: AuraBiomeSunSpec | null;
+export type AuraBiomeEnvironmentSpec =
+  | { readonly source: "sky-capture"; readonly intensity: number; readonly faceSize: AuraTiered<64 | 128 | 256> }
+  | { readonly source: "hdri"; readonly hdri: AuraAssetRef<"texture">; readonly intensity: number; readonly rotationDeg: number }
+  | { readonly source: "room"; readonly colorTemperatureK: number; readonly intensity: number }
+  | { readonly source: "space-bake"; readonly intensity: number };
+export interface AuraBiomePostOverrides { readonly exposureEv?: number; readonly bloomThreshold?: number; readonly bloomStrength?: number; readonly grade?: "neutral" | "warm" | "cool" | "teal-orange" | "low-contrast" }
+/** Superset of the frozen C-26 AuraBiomeRig: every C-26 field keeps its contract type. */
+export interface AuraBiomeRigDetail extends AuraBiomeRig {
+  readonly sky: AuraSkySpec | null;                 // C-21
+  readonly fog: AuraHeightFogSpec | null;           // C-21
+  readonly post: AuraPostPresetId;                  // C-13 (frozen id); EV/bloom/grade in postOverrides
+  readonly environment: AuraBiomeEnvironmentSpec["source"];
+  readonly environmentSpec: AuraBiomeEnvironmentSpec;
+  readonly sunDetail: AuraBiomeSunSpec | null;
   readonly shadows: { readonly cascades: AuraTiered<1 | 2 | 3 | 4>; readonly maxDistance: AuraTiered<number>; readonly strength: number; readonly softness: number };
-  readonly fog: AuraHeightFogSpec | null;          // type owned by PRD 07
-  readonly post: AuraPostPresetSpec;               // type owned by PRD 03 (tone map, exposureEv, bloom, grade)
-  readonly practicalScale: number;                 // multiplier for emissive/lights tagged practical
+  readonly postOverrides: AuraBiomePostOverrides;
+  readonly practicalScale: number;                  // multiplier for emissive/lights tagged practical
   readonly ambientPolicy: "ibl-only";
 }
 export interface AuraBiomeOverrides {
   readonly sun?: Partial<AuraBiomeSunSpec>;
-  readonly environment?: Partial<AuraBiomeRig["environment"]>;
+  readonly environment?: Partial<AuraBiomeEnvironmentSpec>;
   readonly fog?: Partial<AuraHeightFogSpec> | null;
-  readonly post?: Partial<AuraPostPresetSpec>;
+  readonly post?: AuraBiomePostOverrides & { readonly preset?: AuraPostPresetId };
   readonly practicalScale?: number;
 }
-export interface AuraBiomeNode extends AuraWorldNodeBase { readonly kind: "biome"; readonly biome: AuraBiomeId; readonly overrides?: AuraBiomeOverrides }
+export interface AuraBiomeNode extends AuraWorldNodeBase { readonly kind: "biome"; readonly biome: AuraBiomeId; readonly scope?: "all" | "environment"; readonly overrides?: AuraBiomeOverrides }
 
 export declare const world: {
   biome(id: AuraBiomeId, overrides?: AuraBiomeOverrides): AuraNodeBuilder<AuraBiomeNode>;
   biomes: {
-    list(): readonly AuraBiomeId[];
-    describe(id: AuraBiomeId, tier?: AuraWorldQualityTier): AuraBiomeRig; // frozen, inspectable by agents
+    list(): readonly AuraBiomeId[];                                            // = C-26 listBiomes()
+    describe(id: AuraBiomeId, tier?: AuraWorldQualityTier): AuraBiomeRigDetail; // = C-26 describeBiome (pure, deterministic, frozen)
   };
   // ... continued below
 };
 
-// environments.* additions (packages/engine/src/agent-api/index.ts:4123-4190): thin aliases that emit a biome node
-// with environment-only scope (sky/sun/fog untouched).
-environments.outdoor(options?: AuraEnvironmentOptions & { readonly biome?: "outdoor-day" | "golden-hour" | "overcast" | "alpine-snow" }): AuraNodeBuilder<AuraEnvironmentNode>;
-environments.room(options?: AuraEnvironmentOptions & { readonly colorTemperatureK?: number }): AuraNodeBuilder<AuraEnvironmentNode>;
-environments.space(options?: AuraEnvironmentOptions): AuraNodeBuilder<AuraEnvironmentNode>;
-environments.underwater(options?: AuraEnvironmentOptions): AuraNodeBuilder<AuraEnvironmentNode>;
+// environments.* additions, in PRD 10-owned packages/engine/src/agent-api/nodes/environments.world.ts (spread into
+// `environments` by PR 0b-1; `index.ts:4123-4190` itself is not edited). They emit a biome node with scope
+// "environment" (sky/sun/fog untouched). Flag off: they emit environments.studio() plus an option-ignored degradation.
+environments.outdoor(options?: AuraEnvironmentOptions & { readonly biome?: "outdoor-day" | "golden-hour" | "overcast" | "alpine-snow" }): AuraNodeBuilder<AuraBiomeNode>;
+environments.room(options?: AuraEnvironmentOptions & { readonly colorTemperatureK?: number }): AuraNodeBuilder<AuraBiomeNode>;
+environments.space(options?: AuraEnvironmentOptions): AuraNodeBuilder<AuraBiomeNode>;
+environments.underwater(options?: AuraEnvironmentOptions): AuraNodeBuilder<AuraBiomeNode>;
 ```
 
-Resolution order in `BiomeResolver` (replaces the start of `createProductionRuntimeEnvironment`, `index.ts:12628`):
-explicit `environments.*` (environment slot only) > `world.biome` > `world.timeOfDay` keyframe rig > default biome
-(§6.3 table) > PRD 02 neutral room. `lights.ambient` nodes are additive and never zero IBL in any branch (PRD 02 owns
-the general change; this resolver enforces it for world scenes).
+Resolution is C-09's priority order, not an edit to `createProductionRuntimeEnvironment` (`index.ts:12628`, carved to
+PRD 02's `compiler/environment.ts`). PRD 10 registers two `AuraEnvironmentSource`s from `production-runtime/world/BiomeResolver.ts`:
+`prd10.biome` (priority 300: `world.biome`, `environments.outdoor/room/space/underwater`, or the §6.3 default biome when
+the scene has a world signal) and `prd10.timeOfDay` (priority 250: keyframe rig). Explicit PRD 02 environments (400) win.
+Every PRD 10 resolution returns `ambient: null` plus IBL intensity > 0, so a biome scene never hits the ambient-zeroes-IBL
+branch even while the C-09 stub's legacy path still has it for other scenes. With `A3D_QR_LIGHTING` off the C-09 stub
+consults registered sources only when their flag is on, so `A3D_QR_WORLD` alone activates them (CONTRACTS C-09 stub).
+Sky and fog are applied through C-21 `app.atmosphere.setSky/setFog` from the `biome` node handler, and the post preset
+through the C-13 `AuraPostPresetId` plus overrides contributed as C-36 RenderSource contributions.
 
 #### 7.1.3 Time of day and wind
 
@@ -719,21 +803,27 @@ export interface AuraTimeOfDayOptions extends AuraWorldNodeBase {
   readonly maxElevationDeg?: number;                             // arc mode
   readonly keyframes?: readonly { readonly hour: number; readonly biome: AuraBiomeId; readonly overrides?: AuraBiomeOverrides }[];
   readonly ibl?: { readonly recapture?: boolean; readonly thresholdDeg?: number; readonly crossfadeSeconds?: number };
-  readonly stars?: boolean;                                      // forwarded to PRD 07 sky
+  readonly stars?: boolean;                                      // forwarded to C-21 AuraSkySpec.stars
 }
 export interface AuraTimeOfDayNode extends AuraWorldNodeBase { readonly kind: "time-of-day"; readonly options: AuraTimeOfDayOptions }
 
-export interface AuraWindSpec extends AuraWorldNodeBase {
-  readonly directionDeg?: number;     // default 35
-  readonly strength?: number;         // 0..2, default 0.5
-  readonly gustStrength?: number;     // 0..1, default 0.35
-  readonly gustScale?: number;        // world metres per gust cell, default 40
+/** Authoring options; normalized to the frozen C-26 AuraWindSpec (direction vec3, strength, gust, gustFrequency, turbulence). */
+export interface AuraWindOptions extends AuraWorldNodeBase {
+  readonly directionDeg?: number;     // default 35   -> direction = [sin, 0, cos]
+  readonly strength?: number;         // 0..2, default 0.5 -> strength
+  readonly gustStrength?: number;     // 0..1, default 0.35 -> gust
+  readonly gustScale?: number;        // metres per gust cell, default 40 -> gustFrequency = 1 / gustScale
+  readonly turbulence?: number;       // 0..1, default 0.2
 }
-export interface AuraWindNode extends AuraWorldNodeBase { readonly kind: "wind"; readonly wind: AuraWindSpec }
+export function normalizeWind(options?: AuraWindOptions): Required<AuraWindSpec>; // pure; used by C-26 wind()
+export interface AuraWindNode extends AuraWorldNodeBase { readonly kind: "wind"; readonly wind: Required<AuraWindSpec> }
 
 world.timeOfDay(options: AuraTimeOfDayOptions): AuraNodeBuilder<AuraTimeOfDayNode>;
-world.wind(spec?: AuraWindSpec): AuraNodeBuilder<AuraWindNode>;
+world.wind(options?: AuraWindOptions): AuraNodeBuilder<AuraWindNode>;
 ```
+
+`stars` is forwarded as C-21 `AuraSkySpec.stars`. The `A3DWind` UBO and chunk name are frozen by C-26 (`WIND_CHUNK =
+"a3d_prd10_wind"`, §8.2).
 
 #### 7.1.4 Terrain
 
@@ -828,7 +918,12 @@ export interface AuraScatterOptions extends AuraWorldNodeBase {
   readonly budget?: AuraTiered<number>;                     // max instances; enforced through planScatterInstances/enforceFrameBudget
   readonly collision?: "none" | "trunk-capsules";           // static capsules for tree trunks via physics
 }
-export interface AuraScatterNode extends AuraWorldNodeBase { readonly kind: "scatter"; readonly options: AuraScatterOptions }
+export interface AuraScatterNode extends AuraWorldNodeBase {
+  readonly kind: "scatter";
+  readonly options?: AuraScatterOptions;          // rule-driven scatter
+  /** Explicit placements emitted by kits, place*, room, street and instances.model({ static/chunkSize/wind/impostor }). */
+  readonly placements?: { readonly asset: AuraAssetRef<"model">; readonly matrices: Float32Array /* 12 floats (3x4) per instance */; readonly colors?: Float32Array; readonly wind?: boolean; readonly impostor?: AuraAssetRef<"texture"> | "none"; readonly shadowLod?: "none" | "lod1" | "impostor"; readonly chunkSize?: number; readonly tags?: readonly string[] };
+}
 export interface AuraScatterResult {
   readonly node: AuraScatterNode;
   readonly instanceCount: number;              // after rules and budget
@@ -925,7 +1020,7 @@ world.spline(points: readonly AuraVec3[], options?: { readonly closed?: boolean;
 export type AuraExtrudeProfile = readonly (readonly [number, number])[] | "road-2-lane" | "road-4-lane" | "race-track" | "curb" | "rail" | "tunnel-round" | "tunnel-box" | "fence";
 world.extrude(spline: AuraSplineHandle, options: {
   readonly profile: AuraExtrudeProfile;
-  readonly material: AuraMaterialSpec;            // must support repeat UVs (PRD 04 sampler fix)
+  readonly material: AuraMaterialSpec;            // repeat UVs via C-12 AuraTextureSampling (`sampling.wrap: "repeat"`); stub path keeps today's sampler
   readonly segmentsPerMeter?: number;             // default 0.5, adaptive on curvature
   readonly uv?: { readonly uScale?: number; readonly vMetersPerTile?: number };
   readonly conformToTerrain?: AuraTerrainHandle;  // drapes and flattens the terrain under the extrusion
@@ -943,8 +1038,9 @@ world.placePoisson(items: readonly AuraScatterAsset[], options: { readonly shape
 ```
 
 All placement functions compose full matrices internally (`translate · rotateY · scale`, with the parent kit origin
-and rotation applied as a matrix). They emit one `instances.model` node per unique asset, with `static: true`. They
-never emit `group()` hierarchies (K4).
+and rotation applied as a matrix). They emit one `scatter` node with explicit `placements` per unique asset (§7.1.5),
+drawn by PRD 10's `ScatterRuntime` from static buffers. They never emit `group()` hierarchies (K4) and never pass through
+`createProductionInstanceTransforms`, so the V4 size bug and its R18 fix do not affect them.
 
 #### 7.1.8 Rooms and streets
 
@@ -968,8 +1064,8 @@ world.street(options: {
   readonly kit?: AuraKit;                                       // default world.kits.city
   readonly buildings?: { readonly side: "left" | "right" | "both"; readonly setback: number; readonly heightRange: readonly [number, number]; readonly seed: number };
   readonly props?: readonly { readonly piece: string; readonly spacing: number; readonly side: "left" | "right" | "both"; readonly offset: number }[];
-  readonly markings?: boolean;                                  // decals via PRD 07
-  readonly wet?: number;                                        // 0..1 wetness via PRD 07 wetness term
+  readonly markings?: boolean;                                  // decals via the public `decals` API (PRD 07-owned `agent-api/Decals.ts`); no contract needed
+  readonly wet?: number;                                        // 0..1 wetness: C-21 WETNESS_CHUNK on Path G; Path S ignores it with an option-ignored degradation
   readonly name?: string;
 }): readonly AuraSceneNode[];
 ```
@@ -977,84 +1073,119 @@ world.street(options: {
 #### 7.1.9 Materials
 
 ```ts
-// AuraMaterialSpec additions (packages/engine/src/agent-api/index.ts:1027)
-readonly alphaMode?: "opaque" | "mask" | "blend";   // default "opaque"; "mask" uses alphaCutoff
-readonly alphaCutoff?: number;                      // default 0.5 when alphaMode = "mask"
-readonly practical?: boolean;                       // emissive scaled by world practicalScale (§6.7)
+// AuraMaterialSpec fields pre-declared in PR 0a (C-15; `index.ts:1027`, today 0 occurrences of alphaCutoff/alphaMode):
+//   alphaMode?, alphaCutoff?, alphaToCoverage?, doubleSided?  -> semantics owned by PRD 04 (CONTRACTS R12); PRD 10 consumes
+//   practical?: boolean                                        -> semantics owned by PRD 10 (§6.7)
 
-material.foliage(options: {
+// packages/engine/src/agent-api/world/materials.ts (PRD 10). Exposed as world.materials.*; `material.foliage/terrainLayer/planet`
+// aliases in PRD 04's nodes/material.ts are request Q-04-1 and nothing depends on them.
+world.materials.foliage(options: {
   readonly map: AuraAssetRef<"texture">; readonly normalMap?: AuraAssetRef<"texture">;
   readonly alphaCutoff?: number; readonly translucency?: number; readonly translucencyColor?: AuraColor;
   readonly roughness?: number; readonly wind?: boolean;
-}): AuraMaterialSpec;
-material.terrainLayer(preset: AuraTerrainLayerSpec["preset"]): AuraTerrainLayerSpec;
-material.planet(options: {
+}): AuraMaterialSpec;   // sets alphaMode "mask", doubleSided true, and the C-03 lobe prd10.foliageTranslucency
+world.materials.terrainLayer(preset: AuraTerrainLayerSpec["preset"]): AuraTerrainLayerSpec;
+world.materials.planet(options: {
   readonly albedo?: AuraAssetRef<"texture"> | "procedural-earthlike" | "procedural-rocky" | "procedural-gas";
   readonly night?: AuraAssetRef<"texture">; readonly clouds?: AuraAssetRef<"texture"> | number;
   readonly atmosphereColor?: AuraColor; readonly atmosphereThickness?: number; readonly seed?: number;
-}): AuraMaterialSpec;
+}): AuraMaterialSpec;   // C-03 lobe prd10.planet (terminator wrap, night map, atmosphere rim)
 ```
 
-#### 7.1.10 Runtime handle
+#### 7.1.10 Runtime handle (provides C-26)
 
 ```ts
-export interface AuraWorldRuntime {
+// packages/engine/src/agent-api/world/runtime.ts. Registered with C-38 registerAppExtension({ member: "world",
+// owner: "prd10", flag: "A3D_QR_WORLD" }); C-26 worldQueriesSlot.provide(createWorldQueries) in lanes/prd10.ts.
+export interface AuraWorldRuntime extends AuraWorldQueries {   // C-26: ground(), height(), wind(), biome(), describeBiome(), listBiomes()
   readonly timeOfDay: { set(hour: number): void; get(): number; animate(options: { readonly hoursPerSecond: number }): void; pause(): void };
-  readonly wind: { set(spec: Partial<AuraWindSpec>): void };
+  setWind(options: AuraWindOptions): void;                   // `wind()` is the C-26 getter, so the setter is a method
   terrain(nameOrId: string): AuraTerrainHandle;
   water(nameOrId: string): AuraWaterHandle;
-  diagnostics(): AuraWorldDiagnostics;
+  diagnostics(): AuraWorldDiagnostics;                       // same object as diagnostics().world (C-31 section "world")
 }
-export interface AuraWorldDiagnostics {             // every number is measured from submitted draws in the last frame
+export interface AuraWorldDiagnostics {             // every number is measured from submitted draws in the last frame; unmeasurable = null
+  readonly drawPath: "S" | "G" | "safe-basic";
   readonly terrain: readonly { readonly id: string; readonly nodesDrawn: number; readonly trianglesDrawn: number; readonly layers: number; readonly degraded: boolean }[];
-  readonly scatter: readonly { readonly name: string; readonly lod0: number; readonly lod1: number; readonly impostor: number; readonly culled: number; readonly shadowCasters: number; readonly draws: number }[];
+  readonly scatter: readonly { readonly name: string; readonly lod0: number; readonly lod1: number; readonly impostor: number; readonly culled: number; readonly shadowCasters: number | null; readonly draws: number; readonly checksum: string }[];
   readonly grass: readonly { readonly bladesDrawn: number; readonly chunks: number; readonly mode: "blades" | "cards" | "off" }[];
-  readonly water: readonly { readonly id: string; readonly reflection: "ibl" | "ssr" | "planar"; readonly planarDraws: number; readonly refraction: boolean; readonly underwater: boolean }[];
-  readonly biome: { readonly id: AuraBiomeId | null; readonly environmentSource: string; readonly iblPixelBacked: boolean; readonly backgroundDrawn: boolean };
-  readonly gpuMs?: Readonly<Record<string, number>>; // when EXT_disjoint_timer_query_webgl2 is available
+  readonly water: readonly { readonly id: string; readonly reflection: "ibl" | "ssr" | "planar"; readonly planarDraws: number; readonly refraction: boolean; readonly sceneCopy: "shared" | "prd10-fallback" | "none"; readonly underwater: boolean }[];
+  readonly biome: { readonly id: AuraBiomeId | null; readonly environmentSource: string; readonly iblPixelBacked: boolean | null; readonly backgroundDrawn: boolean | null; readonly iblCrossfade: "on" | "pending-CCR-10-1" };
+  readonly pending: readonly string[];              // e.g. "C-11:shadows", "C-02:generator", "C-21:sky-real" while stubs are active
+  readonly memoryMB: number;
+  readonly gpuMs: Readonly<Record<string, number>> | null; // only when EXT_disjoint_timer_query_webgl2 is available (C-28)
 }
-// AuraApp addition (packages/engine/src/agent-api/index.ts:11126+)
-readonly world: AuraWorldRuntime;
 ```
+
+C-26 semantics implemented by PRD 10:
+- `ground().raycastDown(x, z, fromY = 1e4, maxDistance = 2e4)` tests terrain heightfields first (ray-march on the CPU
+  Float32Array with bilinear refinement), then physics colliders through the existing `packages/physics/src/Raycast.ts`
+  API (owner PRD 08, unchanged), then static kit instance AABBs. It returns the nearest hit with `nodeId`.
+- `height().heightAt/normalAt` return the bilinear terrain value under (x, z), or the highest water rest height when
+  only water covers the point, else 0 and up. `occluderHeightAt` reads a 1 m occluder grid baked at build from kit and
+  room roofs (for C-20/C-21 rain occlusion).
+- `wind()` returns the normalized current `Required<AuraWindSpec>`; `biome()` the active rig or null; `describeBiome`
+  and `listBiomes` are pure (§6.3 table).
 
 ### 7.2 Changed
 
-| Symbol | Change |
-|---|---|
-| `instances.box/sphere/plane/cylinder/capsule/torus/custom` | Honour `size` (V4). Accept `static?: boolean` (default `true` when `transforms` is a literal array never mutated through runtime handles), which uploads once and skips per-frame `createProductionInstanceTransforms`. |
-| `instances.model` | Accept `static`, `chunkSize` (metres, default 32 when > 256 instances), `shadowLod: "none" \| "lod1" \| "impostor"`, `wind?: boolean`, `impostor?: AuraAssetRef<"texture">`. |
-| `createProductionRuntimeEnvironment` | Delegates to `BiomeResolver`. The ambient branch no longer emits `environmentMapIntensity: 0` for world scenes. |
-| `prefabs.cityBlock` / `city.block` | Re-implemented on `world.kits.city` + `world.street` once the kit is admitted (Phase 5). Until then: unchanged output, plus a build warning "primitive placeholder city; use world.street". |
-| `sceneKitPerformanceBudgets.*.evidence` strings (`index.ts:9683-9796`) | Replaced by values from `AuraWorldDiagnostics`. Strings that claim impostors are deleted. |
-| `sampleTerrainHeightfield` (`TerrainHeightfield.ts:133`) | Bilinear interpolation. `queryTerrainHeight` doc unchanged (now true). |
-| `planScatterInstances` / `enforceFrameBudget` | Kept as the budget enforcer called by `world.scatter`. The return type gains `perCell` counts. |
-| `EnvironmentPresetPack` | Night `exposureFactor` removed. The SSIM gate compares per-preset references instead of normalized luma. |
-
-### 7.3 Deprecated, then removed (removal after PRD 14 migration, no later than Phase 7 exit)
-
-| Symbol | Replacement | Removal condition |
+| Symbol | Change | Owner of the edit |
 |---|---|---|
-| `water.surface` (`index.ts:3870-3905`) | `world.water({ kind: "lake" \| "ocean" })` | 0 call sites in `apps/`, `examples/`, templates |
-| `water.buoyancy` | `app.world.water(id).heightAt/normalAt` | same |
-| `weather.wetGround` (`index.ts:3807-3843`) | PRD 07 wetness term on any material + `world.street({ wet })` | same |
-| `prefabs.cityBlock`, `city.block`, `city.cityBlock` | `world.street` / `world.kits.city.place` | same |
-| `planSkyBackdrop` (`LayeredSceneComposition.ts:503-543`) | PRD 07 gradient sky; distant layers via `world.scatter` of impostor buildings or ridge meshes | owned with PRD 07 |
-| `createTerrainTileGrid`, `TerrainTilePlan` (`TerrainTiles.ts:15-96`) | `TerrainCdlod` | immediately (no external callers; verify with `rg`) |
-| `resolveTerrainSlopeBlend` | GPU auto-splat rules (default rule set encodes the same formula) | after Phase 2 |
-| `createProceduralSkyDome`, `createEnvironmentStage`, `createNamedEnvironmentPreset` (`EnvironmentPlatform.ts:395-415`, `EnvironmentPreset.ts`) | biomes | immediately (no callers in engine/apps/templates, 08 §8.5) |
-| `WaterSurface.ts`, `WaterReflectionRefractionCapture` CPU composite (`OceanSurface.ts:389-455`) | `WaterMaterial`, `ReflectionViewPass` | after Phase 4 |
-| `@aura3d/materials` `THREE_COMPAT_TEXTURE_SETS` aliasing GLB embedded textures (`TextureSet.ts:18-56`) for terrain/foliage purposes | `packages/engine/assets/world/terrain` layer presets | coordinate with PRD 04 |
+| `instances.box/sphere/plane/cylinder/capsule/torus/custom` | Honour `size` (V4). Correctness fix, no flag. | PRD 15 (`compiler/primitives.ts`, CONTRACTS R18); request Q-15-1 |
+| `AuraPrimitiveNode.static` | Upload once and skip per-frame `createProductionInstanceTransforms` | semantics PRD 11 (C-07); PRD 10 does not depend on it |
+| `instances.model` (`nodes/instances.ts`) | Accept `static`, `chunkSize` (metres, default 32 when > 256 instances), `shadowLod: "none" \| "lod1" \| "impostor"`, `wind?: boolean`, `impostor?: AuraAssetRef<"texture">`. With `A3D_QR_WORLD` on and any of these set, the builder emits a `scatter` node with explicit placements. Flag off: they are listed in `DIAGNOSTIC_ONLY_FIELDS` (`compiler/diagnosticOnly.prd10.ts`) and the node is unchanged. | PRD 10 |
+| environment selection | `prd10.biome` / `prd10.timeOfDay` C-09 sources; biome scenes never zero IBL | PRD 10 (own sources) |
+| `prefabs.cityBlock` / `city.block` (`nodes/prefabs/cityBlock.ts`) | Re-implemented on `world.kits.city` + `world.street` behind the flag once the city kit is admitted (Phase 5). Until then: unchanged output plus a build warning "primitive placeholder city; use world.street". | PRD 10 |
+| `sceneKitPerformanceBudgets.cityBlock.evidence` (`index.ts:9689`, carved to `devtools/sceneKitBudgets.ts`) | Replace "instanced or impostored by family" with values read from `diagnostics().world` | PRD 11; request Q-11-3 |
+| `sampleTerrainHeightfield` (`TerrainHeightfield.ts:133`) | Bilinear interpolation. `queryTerrainHeight` doc unchanged (now true). Changes physics heights for existing fixtures; declared correctness fix (CONTRACTS §6.1) behind no flag, PRD 12 re-baselines affected scenes. | PRD 10 |
+| `planScatterInstances` / `enforceFrameBudget` | Kept as the budget enforcer called by `world.scatter`. The return type gains `perCell` counts. | PRD 10 |
+| `EnvironmentPresetPack` | Night `exposureFactor` removed behind `A3D_QR_WORLD_BIOME`. The SSIM gate compares per-preset references instead of normalized luma. | PRD 10 |
+
+### 7.3 Deprecated, then removed
+
+Removal condition for every row: 0 call sites in `apps/`, `examples/` and templates, measured with `rg`. Migration
+is done by the route and template owners (PRD 14, PRD 13) with the `prd10-world-migrate` codemod/report that PRD 10
+ships through C-39. Removal is a PRD 10 PR at or after Phase 7 and never blocks any PRD 10 acceptance.
+
+| Symbol | Replacement | Removal |
+|---|---|---|
+| `water.surface` (`index.ts:3870-3909`, carved to `nodes/water.ts`) | `world.water({ kind: "lake" \| "ocean" })` | PRD 10 |
+| `water.buoyancy` (`index.ts:3905-3908`) | `app.world.water(id).heightAt/normalAt` | PRD 10 |
+| `weather.wetGround` (`index.ts:3807-3843`, carved to PRD 07's `nodes/weather.ts`) | C-21 wetness on any material + `world.street({ wet })` | PRD 07, request Q-07-1 |
+| `prefabs.cityBlock`, `city.block`, `city.cityBlock` (`index.ts:9241-9245` aliases) | `world.street` / `world.kits.city.place` | PRD 10 (`cityBlock.ts`); alias lines PRD 15, request Q-15-2 |
+| `planSkyBackdrop` (`LayeredSceneComposition.ts:503-543`, PRD 10-owned) | C-21 gradient sky; distant layers via `world.scatter` of impostor buildings or ridge meshes | PRD 10 |
+| `createTerrainTileGrid`, `TerrainTilePlan` (`TerrainTiles.ts:15-96`) | `TerrainCdlod` | PRD 10, Phase 1 (`rg` shows no external callers) |
+| `resolveTerrainSlopeBlend` (`TerrainTiles.ts:98-114`) | GPU auto-splat rules (default rule set encodes the same formula) | PRD 10, after Phase 2 |
+| `createNamedEnvironmentPreset` (`EnvironmentPreset.ts:47-128`) | biomes | PRD 10, Phase 1 (no callers, 08 §8.5) |
+| `createProceduralSkyDome`, `createEnvironmentStage` (`EnvironmentPlatform.ts:395-415`) | biomes | PRD 02 (file owner), request Q-02-3 |
+| `WaterSurface.ts`, `WaterReflectionRefractionCapture` (`OceanSurface.ts:389-455`) | `WaterMaterial`, `ReflectionViewPass` | PRD 10, after Phase 4 |
+| `THREE_COMPAT_TEXTURE_SETS` (`packages/materials/src/TextureSet.ts:40-59`) as terrain/foliage source | `packages/engine/assets/world/terrain` layer presets | PRD 15 (package owner), request Q-15-4 |
 
 ---
 
 ## 8. Shader changes
 
-All chunks are written in GLSL ES 3.00 and in WGSL. Until PRD 11 lands its shared material IR, each world material
-registers a real WGSL program under its own marker in `createNativeShaderSources` (`WebGPUDevice.ts:3179-3311`). A
-world material with no WGSL program makes the app select WebGL2 for that scene and report
-`renderer.backendFallback: "world-material-no-wgsl"`. It must never render as flat `u_draw.color` (07 §2).
-Lighting, shadows, IBL, fog and tone mapping come from the shared PBR chunks (PRD 01/02/07). World shaders provide only
-surface inputs and vertex deformation.
+### 8.0 Program sources and draw paths
+
+- Every PRD 10 chunk is a C-02 `ShaderChunk` named `a3d_prd10_<name>` with `owner: "prd10"`, a GLSL ES 3.00 body and
+  a hand-written `wgsl` twin: `a3d_prd10_wind` (frozen name, C-26), `a3d_prd10_terrain_splat`, `a3d_prd10_terrain_cdlod`,
+  `a3d_prd10_foliage`, `a3d_prd10_impostor`, `a3d_prd10_grass`, `a3d_prd10_gerstner`, `a3d_prd10_water`,
+  `a3d_prd10_caustics`, `a3d_prd10_space_bake`, `a3d_prd10_planet`, `a3d_prd10_world_light_fallback`. All are registered
+  from `packages/rendering/src/lanes/prd10.ts` and compile in `ChunkHarness` (C-02) on day 0.
+- Path G (C-02 real and `A3D_QR_CORE=v2`): world RenderItems use generated programs. PRD 10 contributes
+  `ShaderFeature`s (`prd10.terrain`, `prd10.wind`, `prd10.foliage`, `prd10.impostor`, `prd10.grass`, `prd10.water`,
+  `prd10.caustics`, `prd10.practical`) at the hook points in §8.1-8.8. Lighting, shadows (C-11), IBL (C-09), fog
+  (C-21 `a3d_prd07_fog`) and tone mapping (C-05) come from the shared chunks. World shaders provide only surface inputs and
+  vertex deformation.
+- Path S (stubs): `generateProgram` throws `PROGRAM_GENERATOR_PENDING`, so `WorldFramePasses` links complete PRD 10
+  programs itself (`device.createShader` with PRD 10 chunks + `a3d_prd10_world_light_fallback`: Lambert + GGX sun from
+  the first directional light in `ctx.source`, `a3dSampleIrradianceSH` from the C-09 stub chunk, specular from the C-21
+  sky horizon colour, linear fog from the C-21 stub chunk, shadow factor `a3dSunShadowAt` = 1.0 from the C-11 stub).
+  `diagnostics().world.pending` lists every stubbed input. Path S output is evidence of geometry and textures only.
+- WebGPU: the C-02 `wgsl` twins are consumed by PRD 11's backend (C-29). Wiring them into
+  `createNativeShaderSources` (`WebGPUDevice.ts:3179`) is request Q-11-1. A world node on WebGPU without a usable program
+  records `WGSL_PROGRAM_MISSING` as a `capability-degraded` degradation and is skipped; it never renders as flat
+  `u_draw.color` (07 §2).
 
 ### 8.1 Terrain (CDLOD vertex + splat fragment)
 
@@ -1117,7 +1248,7 @@ Fragment (`world/terrain/shaders/terrain.frag.glsl.ts`, providing `a3dSurface` i
 - Texture fetches per fragment: Medium flat ground with 2 active layers ≈ 2 × 3 maps × 2 scales = 12 array fetches, plus
   4 height and 2 splat. On steep rock, +6 for triplanar.
 
-### 8.2 Wind (`a3d_wind` chunk, shared by foliage, grass and the depth pass)
+### 8.2 Wind (`a3d_prd10_wind` chunk, C-26 `WIND_CHUNK`; shared by foliage, grass and the depth pass)
 
 ```glsl
 layout(std140) uniform A3DWind { vec4 u_windDirStrength; vec4 u_windGust; };  // dir.xz, strength, time | gustStrength, 1/gustScale, -, -
@@ -1138,8 +1269,10 @@ vec3 a3dWindOffset(vec3 localPos, vec3 instanceOrigin, vec4 weights /* vertex co
 }
 ```
 
-Wind applies in object space before the instance matrix. The same function is included in the depth vertex shader so
-that shadows move with the foliage. Normal for lighting: bend the vertex normal by the same rotation approximation
+Wind applies in object space before the instance matrix (hook `vertex:deform`). The same function reaches the depth
+pass through the C-11 depth feature `prd10.wind` (`passes: ["depth"]`), so shadows move with the foliage when C-11 is real (PRD 02's
+`DepthPass` applying registered features); with the C-11 stub the feature is stored, not applied, and
+`diagnostics().world.pending` lists `C-11:wind-casters`. Normal for lighting: bend the vertex normal by the same rotation approximation
 (`n' = normalize(n + offset * 0.5 / assetHeight)`).
 
 ### 8.3 Foliage fragment
@@ -1218,13 +1351,13 @@ vec3 T = exp(-u_absorption * thickness);                                     // 
 vec3 transmitted = refracted * T + u_scatterColor * (1.0 - T) * a3dSunIrradiance();
 vec3 R = reflect(-V, n);
 vec3 reflected = u_reflectionMode == 2 ? texture(u_planarReflection, suv + n.xz * u_reflectionDistort).rgb
-                                       : a3dSampleEnvironmentSpecular(R, 0.03);   // PRD 02 IBL, or SSR result (mode 1)
-vec3 sunSpec = a3dDirectSpecularGGX(n, V, u_sunDirection, 0.06) * u_sunColor * a3dSunShadow(v_worldPosition);
+                                       : a3dWorldEnvSpecular(R, 0.03);   // Path G: shared C-09 IBL; Path S: sky horizon; mode 1: C-13 SSR
+vec3 sunSpec = a3dDirectSpecularGGX(n, V, u_sunDirection, 0.06) * u_sunColor * a3dSunShadowAt(v_worldPosition)   /* C-11 chunk; stub 1.0 */;
 float shoreFoam = (1.0 - smoothstep(0.0, u_foamShoreDepth, thickness)) * texture(u_foam, v_xz / 3.0 + u_time * 0.02).r;
 float crestFoam = smoothstep(u_foamCrest, u_foamCrest - 0.15, v_crest) * texture(u_foam, v_xz / 5.0).g;
 vec3 color = mix(transmitted, reflected, F) + sunSpec;
 color = mix(color, vec3(0.9) * a3dSunIrradiance() + a3dSkyIrradiance(), clamp(shoreFoam + crestFoam, 0.0, 1.0));
-color = a3dApplyFog(color, v_worldPosition);                                 // PRD 07 chunk
+color = a3dApplyFog(color, v_worldPosition);                                 // C-21 chunk a3d_prd07_fog (stub: linear)
 ```
 
 On Low (no SceneColorCopy), `transmitted = u_deepColor * a3dSkyIrradiance()`, mixed toward `u_shallowColor` by
@@ -1233,17 +1366,21 @@ terrain.
 
 ### 8.7 Underwater and caustics
 
-- `a3d_caustics` chunk, included in the shared PBR lighting behind `#define A3D_CAUSTICS` (PRD 01 owns the shader
-  framework; this PRD supplies the chunk). For fragments with `worldPos.y < waterHeightAt(worldPos.xz)`:
+- `a3d_prd10_caustics` chunk, contributed to shared lighting as the C-02 `ShaderFeature` `prd10.caustics` (hook
+  `fragment:lights`, define `A3D_PRD10_CAUSTICS`) on Path G, and linked into PRD 10's own terrain/kit programs on Path S.
+  For fragments with `worldPos.y < waterHeightAt(worldPos.xz)`:
   - Project along the sun direction to the water plane: `cuv = (worldPos.xz - L.xz * (h - worldPos.y) / L.y) / u_causticScale`.
   - Sample the 16-frame caustic atlas at `cuv` with frame `floor(t * 12) mod 16` (crossfaded between frames).
   - Multiply the direct sun term by `1.0 + u_causticStrength * c * exp(-depth * 0.15)`.
 - Underwater mode (camera below the surface):
-  - Fog switches to an absorption fog (PRD 07 fog with per-channel density `u_absorption`).
+  - Fog switches to an absorption fog: C-21 `setFog({ mode: "absorption", absorption })` (the stub maps it to linear fog
+    and records a degradation).
   - The water surface is drawn back-face with a Snell's window: total internal reflection outside the 48.6° cone,
     `refractAngle = asin(sin(θ) * 1.33)`.
   - Background uses the underwater gradient.
-  - Post adds a slight wavy distortion via a 2-tap UV offset from the normal texture (PRD 03 hook).
+  - Post adds a slight wavy distortion via a 2-tap UV offset from the normal texture: C-13 `registerPostPass`
+    `prd10.underwaterDistortion` in phase `post-hdr` (C-01 stub skips it with `FRAME_PHASE_SKIPPED` when no post target
+    exists).
 
 ### 8.8 Space bake and planet
 
@@ -1265,59 +1402,60 @@ terrain.
 
 ### 9.1 Pass order (production root frame)
 
-1. Shadow maps (PRD 02): terrain (far cascades on Low), kit instances, scatter LOD0/LOD1 near cascade (wind-deformed,
-   alpha-tested), impostors far cascade (High+).
-2. Planar reflection (`ReflectionViewPass`, High+ and only when a visible water node requests it):
-   - Reflected camera about the water plane, with an oblique near clip plane (Lengyel) to cull geometry below the water.
-   - Half resolution, RGBA16F + depth24.
-   - Draws the sky (PRD 07), terrain at LOD bias +2 and items tagged with `reflectionLayers`. No grass, no particles,
-     no water itself.
-   - Skipped when the water plane is off-screen or its screen coverage < 2%.
-3. Opaque forward: terrain → kits/scatter (front-to-back by cell) → grass → other opaque.
-4. Sky/background (PRD 07) drawn after opaque with depth test `LEQUAL` at far plane (early-Z saves fill).
-5. `SceneColorCopy` + depth copy (shared resource defined with PRD 04 transmission; one copy per frame, at render
-   resolution, RGBA16F). Skipped on Low and when no water or transmission is visible.
-6. Water (sorted as transparent, depth write on for the surface, so particles behind it are occluded).
-7. Transparents and particles (PRD 07).
-8. Post (PRD 03); underwater distortion hook.
+The draw path is chosen once per app at mount by `WorldFramePasses`: Path G when `programCacheSlot.provided` and
+`A3D_QR_CORE=v2`, else Path S. Both are registered as one C-01 contributor `prd10.world` (owner `prd10`, flag
+`A3D_QR_WORLD`). Nothing in `Renderer.ts` or `ForwardPass.ts` is edited.
 
-### 9.2 Production bridge integration
+| Step | Path G (contracts real) | Path S (PR 0 stubs) |
+|---|---|---|
+| 1 Shadows | C-11 ShadowSystem draws terrain (far cascades on Low), kit instances, scatter LOD0/LOD1 near cascade (wind-deformed, alpha-tested via `prd10.wind` + C-11 `alphaTest` variant), impostors far cascade (High+) | none; reported `pending: ["C-11:shadows"]` |
+| 2 Planar reflection | `ReflectionViewPass` (High+, visible water requesting it) in phase `background`, order −10: reflected `CameraLike` (C-08) about the water plane, oblique near clip (Lengyel), half-res RGBA16F + depth24; draws C-21 sky, terrain at LOD bias +2 and items tagged with `reflectionLayers`; no grass, particles or water. Skipped when the plane is off-screen or covers < 2% | same pass, world items only (forward items are not re-drawable from a contributor); reported as `reflection: "planar-world-only"` |
+| 3 World opaque | RenderItems added in phase `collect`; drawn by PRD 01's opaque forward pass (terrain → kits/scatter front-to-back by cell → grass) | phase `background`, order +10, after `EnvironmentBackgroundPass`, before the single `ForwardPass` (C-01 stub, `Renderer.ts:650/664`); writes colour and depth so forward opaque depth-tests against it |
+| 4 Sky | C-21 sky after opaque, LEQUAL at far plane (C-01 `background` when real) | legacy background / C-21 stub clear |
+| 5 Scene copy | `FRAME_RESOURCES.sceneColorCopy` + `sceneDepthCopy` when another contributor publishes them (shared with transmission), else PRD 10's `SceneCopyFallback` writes `prd10.scene.color.copy` / `prd10.scene.depth.copy` in `after-opaque`. Skipped on Low and when no water is visible | `SceneCopyFallback` only (C-01 stub `sceneDepth.available = false`); if the blit is unsupported, water uses the Low path (§8.6) |
+| 6 Water | `transparent` phase `TransparentQueueItem`s sorted with forward transparents by `sortDepth`; depth write on for the surface | `transparent` phase; drawn after every forward transparent (documented C-01 stub deviation: particles behind water draw first) |
+| 7 Transparents/particles | C-20 | legacy |
+| 8 Post | C-13 graph; `prd10.underwaterDistortion` in `post-hdr` | skipped with `FRAME_PHASE_SKIPPED` if no post target |
 
-- `createProductionRuntimeSceneRenderer` (`index.ts:13540+`) gains a `worldLowering` step before
-  `collectRenderItems`. `production-runtime/world/*` builders convert world nodes to `RenderItem`s with world materials
-  and register per-frame update callbacks:
-  - CDLOD selection
-  - cell culling
-  - grass ring
-  - time-of-day uniforms
-  - water time
-- World render items carry `static: true` buffers. The bridge must not re-run `createProductionInstanceTransforms` for
-  them.
-- Render source additions (`index.ts:13990-14005`): `environmentBackground` from the biome's sky (PRD 07 owns the field
-  semantics), `reflectionViews: ReflectionViewRequest[]`, `sceneColorCopy: boolean`, `worldUniforms: { wind, time,
-  practicalScale }`.
-- `app.world` is created in `createAuraApp` (`index.ts:11126+`). Handles resolve by node `name` or generated `id`.
-- Safe-basic fallback (`createWebGLSceneRenderer`): terrain = `createTerrainHeightfieldGeometry` mesh with vertex-colour
-  splat; scatter = `instances.model` without wind/impostors; water = single plane with Fresnel tint; biome = sky
-  gradient clear + IBL as available. Each emits `world.degraded: <reason>` in diagnostics and is visible in
-  `app.diagnostics().world`.
+Phase 1 verifies the Path S step-3 assumption (the `background` phase pass shares the forward depth attachment and is
+not cleared) in `tests/qr/prd10/browser/world-pass-depth.spec.ts`. If it fails, world opaque moves to `after-opaque`
+and the transparent-order deviation is recorded; nothing outside PRD 10 changes.
 
-### 9.3 Instancing fixes this PRD requires (owned here when not already landed by PRD 11)
+### 9.2 Compiler integration (C-36, C-37, C-38)
 
-- `createProductionInstanceTransforms` passes `size: node.size` into `localNode` (V4). Test in §15.1.
-- Static instance buffers: allocate once per world item via `device.createBuffer("vertex", …)`, keep across frames,
-  and dispose on scene teardown. This bypasses `applyInstanceBinding`'s per-frame allocation (V5) for world items.
-  PRD 11 owns the general fix for dynamic instances and the VAO cache.
-- Instance attribute layout (32 B):
-  - `vec3 position`
-  - `float yawScalePacked` (yaw 16-bit, scale 16-bit as half)
-  - `vec4 variation` (colour variation, LOD fade, wind phase, reserved) as `unorm8x4`
-  - `vec4 extra` reserved as `unorm8x4`
-- Instance matrices are reconstructed in the vertex shader (yaw + uniform scale). Arbitrary 3×4 matrices are only
-  needed for kits, where a 48 B layout `mat3x4` is used.
-- WebGPU: world materials use a storage-buffer instance array (no 4-instance uniform cap, V6). This needs the WGSL
-  program from §8. If PRD 11's IR is unavailable, the hand-written WGSL is required for Phase 3 exit on WebGPU, or
-  WebGPU is excluded from Phase 3 acceptance (stated in §18).
+- PRD 10 registers `NodeHandler`s from `agent-api/compiler/world.ts` for the 7 pre-declared kinds `biome`,
+  `time-of-day`, `wind`, `terrain`, `scatter`, `grass`, `water`. `compile()` builds GPU resources once (height texture,
+  splat, instance chunk buffers, extruded geometry) and calls `out.set("worldUniforms", { wind, time, practicalScale })`,
+  `out.set("reflectionViews", requests)` and `out.set("sceneColorCopy", boolean)` on the RenderSource fields pre-declared
+  in PR 0a (CONTRACTS §3.5). `update()` runs per frame: CDLOD selection, cell culling, grass ring, time-of-day uniforms,
+  water time.
+- World items never pass through `createProductionInstanceTransforms` (`index.ts:14747`).
+- Runtime add/remove of world nodes (streamed grass rings, time-of-day keyframe swaps) uses C-37
+  `AuraRuntimeNodeRegistry.add/remove`; with the stub (no add/remove) PRD 10 keeps its rings inside one `grass` node and
+  updates buffers in `update()`, so it does not need C-37 real.
+- `app.world` is created by the C-38 extension factory. Handles resolve by node `name` or generated `id`.
+- Safe-basic fallback (no production renderer): terrain = `createTerrainHeightfieldGeometry` mesh with vertex-colour
+  splat; scatter = `instances.model` without wind/impostors; water = single plane with Fresnel tint; biome = sky gradient
+  clear + whatever IBL the legacy path provides. Each records a `capability-degraded` degradation and
+  `diagnostics().world.drawPath = "safe-basic"`.
+
+### 9.3 Instancing used by world content
+
+- World instances are owned by PRD 10: `InstanceChunkGrid` allocates its static vertex buffers once per world item with
+  `device.createBuffer("vertex", …)`, keeps them across frames and disposes them on scene teardown. This bypasses the
+  per-frame allocation and VAO leak of the generic path (V5) and the WebGPU 4-instance uniform cap (V6) for world items
+  without editing `ForwardPass.ts` or `WebGL2Device.ts`. When C-07 `instanceBufferSlot` is provided for real (PRD 01),
+  `InstanceChunkGrid` uses it instead; the stub wraps today's per-frame upload and is not used for static world data.
+- The generic fixes (dynamic instance buffers, VAO cache key at `WebGL2Device.ts:4225`, WebGPU `instance0..3` struct at
+  `WebGPUDevice.ts:3420-3466`) belong to PRD 01 / PRD 11 (C-07, C-29). PRD 10 does not wait for them.
+- The instance `size` bug (`index.ts:14750` builds `localNode` without `size`) is fixed by PRD 15 (R18). Benchmark 16
+  recovering is an integrated observation, not a PRD 10 gate.
+- Instance attribute layout (32 B): `vec3 position`; `float yawScalePacked` (yaw 16-bit, scale as half);
+  `vec4 variation` (colour variation, LOD fade, wind phase, reserved) as `unorm8x4`; `vec4 extra` reserved as `unorm8x4`.
+  Matrices are reconstructed in the vertex shader (yaw + uniform scale). Kits and explicit placements use a 48 B
+  `mat3x4` layout.
+- WebGPU: world programs use a storage-buffer instance array through their WGSL twins (§8.0). Until Q-11-1 lands,
+  WebGPU is excluded from PRD 10 standalone acceptance (§18).
 
 ### 9.4 Culling and LOD
 
@@ -1336,17 +1474,694 @@ terrain.
 
 - Texture arrays are built at load by uploading each layer's KTX2 levels into a `TEXTURE_2D_ARRAY` (WebGL2 core) or a
   `texture_2d_array` (WebGPU). All layers must share size and compressed format. A mismatch is resized at admission
-  (PRD 05), never at runtime.
-- Total world GPU memory is tracked per tier (§17) and reported in `app.diagnostics().world.memoryMB`. Exceeding the
+  (C-17 `assets optimize`), never at runtime.
+- Total world GPU memory is tracked per tier (§17) and reported in `app.diagnostics().world.memoryMB` (C-31 section `world`). Exceeding the
   tier budget at load drops layer resolution one step and warns.
-- KTX2 transcoding uses the locally bundled basis transcoder (PRD 05 removes the unpkg CDN, 11 §3). World assets
-  require it, and fall back to PNG when unavailable.
+- KTX2 transcoding goes through the C-16 decoder registry (stub wraps today's `GLTFCompressionDecoders.ts`; the local
+  bundled transcoder is PRD 05's real implementation, 11 §3). World textures fall back to their PNG twins when the
+  registry reports no transcoder, and `diagnostics().world.pending` lists `C-16:ktx2`. Texture-array upload of compressed
+  layers needs the C-16 compressed-format mapping; until it is real, arrays are uploaded from PNG (RGBA8) and the memory
+  report says so.
 
 ### 9.6 Impostor baking (offline)
 
 `tools/impostor-bake/index.ts --asset <id> --views 8 --size 256` loads the GLB in a bake page (WebGL2) on the remote
 macos-14 runner. For each hemi-octahedral view direction it renders the asset orthographically into a 256² tile:
 albedo+alpha, normal (object space) + linear depth. It writes `<id>.impostor.albedo.ktx2` and
-`<id>.impostor.normaldepth.ktx2` plus a JSON with bounding sphere and view count, and registers them with the asset
-manifest via PRD 05's `assets add`. The output is deterministic: the same GLB hash gives the same atlas hash.
+`<id>.impostor.normaldepth.ktx2` plus a JSON with bounding sphere and view count. It records them in the PRD 10-owned
+`packages/engine/assets/world/manifest.json` (manifest 1.1 field shape, C-17) after running the C-17 admission gates,
+which are pure functions and therefore usable on day 0; root `aura.assets.json` is not written (generated file, owner
+PRD 05, CONTRACTS §4.3). The command is registered as `aura3d assets bake-impostor` through C-39 from
+`packages/aura3d-cli/src/commands/prd10/`. The output is deterministic: the same GLB hash gives the same atlas hash.
+
+---
+
+## 10. Migration plan
+
+PRD 10 never edits routes or templates. Migration is delivered as tools and facts, applied by their owners whenever
+they choose (CONTRACTS R20, R21). Nothing in PRD 10's standalone acceptance depends on any migration landing.
+
+1. **Codemod/report `prd10-world-migrate`** (C-39 `registerCodemod`, `packages/aura3d-cli/src/commands/prd10/`). It
+   reports, and with `--write` rewrites:
+   - `water.surface(...)` → `world.water({ kind: "lake" | "ocean", shape, height })` (preset → waves preset mapping).
+   - `water.buoyancy(...)` → `app.world.water(id).heightAt(x, z, t)`.
+   - `prefabs.cityBlock` / `city.block` → `world.street` + `world.kits.city` (report-only: layout differs).
+   - `environments.studio` used in outdoor categories (`city-day`, racing/golf routes) → `world.biome("outdoor-day")`.
+   - `lights.ambient` with no environment node → report row "biome recommended" (the C-09 fix is PRD 02's).
+   - `material.pbr({ metallic > 0 })` on nodes named `*water*`/`*ocean*` → report row (water is a dielectric).
+   - route-local terrain builders (patrol-wing `sky.ts:32-230`, aurora-lander `terrain.ts`) → report rows with a
+     suggested `world.terrain` call.
+2. **Per-game target table** (§1 table, last column) is published as C-40 fact rows `F-10-*` (biome per game, content
+   sets per game) for PRD 14 and PRD 13. PRD 14 decides adoption per route behind `A3D_QR_ROUTE_<ID>` + `A3D_QR_WORLD`.
+3. **Templates and skills.** PRD 13 writes skill text for `aura3d-materials-environments`, `aura3d-scene-authoring`
+   and `aura3d-performance` from facts `F-10-01..F-10-08` (§12.1), including the "do not use" list (`water.surface`,
+   `sky.dayNight` for outdoor sky, `environments.hdri` "for the sky", `city.block`, cylinder+sphere trees).
+4. **Deprecations** (§7.3) emit a one-time build warning naming the replacement when `A3D_QR_WORLD` is on. Removal follows
+   §7.3 and CONTRACTS §5.4.
+5. **Data.** `fixtures/three-compat/environments/manifest.json` aliased entries are deleted in Phase 1. Benchmarks that
+   referenced them (if any, checked with `rg`) are listed in a request to PRD 12 (Q-12-1).
+
+## 11. Backward compatibility
+
+- Flag off (`A3D_QR_WORLD` unset, the default until `integrated-accepted`): every existing builder emits the same nodes
+  as at `85aafcd0`, no PRD 10 handler, environment source, contributor, chunk feature or app factory is active, and the
+  flag-off sentinel identity check (CONTRACTS §6.1) stays within IC-0 tolerance.
+- Declared correctness fixes that ship with no flag (CONTRACTS §6.1): bilinear `sampleTerrainHeightfield` (T2). It
+  changes physics heights for fixtures that sample between texels; PRD 12 re-baselines affected scenes. The instance
+  `size` fix (V4) is PRD 15's declared fix (R18).
+- New public symbols are additive: the `world` namespace, `environments.outdoor/room/space/underwater`,
+  `instances.model` options, `app.world` (present in flag-off apps as the C-26 stub: plane-y=0 ground, zero wind, null
+  biome). `tests/unit/public-api-contracts.test.ts` exports remain a superset.
+- Deleted with no callers (verified with `rg` in the deleting PR): `createTerrainTileGrid`/`TerrainTilePlan`,
+  `createNamedEnvironmentPreset`. Their names are kept as `@deprecated` re-exports that throw
+  `AuraRuntimeError("removed-world-planner")` for one minor version.
+- `EnvironmentPresetPack` night normalization removal is behind `A3D_QR_WORLD_BIOME` until `default-on`.
+- Deprecated builders keep working until their §7.3 removal condition holds.
+
+---
+
+## 12. Contracts consumed / provided
+
+The earlier "depends on PRD NN" edges (conflict map rows PRD-10 → 01/02/03/04/05/07/09/11/12/13/14/15) are replaced by
+the contracts below. PRD 10 builds against each consumed contract's PR 0 stub and never waits for its real
+implementation. Whether a criterion is standalone (§16.1) or integrated (§16.2) follows from what the stub can show.
+
+### 12.1 Contracts provided
+
+| ID | Surface PRD 10 provides | Stub that must keep working (PR 0a, CONTRACTS C-26) | Real (PRD 10) | Consumers |
+|---|---|---|---|---|
+| C-26 | `GroundRaycaster`, `AuraHeightQuery`, `AuraWindSpec`, `WIND_CHUNK = "a3d_prd10_wind"` + `A3DWind` UBO, `AuraBiomeId` (11 ids), `AuraBiomeRig`, `AuraWorldQueries`, `worldQueriesSlot`, `AuraApp.world` (C-38 member) | `ground()` raycasts physics if a world exists else plane y = 0; `height()` 0 + up; `wind()` zero strength; `biome()` null; `describeBiome` from today's `environments.*` with `post: "daylight-outdoor"` for outdoor ids | `agent-api/world/{queries,runtime,biomes,wind}.ts`, `production-runtime/world/BiomeResolver.ts`, terrain, scatter, water; `worldQueriesSlot.provide()` and `registerAppExtension({ member: "world" })` in `packages/engine/src/lanes/prd10.ts` | 06 (foot IK ground), 07 (splash/rain height, occluder height), 13 (looks → biomes), 14 (worlds) |
+
+Invariants PRD 10 keeps for consumers: the stub stays the flag-off path until CONTRACTS §5.4 removal; the real
+implementation passes `tests/unit/contracts/C-26-world.test.ts` (custodian PRD 15) for `real`, plus PRD 10's own
+`tests/unit/contracts/impl/prd10-world.test.ts` (heightAt vs shader bilinear ≤ 1e-4 m, raycast order terrain → physics →
+static, `describeBiome` deterministic and frozen, `listBiomes()` length 11, wind normalization). The wind chunk keeps the
+frozen signature `vec3 a3dWindOffset(vec3 localPos, vec3 instanceOrigin, vec4 weights, float assetHeight)` so PRD 07
+(foliage-like cards) and PRD 11 (batching) can include it.
+
+Registry entries PRD 10 provides into other contracts (all from PRD 10 files):
+
+| Contract | Entry |
+|---|---|
+| C-01 | contributor `prd10.world` (phases `collect` (Path G), `background`, `after-opaque`, `transparent`) |
+| C-02 | chunks `a3d_prd10_*` (§8.0); features `prd10.terrain`, `prd10.wind`, `prd10.foliage`, `prd10.impostor`, `prd10.grass`, `prd10.water`, `prd10.caustics`, `prd10.practical` |
+| C-03 | lobes `prd10.foliageTranslucency`, `prd10.planet` |
+| C-09 | environment sources `prd10.biome` (300), `prd10.timeOfDay` (250) |
+| C-11 | depth feature `prd10.wind` (passes `depth`) |
+| C-13 | post pass `prd10.underwaterDistortion` (`post-hdr`) |
+| C-15 | semantics of `AuraMaterialSpec.practical` |
+| C-30 | lane scenes `prd10-*` (§16.1) in `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd10/` |
+| C-31 | diagnostics section `world` |
+| C-34 | lint rules `look/world-void` (outdoor category, no sky/biome), `look/primitive-trees` (≥ 8 cylinder+sphere pairs) |
+| C-36 | node handlers for `biome`, `time-of-day`, `wind`, `terrain`, `scatter`, `grass`, `water`; option-coverage rows; `compiler/diagnosticOnly.prd10.ts` |
+| C-38 | app member `world` |
+| C-39 | CLI `assets bake-impostor`, `world bake-content`; codemod `prd10-world-migrate` |
+| C-40 | facts `F-10-01` world API surface, `F-10-02` biome table and units, `F-10-03` default-biome rules, `F-10-04` content sets and licences, `F-10-05` tier budgets, `F-10-06` do-not-use list, `F-10-07` per-game biome targets, `F-10-08` placement determinism (seed rules) |
+
+### 12.2 Contracts consumed
+
+| ID | Name | Provider | What PRD 10 uses | Day-0 stub behaviour relied on | Effect on acceptance |
+|---|---|---|---|---|---|
+| C-01 | FrameGraph phase hooks | 01 | `registerFrameContributor`, `background`/`after-opaque`/`transparent`/`collect`, `FRAME_RESOURCES.sceneColorCopy/sceneDepthCopy`, blackboard | `background` passes between `EnvironmentBackgroundPass` and `ForwardPass`; other phases after the single ForwardPass; `sceneDepth.available = false` | Path S draws standalone; water/particle interleave integrated |
+| C-02 | ShaderChunk/Feature registry, ProgramCache | 01 | `registerShaderChunk`, `registerShaderFeature`, `ChunkHarness`, `programCacheSlot.provided` | registries real; `generateProgram` throws `PROGRAM_GENERATOR_PENDING`; cache wraps `ShaderLibrary` | chunk compile standalone; shared lighting on world surfaces integrated |
+| C-03 | MaterialFeature lobe registry | 04 | `registerMaterialLobe("prd10.*")` | registry real; no render effect until C-02 real | lobe numerics standalone (ChunkHarness); visible lobes integrated |
+| C-06 | Scene graph transforms, color parsing | 01 | colour parsing for rig colours | today's parser; `group()` composition still additive (19 C6) | none: placement composes its own matrices |
+| C-07 | InstanceBuffer | 01 | `instanceBufferSlot` (optional) | wraps per-frame upload | not used for static world data; standalone |
+| C-08 | Frame uniforms, CameraLike | 01 | `CameraLike` for reflection views, `u_cameraPosition`/`u_viewProjection` | `buffer: null`; legacy uniforms | standalone |
+| C-09 | EnvironmentSource / EnvironmentProbe | 02 | `registerEnvironmentSource`, `environmentProbeFactorySlot.fromScene/fromEquirect/fromCube/neutral`, `a3dSampleIrradianceSH` | sources consulted when their flag is on; probe factory wraps legacy PMREM; SH stub = hemisphere pair | biome selection standalone; pixel-correct biome IBL integrated |
+| C-10 | Lighting API | 02 | sun as `lights.directional` node with `shadow` options; `lights.hemisphere` | hemisphere lowers to two directional fills; physical units inert | standalone (rig values in current units) |
+| C-11 | Shadow caster variants, `a3dSunShadowAt` | 02 | `registerDepthVariantFeature("prd10.wind")`, `alphaTest`/`instanced` variant keys, shadow lookup chunk | features stored, not applied; `a3dSunShadowAt` = 1.0 | world shadows integrated only |
+| C-12 | Sampler descriptors | 02 | `AuraTextureSampling` repeat + mips for extrusions, layer arrays (`wrap`, `anisotropy` by tier) | device mapping unchanged; anisotropy table real | standalone for PRD 10 programs (own samplers); forward materials integrated |
+| C-13 | PostPass registry, post presets | 03 | `AuraPostPresetId`, `postPresets`, `registerPostPass` | presets map to today's post nodes; post-hdr skipped without target | rig post integrated |
+| C-15 | Material spec additions | 04 | `alphaMode/alphaCutoff/alphaToCoverage/doubleSided` (pre-declared), `practical` | fields declared, DIAGNOSTIC_ONLY for forward materials | PRD 10 programs honour them standalone; forward materials integrated |
+| C-16 | Compressed textures, decoder registry | 05 | `selectKTX2TargetFormat`, `createAssetDecoderRegistry` | pure target table real; registry wraps `GLTFCompressionDecoders.ts` | PNG fallback standalone; KTX2 memory budgets integrated |
+| C-17 | Asset manifest 1.1, admission | 05 | 1.1 field shapes, pure admission gates for world content | reader accepts 1.1; gates pure | content admission standalone (own manifest) |
+| C-21 | Sky / fog / atmosphere | 07 | `AuraSkySpec`, `AuraHeightFogSpec`, `app.atmosphere.setSky/setFog/setWetness`, `skyBackgroundSlot`, `onSkyChanged`, `a3d_prd07_fog`, `WETNESS_CHUNK` | `sky.preetham/gradient` lower to `sky.dayNight` + degradation; `setFog` writes `environmentFog`; linear fog chunk; capture clears to horizon | rig composition standalone; sky look integrated |
+| C-27 | QualityTier settings | 11 | `QUALITY_TIERS` (`lodBias`, `maxTextureSize`, `shadow.*`, `environmentSize`, `msaaSamples`), `app.quality.tier/onChange` | ships real (data); `"auto"` → high desktop / medium coarse pointer | standalone |
+| C-30 | Benchmark scene registry | 12 | lane scene indices, `prd10-*` ids, `SceneOwner "prd10"` | registry wraps 18 scenes + lane indices | standalone capture of own scenes |
+| C-31 | Diagnostics sections | 12 | `registerDiagnosticsSection({ key: "world" })` | section present, null values | standalone |
+| C-33 | Capture harness, `--flags` | 12 | `qr_flags` capture of lane scenes and games | today's scripts + passthrough | standalone screening; acceptance only at checkpoints |
+| C-34 | lookLint rule registry | 13 | `registerLookLintRule` | registry real (0b-1) | standalone |
+| C-36 | SceneCompiler extension points | 15 | `registerNodeHandler`, `RenderSourceContributions`, `DIAGNOSTIC_ONLY_FIELDS`, `registerOptionCoverage`, `degrade()` | wraps the moved legacy compiler; new kinds run their handlers | standalone |
+| C-37 | RuntimeNode add/remove | 15 | `add/remove` for streamed world nodes (optional) | registry without add/remove semantics | not required (§9.2); standalone |
+| C-38 | App extension registry | 15 | `registerAppExtension("world")` | real in PR 0 | standalone |
+| C-39 | CLI command + codemod registry | 15 | `registerCliCommand`, `registerCodemod` | real in PR 0 | standalone |
+| C-40 | Facts handoff | each → 13 | rows `F-10-*` in CONTRACTS Appendix B | table, no code | — |
+
+Resolved conflicts from CONTRACTS §0 that changed this PRD: R12 (PRD 04 owns `alphaMode/alphaCutoff` semantics; PRD 10
+consumes), R18 (instance `size` fix is PRD 15's, unflagged), R1 (`AuraWorldQualityTier` = C-27 `AuraQualityTier`),
+R20/R21 (templates, skills and routes are PRD 13's/14's; PRD 10 ships facts and a codemod). Contract shapes adopted from
+C-26: `AuraWindSpec` (PRD-local `AuraWindOptions` maps to it), `AuraBiomeRig.post` as a C-13 preset id
+(`AuraBiomeRigDetail.postOverrides` carries EV/bloom/grade), chunk name `a3d_prd10_wind`, and `app.world.setWind` (the
+earlier `app.world.wind.set` collided with the C-26 `wind()` getter).
+
+### 12.3 Requests to other lanes (non-blocking)
+
+Filed as `qr-request` + `to:prdNN` issues (CONTRACTS §6.5). PRD 10 never waits: each row says what PRD 10 does in the
+meantime and which criterion moves to the next checkpoint after it lands.
+
+| ID | To | File / change | Contract | Meanwhile |
+|---|---|---|---|---|
+| Q-15-1 | 15 | `compiler/primitives.ts` (from `index.ts:14747-14754`): `localNode` keeps `size: node.size` (R18 declared fix) | C-36 | world content bypasses this path (§9.3); benchmark 16 recovery is an integrated observation |
+| Q-15-2 | 15 | `index.ts:9241-9245` `city.block/cityBlock` aliases: add `@deprecated` JSDoc pointing at `world.street` | — | aliases call PRD 10's `prefabs.cityBlock`, which already warns |
+| Q-15-3 | 15 | `packages/engine/package.json#exports`: reserve `@aura3d/engine/world` → `src/agent-api/world/index.ts` | §3.8 | `world` exported from the root through the lazy lane barrel |
+| Q-15-4 | 15 | `packages/materials/src/TextureSet.ts:40-59`: mark `THREE_COMPAT_TEXTURE_SETS` "not a terrain/foliage source" | — | PRD 10 ships its own layer presets |
+| Q-15-5 | 15 | `.github/QR_OWNERSHIP.json`: confirm `packages/engine/src/agent-api/compiler/world.ts` and `production-runtime/world/` map to prd10 (CONTRACTS §4.1 row 10) | §4 | — |
+| Q-02-1 | 02 | `DepthPass.ts`: apply registered C-11 depth features (`prd10.wind`) and the `alphaTest`/`instanced` variant for world casters on PRD 02's real path | C-11 | world draws cast no shadows on Path S; reported `pending: ["C-11:shadows"]` |
+| Q-02-2 | 02 | Accept `"sky-capture"` resolutions from `prd10.*` sources whose `probe.capture.include = "sky-only"` (already in the C-09 union) and report `iblPixelBacked` in `lighting.diagnostics().environment` | C-09 | PRD 10 reports `iblPixelBacked: null` |
+| Q-02-3 | 02 | `EnvironmentPlatform.ts:395-415`: delete `createProceduralSkyDome`/`createEnvironmentStage` (no callers, 08 §8.5) | — | PRD 10 never calls them |
+| CCR-10-1 | 15 + 02 | C-09 additive field `AuraEnvironmentSourceResolution.blendFrom?: { readonly probe: unknown; readonly weight: number }` for time-of-day crossfade | C-09 | hard cut on probe swap (§6.7) |
+| Q-07-1 | 07 | `nodes/weather.ts`: `weather.wetGround` `@deprecated` → C-21 wetness + `world.street({ wet })` | C-21 | `world.street({ wet })` is option-ignored on Path S |
+| Q-07-2 | 07 | C-21 `AuraSkySpec` gradient `bands` support for an aurora band (`polar-night`) and a city glow band (`night-city`) | C-21 | rigs use plain gradient; aurora is absent and reported |
+| Q-07-3 | 07 | C-21 real `setFog({ mode: "absorption", absorption })` for underwater | C-21 | linear fog fallback + degradation |
+| Q-04-1 | 04 | `nodes/material.ts`: add `material.foliage/terrainLayer/planet` as aliases of `world.materials.*` | C-15 | agents use `world.materials.*` |
+| Q-04-2 | 04 | C-15 real: honour `alphaMode: "mask"`, `alphaCutoff`, `alphaToCoverage`, `doubleSided` on forward materials (kit GLBs with foliage) | C-15 | PRD 10 programs honour them; forward kit materials alpha-blend as today |
+| Q-11-1 | 11 | `WebGPUDevice.ts:3179` `createNativeShaderSources`: consume C-02 `ShaderChunk.wgsl` twins of `a3d_prd10_*` and a storage-buffer instance array | C-02, C-29 | WebGPU excluded from PRD 10 standalone acceptance (§18) |
+| Q-11-2 | 11 | `QUALITY_TIERS` CCR (additive) only if §17 world budgets need tier fields; none planned | C-27 | PRD 10 tables in §17 read existing fields |
+| Q-11-3 | 11 | `devtools/sceneKitBudgets.ts` (from `index.ts:9689`): replace the "instanced or impostored by family" `cityBlock.evidence` string with `diagnostics().world` values | C-31 | PRD 10 diagnostics report the real values |
+| Q-12-1 | 12 | Add `packages/engine/assets/world/**` binary paths to LFS in `.gitattributes` and `benchmarks/quality-rebuild/ci.sh`; re-baseline scenes affected by T2 and V4 fixes; rubric lines for §16.2 | C-30, C-32 | lane workflow `qr-prd10-world.yml` pulls LFS itself |
+| Q-13-1 | 13 | Skills/templates from facts `F-10-01..08`; no template uses `water.surface`, `city.block` or primitive trees | C-40 | — |
+| Q-14-1 | 14 | Per-route adoption of `world.*` per §1 target table, using `prd10-world-migrate`; delete review-capture world forks (K7) | R21 | standalone acceptance uses lane scenes, not routes |
+
+PRD 06 (C-26 ground for foot IK), PRD 07 (C-26 height for splashes and rain) and PRD 09 (game runtime hosting
+`app.world` handles) consume C-26 and need no request from PRD 10.
+
+---
+
+## Parallel execution
+
+### Day-0 start conditions
+
+PRD 10 starts on 2026-10-05 from the PR 0a branch (CONTRACTS §3.9). The only prerequisites are PR 0a artifacts:
+`packages/rendering/src/contracts/{core,frameGraph,program,materialLobes,geometry,frameUniforms,environment,shadows,sampling,post,textureFormats,atmosphere,quality,renderSource,renderItem}.ts`
+and `testing/ChunkHarness.ts`; `packages/engine/src/contracts/{flags,world,environment,lighting,atmosphere,post,materials,assets,diagnostics,looks,compiler,runtimeNodes,app}.ts`
+and the C-26 stub in `stubs/`; the pre-declared optional fields (`AuraMaterialSpec.practical` and alpha fields,
+`RenderSource.reflectionViews/sceneColorCopy/worldUniforms`, `AuraNodeKindMap` world kinds, `AuraApp.world`); the lane
+barrels `src/lanes/prd10.ts`; `compiler/diagnosticOnly.prd10.ts`; `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd10/index.ts`;
+`packages/aura3d-cli/src/commands/prd10/index.ts`; the conformance harness. No other lane's real implementation is needed.
+
+Work in new PRD 10 files starts on day 0. Edits to PRD 10's carved regions start when the PR 0b part containing them
+merges (≤ 2026-10-07); until then the replacement is written in the target module and wired after the merge:
+- PR 0b-1: `nodes/instances.ts`, `nodes/water.ts`, `nodes/environments.world.ts`, `nodes/prefabs/cityBlock.ts`, and the
+  C-31/C-34/C-36/C-37/C-38 seams (`registerNodeHandler` dispatch, app extensions).
+- PR 0b-2: C-01 `FrameGraph.ts` dispatcher (contributor phases), C-09 `resolveEnvironment` seam, C-11 depth-feature
+  store, C-13 post registry.
+- PR 0b-3: C-39 CLI fallthrough and capture `--flags`.
+PRD 10 files that need no PR 0b part (start at hour 0): everything in `packages/rendering/src/world/`, `Terrain*.ts`,
+`OceanSurface.ts`, `VegetationScatter.ts`, `EnvironmentPreset*.ts`, `SpaceEnvironment.ts`, `agent-api/world/`,
+`production-runtime/world/` (logic), `BiomeEnvironmentRegistry.ts`, `HeightfieldLayout.ts`, `engine/assets/world/`,
+`tools/{impostor-bake,world-content-bake}/`, lane benchmark scenes, `tests/qr/prd10/`.
+
+### Owned files and directories (must match CONTRACTS §4.1 row 10)
+
+`packages/rendering/src/world/`, `packages/rendering/src/{EnvironmentPreset,EnvironmentPresetPack,OceanSurface,SpaceEnvironment,VegetationScatter,WaterSurface}.ts`,
+`packages/rendering/src/Terrain*.ts`; `packages/engine/src/agent-api/world/`, `packages/engine/src/agent-api/{Scatter,LayeredSceneComposition}.ts`,
+`packages/engine/src/agent-api/compiler/world.ts`, `packages/engine/src/agent-api/nodes/{instances,water,environments.world}.ts`,
+`packages/engine/src/agent-api/nodes/prefabs/cityBlock.ts`, `packages/engine/src/production-runtime/world/`;
+`packages/engine/assets/world/`; `packages/environments/src/BiomeEnvironmentRegistry.ts`;
+`packages/physics-rapier/src/HeightfieldLayout.ts`; `fixtures/three-compat/environments/`; `tools/{impostor-bake,world-content-bake}/`.
+Lane-generic (CONTRACTS §4.1 "lane NN"): this PRD file, `docs/project/aura3d-quality-rebuild/evidence/{prd10,prd-10}/`,
+`packages/*/src/lanes/prd10.ts`, `agent-api/compiler/diagnosticOnly.prd10.ts`, `packages/aura3d-cli/src/commands/prd10/`,
+`benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd10/`, `.github/workflows/qr-prd10-*.yml`, `tests/qr/prd10/`,
+`tests/unit/contracts/impl/prd10-*`.
+
+Tasks of the earlier draft that edited files owned by other lanes were converted to extension points (§5 table) or
+moved to §12.3 requests: `agent-api/index.ts` outside PRD 10 carve-outs, `compiler/{renderer,renderInput,primitives}.ts`
+and `app/createAuraApp.ts` (15); `compiler/environment.ts`, `DepthPass.ts`, `EnvironmentPlatform.ts`,
+`packages/environments/src/{EnvironmentRegistry,HDRIEnvironment,PMREMPreset}.ts` (02); `ForwardPass.ts` and the
+shared PBR chunks (01); `WebGPUDevice.ts`, `devtools/sceneKitBudgets.ts` (11); `nodes/weather.ts` (07);
+`nodes/material.ts` (04); `benchmarks/quality-rebuild/shared/*`, `aura3d/common.ts`, `three/common.ts` (12);
+`fixtures/environment-corpus/` (15 default; biome HDRIs live in `packages/engine/assets/world/hdri/` instead); `apps/*` (14).
+
+### Extension points used in files owned by others
+
+| Extension point | Host (owner) | PRD 10 registration file |
+|---|---|---|
+| C-01 `registerFrameContributor` | `renderer/FrameGraph.ts` (01) | `production-runtime/world/WorldFramePasses.ts` |
+| C-02 `registerShaderChunk/Feature` | `contracts/program.ts` (15) | `packages/rendering/src/lanes/prd10.ts` → `world/**/shaders/*` |
+| C-03 `registerMaterialLobe` | `contracts/materialLobes.ts` (15) | `world/vegetation/FoliageMaterial.ts`, `world/space/PlanetMaterial.ts` |
+| C-09 `registerEnvironmentSource` | `compiler/environment.ts` seam (02) | `production-runtime/world/BiomeResolver.ts` |
+| C-11 `registerDepthVariantFeature` | `DepthPass.ts` (02) | `world/vegetation/WindField.ts` |
+| C-13 `registerPostPass` | post registry (03) | `world/water/UnderwaterState.ts` |
+| C-21 `app.atmosphere.setSky/setFog`, `skyBackgroundSlot` | atmosphere runtime (07) | `production-runtime/world/{BiomeResolver,TimeOfDayRuntime}.ts` |
+| C-31 `registerDiagnosticsSection("world")` | `app/diagnostics.ts` (15) | `production-runtime/world/WorldDiagnostics.ts` |
+| C-34 `registerLookLintRule` | `looks/generatedCodeWarnings.ts` (13) | `agent-api/world/register.ts` |
+| C-36 `registerNodeHandler`, `registerOptionCoverage` | `compiler/` (15) | `agent-api/compiler/world.ts` |
+| C-38 `registerAppExtension("world")` | `app/createAuraApp.ts` (15) | `packages/engine/src/lanes/prd10.ts` |
+| C-39 `registerCliCommand`, `registerCodemod` | `commands/registry.ts` (15), `cli.ts` (05) | `packages/aura3d-cli/src/commands/prd10/index.ts` |
+| `environments` spread | `nodes/environments.ts` (02) | `nodes/environments.world.ts` |
+
+### Feature flags
+
+| Flag | Values | Gates | PRD-local alias |
+|---|---|---|---|
+| `A3D_QR_WORLD` | bool | every PRD 10 behaviour change: node handlers, `prd10.world` contributor, C-09 sources, `app.world` real factory, `instances.model` world options, `prefabs.cityBlock` rebuild, lint rules, diagnostics section values | — |
+| `A3D_QR_WORLD_TERRAIN` | bool | terrain + grass + scatter-on-terrain (on by default when `A3D_QR_WORLD` is on) | — |
+| `A3D_QR_WORLD_WATER` | bool | water, reflection view, scene-copy fallback, underwater, caustics | — |
+| `A3D_QR_WORLD_BIOME` | bool | biome/time-of-day sources, default-biome rules, `EnvironmentPresetPack` night change | — |
+
+Not flagged (declared correctness fixes, CONTRACTS §6.1): bilinear `sampleTerrainHeightfield` (T2). Deletions of
+caller-less planners (§7.3) ship unflagged with `@deprecated` throwing re-exports. Visibility of world surfaces in
+shared lighting additionally requires `A3D_QR_CORE=v2` (Path G).
+
+### Stubs used
+
+C-01 (background/after-opaque/transparent after single ForwardPass; `sceneDepth` unavailable), C-02 (registries real,
+`PROGRAM_GENERATOR_PENDING`), C-03 (registry only), C-06 (additive groups; unused), C-07 (per-frame wrapper; unused for
+static data), C-08 (legacy uniforms), C-09 (legacy wrap + registered sources when flagged; legacy PMREM; SH hemisphere
+pair), C-10 (hemisphere → 2 fills), C-11 (features stored; shadow = 1.0), C-12 (device mapping unchanged), C-13
+(presets over today's post nodes), C-15 (fields declared, DIAGNOSTIC_ONLY), C-16 (pure table, wrapped decoders), C-17
+(1.1 reader, pure gates), C-21 (sky → `sky.dayNight` + degradation, linear fog, horizon-clear capture), C-27 (real data),
+C-30, C-31, C-33, C-34, C-36 (legacy compiler wrapper), C-37 (no add/remove), C-38/C-39 (real). PRD 10's own C-26 stub
+stays the flag-off path until §5.4 removal.
+
+### Integration checkpoints
+
+Integrated acceptance (§16.2) is evaluated only at CONTRACTS §7 checkpoints with `A3D_QR_WORLD` on inside
+`qr_flags=all`, and never blocks a PRD 10 merge:
+- IC-0 (2026-10-08): flags `none` baseline; PRD 10 records per-scene and per-game world baselines (research 21/23
+  numbers reproduced) in `evidence/prd-10/IC-0.md`.
+- IC-1 (2026-10-15), IC-2 (10-22), IC-3 (10-29): screening only (vision, recorded, cannot accept). PRD 10 checks that
+  Path G activates where C-02 is real and lists still-pending contracts from `diagnostics().world.pending`.
+- IC-4 (2026-11-05), IC-8 (2026-12-03), IC-12 (2026-12-31): G-PANEL rounds; the only rounds that can satisfy §16.2 and
+  move `A3D_QR_WORLD` to `integrated-accepted`. Leave-one-out (`all,-world`) attributes regressions.
+A checkpoint failure becomes a `qr-ic-regression` issue against the owning lane (CONTRACTS §7).
+
+---
+
+## 13. Implementation phases
+
+Each phase's exit criteria are met on a GitHub Actions macos-14 run (Chromium, ANGLE Metal) of
+`.github/workflows/qr-prd10-world.yml`, with the run ID recorded in
+`docs/project/aura3d-quality-rebuild/evidence/prd-10/<phase>.md`. Phase 1 starts on day 0. Phases 2, 3, 4, 5 and 6
+depend only on Phase 1 outputs and the PR 0b merges, not on each other, and run in parallel inside the lane (separate
+agents). No phase waits for another lane; integrated criteria (§16.2) never gate a phase exit.
+
+**Phase 1: Day-0 foundations in PRD 10 files only (2026-10-05 →).**
+- Work: R9 correctness/honesty (bilinear `sampleTerrainHeightfield`; delete `createTerrainTileGrid`/`TerrainTilePlan`,
+  `createNamedEnvironmentPreset`; rewrite the claim headers at `TerrainTiles.ts:1-13` and `VegetationScatter.ts:134`;
+  delete the 3 aliased HDRI manifest entries); `agent-api/world/{types,biomes,wind,queries}.ts` (pure); the §6.3 rig
+  table as data with `describeBiome`; C-26 real `worldQueriesSlot.provide` (ground order, height, wind, biome); all
+  `a3d_prd10_*` chunks registered and compiled in ChunkHarness; `WorldFramePasses` skeleton (contributor registered,
+  Path S/G selection, depth-sharing probe test); lane scenes `prd10-*` (§16.1) with Aura and three r185 adapters;
+  `qr-prd10-world.yml`; flag-`none` baseline capture of every lane scene; codemod `prd10-world-migrate` in report mode.
+- Exit:
+  - `pnpm typecheck:raw`, `pnpm lint`, `pnpm test:unit` green; C-26 conformance green for `stub` and `real`.
+  - Every `a3d_prd10_*` chunk compiles in ChunkHarness on macos-14 (WebGL2). Its WGSL twin returns zero errors from
+    `GPUShaderModule.getCompilationInfo()` in the same Chromium run when `navigator.gpu` exists; otherwise the twin is
+    recorded as "unvalidated" (`tools/wgsl-validate` does not exist at `7992a0dd`; it is PRD 11's).
+  - `world-pass-depth.spec.ts` result recorded (Path S step 3 in `background` or fallback to `after-opaque`).
+  - `rg -n "createTerrainTileGrid|createNamedEnvironmentPreset" packages apps examples` returns only the throwing
+    deprecated re-exports.
+  - Baselines for all `prd10-*` scenes committed to `evidence/prd-10/phase-1.md`.
+
+**Phase 2: Terrain (R2), after PR 0b-1/0b-2 (≤ 2026-10-07 →).**
+- Scope: `world/terrain/*`, `TerrainRuntime`, `terrain` node handler, height sources (asset/procedural/array), CDLOD,
+  layer arrays, auto-splat on GPU at load, holes, collider via `HeightfieldShape`, `AuraTerrainHandle`, safe-basic path.
+- Exit: S1, S2, S3, S4 (§16.1).
+
+**Phase 3: Scatter, foliage, wind, impostors, grass (R3, R4).**
+- Scope: `InstanceChunkGrid`, `FoliageMaterial`, `ImpostorMaterial`, `GrassField`, `WindField`, `scatter`/`grass`/`wind`
+  handlers, `instances.model` world options, `tools/impostor-bake`, C-11 `prd10.wind` depth feature registration.
+- Exit: S5, S6, S7, S8 (§16.1).
+
+**Phase 4: Water (R5).**
+- Scope: `WaterMaterial`, `GerstnerWaves` (moved from `OceanSurface.ts:170-300`), `SceneCopyFallback`,
+  `ReflectionViewPass`, underwater + caustics, `water` handler, `nodes/water.ts` deprecation path; delete
+  `WaterReflectionRefractionCapture`.
+- Exit: S9, S10 (§16.1).
+
+**Phase 5: Kits, spline, placement, rooms, streets, content (R6, §6.6).**
+- Scope: `defineKit`, `world.kits.*`, `world.spline/extrude/placeAlong/placeGrid/placePoisson`, `world.room`,
+  `world.street`, `prefabs.cityBlock` rebuild, shipped content admitted through C-17 gates into
+  `packages/engine/assets/world/manifest.json` with provenance.
+- Exit: S11, S12, S13 (§16.1).
+
+**Phase 6: Biomes, time of day, space (R1, R7, R8).**
+- Scope: `prd10.biome`/`prd10.timeOfDay` C-09 sources, `biome`/`time-of-day` handlers applying C-21 sky/fog and C-13
+  preset, default-biome rules, `environments.outdoor/room/space/underwater`, `TimeOfDayRuntime` re-capture, practical
+  scale, `SpaceSkyBake`, `world.materials.planet`, lint rules, C-40 facts `F-10-01..08`.
+- Exit: S14, S15, S16 (§16.1).
+
+**Phase 7: Integrated acceptance (checkpoint-driven, never blocks merges).**
+- Exit (= completion, §21): §16.2 met at a G-PANEL round with `A3D_QR_WORLD` on in `all`, vision + human sign-off
+  recorded; flag reaches `integrated-accepted`, then `default-on` after two clean checkpoints; §7.3 removals done where
+  their conditions hold.
+
+---
+
+## 14. Task checklist
+
+Every task edits only PRD 10-owned paths (§Parallel execution) unless it says "request". File paths are relative to the
+repo root; "flag" means `A3D_QR_WORLD` (or the named sub-flag) gates the behaviour.
+
+Phase 1 (day 0):
+- [ ] T1.1 `packages/rendering/src/TerrainHeightfield.ts:133-141`: replace the `Math.round` texel pick (`:134-135`) with
+  bilinear interpolation of the 4 neighbours; add `toHeightTexture(fixture): { data: Float32Array; width; height }`.
+  Test `tests/qr/prd10/unit/terrain-bilinear.test.ts`: midpoint of a 2×2 ramp equals the mean ±1e-6.
+- [ ] T1.2 `packages/rendering/src/TerrainTiles.ts`: delete `createTerrainTileGrid` and `TerrainTilePlan` (`:15-96`),
+  replace the `:1-13` header with "budget and query utilities only"; keep a `@deprecated` `createTerrainTileGrid` that
+  throws `AuraRuntimeError("removed-world-planner")`.
+- [ ] T1.3 `packages/rendering/src/VegetationScatter.ts:134`: claim boundary names `world.scatter` as the runtime and
+  this module as an offline placement helper.
+- [ ] T1.4 `packages/rendering/src/EnvironmentPreset.ts`: delete `createNamedEnvironmentPreset` (`:47-128`) after
+  `rg -n createNamedEnvironmentPreset packages apps examples templates` shows only its definition; leave a throwing
+  `@deprecated` export.
+- [ ] T1.5 `fixtures/three-compat/environments/manifest.json`: delete `industrial-sunset-puresky`, `spruit-sunrise`,
+  `venice-sunset`; `rg` the ids in `benchmarks/` and file Q-12-1 with any hit.
+- [ ] T1.6 `packages/engine/src/agent-api/world/types.ts`, `biomes.ts`: types of §7.1.1-7.1.2 re-exporting C-26
+  types; `BIOME_RIGS: Readonly<Record<AuraBiomeId, AuraBiomeRigDetail>>` from the §6.3 table (all 11 ids, deep-frozen);
+  `describeBiome(id, tier)` applying the Low-tier variant rule; `listBiomes()`.
+- [ ] T1.7 `agent-api/world/wind.ts`: `AuraWindOptions`, `normalizeWind` (directionDeg → unit vec3, gustScale →
+  gustFrequency, defaults 35°/0.5/0.35/40 m/0.2).
+- [ ] T1.8 `agent-api/world/queries.ts`: `createWorldQueries(app)` implementing C-26 semantics (§7.1.10); provide it in
+  `packages/engine/src/lanes/prd10.ts` via `worldQueriesSlot.provide`. Add
+  `tests/unit/contracts/impl/prd10-world.test.ts`.
+- [ ] T1.9 `packages/rendering/src/lanes/prd10.ts`: `registerShaderChunk` for every `a3d_prd10_*` chunk (§8.0) with
+  GLSL and WGSL bodies from `world/**/shaders/*`; `tests/qr/prd10/browser/chunks.spec.ts` compiles each in
+  ChunkHarness.
+- [ ] T1.10 `production-runtime/world/WorldFramePasses.ts`: `registerFrameContributor({ id: "prd10.world", owner:
+  "prd10", flag: "A3D_QR_WORLD", phases: ["collect", "background", "after-opaque", "transparent"] })`; select Path G iff
+  `programCacheSlot.provided && flags.on("A3D_QR_CORE")` with value `v2`, else Path S.
+- [ ] T1.11 `tests/qr/prd10/browser/world-pass-depth.spec.ts`: a Path S `background` pass quad at z = 5 and a forward
+  box at z = 3 and z = 7; assert both occlusion orders by pixel colour. Record the result in `evidence/prd-10/phase-1.md`.
+- [ ] T1.12 `production-runtime/world/WorldDiagnostics.ts`: `registerDiagnosticsSection({ key: "world", owner: "prd10" })`
+  returning `AuraWorldDiagnostics` with `null` for anything not measured.
+- [ ] T1.13 Lane scenes: `benchmarks/quality-rebuild/scenes/prd10/index.ts` with the 9 `prd10-*` specs of §16.1,
+  `aura3d/scenes/prd10/*.ts` and `three/scenes/prd10/*.ts` adapters (three r185 `Water`, `Sky`, `InstancedMesh`
+  references); each declares `qrFlags: ["world"]`, `owner: "prd10"`.
+- [ ] T1.14 `.github/workflows/qr-prd10-world.yml`: macos-14; jobs `unit` (`pnpm test:unit -- tests/qr/prd10 tests/unit/contracts`),
+  `browser` (Playwright Chromium on `tests/qr/prd10/browser`), `capture` (dispatches PRD 12's `quality-rebuild-capture.yml` with
+  the C-33 `qr_flags` input, `world` and `none`, on `prd10-*` scenes); artifacts uploaded; run ID written by the job summary.
+- [ ] T1.15 `packages/aura3d-cli/src/commands/prd10/index.ts`: `registerCodemod("prd10-world-migrate")` in report mode
+  covering the §10 patterns, with row output `{ file, line, pattern, suggestion }`; unit test on fixtures in
+  `tests/qr/prd10/fixtures/migrate/`.
+- [ ] T1.16 `agent-api/compiler/diagnosticOnly.prd10.ts`: list `instances.model.{static,chunkSize,shadowLod,wind,impostor}`
+  and `AuraMaterialSpec.practical` until wired; `registerOptionCoverage` rows for each world builder field.
+
+Phase 2 (terrain):
+- [ ] T2.1 `world/terrain/TerrainHeightTexture.ts`: R32F `texImage2D` upload, `heightBilinear` CPU twin identical to
+  the GLSL of §8.1; test CPU vs GPU readback (one-off test readback, never in the frame) ≤ 1e-4 m on 1,000 random points.
+- [ ] T2.2 `world/terrain/TerrainCdlod.ts`: quadtree with per-node min/max height, frustum test, ranges
+  `range_l = range_0 · 2^l` scaled by C-27 `lodBias`; unit test: node count and morph ranges for a 2 km terrain.
+- [ ] T2.3 `world/terrain/TerrainPatchGeometry.ts`: shared (N+1)² grid, N from §17 tier table.
+- [ ] T2.4 `world/terrain/TerrainMaterial.ts` + `shaders/terrain.{vert,frag}.glsl.ts`, `terrain.wgsl.ts`: §8.1 exactly;
+  layer `sampler2DArray`s built from per-layer textures (PNG on Path S, KTX2 via C-16 when real).
+- [ ] T2.5 GPU auto-splat bake at load (`world/terrain/SplatBake.ts`): fullscreen pass writing RGBA8 splat from rules;
+  default rule set equals `resolveTerrainSlopeBlend`'s formula (test: identical weights ±1/255 at 64 sample points).
+- [ ] T2.6 `agent-api/world/terrain.ts`: `world.terrain` builder, `AuraTerrainHandle` (heightAt, normalAt, slopeDegAt,
+  layerWeightsAt, raycast), holes, collider (`HeightfieldShape` via `toRapierHeightfieldHeights`), procedural sources
+  (`fbm`, `ridged`, `terraced`, `flatten`).
+- [ ] T2.7 `agent-api/compiler/world.ts` + `production-runtime/world/TerrainRuntime.ts`: `registerNodeHandler({ kind:
+  "terrain" })`; Path G items in `collect`, Path S pass in `background`; safe-basic mesh with vertex-colour splat.
+- [ ] T2.8 Delete `resolveTerrainSlopeBlend` callers in PRD 10 files; keep the export `@deprecated`.
+
+Phase 3 (vegetation):
+- [ ] T3.1 `world/vegetation/InstanceChunkGrid.ts`: 32 m cells, 32 B/48 B layouts (§9.3), static buffers, per-cell
+  AABB including max wind sway, `firstInstance` emulation via attribute offset `rangeStart * stride`.
+- [ ] T3.2 `agent-api/world/scatter.ts`: Bridson Poisson per cell seeded by `hash(seed, layerIndex, cellX, cellZ)`;
+  slope/height/onLayers/mask/exclude rules; `planScatterInstances`/`enforceFrameBudget` budget; `checksum` = SHA-256 of
+  the sorted placement buffer.
+- [ ] T3.3 `world/vegetation/WindField.ts`: `A3DWind` UBO per C-26, 64² RG8 gust noise from `engine/assets/world/noise/`;
+  `registerShaderFeature("prd10.wind")` (hook `vertex:deform`) and `registerDepthVariantFeature("prd10.wind")`.
+- [ ] T3.4 `world/vegetation/FoliageMaterial.ts` + shaders: §8.3; `registerMaterialLobe("prd10.foliageTranslucency")`;
+  alpha test always, A2C only when C-04/C-15 real and MSAA on.
+- [ ] T3.5 `world/vegetation/ImpostorMaterial.ts` + shaders: §8.4; dithered crossfade over 4 m.
+- [ ] T3.6 `tools/impostor-bake/`: CLI per §9.6 and `assets bake-impostor` C-39 command; determinism test (two runs →
+  same atlas SHA-256) on the remote runner.
+- [ ] T3.7 `world/vegetation/GrassField.ts` + `GrassRuntime.ts`: §8.5; blades on Medium+, cards on Low; ring of 8 m chunks.
+- [ ] T3.8 `nodes/instances.ts`: world options on `instances.model` emit `scatter` placements when the flag is on.
+
+Phase 4 (water):
+- [ ] T4.1 `world/water/GerstnerWaves.ts`: move `oceanPresetWaves`/`evaluateWaves` (`OceanSurface.ts:170`, `:213`);
+  `OceanSurface.ts` re-exports; CPU/GPU agreement test ≤ 1e-3 m over 10 s at 100 points.
+- [ ] T4.2 `world/water/WaterMaterial.ts` + `shaders/water.{glsl,wgsl}.ts`: §8.6 with `a3dWorldEnvSpecular` and
+  `a3dSunShadowAt`; Low path without scene copy.
+- [ ] T4.3 `world/water/SceneCopyFallback.ts`: `after-opaque` blit to `prd10.scene.color.copy`/`prd10.scene.depth.copy`;
+  use `FRAME_RESOURCES.sceneColorCopy/sceneDepthCopy` when another pass publishes them (read the blackboard).
+- [ ] T4.4 `world/water/ReflectionViewPass.ts`: §9.1 step 2 with oblique clip; skip rule (< 2% coverage).
+- [ ] T4.5 `world/water/{UnderwaterState,Caustics}.ts`: §8.7; `prd10.caustics` feature; `prd10.underwaterDistortion`
+  post pass; C-21 absorption fog request Q-07-3.
+- [ ] T4.6 `agent-api/world/water.ts`, `nodes/water.ts`: `world.water`, `AuraWaterHandle`; `water.surface` emits
+  `world.water` with the flag on and warns.
+- [ ] T4.7 Delete `WaterReflectionRefractionCapture` (`OceanSurface.ts:389-455`) and `WaterSurface.ts` once `rg` shows
+  no imports outside PRD 10 files (else keep `@deprecated` and list the importers in Q-14-1).
+
+Phase 5 (kits and content):
+- [ ] T5.1 `agent-api/world/kits.ts`: `defineKit`, `place` (snap, rotation steps, sockets), `fill` (seeded); output =
+  `scatter` placement nodes per asset (§7.1.7).
+- [ ] T5.2 `agent-api/world/spline.ts`: centripetal Catmull-Rom, arc-length table, rotation-minimizing frames, banking.
+- [ ] T5.3 `world.extrude` (`agent-api/world/spline.ts`): profiles of §7.1.7, UVs in metres, adaptive segments,
+  `conformToTerrain` writes a flatten mask into the terrain height source before upload.
+- [ ] T5.4 `agent-api/world/placement.ts`: `placeAlong`, `placeGrid`, `placePoisson`, all matrix-composed.
+- [ ] T5.5 `agent-api/world/{room,street}.ts`: §7.1.8; room lights as practical lights.
+- [ ] T5.6 `nodes/prefabs/cityBlock.ts`: rebuild on `world.street` + city kit behind the flag; flag off unchanged + warning.
+- [ ] T5.7 `packages/engine/assets/world/`: admit §6.6 sets; each entry records source URL, licence (CC0/MIT only),
+  author, SHA-256, C-17 gate verdicts; `tools/world-content-bake/` bakes water normals, foam, caustics, noise and wind
+  vertex weights deterministically.
+
+Phase 6 (biomes, time of day, space):
+- [ ] T6.1 `production-runtime/world/BiomeResolver.ts`: `registerEnvironmentSource({ id: "prd10.biome", priority: 300 })`
+  and `prd10.timeOfDay` (250); resolutions with `ambient: null`, IBL > 0; default-biome rules of §6.3.
+- [ ] T6.2 `biome` node handler: apply rig sky/fog through `app.atmosphere.setSky/setFog` (C-21), sun as a directional
+  light with C-10 shadow options, C-13 preset id + overrides via RenderSource contributions.
+- [ ] T6.3 `nodes/environments.world.ts`: `environments.outdoor/room/space/underwater` (§7.1.2).
+- [ ] T6.4 `production-runtime/world/TimeOfDayRuntime.ts` + `agent-api/world/timeOfDay.ts`: NOAA solar position (±0.5°
+  vs a 20-point reference table), arc mode, keyframe interpolation rules (§6.7), re-capture scheduling, practical scale.
+- [ ] T6.5 `packages/rendering/src/EnvironmentPresetPack.ts:25-46`: drop night `exposureFactor` behind
+  `A3D_QR_WORLD_BIOME`; update its SSIM gate to per-preset references.
+- [ ] T6.6 `world/space/{SpaceSkyBake,PlanetMaterial}.ts`: §8.8; fallback cube `engine/assets/world/hdri/space-default-512.ktx2`
+  (+ PNG faces).
+- [ ] T6.7 `packages/environments/src/BiomeEnvironmentRegistry.ts`: biome HDRI ids → `engine/assets/world/hdri/*`; load
+  checks (≥ 2k for High, RGBE/EXR source, distinct SHA-256 per id).
+- [ ] T6.8 `agent-api/world/register.ts`: `registerLookLintRule` for `look/world-void` and `look/primitive-trees`.
+- [ ] T6.9 Append C-40 rows `F-10-01..08` to CONTRACTS Appendix B (append-only edit allowed by CONTRACTS §6.4).
+- [ ] T6.10 File every §12.3 request that is still open, with the exact diff text.
+
+---
+
+## 15. Test requirements
+
+All suites run remotely on GitHub Actions `macos-14` (Chromium with ANGLE Metal; the runner class of run 37289688772)
+via `.github/workflows/qr-prd10-world.yml`, plus the custodian `qr-contracts.yml` on every PR. Nothing heavy runs on the
+developer Mac. Browser tests and bakes are Playwright jobs on that runner.
+
+### 15.1 Unit (`vitest`, `tests/qr/prd10/unit/`, picked up by `pnpm test:unit`)
+- Terrain: bilinear sampling (T1.1); `TerrainCdlod` node selection, morph ranges and `lodBias` scaling; height-source
+  generators deterministic per seed; holes mask; Rapier heights row-major equality with `toRapierHeightfieldHeights`.
+- Scatter/placement: checksum stability across 3 runs and across `seed`-order permutations; budget enforcement; rule
+  filters; kit socket snapping and rotated-origin placement against analytic matrices (≤ 1e-5); spline arc-length and
+  frames; extrusion UV metres per tile (≤ 1%).
+- Wind/water/time: `normalizeWind`; Gerstner CPU sums vs closed form; steepness clamp; NOAA solar position vs a 20-row
+  reference table (≤ 0.5°); keyframe interpolation (linear RGB, log intensity, EV).
+- Biomes: `listBiomes().length === 11`; `describeBiome` deep-frozen and deterministic; every rig has
+  `ambientPolicy: "ibl-only"`, shadow strength 1.0, a valid C-13 preset id and C-21 spec union member; default-biome rules.
+- Contracts: `tests/unit/contracts/C-26-world.test.ts` green for `stub` and `real`; `tests/unit/contracts/impl/prd10-world.test.ts`.
+- C-36: option-coverage rows for every world builder field; flag-off RenderSource byte-equality for the 18 base
+  scenes' snapshots with PRD 10 registrations loaded.
+- Codemod: `prd10-world-migrate` rows on fixtures.
+
+### 15.2 Browser (`tests/qr/prd10/browser/*.spec.ts`, Playwright Chromium macos-14)
+- `chunks.spec.ts`: every `a3d_prd10_*` chunk compiles in ChunkHarness; WGSL twins via `getCompilationInfo()` when WebGPU
+  exists.
+- `world-pass-depth.spec.ts` (T1.11).
+- `terrain-gpu-cpu.spec.ts`: GPU height readback (test-only) vs CPU ≤ 1e-4 m.
+- `terrain-cracks.spec.ts`: 120-frame dolly over `prd10-terrain-flyover`; background-coloured pixels inside the terrain
+  silhouette mask = 0 in every frame.
+- `scatter-alloc.spec.ts`: instrumented `gl.createBuffer`/`createVertexArray` counts after a 60-frame warm-up stay
+  constant for 300 frames with 100k instances.
+- `wind-chunk.spec.ts`: `a3dWindOffset` in ChunkHarness vs CPU reference ≤ 1e-4; length preservation ≤ 1e-4.
+- `impostor.spec.ts`: impostor vs LOD0 silhouette IoU ≥ 0.9 at 8 view directions.
+- `water-gerstner.spec.ts`: vertex height vs `AuraWaterHandle.heightAt` ≤ 1e-3 m; `water.surface` with the flag on
+  submits 0 `box` primitives.
+- `time-of-day.spec.ts`: `app.world.timeOfDay.set(h)` leaves the snapshot version and node count unchanged; at most one
+  capture face per frame.
+- `flag-off-identity.spec.ts`: flags `none` vs `85aafcd0` on the 6 sentinel scenes within IC-0 tolerance.
+
+### 15.3 Capture (C-30/C-33)
+- Every `prd10-*` scene captured with `qr_flags=world` and `none`, both engines (three r185 adapter), desktop 1280×720 at
+  DPR 1 and 2, and the mobile viewport 390×844 at DPR 3 (render scale per C-27 Low/Medium).
+- Each run stores `ReadyPayloadV2` (qrFlags, applied exposure, tone mapping), `diagnostics().world`, FLIP/SSIM/ΔE2000 per
+  PRD 12 metrics, and frame-time p50/p95 per tier.
+
+### 15.4 Negative controls
+- Broken controls `flat-sky` and `albedo-only` (C-30) on `prd10-biomes-*` and `prd10-terrain-layers` must lower the PRD 12
+  metrics and the vision screening score; if they do not, the scene is not discriminative and is fixed before use.
+
+---
+
+## 16. Visual acceptance tests
+
+### 16.1 Standalone acceptance (gates PRD 10 merges and `standalone-accepted`)
+
+Passable with PR 0 stubs, today's renderer and `A3D_QR_WORLD` on, on the lane workflow. These are engineering and
+determinism gates; renders produced here are recorded, **not** claimed as quality (CONTRACTS §8 row 10).
+
+Lane scenes (C-30, both adapters): `prd10-terrain-flyover`, `prd10-terrain-layers`, `prd10-forest-wind`,
+`prd10-meadow-grass`, `prd10-coast-water`, `prd10-city-street`, `prd10-interior-room`, `prd10-biomes-sweep` (one capture per
+biome id, 11 frames), `prd10-space-orbit`.
+
+| # | Criterion | Measured by |
+|---|---|---|
+| S1 | Terrain CPU/GPU/physics height agreement ≤ 1e-4 m (1,000 points); `ground().raycastDown` hits terrain first | 15.1, `terrain-gpu-cpu.spec.ts` |
+| S2 | CDLOD: 0 crack pixels over 120 frames; per-frame terrain-region luma delta p99 ≤ 0.02 on a slow dolly (no popping) | `terrain-cracks.spec.ts`, capture strip |
+| S3 | Terrain renders ≥ 4 sampled layers (`diagnostics().world.terrain[0].layers ≥ 4`); rock vs grass region mean ΔE2000 ≥ 10; terrain region is not a flat colour (per-pixel luma std-dev ≥ 0.03) | capture + masks |
+| S4 | Terrain CPU selection ≤ 0.15 ms p95 (2 km, 6 levels); draws ≤ LOD levels + 1 | frame timing, diagnostics |
+| S5 | Scatter checksum identical across 3 runs, Node vs browser, and evaluation-order permutations | 15.1 |
+| S6 | 100k scatter instances: 0 buffer/VAO allocations after warm-up; draws ≤ 1 per (cell group × LOD band) | `scatter-alloc.spec.ts` |
+| S7 | Wind chunk matches CPU reference ≤ 1e-4; foliage visibly moves (per-pixel delta in foliage mask over 1 s ≥ 1% of pixels) | `wind-chunk.spec.ts`, strip |
+| S8 | Impostor bake deterministic (same SHA-256 twice); impostor/LOD0 IoU ≥ 0.9 at 8 views | `impostor.spec.ts` |
+| S9 | Water vertex height = `heightAt` ≤ 1e-3 m; `water.surface` (flag on) submits 0 box primitives | `water-gerstner.spec.ts` |
+| S10 | Water reflection/refraction mode per tier reported as configured in §17; planar pass skipped below 2% coverage | diagnostics, unit |
+| S11 | Kits/placement: analytic matrix agreement ≤ 1e-5 under rotated origins; 0 `group` nodes emitted | 15.1 |
+| S12 | Extrusion: UV metres per tile within 1%; `conformToTerrain` max gap ≤ 0.02 m | 15.1 |
+| S13 | Shipped content: every asset CC0/MIT with provenance + SHA-256; every model has base colour + normal + LOD1 (or a recorded stylized decision); C-17 gates pass; bytes within §17.3 | admission report |
+| S14 | Biomes: 11 rigs pure/deterministic; each biome scene resolves C-09 kind `"biome"` with `ambient: null` and IBL intensity > 0; a sky node is submitted (no single clear-colour world scene with a world signal) | 15.1, diagnostics |
+| S15 | Time of day: solar ±0.5°; no remount on `set`; ≤ 1 capture face/frame; practical scale changes PRD 10 practical lights | `time-of-day.spec.ts` |
+| S16 | Flag-off identity within IC-0 tolerance on the 6 sentinels; no string in PRD 10 files claims impostors, rendering or parity that a test does not measure (`rg` audit list in evidence) | `flag-off-identity.spec.ts`, audit |
+
+### 16.2 Integrated acceptance (evaluated only at G-PANEL checkpoints; never blocks)
+
+Judged with `qr_flags=all` (Path G active), 2 human judges + 1 vision model (PRD 12 rubric, C-32), same capture
+conditions for both engines. Medians on the 0-10 scale.
+
+| # | Criterion | Needs (contracts real) |
+|---|---|---|
+| I1 | Each `prd10-*` scene: Aura median ≥ 6.5 and ≥ three r185 median − 0.5 | C-02, C-03, C-09, C-11, C-13, C-21 |
+| I2 | Base scenes 09-outdoor, 13-ibl-only, 16-instancing, 17-large-environment, 18-game-scene: Aura median ≥ three median (23: 5.5 / 6 / 4.5 / 4.5 / 5.0) | + R18 fix (15), C-16 |
+| I3 | Games that adopted `world.*` (PRD 14's choice, per `games.json` `qrFlags`): `environment_world` ≥ 6 and `atmospheric_effects` ≥ 5 per game; mean `environment_world` over all 18 games ≥ 5 (from 2.7, research 21) | + PRD 14 adoption |
+| I4 | Foliage shadows move with wind and cards cast cutout shadows (shadow-receiver mask IoU vs a reference ≥ 0.85) | C-11 |
+| I5 | Biome IBL is pixel-backed (`iblPixelBacked: true`) and the `flat-sky` broken control scores ≥ 1.5 lower | C-09, C-21 |
+| I6 | §17 budgets met per tier on the checkpoint runner with all flags on | C-27, C-28 |
+| I7 | No vision-judge complaint of class "void", "flat grey ground", "lollipop/primitive trees", "box water" on adopted games | all of the above |
+
+---
+
+## 17. Performance budgets
+
+Tier names and shared settings are C-27 `QUALITY_TIERS` (frozen). World values below are PRD 10's own tables, keyed by
+the resolved tier. GPU numbers are targets at the tier's reference resolution (Low: mobile 1170×2532 at render scale
+0.5; Medium: 1080p integrated GPU; High: 1440p discrete; Ultra: 4K discrete). They are measured on the checkpoint
+runner (macos-14, Apple Paravirtual GPU) for regression tracking; numbers for real mobile hardware are "unmeasured"
+until a device run exists. Timer-query numbers are reported only when `EXT_disjoint_timer_query_webgl2` exists.
+
+### 17.1 Per-system budgets
+
+| System / parameter | Low | Medium | High | Ultra |
+|---|---|---|---|---|
+| Terrain patch N / LOD levels / layers | 32 / 4 / 4 (no triplanar) | 64 / 6 / 4 (triplanar rock) | 64 / 6 / 8 | 64 / 7 / 8 + baked normal |
+| Terrain GPU ms | 1.0 | 1.2 | 1.8 | 2.5 |
+| Scatter visible: mesh / impostor / rocks | 1k / 10k / 5k (impostor > 25 m) | 3k / 20k / 10k | 6k / 40k / 20k | 10k / 80k / 30k |
+| Scatter GPU ms (incl. alpha-test overdraw) | 1.0 | 1.5 | 2.2 | 3.0 |
+| Scatter shadow casters | none | near cascade ≤ 40 m | near ≤ 60 m + impostors far | all cascades |
+| Grass | cards ≤ 15 m, ~40k | blades 10/m² ≤ 30 m | 20/m² ≤ 45 m | 32/m² ≤ 60 m |
+| Grass GPU ms | 0.5 | 1.0 | 1.8 | 2.5 |
+| Water reflection / refraction / waves | IBL / off / 4 | IBL / on / 4 | planar half-res / on / 8 | planar / on / 8 |
+| Water GPU ms | 0.3 | 0.6 | 2.1-3.6 | 3-5 |
+| Sky re-capture face size / cadence | 64² / 1 face per 4 frames | 128² / 1 per frame | 256² / 1 per frame | 256² / 1 per frame |
+| Space bake | 512² RGBA8+RGBM | 512² RGBA16F | 1024² RGB9E5 | 1024² RGB9E5 |
+| World CPU ms/frame (selection, culling, uniforms) | ≤ 0.5 | ≤ 0.5 | ≤ 0.6 | ≤ 0.8 |
+| World draw calls (share of C-27 `drawBudget` 150/300/600/1500) | ≤ 60 | ≤ 120 | ≤ 240 | ≤ 500 |
+| Total world GPU ms (all of the above in one scene) | ≤ 3.5 | ≤ 5.0 | ≤ 8.0 | ≤ 12.0 |
+
+### 17.2 GPU memory (world resources, resident)
+
+| Tier | Budget | Composition at the cap |
+|---|---|---|
+| Low | 96 MB | terrain 4 layers × 512² KTX2 (≈ 4.5 MB), height 513² R32F (1 MB), 2 species impostors at 1024² (8 MB), grass atlas, water normals, 1k HDRI or sky capture |
+| Medium | 192 MB | 4 layers × 1k (17 MB), height 1025² (4.2 MB), splat ×1 (5.6 MB), 4 species (32 MB), 100k instances (3.2 MB), SceneColorCopy 1080p (16.6 MB), 2k HDRI (8 MB) |
+| High | 320 MB | 8 layers (34 MB), splat ×2, 6 species, planar RT (6 MB), double PMREM |
+| Ultra | 512 MB | High + baked normal map, 1024² space cube |
+
+Over budget at load: drop layer resolution one step, then impostor atlas size, then warn with
+`world.memory.reduced`. The uncompressed PNG path (C-16 stub) multiplies texture bytes ×4; on Path S the budget check
+uses actual uploaded bytes, so Low may drop to 4 layers × 256² and reports it.
+
+### 17.3 Shipped asset bytes (`packages/engine/assets/world/`, lazy-loaded, never in the JS bundle)
+
+Terrain layers ≤ 30 MB (10 layers × 1k + 512 KTX2, PNG fallbacks ≤ 60 MB stored via LFS); foliage ≤ 48 MB; rocks
+≤ 4 MB; water + noise ≤ 1.8 MB; HDRIs ≤ 40 MB (5 × 2k + 1k); city ≤ 15 MB; interior ≤ 10 MB; trackside ≤ 8 MB; space
+≤ 14 MB. A route downloads only the sets its scene references.
+
+### 17.4 Bundle (gzip)
+
+- Root `@aura3d/engine` entry growth from PRD 10: ≤ 1.5 KB (lane barrel with lazy factories, type-only re-exports).
+- World runtime chunk loaded on first world node: ≤ 56 KB (R1 4 + R2 14 + R3 12 + R4 4 + R5 10 + R6 6 + R7 3 + R8 3).
+- Measured with the existing bundle-size tooling (`tools/bundle-size/`, PRD 11-owned; run, not edited) in the lane
+  workflow; regressions above budget fail PRD 10's own job.
+
+## 18. Browser coverage
+
+| Browser (macos-14 runner) | Standalone (Path S) | Notes |
+|---|---|---|
+| Chromium, WebGL2 (ANGLE Metal) | required for all §16.1 criteria | reference runner |
+| Firefox, WebGL2 | required for S1, S3, S5, S9, S14 functional checks | timer queries usually absent → GPU ms `null` |
+| WebKit (Playwright), WebGL2 | required for S1, S3, S5, S9, S14 | R32F `texelFetch` path (no float-linear needed) |
+| Any, WebGPU | excluded from standalone until Q-11-1 lands; `WGSL_PROGRAM_MISSING` degradation must be recorded, never flat colour | integrated only |
+
+Safe-basic renderer: S9 (no box water) and S14 (sky node submitted) also run with `renderer: "safe-basic"`.
+
+## 19. Mobile coverage
+
+- Playwright device emulation on macos-14 (iPhone 13 390×844 DPR 3 WebKit; Pixel 7 412×915 DPR 2.625 Chromium) with
+  `?aura3d-quality=low` and `medium`. This validates layout, tier selection (C-27 `"auto"` → medium on coarse pointer),
+  Low-tier fallbacks (grass cards, no refraction, IBL water, 4 terrain layers) and memory accounting. It does not measure
+  mobile GPU time.
+- Touch-only interaction is not needed by world systems; no gesture tests.
+- Real-device GPU numbers in §17 stay "target, unmeasured" until a device-farm run is recorded in
+  `evidence/prd-10/mobile.md`.
+
+## 20. Screenshots and evidence required
+
+Stored under `docs/project/aura3d-quality-rebuild/evidence/prd-10/` with the GH Actions run ID, commit SHA, runner
+string, `qrFlags` and tier for every image:
+- Per phase: `phase-N.md` with run IDs and the §16.1 table filled with measured values.
+- For each `prd10-*` scene: Aura and three r185 frames at 1280×720 DPR 1 and 2 and the mobile viewport, flags `world`
+  and `none`; 8-frame strips for wind, water and time-of-day; region masks (terrain, foliage, water, sky).
+- `biomes-sweep.png` contact sheet of all 11 rigs (Path S label stamped on Path S captures).
+- Diagnostics JSON (`diagnostics().world`) next to each capture.
+- At G-PANEL rounds: the `PanelRoundRecord` excerpt for PRD 10 scenes and adopted games, leave-one-out deltas, and the
+  judges' verbatim notes for any score below the §16.2 bar.
+No capture produced with stubs is labelled as a quality result.
+
+## 21. Completion criteria
+
+1. Every §14 task is checked, or moved with a reason to §24 or to a §12.3 request.
+2. §16.1 S1-S16 pass on the lane workflow; `A3D_QR_WORLD` is `standalone-accepted`.
+3. §16.2 I1-I7 pass at one G-PANEL checkpoint with `qr_flags=all`, vision + human sign-off recorded; the flag reaches
+   `integrated-accepted`, then `default-on` after two consecutive clean checkpoints (CONTRACTS §5.3).
+4. C-26 real passes its conformance suite; facts `F-10-01..08` are `verified` in Appendix B.
+5. §7.3 removals done where 0 call sites remain; the rest are listed with their remaining callers.
+
+## 22. Rollback
+
+- Every behaviour change except T2 (bilinear height, declared fix) is behind `A3D_QR_WORLD` or a sub-flag; rollback is
+  turning it off (`?a3d-qr=-world`, `A3D_QR=-world`, or per-route opt-out). The C-26 stub remains the flag-off path.
+- Sub-flag rollback isolates a system: `-world_water`, `-world_terrain`, `-world_biome`.
+- A merged PR that turns main red is reverted immediately (CONTRACTS §6.1); PRD 10 re-lands.
+- T2 rollback: revert the single commit; PRD 12 restores previous baselines.
+- Deleted planners keep throwing re-exports for one minor version, so a downstream import failure is explicit.
+- Shipped assets are additive files; removing a set only affects scenes that reference it, which fail loudly.
+
+## 23. Risks
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Path S `background`-phase depth is not shared with ForwardPass | world opaque mis-occludes | T1.11 decides on day 0; fallback `after-opaque` with documented transparent-order deviation |
+| C-02 generator lands late or never covers custom vertex hooks | world surfaces lack shared lighting/shadows; integrated scores stay low | Path S keeps standalone value; integrated criteria wait for checkpoints; hook needs filed early as CCR if missing |
+| C-09 crossfade field rejected (CCR-10-1) | visible IBL pop at time-of-day captures | hard cut limited to captures every ≥ 1.5° of sun; option to disable re-capture |
+| Licence or availability of candidate CC0 packs changes | content gap | multiple candidates per set (§6.6); admission blocks non-CC0/MIT; procedural bakes for water/noise/space |
+| Alpha-tested foliage overdraw on Low | frame-time misses | impostors from 25 m, card-only grass, budget enforcement; tier drop via C-27 governor |
+| Physics/visual height mismatch after T2 changes existing games | gameplay drift | declared fix; PRD 12 re-baseline; affected routes listed for PRD 14 |
+| Vision judges reward painted plates over 3D worlds | misleading scores | rubric lines via Q-12-1; human panel required for acceptance |
+| WebGPU coverage slips | WebGPU users get WebGL2 or degraded worlds | explicit degradation, never flat colour; integrated only |
+
+## 24. Out of scope
+
+- Occlusion culling, HLOD, mesh simplification at runtime (07 §3.4).
+- Terrain streaming beyond one resident heightfield, erosion simulation, runtime sculpting, voxel/cave terrain.
+- FFT ocean, rivers with flow-map authoring tools, foam particles (VFX lane), buoyancy physics beyond `heightAt/normalAt`.
+- Procedural tree generation at runtime (L-system stays an offline input), seasonal growth.
+- Editing routes, templates, skills, shared benchmarks or another lane's files (handled by §12.3 requests and C-40 facts).
+- Any claim that Aura3D world rendering matches or beats three.js outside a G-PANEL round (§16.2).
 
