@@ -119,9 +119,9 @@ Measured on GitLab (2026-10-05). Job durations include about 1–1.5 minutes of 
 | Full 18-game capture from production routes (pipeline 2915390729) | 1,334 s | ≈ 133 |
 | 18-scene benchmark (pipeline 2915390729) | 163 s | ≈ 16 |
 | GPU probe on 2 macOS images (pipeline 2915365880) | 2 × ≈ 100 s | ≈ 20 |
-| 2-game capture with `local=true`, one desktop viewport, `mobile=false` | see the next row | measured below |
+| 2-game capture, `local=true`, one desktop viewport, `mobile=false` (pipeline 2915484179) | 222 s | ≈ 22 |
 
-Local-build runs also pull LFS (about 1.7 GB) and build the selected games, so they cost more than production-route runs. Record the measured cost of your first one in your lane's evidence.
+A local-build run pulls LFS and builds only the selected games. On top of the shared install, expect roughly 1–2 minutes of wall time per game, so a full 18-game `local=true` checkpoint costs more than the production-route figure above. Record the first measured value in IC-0 evidence.
 
 Spending rules:
 - Prefer targeted runs: `games=<only the games you touched>`, one desktop viewport (`viewports=1920x1080`), and `mobile=false` unless you are judging mobile. Or run lane scenes only.
