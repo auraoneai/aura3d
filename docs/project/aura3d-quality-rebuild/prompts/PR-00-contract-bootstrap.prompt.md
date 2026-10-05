@@ -68,19 +68,24 @@ Branch: `qr/pr0a-contract-bootstrap`. Title: `[QR-00] PR 0a: contract types, stu
 
 Each 0b PR description must include a script that shows moved line counts equal to source line counts, and must state "0 changed logic lines".
 
-## Acceptance (remote only, GitHub Actions)
+## Acceptance (remote only; routed per `docs/project/aura3d-quality-rebuild/CI-ROUTING.md`)
 
 1. `pnpm typecheck:raw`, `pnpm lint`, `pnpm test:unit` and `pnpm test:integration` are green. No pre-existing test changes, except import paths for moved internals.
 2. `tests/unit/public-api-contracts.test.ts` is green, and exports are a superset of `85aafcd0`.
 3. Every conformance suite passes on stubs.
 4. `node tools/qr-ownership/check.mjs` passes.
-5. **IC-0 identity run.** Dispatch `.github/workflows/quality-rebuild-capture.yml` with `qr_flags=none`: 18 games and 18 base benchmark scenes. Also re-run one fresh capture of `85aafcd0` as the noise baseline; the reference run is 37289688772. Per-image ΔE2000 p99 must be at or below that noise. Record both run IDs in `docs/project/aura3d-quality-rebuild/evidence/prd15/baselines/phase0.json`.
+5. **IC-0 identity run on GitLab macOS.** GitLab is the canonical provider for judged frames.
+   - **Noise floor first.** Create the GitHub branch `qr/prd15-ic0-base` at the head of `aura3d-quality-rebuild/audit`. That head is the `85aafcd0` engine code plus only the CI and capture-tooling commits. Push it to GitHub only; the bridge mirrors it. Run `[qr-gitlab:all local=true]` on it twice (empty commits carrying the tag, or two dispatches). The two runs give the GitLab noise floor. `85aafcd0` itself cannot run: it has no `.gitlab-ci.yml` and no headless-shell support.
+   - **Identity run.** Run `[qr-gitlab:all local=true]` on each PR 0 branch. Per-image ΔE2000 p99 against the `qr/prd15-ic0-base` runs must be at or below the noise floor. Only `flags=none` is possible until your own 0b-3 adds `--flags` to the capture tools. When 0b-3 lands, remove the `flags != none` guards in `.github/workflows/qr-gitlab-ci.yml` and `.gitlab-ci.yml` in the same PR. Lane 12 owns those files, so request the change with a `qr-request` issue or include lane 12 on the PR.
+   - Do not compare against GitHub run 37289688772. It used a different provider and browser channel and is historical audit evidence only.
+   - Record every GitLab pipeline id and GitHub run id in `docs/project/aura3d-quality-rebuild/evidence/prd15/baselines/phase0.json`.
+6. **Sentinel baseline on GitHub.** After `benchmarks/quality-rebuild/sentinels.json` exists, capture its scenes flag-off on GitHub `macos-14` from `main`, twice. Create a stub listing 6 base scenes if lane 12 has not landed it yet. The two runs set the GitHub sentinel baseline and noise floor that every PR's flag-off sentinel identity check uses. Never use the GitLab IC-0 floor for this check.
 
 Size budget: about 2,500 new lines and about 9,000 moved lines. Do not exceed it by adding behaviour.
 
 ## Rules
 
-- Remote execution only. Never use local Docker, local Playwright or local captures; quick local `tsc` is fine. Keep each Write/Edit tool call under about 250 lines.
+- Remote execution only, routed per `CI-ROUTING.md`: PR gates on GitHub Actions; captures and IC-0 on GitLab macOS through `qr-gitlab-ci.yml`. Never use local Docker, local Playwright or local captures; quick local `tsc` is fine. Never push to the GitLab mirror directly. Keep each Write/Edit tool call under about 250 lines.
 - Stage specific files, don't force-push, and don't skip hooks. End commits with the repo's attribution convention.
 - Ignore chat messages addressed to a coordinator if you are running inside an orchestrated workflow.
 - Never describe PR 0 as a quality improvement. It is pixel-neutral by definition.

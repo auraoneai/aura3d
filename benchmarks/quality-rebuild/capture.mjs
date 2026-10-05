@@ -295,7 +295,10 @@ async function main() {
   mkdirSync(args.out, { recursive: true });
   const { server, port } = await startStaticServer(args.dist);
   const baseUrl = `http://127.0.0.1:${port}`;
-  const browser = await chromium.launch({ channel: "chromium", headless: true, args: launchArgs() });
+  // QR_BENCH_CHANNEL=headless-shell uses chromium-headless-shell; required on GitLab saas-macos runners,
+  // where full Chromium crashes on the second page (tools/quality-rebuild-capture/gpu-probe.mjs).
+  const benchChannel = process.env.QR_BENCH_CHANNEL === "headless-shell" ? undefined : (process.env.QR_BENCH_CHANNEL || "chromium");
+  const browser = await chromium.launch({ channel: benchChannel, headless: true, args: launchArgs() });
   const report = {
     schema: "aura3d-quality-rebuild-report/1.0",
     generatedAt: new Date().toISOString(),
@@ -307,6 +310,10 @@ async function main() {
       ci: Boolean(process.env.CI),
       runner: process.env.RUNNER_OS ? `${process.env.RUNNER_OS}/${process.env.RUNNER_ARCH ?? ""}` : null,
       githubRunId: process.env.GITHUB_RUN_ID ?? null,
+      ciProvider: process.env.GITLAB_CI ? "gitlab" : process.env.GITHUB_ACTIONS ? "github" : "local",
+      gitlabPipeline: process.env.CI_PIPELINE_ID ?? null,
+      githubTriggerRun: process.env.QR_GITHUB_RUN || null,
+      browserChannel: process.env.QR_BENCH_CHANNEL || "chromium",
       browserVersion: browser.version(),
       launchArgs: launchArgs(),
       assetCopy: existsSync(join(args.dist, "qr-assets", "asset-copy-report.json"))

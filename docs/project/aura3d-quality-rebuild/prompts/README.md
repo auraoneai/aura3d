@@ -9,7 +9,14 @@ These are ready-to-paste prompts for running the rebuild with coding agents (Cla
    - Lanes branch from the PR 0a branch once it is pushed. Before that, they work in new lane-owned files.
    - No lane waits for another lane or for PR 0 to merge.
 3. Lane 15 owns PR 0. If you run `LANE-15` and `PR-00` as separate agents, the lane-15 agent coordinates through the PR 0a branch instead of redoing it.
-4. Every Thursday from 2026-10-15, integration checkpoints run the 18 benchmark scenes and 18 games with all flags on and off. Every 4th checkpoint (IC-4, IC-8, IC-12, …) is a G-PANEL round, the only place visual acceptance is decided. Checkpoints never block lane work.
+4. Every Thursday from 2026-10-15, integration checkpoints run the 18 benchmark scenes and 18 games with all flags on and off, on GitLab macOS. Every 4th checkpoint (IC-4, IC-8, IC-12, …) is a G-PANEL round, the only place visual acceptance is decided. Checkpoints never block lane work.
+
+## CI: GitHub plus GitLab
+
+All CI routing is in `../CI-ROUTING.md`, and every prompt points agents there.
+- **PR gates** run on GitHub Actions; the repo is public, so they're free.
+- **Captures, benchmarks and perf runs** go to the GitLab mirror's macOS runners, which have a 50,000-minute monthly quota. They go through `.github/workflows/qr-gitlab-ci.yml`, which syncs the branch, triggers the pipeline and brings results back as a GitHub check plus an artifact.
+- **Budget:** each lane gets about 2,400 GitLab compute minutes a month.
 
 | Prompt | Lane |
 |---|---|
