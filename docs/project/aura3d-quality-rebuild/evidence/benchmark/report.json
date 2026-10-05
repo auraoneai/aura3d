@@ -1,0 +1,4961 @@
+{
+  "schema": "aura3d-quality-rebuild-report/1.0",
+  "generatedAt": "2026-10-05T09:28:17.910Z",
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "23.6.0",
+    "node": "v22.23.2",
+    "ci": true,
+    "runner": "macOS/ARM64",
+    "githubRunId": "37289688772",
+    "browserVersion": "147.0.7727.15",
+    "launchArgs": [
+      "--ignore-gpu-blocklist",
+      "--enable-gpu-rasterization",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--force-color-profile=srgb",
+      "--use-angle=metal",
+      "--enable-gpu"
+    ],
+    "assetCopy": {
+      "copied": 14,
+      "skipped": []
+    },
+    "gpu": {
+      "webgl2": true,
+      "vendor": "Google Inc. (Apple)",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+      "maxSamples": 4,
+      "floatColorBuffer": true
+    }
+  },
+  "scenes": [
+    {
+      "scene": "01-simple-geometry",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "01-simple-geometry",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/01-simple-geometry/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "01-simple-geometry",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 6. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 7,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "product/material scene has no explicit IBL environment node",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 4 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+            ],
+            "errors": [],
+            "loadMs": 1260,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.4,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 4,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.26926878718570296,
+                    -0.2635762017415913,
+                    -0.22006740048702442,
+                    0,
+                    0,
+                    0.2353358944121351,
+                    -0.3851179508522927,
+                    0,
+                    -0.35902504958093723,
+                    -0.19768215130619346,
+                    -0.16505055036526833,
+                    0,
+                    0.03971567178716739,
+                    -0.1800775888608014,
+                    -0.19861204305269103,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 7
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 2014,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "01-simple-geometry",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/01-simple-geometry/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "01-simple-geometry",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 7,
+            "triangles": 8346,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 523,
+            "extra": {
+              "revision": "185",
+              "programs": 3,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1011,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 4.415160590277778,
+        "meanAbsDiffPerChannel": {
+          "r": 3.2103363715277777,
+          "g": 4.21453125,
+          "b": 5.820614149305555
+        },
+        "psnr": 26.478666680121627,
+        "ssim": 0.9836834211248043,
+        "ssimMinWindow": -0.045578499684414006,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.03814561631944444,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 90.05424914593613,
+          "three": 86.14767274367408
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/01-simple-geometry/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/01-simple-geometry/diff.png"
+    },
+    {
+      "scene": "02-pbr-product",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "02-pbr-product",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/02-pbr-product/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "02-pbr-product",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 3. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 7,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 2 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 4845,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 4,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.39838452963348675,
+                    -0.3880734031521107,
+                    -0.2857306922248011,
+                    0,
+                    0,
+                    0.3363302827318293,
+                    -0.4762178203746685,
+                    0,
+                    -0.5975767944502302,
+                    -0.2587156021014071,
+                    -0.19048712814986737,
+                    0,
+                    0,
+                    -0.2862192005605053,
+                    -0.40526438099237105,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "antiqueCamera",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 5307,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/antique-camera.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "02-pbr-product",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/02-pbr-product/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "02-pbr-product",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 7,
+            "triangles": 40518,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 2324,
+            "extra": {
+              "revision": "185",
+              "programs": 5,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 2916,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/antique-camera.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 4.246821831597222,
+        "meanAbsDiffPerChannel": {
+          "r": 4.408757595486111,
+          "g": 4.269419487847222,
+          "b": 4.062288411458334
+        },
+        "psnr": 25.030954833130888,
+        "ssim": 0.9688664795405639,
+        "ssimMinWindow": -0.4187959611456748,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.08443793402777777,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 76.56577414254319,
+          "three": 79.65989443145287
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/02-pbr-product/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/02-pbr-product/diff.png"
+    },
+    {
+      "scene": "03-damaged-helmet",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "03-damaged-helmet",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/03-damaged-helmet/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "03-damaged-helmet",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 1,
+            "warnings": [
+              "Scene has no lights. Suggested fix: add lights.studio() or lights.ambient().",
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 0 Aura primitives on webgl2.",
+              "Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."
+            ],
+            "errors": [],
+            "loadMs": 3086,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": true,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "aura3d-root-production-fallback-key-shadow",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "damagedHelmet",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3675,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/damaged-helmet.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "03-damaged-helmet",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/03-damaged-helmet/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "03-damaged-helmet",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              }
+            ],
+            "drawCalls": 1,
+            "triangles": 15452,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 823,
+            "extra": {
+              "revision": "185",
+              "programs": 1,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1101,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 2.9108376736111112,
+        "meanAbsDiffPerChannel": {
+          "r": 2.9078233506944446,
+          "g": 2.941400824652778,
+          "b": 2.883288845486111
+        },
+        "psnr": 25.86668132563803,
+        "ssim": 0.9590503275799239,
+        "ssimMinWindow": -0.7696613075817667,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.05022894965277778,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 41.22088886313072,
+          "three": 39.616224471851154
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/03-damaged-helmet/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/03-damaged-helmet/diff.png"
+    },
+    {
+      "scene": "04-clearcoat",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "04-clearcoat",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/04-clearcoat/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "04-clearcoat",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 27,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 0 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 3284,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "material",
+                "exposure": 0.78,
+                "evidence": "material labs keep chrome/glass highlight detail without clipping"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": false,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 2048,
+                "label": "aura3d-root-production-material-2048px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 0,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "clearCoatTest",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3778,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/clear-coat-test.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "04-clearcoat",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/04-clearcoat/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "04-clearcoat",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              }
+            ],
+            "drawCalls": 27,
+            "triangles": 37116,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 1567,
+            "extra": {
+              "revision": "185",
+              "programs": 11,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 2088,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/clear-coat-test.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 3.800118634259259,
+        "meanAbsDiffPerChannel": {
+          "r": 3.320276692708333,
+          "g": 3.47037109375,
+          "b": 4.609708116319444
+        },
+        "psnr": 26.75274211526208,
+        "ssim": 0.9556973750142738,
+        "ssimMinWindow": -0.2977581131684797,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.12518012152777777,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 57.89648699571402,
+          "three": 59.437732148729474
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/04-clearcoat/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/04-clearcoat/diff.png"
+    },
+    {
+      "scene": "05-transmission",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "05-transmission",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/05-transmission/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "05-transmission",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 5,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 0 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 2853,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": false,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 0,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "compareTransmission",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3350,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/compare-transmission.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "05-transmission",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/05-transmission/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "05-transmission",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              }
+            ],
+            "drawCalls": 8,
+            "triangles": 13060,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 1770,
+            "extra": {
+              "revision": "185",
+              "programs": 6,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 2315,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 12.082061993634259,
+        "meanAbsDiffPerChannel": {
+          "r": 12.233460286458333,
+          "g": 12.012821180555555,
+          "b": 11.99990451388889
+        },
+        "psnr": 18.86067450954857,
+        "ssim": 0.945537301341386,
+        "ssimMinWindow": -0.6355724896532241,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.2357790798611111,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 79.6684573028691,
+          "three": 91.42251094192089
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/05-transmission/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/05-transmission/diff.png"
+    },
+    {
+      "scene": "06-metal-roughness-sweep",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "06-metal-roughness-sweep",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/06-metal-roughness-sweep/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "06-metal-roughness-sweep",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 12,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 12 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 2892,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": false,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 0,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 3538,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "06-metal-roughness-sweep",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/06-metal-roughness-sweep/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "06-metal-roughness-sweep",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              }
+            ],
+            "drawCalls": 12,
+            "triangles": 47616,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 218,
+            "extra": {
+              "revision": "185",
+              "programs": 1,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 421,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/studio_small_08_1k.hdr",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 4.341656539351852,
+        "meanAbsDiffPerChannel": {
+          "r": 4.861739366319444,
+          "g": 4.291012369791667,
+          "b": 3.8722178819444446
+        },
+        "psnr": 25.771287971412463,
+        "ssim": 0.9638068028420018,
+        "ssimMinWindow": -0.45966293735253083,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.12012261284722223,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 54.253609429519955,
+          "three": 57.55178929495197
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/06-metal-roughness-sweep/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/06-metal-roughness-sweep/diff.png"
+    },
+    {
+      "scene": "07-sheen-fabric",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "07-sheen-fabric",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/07-sheen-fabric/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "07-sheen-fabric",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 20,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 0 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 3189,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": false,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 0,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "sheenTestGrid",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3647,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/sheen-test-grid.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "07-sheen-fabric",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/07-sheen-fabric/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "07-sheen-fabric",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              }
+            ],
+            "drawCalls": 20,
+            "triangles": 21646,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 466,
+            "extra": {
+              "revision": "185",
+              "programs": 3,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 763,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/studio_small_08_1k.hdr",
+              "failure": "net::ERR_ABORTED"
+            },
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/sheen-test-grid.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 6.448203125,
+        "meanAbsDiffPerChannel": {
+          "r": 6.094385850694445,
+          "g": 7.712731119791667,
+          "b": 5.5374924045138885
+        },
+        "psnr": 23.524009499542025,
+        "ssim": 0.9541568484495841,
+        "ssimMinWindow": -0.26456145383226726,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.20049913194444444,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 62.377824687763834,
+          "three": 68.75600774654784
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/07-sheen-fabric/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/07-sheen-fabric/diff.png"
+    },
+    {
+      "scene": "08-skinned-character",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "08-skinned-character",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/08-skinned-character/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "08-skinned-character",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 2.5. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 3,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 1 typed GLB actor and 1 Aura primitive on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 3249,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 0.6,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 2,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    1.1133841778645868,
+                    -0.4029608361944627,
+                    -0.3553879236201157,
+                    0,
+                    0,
+                    0.654811358816002,
+                    -0.7107758472402314,
+                    0,
+                    -0.7422561185763912,
+                    -0.6044412542916942,
+                    -0.5330818854301735,
+                    0,
+                    0.018539394944683502,
+                    -0.47815600555092735,
+                    -0.5487245308269403,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "cesiumMan",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3767,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/cesium-man.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "08-skinned-character",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/08-skinned-character/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "08-skinned-character",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 3,
+            "triangles": 9346,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 943,
+            "extra": {
+              "revision": "185",
+              "programs": 5,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1396,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/studio_small_08_1k.hdr",
+              "failure": "net::ERR_ABORTED"
+            },
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/cesium-man.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 2.6258973524305556,
+        "meanAbsDiffPerChannel": {
+          "r": 2.8755392795138888,
+          "g": 2.6465049913194445,
+          "b": 2.3556477864583334
+        },
+        "psnr": 29.725009943365016,
+        "ssim": 0.9886999829866697,
+        "ssimMinWindow": 0.048435022622458974,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.05781575520833333,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 71.42196115912589,
+          "three": 72.31616608141323
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/08-skinned-character/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/08-skinned-character/diff.png"
+    },
+    {
+      "scene": "09-outdoor-environment",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "09-outdoor-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/09-outdoor-environment/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "09-outdoor-environment",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "hdri-background",
+                "status": "missing",
+                "detail": "scene().background() accepts only a color; environments.hdri() has no background/skybox option. Rendered solid #9fb8d0 instead of autumnFieldPuresky."
+              },
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 20. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "fog",
+                "status": "partial",
+                "detail": "effects.fog() maps to exponential-squared fog but caps opacity at 0.25 + 0.55 * intensity (max 0.80), so distant geometry never fully fogs as FogExp2 does."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 35,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 5 typed GLB actors and 13 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light.",
+              "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."
+            ],
+            "errors": [],
+            "loadMs": 3252,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/autumn_field_puresky_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 123904, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 2048,
+                "label": "aura3d-root-production-product-2048px-shadow-map",
+                "nativeShadowMapBindings": 18,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.03387233933438695,
+                    0.0449832182784316,
+                    0.04120762706792817,
+                    0,
+                    0,
+                    0.043317173157008206,
+                    -0.061811440601892254,
+                    0,
+                    0.050808509001580425,
+                    -0.029988812185621067,
+                    -0.027471751378618778,
+                    0,
+                    0.35149924650539544,
+                    -0.2678860579911031,
+                    0.027716953142711633,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "rockB",
+                  "status": "ready"
+                },
+                {
+                  "id": "rockA",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3828,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/propRockB.c94b2733.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "09-outdoor-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/09-outdoor-environment/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "09-outdoor-environment",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "hdri-background",
+                "status": "supported",
+                "detail": "scene.background = equirectangular HDR texture"
+              },
+              {
+                "feature": "fog",
+                "status": "supported",
+                "detail": "THREE.FogExp2"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 36,
+            "triangles": 131282,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 2219,
+            "extra": {
+              "revision": "185",
+              "programs": 8,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 2728,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/propRockA.52dd1f0f.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 17.62818648726852,
+        "meanAbsDiffPerChannel": {
+          "r": 21.46227973090278,
+          "g": 17.393426649305557,
+          "b": 14.028853081597223
+        },
+        "psnr": 21.732913258485844,
+        "ssim": 0.9560735437874079,
+        "ssimMinWindow": -0.5527762103126765,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.7129806857638888,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 168.69794844426985,
+          "three": 178.2878981112603
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/09-outdoor-environment/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/09-outdoor-environment/diff.png"
+    },
+    {
+      "scene": "10-indoor-environment",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "10-indoor-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/10-indoor-environment/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "10-indoor-environment",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "point-light-range:ceiling left",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ceiling center",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ceiling right",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "spot-light-range:spot art",
+                "status": "partial",
+                "detail": "Spec asks for infinite range; lights.spot() distance is finite (public default 12 used)."
+              },
+              {
+                "feature": "spot-light-range:spot table",
+                "status": "partial",
+                "detail": "Spec asks for infinite range; lights.spot() distance is finite (public default 12 used)."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 5. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 26,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 16 Aura primitives on webgl2.",
+              "Production runtime derived 5 collected direct lights from 5 authored scene lights.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+            ],
+            "errors": [],
+            "loadMs": 561,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "neon",
+                "exposure": 1.18,
+                "evidence": "dark neon scenes lift tunnel detail while bloom is clamped"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.08,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-neon-1024px-shadow-map",
+                "nativeShadowMapBindings": 16,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    1.830487721712452,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1.2467524039146185,
+                    -0.7334080671675259,
+                    -0.7321867381630838,
+                    0,
+                    -1.340258834208215,
+                    -0.6822400624814194,
+                    -0.6811039424772872,
+                    -3.660975443424904,
+                    -2.275323137144179,
+                    2.789106776700105,
+                    2.80444548315023
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 7
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": true,
+                  "casterIsSpot": true,
+                  "casterName": "spot table",
+                  "angle": 0.5,
+                  "penumbra": 0.4,
+                  "range": 12,
+                  "atlasResolution": 1024,
+                  "atlasReason": "medium cone (<=40deg half-angle) needs a 1024 tile",
+                  "spotPixelBacked": true,
+                  "reason": "spot shadow map rendered and sampled (1024px medium cone (<=40deg half-angle) needs a 1024 tile)"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 1376,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "10-indoor-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/10-indoor-environment/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "10-indoor-environment",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 23,
+            "triangles": 9988,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 781,
+            "extra": {
+              "revision": "185",
+              "programs": 5,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1244,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 15.266453269675926,
+        "meanAbsDiffPerChannel": {
+          "r": 17.473504774305557,
+          "g": 15.326590711805556,
+          "b": 12.999264322916666
+        },
+        "psnr": 22.63069176598888,
+        "ssim": 0.9684351356121421,
+        "ssimMinWindow": -0.6477931598137393,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.5701432291666667,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 89.84555255120394,
+          "three": 103.13404556772075
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/10-indoor-environment/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/10-indoor-environment/diff.png"
+    },
+    {
+      "scene": "11-multiple-lights",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "11-multiple-lights",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/11-multiple-lights/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "11-multiple-lights",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "point-light-range:ring light 0",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 1",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 2",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 3",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 4",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 5",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 6",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 7",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 8",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "point-light-range:ring light 9",
+                "status": "partial",
+                "detail": "lights.point() has no distance/decay option; production bridge uses fixed range 10 * scale (spec range infinite)."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 32,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 14 Aura primitives on webgl2.",
+              "Production runtime derived 10 collected direct lights from 10 authored scene lights.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+            ],
+            "errors": [],
+            "loadMs": 2887,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "neon",
+                "exposure": 1.18,
+                "evidence": "dark neon scenes lift tunnel detail while bloom is clamped"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.03,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-neon-1024px-shadow-map",
+                "nativeShadowMapBindings": 28,
+                "shadowRenderTargetsAllocated": 49,
+                "observed": {
+                  "lightMatrix": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [
+                    0,
+                    0,
+                    1.0020020008087158,
+                    1,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0.800000011920929,
+                    -3.0260260105133057,
+                    -3,
+                    0,
+                    0,
+                    -1.0020020008087158,
+                    -1,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0.800000011920929,
+                    2.9859859943389893,
+                    3,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1.0020020008087158,
+                    1,
+                    0,
+                    1,
+                    0,
+                    0,
+                    -3,
+                    0,
+                    -0.8216215968132019,
+                    -0.800000011920929,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -1.0020020008087158,
+                    -1,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    -3,
+                    0,
+                    0.7815815806388855,
+                    0.800000011920929,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1.0020020008087158,
+                    1,
+                    -3,
+                    0.800000011920929,
+                    -0.0200200192630291,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -1.0020020008087158,
+                    -1,
+                    3,
+                    0.800000011920929,
+                    -0.0200200192630291,
+                    0
+                  ],
+                  "pointFaceRects": [
+                    0,
+                    0,
+                    0.3333333432674408,
+                    0.5,
+                    0.3333333432674408,
+                    0,
+                    0.3333333432674408,
+                    0.5,
+                    0.6666666865348816,
+                    0,
+                    0.3333333432674408,
+                    0.5,
+                    0,
+                    0.5,
+                    0.3333333432674408,
+                    0.5,
+                    0.3333333432674408,
+                    0.5,
+                    0.3333333432674408,
+                    0.5,
+                    0.6666666865348816,
+                    0.5,
+                    0.3333333432674408,
+                    0.5
+                  ],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 49,
+                  "submissionFrameId": 7
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "ring light 0",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 3534,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "11-multiple-lights",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/11-multiple-lights/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "11-multiple-lights",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              }
+            ],
+            "drawCalls": 14,
+            "triangles": 43854,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 342,
+            "extra": {
+              "revision": "185",
+              "programs": 1,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 803,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 2.690062934027778,
+        "meanAbsDiffPerChannel": {
+          "r": 3.3243467881944446,
+          "g": 2.7488747829861113,
+          "b": 1.9969672309027777
+        },
+        "psnr": 32.421539691317534,
+        "ssim": 0.9863596746083629,
+        "ssimMinWindow": 0.1763551158988729,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.070478515625,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 22.332510509987678,
+          "three": 25.07031239041636
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/11-multiple-lights/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/11-multiple-lights/diff.png"
+    },
+    {
+      "scene": "12-shadows",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "12-shadows",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/12-shadows/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "12-shadows",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "multiple-shadow-casters",
+                "status": "missing",
+                "detail": "Spec requests 2 shadow casters (sun, spot); the production bridge has a single caster slot (resolveProductionShadowCasterIndex)."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 7. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 11,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "product/material scene has no explicit IBL environment node",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 6 Aura primitives on webgl2.",
+              "Production runtime derived 2 collected direct lights from 2 authored scene lights.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+            ],
+            "errors": [],
+            "loadMs": 649,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.15,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 2048,
+                "label": "aura3d-root-production-product-2048px-shadow-map",
+                "nativeShadowMapBindings": 6,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.19291841448954197,
+                    -0.1873203972157978,
+                    -0.16353992308559917,
+                    0,
+                    0,
+                    0.19200340714619274,
+                    -0.2616638769369587,
+                    0,
+                    -0.24114801811192743,
+                    -0.14985631777263825,
+                    -0.13083193846847935,
+                    0,
+                    -0.010427757106160606,
+                    -0.19080337736600309,
+                    -0.26271156197750745,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 7
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": true,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "shadow requested but the caster slot went to a non-spot light"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 1215,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "12-shadows",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/12-shadows/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "12-shadows",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "2 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "multiple-shadow-casters",
+                "status": "supported",
+                "detail": "sun, spot"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 16,
+            "triangles": 12590,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 479,
+            "extra": {
+              "revision": "185",
+              "programs": 3,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1025,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 7.3229340277777775,
+        "meanAbsDiffPerChannel": {
+          "r": 7.091446397569444,
+          "g": 7.268617621527778,
+          "b": 7.608738064236111
+        },
+        "psnr": 25.293668083493337,
+        "ssim": 0.9837766708360555,
+        "ssimMinWindow": -0.8290893731796206,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.019618055555555555,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 139.24356690546364,
+          "three": 143.53332377510245
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/12-shadows/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/12-shadows/diff.png"
+    },
+    {
+      "scene": "13-ibl-only",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "13-ibl-only",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/13-ibl-only/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "13-ibl-only",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "hdri-background",
+                "status": "missing",
+                "detail": "scene().background() accepts only a color; environments.hdri() has no background/skybox option. Rendered solid #8fb3d9 instead of kloppenheim06Puresky."
+              },
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 7,
+            "warnings": [
+              "Scene has no lights. Suggested fix: add lights.studio() or lights.ambient().",
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 4 Aura primitives on webgl2.",
+              "Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."
+            ],
+            "errors": [],
+            "loadMs": 2905,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "material",
+                "exposure": 0.78,
+                "evidence": "material labs keep chrome/glass highlight detail without clipping"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 1,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/kloppenheim_06_puresky_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 32.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-material-1024px-shadow-map",
+                "nativeShadowMapBindings": 4,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.3915324667861319,
+                    0.22370427479044627,
+                    0.25015088759180765,
+                    0,
+                    0,
+                    0.4690957892889151,
+                    -0.36385583649717473,
+                    0,
+                    0.2734512466442826,
+                    -0.3203038479954117,
+                    -0.35817058905190635,
+                    0,
+                    0,
+                    -0.23454789464445755,
+                    -0.18192791824858734,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "aura3d-root-production-fallback-key-shadow",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 3464,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "13-ibl-only",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/13-ibl-only/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "13-ibl-only",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "hdri-background",
+                "status": "supported",
+                "detail": "scene.background = equirectangular HDR texture"
+              }
+            ],
+            "drawCalls": 5,
+            "triangles": 11918,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 385,
+            "extra": {
+              "revision": "185",
+              "programs": 2,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 850,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 31.20919704861111,
+        "meanAbsDiffPerChannel": {
+          "r": 48.40201714409722,
+          "g": 30.317256944444445,
+          "b": 14.908317057291667
+        },
+        "psnr": 16.902846901701725,
+        "ssim": 0.9538774608903067,
+        "ssimMinWindow": -0.6713490733195232,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.9416384548611111,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 179.50710907425258,
+          "three": 180.9037848668222
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/13-ibl-only/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/13-ibl-only/diff.png"
+    },
+    {
+      "scene": "14-particles",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "14-particles",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/14-particles/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "14-particles",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "particles:seeded-positions",
+                "status": "missing",
+                "detail": "effects.particles() generates positions internally; no seed or explicit position buffer, so the spec's seeded distribution (seed 1414) cannot be reproduced."
+              },
+              {
+                "feature": "particles:sprite-size",
+                "status": "missing",
+                "detail": "No sprite size option (spec 0.06); engine sizeOverLife defaults used."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 1,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 1 Aura primitive on webgl2.",
+              "Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries.",
+              "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."
+            ],
+            "errors": [],
+            "loadMs": 512,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "neon",
+                "exposure": 1.18,
+                "evidence": "dark neon scenes lift tunnel detail while bloom is clamped"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.05,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": true,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-neon-1024px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "aura3d-root-production-fallback-key-shadow",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 1076,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "14-particles",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/14-particles/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "14-particles",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "particles",
+                "status": "supported",
+                "detail": "THREE.Points x2000, seeded positions, additive sprite"
+              }
+            ],
+            "drawCalls": 2,
+            "triangles": 2,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 523,
+            "extra": {
+              "revision": "185",
+              "programs": 2,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1096,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 12.93969581886574,
+        "meanAbsDiffPerChannel": {
+          "r": 13.300777994791666,
+          "g": 12.978117404513888,
+          "b": 12.540192057291666
+        },
+        "psnr": 21.016014842669218,
+        "ssim": 0.5576518749045289,
+        "ssimMinWindow": -0.38660367125548467,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.3890256076388889,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 15.431738525321405,
+          "three": 5.877530747590288
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/14-particles/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/14-particles/diff.png"
+    },
+    {
+      "scene": "15-animation-skinning",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "15-animation-skinning",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/15-animation-skinning/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "15-animation-skinning",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 4. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 7,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 2 typed GLB actors and 1 Aura primitive on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light."
+            ],
+            "errors": [],
+            "loadMs": 3222,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 0.6,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/studio_small_08_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 105.5, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 1024,
+                "label": "aura3d-root-production-product-1024px-shadow-map",
+                "nativeShadowMapBindings": 4,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.25519902528669985,
+                    -0.34059898902124147,
+                    -0.260793738413577,
+                    0,
+                    0,
+                    0.295185790485076,
+                    -0.434656230689295,
+                    0,
+                    -0.3827985379300498,
+                    -0.22706599268082764,
+                    -0.17386249227571798,
+                    0,
+                    -0.19707455629641848,
+                    -0.3705342445982458,
+                    -0.295717290529217,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": [
+                {
+                  "id": "soldier",
+                  "status": "ready"
+                },
+                {
+                  "id": "fox",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 3812,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "glTF mesh 0 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 52 rescaled to sum 1"
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/fox.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "15-animation-skinning",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/15-animation-skinning/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "15-animation-skinning",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              },
+              {
+                "feature": "animation:soldier walking",
+                "status": "supported",
+                "detail": "AnimationMixer.setTime(1.25) on \"Walk\""
+              },
+              {
+                "feature": "animation:fox walking",
+                "status": "supported",
+                "detail": "AnimationMixer.setTime(1.25) on \"Walk\""
+              }
+            ],
+            "drawCalls": 7,
+            "triangles": 23906,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 1520,
+            "extra": {
+              "revision": "185",
+              "programs": 7,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1986,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/studio_small_08_1k.hdr",
+              "failure": "net::ERR_ABORTED"
+            },
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/soldier.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 3.8637293836805555,
+        "meanAbsDiffPerChannel": {
+          "r": 4.250881076388889,
+          "g": 3.968117404513889,
+          "b": 3.372189670138889
+        },
+        "psnr": 29.675196596755367,
+        "ssim": 0.9719292599655293,
+        "ssimMinWindow": -0.8970744498621066,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.048804253472222225,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 77.15547998606863,
+          "three": 79.11792066908659
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/15-animation-skinning/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/15-animation-skinning/diff.png"
+    },
+    {
+      "scene": "16-instancing",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "16-instancing",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/16-instancing/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "16-instancing",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              }
+            ],
+            "drawCalls": 2,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "product/material scene has no explicit IBL environment node",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 2 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light.",
+              "1 authored ambient light remain environment-lighting intent and are not mislabeled as direct CollectedLight entries."
+            ],
+            "errors": [],
+            "loadMs": 1153,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "authored-ambient",
+                "intensity": 0.3,
+                "evidence": "production bridge submitted 1 authored ambient light without an implicit environment map",
+                "iblPixelBacked": false,
+                "hdriStatus": "none"
+              },
+              "shadows": {
+                "enabled": false,
+                "requested": false,
+                "mapRendered": false,
+                "mapSampled": false,
+                "mapSize": 2048,
+                "label": "aura3d-root-production-product-2048px-shadow-map",
+                "nativeShadowMapBindings": 0,
+                "shadowRenderTargetsAllocated": 0,
+                "observed": null,
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 1745,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "16-instancing",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/16-instancing/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "16-instancing",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "instancing",
+                "status": "supported",
+                "detail": "InstancedMesh x10000"
+              }
+            ],
+            "drawCalls": 2,
+            "triangles": 120002,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 296,
+            "extra": {
+              "revision": "185",
+              "programs": 2,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 788,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 34.165750144675926,
+        "meanAbsDiffPerChannel": {
+          "r": 16.742327473958333,
+          "g": 28.662776692708334,
+          "b": 57.09214626736111
+        },
+        "psnr": 13.598107710886158,
+        "ssim": 0.39896849990341643,
+        "ssimMinWindow": -0.7147982093212021,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.7086762152777778,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 35.495366683387545,
+          "three": 48.834933970229265
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/16-instancing/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/16-instancing/diff.png"
+    },
+    {
+      "scene": "17-large-environment",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "17-large-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/17-large-environment/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "17-large-environment",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 50. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "cascaded-shadow-maps",
+                "status": "partial",
+                "detail": "No public CSM option (cascades/maxFar). Spec asks 4 cascades to 120; whatever the runtime submits is in extra.shadows.observed."
+              },
+              {
+                "feature": "fog",
+                "status": "partial",
+                "detail": "effects.fog() maps to exponential-squared fog but caps opacity at 0.25 + 0.55 * intensity (max 0.80), so distant geometry never fully fogs as FogExp2 does."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              }
+            ],
+            "drawCalls": 1135,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 0 typed GLB actors and 577 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light.",
+              "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."
+            ],
+            "errors": [],
+            "loadMs": 3951,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "city-day",
+                "exposure": 0.98,
+                "evidence": "day city keeps sky and road markings readable"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 0.6,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/autumn_field_puresky_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 123904, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 4096,
+                "label": "aura3d-root-production-city-day-4096px-shadow-map",
+                "nativeShadowMapBindings": 568,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.01167502922987459,
+                    0.013186546345426079,
+                    0.01218419277623106,
+                    0,
+                    0,
+                    0.0137359857764855,
+                    -0.01827628916434659,
+                    0,
+                    0.015566705639832784,
+                    -0.00988990975906956,
+                    -0.009138144582173295,
+                    0,
+                    -0.0000791918233847456,
+                    -0.11740689274638037,
+                    -0.15623547924116096,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": false,
+                "rendered": false,
+                "intensity": 0,
+                "threshold": 0,
+                "radius": 0,
+                "antiBlowout": true
+              },
+              "assets": []
+            }
+          },
+          "wallMs": 4279,
+          "consoleMessages": [],
+          "pageErrors": [],
+          "failedRequests": []
+        },
+        "three": {
+          "engine": "three",
+          "scene": "17-large-environment",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/17-large-environment/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "17-large-environment",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "fog",
+                "status": "supported",
+                "detail": "THREE.FogExp2"
+              },
+              {
+                "feature": "cascaded-shadow-maps",
+                "status": "supported",
+                "detail": "CSM addon, 4 cascades to 120"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              }
+            ],
+            "drawCalls": 2395,
+            "triangles": 28730,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 1133,
+            "extra": {
+              "revision": "185",
+              "programs": 3,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 1507,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": []
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 11.401138599537036,
+        "meanAbsDiffPerChannel": {
+          "r": 11.853712022569445,
+          "g": 11.431261935763889,
+          "b": 10.918441840277778
+        },
+        "psnr": 25.180099140533933,
+        "ssim": 0.8791997163358474,
+        "ssimMinWindow": -0.7848624805733488,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.3429546440972222,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 163.3287528524555,
+          "three": 163.47949226239385
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/17-large-environment/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/17-large-environment/diff.png"
+    },
+    {
+      "scene": "18-game-scene",
+      "engines": {
+        "aura3d": {
+          "engine": "aura3d",
+          "scene": "18-game-scene",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/18-game-scene/aura3d.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "aura3d",
+            "scene": "18-game-scene",
+            "engineVersion": "3.0.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "Production bridge submits operator \"aces\"; no public option to select an operator."
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "missing",
+                "detail": "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\"."
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "missing",
+                "detail": "No public tone-mapping selector (Khronos PBR Neutral unavailable)."
+              },
+              {
+                "feature": "exposure",
+                "status": "partial",
+                "detail": "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed."
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "missing",
+                "detail": "No public mapSize/bias/normalBias/frustum options; spec asks mapSize 2048, bias -0.0005, normalBias 0.02, extent 14. Observed values are in extra.shadows."
+              },
+              {
+                "feature": "primitive-tessellation",
+                "status": "missing",
+                "detail": "primitives.sphere/cylinder expose no segment options; production meshes are fixed (sphere 16x12, cylinder 24 segments, no cylinder UVs/tangents). three.js side uses SphereGeometry(64x32), CylinderGeometry(48)."
+              },
+              {
+                "feature": "fog",
+                "status": "partial",
+                "detail": "effects.fog() maps to exponential-squared fog but caps opacity at 0.25 + 0.55 * intensity (max 0.80), so distant geometry never fully fogs as FogExp2 does."
+              },
+              {
+                "feature": "bloom",
+                "status": "partial",
+                "detail": "effects.bloom() radius/threshold units are engine-specific; antiBlowout clamps intensity to <= 0.92 by default."
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "environments.hdri(): hdriStatus=ready iblPixelBacked=true"
+              },
+              {
+                "feature": "renderer-backend",
+                "status": "supported",
+                "detail": "mounted backend: production-runtime"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "mapRendered=true mapSampled=true"
+              },
+              {
+                "feature": "bloom-pass",
+                "status": "supported",
+                "detail": "bloom.rendered=true"
+              }
+            ],
+            "drawCalls": 24,
+            "warnings": [
+              "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+              "scene has no contact shadow or contact-occlusion grounding cue",
+              "Production runtime bridge active with 7 typed GLB actors and 6 Aura primitives on webgl2.",
+              "Production runtime derived 1 collected direct light from 1 authored scene light.",
+              "Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."
+            ],
+            "errors": [],
+            "loadMs": 4303,
+            "extra": {
+              "backend": "webgl2",
+              "renderSize": [
+                1280,
+                720
+              ],
+              "reportedToneMapping": "aces-filmic",
+              "reportedExposure": {
+                "category": "product",
+                "exposure": 0.92,
+                "evidence": "studio whites preserve product highlights and contact shadows"
+              },
+              "environment": {
+                "enabled": true,
+                "preset": "hdri",
+                "intensity": 0.7,
+                "evidence": "production bridge renders the studio procedural fallback until the authored HDRI /qr-assets/autumn_field_puresky_1k.hdr resolves through the HDR chain — HDRI chain ready (single probe) (maxLinear 123904, 9 specular mips)",
+                "iblPixelBacked": true,
+                "hdriStatus": "ready",
+                "dualProbe": false,
+                "hdriRotation": 0
+              },
+              "shadows": {
+                "enabled": true,
+                "requested": true,
+                "mapRendered": true,
+                "mapSampled": true,
+                "mapSize": 2048,
+                "label": "aura3d-root-production-product-2048px-shadow-map",
+                "nativeShadowMapBindings": 14,
+                "shadowRenderTargetsAllocated": 1,
+                "observed": {
+                  "lightMatrix": [
+                    0.05916324618763338,
+                    0.08245052357907051,
+                    0.07073730847237951,
+                    0,
+                    0,
+                    0.07145712043519445,
+                    -0.11789551412063251,
+                    0,
+                    0.08874486928145006,
+                    -0.054967015719380334,
+                    -0.047158205648253,
+                    0,
+                    0.6165605058890691,
+                    -0.4001082952773194,
+                    0.08399339336291162,
+                    1
+                  ],
+                  "cascades": [],
+                  "pointFaceMatrices": [],
+                  "pointFaceRects": [],
+                  "stabilize": true,
+                  "shadowRenderTargetsAllocated": 1,
+                  "submissionFrameId": 8
+                },
+                "contactShadows": 0,
+                "mapType": "pcf-soft",
+                "spot": {
+                  "requested": false,
+                  "casterIsSpot": false,
+                  "casterName": "sun",
+                  "spotPixelBacked": false,
+                  "reason": "no authored spot requested a shadow map"
+                }
+              },
+              "bloom": {
+                "enabled": true,
+                "rendered": true,
+                "intensity": 0.7,
+                "threshold": 0.85,
+                "radius": 0.4,
+                "antiBlowout": true,
+                "quality": "cinematic"
+              },
+              "assets": [
+                {
+                  "id": "soldier",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                },
+                {
+                  "id": "crate",
+                  "status": "ready"
+                },
+                {
+                  "id": "rockB",
+                  "status": "ready"
+                },
+                {
+                  "id": "rockB",
+                  "status": "ready"
+                },
+                {
+                  "id": "rockA",
+                  "status": "ready"
+                }
+              ]
+            }
+          },
+          "wallMs": 4898,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "glTF mesh 0 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 52 rescaled to sum 1"
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/deepRecoveryCrateStandard.02520123.glb",
+              "failure": "net::ERR_ABORTED"
+            },
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/propRockA.52dd1f0f.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        },
+        "three": {
+          "engine": "three",
+          "scene": "18-game-scene",
+          "status": "ready",
+          "screenshot": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/18-game-scene/three.png",
+          "gpu": {
+            "webgl2": true,
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Unspecified Version)",
+            "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+            "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+            "maxSamples": 4,
+            "floatColorBuffer": true
+          },
+          "payload": {
+            "engine": "three",
+            "scene": "18-game-scene",
+            "engineVersion": "0.185.1",
+            "capabilityLog": [
+              {
+                "feature": "tone-mapping:aces-filmic",
+                "status": "supported",
+                "detail": "renderer.toneMapping = ACESFilmicToneMapping"
+              },
+              {
+                "feature": "tone-mapping:agx",
+                "status": "supported",
+                "detail": "THREE.AgXToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "tone-mapping:neutral",
+                "status": "supported",
+                "detail": "THREE.NeutralToneMapping available (not used: spec requests ACES)"
+              },
+              {
+                "feature": "exposure",
+                "status": "supported",
+                "detail": "renderer.toneMappingExposure = 1"
+              },
+              {
+                "feature": "hdri-ibl",
+                "status": "supported",
+                "detail": "HDRLoader + PMREMGenerator.fromEquirectangular"
+              },
+              {
+                "feature": "fog",
+                "status": "supported",
+                "detail": "THREE.FogExp2"
+              },
+              {
+                "feature": "shadow-map",
+                "status": "supported",
+                "detail": "1 shadow-casting light(s), PCFSoftShadowMap"
+              },
+              {
+                "feature": "shadow-map-config",
+                "status": "supported",
+                "detail": "mapSize 2048, bias -0.0005, normalBias 0.02"
+              },
+              {
+                "feature": "animation:player soldier",
+                "status": "supported",
+                "detail": "AnimationMixer.setTime(1.25) on \"Idle\""
+              },
+              {
+                "feature": "bloom",
+                "status": "supported",
+                "detail": "EffectComposer(HalfFloat, 4x MSAA) + UnrealBloomPass + OutputPass"
+              }
+            ],
+            "drawCalls": 38,
+            "triangles": 137980,
+            "warnings": [],
+            "errors": [],
+            "loadMs": 2836,
+            "extra": {
+              "revision": "185",
+              "programs": 19,
+              "maxAnisotropy": 16
+            }
+          },
+          "wallMs": 3238,
+          "consoleMessages": [
+            {
+              "type": "warning",
+              "text": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+            }
+          ],
+          "pageErrors": [],
+          "failedRequests": [
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/autumn_field_puresky_1k.hdr",
+              "failure": "net::ERR_ABORTED"
+            },
+            {
+              "url": "http://127.0.0.1:49626/qr-assets/soldier.glb",
+              "failure": "net::ERR_ABORTED"
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "width": 1280,
+        "height": 720,
+        "meanAbsDiff": 14.115824652777778,
+        "meanAbsDiffPerChannel": {
+          "r": 16.26567165798611,
+          "g": 14.942739800347223,
+          "b": 11.1390625
+        },
+        "psnr": 23.77907332152496,
+        "ssim": 0.9653350536755999,
+        "ssimMinWindow": -0.8008726754015094,
+        "ssimMethod": "luma, 8x8 uniform window, stride 4",
+        "changedPixelRatio": 0.43615342881944447,
+        "changedPixelThreshold": 16,
+        "meanLuma": {
+          "aura3d": 144.08610692483677,
+          "three": 158.21584727843745
+        }
+      },
+      "sideBySide": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/18-game-scene/side-by-side.png",
+      "diff": "/Users/runner/work/aura3d/aura3d/benchmarks/quality-rebuild/out/18-game-scene/diff.png"
+    }
+  ],
+  "summary": [
+    {
+      "scene": "01-simple-geometry",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 4.415160590277778,
+      "ssim": 0.9836834211248043,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "02-pbr-product",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 4.246821831597222,
+      "ssim": 0.9688664795405639,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "03-damaged-helmet",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 2.9108376736111112,
+      "ssim": 0.9590503275799239,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral"
+      ]
+    },
+    {
+      "scene": "04-clearcoat",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 3.800118634259259,
+      "ssim": 0.9556973750142738,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral"
+      ]
+    },
+    {
+      "scene": "05-transmission",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 12.082061993634259,
+      "ssim": 0.945537301341386,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral"
+      ]
+    },
+    {
+      "scene": "06-metal-roughness-sweep",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 4.341656539351852,
+      "ssim": 0.9638068028420018,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "07-sheen-fabric",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 6.448203125,
+      "ssim": 0.9541568484495841,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral"
+      ]
+    },
+    {
+      "scene": "08-skinned-character",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 2.6258973524305556,
+      "ssim": 0.9886999829866697,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config"
+      ]
+    },
+    {
+      "scene": "09-outdoor-environment",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 17.62818648726852,
+      "ssim": 0.9560735437874079,
+      "auraMissing": [
+        "hdri-background",
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "10-indoor-environment",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 15.266453269675926,
+      "ssim": 0.9684351356121421,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "11-multiple-lights",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 2.690062934027778,
+      "ssim": 0.9863596746083629,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "12-shadows",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 7.3229340277777775,
+      "ssim": 0.9837766708360555,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "multiple-shadow-casters",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "13-ibl-only",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 31.20919704861111,
+      "ssim": 0.9538774608903067,
+      "auraMissing": [
+        "hdri-background",
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "primitive-tessellation"
+      ]
+    },
+    {
+      "scene": "14-particles",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 12.93969581886574,
+      "ssim": 0.5576518749045289,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "particles:seeded-positions",
+        "particles:sprite-size"
+      ]
+    },
+    {
+      "scene": "15-animation-skinning",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 3.8637293836805555,
+      "ssim": 0.9719292599655293,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config"
+      ]
+    },
+    {
+      "scene": "16-instancing",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 34.165750144675926,
+      "ssim": 0.39896849990341643,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral"
+      ]
+    },
+    {
+      "scene": "17-large-environment",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 11.401138599537036,
+      "ssim": 0.8791997163358474,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config"
+      ]
+    },
+    {
+      "scene": "18-game-scene",
+      "aura3d": "ready",
+      "three": "ready",
+      "meanAbsDiff": 14.115824652777778,
+      "ssim": 0.9653350536755999,
+      "auraMissing": [
+        "tone-mapping:agx",
+        "tone-mapping:neutral",
+        "shadow-map-config",
+        "primitive-tessellation"
+      ]
+    }
+  ]
+}

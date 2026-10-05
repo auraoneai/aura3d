@@ -378,6 +378,7 @@ tests/browser/fixtures/*
 # Local AI-agent control files; public guidance lives in llms.txt and docs/agents/.
 AGENTS.md
 **/AGENTS.md
-.claude/
+.claude/*
+!.claude/skills/
 .cursor/rules/
 .github/copilot-instructions.md

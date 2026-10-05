@@ -15,6 +15,27 @@ renderer code or production runtime internals.
 
 It is also not a provider-backed scene-generation contract. In the active product, the AI coding agent turns prompt intent into editable TypeScript or JavaScript source code that calls public Aura3D APIs.
 
+## Skill Routing
+
+Load the matching Aura3D skill before starting a step. The procedures below are
+summarized in these skills; this document stays the policy source.
+
+| Task | Skill |
+| --- | --- |
+| Any Aura3D task, public examples, claims | `aura3d-core` (shared rules in `aura3d-core/references/boundaries.md`) |
+| Prompt to scene or route | `aura3d-scene-authoring` |
+| Named real object or user GLB | `aura3d-assets` |
+| Before calling work done, public, or shippable | `aura3d-evidence-review` |
+| `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, Aura Clash | `aura3d-browser-game` |
+| Rigged humanoids, clips, morphs, visemes, assembled characters | `aura3d-character-animation` |
+| `animation-studio` episodes (Scene-Tool CLI) | `aura3d-animation-studio` |
+| three.js ports, `three-compat-*` templates | `aura3d-threejs-migration` |
+| Materials, textures, HDRI, sky, weather, water | `aura3d-materials-environments` |
+| Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
+| Restyling a finished mesh | `aura3d-retexture` |
+| Paid Meshy generation | `meshy-cli` |
+| Slow or heavy routes, performance claims | `aura3d-performance` |
+
 ## Aura3D advantage
 
 Aura3D provides:

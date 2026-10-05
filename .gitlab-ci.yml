@@ -1,0 +1,175 @@
+spec:
+  inputs:
+    suite:
+      description: "games | benchmark | all (games + benchmark) | unit (Linux typecheck/lint/unit) | probe (GPU launch probe)"
+      default: all
+      options: [all, games, benchmark, unit, probe]
+    games:
+      description: "Comma-separated game ids from tools/quality-rebuild-capture/games.json (empty = all 18)"
+      default: ""
+      regex: ^[a-z0-9,-]*$
+    viewports:
+      description: "Desktop viewports WIDTHxHEIGHT, comma-separated"
+      default: "1920x1080,1280x720"
+      regex: ^[0-9x,]+$
+    local_build:
+      description: "Build and serve every selected game from this commit (required for lane evidence; otherwise 17 of 18 games come from production)"
+      type: boolean
+      default: false
+    mobile:
+      description: "Also capture the 390x844@3x mobile run"
+      type: boolean
+      default: true
+    qr_flags:
+      description: "A3D_QR_* flag set (none | all | comma list). Only 'none' is accepted until C-33 (PR 0b-3) adds --flags to the capture tools"
+      default: none
+      regex: ^[A-Za-z0-9_,.-]+$
+    requester:
+      description: "Lane tag recorded in the report, e.g. prd02"
+      default: unspecified
+      regex: ^[A-Za-z0-9_.-]{1,40}$
+    github_run:
+      description: "GitHub bridge run id (set by .github/workflows/qr-gitlab-ci.yml)"
+      default: ""
+      regex: ^[0-9]*$
+---
+# Aura3D quality-rebuild remote pipelines on the GitLab mirror
+# (gitlab.com/chahal-foundation-group/github-auraoneai/aura3d).
+#
+# GitHub is the source of truth. This file is mirrored from GitHub; never edit it on GitLab.
+# Pipelines start ONLY when requested (trigger token used by .github/workflows/qr-gitlab-ci.yml, the API,
+# or the GitLab web UI). Mirror pushes never start one.
+#
+# Parameters arrive as typed, regex-checked pipeline INPUTS (spec above). Pipeline variable overrides are
+# disabled on the project (ci_pipeline_variables_minimum_override_role = no_one_allowed), so a trigger can
+# only choose among these inputs; it cannot change runner flags, binaries, URLs or images.
+#
+# Cost (GitLab compute minutes, 50,000/month on the group): macOS M1 medium has cost factor 6.
+#   full 18-game capture, production routes  ~22 min wall -> ~133 compute min  (pipeline 2915390729)
+#   18-scene benchmark                       ~2.7 min wall -> ~16 compute min
+#   GPU probe (2 macOS images)               ~2 x 2 min    -> ~25 compute min
+#   linux unit suite                         cost factor 2 on saas-linux-medium-amd64
+# Policy and budgets: docs/project/aura3d-quality-rebuild/CI-ROUTING.md
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "trigger" || $CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "web"'
+    - when: never
+
+variables:
+  QR_SUITE: "$[[ inputs.suite ]]"
+  QRC_GAMES: "$[[ inputs.games ]]"
+  QRC_VIEWPORTS: "$[[ inputs.viewports ]]"
+  QRC_LOCAL_BUILD: "$[[ inputs.local_build ]]"
+  QR_MOBILE: "$[[ inputs.mobile ]]"
+  QR_FLAGS: "$[[ inputs.qr_flags ]]"
+  QR_REQUESTER: "$[[ inputs.requester ]]"
+  QR_GITHUB_RUN: "$[[ inputs.github_run ]]"
+  NODE_VERSION: "22.23.2"
+  PNPM_VERSION: "11.1.3"
+  GIT_DEPTH: "50"
+  GIT_LFS_SKIP_SMUDGE: "1"
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_INSTALL_CLEANUP: "1"
+
+stages: [capture]
+
+.macos:
+  tags: [saas-macos-medium-m1]
+  image: macos-15-xcode-16
+  timeout: 2h
+  interruptible: true
+  before_script:
+    - set -euo pipefail
+    # Defense in depth: the capture tools read these from the environment; never let them come from outside.
+    - unset QRC_EXECUTABLE QRC_BASE_URL QRC_OUT QRC_BUILD_DIR QRC_GPU_ARGS QR_BENCH_CHROME_ARGS QRC_CHANNEL QR_BENCH_CHANNEL || true
+    - echo "requester=$QR_REQUESTER suite=$QR_SUITE flags=$QR_FLAGS local=$QRC_LOCAL_BUILD mobile=$QR_MOBILE ref=$CI_COMMIT_REF_NAME sha=$CI_COMMIT_SHA github_run=$QR_GITHUB_RUN"
+    - |
+      if [ "$QR_FLAGS" != "none" ]; then
+        echo "qr_flags=$QR_FLAGS is not consumed yet: the capture tools gain --flags with C-33 (PR 0b-3). Refusing to run so flag-on and flag-off captures cannot silently be identical."
+        exit 1
+      fi
+    - curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz" -o /tmp/node.tgz
+    - mkdir -p "$HOME/node" && tar -xzf /tmp/node.tgz -C "$HOME/node" --strip-components=1
+    - export PATH="$HOME/node/bin:$PATH"
+    - node --version
+    - npm install -g "pnpm@${PNPM_VERSION}" >/dev/null
+    - command -v git-lfs >/dev/null 2>&1 || brew install git-lfs
+    - git lfs install --local
+    - pnpm install --frozen-lockfile
+    - pnpm exec playwright install chromium
+
+# GPU flags and browser channel are fixed here, as CLI arguments. Full Chromium (new headless) crashes on the
+# second page on saas-macos runners (CVDisplayLink, SEGV); chromium-headless-shell is stable there on the same
+# ANGLE Metal paravirtual GPU (gpu-probe, pipeline 2915365880).
+qr:games-capture:
+  extends: .macos
+  stage: capture
+  rules:
+    - if: '$QR_SUITE == "games" || $QR_SUITE == "all"'
+  script:
+    - export PATH="$HOME/node/bin:$PATH"
+    - |
+      if [ "$QRC_LOCAL_BUILD" = "true" ]; then git lfs pull; fi
+      [ "$QR_MOBILE" = "true" ] || export QRC_NO_MOBILE=1
+    - node tools/quality-rebuild-capture/capture-games.mjs --validate
+    - node tools/quality-rebuild-capture/capture-games.mjs --build-only || echo "build step failed; captures continue for production routes"
+    # QRC_GPU_ARGS was unset in before_script, so capture-games.mjs uses its built-in Metal flags.
+    - node tools/quality-rebuild-capture/capture-games.mjs --skip-build --channel headless-shell
+  artifacts:
+    when: always
+    expire_in: 30 days
+    name: "game-captures-$CI_PIPELINE_ID"
+    paths:
+      - tools/quality-rebuild-capture/out/
+      - tools/quality-rebuild-capture/.build/build-report.json
+
+qr:benchmark:
+  extends: .macos
+  stage: capture
+  rules:
+    - if: '$QR_SUITE == "benchmark" || $QR_SUITE == "all"'
+  script:
+    - export PATH="$HOME/node/bin:$PATH"
+    - export QR_BENCH_OUT=benchmarks/quality-rebuild/out QR_BENCH_CHANNEL=headless-shell QR_BENCH_CHROME_ARGS="--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+    - mkdir -p "$QR_BENCH_OUT"
+    - bash benchmarks/quality-rebuild/ci.sh
+  artifacts:
+    when: always
+    expire_in: 30 days
+    name: "threejs-benchmark-$CI_PIPELINE_ID"
+    paths:
+      - benchmarks/quality-rebuild/out/
+
+qr:gpu-probe:
+  extends: .macos
+  stage: capture
+  image: $QR_MAC_IMAGE
+  parallel:
+    matrix:
+      - QR_MAC_IMAGE: [macos-15-xcode-16, macos-26-xcode-26]
+  rules:
+    - if: '$QR_SUITE == "probe"'
+  script:
+    - export PATH="$HOME/node/bin:$PATH"
+    - mkdir -p tools/quality-rebuild-capture/out
+    - node tools/quality-rebuild-capture/gpu-probe.mjs --out tools/quality-rebuild-capture/out/gpu-probe.json
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths: [tools/quality-rebuild-capture/out/]
+
+qr:unit:
+  stage: capture
+  tags: [saas-linux-medium-amd64]
+  image: node:22.23.2-bookworm
+  timeout: 1h
+  interruptible: true
+  rules:
+    - if: '$QR_SUITE == "unit"'
+  script:
+    - npm install -g "pnpm@${PNPM_VERSION}" >/dev/null
+    - pnpm install --frozen-lockfile
+    - pnpm typecheck:raw
+    - pnpm lint
+    - pnpm test:unit

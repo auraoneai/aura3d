@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSyn
 import { createHash } from "node:crypto";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { inflateSync } from "node:zlib";
+import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { admitAssetForRole } from "./asset-role-admission.js";
 import {
   DEFAULT_AURA_ASSET_MANIFEST,
@@ -1113,17 +1114,37 @@ export function createCharacterAssemblyPlan(options: CharacterAssemblyPlanOption
   };
 }
 
-export function initAgentFiles(options: { readonly projectDir?: string; readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all" }): readonly string[] {
+export function initAgentFiles(options: {
+  readonly projectDir?: string;
+  readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all";
+  /** Agent skills to install alongside instruction files. Defaults to "core"; "none" writes instruction files only. */
+  readonly skills?: AuraSkillMode;
+  readonly template?: string;
+  readonly skillsDir?: string;
+}): readonly string[] {
+  return initAgentSetup(options).written;
+}
+
+export function initAgentSetup(options: {
+  readonly projectDir?: string;
+  readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all";
+  readonly skills?: AuraSkillMode;
+  readonly template?: string;
+  readonly skillsDir?: string;
+}): { readonly written: readonly string[]; readonly skills: readonly string[]; readonly skippedUserModified: readonly string[] } {
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const targets = options.agent === "all" ? ["generic", "claude", "cursor", "copilot"] as const : [options.agent] as const;
   const written: string[] = [];
+  const mode = options.skills ?? "core";
   for (const target of targets) {
-    if (target === "generic") written.push(writeAgentFile(projectDir, "AGENTS.md", genericAgentText()));
-    if (target === "claude") written.push(writeAgentFile(projectDir, ".claude/CLAUDE.md", genericAgentText("Claude")));
-    if (target === "cursor") written.push(writeAgentFile(projectDir, ".cursor/rules/aura3d.mdc", genericAgentText("Cursor")));
-    if (target === "copilot") written.push(writeAgentFile(projectDir, ".github/copilot-instructions.md", genericAgentText("GitHub Copilot")));
+    if (target === "generic") written.push(writeAgentFile(projectDir, "AGENTS.md", genericAgentText("AI coding agent", mode !== "none" ? ".agents/skills" : undefined)));
+    if (target === "claude") written.push(writeAgentFile(projectDir, ".claude/CLAUDE.md", genericAgentText("Claude", mode !== "none" ? ".claude/skills" : undefined)));
+    if (target === "cursor") written.push(writeAgentFile(projectDir, ".cursor/rules/aura3d.mdc", genericAgentText("Cursor", mode !== "none" ? ".cursor/skills" : undefined)));
+    if (target === "copilot") written.push(writeAgentFile(projectDir, ".github/copilot-instructions.md", genericAgentText("GitHub Copilot", mode !== "none" ? ".github/skills" : undefined)));
   }
-  return written;
+  if (mode === "none") return { written, skills: [], skippedUserModified: [] };
+  const result = writeAgentSkills({ projectDir, agent: options.agent, skills: mode, template: options.template, skillsDir: options.skillsDir });
+  return { written: [...written, ...result.written], skills: result.skills, skippedUserModified: result.skippedUserModified };
 }
 
 function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: AssetReadinessOptions): AssetReadinessReport {
@@ -3618,10 +3639,13 @@ function writeAgentFile(projectDir: string, path: string, contents: string): str
   return output;
 }
 
-function genericAgentText(agent = "AI coding agent"): string {
+function genericAgentText(agent = "AI coding agent", skillsPath?: string): string {
+  const skillsLine = skillsPath
+    ? `Load the Aura3D skills in ./${skillsPath}/ on demand. Start with aura3d-core; it routes to the task skill (scene authoring, assets, evidence review, games, animation, migration, materials, performance).\n`
+    : "";
   return `# Aura3D Instructions For ${agent}
 
-Read ./llms.txt first, then ./docs/agents/README.md.
+Read ./llms.txt first. ${skillsLine}Full agent manual: https://github.com/auraoneai/aura3d/blob/main/docs/agents/README.md
 
 Use @aura3d/engine public imports only:
 - createAuraApp

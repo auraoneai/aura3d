@@ -1,0 +1,396 @@
+{
+  "$comment": "Per-game routes and real-input timelines for tools/quality-rebuild-capture/capture-games.mjs. Key names are DOM KeyboardEvent.code values. Timelines use only the controls a player has (keyboard, pointer drag, focus/click): no debug hooks, no ?capture= review lenses, so screenshots show the shipped experience. Step vocabulary is documented in README.md. Timeline time 0 is the first step after the 01-title shot.",
+  "schema": "aura3d.quality-rebuild-capture.games/1",
+  "productionOrigin": "https://aura3d.auraone.ai",
+  "defaults": {
+    "titleSettleMs": 1200,
+    "readyTimeoutMs": 30000,
+    "readyFallbackMs": 6000,
+    "fpsSampleMs": 5000,
+    "mobileStopAfterShot": "03-mid",
+    "requiredShots": ["02-opening", "03-mid", "04-action"]
+  },
+  "games": [
+    {
+      "id": "aura-clash-showcase",
+      "title": "Aura Clash Arena",
+      "genre": "fighting",
+      "appDir": "aura-clash-showcase",
+      "deployed": true,
+      "route": "/apps/aura-clash-showcase/",
+      "altRoutes": ["/showcase/aura-clash/playable/"],
+      "evidenceGlobal": "__AURA_CLASH_ARENA_PROOF__",
+      "readyExpr": "window.__AURA_CLASH_ARENA_PROOF__?.status === 'running'",
+      "focus": { "selector": ".aca", "method": "focus" },
+      "notes": "Round auto-starts (1.35s ROUND intro). Controls from src/playable/AuraClashArenaApp.ts actionKeys: A/D move, W jump, S down, Space dash, Shift/Q guard, J light, K heavy, L special (meter-gated), P pause, R reset. Action shot waits for proof.totalHits to increase.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyD" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyD" },
+        { "repeat": 6, "steps": [
+          { "hold": "KeyD", "ms": 250 },
+          { "press": "KeyJ" }, { "wait": 220 },
+          { "press": "KeyJ" }, { "wait": 220 },
+          { "press": "KeyK" }, { "wait": 380 }
+        ] },
+        { "down": "KeyD" }, { "press": "KeyJ" }, { "wait": 120 }, { "shot": "03-mid" }, { "up": "KeyD" },
+        { "until": "(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > s", "capture": "window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0", "timeout": 6000,
+          "loop": [{ "press": "KeyJ" }, { "wait": 50 }, { "press": "KeyK" }, { "wait": 50 }] },
+        { "shot": "04-action" },
+        { "press": "KeyL" }, { "wait": 320 }, { "shot": "05-special" }
+      ]
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "title": "Blockfall Reactor",
+      "genre": "falling-blocks",
+      "appDir": "showcase-blockfall-reactor",
+      "deployed": true,
+      "route": "/apps/showcase-blockfall-reactor/",
+      "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
+      "notes": "Boots straight into play (attract mode only after 45s idle). A/D move, W/X/E rotate CW, Z/Q rotate CCW, S soft drop, Space hard drop, C/Shift hold, P pause. Action shot is taken 60ms after a hard drop (lock/impact FX); a line clear is not reliably reachable blind in 15s.",
+      "timeline": [
+        { "fps": 5000 },
+        { "press": "KeyA" }, { "wait": 300 }, { "press": "KeyW" }, { "wait": 500 }, { "press": "Space" }, { "wait": 1200 },
+        { "shot": "02-opening" },
+        { "repeat": 5, "steps": [
+          { "press": "KeyD" }, { "wait": 150 }, { "press": "KeyD" }, { "wait": 200 }, { "press": "KeyW" }, { "wait": 350 }, { "press": "Space" }, { "wait": 650 }
+        ] },
+        { "press": "KeyA" }, { "press": "KeyA" }, { "press": "KeyA" }, { "wait": 200 },
+        { "down": "KeyS" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyS" },
+        { "press": "KeyC" }, { "wait": 400 },
+        { "press": "Space" }, { "wait": 60 }, { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "title": "Skyline Runner",
+      "genre": "platformer",
+      "appDir": "showcase-skyline-runner",
+      "deployed": true,
+      "route": "/apps/showcase-skyline-runner/",
+      "evidenceGlobal": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+      "notes": "A/D run, W/Up/Space jump, Shift/K dash, J/L fire, G ghost, P pause, R reset. Hold run right with periodic jumps; mid shot is taken mid-jump with run held.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyD" }, { "wait": 900 }, { "press": "Space" }, { "wait": 1100 }, { "shot": "02-opening" },
+        { "repeat": 6, "steps": [{ "wait": 650 }, { "press": "Space" }, { "wait": 450 }] },
+        { "press": "ShiftLeft" }, { "wait": 250 },
+        { "press": "Space" }, { "wait": 220 }, { "shot": "03-mid" },
+        { "wait": 600 }, { "press": "KeyJ" }, { "wait": 120 }, { "shot": "04-action" },
+        { "up": "KeyD" }
+      ]
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "title": "Turbo Drift Circuit",
+      "genre": "racing",
+      "appDir": "showcase-turbo-drift-circuit",
+      "deployed": true,
+      "route": "/apps/showcase-turbo-drift-circuit/",
+      "evidenceGlobal": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+      "notes": "Start lights only advance while throttle/drift is held (startLights in src/main.ts), so throttle is held from t=0. W/Up throttle, S brake, A/D steer, Space/Shift drift, P pause, R reset. 02-opening may still show the light ceremony if it runs longer than 2s; 03-mid is inside a held right drift.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
+        { "wait": 4000 },
+        { "hold": "KeyA", "ms": 500 },
+        { "wait": 700 },
+        { "down": "KeyD" }, { "down": "Space" }, { "wait": 1300 }, { "shot": "03-mid" }, { "up": "Space" }, { "up": "KeyD" },
+        { "wait": 900 },
+        { "down": "KeyA" }, { "down": "Space" }, { "wait": 1000 }, { "shot": "04-action" }, { "up": "Space" }, { "up": "KeyA" },
+        { "up": "KeyW" }
+      ]
+    },
+    {
+      "id": "showcase-siege-golf",
+      "title": "Siege Golf",
+      "genre": "golf / projectile",
+      "appDir": "showcase-siege-golf",
+      "deployed": true,
+      "route": "/apps/showcase-siege-golf/",
+      "evidenceGlobal": "__SIEGE_GOLF_EVIDENCE__",
+      "notes": "Left/Right aim, hold Space to charge and release to strike, J precision strike, R hole reset, T round reset, P pause. Opening shot is the first ball in flight; 05-charge shows the charge meter.",
+      "timeline": [
+        { "fps": 5000 },
+        { "hold": "Space", "ms": 800 }, { "wait": 1200 }, { "shot": "02-opening" },
+        { "wait": 3500 },
+        { "hold": "ArrowLeft", "ms": 200 },
+        { "hold": "Space", "ms": 950 }, { "wait": 1400 }, { "shot": "03-mid" },
+        { "wait": 1200 }, { "shot": "04-action" },
+        { "wait": 2500 },
+        { "down": "Space" }, { "wait": 600 }, { "shot": "05-charge" }, { "up": "Space" }
+      ]
+    },
+    {
+      "id": "showcase-aurora-lander",
+      "title": "Aurora Lander",
+      "genre": "lander",
+      "appDir": "showcase-aurora-lander",
+      "deployed": true,
+      "route": "/apps/showcase-aurora-lander/",
+      "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__",
+      "notes": "The boot drop falls untouched, so thrust starts at t=0. W/Up thrust, A/D lateral, Space quick restart, R restart, G ghost, P pause. Action shot waits for a touchdown/crash state (regex on evidence state/phase) to capture landing dust or the crash.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyW" },
+        { "repeat": 5, "steps": [
+          { "wait": 350 }, { "down": "KeyW" }, { "down": "KeyD" }, { "wait": 550 }, { "up": "KeyD" }, { "wait": 250 }, { "up": "KeyW" }
+        ] },
+        { "down": "KeyW" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyW" },
+        { "until": "/land|touch|crash|fail|success|complete/i.test(String(window.__AURORA_LANDER_EVIDENCE__?.state ?? window.__AURORA_LANDER_EVIDENCE__?.phase ?? ''))", "timeout": 7000, "loop": [{ "wait": 80 }] },
+        { "wait": 150 }, { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-neon-swarm",
+      "title": "Neon Swarm",
+      "genre": "twin-stick survival",
+      "appDir": "showcase-neon-swarm",
+      "deployed": true,
+      "route": "/apps/showcase-neon-swarm/",
+      "evidenceGlobal": "__NEON_SWARM_EVIDENCE__",
+      "notes": "Wave 1 begins after a 3.2s intermission (INTERMISSION_FIRST_SECONDS). WASD move, J fire (held), Space/K burst, Shift dash, P pause, R reset. Action shot waits for a kill; 05-burst fires burst (only visible if charged).",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyJ" },
+        { "hold": "KeyW", "ms": 900 }, { "hold": "KeyD", "ms": 1100 }, { "shot": "02-opening" },
+        { "repeat": 4, "steps": [{ "hold": "KeyA", "ms": 650 }, { "hold": "KeyS", "ms": 550 }, { "hold": "KeyD", "ms": 500 }] },
+        { "down": "KeyW" }, { "wait": 400 }, { "shot": "03-mid" }, { "up": "KeyW" },
+        { "until": "(window.__NEON_SWARM_EVIDENCE__?.kills ?? 0) > s", "capture": "window.__NEON_SWARM_EVIDENCE__?.kills ?? 0", "timeout": 6000,
+          "loop": [{ "hold": "KeyA", "ms": 120 }, { "hold": "KeyD", "ms": 120 }] },
+        { "shot": "04-action" },
+        { "press": "Space" }, { "wait": 120 }, { "shot": "05-burst" },
+        { "up": "KeyJ" }
+      ]
+    },
+    {
+      "id": "showcase-gravity-post",
+      "title": "Gravity Post",
+      "genre": "orbital delivery",
+      "appDir": "showcase-gravity-post",
+      "deployed": true,
+      "route": "/apps/showcase-gravity-post/",
+      "evidenceGlobal": "__GRAVITY_POST_EVIDENCE__",
+      "notes": "Launch is pointer-drag only: launchActiveAim() in src/main.ts is defined but never called, so no key launches the pod (A/D/Z/X only steer the keyboard aim preview). Drag vector (-4,-79)px from the stage centre is the verified contract-one delivery (tests/browser/gravity-post-scene.spec.ts). While coasting: hold Space time-warp, W/S burns, X skips flyby, N next, R retry, P pause.",
+      "timeline": [
+        { "fps": 5000 },
+        { "wait": 300 },
+        { "drag": { "selector": "[data-testid='gravity-post-stage'] canvas", "from": [0.5, 0.5], "by": [-4, -79], "ms": 700, "steps": 14, "shotBeforeRelease": "02a-aim" } },
+        { "wait": 900 }, { "shot": "02-opening" },
+        { "down": "Space" }, { "wait": 5500 }, { "shot": "03-mid" }, { "up": "Space" },
+        { "press": "KeyW" }, { "wait": 90 }, { "shot": "04-action" },
+        { "down": "Space" }, { "wait": 3000 }, { "shot": "05-late-coast" }, { "up": "Space" }
+      ]
+    },
+    {
+      "id": "showcase-courier-rush",
+      "title": "Courier Rush",
+      "genre": "city driving / delivery",
+      "appDir": "showcase-courier-rush",
+      "deployed": true,
+      "route": "/apps/showcase-courier-rush/",
+      "evidenceGlobal": "__COURIER_RUSH_EVIDENCE__",
+      "readyExpr": "document.body?.dataset?.aura3dReady === 'true'",
+      "focus": { "selector": "canvas", "method": "click" },
+      "notes": "Playable spec clicks the canvas before driving. W throttle, S brake, A/D steer, Space handbrake, E interact, P pause, R reset. 03-mid is a held handbrake turn; action waits for a collision strike (evidence strikes) else times out.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
+        { "hold": "KeyD", "ms": 900 }, { "wait": 1800 }, { "hold": "KeyA", "ms": 700 }, { "wait": 1600 },
+        { "down": "KeyD" }, { "down": "Space" }, { "wait": 800 }, { "shot": "03-mid" }, { "up": "Space" }, { "up": "KeyD" },
+        { "until": "(window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0) > s", "capture": "window.__COURIER_RUSH_EVIDENCE__?.strikes ?? 0", "timeout": 4500, "loop": [{ "wait": 100 }] },
+        { "shot": "04-action" },
+        { "up": "KeyW" }
+      ]
+    },
+    {
+      "id": "showcase-pulse-tunnel",
+      "title": "Pulse Tunnel",
+      "genre": "rhythm runner",
+      "appDir": "showcase-pulse-tunnel",
+      "deployed": true,
+      "route": "/apps/showcase-pulse-tunnel/",
+      "evidenceGlobal": "__PULSE_TUNNEL_EVIDENCE__",
+      "notes": "Mounts in state 'ready'; the first key gesture (Space) starts the run. A/D lane, W jump, S slide, P pause, R restart. Lane/jump inputs are blind (not beat-synced), so a miss/fail frame is possible and is itself useful evidence.",
+      "timeline": [
+        { "fps": 5000 },
+        { "press": "Space" }, { "wait": 1900 }, { "shot": "02-opening" },
+        { "repeat": 6, "steps": [{ "press": "KeyD" }, { "wait": 450 }, { "press": "KeyW" }, { "wait": 450 }, { "press": "KeyA" }, { "wait": 300 }] },
+        { "press": "KeyW" }, { "wait": 160 }, { "shot": "03-mid" },
+        { "until": "(window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0) > s", "capture": "window.__PULSE_TUNNEL_EVIDENCE__?.score ?? 0", "timeout": 3000,
+          "loop": [{ "press": "KeyA" }, { "wait": 180 }, { "press": "KeyD" }, { "wait": 180 }] },
+        { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-mech-hangar",
+      "title": "Mech Hangar",
+      "genre": "mech builder / arena",
+      "appDir": "showcase-mech-hangar",
+      "deployed": true,
+      "route": "/apps/showcase-mech-hangar/",
+      "evidenceGlobal": "__MECH_HANGAR_EVIDENCE__",
+      "notes": "Starts in the hangar builder: Digit1-4 select slot, Left/Right cycle part, Enter locks the build and enters the arena (72-frame countdown). Arena: A/D move, Space jump, J light, K heavy, L special, Shift guard, P pause. 02-opening is the customised hangar; 02b is the arena after the countdown.",
+      "timeline": [
+        { "fps": 5000 },
+        { "press": "Digit1" }, { "wait": 250 }, { "press": "ArrowRight" }, { "wait": 500 },
+        { "press": "Digit2" }, { "wait": 250 }, { "press": "ArrowRight" }, { "wait": 900 }, { "shot": "02-opening" },
+        { "press": "Enter" }, { "wait": 2200 }, { "shot": "02b-arena-opening" },
+        { "repeat": 3, "steps": [{ "hold": "KeyD", "ms": 700 }, { "press": "KeyJ" }, { "wait": 280 }, { "press": "KeyJ" }, { "wait": 280 }, { "press": "KeyK" }, { "wait": 550 }] },
+        { "down": "KeyD" }, { "press": "KeyJ" }, { "wait": 140 }, { "shot": "03-mid" }, { "up": "KeyD" },
+        { "press": "KeyK" }, { "wait": 180 }, { "shot": "04-action" },
+        { "press": "KeyL" }, { "wait": 300 }, { "shot": "05-special" }
+      ]
+    },
+    {
+      "id": "showcase-vault-breakers",
+      "title": "Vault Breakers",
+      "genre": "pinball",
+      "appDir": "showcase-vault-breakers",
+      "deployed": true,
+      "route": "/apps/showcase-vault-breakers/",
+      "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__",
+      "notes": "Hold Space to pull the plunger, release to serve (1.8s hold matches the thumbnail producer). A/Left left flipper, D/Right right flipper, S nudge, P pause, R reset. Action waits for a score change.",
+      "timeline": [
+        { "fps": 5000 },
+        { "hold": "Space", "ms": 1800 }, { "wait": 350 }, { "shot": "02-opening" },
+        { "repeat": 8, "steps": [{ "wait": 400 }, { "hold": "KeyA", "ms": 180 }, { "wait": 150 }, { "hold": "KeyD", "ms": 180 }] },
+        { "down": "KeyA" }, { "down": "KeyD" }, { "wait": 120 }, { "shot": "03-mid" }, { "up": "KeyA" }, { "up": "KeyD" },
+        { "until": "(window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0) > s", "capture": "window.__VAULT_BREAKERS_EVIDENCE__?.score ?? 0", "timeout": 5000,
+          "loop": [{ "hold": "KeyA", "ms": 140 }, { "wait": 60 }, { "hold": "KeyD", "ms": 140 }, { "wait": 60 }] },
+        { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-rooftop-buckets",
+      "title": "Rooftop Buckets",
+      "genre": "basketball shooting",
+      "appDir": "showcase-rooftop-buckets",
+      "deployed": true,
+      "route": "/apps/showcase-rooftop-buckets/",
+      "evidenceGlobal": "__ROOFTOP_BUCKETS_EVIDENCE__",
+      "notes": "Hold Space to charge, release to shoot (26 frames ~ 0.55-0.7 power per playable spec). A/D change spot, W/S aim, P pause, R reset. A 'Heat Cleared' modal (#rb-modal-btn) may appear after enough makes; it is captured as-is. Action waits for evidence makes to increase.",
+      "timeline": [
+        { "fps": 5000 },
+        { "hold": "Space", "ms": 480 }, { "wait": 1500 }, { "shot": "02-opening" },
+        { "wait": 1400 },
+        { "press": "KeyD" }, { "wait": 700 }, { "hold": "Space", "ms": 520 }, { "wait": 1700 },
+        { "press": "KeyA" }, { "wait": 700 },
+        { "down": "Space" }, { "wait": 450 }, { "shot": "05-charge" }, { "up": "Space" },
+        { "wait": 650 }, { "shot": "03-mid" },
+        { "until": "(window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0) > s", "capture": "window.__ROOFTOP_BUCKETS_EVIDENCE__?.makes ?? 0", "timeout": 3500, "loop": [{ "wait": 80 }] },
+        { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-gallery-shift",
+      "title": "Gallery Shift",
+      "genre": "stealth heist",
+      "appDir": "showcase-gallery-shift",
+      "deployed": true,
+      "route": "/apps/showcase-gallery-shift/",
+      "evidenceGlobal": "__GALLERY_SHIFT_EVIDENCE__",
+      "readyExpr": "window.__GALLERY_SHIFT_EVIDENCE__?.status === 'ready'",
+      "notes": "WASD move, Shift sneak, X sprint, E lift exhibit (hold), P pause, R restart. Blind movement; action is a lift attempt and may show a guard detection instead.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" }, { "up": "KeyW" },
+        { "hold": "KeyD", "ms": 1200 },
+        { "down": "ShiftLeft" }, { "hold": "KeyW", "ms": 1500 }, { "up": "ShiftLeft" },
+        { "hold": "KeyA", "ms": 1000 },
+        { "hold": "KeyE", "ms": 900 },
+        { "down": "KeyX" }, { "down": "KeyW" }, { "wait": 1200 }, { "shot": "03-mid" }, { "up": "KeyW" }, { "up": "KeyX" },
+        { "down": "KeyE" }, { "wait": 500 }, { "shot": "04-action" }, { "up": "KeyE" }
+      ]
+    },
+    {
+      "id": "showcase-deep-recovery",
+      "title": "Deep Recovery",
+      "genre": "underwater salvage",
+      "appDir": "showcase-deep-recovery",
+      "deployed": true,
+      "route": "/apps/showcase-deep-recovery/",
+      "evidenceGlobal": "__DEEP_RECOVERY_EVIDENCE__",
+      "notes": "Raw window keydown handler: W/S throttle, A/D turn, Q dive, E surface, Shift sprint, Space sonar ping, F grapple, C repair, P pause, R reset. Action is a sonar ping (ring VFX) 250ms after the key.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyW" }, { "wait": 2000 }, { "shot": "02-opening" },
+        { "press": "Space" }, { "wait": 800 },
+        { "hold": "KeyD", "ms": 1000 },
+        { "hold": "KeyQ", "ms": 1200 },
+        { "down": "ShiftLeft" }, { "wait": 2600 }, { "up": "ShiftLeft" },
+        { "down": "KeyA" }, { "wait": 500 }, { "shot": "03-mid" }, { "up": "KeyA" },
+        { "press": "Space" }, { "wait": 250 }, { "shot": "04-action" },
+        { "press": "KeyF" }, { "wait": 350 }, { "shot": "05-grapple" },
+        { "up": "KeyW" }
+      ]
+    },
+    {
+      "id": "showcase-patrol-wing",
+      "title": "Patrol Wing",
+      "genre": "flight / air combat",
+      "appDir": "showcase-patrol-wing",
+      "deployed": true,
+      "route": "/apps/showcase-patrol-wing/",
+      "evidenceGlobal": "__PATROL_WING_EVIDENCE__",
+      "readyExpr": "window.__PATROL_WING_EVIDENCE__?.mounted === true",
+      "notes": "Starts in 'preflight' on the pad; Shift throttles up for a rolling takeoff (takeoffSpeed 10.5). W pitch down, S pitch up, A/D roll, Q/E yaw, Space fire, C camera, P pause, R reset. W is never used (nose-down crash).",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "ShiftLeft" }, { "wait": 2000 }, { "shot": "02-opening" },
+        { "wait": 1500 }, { "up": "ShiftLeft" },
+        { "hold": "KeyS", "ms": 700 },
+        { "wait": 800 },
+        { "hold": "KeyD", "ms": 900 },
+        { "hold": "KeyE", "ms": 700 },
+        { "wait": 800 },
+        { "down": "Space" }, { "wait": 300 }, { "shot": "03-mid" },
+        { "wait": 500 }, { "shot": "04-action" }, { "up": "Space" },
+        { "hold": "KeyA", "ms": 900 }, { "down": "Space" }, { "wait": 400 }, { "shot": "05-banked-fire" }, { "up": "Space" }
+      ]
+    },
+    {
+      "id": "showcase-bank-shot",
+      "title": "Bank Shot",
+      "genre": "billiards",
+      "appDir": "showcase-bank-shot",
+      "deployed": true,
+      "route": "/apps/showcase-bank-shot/",
+      "evidenceGlobal": "__BANK_SHOT_EVIDENCE__",
+      "notes": "A/D aim, W/S top/draw spin, hold Space to charge, release to strike, P pause, R reset. 02-opening is the break ~500ms after release; action waits for a pot (evidence potted/score).",
+      "timeline": [
+        { "fps": 5000 },
+        { "wait": 300 }, { "hold": "Space", "ms": 850 }, { "wait": 500 }, { "shot": "02-opening" },
+        { "wait": 4600 },
+        { "hold": "KeyD", "ms": 400 },
+        { "down": "Space" }, { "wait": 700 }, { "shot": "05-charge" }, { "up": "Space" },
+        { "wait": 400 }, { "shot": "03-mid" },
+        { "until": "(window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t", "capture": "window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0", "capture2": "window.__BANK_SHOT_EVIDENCE__?.score ?? 0", "timeout": 4000, "loop": [{ "wait": 80 }] },
+        { "shot": "04-action" }
+      ]
+    },
+    {
+      "id": "showcase-orbital-defense",
+      "title": "Orbital Defense",
+      "genre": "arcade defense",
+      "appDir": "showcase-orbital-defense",
+      "deployed": false,
+      "route": "/apps/showcase-orbital-defense/",
+      "evidenceGlobal": "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__",
+      "readyExpr": "document.body?.dataset?.aura3dShowcaseReady === 'true'",
+      "notes": "Not deployed (production 404); always built from source and served locally. No per-app vite.config.ts: the wrapper config reuses the root vite.config.ts aliases. A/D rotate, Space fire, Q shield pulse, R reset, P pause. Action waits for score to increase.",
+      "timeline": [
+        { "fps": 5000 },
+        { "down": "KeyD" },
+        { "repeat": 6, "steps": [{ "press": "Space" }, { "wait": 300 }] },
+        { "shot": "02-opening" }, { "up": "KeyD" },
+        { "repeat": 10, "steps": [{ "down": "KeyA" }, { "press": "Space" }, { "wait": 300 }, { "up": "KeyA" }, { "press": "Space" }, { "wait": 300 }] },
+        { "press": "Space" }, { "wait": 80 }, { "shot": "03-mid" },
+        { "until": "(window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0) > s", "capture": "window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__?.score ?? 0", "timeout": 4000,
+          "loop": [{ "press": "Space" }, { "hold": "KeyD", "ms": 120 }] },
+        { "shot": "04-action" },
+        { "press": "KeyQ" }, { "wait": 150 }, { "shot": "05-shield" }
+      ]
+    }
+  ]
+}
