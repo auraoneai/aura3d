@@ -22,9 +22,9 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: "games | benchmark | all | unit"
+        description: "games | benchmark | all | unit | probe"
         type: choice
-        options: [all, games, benchmark, unit]
+        options: [all, games, benchmark, unit, probe]
         default: all
       games:
         description: "Comma-separated game ids (empty = all 18)"

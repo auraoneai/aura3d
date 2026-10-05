@@ -100,6 +100,24 @@ qr:benchmark:
     paths:
       - benchmarks/quality-rebuild/out/
 
+qr:gpu-probe:
+  extends: .macos
+  stage: capture
+  image: $QR_MAC_IMAGE
+  parallel:
+    matrix:
+      - QR_MAC_IMAGE: [macos-15-xcode-16, macos-26-xcode-26]
+  rules:
+    - if: '$QR_SUITE == "probe"'
+  script:
+    - export PATH="$HOME/node/bin:$PATH"
+    - mkdir -p tools/quality-rebuild-capture/out
+    - node tools/quality-rebuild-capture/gpu-probe.mjs --out tools/quality-rebuild-capture/out/gpu-probe.json
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths: [tools/quality-rebuild-capture/out/]
+
 qr:unit:
   stage: capture
   tags: [saas-linux-medium-amd64]
