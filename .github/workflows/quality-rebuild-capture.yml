@@ -1,0 +1,159 @@
+name: Quality Rebuild Capture
+
+# Remote visual autopsy of the 18 Aura3D showcase games plus the three.js benchmark, on an
+# Apple-silicon GPU runner (ANGLE Metal). No secrets are used; artifacts always upload.
+
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Comma-separated game ids from tools/quality-rebuild-capture/games.json (empty = all 18)"
+        required: false
+        default: ""
+      local_build_all:
+        description: "Build and serve every selected game from source (pulls LFS assets) instead of production URLs"
+        type: boolean
+        required: false
+        default: false
+      viewports:
+        description: "Desktop viewports, WIDTHxHEIGHT comma-separated"
+        required: false
+        default: "1920x1080,1280x720"
+  push:
+    branches: ["aura3d-quality-rebuild/audit"]
+    paths:
+      - "tools/quality-rebuild-capture/**"
+      - "benchmarks/quality-rebuild/**"
+      - ".github/workflows/quality-rebuild-capture.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-rebuild-capture-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  games:
+    name: Game captures (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      QRC_GAMES: ${{ github.event_name == 'workflow_dispatch' && inputs.games || '' }}
+      QRC_VIEWPORTS: ${{ github.event_name == 'workflow_dispatch' && inputs.viewports || '1920x1080,1280x720' }}
+      QRC_LOCAL_BUILD: ${{ github.event_name == 'workflow_dispatch' && inputs.local_build_all && 'true' || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Production captures and the Orbital Defense source build need no LFS blobs; only the
+          # local_build_all mode serves typed GLB/audio assets from public/ and apps/*/assets.
+          lfs: ${{ github.event_name == 'workflow_dispatch' && inputs.local_build_all }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Validate games.json
+        run: node tools/quality-rebuild-capture/capture-games.mjs --validate
+
+      - name: Build local-source games (Orbital Defense; all games when local_build_all)
+        id: build
+        continue-on-error: true
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only
+
+      - name: Capture games
+        id: capture
+        continue-on-error: true
+        run: node tools/quality-rebuild-capture/capture-games.mjs --skip-build
+
+      - name: Upload game captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-captures
+          path: |
+            tools/quality-rebuild-capture/out/
+            tools/quality-rebuild-capture/.build/build-report.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Report step outcomes
+        if: always()
+        run: |
+          echo "build=${{ steps.build.outcome }} capture=${{ steps.capture.outcome }}"
+          test "${{ steps.capture.outcome }}" = "success"
+
+  threejs-benchmark:
+    name: three.js benchmark (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 90
+    env:
+      # Contract for benchmarks/quality-rebuild/ci.sh: write results under QR_BENCH_OUT and launch
+      # Chromium with QR_BENCH_CHROME_ARGS. The script is optional; the job is a no-op without it.
+      QR_BENCH_OUT: benchmarks/quality-rebuild/out
+      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Run benchmark
+        id: bench
+        continue-on-error: true
+        run: |
+          mkdir -p "$QR_BENCH_OUT"
+          if [ -f benchmarks/quality-rebuild/ci.sh ]; then
+            bash benchmarks/quality-rebuild/ci.sh
+          else
+            echo "benchmarks/quality-rebuild/ci.sh not present at ${GITHUB_SHA}; benchmark skipped." | tee "$QR_BENCH_OUT/SKIPPED.txt"
+          fi
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threejs-benchmark
+          path: benchmarks/quality-rebuild/out/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Report step outcome
+        if: always()
+        run: |
+          echo "bench=${{ steps.bench.outcome }}"
+          test "${{ steps.bench.outcome }}" = "success"

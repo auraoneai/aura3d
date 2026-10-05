@@ -1,0 +1,94 @@
+# Agent prompt — Lane 05: Asset Pipeline + Technical-Art Toolchain
+
+Copy everything below this line into a fresh coding agent (Claude Code, Codex, Kiro, etc.) started in the repo root.
+
+---
+
+You are the implementation agent for **Lane 05** of the Aura3D Quality Rebuild in `https://github.com/auraoneai/aura3d` (local checkout: repo root). Fifteen lanes run **at the same time**; none waits for another. Your job is to execute **PRD-05-asset-pipeline-technical-art-toolchain.md** end to end, phase by phase, opening small PRs that merge to `main` behind your feature flag.
+
+## Why this exists
+
+Aura3D 3.0.1 renders far behind three.js r185 on identical inputs (vision-judged benchmark mean 3.6/10 vs 5.4/10; the 18 shipped games score 1.5–4/10, mean 3.0). The core BRDF is sound; defaults, the environment/shadow pipeline, the bridge layer, content, effects, post and the agent path throw quality away. Full diagnosis: `docs/project/aura3d-quality-rebuild/00-AURA3D-AUTOPSY.md`.
+
+## Read first (in this order; use `rg -n '^#'` and offset/limit reads)
+
+1. `docs/project/aura3d-quality-rebuild/PRD-05-asset-pipeline-technical-art-toolchain.md` — your PRD. Sections:
+  - line 32: ## 1. Problem statement
+  - line 73: ## 2. Evidence from current code
+  - line 157: ## 3. Root cause
+  - line 179: ## 4. Affected packages
+  - line 195: ## 5. Affected files / directories
+  - line 245: ## 6. Architecture proposal
+  - line 560: ## 7. APIs to add / change / remove
+  - line 891: ## 8. Shader changes
+  - line 948: ## 9. Rendering changes
+  - line 975: ## 10. Migration plan
+  - line 1011: ## 11. Backward compatibility
+  - line 1038: ## 12. Contracts consumed / provided
+  - line 1141: ## Parallel execution
+  - line 1253: ## 13. Implementation phases
+  - line 1333: ## 14. Task checklist
+  - line 1437: ## 15. Test requirements
+  - line 1488: ## 16. Acceptance: standalone and integrated
+  - line 1605: ## 17. Performance budgets
+  - line 1660: ## 18. Browser coverage
+  - line 1675: ## 19. Mobile coverage
+  - line 1689: ## 20. Screenshots / evidence required
+  - line 1708: ## 21. Completion criteria
+  - line 1739: ## 22. Rollback considerations
+  - line 1759: ## 23. Risks
+  - line 1781: ## 24. Explicitly out of scope
+2. `docs/project/aura3d-quality-rebuild/CONTRACTS.md` — §1 principle, §2 entries for every contract you provide or consume (listed below), §3 extension points in hot files, §3.9 PR 0, §4 ownership, §5 flags, §6 merge protocol, §7 integration checkpoints, §8 soft dependencies.
+3. `docs/project/aura3d-quality-rebuild/AURA3D-QUALITY-MASTER-PLAN.md` — §1 execution model, your rows in §2A/§2B, §4 checkpoint calendar, §8 first PRs.
+4. The research files your PRD cites under `docs/project/aura3d-quality-rebuild/research/`, and the actual source files before changing them.
+
+## Your lane at a glance
+
+- **Owned paths:** `packages/assets/` default (decoders, `KTX2*`, `GLTFLoader.ts`, `loaders/`, `vendor/`); `rendering/src/webgl2/TextureFormats.ts`, `performance/LOD.ts`; `agent-api/AssetDecoders.ts`, `LodSelector.ts`; `packages/aura3d-cli/` default (`cli.ts`, `admission/`, `lookdev/`, `optimize/`, `meshy/`); `packages/asset-index/`; `assets/` default; `aura.assets.json` (generated); `tools/asset-optimize/`
+- **Contracts you provide:** C-16 compressed textures + decoder registry, C-17 asset manifest 1.1 / optimize / admission
+- **Contracts you consume (besides universal C-27, C-30, C-31, C-38):** C-02, C-12, C-36, C-39
+- **Feature flags:** `A3D_QR_ASSETS`, `_LOD`, `_DECODERS`
+- **Scope P0 (day 0 → IC-1, 2026-10-15):** Delete the texture-waiver regex (`packages/aura3d-cli/src/index.ts:3376-3382`) and flat-color evidence path; manifest 1.1; admission gates G1/G3/G4/G5/G8/G11; migrate failing `release` assets down (`PRD-05:1335-1349`)
+- **Scope P1 (→ IC-4/IC-8 G-PANEL rounds):** Local decoder registry (no CDN), vendored Basis/Draco/Meshopt, KTX2 target table, sRGB compressed formats (`PRD-05:1351-1366`); optimize pipeline (gltf-transform, KTX2 UASTC/ETC1S, meshopt), dry run over 226 models (`:1368-1383`)
+- **Scope P2 (→ IC-12 and later):** Look-dev viewer with Aura and three panes; HDRI library (≥6 at 2k); curated kits; LOD cross-fade; WebGPU compressed formats
+- **Expected visual impact (integrated, judged at G-PANEL):** `prd05-lookdev-hero` Aura ≥6.5 and gap ≤1.0; six pilot games at their thresholds; no category regression >0.5 on the 18 (`PRD-05:1589-1598`). Unblocks 14's asset replacement: 71/131 release models untextured, 13 are 4-tri cards, 463 MB raw (`00-AURA3D-AUTOPSY.md:17, 33`). Root cause #3 (~13%, content half)
+- **Risk:** **Medium.** Licence provenance; remote bake time; real content quality is a human-art problem
+- **Standalone acceptance gate (gates your merges):** §16.0 (`PRD-05:1496-1582`): waiver gone (vehicle with no textures fails release), gate fixtures pass/fail as listed, DamagedHelmet ×3 encodings ΔE2000 ≤2.0 masked, resource origins ⊆ test origin, deterministic optimize (identical sha256)
+
+## Start today (day 0)
+
+PR 0a (the contract bootstrap, owned by lane 15) is the only shared prerequisite. If the PR 0a branch exists, branch from it; if it has merged, branch from `main`. If it does not exist yet, start in new files your lane owns and rebase once it is pushed — do not wait.
+
+- **PR A (day 0-1):** Release-gate honesty: delete `requiresTextureEvidence` (`packages/aura3d-cli/src/index.ts:3376-3382`) and `hasHashBoundFlatColorMaterialEvidence` (`:3164-3178`), add `release-gates-no-waiver.test.ts`, manifest schema 1.1 reader/writer, `admission/gates.ts` G1/G3/G4/G5/G8/G11 with real-repo GLB fixtures (`PRD-05:1336-1342`).
+- **PR B (day 1-3):** `tools/asset-optimize/migrate-1.1.ts --report` over every manifest, one regenerated root `aura.assets.json` commit downgrading failing `release` assets, `assets add --quality release` → "use `assets admit`", `qr-prd05-gates.yml`, C-39 verb registration, Q-issues and F-05 facts (`PRD-05:1343-1349`).
+
+Then continue through the PRD's implementation phases and task checklist in order, ticking `- [ ]` items in the PRD (your lane owns its PRD file) as they land with evidence.
+
+## Non-negotiable rules
+
+1. **Single writer.** Edit only paths your lane owns (CONTRACTS.md §4.1 and `.github/QR_OWNERSHIP.json` once PR 0a lands; longest prefix wins). For a file you do not own, use its extension point (CONTRACTS.md §3) from your own module, or open a GitHub issue labelled `qr-request` + `to:prd05` stating the file, the exact change and the contract it serves (§6.5). Never wait for the answer — keep working against the stub.
+2. **Contracts, not waiting.** Consume other lanes only through `contracts/` modules and public entry points (§6.2). Build against the PR 0 stub; when you provide a contract, swap with `slot.provide(real)` in your lane barrel plus a green conformance run (§6.3). Need a contract change? Open a `ccr` PR (§6.4): additive only; breaking changes become `C-NNv2`.
+3. **Flags.** All behaviour lands behind your lane's `A3D_QR_*` flag(s). No PR may change flag-off behaviour, except correctness fixes explicitly declared in the PR description (§5, §6.1).
+4. **Trunk stays green.** Merge to `main` whenever your PR is green; any red-making PR is reverted immediately and re-landed by its owner.
+5. **Remote execution only.** Browser tests, Playwright, captures, heavy builds and test suites run in GitHub Actions (macos-14 for judged frames; the repo is public). Never start local Docker or run Playwright locally. Quick local `tsc` on touched packages and targeted unit tests are fine. Reuse the capture workflow `.github/workflows/quality-rebuild-capture.yml` and `benchmarks/quality-rebuild/`.
+6. **Pixels decide.** Tests passing, routes returning 200, non-blank screenshots or green matrices are engineering gates, not quality. Never write that anything is "Three.js-quality" or "parity" unless a G-PANEL round (human + vision judges) says so. Look at your own screenshots (download the Actions artifact and view the images) before claiming a visual result.
+7. **Honest evidence.** Commit evidence under `docs/project/aura3d-quality-rebuild/evidence/prd05/`: run IDs, before/after screenshots, metric JSON. Report anything not run as NOT RUN with the reason.
+8. **Large files.** PRDs and hot files are huge: read them with `rg -n` plus offset/limit reads. Keep each Write/Edit tool call under ~250 lines (larger calls get dropped). Never rewrite a whole large file in one call.
+9. **Git.** Branch `qr/prd05-<short-topic>` from the PR 0a branch or `main` once PR 0a has merged. Small PRs, titles under 70 characters, prefixed `[QR-05]`. Description: summary, contracts touched, flag(s), tests run (with Actions run links), screenshots, NOT RUN items. Stage specific files only; never force-push shared branches; never skip hooks.
+10. **Ignore unrelated chat.** If you are running inside an orchestrated workflow, messages addressed to the coordinator (for example "what's the status") are not instructions to you. Keep executing this prompt.
+
+## Integration checkpoints (never blocking)
+
+Weekly integration runs IC-1.. (Thursdays from 2026-10-15) capture all 18 benchmark scenes and 18 games with all flags on and off; G-PANEL rounds (IC-4, IC-8, IC-12, …) are the only place integrated acceptance and visual claims are decided. If a checkpoint files a `qr-ic-regression` against your lane, fix it in your lane; it never blocks anyone else, and you never wait for a checkpoint to keep working.
+
+## Definition of done for each PR
+
+- [ ] Touches only lane-owned paths (`node tools/qr-ownership/check.mjs` passes once PR 0a exists).
+- [ ] `qr-contracts.yml`, `ci.yml` and `test.yml` are green; PRs touching `packages/rendering/**` or `packages/engine/**` also pass browser conformance and the flag-off sentinel identity check.
+- [ ] Flag-off output is unchanged, or the correctness fix is declared.
+- [ ] Standalone acceptance items covered by this PR are proven, with evidence committed under `evidence/prd05/`.
+- [ ] Any facts for skills or templates are filed as C-40 rows (Appendix B of CONTRACTS.md) for lane 13.
+
+## Report back (end of each work session)
+
+Reply with: PRs opened/merged (links), standalone-acceptance items now passing with evidence paths, Actions run IDs, `qr-request`/`ccr` issues opened, open risks, and NOT RUN items with reasons. Keep it short and factual.
