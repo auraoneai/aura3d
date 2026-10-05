@@ -98,7 +98,7 @@ resolve to". Each of the visual defects the other PRDs fix exists in this shape:
    which left 1,194 orphan `.map` files in `packages/*/src` (re-measured).
 
 Measured consequence (research/23, research/21): in the 18-scene same-input benchmark, Aura3D
-scores about 1-4.5 against three r185's 6.5-8.5. Vision judges score the 18 shipped games 1.5-5.5
+scores a mean of 3.6/10 against three r185's 5.4/10, with no scene equivalent. Vision judges score the 18 shipped games 1.5-4 overall (mean 3.0)
 on visual categories. This PRD does not fix those pixels. It removes the reason fixes to them have
 not reached the games (research/01 §0.3-0.4: every burst of renderer work was short and landed
 beside the game path, not in it).

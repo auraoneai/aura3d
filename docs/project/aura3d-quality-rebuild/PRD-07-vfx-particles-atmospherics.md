@@ -2030,6 +2030,8 @@ browser or local Docker.
 
 ### 17.1 Standalone acceptance (passable by PRD 07 alone, on PR 0 stubs; gates PRD 07 merges and `standalone-accepted`)
 
+Standalone rows are engineering evidence only; passing them supports no claim of three.js-level visual quality (only a
+G-PANEL integrated round can, CONTRACTS §7).
 Every standalone capture runs with `--flags vfx` and every other lane flag off. Because of the C-04 stub, additive
 blending is the documented fallback. Because of the C-01 stub, there are no soft particles or froxels, and particles
 draw after all transparents.

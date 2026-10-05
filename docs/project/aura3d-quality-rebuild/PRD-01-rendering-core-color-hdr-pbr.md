@@ -1189,7 +1189,9 @@ The integrated judge has three parts: lane 12's automated region metrics (necess
 
 ### 17.1 Standalone acceptance (lane 01 alone; gates merges and `standalone-accepted`)
 
-All on remote macos-14 CI (`qr-prd01-core.yml`), flag on, with the flag-off sentinel identity check green:
+All on remote macos-14 CI (`qr-prd01-core.yml`), flag on, with the flag-off sentinel identity check green
+(engineering evidence only: per-row matches against three on narrow lane scenes support no claim of three.js-level
+visual quality; only a G-PANEL integrated round can, CONTRACTS §7):
 
 | # | Criterion | Test / evidence | Contracts stubbed |
 |---|---|---|---|

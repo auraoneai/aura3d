@@ -1713,7 +1713,8 @@ here, never by PRD 12.
 ### 16.1 Standalone acceptance (this lane alone, with stubs; gates PRD 12 merges)
 
 Every row is reproducible from PRD 12's own files, the 3.0.1 commit `c08d8acb`, the PR 0a stubs and the macos-14
-runner. None needs another lane's real implementation.
+runner. None needs another lane's real implementation. These rows prove the infrastructure sees known defects; they
+are not, and support no claim of, three.js-level visual quality for Aura3D (CONTRACTS §7).
 
 | ID | Input | Reference | Criterion (automated) | Threshold | Human/vision review |
 |---|---|---|---|---|---|

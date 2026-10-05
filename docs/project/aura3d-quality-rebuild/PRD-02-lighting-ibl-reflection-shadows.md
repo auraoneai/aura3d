@@ -2048,6 +2048,8 @@ and game captures from `tools/quality-rebuild-capture` (C-33), both dispatched b
 ### 16.1 Standalone acceptance (PRD 02 alone, stubs; gates merges and `standalone-accepted`)
 
 All on macos-14 Chromium (ANGLE Metal) unless noted; each has a broken control (flag off or feature off fails).
+These rows are engineering evidence only; passing all of them supports no claim of three.js-level visual quality
+(only a G-PANEL integrated round can, CONTRACTS §7).
 
 | ID | Criterion | Where measured | Threshold |
 |---|---|---|---|
@@ -2349,8 +2351,8 @@ Game evidence must come from the shipped lane (research/18 Q9).
 7. Section 16.2 scores are met, and the must-disappear differences are reclassified, by both the vision model and
    the human reviewer.
 8. Section 16.3 floor is met for the 18 games, and lighthouse thresholds for the 3 lighthouse games.
-9. An agent-authored scene from the `create-aura3d` `mini-game` / `racing-starter` templates (after PRD 13
-   applies Q-13-1) has an environment and a shadowed sun: scaffold the template, build its scene snapshot,
+9. An agent-authored scene from the `create-aura3d` `mini-game` / `racing-starter` templates (integrated; evaluated
+   on whatever template state lane 13 has on main, Q-13-1 being a non-blocking request) has an environment and a shadowed sun: scaffold the template, build its scene snapshot,
    assert `environment.source !== "neutral"` and one directional in `selectShadowedLights(...)`.
 
 **Removal** (after `default-on` for two checkpoints, CONTRACTS §5.4): the `rg` deletion check returns 0 over

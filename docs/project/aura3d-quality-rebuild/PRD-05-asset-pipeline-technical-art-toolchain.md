@@ -1495,6 +1495,9 @@ assets matches three.js; they establish that the pipeline preserves and budgets 
 
 ### 16.0 Standalone acceptance (lane 05 alone, PR 0 stubs only; gates lane-05 merges and `standalone-accepted`)
 
+Engineering evidence only: these rows (including three-adapter look-dev) support no claim of three.js-level visual
+quality for Aura3D renders; only a G-PANEL integrated round can (CONTRACTS §7).
+
 | # | Criterion | Measured by | Needs from other lanes |
 |---|---|---|---|
 | S1 | Regex and flat-colour waivers deleted; 0 root-manifest `release` assets fail G1–G11; broken-control fixtures fail the right gates | `qr-prd05-gates.yml`, `migration-1.1.json` | none |

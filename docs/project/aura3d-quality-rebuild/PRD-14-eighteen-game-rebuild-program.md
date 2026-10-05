@@ -1270,7 +1270,7 @@ standalone fallback the v2 route ships with on stubs, and the full effect is jud
 
 - Surface fragment: `float ndl = dot(N, L); float day = smoothstep(-0.08, 0.18, ndl);` `color = mix(nightLights.rgb * nightIntensity, pbrLit(albedo, N, …), day);`
   clouds as a second layer: `albedo = mix(albedo, vec3(0.95), cloud.a * 0.85)` with cloud shadow `pbrLit *= 1.0 - 0.35 * cloudShadow(uv + L.xz * 0.002)`.
-- Atmosphere shell: sphere at 1.025 R, front faces, additive blend (`ONE, ONE`, needs PRD 01 blend modes), depth test on, depth write off.
+- Atmosphere shell: sphere at 1.025 R, front faces, additive blend (`ONE, ONE` via C-04 `additive`; under the C-04 stub it resolves to `alpha`, so the shell is authored to read acceptably either way and the additive look is integrated), depth test on, depth write off.
   `float rim = pow(1.0 - saturate(dot(N, V)), 4.0); float lit = saturate(dot(N, L) + 0.25);` `out = atmosphereColor * rim * lit * intensity` (HDR, 2–6).
   Terminator band: multiply by `smoothstep(-0.25, 0.1, dot(N, L))` and add a warm tint `vec3(1.0, 0.45, 0.2) * rim * (1.0 - abs(dot(N, L)) * 4.0)` clamped.
 - Shield variant (Orbital): same shell with a hex mask texture, `alpha = rim * hex(uv * 24.0) * (0.3 + hitPulse)`, `hitPulse` a uniform array of 4 impact

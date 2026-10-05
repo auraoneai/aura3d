@@ -869,6 +869,7 @@ Conformance suites that must pass for both `stub` and `real` (PRD 15-owned): `te
 |---|---|---|---|---|---|
 | C-01 | FrameGraph phase hooks | 01 | none required; palette upload is lazy per frame (§9.2) | — | — |
 | C-02 | ProgramFeatures, chunk registry, ProgramCache | 01 | `registerShaderChunk`, `registerShaderFeature`, `ProgramFeatures.skinning/morph`, `ProgramCacheLike.precompile`, `ChunkHarness` | registries real (store and validate); `generateProgram` throws `PROGRAM_GENERATOR_PENDING`; cache wraps `ShaderLibrary` and ignores features; ChunkHarness real | chunk compile and GPU = CPU numerics standalone; unified skinned PBR and morph pixels integrated |
+| C-03 | MaterialFeature lobe registry | 04 | read-only: skinned/morphed items keep whatever lobes C-03 reports; deform chunks (C-18) run at `vertex:deform` before lobe evaluation; PRD 06 registers no lobes | registry real; lobes have no render effect until the C-02 generator is real; `materials.paths.materialModel = "legacy"` (`CONTRACTS.md:490-491`) | none standalone (skinned shading stays on the legacy `SkinnedLitMaterial` path); lobe-correct skinned shading integrated |
 | C-07 | Primitive tessellation, InstanceBuffer | 01 | none for P0-P4 (crowds out of scope) | — | — |
 | C-09 / C-10 | Environment, lighting | 02 | hero scene lighting | legacy environment and lights | hero IBL/lighting look integrated |
 | C-11 | ShadowCaster depth-variant hook | 02 | `registerDepthVariantFeature`, `registerSkinnedBoundsProvider`, `ShadowCasterVariantKey.skinning/morphTargets` | features stored, applied only once the lighting lane's `DepthPass` consumes them; key has only `instanced`/`doubleSided` | light-view silhouette standalone (lane harness); on-screen skinned shadows integrated |
@@ -1381,7 +1382,8 @@ A scene passes only when all three pass. The vision prompt must include the thre
 
 ### 17.0 Standalone acceptance (this lane alone; gates PRD 06 merges and `standalone-accepted`)
 
-All on remote macos-14 CI, flag-on, with the flag-off sentinel identity check green:
+All on remote macos-14 CI, flag-on, with the flag-off sentinel identity check green (engineering evidence only;
+numeric parity with three r185 here supports no claim of three.js-level visual quality, CONTRACTS §7):
 
 | # | Criterion | Test / evidence | Contracts stubbed |
 |---|---|---|---|

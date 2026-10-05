@@ -864,6 +864,8 @@ Contract Change Requests this lane opens (all additive, CONTRACTS §6.4; none is
 | C-08 | Frame uniforms | 01 | `AuraFrame`/`AuraLights` member lists for `UniformLayout` and WGSL | types declared | conditional Phase 6 only |
 | C-11 | ShadowCaster depth-variant hook | 02 | `registerDepthVariantFeature("prd11.drawId")` | features stored, applied once `DepthPass` consumes them | instanced casters standalone (existing path); multi-draw casters integrated |
 | C-13 | PostPass registry | 03 | `gpuOnly` pass list for the guard's allow-set | registry stores entries; legacy chain runs with `A3D_QR_POST` off | guard unit-tested standalone; Deep Recovery frame time integrated (needs Q-03-1) |
+| C-14 | Velocity, temporal history | 03 | `resetTemporalHistory` on C-29 device restore; history targets counted in `RenderTargetPool`/FrameStats memory | fields inert; `resetTemporalHistory` calls the existing `temporalHistory.reset()` (`CONTRACTS.md:1027-1030`) | restore-resets-history unit test standalone; WebGPU TAA parity integrated |
+| C-18 | Deformation resources | 06 | batcher excludes skinned/morphed items from merged batches; WGSL twin of the deform chunk (conditional Phase 6) | `forward/Skinning.ts`/`forward/Morph.ts` hold the verbatim moved code (`CONTRACTS.md:1199-1202`) | batch exclusion standalone; WebGPU skinned parity integrated |
 | C-20 / C-21 | Particles, sky/fog/atmosphere | 07 | `particles` FrameStats scope; volumetric-pass-active signal for the fog rule | stubs report no GPU volumetric pass | integrated |
 | C-30 | Benchmark scene registry, ReadyPayloadV2 | 12 | lane scenes in `scenes/prd11/`, `ReadyPayloadV2.frameTiming`, `qrFlags` | registry wraps 18 base scenes + lane indices | standalone (own scenes) |
 | C-31 | Diagnostics sections | 12 | `registerDiagnosticsSection` for `frame`, `quality`, `renderer.batching` | keys present with null values | standalone |
@@ -1184,7 +1186,9 @@ Two kinds of acceptance, per CONTRACTS §8 (row "11 GPU/tiers"):
 
 ### 16.0 Standalone acceptance (this lane alone; gates merges and `standalone-accepted`)
 
-All on remote macos-14 CI in `qr-prd11-perf.yml`, flags `tiers`, with the flag-off sentinel identity check green:
+All on remote macos-14 CI in `qr-prd11-perf.yml`, flags `tiers`, with the flag-off sentinel identity check green
+(engineering evidence only; no row supports a claim of three.js-level visual quality or of G3 frame rate on named
+hardware, CONTRACTS §7):
 
 | # | Criterion | Test / evidence | Contracts stubbed |
 |---|---|---|---|

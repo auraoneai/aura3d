@@ -157,46 +157,46 @@ Conformance test layout:
 
 | ID | Contract | Provider | Consumers | Flag | PR 0 | PRD-proposed aliases |
 |---|---|---|---|---|---|---|
-| C-01 | FrameGraph phase hooks (pass registration) | 01 | 02,03,04,07,08,10,11 | A3D_QR_CORE | 0a+0b | C-07-IN-3 |
-| C-02 | ProgramFeatures + ShaderFeature/chunk registry + ProgramCache | 01 | 02,03,04,05,06,07,08,10,11 | A3D_QR_CORE | 0a | C-07-IN-4; PRD 01 "generator feature record" |
-| C-03 | MaterialFeature lobe registry | 04 | 01,06,07,10,13 | A3D_QR_MATERIALS | 0a | PRD 04 PhysicalFeatureSet |
-| C-04 | BlendMode / RenderCommandState / DepthCompare | 01 | 03,04,07,11 | A3D_QR_CORE | 0a | C-07-IN-1 |
-| C-05 | Output: HDR target, tone mapping, exposure, background coverage, output overlay | 01 | 03,09,12,13,14 | A3D_QR_CORE | 0a+0b | C-01-quality (part) |
+| C-01 | FrameGraph phase hooks (pass registration) | 01 | 02,03,04,06,07,08,10,11,13 | A3D_QR_CORE | 0a+0b | C-07-IN-3 |
+| C-02 | ProgramFeatures + ShaderFeature/chunk registry + ProgramCache | 01 | 02,03,04,05,06,07,08,10,11,13,15 | A3D_QR_CORE | 0a | C-07-IN-4; PRD 01 "generator feature record" |
+| C-03 | MaterialFeature lobe registry | 04 | 01,06,07,10,13,14 | A3D_QR_MATERIALS | 0a | PRD 04 PhysicalFeatureSet |
+| C-04 | BlendMode / RenderCommandState / DepthCompare | 01 | 03,04,07,11,14 | A3D_QR_CORE | 0a | C-07-IN-1 |
+| C-05 | Output: HDR target, tone mapping, exposure, background coverage, output overlay | 01 | 02,03,04,05,07,09,11,12,13,14,15 | A3D_QR_CORE | 0a+0b | C-01-quality (part) |
 | C-06 | Scene graph transforms + color parsing | 01 | 08,09,10,15 | A3D_QR_CORE | 0a | — |
-| C-07 | Primitive tessellation + InstanceBuffer | 01 | 06,10,11,13 | A3D_QR_CORE | 0a | C-01-quality (part) |
-| C-08 | Frame uniforms (AuraFrame/AuraLights UBO) + CameraLike | 01 | 02,03,07,08,10 | A3D_QR_CORE | 0a | — |
-| C-09 | EnvironmentSource / EnvironmentProbe | 02 | 04,07,10,13 | A3D_QR_LIGHTING | 0a+0b | C-07-IN-5, C-02-env |
-| C-10 | Lighting API + lighting runtime | 02 | 10,12,13,14 | A3D_QR_LIGHTING | 0a | C-02-env |
-| C-11 | ShadowCaster depth-variant hook + shadow lookup | 02 | 06,07,10,11 | A3D_QR_LIGHTING | 0a+0b | C-07-IN-6 |
-| C-12 | Sampler / texture-sampling descriptors (device mapping) | 02 | 04,05,10 | A3D_QR_LIGHTING | 0a+0b | — |
-| C-13 | PostPass registry + post pipeline + output presets | 03 | 02,07,08,09,10,13,14 | A3D_QR_POST | 0a+0b | C-03-post, C-07-IN-8 (part) |
-| C-14 | Velocity / temporal history | 03 | 06,07,08,11 | A3D_QR_POST | 0a+0b | C-07-IN-8 |
-| C-15 | Material spec additions + model material overrides | 04 | 09,10,13,14 | A3D_QR_MATERIALS | 0a | C-04-override |
-| C-16 | Compressed textures + decoder registry | 05 | 04,07,10 | A3D_QR_ASSETS | 0a+0b | — |
+| C-07 | Primitive tessellation + InstanceBuffer | 01 | 06,07,09,10,11,13,14 | A3D_QR_CORE | 0a | C-01-quality (part) |
+| C-08 | Frame uniforms (AuraFrame/AuraLights UBO) + CameraLike | 01 | 02,03,07,08,10,11 | A3D_QR_CORE | 0a | — |
+| C-09 | EnvironmentSource / EnvironmentProbe | 02 | 01,03,04,05,06,07,10,13,14,15 | A3D_QR_LIGHTING | 0a+0b | C-07-IN-5, C-02-env |
+| C-10 | Lighting API + lighting runtime | 02 | 01,03,06,10,12,13,14,15 | A3D_QR_LIGHTING | 0a | C-02-env |
+| C-11 | ShadowCaster depth-variant hook + shadow lookup | 02 | 01,03,04,05,06,07,10,11,13,14,15 | A3D_QR_LIGHTING | 0a+0b | C-07-IN-6 |
+| C-12 | Sampler / texture-sampling descriptors (device mapping) | 02 | 01,04,05,10 | A3D_QR_LIGHTING | 0a+0b | — |
+| C-13 | PostPass registry + post pipeline + output presets | 03 | 01,02,07,08,09,10,11,13,14,15 | A3D_QR_POST | 0a+0b | C-03-post, C-07-IN-8 (part) |
+| C-14 | Velocity / temporal history | 03 | 01,06,07,08,11,14,15 | A3D_QR_POST | 0a+0b | C-07-IN-8 |
+| C-15 | Material spec additions + model material overrides | 04 | 03,05,09,10,13,14,15 | A3D_QR_MATERIALS | 0a | C-04-override |
+| C-16 | Compressed textures + decoder registry | 05 | 01,04,07,10 | A3D_QR_ASSETS | 0a+0b | — |
 | C-17 | Asset manifest 1.1 / AssetOptimize / admission | 05 | 06,07,09,10,13,14,15 | A3D_QR_ASSETS | 0a | C-05-assets, C-07-OUT-3 (consumer side) |
-| C-18 | Deformation resources (texture update/2d-array, palette, morph, deform chunk) | 06 | 01,02,03,11 | A3D_QR_ANIMATION | 0a+0b | — |
-| C-19 | AnimationPlayback API | 06 | 07,08,09,13,14 | A3D_QR_ANIMATION | 0a | C-06-anim, C-07-IN-7 |
-| C-20 | ParticleEmitter render hook + `app.effects` | 07 | 08,09,13,14 | A3D_QR_VFX | 0a | C-07-OUT-1, C-07-OUT-7, C-07-fx |
-| C-21 | Sky / fog / atmosphere | 07 | 02,10,13,14 | A3D_QR_VFX | 0a | C-07-OUT-2, C-07-OUT-4 |
-| C-22 | CameraRig live API | 08 | 03,09,12,13,14 | A3D_QR_CAMERA | 0a | C-08-camera |
+| C-18 | Deformation resources (texture update/2d-array, palette, morph, deform chunk) | 06 | 01,02,03,04,11,14 | A3D_QR_ANIMATION | 0a+0b | — |
+| C-19 | AnimationPlayback API | 06 | 05,07,08,09,13,14,15 | A3D_QR_ANIMATION | 0a | C-06-anim, C-07-IN-7 |
+| C-20 | ParticleEmitter render hook + `app.effects` | 07 | 08,09,11,13,14,15 | A3D_QR_VFX | 0a | C-07-OUT-1, C-07-OUT-7, C-07-fx |
+| C-21 | Sky / fog / atmosphere | 07 | 01,02,03,10,11,13,14,15 | A3D_QR_VFX | 0a | C-07-OUT-2, C-07-OUT-4 |
+| C-22 | CameraRig live API | 08 | 03,06,07,09,12,13,14 | A3D_QR_CAMERA | 0a | C-08-camera |
 | C-23 | Time controller + feel bus + screen-feel uniforms | 08 | 03,06,07,09,14 | A3D_QR_CAMERA | 0a | — |
-| C-24 | GameShell / Session / HUD / Touch / capture context | 09 | 12,13,14 | A3D_QR_GAME | 0a | C-09-game |
+| C-24 | GameShell / Session / HUD / Touch / capture context | 09 | 08,12,13,14 | A3D_QR_GAME | 0a | C-09-game |
 | C-25 | Game audio | 09 | 08,13,14 | A3D_QR_GAME | 0a | — |
-| C-26 | World queries: ground raycast, height, wind, biome | 10 | 06,07,13,14 | A3D_QR_WORLD | 0a | C-07-IN-11, C-10-biome |
-| C-27 | QualityTier settings | 11 | all engine lanes, 12,13,14 | A3D_QR_TIERS | 0a | C-07-IN-9, C-11-tier |
-| C-28 | Device capabilities: probe, counters, compileAsync, FrameStats, resource registry | 11 | 01,02,03,06,07,12 | A3D_QR_TIERS | 0a+0b | — |
-| C-29 | Renderer factory / backends / frame API / device lifecycle | 11 | 01,07,12,15 | A3D_QR_WEBGPU | 0b | — |
-| C-30 | Benchmark scene registry + ReadyPayload + report schema | 12 | 01-11,14 | (tooling) | 0a | C-07-OUT-8, C-12-harness |
-| C-31 | Diagnostics / evidence schema + sections registry | 12 | all | (tooling) | 0a+0b | C-12-harness |
-| C-32 | VisualReview rubric / judgement schema | 12 | 13,14 | (tooling) | 0a | C-12-harness |
-| C-33 | Capture harness interface (+ capture step plugins, games.json schema) | 12 | 06,08,09,13,14 | (tooling) | 0a | C-12-harness |
+| C-26 | World queries: ground raycast, height, wind, biome | 10 | 02,06,07,08,13,14 | A3D_QR_WORLD | 0a | C-07-IN-11, C-10-biome |
+| C-27 | QualityTier settings | 11 | all other lanes | A3D_QR_TIERS | 0a | C-07-IN-9, C-11-tier |
+| C-28 | Device capabilities: probe, counters, compileAsync, FrameStats, resource registry | 11 | all lanes except 10,11 | A3D_QR_TIERS | 0a+0b | — |
+| C-29 | Renderer factory / backends / frame API / device lifecycle | 11 | 01,02,03,04,05,06,07,09,12,14,15 | A3D_QR_WEBGPU | 0b | — |
+| C-30 | Benchmark scene registry + ReadyPayload + report schema | 12 | all lanes except 12,13 | (tooling) | 0a | C-07-OUT-8, C-12-harness |
+| C-31 | Diagnostics / evidence schema + sections registry | 12 | all other lanes | (tooling) | 0a+0b | C-12-harness |
+| C-32 | VisualReview rubric / judgement schema | 12 | all lanes except 10,12 | (tooling) | 0a | C-12-harness |
+| C-33 | Capture harness interface (+ capture step plugins, games.json schema) | 12 | all other lanes | (tooling) | 0a | C-12-harness |
 | C-34 | Looks + lookLint rule registry | 13 | 02,07,08,09,10,12,14 | A3D_QR_LOOKS | 0a+0b | P-13-looks, P-13-lint, C-02-lint |
-| C-35 | Art direction + game acceptance schema | 14 | 12,13 | (data) | 0a | — |
-| C-36 | SceneCompiler extension points | 15 | 01,02,03,04,05,06,07,10,11,13 | A3D_QR_COMPILER | 0a+0b | C-07-IN-10, C-07-OUT-6 |
-| C-37 | RuntimeNode add/remove + node-handle extensions | 15 | 06,07,08,09,10,14 | A3D_QR_COMPILER | 0a+0b | C-07-OUT-5 |
-| C-38 | App surface extension registry (AuraApp / options / diagnostics members) | 15 | all engine lanes | — (infrastructure) | 0a+0b | — |
-| C-39 | CLI command + codemod registry | 15 | 01,02,03,04,05,06,08,09,10,13 | — (infrastructure) | 0a+0b | — |
-| C-40 | Facts handoff tables (skills, recipes, defaults) | each lane → 13 | 13 | — | none | C-07-OUT-9, P-13-skills |
+| C-35 | Art direction + game acceptance schema | 14 | 05,09,11,12,13 | (data) | 0a | — |
+| C-36 | SceneCompiler extension points | 15 | 01,02,03,04,05,06,07,08,10,11,12,13 | A3D_QR_COMPILER | 0a+0b | C-07-IN-10, C-07-OUT-6 |
+| C-37 | RuntimeNode add/remove + node-handle extensions | 15 | 02,04,06,07,08,09,10,11,14 | A3D_QR_COMPILER | 0a+0b | C-07-OUT-5 |
+| C-38 | App surface extension registry (AuraApp / options / diagnostics members) | 15 | all other lanes | — (infrastructure) | 0a+0b | — |
+| C-39 | CLI command + codemod registry | 15 | all lanes except 12,15 | — (infrastructure) | 0a+0b | — |
+| C-40 | Facts handoff tables (skills, recipes, defaults) | each lane → 13 | 01,02,03,04,05,06,08,09,10,11,15 | — | none | C-07-OUT-9, P-13-skills |
 
 Column "PR 0" means:
 - `0a`: only new contract or stub files are needed.
@@ -2682,7 +2682,7 @@ With the flag off, nothing changes for anyone. Consumers never change code to sw
 
 | Checkpoint | Date (UTC) | Purpose |
 |---|---|---|
-| IC-0 | 2026-10-08 | PR 0 identity: flags `none` vs `85aafcd0`. This is the program's measured baseline. It should reproduce research 23 (Aura ~1-4.5 vs three r185 ~6.5-8.5) and research 21 (games overall 1.5-4/10). |
+| IC-0 | 2026-10-08 | PR 0 identity: flags `none` vs `85aafcd0`. This is the program's measured baseline. It should reproduce research 23 (vision-judged benchmark: Aura 1-4.5, mean 3.6, vs three r185 4-7, mean 5.4) and research 21 (games overall 1.5-4/10, mean 3.0). The 6.5-8.5 three.js figures in research 22 come from the blind pass-1 judges and are not a baseline. |
 | IC-1 … IC-n | every Thursday from 2026-10-15 (IC-1), 2026-10-22 (IC-2), 2026-10-29 (IC-3), 2026-11-05 (IC-4), … | weekly integrated run |
 | G-PANEL rounds | IC-4, IC-8, IC-12, … (every 4th) | human plus vision panel; the only rounds that can accept |
 

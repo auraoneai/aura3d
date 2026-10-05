@@ -22,7 +22,7 @@ Gate: this PRD is not complete when tests pass, routes return 200, screenshots a
 suite is green, or a parity matrix is green. Merging is gated by **standalone acceptance** (§16.1), which this lane
 can pass alone. Completion is gated by **integrated acceptance** (§16.2, §16.3): the material benchmark scenes and the
 listed games, judged against three r185 at a G-PANEL integration checkpoint (CONTRACTS §7; 2 humans + 1 vision
-model, median of record). Aura3D is not Three.js-quality today (research/23: Aura ~1-4.5 vs three r185 ~6.5-8.5).
+model, median of record). Aura3D is not Three.js-quality today (research/23 vision judgment: Aura mean 3.6 vs three r185 mean 5.4 across 18 same-input scenes, no scene equivalent).
 Nothing in this document, and no standalone gate, may be cited as evidence that it is until a G-PANEL round meets
 the integrated thresholds.
 
@@ -411,8 +411,7 @@ Each lobe is a `MaterialLobe` (C-03) with `feature()`, `bind()`, `samplerSlots` 
 - The glass import rewrite (E22) is skipped for a material exactly when its draw resolves to a generated program with
   the `transmission` lobe (or `renderer.transmission: "env"`); otherwise the legacy rewrite stays (R2 sequencing).
 - Ordering: with the C-01 stub, the `transmission` phase runs after the single `ForwardPass`, so transmissive items are
-  already drawn before the capture (CONTRACTS C-01 stub deviation). Correct capture-then-transmissive order needs PRD 01's
-  ForwardPass split (C-01 real) and a transmissive queue placed after the `transmission` phase (request Q-01-6). Until
+  already drawn before the capture (CONTRACTS C-01 stub deviation). Correct capture-then-transmissive order needs C-01 real (ForwardPass split, provider 01) and a transmissive queue placed after the `transmission` phase (request Q-01-6). Until
   then, capture correctness is standalone (§16.1 S10) and the 05-transmission look is integrated.
 
 Costs and fallback:
@@ -1030,7 +1029,7 @@ vec3 a3dVolumeAttenuation(float dist, vec3 color, float attDist) {
 
 ### 8.8 `tangent_frame` and normals
 
-- VS (ShaderFeature `prd04.tangentFrame`, hook `vertex:world`, after PRD 06's `vertex:deform`):
+- VS (ShaderFeature `prd04.tangentFrame`, hook `vertex:world`, ordered after the C-18 `vertex:deform` hook; identity under the C-18 stub):
   `v_tangent = vec4(normalize(mat3(skinnedModel) * a_tangent.xyz), a_tangent.w)`, where
   `skinnedModel = u_model · instanceMatrix · skinMatrix` as applicable (skin matrix from PRD 06's deform chunk, C-18).
   The legacy shaders' `mat3(u_normalMatrix)` at `ShaderLibrary.ts:602, 1132, 2112, 2118` is PRD 01's (Q-01-4).
@@ -1096,8 +1095,9 @@ Every rendering change reaches the frame through a contract seam; PRD 04 edits n
      `transmission-ldr-capture`. Scale: 0.5 on Medium, 1 on High/Ultra, none on Low (C-27 tier).
    - No readback (C-28 `readbacks` must stay 0).
    - Final pass order (opaque + MASK → capture → transmissive back-to-front with depth write and shadow receive →
-     BLEND → post → output) requires PRD 01's ForwardPass split (C-01 real) plus a transmissive queue after the
-     `transmission` phase: request Q-01-6. Transmissive objects do not see each other (matches r185).
+     BLEND → post → output) is the integrated order, active when C-01 is real (ForwardPass split) plus a transmissive
+     queue after the `transmission` phase (non-blocking request Q-01-6). Against the C-01 stub the lane registers its
+     `transmission` contributor and proves capture + back-to-front ordering in its own lane scenes (standalone). Transmissive objects do not see each other (matches r185).
 2. **Programs (C-02/C-03).** Lobes, the transmission sampler binding, UV transforms, tangent frame, A2C and debug views
    are registered ShaderFeatures/lobes. The 10 named `DEFAULT_TEXTURED_PBR_*_VARIANT` constants stay in PRD 01's legacy
    library; generated programs ignore them.
@@ -1737,7 +1737,7 @@ Lane `standalone-accepted` (CONTRACTS §5.3): all §16.1 rows S1–S16 pass in o
 
 Program completion (all on the final commit, judged at a G-PANEL round):
 1. Every §16.2 scene meets its threshold with `qr_flags=all`, vision + human sign-off recorded.
-2. Every §16.3 game meets its material outcome after PRD 14's rebuild pass, with human sign-off.
+2. Every §16.3 game meets its material outcome at a G-PANEL round with `qr_flags=all` on whatever v2 routes lane 14 has on main (integrated criterion; it never gates lane 04's standalone acceptance or merges), with human sign-off.
 3. No PRD 04 code path contains asset-specific branches (source guard + review); `inspectMaterials()` on every Khronos
    fixture shows factors equal to the authored JSON.
 4. `lightsDroppedByMaterial == 0` on all 18 games.
