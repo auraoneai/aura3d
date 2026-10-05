@@ -1,0 +1,15 @@
+{
+  "name": "@aura3d/benchmark-quality-rebuild",
+  "private": true,
+  "type": "module",
+  "description": "Same-scene visual benchmark: Aura3D (@aura3d/engine source) vs three@0.185.1. Not a pnpm workspace member; dependencies resolve from the repo root (three 0.185.1, vite, @playwright/test).",
+  "benchmarkEngines": {
+    "aura3d": "workspace source via repo-root vite aliases (@aura3d/engine -> packages/engine/src/index.ts)",
+    "three": "0.185.1 (repo-root devDependency, asserted at build time and at runtime via THREE.REVISION)"
+  },
+  "scripts": {
+    "build": "vite build --config vite.config.ts",
+    "capture": "node capture.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

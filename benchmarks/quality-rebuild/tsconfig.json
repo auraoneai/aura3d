@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["main.ts", "shared/**/*.ts", "aura3d/**/*.ts", "three/**/*.ts", "vite.config.ts"]
+}
