@@ -3,7 +3,7 @@
   "queue": [
     {
       "gameId": "showcase-bank-shot",
-      "commit": "9fdee592d9c4b719744a57e01ecda12ac29fa469",
+      "commit": "6fe4351a9f0286b56b79bcc5e144d96a4550c1a5",
       "pr": 183,
       "phase": "T2-v2-shell",
       "requestedAt": "2026-10-06",
