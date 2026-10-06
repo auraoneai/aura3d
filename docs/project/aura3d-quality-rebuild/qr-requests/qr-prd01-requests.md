@@ -42,3 +42,28 @@ lane 01 does until the change lands.
 Recorded in PRD-01 §13.5 (Q-01-* from lanes 02, 03, 04, 06, 07, 08, 09, 15; R-01-*).
 Disposition is unchanged: all accepted per §13.5 except lane 08's legacy
 camera-fade patch (declined under §3.7).
+
+## PR B (Phase 1) status notes — 2026-10-06
+
+- C-06 real bodies landed in `agent-api/sceneGraph.ts` + `agent-api/color.ts`
+  (still resolving to owner 15 per QR-OWN-1). The C-06 contract file
+  (`contracts/sceneGraph.ts`, owner 15) exports free functions, not a slot —
+  there is no `sceneGraphSlot.provide` to call; the flag-on path lands when
+  Q-15-7's `compiler/{sceneGraph,color}.ts` verbatim move bridges to these
+  impls. `AuraTransformSpec.quaternion`/`rotationOrder` are already on the spec
+  type, so no compiler change is needed for the data path.
+- C-07 instancing: `ForwardPass`/`contracts/renderItem.ts` already compose
+  `u_modelViewProjection · instanceMatrix · position` (attribute path
+  `a_instanceMatrix0..3`, uniform fallback, per-instance CPU fallback) —
+  `u_modelMatrix · instance · u_geometryMatrix` holds because the geometry
+  fold (`size ⊙ fit`) is baked into `modelMatrix` upstream by Q-15-2. No
+  ForwardPass change was required; `instanceBufferSlot.provide` wires the real
+  `InstanceBuffer` (doubling growth, dirty-range `updateBuffer`, VAO eviction).
+- C-07 `createPrimitiveGeometry` + `Geometry` extensions (cylinder frusta,
+  torus XY-plane, box, capsule ellipticity, litPlane segments) landed in
+  `geometry/Primitives.ts` + `Geometry.ts`. Legacy `Geometry.cylinder` wall
+  winding was verified outward-facing and preserved under the new layout.
+- FrameGraph seam: `prd01.forwardTarget` blackboard key + `ctx.sceneDepth`
+  filled from the forward target's depth texture; set in both render paths.
+  Unflagged, additive-only plumbing (nothing consumes it yet → flag-off
+  pixel-identical).
