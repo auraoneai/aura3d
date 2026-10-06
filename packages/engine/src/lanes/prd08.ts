@@ -74,6 +74,7 @@ export {
   quatFromEulerXYZ as cameraQuatFromEulerXYZ,
   quatMultiply as cameraQuatMultiply,
   quatNormalize as cameraQuatNormalize,
+  quatRotateVec3 as cameraQuatRotateVec3,
   quatSlerp as cameraQuatSlerp,
   quatToEulerXYZ as cameraQuatToEulerXYZ
 } from "../agent-api/camera/quat.js";
@@ -96,6 +97,26 @@ export {
   type LegacySpecRigDeps,
   type LegacyTargetSource
 } from "../agent-api/camera/rigs/fromSpec.js";
+export { createChaseRig, type ChaseRigOptions } from "../agent-api/camera/rigs/chase.js";
+export { createFlightRig, type FlightRigOptions } from "../agent-api/camera/rigs/flight.js";
+export { createFollow2dRig, type Follow2dRigOptions } from "../agent-api/camera/rigs/follow2d.js";
+export { createFightingRig, type FightingRigOptions } from "../agent-api/camera/rigs/fighting.js";
+export { createShoulderRig, type ShoulderRigOptions } from "../agent-api/camera/rigs/shoulder.js";
+export { createOrbitRig, bindOrbitPointer, type OrbitRigOptions, type AuraOrbitRig } from "../agent-api/camera/rigs/orbit.js";
+export { createTopDownRig, type TopDownRigOptions } from "../agent-api/camera/rigs/topDown.js";
+export { createAltitudeRig, type AltitudeRigOptions } from "../agent-api/camera/rigs/altitude.js";
+export { createRailRig } from "../agent-api/camera/rigs/rail.js";
+export {
+  createCameraProbe,
+  type AuraCameraProbeDeps,
+  type ProbeBoundsEntry,
+  type ProbePhysicsEntry
+} from "../agent-api/camera/Probe.js";
+export {
+  createCollisionDamper,
+  type CollisionDamper,
+  type CollisionDamperOptions
+} from "../agent-api/camera/collision.js";
 export {
   createFovKickLayer,
   createLookAtLayer,
