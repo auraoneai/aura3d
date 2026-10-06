@@ -1,0 +1,169 @@
+name: Quality Checkpoint
+
+# CONTRACTS §7 integrated checkpoint (PRD-12 T1.17). Every Thursday 00:00 UTC on
+# main HEAD: captures the corpus with qr_flags=none and all, runs the real
+# metric suite, and writes history/rounds/IC-<k>.json + history/index.jsonl via
+# a bot PR. On G-PANEL rounds (k % 4 == 0) adds leave-one-out captures
+# (all,-<lane>). On an `all` crash it re-runs with all,-<lane> the same day.
+# Never blocks merges — this workflow produces evidence, not gates.
+
+on:
+  schedule:
+    - cron: "0 0 * * 4"
+  workflow_dispatch:
+    inputs:
+      lanes_only:
+        description: "Run only the leave-one-out captures (skips none/all captures)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: quality-checkpoint
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Round index + leave-one-out plan
+    runs-on: ubuntu-latest
+    outputs:
+      k: ${{ steps.plan.outputs.k }}
+      gpanel: ${{ steps.plan.outputs.gpanel }}
+      lanes: ${{ steps.plan.outputs.lanes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compute IC round
+        id: plan
+        run: |
+          set -euo pipefail
+          k=$(ls benchmarks/quality-rebuild/history/rounds/IC-*.json 2>/dev/null | wc -l)
+          gpanel=false
+          if [ "$((k % 4))" = "0" ]; then gpanel=true; fi
+          lanes=$(node -e 'const m=JSON.parse(require("fs").readFileSync(".github/QR_OWNERSHIP.json","utf8"));const owners=m.rules.map(r=>r.owner).filter(o=>/^\d+$/.test(o));console.log(JSON.stringify(owners))')
+          echo "k=$k" >> "$GITHUB_OUTPUT"
+          echo "gpanel=$gpanel" >> "$GITHUB_OUTPUT"
+          echo "lanes=$lanes" >> "$GITHUB_OUTPUT"
+
+  capture-none:
+    name: Capture (flags=none)
+    needs: prepare
+    if: ${{ ! inputs.lanes_only }}
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      qr_flags: "none"
+      artifact_suffix: "-none"
+
+  capture-all:
+    name: Capture (flags=all)
+    needs: prepare
+    if: ${{ ! inputs.lanes_only }}
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      qr_flags: "all"
+      artifact_suffix: "-all"
+
+  capture-leave-one-out:
+    name: "G-PANEL leave-one-out (all,-${{ matrix.lane }})"
+    needs: [prepare, capture-all]
+    if: ${{ needs.prepare.outputs.gpanel == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ fromJSON(needs.prepare.outputs.lanes) }}
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      qr_flags: "all,-${{ matrix.lane }}"
+      artifact_suffix: "-loo-${{ matrix.lane }}"
+
+  rerun-on-all-crash:
+    name: "Crash re-run (all,-${{ matrix.lane }})"
+    needs: [prepare, capture-all]
+    # When the full-flags capture crashes, re-run each lane-off variant the same day.
+    if: ${{ always() && needs.capture-all.result == 'failure' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ fromJSON(needs.prepare.outputs.lanes) }}
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      qr_flags: "all,-${{ matrix.lane }}"
+      artifact_suffix: "-retry-${{ matrix.lane }}"
+
+  collect:
+    name: Metrics + round record
+    needs: [prepare, capture-none, capture-all]
+    if: ${{ always() && ! inputs.lanes_only }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Python + pinned metric deps
+        run: pip install -r tools/quality-gate/metrics/requirements.lock
+
+      - name: Download captures
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Score captures and write round record
+        id: collect
+        run: |
+          node tools/quality-gate/bin/collect-checkpoint.mjs \
+            --artifacts artifacts --k "${{ needs.prepare.outputs.k }}" \
+            --run-id "${{ github.run_id }}" --sha "${{ github.sha }}"
+
+      - name: Open bot PR with the round record
+        run: |
+          set -euo pipefail
+          branch="qr/ic-${{ needs.prepare.outputs.k }}-record"
+          git config user.email "devin-quality-checkpoint[bot]@users.noreply.github.com"
+          git config user.name "Devin Quality Checkpoint"
+          git checkout -b "$branch"
+          git add benchmarks/quality-rebuild/history/
+          if git diff --cached --quiet; then
+            echo "no round record changes"; exit 0
+          fi
+          git commit -m "[QR-12] checkpoint IC-${{ needs.prepare.outputs.k }} round record"
+          git push origin "$branch"
+          gh pr create --title "[QR-12] Checkpoint IC-${{ needs.prepare.outputs.k }} round record" \
+            --body "Automated integrated-checkpoint record (CONTRACTS §7). Never merge-blocked. Record: benchmarks/quality-rebuild/history/rounds/IC-${{ needs.prepare.outputs.k }}.json" \
+            --label "qr-request" || true
+
+      - name: File qr-ic-regression issues
+        if: ${{ steps.collect.outputs.regressions == 'true' }}
+        run: |
+          node tools/quality-gate/bin/file-regressions.mjs \
+            --report artifacts/checkpoint/metrics.json \
+            --label qr-ic-regression --run-id "${{ github.run_id }}"
+
+      - name: Upload metrics report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkpoint-metrics
+          path: artifacts/checkpoint/
+          retention-days: 90
+          if-no-files-found: warn

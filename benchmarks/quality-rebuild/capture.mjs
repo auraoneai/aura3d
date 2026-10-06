@@ -8,6 +8,12 @@
  *
  * Usage (after `vite build` of this directory):
  *   node benchmarks/quality-rebuild/capture.mjs [--dist <dir>] [--out <dir>] [--scenes a,b] [--engines aura3d,three]
+ *     [--dprs 1|1,2] [--variants none|all|<id,id>] [--calibrate] [--strict]
+ *
+ * --strict fails (exit 1) when any item is not READY or any GPU string contains
+ * "SwiftShader"/"llvmpipe" (PRD-12 §9.5; mask-misalignment is a gate verdict).
+ * With --calibrate each (scene, engine, dpr) is captured 5 times for the noise
+ * floor; --variants renders broken-control captures after the default frame.
  *
  * Browser work runs remotely (GitHub Actions macos-14); this script is not meant
  * to be run on a developer Mac under the AuraOne policy.
@@ -23,7 +29,17 @@ import { chromium } from "@playwright/test";
 const here = fileURLToPath(new URL(".", import.meta.url));
 
 function parseArgs(argv) {
-  const args = { dist: join(here, "dist"), out: process.env.QR_BENCH_OUT ? resolve(process.env.QR_BENCH_OUT) : join(here, "out"), scenes: undefined, engines: ["aura3d", "three"], timeoutMs: 240_000 };
+  const args = {
+    dist: join(here, "dist"),
+    out: process.env.QR_BENCH_OUT ? resolve(process.env.QR_BENCH_OUT) : join(here, "out"),
+    scenes: undefined,
+    engines: ["aura3d", "three"],
+    timeoutMs: 240_000,
+    dprs: [1],
+    variants: "none",
+    calibrate: false,
+    strict: false
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
     const value = argv[index + 1];
@@ -33,6 +49,10 @@ function parseArgs(argv) {
     else if (flag === "--engines") { args.engines = value.split(",").filter(Boolean); index += 1; }
     else if (flag === "--timeout") { args.timeoutMs = Number(value); index += 1; }
     else if (flag === "--flags") { args.flags = value; index += 1; }
+    else if (flag === "--dprs") { args.dprs = value.split(",").map((v) => Number(v)).filter((v) => v === 1 || v === 2); index += 1; }
+    else if (flag === "--variants") { args.variants = value; index += 1; }
+    else if (flag === "--calibrate") { args.calibrate = true; }
+    else if (flag === "--strict") { args.strict = true; }
   }
   return args;
 }
@@ -101,9 +121,13 @@ async function gpuInfo(page) {
   });
 }
 
-async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, flags) {
+async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, flags, run = {}) {
   // C-33 (PR 0b-3): --flags passthrough appends a3d-qr=<list>; resolveQrFlags reads it.
   const flagsQuery = flags && flags !== "none" ? `&a3d-qr=${encodeURIComponent(flags)}` : "";
+  const dprQuery = run.dpr && run.dpr !== 1 ? `&dpr=${run.dpr}` : "";
+  const variantQuery = run.variant ? `&variant=${encodeURIComponent(run.variant)}` : "";
+  // Mask passes render in the same page load after READY (three side only, §9.5).
+  const passQuery = run.masks && engine === "three" ? "&pass=mask" : "";
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, colorScheme: "dark" });
   const page = await context.newPage();
   const consoleMessages = [];
@@ -120,17 +144,35 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, fl
   const started = Date.now();
   const result = { engine, scene, status: "error", screenshot: null };
   try {
-    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}${flagsQuery}`, { waitUntil: "load", timeout: 60_000 });
+    const fileBase = `${engine}${run.suffix ?? ""}`;
+    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}${flagsQuery}${dprQuery}${variantQuery}${passQuery}`, { waitUntil: "load", timeout: 60_000 });
     await page.waitForFunction(() => Boolean(window.__QR_READY__ || window.__QR_ERROR__), undefined, { timeout: timeoutMs, polling: 250 });
     const state = await page.evaluate(() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null }));
     result.gpu = await gpuInfo(page);
     if (state.error) {
       result.error = state.error;
+      result.notExpressible = typeof state.error === "string" && state.error.includes("not expressible");
     } else {
       result.status = "ready";
       result.payload = state.ready;
+      // ready.json: the full ReadyPayloadV2 next to each PNG (§9.2).
+      writeFileSync(join(outDir, scene, `${fileBase}.ready.json`), JSON.stringify(state.ready, null, 2));
+      if (engine === "three" && run.masks) {
+        const masks = await page.evaluate(() => window.__QR_MASKS__ ?? null);
+        const maskIndex = await page.evaluate(() => window.__QR_MASK_INDEX__ ?? null);
+        if (masks) {
+          result.masks = {};
+          for (const [maskId, entry] of Object.entries(masks)) {
+            const target = join(outDir, scene, `three.${maskId}.mask.png`);
+            writeDataUrl(target, entry.dataUrl);
+            result.masks[maskId] = target;
+          }
+          if (maskIndex) writeFileSync(join(outDir, scene, "three.mask-index.json"), JSON.stringify(maskIndex));
+        }
+      }
+      result.specSummary = await page.evaluate(() => window.__QR_SPEC__ ?? null);
     }
-    const target = join(outDir, scene, `${engine}.png`);
+    const target = join(outDir, scene, `${fileBase}.png`);
     await page.locator("#stage").screenshot({ path: target, animations: "disabled", timeout: 30_000 });
     result.screenshot = target;
   } catch (error) {
@@ -342,14 +384,42 @@ async function main() {
     await comparePage.goto("about:blank");
     for (const scene of scenes) {
       mkdirSync(join(args.out, scene), { recursive: true });
-      const entry = { scene, engines: {}, metrics: null, sideBySide: null, diff: null };
-      for (const engine of args.engines) {
-        const result = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs, args.flags ?? process.env.QRC_FLAGS ?? "none");
-        entry.engines[engine] = result;
-        console.log(`[quality-rebuild] ${scene} ${engine}: ${result.status} in ${result.wallMs} ms${result.error ? ` (${result.error.split("\n")[0]})` : ""}`);
+      const entry = { scene, engines: {}, metrics: null, sideBySide: null, diff: null, variants: {}, repeats: {} };
+      for (const dpr of args.dprs) {
+        for (const engine of args.engines) {
+          const suffix = dpr !== 1 ? `@dpr${dpr}` : "";
+          const result = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs, args.flags ?? process.env.QRC_FLAGS ?? "none", { dpr, suffix, masks: true });
+          const slot = suffix ? `${engine}${suffix}` : engine;
+          entry.engines[slot] = result;
+          console.log(`[quality-rebuild] ${scene} ${slot}: ${result.status} in ${result.wallMs} ms${result.error ? ` (${result.error.split("\n")[0]})` : ""}`);
+          if (args.calibrate) {
+            const repeats = [];
+            for (let repeat = 1; repeat <= 4; repeat += 1) {
+              const repeatResult = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs, args.flags ?? process.env.QRC_FLAGS ?? "none", { dpr, suffix: `${suffix}.repeat-${repeat}` });
+              repeats.push(repeatResult);
+            }
+            entry.repeats[slot] = repeats;
+          }
+          const wanted = args.variants === "all" ? (result.specSummary?.brokenControls ?? []) : (args.variants === "none" ? [] : args.variants.split(",").filter(Boolean));
+          for (const variant of wanted) {
+            if (!result.specSummary?.brokenControls?.includes(variant)) continue;
+            const variantResult = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs, args.flags ?? process.env.QRC_FLAGS ?? "none", { dpr, suffix: `.variant-${variant}${suffix}`, variant, masks: false });
+            entry.variants[`${slot}.${variant}`] = variantResult;
+            console.log(`[quality-rebuild] ${scene} ${slot} variant=${variant}: ${variantResult.status}${variantResult.notExpressible ? " (not expressible — three-proxy source)" : ""}`);
+          }
+        }
       }
       const aura = entry.engines.aura3d;
       const three = entry.engines.three;
+      // Strict-capture guard: any non-ready item or a software rasterizer fails
+      // the run (R-8: never treat SwiftShader/llvmpipe frames as evidence).
+      if (args.strict) {
+        for (const result of Object.values(entry.engines).concat(Object.values(entry.variants ?? {}))) {
+          if (result.status !== "ready" && !result.notExpressible) entry.strictFailure = result.error ?? "not ready";
+          const renderer = String(result.gpu?.renderer ?? "");
+          if (/swiftshader|llvmpipe/i.test(renderer)) entry.strictFailure = `software rasterizer: ${renderer}`;
+        }
+      }
       if (aura?.screenshot && three?.screenshot) {
         const auraLabel = `Aura3D ${aura.payload?.engineVersion ?? ""} (${aura.status})`;
         const threeLabel = `three.js ${three.payload?.engineVersion ?? ""} (${three.status})`;
@@ -378,8 +448,16 @@ async function main() {
     auraMissing: (entry.engines.aura3d?.payload?.capabilityLog ?? []).filter((item) => item.status === "missing").map((item) => item.feature)
   }));
   writeFileSync(join(args.out, "report.json"), JSON.stringify(report, null, 2));
+  const reportGpu = String(report.environment.gpu?.renderer ?? "");
   const failures = report.scenes.flatMap((entry) => Object.values(entry.engines).filter((result) => result.status !== "ready").map((result) => `${entry.scene}/${result.engine}`));
   console.log(`[quality-rebuild] report: ${join(args.out, "report.json")}; non-ready captures: ${failures.length ? failures.join(", ") : "none"}`);
+  const strictFailures = report.scenes.filter((entry) => entry.strictFailure).map((entry) => `${entry.scene}: ${entry.strictFailure}`);
+  if (args.strict && (strictFailures.length > 0 || /swiftshader|llvmpipe/i.test(reportGpu))) {
+    if (/swiftshader|llvmpipe/i.test(reportGpu)) strictFailures.unshift(`report GPU ${reportGpu} is a software rasterizer`);
+    console.error(`[quality-rebuild] --strict failed: ${strictFailures.join("; ")}`);
+    process.exitCode = 1;
+    return;
+  }
   // Capture failures are audit data, not a script failure; exit non-zero only when nothing rendered at all.
   if (report.scenes.length > 0 && report.scenes.every((entry) => !entry.metrics)) process.exitCode = 1;
 }
