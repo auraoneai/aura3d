@@ -39,9 +39,29 @@ function humanDoc(gameId: string, id: string, notes?: string): HumanReviewDoc {
   };
 }
 
+function runReport(gameId: string, over: Record<string, unknown> = {}) {
+  return {
+    generatedAt: "2026-11-05T00:00:00Z",
+    environment: { runner: "macos-14", probeRenderer: "ANGLE Metal", browserVersion: "chromium", sha: "abc1234" },
+    games: [{
+      id: gameId,
+      runs: [{
+        run: "1920x1080",
+        shots: [{ name: "01-boot", file: "shots/01-boot.png" }],
+        fps: { fps: 60, p50: 16, p95: 22 },
+        diagnostics: { qrFlags: [], degradations: [] },
+        consoleErrors: [],
+        pageErrors: []
+      }]
+    }],
+    ...over
+  } as const;
+}
+
 function opts(gameId: string, over: Record<string, unknown> = {}) {
   return {
     gameId, commit: "abc1234", round: "IC-4", captureRunId: "run-1",
+    runReport: runReport(gameId),
     panel: { round: "IC-4", date: "2026-11-05", commit: "abc1234", captureRunId: "run-1", qrFlags: [], judges: [JUDGE], benchmark: [], games: [visionJudgement(gameId)] },
     humanForms: [humanDoc(gameId, "h1"), humanDoc(gameId, "h2"), humanDoc(gameId, "h3")],
     acceptance: { minOverall: 7, minVisualCategory: 5, critical: CRITICAL, minNonVisual: { sound_audio: 6, controls: 7, game_feel: 6.5, loading_transitions: 6 } },
@@ -54,6 +74,58 @@ describe("buildScorecard + verdict (T1.6)", () => {
   it("accepts all-7 vision + all-7 humans on a G-PANEL round", () => {
     const card = buildScorecard(opts("showcase-bank-shot"));
     expect(card.verdict).toBe("accepted");
+    expect(card.countedRound).toBe(0);
+  });
+
+  it("rejects when the capture has no completed runs", () => {
+    const card = buildScorecard(opts("showcase-bank-shot", { runReport: undefined }));
+    expect(card.verdict).toBe("rejected");
+    expect(card.findings.some((f) => f.includes("no completed runs"))).toBe(true);
+  });
+
+  it("rejects when a run produced no shots", () => {
+    const rep = runReport("showcase-bank-shot");
+    const broken = { ...rep, games: [{ id: "showcase-bank-shot", runs: [{ run: "1920x1080", shots: [] }] }] };
+    const card = buildScorecard(opts("showcase-bank-shot", { runReport: broken }));
+    expect(card.verdict).toBe("rejected");
+    expect(card.findings.some((f) => f.includes("no shots"))).toBe(true);
+  });
+
+  it("rejects on runner perf over the §17.2 thresholds", () => {
+    const rep = runReport("showcase-bank-shot");
+    const slow = {
+      ...rep,
+      games: [{ id: "showcase-bank-shot", runs: [{ run: "1920x1080", shots: [{ name: "a", file: "x.png" }], fps: { p50: 60, p95: 90 } }] }]
+    };
+    const card = buildScorecard(opts("showcase-bank-shot", { runReport: slow }));
+    expect(card.verdict).toBe("rejected");
+    expect(card.findings.some((f) => f.includes("p50") && f.includes("§17.2"))).toBe(true);
+    expect(card.findings.some((f) => f.includes("p95") && f.includes("§17.2"))).toBe(true);
+  });
+
+  it("rejects when a human's measured fps p50 is under the §17 floor", () => {
+    const slowHuman = (id: string): HumanReviewDoc => {
+      const doc = humanDoc("showcase-bank-shot", id);
+      return { ...doc, human: { ...doc.human, measuredFps: { p50: 20, p95: 15 } } };
+    };
+    const card = buildScorecard(opts("showcase-bank-shot", {
+      humanForms: [slowHuman("h1"), slowHuman("h2"), slowHuman("h3")]
+    }));
+    expect(card.verdict).toBe("rejected");
+    expect(card.findings.some((f) => f.includes("p50 20 < 27"))).toBe(true);
+  });
+
+  it("defaults integrated-critical ids from games.json when the flag is omitted", () => {
+    const rep = runReport("showcase-bank-shot");
+    const withDegradation = {
+      ...rep,
+      games: [{ id: "showcase-bank-shot", runs: [{ run: "1920x1080", shots: [{ name: "a", file: "x.png" }], diagnostics: { qrFlags: [], degradations: ["C-24"] } }] }]
+    };
+    const card = buildScorecard(opts("showcase-bank-shot", {
+      runReport: withDegradation,
+      integratedCritical: undefined
+    }));
+    expect(card.enginePending).toContain("C-24");
     expect(card.countedRound).toBe(0);
   });
 

@@ -34,10 +34,16 @@ describe("check-art-direction.mjs static scan (T1.9)", () => {
     expect(r.code).toBe(0);
   });
 
-  it("a route without src/v2 fails (T1.10 dispatcher missing)", () => {
-    const r = run("--apps-root", FIXTURES, "--routes", "no-such-route");
+  it("a route with art/direction.ts but no src/v2 fails (T1.10 dispatcher missing)", () => {
+    const r = run("--apps-root", FIXTURES, "--routes", "direction-only-route");
     expect(r.code).toBe(1);
     expect(r.out).toContain("no src/v2");
+  });
+
+  it("an unmigrated route (no v2, no direction) is skipped", () => {
+    const r = run("--apps-root", FIXTURES, "--routes", "no-such-route");
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("unmigrated");
   });
 
   it("exits 2 with no --routes", () => {

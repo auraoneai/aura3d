@@ -32,10 +32,21 @@ const MIME: Record<string, string> = {
 };
 
 function serve(dir: string): Promise<{ server: Server; url: string }> {
+  // Rooted at `dir`: resolve+realpath the request so `..` segments and sibling
+  // prefixes ("/apps/foo" vs "/apps/foo-bar") cannot escape the build dir.
+  const root = realpathSync(resolve(dir));
   const server = createServer((req, res) => {
     const path = new URL(req.url ?? "/", "http://x").pathname;
-    const file = join(dir, path === "/" ? "index.html" : path);
-    if (!existsSync(file) || !file.startsWith(dir)) {
+    const file = resolve(root, "." + (path === "/" ? "/index.html" : path));
+    if ((!file.startsWith(root + sep) && file !== root) || !existsSync(file)) {
+      res.writeHead(404); res.end("not found"); return;
+    }
+    try {
+      const real = realpathSync(file);
+      if (!real.startsWith(root + sep) && real !== root) {
+        res.writeHead(404); res.end("not found"); return;
+      }
+    } catch {
       res.writeHead(404); res.end("not found"); return;
     }
     res.writeHead(200, { "content-type": MIME[extname(file)] ?? "application/octet-stream" });
@@ -101,6 +112,7 @@ test.describe("art-direction runtime audit (T1.9)", () => {
   for (const { appDir, entry } of routes) {
     test(`route ${appDir}: no auditArtDirection/lookLint violations`, async ({ page }) => {
       const buildDirs = [
+        join(ROOT, "tools", "quality-rebuild-capture", ".build", "site", "apps", appDir),
         join(ROOT, "tools", "quality-rebuild-capture", ".build", appDir),
         join(APPS, appDir, "dist")
       ];

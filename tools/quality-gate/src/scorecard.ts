@@ -172,7 +172,15 @@ export function buildScorecard(opts: BuildScorecardOptions): GameScorecard {
   const qrFlags = new Set<string>();
   const perf: PerfRow[] = [];
   const findings: string[] = [];
+  // A round with no completed capture is incomplete, not accepted: build
+  // failures and missing shots surface as production-health findings.
+  if (!gameRun || (gameRun.runs?.length ?? 0) === 0) {
+    findings.push(`capture report has no completed runs for ${gameId}`);
+  }
   for (const run of gameRun?.runs ?? []) {
+    if ((run.shots?.length ?? 0) === 0) {
+      findings.push(`run ${run.run ?? "?"}: no shots captured`);
+    }
     const degs = run.diagnostics?.degradations ?? run.evidence?.degradations ?? [];
     for (const d of degs) degradations.add(String(d));
     for (const f of run.diagnostics?.qrFlags ?? run.evidence?.qrFlags ?? []) qrFlags.add(String(f));
@@ -216,7 +224,11 @@ export function buildScorecard(opts: BuildScorecardOptions): GameScorecard {
     }
   }
 
-  const integratedCritical = opts.integratedCritical ?? [];
+  // §12.2: a round counts toward withdrawal only when every §12.3
+  // integrated-critical contract is real. When the caller does not pass the
+  // list, resolve it from games.json so omitted flags can never count a
+  // round whose contracts were still pending.
+  const integratedCritical = opts.integratedCritical ?? integratedCriticalFor(gameId);
   const enginePending = integratedCritical.filter((c) => degradations.has(c));
 
   const env = opts.runReport?.environment ?? {};
@@ -254,6 +266,19 @@ const DEFAULT_ACCEPTANCE: ScorecardAcceptance = {
   critical: {},
   minNonVisual: { sound_audio: 6, controls: 7, game_feel: 6.5, loading_transitions: 6 }
 };
+
+/** §12.3 integrated-critical ids for a game, from tools/quality-rebuild-capture/games.json. */
+export function integratedCriticalFor(gameId: string, gamesJsonPath?: string): readonly string[] {
+  const file = gamesJsonPath
+    ?? resolve(fileURLToPath(import.meta.url), "..", "..", "..", "quality-rebuild-capture", "games.json");
+  try {
+    const games = (JSON.parse(readFileSync(file, "utf8")) as { games?: { id?: string; integratedCritical?: string[] }[] }).games ?? [];
+    const entry = games.find((g) => g.id === gameId);
+    return entry?.integratedCritical ?? [];
+  } catch {
+    return [];
+  }
+}
 
 /* --------------------------------- verdict --------------------------------- */
 
@@ -334,6 +359,27 @@ export function verdictDetailed(
     }
     if (scorecard.human.some((h) => h.competitiveWithModernThree === false)) {
       reasons.push("a human reviewer answered 'competitive with modern three.js': No");
+    }
+  }
+
+  // 4. Runner perf gate (PRD 11 §17.2): 1280x720 p50<=20 p95<=34;
+  //    1920x1080 p50<=33 p95<=50; 390x844 p50<=33.
+  const PERF_LIMITS: Readonly<Record<string, { p50Ms: number; p95Ms?: number }>> = {
+    "1280x720": { p50Ms: 20, p95Ms: 34 },
+    "1920x1080": { p50Ms: 33, p95Ms: 50 },
+    "390x844": { p50Ms: 33 }
+  };
+  for (const row of scorecard.perf) {
+    const lim = PERF_LIMITS[row.viewport];
+    if (!lim) continue;
+    if (!(row.p50Ms <= lim.p50Ms)) reasons.push(`perf ${row.viewport} p50 ${row.p50Ms.toFixed(1)}ms > ${lim.p50Ms}ms (§17.2)`);
+    if (lim.p95Ms !== undefined && !(row.p95Ms <= lim.p95Ms)) reasons.push(`perf ${row.viewport} p95 ${row.p95Ms.toFixed(1)}ms > ${lim.p95Ms}ms (§17.2)`);
+  }
+  // Integrated device floor (§17): human-reported fps p50 must hold >= 27.
+  for (const h of scorecard.human) {
+    const p50 = h.measuredFps?.p50;
+    if (typeof p50 === "number" && !(p50 >= 27)) {
+      reasons.push(`human ${h.judge.id} measured fps p50 ${p50} < 27 (§17)`);
     }
   }
 

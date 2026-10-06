@@ -52,16 +52,20 @@ export function checkRouteHealth(file, failures = []) {
       }
     }
   }
-  if (typeof doc.claim === "string" && doc.claim.trim() !== "") {
+  // §7.4 free-text/schema rules apply only to V2-ized files (a route that has
+  // declared qualityGate has begun the rebuild contract; legacy files that
+  // never had qualityGate are pre-migration and are not gated here).
+  const v2 = doc.qualityGate != null;
+  if (v2 && typeof doc.claim === "string" && doc.claim.trim() !== "") {
     failures.push(`${file}: free-text claim field remains (§7.4)`);
   }
-  if (doc.systems != null) {
+  if (v2 && doc.systems != null) {
     failures.push(`${file}: free-text systems field remains (§7.4)`);
   }
-  if (doc.primitiveStatus && doc.primitiveStatus.sourceOccurrences != null) {
+  if (v2 && doc.primitiveStatus && doc.primitiveStatus.sourceOccurrences != null) {
     failures.push(`${file}: primitiveStatus.sourceOccurrences remains (§7.4: counts call sites, not nodes)`);
   }
-  for (const list of ["primaryAssets", "typedModelFamily", "audioAssets"]) {
+  if (v2) for (const list of ["primaryAssets", "typedModelFamily", "audioAssets"]) {
     for (const entry of Array.isArray(doc[list]) ? doc[list] : []) {
       if (entry && typeof entry === "object" && entry.quality === "release") {
         const id = entry.typedRef ?? entry.id ?? "?";

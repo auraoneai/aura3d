@@ -58,12 +58,17 @@ describe("check-route-health.mjs (T1.8)", () => {
     expect(r.out).toContain("dependabot[bot]");
   });
 
-  it("fails on remaining free-text claim/systems and sourceOccurrences", () => {
+  it("fails on remaining free-text claim/systems and sourceOccurrences in a V2 file", () => {
     const r = run(ROOT, ["bad-freetext"]);
     expect(r.code).toBe(1);
     expect(r.out).toContain("claim");
     expect(r.out).toContain("systems");
     expect(r.out).toContain("sourceOccurrences");
+  });
+
+  it("skips §7.4 schema rules on a pre-migration file (no qualityGate)", () => {
+    const r = run(ROOT, ["legacy-freetext"]);
+    expect(r.code).toBe(0);
   });
 
   it("reports every failing fixture in one run", () => {

@@ -65,7 +65,14 @@ export function checkArtDirection(appsRoot, routeIds) {
   for (const id of routeIds) {
     const v2 = join(appsRoot, id, "src", "v2");
     if (!existsSync(v2)) {
-      violations.push(`${id}: no src/v2 tree (T1.10 dispatcher missing)`);
+      // A route with no v2 tree and no adopted art direction is unmigrated —
+      // lane scope only gates routes that have begun the §10 rebuild.
+      // A direction without a v2 shell is an incomplete T1.10 and fails.
+      if (!existsSync(join(appsRoot, id, "art", "direction.ts"))) {
+        scanned.push(`${id} (unmigrated: no src/v2 or art/direction.ts — skipped)`);
+      } else {
+        violations.push(`${id}: art/direction.ts present but no src/v2 tree (T1.10 dispatcher missing)`);
+      }
       continue;
     }
     let count = 0;

@@ -67,6 +67,8 @@ jobs:
         with:
           fetch-depth: 0
       - id: changed
+        env:
+          GAMES_INPUT: ${{ inputs.games }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="origin/${{ github.base_ref }}"
@@ -75,7 +77,7 @@ jobs:
           fi
           git fetch origin "${{ github.base_ref || 'main' }}" --depth=1 || true
           DIRS="$(git diff --name-only "$BASE"...HEAD -- 'apps/*/' | cut -d/ -f2 | sort -u | paste -sd, -)"
-          if [ -n "${{ inputs.games }}" ]; then DIRS="${{ inputs.games }}"; fi
+          if [ -n "${GAMES_INPUT:-}" ]; then DIRS="${GAMES_INPUT}"; fi
           echo "changed dirs: ${DIRS:-<none>}"
           RESOLVED="$(DIRS="$DIRS" python3 - << 'PY'
           import json, os
@@ -146,7 +148,7 @@ jobs:
       - name: Runtime art-direction audit
         id: audit
         continue-on-error: true
-        run: pnpm exec playwright test tests/qr/prd14/browser/art-direction-audit.spec.ts
+        run: pnpm exec playwright test -c tests/qr/prd14/playwright.config.ts tests/qr/prd14/browser/art-direction-audit.spec.ts
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
