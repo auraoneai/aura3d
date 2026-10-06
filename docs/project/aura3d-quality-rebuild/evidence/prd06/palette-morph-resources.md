@@ -36,7 +36,11 @@ bind, T0.11 in-place runtime palettes + `paletteKey`, C-18 chunk registration +
   `qr/prd06-**` pushes (chromium/webkit/firefox on macos-14). IoU targets:
   deform-vs-CPU ≥ 0.98, bind-pose GPU-vs-CPU ≥ 0.98, raw `a_position` control
   < 0.8, animated-vs-bind < 0.8. Mask PNGs upload as `test-results/` artifacts.
-- Aura Clash `tracksApplied` A/B (S13) — pending.
+- Aura Clash `tracksApplied` A/B (S13) — `tests/qr/prd06/browser/aura-clash-tracks-applied.spec.ts`
+  written (drives the live route via `__AURA_CLASH_ARENA_TEST_DRIVER__` + keyboard;
+  all 11 `AURA_CLASH_REQUIRED_CLIP_KEYS` sampled under `?a3d-qr=none` and
+  `?a3d-qr=animation`, `tracksApplied` equality asserted per key). Remote
+  browser run pending on this branch.
 - Whole-repo jest lane — repo CI.
 
 ## Requests filed (pending, non-blocking)
