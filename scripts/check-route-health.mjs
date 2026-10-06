@@ -8,6 +8,8 @@
  *      reviewer logins — agent ids are rejected.
  *   3. Free-text quality claims are gone: no `claim`/`systems` fields, and no
  *      `primitiveStatus.sourceOccurrences` (counts call sites, not nodes).
+ *   4. No self-assigned `quality: "release"` on route-local assets
+ *      (primaryAssets / typedModelFamily / audioAssets).
  *
  * Usage:
  *   node scripts/check-route-health.mjs                 # all routes
@@ -58,6 +60,14 @@ export function checkRouteHealth(file, failures = []) {
   }
   if (doc.primitiveStatus && doc.primitiveStatus.sourceOccurrences != null) {
     failures.push(`${file}: primitiveStatus.sourceOccurrences remains (§7.4: counts call sites, not nodes)`);
+  }
+  for (const list of ["primaryAssets", "typedModelFamily", "audioAssets"]) {
+    for (const entry of Array.isArray(doc[list]) ? doc[list] : []) {
+      if (entry && typeof entry === "object" && entry.quality === "release") {
+        const id = entry.typedRef ?? entry.id ?? "?";
+        failures.push(`${file}: self-assigned quality:"release" on route-local asset ${id} (§7.4)`);
+      }
+    }
   }
   return failures;
 }
