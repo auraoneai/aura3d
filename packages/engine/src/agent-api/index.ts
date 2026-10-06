@@ -210,6 +210,12 @@ export * from "./Scatter.js";
 export * from "./AssetDecoders.js";
 export * from "./VehicleChassis.js";
 export * from "./VehicleDriverAi.js";
+// Published-union surface (PRD-15 T1.4): the names packages/engine/src/index.ts
+// exports that were missing from published ".". engineSurface holds the moved
+// facade decls; publishedUnion re-exports the contract surface plus the
+// @deprecated union names with their §6.6 destinations.
+export * from "./engineSurface.js";
+export * from "./publishedUnion.js";
 /**
  * Deliberate public surface for the shared arcade vehicle core. The racing kit
  * owns the certified circuit path; exporting the bare motion helper lets routes
