@@ -24,6 +24,7 @@ export interface BankShotEvidenceBindings {
   readonly bootedAtMs: number;
   readonly frameCount: () => number;
   readonly audioCueLog: () => readonly string[];
+  readonly lastStrikeAudio: () => { readonly gainDb: number; readonly pitchSemitones: number } | null;
 }
 
 export function publishBankShotEvidence(b: BankShotEvidenceBindings): void {
@@ -93,7 +94,7 @@ export function publishBankShotEvidence(b: BankShotEvidenceBindings): void {
       return { maxAngularSpeed: b.maxAngularSpeed(), liveCount: b.sim.liveBallCount() };
     },
     get audio() {
-      return { cues: [...b.audioCueLog()] };
+      return { cues: [...b.audioCueLog()], lastStrike: b.lastStrikeAudio() };
     },
     get aim() {
       const s = b.cue.state();

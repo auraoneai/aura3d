@@ -6,7 +6,7 @@
 import { scene } from "@aura3d/engine";
 import { postPresets } from "@aura3d/engine/contracts";
 import { createGame, type Game } from "@aura3d/game";
-import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
+import { CueController, AIM_STEP, SPIN_STEP, strikeSpeedFor } from "../gameplay/cue";
 import { RulesEngine, type ShotOutcome } from "../gameplay/rules";
 import {
   createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z
@@ -20,6 +20,7 @@ import { createBankShotRig, fallbackCameraNode } from "./scene/camera";
 import { wireBankShotFx } from "./scene/fx";
 import { publishBankShotEvidence } from "./evidence";
 import { applyBankShotScenario } from "./scenarios";
+import { strikeAudioMap, type StrikeAudioParams } from "./audio-map";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BANK_SHOT" as const;
 
@@ -31,6 +32,7 @@ const sim = createTableSimulation();
 const rules = new RulesEngine(1);
 const cueController = new CueController();
 const rigState = { aimAngle: 0, rolling: false };
+let lastStrikeAudio: StrikeAudioParams | null = null;
 
 function buildScene() {
   return scene()
@@ -126,7 +128,9 @@ function doStrike(): void {
   shootingFrames = 0;
   pottedThisShot = [];
   if (firstRack) fx.onBreak(); else fx.onStrike();
-  pushCue("cue-strike");
+  const strikeParams = strikeAudioMap(strikeSpeedFor(command.power));
+  lastStrikeAudio = strikeParams;
+  pushCue(strikeParams.cue);
 }
 
 function applyOutcome(outcome: ShotOutcome): void {
@@ -434,7 +438,8 @@ void game.ready().then(() => {
     maxAngularSpeed: () => maxAngularSpeed,
     bootedAtMs,
     frameCount: () => framePublished,
-    audioCueLog: () => audioCueLog
+    audioCueLog: () => audioCueLog,
+    lastStrikeAudio: () => lastStrikeAudio
   });
 
   // `?scenario=<name>` — deterministic state fixtures (T2.1; state only, so
