@@ -21,6 +21,19 @@
         }
       });
     </script>
+    <script type="importmap">
+      // Deep `@aura3d/rendering/contracts/*` subpaths are published exports but
+      // have no entry in the example-dev-server alias table (owner 15; qr-request
+      // filed). Map the specifiers this harness's engine chain reaches so the
+      // browser resolves them natively. Served .ts is transpiled by the server.
+      {
+        "imports": {
+          "@aura3d/rendering/contracts/flags.state": "/packages/rendering/src/contracts/flags.state.ts",
+          "@aura3d/rendering/contracts": "/packages/rendering/src/contracts/index.ts",
+          "@aura3d/rendering/contracts/": "/packages/rendering/src/contracts/"
+        }
+      }
+    </script>
     <script type="module" src="./clip-samples-harness.ts"></script>
   </body>
 </html>
