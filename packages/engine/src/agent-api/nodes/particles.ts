@@ -9,7 +9,13 @@ export const particles = {
   diagnostics: collectParticleBudgetDiagnostics
 } as const;
 
-export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]): AuraParticleBudgetDiagnostics {
+/**
+ * PRD-07 P1-T3 — existing fields plus `declared`/`observedLive`/`observedDraws`.
+ * The function is static: observed values are always null here and are filled
+ * by the `effects` diagnostics section when a live effect system reports.
+ * `gpuReady` stays as the deprecated alias computed exactly as before.
+ */
+export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]): AuraParticleBudgetDiagnostics & { readonly declared: number; readonly observedLive: null; readonly observedDraws: null } {
   const flattened = groups.flatten(nodes);
   const particleEffects = flattened.filter((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "particles");
   const totalParticles = particleEffects.reduce((sum, node) => sum + Math.max(120, Math.min(6000, node.particleCount ?? 900)), 0);
@@ -22,6 +28,9 @@ export function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]
     estimatedUpdateCostMs: Number((totalParticles * 0.00018 + particleEffects.length * 0.04).toFixed(3)),
     modes,
     texturedBillboards: particleEffects.filter((node) => node.texturedBillboard !== false).length,
-    gpuReady: totalParticles >= 1000 && particleEffects.every((node) => node.texturedBillboard !== false)
+    gpuReady: totalParticles >= 1000 && particleEffects.every((node) => node.texturedBillboard !== false),
+    declared: totalParticles,
+    observedLive: null,
+    observedDraws: null
   };
 }

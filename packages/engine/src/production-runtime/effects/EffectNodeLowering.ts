@@ -40,6 +40,8 @@ export interface EffectNodeLike {
   readonly drag?: number;
   readonly spread?: number;
   readonly direction?: AuraVec3;
+  readonly softDistance?: number;
+  readonly nearFade?: number;
 }
 
 export interface LoweredParticleEffect {
@@ -74,6 +76,8 @@ export interface LoweredBatchSpec {
   readonly blend: "alpha" | "premultiplied" | "additive" | "multiply";
   readonly shading: "unlit" | "lit";
   readonly softDepth: boolean;
+  readonly softDistance?: number;
+  readonly nearFade?: number;
   readonly stretch: boolean;
   readonly frameBlend: boolean;
   readonly atlasKey: string;
@@ -142,7 +146,9 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         batch: {
           blend,
           shading: "unlit",
-          softDepth: materialMode !== "spark",
+          softDepth: node.softDistance !== undefined ? true : materialMode !== "spark",
+          ...(node.softDistance !== undefined ? { softDistance: node.softDistance } : {}),
+          ...(node.nearFade !== undefined ? { nearFade: node.nearFade } : {}),
           stretch: materialMode === "spark",
           frameBlend: false,
           atlasKey: "soft-dot"

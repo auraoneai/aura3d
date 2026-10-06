@@ -29,3 +29,14 @@ export function resolveSceneDepth(ctx: FrameContributorContext): ResolvedSceneDe
   }
   return { source, available: false, pendingNote: null };
 }
+
+/**
+ * §6.2.7 output encoding: "linear" when the frame renders into an HDR target
+ * (postprocess on), else the legacy "srgb" encode. PRD 01 publishes the
+ * decision on the blackboard as `prd01.outputColorSpace` when postprocess is
+ * active; absent the key the legacy path applies (the flag-off convention).
+ */
+export function resolveOutputColorSpace(ctx: FrameContributorContext): "linear" | "srgb" {
+  const published = ctx.blackboard.get("prd01.outputColorSpace");
+  return published === "linear" ? "linear" : "srgb";
+}

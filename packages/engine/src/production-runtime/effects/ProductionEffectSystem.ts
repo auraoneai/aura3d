@@ -169,6 +169,8 @@ export class ProductionEffectSystem {
         blend: group.first.lowered.batch.blend,
         shading: group.first.lowered.batch.shading,
         softDepth: group.first.lowered.batch.softDepth,
+        ...(group.first.lowered.batch.softDistance !== undefined ? { softDistance: group.first.lowered.batch.softDistance } : {}),
+        ...(group.first.lowered.batch.nearFade !== undefined ? { nearFade: group.first.lowered.batch.nearFade } : {}),
         stretch: group.first.lowered.batch.stretch,
         frameBlend: group.first.lowered.batch.frameBlend
       };

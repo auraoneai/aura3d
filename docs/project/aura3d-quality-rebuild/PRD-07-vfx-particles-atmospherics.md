@@ -1725,7 +1725,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     - flags `none` + `effects.particles()` → the error appears after 30 `app.step(1/60)`;
     - flags `vfx` → no error, and `pixelBacked` includes `"particles"`;
     - a fog node never reports.
-- [ ] **P1-T3** Carved `agent-api/nodes/particles.ts`. `collectParticleBudgetDiagnostics` returns the existing fields plus
+- [x] **P1-T3** Carved `agent-api/nodes/particles.ts`. `collectParticleBudgetDiagnostics` returns the existing fields plus
   `{ declared, observedLive: null, observedDraws: null }`. The observed values are filled by the effects section; the
   function itself is static. `gpuReady` stays as a deprecated alias computed exactly as today, so the flag-off
   output is identical. Update `tests/unit/` snapshot expectations only by adding fields.
@@ -1749,11 +1749,11 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P1-T8** `effects/ParticleSystem.ts`. `writeInstances(out: Float32Array, camera): number` writes the §6.2.1 layout
   directly, evaluating sizes, colours and frames over life. `buildBatch` is kept untouched. Test: `seed` 1414 with 2,000
   particles produces byte-identical buffers across two runs.
-- [ ] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
+- [x] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
   §6.2.7 (HDR target vs legacy `outputColorSpace`). Tests:
   - unit, `ChunkHarness` text: every chunk wraps;
   - browser, `particle-shader-compile.spec.ts`: all define combinations compile on WebGL2.
-- [ ] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
+- [x] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
   returns the R-01-1 blackboard target copy, or `{ available: false }` with `SOFT_DEPTH_PENDING`. The soft and near
   fade math is checked in `soft-depth.spec.ts` (browser): a PRD 07-created depth `RenderTarget` (`depth: "texture"`)
   holds a plane at 2 m, a particle at 1.9 m has `alpha × 0.2857` (±1/255), and particle depth beyond 2 m gives alpha 0.

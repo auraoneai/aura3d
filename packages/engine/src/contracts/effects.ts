@@ -21,7 +21,7 @@ export interface AuraAppEffects {
   clear(): void;
 }
 // AuraApp.effects: AuraAppEffects (via C-38)
-export interface AuraEffectsDiagnostics { readonly nodes: readonly { readonly id: string; readonly effect: string; readonly consumer: string; readonly live: number; readonly drawCalls: number; readonly instancesDrawn: number; readonly sim: string; readonly softDepth: boolean; readonly zeroPixelFrames: number }[]; readonly batches: number; readonly liveParticles: number; readonly budget: { readonly tier: AuraQualityTier; readonly cap: number; readonly culled: number }; readonly gpuMs?: number; readonly errors: readonly { readonly code: string; readonly nodeId: string; readonly message: string }[]; readonly pixelBacked: readonly string[]; readonly deviceReadbacks?: number; }
+export interface AuraEffectsDiagnostics { readonly nodes: readonly { readonly id: string; readonly effect: string; readonly consumer: string; readonly live: number; readonly drawCalls: number; readonly instancesDrawn: number; readonly sim: string; readonly softDepth: boolean; readonly zeroPixelFrames: number }[]; readonly batches: number; readonly liveParticles: number; readonly budget: { readonly tier: AuraQualityTier; readonly cap: number; readonly culled: number; readonly declared: number; readonly observedLive: number; readonly observedDraws: number }; readonly gpuMs?: number; readonly errors: readonly { readonly code: string; readonly nodeId: string; readonly message: string }[]; readonly pixelBacked: readonly string[]; readonly deviceReadbacks?: number; }
 
 /**
  * PR 0a honest stub: `burst` and `spawn` create pooled primitive nodes through

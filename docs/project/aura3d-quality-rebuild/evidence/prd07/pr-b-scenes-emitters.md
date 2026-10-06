@@ -30,10 +30,33 @@ Branch `devin/1791292686-prd07-scenes` (off `4de6835`).
 
 ## Local verification
 
-- `vitest tests/qr/prd07` — 14 files, 46 tests green.
+- `vitest tests/qr/prd07` — 16 files, 56 tests green.
+- `tsc -p tsconfig.build.json --noEmit` — clean (rechecked after P1-T3/T9/T10 landings).
 - `tsc -p tsconfig.build.json --noEmit` — clean; bench tsconfig clean.
 - Flag-off: no `prd07.*` contributors, no `qualityRebuild.flags` → no
   `ProductionEffectSystem` — unchanged render path.
+
+## Follow-on (post-6f5eacf)
+
+- **P1-T3:** `collectParticleBudgetDiagnostics` gains `{ declared, observedLive: null,
+  observedDraws: null }`; `gpuReady` unchanged. `vfx/diagnostics.ts` fills observed
+  slots from the live system; `particle-budget.test.ts` (3) green.
+- **P1-T9:** `particle.glsl.ts` rewritten per §8.1 — `SOFT_PARTICLES` (u_sceneDepth +
+  u_depthLinearize, perspective+ortho linearize), `BLEND_ADDITIVE` (alpha-0 additive
+  branch) vs `BLEND_ADDITIVE_FALLBACK` (×1.6 core), `u_outputColorSpace` encode per
+  §6.2.7 (linear HDR vs sRGB), `o_reactive` at location 2. `ParticleBatchPass`
+  resolves scene depth + output space once per frame; `softDistance`/`nearFade`
+  plumbed node → LoweredBatchSpec → ParticleBatchDescriptor (contract extended).
+  `deviceHonoursBlendMode` now probes `native-render-pipeline` capability — the
+  LeanWebGL2 C-04 stub ignores blendMode, so the fallback path honestly applies
+  there. Unit `particle-shader.test.ts` (7) + browser
+  `particle-shader-compile.spec.ts` (all 256 define combos compile+link) written.
+- **P1-T10:** `resolveOutputColorSpace(ctx)` added (`prd01.outputColorSpace`
+  blackboard key, absent → legacy "srgb"); `soft-depth-harness`/`soft-depth.spec.ts`
+  written — depth-RT plane at 2 m, particle at 1.9 m → centre alpha ×0.2857, beyond → 0.
+- **P1-T19 flag-off sentinel:** flag-off spec now asserts the honest sentinel —
+  `zeroPixelFrames ≥ 30` + `EFFECT_ZERO_PIXELS` error (ProductionEffectSystem is
+  created flag-off precisely to report the old bug).
 
 ## NOT RUN
 

@@ -68,11 +68,12 @@ test.describe("prd07 particles production", () => {
     const result = await page.evaluate(() => window.__QR_PRD07_FOUNTAIN__);
     expect(result?.status, result?.error).toBe("ready");
     // Flag-off = the old bug itself: the scene requests a fountain and nothing
-    // draws. The flag-off frame must stay bit-identical to 85aafcd0, so this
-    // documents the deficit rather than asserting the sentinel (EFFECT_ZERO_PIXELS
-    // is flag-on diagnostics, covered by the unit suite).
+    // draws. P1-T2's sentinel is what stops the bug being silent — the tracked
+    // node accrues 30 zero-pixel frames and EFFECT_ZERO_PIXELS is reported.
     expect(result?.nodeDrawCalls ?? 0).toBe(0);
     expect(result?.pixelBacked ?? []).not.toContain("particles");
     expect(result?.warmFraction ?? 1).toBeLessThan(0.001);
+    expect(result?.zeroPixelFrames ?? 0).toBeGreaterThanOrEqual(30);
+    expect((result?.errors ?? []).some((e) => e.startsWith("EFFECT_ZERO_PIXELS"))).toBe(true);
   });
 });
