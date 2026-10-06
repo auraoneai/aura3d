@@ -192,16 +192,26 @@ function sunAngles(position: readonly [number, number, number]): { elevationDeg:
  * and admits it via `aura3d assets add --type texture` under the same id —
  * so the engine can reference it by name at authoring time.
  */
-const lookHdriAssets = defineAuraAssets({
-  autumnFieldPuresky1k: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" },
-  kloppenheim06Puresky1k: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_06_puresky_1k.hdr" },
-  studioSmall081k: { type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr" }
-});
+// Built lazily on first use — a module-level `defineAuraAssets` here runs
+// during `agent-api/index.ts` import evaluation (via promptRecipes → looks)
+// and hits `auraAssetRefBrand`'s TDZ.
+type LookHdriAssets = ReturnType<typeof buildLookHdriAssets>;
+let lookHdriAssetsCache: LookHdriAssets | undefined;
+function buildLookHdriAssets() {
+  return defineAuraAssets({
+    autumnFieldPuresky1k: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" },
+    kloppenheim06Puresky1k: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_06_puresky_1k.hdr" },
+    studioSmall081k: { type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr" }
+  });
+}
+function lookHdriAssets(): LookHdriAssets {
+  return (lookHdriAssetsCache ??= buildLookHdriAssets());
+}
 
 const HDRI_ASSET = {
-  autumn_field_puresky_1k: lookHdriAssets.autumnFieldPuresky1k,
-  kloppenheim_06_puresky_1k: lookHdriAssets.kloppenheim06Puresky1k,
-  studio_small_08_1k: lookHdriAssets.studioSmall081k
+  get autumn_field_puresky_1k() { return lookHdriAssets().autumnFieldPuresky1k; },
+  get kloppenheim_06_puresky_1k() { return lookHdriAssets().kloppenheim06Puresky1k; },
+  get studio_small_08_1k() { return lookHdriAssets().studioSmall081k; }
 } as const;
 
 function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined): AuraLookPreset["v0"] {
@@ -298,6 +308,16 @@ function describeOrThrow(id: AuraLookId): AuraLookPreset {
   const preset = lookPresets[id];
   if (preset === undefined) throw new Error(`LOOK_UNKNOWN:${id}`);
   return preset;
+}
+
+/** Flat v0 children for a look id (same list the `aura-look:<id>` group
+ *  carries). The C-36 `look` NodeHandler emits these when it falls back
+ *  (T1.13); exported for it, not part of the authoring surface. */
+export function expandLookChildren(
+  id: AuraLookId,
+  overrides?: AuraLookOverrides
+): readonly AuraSceneNode[] {
+  return v0Children(describeOrThrow(id), clampLookOverrides(overrides));
 }
 
 export const looks = {
