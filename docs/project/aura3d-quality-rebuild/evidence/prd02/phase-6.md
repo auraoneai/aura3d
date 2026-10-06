@@ -78,3 +78,27 @@ number source, recorded by the lane capture report (pending lane-side capture).
 - `lighting.quality` override + per-light `shadowOptions` surface exists;
   per-light `mapSize` enforcement is bounded by the tier map size (no separate
   per-light atlas sizing — C-10 contract doesn't define one).
+
+## §6.4 shadow logic halves (item 1912) — added post-phase-6
+
+- `DirectionalCascadeFitter`: extent switched from light-space AABB to the
+  **world-space bounding sphere about the point-set centroid** — the only
+  rigid-motion-invariant fit, so a 10° camera yaw leaves each cascade's
+  `radius` unchanged (≤1e-16 measured, spec ≤1e-5). `center` (texel-snapped
+  light-space x/y of the centroid + depth mid) and `radius` are exported on
+  `DirectionalCascadeFit` for the stability assertions.
+- Fixed a pre-existing **double-centring bug** in the ortho projection: the
+  view matrix already translates light-z by `-(min+max)/2` and the projection
+  column subtracted it again, pushing off-frustum casters past z=1 in the
+  biased [0,1]³ VP. The caster-50 m-behind-camera case now projects inside.
+- `resolvePrd02ShadowCasterVariant`: `batched` now real (multi-instance
+  `instanceTransforms` or `static-batch-*` label from
+  `SceneOptimization.batchStaticRenderItems`); `alphaHash` = BLEND +
+  `castShadow: true`; `doubleSided` and MASK→`alphaTest` (`u_alphaCutoff`)
+  unchanged.
+- New `prd02ShadowCasterEligible(item)` (§6.4 rule: `castShadow: false` always
+  excluded; BLEND excluded unless `castShadow === true`) — wired into both
+  `Prd02ShadowsContributor` and `Prd02ContactShadowsContributor` caster filters.
+- Tests: `tests/unit/contracts/impl/prd02-{cascade-fitter,shadow-atlas,shadow-caster-variants}.test.ts`
+  — 10/10 green (vitest 2026-10-06T17:11Z on qr/prd02-engine-composition).
+  PCSS/Vogel kernel correctness stays browser-side (ChunkHarness, macos-14 CI).

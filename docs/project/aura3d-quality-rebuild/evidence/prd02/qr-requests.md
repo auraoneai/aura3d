@@ -95,3 +95,14 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
   note `.github/QR_OWNERSHIP.json` lacks the CONTRACTS §4.1 row-02
   file-level carve-out for `shaders/pbr-direct.frag.glsl` (the `shaders/`
   dir is owner-01) — the JSON may flag the deletion to lane 01.
+- **to:prd15** (Phase 4, item 1923 = Q-15-5) — `compiler/primitives.ts` does not
+  copy `node.receiveShadow` onto generated `RenderItem`s, so engine-authored
+  geometry can never opt out of shadow receiving through the flag-path
+  `u_shadowMapEnabled = 0` binding (already live in
+  `forward/Lighting.ts` via `receiveShadowDisabled`). Request: map
+  `node.receiveShadow` → `item.receiveShadow` in the primitives compiler.
+- **to:prd04** (Phase 4, item 1923 = Q-04-2) —
+  `production-runtime/TypedGLBActor.ts` never sets `receiveShadow` on its
+  generated items, so GLB actors can't opt out of shadow receiving. Request:
+  carry a `receiveShadow` flag (or `false` where the actor opts out) onto the
+  produced `RenderItem`s.

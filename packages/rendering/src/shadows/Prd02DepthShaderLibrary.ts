@@ -191,17 +191,39 @@ export function resolvePrd02ShadowCasterVariant(
     const value = feature.select({ item, pass: "depth", tier, flags });
     if (value !== undefined) features[feature.id] = value;
   }
+  const base = item.material ? baseOf(item.material) : null;
+  const blended = base?.renderState.blend === true;
+  // "batched" = produced by `batchStaticRenderItems` (SceneOptimization.ts):
+  // it stamps a multi-instance `instanceTransforms` chunk under a
+  // `static-batch-*` label. Authored instancing may share the field, so the
+  // label prefix is the stronger marker; either marks the batch variant.
+  const instanced = item.instanceTransforms !== undefined || item.instanceAttributes !== undefined;
+  const batched =
+    (item.instanceTransforms?.length ?? 0) > 16 ||
+    /^static-batch-/.test(item.label ?? "");
   return {
     skinning: skinning ? (skinning.extraInfluences ? 8 : 4) : 0,
     skinningTexture: (skinning?.jointCount ?? 0) > MAX_UNIFORM_SKINNING_JOINTS,
     morphTargets: (item.morphTargets?.length ?? 0) > 0 || (item.morphWeights?.length ?? 0) > 0,
-    instanced: item.instanceTransforms !== undefined || item.instanceAttributes !== undefined,
-    batched: false,
+    instanced,
+    batched,
     alphaTest: casterAlphaCutoff(item) !== null,
-    alphaHash: false,
-    doubleSided: item.material ? baseOf(item.material).renderState.cullMode === "none" : false,
+    // BLEND + explicit castShadow: alpha-hashed depth (no cutoff); BLEND
+    // without castShadow is excluded upstream (prd02ShadowCasterEligible).
+    alphaHash: blended && item.castShadow === true,
+    doubleSided: base ? base.renderState.cullMode === "none" : false,
     features
   };
+}
+
+/** §6.4 caster rule: BLEND items are excluded unless `castShadow === true`
+ *  (then they take the alpha-hash variant); `castShadow === false` always
+ *  excludes. Everything else casts. */
+export function prd02ShadowCasterEligible(item: RenderItem): boolean {
+  if (item.castShadow === false) return false;
+  const base = item.material ? baseOf(item.material) : null;
+  if (base?.renderState.blend === true && item.castShadow !== true) return false;
+  return true;
 }
 
 /** GLSL defines a variant key compiles the depth body with. */

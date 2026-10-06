@@ -26,6 +26,10 @@ export interface DirectionalCascadeFit {
   readonly splitFar: number;
   /** World-space size of one shadow-map texel (normal-bias + stability unit). */
   readonly texelWorld: number;
+  /** Bounding-sphere radius of the cascade slice (+ casters), before padding. */
+  readonly radius: number;
+  /** Texel-snapped light-space ortho centre (x, y) and unsnapped depth mid (z). */
+  readonly center: readonly [number, number, number];
   readonly casterCount: number;
 }
 
@@ -157,10 +161,27 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
       min = [Math.min(min[0]!, lx), Math.min(min[1]!, ly), Math.min(min[2]!, lz)];
       max = [Math.max(max[0]!, lx), Math.max(max[1]!, ly), Math.max(max[2]!, lz)];
     }
-    const extent = Math.max(1e-6, max[0]! - min[0]!, max[1]! - min[1]!) + padding * 2;
+    // Bounding-sphere radius about the world-space centroid: rigid transforms
+    // (e.g. camera yaw about the camera pivot) rotate the centroid with the
+    // point set and preserve 3D distances, so max|p-centroid| is exactly
+    // yaw-invariant — a 10° yaw keeps each cascade's radius stable
+    // (PRD-02 §6.4 / prd02-17 shimmer) where a light-space AABB extent is not.
+    const centerZ = (min[2]! + max[2]!) / 2;
+    let cx0 = 0, cy0 = 0, cz0 = 0;
+    for (const p of allPts) { cx0 += p[0]; cy0 += p[1]; cz0 += p[2]; }
+    const n = allPts.length;
+    const centroid: V3 = [cx0 / n, cy0 / n, cz0 / n];
+    let radius = 0;
+    for (const p of allPts) {
+      radius = Math.max(radius, Math.hypot(p[0] - centroid[0], p[1] - centroid[1], p[2] - centroid[2]));
+    }
+    const centerX = centroid[0] * basis.right[0] + centroid[1] * basis.right[1] + centroid[2] * basis.right[2];
+    const centerY = centroid[0] * basis.up[0] + centroid[1] * basis.up[1] + centroid[2] * basis.up[2];
+    radius = Math.max(radius, 1e-6);
+    const extent = 2 * radius + padding * 2;
     const texelWorld = extent / options.mapSize;
-    const cx = Math.round(((min[0]! + max[0]!) / 2) / texelWorld) * texelWorld;
-    const cy = Math.round(((min[1]! + max[1]!) / 2) / texelWorld) * texelWorld;
+    const cx = Math.round(centerX / texelWorld) * texelWorld;
+    const cy = Math.round(centerY / texelWorld) * texelWorld;
     const depthPad = Math.max(padding, extent * 0.05);
     const view = new Float32Array([
       basis.right[0], basis.up[0], basis.forward[0], 0,
@@ -170,11 +191,13 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     ]);
     const half = extent / 2;
     const depth = (max[2]! - min[2]!) + depthPad * 2;
+    // view already centres z on (min+max)/2 — the proj z column must NOT
+    // translate again (double-centring pushed off-frustum casters past z=1).
     const proj = new Float32Array([
       1 / half, 0, 0, 0,
       0, 1 / half, 0, 0,
       0, 0, -2 / depth, 0,
-      0, 0, -(min[2]! - depthPad + max[2]! + depthPad) / 2 / (depth / 2), 1
+      0, 0, 0, 1
     ]);
     // proj*(view*p): row-major compose proj × view.
     const viewProjection = new Float32Array(16);
@@ -195,6 +218,6 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
           bias[8 + r]! * viewProjection[c * 4 + 2]! + bias[12 + r]! * viewProjection[c * 4 + 3]!;
       }
     }
-    return { index, viewProjection: biased, drawViewProjection: viewProjection, splitFar: split.far, texelWorld, casterCount: options.casters.length };
+    return { index, viewProjection: biased, drawViewProjection: viewProjection, splitFar: split.far, texelWorld, radius, center: [cx, cy, centerZ], casterCount: options.casters.length };
   });
 }

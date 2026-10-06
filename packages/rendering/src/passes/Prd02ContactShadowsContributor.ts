@@ -11,7 +11,7 @@ import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { FrameContributorContext, FrameContributor } from "../contracts/frameGraph";
 import { ContactShadowPass, type ContactShadowOptions, CONTACT_MASK_BLACKBOARD_KEY } from "./ContactShadowPass";
 import { collectShadowSystemLights } from "../shadows/Prd02ShadowsContributor";
-import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02DepthShader } from "../shadows/Prd02DepthShaderLibrary";
+import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02DepthShader, prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "../ShaderLibraryCore";
 import { QUALITY_TIERS } from "../contracts/quality";
 import type { AuraQualityTier } from "../contracts/quality";
@@ -101,7 +101,7 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
         far: 100
       },
       sceneDepth: ctx.sceneDepth,
-      casters: ctx.items.filter((item) => item.castShadow !== false),
+      casters: ctx.items.filter(prd02ShadowCasterEligible),
       depthPassOptions: {
         shaderLibrary: depthLibraryFor(ctx.device),
         variantResolver: (item) =>

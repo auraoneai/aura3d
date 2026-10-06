@@ -16,6 +16,7 @@ import { sceneFromSource } from "../renderer/RenderShared";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
 import { bindShadowFrameUniforms, shadowBindingMaterial } from "./ShadowFrameBinding";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
+import { prd02ShadowCasterEligible } from "./Prd02DepthShaderLibrary";
 
 const DEFAULT_NORMAL_BIAS_TEXELS = 1.5;
 
@@ -146,7 +147,7 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
   execute(_context: RenderPassContext): void {
     const ctx = this.ctx;
     const config = shadowSystemConfigFromSource(ctx);
-    const casters = ctx.items.filter((item) => item.castShadow !== false);
+    const casters = ctx.items.filter(prd02ShadowCasterEligible);
     const { sunDirection, localLights } = collectShadowSystemLights(ctx);
     const system = shadowSystemForDevice(ctx.device, config);
     const uniforms: Prd02ShadowFrameUniforms | null = ctx.camera

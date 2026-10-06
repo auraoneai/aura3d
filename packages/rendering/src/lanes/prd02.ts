@@ -214,6 +214,11 @@ export {
   type Prd02KillSwitchesLike
 } from "../passes/Prd02SubFlags.js";
 export {
+  createPrd02ReceiveShadowContributor,
+  type Prd02ReceiveShadowOverrideOptions
+} from "../shadows/Prd02ReceiveShadowContributor.js";
+export { prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary.js";
+export {
   CONTACT_SHADOW_CHUNK_ID
 } from "../shaders/chunks/contact_shadow.glsl.js";
 export {

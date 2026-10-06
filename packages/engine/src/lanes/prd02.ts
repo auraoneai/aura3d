@@ -77,7 +77,7 @@ import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, ty
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
-import { auraLightsCounters } from "../../../rendering/src/LightUniforms.js";
+import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
 import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
@@ -279,6 +279,8 @@ registerDiagnosticsSection({
       lightsEvaluated: counters?.lightsEvaluated ?? null,
       lightsCulledByRange: null,
       lightsDroppedByCap: counters?.lightsDroppedByCap ?? null,
+      // §4.2 runtime collectedLights: one row per evaluated light.
+      lights: auraLightsLastFrame() ?? null,
       timings: lighting?.lightingTimings?.() ?? null
     };
   }

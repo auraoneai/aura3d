@@ -319,10 +319,26 @@ function kindToFloat(kind: CollectedLight["kind"]): number {
 
 /** C-31 sink: counters of the most recent pack (null until the flag path runs). */
 let auraLightsLastCounters: { lightsEvaluated: number; lightsDroppedByCap: number } | null = null;
+/** C-31 §4.2 per-light rows of the most recent pack (one per evaluated light). */
+let auraLightsLastLights: readonly AuraLightSummary[] | null = null;
+
+/** §4.2 `collectedLights` row: kind, intensity, range, caster flag (+name when set). */
+export interface AuraLightSummary {
+  readonly kind: AuraLightData["kind"];
+  readonly name?: string;
+  readonly intensity: number;
+  readonly range: number;
+  readonly castsShadow: boolean;
+}
 
 /** Read the counters reported by the last `packAuraLightsStd140` call (C-31 `prd02.lighting` section). */
 export function auraLightsCounters(): { lightsEvaluated: number; lightsDroppedByCap: number } | null {
   return auraLightsLastCounters;
+}
+
+/** Read the per-light rows reported by the last `packAuraLightsStd140` call (C-31 §4.2). */
+export function auraLightsLastFrame(): readonly AuraLightSummary[] | null {
+  return auraLightsLastLights;
 }
 
 /**
@@ -339,6 +355,13 @@ export function auraLightsUniformBlock(
     lightsEvaluated: packed.lightsEvaluated,
     lightsDroppedByCap: packed.lightsDroppedByCap
   };
+  auraLightsLastLights = lights.map((light) => ({
+    kind: light.kind,
+    ...(light.name !== undefined ? { name: light.name } : {}),
+    intensity: light.intensity,
+    range: light.range,
+    castsShadow: light.shadowIndex !== undefined && light.shadowIndex >= 0
+  }));
   return {
     uniforms: {
       u_lightData: packed.data,
