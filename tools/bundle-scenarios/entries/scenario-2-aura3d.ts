@@ -4,8 +4,11 @@
  * glTF loading, PBR, orbit controls, lighting, environment. The most common real first project, and
  * the one where Aura3D's integrated environment presets and asset handling should start paying off.
  */
-import { createAuraApp, camera, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/lean/product";
+import { createAuraApp, camera, defineAuraAssets, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/lean/product";
 
+const assets = defineAuraAssets({
+  product: { type: "model", format: "glb", url: "/model.glb", hash: "sha256-bundle-scenario" }
+});
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const app = createAuraApp(canvas, {
   scene: scene()
@@ -14,7 +17,7 @@ const app = createAuraApp(canvas, {
     .add(interactions.orbit())
     .add(environments.studio())
     .add(lights.directional({ intensity: 2.4 }).position(2.4, 3.2, 2.8))
-    .add(model({ id: "product", type: "model", format: "glb", url: "/model.glb", hash: "sha256-bundle-scenario" }))
+    .add(model(assets.product))
     .add(primitives.sphere({ material: material.clearcoatPaint({ color: "#b3202f" }) }).position(0, 0.6, 0))
     .add(primitives.plane({ material: material.pbr({ color: "#2a3038", roughness: 0.8 }) }).scale([8, 1, 8]))
 });
