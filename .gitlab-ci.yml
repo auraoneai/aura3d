@@ -67,4 +67,7 @@ qr:diag:
     - git lfs install --local
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
-    - echo "=== BISECT-1 OK (through playwright) ==="
+    - git lfs pull
+    - echo "=== lfs pull done ==="
+    - node tools/quality-rebuild-capture/capture-games.mjs --validate
+    - echo "=== BISECT-2 OK (through validate) ==="
