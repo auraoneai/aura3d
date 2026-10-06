@@ -4,7 +4,8 @@
   "notes": [
     "Every `[qr-gitlab:all local=true]` push triggers GitLab project 87152020 pipelines on saas-macos-medium-m1 runners; results return as GitHub `GitLab pipeline` checks plus `gitlab-all-<pipelineId>` artifacts.",
     "Pre-06:00 pipelines failed ~3 min in on every 0b branch. Root cause found via qr/diag-lfs-probe bisection: PR 0a contract modules imported `@aura3d/rendering/contracts*` and `@aura3d/engine-runtime*` specifiers that had no vite alias entries; vite's prefix-match aliases rewrote them onto `packages/*/src/index.ts/...` and every real bundle build (game --build-only, benchmarks ci.sh vite build) died with ENOTDIR. Fixed on all four PR branches by adding the tsconfig-mirrored subpath aliases to vite.config.ts (commits 269768a8 / 43653ddc / 638462ce / ec8c4c57). 18/18 game builds and the benchmark build verified locally post-fix.",
-    "GitHub Actions run ids for the Quality Rebuild Capture sentinel runs are not retrievable without a GitHub API token in this environment; the triggering commit SHAs are recorded instead (the workflow runs on pushes to aura3d-quality-rebuild/audit only)."
+    "GitHub Actions run ids for the Quality Rebuild Capture sentinel runs are not retrievable without a GitHub API token in this environment; the triggering commit SHAs are recorded instead (the workflow runs on pushes to aura3d-quality-rebuild/audit only).",
+    "Per-image deltaE2000 p99 vs the ic0-base noise floor is NOT-RUN in this session: metrics live inside the gitlab-all-* GitHub artifacts, and downloading them requires `gh` authentication or a GitLab API token — neither is provisioned in this session. The artifact names are recorded below so the comparison can be run with `gh run download`."
   ],
   "base_branch": {
     "branch": "qr/prd15-ic0-base",
@@ -13,41 +14,45 @@
       { "commit": "14adf1e6", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
       { "commit": "24076220", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
       { "commit": "5bd903c4", "gitlab_pipeline": null, "status": "unknown (pre-dated check observation)" },
-      { "commit": "06986d7d", "gitlab_pipeline": "TBD-wave-A", "status": "pending" }
+      { "commit": "06986d7d", "gitlab_pipeline": "2916316776", "status": "success", "artifact": "gitlab-all-2916316776", "note": "wave A — run 1 of 2" },
+      { "commit": "33d02be3", "gitlab_pipeline": "2916430413", "status": "success", "artifact": "gitlab-all-2916430413", "note": "wave B — run 2 of 2" }
     ]
   },
   "branches": {
     "qr/pr0b1-agent-api-carveouts": {
       "pr": "https://github.com/auraoneai/aura3d/pull/24",
       "runs": [
-        { "commit": "26b68d11", "gitlab_pipeline": "canceled (superseded)", "status": "canceled" },
+        { "commit": "26b68d11", "gitlab_pipeline": "canceled (superseded by 9ea21561)", "status": "canceled" },
         { "commit": "9ea21561", "gitlab_pipeline": "2916128184", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
         { "commit": "a6f72b8c", "gitlab_pipeline": "2916209997", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
-        { "commit": "b14e0da7", "gitlab_pipeline": "TBD-wave-A", "status": "pending" }
+        { "commit": "b14e0da7", "gitlab_pipeline": "2916316366", "status": "success", "artifact": "gitlab-all-2916316366", "note": "wave A — run 1 of 2" },
+        { "commit": "8897bbcf", "gitlab_pipeline": "2916457500", "status": "success", "artifact": "gitlab-all-2916457500", "note": "wave B — run 2 of 2" }
       ]
     },
     "qr/pr0b2-rendering-carveouts": {
       "pr": "https://github.com/auraoneai/aura3d/pull/25",
       "runs": [
-        { "commit": "d939b819", "gitlab_pipeline": "canceled (superseded)", "status": "canceled" },
+        { "commit": "d939b819", "gitlab_pipeline": "canceled (superseded by 5660dc21)", "status": "canceled" },
         { "commit": "5660dc21", "gitlab_pipeline": "TBD (pre-fix, likely failed-fast)", "status": "unknown" },
-        { "commit": "c1785f0a", "gitlab_pipeline": "TBD-wave-A", "status": "pending" }
+        { "commit": "c1785f0a", "gitlab_pipeline": "2916314807", "status": "success", "artifact": "gitlab-all-2916314807", "note": "wave A — run 1 of 2" },
+        { "commit": "e7e164fb", "gitlab_pipeline": "2916428154", "status": "success", "artifact": "gitlab-all-2916428154", "note": "wave B — run 2 of 2" }
       ]
     },
     "qr/pr0b3-gltf-cli-capture": {
       "pr": "https://github.com/auraoneai/aura3d/pull/26",
       "runs": [
-        { "commit": "ed253810", "gitlab_pipeline": "canceled (superseded)", "status": "canceled" },
+        { "commit": "ed253810", "gitlab_pipeline": "canceled (superseded by f0ad25cb)", "status": "canceled" },
         { "commit": "f0ad25cb", "gitlab_pipeline": "2916127676", "status": "failed-fast (~3min, pre-alias-fix ENOTDIR)" },
-        { "commit": "cbc9db52", "gitlab_pipeline": "TBD-wave-A", "status": "pending" }
+        { "commit": "cbc9db52", "gitlab_pipeline": "2916312854", "status": "success", "artifact": "gitlab-all-2916312854", "note": "wave A — run 1 of 2" },
+        { "commit": "9dc83240", "gitlab_pipeline": "2916428691", "status": "success", "artifact": "gitlab-all-2916428691", "note": "wave B — run 2 of 2" }
       ]
     }
   },
   "diagnostics": [
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "2916153428", "status": "success", "purpose": "before_script replica (node/pnpm/git-lfs/playwright) — all passed" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "2916177xxx", "status": "success", "purpose": "benchmark ci.sh replica with headless-shell — passed" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "exact .gitlab-ci.yml replica on ic0-base tree — full pipeline passed, isolating failure to 0b branch content" },
-    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "one-game end-to-end capture (desktop+mobile, 2 viewports) — passed" }
+    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "2916153428", "status": "success", "purpose": "before_script replica (node dl, pnpm@11.1.3, git lfs pull, --validate) — all passed; proved mirror carries LFS objects" },
+    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "benchmark ci.sh replica with QR_BENCH_CHANNEL=headless-shell — passed" },
+    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "verbatim .gitlab-ci.yml replica on ic0-base tree — full suite=all pipeline passed, isolating failure to 0b branch content" },
+    { "branch": "qr/diag-lfs-probe", "gitlab_pipeline": "TBD", "status": "success", "purpose": "one-game end-to-end capture (1 game x 2 viewports x desktop+mobile) — passed" }
   ],
   "github_sentinel_runs": {
     "workflow": "Quality Rebuild Capture (.github/workflows/quality-rebuild-capture.yml)",
@@ -55,11 +60,11 @@
     "scenes": "benchmarks/quality-rebuild/sentinels.json (6 base scenes, PR-0a custodian stub — lane 12 has not landed its own)",
     "runs": [
       { "trigger_commit": "2c1ec889", "github_run_id": "not retrievable without GH API token", "status": "triggered" },
-      { "trigger_commit": "PENDING-SECOND-SHA", "github_run_id": "not retrievable without GH API token", "status": "triggered" }
+      { "trigger_commit": "81004af2", "github_run_id": "not retrievable without GH API token", "status": "triggered" }
     ]
   },
   "delta_e2000_p99": {
-    "status": "awaiting successful wave-A wave-B pipelines; per-image p99 must be at or below the qr/prd15-ic0-base noise floor",
-    "measurement": "artifacts gitlab-all-<pipelineId> contain per-scene diff metrics; compare 0b-branch run vs the two ic0-base runs"
+    "status": "NOT-RUN (artifact access gated on gh/GitLab token; see notes)",
+    "measurement": "download gitlab-all-<pipelineId> artifacts for each 0b branch run + both ic0-base runs; compare per-image deltaE2000 p99 of 0b vs ic0-base and assert <= ic0-base noise floor"
   }
 }
