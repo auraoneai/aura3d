@@ -63,6 +63,8 @@ variables:
   QRC_LOCAL_BUILD: "$[[ inputs.local_build ]]"
   QR_MOBILE: "$[[ inputs.mobile ]]"
   QR_FLAGS: "$[[ inputs.qr_flags ]]"
+  # Forwarded to the capture tools (capture-games.mjs reads QRC_FLAGS; capture.mjs reads it too).
+  QRC_FLAGS: "$[[ inputs.qr_flags ]]"
   QR_REQUESTER: "$[[ inputs.requester ]]"
   QR_GITHUB_RUN: "$[[ inputs.github_run ]]"
   NODE_VERSION: "22.23.2"
@@ -84,11 +86,7 @@ stages: [capture]
     # Defense in depth: the capture tools read these from the environment; never let them come from outside.
     - unset QRC_EXECUTABLE QRC_BASE_URL QRC_OUT QRC_BUILD_DIR QRC_GPU_ARGS QR_BENCH_CHROME_ARGS QRC_CHANNEL QR_BENCH_CHANNEL || true
     - echo "requester=$QR_REQUESTER suite=$QR_SUITE flags=$QR_FLAGS local=$QRC_LOCAL_BUILD mobile=$QR_MOBILE ref=$CI_COMMIT_REF_NAME sha=$CI_COMMIT_SHA github_run=$QR_GITHUB_RUN"
-    - |
-      if [ "$QR_FLAGS" != "none" ]; then
-        echo "qr_flags=$QR_FLAGS is not consumed yet: the capture tools gain --flags with C-33 (PR 0b-3). Refusing to run so flag-on and flag-off captures cannot silently be identical."
-        exit 1
-      fi
+    - echo "qr_flags=$QR_FLAGS forwarded to the capture tools via QRC_FLAGS/QR_BENCH_FLAGS"
     - curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz" -o /tmp/node.tgz
     - mkdir -p "$HOME/node" && tar -xzf /tmp/node.tgz -C "$HOME/node" --strip-components=1
     - export PATH="$HOME/node/bin:$PATH"

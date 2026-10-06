@@ -32,6 +32,7 @@ function parseArgs(argv) {
     else if (flag === "--scenes") { args.scenes = value.split(",").filter(Boolean); index += 1; }
     else if (flag === "--engines") { args.engines = value.split(",").filter(Boolean); index += 1; }
     else if (flag === "--timeout") { args.timeoutMs = Number(value); index += 1; }
+    else if (flag === "--flags") { args.flags = value; index += 1; }
   }
   return args;
 }
@@ -100,7 +101,9 @@ async function gpuInfo(page) {
   });
 }
 
-async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs) {
+async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs, flags) {
+  // C-33 (PR 0b-3): --flags passthrough appends a3d-qr=<list>; resolveQrFlags reads it.
+  const flagsQuery = flags && flags !== "none" ? `&a3d-qr=${encodeURIComponent(flags)}` : "";
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, colorScheme: "dark" });
   const page = await context.newPage();
   const consoleMessages = [];
@@ -117,7 +120,7 @@ async function captureOne(browser, baseUrl, scene, engine, outDir, timeoutMs) {
   const started = Date.now();
   const result = { engine, scene, status: "error", screenshot: null };
   try {
-    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}`, { waitUntil: "load", timeout: 60_000 });
+    await page.goto(`${baseUrl}/index.html?engine=${engine}&scene=${scene}${flagsQuery}`, { waitUntil: "load", timeout: 60_000 });
     await page.waitForFunction(() => Boolean(window.__QR_READY__ || window.__QR_ERROR__), undefined, { timeout: timeoutMs, polling: 250 });
     const state = await page.evaluate(() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null }));
     result.gpu = await gpuInfo(page);
@@ -341,7 +344,7 @@ async function main() {
       mkdirSync(join(args.out, scene), { recursive: true });
       const entry = { scene, engines: {}, metrics: null, sideBySide: null, diff: null };
       for (const engine of args.engines) {
-        const result = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs);
+        const result = await captureOne(browser, baseUrl, scene, engine, args.out, args.timeoutMs, args.flags ?? process.env.QRC_FLAGS ?? "none");
         entry.engines[engine] = result;
         console.log(`[quality-rebuild] ${scene} ${engine}: ${result.status} in ${result.wallMs} ms${result.error ? ` (${result.error.split("\n")[0]})` : ""}`);
       }
