@@ -64,6 +64,19 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
+    status.textContent = `running ${tools}`;
+    const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");
+    const report =
+      tools === "canvas-dpr" ? await runCanvasDprTool(stage)
+      : tools === "app-capture" ? await runAppCaptureTool(stage)
+      : await runMountFailureTool(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
+
   const adapters = engine === "three" ? threeScenes : auraScenes;
   const adapter = adapters.find((entry) => entry.id === sceneId);
   if (!adapter) {

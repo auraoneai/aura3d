@@ -36,6 +36,73 @@ lane 01 does until the change lands.
 | ID | To | File / exact change | Reason |
 |---|---|---|---|
 | QR-OWN-1 | 15 | `.github/QR_OWNERSHIP.json`: add `tests/qr/prdNN/` (or `tests/qr/`) per-lane ownership mapping | `tests/qr/prd01/**` resolves to owner 15 today, but PRD-01 §16.4 assigns `tests/qr/prd01/` to lane 01. Lane 01 proceeds in these files; this request reconciles the JSON. |
+| Q-15-8 | 15 | Migrate the 45 owner-15 class-(b) readback rows (`tests/browser/*`, `tools/*-parity/*`, `tests/visual/pbr-environment-pixels.spec.ts`, `apps/advanced-examples-gallery/src/main.ts`) to `app.capture()`; keep `agent-api/index.ts` `screenshot()` on same-task readback once `A3D_QR_CORE` removes `preserveDrawingBuffer` | C-05 | `evidence/prd01/readback-triage.json` |
+| Q-12-2 | 12 | `tools/compare-engines/index.ts` root-canvas `toDataURL` readback → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
+| Q-13-2 | 13 | `tools/agent-docs/simulation.ts` + `tools/agent-dogfood/index.ts` class-(b) readbacks → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
+| Q-15-9 | 15 | `index.ts:9608` safe-basic catch: emit C-36 degradation `{code:"renderer-mount-failed"}` (lands in `diagnostics().degradations` + `onDegradation`) and honor `renderer.strictMount` (reject `ready()`, no safe-basic draw) under `A3D_QR_CORE` | C-36, C-05 | `onRendererError` forwarding handles the code verbatim once emitted; `renderer-mount-failure.spec.ts` asserts (1)-(3) today, (4) + no-safe-basic-draw at integrated I9 |
+
+## PR D (Phase 2: resolution + readback) status notes — 2026-10-06
+
+- §6.9: `renderer/PixelRatio.ts` `resolveCanvasPixelRatio` (explicit ??
+  `resolution.pixelRatio` ?? `min(dpr, tier.maxPixelRatio)`, no [1,2] clamp —
+  Ultra@DPR3 = 3), `resolveCanvasContextAttributes` (flag-on
+  `{antialias:false, alpha:false, preserveDrawingBuffer:false,
+  powerPreference:"high-performance"}`; flag-off baseline unchanged;
+  `renderer.debug.preserveDrawingBuffer` opt-in + dev warning),
+  `watchDevicePixelRatio` (matchMedia `(resolution: Xdppx)` re-arm chain).
+- `ResolutionGovernor.ts`: `sample(frameMs, gpuMs?)` uses `gpuMs ?? frameMs`
+  (C-28), renderScale in `[tier.minRenderScale, 1]` stepping 0.1 — down after
+  30 consecutive > `targetFrameMs·1.1`, up after 120 < `targetFrameMs·0.8`;
+  HiDPI floor `1/devicePixelRatio` unless `allowSubCssResolution`.
+- `Renderer`: `options.resolution`/`qualityTier` opt-in (absent → bit-identical),
+  `setRenderScaleCeiling`, `renderScale = min(ceiling, governor)`, per-frame
+  `governor.sample` at `device.endFrame()` in both `render`/`renderAsync`,
+  `resolutionReport` getter backing C-31 `resolution`
+  (`pixelRatio/renderScale/ceiling/backing`), `resizeToDisplay` DPR through
+  `resolveCanvasPixelRatio`, DPR-change watcher disposed with the renderer.
+- `WebGL2DeviceOptions.powerPreference` plumbed to `getContext("webgl2", …)`
+  (Q-15-3's call site stays lane 15's).
+- C-31 `resolution`: `collectResolution` reads `Symbol.for("a3d.prd01.renderer")`
+  (`PRD01_RENDERER`, the Q-15-1 seam) for the renderer report, else falls back
+  to `screenshot()`/`app.canvas` for real backing/CSS dims; unobservable fields
+  stay null.
+- C-05 real `capture()` in the `lanes/prd01` output factory: `app.step()`
+  renders a frame synchronously, then `readPixels` the default framebuffer in
+  the same task (before compositing — `preserveDrawingBuffer` never set), rows
+  flipped, `ImageBitmap`/`OffscreenCanvas→PNG Blob`; falls back to
+  `app.screenshot()` on non-webgl2/disposed surfaces. `onRendererError` now
+  forwards `diagnostics().degradations` verbatim (C-36 codes incl.
+  `renderer-mount-failed`) before the plain `errors` pass-through.
+- Readback triage committed (`evidence/prd01/readback-triage.json`,
+  `tools/quality-rebuild-codemods/readback-triage.mjs`): 229 files, class
+  a=176 / b=52 / c=1. No lane-01-owned class-(b) rows exist, so there was
+  nothing to migrate in-tree; requests filed for the rest — Q-13-1 (templates),
+  Q-14-1 (`apps/showcase-gravity-post`), Q-15-8 (45 owner-15 rows incl.
+  `apps/advanced-examples-gallery`), Q-12-2 (`tools/compare-engines`), Q-13-2
+  (`tools/agent-docs`/`agent-dogfood`). The single class-(c) row
+  (`tests/clean-room/renderer-extension`) is owner 15.
+- `Renderer.captureFrame` already did same-task readPixels; it is the provider
+  readback (class a), not a class-(b) consumer.
+- Harness `?tools=` routes: `canvas-dpr` (deviceScaleFactor:2 → backing 2× CSS,
+  §6.9 attrs via `resolveCanvasContextAttributes`), `app-capture` (capture() vs
+  same-task `toDataURL` MAD ≤ 1/255 at `a3d-qr=none`+`core`),
+  `renderer-mount-failure` (patched `ProductionRuntimeRenderer.create` reject →
+  ready() resolves, errors recorded, onRendererError fires; strictMount +
+  `renderer-mount-failed` code recorded, asserted at I9 per spec note).
+- `RenderBackendOptions.powerPreference` forwarded → `WebGL2DeviceOptions` →
+  `getContext`; lane canvases pick the §6.9 attribute set via
+  `resolveCanvasContextAttributes({flagOn})` (app mount's context attrs remain
+  lane-15 wiring, Q-15-3).
+- C-39 codemod `core-v2` (`tools/quality-rebuild-codemods/core-v2.ts` + `run.ts`):
+  pure `source → code + rows` — pixelRatio overrides (`Math.min(cap,dpr)` and
+  literal `1` → `renderer.resolution.maxPixelRatio`, other absolutes →
+  `resolution.pixelRatio`; Turbo-Drift capture-only spread rewritten in place),
+  `qualityProfile` → `quality` (production→high, safe-basic→low, else
+  approximate), safe-basic classification rows, ambient irradiance review rows.
+  Registered via `registerCodemod` + `core inspect-programs` in
+  `commands/prd01/index.ts`. Evidence generated: `safe-basic-inventory.json`
+  (140 entries / 94 files: 102 mode-select, 33 doc, 5 warning-assert) and
+  `ambient-review.json` (48 sites, intensity→intensity/π).
 
 ## Incoming requests to lane 01
 
