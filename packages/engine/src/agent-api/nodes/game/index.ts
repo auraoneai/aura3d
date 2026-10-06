@@ -2,7 +2,8 @@
 
 import type { AuraApp, AuraGameLoopPlan, AuraGameRuntimeEvidence } from "../../index.js";
 import { DEFAULT_MAX_SUBSTEPS } from "../../app/frameLoopDefaults.js";
-import { certifyPublicPlatformerPresentation, certifyPublicRacingPresentation, createAuraGameRuntime, createGamePlatformerCameraRig, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerPresentationSurfaceNodes, createGamePublicPlatformerPresentationNodes, createGamePublicRacingPresentationNodes, createGameRacingCheckpointGateNodes, createGameRacingPresentationTrackNodes, createGameRacingRoadMeshNodes, createGameRacingStartFinishNodes, effects, gameRules } from "../../index.js";
+import { certifyPublicPlatformerPresentation, certifyPublicRacingPresentation, createAuraGameRuntime, createGamePlatformerCameraRig, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerPresentationSurfaceNodes, createGamePublicPlatformerPresentationNodes, createGamePublicRacingPresentationNodes, createGameRacingCheckpointGateNodes, createGameRacingPresentationTrackNodes, createGameRacingRoadMeshNodes, createGameRacingStartFinishNodes } from "../../index.js";
+import { gameRules } from "../../gameRules.js";
 import { createFrameLoop } from "../../FrameLoop.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105, type GameRuntimeEvidenceOptions } from "../../GameEvidence.js";
 import { GAME_FALLING_BLOCK_PIECES, createGameAssetBoundPlatformerLevel, createGameAssetBoundRacingRoute, createGameFallingBlocksKit, createGameLocomotionKit, createGamePlatformerKit, createGamePlatformerSurfaceQuery, createGameRacingKit, createGameRacingSurfaceQuery } from "../../GameGenreKits.js";

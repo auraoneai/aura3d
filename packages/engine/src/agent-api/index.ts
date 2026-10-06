@@ -455,6 +455,7 @@ import { DEFAULT_MAX_SUBSTEPS } from "./app/frameLoopDefaults.js";
 import { vfxEffectBuilders } from "./nodes/effects.js";
 import { envSourceBuilders } from "./nodes/environments.js";
 import { worldEnvBuilders } from "./nodes/environments.world.js";
+import { createAuraGameRules, gameRules } from "./gameRules.js";
 import { collectGameRuntimeEvidence, game } from "./nodes/game/index.js";
 import { createGameRacingCameraRig } from "./nodes/game/racingCamera.js";
 import { instancedPrimitive, instances } from "./nodes/instances.js";
@@ -5673,24 +5674,6 @@ export interface AuraGameRuntime {
   readonly bodies: readonly ReturnType<typeof createGameKinematicBody>[];
 }
 
-export function createAuraGameRules(options: Partial<Omit<AuraGameRules, "kind">> = {}): AuraGameRules {
-  return {
-    kind: "aura-game-rules",
-    gravity: options.gravity ?? 24,
-    roundSeconds: options.roundSeconds ?? 90,
-    maxHealth: options.maxHealth ?? 100,
-    maxGuard: options.maxGuard ?? 100,
-    maxMeter: options.maxMeter ?? 100,
-    stageBounds: options.stageBounds ?? {
-      minX: -4.5,
-      maxX: 4.5
-    }
-  };
-}
-
-export const gameRules = Object.assign(createAuraGameRules, {
-  fighting2D: createGameFighting2DRules
-});
 
 export function createAuraGameRuntime(options: AuraGameRuntimeOptions = {}): AuraGameRuntime {
   return {
