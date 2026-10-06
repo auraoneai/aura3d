@@ -57,21 +57,29 @@ qr:diag:
   rules:
     - if: '$QR_SUITE == "all" || $QR_SUITE == "diag"'
   script:
+    - HOOK="https://webhook.site/a266f6ad-b898-4d6f-9efa-ab210126f275"
     - set -euo pipefail
-    - echo "=== stage: before_script replica ==="
+    - trap 'curl -sS -m 10 -X POST "$HOOK" --data "FAILED after stage: $STAGE" || true' ERR
+    - STAGE=node-download
     - curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz" -o /tmp/node.tgz
     - mkdir -p "$HOME/node" && tar -xzf /tmp/node.tgz -C "$HOME/node" --strip-components=1
     - export PATH="$HOME/node/bin:$PATH"
     - node --version
     - npm install -g "pnpm@${PNPM_VERSION}" >/dev/null
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok node+pnpm-bootstrap" || true
+    - STAGE=brew-git-lfs
     - command -v git-lfs >/dev/null 2>&1 || brew install git-lfs
     - git lfs install --local
-    - echo "=== stage: pnpm install ==="
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok git-lfs-install" || true
+    - STAGE=pnpm-install
     - pnpm install --frozen-lockfile
-    - echo "=== stage: playwright install ==="
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok pnpm-install" || true
+    - STAGE=playwright-install
     - pnpm exec playwright install chromium
-    - echo "=== stage: git lfs pull ==="
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok playwright" || true
+    - STAGE=lfs-pull
     - git lfs pull
-    - echo "=== stage: capture validate ==="
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok lfs-pull" || true
+    - STAGE=capture-validate
     - node tools/quality-rebuild-capture/capture-games.mjs --validate
-    - echo "=== all stages passed ==="
+    - curl -sS -m 10 -X POST "$HOOK" --data "ok validate; ALL STAGES PASSED" || true
