@@ -57,7 +57,13 @@ export function createSpatialNode(options: SpatialNodeOptions): SpatialNode {
     }
   }
 
-  const filter = ctx.createBiquadFilter() as unknown as SoundBiquadLike;
+  // Fake/headless contexts may lack createBiquadFilter — the occlusion filter
+  // degrades to a passthrough gain (still positionable, just no lowpass).
+  const filter = (
+    typeof ctx.createBiquadFilter === "function"
+      ? ctx.createBiquadFilter()
+      : ctx.createGain()
+  ) as unknown as SoundBiquadLike;
   filter.type = "lowpass";
   if (filter.frequency) filter.frequency.value = OCCLUSION_OPEN_HZ;
   if (filter.Q) filter.Q.value = 0.707;

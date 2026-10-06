@@ -88,6 +88,7 @@ export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
 export { createGameSoundEngine } from "./game-sound/GameSoundEngine";
 export type { GameSoundOptions, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
+export type { SoundGraphContext } from "./game-sound/types";
 export { createMasterChain, safetyClipCurve } from "./game-sound/MasterChain";
 export { createSpatialNode, occlusionHz } from "./game-sound/SpatialVoice";
 export { createEngineLoop, gainsForRpm } from "./game-sound/EngineLoop";

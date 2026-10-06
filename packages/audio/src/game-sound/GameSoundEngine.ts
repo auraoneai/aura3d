@@ -30,6 +30,8 @@ export interface AudioAssetRef {
   readonly hash?: string;
   readonly license?: string;
   readonly provenance?: "sample" | "synth";
+  /** Pre-decoded buffer — skips the fetch/decode path (already-loaded clips). */
+  readonly buffer?: AudioBuffer;
 }
 
 export interface SoundCueSpec extends VoiceCueSpec {
@@ -211,7 +213,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
       return {
         id: -1,
         stop: () => {},
-        setPosition: (p: Vec3) => spatial?.setPosition(p)
+        setPosition: (p: Vec3) => spatial?.setPosition(p),
+        setOcclusion: (a: number) => spatial?.setOcclusion(a)
       };
     }
     const allocation = pool.allocate(cueId, cue as VoiceCueSpec, input, opts);
@@ -230,7 +233,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
           pool.release(record);
         }
       },
-      setPosition: (p: Vec3) => spatial?.setPosition(p)
+      setPosition: (p: Vec3) => spatial?.setPosition(p),
+      setOcclusion: (a: number) => spatial?.setOcclusion(a)
     };
   };
 

@@ -240,5 +240,5 @@ const resolveBuffer = (
   const list = Array.isArray(asset) ? asset : [asset];
   const index = picker ? picker.next() : 0;
   const chosen = list[index] ?? list[0];
-  return bufferFor(chosen.url);
+  return (chosen as { buffer?: AudioBuffer }).buffer ?? bufferFor(chosen.url);
 };
