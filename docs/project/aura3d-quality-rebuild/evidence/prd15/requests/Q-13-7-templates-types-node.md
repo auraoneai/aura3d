@@ -37,7 +37,10 @@ three-compat-character-viewer (2), three-compat-custom-threejs-migration (2),
 three-compat-large-scene (2), three-compat-material-authoring (2),
 three-compat-postprocess-scene (2), three-compat-premium-product-viewer (2)
 
-`templates/` (root `files` set): mini-game (tests/*.spec.ts + playwright.config.ts)
+`templates/` (root `files` set): mini-game (tests/*.spec.ts + playwright.config.ts),
+cinematic-scene, product-viewer (both ship a tsconfig covering `node:*`-importing
+files with no `@types/node` — same class, first seen on the qr-prd15-pack-check
+macos-14 run)
 
 ## Requested change
 

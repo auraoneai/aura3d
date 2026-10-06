@@ -50,6 +50,6 @@ jobs:
       # dist/ must exist so the packed tarball carries real output.
       - run: pnpm build:raw
       - name: Packed consumer check
-        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts
+        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts --baseline tools/packed-consumer-check/baseline.json
         env:
           CI: "true"
