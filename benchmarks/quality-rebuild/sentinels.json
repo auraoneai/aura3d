@@ -1,0 +1,11 @@
+{
+  "$comment": "C-30 sentinel baseline (PR 0a custodian fill until lane 12 lands its own). The six base scenes captured flag-off twice from main for the IC-0 noise comparison.",
+  "scenes": [
+    { "id": "base-01-triangle" },
+    { "id": "base-02-lit-cube" },
+    { "id": "base-03-textured" },
+    { "id": "base-04-shadows" },
+    { "id": "base-05-environment" },
+    { "id": "base-06-post" }
+  ]
+}

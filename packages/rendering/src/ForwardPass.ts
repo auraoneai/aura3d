@@ -19,33 +19,10 @@ import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
+import { type RenderItem } from "./contracts/renderItem";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 
-export interface RenderItem {
-  readonly geometry: Geometry;
-  readonly material?: RenderMaterial;
-  readonly label?: string;
-  readonly drawRange?: RenderItemDrawRange;
-  readonly includeInAutoFrame?: boolean;
-  readonly modelMatrix?: Float32Array | readonly number[];
-  readonly normalMatrix?: Float32Array | readonly number[];
-  readonly modelViewProjectionMatrix?: Float32Array | readonly number[];
-  readonly skinning?: SkinningPaletteBinding;
-  readonly morphTargets?: readonly MorphTargetDelta[];
-  readonly morphWeights?: readonly number[];
-  /**
-   * Wrinkle-detail intensity resolved engine-side from live morph weights
-   * (`resolveWrinkleMapStrength`). Shaders that declare `u_wrinkleStrength` modulate
-   * procedural normal detail by it; absent (or zero) leaves rendering bit-identical.
-   */
-  readonly wrinkleStrength?: number;
-  readonly instanceTransforms?: Float32Array | readonly number[];
-  readonly instanceColors?: Float32Array | readonly number[];
-  readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
-  readonly boundingBoxCenter?: readonly [number, number, number];
-  /** Exclude supporting/decorative geometry from renderer-owned shadow depth passes. */
-  readonly castShadow?: boolean;
-}
+export type { RenderItem };
 
 export interface RenderItemDrawRange {
   readonly start: number;

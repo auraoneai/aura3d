@@ -20,6 +20,7 @@
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import auraBoundaries from "./tools/eslint-plugin-aura3d-boundaries/index.mjs";
+import qrLaneRules from "./eslint/qr/index.js";
 
 export default [
   {
@@ -77,5 +78,9 @@ export default [
     // itself part of any package's dependency graph.
     files: ["packages/create-aura3d/src/**/*.ts"],
     rules: { "aura3d-boundaries/no-upward-package-import": "off" }
-  }
+  },
+  // Aura3D Quality Rebuild lane rules (CONTRACTS.md §3.8). Every eslint/qr/*.js
+  // file exports an array of flat-config blocks; PR 0a ships them empty plus the
+  // WARN-mode qr-no-cross-lane-import rule.
+  ...qrLaneRules
 ];

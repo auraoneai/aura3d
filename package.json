@@ -128,7 +128,25 @@
     "./assets/production-runtime": "./dist/assets/asset-corpus/index.js",
     "./assets/advanced-gallery": "./dist/assets/advanced-gallery/index.js",
     "./production-runtime": "./dist/engine/production-runtime/index.js",
-    "./advanced-runtime": "./dist/engine/advanced-runtime/index.js"
+    "./advanced-runtime": "./dist/engine/advanced-runtime/index.js",
+    "./contracts": {
+      "types": "./dist/engine/contracts/index.d.ts",
+      "browser": "./dist/engine/contracts/index.js",
+      "import": "./dist/engine/contracts/index.js",
+      "default": "./dist/engine/contracts/index.js"
+    },
+    "./renderer": {
+      "types": "./dist/engine/renderer/index.d.ts",
+      "browser": "./dist/engine/renderer/index.js",
+      "import": "./dist/engine/renderer/index.js",
+      "default": "./dist/engine/renderer/index.js"
+    },
+    "./devtools": {
+      "types": "./dist/engine/devtools/index.d.ts",
+      "browser": "./dist/engine/devtools/index.js",
+      "import": "./dist/engine/devtools/index.js",
+      "default": "./dist/engine/devtools/index.js"
+    }
   },
   "scripts": {
     "typecheck:browser:301": "tsc --noEmit -p tsconfig.browser-301.json",

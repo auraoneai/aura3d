@@ -4130,6 +4130,8 @@ void main() {
         const extension = this.gl.getExtension("WEBGL_compressed_texture_astc");
         return extension ? { internalFormat: extension.COMPRESSED_RGBA_ASTC_4x4_KHR } : null;
       }
+      default:
+        throw new Error(`UNSUPPORTED_COMPRESSED_FORMAT:${format}`);
     }
   }
 

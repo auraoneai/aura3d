@@ -1,8 +1,8 @@
-export type TextureCompressedFormat = "bc1-rgba-unorm" | "bc3-rgba-unorm" | "etc2-rgba8unorm" | "astc-4x4-rgba-unorm";
+export type TextureCompressedFormat = "bc1-rgba-unorm" | "bc3-rgba-unorm" | "etc2-rgba8unorm" | "astc-4x4-rgba-unorm" | "bc7-rgba-unorm" | "etc2-rgb8unorm";
 export type TextureFormat = "rgba8" | "rgba16f" | "rgba32f" | "depth24" | TextureCompressedFormat;
 export type TextureColorSpace = "linear" | "srgb";
 export type TexturePixelData = Uint8Array | Uint8ClampedArray | Uint16Array | Float32Array;
-export type TextureDimension = "2d" | "cube";
+export type TextureDimension = "2d" | "cube" | "2d-array";
 export type TextureCubeFace = "px" | "nx" | "py" | "ny" | "pz" | "nz";
 
 export interface TextureMipLevelDescriptor {
@@ -40,6 +40,8 @@ export interface TextureDescriptor {
   readonly source?: TexImageSource;
   readonly fallbackData?: Uint8Array | Uint8ClampedArray;
   readonly fallbackMipLevels?: readonly TextureMipLevelDescriptor[];
+  /** C-18 (PR 0a): layer count when `dimension` is "2d-array" (morph textures). */
+  readonly layers?: number;
 }
 
 export class Texture {
@@ -182,6 +184,24 @@ export class Texture {
     if (this.fallbackMipLevels.length > 0) return this.fallbackMipLevels;
     return this.fallbackData ? [{ width: this.width, height: this.height, data: this.fallbackData }] : [];
   }
+
+  /** C-18 (PR 0a): content revision, incremented by `update`. */
+  public revision = 0;
+
+  /**
+   * C-18 (PR 0a): replace pixel content in place and bump `revision`. The
+   * device observes the revision to decide whether to re-upload (morph data).
+   */
+  public update(descriptor: { readonly data?: TexturePixelData; readonly mipLevels?: readonly TextureMipLevelDescriptor[]; readonly layers?: number }): void {
+    if (descriptor.data !== undefined) {
+      (this as { data: TexturePixelData | null }).data = clonePixelData(descriptor.data);
+    }
+    if (descriptor.mipLevels !== undefined) {
+      (this as { mipLevels: readonly TextureMipLevel[] }).mipLevels = cloneMipLevels(descriptor.mipLevels, "mipLevels");
+    }
+    void descriptor.layers;
+    this.revision += 1;
+  }
 }
 
 export function bytesPerPixel(format: TextureFormat): number {
@@ -196,7 +216,9 @@ export function bytesPerPixel(format: TextureFormat): number {
       return 4;
     case "bc1-rgba-unorm":
     case "bc3-rgba-unorm":
+    case "bc7-rgba-unorm":
     case "etc2-rgba8unorm":
+    case "etc2-rgb8unorm":
     case "astc-4x4-rgba-unorm":
       return 0;
   }
@@ -213,7 +235,7 @@ export function isFloatColorTextureFormat(format: TextureFormat): boolean {
 }
 
 export function isCompressedTextureFormat(format: TextureFormat): format is TextureCompressedFormat {
-  return format === "bc1-rgba-unorm" || format === "bc3-rgba-unorm" || format === "etc2-rgba8unorm" || format === "astc-4x4-rgba-unorm";
+  return format === "bc1-rgba-unorm" || format === "bc3-rgba-unorm" || format === "etc2-rgba8unorm" || format === "astc-4x4-rgba-unorm" || format === "bc7-rgba-unorm" || format === "etc2-rgb8unorm";
 }
 
 export function compressedTextureByteLength(width: number, height: number, format: TextureCompressedFormat): number {
@@ -228,8 +250,12 @@ export function compressedBlockByteLength(format: TextureCompressedFormat): numb
       return 8;
     case "bc3-rgba-unorm":
     case "etc2-rgba8unorm":
+    case "etc2-rgb8unorm":
     case "astc-4x4-rgba-unorm":
+    case "bc7-rgba-unorm":
       return 16;
+    default:
+      throw new Error(`UNSUPPORTED_COMPRESSED_FORMAT:${format}`);
   }
 }
 

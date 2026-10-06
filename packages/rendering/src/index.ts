@@ -1191,3 +1191,7 @@ export * from "./animation/index.js";
 
 
 export * from "./effects/ResidentGPUParticleRenderer.js";
+
+// Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";

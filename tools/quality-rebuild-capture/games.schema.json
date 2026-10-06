@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "aura3d.capture.games/1.0",
+  "title": "quality-rebuild-capture games.json V2 schema (C-33)",
+  "type": "object",
+  "required": ["games"],
+  "properties": {
+    "games": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/gameEntry" }
+    }
+  },
+  "definitions": {
+    "gameEntry": {
+      "type": "object",
+      "required": ["id", "route", "wave"],
+      "properties": {
+        "id": { "type": "string" },
+        "route": { "type": "string" },
+        "wave": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "rebuildTier": { "enum": ["S-presentation", "S-world", "F"] },
+        "artDirection": { "type": "string" },
+        "requiredConditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["shot", "expr", "deadlineMs"],
+            "properties": {
+              "shot": { "type": "string" },
+              "expr": { "type": "string" },
+              "deadlineMs": { "type": "number" }
+            }
+          }
+        },
+        "canvasBlankCheck": {
+          "type": "object",
+          "required": ["maxDarkFraction", "minDistinctColors"],
+          "properties": {
+            "maxDarkFraction": { "type": "number", "maximum": 0.97 },
+            "minDistinctColors": { "type": "integer" },
+            "reason": { "type": "string" }
+          }
+        },
+        "acceptance": { "type": "object" },
+        "budgets": { "type": "object" },
+        "routeHealthQualityGate": {
+          "type": "object",
+          "properties": {
+            "status": { "enum": ["unreviewed", "in-rebuild", "rejected", "accepted", "withdrawn"] },
+            "scorecard": { "type": "string" },
+            "acceptedAt": { "type": "string" },
+            "acceptedBy": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "qrFlags": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    }
+  }
+}

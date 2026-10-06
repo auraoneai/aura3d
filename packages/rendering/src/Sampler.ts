@@ -14,6 +14,12 @@ export interface SamplerDescriptor {
   readonly addressU?: TextureAddressMode;
   readonly addressV?: TextureAddressMode;
   readonly maxAnisotropy?: number;
+  /** C-12 (PR 0a): depth-compare sampler mode (PRD 02 shadow compare samplers). */
+  readonly compare?: "less-equal" | "greater-equal";
+  /** C-12 (PR 0a): third axis address mode. */
+  readonly addressW?: TextureAddressMode;
+  /** C-12 (PR 0a): mirror-once address mode for U/V/W when the backend supports it. */
+  readonly mirror?: boolean;
 }
 
 export class Sampler {
