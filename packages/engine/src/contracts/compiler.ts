@@ -81,7 +81,7 @@ export const DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: 
   "animation.restPoseReset": { reason: "C-19: rest-pose reset is PRD 06's", ownerPrd: 6 }
 };
 
-export interface OptionCoverageRow { readonly builder: string; readonly field: string; readonly probeValueA: unknown; readonly probeValueB: unknown; readonly ownerPrd: number; }
+export interface OptionCoverageRow { readonly builder: string; readonly field: string; readonly probeValueA: unknown; readonly probeValueB: unknown; readonly ownerPrd: number; readonly beforeOptions?: readonly string[]; }
 
 const optionCoverage = new Map<string, OptionCoverageRow>();
 

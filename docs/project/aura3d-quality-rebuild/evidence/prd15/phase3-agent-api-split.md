@@ -136,3 +136,81 @@ zero-enforced sweep of the real tree.
   (`qr-prd15-captures.yml` is Phase-5 work); unit + tsc are the local evidence.
 - Full vitest suite (`tests/unit` beyond `engine/`) — same artifact-dependent
   classes; engine lane run above is the relevant slice.
+
+## T3.10 — instancing size fix (commit 3e599b0c)
+
+`createProductionInstanceTransforms` localNode now carries `size: node.size`
+(unflagged correctness fix — declared, not flag-gated). Unit test
+`tests/qr/prd15/compiler/primitives.test.ts` asserts the diagonal
+`[1,4,1]`/`[1,2,1]` per-instance scales and ±2 translations; benchmark
+scene 16 (`16-instancing`) re-baselined via `[qr-gitlab:benchmark local=true]`.
+
+## T3.11 — real C-36 handlers + compile/update (commit 7f6c0915)
+
+`compiler/handlers.ts`: `NodeKindHandlers` mapped type over the C-36
+`AuraNodeKindMap` keys (missing key fails compilation — `@ts-expect-error`
+type test in `tests/qr/prd15/compiler/handlers.test.ts`), `bridgeCompiled<K>`,
+the 18-kind `nodeHandlers` table, `isKnownNodeKind`, and
+`resolveNodeHandler` (a registered lane handler wins iff `!== default` and
+its flag is on or unset).
+
+`compiler/compileScene.ts`: `compileScene`/`updateCompiledScene` wrap the
+moved bridge functions behind `A3D_QR_COMPILER`; `compiler/renderer.ts` calls
+`compileScene` once at mount and `updateCompiledScene` per frame
+(`flagsOn` leaves entry assembly empty when the flag is on — the compiled
+entries own the render items). `lanes/prd15.ts` provides the slot with the
+real impl (`compilerSlot.provide(realCompilerImpl)` on engine-root import).
+
+Cycle fix: `asRuntimeCompiled`/`bindRuntimeCompiled` live in
+`contracts/compiler.ts` (WeakMap<CompiledScene, RuntimeCompiledSceneInternals>)
+so registry/renderer consume internals with no import edge into the impl —
+the 105-member SCC went back to the allowlisted 104.
+
+C-36 conformance: `tests/unit/contracts/C-36-compiler.test.ts` 8/8 — stub,
+flag-on real compile+update, mixed-state no-op, unknown-kind degrade /
+strict-throw, registered-handler precedence, real-vs-legacy deep equality.
+
+## T3.12 — per-node versions + C-37 add/remove + item reuse (commit 58686d65)
+
+`AuraRuntimeNodeHandle.version` bumps on every mutator (position/rotation/
+scale/visible setters, setMaterial, play, setAnimation(+Pose),
+setImportedAssetEvidence, morph setters, attachEffect).
+`MutableAuraRuntimeNodeRegistry` gained `version`, `add`, `remove`,
+`configure`, `attachCompiled`/`detachCompiled`; flag-on + attached compiled →
+`compiled.addSubtree`/`removeSubtree` (no remount); flag-off → snapshot append
++ `setScene` remount + `RUNTIME_ADD_REMOUNT` diagnostic. `CompiledSceneImpl`
+implements `addSubtree` (parent-group transform via `findNodeByRuntimeId`,
+typed-GLB actors with `runtimeIdStillLive` guard) and `removeSubtree`
+(disposes entries/actors/handlers, clears `itemCache`).
+`updateCompiledScene` reuses the previous `RenderItem` when the node version
+is unchanged (`primitive-N:`/`actor-N:` label → runtime id → `runtime.get(id).version`).
+
+C-37 unit: `tests/unit/contracts/C-37-runtime-nodes.test.ts` 4/4 — version
+increments, flag-on subtree add/remove (no remount), flag-off remount +
+diagnostic, 500 static + 1 mover → `frame2.length - 1` identical item refs.
+
+## T3.13 — option coverage + diagnostic-only (commit pending)
+
+`tools/arch-gates/rules/option-coverage.ts --scaffold` walks every nodes/
+builder (leaf namespaces, `as const` composites, spreads resolved through
+`getAliasedSymbol`, last-param options inference, `beforeOptions` positional
+descriptors) and emits `agent-api/compiler/optionCoverage.ts` — 2,818 rows /
+100 builders, packed 4-per-line for the max-file-lines gate.
+`compiler/diagnosticOnly.prd15.ts` is this lane's sweepable claim file
+(currently empty — see result); the `option-coverage` gate rule lists its
+stale entries when a row (scaffold or an owner's `registerOptionCoverage`
+literal anywhere in agent-api) covers them — contract seeds in
+DIAGNOSTIC_ONLY_FIELDS are curated and not swept.
+
+`tests/qr/prd15/compiler/optionCoverage.test.ts` compiles
+`scene().add(builder(probeA|probeB))` through the real C-36 impl per row and
+asserts `deepDiff` over the render-facing state (`lastInput`, contributions,
+handled nodes, entries, features, degradations — `source`/`liveNodes`
+excluded as input-verbatim carriers), unless the row's `${builder}.${field}`
+matches the merged diagnostic map (exact, `${builder}.*`, `*.field`, or
+`domain.field` for transform/light/model domains).
+
+**Result: 0 uncovered of 2,818** — every scaffolded option field provably
+lands in compiled state (probe defaults fill required fields:
+transforms/levels/geometry/colors overrides). `diagnosticOnly.prd15.ts`
+therefore stays empty; it exists for the daily sweep when owners drop fields.

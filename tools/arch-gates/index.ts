@@ -16,6 +16,7 @@ import { generateResolutionMaps } from "../generate-resolution-maps/index";
 import { checkLayering } from "./rules/layering";
 import { checkMaxFileLines } from "./rules/maxFileLines";
 import { checkNoCycles } from "./rules/noCycles";
+import { optionCoverageRule, scaffoldOptionCoverage } from "./rules/option-coverage";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -141,10 +142,11 @@ export function runGates(root: string): GateReport {
     "no-cross-package-relative": { findings: checkNoCrossPackageRelative(root) },
     layering: { findings: checkLayering(root) },
     "no-cycles": { findings: checkNoCycles(root) },
-    "max-file-lines": { findings: checkMaxFileLines(root) }
+    "max-file-lines": { findings: checkMaxFileLines(root) },
+    "option-coverage": { findings: optionCoverageRule([], root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 6, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 7, findings } };
 }
 
 function main(): void {
@@ -152,6 +154,11 @@ function main(): void {
   const strict = args.includes("--strict");
   const outIndex = args.indexOf("--out");
   const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
+
+  if (args.includes("--scaffold")) {
+    scaffoldOptionCoverage(REPO_ROOT);
+    return;
+  }
 
   const report = runGates(REPO_ROOT);
   const enforcedCount = Object.values(report.rules).reduce(
