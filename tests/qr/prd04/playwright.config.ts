@@ -12,7 +12,7 @@ const baseLaunch = (baseConfig.use?.launchOptions ?? {}) as { args?: string[] };
 export default defineConfig({
   ...baseConfig,
   testDir: ".",
-  testMatch: ["tests/qr/prd04/browser/**/*.spec.ts"],
+  testMatch: ["browser/**/*.spec.ts"],
   timeout: 180_000,
   use: {
     ...baseConfig.use,
