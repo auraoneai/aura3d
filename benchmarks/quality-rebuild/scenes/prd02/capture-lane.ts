@@ -15,7 +15,7 @@ import { createServer, type Server } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { execSync } from "node:child_process";
-import { chromium, type Browser } from "playwright";
+import { chromium, type Browser } from "@playwright/test";
 import { getPrd02Spec, prd02SceneIds } from "./specs";
 
 interface Args {
