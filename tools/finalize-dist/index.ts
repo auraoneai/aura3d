@@ -20,6 +20,13 @@ const publicPackageNames = packageNames.filter((packageName) => {
 
 mkdirSync(rootDist, { recursive: true });
 
+// Q-12-5 bridge: `.github/workflows/build.yml` (lane-12-owned) still asserts
+// `dist/index.{js,d.ts}` exist. Keep emitting the root aggregate as a
+// build-only artifact — it is NOT listed in package.json#files (T1.7 removed
+// it), so nothing publishes it — until the workflow assertion is deleted.
+const rootIndexLines: string[] = [];
+const rootTypeLines: string[] = [];
+
 for (const packageName of packageNames) {
   const source = join(rootDist, "packages", packageName, "src");
   const packageSource = join(packageRoot, packageName, "src");
@@ -37,7 +44,10 @@ for (const packageName of packageNames) {
   copyStaticRuntimeAssets(packageSource, localPackageDist);
   rewriteJavaScriptSpecifiers(localPackageDist, localPackageDist, false);
 
-  if (!publicPackageNames.includes(packageName) && !rootPackageSurfacePackages.has(packageName)) {
+  if (publicPackageNames.includes(packageName)) {
+    rootIndexLines.push(`export * from "./${packageName}/index.js";`);
+    rootTypeLines.push(`export * from "./${packageName}/index.js";`);
+  } else if (!rootPackageSurfacePackages.has(packageName)) {
     rmSync(rootPackageDist, { recursive: true, force: true });
   }
 }
@@ -52,6 +62,9 @@ for (const packageName of packageNames) {
     rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   }
 }
+
+writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
+writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 
 console.log(`Finalized dist exports for ${packageNames.length} packages.`);
 
