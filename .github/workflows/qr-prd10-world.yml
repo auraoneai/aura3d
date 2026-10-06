@@ -91,20 +91,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh workflow run quality-rebuild-capture.yml \
+            -R "${GITHUB_REPOSITORY}" \
             --ref "$GITHUB_REF_NAME" \
             -f qr_flags=world \
             -f viewports=1280x720 || echo "dispatch not authorized on this ref"
           sleep 3
-          run_id=$(gh run list --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
           echo "### capture (world) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
       - name: Dispatch quality-rebuild-capture (qr_flags=none)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh workflow run quality-rebuild-capture.yml \
+            -R "${GITHUB_REPOSITORY}" \
             --ref "$GITHUB_REF_NAME" \
             -f qr_flags=none \
             -f viewports=1280x720 || echo "dispatch not authorized on this ref"
           sleep 3
-          run_id=$(gh run list --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+          run_id=$(gh run list -R "${GITHUB_REPOSITORY}" --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
           echo "### capture (none) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
