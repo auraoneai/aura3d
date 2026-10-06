@@ -47,7 +47,12 @@ Unit gate: `tests/unit/contracts/impl/prd02-phase3.test.ts` (17 tests, all green
 - **`forward/Lighting.ts` flag path**: shadow strength `1.0` (not `0.65`) via
   `prd02ShadowStrengthDefault`; `receiveShadow === false` → `u_*ShadowMapEnabled`
   0 / strength 0. Ambient × `1/π` via `ambientToExitRadiance` in
-  `LightUniforms.ts`.
+  `LightUniforms.ts`. Clustering threshold flag-gated at `AURA_LIGHTS_MAX` (32)
+  vs legacy 16 in `resolveForwardClusteredLighting`; `auraLightsUniformBlock`
+  produces `{u_lightData, u_prd02LightCount}` for chunk programs (uniform
+  declared in `lighting_punctual.glsl.ts`) and records `lightsEvaluated`/
+  `lightsDroppedByCap` into a sink the C-31 `prd02.lighting` diagnostics
+  section reads.
 - **`AuraLights` std140 packer** (`LightUniforms.ts`): 32 × 6 vec4, kind codes
   0dir/1pt/2spot/3rect, cos-angle + decay packing, rect basis columns; returns
   `{lightsEvaluated, lightsDroppedByCap, droppedNames}`.
@@ -80,9 +85,9 @@ Unit gate: `tests/unit/contracts/impl/prd02-phase3.test.ts` (17 tests, all green
   ChunkHarness `prd02-13` B/R ≥ 1.05 — not yet written/run.
 - `readPixelsCalls` delta = 0 after frame 2 and Long-Task > 50 ms checks gate on
   C-28 counters (Phase 4 first item) and a browser lane run.
-- `forward/Lighting.ts` clustering > 32 wiring + `lightsEvaluated`/
-  `lightsDroppedByCap` plumbing into the C-31 `prd02.lighting` section; flag-off
-  byte-identical uniform test.
+- `forward/Lighting.ts` flag-off byte-identical uniform test across the 18
+  base snapshots (device mock) — the packer/threshold/counter wiring itself is
+  landed and unit-tested.
 - Native `RGB9_E5` cube upload (Q-06-1 → to:prd11, logged in qr-requests.md).
 - `setRendererQrFlags` is never called from `createAuraApp` — rendering-layer
   flag checks only see the flag in tests until lane 15 wires it (qr-request).

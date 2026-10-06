@@ -75,6 +75,7 @@ import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, ty
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
+import { auraLightsCounters } from "../../../rendering/src/LightUniforms.js";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
 import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
@@ -233,12 +234,13 @@ registerDiagnosticsSection({
   collect(app) {
     const lighting = (app as unknown as AppLike).lighting;
     const diag = lighting?.diagnostics();
+    const counters = auraLightsCounters();
     return {
       model: prd02LightingOn() ? readLightingModelFromUrl().model ?? "physical" : "legacy-3.0",
       environment: diag?.environment ?? null,
-      lightsEvaluated: null,
+      lightsEvaluated: counters?.lightsEvaluated ?? null,
       lightsCulledByRange: null,
-      lightsDroppedByCap: null
+      lightsDroppedByCap: counters?.lightsDroppedByCap ?? null
     };
   }
 });

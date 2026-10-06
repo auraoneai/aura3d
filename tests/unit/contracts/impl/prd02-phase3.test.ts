@@ -262,3 +262,37 @@ describe("legacy equirect bridge (PRD-02 Phase 3, E5 fix)", () => {
     expect(lighting?.environmentMapTexture).toBeUndefined();
   });
 });
+
+describe("AuraLights uniform block + C-31 counters + >32 clustering (PRD-02 §6.3)", () => {
+  const mkLight = (kind: AuraLightData["kind"] = "point"): AuraLightData => ({
+    kind, position: [0, 1, 0], direction: [0, -1, 0], color: [1, 1, 1],
+    intensity: 1, range: 10, spotAngle: 0.5, penumbra: 0.2, decay: 2
+  });
+
+  it("auraLightsUniformBlock emits u_lightData/u_prd02LightCount and records counters", async () => {
+    const { auraLightsUniformBlock, auraLightsCounters, AURA_LIGHTS_MAX } =
+      await import("../../../../packages/rendering/src/LightUniforms");
+    const lights = Array.from({ length: AURA_LIGHTS_MAX + 4 }, () => mkLight());
+    const { uniforms, lightCount } = auraLightsUniformBlock(lights);
+    expect(lightCount).toBe(AURA_LIGHTS_MAX);
+    expect((uniforms.u_lightData as Float32Array).length).toBe(AURA_LIGHTS_MAX * 6 * 4);
+    expect(uniforms.u_prd02LightCount).toBe(AURA_LIGHTS_MAX);
+    const counters = auraLightsCounters();
+    expect(counters?.lightsEvaluated).toBe(AURA_LIGHTS_MAX + 4);
+    expect(counters?.lightsDroppedByCap).toBe(4);
+  });
+
+  it("clustering engages above 32 under the flag, above 16 without", async () => {
+    const { resolveForwardClusteredLighting } =
+      await import("../../../../packages/rendering/src/forward/Lighting");
+    const vp = new Float32Array(16); vp[0] = vp[5] = vp[10] = vp[15] = 1;
+    const at = (n: number) => Array.from({ length: n }, () =>
+      ({ kind: "point", position: [0, 0, 0], direction: [0, -1, 0], color: [1, 1, 1], intensity: 1, range: 10 } as never));
+    setRendererQrFlags(BASE);
+    expect(resolveForwardClusteredLighting(at(17), 64, 64, vp)).not.toBeNull();
+    expect(resolveForwardClusteredLighting(at(16), 64, 64, vp)).toBeNull();
+    setRendererQrFlags(LIGHTING_ON);
+    expect(resolveForwardClusteredLighting(at(17), 64, 64, vp)).toBeNull();
+    expect(resolveForwardClusteredLighting(at(33), 64, 64, vp)).not.toBeNull();
+  });
+});

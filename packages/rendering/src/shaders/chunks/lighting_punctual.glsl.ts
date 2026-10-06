@@ -18,6 +18,8 @@ export const LIGHTING_PUNCTUAL_CHUNK_GLSL = /* glsl */ `
 #define A3D_MAX_LIGHTS 32
 #endif
 uniform int u_prd02LightCount;
+// AuraLights std140 block, flattened for WebGL2 (PRD-02 §8.1): 6 vec4 per light.
+uniform vec4 u_lightData[A3D_MAX_LIGHTS * 6];
 
 // Frostbite range window — only applies when range > 0.
 float a3d_rangeWindow(float d, float range) {

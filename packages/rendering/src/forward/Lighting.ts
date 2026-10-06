@@ -3,6 +3,7 @@
 import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { AURA_LIGHTS_MAX } from "../LightUniforms.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { createShadowFilterKernel, type ShadowFilterKernel } from "../ShadowMap.js";
@@ -476,7 +477,11 @@ export function resolveForwardClusteredLighting(
   height: number,
   cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined
 ): ClusteredForwardLightingResources | null {
-  return (lights?.length ?? 0) > 16
+  // PRD-02 §6.3: under A3D_QR_LIGHTING the AuraLights std140 block packs 32
+  // lights directly, so clustering only engages above 32. Legacy stays at 16
+  // (byte-identical flag-off behaviour).
+  const threshold = rendererQrFlags().on("A3D_QR_LIGHTING") ? AURA_LIGHTS_MAX : 16;
+  return (lights?.length ?? 0) > threshold
     ? createClusteredForwardLighting(
         lights ?? [],
         width,

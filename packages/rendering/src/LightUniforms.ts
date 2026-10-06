@@ -316,3 +316,34 @@ function kindToFloat(kind: CollectedLight["kind"]): number {
       return 3;
   }
 }
+
+/** C-31 sink: counters of the most recent pack (null until the flag path runs). */
+let auraLightsLastCounters: { lightsEvaluated: number; lightsDroppedByCap: number } | null = null;
+
+/** Read the counters reported by the last `packAuraLightsStd140` call (C-31 `prd02.lighting` section). */
+export function auraLightsCounters(): { lightsEvaluated: number; lightsDroppedByCap: number } | null {
+  return auraLightsLastCounters;
+}
+
+/**
+ * Chunk-facing AuraLights uniform block (PRD-02 §6.3/§8.1): packs the lights
+ * and returns `{u_lightData, u_prd02LightCount}` matching the
+ * `a3d_prd02_lighting_punctual` chunk declarations. Side effect: records
+ * `lightsEvaluated`/`lightsDroppedByCap` into the C-31 sink.
+ */
+export function auraLightsUniformBlock(
+  lights: readonly AuraLightData[]
+): { uniforms: Record<string, unknown>; lightCount: number } {
+  const packed = packAuraLightsStd140(lights);
+  auraLightsLastCounters = {
+    lightsEvaluated: packed.lightsEvaluated,
+    lightsDroppedByCap: packed.lightsDroppedByCap
+  };
+  return {
+    uniforms: {
+      u_lightData: packed.data,
+      u_prd02LightCount: packed.lightCount
+    },
+    lightCount: packed.lightCount
+  };
+}
