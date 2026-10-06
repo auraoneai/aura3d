@@ -27,7 +27,7 @@
     },
     {
       "gameId": "showcase-orbital-defense",
-      "commit": "91eb8d24837736fdd69d5a44de4d7cb3056f1f42",
+      "commit": "109b90967a4eecfac6045d94e19a10a23429a474",
       "pr": 238,
       "phase": "T2-v2-shell",
       "requestedAt": "2026-10-06",
