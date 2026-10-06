@@ -34,7 +34,7 @@ const OFF = resolveQrFlags({ env: {} });
 
 function device(): MockRenderDevice {
   const d = new MockRenderDevice();
-  (d.info as { capabilities: string[] }).capabilities = [...d.info.capabilities, "hdr-render-targets"];
+  (d.info as unknown as { capabilities: import("../../../../packages/rendering/src/RenderDevice").RenderDeviceCapability[] }).capabilities = [...(d.info.capabilities ?? []), "hdr-render-targets"];
   return d;
 }
 
