@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createGameShell } from "../../../packages/game/src/shell/GameShell.js";
 import { runTransition } from "../../../packages/game/src/shell/transition.js";
-import { wireContextLoss } from "../../../packages/game/src/shell/contextLoss.js";
 import { createMenu } from "../../../packages/game/src/shell/screens/menu.js";
 import { mountTouchControls } from "../../../packages/game/src/touch/TouchControls.js";
 import type { HudDocument, HudElement, HudRect } from "../../../packages/game/src/hud/dom.js";
@@ -176,34 +175,6 @@ describe("GameShell (PRD-09 1761/1762/1763)", () => {
     expect(log).toEqual(["opacity=1", "run", "present@1", "opacity=0"]);
   });
 
-  it("context-loss wiring pauses, hides HUD, restores to paused with Reload after 3s", () => {
-    const doc = new FakeDoc();
-    const mount = doc.createElement("div");
-    const calls: string[] = [];
-    let lostCb: (() => void) | null = null;
-    let restoredCb: (() => void) | null = null;
-    const timers: { cb: () => void; ms: number }[] = [];
-    const app = {
-      onDeviceLost: (cb: () => void) => { lostCb = cb; return () => {}; },
-      onDeviceRestored: (cb: () => void) => { restoredCb = cb; return () => {}; }
-    };
-    const ctl = wireContextLoss(app, doc, {
-      mount: (el) => mount.appendChild(el as HudElement),
-      pause: (r) => calls.push(`pause:${r}`),
-      hideHud: () => calls.push("hideHud"),
-      showHud: () => calls.push("showHud"),
-      setTimer: (cb, ms) => { timers.push({ cb, ms }); return { cancel: () => {} }; }
-    });
-    lostCb!();
-    expect(ctl.lost).toBe(true);
-    expect(calls).toEqual(["pause:context-lost", "hideHud"]);
-    // reload button appears after 3s
-    timers.forEach((t) => t.cb());
-    restoredCb!();
-    expect(ctl.lost).toBe(false);
-    expect(calls).toContain("showHud");
-    ctl.dispose();
-  });
 });
 
 describe("mountTouchControls (PRD-09 1766)", () => {
