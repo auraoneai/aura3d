@@ -2805,4 +2805,9 @@ column cites a passing test or a capture run id.
 | F-03-03 | 03 | Bloom threshold is linear HDR, default 1.0; do not author < 1 on lit scenes (PRD 03 §10). | `effects.bloom` | 2026-10-06 | — | proposed |
 | F-03-04 | 03 | Emissive ≥ 2.5 to glow under `neon-night` (PRD 03 §10). | `material.emissiveIntensity` | 2026-10-06 | — | proposed |
 | F-03-05 | 03 | Do not fix bloom blobs by lowering intensity; raise threshold or lower emissive (PRD 03 §10). | `effects.bloom` | 2026-10-06 | — | proposed |
+| F-03-06 | 03 | Flag-on `toneMapping.exposure = output.exposure × colorGrade.exposure`; `output.toneMapping: "none"` disables the pass (§6.4). | `output.exposure` | 2026-10-06 | PR B | landed |
+| F-03-07 | 03 | Tier AA (§7.2): `antiAlias` without authored `mode` = `auto` → C-27 row; never FXAA on a multisampled target; MSAA pixel-guard 2.4 Mpx → smaa; reason in `post.skipped`. | `effects.antiAlias` | 2026-10-06 | PR B | landed |
+| F-03-08 | 03 | CCR-03-1: `RendererPostProcessOptions.depthRange {near,far,projection?}` carries `resolveCameraClipping` into `presentLdrPostprocess` (near/far only at the device boundary). | `postprocess.depthRange` | 2026-10-06 | PR B | landed |
+| F-03-09 | 03 | CCR-03-3: `AuraEffectNode.postAuthored` = authored option keys at factory time; inert flag-off. | `postAuthored` | 2026-10-06 | PR B | landed |
+| F-03-10 | 03 | Flag-on FXAA = verbatim three r185 `FXAAShader` port + `triangularDither` (PCG2D) as a present-split finalize pass (`fxaa.variant:"r185"`); flag-off keeps `u_hasFxaa` inline path. | `effects.antiAlias` | 2026-10-06 | PR B | landed |
 

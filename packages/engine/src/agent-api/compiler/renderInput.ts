@@ -173,8 +173,8 @@ export function createProductionRuntimeRendererInput(
     // The production runtime owns the pixel-backed HDR target and pass chain for
     // routes that request effects. The diagnostics are device-observed, so a
     // compositor failure is reported as fallback rather than claimed as a pass.
-    // CCR-03-1: `attach.canvas` keys the submitted-record store so a second
-    // app's compile never overwrites the first app's post diagnostics.
+    // CCR-03-1: `attach.canvas` keys the submitted record/context stores so a
+    // second app's compile never overwrites the first's post diagnostics.
     postprocess: compatibility?.source.postprocess ?? createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, { canvas }),
     shadow: { ...createProductionRuntimeShadowOptions(snapshot, collectedLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
     environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
