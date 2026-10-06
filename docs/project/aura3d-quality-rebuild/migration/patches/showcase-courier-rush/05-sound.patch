@@ -1,0 +1,2478 @@
+From 5d8e5349fd7d6044dcb198c3658154cb7bef9be3 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 14:33:43 +0000
+Subject: [PATCH] migration(showcase-courier-rush) step 5: courier-audio.ts ->
+ src/sound.ts
+
+Cue map points at game-sfx-core ids; the registered-but-never-played
+engine cue becomes a real sound.engine() loop over the van layer set
+(layer0/1/2 on-load + off-load derivations) with setRpm from van speed
+and setLoad from drive throttle every frame, and ambience.city-night
+starts as the shift bed on first unlock. Deletes courier-audio.ts,
+build-sfx.mjs, register-sfx.mjs, the generated WAVs, the courier*Sfx
+typed-asset registrations and their public copies; route-health keeps
+the same mounted evidence keys.
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../assets/sfx/ambientCity.wav                |    3 -
+ .../assets/sfx/dispatchBlip.wav               |    3 -
+ .../assets/sfx/earlyBonus.wav                 |    3 -
+ .../assets/sfx/engineLoop.wav                 |    3 -
+ .../assets/sfx/hornNear.wav                   |    3 -
+ .../assets/sfx/parcelDrop.wav                 |    3 -
+ .../assets/sfx/parcelPickup.wav               |    3 -
+ .../assets/sfx/shiftClear.wav                 |    3 -
+ .../assets/sfx/shiftFail.wav                  |    3 -
+ .../assets/sfx/strikeHit.wav                  |    3 -
+ apps/showcase-courier-rush/package.json       |    5 +-
+ .../scripts/build-sfx.mjs                     |  306 -----
+ .../scripts/register-sfx.mjs                  |   40 -
+ .../scripts/write-route-health.mjs            |    2 +-
+ .../src/courier-audio.ts                      |  217 ---
+ apps/showcase-courier-rush/src/main.ts        |   20 +-
+ apps/showcase-courier-rush/src/sound.ts       |  144 ++
+ .../courierAmbientCitySfx.995b1230.wav        |    3 -
+ .../courierAmbientCitySfx.thumb.svg           |    1 -
+ .../courierDispatchBlipSfx.8f47ba51.wav       |    3 -
+ .../courierDispatchBlipSfx.thumb.svg          |    1 -
+ .../courierEarlyBonusSfx.bd2aa402.wav         |    3 -
+ .../courierEarlyBonusSfx.thumb.svg            |    1 -
+ .../aura-assets/courierEngineSfx.0cc87f79.wav |    3 -
+ .../aura-assets/courierEngineSfx.b84e05b6.wav |    3 -
+ public/aura-assets/courierEngineSfx.thumb.svg |    1 -
+ .../courierHornNearSfx.8271dced.wav           |    3 -
+ .../aura-assets/courierHornNearSfx.thumb.svg  |    1 -
+ .../courierParcelDropSfx.69469dfa.wav         |    3 -
+ .../courierParcelDropSfx.thumb.svg            |    1 -
+ .../courierParcelPickupSfx.86c6b345.wav       |    3 -
+ .../courierParcelPickupSfx.thumb.svg          |    1 -
+ .../courierShiftClearSfx.d6d76276.wav         |    3 -
+ .../courierShiftClearSfx.thumb.svg            |    1 -
+ .../courierShiftFailSfx.b9378836.wav          |    3 -
+ .../aura-assets/courierShiftFailSfx.thumb.svg |    1 -
+ .../courierStrikeHitSfx.c75e32f0.wav          |    3 -
+ .../aura-assets/courierStrikeHitSfx.thumb.svg |    1 -
+ src/aura-assets.ts                            | 1224 +++--------------
+ 39 files changed, 340 insertions(+), 1691 deletions(-)
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/ambientCity.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/engineLoop.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/hornNear.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/parcelDrop.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/parcelPickup.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/shiftClear.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/shiftFail.wav
+ delete mode 100644 apps/showcase-courier-rush/assets/sfx/strikeHit.wav
+ delete mode 100644 apps/showcase-courier-rush/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-courier-rush/scripts/register-sfx.mjs
+ delete mode 100644 apps/showcase-courier-rush/src/courier-audio.ts
+ create mode 100644 apps/showcase-courier-rush/src/sound.ts
+ delete mode 100644 public/aura-assets/courierAmbientCitySfx.995b1230.wav
+ delete mode 100644 public/aura-assets/courierAmbientCitySfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierDispatchBlipSfx.8f47ba51.wav
+ delete mode 100644 public/aura-assets/courierDispatchBlipSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierEarlyBonusSfx.bd2aa402.wav
+ delete mode 100644 public/aura-assets/courierEarlyBonusSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierEngineSfx.0cc87f79.wav
+ delete mode 100644 public/aura-assets/courierEngineSfx.b84e05b6.wav
+ delete mode 100644 public/aura-assets/courierEngineSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierHornNearSfx.8271dced.wav
+ delete mode 100644 public/aura-assets/courierHornNearSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierParcelDropSfx.69469dfa.wav
+ delete mode 100644 public/aura-assets/courierParcelDropSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierParcelPickupSfx.86c6b345.wav
+ delete mode 100644 public/aura-assets/courierParcelPickupSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierShiftClearSfx.d6d76276.wav
+ delete mode 100644 public/aura-assets/courierShiftClearSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierShiftFailSfx.b9378836.wav
+ delete mode 100644 public/aura-assets/courierShiftFailSfx.thumb.svg
+ delete mode 100644 public/aura-assets/courierStrikeHitSfx.c75e32f0.wav
+ delete mode 100644 public/aura-assets/courierStrikeHitSfx.thumb.svg
+
+diff --git a/apps/showcase-courier-rush/assets/sfx/ambientCity.wav b/apps/showcase-courier-rush/assets/sfx/ambientCity.wav
+deleted file mode 100644
+index ef5dbc18..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/ambientCity.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:995b1230697415d1aa56abf95135d10f27d9b778709bed34caa78f36205bb024
+-size 176444
+diff --git a/apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav b/apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
+deleted file mode 100644
+index 0bdb766e..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:8f47ba514fcbac57761264a77c2a617d4a0fafaf51afde40fe3d40ebef97c09e
+-size 24740
+diff --git a/apps/showcase-courier-rush/assets/sfx/earlyBonus.wav b/apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
+deleted file mode 100644
+index e3d0a24f..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:bd2aa40241b19813225b02aa787ce5ed717ac0217ed0a83f6cdee3349e7706e6
+-size 27386
+diff --git a/apps/showcase-courier-rush/assets/sfx/engineLoop.wav b/apps/showcase-courier-rush/assets/sfx/engineLoop.wav
+deleted file mode 100644
+index 84d3cc12..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/engineLoop.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0cc87f79f6f680bcae5f289ddc94d639a84a62626880cfcdc0c4125b18bf8fa7
+-size 123522
+diff --git a/apps/showcase-courier-rush/assets/sfx/hornNear.wav b/apps/showcase-courier-rush/assets/sfx/hornNear.wav
+deleted file mode 100644
+index c3379740..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/hornNear.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:8271dceda2c48f819789d53a1c83da4ff59382d67baf018397672b9c9b11f4bc
+-size 35324
+diff --git a/apps/showcase-courier-rush/assets/sfx/parcelDrop.wav b/apps/showcase-courier-rush/assets/sfx/parcelDrop.wav
+deleted file mode 100644
+index 24a32d14..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/parcelDrop.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:69469dfaf7854a98c382abd52f7f199a4e781cb5a44ca8fe7ff7f4da768af02f
+-size 44144
+diff --git a/apps/showcase-courier-rush/assets/sfx/parcelPickup.wav b/apps/showcase-courier-rush/assets/sfx/parcelPickup.wav
+deleted file mode 100644
+index 7055a156..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/parcelPickup.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:86c6b345a32b73c02f9b9304434baab1e465b75d6e2d217dd29eb8795feef740
+-size 28268
+diff --git a/apps/showcase-courier-rush/assets/sfx/shiftClear.wav b/apps/showcase-courier-rush/assets/sfx/shiftClear.wav
+deleted file mode 100644
+index 398ba4a5..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/shiftClear.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:d6d76276eefcda93c2fe15852f5722f1b5e82223061c19cce0f1c306d46128dc
+-size 77660
+diff --git a/apps/showcase-courier-rush/assets/sfx/shiftFail.wav b/apps/showcase-courier-rush/assets/sfx/shiftFail.wav
+deleted file mode 100644
+index 9d3b2170..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/shiftFail.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:b93788363910dd46585c68280e825e0e78fb0a0ed8723c3f861878ca9827ce1b
+-size 86480
+diff --git a/apps/showcase-courier-rush/assets/sfx/strikeHit.wav b/apps/showcase-courier-rush/assets/sfx/strikeHit.wav
+deleted file mode 100644
+index 913bc087..00000000
+--- a/apps/showcase-courier-rush/assets/sfx/strikeHit.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:c75e32f00e819d03e3c251128a6e8e88e3e3492db6f12e7f453c8a4be182fd4a
+-size 33560
+diff --git a/apps/showcase-courier-rush/package.json b/apps/showcase-courier-rush/package.json
+index 18071c15..c0ec2ad2 100644
+--- a/apps/showcase-courier-rush/package.json
++++ b/apps/showcase-courier-rush/package.json
+@@ -9,14 +9,13 @@
+     "typecheck": "tsc -p tsconfig.json --noEmit",
+     "build": "vite build",
+     "preview": "vite preview --host 127.0.0.1",
+-    "build-sfx": "node scripts/build-sfx.mjs",
+     "register:models": "node scripts/register-models.mjs",
+-    "register:sfx": "node scripts/register-sfx.mjs",
+     "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+     "evidence:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/audio": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-courier-rush/scripts/build-sfx.mjs b/apps/showcase-courier-rush/scripts/build-sfx.mjs
+deleted file mode 100644
+index 158142dc..00000000
+--- a/apps/showcase-courier-rush/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,306 +0,0 @@
+-/**
+- * Courier Rush SFX synth — generates original CC0 WAV cues entirely in-repo.
+- *
+- * No network downloads, no sampled material: every cue is synthesized from
+- * oscillators / filtered noise with a small committed generator so provenance is
+- * auditable (author "Aura3D synthesis", license CC0-1.0).
+- *
+- * Run from the repo root:  node apps/showcase-courier-rush/scripts/build-sfx.mjs
+- * Output: apps/showcase-courier-rush/assets/sfx/*.wav (16-bit PCM mono 44100 Hz)
+- *
+- * After generation, register each audio file with the CLI so it lands in the
+- * typed root asset map the route imports (`../../../src/aura-assets`), e.g.:
+- *   node packages/aura3d-cli/dist/cli.js assets add apps/showcase-courier-rush/assets/sfx/engineLoop.wav --name courierEngineSfx --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-courier-rush/scripts/build-sfx.mjs"
+- */
+-import { mkdirSync, writeFileSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/sfx");
+-const SAMPLE_RATE = 44100;
+-
+-// ---- waveform / DSP helpers -------------------------------------------------
+-function noiseBuffer(length) {
+-  const out = new Float32Array(length);
+-  let seed = 0x9e3779b9;
+-  for (let i = 0; i < length; i += 1) {
+-    // Deterministic LCG noise so regenerating the cue is byte-identical.
+-    seed = (seed * 1664525 + 1013904223) >>> 0;
+-    out[i] = ((seed / 0xffffffff) * 2 - 1);
+-  }
+-  return out;
+-}
+-
+-function envelope(length, attack, decay, total) {
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const start = Math.min(1, t / Math.max(0.0005, attack));
+-    const end = Math.pow(Math.max(0, 1 - t / total), decay);
+-    out[i] = start * end;
+-  }
+-  return out;
+-}
+-
+-/** One-pole low-pass. */
+-function lowpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let prev = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    prev = prev + alpha * (samples[i] - prev);
+-    out[i] = prev;
+-  }
+-  return out;
+-}
+-
+-/** One-pole high-pass. */
+-function highpass(samples, cutoff) {
+-  const rc = 1 / (2 * Math.PI * cutoff);
+-  const dt = 1 / SAMPLE_RATE;
+-  const alpha = dt / (rc + dt);
+-  let lp = 0;
+-  const out = new Float32Array(samples.length);
+-  for (let i = 0; i < samples.length; i += 1) {
+-    lp += alpha * (samples[i] - lp);
+-    out[i] = samples[i] - lp;
+-  }
+-  return out;
+-}
+-
+-/**
+- * Render a one-shot cue into a normalized mono buffer.
+- * tone: {wave, freqStart, freqEnd, amp, attack, decay, total} or array of stacked partials
+- * noise: {amp, attack, decay, total, hp?, lp?}
+- */
+-function renderCue({ tone, noise }) {
+-  const parts = (Array.isArray(tone) ? tone : tone ? [tone] : []);
+-  const totalSec = Math.max(
+-    ...parts.map((p) => p.total ?? 0),
+-    noise?.total ?? 0,
+-    0.1
+-  ) + 0.08;
+-  const length = Math.floor(totalSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (const part of parts) {
+-    const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) {
+-      const t = i / SAMPLE_RATE;
+-      const progress = Math.min(1, t / total);
+-      const f = freqStart + (freqEnd - freqStart) * progress;
+-      const phase = 2 * Math.PI * f * t;
+-      let v = 0;
+-      if (wave === "sine") v = Math.sin(phase);
+-      else if (wave === "triangle") v = (2 / Math.PI) * Math.asin(Math.sin(phase));
+-      else if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-      else if (wave === "square") v = Math.sign(Math.sin(phase));
+-      else v = Math.sin(phase);
+-      out[i] += v * env[i] * amp;
+-    }
+-  }
+-  if (noise) {
+-    const { amp = 0.4, attack = 0.004, decay = 4, total = 0.16, hp = 0, lp = 0 } = noise;
+-    let raw = noiseBuffer(length);
+-    if (hp > 0) raw = highpass(raw, hp);
+-    if (lp > 0) raw = lowpass(raw, lp);
+-    const env = envelope(length, attack, decay, total);
+-    for (let i = 0; i < length; i += 1) out[i] += raw[i] * env[i] * amp;
+-  }
+-  // Normalize to a safe peak.
+-  let peak = 0;
+-  for (let i = 0; i < length; i += 1) peak = Math.max(peak, Math.abs(out[i]));
+-  if (peak > 0) {
+-    const gain = Math.min(1, 0.9 / peak);
+-    for (let i = 0; i < length; i += 1) out[i] *= gain;
+-  }
+-  return out;
+-}
+-
+-/** A looping pad — output is a full short loop (normalized, can be looped by the player). */
+-function loopCue(durationSec, wave, freqStart, freqEnd, wobble = 4) {
+-  const length = Math.floor(durationSec * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  const amp = 0.16;
+-  for (let i = 0; i < length; i += 1) {
+-    const t = i / SAMPLE_RATE;
+-    const progress = Math.min(1, t / durationSec);
+-    const f = freqStart + (freqEnd - freqStart) * progress + Math.sin(t * wobble) * wobble;
+-    const phase = 2 * Math.PI * f * t;
+-    let v = 0;
+-    if (wave === "sawtooth") v = 2 * (phase / (2 * Math.PI) - Math.floor(0.5 + phase / (2 * Math.PI)));
+-    else if (wave === "square") v = Math.sign(Math.sin(phase));
+-    else v = Math.sin(phase);
+-    out[i] = v * amp * (0.7 + 0.3 * Math.sin(t * 2));
+-  }
+-  // Fade the loop edges so replaying is click-free.
+-  const fade = Math.floor(0.02 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i += 1) {
+-    out[i] *= i / fade;
+-    out[length - 1 - i] *= i / fade;
+-  }
+-  return out;
+-}
+-
+-// ---- cue recipes ------------------------------------------------------------
+-/** Engine loop: smooth electric/hybrid delivery van purr (no harsh short wobbles). */
+-function engineLoop() {
+-  const duration = 6.0;
+-  const length = Math.floor(duration * SAMPLE_RATE);
+-  const out = new Float32Array(length);
+-  for (let i = 0; i < length; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const sub = Math.sin(2 * Math.PI * 48 * t) * 0.4;
+-    const hum = Math.sin(2 * Math.PI * 96 * t) * 0.2;
+-    const purr = Math.sin(2 * Math.PI * 144 * t) * 0.08;
+-    out[i] = (sub + hum + purr) * 0.2;
+-  }
+-  const fade = Math.floor(0.05 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+-  }
+-  return lowpass(out, 300);
+-}
+-
+-/** Dispatch blip: delicate two-tone radio confirmation chime. */
+-function dispatchBlip() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 660, freqEnd: 660, amp: 0.2, attack: 0.003, decay: 6, total: 0.08 },
+-    { wave: "sine", freqStart: 880, freqEnd: 880, amp: 0.22, attack: 0.08, decay: 6, total: 0.15 }
+-  ] });
+-}
+-
+-/** Parcel pickup: soft tactile cardboard tap + gentle settlement. */
+-function parcelPickup() {
+-  return renderCue({
+-    noise: { amp: 0.2, attack: 0.01, decay: 5, total: 0.15, hp: 400, lp: 2200 },
+-    tone: [
+-      { wave: "sine", freqStart: 180, freqEnd: 110, amp: 0.25, attack: 0.005, decay: 4, total: 0.16 }
+-    ]
+-  });
+-}
+-
+-/** Parcel drop: satisfying velvet delivery chime over a soft settlement. */
+-function parcelDrop() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 523.25, amp: 0.25, attack: 0.003, decay: 4.5, total: 0.16 },
+-      { wave: "sine", freqStart: 783.99, amp: 0.28, attack: 0.05, decay: 4.5, total: 0.28 },
+-      { wave: "sine", freqStart: 1046.5, amp: 0.2, attack: 0.1, decay: 5, total: 0.38 }
+-    ],
+-    noise: { amp: 0.08, attack: 0.003, decay: 6, total: 0.08, lp: 900 }
+-  });
+-}
+-
+-/** Early bonus: delicate crystal cascade chime. */
+-function earlyBonus() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 880, amp: 0.18, attack: 0.002, decay: 5.5, total: 0.1 },
+-    { wave: "sine", freqStart: 1174.7, amp: 0.18, attack: 0.05, decay: 5.5, total: 0.15 },
+-    { wave: "sine", freqStart: 1567.98, amp: 0.2, attack: 0.1, decay: 5.5, total: 0.22 }
+-  ] });
+-}
+-
+-/** Strike hit: dull cushioned bumper thud. */
+-function strikeHit() {
+-  return renderCue({
+-    tone: [
+-      { wave: "sine", freqStart: 130, freqEnd: 55, amp: 0.4, attack: 0.003, decay: 3.8, total: 0.24 }
+-    ],
+-    noise: { amp: 0.2, attack: 0.002, decay: 5, total: 0.12, hp: 120, lp: 1600 }
+-  });
+-}
+-
+-/** Shift clear: warm, lush four-note celebration chord. */
+-function shiftClear() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 523.25, amp: 0.25, attack: 0.005, decay: 4, total: 0.25 },
+-    { wave: "sine", freqStart: 659.25, amp: 0.25, attack: 0.12, decay: 4, total: 0.38 },
+-    { wave: "sine", freqStart: 783.99, amp: 0.28, attack: 0.25, decay: 3.8, total: 0.55 },
+-    { wave: "sine", freqStart: 1046.5, amp: 0.3, attack: 0.4, decay: 3.5, total: 0.75 }
+-  ] });
+-}
+-
+-/** Shift fail: gentle descending acoustic tone. */
+-function shiftFail() {
+-  return renderCue({ tone: [
+-    { wave: "triangle", freqStart: 330, freqEnd: 90, amp: 0.25, attack: 0.01, decay: 2.8, total: 0.7 },
+-    { wave: "sine", freqStart: 165, freqEnd: 45, amp: 0.28, attack: 0.02, decay: 2.5, total: 0.8 }
+-  ] });
+-}
+-
+-/** Horn near: gentle polite dual tone. */
+-function hornNear() {
+-  return renderCue({ tone: [
+-    { wave: "sine", freqStart: 392, amp: 0.18, attack: 0.01, decay: 3, total: 0.25 },
+-    { wave: "sine", freqStart: 523.25, amp: 0.18, attack: 0.01, decay: 3, total: 0.25 }
+-  ] });
+-}
+-
+-/** Ambient city night: soothing, distant nocturnal cityscape breeze. */
+-function ambientCity() {
+-  const duration = 8.0;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const raw = noiseBuffer(N);
+-  const air = lowpass(highpass(raw, 100), 550);
+-  const out = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const breath = 0.7 + 0.3 * Math.sin(2 * Math.PI * 0.15 * t);
+-    const distantHum = Math.sin(2 * Math.PI * 55 * t) * 0.06;
+-    out[i] = (air[i] * 0.15 + distantHum) * breath;
+-  }
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const k = i / fade;
+-    out[i] = out[i] * k + out[N - fade + i] * (1 - k);
+-  }
+-  return out;
+-}
+-
+-// ---- WAV writer -------------------------------------------------------------
+-function writeWav(path, samples) {
+-  const length = samples.length;
+-  const buffer = Buffer.alloc(44 + length * 2);
+-  const numChannels = 1;
+-  const bitsPerSample = 16;
+-  const byteRate = SAMPLE_RATE * numChannels * bitsPerSample / 8;
+-  buffer.write("RIFF", 0);
+-  buffer.writeUInt32LE(36 + length * 2, 4);
+-  buffer.write("WAVE", 8);
+-  buffer.write("fmt ", 12);
+-  buffer.writeUInt32LE(16, 16);
+-  buffer.writeUInt16LE(1, 20);
+-  buffer.writeUInt16LE(numChannels, 22);
+-  buffer.writeUInt32LE(SAMPLE_RATE, 24);
+-  buffer.writeUInt32LE(byteRate, 28);
+-  buffer.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+-  buffer.writeUInt16LE(bitsPerSample, 34);
+-  buffer.write("data", 36);
+-  buffer.writeUInt32LE(length * 2, 40);
+-  for (let i = 0; i < length; i += 1) {
+-    const v = Math.max(-1, Math.min(1, samples[i]));
+-    buffer.writeInt16LE(Math.round(v * 32767), 44 + i * 2);
+-  }
+-  writeFileSync(path, buffer);
+-  return length / SAMPLE_RATE;
+-}
+-
+-const cues = {
+-  engineLoop, dispatchBlip, parcelPickup, parcelDrop, earlyBonus,
+-  strikeHit, shiftClear, shiftFail, hornNear, ambientCity
+-};
+-
+-mkdirSync(OUT_DIR, { recursive: true });
+-const report = {};
+-for (const [name, fn] of Object.entries(cues)) {
+-  const samples = fn();
+-  const path = resolve(OUT_DIR, `${name}.wav`);
+-  const duration = writeWav(path, samples);
+-  report[name] = path + " (" + duration.toFixed(3) + "s)";
+-  console.log("wrote", report[name]);
+-}
+-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+diff --git a/apps/showcase-courier-rush/scripts/register-sfx.mjs b/apps/showcase-courier-rush/scripts/register-sfx.mjs
+deleted file mode 100644
+index eb9a8660..00000000
+--- a/apps/showcase-courier-rush/scripts/register-sfx.mjs
++++ /dev/null
+@@ -1,40 +0,0 @@
+-import { spawnSync } from "node:child_process";
+-import { resolve } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
+-const repoRoot = resolve(appDir, "../..");
+-const cli = "packages/aura3d-cli/src/cli.ts";
+-const retrievedAt = "2026-08-23T20:00:00Z";
+-const definitions = [
+-  ["courierAmbientCitySfx", "ambientCity.wav", "Gesture-unlocked rain-dark city ambience."],
+-  ["courierDispatchBlipSfx", "dispatchBlip.wav", "Dispatch cue driven by each new delivery."],
+-  ["courierEarlyBonusSfx", "earlyBonus.wav", "Early-delivery combo cue driven by actual timer state."],
+-  ["courierEngineSfx", "engineLoop.wav", "Arcade van engine loop driven by live authored speed."],
+-  ["courierHornNearSfx", "hornNear.wav", "Traffic horn driven by a seeded courtesy-stop event."],
+-  ["courierParcelDropSfx", "parcelDrop.wav", "Parcel drop cue driven by one accepted drop sensor event."],
+-  ["courierParcelPickupSfx", "parcelPickup.wav", "Parcel pickup cue driven by one accepted pickup sensor event."],
+-  ["courierShiftClearSfx", "shiftClear.wav", "Shift-clear cue driven by completion of all five deliveries."],
+-  ["courierShiftFailSfx", "shiftFail.wav", "Shift-fail cue driven by timer or strike exhaustion."],
+-  ["courierStrikeHitSfx", "strikeHit.wav", "Collision strike cue driven by pinned route-local collision rules."]
+-];
+-
+-for (const [id, file, suitability] of definitions) {
+-  const source = `apps/showcase-courier-rush/assets/sfx/${file}`;
+-  const result = spawnSync("pnpm", [
+-    "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
+-    "assets", "add", source, "--name", id, "--type", "audio",
+-    "--license", "CC0-1.0", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
+-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-    "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
+-    "--author", "Aura3D synthesis", "--retrieved-at", retrievedAt,
+-    "--quality", "candidate", "--role", "unknown", "--suitability", suitability
+-  ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
+-  let payload;
+-  try { payload = JSON.parse(result.stdout); } catch { payload = null; }
+-  if (payload?.ok !== true) {
+-    process.stderr.write(result.stderr || result.stdout);
+-    process.exit(result.status ?? 1);
+-  }
+-  console.log(`Registered ${id}`);
+-}
+diff --git a/apps/showcase-courier-rush/scripts/write-route-health.mjs b/apps/showcase-courier-rush/scripts/write-route-health.mjs
+index 9d017c90..005731d9 100644
+--- a/apps/showcase-courier-rush/scripts/write-route-health.mjs
++++ b/apps/showcase-courier-rush/scripts/write-route-health.mjs
+@@ -9,7 +9,7 @@ const reportDir = join(repoRoot, "tests/reports/showcase-courier-rush");
+ const modelAssetIds = ["courierVan", "courierParcel", "courierTrafficSedan", "courierTrafficHatch", "courierZoneAwning", "courierZoneBollard"];
+ const primaryAssetIds = ["courierVan", "courierParcel"];
+ const supportingAssetIds = modelAssetIds.filter((id) => !primaryAssetIds.includes(id));
+-const audioAssetIds = ["courierAmbientCitySfx", "courierDispatchBlipSfx", "courierEarlyBonusSfx", "courierEngineSfx", "courierHornNearSfx", "courierParcelDropSfx", "courierParcelPickupSfx", "courierShiftClearSfx", "courierShiftFailSfx", "courierStrikeHitSfx"];
++const audioAssetIds = []; // sound cues come from the shared game-sfx-core pack, not route-typed assets
+ const acceptanceFiles = ["load.png", "pickup-zone.png", "parcel-in-bed.png", "busy-intersection.png", "drop-flash.png", "traffic-strike-fail.png", "timer-fail-summary.png", "shift-clear.png", "mobile.png", "reduced-motion.png"];
+ 
+ const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+diff --git a/apps/showcase-courier-rush/src/courier-audio.ts b/apps/showcase-courier-rush/src/courier-audio.ts
+deleted file mode 100644
+index 0130bb1b..00000000
+--- a/apps/showcase-courier-rush/src/courier-audio.ts
++++ /dev/null
+@@ -1,217 +0,0 @@
+-/**
+- * Courier Rush audio runtime - a thin public-API wrapper around createGameAudio.
+- *
+- * Every cue maps to a CLI-registered typed audio asset (assets.courier*Sfx)
+- * synthesized in-repo by scripts/build-sfx.mjs (original CC0, author "Aura3D
+- * synthesis"). No raw URLs, no invented asset ids, and playback only ever
+- * happens after a user gesture unlocks the AudioContext.
+- */
+-import { createGameAudio, type GameAudio } from "@aura3d/engine";
+-import { assets } from "../../../src/aura-assets";
+-
+-/** Logical gameplay cue identifiers used by the route. */
+-export type CourierAudioCue =
+-  | "engine"
+-  | "ambient-city"
+-  | "dispatch"
+-  | "pickup"
+-  | "drop"
+-  | "early-bonus"
+-  | "strike"
+-  | "horn"
+-  | "shift-clear"
+-  | "shift-fail";
+-
+-/** Typed audio asset keys registered through `aura3d assets add`. */
+-export type CourierAudioAssetKey =
+-  | "courierEngineSfx"
+-  | "courierAmbientCitySfx"
+-  | "courierDispatchBlipSfx"
+-  | "courierParcelPickupSfx"
+-  | "courierParcelDropSfx"
+-  | "courierEarlyBonusSfx"
+-  | "courierStrikeHitSfx"
+-  | "courierHornNearSfx"
+-  | "courierShiftClearSfx"
+-  | "courierShiftFailSfx";
+-
+-export const courierAudioCueAssetKeys: Record<CourierAudioCue, CourierAudioAssetKey> = {
+-  engine: "courierEngineSfx",
+-  "ambient-city": "courierAmbientCitySfx",
+-  dispatch: "courierDispatchBlipSfx",
+-  pickup: "courierParcelPickupSfx",
+-  drop: "courierParcelDropSfx",
+-  "early-bonus": "courierEarlyBonusSfx",
+-  strike: "courierStrikeHitSfx",
+-  horn: "courierHornNearSfx",
+-  "shift-clear": "courierShiftClearSfx",
+-  "shift-fail": "courierShiftFailSfx"
+-};
+-
+-export interface CourierAudioCueDefinition {
+-  readonly cue: CourierAudioCue;
+-  readonly bus: "engine" | "city" | "fx" | "ui";
+-  readonly intent: string;
+-  readonly loop: boolean;
+-  readonly assetKey: CourierAudioAssetKey;
+-  readonly asset: {
+-    readonly url: string;
+-    readonly hash: string;
+-    readonly format: "wav";
+-    readonly license: "CC0-1.0";
+-    readonly author: "Aura3D synthesis";
+-  };
+-  readonly volume: number;
+-}
+-
+-/** Throws if a typed audio asset is missing its generated content hash/url. */
+-export function courierAudioAssetReference(key: CourierAudioAssetKey) {
+-  const asset = assets[key];
+-  if (!asset || !asset.hash || !asset.url) {
+-    throw new Error("Courier audio asset " + key + " is missing its generated content hash/url.");
+-  }
+-  return {
+-    key,
+-    typedAssetMember: "assets." + key,
+-    url: asset.url,
+-    hash: asset.hash,
+-    format: "wav" as const,
+-    license: "CC0-1.0" as const,
+-    author: "Aura3D synthesis" as const
+-  };
+-}
+-
+-function define(
+-  cue: CourierAudioCue,
+-  bus: CourierAudioCueDefinition["bus"],
+-  intent: string,
+-  loop: boolean,
+-  volume: number
+-): CourierAudioCueDefinition {
+-  const assetKey = courierAudioCueAssetKeys[cue];
+-  return {
+-    cue,
+-    bus,
+-    intent,
+-    loop,
+-    assetKey,
+-    asset: courierAudioAssetReference(assetKey),
+-    volume
+-  };
+-}
+-
+-/** Committed cue -> bus/intent/asset/volume manifest (10 cues per the PRD). */
+-export const courierAudioManifest: Record<CourierAudioCue, CourierAudioCueDefinition> = {
+-  engine: define("engine", "engine", "Soft van idle loop while the shift runs.", true, 0.42),
+-  "ambient-city": define("ambient-city", "city", "Night city ambience bed.", true, 0.3),
+-  dispatch: define("dispatch", "ui", "Dispatch radio blip at each new delivery.", false, 0.6),
+-  pickup: define("pickup", "fx", "Parcel thumps into the van bed.", false, 0.7),
+-  drop: define("drop", "fx", "Delivery chime on a scored drop.", false, 0.72),
+-  "early-bonus": define("early-bonus", "fx", "Combo sparkle for an early delivery.", false, 0.55),
+-  strike: define("strike", "fx", "Panel crunch when the van hits traffic or props.", false, 0.75),
+-  horn: define("horn", "city", "Traffic honk at a courtesy stop near the van.", false, 0.5),
+-  "shift-clear": define("shift-clear", "ui", "End-of-shift clear sting.", false, 0.75),
+-  "shift-fail": define("shift-fail", "ui", "Radio power-down when the shift fails.", false, 0.7)
+-};
+-
+-export const courierAudioAssets = Object.freeze(
+-  Object.fromEntries(
+-    Object.values(courierAudioCueAssetKeys).map((key) => [key, courierAudioAssetReference(key)])
+-  ) as Record<CourierAudioAssetKey, ReturnType<typeof courierAudioAssetReference>>
+-);
+-
+-export interface CourierAudioProof {
+-  readonly enabled: boolean;
+-  readonly muted: boolean;
+-  readonly unlocked: boolean;
+-  readonly contextState: string;
+-  readonly sfxReady: boolean;
+-  readonly lastCue: CourierAudioCue | null;
+-  readonly recentCues: readonly CourierAudioCue[];
+-  readonly playedCueCount: number;
+-  readonly suppressedCueCount: number;
+-  readonly cueCount: number;
+-  readonly typedAssetCount: number;
+-  readonly assetUrls: readonly string[];
+-  readonly audioErrors: readonly string[];
+-  readonly gestureUnlocked: boolean;
+-}
+-
+-export interface CourierAudioController {
+-  readonly cue: (name: CourierAudioCue) => Promise<void>;
+-  readonly unlock: () => Promise<void>;
+-  readonly proof: () => CourierAudioProof;
+-}
+-
+-let cachedAudio: GameAudio<CourierAudioCue> | null = null;
+-
+-export function createCourierAudio(reducedMotion = false): CourierAudioController {
+-  const recentCues: CourierAudioCue[] = [];
+-  let gestureUnlocked = false;
+-  const assetUrls = Object.values(courierAudioAssets).map((asset) => asset.url);
+-
+-  if (!cachedAudio) {
+-    const cueEntries = Object.fromEntries(
+-      Object.values(courierAudioManifest).map((definition) => [
+-        definition.cue,
+-        {
+-          id: definition.cue,
+-          bus: definition.bus,
+-          volume: definition.volume,
+-          loop: definition.loop,
+-          asset: definition.asset
+-        }
+-      ])
+-    ) as unknown as Record<CourierAudioCue, Parameters<typeof createGameAudio<CourierAudioCue>>[0]["cues"][CourierAudioCue]>;
+-
+-    cachedAudio = createGameAudio({
+-      browserContext: true,
+-      buses: [
+-        { id: "engine", volume: 0.55 },
+-        { id: "city", volume: 0.5 },
+-        { id: "fx", volume: 0.8 },
+-        { id: "ui", volume: 0.65 }
+-      ],
+-      cues: cueEntries
+-    });
+-  }
+-  const audio = cachedAudio;
+-
+-  async function cue(name: CourierAudioCue): Promise<void> {
+-    recentCues.push(name);
+-    if (recentCues.length > 24) recentCues.shift();
+-    await audio.cue(name);
+-  }
+-
+-  return {
+-    async cue(name) {
+-      await cue(name);
+-    },
+-    async unlock() {
+-      await audio.unlock();
+-      gestureUnlocked = true;
+-    },
+-    proof() {
+-      const evidence = audio.evidence;
+-      const ready = evidence.enabled
+-        && Object.keys(courierAudioManifest).length >= 10
+-        && assetUrls.length >= 10;
+-      return {
+-        enabled: evidence.enabled && !evidence.muted,
+-        muted: evidence.muted,
+-        unlocked: evidence.unlocked,
+-        contextState: evidence.contextState,
+-        sfxReady: reducedMotion ? false : ready,
+-        lastCue: evidence.lastCue as CourierAudioCue | null,
+-        recentCues: recentCues.slice(),
+-        playedCueCount: evidence.playedCueCount,
+-        suppressedCueCount: evidence.suppressedCueCount,
+-        cueCount: Object.keys(courierAudioManifest).length,
+-        typedAssetCount: assetUrls.length,
+-        assetUrls: assetUrls.slice(),
+-        audioErrors: evidence.errors.slice(),
+-        gestureUnlocked
+-      };
+-    }
+-  };
+-}
+diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+index c0942f41..6ee39f55 100644
+--- a/apps/showcase-courier-rush/src/main.ts
++++ b/apps/showcase-courier-rush/src/main.ts
+@@ -54,7 +54,7 @@ import {
+   VAN_TUNE,
+   type VanDriveInput
+ } from "./van";
+-import { createCourierAudio, type CourierAudioController } from "./courier-audio";
++import { createCourierSound, type CourierCue, type CourierSoundController } from "./sound";
+ import {
+   decayHudEffects,
+   hideShiftSummary,
+@@ -113,14 +113,14 @@ const reducedMotion = accessibilitySettings.reducedMotion;
+ const runtimeEffects = game.effects({ poolSize: 40, reducedMotion, reducedFlash: false });
+ 
+ // ---- audio ------------------------------------------------------------------
+-const courierAudio: CourierAudioController = createCourierAudio(reducedMotion);
++const courierAudio: CourierSoundController = createCourierSound();
+ let audioUnlocked = false;
+ const unlockAudio = (): void => {
+   if (audioUnlocked) return;
+   audioUnlocked = true;
+-  void courierAudio.unlock();
++  void courierAudio.unlock().then(() => courierAudio.startBeds());
+ };
+-const playCue = (cue: Parameters<CourierAudioController["cue"]>[0]): void => {
++const playCue = (cue: CourierCue): void => {
+   if (!audioUnlocked) return;
+   void courierAudio.cue(cue);
+ };
+@@ -660,7 +660,7 @@ const mountedEvidence = {
+   van: { x: 0, z: 0, heading: 0, speed: 0 },
+   trafficSummaries: [] as { readonly id: string; readonly x: number; readonly z: number; readonly heading: number; readonly speed: number; readonly courtesyStopped: boolean }[],
+   audio: {
+-    system: "engine.createGameAudio",
++    system: "audio.createGameSoundEngine",
+     cueCount: 10,
+     gestureUnlocked: false,
+     sfxReady: false,
+@@ -682,12 +682,12 @@ const mountedEvidence = {
+ 
+ function refreshAudioEvidence(): void {
+   const proof = courierAudio.proof();
+-  mountedEvidence.audio.gestureUnlocked = proof.gestureUnlocked;
+-  mountedEvidence.audio.sfxReady = proof.sfxReady;
+-  mountedEvidence.audio.recentCues = proof.recentCues.slice();
++  mountedEvidence.audio.gestureUnlocked = audioUnlocked;
++  mountedEvidence.audio.sfxReady = proof.contextState === "running" && proof.errors.length === 0;
++  mountedEvidence.audio.recentCues = courierAudio.recentCues().slice();
+   mountedEvidence.audio.playedCueCount = proof.playedCueCount;
+   mountedEvidence.audio.contextState = proof.contextState;
+-  mountedEvidence.audio.assetUrls = proof.assetUrls.slice();
++  mountedEvidence.audio.assetUrls = courierAudio.assetUrls.slice();
+ }
+ 
+ Object.defineProperty(window, "__COURIER_RUSH_EVIDENCE__", {
+@@ -1201,6 +1201,8 @@ app.onFrame(({ dt }) => {
+   }
+ 
+   // Traffic steps with the van position so nearby courtesy horns can fire.
++  courierAudio.updateEngine(vanAfter.speed, driveInput.throttle);
++
+   const trafficEvents = trafficSim.step(stepSeconds, vanAfter.x, vanAfter.z);
+   if (trafficEvents.length > 0) playCue("horn");
+ 
+diff --git a/apps/showcase-courier-rush/src/sound.ts b/apps/showcase-courier-rush/src/sound.ts
+new file mode 100644
+index 00000000..9fb5647e
+--- /dev/null
++++ b/apps/showcase-courier-rush/src/sound.ts
+@@ -0,0 +1,144 @@
++/**
++ * Courier Rush sound — PRD-09 §10 step 5: a cues object over the shared
++ * game-sfx-core pack plus the live van engine loop, replacing courier-audio.ts
++ * and the generated-WAV pipeline (scripts/build-sfx.mjs). One-shot cues map to
++ * pack ids under /packs/game-sfx-core/; {format} resolves to the probed
++ * encoding on the C-25 engine path.
++ *
++ * Engine: `sound.engine({...van layers})` — three on-load layers crossfaded by
++ * RPM with off-load counterparts; `updateEngine(speed, throttle)` feeds
++ * `setRpm`/`setLoad` from the drive sim every frame. `city-night` is the
++ * ambience bed, started once the first gesture unlocks playback ("playing").
++ */
++import { createGameSoundEngine, type EngineLoopSpec } from "@aura3d/audio";
++
++export type CourierCue =
++  | "dispatch"
++  | "pickup"
++  | "drop"
++  | "early-bonus"
++  | "strike"
++  | "horn"
++  | "shift-clear"
++  | "shift-fail";
++
++const asset = (id: string) => ({
++  url: `/packs/game-sfx-core/${id}.{format}`,
++  license: "CC0",
++  provenance: "sample" as const
++});
++
++const ids = (...stems: string[]) => stems.map(asset);
++
++/** Route cue map → game-sfx-core ids (route buses fold onto §6.8 ids). */
++export const courierCues: Record<CourierCue, { readonly bus: "sfx" | "ui" | "ambience"; readonly volumeDb: number; readonly asset: ReturnType<typeof ids> }> = {
++  dispatch: { bus: "ui", volumeDb: -4.4, asset: ids("ui.confirm.00", "ui.confirm.01") },
++  pickup: { bus: "sfx", volumeDb: -3.1, asset: ids("impact.plastic.medium.00", "impact.plastic.medium.01", "impact.plastic.medium.02") },
++  drop: { bus: "sfx", volumeDb: -2.9, asset: ids("stinger.checkpoint.00", "stinger.checkpoint.01") },
++  "early-bonus": { bus: "sfx", volumeDb: -5.2, asset: ids("pickup.combo-up.00", "pickup.combo-up.01") },
++  strike: { bus: "sfx", volumeDb: -2.5, asset: ids("impact.metal.medium.00", "impact.metal.medium.01", "impact.metal.medium.02") },
++  horn: { bus: "ambience", volumeDb: -6, asset: ids("stinger.alarm.00", "stinger.alarm.01") },
++  "shift-clear": { bus: "ui", volumeDb: -2.5, asset: ids("stinger.win.00", "stinger.win.01") },
++  "shift-fail": { bus: "ui", volumeDb: -3.1, asset: ids("stinger.lose.00", "stinger.lose.01") }
++};
++
++const CITY_BED = {
++  bus: "ambience" as const,
++  volumeDb: -10.5,
++  loop: true,
++  asset: ids("ambience.city-night")
++};
++
++/** Van engine: three layer anchors across the drive rpm span. */
++export const vanEngineSpec: EngineLoopSpec = {
++  idleRpm: 700,
++  maxRpm: 4800,
++  bus: "sfx",
++  onLoad: [
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer0.on.{format}" }, rpm: 700 },
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer1.on.{format}" }, rpm: 2400 },
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer2.on.{format}" }, rpm: 4800 }
++  ],
++  offLoad: [
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer0.off.{format}" }, rpm: 700 },
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer1.off.{format}" }, rpm: 2400 },
++    { asset: { url: "/packs/game-sfx-core/vehicle.van.layer2.off.{format}" }, rpm: 4800 }
++  ]
++};
++
++const VAN_MAX_SPEED = 13;
++
++type EngineHandle = ReturnType<ReturnType<typeof createGameSoundEngine<CourierCue | "city-bed">>["engine"]>;
++
++export interface CourierSoundProof {
++  readonly contextState: string;
++  readonly playedCueCount: number;
++  readonly liveVoices: number;
++  readonly assetUrls: readonly string[];
++  readonly errors: readonly string[];
++}
++
++export interface CourierSoundController {
++  readonly cue: (name: CourierCue) => Promise<void>;
++  readonly unlock: () => Promise<void>;
++  /** Start the engine loop + city-night bed (call on first unlock = "playing"). */
++  readonly startBeds: () => void;
++  /** Feed drive sim state every frame: van speed (m/s) and throttle 0..1. */
++  readonly updateEngine: (speed: number, throttle: number) => void;
++  readonly recentCues: () => readonly CourierCue[];
++  readonly proof: () => CourierSoundProof;
++  readonly assetUrls: readonly string[];
++}
++
++let cached: ReturnType<typeof createGameSoundEngine<CourierCue | "city-bed">> | null = null;
++
++export function createCourierSound(): CourierSoundController {
++  if (!cached) {
++    const cues: Parameters<typeof createGameSoundEngine<CourierCue | "city-bed">>[0]["cues"] = {
++      ...courierCues,
++      "city-bed": CITY_BED
++    };
++    cached = createGameSoundEngine<CourierCue | "city-bed">({
++      buses: { sfx: 0.8, ui: 0.65, ambience: 0.5 },
++      cues,
++      tier: "high"
++    });
++  }
++  const sound = cached;
++  const recent: CourierCue[] = [];
++  let engine: EngineHandle | undefined;
++  let bedsStarted = false;
++
++  return {
++    cue: async (name) => {
++      recent.push(name);
++      if (recent.length > 24) recent.shift();
++      sound.play(name);
++    },
++    unlock: () => sound.unlock(),
++    startBeds() {
++      if (bedsStarted) return;
++      bedsStarted = true;
++      void sound.play("city-bed");
++      engine = sound.engine(vanEngineSpec);
++    },
++    updateEngine(speed, throttle) {
++      if (!engine) return;
++      const frac = Math.min(1, Math.abs(speed) / VAN_MAX_SPEED);
++      engine.setRpm(vanEngineSpec.idleRpm + frac * (vanEngineSpec.maxRpm - vanEngineSpec.idleRpm));
++      engine.setLoad(Math.min(1, Math.max(0, throttle)));
++    },
++    recentCues: () => recent.slice(),
++    proof() {
++      const p = sound.proof();
++      return {
++        contextState: p.contextState,
++        playedCueCount: p.voicesPlayed,
++        liveVoices: p.liveVoices,
++        assetUrls: Object.values(courierCues).flatMap((d) => d.asset.map((a) => a.url)),
++        errors: p.errors.slice()
++      };
++    },
++    assetUrls: Object.values(courierCues).flatMap((d) => d.asset.map((a) => a.url))
++  };
++}
+diff --git a/public/aura-assets/courierAmbientCitySfx.995b1230.wav b/public/aura-assets/courierAmbientCitySfx.995b1230.wav
+deleted file mode 100644
+index ef5dbc18..00000000
+--- a/public/aura-assets/courierAmbientCitySfx.995b1230.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:995b1230697415d1aa56abf95135d10f27d9b778709bed34caa78f36205bb024
+-size 176444
+diff --git a/public/aura-assets/courierAmbientCitySfx.thumb.svg b/public/aura-assets/courierAmbientCitySfx.thumb.svg
+deleted file mode 100644
+index e0e1c729..00000000
+--- a/public/aura-assets/courierAmbientCitySfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierAmbientCitySfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierDispatchBlipSfx.8f47ba51.wav b/public/aura-assets/courierDispatchBlipSfx.8f47ba51.wav
+deleted file mode 100644
+index 0bdb766e..00000000
+--- a/public/aura-assets/courierDispatchBlipSfx.8f47ba51.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:8f47ba514fcbac57761264a77c2a617d4a0fafaf51afde40fe3d40ebef97c09e
+-size 24740
+diff --git a/public/aura-assets/courierDispatchBlipSfx.thumb.svg b/public/aura-assets/courierDispatchBlipSfx.thumb.svg
+deleted file mode 100644
+index c0a0a39a..00000000
+--- a/public/aura-assets/courierDispatchBlipSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierDispatchBlipSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierEarlyBonusSfx.bd2aa402.wav b/public/aura-assets/courierEarlyBonusSfx.bd2aa402.wav
+deleted file mode 100644
+index e3d0a24f..00000000
+--- a/public/aura-assets/courierEarlyBonusSfx.bd2aa402.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:bd2aa40241b19813225b02aa787ce5ed717ac0217ed0a83f6cdee3349e7706e6
+-size 27386
+diff --git a/public/aura-assets/courierEarlyBonusSfx.thumb.svg b/public/aura-assets/courierEarlyBonusSfx.thumb.svg
+deleted file mode 100644
+index bacc669e..00000000
+--- a/public/aura-assets/courierEarlyBonusSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierEarlyBonusSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierEngineSfx.0cc87f79.wav b/public/aura-assets/courierEngineSfx.0cc87f79.wav
+deleted file mode 100644
+index 84d3cc12..00000000
+--- a/public/aura-assets/courierEngineSfx.0cc87f79.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0cc87f79f6f680bcae5f289ddc94d639a84a62626880cfcdc0c4125b18bf8fa7
+-size 123522
+diff --git a/public/aura-assets/courierEngineSfx.b84e05b6.wav b/public/aura-assets/courierEngineSfx.b84e05b6.wav
+deleted file mode 100644
+index 3f54b0ec..00000000
+--- a/public/aura-assets/courierEngineSfx.b84e05b6.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:b84e05b6fd945ab90d4d915ebd16497ca1b75e14e0703ba7fbec0b884f7fbcd4
+-size 123522
+diff --git a/public/aura-assets/courierEngineSfx.thumb.svg b/public/aura-assets/courierEngineSfx.thumb.svg
+deleted file mode 100644
+index ec7262cf..00000000
+--- a/public/aura-assets/courierEngineSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierEngineSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierHornNearSfx.8271dced.wav b/public/aura-assets/courierHornNearSfx.8271dced.wav
+deleted file mode 100644
+index c3379740..00000000
+--- a/public/aura-assets/courierHornNearSfx.8271dced.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:8271dceda2c48f819789d53a1c83da4ff59382d67baf018397672b9c9b11f4bc
+-size 35324
+diff --git a/public/aura-assets/courierHornNearSfx.thumb.svg b/public/aura-assets/courierHornNearSfx.thumb.svg
+deleted file mode 100644
+index 4e9c02b3..00000000
+--- a/public/aura-assets/courierHornNearSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierHornNearSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierParcelDropSfx.69469dfa.wav b/public/aura-assets/courierParcelDropSfx.69469dfa.wav
+deleted file mode 100644
+index 24a32d14..00000000
+--- a/public/aura-assets/courierParcelDropSfx.69469dfa.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:69469dfaf7854a98c382abd52f7f199a4e781cb5a44ca8fe7ff7f4da768af02f
+-size 44144
+diff --git a/public/aura-assets/courierParcelDropSfx.thumb.svg b/public/aura-assets/courierParcelDropSfx.thumb.svg
+deleted file mode 100644
+index d62fea9b..00000000
+--- a/public/aura-assets/courierParcelDropSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierParcelDropSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierParcelPickupSfx.86c6b345.wav b/public/aura-assets/courierParcelPickupSfx.86c6b345.wav
+deleted file mode 100644
+index 7055a156..00000000
+--- a/public/aura-assets/courierParcelPickupSfx.86c6b345.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:86c6b345a32b73c02f9b9304434baab1e465b75d6e2d217dd29eb8795feef740
+-size 28268
+diff --git a/public/aura-assets/courierParcelPickupSfx.thumb.svg b/public/aura-assets/courierParcelPickupSfx.thumb.svg
+deleted file mode 100644
+index f0b2af21..00000000
+--- a/public/aura-assets/courierParcelPickupSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierParcelPickupSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierShiftClearSfx.d6d76276.wav b/public/aura-assets/courierShiftClearSfx.d6d76276.wav
+deleted file mode 100644
+index 398ba4a5..00000000
+--- a/public/aura-assets/courierShiftClearSfx.d6d76276.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:d6d76276eefcda93c2fe15852f5722f1b5e82223061c19cce0f1c306d46128dc
+-size 77660
+diff --git a/public/aura-assets/courierShiftClearSfx.thumb.svg b/public/aura-assets/courierShiftClearSfx.thumb.svg
+deleted file mode 100644
+index 4b3eee95..00000000
+--- a/public/aura-assets/courierShiftClearSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierShiftClearSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierShiftFailSfx.b9378836.wav b/public/aura-assets/courierShiftFailSfx.b9378836.wav
+deleted file mode 100644
+index 9d3b2170..00000000
+--- a/public/aura-assets/courierShiftFailSfx.b9378836.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:b93788363910dd46585c68280e825e0e78fb0a0ed8723c3f861878ca9827ce1b
+-size 86480
+diff --git a/public/aura-assets/courierShiftFailSfx.thumb.svg b/public/aura-assets/courierShiftFailSfx.thumb.svg
+deleted file mode 100644
+index 28da461a..00000000
+--- a/public/aura-assets/courierShiftFailSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierShiftFailSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/courierStrikeHitSfx.c75e32f0.wav b/public/aura-assets/courierStrikeHitSfx.c75e32f0.wav
+deleted file mode 100644
+index 913bc087..00000000
+--- a/public/aura-assets/courierStrikeHitSfx.c75e32f0.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:c75e32f00e819d03e3c251128a6e8e88e3e3492db6f12e7f453c8a4be182fd4a
+-size 33560
+diff --git a/public/aura-assets/courierStrikeHitSfx.thumb.svg b/public/aura-assets/courierStrikeHitSfx.thumb.svg
+deleted file mode 100644
+index a0b8bff1..00000000
+--- a/public/aura-assets/courierStrikeHitSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">courierStrikeHitSfx</text></svg>
+\ No newline at end of file
+diff --git a/src/aura-assets.ts b/src/aura-assets.ts
+index 0a78aace..abbd7e4d 100644
+--- a/src/aura-assets.ts
++++ b/src/aura-assets.ts
+@@ -62,17 +62,7 @@ type AuraGeneratedAssetDefinitions = {
+   readonly "blockfallReactorMechanicHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "blockfallReactorPlasmaRival": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "blockfallRotateSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierAmbientCitySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierDispatchBlipSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierEarlyBonusSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierEngineSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierHornNearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "courierParcel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+-  readonly "courierParcelDropSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierParcelPickupSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierShiftClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierShiftFailSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "courierStrikeHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "courierTrafficHatch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "courierTrafficSedan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "courierVan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+@@ -7817,1010 +7807,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+       "role": "unknown"
+     },
+   },
+-  "courierAmbientCitySfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierAmbientCitySfx.995b1230.wav",
+-    hash: "sha256-995b1230697415d1aa56abf95135d10f27d9b778709bed34caa78f36205bb024",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 176444,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/ambientCity.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/ambientCity.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/ambientCity.wav",
+-      "outputPath": "public/aura-assets/courierAmbientCitySfx.995b1230.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierAmbientCitySfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Gesture-unlocked rain-dark city ambience."
+-    },
+-  },
+-  "courierDispatchBlipSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierDispatchBlipSfx.8f47ba51.wav",
+-    hash: "sha256-8f47ba514fcbac57761264a77c2a617d4a0fafaf51afde40fe3d40ebef97c09e",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 24740,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav",
+-      "outputPath": "public/aura-assets/courierDispatchBlipSfx.8f47ba51.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierDispatchBlipSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Dispatch cue driven by each new delivery."
+-    },
+-  },
+-  "courierEarlyBonusSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierEarlyBonusSfx.bd2aa402.wav",
+-    hash: "sha256-bd2aa40241b19813225b02aa787ce5ed717ac0217ed0a83f6cdee3349e7706e6",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 27386,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/earlyBonus.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/earlyBonus.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/earlyBonus.wav",
+-      "outputPath": "public/aura-assets/courierEarlyBonusSfx.bd2aa402.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierEarlyBonusSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Early-delivery combo cue driven by actual timer state."
+-    },
+-  },
+-  "courierEngineSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierEngineSfx.0cc87f79.wav",
+-    hash: "sha256-0cc87f79f6f680bcae5f289ddc94d639a84a62626880cfcdc0c4125b18bf8fa7",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 123522,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/engineLoop.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/engineLoop.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/engineLoop.wav",
+-      "outputPath": "public/aura-assets/courierEngineSfx.0cc87f79.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierEngineSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Arcade van engine loop driven by live authored speed."
+-    },
+-  },
+-  "courierHornNearSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierHornNearSfx.8271dced.wav",
+-    hash: "sha256-8271dceda2c48f819789d53a1c83da4ff59382d67baf018397672b9c9b11f4bc",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 35324,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/hornNear.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/hornNear.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/hornNear.wav",
+-      "outputPath": "public/aura-assets/courierHornNearSfx.8271dced.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierHornNearSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Traffic horn driven by a seeded courtesy-stop event."
+-    },
+-  },
+-  "courierParcel": {
+-    type: "model",
+-    format: "glb",
+-    url: "/aura-assets/courierParcel.b04bff68.glb",
+-    hash: "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+-    bounds: [
+-      0.774,
+-      0.64,
+-      0.393
+-    ],
+-    sizeBytes: 1168660,
+-    metadata: {
+-      "materials": [
+-        "defaultMat"
+-      ],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "non-humanoid",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "No skin/skeleton metadata detected."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "No morph target metadata detected."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 3,
+-        "meshCount": 1,
+-        "materialCount": 1,
+-        "textureCount": 3,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [
+-          "Sketchfab_model"
+-        ],
+-        "maxDepth": 3,
+-        "messages": [
+-          "Detected 3 nodes across 1 root."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "public/aura-assets/courierParcel.b04bff68.glb",
+-        "sourcePage": "https://sketchfab.com/3d-models/76fa80950b1f48a8ad6a8441fe443241",
+-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
+-        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
+-        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+-        "licenseName": "CC-BY-4.0",
+-        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+-        "licenseRaw": "CC-BY-4.0",
+-        "author": "macriciox (https://sketchfab.com/macriciox)",
+-        "sourceFamily": "objaverse",
+-        "attribution": "macriciox",
+-        "sha256": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+-        "retrievedAt": "2026-08-21T22:45:04.198Z",
+-        "resolveCandidate": {
+-          "catalogId": "objaverse:76fa80950b1f48a8ad6a8441fe443241",
+-          "query": "cardboard box",
+-          "source": "objaverse",
+-          "sourceFamily": "objaverse",
+-          "scoreTotal": 0.76,
+-          "scoreBreakdown": {
+-            "semantic": 10.76,
+-            "sourceQuality": 14,
+-            "license": 13,
+-            "inspection": 0,
+-            "roleFit": 0
+-          },
+-          "reasons": [
+-            "semantic/source score 10.76",
+-            "download URL preserved",
+-            "author/attribution preserved",
+-            "verified CC-BY-4.0 license"
+-          ],
+-          "penalties": [
+-            "missing source page",
+-            "missing license URL/source evidence",
+-            "missing bounds/dimensions metadata",
+-            "missing material metadata for visual model role"
+-          ],
+-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
+-          "license": "CC-BY-4.0",
+-          "licenseName": "CC-BY-4.0",
+-          "licenseRaw": "CC-BY-4.0",
+-          "author": "macriciox",
+-          "attribution": "macriciox",
+-          "semanticScore": 0.8036889792937617,
+-          "postDownloadInspection": {
+-            "bounds": [
+-              0.774,
+-              0.64,
+-              0.393
+-            ],
+-            "materialCount": 1,
+-            "textureCount": 3,
+-            "animationClipCount": 0,
+-            "skinCount": 0,
+-            "morphTargetCount": 0,
+-            "warnings": [
+-              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+-            ]
+-          },
+-          "rawCatalogMetadata": {
+-            "id": "objaverse:76fa80950b1f48a8ad6a8441fe443241",
+-            "title": "Cardboard box",
+-            "source": "objaverse",
+-            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
+-            "license": "CC-BY-4.0",
+-            "thumbnail": "https://media.sketchfab.com/models/76fa80950b1f48a8ad6a8441fe443241/thumbnails/3706e84f90a74bd6b9f920e9abbde539/68d655fdb2d34f55bed588e0315fe7e0.jpeg",
+-            "attribution": "macriciox",
+-            "score": 0.8036889792937617
+-          }
+-        },
+-        "checkedAt": "2026-08-21T22:45:04.198Z"
+-      },
+-      "sourcePath": "public/aura-assets/courierParcel.b04bff68.glb",
+-      "outputPath": "public/aura-assets/courierParcel.b04bff68.glb",
+-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+-      "author": "macriciox (https://sketchfab.com/macriciox)",
+-      "boundsMetadata": {
+-        "min": [
+-          -0.328,
+-          -0.292,
+-          -0.139
+-        ],
+-        "max": [
+-          0.446,
+-          0.348,
+-          0.254
+-        ],
+-        "size": [
+-          0.774,
+-          0.64,
+-          0.393
+-        ],
+-        "center": [
+-          0.059,
+-          0.028,
+-          0.057
+-        ],
+-        "maxDimension": 0.774,
+-        "grounded": false
+-      },
+-      "materialMetadata": [
+-        {
+-          "name": "defaultMat",
+-          "visible": true,
+-          "readable": true,
+-          "opacity": 1,
+-          "reasons": []
+-        }
+-      ],
+-      "orientation": {
+-        "source": "manifest-override",
+-        "forwardAxis": "+Z",
+-        "upAxis": "+Y",
+-        "view": "hash-bound-readable-prop-view",
+-        "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+-        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+-        "checkedAt": "2026-08-23T20:22:43.926Z",
+-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel",
+-        "renderedProbe": {
+-          "url": "tests/reports/showcase-release-asset-probes/courierParcel.png",
+-          "sha256": "sha256-972ea709611b42332b29645b7c6c530116054e662ffc6fb6ff56a58b1f4cb611",
+-          "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+-          "checkedAt": "2026-08-23T20:22:43.926Z",
+-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel"
+-        },
+-        "messages": [
+-          "The hash-bound parcel is presented +Y-up with +Z as its route-authored neutral view before it is visibly attached to the van bed."
+-        ]
+-      },
+-      "nodeNames": [
+-        "Sketchfab_model",
+-        "Box.OBJ.cleaner.materialmerger.gles",
+-        "Object_2"
+-      ],
+-      "textures": [
+-        "image-0",
+-        "image-1",
+-        "image-2"
+-      ],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierParcel.thumb.svg",
+-      "quality": "release",
+-      "role": "prop",
+-      "suitabilityReason": "Release-validated typed textured parcel prop with readable materials, retained root-safe rendered probe, durable CC-BY provenance, and visible route attachment state; supporting cargo, not a primary subject.",
+-      "renderedProbe": {
+-        "url": "tests/reports/showcase-release-asset-probes/courierParcel.png",
+-        "kind": "browser-screenshot",
+-        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel",
+-        "sha256": "sha256-972ea709611b42332b29645b7c6c530116054e662ffc6fb6ff56a58b1f4cb611",
+-        "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+-        "width": 752,
+-        "height": 600,
+-        "nonBlankPixels": 451200,
+-        "colorBuckets": 15,
+-        "checkedAt": "2026-08-23T20:22:43.926Z",
+-        "foregroundBounds": {
+-          "x": 160,
+-          "y": 180,
+-          "width": 412,
+-          "height": 348
+-        }
+-      }
+-    },
+-  },
+-  "courierParcelDropSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierParcelDropSfx.69469dfa.wav",
+-    hash: "sha256-69469dfaf7854a98c382abd52f7f199a4e781cb5a44ca8fe7ff7f4da768af02f",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 44144,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/parcelDrop.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/parcelDrop.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/parcelDrop.wav",
+-      "outputPath": "public/aura-assets/courierParcelDropSfx.69469dfa.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierParcelDropSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Parcel drop cue driven by one accepted drop sensor event."
+-    },
+-  },
+-  "courierParcelPickupSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierParcelPickupSfx.86c6b345.wav",
+-    hash: "sha256-86c6b345a32b73c02f9b9304434baab1e465b75d6e2d217dd29eb8795feef740",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 28268,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/parcelPickup.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/parcelPickup.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/parcelPickup.wav",
+-      "outputPath": "public/aura-assets/courierParcelPickupSfx.86c6b345.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierParcelPickupSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Parcel pickup cue driven by one accepted pickup sensor event."
+-    },
+-  },
+-  "courierShiftClearSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierShiftClearSfx.d6d76276.wav",
+-    hash: "sha256-d6d76276eefcda93c2fe15852f5722f1b5e82223061c19cce0f1c306d46128dc",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 77660,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/shiftClear.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/shiftClear.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/shiftClear.wav",
+-      "outputPath": "public/aura-assets/courierShiftClearSfx.d6d76276.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierShiftClearSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Shift-clear cue driven by completion of all five deliveries."
+-    },
+-  },
+-  "courierShiftFailSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierShiftFailSfx.b9378836.wav",
+-    hash: "sha256-b93788363910dd46585c68280e825e0e78fb0a0ed8723c3f861878ca9827ce1b",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 86480,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/shiftFail.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/shiftFail.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
+-      },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/shiftFail.wav",
+-      "outputPath": "public/aura-assets/courierShiftFailSfx.b9378836.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierShiftFailSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Shift-fail cue driven by timer or strike exhaustion."
+-    },
+-  },
+-  "courierStrikeHitSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/courierStrikeHitSfx.c75e32f0.wav",
+-    hash: "sha256-c75e32f00e819d03e3c251128a6e8e88e3e3492db6f12e7f453c8a4be182fd4a",
++  "courierParcel": {
++    type: "model",
++    format: "glb",
++    url: "/aura-assets/courierParcel.b04bff68.glb",
++    hash: "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+     bounds: [
+-      0,
+-      0,
+-      0
++      0.774,
++      0.64,
++      0.393
+     ],
+-    sizeBytes: 33560,
++    sizeBytes: 1168660,
+     metadata: {
+-      "materials": [],
++      "materials": [
++        "defaultMat"
++      ],
+       "animations": [],
+       "animationClips": [],
+       "animationMetadata": {
+@@ -8831,14 +7832,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+         ]
+       },
+       "humanoid": false,
+-      "humanoidStatus": "unknown",
++      "humanoidStatus": "non-humanoid",
+       "humanoidConfidence": "low",
+       "skeleton": {
+         "skinCount": 0,
+         "jointCount": 0,
+         "skins": [],
+         "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
++          "No skin/skeleton metadata detected."
+         ]
+       },
+       "morphTargets": {
+@@ -8846,51 +7847,190 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+         "targetNames": [],
+         "meshes": [],
+         "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
++          "No morph target metadata detected."
+         ]
+       },
+       "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
++        "nodeCount": 3,
++        "meshCount": 1,
++        "materialCount": 1,
++        "textureCount": 3,
+         "animationClipCount": 0,
+         "skinCount": 0,
+         "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
++        "rootNodeNames": [
++          "Sketchfab_model"
++        ],
++        "maxDepth": 3,
+         "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
++          "Detected 3 nodes across 1 root."
+         ]
+       },
+       "provenance": {
+-        "sourcePath": "apps/showcase-courier-rush/assets/sfx/strikeHit.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-courier-rush/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-courier-rush/assets/sfx/strikeHit.wav",
+-        "license": "CC0-1.0",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "retrievedAt": "2026-08-23T20:00:00Z",
+-        "checkedAt": "2026-08-23T20:00:00Z"
++        "sourcePath": "public/aura-assets/courierParcel.b04bff68.glb",
++        "sourcePage": "https://sketchfab.com/3d-models/76fa80950b1f48a8ad6a8441fe443241",
++        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
++        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
++        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
++        "licenseName": "CC-BY-4.0",
++        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
++        "licenseRaw": "CC-BY-4.0",
++        "author": "macriciox (https://sketchfab.com/macriciox)",
++        "sourceFamily": "objaverse",
++        "attribution": "macriciox",
++        "sha256": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
++        "retrievedAt": "2026-08-21T22:45:04.198Z",
++        "resolveCandidate": {
++          "catalogId": "objaverse:76fa80950b1f48a8ad6a8441fe443241",
++          "query": "cardboard box",
++          "source": "objaverse",
++          "sourceFamily": "objaverse",
++          "scoreTotal": 0.76,
++          "scoreBreakdown": {
++            "semantic": 10.76,
++            "sourceQuality": 14,
++            "license": 13,
++            "inspection": 0,
++            "roleFit": 0
++          },
++          "reasons": [
++            "semantic/source score 10.76",
++            "download URL preserved",
++            "author/attribution preserved",
++            "verified CC-BY-4.0 license"
++          ],
++          "penalties": [
++            "missing source page",
++            "missing license URL/source evidence",
++            "missing bounds/dimensions metadata",
++            "missing material metadata for visual model role"
++          ],
++          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
++          "license": "CC-BY-4.0",
++          "licenseName": "CC-BY-4.0",
++          "licenseRaw": "CC-BY-4.0",
++          "author": "macriciox",
++          "attribution": "macriciox",
++          "semanticScore": 0.8036889792937617,
++          "postDownloadInspection": {
++            "bounds": [
++              0.774,
++              0.64,
++              0.393
++            ],
++            "materialCount": 1,
++            "textureCount": 3,
++            "animationClipCount": 0,
++            "skinCount": 0,
++            "morphTargetCount": 0,
++            "warnings": [
++              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
++            ]
++          },
++          "rawCatalogMetadata": {
++            "id": "objaverse:76fa80950b1f48a8ad6a8441fe443241",
++            "title": "Cardboard box",
++            "source": "objaverse",
++            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-089/76fa80950b1f48a8ad6a8441fe443241.glb",
++            "license": "CC-BY-4.0",
++            "thumbnail": "https://media.sketchfab.com/models/76fa80950b1f48a8ad6a8441fe443241/thumbnails/3706e84f90a74bd6b9f920e9abbde539/68d655fdb2d34f55bed588e0315fe7e0.jpeg",
++            "attribution": "macriciox",
++            "score": 0.8036889792937617
++          }
++        },
++        "checkedAt": "2026-08-21T22:45:04.198Z"
+       },
+-      "sourcePath": "apps/showcase-courier-rush/assets/sfx/strikeHit.wav",
+-      "outputPath": "public/aura-assets/courierStrikeHitSfx.c75e32f0.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
++      "sourcePath": "public/aura-assets/courierParcel.b04bff68.glb",
++      "outputPath": "public/aura-assets/courierParcel.b04bff68.glb",
++      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
++      "author": "macriciox (https://sketchfab.com/macriciox)",
++      "boundsMetadata": {
++        "min": [
++          -0.328,
++          -0.292,
++          -0.139
++        ],
++        "max": [
++          0.446,
++          0.348,
++          0.254
++        ],
++        "size": [
++          0.774,
++          0.64,
++          0.393
++        ],
++        "center": [
++          0.059,
++          0.028,
++          0.057
++        ],
++        "maxDimension": 0.774,
++        "grounded": false
++      },
++      "materialMetadata": [
++        {
++          "name": "defaultMat",
++          "visible": true,
++          "readable": true,
++          "opacity": 1,
++          "reasons": []
++        }
++      ],
+       "orientation": {
+-        "source": "unknown",
++        "source": "manifest-override",
++        "forwardAxis": "+Z",
++        "upAxis": "+Y",
++        "view": "hash-bound-readable-prop-view",
++        "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
++        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
++        "checkedAt": "2026-08-23T20:22:43.926Z",
++        "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel",
++        "renderedProbe": {
++          "url": "tests/reports/showcase-release-asset-probes/courierParcel.png",
++          "sha256": "sha256-972ea709611b42332b29645b7c6c530116054e662ffc6fb6ff56a58b1f4cb611",
++          "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
++          "checkedAt": "2026-08-23T20:22:43.926Z",
++          "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel"
++        },
+         "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
++          "The hash-bound parcel is presented +Y-up with +Z as its route-authored neutral view before it is visibly attached to the van bed."
+         ]
+       },
+-      "nodeNames": [],
+-      "textures": [],
++      "nodeNames": [
++        "Sketchfab_model",
++        "Box.OBJ.cleaner.materialmerger.gles",
++        "Object_2"
++      ],
++      "textures": [
++        "image-0",
++        "image-1",
++        "image-2"
++      ],
+       "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/courierStrikeHitSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Collision strike cue driven by pinned route-local collision rules."
++      "thumbnailUrl": "/aura-assets/courierParcel.thumb.svg",
++      "quality": "release",
++      "role": "prop",
++      "suitabilityReason": "Release-validated typed textured parcel prop with readable materials, retained root-safe rendered probe, durable CC-BY provenance, and visible route attachment state; supporting cargo, not a primary subject.",
++      "renderedProbe": {
++        "url": "tests/reports/showcase-release-asset-probes/courierParcel.png",
++        "kind": "browser-screenshot",
++        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
++        "route": "tests/browser/showcase-release-asset-probe-harness?asset=courierParcel",
++        "sha256": "sha256-972ea709611b42332b29645b7c6c530116054e662ffc6fb6ff56a58b1f4cb611",
++        "assetHash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
++        "width": 752,
++        "height": 600,
++        "nonBlankPixels": 451200,
++        "colorBuckets": 15,
++        "checkedAt": "2026-08-23T20:22:43.926Z",
++        "foregroundBounds": {
++          "x": 160,
++          "y": 180,
++          "width": 412,
++          "height": 348
++        }
++      }
+     },
+   },
+   "courierTrafficHatch": {
+-- 
+2.34.1
+
