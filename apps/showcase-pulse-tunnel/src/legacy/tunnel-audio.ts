@@ -13,7 +13,7 @@
  * pattern mode; gameplay never depends on audio existing.
  */
 import { createGameAudio, type GameAudio, type GameAudioContextLike } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type PulseSfxCue =
   | "laneSwitch"

@@ -20,7 +20,7 @@
     "primaryAsset": {
       "typedRef": "assets.pulseRunnerCraft",
       "hash": "sha256-0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle",
       "license": "CC0-1.0",
       "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
@@ -47,7 +47,7 @@
     "terminalSentry": {
       "typedRef": "assets.pulseTerminalSentry",
       "hash": "sha256-0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61",
-      "quality": "release",
+      "quality": "candidate",
       "role": "character",
       "license": "CC0-1.0",
       "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
@@ -75,7 +75,7 @@
     "encounterWorld": {
       "typedRef": "assets.pulseReactorEncounterWorld",
       "hash": "sha256-9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
       "license": "CC0-1.0",
       "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
@@ -370,5 +370,8 @@
     ],
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-pulse-tunnel/dist --release --source apps/showcase-pulse-tunnel/src --asset pulseRunnerCraft --asset pulseTerminalSentry --asset pulseReactorEncounterWorld",
     "deployAssetBoundary": "The strict deploy check validates the three original release-quality Pulse model assets. All 13 live typed audio references remain independently hash/provenance/quality-validated by this generator because the model-oriented deploy validator is scoped to the visual encounter kit."
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }
