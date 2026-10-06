@@ -3,5 +3,22 @@
   "assetBasePath": "/aura-assets/",
   "outputDir": "public/aura-assets",
   "typegen": "src/aura-assets.ts",
-  "assets": []
+  "assets": [
+    {
+      "id": "product",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/khronosToyCar.01a60862.glb",
+      "outputPath": "public/aura-assets/khronosToyCar.01a60862.glb",
+      "url": "/aura-assets/khronosToyCar.01a60862.glb",
+      "hash": "sha256-01a60862de55cd4b9f3acfab0b0def86451800f9c42467fcd61052c16cb9838c",
+      "sizeBytes": 5422412,
+      "bounds": [734.429, 739.623, 288.229],
+      "materials": ["ToyCar", "Fabric", "Glass"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Khronos glTF-Sample-Assets ToyCar (Microsoft); KHR_materials_clearcoat/transmission/sheen sample"
+    }
+  ]
 }
