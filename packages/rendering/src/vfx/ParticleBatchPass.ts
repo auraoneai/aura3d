@@ -24,6 +24,8 @@ export interface ParticlePassDiagnostics {
   drawCalls: number;
   instancesDrawn: number;
   readonly errors: { code: string; nodeId: string; message: string }[];
+  /** C-28 device counters snapshot at report time (e.g. `readbacks` must stay 0). */
+  readonly deviceCounters?: { readonly readbacks: number };
 }
 
 interface BatchState extends ParticleBatchHandle {
@@ -218,7 +220,10 @@ export class ParticleBatchPass {
   }
 
   get diagnostics(): ParticlePassDiagnostics {
-    return this.frameDiagnostics;
+    const counters = this.device.counters?.();
+    return counters === undefined
+      ? this.frameDiagnostics
+      : { ...this.frameDiagnostics, deviceCounters: { readbacks: counters.readbacks } };
   }
 
   get batchCount(): number {

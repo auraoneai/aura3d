@@ -1782,7 +1782,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - The real factory is used only when `A3D_QR_VFX` is on; otherwise the PR 0a stub factory is used.
   - Test `effect-system-binding.test.ts`: single app → bound on the first contributor call; two apps →
     `VFX_APP_BINDING_AMBIGUOUS`.
-- [ ] **P1-T15** Lane scenes, each with both adapters (Aura and three r185):
+- [x] **P1-T15** Lane scenes, each with both adapters (Aura and three r185):
   - `benchmarks/quality-rebuild/scenes/prd07/index.ts` with `prd07-particles-fountain` (copy of `shared/scenes.ts:280-288`
     plus `blend: "additive"`, `size`), `prd07-flipbook` and `prd07-particles-stress`;
   - `aura3d/scenes/prd07/*.ts` and `three/scenes/prd07/*.ts`.

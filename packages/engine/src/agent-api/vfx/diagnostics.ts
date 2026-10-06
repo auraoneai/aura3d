@@ -34,7 +34,8 @@ export function collectEffectsSection(app: AuraApp): import("../../contracts/eff
     budget: { tier: "medium", cap: 10000, culled: 0 },
     ...(report.gpuMs !== undefined ? { gpuMs: report.gpuMs } : {}),
     errors: report.errors,
-    pixelBacked: report.pixelBacked
+    pixelBacked: report.pixelBacked,
+    ...(report.deviceReadbacks !== undefined ? { deviceReadbacks: report.deviceReadbacks } : {})
   };
 }
 

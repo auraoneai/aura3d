@@ -15,8 +15,8 @@ export interface EffectNodeLike {
   readonly particleCount?: number;
   readonly emitter?: "fountain" | "swirl" | "ambient";
   readonly color?: string | readonly number[];
-  readonly speed?: number;
-  readonly gravity?: number;
+  readonly speed?: number | readonly [number, number];
+  readonly gravity?: number | AuraVec3;
   readonly emissionRate?: number;
   readonly radius?: number;
   readonly height?: number;
@@ -30,6 +30,16 @@ export interface EffectNodeLike {
   readonly mist?: boolean;
   readonly splashes?: boolean;
   readonly seed?: number;
+  // PRD-07 §6.2 emitter surface (options accepted by effects.particles).
+  readonly blend?: "alpha" | "premultiplied" | "additive" | "multiply" | "opaque";
+  readonly size?: number | readonly [number, number];
+  readonly maxParticles?: number;
+  readonly prewarm?: number;
+  readonly rate?: number;
+  readonly lifetime?: number | readonly [number, number];
+  readonly drag?: number;
+  readonly spread?: number;
+  readonly direction?: AuraVec3;
 }
 
 export interface LoweredParticleEffect {
@@ -81,6 +91,16 @@ const COLOR_TABLE: Record<string, readonly [number, number, number]> = {
 
 const ADDITIVE_MODES = new Set(["additive-glow", "spark", "star"]);
 
+const VALID_BLENDS = new Set(["alpha", "premultiplied", "additive", "multiply"]);
+
+type Blend = "alpha" | "premultiplied" | "additive" | "multiply";
+
+function asRange(v: number | readonly [number, number] | undefined): readonly [number, number] | undefined {
+  if (v === undefined) return undefined;
+  if (typeof v === "number") return [v, v];
+  return [v[0], v[1] ?? v[0]];
+}
+
 function hashSeed(nodeId: string): number {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < nodeId.length; i++) {
@@ -109,8 +129,10 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     case "particles": {
       const materialMode = node.materialMode ?? "soft-alpha";
       const additive = ADDITIVE_MODES.has(materialMode);
-      const count = Math.max(1, Math.min(200000, Math.round(node.particleCount ?? 200)));
-      const speed = node.speed ?? (node.emitter === "fountain" ? 3 : 1);
+      const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : additive ? "additive" : "alpha";
+      const count = Math.max(1, Math.min(200000, Math.round(node.maxParticles ?? node.particleCount ?? 200)));
+      const speedScalar = typeof node.speed === "number" ? node.speed : node.emitter === "fountain" ? 3 : 1;
+      const speedRange = asRange(node.speed) ?? [speedScalar * 0.7, speedScalar];
       return {
         type: "emitter",
         nodeId,
@@ -118,7 +140,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         consumer: "particle-pass",
         sim: "cpu",
         batch: {
-          blend: additive ? "additive" : "alpha",
+          blend,
           shading: "unlit",
           softDepth: materialMode !== "spark",
           stretch: materialMode === "spark",
@@ -128,23 +150,24 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
         emitter: {
           // §6.2.2 material key — identical blend/atlas/flags merge into one
           // instanced draw in ProductionEffectSystem.feed.
-          key: `eff.${additive ? "additive" : "alpha"}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.0`,
+          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.0`,
           nodeId,
           origin: position,
           capacity: count,
-          emissionRate: node.emissionRate ?? count / 2.5,
-          life: [1.2, 2.4],
-          speed: [speed * 0.7, speed],
-          spread: node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : 0.18,
-          direction: node.emitter === "ambient" ? [0.15, 0.4, 0.1] : [0, 1, 0],
-          gravity: node.gravity ?? (additive ? -1.2 : -0.6),
-          size: node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14],
+          emissionRate: node.rate ?? node.emissionRate ?? count / 2.5,
+          life: asRange(node.lifetime) ?? [1.2, 2.4],
+          speed: speedRange,
+          spread: node.spread ?? (node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : 0.18),
+          direction: node.direction ?? (node.emitter === "ambient" ? [0.15, 0.4, 0.1] : [0, 1, 0]),
+          gravity: typeof node.gravity === "number" ? node.gravity : Array.isArray(node.gravity) ? node.gravity[1] ?? 0 : additive ? -1.2 : -0.6,
+          size: asRange(node.size) ?? (node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14]),
           color: nodeColor(node),
           alpha: materialMode === "smoke" ? 0.35 : 0.85,
           spin: node.emitter === "swirl" ? 2.4 : 0.6,
           stretch: materialMode === "spark" ? 0.02 : 0,
-          drag: 0.12,
-          seed: seedOverride ?? (node.seed ?? hashSeed(nodeId))
+          drag: node.drag ?? 0.12,
+          seed: seedOverride ?? (node.seed ?? hashSeed(nodeId)),
+          ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {})
         }
       };
     }

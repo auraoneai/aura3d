@@ -3,7 +3,22 @@
 import type { AuraEffectNode, AuraVec3 } from "../index.js";
 import { AuraNodeBuilder, effects } from "../index.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
+import type { AuraBlendMode } from "@aura3d/rendering/contracts";
+import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
 import { particles } from "./particles.js";
+
+/**
+ * Copy every defined PRD-07 §6.2 emitter option onto the node value so it
+ * reaches `EffectNodeLowering` on the raw spec object (AuraEffectNode carries
+ * no typed slots for the new surface yet — fields ride through as data).
+ */
+function withEmitterOptions<T extends AuraEffectNode>(value: T, options: Readonly<Record<string, unknown>>): T {
+  const target = value as Record<string, unknown>;
+  for (const [key, optionValue] of Object.entries(options)) {
+    if (optionValue !== undefined) target[key] = optionValue;
+  }
+  return value;
+}
 
 export const vfxEffectBuilders = {
   fog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
@@ -132,11 +147,17 @@ export const vfxEffectBuilders = {
    * recorded with validated sheet geometry, but withheld — root has no
    * native sprite-sheet sampler yet, so no pass is submitted.
    */
-  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
+  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
+    readonly blend?: AuraBlendMode;
+    readonly size?: number | readonly [number, number];
+    readonly seed?: number;
+    readonly loop?: boolean;
+    readonly sprite?: AuraParticleEmitterOptions["sprite"];
+  } = {}) => {
     const columns = options.spriteColumns ?? 4;
     const rows = options.spriteRows ?? 4;
     resolveFlipbookUv(0, columns, rows);
-    return new AuraNodeBuilder<AuraEffectNode>({
+    return new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
       kind: "effect",
       effect: "flipbook-sprite",
       name: options.name ?? "flipbook explosion sprite",
@@ -145,7 +166,7 @@ export const vfxEffectBuilders = {
       spriteColumns: columns,
       spriteRows: rows,
       frameRate: options.frameRate ?? 24
-    });
+    }, options));
   },
   /**
    * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
@@ -171,8 +192,12 @@ export const vfxEffectBuilders = {
       segmentCount: descriptor.segmentCount
     });
   },
-  particles: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-	    new AuraNodeBuilder<AuraEffectNode>({
+  /**
+   * PRD-07 §6.2 emitter surface: accepts `AuraParticleEmitterOptions` plus the
+   * legacy fields; every defined option rides the node to lowering.
+   */
+  particles: (options: AuraParticleEmitterOptions & AuraLegacyParticleFields & Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
       kind: "effect",
       effect: "particles",
       name: options.name ?? `${options.emitter ?? "fountain"} particle system`,
@@ -195,5 +220,5 @@ export const vfxEffectBuilders = {
 	      velocityOverLife: options.velocityOverLife ?? [1, 0.82, 0.28],
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22
-	    }),
+	    }, options as unknown as Record<string, unknown>)),
 };

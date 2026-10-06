@@ -22,6 +22,8 @@ export interface EmitterDescriptor {
   readonly stretch: number;
   readonly drag: number;
   readonly seed: number;
+  /** Seconds of simulation applied at creation (steady-state at t=0, capped at 30s). */
+  readonly prewarm?: number;
 }
 
 export interface EmitterState {
@@ -48,7 +50,7 @@ export function mulberry32(seed: number): () => number {
 
 export function createEmitter(desc: EmitterDescriptor): EmitterState {
   const n = Math.max(1, desc.capacity);
-  return {
+  const state: EmitterState = {
     desc,
     live: 0,
     emitRemainder: 0,
@@ -58,6 +60,13 @@ export function createEmitter(desc: EmitterDescriptor): EmitterState {
     age: new Float32Array(n), life: new Float32Array(n), size: new Float32Array(n),
     seedA: new Float32Array(n)
   };
+  if (desc.prewarm && desc.prewarm > 0) {
+    // Same fixed-step path as live sim so prewarmed state is identical to an
+    // emitter that ran for `prewarm` seconds.
+    const steps = Math.min(Math.ceil(Math.min(desc.prewarm, 30) * 60), 1800);
+    for (let i = 0; i < steps; i++) stepEmitter(state, 1 / 60);
+  }
+  return state;
 }
 
 function next(state: EmitterState): number {

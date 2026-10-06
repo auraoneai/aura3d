@@ -1,0 +1,218 @@
+/**
+ * PRD-07 lane adapter runner (Aura side). Same contract as
+ * `aura3d/common.ts` (createAuraApp on production, step to the capture time,
+ * settle frames, ReadyPayload) but honours the PRD-07 §6.2 emitter options
+ * (`seed`, `size`, `blend`, `maxParticles`, `prewarm`) and lane object kinds
+ * (`flipbook`, `emitterSet`).
+ *
+ * Flags: `--flags <list>` appends `?a3d-qr=<list>` (C-33); the engine resolves
+ * flags only from `createAuraApp` options, so the param is read here and
+ * forwarded. Absent param = flags off (the flag-off sentinel run).
+ */
+import {
+  camera,
+  createAuraApp,
+  effects,
+  lights,
+  primitives,
+  scene,
+  type AuraApp,
+  type AuraMaterialSpec,
+  type AuraNodeInput,
+  type AuraSceneBuilder
+} from "@aura3d/engine";
+import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
+import type { EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
+
+declare const __AURA3D_VERSION__: string;
+
+class CapabilityLog {
+  readonly entries: CapabilityEntry[] = [];
+  add(feature: string, status: CapabilityStatus, detail: string): void {
+    this.entries.push({ feature, status, detail });
+  }
+}
+
+function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
+  return {
+    color: spec.color,
+    roughness: spec.roughness,
+    metallic: spec.metalness,
+    metalness: spec.metalness,
+    ...(spec.emissive !== undefined ? { emissive: spec.emissive } : {}),
+    ...(spec.emissiveIntensity !== undefined ? { emissiveIntensity: spec.emissiveIntensity } : {})
+  };
+}
+
+function flagsFromUrl(): readonly string[] | undefined {
+  const raw = new URLSearchParams(window.location.search).get("a3d-qr");
+  if (raw === null || raw === "" || raw === "none") return undefined;
+  return raw.split(",").filter(Boolean);
+}
+
+interface EffectsDiagnosticsShape {
+  readonly nodes?: readonly {
+    readonly id: string; readonly effect: string; readonly live: number;
+    readonly drawCalls: number; readonly instancesDrawn: number;
+    readonly zeroPixelFrames: number;
+  }[];
+  readonly batches?: number;
+  readonly liveParticles?: number;
+  readonly pixelBacked?: readonly string[];
+  readonly errors?: readonly { readonly code: string; readonly nodeId: string; readonly message: string }[];
+}
+
+function effectsDiagnostics(app: AuraApp): EffectsDiagnosticsShape | undefined {
+  const diagnostics = app.diagnostics() as unknown as { effects?: EffectsDiagnosticsShape };
+  return diagnostics.effects;
+}
+
+function particleNode(object: { readonly name: string; readonly seed: number; readonly count: number; readonly center: readonly [number, number, number]; readonly radius: number; readonly height: number; readonly color: string; readonly size: number; readonly blending: string; readonly rate?: number }, spec: Prd07SceneSpec): AuraNodeInput {
+  const prewarm = spec.time + spec.settleFrames / 60;
+  return effects.particles({
+    name: object.name,
+    emitter: "fountain",
+    radius: object.radius,
+    height: object.height,
+    color: object.color,
+    // PRD-07 §6.2 surface: deterministic seed, world-space sprite size,
+    // explicit blend, emitter cap and steady-state prewarm.
+    seed: object.seed,
+    size: object.size,
+    blend: object.blending === "additive" ? "additive" : "alpha",
+    maxParticles: object.count,
+    prewarm,
+    ...(object.rate !== undefined ? { rate: object.rate } : {})
+  }).position(object.center[0], object.center[1], object.center[2]);
+}
+
+function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraSceneBuilder {
+  const built = scene();
+  const nodes: AuraNodeInput[] = [];
+
+  if (spec.background.kind === "color") {
+    built.background(spec.background.color);
+  }
+  built.camera(camera.perspective({
+    position: spec.camera.position,
+    target: spec.camera.target,
+    fov: spec.camera.fov,
+    near: spec.camera.near,
+    far: spec.camera.far
+  }));
+  log.add("tone-mapping:aces-filmic", "supported", "Production bridge submits operator \"aces\".");
+
+  for (const light of spec.lights) {
+    if (light.kind === "ambient") {
+      nodes.push(lights.ambient({ name: light.name, intensity: light.intensity, color: light.color }));
+    } else if (light.kind === "directional") {
+      nodes.push(lights.directional({ name: light.name, position: light.position, intensity: light.intensity, color: light.color, shadow: light.castShadow })
+        .lookAt(light.target[0], light.target[1], light.target[2]));
+    } else if (light.kind === "point") {
+      nodes.push(lights.point({ name: light.name, position: light.position, intensity: light.intensity, color: light.color }));
+    }
+  }
+
+  for (const object of spec.objects) {
+    if (object.kind === "primitive") {
+      let node = primitives[object.shape]({
+        name: object.name,
+        material: toAuraMaterial(object.material),
+        size: object.size,
+        castShadow: object.castShadow,
+        receiveShadow: object.receiveShadow
+      }).position(...object.position);
+      if (object.rotation) node = node.rotate(...object.rotation);
+      nodes.push(node);
+    } else if (object.kind === "particles") {
+      nodes.push(particleNode(object, spec));
+      log.add("particles", "supported", `effects.particles ${object.count} max, seed ${object.seed}, blend ${object.blending}, size ${object.size}`);
+    } else if (object.kind === "flipbook") {
+      nodes.push(effects.flipbook({
+        name: object.name,
+        color: object.color ?? "#ffb347",
+        spriteColumns: object.atlas.columns,
+        spriteRows: object.atlas.rows,
+        frameRate: object.atlas.frameRate,
+        seed: object.atlas.seed,
+        size: object.size,
+        blend: object.blending ?? "alpha"
+      }).position(...object.position));
+      log.add("flipbook", "partial", `effects.flipbook ${object.atlas.columns}x${object.atlas.rows} @ ${object.atlas.frameRate}fps — atlas sampling lands with P1-T11/T12.`);
+    } else if (object.kind === "emitterSet") {
+      for (const member of object.emitters) {
+        nodes.push(particleNode({ ...member }, spec));
+      }
+      log.add("emitterSet", "supported", `${object.emitters.length} emitters, ${object.emitters.reduce((s: number, e: EmitterMemberSpec) => s + e.count, 0)} total particles`);
+    }
+  }
+
+  for (const node of nodes) built.add(node);
+  return built;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function nextFrame(): Promise<void> {
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+}
+
+export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+  const started = performance.now();
+  const log = new CapabilityLog();
+  const flags = flagsFromUrl();
+  const builtScene = buildPrd07AuraScene(spec, log);
+  const app = createAuraApp(host, {
+    scene: builtScene,
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    pixelRatio: spec.resolution.devicePixelRatio,
+    resize: false,
+    autoStart: false,
+    ...(flags !== undefined ? { qualityRebuild: { flags: [...flags] } } : {})
+  });
+  await app.ready();
+
+  const drawDeadline = performance.now() + 90_000;
+  while (performance.now() < drawDeadline) {
+    app.step(0);
+    const diagnostics = app.diagnostics();
+    if (diagnostics.drawCalls > 0 || diagnostics.errors.length > 0) break;
+    await sleep(50);
+  }
+
+  // Advance simulated time to the capture time, then settle.
+  app.step(spec.time);
+  for (let frame = 0; frame < spec.settleFrames; frame += 1) {
+    await nextFrame();
+    app.step(0);
+  }
+  await nextFrame();
+
+  const diagnostics = app.diagnostics();
+  const fx = effectsDiagnostics(app);
+  if (fx) {
+    log.add("effects-nodes", "supported", `${fx.nodes?.length ?? 0} effect nodes, ${fx.liveParticles ?? 0} live particles, ${fx.batches ?? 0} batches, pixelBacked=[${(fx.pixelBacked ?? []).join(",")}]`);
+    for (const error of fx.errors ?? []) log.add(`effects-error:${error.code}`, "missing", `${error.nodeId}: ${error.message}`);
+  } else {
+    log.add("effects-nodes", "missing", "diagnostics().effects section absent (A3D_QR_VFX off)");
+  }
+
+  return {
+    engine: "aura3d",
+    scene: spec.id,
+    engineVersion: __AURA3D_VERSION__,
+    capabilityLog: log.entries,
+    drawCalls: diagnostics.drawCalls,
+    warnings: [...diagnostics.warnings],
+    errors: [...diagnostics.errors],
+    loadMs: Math.round(performance.now() - started),
+    extra: {
+      backend: diagnostics.backend,
+      renderSize: diagnostics.renderSize,
+      qrFlags: flags ?? [],
+      effects: fx
+    }
+  };
+}

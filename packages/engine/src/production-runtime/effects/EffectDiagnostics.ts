@@ -23,6 +23,8 @@ export interface EffectDiagnosticsReport {
   readonly errors: readonly { code: string; nodeId: string; message: string }[];
   readonly pixelBacked: readonly string[];
   readonly gpuMs?: number;
+  /** C-28 — device readback count observed by the particle pass (must stay 0). */
+  readonly deviceReadbacks?: number;
 }
 
 const ZERO_PIXEL_FRAME_LIMIT = 30;
@@ -35,6 +37,7 @@ export class EffectDiagnostics {
   private gpuMs: number | null = null;
   private batches = 0;
   private liveParticles = 0;
+  private deviceReadbacks: number | null = null;
   private readonly warned = new Set<string>();
 
   track(node: Omit<TrackedEffectNode, "drawCalls" | "instancesDrawn" | "zeroPixelFrames">): TrackedEffectNode {
@@ -74,6 +77,10 @@ export class EffectDiagnostics {
     this.batches = batches;
     this.liveParticles = liveParticles;
     if (gpuMs !== undefined) this.gpuMs = gpuMs;
+  }
+
+  noteDeviceReadbacks(readbacks: number): void {
+    this.deviceReadbacks = readbacks;
   }
 
   /**
@@ -118,7 +125,8 @@ export class EffectDiagnostics {
       liveParticles: this.liveParticles,
       errors: [...this.errors],
       pixelBacked: [...this.pixelBacked],
-      ...(this.gpuMs !== null ? { gpuMs: this.gpuMs } : {})
+      ...(this.gpuMs !== null ? { gpuMs: this.gpuMs } : {}),
+      ...(this.deviceReadbacks !== null ? { deviceReadbacks: this.deviceReadbacks } : {})
     };
   }
 
@@ -130,5 +138,6 @@ export class EffectDiagnostics {
     this.frameDraws.clear();
     this.warned.clear();
     this.gpuMs = null;
+    this.deviceReadbacks = null;
   }
 }

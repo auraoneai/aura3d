@@ -228,6 +228,9 @@ export class ProductionEffectSystem {
     for (const error of diag.errors) {
       this.diagnostics.note(error.code, error.nodeId, error.message);
     }
+    if (diag.deviceCounters !== undefined) {
+      this.diagnostics.noteDeviceReadbacks(diag.deviceCounters.readbacks);
+    }
   }
 
   liveCount(): number {
