@@ -4,10 +4,10 @@
 // sign props (emissive practicals), wet clearcoat deck. The four root
 // "shadow evidence" boxes and the spectator card are deleted; no parked
 // nodes, no ambient fill — visibility comes from the rig in lighting.ts.
-import { game, instances, model } from "@aura3d/engine";
+import { game, instances, model, primitives } from "@aura3d/engine";
 import { assets } from "../../aura-assets";
 import {
-  FOG_CARD_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
+  FOG_CARD_MATERIAL, HIT_FLASH_MATERIAL, NEON_CYAN_MATERIAL, NEON_PINK_MATERIAL,
   ROOFTOP_DECK_MATERIAL, ROOFTOP_TRIM_MATERIAL, SKYLINE_MATERIAL
 } from "./materials";
 
@@ -48,6 +48,7 @@ export const STAGE_HALF_WIDTH = 3.4;
 /** Runtime node names the fighting rig reads via ctx.subject(...). */
 export const P1_NODE = "aura-clash-p1";
 export const P2_NODE = "aura-clash-p2";
+export const HIT_FLASH_NODE = "clash-hit-flash";
 
 export interface AuraClashWorldOptions {
   readonly playerStart?: readonly [number, number, number];
@@ -177,6 +178,19 @@ export function auraClashWorldNodes(o: AuraClashWorldOptions = {}): readonly unk
       receiveShadow: true
     }).position(...p2).rotate(0, -Math.PI / 2, 0)
       .runtime(game.runtimeNode(P2_NODE, { tags: ["fighter", "opponent", "typed-asset"] }))
+  );
+
+  // §14.4 hit flash: runtime-toggled light-representing sphere (the engine's
+  // point lights aren't runtime-togglable); parked under the deck between
+  // hits, parked at the contact point for exactly 80 ms when one lands.
+  nodes.push(
+    primitives.sphere({
+      name: HIT_FLASH_NODE,
+      material: HIT_FLASH_MATERIAL,
+      castShadow: false,
+      receiveShadow: false
+    }).position(0, -3, 0).scale(0.34)
+      .runtime(game.runtimeNode(HIT_FLASH_NODE, { tags: ["fx", "hit-flash"] }))
   );
   return nodes;
 }

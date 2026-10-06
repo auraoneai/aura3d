@@ -22,15 +22,28 @@ export interface AuraClashFxHooks {
       readonly shake?: { add(amount: number): void };
     };
   };
+  /** §14.4 hit flash: runtime handle parked under the deck, shown 80 ms. */
+  readonly hitFlash?: {
+    setPosition(x: number, y: number, z: number): unknown;
+  } | null;
 }
 
 let koFired = false;
+let hitFlashUntilMs = -1;
+const HIT_FLASH_MS = 80;
 
 /** Consume the fighting kit's combat events; call once per frame. */
 export function auraClashFxFrame(
   hooks: AuraClashFxHooks,
-  events: readonly GameCombatEvent[]
+  events: readonly GameCombatEvent[],
+  nowMs = performance.now()
 ): void {
+  // Flash window elapsed → park the node again (below the deck, still
+  // visible:true so the runtime never re-syncs a hidden node).
+  if (hitFlashUntilMs >= 0 && nowMs >= hitFlashUntilMs) {
+    hitFlashUntilMs = -1;
+    hooks.hitFlash?.setPosition(0, -3, 0);
+  }
   for (const ev of events) {
     const p = ev.position ?? [0, 0.9, 0];
     switch (ev.type) {
@@ -46,6 +59,10 @@ export function auraClashFxFrame(
           actors: ev.targetId && ev.attackerId ? [ev.attackerId, ev.targetId] : undefined
         });
         hooks.app.camera?.shake?.add(0.12);
+        if (hooks.hitFlash) {
+          hooks.hitFlash.setPosition(p[0], p[1] + 0.06, p[2]);
+          hitFlashUntilMs = nowMs + HIT_FLASH_MS;
+        }
         break;
       case "blocked":
         hooks.game.fx.burst("spark", [p[0], p[1], p[2]], {
@@ -73,6 +90,8 @@ export function auraClashFxFrame(
         break;
       case "round-reset":
         koFired = false;
+        hitFlashUntilMs = -1;
+        hooks.hitFlash?.setPosition(0, -3, 0);
         break;
       default:
         break;

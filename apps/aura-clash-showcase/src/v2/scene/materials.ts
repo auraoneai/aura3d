@@ -36,6 +36,16 @@ export const NEON_CYAN_MATERIAL: AuraMaterialSpec = material.emissive({
   roughness: 0.3
 });
 
+// Hit flash: a light-representing node (the ≤0.1 non-light cap does not
+// apply, §6.9.3); toggled 80 ms per landed hit via its runtime handle.
+export const HIT_FLASH_MATERIAL: AuraMaterialSpec = material.emissive({
+  color: "#1a1206",
+  emissive: "#fff3d0",
+  emissiveIntensity: 6.4,
+  roughness: 0.2,
+  practical: true
+});
+
 export const SKYLINE_MATERIAL: AuraMaterialSpec = material.pbr({
   color: "#0b1020",
   roughness: 0.85,

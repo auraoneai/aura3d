@@ -9,7 +9,7 @@ import { createGame } from "@aura3d/game";
 import { createFightingGameKit, postPresets } from "@aura3d/engine";
 import type { FightingGameSnapshot } from "@aura3d/engine";
 import { auraClashEnvironment, auraClashLights } from "./scene/lighting";
-import { auraClashWorldNodes, P1_NODE, P2_NODE } from "./scene/world";
+import { auraClashWorldNodes, P1_NODE, P2_NODE, HIT_FLASH_NODE } from "./scene/world";
 import { createAuraClashFightingRig } from "./scene/camera";
 import { auraClashFxFrame } from "./scene/fx";
 import { publishAuraClashEvidence } from "./evidence";
@@ -123,10 +123,15 @@ game.app.onFrame?.(({ dt }) => {
     p2.setRotation(0, (latestSnapshot.opponent.facing ?? -1) * -Math.PI / 2, 0);
   }
 
-  // Combat events → fx + juice + audio intents.
+  // Combat events → fx + juice + audio intents. The frame call runs even
+  // with no events so the hit-flash window expires on schedule.
   const events = kit.combat.consumeEvents();
+  auraClashFxFrame({
+    game: { fx: game.fx, session: game.session },
+    app: game.app,
+    hitFlash: game.app.nodes.get(HIT_FLASH_NODE)
+  }, events);
   if (events.length > 0) {
-    auraClashFxFrame({ game: { fx: game.fx, session: game.session }, app: game.app }, events);
     for (const ev of events) {
       if (ev.type === "hit") {
         pushCue("hit");
