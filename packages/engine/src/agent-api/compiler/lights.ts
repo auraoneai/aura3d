@@ -1,13 +1,19 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraLightNode, AuraVec3, ProductionRuntimeLightDescriptor, AuraSceneSnapshot } from "../index.js";
+import type { AuraColor, AuraLightNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../index.js";
 import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
-import { clampNumber, groups, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
+import { clampNumber, colorToLinearRgb, groups, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
+import { resolveQrFlags } from "../../contracts/flags.js";
+import type { AuraLightingModel } from "../../contracts/lighting.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 
 export function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
+  // PRD-02: under A3D_QR_LIGHTING the authored-defaults fallback light rig is
+  // replaced by the C-09 `prd02.neutral-room` environment source plus authored
+  // light collection — no implicit directionals (F-02-01).
+  if (prd02LightingOn()) return [];
   if (cachedProductionRuntimeFallbackLights) return cachedProductionRuntimeFallbackLights;
   const descriptors: readonly ProductionRuntimeLightDescriptor[] = [
     {
@@ -319,4 +325,104 @@ export function resolveLightingTier(
   ctx: { readonly quality: { readonly tier: AuraQualityTier } }
 ): AuraQualityTier {
   return !requested || requested === "auto" ? ctx.quality.tier : requested;
+}
+
+// ---------- PRD-02 Phase 2 — lighting model / flag resolution ----------
+
+/**
+ * `?aura-lighting=` URL override (C-10): "physical" | "legacy-3.0" | null.
+ * `?a3dLighting=0|off|false` is the kill switch — it wins over every flag
+ * source and forces the legacy path.
+ */
+export function readLightingModelFromUrl(url?: URL | string): { readonly model: AuraLightingModel | null; readonly disabled: boolean } {
+  const href = url !== undefined
+    ? (typeof url === "string" ? url : url.href)
+    : (typeof location !== "undefined" ? location.href : undefined);
+  if (!href) return { model: null, disabled: false };
+  const params = new URL(href, "http://localhost/").searchParams;
+  const kill = params.get("a3dLighting");
+  if (kill !== null && (kill === "0" || kill === "off" || kill === "false" || kill === "")) {
+    return { model: null, disabled: true };
+  }
+  const model = params.get("aura-lighting");
+  if (model === "physical" || model === "legacy-3.0") return { model, disabled: false };
+  return { model: null, disabled: false };
+}
+
+/**
+ * True when A3D_QR_LIGHTING applies for this compile: `ctx.flags` when the
+ * C-36 context is available, else the ambient `?a3d-qr=` URL / `A3D_QR=`
+ * env resolution — and never when `?a3dLighting=` kills it.
+ */
+export function prd02LightingOn(flags?: { on(name: string): boolean }, url?: URL | string): boolean {
+  if (readLightingModelFromUrl(url).disabled) return false;
+  if (flags) return flags.on("A3D_QR_LIGHTING");
+  return resolveQrFlags({
+    url: typeof location !== "undefined" ? location.href : undefined,
+    env: typeof process !== "undefined" ? process.env : {}
+  }).on("A3D_QR_LIGHTING");
+}
+
+/** C-10: model defaults "physical" under the flag, "legacy-3.0" otherwise;
+ *  `?aura-lighting=legacy-3.0` and `options.lighting.model` override. */
+export function resolveLightingModel(
+  options?: { readonly model?: AuraLightingModel },
+  flags?: { on(name: string): boolean },
+  url?: URL | string
+): AuraLightingModel {
+  const fromUrl = readLightingModelFromUrl(url);
+  if (fromUrl.disabled) return "legacy-3.0";
+  if (options?.model) return options.model;
+  if (fromUrl.model) return fromUrl.model;
+  return prd02LightingOn(flags, url) ? "physical" : "legacy-3.0";
+}
+
+/** Hemisphere contribution: non-punctual irradiance (sky/ground pair). */
+export interface HemisphereIrradiance {
+  readonly name?: string;
+  readonly skyColor: readonly [number, number, number];
+  readonly groundColor: readonly [number, number, number];
+  readonly intensity: number;
+  /** Sky direction (node position normalised; default +Y). */
+  readonly direction: readonly [number, number, number];
+}
+
+/** C-36 light-handler output under A3D_QR_LIGHTING. */
+export interface Prd02CollectedLights {
+  readonly descriptors: readonly PhysicalLightDescriptor[];
+  readonly hemisphere: readonly HemisphereIrradiance[];
+  readonly ambientIntensity: number;
+}
+
+/**
+ * Collects authored lights under the flag: physical units via
+ * `physicalLightDescriptor`, ambient summed additively (F-02-01), hemisphere
+ * as an irradiance term. No fallback three-light rig — a no-light scene
+ * returns zero descriptors and the neutral env supplies IBL (S-items).
+ */
+export function collectPrd02Lights(snapshot: AuraSceneSnapshot): Prd02CollectedLights {
+  const lightNodes = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
+  const descriptors: PhysicalLightDescriptor[] = [];
+  const hemisphere: HemisphereIrradiance[] = [];
+  let ambientIntensity = 0;
+  lightNodes.forEach((node, index) => {
+    if (node.light === "ambient") {
+      ambientIntensity += node.intensity ?? 0;
+      return;
+    }
+    if (node.light === "hemisphere") {
+      const direction = normalize3((node.position ?? [0, 1, 0]) as AuraVec3);
+      hemisphere.push({
+        ...(node.name !== undefined ? { name: node.name } : {}),
+        skyColor: colorToLinearRgb(node.color ?? "#bcd7ff"),
+        groundColor: colorToLinearRgb((node as { groundColor?: AuraColor }).groundColor ?? "#352f28"),
+        intensity: node.intensity ?? 1,
+        direction: direction as readonly [number, number, number]
+      });
+      return;
+    }
+    const descriptor = physicalLightDescriptor(node, node.name ?? `${node.light}-${index}`);
+    if (descriptor) descriptors.push(descriptor);
+  });
+  return { descriptors, hemisphere, ambientIntensity };
 }

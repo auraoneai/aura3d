@@ -43,11 +43,54 @@ export {
   projectEquirectToSH9,
   convolveSH9Irradiance
 } from "../environment/SphericalHarmonics.js";
-export * from "../environment/RoomEnvironmentScene.js";
-export * from "../environment/HdrEquirect.js";
-export * from "../environment/Rgb9e5Cube.js";
-export * from "../environment/LightingSamplerBudget.js";
-export * from "../environment/workers/cpuPrefilter.js";
+export {
+  type RoomBox,
+  type RoomEmissivePanel,
+  type RoomPointLight,
+  type RoomEnvironmentSceneDescriptor,
+  ROOM_ENVIRONMENT_PANEL_RADIANCES,
+  createRoomEnvironmentScene,
+  sampleRoomEnvironment
+} from "../environment/RoomEnvironmentScene.js";
+export {
+  type HdrImage,
+  HdrDecodeError,
+  decodeHdrEquirect,
+  sampleEquirect,
+  equirectToCubeFaces
+} from "../environment/HdrEquirect.js";
+export {
+  KTX2_MAGIC,
+  VK_FORMAT_E5B9G9R9_UFLOAT_PACK32,
+  KTX2_HEADER_BYTES,
+  type Rgb9e5CubeErrorReason,
+  Rgb9e5CubeError,
+  type Rgb9e5Cube,
+  readRgb9e5Cube,
+  unpackRgb9e5,
+  packRgb9e5
+} from "../environment/Rgb9e5Cube.js";
+export {
+  FEATURE_UNITS,
+  FEATURE_DEFINES,
+  type SamplerBudgetResult,
+  presentFeatures,
+  resolveLightingSamplerBudgetReal
+} from "../environment/LightingSamplerBudget.js";
+export {
+  PREFILTER_MIP_FLOOR,
+  type PrefilterCubeSource,
+  type PrefilterResult,
+  mipCountForFaceSize,
+  roughnessToLod,
+  lodToRoughness,
+  mipRoughness,
+  faceUvToDir,
+  sampleCube,
+  type PrefilterOptions,
+  prefilterCubeGGX,
+  prefilterLevelGGX
+} from "../environment/workers/cpuPrefilter.js";
 export {
   SH9_CHUNK_GLSL,
   LIGHTING_IBL_CHUNK_GLSL,
