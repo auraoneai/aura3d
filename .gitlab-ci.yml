@@ -67,7 +67,8 @@ qr:diag:
     - git lfs install --local
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
-    - git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb" || echo "lfs pull warn"
-    - export QR_BENCH_CHANNEL=headless-shell
-    - bash benchmarks/quality-rebuild/ci.sh
-    - echo "=== BISECT3 benchmark done ==="
+    - git lfs pull || echo "lfs pull warn"
+    - export QRC_GAMES=aura-clash-showcase QRC_VIEWPORTS=1920x1080 QRC_NO_MOBILE=1 QRC_LOCAL_BUILD=true
+    - node tools/quality-rebuild-capture/capture-games.mjs --build-only || echo "build warn"
+    - node tools/quality-rebuild-capture/capture-games.mjs --skip-build --channel headless-shell
+    - echo "=== BISECT4 one-game capture done ==="
