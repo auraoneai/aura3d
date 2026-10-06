@@ -461,6 +461,8 @@ export interface RenderDevice {
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer;
   updateBuffer(buffer: RenderBuffer, byteOffset: number, data: ArrayBufferView): void;
+  /** C-08 (PRD 01): bind a `"uniform"` buffer to a UBO binding point (gl.bindBufferBase). */
+  bindUniformBuffer?(buffer: RenderBuffer, binding: number): void;
   readBuffer(buffer: RenderBuffer, byteOffset?: number, byteLength?: number): Uint8Array;
   createShaderProgram(sources: ShaderSources): RenderShaderProgram;
   /** Optional native asynchronous validation, currently implemented by WebGPU. */
@@ -634,6 +636,7 @@ export class MockRenderDevice implements RenderDevice {
   private viewportWidth = 0;
   private viewportHeight = 0;
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
+  public readonly uniformBufferBindings: { bufferId: number; binding: number }[] = [];
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
     this.assertAlive();
@@ -675,6 +678,18 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     return mockBuffer.bytes.slice(byteOffset, byteOffset + byteLength);
+  }
+
+  bindUniformBuffer(buffer: RenderBuffer, binding: number): void {
+    this.assertAlive();
+    const mockBuffer = this.requireMockBuffer(buffer);
+    if (mockBuffer.disposed) {
+      throw new RenderDeviceError("Cannot bind a disposed buffer", "DISPOSED_RESOURCE", { bufferId: buffer.id });
+    }
+    if (mockBuffer.usage !== "uniform") {
+      throw new RenderDeviceError("Buffer was not created with usage 'uniform'", "INVALID_BUFFER_USAGE", { bufferId: buffer.id });
+    }
+    this.uniformBufferBindings.push({ bufferId: buffer.id, binding });
   }
 
   createShaderProgram(sources: ShaderSources): RenderShaderProgram {

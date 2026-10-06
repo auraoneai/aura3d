@@ -553,7 +553,11 @@ export class WebGL2Device implements RenderDevice {
       throw new RenderDeviceError("Failed to allocate WebGL buffer", "WEBGL_ALLOCATION_FAILED");
     }
 
-    const target = usage === "index" ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
+    const target = usage === "index"
+      ? this.gl.ELEMENT_ARRAY_BUFFER
+      : usage === "uniform"
+        ? this.gl.UNIFORM_BUFFER
+        : this.gl.ARRAY_BUFFER;
     this.host.drawBinder.bindNoVertexArray();
     this.stateCache.bindBuffer(target, handle, () => this.gl.bindBuffer(target, handle));
     this.gl.bufferData(target, byteLength, this.gl.DYNAMIC_DRAW);
@@ -586,6 +590,15 @@ export class WebGL2Device implements RenderDevice {
     this.stateCache.bindBuffer(webglBuffer.target, webglBuffer.handle, () => this.gl.bindBuffer(webglBuffer.target, webglBuffer.handle));
     this.gl.bufferSubData(webglBuffer.target, byteOffset, data);
     this.host.counters.bufferUpdateCount += 1;
+  }
+
+  bindUniformBuffer(buffer: RenderBuffer, binding: number): void {
+    this.host.lifecycle.assertAlive();
+    const webglBuffer = this.host.drawBinder.requireBuffer(buffer);
+    if (webglBuffer.target !== this.gl.UNIFORM_BUFFER) {
+      throw new RenderDeviceError("Buffer was not created with usage 'uniform'", "INVALID_BUFFER_USAGE", { bufferId: buffer.id });
+    }
+    this.gl.bindBufferBase(this.gl.UNIFORM_BUFFER, binding, webglBuffer.handle);
   }
 
   readBuffer(buffer: RenderBuffer, byteOffset = 0, byteLength = buffer.byteLength - byteOffset): Uint8Array {

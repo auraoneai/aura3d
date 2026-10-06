@@ -4,7 +4,12 @@
  */
 
 import { instanceBufferSlot } from "../contracts/geometry";
+import { frameUniformsSlot } from "../contracts/frameUniforms";
 import { InstanceBuffer } from "../resources/InstanceBuffer";
+import { FrameUniforms } from "../resources/UniformBlock";
 
 // C-07 real: persistent doubling buffer (stub was per-write full upload).
 instanceBufferSlot.provide((device, capacity, options) => new InstanceBuffer(device, capacity, options));
+
+// C-08 real: AuraFrame UBO at binding 0, uploaded once per view.
+frameUniformsSlot.provide((device) => new FrameUniforms(device));
