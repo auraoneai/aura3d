@@ -114,7 +114,7 @@ export function terrainGpuHeightReadback(
 ): Float32Array {
   const heightTex = createTerrainHeightTexture(gl, grid);
   const vsSrc = `#version 300 es
-    void main() { gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }`;
+    void main() { gl_Position = vec4(0.0, 0.0, 0.0, 1.0); gl_PointSize = 1.0; }`;
   const fsSrc = `#version 300 es
     precision highp float;
     uniform highp sampler2D u_height;

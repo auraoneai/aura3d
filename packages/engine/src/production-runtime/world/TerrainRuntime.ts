@@ -12,6 +12,7 @@ import { Sampler, Texture, TextureBinding, VertexFormat } from "@aura3d/renderin
 import type { FrameContributorContext } from "@aura3d/rendering/contracts";
 import type { RenderPass, RenderPassContext } from "@aura3d/rendering";
 import {
+  bakeTerrainSplat,
   buildCdlodTree,
   cdlodRanges,
   createTerrainPatchGeometry,
@@ -19,7 +20,8 @@ import {
   TERRAIN_TIER_LOD,
   terrainMacroNormal,
   type CdlodRange,
-  type CdlodTree
+  type CdlodTree,
+  type SplatBakeResult
 } from "@aura3d/rendering/world";
 import { TERRAIN_FRAG_GLSL, TERRAIN_VERT_GLSL } from "@aura3d/rendering/world";
 import {
@@ -42,6 +44,8 @@ const LINEAR = new Sampler({ minFilter: "linear", magFilter: "linear" });
 
 interface TerrainGpuState {
   readonly record: TerrainRecord;
+  /** Non-null when the GPU bake produced the maps (keeps bake RTs alive). */
+  readonly gpuBake: SplatBakeResult | null;
   readonly patchN: number;
   readonly vertexCount: number;
   readonly tree: CdlodTree;
@@ -94,6 +98,20 @@ function slopeDegAt(record: TerrainRecord, u: number, v: number): number {
   const texel = (record.size[0] / Math.max(1, g.columns - 1) + record.size[1] / Math.max(1, g.rows - 1)) / 2;
   const [, ny] = terrainMacroNormal(g, [Math.min(1, Math.max(0, u)), Math.min(1, Math.max(0, v))], texel, record.heightScale);
   return (Math.acos(Math.min(1, Math.max(-1, ny))) * 180) / Math.PI;
+}
+
+/** AuraSplatRule (name-keyed) → indexed SplatBakeRule for the GPU bake. */
+function splatBakeRulesFor(record: TerrainRecord): { readonly layer: number; readonly weight: number; readonly slopeDeg?: readonly [number, number]; readonly height?: readonly [number, number]; readonly falloff?: number; readonly noise?: { readonly scale: number; readonly threshold: number; readonly seed?: number } }[] {
+  const layers = record.options.layers;
+  const names = layers.map((l) => l.name);
+  const rules = record.options.splat?.kind === "auto" ? record.options.splat.rules : defaultSplatRules(layers);
+  const out: ReturnType<typeof splatBakeRulesFor> = [];
+  for (const r of rules) {
+    const layer = names.indexOf(r.layer);
+    if (layer < 0 || layer >= 8) continue; // unknown/over-8 layers can't map to a channel
+    out.push({ layer, weight: r.weight ?? 1, slopeDeg: r.slopeDeg, height: r.height, falloff: r.falloff, noise: r.noise });
+  }
+  return out;
 }
 
 /** CPU splat bake — the same formula the GPU SplatBake runs (±1/255), so Path S starts honest. */
@@ -205,7 +223,7 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
     morph[r.lod * 2 + 1] = r.morphEnd;
   }
   const splatRes = 256;
-  const { tex0, tex1 } = bakeSplat(record, splatRes);
+  const { tex0, tex1 } = bakeSplat(record, splatRes); // CPU fallback (kept — also feeds tests)
   const instBuf = device.createBuffer("vertex", tree.all.length * 16);
   const layerParams = new Float32Array(32);
   const layerTintOrm = new Float32Array(32);
@@ -222,8 +240,40 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
     layerTintOrm[i * 4 + 2] = tint[2];
     layerTintOrm[i * 4 + 3] = layer.roughnessBias ?? 0;
   });
+  const heightTex = new Texture({
+    width: grid.columns,
+    height: grid.rows,
+    format: "rgba32f",
+    colorSpace: "linear",
+    label: `prd10.terrain.${record.node.id}.height`,
+    data: heightsToRgba32f(record)
+  });
+  // T2.5: GPU bake when the device supports offscreen targets; CPU map is the
+  // fallback (same evalSplatRules formula, ±1/255).
+  let gpuBake: SplatBakeResult | null = null;
+  let splatTex0 = new Texture({ width: splatRes, height: splatRes, format: "rgba8", colorSpace: "linear", label: `prd10.terrain.${record.node.id}.splat0`, data: tex0 });
+  let splatTex1 = tex1 ? new Texture({ width: splatRes, height: splatRes, format: "rgba8", colorSpace: "linear", label: `prd10.terrain.${record.node.id}.splat1`, data: tex1 }) : null;
+  try {
+    const bake = bakeTerrainSplat(device, {
+      heightTexture: heightTex,
+      heightTexSize: [grid.columns, grid.rows],
+      texelWorld: (record.size[0] / Math.max(1, grid.columns - 1) + record.size[1] / Math.max(1, grid.rows - 1)) / 2,
+      heightScale: record.heightScale,
+      resolution: splatRes,
+      layerCount,
+      rules: splatBakeRulesFor(record)
+    });
+    gpuBake = bake;
+    splatTex0.dispose();
+    splatTex1?.dispose();
+    splatTex0 = bake.splat0;
+    splatTex1 = bake.splat1;
+  } catch {
+    // device without offscreen-target support (or compile failure) -> CPU maps stay
+  }
   const state: TerrainGpuState = {
     record,
+    gpuBake,
     patchN,
     vertexCount: patch.vertexCount,
     tree,
@@ -234,16 +284,9 @@ function buildTerrainState(device: RenderDevice, ds: DeviceTerrainState, record:
     indexType: patch.indexType,
     instBuf,
     instCap: tree.all.length,
-    heightTex: new Texture({
-      width: grid.columns,
-      height: grid.rows,
-      format: "rgba32f",
-      colorSpace: "linear",
-      label: `prd10.terrain.${record.node.id}.height`,
-      data: heightsToRgba32f(record)
-    }),
-    splatTex0: new Texture({ width: splatRes, height: splatRes, format: "rgba8", colorSpace: "linear", label: `prd10.terrain.${record.node.id}.splat0`, data: tex0 }),
-    splatTex1: tex1 ? new Texture({ width: splatRes, height: splatRes, format: "rgba8", colorSpace: "linear", label: `prd10.terrain.${record.node.id}.splat1`, data: tex1 }) : null,
+    heightTex,
+    splatTex0,
+    splatTex1,
     holesTex: new Texture({ width: 256, height: 256, format: "rgba8", colorSpace: "linear", label: `prd10.terrain.${record.node.id}.holes`, data: bakeHoles(record, 256) }),
     macroTex: new Texture({ width: 256, height: 256, format: "rgba8", colorSpace: "linear", label: "prd10.macroVariation", data: macroVariationTexture() }),
     layerParams,

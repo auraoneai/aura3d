@@ -6,16 +6,11 @@
  */
 import type { ShaderChunk } from "../../../contracts/program.js";
 
-export const terrainCdlodGlsl = /* glsl */ `
-uniform highp sampler2D u_height;       // R32F, texelFetch only (no float filtering required)
-uniform vec4 u_terrain;                 // originX, originZ, sizeX, sizeZ
+/** Shared by the terrain program and the SplatBake pass so both run the §8.1 kernel verbatim. */
+export const a3dTerrainHeightBilinearGlsl = /* glsl */ `
+uniform highp sampler2D u_height;       // R32F (or RGBA32F-packed), texelFetch only
 uniform float u_heightScale;
 uniform vec2 u_heightTexSize;
-uniform vec2 u_morph[8];                // per LOD: morphStart, morphEnd (distance)
-uniform float u_gridDim;                // patch quads per side (32 or 64)
-
-out vec3 v_worldPosition;
-out vec2 v_terrainUv;
 
 // Must match AuraTerrainHandle.heightAt bit-for-bit within 1e-4 m: border
 // texels clamp so the CPU and GPU kernels agree at the last texel.
@@ -30,6 +25,16 @@ float a3dTerrainHeightBilinear(vec2 uv) {
   float h11 = texelFetch(u_height, clamp(i + ivec2(1, 1),   ivec2(0), hi), 0).r;
   return mix(mix(h00, h10, f.x), mix(h01, h11, f.x), f.y) * u_heightScale;
 }
+`;
+
+export const terrainCdlodGlsl = /* glsl */ `
+${a3dTerrainHeightBilinearGlsl}
+uniform vec4 u_terrain;                 // originX, originZ, sizeX, sizeZ
+uniform vec2 u_morph[8];                // per LOD: morphStart, morphEnd (distance)
+uniform float u_gridDim;                // patch quads per side (32 or 64)
+
+out vec3 v_worldPosition;
+out vec2 v_terrainUv;
 
 // Full patch displacement for one vertex. a_grid: patch-local [0,1];
 // a_node: per-instance {offsetX, offsetZ, nodeSize, lod}.

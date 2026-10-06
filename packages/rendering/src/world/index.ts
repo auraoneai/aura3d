@@ -6,6 +6,7 @@
 export * from "./terrain/TerrainHeightTexture.js";
 export * from "./terrain/TerrainCdlod.js";
 export * from "./terrain/TerrainPatchGeometry.js";
+export * from "./terrain/SplatBake.js";
 export * from "./terrain/shaders/terrainCdlod.js";
 export * from "./terrain/shaders/terrainSplat.js";
 export * from "./terrain/shaders/terrain.vert.glsl.js";

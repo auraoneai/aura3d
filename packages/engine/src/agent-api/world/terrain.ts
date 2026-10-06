@@ -388,7 +388,7 @@ export function evalSplatRules(
     const i = layerNames.indexOf(rule.layer);
     if (i < 0) continue;
     const base = rule.weight ?? 1;
-    let w = base * rangeWeight(sample.slopeDeg, rule.slopeDeg) * rangeWeight(sample.heightNorm, rule.height);
+    let w = base * rangeWeight(sample.slopeDeg, rule.slopeDeg, rule.falloff ?? 0.1) * rangeWeight(sample.heightNorm, rule.height, rule.falloff ?? 0.1);
     if (rule.curvature) w *= 1; // curvature eval lands with the GPU bake (kept for parity)
     if (rule.noise) {
       const n = valueNoise(sample.u * rule.noise.scale, sample.v * rule.noise.scale, rule.noise.seed ?? 0);
@@ -415,13 +415,13 @@ export function defaultSplatRules(layers: readonly AuraTerrainLayerSpec[]): read
   const names = new Set(layers.map((l) => l.name));
   const rules: AuraSplatRule[] = [];
   if (names.has("rock") || names.has("rock-cliff") || names.has("rock-scree")) {
-    rules.push({ layer: layers.find((l) => /rock/.test(l.name))!.name, slopeDeg: [25, 90], weight: 1, falloff: 0.5 });
+    rules.push({ layer: layers.find((l) => /rock/.test(l.name))!.name, slopeDeg: [25, 90], weight: 1, falloff: 0.1 });
   }
   if (names.has("snow")) {
-    rules.push({ layer: "snow", height: [0.7, 1], weight: 1, falloff: 0.4 });
+    rules.push({ layer: "snow", height: [0.7, 1], weight: 1, falloff: 0.1 });
   }
   if (names.has("sand") || names.has("sand-beach")) {
-    rules.push({ layer: layers.find((l) => /sand/.test(l.name))!.name, height: [0, 0.08], weight: 1, falloff: 0.5 });
+    rules.push({ layer: layers.find((l) => /sand/.test(l.name))!.name, height: [0, 0.08], weight: 1, falloff: 0.1 });
   }
   return rules;
 }
