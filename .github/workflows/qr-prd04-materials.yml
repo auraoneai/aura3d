@@ -89,7 +89,7 @@ jobs:
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
         # All PRD-04 unit-gated browser specs: chunk conformance, lobe numeric parity,
         # transmission capture, decoders/variants. Scene captures run in the `capture` job.
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 WGSL twins"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 WGSL twins|PRD-04 S3|PRD-04 S6|PRD-04 S7|PRD-04 S9|PRD-04 S16|PRD-04 §16.2"
       - name: Extension matrix --check (P6-2 truthful matrix)
         # material-conformance.json was just written by the chunk-conformance spec;
         # the tool fails when the report is missing or the matrices drift from it.
@@ -105,6 +105,7 @@ jobs:
             tests/reports/physical-lobes-numeric.json
             tests/reports/prd04-decoders-variants.json
             tests/reports/prd04-wgsl-twins.json
+            tests/reports/prd04/probes/**/*.json
           if-no-files-found: warn
 
   capture:
@@ -127,7 +128,7 @@ jobs:
       - name: Scene captures (prd04-* + legacy reference scenes, both engines)
         env:
           PRD04_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }}
-          PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
+          PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,prd04-damaged-helmet,prd04-transmission,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
           PRD04_ENGINES: "aura3d,three"
         run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "lane captures"
       - name: Upload captures

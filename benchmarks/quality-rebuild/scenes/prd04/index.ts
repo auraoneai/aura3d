@@ -271,6 +271,21 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
       { kind: "model", name: "alpha-panels", asset: "alphaBlendModeTest", position: [0, -0.7, 0], castShadow: false, receiveShadow: false }
     ],
     primaryCriterion: "alpha-mask-edges"
+  },
+  "prd04-damaged-helmet": {
+    ...base,
+    id: "prd04-damaged-helmet",
+    index: 411,
+    title: "Damaged helmet under tint override",
+    purpose: "S3 second subject: DamagedHelmet keeps authored maps under a tint override (C-15 bridge).",
+    camera: { position: [0, 0.15, 3.2], target: [0, 0, 0], fov: 40, near: 0.05, far: 50 },
+    background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#2a2c30", intensity: 0.9 },
+    environment: { hdri: "studioSmall08", intensity: 0.9, rotation: 0 },
+    lights: [{ kind: "ambient", name: "fill", color: "#ffffff", intensity: 0.15 }, sun(2.2, [4, 5, 3])],
+    objects: [
+      { kind: "model", name: "helmet", asset: "damagedHelmet", position: [0, -0.5, 0], scale: 1.4, castShadow: false, receiveShadow: false }
+    ],
+    primaryCriterion: "tinted-texture-retention"
   }
 };
 

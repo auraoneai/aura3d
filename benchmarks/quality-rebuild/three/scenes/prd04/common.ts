@@ -11,8 +11,28 @@ import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd04ModelAssets, prd04TextureAssets } from "../../../scenes/prd04/assets";
 import type { Prd04ModelSpec, Prd04SceneSpec } from "../../../scenes/prd04/spec";
+import { canvasPixels, decodePngDataUrl, lumaMap, rowProfileSpike, temporalLumaStddev } from "../../../scenes/prd04/metrics";
 
 const EULER_ORDER: THREE.EulerOrder = "ZYX";
+
+export interface Prd04ThreeSceneOptions {
+  /** `#rrggbb` overrides spec tints; `"none"` suppresses them entirely (S3). */
+  readonly tint?: string;
+  /** Drive `spec.strip`: orbit ±`orbitDegrees`/2 while capturing frames (S6). */
+  readonly strip?: boolean;
+  /** Include the settled frame's decoded RGBA pixels on `extra.frame`. */
+  readonly pixels?: boolean;
+}
+
+/** Rotate `position` around `target` on the Y axis by `degrees`. */
+function orbitY(position: readonly [number, number, number], target: readonly [number, number, number], degrees: number): [number, number, number] {
+  const rad = (degrees * Math.PI) / 180;
+  const dx = position[0] - target[0];
+  const dz = position[2] - target[2];
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  return [target[0] + dx * cos - dz * sin, position[1], target[2] + dx * sin + dz * cos];
+}
 
 class CapabilityLog {
   readonly entries: CapabilityEntry[] = [];
@@ -71,7 +91,11 @@ async function applyVariant(gltf: GLTF, root: THREE.Object3D, variantName: strin
   log.add("variant", "supported", `KHR_materials_variants "${variantName}" applied on ${swaps.length} mesh(es)`);
 }
 
-export async function runPrd04ThreeScene(spec: Prd04SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runPrd04ThreeScene(
+  spec: Prd04SceneSpec,
+  host: HTMLElement,
+  options: Prd04ThreeSceneOptions = {}
+): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
   const errors: string[] = [];
@@ -79,7 +103,8 @@ export async function runPrd04ThreeScene(spec: Prd04SceneSpec, host: HTMLElement
   host.style.width = `${spec.resolution.width}px`;
   host.style.height = `${spec.resolution.height}px`;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const wantStrip = options.strip === true && spec.strip !== undefined;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: wantStrip || options.pixels === true });
   renderer.setPixelRatio(spec.resolution.devicePixelRatio);
   renderer.setSize(spec.resolution.width, spec.resolution.height, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -235,7 +260,8 @@ export async function runPrd04ThreeScene(spec: Prd04SceneSpec, host: HTMLElement
             mesh.receiveShadow = object.receiveShadow;
           }
         });
-        if (object.tint) applyModelTint(root, object.tint.color, log);
+        const tint = options.tint === "none" ? undefined : options.tint ?? object.tint?.color;
+        if (tint) applyModelTint(root, tint, log);
         if (object.variant) await applyVariant(gltf, root, object.variant, log);
         scene.add(root);
       } catch (error) {
@@ -254,6 +280,53 @@ export async function runPrd04ThreeScene(spec: Prd04SceneSpec, host: HTMLElement
     renderFrame();
   }
 
+  // P7/S6 strip: orbit the camera ±orbitDegrees/2, capture `frames` luma maps.
+  let stripReport: Record<string, unknown> | undefined;
+  if (wantStrip) {
+    const half = spec.strip!.orbitDegrees / 2;
+    const frameLumas: Float32Array[] = [];
+    let stripMask: Uint8Array | undefined;
+    const nextFrame = (): Promise<void> => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    for (let i = 0; i < spec.strip!.frames; i++) {
+      const angle = -half + (spec.strip!.orbitDegrees * i) / Math.max(1, spec.strip!.frames - 1);
+      camera.position.set(...orbitY(spec.camera.position, spec.camera.target, angle));
+      camera.lookAt(...spec.camera.target);
+      renderFrame();
+      await nextFrame();
+      const pixels = await canvasPixels(renderer.domElement);
+      frameLumas.push(lumaMap(pixels));
+      if (i === spec.strip!.frames - 1) {
+        stripMask = new Uint8Array(pixels.length / 4);
+        for (let p = 0; p < stripMask.length; p++) {
+          stripMask[p] = frameLumas[i]![p]! > 0.02 && p >= Math.floor(stripMask.length * 0.45) ? 1 : 0;
+        }
+      }
+    }
+    const w = renderer.domElement.width;
+    const h = renderer.domElement.height;
+    const far = temporalLumaStddev(frameLumas, w, h, stripMask!, 1 / 3, "bottom");
+    const near = temporalLumaStddev(frameLumas, w, h, stripMask!, 1 / 3, "top");
+    stripReport = {
+      frames: spec.strip!.frames,
+      intervalMs: spec.strip!.intervalMs,
+      orbitDegrees: spec.strip!.orbitDegrees,
+      farThirdLumaStd: far.mean,
+      nearThirdLumaStd: near.mean,
+      maskedPixels: far.maskedPixels,
+      tileFreqSpike: rowProfileSpike(frameLumas[frameLumas.length - 1]!, w, h, stripMask!).spike
+    };
+    // Restore the authored camera for the settled frame payload.
+    camera.position.set(...spec.camera.position);
+    camera.lookAt(...spec.camera.target);
+    renderFrame();
+  }
+
+  let frame: Record<string, unknown> | undefined;
+  if (options.pixels === true) {
+    const decoded = await decodePngDataUrl(renderer.domElement.toDataURL("image/png"));
+    frame = decoded;
+  }
+
   return {
     engine: "three",
     scene: spec.id,
@@ -264,7 +337,9 @@ export async function runPrd04ThreeScene(spec: Prd04SceneSpec, host: HTMLElement
     loadMs: Math.round(performance.now() - started),
     extra: {
       maxAnisotropy: maxAniso,
-      ktx2LoaderAttached: true
+      ktx2LoaderAttached: true,
+      ...(stripReport ? { strip: stripReport } : {}),
+      ...(frame ? { frame } : {})
     }
   };
 }
