@@ -130,6 +130,8 @@ function doStrike(): void {
   if (firstRack) fx.onBreak(); else fx.onStrike();
   const strikeParams = strikeAudioMap(strikeSpeedFor(command.power));
   lastStrikeAudio = strikeParams;
+  // §14.4: cue travels its full pull-back → ball contact over 80 ms.
+  strokeAnim = { t0: performance.now(), pullback: 0.04 + command.power * 0.28 };
   pushCue(strikeParams.cue);
 }
 
@@ -203,6 +205,7 @@ function consumeShotEvents(): void {
   }
   for (const pot of sim.consumePotEvents()) {
     pottedThisShot.push(pot.ball);
+    sinkingBalls.set(pot.ball, performance.now());
     pushCue("pocket-drop");
     fx.onPotted(pot.ball);
     void game.hud.toast(pot.ball === 0 ? "SCRATCH" : `BALL ${pot.ball} DOWN`, { ms: 1600 });
@@ -297,6 +300,8 @@ function poseLine(h: ReturnType<typeof handle>, x0: number, z0: number, x1: numb
 }
 
 let maxAngularSpeed = 0;
+let strokeAnim: { readonly t0: number; readonly pullback: number } | null = null;
+const sinkingBalls = new Map<number, number>();
 const prevQuat = new Map<string, readonly [number, number, number, number]>();
 
 function syncVisuals(): void {
@@ -304,7 +309,21 @@ function syncVisuals(): void {
     const h = handle(pose.name);
     if (!h) continue;
     const number = Number(pose.name.slice(5));
-    if (rules.potted.includes(number)) { park(h); prevQuat.delete(pose.name); continue; }
+    if (rules.potted.includes(number)) {
+      // §14.4 pocket drop: the ball sinks 6 cm over 120 ms, then parks.
+      const t0 = sinkingBalls.get(number);
+      if (t0 !== undefined) {
+        const t = (performance.now() - t0) / 120;
+        if (t < 1) {
+          h.setPosition(pose.position[0], pose.position[1] + BALL_VISUAL_LIFT - 0.06 * t, pose.position[2]);
+        } else {
+          park(h);
+          sinkingBalls.delete(number);
+        }
+      } else park(h);
+      prevQuat.delete(pose.name);
+      continue;
+    }
     h.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
     h.setPosition(pose.position[0], pose.position[1] + BALL_VISUAL_LIFT, pose.position[2]);
     h.setRotation(...ballEulerFromBody(pose.rotation));
@@ -329,9 +348,15 @@ function syncVisuals(): void {
   if (rules.phase === "shooting") {
     park(aimLine); park(aimBank); park(cueGhost);
     const angle = cueController.aimAngle;
+    const dirX = Math.cos(angle), dirZ = Math.sin(angle);
+    // 80 ms stroke: slide the tip from the charged pull-back to contact.
+    const animT = strokeAnim ? Math.min(1, (performance.now() - strokeAnim.t0) / 80) : 1;
+    const back = strokeAnim ? strokeAnim.pullback : 0;
+    const dist = back + (-0.045 - back) * animT;
     cueStick?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    cueStick?.setPosition(cueInfo.x + Math.cos(angle) * 0.045, BALL_SURFACE_Y + 0.008, cueInfo.z + Math.sin(angle) * 0.045);
+    cueStick?.setPosition(cueInfo.x - dirX * dist, BALL_SURFACE_Y + 0.008, cueInfo.z - dirZ * dist);
     cueStick?.setRotation(0, -angle, 0.035);
+    if (animT >= 1) strokeAnim = null;
     return;
   }
   if (rules.phase === "ball-in-hand") {
