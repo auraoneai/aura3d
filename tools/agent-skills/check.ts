@@ -198,11 +198,45 @@ function buildExportSet(): Set<string> {
           if (alias) set.add(alias);
         }
         if (path.endsWith("packages/engine/src/agent-api/index.ts")) {
+          // Namespaces are composed via `...spread` from leaf modules (PR 0 carve-outs),
+          // so resolve each spread to the leaf's `export const` object body before
+          // checking member names — the barrel body itself no longer lists them.
+          const importSources = new Map<string, string>();
+          for (const m of src.matchAll(/import\s+(?:type\s+)?\{([^}]+)\}\s+from\s+"([^"]+)";/g)) {
+            const resolved = resolve(path, "..", m[2]!).replace(/\.js$/, ".ts");
+            for (const part of m[1]!.split(",")) {
+              const local = part.trim().split(/\s+as\s+/).pop()?.replace(/^type\s+/, "").trim();
+              if (local) importSources.set(local, resolved);
+            }
+          }
+          const objectBody = (file: string, name: string): string | undefined => {
+            if (!existsSync(file)) return undefined;
+            const leaf = readFileSync(file, "utf8");
+            const leafMatch = leaf.match(new RegExp(`export\\s+const\\s+${name}(?:\\s*:[^=]*)?\\s*=\\s*\\{`));
+            if (!leafMatch) return undefined;
+            const start = leafMatch.index! + leafMatch[0].length;
+            let depth = 1, i = start;
+            while (i < leaf.length && depth > 0) { const c = leaf[i++]; if (c === "{") depth++; else if (c === "}") depth--; }
+            return leaf.slice(start, i);
+          };
+          const expandSpreads = (body: string, seen: Set<string>): string => {
+            let out = body;
+            for (const m of body.matchAll(/\.\.\.([A-Za-z_$][\w$]*)/g)) {
+              const local = m[1]!;
+              if (seen.has(local)) continue;
+              seen.add(local);
+              const file = importSources.get(local);
+              if (!file) continue;
+              const leafBody = objectBody(file, local);
+              if (leafBody !== undefined) out += expandSpreads(leafBody, seen);
+            }
+            return out;
+          };
           for (const m of src.matchAll(/export const ([a-z][A-Za-z0-9]*) = \{/g)) {
             const start = m.index! + m[0].length;
             let depth = 1, i = start;
             while (i < src.length && depth > 0) { const c = src[i++]; if (c === "{") depth++; else if (c === "}") depth--; }
-            engineNamespaces.set(m[1]!, src.slice(start, i));
+            engineNamespaces.set(m[1]!, expandSpreads(src.slice(start, i), new Set()));
           }
         }
       }
