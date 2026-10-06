@@ -1,0 +1,19 @@
+{
+  "name": "studio",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "studio.specular.ktx2",
+  "sh9": "studio.sh9.f32",
+  "sha256": {
+    "specular": "4f9c4f2b064ce3041f77f157cf5b803bb1f28d817c70a7c084c7c5854eb66994",
+    "sh9": "bb143f21c720aa2cf1a80a63ed7f5db810613c1b7544a59c9ff6536c6747facd"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128
+}

@@ -1,9 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraLightNode, AuraVec3, ProductionRuntimeLightDescriptor } from "../index.js";
-import { clampNumber, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
+import type { AuraLightNode, AuraVec3, ProductionRuntimeLightDescriptor, AuraSceneSnapshot } from "../index.js";
+import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
+import { clampNumber, groups, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 
 export function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
   if (cachedProductionRuntimeFallbackLights) return cachedProductionRuntimeFallbackLights;
@@ -165,4 +167,156 @@ export function createProductionRuntimeCollectedLight(
     layerMask: 0xffffffff,
     source
   };
+}
+
+// ---------- PRD-02 §6.3 / §6.4 — physical units + caster selection (flag path) ----------
+
+/**
+ * Physical-light descriptor: what an authored `lights.*` node means in
+ * three-r185 units (PRD-02 §6.3). Ambient/hemisphere are non-punctual and
+ * resolve through the environment path, so they return `null`.
+ */
+export interface PhysicalLightDescriptor extends ProductionRuntimeLightDescriptor {
+  /** Inverse-power exponent (PRD-02 §6.3); 0 = no falloff (directional/ambient). */
+  readonly decay: number;
+  readonly shadowOptions?: AuraDirectionalShadowOptions | AuraLocalShadowOptions;
+}
+
+const FOUR_PI = 4 * Math.PI;
+
+export function physicalLightDescriptor(node: AuraLightNode, name: string): PhysicalLightDescriptor | null {
+  const color = (node.color ?? [1, 1, 1]) as readonly [number, number, number];
+  const position = (node.position ?? [0, 0, 0]) as AuraVec3;
+  const direction = productionRuntimeLightDirection(node, position);
+  const shadowRequested = node.shadow === true || (typeof node.shadow === "object" && node.shadow !== null);
+  const shadowDisabled = node.shadow === false;
+  const shadowOptions = typeof node.shadow === "object" && node.shadow !== null ? node.shadow : undefined;
+  switch (node.light) {
+    case "directional":
+    case "studio":
+      return {
+        kind: "directional",
+        name,
+        color,
+        intensity: node.intensity ?? 3,
+        position,
+        direction,
+        range: 0,
+        spotAngle: 0,
+        penumbra: 0,
+        decay: 0,
+        shadowPriority: 3,
+        shadowRequested,
+        shadowDisabled,
+        shadowOptions,
+        authoredLight: node.light
+      };
+    case "point": {
+      const cd = node.power !== undefined ? node.power / FOUR_PI : (node.intensity ?? 8);
+      return {
+        kind: "point",
+        name,
+        color,
+        intensity: cd,
+        position,
+        direction,
+        range: node.distance ?? 0,
+        spotAngle: 0,
+        penumbra: 0,
+        decay: node.decay ?? 2,
+        shadowPriority: 1,
+        shadowRequested,
+        shadowDisabled,
+        shadowOptions,
+        authoredLight: "point"
+      };
+    }
+    case "spot": {
+      const cd = node.power !== undefined ? node.power / Math.PI : (node.intensity ?? 30);
+      return {
+        kind: "spot",
+        name,
+        color,
+        intensity: cd,
+        position,
+        direction,
+        range: node.distance ?? 0,
+        spotAngle: node.angle ?? Math.PI / 6,
+        penumbra: node.penumbra ?? 0,
+        decay: node.decay ?? 2,
+        shadowPriority: 2,
+        shadowRequested,
+        shadowDisabled,
+        shadowOptions,
+        authoredLight: "spot"
+      };
+    }
+    case "rect":
+    case "softbox": {
+      return {
+        kind: "rect-area",
+        name,
+        color,
+        intensity: node.intensity ?? 1.4,
+        position,
+        direction,
+        range: 0,
+        spotAngle: 0,
+        penumbra: 0,
+        decay: 0,
+        shadowPriority: 1,
+        shadowRequested,
+        shadowDisabled,
+        shadowOptions,
+        authoredLight: node.light,
+        authoredWidth: node.width ?? 1,
+        authoredHeight: node.height ?? 1
+      };
+    }
+    default:
+      return null; // ambient / hemisphere resolve through the environment path
+  }
+}
+
+export interface ShadowedLightSelection {
+  /** Descriptors that get shadow maps this frame, in atlas order. */
+  readonly casters: readonly PhysicalLightDescriptor[];
+  /** Names of shadow-requesting lights dropped by the tier cap (diagnostic). */
+  readonly droppedNames: readonly string[];
+}
+
+/**
+ * Caster selection (PRD-02 §6.4): explicit `shadow: true` first (priority,
+ * then authored order), then `autoSunShadow` promotes the brightest
+ * directional **only when no directional carries an explicit shadow
+ * setting** (requested or disabled). Point/spot/rect never cast implicitly.
+ */
+export function selectShadowedLights(
+  descriptors: readonly PhysicalLightDescriptor[],
+  options: { readonly autoSunShadow?: boolean; readonly max?: number } = {}
+): ShadowedLightSelection {
+  const max = options.max ?? 4;
+  const autoSun = options.autoSunShadow ?? true;
+  const requested = descriptors.filter((d) => d.shadowRequested && !d.shadowDisabled);
+  const casters: PhysicalLightDescriptor[] = [...requested].sort((a, b) =>
+    b.shadowPriority - a.shadowPriority || a.name.localeCompare(b.name)
+  );
+  const anyDirectionalExplicit = descriptors.some((d) => d.kind === "directional" && (d.shadowRequested || d.shadowDisabled));
+  if (autoSun && !anyDirectionalExplicit && casters.length < max) {
+    const sun = descriptors
+      .filter((d) => d.kind === "directional" && !d.shadowDisabled)
+      .sort((a, b) => b.intensity - a.intensity || a.name.localeCompare(b.name))[0];
+    if (sun) casters.push({ ...sun, shadowRequested: true });
+  }
+  const kept = casters.slice(0, Math.max(0, max));
+  const dropped = casters.slice(Math.max(0, max)).map((d) => d.name);
+  return { casters: kept, droppedNames: dropped };
+}
+
+/** lighting.quality "auto" → the C-27-resolved tier from the compile context (PRD-02 §6.8). */
+export function resolveLightingTier(
+  requested: AuraQualityTier | "auto" | undefined,
+  ctx: { readonly quality: { readonly tier: AuraQualityTier } }
+): AuraQualityTier {
+  return !requested || requested === "auto" ? ctx.quality.tier : requested;
 }
