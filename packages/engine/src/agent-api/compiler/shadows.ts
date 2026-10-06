@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../index.js";
-import { groups, resolveProductionRuntimeShadowTuning, resolveRendererSceneCategory } from "../index.js";
+import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
+import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.js";
+import { groups } from "../nodes/groups.js";
+import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
 import { createSpotShadowProjection, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions } from "@aura3d/rendering";
 
 export function createProductionRuntimeShadowOptions(

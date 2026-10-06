@@ -275,6 +275,7 @@ export { editor } from "./nodes/editor.js";
 export { effects } from "./nodes/effects.composite.js";
 export { environments, environmentMapPresets } from "./nodes/environments.composite.js";
 export { collectGameRuntimeEvidence, game } from "./nodes/game/index.js";
+export { createAuraGameRules, gameRules } from "./gameRules.js";
 export { createGameRacingCameraRig } from "./nodes/game/racingCamera.js";
 export { gameFeel } from "./nodes/gameFeel.js";
 export { games } from "./nodes/games.js";

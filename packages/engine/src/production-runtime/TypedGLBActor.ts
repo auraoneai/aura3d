@@ -12,7 +12,7 @@ import type { GLTFMaterialRenderStateOverride } from "@aura3d/assets";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions } from "./actor/extensions";
-import "./actor/TypedGLBActorLod";
+import "./actor/TypedGLBActorLod.js";
 
 export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
 

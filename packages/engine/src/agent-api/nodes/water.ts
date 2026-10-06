@@ -1,7 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraSceneNode } from "../index.js";
-import { primitives } from "../index.js";
+import type { AuraSceneNode } from "../nodes/types.js";
+import { primitives } from "../nodes/primitives.js";
 import { createWaterSurface, sampleOceanFixture, type WaterSurfaceBoat, type WaterSurfacePreset } from "@aura3d/rendering";
 import { material } from "./material.js";
 

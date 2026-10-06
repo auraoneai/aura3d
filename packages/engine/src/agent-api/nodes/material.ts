@@ -1,11 +1,14 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../index.js";
-import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, neon, proceduralTexture } from "../index.js";
+import type { AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
+import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, proceduralTexture } from "../nodes/materialTools.js";
+import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec } from "../../material-physical/PhysicalMaterialSpec.js";
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const material = {
+
+export const material = lazyNamespace(() => ({
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
     color: "#d7dee8",
     roughness: 0.55,
@@ -315,4 +318,4 @@ export const material = {
   visualQA: (nodes: readonly AuraSceneNode[]): AuraMaterialVisualQAResult => validateMaterialVisualQA(nodes),
   capabilityDiagnostics: (input?: AuraMaterialCapabilityInput): AuraMaterialCapabilityDiagnostics =>
     createMaterialCapabilityDiagnostics(input)
-} as const;
+} as const));

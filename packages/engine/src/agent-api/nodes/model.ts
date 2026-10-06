@@ -5,6 +5,8 @@ import { AuraNodeBuilder } from "./builder.js";
 import { defineAuraAssets } from "./assets.js";
 import { material } from "./material.js";
 import { physics } from "./physics.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 export function model<TAsset extends AuraAssetRef<"model">>(
   asset: TAsset,
@@ -49,7 +51,7 @@ export function unsafeModelUrl(url: string, options: Omit<AuraAssetDefinition, "
   }).unsafe;
 }
 
-export const builtInCharacterAssets = defineAuraAssets({
+export const builtInCharacterAssets = lazyNamespace(() => defineAuraAssets({
   humanoid: {
     type: "model",
     format: "glb",
@@ -64,4 +66,4 @@ export const builtInCharacterAssets = defineAuraAssets({
       license: "Aura3D bundled soldier fixture from the existing repository corpus"
     }
   }
-} as const);
+} as const));

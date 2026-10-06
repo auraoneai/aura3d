@@ -19,6 +19,8 @@ import { checkNoCycles } from "./rules/noCycles";
 import { optionCoverageRule, scaffoldOptionCoverage } from "./rules/option-coverage";
 import { checkGlslLocation } from "./rules/glslLocation";
 import { checkSingleRenderer } from "./rules/singleRenderer";
+import { checkExportBudget, checkNoEvidenceInRuntime } from "./rules/exportBudget";
+import { checkUniqueOwnership } from "./rules/uniqueOwnership";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -147,10 +149,13 @@ export function runGates(root: string): GateReport {
     "max-file-lines": { findings: checkMaxFileLines(root) },
     "option-coverage": { findings: optionCoverageRule([], root) },
     "single-renderer": { findings: checkSingleRenderer(root) },
-    "glsl-location": { findings: checkGlslLocation(root) }
+    "glsl-location": { findings: checkGlslLocation(root) },
+    "export-budget": { findings: checkExportBudget(root) },
+    "no-evidence-in-runtime": { findings: checkNoEvidenceInRuntime(root) },
+    "unique-ownership": { findings: checkUniqueOwnership(root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 9, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 12, findings } };
 }
 
 function main(): void {

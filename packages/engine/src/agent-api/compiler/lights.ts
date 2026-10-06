@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraLightNode, AuraVec3, ProductionRuntimeLightDescriptor } from "../index.js";
-import { clampNumber, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
+import type { AuraLightNode, AuraVec3, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import { multiplyRgb } from "../colorUtils.js";
+import { clampNumber, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../compiler/observations.js";
+import { normalize3 } from "../sceneMath.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
 

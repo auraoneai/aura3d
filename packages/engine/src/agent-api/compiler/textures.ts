@@ -1,7 +1,12 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../index.js";
-import { AuraRuntimeError, clamp01, colorToLinearRgb, createProductionPrimitiveMaterial, primitive, resolveProductionPrimitiveScalars, rootSdfFontAtlas, text3D } from "../index.js";
+import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
+import { AuraRuntimeError } from "../app/errors.js";
+import { colorToLinearRgb } from "../colorUtils.js";
+import { createProductionPrimitiveMaterial, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
+import { primitive } from "../nodes/primitives.js";
+import { rootSdfFontAtlas, text3D } from "../nodes/text3d.js";
+import { clamp01 } from "../sceneMath.js";
 import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, layoutSdfText, rasterizeSdfTextLabelImage, resolveSamplerAnisotropy, type SdfTextOcclusionPolicy } from "@aura3d/rendering";
 import { material } from "../nodes/material.js";
 

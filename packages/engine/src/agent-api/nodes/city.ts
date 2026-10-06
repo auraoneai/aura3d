@@ -16,6 +16,8 @@ import { ui } from "./ui.js";
 import { validateCityVisualQA } from "../looks/structuralQA.js";
 import { cameraPreset } from "../CameraPresetLibrary.js";
 import { distance } from "../SpatialAnchoring.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 export function makeCityCrosswalk(namePrefix: string, x: number, z: number, orientation: "northSouth" | "eastWest"): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
@@ -373,7 +375,7 @@ function bindCityDayNightToggle(
   return button;
 }
 
-export const city = {
+export const city = lazyNamespace(() => ({
   createState: createCityStateController,
   bindDayNightToggle: bindCityDayNightToggle,
   block: (options: AuraCityBlockOptions = {}): readonly AuraSceneNode[] => prefabs.cityBlock(options),
@@ -387,4 +389,4 @@ export const city = {
   }),
   instancing: collectCityInstancingPlan,
   visualQA: validateCityVisualQA
-} as const;
+} as const));

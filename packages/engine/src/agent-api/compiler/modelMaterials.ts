@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — C-15 model-material tint bridge, verbatim from the
 // TypedGLBActor options inside createProductionRuntimeSceneRenderer; 0 changed logic lines.
-import type { AuraModelNode } from "../index.js";
-import { clamp01, colorToLinearRgb, colorToLinearRgba } from "../index.js";
+import type { AuraModelNode } from "../nodes/types.js";
+import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { clamp01 } from "../sceneMath.js";
 
 export function applyModelTintBridge(node: AuraModelNode): Record<string, unknown> {
   return node.material?.color ? {

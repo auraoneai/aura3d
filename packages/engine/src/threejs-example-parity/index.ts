@@ -39,7 +39,7 @@ import type {
   ProductionRendererInput,
   ProductionRuntimeRendererBackendPreference,
   ProductionRuntimeRendererBackendSelection,
-  RuntimeParityFrameRenderResult
+  RendererFrameResult
 } from "../../../rendering/src/production-runtime/index";
 import { resolveProductionRuntimeRendererBackend } from "../../../rendering/src/production-runtime/index";
 import type { RenderDeviceDiagnostics } from "../../../rendering/src/RenderDevice";
@@ -226,7 +226,7 @@ export class CurrentRoutesInteractiveRenderer {
     return new CurrentRoutesInteractiveRenderer(renderer, options.canvas, selection);
   }
 
-  async renderFrame(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
+  async renderFrame(input: ProductionRendererInput): Promise<RendererFrameResult> {
     const started = now();
     const renderStart = now();
     const diagnostics = await this.renderer.renderAsync(input.source, input.camera);

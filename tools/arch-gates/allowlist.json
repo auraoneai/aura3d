@@ -421,5 +421,364 @@
     "expires": "2026-11-30",
     "reason": "webgpu production renderer constructs itself; owner folds into WebGPUDevice/RenderBackend",
     "request": "Q-11-4"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "normalizeQuat",
+    "packages": [
+      "animation",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "identityMat4",
+    "packages": [
+      "animation",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "composeMat4",
+    "packages": [
+      "animation",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "multiplyMat4",
+    "packages": [
+      "animation",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Vec3",
+    "packages": [
+      "animation",
+      "physics",
+      "rendering",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Quat",
+    "packages": [
+      "animation",
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Mat4",
+    "packages": [
+      "animation",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "LoopMode",
+    "packages": [
+      "animation",
+      "core"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "StateTransition",
+    "packages": [
+      "animation",
+      "scripting"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "AnimationAssetCategory",
+    "packages": [
+      "asset-index",
+      "editor",
+      "editor-runtime"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-3",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "AnimationController",
+    "packages": [
+      "animation",
+      "engine"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-4",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "GroundRaycaster",
+    "packages": [
+      "animation",
+      "engine"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-06-4",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "TextureMipLevel",
+    "packages": [
+      "assets",
+      "rendering"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-01-8",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "DebugLine",
+    "packages": [
+      "physics",
+      "rendering"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-01-8",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Bounds3",
+    "packages": [
+      "rendering",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-01-8",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "OrbitControls",
+    "packages": [
+      "controls",
+      "input",
+      "three-compat"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-08-2",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "FirstPersonControls",
+    "packages": [
+      "controls",
+      "input",
+      "three-compat"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-08-2",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "PointerLockControls",
+    "packages": [
+      "controls",
+      "input",
+      "three-compat"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-08-2",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "InteractionRayProvider",
+    "packages": [
+      "controls",
+      "input"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-08-2",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Vec3Like",
+    "packages": [
+      "audio",
+      "input"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-08-2",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "inspectAsset",
+    "packages": [
+      "aura3d-cli",
+      "engine"
+    ],
+    "expires": "2026-11-03",
+    "request": "Q-05-9",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "SystemPhase",
+    "packages": [
+      "core",
+      "ecs"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.8",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "LightKind",
+    "packages": [
+      "ecs",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.8",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Scene",
+    "packages": [
+      "react",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.9",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Camera",
+    "packages": [
+      "react",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.9",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "vec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "addVec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "subVec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "scaleVec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "lengthVec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "normalizeVec3",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "EPSILON",
+    "packages": [
+      "physics",
+      "scene"
+    ],
+    "expires": "2026-11-03",
+    "request": "T6.6",
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
   }
 ]

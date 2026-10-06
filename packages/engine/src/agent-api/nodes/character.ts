@@ -15,6 +15,8 @@ import { prefabs } from "./prefabs/index.js";
 import { primitives } from "./primitives.js";
 import { validatePrimitiveHumanoidVisualQA } from "../looks/structuralQA.js";
 import { footPlanting } from "../FootPlanting.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 const characterClips: readonly AuraCharacterClip[] = [
   { name: "idle", duration: 2.4, captureTime: 0.4, loop: true },
@@ -453,7 +455,7 @@ export function distance3(a: AuraVec3, b: AuraVec3): number {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
-export const character = {
+export const character = lazyNamespace(() => ({
   builtInHumanoidAsset: (): AuraAssetRef<"model", "humanoid"> => builtInCharacterAssets.humanoid,
   skeleton: createPrimitiveHumanoidSkeleton,
   clips: (): readonly AuraCharacterClip[] => characterClips,
@@ -471,4 +473,4 @@ export const character = {
   },
   visualQA: validatePrimitiveHumanoidVisualQA,
   validatePrimitiveHumanoid: validatePrimitiveHumanoidVisualQA
-} as const;
+} as const));

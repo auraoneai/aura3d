@@ -13,13 +13,13 @@ const app = createAuraApp(canvas, {
     .camera(camera.perspective({ position: [0, 6, 10], target: [0, 1, 0] }))
     .add(lights.directional({ intensity: 2.2 }).position(4, 8, 6))
     .add(primitives.plane({ name: "ground", material: material.pbr({ color: "#1d2530" }) }).scale([20, 1, 20]))
-    .add(primitives.box({ name: "player", material: material.pbr({ color: "#4fd1c5" }) }).position(0, 0.35, 0).runtime("player"))
+    .add(primitives.box({ name: "player", material: material.pbr({ color: "#4fd1c5" }) }).position(0, 0.35, 0).runtime({ id: "player" }))
 });
 const input = app.input({ actions: { jump: ["Space"], left: ["ArrowLeft"], right: ["ArrowRight"] } });
 const platformer = game.platformer({ platforms: [{ id: "ground", x: -10, y: 0, width: 20, height: 0.35 }] });
 const player = app.nodes.require("player");
-app.onFrame((deltaSeconds) => {
-  const state = platformer.step(deltaSeconds, {
+app.onFrame(({ dt }) => {
+  const state = platformer.step(dt, {
     moveX: Number(input.held("right")) - Number(input.held("left")),
     jumpPressed: input.pressed("jump")
   });

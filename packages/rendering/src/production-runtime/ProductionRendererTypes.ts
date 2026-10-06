@@ -70,7 +70,7 @@ export interface ProductionPixelMetrics {
   readonly centerPixel: readonly [number, number, number, number];
 }
 
-export interface CurrentRoutesRendererTimingDiagnostics {
+export interface RendererTimingDiagnostics {
   readonly source: "performance-now" | "date-now";
   readonly totalMs: number;
   readonly renderMs: number;
@@ -88,20 +88,20 @@ export interface ProductionRenderProof {
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly features: readonly ProductionRendererFeature[];
   readonly pixels: ProductionPixelMetrics;
-  readonly timing?: CurrentRoutesRendererTimingDiagnostics;
+  readonly timing?: RendererTimingDiagnostics;
   readonly transmissionBackdropCapture?: RuntimeParityTransmissionBackdropCaptureProof;
 }
 
-export interface RuntimeParityFrameRenderResult {
+export interface RendererFrameResult {
   readonly backend: ProductionRendererBackend;
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly features: readonly ProductionRendererFeature[];
-  readonly timing?: CurrentRoutesRendererTimingDiagnostics;
+  readonly timing?: RendererTimingDiagnostics;
 }
 
 export interface ProductionProductionRenderer {
   readonly backend: ProductionRendererBackend;
-  renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult;
+  renderFrame(input: ProductionRendererInput): RendererFrameResult;
   renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof;
   getFeatures(): readonly ProductionRendererFeature[];
   getDiagnostics(): RenderDeviceDiagnostics;
@@ -119,7 +119,7 @@ export interface ProductionProductionRenderer {
 }
 
 export interface CurrentRoutesProductionRenderer extends ProductionProductionRenderer {
-  renderInteractiveFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult;
+  renderInteractiveFrame(input: ProductionRendererInput): RendererFrameResult;
   captureProof(input: ProductionRendererInput): ProductionRenderProof;
 }
 

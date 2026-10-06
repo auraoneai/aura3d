@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAnimationSpec, AuraModelNode, ProductionRuntimeActorEntry } from "../index.js";
-import { isModelTransformAnimationClip, productionRenderErrorMessage, resolveProductionActorAnimationSeconds } from "../index.js";
+import type { AuraAnimationSpec, AuraModelNode, ProductionRuntimeActorEntry } from "../nodes/types.js";
+import { resolveProductionActorAnimationSeconds } from "../compiler/actors.js";
+import { productionRenderErrorMessage } from "../compiler/observations.js";
+import { isModelTransformAnimationClip } from "../sceneMath.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
 import type { Mat4 } from "@aura3d/scene";
 

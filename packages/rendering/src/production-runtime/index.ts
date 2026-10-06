@@ -76,7 +76,7 @@ export {
   RUNTIME_PARITY_WEBGPU_REQUIRED_FEATURES
 } from "./ProductionRendererTypes";
 export type {
-  CurrentRoutesRendererTimingDiagnostics,
+  RendererTimingDiagnostics,
   ProductionImportedAssetRenderMetadata,
   ProductionPixelMetrics,
   ProductionProductionRenderer,
@@ -85,7 +85,7 @@ export type {
   ProductionRendererFeature,
   ProductionRendererFeatureState,
   ProductionRendererInput,
-  RuntimeParityFrameRenderResult,
+  RendererFrameResult,
   RuntimeParityTransmissionBackdropCaptureOptions,
   RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";

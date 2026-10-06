@@ -1264,9 +1264,9 @@ describe("game runtime source gates", () => {
     const fightingKit = readSource("packages/engine/src/agent-api/game-kits/fighting.ts");
 
     expect(rootIndex).toContain('export * from "./agent-api/index.js";');
-    expect(agentApi).toContain("export const games = {");
-    expect(agentApi).toContain("export const game = {");
-    expect(agentApi).toMatch(/export const game = \{[\s\S]*runtimeNode:[\s\S]*input: createGameInput[\s\S]*kinematicBody: createGameKinematicBody[\s\S]*collisionWorld: createGameCollisionWorld[\s\S]*combatWorld: createCombatWorld[\s\S]*cameraDirector: createGameCameraDirector[\s\S]*effects: createGameEffects[\s\S]*hud: \{[\s\S]*accessibility: \{/);
+    expect(agentApi).toContain("export const games = lazyNamespace(() => ({");
+    expect(agentApi).toContain("export const game = lazyNamespace(() => ({");
+    expect(agentApi).toMatch(/export const game = lazyNamespace\(\(\) => \(\{[\s\S]*runtimeNode:[\s\S]*input: createGameInput[\s\S]*kinematicBody: createGameKinematicBody[\s\S]*collisionWorld: createGameCollisionWorld[\s\S]*combatWorld: createCombatWorld[\s\S]*cameraDirector: createGameCameraDirector[\s\S]*effects: createGameEffects[\s\S]*hud: \{[\s\S]*accessibility: \{/);
     expectIncludesAll(agentApi, [
       "export function createGameInput",
       "export function createGameKinematicBody",

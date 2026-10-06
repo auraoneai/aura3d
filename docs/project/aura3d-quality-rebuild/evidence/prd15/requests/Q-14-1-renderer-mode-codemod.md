@@ -38,3 +38,13 @@ your discretion.
 `AuraRendererMode`/`AuraRendererFallbackMode` type references (none in your
 files) can't be rewritten mechanically — the codemod emits `mapping: "none"`
 rows pointing at `renderer.quality`.
+
+---
+
+## T5.9 follow-up — `engine-entry-imports` / `devtools-imports` codemods
+
+T5.9 collapsed `@aura3d/engine` subpaths to the §6.1 list. In addition to the
+`renderer-mode` migration above, run `aura3d codemod engine-entry-imports "<paths>" --write --report`
+and `aura3d codemod devtools-imports "<paths>" --write --report` on your files.
+Dry-run report (109 files, 86 planned rows):
+`docs/project/aura3d-quality-rebuild/evidence/prd15/reports/engine-entry-imports-lane-14.json`

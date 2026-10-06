@@ -11,10 +11,13 @@ import { registerCliCommand, registerCodemod, codemodFor } from "../../contracts
 import { createRendererImportsCodemod } from "../../codemods/renderer-imports.js";
 import { createRendererModeCodemod } from "../../codemods/renderer-mode.js";
 import { createLeanImportsCodemod } from "../../codemods/lean-imports.js";
+import { createDevtoolsImportsCodemod, createEngineEntryImportsCodemod } from "../../codemods/engine-entry-imports.js";
 
 registerCodemod(createRendererImportsCodemod());
 registerCodemod(createRendererModeCodemod());
 registerCodemod(createLeanImportsCodemod());
+registerCodemod(createDevtoolsImportsCodemod());
+registerCodemod(createEngineEntryImportsCodemod());
 
 registerCliCommand({
   name: "codemod",

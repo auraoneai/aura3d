@@ -965,10 +965,30 @@ export interface AuraRendererQualityProfile {
   readonly antialiasing: "msaa" | "msaa-plus-high-dpi";
   readonly pixelRatio: number;
   readonly preserveDrawingBuffer: boolean;
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T5.7): profile values move to lane 11's
+   * `renderer.quality` surface; removed in 4.0.0. See Q-11-6.
+   */
   readonly maxRecommendedDrawCalls: number;
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T5.7): feature requests move to
+   * `renderer.quality`; removed in 4.0.0. See Q-11-6.
+   */
   readonly requestedFeatures: readonly string[];
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T5.7): root-surface capability rows move to
+   * `renderer.quality`; removed in 4.0.0. See Q-11-6.
+   */
   readonly supportedInRoot: readonly string[];
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T5.7): root-surface capability rows move to
+   * `renderer.quality`; removed in 4.0.0. See Q-11-6.
+   */
   readonly blockedInRoot: readonly string[];
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T5.7): claim-boundary text moves to the
+   * quality-level evidence surface; removed in 4.0.0. See Q-11-6.
+   */
   readonly claimBoundary: string;
 }
 

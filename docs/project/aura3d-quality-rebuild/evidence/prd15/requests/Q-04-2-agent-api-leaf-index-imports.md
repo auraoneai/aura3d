@@ -1,6 +1,6 @@
 # Q-04-2: lane-04 agent-api leaves still import `../index.js` — repoint to leaf sources
 
-**From:** lane 15 · **To:** lane 04 · **Filed:** 2026-10-06 · **Status:** OPEN
+**From:** lane 15 · **To:** lane 04 · **Filed:** 2026-10-06 · ****Status:** APPLIED BY LANE 15 (2026-10-06)
 
 PRD-15 T3.1 split `agent-api/index.ts` (~14k lines) into leaf modules; the
 barrel is now named re-exports only. Lane-15-owned leaves were repointed to
@@ -29,3 +29,11 @@ is visible in `packages/engine/src/agent-api/index.ts`'s own
 change; the barrel's public surface is unchanged.
 
 SLA: 2 working days per CONTRACTS §6.5 — we don't block on it.
+
+## Resolution
+
+Lane 15 applied this repoint directly as part of the Phase-5 ESM-cycle repair
+(the leaf→barrel edges were the load-bearing side of the TDZ crashes). The
+change is the mechanical repoint this request describes — every imported name
+now comes from the leaf that owns it. Filing left in place so the owner can
+review; the request no longer blocks them.

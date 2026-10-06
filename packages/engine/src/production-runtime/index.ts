@@ -57,9 +57,9 @@ import type {
   RenderItem,
   RenderSource,
   RendererPostProcessOptions,
-  RendererShadowOptions,
-  RuntimeParityFrameRenderResult
+  RendererShadowOptions
 } from "@aura3d/rendering";
+import type { RendererFrameResult } from "@aura3d/rendering/production-runtime";
 import {
   Geometry,
   Material,
@@ -160,7 +160,7 @@ export interface A3DFrameRenderResult {
   readonly backend: "webgl2" | "webgpu";
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly features: readonly ProductionRendererFeature[];
-  readonly timing?: NonNullable<RuntimeParityFrameRenderResult["timing"]>;
+  readonly timing?: NonNullable<RendererFrameResult["timing"]>;
 }
 
 export interface A3DRenderOptions {

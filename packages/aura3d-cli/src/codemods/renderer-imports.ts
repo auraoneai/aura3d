@@ -68,7 +68,7 @@ const RENDERER_EXPORTS = new Set([
   "ProductionRendererInput", "ProductionRenderProof",
   "ProductionRuntimeRendererBackendPreference", "ProductionRuntimeRendererBackendSelection",
   "ProductionRuntimeRendererOptions", "ProductionWebGL2RendererOptions",
-  "RuntimeParityFrameRenderResult", "ScenePickHit", "ScenePickOptions"
+  "RendererTimingDiagnostics", "ScenePickHit", "ScenePickOptions"
 ]);
 
 const RENAMES = new Map([
@@ -156,10 +156,14 @@ export function createRendererImportsCodemod(): {
       for (const stmt of sf.statements) {
         if (!ts.isImportDeclaration(stmt) && !ts.isExportDeclaration(stmt)) continue;
         const spec = moduleSpecifierText(stmt);
-        if (!spec || !SUBPATHS.has(spec)) continue;
-        const target = SUBPATHS.get(spec)!;
+        if (!spec || (!SUBPATHS.has(spec) && spec !== TARGET)) continue;
+        const target = SUBPATHS.get(spec) ?? TARGET;
+        // spec === TARGET: already on the new entry — only the named-bindings
+        // path matters (deprecated aliases like A3DRenderer rename to Renderer).
+        const onTarget = spec === TARGET;
 
         if (ts.isExportDeclaration(stmt)) {
+          if (onTarget) continue;
           // `export { ... } from "<subpath>"` — same split logic, no import clause flags.
           const clause = stmt.exportClause;
           if (!clause || !ts.isNamedExports(clause)) {
@@ -193,6 +197,7 @@ export function createRendererImportsCodemod(): {
         }
 
         const clause = stmt.importClause;
+        if (onTarget && (!clause?.namedBindings || !ts.isNamedImports(clause.namedBindings))) continue;
         if (!clause) {
           // side-effect import — just repoint
           edits.push({ start: stmt.moduleSpecifier!.getStart(sf), end: stmt.moduleSpecifier!.getEnd(), text: `"${target}"` });
@@ -237,8 +242,15 @@ export function createRendererImportsCodemod(): {
         const lines: string[] = [];
         const typeFlag = clause.isTypeOnly ? "type " : "";
         const defaultPart = clause.name ? `${clause.name.text}, ` : "";
-        lines.push(`import ${typeFlag}{ ${defaultPart}${moved.join(", ")} } from "${target}";`);
-        if (kept.length) lines.push(`import ${typeFlag}{ ${kept.join(", ")} } from "${spec}";`);
+        if (onTarget) {
+          // Names already resolve on the target: emit a single import with
+          // renames applied; names absent from RENDERER_EXPORTS keep their
+          // exported spelling and are reported "none" above.
+          lines.push(`import ${typeFlag}{ ${defaultPart}${[...moved, ...kept].join(", ")} } from "${target}";`);
+        } else {
+          lines.push(`import ${typeFlag}{ ${defaultPart}${moved.join(", ")} } from "${target}";`);
+          if (kept.length) lines.push(`import ${typeFlag}{ ${kept.join(", ")} } from "${spec}";`);
+        }
         edits.push({ start: stmt.getStart(sf), end: stmt.getEnd(), text: lines.join("\n") });
         replacedRanges.push({ start: stmt.getStart(sf), end: stmt.getEnd() });
       }

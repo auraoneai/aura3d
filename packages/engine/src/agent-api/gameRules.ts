@@ -6,6 +6,8 @@
 // module breaks the cycle: both the barrel and the carve-out import from here.
 import type { AuraGameRules } from "./nodes/types.js";
 import { createGameFighting2DRules } from "./GameRuntime.js";
+import { lazyCallable } from "./lazyNamespace.js";
+
 
 export function createAuraGameRules(options: Partial<Omit<AuraGameRules, "kind">> = {}): AuraGameRules {
   return {
@@ -22,6 +24,6 @@ export function createAuraGameRules(options: Partial<Omit<AuraGameRules, "kind">
   };
 }
 
-export const gameRules = Object.assign(createAuraGameRules, {
+export const gameRules = lazyCallable(() => Object.assign(createAuraGameRules, {
   fighting2D: createGameFighting2DRules
-});
+}));

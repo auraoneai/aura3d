@@ -1,7 +1,13 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraPromptPlan } from "../../index.js";
-import { AuraSceneBuilder, effects, model, prefabs, primitives, scene, timeline } from "../../index.js";
+import type { AuraAssetRef, AuraPromptPlan } from "../../nodes/types.js";
+import { prefabs } from "../prefabs/index.js";
+import { AuraSceneBuilder } from "../scene.js";
+import { effects } from "../effects.composite.js";
+import { model } from "../model.js";
+import { primitives } from "../primitives.js";
+import { scene } from "../scene.js";
+import { timeline } from "../timeline.js";
 import { camera } from "../camera.js";
 import { lights } from "../lights.js";
 import { material } from "../material.js";

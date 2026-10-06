@@ -1,23 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
-import {
-  AnimationAction,
-  AnimationClip,
-  AnimationLayer,
-  AnimationMixer,
-  AnimationTrack,
-  assignActionToAnimationLayer,
-  attachAnimationLayer,
-  createAnimationAction,
-  createAnimationClip,
-  createAnimationDebugOverlay,
-  createAnimationEventMarker,
-  createAnimationLayer,
-  createAnimationMixer,
-  createAnimationTrack,
-  crossFadeAnimations,
-  setAnimationTimeScale,
-  subscribeAnimationEvents
-} from "@aura3d/engine";
+import { assignActionToAnimationLayer, attachAnimationLayer, createAnimationAction, createAnimationClip, createAnimationDebugOverlay, createAnimationEventMarker, createAnimationLayer, createAnimationMixer, createAnimationTrack, crossFadeAnimations, setAnimationTimeScale, subscribeAnimationEvents } from "@aura3d/engine";
+import { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, AnimationTrack } from "@aura3d/engine/animation";
 
 /** muse3jsparity-PRD E3: mixer/action/track/event/timeScale/crossfade/layers all root-reachable. */
 

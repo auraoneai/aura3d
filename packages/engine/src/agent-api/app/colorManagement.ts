@@ -1,11 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraRendererColorManagementPreset, AuraSceneCategory, AuraSceneExposurePreset } from "../nodes/types.js";
-import { neon } from "../nodes/neon.js";
-import { physics } from "../nodes/physics.js";
-import { product } from "../nodes/product.js";
-import { game } from "../nodes/game/index.js";
-import { material } from "../nodes/material.js";
+
 
 export const rendererColorManagementPreset: AuraRendererColorManagementPreset = {
   kind: "aura-renderer-color-management",

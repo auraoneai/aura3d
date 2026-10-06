@@ -46,14 +46,15 @@ describe("game runtime frame-loop and package source contracts", () => {
       type: "module",
       sideEffects: false
     });
+    // PRD-15 §6.1: "." resolves to the explicit public surface entry.
     expect(publicRoot).toMatchObject({
-      types: "./dist/engine/agent-api/index.d.ts",
-      browser: "./dist/engine/agent-api/index.js",
-      import: "./dist/engine/agent-api/index.js",
-      default: "./dist/engine/agent-api/index.js"
+      types: "./dist/engine/public/index.d.ts",
+      browser: "./dist/engine/public/index.js",
+      import: "./dist/engine/public/index.js",
+      default: "./dist/engine/public/index.js"
     });
     expect(agentApi).toContain("export function createAuraApp");
-    expect(agentApi).toContain("export const game = {");
+    expect(agentApi).toContain("export const game = lazyNamespace(() => ({");
     expect(agentApi).toContain("runtimeNode: createRuntimeNodeSpec");
     expect(agentApi).toContain("export function model");
     expect(agentApi).toContain("export function scene");

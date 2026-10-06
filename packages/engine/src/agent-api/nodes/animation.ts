@@ -15,8 +15,10 @@ import { createPromptAnimationEpisodePlan, createPromptAnimationStoryBible, defi
 import { performance } from "../performanceEvidence.js";
 import { storyboard } from "../PromptAnimationContract.js";
 import { shotTimeline } from "../ShotTimeline.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const animation = {
+
+export const animation = lazyNamespace(() => ({
   episodePlan: createPromptAnimationEpisodePlan,
   storyBible: createPromptAnimationStoryBible,
   storyboard: definePromptAnimationStoryboard,
@@ -47,6 +49,6 @@ export const animation = {
   episodePackage: createAnimationEpisodePackageManifest,
   validateEpisodePackage: validateAnimationEpisodePackage,
   evidence: collectPromptAnimationEvidence
-} as const;
+} as const));
 
 export const animationStudio = animation;

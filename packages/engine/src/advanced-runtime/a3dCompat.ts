@@ -18,9 +18,9 @@ import type {
   ProductionRendererInput,
   RenderSource,
   RendererInput,
-  RenderItem,
-  RuntimeParityFrameRenderResult
+  RenderItem
 } from "@aura3d/rendering";
+import type { RendererFrameResult } from "@aura3d/rendering/production-runtime";
 import type { Scene } from "@aura3d/scene";
 import { Renderer, rendererInteractiveFeatureReport } from "@aura3d/rendering";
 
@@ -45,7 +45,7 @@ function normalizeFrameInput(input: ProductionRendererInput | A3DRenderFrameSour
  * Former `A3DRenderer.renderFrame` / `ProductionWebGL2Renderer.renderInteractiveFrame`:
  * synchronous frame render returning backend + diagnostics + feature rows.
  */
-export function a3dRenderFrame(renderer: Renderer, input: ProductionRendererInput): RuntimeParityFrameRenderResult {
+export function a3dRenderFrame(renderer: Renderer, input: ProductionRendererInput): RendererFrameResult {
   const frame = normalizeFrameInput(input);
   const diagnostics = renderer.render(frame.source, frame.camera);
   return {
@@ -56,7 +56,7 @@ export function a3dRenderFrame(renderer: Renderer, input: ProductionRendererInpu
 }
 
 /** Former `renderFrameAsync` — the async dispatch used by the WebGPU backend route. */
-export async function a3dRenderFrameAsync(renderer: Renderer, input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
+export async function a3dRenderFrameAsync(renderer: Renderer, input: ProductionRendererInput): Promise<RendererFrameResult> {
   const frame = normalizeFrameInput(input);
   const diagnostics = await renderer.renderAsync(frame.source, frame.camera);
   return {

@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode } from "../index.js";
-import { AuraNodeBuilder, effects } from "../index.js";
+import type { AuraEffectNode } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { effects } from "../nodes/effects.composite.js";
 import { shadows } from "./shadows.js";
 
 export const postEffectBuilders = {

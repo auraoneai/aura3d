@@ -47,3 +47,13 @@ map `none` and correctly stay on the deprecated subpath for now.
 
 Nothing here blocks compilation today: apps are outside `tsconfig.build.json`
 and the deprecated aliases stay exported until Phase 8.
+
+---
+
+## T5.9 follow-up — `engine-entry-imports` / `devtools-imports` codemods
+
+T5.9 collapsed `@aura3d/engine` subpaths to the §6.1 list. In addition to
+`renderer-imports`, run `aura3d codemod engine-entry-imports "<paths>" --write --report`
+and `aura3d codemod devtools-imports "<paths>" --write --report` on your files.
+Dry-run report (7 remaining non-15-owned files — owners 03/04/05/09 — 18 planned rows):
+`docs/project/aura3d-quality-rebuild/evidence/prd15/reports/engine-entry-imports-other-lanes.json`

@@ -1,7 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraCompiledPromptPlan, AuraInteractionNode, AuraPromptCameraPreset, AuraPromptEffectId, AuraPromptInteractionMode, AuraPromptLightingPreset, AuraPromptPlan, AuraPromptResolvedSubject, AuraPromptSceneType } from "../../index.js";
-import { AuraNodeBuilder, effects, interactions, promptSubjectIsResolved, scene } from "../../index.js";
+import type { AuraCompiledPromptPlan, AuraInteractionNode, AuraPromptCameraPreset, AuraPromptEffectId, AuraPromptInteractionMode, AuraPromptLightingPreset, AuraPromptPlan, AuraPromptResolvedSubject, AuraPromptSceneType } from "../../nodes/types.js";
+import { AuraNodeBuilder } from "../../nodes/builder.js";
+import { effects } from "../../nodes/effects.composite.js";
+import { interactions } from "../../nodes/interactions.js";
+import { promptSubjectIsResolved } from "../../nodes/promptPlans.js";
+import { scene } from "../../nodes/scene.js";
 import { camera } from "../camera.js";
 import { promptRecipes } from "./promptRecipes.js";
 

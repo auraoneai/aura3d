@@ -50,7 +50,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 import { build, type Plugin } from "esbuild";
-import { writeReport, type ReleaseCheck } from "../check-common";
+import { writeReport, type ReleaseCheck } from "../check-common.js";
 
 const REPORT_PATH = "tests/reports/bundle-scenarios.json";
 const ARTIFACT_DIR = "tests/reports/bundle-scenarios";

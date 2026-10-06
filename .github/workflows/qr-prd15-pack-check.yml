@@ -48,9 +48,15 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # dist/ must exist so the packed tarball carries real output.
+      # macOS runners cap V8's old-space near 2 GB; the workspace-wide program
+      # graph needs ~4 GB on the T3 split (OOM abort 134 observed on #182).
       - run: pnpm build:raw
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
       - name: Packed consumer check
-        run: pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts
+        run: >-
+          pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts
+          --extra-dir tests/qr/prd15/fixtures/deprecated-subpaths
         env:
           CI: "true"
       # PRD-15 T4.7 — the lean-template fixtures build from the packed engine +

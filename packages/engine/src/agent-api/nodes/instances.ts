@@ -1,12 +1,17 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraColor, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../index.js";
-import { AuraNodeBuilder, geometry, model, primitive } from "../index.js";
+import type { AuraAssetRef, AuraColor, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { geometry } from "../nodes/geometry.js";
+import { model } from "../nodes/model.js";
+import { primitive } from "../nodes/primitives.js";
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const instances = {
+
+export const instances = lazyNamespace(() => ({
   box: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("box", options),
   sphere: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("sphere", options),
   plane: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("plane", options),
@@ -71,7 +76,7 @@ export const instances = {
       ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {})
     });
   }
-} as const;
+} as const));
 
 export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
   if (options.transforms.length === 0) throw new Error("Aura3D instancing requires at least one transform.");

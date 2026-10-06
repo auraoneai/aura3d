@@ -18,3 +18,13 @@ Dry-run coverage of the current app tree is attached to Q-ALL-1
 (`evidence/prd15/codemod-reports/renderer-imports-non-owner-apps.json`);
 `rg -l "@aura3d/engine/advanced-runtime" templates examples packages/create-aura3d`
 is the equivalent consumer set here.
+
+---
+
+## T5.9 follow-up — `engine-entry-imports` / `devtools-imports` codemods
+
+T5.9 collapsed `@aura3d/engine` subpaths to the §6.1 list. In addition to
+`renderer-imports`, run `aura3d codemod engine-entry-imports "<paths>" --write --report`
+and `aura3d codemod devtools-imports "<paths>" --write --report` on your files.
+Dry-run report (91 files, 82 planned rows):
+`docs/project/aura3d-quality-rebuild/evidence/prd15/reports/engine-entry-imports-lane-13.json`
