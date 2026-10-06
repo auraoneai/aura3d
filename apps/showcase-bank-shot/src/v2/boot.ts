@@ -238,7 +238,7 @@ window.addEventListener("keydown", (e) => {
 
 // T2.6: hidden tab auto-pauses the session (stub wires no listener).
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) game.session.pause("tab-hidden");
+  if (document.hidden) game.session.pause("visibility");
   else game.session.resume();
 });
 
@@ -457,6 +457,7 @@ void game.ready().then(() => {
     get app() { return game.app; },
     get scene() { return game.app.scene; },
     get state() { return game.session.state; },
+    get session() { return game.session; },
     get frame() { return framePublished; },
     firstFrameAt: performance.now(),
     sessionStartedAt: performance.now()

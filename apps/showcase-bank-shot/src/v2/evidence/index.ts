@@ -30,7 +30,9 @@ export function publishBankShotEvidence(b: BankShotEvidenceBindings): void {
   const w = window as unknown as Record<string, Record<string, unknown>>;
   w.__AURA3D_GAME_EVIDENCE__ ??= {};
   w.__AURA3D_GAME_EVIDENCE__["showcase-bank-shot"] = {
-    get session() {
+    // `session` is a shell-owned section name (§7.2.1); the route republishes
+    // playback state as `playback` (spec reads paused via `__AURA3D_GAME__.session`).
+    get playback() {
       return {
         state: b.game.session.state,
         paused: b.game.session.paused,

@@ -96,13 +96,21 @@ test.describe("showcase-bank-shot v2 (T2.6)", () => {
         document.dispatchEvent(new Event("visibilitychange"));
       });
       await page.waitForTimeout(150);
-      expect(await page.evaluate(() => eval(EVIDENCE + ".session.paused") as boolean)).toBe(true);
+      expect(
+        await page.evaluate(
+          () => (window as { __AURA3D_GAME__?: { session?: { paused?: boolean } } }).__AURA3D_GAME__?.session?.paused
+        )
+      ).toBe(true);
       await page.evaluate(() => {
         Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
         document.dispatchEvent(new Event("visibilitychange"));
       });
       await page.waitForTimeout(150);
-      expect(await page.evaluate(() => eval(EVIDENCE + ".session.paused") as boolean)).toBe(false);
+      expect(
+        await page.evaluate(
+          () => (window as { __AURA3D_GAME__?: { session?: { paused?: boolean } } }).__AURA3D_GAME__?.session?.paused
+        )
+      ).toBe(false);
 
       expect(errors).toEqual([]);
     } finally {
