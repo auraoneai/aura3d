@@ -22,6 +22,13 @@
  *   node tools/agent-templates/capture-templates.mjs --templates mini-game,product-viewer
  *   node tools/agent-templates/capture-templates.mjs --skip-pack
  *   node tools/agent-templates/capture-templates.mjs --flags a3d_qr_looks
+ *   node tools/agent-templates/capture-templates.mjs --source <dir,...>   # pre-built dirs
+ *
+ * --source mode (T0.5 agent-output-eval capture leg): each argument is a
+ * directory containing a built index.html (a dist/ dir, or a project whose
+ * dist/index.html exists). No packing/scaffolding/build runs — the repo's
+ * own vite serves the directory; everything else (shots, readiness, flags,
+ * report.json) is identical to template mode.
  */
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -84,15 +91,24 @@ const templateIds = readdirSync(templateRoot, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 const requested = opt("--templates", "QRC_TEMPLATES", "").split(",").map((s) => s.trim()).filter(Boolean);
+// --source: pre-built dirs (agent-eval cells). Each entry names the dir and
+// either is or contains a dist/ with index.html.
+const sourceDirs = opt("--source", "QRC_SOURCE", "").split(",").map((s) => s.trim()).filter(Boolean).map((dir) => {
+  const abs = path.resolve(dir);
+  const distDir = existsSync(path.join(abs, "index.html")) ? abs : existsSync(path.join(abs, "dist", "index.html")) ? path.join(abs, "dist") : null;
+  if (!distDir) { console.error(`--source: no index.html under ${abs} or its dist/`); process.exit(2); }
+  const leaf = path.basename(abs.replace(/\/+$/, ""));
+  return { id: leaf === "dist" ? path.basename(path.dirname(abs)) : leaf, distDir };
+});
 for (const id of requested) {
   if (!templateIds.includes(id)) {
     console.error(`unknown template "${id}". Known: ${templateIds.join(", ")}`);
     process.exit(2);
   }
 }
-const selected = requested.length ? templateIds.filter((id) => requested.includes(id)) : templateIds;
+const selected = sourceDirs.length ? sourceDirs : (requested.length ? templateIds.filter((id) => requested.includes(id)) : templateIds).map((id) => ({ id, distDir: null }));
 if (flag("--list")) {
-  console.log(selected.join("\n"));
+  console.log(selected.map((item) => item.id).join("\n"));
   process.exit(0);
 }
 if (!selected.length) {
@@ -104,6 +120,10 @@ if (!selected.length) {
 // Packed tarballs -> install set
 // -------------------------------------------------------------------------
 function packTarballs() {
+  if (sourceDirs.length) {
+    log("--source: skipping release pack");
+    return new Map();
+  }
   if (skipPack) {
     log("--skip-pack: reusing tests/reports/release-tarballs");
   } else {
@@ -259,10 +279,17 @@ function captureUrl(origin) {
 }
 
 // `vite preview` on a fixed port, sequential per template.
-async function startPreview(scaffoldDir) {
-  const viteBin = path.join(scaffoldDir, "node_modules", "vite", "bin", "vite.js");
+async function startPreview(scaffoldDir, external = false) {
+  // external (--source) dirs carry only dist output: serve it with the repo's
+  // own vite via --outDir; scaffolded templates use their installed vite.
+  const viteBin = external
+    ? path.join(repoRoot, "node_modules", "vite", "bin", "vite.js")
+    : path.join(scaffoldDir, "node_modules", "vite", "bin", "vite.js");
   if (!existsSync(viteBin)) throw new Error("vite not installed in scaffold");
-  const child = spawn(process.execPath, [viteBin, "preview", "--host", "127.0.0.1", "--port", String(previewPort), "--strictPort"], { cwd: scaffoldDir, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath,
+    [viteBin, "preview", "--host", "127.0.0.1", "--port", String(previewPort), "--strictPort",
+     ...(external ? ["--outDir", scaffoldDir] : [])],
+    { cwd: external ? repoRoot : scaffoldDir, stdio: ["ignore", "pipe", "pipe"] });
   const origin = `http://127.0.0.1:${previewPort}`;
   const deadline = Date.now() + 30_000;
   let lastError = null;
@@ -405,7 +432,7 @@ async function main() {
   });
   report.environment.browserVersion = browser.version();
   try {
-    for (const id of selected) {
+    for (const { id, distDir } of selected) {
       const entry = { template: id, runs: [], shotsExpected: SHOTS.length * VIEWPORTS.length };
       report.templates.push(entry);
       const shotsDir = path.join(outDir, "shots", id);
@@ -413,10 +440,12 @@ async function main() {
       mkdirSync(shotsDir, { recursive: true });
       let preview = null;
       try {
-        const scaffoldDir = path.join(outDir, "work", id);
+        const scaffoldDir = distDir ?? path.join(outDir, "work", id);
         // --skip-build reuses an existing scaffold+dist so the capture side can
         // be iterated without repacking and rebuilding every template.
-        const reusable = skipBuild && existsSync(path.join(scaffoldDir, "dist", "index.html"));
+        const reusable = (skipBuild || distDir !== null) && existsSync(path.join(scaffoldDir, "dist", "index.html")) ? true
+          : distDir !== null; // source mode: the dir IS the built output
+        if (distDir) { entry.source = "dir"; entry.distDir = path.relative(repoRoot, distDir); }
         if (!reusable) {
           scaffoldTemplate(id);
           const pkg = JSON.parse(readFileSync(path.join(scaffoldDir, "package.json"), "utf8"));
@@ -428,8 +457,9 @@ async function main() {
         } else {
           entry.reusedBuild = true;
         }
-        if (!existsSync(path.join(scaffoldDir, "dist", "index.html"))) throw new Error("build produced no dist/index.html");
-        preview = await startPreview(scaffoldDir);
+        const serveDir = distDir ?? scaffoldDir;
+        if (!existsSync(path.join(serveDir, "dist", "index.html")) && !existsSync(path.join(serveDir, "index.html"))) throw new Error("build produced no dist/index.html");
+        preview = await startPreview(serveDir, distDir !== null);
         for (const run of VIEWPORTS) {
           entry.runs.push(await captureViewport(browser, id, run, preview.origin, shotsDir));
         }
