@@ -5,9 +5,12 @@ import {
   primitives,
   scene,
   createProductionRuntimePostprocess,
+  createPrd03PostSurface,
   collectPostSection,
   collectExposureSection,
   latestSubmittedPostprocess,
+  recordAuthoredPostContext,
+  resetAuthoredPostContext,
   resetSubmittedPostprocess
 } from "@aura3d/engine";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
@@ -28,7 +31,10 @@ const snapshotWithEffects = () =>
     .toJSON();
 
 describe("post/exposure diagnostics sections", () => {
-  beforeEach(() => resetSubmittedPostprocess());
+  beforeEach(() => {
+    resetSubmittedPostprocess();
+    resetAuthoredPostContext();
+  });
 
   test("sections mount under their keys flag-on", () => {
     const app = createAuraApp(null, {
@@ -77,32 +83,33 @@ describe("post/exposure diagnostics sections", () => {
     expect(post.targetFormat).toBe("rgba16f");
   });
 
-  test("exposure section: applied stays the pinned 1; authored grade exposure is reported separately", () => {
+  test("exposure section: flag-off keeps the pinned 1; flag-on applies the §6.4 product", () => {
+    // Flag-off (no authored post context): legacy truth — the authored 1.35
+    // stays diagnostic-only and `applied` is the pinned 1.
     createProductionRuntimePostprocess(snapshotWithEffects(), [], 320, 200);
-    const exposure = collectExposureSection({} as AuraApp);
-    // Phase 0 truth: legacy toneMapping.exposure is pinned at 1 — the authored
-    // 1.35 must NOT leak into `applied` before Phase 1 wiring.
+    let exposure = collectExposureSection({} as AuraApp);
     expect(exposure.applied).toBe(1);
     expect(exposure.authoredGradeExposure).toBe(1.35);
     expect(exposure.operator).toBe("aces");
-  });
-
-  test("flag-off keeps the same truthful data (diagnostics plumbing is flag-neutral)", () => {
-    const flags = resolveQrFlags({ options: [] });
-    expect(flags.on("A3D_QR_POST")).toBe(false);
-    createProductionRuntimePostprocess(scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 160, 90);
-    expect(latestSubmittedPostprocess()?.authored.bloom).toBe(true);
-    expect(collectPostSection({} as AuraApp).submittedPasses).toContain("bloom");
+    // Flag-on (Phase 1): exposure = output.exposure × colorGrade.exposure.
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: ["post"] }), options: {} });
+    createProductionRuntimePostprocess(snapshotWithEffects(), [], 320, 200);
+    exposure = collectExposureSection({} as AuraApp);
+    expect(exposure.applied).toBeCloseTo(1.35, 6);
+    expect(exposure.authoredGradeExposure).toBe(1.35);
   });
 
   test("multi-app: sections never read a sibling app's submitted record (review P2)", () => {
-    // Each app's compile runs inside its async mount — possibly out of order.
-    // Canvas-keyed records must still land on the owning app; a module-global
-    // `latest` would hand B's chain to A.
+    // Headless createAuraApp never mounts → never compiles. Replicate the real
+    // ordering instead: both factories run synchronously, then each app's
+    // async mount compiles — possibly out of order. Canvas-keyed stores must
+    // still land each record/context on the owning app.
     const canvasA = {} as HTMLCanvasElement;
     const canvasB = {} as HTMLCanvasElement;
     const appA = { canvas: canvasA } as AuraApp;
     const appB = { canvas: canvasB } as AuraApp;
+    createPrd03PostSurface(appA, { flags: resolveQrFlags({ options: ["post"] }), options: {} });
+    createPrd03PostSurface(appB, { flags: resolveQrFlags({ options: ["post"] }), options: {} });
     // B's mount resolves first — the wrong ordering for a global `latest`.
     createProductionRuntimePostprocess(
       scene().add(effects.antiAlias({ mode: "fxaa" })).toJSON(), [], 320, 200, true, { canvas: canvasB });
@@ -114,5 +121,13 @@ describe("post/exposure diagnostics sections", () => {
     expect(postA.submittedPasses).not.toContain("fxaa");
     expect(postB.submittedPasses).toContain("fxaa");
     expect(postB.submittedPasses).not.toContain("bloom");
+  });
+
+  test("flag-off keeps the same truthful data (diagnostics plumbing is flag-neutral)", () => {
+    const flags = resolveQrFlags({ options: [] });
+    expect(flags.on("A3D_QR_POST")).toBe(false);
+    createProductionRuntimePostprocess(scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 160, 90);
+    expect(latestSubmittedPostprocess()?.authored.bloom).toBe(true);
+    expect(collectPostSection({} as AuraApp).submittedPasses).toContain("bloom");
   });
 });

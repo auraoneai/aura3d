@@ -1813,17 +1813,17 @@ Phase 0 (day 0)
 - [ ] Commit the baseline captures and `bundle.json` to `evidence/prd03/phase0/`.
 
 Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
-- [ ] `agent-api/compiler/postprocess.ts`, flag on: set
+- [x] `agent-api/compiler/postprocess.ts`, flag on: set
   `toneMapping.exposure = (options.output?.exposure ?? 1) × (colorGrade.exposure ?? 1)` (replacing
   the literal 1 that came from `index.ts:12898-12904`) and
   `operator = options.output?.toneMapping ?? DEFAULT_TONE_MAPPING`. Test: `post-diagnostics.test.ts`
   asserts the bridge output `toneMapping.exposure === 1.05` for `colorGrade({exposure:1.05})` with
   the flag on and `1` with it off.
-- [ ] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared
+- [x] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared
   `AuraCreateAppOptions.output`) at compile time through `SceneCompileContext`. If PR 0b-1 does not
   pass create options into the context, raise CCR-03-6 to add `SceneCompileContext.output?`.
   Test: a unit test with a fake renderer captures the options.
-- [ ] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on,
+- [x] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on,
   pass `depthRange: { near, far, projection }` from the compiled camera's
   `resolveCameraClipping` result (`RootRuntimeSupport.ts:16-21`) through
   `RendererPostProcessOptions.depthRange` (CCR-03-1) into `presentLdrPostprocess` options, which
@@ -1831,7 +1831,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-depth-range.test.ts` asserts the device receives 0.05/100 for a
   default root camera with the flag on and 0.1/1000 with it off. A browser test checks DOF focus
   at 10 m on a 0.05/100 camera.
-- [ ] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185
+- [x] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185
   `FXAAShader.js` (6.5, 8.13), recomputing luma per tap, with `triangularDither` before the write.
   In `webgl2/LegacyPost.ts`, with the flag on and mode `fxaa`: run the present program with no
   `fxaa` option (`u_hasFxaa = 0`) into a pooled RGBA8 target, then this FXAA program to the output.
@@ -1844,7 +1844,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
     threshold) is unchanged within 1 LSB.
   - (c) A 1-px black/white checkerboard matches three within 2 LSB mean. It is *expected* to blur,
     as three's does; no FXAA variant can tell texture edges from geometry edges.
-- [ ] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by
+- [x] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by
   `compiler/postprocess.ts`:
   - Mode from C-27 `msaaSamples/postAntiAlias` and the authored `antiAlias` mode. An `antiAlias`
     node whose `postAuthored` lacks `mode` counts as `auto`.
@@ -1855,7 +1855,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-tiers.test.ts` asserts that no resolved plan has both
   `sampleCount 4` and `fxaa`, that 3840×2160 msaa resolves to non-msaa, and that the flag-off
   output equals today's `fxaaRequested` logic (`index.ts:12859`).
-- [ ] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test:
+- [x] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test:
   `tests/browser/post-banding.spec.ts` renders `prd03-night-fog-banding` on the FXAA path and
   asserts two things: the longest run of identical 8-bit values along the gradient is ≤ 1.5× the
   ideal quantization run, and Sobel on 8-bit luma with threshold 1 finds < 0.5% contour pixels.
