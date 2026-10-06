@@ -8,6 +8,8 @@ import type { AuraLightingModel } from "../../contracts/lighting.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+// Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
+import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
 
 export function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
   // PRD-02: under A3D_QR_LIGHTING the authored-defaults fallback light rig is
@@ -425,4 +427,60 @@ export function collectPrd02Lights(snapshot: AuraSceneSnapshot): Prd02CollectedL
     if (descriptor) descriptors.push(descriptor);
   });
   return { descriptors, hemisphere, ambientIntensity };
+}
+
+/**
+ * Descriptor → `AuraLightData` for the std140 AuraLights packer
+ * (`packAuraLightsStd140`, u_lightData in the a3d_prd02_lighting_punctual
+ * chunk). rect/softbox nodes carry `kind:"rect-area"` with the authored
+ * width/height; right/up derive an orthonormal basis from `direction` when
+ * the scene transform's basis isn't threaded through the descriptor.
+ */
+export function descriptorToAuraLightData(
+  descriptor: PhysicalLightDescriptor,
+  shadowIndex?: number
+): AuraLightData {
+  const rect = descriptor.kind === "rect-area";
+  const basis = rect ? rectBasisFromDirection(descriptor.direction) : undefined;
+  return {
+    kind: descriptor.kind as AuraLightData["kind"],
+    color: descriptor.color,
+    intensity: descriptor.intensity,
+    position: descriptor.position,
+    direction: descriptor.direction,
+    range: descriptor.range,
+    spotAngle: descriptor.spotAngle,
+    penumbra: descriptor.penumbra,
+    decay: descriptor.decay,
+    ...(shadowIndex !== undefined ? { shadowIndex } : {}),
+    ...(rect
+      ? {
+          right: basis!.right,
+          up: basis!.up,
+          width: descriptor.authoredWidth ?? 1,
+          height: descriptor.authoredHeight ?? 1
+        }
+      : {}),
+    name: descriptor.name
+  };
+}
+
+/** Orthonormal (right, up) spanning the plane ⊥ direction (default up +Y). */
+function rectBasisFromDirection(direction: readonly [number, number, number]): {
+  readonly right: readonly [number, number, number];
+  readonly up: readonly [number, number, number];
+} {
+  const [dx, dy, dz] = normalize3(direction);
+  const refY: readonly [number, number, number] = Math.abs(dy) > 0.999 ? [1, 0, 0] : [0, 1, 0];
+  const right = normalize3([
+    refY[1] * dz - refY[2] * dy,
+    refY[2] * dx - refY[0] * dz,
+    refY[0] * dy - refY[1] * dx
+  ]);
+  const up = normalize3([
+    dy * right[2] - dz * right[1],
+    dz * right[0] - dx * right[2],
+    dx * right[1] - dy * right[0]
+  ]);
+  return { right, up };
 }

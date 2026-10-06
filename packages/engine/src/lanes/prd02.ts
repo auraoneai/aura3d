@@ -32,8 +32,12 @@ export {
 export {
   explicitEnvironmentResolution,
   prd02AmbientTerm,
-  registerPrd02EnvironmentSources
+  registerPrd02EnvironmentSources,
+  bindPrd02EnvironmentProbe,
+  type Prd02EnvironmentBindOptions,
+  type Prd02EnvironmentBinding
 } from "../agent-api/compiler/environment.js";
+export { descriptorToAuraLightData } from "../agent-api/compiler/lights.js";
 export { probes, type AuraProbeNode, type AuraReflectionProbeOptions, type AuraIrradianceVolumeOptions } from "../agent-api/nodes/probes.js";
 export { prd02EnvironmentBuilders, type AuraEnvironmentNodeV2, type AuraEnvironmentPresetName } from "../agent-api/nodes/environments.js";
 export { prd02KitLighting } from "../agent-api/nodes/sceneKits.js";

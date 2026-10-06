@@ -112,6 +112,99 @@ export class LightUniforms {
   }
 }
 
+/**
+ * PRD-02 §6.3/§8 — `AuraLights` std140 packer (u_lightData, 32 lights × 6
+ * vec4 = 3KB). Physical units: point/spot candela, directional lux; the
+ * shader applies range-window + inverse-power decay (chunk
+ * `a3d_prd02_lighting_punctual`). Per-light layout is frozen by the chunk:
+ *   [0] position.xyz, w = kind (0 dir, 1 point, 2 spot, 3 rect)
+ *   [1] direction.xyz, w = range (0 = infinite)
+ *   [2] color.rgb,        w = intensity
+ *   [3] spot: cosOuter, cosInner, decay, shadowIndex
+ *   [4] rect: right.xyz, width   (else 0)
+ *   [5] rect: up.xyz,    height  (else 0)
+ */
+export interface AuraLightData {
+  readonly kind: "directional" | "point" | "spot" | "rect-area";
+  readonly color: readonly [number, number, number];
+  readonly intensity: number;
+  readonly position: readonly [number, number, number];
+  readonly direction: readonly [number, number, number];
+  readonly range: number;
+  readonly spotAngle: number;
+  readonly penumbra: number;
+  readonly decay: number;
+  /** Index into the shadow map array (-1/undefined = unshadowed). */
+  readonly shadowIndex?: number;
+  readonly right?: readonly [number, number, number];
+  readonly up?: readonly [number, number, number];
+  readonly width?: number;
+  readonly height?: number;
+  readonly name?: string;
+}
+
+export const AURA_LIGHTS_MAX = 32;
+export const AURA_LIGHTS_VEC4_PER_LIGHT = 6;
+
+export interface AuraLightsPacked {
+  /** AURA_LIGHTS_MAX × 6 vec4 floats; lights past capacity are dropped. */
+  readonly data: Float32Array;
+  readonly lightCount: number;
+  /** Lights considered this frame (C-28 prd02.lightsEvaluated). */
+  readonly lightsEvaluated: number;
+  /** Lights dropped by the 32-light cap (C-28 prd02.lightsDroppedByCap). */
+  readonly lightsDroppedByCap: number;
+  readonly droppedNames: readonly string[];
+}
+
+function auraLightKind(k: AuraLightData["kind"]): number {
+  return k === "directional" ? 0 : k === "point" ? 1 : k === "spot" ? 2 : 3;
+}
+
+export function packAuraLightsStd140(lights: readonly AuraLightData[]): AuraLightsPacked {
+  const capacity = AURA_LIGHTS_MAX;
+  const selected = lights.slice(0, capacity);
+  const dropped = lights.slice(capacity);
+  const data = new Float32Array(capacity * AURA_LIGHTS_VEC4_PER_LIGHT * 4);
+  for (const [index, light] of selected.entries()) {
+    const base = index * AURA_LIGHTS_VEC4_PER_LIGHT * 4;
+    data[base] = light.position[0]; data[base + 1] = light.position[1]; data[base + 2] = light.position[2];
+    data[base + 3] = auraLightKind(light.kind);
+    data[base + 4] = light.direction[0]; data[base + 5] = light.direction[1]; data[base + 6] = light.direction[2];
+    data[base + 7] = light.range;
+    data[base + 8] = light.color[0]; data[base + 9] = light.color[1]; data[base + 10] = light.color[2];
+    data[base + 11] = light.intensity;
+    const halfOuter = light.spotAngle / 2;
+    const halfInner = halfOuter * Math.max(0, 1 - Math.min(1, light.penumbra));
+    data[base + 12] = light.kind === "spot" ? Math.cos(halfOuter) : 0;
+    data[base + 13] = light.kind === "spot" ? Math.cos(halfInner) : 0;
+    data[base + 14] = light.decay;
+    data[base + 15] = light.shadowIndex ?? -1;
+    const right = light.kind === "rect-area" ? light.right ?? [1, 0, 0] : [0, 0, 0];
+    const up = light.kind === "rect-area" ? light.up ?? [0, 1, 0] : [0, 0, 0];
+    data[base + 16] = right[0]; data[base + 17] = right[1]; data[base + 18] = right[2];
+    data[base + 19] = light.kind === "rect-area" ? light.width ?? 1 : 0;
+    data[base + 20] = up[0]; data[base + 21] = up[1]; data[base + 22] = up[2];
+    data[base + 23] = light.kind === "rect-area" ? light.height ?? 1 : 0;
+  }
+  return {
+    data,
+    lightCount: selected.length,
+    lightsEvaluated: lights.length,
+    lightsDroppedByCap: dropped.length,
+    droppedNames: dropped.map((l, i) => l.name ?? `light-${capacity + i}`)
+  };
+}
+
+/** Ambient irradiance → exit radiance (energy-conserving 1/π, PRD-02 §6.3). */
+export function ambientToExitRadiance(
+  color: readonly [number, number, number],
+  intensity: number
+): [number, number, number] {
+  const k = Math.max(0, intensity) / Math.PI;
+  return [color[0] * k, color[1] * k, color[2] * k];
+}
+
 interface RankedLight {
   readonly light: CollectedLight;
   readonly inputIndex: number;

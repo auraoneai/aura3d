@@ -218,6 +218,80 @@ export function explicitEnvironmentResolution(
   }
 }
 
+// ---------- PRD-02 Phase 3 — probe binding (neutral floor + async upgrade) ----------
+
+import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
+import { environmentProbeFactorySlot, type AuraQualityTier, type QrFlags } from "@aura3d/rendering/contracts";
+// Deep imports: @aura3d/rendering has no "./environment" subpath and contracts
+// don't re-export RenderDevice (lane-15/-01 files); same pattern as
+// FlagshipFoundation's rendering/src deep imports.
+import type { RenderDevice } from "../../../../rendering/src/RenderDevice.js";
+import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
+import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
+
+export interface Prd02EnvironmentBindOptions {
+  readonly device: RenderDevice;
+  readonly tier: AuraQualityTier;
+  readonly flags: QrFlags;
+  /** Shared cache; a fresh one is created when omitted. */
+  readonly cache?: EnvironmentCache;
+  /** Live-scene capture hook; required only for `{ capture }` probes. */
+  readonly captureRequest?: EnvironmentCaptureRequest;
+  /** Called once when the async-acquired (hdri/preset) probe replaces the neutral floor. */
+  readonly onUpgrade?: (probe: EnvironmentProbe) => void;
+}
+
+export interface Prd02EnvironmentBinding {
+  /** Probe to bind this frame — the neutral floor until `pending` resolves. */
+  readonly probe: EnvironmentProbe;
+  /** Non-null while a higher-quality probe is being acquired. */
+  readonly pending: Promise<EnvironmentProbe> | null;
+  readonly resolution: AuraEnvironmentSourceResolution;
+}
+
+/**
+ * Binds an `AuraEnvironmentSourceResolution` to a real C-09 probe:
+ * neutral probes resolve synchronously through the cache (never evicted);
+ * preset/hdri probes go through `EnvironmentCache.acquire` asynchronously
+ * with the neutral probe bound until they land (`onUpgrade`). `capture`
+ * probes build via `factory.fromScene` when a `captureRequest` is supplied,
+ * else fall back to the neutral floor.
+ */
+export function bindPrd02EnvironmentProbe(
+  resolution: AuraEnvironmentSourceResolution,
+  options: Prd02EnvironmentBindOptions
+): Prd02EnvironmentBinding {
+  const factory = environmentProbeFactorySlot.get(options.flags)(options.device);
+  const cache = options.cache ?? new EnvironmentCache(options.device, factory, defaultProbeLoader(factory));
+  const tier = options.tier;
+  const request = resolution.probe;
+  if (request === "neutral") {
+    return { probe: cache.neutral(tier), pending: null, resolution };
+  }
+  const floor = cache.neutral(tier);
+  if (typeof request === "object" && "capture" in request) {
+    const req = options.captureRequest;
+    if (!req) return { probe: floor, pending: null, resolution };
+    return { probe: factory.fromScene(req, { faceSize: Math.max(128, req.resolution ?? 128) as 128 | 256 | 512 | 1024 }), pending: null, resolution };
+  }
+  if (typeof request === "object" && "hdri" in request) {
+    const pending = cache.acquire({ url: request.hdri, tier }).then((probe) => {
+      options.onUpgrade?.(probe);
+      return probe;
+    });
+    return { probe: floor, pending, resolution };
+  }
+  if (typeof request === "object" && "preset" in request) {
+    const pending = cache.acquire({ preset: request.preset, tier }).then((probe) => {
+      options.onUpgrade?.(probe);
+      return probe;
+    });
+    return { probe: floor, pending, resolution };
+  }
+  // spaceBake and any future request kinds: neutral floor, no upgrade.
+  return { probe: floor, pending: null, resolution };
+}
+
 let prd02SourcesRegistered = false;
 
 /**

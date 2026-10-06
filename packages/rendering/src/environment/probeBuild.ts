@@ -9,7 +9,7 @@ import { Texture, type TextureCubeFace } from "../Texture.js";
 import type { EnvironmentProbe } from "../contracts/environment.js";
 import { sampleRoomEnvironment } from "./RoomEnvironmentScene.js";
 import { projectCubeToSH9 } from "./SphericalHarmonics.js";
-import { faceUvToDir, prefilterCubeGGX, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
+import { faceUvToDir, prefilterCubeGGX, sampleCube, type PrefilterCubeSource, type PrefilterResult } from "./workers/cpuPrefilter.js";
 
 export const CUBE_FACE_ORDER = ["px", "nx", "py", "ny", "pz", "nz"] as const;
 
@@ -235,3 +235,97 @@ export function cubeFaceViewProjection(
   return out;
 }
 
+
+/** IEEE-754 binary16 decode (rgba16f readback → Float32). */
+function halfToFloat(h: number): number {
+  const sign = h & 0x8000 ? -1 : 1;
+  const exp = (h >> 10) & 0x1f;
+  const mantissa = h & 0x03ff;
+  if (exp === 0) return sign * mantissa * 2 ** -24;
+  if (exp === 0x1f) return mantissa !== 0 ? Number.NaN : sign * Number.POSITIVE_INFINITY;
+  return sign * (1 + mantissa / 1024) * 2 ** (exp - 15);
+}
+
+/** 2× box-filter downsample of an RGBA32F image (mip chain, linear HDR). */
+function downsampleRgba(src: Float32Array, w: number, h: number): { data: Float32Array; width: number; height: number } {
+  const nw = Math.max(1, w >> 1);
+  const nh = Math.max(1, h >> 1);
+  const out = new Float32Array(nw * nh * 4);
+  for (let y = 0; y < nh; y += 1) {
+    for (let x = 0; x < nw; x += 1) {
+      for (let c = 0; c < 4; c += 1) {
+        let sum = 0;
+        let count = 0;
+        for (let dy = 0; dy < 2; dy += 1) {
+          for (let dx = 0; dx < 2; dx += 1) {
+            const sx = Math.min(w - 1, x * 2 + dx);
+            const sy = Math.min(h - 1, y * 2 + dy);
+            sum += src[(sy * w + sx) * 4 + c]!;
+            count += 1;
+          }
+        }
+        out[(y * nw + x) * 4 + c] = sum / count;
+      }
+    }
+  }
+  return { data: out, width: nw, height: nh };
+}
+
+/**
+ * Legacy-path bridge (PRD-02 Phase 3): project the probe's mip-0 specular
+ * cube to a mipped RGBA16F equirect — linear HDR end to end (no Reinhard,
+ * no RGBA8), which fixes the E5 dim/clip problem on the legacy environment
+ * path when the flag is on. Mip chain is a CPU box filter.
+ */
+export function probeToEquirectTexture(
+  probe: EnvironmentProbe,
+  options: { readonly width?: number; readonly height?: number } = {}
+): Texture {
+  const width = options.width ?? probe.faceSize * 2;
+  const height = options.height ?? probe.faceSize;
+  const faceSize = probe.faceSize;
+  const level0 = probe.specularCube.cubeFaces.map((face) => {
+    const mip = face.mipLevels[0];
+    if (!mip) throw new Error("probe specular cube has no mip-0 data");
+    if (mip.data instanceof Uint16Array) {
+      const out = new Float32Array(mip.data.length);
+      for (let i = 0; i < mip.data.length; i += 1) out[i] = halfToFloat(mip.data[i]!);
+      return out;
+    }
+    return new Float32Array(mip.data);
+  });
+  const source = { faceSize, faces: level0 };
+  let equirect: Float32Array = new Float32Array(width * height * 4);
+  for (let row = 0; row < height; row += 1) {
+    const theta = ((row + 0.5) / height) * Math.PI;
+    const sinT = Math.sin(theta);
+    const cosT = Math.cos(theta);
+    for (let col = 0; col < width; col += 1) {
+      const phi = ((col + 0.5) / width) * 2 * Math.PI - Math.PI;
+      const dir: readonly [number, number, number] = [-Math.cos(phi) * sinT, cosT, Math.sin(phi) * sinT];
+      const [r, g, b] = sampleCube(source, dir);
+      const i = (row * width + col) * 4;
+      equirect[i] = r; equirect[i + 1] = g; equirect[i + 2] = b; equirect[i + 3] = 1;
+    }
+  }
+  const mipLevels: { width: number; height: number; data: Uint16Array }[] = [
+    { width, height, data: faceToHalf(equirect) }
+  ];
+  let w = width;
+  let h = height;
+  while (w > 1 || h > 1) {
+    const next = downsampleRgba(equirect, w, h);
+    mipLevels.push({ width: next.width, height: next.height, data: faceToHalf(next.data) });
+    equirect = next.data;
+    w = next.width;
+    h = next.height;
+  }
+  return new Texture({
+    width,
+    height,
+    format: "rgba16f",
+    colorSpace: "linear",
+    label: `prd02-equirect-${probe.source}`,
+    mipLevels
+  });
+}

@@ -125,6 +125,14 @@ export {
   defaultProbeLoader
 } from "../environment/EnvironmentCache.js";
 export {
+  type A3DEnvironmentUniformInput,
+  type A3DEnvironmentUniforms,
+  packEnvSH,
+  packA3DEnvironmentUniforms
+} from "../environment/EnvUniforms.js";
+export { createPrd02EnvironmentBackgroundShaderLibrary } from "../environment/Prd02BackgroundShaderLibrary.js";
+export { resolvePrd02EnvironmentBackground } from "../renderer/Background.js";
+export {
   SH9_CHUNK_GLSL,
   LIGHTING_IBL_CHUNK_GLSL,
   LIGHTING_PUNCTUAL_CHUNK_GLSL,
