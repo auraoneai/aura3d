@@ -136,6 +136,8 @@ function createAliasPlugin(external: readonly string[]): Plugin {
       ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
       ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
       ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
+      ["@aura3d/rendering/contracts", "./packages/rendering/src/contracts/index.ts"],
+      ["@aura3d/rendering/contracts/flags.state", "./packages/rendering/src/contracts/flags.state.ts"],
       ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
       ["@aura3d/rendering/lean-core-runtime", "./packages/rendering/src/lean-core-runtime.ts"],
       ["@aura3d/rendering/extension-scalar-atlas", "./packages/rendering/src/extension-scalar-atlas.ts"],
