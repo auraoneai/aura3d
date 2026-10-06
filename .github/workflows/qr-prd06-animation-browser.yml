@@ -54,7 +54,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Lane impl unit tests
-        run: pnpm exec vitest run "tests/unit/contracts/impl/prd06-" "tests/unit/agent-api/production-actor-dispatch" "tests/unit/agent-api/runtime-node-empty-pose" --reporter=dot
+        run: pnpm exec vitest run "tests/unit/contracts/impl/prd06-" "tests/unit/agent-api/production-actor-dispatch" "tests/unit/agent-api/runtime-node-empty-pose" "tests/unit/rendering/texture-update" "tests/unit/rendering/skinning-palette-cache" "tests/unit/assets/gltf-skinning-palette-identity" --reporter=dot
 
   browser:
     runs-on: macos-14
