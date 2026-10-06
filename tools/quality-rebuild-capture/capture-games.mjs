@@ -21,11 +21,11 @@
  * <out>/index.html. Exit code is 0 unless --strict is passed and a game failed to capture.
  */
 import { spawnSync } from "node:child_process";
-import { createReadStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync, appendFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, appendFileSync } from "node:fs";
 import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { inflateSync } from "node:zlib";
 
 const toolDir = path.dirname(fileURLToPath(import.meta.url));
@@ -79,6 +79,39 @@ for (const id of requestedIds) {
 const selectedGames = gamesConfig.games.filter((g) => requestedIds.length === 0 || requestedIds.includes(g.id));
 const isLocal = (game) => localBuildAll || game.deployed === false;
 
+// C-33 (PR 0b-3): --flags passthrough. Appends `a3d-qr=<list>` to every captured URL; the
+// engine's resolveQrFlags reads the same param. Per-game `qrFlags[]` union in on top.
+const qrFlags = opt("--flags", "QRC_FLAGS", "none");
+if (qrFlags !== "none" && qrFlags !== "all" && !/^[A-Za-z0-9_,.-]+$/.test(qrFlags)) {
+  console.error(`--flags must be "none", "all", or a comma list of flag ids; got "${qrFlags}"`);
+  process.exit(2);
+}
+function captureUrlFor(game, route) {
+  const flags = [...new Set([...(game.qrFlags ?? []), ...(qrFlags === "none" ? [] : [qrFlags])])];
+  if (!flags.length) return route;
+  return `${route}${route.includes("?") ? "&" : "?"}a3d-qr=${encodeURIComponent(flags.join(","))}`;
+}
+
+// C-33 (PR 0b-3): capture step plugins. Every ./steps/*.mjs default-exports (or exports a
+// `plugin` named export of) a CaptureStepPlugin {name, owner, run(page, step, ctx)}; a timeline
+// step object carrying the plugin's name as a key dispatches to it.
+async function loadStepPlugins() {
+  const stepsDir = path.join(toolDir, "steps");
+  const plugins = new Map();
+  if (!existsSync(stepsDir)) return plugins;
+  for (const file of readdirSync(stepsDir).filter((f) => f.endsWith(".mjs")).sort()) {
+    const module = await import(pathToFileURL(path.join(stepsDir, file)).href);
+    const plugin = module.default ?? module.plugin;
+    if (!plugin || typeof plugin.name !== "string" || typeof plugin.run !== "function") {
+      throw new Error(`steps/${file}: plugin must export { name, owner, run }`);
+    }
+    if (plugins.has(plugin.name)) throw new Error(`steps/${file}: duplicate step plugin name "${plugin.name}"`);
+    plugins.set(plugin.name, plugin);
+  }
+  return plugins;
+}
+const stepPlugins = await loadStepPlugins();
+
 function validateOrigin(value) {
   let url;
   try { url = new URL(value); } catch { throw new Error(`--base-url is not a URL: ${value}`); }
@@ -110,7 +143,7 @@ function validateTimeline(game) {
     if (!Array.isArray(steps)) { problems.push(`${where}: steps must be an array`); return; }
     steps.forEach((step, index) => {
       const at = `${where}[${index}]`;
-      const kind = STEP_KEYS.find((k) => k in step);
+      const kind = STEP_KEYS.find((k) => k in step) ?? Object.keys(step).find((k) => stepPlugins.has(k));
       if (!kind) { problems.push(`${at}: unknown step ${JSON.stringify(step)}`); return; }
       if (kind === "shot") {
         if (!/^[0-9a-z][0-9a-z-]*$/.test(step.shot)) problems.push(`${at}: shot name must be kebab-case: ${step.shot}`);
@@ -613,6 +646,15 @@ class Timeline {
           if (this.stopped) break;
         }
         this.record.conditions.push({ until: step.until, hit, waitedMs: Date.now() - started, atMs: this.elapsed(), baseline: s, baseline2: t });
+      } else {
+        const pluginKey = Object.keys(step).find((k) => stepPlugins.has(k));
+        if (pluginKey) {
+          const plugin = stepPlugins.get(pluginKey);
+          const result = await plugin.run(this.page, step, {
+            outDir: this.gameDir, route: this.game.route, log: (m) => log(`[step:${pluginKey}] ${m}`)
+          });
+          (this.record.pluginResults ??= []).push({ step: pluginKey, plugin: plugin.name, files: result?.files ?? [], data: result?.data });
+        }
       }
     }
   }
@@ -899,7 +941,7 @@ async function main() {
       if (includeMobile) runs.push(MOBILE_RUN);
       for (const run of runs) {
         if (Date.now() - gameStarted > gameTimeoutMs) { result.error = "game timeout"; break; }
-        const record = await captureRun(browser, game, run, `${origin}${game.route}`, gameDir, run.mobile ? { stopAfterShot: defaults.mobileStopAfterShot ?? "03-mid" } : {});
+        const record = await captureRun(browser, game, run, captureUrlFor(game, `${origin}${game.route}`), gameDir, run.mobile ? { stopAfterShot: defaults.mobileStopAfterShot ?? "03-mid" } : {});
         result.runs.push(record);
         environment.probeRenderer ??= record.gl?.probe?.unmaskedRenderer ?? record.gl?.probe?.renderer ?? null;
         log(`  ${run.name}: shots=${record.shots.length} fps=${record.fps?.fps ?? "?"} firstDraw=${record.timing?.firstDrawCallMs ?? "?"}ms ready=${record.timing?.readiness ?? "?"} err=${record.consoleErrors.length}/${record.pageErrors.length} net=${record.failedRequests.length}${record.error ? ` ERROR ${record.error.slice(0, 120)}` : ""}`);
@@ -907,7 +949,7 @@ async function main() {
       if (includeAlt && !localGame) {
         for (const [index, altRoute] of (game.altRoutes ?? []).entries()) {
           const altRun = { ...desktopViewports[0], name: `alt${index + 1}-${desktopViewports[0].width}x${desktopViewports[0].height}` };
-          const record = await captureRun(browser, game, altRun, `${origin}${altRoute}`, gameDir);
+          const record = await captureRun(browser, game, altRun, captureUrlFor(game, `${origin}${altRoute}`), gameDir);
           result.runs.push(record);
           log(`  ${altRun.name} ${altRoute}: shots=${record.shots.length} fps=${record.fps?.fps ?? "?"}`);
         }

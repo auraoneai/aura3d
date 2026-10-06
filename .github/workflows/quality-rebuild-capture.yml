@@ -19,6 +19,10 @@ on:
         description: "Desktop viewports, WIDTHxHEIGHT comma-separated"
         required: false
         default: "1920x1080,1280x720"
+      qr_flags:
+        description: "QrFlag list passed to captures as a3d-qr=<list> (none|all|comma list)"
+        required: false
+        default: "none"
   push:
     branches: ["aura3d-quality-rebuild/audit"]
     paths:
@@ -45,6 +49,7 @@ jobs:
       QRC_GAMES: ${{ github.event_name == 'workflow_dispatch' && inputs.games || '' }}
       QRC_VIEWPORTS: ${{ github.event_name == 'workflow_dispatch' && inputs.viewports || '1920x1080,1280x720' }}
       QRC_LOCAL_BUILD: ${{ github.event_name == 'workflow_dispatch' && inputs.local_build_all && 'true' || 'false' }}
+      QRC_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.qr_flags || 'none' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

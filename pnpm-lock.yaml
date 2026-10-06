@@ -335,6 +335,15 @@ importers:
         specifier: workspace:*
         version: link:../rendering
 
+  packages/game:
+    dependencies:
+      '@aura3d/engine-runtime':
+        specifier: workspace:*
+        version: link:../engine
+      '@aura3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+
   packages/input:
     dependencies:
       '@aura3d/math':

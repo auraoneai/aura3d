@@ -138,6 +138,12 @@ export interface RenderCommandState {
   readonly cullMode: "none" | "back" | "front";
   readonly blend: boolean;
   readonly depthCompare: "always" | "less-equal";
+  /** C-04 (PR 0a): named blend state; wins over `blend` when set. */
+  readonly blendMode?: import("./contracts/blend").BlendMode;
+  /** C-04 (PR 0a): full depth-compare vocabulary; wins over `depthCompare` when set. */
+  readonly depthCompareV2?: import("./contracts/blend").DepthCompare;
+  /** PR 0a (PRD 04): MSAA alpha-to-coverage. */
+  readonly alphaToCoverage?: boolean;
   readonly colorWrite?: readonly [boolean, boolean, boolean, boolean];
   readonly scissor?: {
     readonly x: number;
@@ -198,6 +204,10 @@ export interface RenderDeviceDiagnostics {
   readonly drawCalls: number;
   readonly buffers: number;
   readonly shaders: number;
+  /** C-28 (PR 0a): native program compiles this session. */
+  readonly programCompileCount?: number;
+  /** C-28 (PR 0a): readPixels calls this session. */
+  readonly readPixelsCalls?: number;
   readonly renderTargets?: number;
   readonly textures?: number;
   readonly bufferBytes?: number;
@@ -457,6 +467,17 @@ export interface RenderDevice {
   captureState(): ReadonlyMap<string, string | number | boolean | null>;
   getDiagnostics(): RenderDeviceDiagnostics;
   dispose(): void;
+  /** C-13 (PR 0a): run a post graph natively; undefined until PRD 03 provides it. */
+  executePostGraph?(graph: unknown): void;
+  /** C-28 (PR 0a): device capability probe. */
+  readonly probe?: import("./contracts/device").DeviceProbe;
+  /** C-28 (PR 0a): frame counters. */
+  counters?(): import("./contracts/device").DeviceCounters;
+  resetFrameCounters?(): void;
+  /** C-02 (PR 0a): asynchronous shader compile when the backend supports it. */
+  compileAsync?(sources: ShaderSources): Promise<RenderShaderProgram>;
+  /** PR 0a (PRD 06/09): instanced multi-draw when the backend supports it. */
+  multiDrawElementsInstanced?(draws: readonly unknown[]): void;
 }
 
 export class RenderDeviceError extends Error {

@@ -4,48 +4,29 @@ import { LightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
 import { MaterialBinding } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
-import { applyMorphTargets, type MorphTargetDelta } from "./MorphTarget";
-import { type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
+import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { MAX_UNIFORM_SKINNING_JOINTS as SHADER_MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
-import { decideSkinningPalettePath, type SkinningCpuFallbackReason } from "./WebGPUSkinningLimits";
+import { type SkinningCpuFallbackReason } from "./WebGPUSkinningLimits";
 import { ShaderModule } from "./ShaderModule";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "./ShaderLibraryCore";
-import { createShadowFilterKernel, type ShadowFilterKernel } from "./ShadowMap";
+import { type ShadowFilterKernel } from "./ShadowMap";
 import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
-import { Sampler } from "./Sampler";
-import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
-import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+import { type RenderItem } from "./contracts/renderItem";
+import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 
-export interface RenderItem {
-  readonly geometry: Geometry;
-  readonly material?: RenderMaterial;
-  readonly label?: string;
-  readonly drawRange?: RenderItemDrawRange;
-  readonly includeInAutoFrame?: boolean;
-  readonly modelMatrix?: Float32Array | readonly number[];
-  readonly normalMatrix?: Float32Array | readonly number[];
-  readonly modelViewProjectionMatrix?: Float32Array | readonly number[];
-  readonly skinning?: SkinningPaletteBinding;
-  readonly morphTargets?: readonly MorphTargetDelta[];
-  readonly morphWeights?: readonly number[];
-  /**
-   * Wrinkle-detail intensity resolved engine-side from live morph weights
-   * (`resolveWrinkleMapStrength`). Shaders that declare `u_wrinkleStrength` modulate
-   * procedural normal detail by it; absent (or zero) leaves rendering bit-identical.
-   */
-  readonly wrinkleStrength?: number;
-  readonly instanceTransforms?: Float32Array | readonly number[];
-  readonly instanceColors?: Float32Array | readonly number[];
-  readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
-  readonly boundingBoxCenter?: readonly [number, number, number];
-  /** Exclude supporting/decorative geometry from renderer-owned shadow depth passes. */
-  readonly castShadow?: boolean;
-}
+
+// PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
+import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
+import { applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
+import { submitDraw } from "./forward/DrawSubmit.js";
+import { bindVelocityUniforms } from "./forward/Velocity.js";
+
+export type { RenderItem };
 
 export interface RenderItemDrawRange {
   readonly start: number;
@@ -114,7 +95,7 @@ export const MAX_UNIFORM_SKINNING_JOINTS = SHADER_MAX_UNIFORM_SKINNING_JOINTS;
  */
 export const MAX_SKINNING_JOINTS = 1024;
 
-const SKINNING_PALETTE_TEXTURE_MAX_WIDTH = 1024;
+
 
 export const MAX_GPU_MORPH_VERTICES = 64;
 export const MAX_GPU_MORPH_TARGETS = 4;
@@ -225,8 +206,8 @@ type Mat4 = [
   number, number, number, number
 ];
 
-const MAX_FORWARD_SHADOW_PCF_SAMPLES = 32;
-const DEFAULT_FORWARD_SHADOW_FILTER_KERNEL = createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 });
+export const MAX_FORWARD_SHADOW_PCF_SAMPLES = 32;
+
 const INSTANCE_MATRIX_ATTRIBUTE_NAMES = [
   "a_instanceMatrix0",
   "a_instanceMatrix1",
@@ -248,14 +229,7 @@ export class ForwardPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     this.skinningPaletteUploads.beginFrame();
-    this.clusteredLighting = (this.options.lights?.length ?? 0) > 16
-      ? createClusteredForwardLighting(
-          this.options.lights ?? [],
-          context.width,
-          context.height,
-          this.options.cameraViewProjectionMatrix
-        )
-      : null;
+    this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
     try {
       for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
         this.drawItem(context.device, item);
@@ -305,6 +279,7 @@ export class ForwardPass extends BaseRenderPass {
     applyAlphaCutoffUniform(item, shader, uniforms);
     applyWrinkleUniform(item, shader, uniforms);
     applyTransformUniforms(item, shader, uniforms);
+    bindVelocityUniforms?.(item, uniforms);
     if (item.skinning) {
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms);
     }
@@ -324,24 +299,7 @@ export class ForwardPass extends BaseRenderPass {
         renderState: renderStateForItem(baseMaterial.renderState, item),
         requiredAttributes: baseMaterial.requiredAttributes
       });
-      const command: DrawCommand = pipeline.createDrawCommand({
-        label: item.label,
-        vertexBuffer,
-        vertexCount: indexBuffer !== undefined ? geometry.vertexBuffer.vertexCount : drawRange.count,
-        ...(indexBuffer === undefined && drawRange.start > 0 ? { firstVertex: drawRange.start } : {}),
-        uniforms,
-        ...(item.instanceTransforms ? { instanceCount: instanceBinding.count } : {}),
-        ...(instanceBinding.attributes ? { instanceAttributes: instanceBinding.attributes } : {})
-      });
-      if (indexBuffer !== undefined) {
-        Object.assign(command, {
-          indexBuffer,
-          indexType: geometry.indexBuffer?.type,
-          indexCount: drawRange.count,
-          ...(drawRange.start > 0 ? { firstIndex: drawRange.start } : {})
-        });
-      }
-      device.draw(command);
+      submitDraw(device, pipeline, geometry, instanceBinding.count, drawRange, { item, vertexBuffer, indexBuffer, drawRange, uniforms, instanceBinding });
     } finally {
       for (const buffer of instanceBinding.buffers ?? []) buffer.dispose();
       if (geometry !== item.geometry) {
@@ -379,101 +337,7 @@ export class ForwardPass extends BaseRenderPass {
   }
 }
 
-export class SkinningPaletteUploadManager {
-  private static readonly validatedGeometryJointCounts = new WeakMap<Geometry, Set<number>>();
-  private static readonly maxRecordedDecisions = 64;
-  private submissions = 0;
-  private jointsUploaded = 0;
-  private maxJointCount = 0;
-  private uniformArraySubmissions = 0;
-  private dataTextureSubmissions = 0;
-  private eightInfluenceSubmissions = 0;
-  private cpuFallbackCount = 0;
-  private decisions: SkinningPaletteDecisionRecord[] = [];
-  private decisionOverflow = 0;
-
-  beginFrame(): void {
-    this.submissions = 0;
-    this.jointsUploaded = 0;
-    this.maxJointCount = 0;
-    this.uniformArraySubmissions = 0;
-    this.dataTextureSubmissions = 0;
-    this.eightInfluenceSubmissions = 0;
-    this.cpuFallbackCount = 0;
-    this.decisions = [];
-    this.decisionOverflow = 0;
-  }
-
-  /**
-   * Which palette paths this frame actually used. Published rather than inferred so a
-   * claim about data-texture or eight-influence skinning rests on observed submissions.
-   * Each submission also records its `decideSkinningPalettePath` decision (same inputs the
-   * upload path used) so the CPU-fallback reason code travels with the diagnostics.
-   */
-  diagnostics(): SkinningPaletteDiagnostics {
-    return {
-      submissions: this.submissions,
-      jointsUploaded: this.jointsUploaded,
-      maxJointCount: this.maxJointCount,
-      uniformArraySubmissions: this.uniformArraySubmissions,
-      dataTextureSubmissions: this.dataTextureSubmissions,
-      eightInfluenceSubmissions: this.eightInfluenceSubmissions,
-      cpuFallbackCount: this.cpuFallbackCount,
-      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
-      decisions: [...this.decisions],
-      decisionOverflow: this.decisionOverflow
-    };
-  }
-
-  bind(
-    item: RenderItem,
-    skinning: SkinningPaletteBinding,
-    material: Material,
-    shader: RenderShaderProgram,
-    uniforms: Map<string, UniformValue>
-  ): void {
-    // Recorded before the upload so a contract throw still leaves its reason code behind.
-    this.recordDecision(item, skinning, shader);
-    const path = applySkinningUniforms(skinning, material, shader, uniforms);
-    if (path === "data-texture") this.dataTextureSubmissions += 1;
-    else this.uniformArraySubmissions += 1;
-    const eightInfluence = item.geometry.vertexBuffer.format.hasAttribute("joints1")
-      && item.geometry.vertexBuffer.format.hasAttribute("weights1");
-    if (eightInfluence) this.eightInfluenceSubmissions += 1;
-    const validatedJointCounts = SkinningPaletteUploadManager.validatedGeometryJointCounts.get(item.geometry) ?? new Set<number>();
-    if (!validatedJointCounts.has(skinning.jointCount)) {
-      validateSkinningGeometryContract(item, skinning);
-      validatedJointCounts.add(skinning.jointCount);
-      SkinningPaletteUploadManager.validatedGeometryJointCounts.set(item.geometry, validatedJointCounts);
-    }
-    this.submissions += 1;
-    this.jointsUploaded += skinning.jointCount;
-    this.maxJointCount = Math.max(this.maxJointCount, skinning.jointCount);
-  }
-
-  private recordDecision(item: RenderItem, skinning: SkinningPaletteBinding, shader: RenderShaderProgram): void {
-    const reflection = shader.reflection.uniforms;
-    const decision = decideSkinningPalettePath({
-      jointCount: skinning.jointCount,
-      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
-      maxDataTextureJoints: MAX_SKINNING_JOINTS,
-      shaderHasSkinningUniforms: reflection.has("u_jointMatrices") && reflection.has("u_jointCount"),
-      shaderHasDataTexturePalette: reflection.has("u_jointPaletteTexture") && reflection.has("u_jointPaletteMode")
-    });
-    if (decision.cpuFallback) this.cpuFallbackCount += 1;
-    if (this.decisions.length < SkinningPaletteUploadManager.maxRecordedDecisions) {
-      this.decisions.push({
-        label: item.label ?? "skinned-item",
-        jointCount: skinning.jointCount,
-        path: decision.path,
-        reason: decision.reason,
-        cpuFallback: decision.cpuFallback
-      });
-    } else {
-      this.decisionOverflow += 1;
-    }
-  }
-}
+export { SkinningPaletteUploadManager } from "./forward/Deform.js";
 
 interface ShaderCacheRecord {
   revision: number;
@@ -831,446 +695,23 @@ function invertMat4(matrix: Mat4): Mat4 {
   ];
 }
 
-export function selectForwardShadowMap(
-  shadowMap: ForwardShadowMapOptions | undefined,
-  item: RenderItem,
-  cameraViewMatrix?: Float32Array | readonly number[],
-  cameraPosition?: readonly [number, number, number]
-): ForwardShadowMapOptions | undefined {
-  const cascades = shadowMap?.cascades;
-  if (!shadowMap || !cascades || cascades.length === 0) return shadowMap;
-  const center = renderItemWorldCenter(item);
-  const depth = cameraViewMatrix && cameraViewMatrix.length >= 16
-    ? Math.max(0, -(
-        cameraViewMatrix[2]! * center[0]
-        + cameraViewMatrix[6]! * center[1]
-        + cameraViewMatrix[10]! * center[2]
-        + cameraViewMatrix[14]!
-      ))
-    : cameraPosition
-      ? Math.hypot(center[0] - cameraPosition[0], center[1] - cameraPosition[1], center[2] - cameraPosition[2])
-      : cascades[0]!.near;
-  const selected = cascades.find((cascade) => depth <= cascade.far) ?? cascades[cascades.length - 1]!;
-  return selected.shadowMap;
-}
+export { selectForwardShadowMap } from "./forward/Lighting.js";
 
-function renderItemWorldCenter(item: RenderItem): readonly [number, number, number] {
-  const local = item.boundingBoxCenter ?? [
-    (item.geometry.bounds.min[0] + item.geometry.bounds.max[0]) / 2,
-    (item.geometry.bounds.min[1] + item.geometry.bounds.max[1]) / 2,
-    (item.geometry.bounds.min[2] + item.geometry.bounds.max[2]) / 2
-  ] as const;
-  const matrix = item.modelMatrix;
-  if (!matrix || matrix.length < 16) return local;
-  return [
-    matrix[0]! * local[0] + matrix[4]! * local[1] + matrix[8]! * local[2] + matrix[12]!,
-    matrix[1]! * local[0] + matrix[5]! * local[1] + matrix[9]! * local[2] + matrix[13]!,
-    matrix[2]! * local[0] + matrix[6]! * local[1] + matrix[10]! * local[2] + matrix[14]!
-  ];
-}
 
-function applyForwardShadowMapUniforms(
-  shadowMap: ForwardShadowMapOptions | undefined,
-  item: RenderItem,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): void {
-  const requiredUniforms = [
-    "u_shadowMapTexture",
-    "u_shadowMapEnabled",
-    "u_shadowMapMatrix",
-    "u_shadowMapStrength",
-    "u_shadowMapBias",
-    "u_shadowMapSlopeBias",
-    "u_shadowMapTexelSize",
-    "u_shadowPcfSampleCount",
-    "u_shadowPcfSamples"
-  ];
-  if (!requiredUniforms.every((uniform) => shader.reflection.uniforms.has(uniform))) {
-    return;
-  }
-  applyForwardPointShadowMapUniforms(shadowMap?.pointLight, item, shader, uniforms);
-  applyForwardSpotShadowMapUniforms(shadowMap?.spotLight, item, shader, uniforms);
-  if (!shadowMap) {
-    uniforms.set("u_shadowMapTexture", new TextureBinding({ name: "u_shadowMapTexture", required: false }));
-    uniforms.set("u_shadowMapEnabled", 0);
-    uniforms.set("u_shadowMapMatrix", new Float32Array(identityMatrix()));
-    uniforms.set("u_shadowMapStrength", 0);
-    uniforms.set("u_shadowMapBias", 0);
-    uniforms.set("u_shadowMapSlopeBias", 0);
-    uniforms.set("u_shadowMapTexelSize", [1, 1]);
-    uniforms.set("u_shadowPcfSampleCount", 1);
-    uniforms.set("u_shadowPcfSamples", new Float32Array(MAX_FORWARD_SHADOW_PCF_SAMPLES * 4));
-    return;
-  }
-  const validation = shadowMap.texture.validate();
-  if (!validation.ok) {
-    throw new RenderDeviceError("Forward shadow-map texture binding validation failed", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      diagnostics: validation.diagnostics
-    });
-  }
-  const strength = shadowMap.strength ?? 0.65;
-  const bias = shadowMap.bias ?? 0.001;
-  const slopeBias = shadowMap.slopeBias ?? 1;
-  const texelSize = shadowMap.texelSize ?? [
-    1 / Math.max(1, shadowMap.texture.texture?.width ?? 1),
-    1 / Math.max(1, shadowMap.texture.texture?.height ?? 1)
-  ];
-  if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
-    throw new RenderDeviceError("Forward shadow-map strength must be finite in [0, 1]", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      strength
-    });
-  }
-  if (!Number.isFinite(bias) || bias < 0) {
-    throw new RenderDeviceError("Forward shadow-map bias must be finite and non-negative", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      bias
-    });
-  }
-  if (!Number.isFinite(slopeBias) || slopeBias < 0) {
-    throw new RenderDeviceError("Forward shadow-map slopeBias must be finite and non-negative", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      slopeBias
-    });
-  }
-  if (texelSize.length !== 2 || !texelSize.every((value) => Number.isFinite(value) && value > 0)) {
-    throw new RenderDeviceError("Forward shadow-map texelSize must contain two finite positive values", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      texelSize: Array.from(texelSize)
-    });
-  }
-  const filterKernel = shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
-  const pcfSamples = packForwardShadowPcfSamples(filterKernel, item.label);
-  uniforms.set("u_shadowMapTexture", shadowMap.texture);
-  uniforms.set("u_shadowMapEnabled", 1);
-  uniforms.set("u_shadowMapMatrix", toMat4Uniform(shadowMap.lightMatrix, "shadowMap.lightMatrix", item.label));
-  uniforms.set("u_shadowMapStrength", strength);
-  uniforms.set("u_shadowMapBias", bias);
-  uniforms.set("u_shadowMapSlopeBias", slopeBias);
-  uniforms.set("u_shadowMapTexelSize", texelSize);
-  uniforms.set("u_shadowPcfSampleCount", filterKernel.samples.length);
-  uniforms.set("u_shadowPcfSamples", pcfSamples);
-}
 
-function applyClusteredLightingUniforms(
-  clustered: ClusteredForwardLightingResources | null,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): void {
-  const required = [
-    "u_clusteredLightEnabled",
-    "u_clusterGridSize",
-    "u_clusterViewportSize",
-    "u_clusterLightData",
-    "u_clusterLightIndices"
-  ];
-  if (!required.every((name) => shader.reflection.uniforms.has(name))) return;
-  if (!clustered) {
-    uniforms.set("u_clusteredLightEnabled", 0);
-    uniforms.set("u_clusterGridSize", [1, 1]);
-    uniforms.set("u_clusterViewportSize", [1, 1]);
-    uniforms.set("u_clusterLightData", new TextureBinding({ name: "u_clusterLightData", required: false }));
-    uniforms.set("u_clusterLightIndices", new TextureBinding({ name: "u_clusterLightIndices", required: false }));
-    return;
-  }
-  uniforms.set("u_clusteredLightEnabled", 1);
-  uniforms.set("u_clusterGridSize", [clustered.diagnostics.gridWidth, clustered.diagnostics.gridHeight]);
-  uniforms.set("u_clusterViewportSize", [
-    clustered.diagnostics.viewportWidth,
-    clustered.diagnostics.viewportHeight
-  ]);
-  uniforms.set("u_clusterLightData", clustered.lightData);
-  uniforms.set("u_clusterLightIndices", clustered.lightIndices);
-}
 
-function applyForwardPointShadowMapUniforms(
-  pointShadowMap: ForwardPointShadowMapOptions | undefined,
-  item: RenderItem,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): void {
-  const requiredUniforms = [
-    "u_pointShadowMapTexture",
-    "u_pointShadowMapEnabled",
-    "u_pointShadowLightPosition",
-    "u_pointShadowRange",
-    "u_pointShadowFaceMatrices",
-    "u_pointShadowFaceRects",
-    "u_pointShadowStrength",
-    "u_pointShadowBias",
-    "u_pointShadowSlopeBias",
-    "u_pointShadowTexelSize",
-    "u_pointShadowPcfSampleCount",
-    "u_pointShadowPcfSamples"
-  ];
-  if (!requiredUniforms.every((uniform) => shader.reflection.uniforms.has(uniform))) {
-    return;
-  }
-  if (!pointShadowMap) {
-    uniforms.set("u_pointShadowMapTexture", new TextureBinding({ name: "u_pointShadowMapTexture", required: false }));
-    uniforms.set("u_pointShadowMapEnabled", 0);
-    uniforms.set("u_pointShadowLightPosition", [0, 0, 0]);
-    uniforms.set("u_pointShadowRange", 1);
-    uniforms.set("u_pointShadowFaceMatrices", new Float32Array(6 * 16));
-    uniforms.set("u_pointShadowFaceRects", new Float32Array(6 * 4));
-    uniforms.set("u_pointShadowStrength", 0);
-    uniforms.set("u_pointShadowBias", 0);
-    uniforms.set("u_pointShadowSlopeBias", 0);
-    uniforms.set("u_pointShadowTexelSize", [1, 1]);
-    uniforms.set("u_pointShadowPcfSampleCount", 1);
-    uniforms.set("u_pointShadowPcfSamples", new Float32Array(MAX_FORWARD_SHADOW_PCF_SAMPLES * 4));
-    return;
-  }
-  const validation = pointShadowMap.texture.validate();
-  if (!validation.ok) {
-    throw new RenderDeviceError("Forward point-shadow atlas texture binding validation failed", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      diagnostics: validation.diagnostics
-    });
-  }
-  if (pointShadowMap.lightPosition.length !== 3 || !isFiniteArrayLike(pointShadowMap.lightPosition)) {
-    throw new RenderDeviceError("Forward point-shadow lightPosition must contain three finite values", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      lightPosition: pointShadowMap.lightPosition
-    });
-  }
-  if (!Number.isFinite(pointShadowMap.range) || pointShadowMap.range <= 0) {
-    throw new RenderDeviceError("Forward point-shadow range must be finite and positive", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      range: pointShadowMap.range
-    });
-  }
-  const faceMatrices = toFloat32Array(pointShadowMap.faceMatrices, 6 * 16, "pointShadowMap.faceMatrices", item.label);
-  const faceRects = toFloat32Array(pointShadowMap.faceRects, 6 * 4, "pointShadowMap.faceRects", item.label);
-  validatePointShadowFaceRects(faceRects, item.label);
-  const strength = pointShadowMap.strength ?? 0.65;
-  const bias = pointShadowMap.bias ?? 0.001;
-  const slopeBias = pointShadowMap.slopeBias ?? 1;
-  const texelSize = pointShadowMap.texelSize ?? [
-    1 / Math.max(1, pointShadowMap.texture.texture?.width ?? 1),
-    1 / Math.max(1, pointShadowMap.texture.texture?.height ?? 1)
-  ];
-  if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
-    throw new RenderDeviceError("Forward point-shadow strength must be finite in [0, 1]", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      strength
-    });
-  }
-  if (!Number.isFinite(bias) || bias < 0) {
-    throw new RenderDeviceError("Forward point-shadow bias must be finite and non-negative", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      bias
-    });
-  }
-  if (!Number.isFinite(slopeBias) || slopeBias < 0) {
-    throw new RenderDeviceError("Forward point-shadow slopeBias must be finite and non-negative", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      slopeBias
-    });
-  }
-  if (texelSize.length !== 2 || !texelSize.every((value) => Number.isFinite(value) && value > 0)) {
-    throw new RenderDeviceError("Forward point-shadow texelSize must contain two finite positive values", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      texelSize: Array.from(texelSize)
-    });
-  }
-  const filterKernel = pointShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
-  uniforms.set("u_pointShadowMapTexture", pointShadowMap.texture);
-  uniforms.set("u_pointShadowMapEnabled", 1);
-  uniforms.set("u_pointShadowLightPosition", pointShadowMap.lightPosition);
-  uniforms.set("u_pointShadowRange", pointShadowMap.range);
-  uniforms.set("u_pointShadowFaceMatrices", faceMatrices);
-  uniforms.set("u_pointShadowFaceRects", faceRects);
-  uniforms.set("u_pointShadowStrength", strength);
-  uniforms.set("u_pointShadowBias", bias);
-  uniforms.set("u_pointShadowSlopeBias", slopeBias);
-  uniforms.set("u_pointShadowTexelSize", texelSize);
-  uniforms.set("u_pointShadowPcfSampleCount", filterKernel.samples.length);
-  uniforms.set("u_pointShadowPcfSamples", packForwardShadowPcfSamples(filterKernel, item.label));
-}
 
-export function applyForwardSpotShadowMapUniforms(
-  spotShadowMap: ForwardSpotShadowMapOptions | undefined,
-  item: RenderItem,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): void {
-  const requiredUniforms = [
-    "u_spotShadowMapTexture",
-    "u_spotShadowMapEnabled",
-    "u_spotShadowLightPosition",
-    "u_spotShadowLightDirection",
-    "u_spotShadowMatrix",
-    "u_spotShadowCone",
-    "u_spotShadowRange",
-    "u_spotShadowStrength",
-    "u_spotShadowBias",
-    "u_spotShadowSlopeBias",
-    "u_spotShadowTexelSize",
-    "u_spotShadowPcfSampleCount",
-    "u_spotShadowPcfSamples"
-  ];
-  if (!requiredUniforms.every((uniform) => shader.reflection.uniforms.has(uniform))) {
-    return;
-  }
-  if (!spotShadowMap) {
-    uniforms.set("u_spotShadowMapTexture", new TextureBinding({ name: "u_spotShadowMapTexture", required: false }));
-    uniforms.set("u_spotShadowMapEnabled", 0);
-    uniforms.set("u_spotShadowLightPosition", [0, 0, 0]);
-    uniforms.set("u_spotShadowLightDirection", [0, -1, 0]);
-    uniforms.set("u_spotShadowMatrix", new Float32Array(identityMatrix()));
-    uniforms.set("u_spotShadowCone", [Math.PI / 4, 0]);
-    uniforms.set("u_spotShadowRange", 1);
-    uniforms.set("u_spotShadowStrength", 0);
-    uniforms.set("u_spotShadowBias", 0);
-    uniforms.set("u_spotShadowSlopeBias", 0);
-    uniforms.set("u_spotShadowTexelSize", [1, 1]);
-    uniforms.set("u_spotShadowPcfSampleCount", 1);
-    uniforms.set("u_spotShadowPcfSamples", new Float32Array(MAX_FORWARD_SHADOW_PCF_SAMPLES * 4));
-    return;
-  }
-  const validation = spotShadowMap.texture.validate();
-  if (!validation.ok) {
-    throw new RenderDeviceError("Forward spot-shadow texture binding validation failed", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      diagnostics: validation.diagnostics
-    });
-  }
-  if (spotShadowMap.lightPosition.length !== 3 || !isFiniteArrayLike(spotShadowMap.lightPosition)) {
-    throw new RenderDeviceError("Forward spot-shadow lightPosition must contain three finite values", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      lightPosition: spotShadowMap.lightPosition
-    });
-  }
-  if (spotShadowMap.lightDirection.length !== 3 || !isFiniteArrayLike(spotShadowMap.lightDirection)) {
-    throw new RenderDeviceError("Forward spot-shadow lightDirection must contain three finite values", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      lightDirection: spotShadowMap.lightDirection
-    });
-  }
-  if (!Number.isFinite(spotShadowMap.angle) || spotShadowMap.angle <= 0 || spotShadowMap.angle >= Math.PI / 2) {
-    throw new RenderDeviceError("Forward spot-shadow angle must be within (0, PI / 2)", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      angle: spotShadowMap.angle
-    });
-  }
-  if (spotShadowMap.penumbra !== undefined && (!Number.isFinite(spotShadowMap.penumbra) || spotShadowMap.penumbra < 0 || spotShadowMap.penumbra > 1)) {
-    throw new RenderDeviceError("Forward spot-shadow penumbra must be in [0, 1]", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      penumbra: spotShadowMap.penumbra
-    });
-  }
-  if (!Number.isFinite(spotShadowMap.range) || spotShadowMap.range <= 0) {
-    throw new RenderDeviceError("Forward spot-shadow range must be finite and positive", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      range: spotShadowMap.range
-    });
-  }
-  const shadowMatrix = toFloat32Array(spotShadowMap.shadowMatrix, 16, "spotShadowMap.shadowMatrix", item.label);
-  const strength = spotShadowMap.strength ?? 0.65;
-  const bias = spotShadowMap.bias ?? 0.001;
-  const slopeBias = spotShadowMap.slopeBias ?? 1;
-  const texelSize = spotShadowMap.texelSize ?? [
-    1 / Math.max(1, spotShadowMap.texture.texture?.width ?? 1),
-    1 / Math.max(1, spotShadowMap.texture.texture?.height ?? 1)
-  ];
-  if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
-    throw new RenderDeviceError("Forward spot-shadow strength must be finite in [0, 1]", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      strength
-    });
-  }
-  if (!Number.isFinite(bias) || bias < 0) {
-    throw new RenderDeviceError("Forward spot-shadow bias must be finite and non-negative", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      bias
-    });
-  }
-  if (!Number.isFinite(slopeBias) || slopeBias < 0) {
-    throw new RenderDeviceError("Forward spot-shadow slopeBias must be finite and non-negative", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      slopeBias
-    });
-  }
-  if (texelSize.length !== 2 || !texelSize.every((value) => Number.isFinite(value) && value > 0)) {
-    throw new RenderDeviceError("Forward spot-shadow texelSize must contain two finite positive values", "FORWARD_SPOT_SHADOW_MAP_CONTRACT", {
-      label: item.label,
-      texelSize: Array.from(texelSize)
-    });
-  }
-  const filterKernel = spotShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
-  uniforms.set("u_spotShadowMapTexture", spotShadowMap.texture);
-  uniforms.set("u_spotShadowMapEnabled", 1);
-  uniforms.set("u_spotShadowLightPosition", spotShadowMap.lightPosition);
-  uniforms.set("u_spotShadowLightDirection", spotShadowMap.lightDirection);
-  uniforms.set("u_spotShadowMatrix", shadowMatrix);
-  uniforms.set("u_spotShadowCone", [spotShadowMap.angle, spotShadowMap.penumbra ?? 0]);
-  uniforms.set("u_spotShadowRange", spotShadowMap.range);
-  uniforms.set("u_spotShadowStrength", strength);
-  uniforms.set("u_spotShadowBias", bias);
-  uniforms.set("u_spotShadowSlopeBias", slopeBias);
-  uniforms.set("u_spotShadowTexelSize", texelSize);
-  uniforms.set("u_spotShadowPcfSampleCount", filterKernel.samples.length);
-  uniforms.set("u_spotShadowPcfSamples", packForwardShadowPcfSamples(filterKernel, item.label));
-}
 
-function toFloat32Array(values: Float32Array | readonly number[], expectedLength: number, name: string, label: string | undefined): Float32Array {
-  const source = values instanceof Float32Array ? values : new Float32Array(values);
-  if (source.length !== expectedLength || !isFiniteArrayLike(source)) {
-    throw new RenderDeviceError(`${name} must contain ${expectedLength} finite values`, "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-      label,
-      length: source.length,
-      expectedLength
-    });
-  }
-  return source;
-}
 
-function validatePointShadowFaceRects(faceRects: Float32Array, label: string | undefined): void {
-  for (let offset = 0; offset < faceRects.length; offset += 4) {
-    const rect = [faceRects[offset], faceRects[offset + 1], faceRects[offset + 2], faceRects[offset + 3]];
-    if (!rect.every((value) => Number.isFinite(value) && value >= 0 && value <= 1) || rect[2]! <= 0 || rect[3]! <= 0) {
-      throw new RenderDeviceError("Forward point-shadow face rects must be normalized atlas rectangles", "FORWARD_POINT_SHADOW_MAP_CONTRACT", {
-        label,
-        face: offset / 4,
-        rect
-      });
-    }
-  }
-}
 
-function packForwardShadowPcfSamples(filterKernel: ShadowFilterKernel, label: string | undefined): Float32Array {
-  if (filterKernel.samples.length < 1 || filterKernel.samples.length > MAX_FORWARD_SHADOW_PCF_SAMPLES) {
-    throw new RenderDeviceError("Forward shadow-map PCF kernel must contain 1 to 32 samples", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label,
-      samples: filterKernel.samples.length
-    });
-  }
-  const packed = new Float32Array(MAX_FORWARD_SHADOW_PCF_SAMPLES * 4);
-  let weightSum = 0;
-  for (const [index, sample] of filterKernel.samples.entries()) {
-    if (![sample.x, sample.y, sample.weight].every(Number.isFinite) || sample.weight < 0) {
-      throw new RenderDeviceError("Forward shadow-map PCF samples must contain finite offsets and non-negative weights", "FORWARD_SHADOW_MAP_CONTRACT", {
-        label,
-        sample
-      });
-    }
-    const offset = index * 4;
-    packed[offset] = sample.x;
-    packed[offset + 1] = sample.y;
-    packed[offset + 2] = sample.weight;
-    weightSum += sample.weight;
-  }
-  if (weightSum <= 0) {
-    throw new RenderDeviceError("Forward shadow-map PCF sample weights must sum to a positive value", "FORWARD_SHADOW_MAP_CONTRACT", {
-      label,
-      weightSum
-    });
-  }
-  return packed;
-}
+
+export { applyForwardSpotShadowMapUniforms } from "./forward/Lighting.js";
+
+
+
+
+
+
 
 function applyEnvironmentLightingUniforms(
   environment: EnvironmentLightingOptions | undefined,
@@ -1614,7 +1055,7 @@ function applyTransformUniforms(
   }
 }
 
-function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array {
+export function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array {
   if (value.length !== 16 || !isFiniteArrayLike(value)) {
     throw new RenderDeviceError("Render item transform uniforms must be finite mat4 values", "RENDER_ITEM_TRANSFORM_CONTRACT", {
       label,
@@ -1636,7 +1077,7 @@ function toMat4Values(value: Float32Array | readonly number[], field: string, la
   return mat4FromArrayLike(value, 0);
 }
 
-function identityMatrix(): readonly number[] {
+export function identityMatrix(): readonly number[] {
   return [
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -1838,172 +1279,11 @@ function validateInstanceAttributeDescriptor(descriptor: RenderItemInstanceAttri
   }
 }
 
-function resolveRenderGeometry(item: RenderItem): Geometry {
-  if (item.morphTargets === undefined && item.morphWeights === undefined) {
-    return item.geometry;
-  }
-  if (!item.morphTargets || !item.morphWeights) {
-    throw new RenderDeviceError("Morph render items require both morphTargets and morphWeights", "MORPH_TARGET_CONTRACT", {
-      label: item.label,
-      targetCount: item.morphTargets?.length ?? 0,
-      weightCount: item.morphWeights?.length ?? 0
-    });
-  }
-  return applyMorphTargets(item.geometry, item.morphTargets, item.morphWeights);
-}
 
-function applyGpuMorphUniforms(
-  item: RenderItem,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): boolean {
-  if (
-    !shader.reflection.uniforms.has("u_morphPositionDeltas") ||
-    !shader.reflection.uniforms.has("u_morphWeights") ||
-    !shader.reflection.uniforms.has("u_morphTargetCount")
-  ) {
-    return false;
-  }
-  if (!item.morphTargets || !item.morphWeights) {
-    throw new RenderDeviceError("Morph render items require both morphTargets and morphWeights", "MORPH_TARGET_CONTRACT", {
-      label: item.label,
-      targetCount: item.morphTargets?.length ?? 0,
-      weightCount: item.morphWeights?.length ?? 0
-    });
-  }
-  if (item.morphTargets.length !== item.morphWeights.length) {
-    throw new RenderDeviceError("Morph target count must match morph weight count", "MORPH_TARGET_CONTRACT", {
-      label: item.label,
-      targetCount: item.morphTargets.length,
-      weightCount: item.morphWeights.length
-    });
-  }
-  // Counts beyond the uniform fast-path capacity are not an error: fall back to the CPU morph
-  // (resolveRenderGeometry -> applyMorphTargets), which is unlimited and morphs normals + tangents
-  // so lighting follows the deformation. The texture-backed GPU plan (createMorphTargetPlan) packs
-  // the same data for the texture path; see MorphTargetPlan.ts.
-  if (item.morphTargets.length > MAX_GPU_MORPH_TARGETS || item.geometry.vertexBuffer.vertexCount > MAX_GPU_MORPH_VERTICES) {
-    return false;
-  }
-  const packed = new Float32Array(MAX_GPU_MORPH_TARGETS * MAX_GPU_MORPH_VERTICES * 4);
-  const packedNormals = new Float32Array(MAX_GPU_MORPH_TARGETS * MAX_GPU_MORPH_VERTICES * 4);
-  const weights = new Float32Array(MAX_GPU_MORPH_TARGETS);
-  for (let targetIndex = 0; targetIndex < item.morphTargets.length; targetIndex += 1) {
-    const target = item.morphTargets[targetIndex]!;
-    if (!target.positions || target.positions.length < item.geometry.vertexBuffer.vertexCount) {
-      throw new RenderDeviceError("GPU morph shader path requires position deltas for every source vertex", "GPU_MORPH_TARGET_CONTRACT", {
-        label: item.label,
-        targetIndex,
-        vertexCount: item.geometry.vertexBuffer.vertexCount,
-        deltaCount: target.positions?.length ?? 0
-      });
-    }
-    const weight = item.morphWeights[targetIndex] ?? 0;
-    if (!Number.isFinite(weight)) {
-      throw new RenderDeviceError("GPU morph weights must be finite", "GPU_MORPH_TARGET_CONTRACT", {
-        label: item.label,
-        targetIndex,
-        weight
-      });
-    }
-    weights[targetIndex] = weight;
-    for (let vertex = 0; vertex < item.geometry.vertexBuffer.vertexCount; vertex += 1) {
-      const delta = target.positions[vertex]!;
-      if (delta.length !== 3 || !Number.isFinite(delta[0]) || !Number.isFinite(delta[1]) || !Number.isFinite(delta[2])) {
-        throw new RenderDeviceError("GPU morph position deltas must be finite vec3 values", "GPU_MORPH_TARGET_CONTRACT", {
-          label: item.label,
-          targetIndex,
-          vertex
-        });
-      }
-      const offset = (targetIndex * MAX_GPU_MORPH_VERTICES + vertex) * 4;
-      packed[offset] = delta[0];
-      packed[offset + 1] = delta[1];
-      packed[offset + 2] = delta[2];
-      const normal = target.normals?.[vertex];
-      if (normal && normal.length === 3) {
-        packedNormals[offset] = normal[0];
-        packedNormals[offset + 1] = normal[1];
-        packedNormals[offset + 2] = normal[2];
-      }
-    }
-  }
-  uniforms.set("u_morphPositionDeltas", packed);
-  uniforms.set("u_morphWeights", weights);
-  uniforms.set("u_morphTargetCount", item.morphTargets.length);
-  // Normal deltas are uploaded only when the bound shader declares the uniform (lit morph variants);
-  // the default unlit morph shader ignores them.
-  if (shader.reflection.uniforms.has("u_morphNormalDeltas")) {
-    uniforms.set("u_morphNormalDeltas", packedNormals);
-  }
-  return true;
-}
 
-function applySkinningUniforms(
-  skinning: SkinningPaletteBinding,
-  material: Material,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): SkinningPalettePath {
-  if (!shader.reflection.uniforms.has("u_jointMatrices") || !shader.reflection.uniforms.has("u_jointCount")) {
-    throw new RenderDeviceError("Skinned render item requires a shader with joint palette uniforms", "SKINNING_SHADER_CONTRACT", {
-      material: material.name
-    });
-  }
-  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > MAX_SKINNING_JOINTS) {
-    throw new RenderDeviceError(`Skinning jointCount must be an integer in [1, ${MAX_SKINNING_JOINTS}]`, "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount,
-      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
-      maxJoints: MAX_SKINNING_JOINTS
-    });
-  }
-  if (skinning.matrices.length !== skinning.jointCount * 16) {
-    throw new RenderDeviceError("Skinning matrix palette length must equal jointCount * 16", "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount,
-      matrixScalars: skinning.matrices.length
-    });
-  }
-  if (!isFiniteArrayLike(skinning.matrices)) {
-    throw new RenderDeviceError("Skinning matrix palette must contain finite values", "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount
-    });
-  }
-  uniforms.set("u_jointCount", skinning.jointCount);
-  // Over the uniform-array limit the palette travels as an RGBA32F data texture, four
-  // texels per matrix. A mat4 uniform costs four vec4 slots, so a uniform array cannot
-  // be grown far enough for large rigs without exhausting MAX_VERTEX_UNIFORM_VECTORS.
-  const path: SkinningPalettePath = skinning.jointCount > MAX_UNIFORM_SKINNING_JOINTS ? "data-texture" : "uniform-array";
-  if (path === "data-texture") {
-    if (!shader.reflection.uniforms.has("u_jointPaletteTexture") || !shader.reflection.uniforms.has("u_jointPaletteMode")) {
-      throw new RenderDeviceError(
-        `Skinning palettes above ${MAX_UNIFORM_SKINNING_JOINTS} joints require a shader with data-texture palette uniforms`,
-        "SKINNING_SHADER_CONTRACT",
-        { material: material.name, jointCount: skinning.jointCount }
-      );
-    }
-    const texture = createSkinningPaletteTexture(skinning, material.name);
-    uniforms.set("u_jointPaletteMode", 1);
-    uniforms.set("u_jointPaletteTexture", new TextureBinding({
-      name: "u_jointPaletteTexture",
-      texture,
-      sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-      required: true
-    }));
-    uniforms.set("u_jointPaletteTextureSize", [texture.width, texture.height]);
-    // The uniform array is still declared by the shader, so give it a valid value.
-    uniforms.set("u_jointMatrices", new Float32Array(MAX_UNIFORM_SKINNING_JOINTS * 16));
-    return path;
-  }
-  if (shader.reflection.uniforms.has("u_jointPaletteMode")) {
-    uniforms.set("u_jointPaletteMode", 0);
-    if (shader.reflection.uniforms.has("u_jointPaletteTextureSize")) uniforms.set("u_jointPaletteTextureSize", [1, 1]);
-    if (shader.reflection.uniforms.has("u_jointPaletteTexture")) {
-      uniforms.set("u_jointPaletteTexture", new TextureBinding({ name: "u_jointPaletteTexture", required: false }));
-    }
-  }
-  uniforms.set("u_jointMatrices", skinning.matrices);
-  return path;
-}
+
+
+
 
 /**
  * Packs a joint palette into an RGBA32F texture, one texel per matrix column.
@@ -2011,166 +1291,11 @@ function applySkinningUniforms(
  * Width is a multiple of four so no matrix straddles a row boundary, which keeps the
  * shader's texel addressing a simple divide and avoids per-column row recomputation.
  */
-function createSkinningPaletteTexture(skinning: SkinningPaletteBinding, materialName: string): Texture {
-  const texelsPerMatrix = 4;
-  const totalTexels = skinning.jointCount * texelsPerMatrix;
-  const width = Math.min(SKINNING_PALETTE_TEXTURE_MAX_WIDTH, Math.max(texelsPerMatrix, ceilToMultiple(Math.ceil(Math.sqrt(totalTexels)), texelsPerMatrix)));
-  const height = Math.ceil(totalTexels / width);
-  const data = new Float32Array(width * height * 4);
-  data.set(skinning.matrices.subarray(0, Math.min(skinning.matrices.length, data.length)));
-  if (skinning.matrices.length > data.length) {
-    throw new RenderDeviceError("Skinning palette does not fit the data texture", "INVALID_SKINNING_PALETTE", {
-      material: materialName,
-      jointCount: skinning.jointCount
-    });
-  }
-  return new Texture({
-    width,
-    height,
-    format: "rgba32f",
-    colorSpace: "linear",
-    label: `aura3d-skinning-palette-${skinning.jointCount}-joints`,
-    data
-  });
-}
 
-function ceilToMultiple(value: number, multiple: number): number {
-  return Math.ceil(value / multiple) * multiple;
-}
 
-function validateSkinningGeometryContract(item: RenderItem, skinning: SkinningPaletteBinding): void {
-  const format = item.geometry.vertexBuffer.format;
-  if (!format.hasAttribute("joints") || !format.hasAttribute("weights")) {
-    throw new RenderDeviceError("Skinned render item geometry must include joints and weights attributes", "SKINNING_GEOMETRY_CONTRACT", {
-      label: item.label,
-      jointCount: skinning.jointCount,
-      vertexFormat: format.attributes.map((attribute) => attribute.shaderName),
-      missingAttributes: [
-        ...(format.hasAttribute("joints") ? [] : ["a_joints"]),
-        ...(format.hasAttribute("weights") ? [] : ["a_weights"])
-      ]
-    });
-  }
 
-  const jointsAttribute = format.getAttribute("joints");
-  const weightsAttribute = format.getAttribute("weights");
-  if (jointsAttribute.components !== 4 || weightsAttribute.components !== 4) {
-    throw new RenderDeviceError("Skinned render item geometry must use four joint and four weight influences per vertex", "SKINNING_GEOMETRY_CONTRACT", {
-      label: item.label,
-      jointCount: skinning.jointCount,
-      jointComponents: jointsAttribute.components,
-      weightComponents: weightsAttribute.components
-    });
-  }
 
-  // Eight-influence geometry must supply both halves of the second set, and both must
-  // be vec4. A half-declared second set would silently drop influences at draw time.
-  const hasJoints1 = format.hasAttribute("joints1");
-  const hasWeights1 = format.hasAttribute("weights1");
-  if (hasJoints1 !== hasWeights1) {
-    throw new RenderDeviceError("Eight-influence skinned geometry must declare both joints1 and weights1", "SKINNING_GEOMETRY_CONTRACT", {
-      label: item.label,
-      hasJoints1,
-      hasWeights1
-    });
-  }
-  const eightInfluence = hasJoints1 && hasWeights1;
-  if (eightInfluence) {
-    const joints1Attribute = format.getAttribute("joints1");
-    const weights1Attribute = format.getAttribute("weights1");
-    if (joints1Attribute.components !== 4 || weights1Attribute.components !== 4) {
-      throw new RenderDeviceError("Eight-influence skinned geometry must use four components per second-set attribute", "SKINNING_GEOMETRY_CONTRACT", {
-        label: item.label,
-        joints1Components: joints1Attribute.components,
-        weights1Components: weights1Attribute.components
-      });
-    }
-  }
 
-  for (let vertex = 0; vertex < item.geometry.vertexBuffer.vertexCount; vertex += 1) {
-    const joints = item.geometry.vertexBuffer.getAttribute(vertex, "joints");
-    const weights = item.geometry.vertexBuffer.getAttribute(vertex, "weights");
-    let weightSum = 0;
-    if (eightInfluence) {
-      // Validate the second set with the same rules, and fold it into the weight sum so
-      // a vertex whose influence is split across both sets is not reported as unweighted.
-      const joints1 = item.geometry.vertexBuffer.getAttribute(vertex, "joints1");
-      const weights1 = item.geometry.vertexBuffer.getAttribute(vertex, "weights1");
-      for (let influence = 0; influence < 4; influence += 1) {
-        const joint = joints1[influence] ?? 0;
-        const weight = weights1[influence] ?? 0;
-        if (!Number.isFinite(weight) || weight < 0) {
-          throw new RenderDeviceError("Skinned render item weights must be finite non-negative values", "SKINNING_GEOMETRY_CONTRACT", {
-            label: item.label,
-            jointCount: skinning.jointCount,
-            vertex,
-            influence: influence + 4,
-            weight
-          });
-        }
-        if (!Number.isInteger(joint) || joint < 0 || joint >= skinning.jointCount) {
-          throw new RenderDeviceError("Skinned render item joint indices must reference palette joints", "SKINNING_GEOMETRY_CONTRACT", {
-            label: item.label,
-            jointCount: skinning.jointCount,
-            vertex,
-            influence: influence + 4,
-            joint
-          });
-        }
-        weightSum += weight;
-      }
-    }
-    for (let influence = 0; influence < 4; influence += 1) {
-      const joint = joints[influence] ?? 0;
-      const weight = weights[influence] ?? 0;
-      if (!Number.isFinite(weight) || weight < 0) {
-        throw new RenderDeviceError("Skinned render item weights must be finite non-negative values", "SKINNING_GEOMETRY_CONTRACT", {
-          label: item.label,
-          jointCount: skinning.jointCount,
-          vertex,
-          influence,
-          weight
-        });
-      }
-      if (!Number.isFinite(joint) || !Number.isInteger(joint) || joint < 0) {
-        throw new RenderDeviceError("Skinned render item joints must be finite non-negative integer indices", "SKINNING_GEOMETRY_CONTRACT", {
-          label: item.label,
-          jointCount: skinning.jointCount,
-          vertex,
-          influence,
-          joint
-        });
-      }
-      if (weight > 0 && joint >= skinning.jointCount) {
-        throw new RenderDeviceError("Skinned render item joint indices must be within the uploaded skinning palette", "SKINNING_GEOMETRY_CONTRACT", {
-          label: item.label,
-          jointCount: skinning.jointCount,
-          vertex,
-          influence,
-          joint,
-          weight
-        });
-      }
-      weightSum += weight;
-    }
-    if (weightSum <= 0) {
-      throw new RenderDeviceError("Skinned render item weights must sum to a positive value", "SKINNING_GEOMETRY_CONTRACT", {
-        label: item.label,
-        jointCount: skinning.jointCount,
-        vertex,
-        weightSum
-      });
-    }
-    if (Math.abs(weightSum - 1) > 0.02) {
-      throw new RenderDeviceError("Skinned render item weights must be normalized before GPU skinning", "SKINNING_GEOMETRY_CONTRACT", {
-        label: item.label,
-        jointCount: skinning.jointCount,
-        vertex,
-        weightSum
-      });
-    }
-  }
-}
 
 function validateInstanceTransformSource(item: RenderItem): Float32Array | readonly number[] {
   const source = item.instanceTransforms ?? [];
@@ -2188,7 +1313,7 @@ function validateInstanceTransformSource(item: RenderItem): Float32Array | reado
   return source;
 }
 
-function isFiniteArrayLike(values: ArrayLike<number>): boolean {
+export function isFiniteArrayLike(values: ArrayLike<number>): boolean {
   for (let index = 0; index < values.length; index += 1) {
     if (!Number.isFinite(values[index])) return false;
   }

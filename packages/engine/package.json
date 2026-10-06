@@ -19,6 +19,18 @@
     "./production-runtime": {
       "types": "./dist/production-runtime/index.d.ts",
       "import": "./dist/production-runtime/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "import": "./dist/contracts/index.js"
+    },
+    "./renderer": {
+      "types": "./dist/renderer/index.d.ts",
+      "import": "./dist/renderer/index.js"
+    },
+    "./devtools": {
+      "types": "./dist/devtools/index.d.ts",
+      "import": "./dist/devtools/index.js"
     }
   },
   "main": "./dist/index.js",
