@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { copyFileSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
+import { aliasEntries as generatedAliasEntries } from "../../vite.aliases.generated";
 
 interface AgentSimulationReport {
   readonly pass: boolean;
@@ -10,10 +11,6 @@ interface AgentSimulationReport {
   readonly template?: string;
   readonly screenshotBytes?: number;
 }
-
-const tsconfig = JSON.parse(readFileSync("tsconfig.base.json", "utf8")) as {
-  compilerOptions?: { paths?: Record<string, readonly string[]> };
-};
 
 export function runAgentSimulation(llmsText: string): AgentSimulationReport {
   const scaffold = /npx\s+create-aura3d@latest\s+([^\s]+)\s+--template\s+([a-z0-9-]+)/.exec(llmsText);
@@ -149,10 +146,13 @@ export default defineConfig({
 }
 
 function writeWorkspaceViteConfig(targetDir: string): void {
-  const aliasEntries = Object.entries(tsconfig.compilerOptions?.paths ?? {})
-    .map(([specifier, paths]) => [specifier, paths[0]] as const)
-    .filter((entry): entry is readonly [string, string] => Boolean(entry[1]))
-    .sort((a, b) => b[0].length - a[0].length)
+  // Mirror the repo's bundler resolution (vite.config.ts -> vite.aliases.generated):
+  // it applies each package's browser export condition — e.g. @aura3d/assets ->
+  // browser-index.ts, which keeps node-only modules out of browser bundles.
+  // tsconfig paths are node/typecheck resolution and must NOT be used here:
+  // they map @aura3d/assets to the full src barrel (fs-backed modules), which
+  // real browser consumers never reach.
+  const aliasEntries = generatedAliasEntries
     .map(([specifier, path]) => {
       const replacement = specifier === "@aura3d/engine"
         ? resolve("packages/engine/src/agent-api/index.ts")
