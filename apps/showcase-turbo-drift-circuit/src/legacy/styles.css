@@ -489,3 +489,12 @@ button { font: inherit; }
   .control-cluster button span { font-size: 7px; }
   .controls-list { display: none; }
 }
+
+/* T1.12 (Turbo Drift): keyboard keycaps read as key glyphs on fine-pointer
+   devices and are hidden on coarse pointers where they cannot be pressed. */
+kbd.keycap {
+  margin-inline-end: 0.4em;
+}
+@media (pointer: coarse) {
+  kbd.keycap { display: none; }
+}

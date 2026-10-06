@@ -7,7 +7,7 @@ import {
   startLightsLabel,
   type RaceSessionState,
   wrappedProgressGap
-} from "./feel";
+} from "../gameplay/feel";
 
 export interface TurboHudElements {
   speed: HTMLElement;
@@ -143,7 +143,7 @@ export function renderTurboHudPanel(debugMode: boolean): string {
       </section>
       ${contactBlock}
       <section class="lap-times" aria-label="Time-trial ghost">
-        <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
+        <button id="ghost-toggle-control" type="button" aria-pressed="false"><kbd class="keycap" aria-hidden="true">G</kbd><span id="ghost-state-value">Ghost OFF</span></button>
         <article class="metric metric--compact"><span>Ghost best</span><strong id="ghost-best-value">--:--.--</strong></article>
       </section>
     </div>
