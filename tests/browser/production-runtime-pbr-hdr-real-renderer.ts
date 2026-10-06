@@ -2,7 +2,8 @@ import { GLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -48,14 +49,14 @@ async function run(): Promise<void> {
     loadSceneAsset("duck", "duck.glb", "Duck", sunsetCanvas, sunsetLighting.lighting),
     loadSceneAsset("antique-camera", "antique-camera.glb", "Antique Camera", sunsetCanvas, sunsetLighting.lighting)
   ]);
-  const studioRenderer = await ProductionWebGL2Renderer.create({
+  const studioRenderer = await Renderer.create({
     canvas: studioCanvas,
     width: studioCanvas.width,
     height: studioCanvas.height,
     preserveDrawingBuffer: true,
     clearColor: [0.015, 0.018, 0.024, 1]
   });
-  const sunsetRenderer = await ProductionWebGL2Renderer.create({
+  const sunsetRenderer = await Renderer.create({
     canvas: sunsetCanvas,
     width: sunsetCanvas.width,
     height: sunsetCanvas.height,
@@ -102,7 +103,7 @@ async function run(): Promise<void> {
     environmentLighting: sunsetLighting.lighting,
     postprocess: sunsetAssets[0]!.pipeline.source.postprocess
   });
-  const studioProof = studioRenderer.renderImportedAsset({
+  const studioProof = rendererProofCapture(studioRenderer, {
     source: studioStage.source,
     camera: studioStage.camera,
     metadata: {
@@ -111,7 +112,7 @@ async function run(): Promise<void> {
       hdrEnvironmentUri: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`
     }
   });
-  const sunsetProof = sunsetRenderer.renderImportedAsset({
+  const sunsetProof = rendererProofCapture(sunsetRenderer, {
     source: sunsetStage.source,
     camera: sunsetStage.camera,
     metadata: {

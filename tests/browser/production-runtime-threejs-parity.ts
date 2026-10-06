@@ -1,6 +1,7 @@
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -108,14 +109,14 @@ async function renderA3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipel
       postprocess: false
     }
   });
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
     preserveDrawingBuffer: true,
     clearColor: [0.014, 0.017, 0.023, 1]
   });
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: pipeline.source,
     camera: pipeline.camera,
     metadata: {

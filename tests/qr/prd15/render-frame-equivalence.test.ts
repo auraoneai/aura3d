@@ -1,16 +1,14 @@
-// PRD-15 T2.2 — golden-JSON equivalence for "one lit cube".
+// PRD-15 T2.2/T2.6 — golden-JSON equivalence for "one lit cube".
 //
-// `ProductionWebGL2Renderer.renderFrame` and the C-29 `Renderer.render`
-// must produce identical `RenderDeviceDiagnostics.drawCalls` and identical
-// shader-program keys for the same `RenderSource`. Both sides run the real
-// `Renderer` pipeline over a `MockRenderDevice` (node env has no GL — the
-// mock validates the command stream deterministically). A `toMatchSnapshot`
-// golden pins the diagnostic JSON; regenerate with `vitest -u` only when a
-// deliberate renderer change alters it.
-//
-// `ProductionWebGL2Renderer`'s constructor is private because `create()`
-// requires a real webgl2 device; the wrapper adds no command-path logic, so
-// the test instantiates it around the same `Renderer` the C-29 side uses.
+// Pre-collapse this proved `ProductionWebGL2Renderer.renderFrame` produced the
+// same command stream as the C-29 `Renderer.render` — the wrapper delegated
+// verbatim, which is exactly why T2.6 could delete it. Post-collapse the proof
+// reads differently but no less honestly: `rendererProofCapture` (the moved
+// imported-asset proof) submits through the very same `renderer.render` call,
+// so its diagnostics and program keys must equal a bare `Renderer.render` of
+// the same `RenderSource`. A `toMatchSnapshot` golden pins the diagnostic
+// JSON; regenerate with `vitest -u` only when a deliberate renderer change
+// alters it.
 import { describe, expect, it } from "vitest";
 import {
   Geometry,
@@ -18,9 +16,9 @@ import {
   PBRMaterial,
   Renderer
 } from "../../../packages/rendering/src";
+import { rendererProofCapture } from "../../../packages/rendering/src/production-runtime";
 import { DirectionalLight } from "../../../packages/scene/src";
 import type { RenderDeviceDiagnostics, RenderSource } from "../../../packages/rendering/src";
-import { ProductionWebGL2Renderer } from "../../../packages/rendering/src/production-runtime/ProductionWebGL2Renderer";
 import type { ProductionRendererInput } from "../../../packages/rendering/src/production-runtime/ProductionRendererTypes";
 
 function litCubeSource(): RenderSource {
@@ -49,6 +47,7 @@ function litCubeSource(): RenderSource {
 function productionInput(source: RenderSource): ProductionRendererInput {
   return {
     source,
+    viewport: { width: 16, height: 16 },
     metadata: {
       assetId: "golden-lit-cube",
       assetUri: "fixture://golden-lit-cube",
@@ -79,22 +78,17 @@ function programKeys(device: MockRenderDevice, previousCommandCount: number): st
 }
 
 describe("C-29 render-frame equivalence (PRD-15 T2.2)", () => {
-  it("lit cube: ProductionWebGL2Renderer.renderFrame and Renderer.render produce identical evidence", async () => {
+  it("lit cube: rendererProofCapture and Renderer.render produce identical evidence", async () => {
     const c29Renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
-    const prodInner = await Renderer.create({ backend: "mock", width: 16, height: 16 });
-    // Private ctor: the wrapper's `create()` only adds the real-webgl2 device
-    // check; its frame path delegates verbatim to `renderer.render`.
-    const prodRenderer = new (ProductionWebGL2Renderer as unknown as {
-      new (renderer: Renderer, width: number, height: number): ProductionWebGL2Renderer;
-    })(prodInner, 16, 16);
+    const prodRenderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
     const c29Device = c29Renderer.device as MockRenderDevice;
-    const prodDevice = prodInner.device as MockRenderDevice;
+    const prodDevice = prodRenderer.device as MockRenderDevice;
 
     try {
       const source = litCubeSource();
-      const prodResult = prodRenderer.renderFrame(productionInput(source));
+      const proof = rendererProofCapture(prodRenderer, productionInput(source));
       const prodEvidence: FrameEvidence = {
-        diagnostics: prodResult.diagnostics,
+        diagnostics: proof.diagnostics,
         programKeys: programKeys(prodDevice, 0)
       };
 
@@ -118,7 +112,7 @@ describe("C-29 render-frame equivalence (PRD-15 T2.2)", () => {
       }).toMatchSnapshot();
     } finally {
       c29Renderer.dispose();
-      prodInner.dispose();
+      prodRenderer.dispose();
     }
   });
 });

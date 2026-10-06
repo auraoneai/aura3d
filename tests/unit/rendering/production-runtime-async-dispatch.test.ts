@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
-import { ProductionRuntimeRenderer } from "../../../packages/rendering/src/production-runtime/ProductionRuntimeRenderer";
-import { ProductionWebGL2Renderer } from "../../../packages/rendering/src/production-runtime/ProductionWebGL2Renderer";
+import { rendererShadowReport } from "../../../packages/rendering/src/production-runtime";
 import type { ProductionRendererInput } from "../../../packages/rendering/src/production-runtime/ProductionRendererTypes";
 import type { RenderDeviceDiagnostics } from "../../../packages/rendering/src/RenderDevice";
 
 // This suite proves dispatch/awaiting only. Real native submissions and pixels belong
 // to native-bloom-pyramid.spec.ts; the test double is never renderer evidence.
+// T2.6: the runtime/backend wrapper classes were deleted — `Renderer` dispatches
+// `render`/`renderAsync` directly and shadow evidence goes through
+// `rendererShadowReport` (which forwards `renderer.getShadowEvidence()`).
 const diagnostics: RenderDeviceDiagnostics = {
   drawCalls: 1, buffers: 0, shaders: 0, renderTargets: 0, textures: 0,
   textureBytes: 0, lastError: null, contextLost: false
@@ -19,14 +21,14 @@ const input = {
 afterEach(() => vi.restoreAllMocks());
 
 describe("production async dispatch", () => {
-  it("forwards live shadow resources through runtime/backend wrappers without caching stale state", async () => {
+  it("forwards live shadow resources through the moved report helper without caching stale state", async () => {
     let observed: Readonly<Record<string, unknown>> | null = { submissionFrameId: 7, cascades: [{ index: 0, lightMatrix: [1, 0, 0, 1] }], pointFaceRects: [] };
     const getShadowEvidence = vi.fn(() => observed);
     vi.spyOn(Renderer, "create").mockResolvedValue({ device: { kind: "webgl2" }, getShadowEvidence, dispose: vi.fn() } as unknown as Renderer);
-    const runtime = await ProductionRuntimeRenderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
-    expect(runtime.getShadowEvidence()).toBe(observed);
+    const runtime = await Renderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
+    expect(rendererShadowReport(runtime)).toBe(observed);
     observed = null;
-    expect(runtime.getShadowEvidence()).toBeNull();
+    expect(rendererShadowReport(runtime)).toBeNull();
     expect(getShadowEvidence).toHaveBeenCalledTimes(2);
     runtime.dispose();
   });
@@ -40,16 +42,15 @@ describe("production async dispatch", () => {
     vi.spyOn(Renderer, "create").mockResolvedValue({
       device: { kind: "webgl2" }, render, renderAsync, resetTemporalHistory, dispose
     } as unknown as Renderer);
-    vi.spyOn(ProductionWebGL2Renderer.prototype, "getFeatures").mockReturnValue([]);
-    const runtime = await ProductionRuntimeRenderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
+    const runtime = await Renderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
     let settled = false;
-    const pending = runtime.renderInteractiveFrameAsync(input).then((value) => { settled = true; return value; });
+    const pending = runtime.renderAsync(input.source, input.camera).then((value) => { settled = true; return value; });
     await Promise.resolve();
     expect(renderAsync).toHaveBeenCalledExactlyOnceWith(input.source, input.camera);
     expect(render).not.toHaveBeenCalled();
     expect(settled).toBe(false);
     complete(diagnostics);
-    expect((await pending).diagnostics).toBe(diagnostics);
+    expect(await pending).toBe(diagnostics);
     runtime.resetTemporalHistory("pause");
     expect(resetTemporalHistory).toHaveBeenCalledExactlyOnceWith("pause");
     runtime.dispose();
@@ -63,8 +64,8 @@ describe("production async dispatch", () => {
       device: { kind: "webgl2" }, render,
       renderAsync: vi.fn().mockRejectedValue(failure), dispose: vi.fn()
     } as unknown as Renderer);
-    const runtime = await ProductionRuntimeRenderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
-    await expect(runtime.renderInteractiveFrameAsync(input)).rejects.toBe(failure);
+    const runtime = await Renderer.create({ canvas: {} as HTMLCanvasElement, width: 16, height: 16, backend: "webgl2" });
+    await expect(runtime.renderAsync(input.source, input.camera)).rejects.toBe(failure);
     expect(render).not.toHaveBeenCalled();
     runtime.dispose();
   });

@@ -1,9 +1,10 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, WebGLSceneRenderer } from "../index.js";
+import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, WebGLSceneRenderer } from "../index.js";
 import { clamp01, colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba, createAssetProvenance, createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTextObservation, createProductionTexturesObservation, createRendererDiagnosticReport, createViewProjection, groups, isRenderableModelNode, primitive, resolveCameraFrame } from "../index.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
-import { ProductionRuntimeRenderer, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../devtools/rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
@@ -46,20 +47,24 @@ export async function createProductionRuntimeSceneRenderer(
       })()
     : [];
   const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened);
-  const productionRenderer = await ProductionRuntimeRenderer.create({
+  // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
+  // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
+  // `captureFrame`/`toBlob` path after a synchronous render, not the raw
+  // WebGL drawing buffer.
+  const productionRenderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
-    backend: "webgl2",
+    backend: (rendererOptions?.backend as RenderBackendKind | undefined) ?? "webgl2",
     antialias: true,
+    requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets", "hdr-image-based-lighting"],
     ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
-    preserveDrawingBuffer: true,
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     clearColor: colorToAcesInputClearColor(snapshot.background)
   });
   let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
-  let latestFeatures: readonly ProductionRendererFeature[] = productionRenderer.getFeatures();
+  let latestFeatures: readonly ProductionRendererFeature[] = rendererFeatureReport(productionRenderer);
   // M2 streaming distances measure against the live camera eye; refreshed
   // every render so residency follows the camera instead of mount intent.
   let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
@@ -172,7 +177,7 @@ export async function createProductionRuntimeSceneRenderer(
         ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
       },
       warnings: [
-        `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.backend}.`,
+        `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.device.kind as AuraBackend}.`,
         ...(authoredDirectLightNodes.length === 0
           ? ["Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."]
           : [`Production runtime derived ${productionRuntimeLights.length} collected direct light${productionRuntimeLights.length === 1 ? "" : "s"} from ${authoredDirectLightNodes.length} authored scene light${authoredDirectLightNodes.length === 1 ? "" : "s"}.`]),
@@ -185,7 +190,7 @@ export async function createProductionRuntimeSceneRenderer(
         ...(flattened.some((node) => node.kind === "effect")
           ? ["Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."]
           : []),
-        ...(productionRenderer.backendSelection.fallback ? [`Production runtime backend fallback: ${productionRenderer.backendSelection.reason}`] : []),
+
         ...latestFeatures
           .filter((feature) => feature.state !== "supported")
           .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
@@ -241,7 +246,7 @@ export async function createProductionRuntimeSceneRenderer(
 
   return {
     get backend() {
-      return productionRenderer.backend;
+      return productionRenderer.device.kind as AuraBackend;
     },
     get diagnostics() {
       return buildDiagnostics();
@@ -254,18 +259,18 @@ export async function createProductionRuntimeSceneRenderer(
     },
     render(time) {
       const input = takePreparedFrame(time);
-      const result = productionRenderer.renderInteractiveFrame(input);
-      latestDeviceDiagnostics = result.diagnostics;
+      validateProductionRendererInput(input);
+      latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
       getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = result.features;
+      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
       return latestDeviceDiagnostics.drawCalls;
     },
     async renderAsync(time) {
       const input = takePreparedFrame(time);
-      const result = await productionRenderer.renderInteractiveFrameAsync(input);
-      latestDeviceDiagnostics = result.diagnostics;
+      validateProductionRendererInput(input);
+      latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
       getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = result.features;
+      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
       return latestDeviceDiagnostics.drawCalls;
     },
     viewProjection(time) {
@@ -284,7 +289,7 @@ export async function createProductionRuntimeSceneRenderer(
       return productionRenderer.onDeviceRestored(listener);
     },
     deviceLost() {
-      return productionRenderer.deviceLost();
+      return productionRenderer.isDeviceLost();
     },
     dispose() {
       disposeHdriEnvironment?.();

@@ -1,10 +1,8 @@
 import { Renderer, type RendererOptions } from "../Renderer";
 import type { RenderDeviceDiagnostics, RenderTarget } from "../RenderDevice";
 import { Texture } from "../Texture";
-import {
-  analyzePixels,
-  type ProductionWebGL2RendererOptions
-} from "./ProductionWebGL2Renderer";
+import { analyzePixels } from "./renderProofs";
+import type { ProductionWebGL2RendererOptions } from "./backendSelection";
 import type {
   ProductionPixelMetrics,
   ProductionProductionRenderer,

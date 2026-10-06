@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { A3DAppLifecycle, A3DRenderer, A3DScene, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
+import { a3dRendererEvidence } from "../../../packages/engine/src/agent-api/devtools/rendererReports.js";
 import { MockRenderDevice } from "@aura3d/rendering";
 import { AdvancedRenderer } from "@aura3d/engine/rendering/advanced-runtime";
 import { GLTFLoader, createRenderableScene } from "@aura3d/engine/assets/advanced-gallery";
@@ -31,7 +32,8 @@ describe("ThreejsParity threejsParity public runtime", () => {
     subject.transform.setPosition(0, 0, -2);
 
     const renderer = await A3DRenderer.create({ backend: "mock", width: 64, height: 64 });
-    const diagnostics = renderer.render(scene);
+    // T2.9: the wrapper's normalizeSource moved to callers — pass the RenderSource.
+    const diagnostics = renderer.render(scene.toRenderSource());
 
     expect(diagnostics.submittedObjects).toBe(2);
     expect(diagnostics.visibleObjects).toBe(2);
@@ -50,13 +52,16 @@ describe("ThreejsParity threejsParity public runtime", () => {
 
     const renderer = await A3DRenderer.create({ backend: "mock", width: 8, height: 8 });
     renderer.resize(10, 6);
-    const frame = renderer.captureFrame(scene);
+    const frame = renderer.captureFrame(scene.toRenderSource());
 
     expect(frame.width).toBe(10);
     expect(frame.height).toBe(6);
     expect(frame.pixels).toHaveLength(10 * 6 * 4);
     expect(renderer.getDiagnostics().drawCalls).toBe(1);
-    const evidence = renderer.evidence({ assetFailures: ["missing:texture:arena-neon"] });
+    const evidence = a3dRendererEvidence(renderer, {
+      assetFailures: ["missing:texture:arena-neon"],
+      renderSize: { width: frame.width, height: frame.height }
+    });
     expect(evidence).toMatchObject({
       backend: "mock",
       drawCalls: 1,
@@ -68,7 +73,7 @@ describe("ThreejsParity threejsParity public runtime", () => {
     });
     expect(evidence.frameTimeMs).toBeGreaterThanOrEqual(0);
     renderer.dispose();
-    expect(renderer.evidence().disposed).toBe(true);
+    expect(a3dRendererEvidence(renderer).disposed).toBe(true);
     expect(() => renderer.resize(12, 12)).toThrow(/disposed/i);
   });
 

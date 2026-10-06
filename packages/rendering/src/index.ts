@@ -435,6 +435,11 @@ export {
   loadProductionHdrEnvironment,
   normalizeTransmissionBackdropCapture,
   parseProductionRadianceHDR,
+  rendererFeatureReport,
+  rendererInteractiveFeatureReport,
+  rendererProofCapture,
+  rendererShadowReport,
+  validateProductionRendererInput,
   summarizeProductionAnimationWorkflow,
   summarizeProductionProductionProof,
   summarizeProductionWebGL2Proof
