@@ -1,7 +1,7 @@
-From 47a77cb9a0ff43ce745cea9320951a149b9b60f3 Mon Sep 17 00:00:00 2001
+From c4d52f4ff4c45def296dc985518fd075e369ea94 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
 Date: Tue, 6 Oct 2026 12:39:58 +0000
-Subject: [PATCH 5/5] migration(showcase-bank-shot) step 10: evidence channel
+Subject: [PATCH] migration(showcase-bank-shot) step 10: evidence channel
  sections + legacyGlobals
 
 publishEvidence/defineProperty -> lazy sections() via src/evidence.ts; legacyGlobals keep __BANK_SHOT_EVIDENCE__ and __AURA3D_SHOWCASE_BANK_SHOT__ live for one release. scripts/write-performance-report.ts deleted (use aura3d perf-report).
@@ -17,11 +17,11 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  create mode 100644 apps/showcase-bank-shot/src/evidence.ts
 
 diff --git a/apps/showcase-bank-shot/package.json b/apps/showcase-bank-shot/package.json
-index ac43b1bb..4f482420 100644
+index 2407d619..fba5895e 100644
 --- a/apps/showcase-bank-shot/package.json
 +++ b/apps/showcase-bank-shot/package.json
-@@ -12,7 +12,6 @@
-     "build:sfx": "node scripts/build-sfx.mjs",
+@@ -11,7 +11,6 @@
+     "preview": "vite preview --host 127.0.0.1",
      "build:models": "node scripts/build-models.mjs",
      "register:assets": "node scripts/register-assets.mjs",
 -    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
@@ -166,7 +166,7 @@ index 00000000..e3ae3386
 +    (collect ?? (() => ({ status: "unbound" })))()
 +};
 diff --git a/apps/showcase-bank-shot/src/main.ts b/apps/showcase-bank-shot/src/main.ts
-index 270c3a57..ef5707fd 100644
+index c8ab4699..ee330d5e 100644
 --- a/apps/showcase-bank-shot/src/main.ts
 +++ b/apps/showcase-bank-shot/src/main.ts
 @@ -27,6 +27,7 @@ import {
