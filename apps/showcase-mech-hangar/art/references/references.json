@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-mech-hangar",
+  "entries": [
+    {
+      "file": "references/hangar-set.json",
+      "source": "shipped comparable: industrial hangar dressing (MechWarrior 5 mech bay / Titanfall 2 assembly floors)",
+      "licence": "reference-only",
+      "why": "Catwalks, gantries, crates, cables and decals at workshop scale \u2014 the set dressing the hangar set targets"
+    },
+    {
+      "file": "references/fight-pit.json",
+      "source": "shipped comparable: floodlit fighting arena (Pacific Rim shatterdome floor / Real Steel ring pit)",
+      "licence": "reference-only",
+      "why": "Floodlit pit with overhead practicals framing two heavy fighters \u2014 the arena read the fighting rig protects"
+    },
+    {
+      "file": "references/rigged-mechs.json",
+      "source": "shipped comparable: rigged modular mechs (ZOIDS articulated kits / Armored Core VI assemblies)",
+      "licence": "reference-only",
+      "why": "5-20k-tri textured modular parts rigged at sockets, walk/strike/recoil/KO clips \u2014 replaces rigid-yaw MH-2M"
+    }
+  ]
+}

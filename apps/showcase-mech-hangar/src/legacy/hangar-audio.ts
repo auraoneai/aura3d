@@ -7,7 +7,7 @@
  * cycle plays on EVERY slot cycle (PRD DoD), and evidence records the recent cues.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 /** Typed audio asset refs resolved once from the generated map. */
 const AUDIO_ASSETS = assets as unknown as Record<HangarAudioCue, { url: string; hash: string; format: "wav" }>;
