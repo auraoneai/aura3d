@@ -56,7 +56,7 @@ describe("aura3d environments bake (C-39)", () => {
     const sh9File = new Float32Array(sh9Buf.buffer.slice(sh9Buf.byteOffset, sh9Buf.byteOffset + sh9Buf.byteLength));
     expect(sh9File.length).toBe(27);
     // SH of the same cube recomputed from the decode path matches within 1e-4.
-    const { decodeHdrEquirect, equirectToCubeFaces, projectCubeToSH9 } = await import("@aura3d/rendering/lanes");
+    const { decodeHdrEquirect, equirectToCubeFaces, projectCubeToSH9Corrected: projectCubeToSH9 } = await import("@aura3d/rendering/lanes");
     const img = decodeHdrEquirect(readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"));
     const faces = equirectToCubeFaces(img, 128);
     const sh9 = projectCubeToSH9(faces, 128);

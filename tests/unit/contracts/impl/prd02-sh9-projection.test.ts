@@ -7,7 +7,9 @@ import {
   projectCubeToSH9,
   projectEquirectToSH9,
   sh9Basis
-} from "@aura3d/rendering/lanes";
+} from "../../../../packages/rendering/src/environment/SphericalHarmonics.js";
+// evaluateSH9Irradiance lives in contracts/environment.js as well; the module
+// import above bypasses the root-barrel collision (TS2308).
 
 /** Constant cube: every texel of every face = L. */
 function constantCube(faceSize: number, l: number): Float32Array[] {

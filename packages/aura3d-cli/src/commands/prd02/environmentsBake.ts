@@ -130,7 +130,7 @@ export async function runEnvironmentsBake(argv: readonly string[], io: { readonl
     samples: args.samples,
     onProgress: (level, face) => io.stdout(`mip ${level} face ${face}`)
   });
-  const sh9 = L.projectCubeToSH9(faces, args.faceSize);
+  const sh9 = L.projectCubeToSH9Corrected(faces, args.faceSize);
   const ktx2 = encodeKtx2Rgb9e5Cube(L, args.faceSize, result.levels);
   mkdirSync(args.outDir, { recursive: true });
   const specPath = join(args.outDir, `${args.name}.specular.ktx2`);
