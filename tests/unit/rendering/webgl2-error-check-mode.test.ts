@@ -13,7 +13,18 @@ import { resolve } from "node:path";
  * 60 FPS / 16.67 ms with `budgetOk: true`.
  */
 describe("WebGL2 error-check mode default", () => {
-  const deviceSource = readFileSync(resolve("packages/rendering/src/WebGL2Device.ts"), "utf8");
+  // PR 0b-2: the device source was carved into webgl2/ subsystem modules; the
+  // assertions below read across the whole device surface.
+  const deviceSource = [
+    "packages/rendering/src/WebGL2Device.ts",
+    "packages/rendering/src/webgl2/ContextLifecycle.ts",
+    "packages/rendering/src/webgl2/MultiDraw.ts",
+    "packages/rendering/src/webgl2/Probe.ts",
+    "packages/rendering/src/webgl2/Samplers.ts",
+    "packages/rendering/src/webgl2/TextureUpload.ts"
+  ]
+    .map((path) => readFileSync(resolve(path), "utf8"))
+    .join("\n");
 
   it("defaults to frame-level checking rather than per-operation strict checking", () => {
     expect(deviceSource).toContain('options.errorCheckMode ?? "frame"');
@@ -23,7 +34,7 @@ describe("WebGL2 error-check mode default", () => {
   it("keeps strict mode available as an explicit opt-in", () => {
     expect(deviceSource).toContain('export type WebGL2ErrorCheckMode = "strict" | "frame";');
     // The per-operation checks must remain, guarded by the strict mode.
-    expect(deviceSource.match(/this\.errorCheckMode === "strict"/g)?.length ?? 0).toBeGreaterThanOrEqual(4);
+    expect(deviceSource.match(/errorCheckMode === "strict"/g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
 
   it("still reads a frame-level error so real WebGL failures surface", () => {

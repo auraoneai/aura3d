@@ -1,0 +1,218 @@
+// C-01 seam (PR 0b) — frame contributor phase-hook dispatcher. CONTRACTS.md §C-01.
+// File: packages/rendering/src/renderer/FrameGraph.ts — owner lane 01.
+//
+// Called from Renderer.render / Renderer.renderAsync at the phase boundaries listed
+// in CONTRACTS.md ("collect" after collectRenderItemsWithDiagnostics, "shadows" after
+// executeRendererShadowMap, "background" between EnvironmentBackgroundPass and
+// ForwardPass, "after-opaque"/"transmission"/"transparent"/"after-transparent" after
+// ForwardPass, "post-hdr" before executePostprocess, "after-output" after it).
+// With zero registered contributors every entry point is a no-op: no passes are
+// added, no draws happen, and the frame is pixel-identical.
+
+import { Scene, identityMat4, type Mat4 } from "@aura3d/scene";
+import type { RenderDevice } from "../RenderDevice";
+import type { RenderGraph } from "../RenderGraph";
+import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
+import type { RenderItem } from "../ForwardPass";
+import type { RenderSource } from "../contracts/renderSource";
+import type { QrFlags } from "../contracts/core";
+import { QUALITY_TIERS, type AuraQualityTierSettings } from "../contracts/quality";
+import {
+  frameContributors,
+  type AuraFramePhase,
+  type FrameCamera,
+  type FrameContributorContext,
+  type TransparentQueueItem
+} from "../contracts/frameGraph";
+
+const EMPTY_QR_FLAGS: QrFlags = { values: {}, on: () => false };
+
+let currentQrFlags: QrFlags = EMPTY_QR_FLAGS;
+
+/** Engine-side wiring: set once flags resolve (createAuraApp / createGameApp). */
+export function setRendererQrFlags(flags: QrFlags): void {
+  currentQrFlags = flags;
+}
+
+export function rendererQrFlags(): QrFlags {
+  return currentQrFlags;
+}
+
+/** Minimal resolved-camera shape produced by Renderer.resolveCamera. */
+export interface ResolvedCameraInput {
+  readonly viewProjectionMatrix: Mat4;
+  readonly viewMatrix?: Mat4;
+  readonly camera?: unknown;
+  readonly cameraPosition?: readonly [number, number, number];
+}
+
+const toF32 = (value: Float32Array | readonly number[]): Float32Array =>
+  value instanceof Float32Array ? value : Float32Array.from(value);
+
+/** Best-effort FrameCamera for the PR 0b stub; PRD 01 publishes real history later. */
+export function toFrameCamera(
+  resolvedCamera: ResolvedCameraInput | undefined,
+  cameraViewProjection: Mat4 | undefined,
+  cameraPosition: readonly [number, number, number] | undefined
+): FrameCamera | null {
+  if (!resolvedCamera) return null;
+  const cam = resolvedCamera.camera as {
+    readonly projectionMatrix?: Mat4;
+    readonly near?: number;
+    readonly far?: number;
+    readonly projection?: "perspective" | "orthographic";
+  } | undefined;
+  return {
+    viewMatrix: resolvedCamera.viewMatrix ? toF32(resolvedCamera.viewMatrix) : toF32(identityMat4()),
+    projectionMatrix: cam?.projectionMatrix ? toF32(cam.projectionMatrix) : toF32(identityMat4()),
+    viewProjectionMatrix: toF32(cameraViewProjection ?? resolvedCamera.viewProjectionMatrix),
+    previousViewProjectionMatrix: null,
+    near: cam?.near ?? 0.1,
+    far: cam?.far ?? 1000,
+    projection: cam?.projection ?? "perspective",
+    position: cameraPosition ?? resolvedCamera.cameraPosition ?? [0, 0, 0]
+  };
+}
+
+export interface RendererFrameHooksInput {
+  readonly device: RenderDevice;
+  readonly width: number;
+  readonly height: number;
+  readonly source: RenderSource | Scene | Iterable<RenderItem>;
+  readonly camera: FrameCamera | null;
+  readonly frameIndex?: number;
+  readonly tier?: AuraQualityTierSettings;
+}
+
+const STUB_SCENE_DEPTH = {
+  texture: null,
+  available: false,
+  linearize: { near: 0.1, far: 1000, orthographic: false }
+} as const;
+
+class ContributorTransparentPass extends BaseRenderPass {
+  constructor(
+    private readonly queue: readonly TransparentQueueItem[],
+    private readonly frame: FrameContributorContext
+  ) {
+    super("qr.contributor.transparents", [], ["aura.scene.color"]);
+  }
+
+  execute(_context: RenderPassContext): void {
+    for (const item of this.queue) {
+      item.draw(this.frame);
+    }
+  }
+}
+
+export class RendererFrameHooks {
+  private readonly flags: QrFlags;
+  private readonly blackboard = new Map<string, unknown>();
+  private readonly frameIndex: number;
+  private readonly timeSeconds: number;
+  private readonly renderSource: RenderSource;
+
+  constructor(private readonly input: RendererFrameHooksInput) {
+    this.flags = rendererQrFlags();
+    this.frameIndex = input.frameIndex ?? 0;
+    this.timeSeconds = typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000;
+    const source = input.source;
+    this.renderSource = source instanceof Scene
+      ? { scene: source }
+      : typeof source === "object" && Symbol.iterator in source
+        ? { renderItems: source }
+        : source;
+  }
+
+  private context(items: readonly RenderItem[]): FrameContributorContext {
+    return {
+      device: this.input.device,
+      width: this.input.width,
+      height: this.input.height,
+      frameIndex: this.frameIndex,
+      timeSeconds: this.timeSeconds,
+      camera: this.input.camera,
+      source: this.renderSource,
+      items,
+      tier: this.input.tier ?? QUALITY_TIERS.high,
+      flags: this.flags,
+      sceneDepth: STUB_SCENE_DEPTH,
+      blackboard: this.blackboard
+    };
+  }
+
+  /** "collect" phase — contributor item-list transforms, applied in order. */
+  collect(items: readonly RenderItem[]): readonly RenderItem[] {
+    const contributors = frameContributors(this.flags);
+    if (contributors.length === 0) return items;
+    let out = items;
+    for (const contributor of contributors) {
+      if (!contributor.phases.includes("collect") || !contributor.collect) continue;
+      const next = contributor.collect([...out], this.context(out));
+      if (next) out = next;
+    }
+    return out;
+  }
+
+  /** Graph-attached phases — contributor passes appended to the render graph. */
+  addPasses(graph: RenderGraph, phase: AuraFramePhase, items: readonly RenderItem[]): void {
+    const contributors = frameContributors(this.flags);
+    if (contributors.length === 0) return;
+    const ctx = this.context(items);
+    for (const contributor of contributors) {
+      if (!contributor.phases.includes(phase)) continue;
+      for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        graph.addPass(pass);
+      }
+      if (phase === "transparent") {
+        const queue = contributor.transparentItems?.(ctx);
+        if (queue && queue.length > 0) {
+          graph.addPass(new ContributorTransparentPass(queue, ctx));
+        }
+      }
+    }
+  }
+
+  /** Direct phases executed outside the graph (post-hdr, after-output). */
+  runPhase(phase: AuraFramePhase, items: readonly RenderItem[], enabled = true): void {
+    const contributors = frameContributors(this.flags);
+    if (contributors.length === 0) return;
+    const ctx = this.context(items);
+    const passContext: RenderPassContext = { device: this.input.device, width: this.input.width, height: this.input.height };
+    for (const contributor of contributors) {
+      if (!contributor.phases.includes(phase)) continue;
+      if (!enabled) {
+        if (typeof console !== "undefined") console.warn(`FRAME_PHASE_SKIPPED:${phase}:${contributor.id}`);
+        continue;
+      }
+      for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        pass.execute(passContext);
+      }
+    }
+  }
+
+  async runPhaseAsync(phase: AuraFramePhase, items: readonly RenderItem[], enabled = true): Promise<void> {
+    const contributors = frameContributors(this.flags);
+    if (contributors.length === 0) return;
+    const ctx = this.context(items);
+    const passContext: RenderPassContext = { device: this.input.device, width: this.input.width, height: this.input.height };
+    for (const contributor of contributors) {
+      if (!contributor.phases.includes(phase)) continue;
+      if (!enabled) {
+        if (typeof console !== "undefined") console.warn(`FRAME_PHASE_SKIPPED:${phase}:${contributor.id}`);
+        continue;
+      }
+      for (const pass of contributor.passes?.(phase, ctx) ?? []) {
+        if (pass.executeAsync) {
+          await pass.executeAsync(passContext);
+        } else {
+          pass.execute(passContext);
+        }
+      }
+    }
+  }
+}
+
+export function createRendererFrameHooks(input: RendererFrameHooksInput): RendererFrameHooks {
+  return new RendererFrameHooks(input);
+}
