@@ -57,6 +57,8 @@ export class Texture {
   public readonly source: TexImageSource | null;
   public readonly fallbackData: Uint8Array | null;
   public readonly fallbackMipLevels: readonly TextureMipLevel[];
+  /** C-18 (PR 0a): layer count when `dimension` is "2d-array". */
+  public readonly layers?: number;
   public disposed = false;
 
   constructor(descriptor: TextureDescriptor) {
@@ -90,9 +92,15 @@ export class Texture {
     this.source = descriptor.source ?? null;
     this.fallbackData = descriptor.fallbackData ? new Uint8Array(descriptor.fallbackData) : null;
     this.fallbackMipLevels = descriptor.fallbackMipLevels ? cloneMipLevels(descriptor.fallbackMipLevels, "fallbackMipLevels") : [];
+    this.layers = descriptor.layers;
     if (this.dimension === "cube") {
       if (this.data || this.mipLevels.length > 0 || this.source || this.fallbackData || this.fallbackMipLevels.length > 0) {
         throw new Error("Cube textures must define cubeFaces instead of 2D data, mipLevels, source, or fallbacks");
+      }
+      if (this.cubeFaces.length === 0) {
+        // GPU-attachment cube (CONTRACTS §3.4 render targets): a cube texture
+        // whose storage is owned by an FBO attachment has no CPU face payload.
+        return;
       }
       if (isCompressedTextureFormat(this.format) || this.format === "depth24") {
         throw new Error("Cube textures currently support rgba8, rgba16f, or rgba32f formats");

@@ -69,6 +69,16 @@ export interface RenderTargetDescriptor {
   readonly format?: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">;
   readonly depth?: boolean | "renderbuffer" | "texture";
   readonly sampleCount?: number;
+  /** PR 0a (CONTRACTS §3.4): texture dimensionality. "cube" renders 6 faces; "2d-array" renders `layers` slices. */
+  readonly dimension?: "2d" | "cube" | "2d-array";
+  /** Layer count for dimension "2d-array" (cube targets always have 6 faces). */
+  readonly layers?: number;
+  /** PR 0a (C-11, lane 02 Q-01-5): depth-only target — no color attachment; `colorTexture` is an unallocated placeholder, `depthTexture` is the sampleable surface. */
+  readonly depthOnly?: boolean;
+  /** Comparison-sampler depth texture (TEXTURE_COMPARE_MODE = COMPARE_REF_TO_TEXTURE) for shadow mapping. */
+  readonly depthCompare?: boolean;
+  /** PR 0a (lane 03 Q-01-2): MRT color attachments; attachment 0 is `colorTexture`. `drawBuffers` bound on setRenderTarget. */
+  readonly colorAttachments?: readonly { format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f"> }[];
 }
 
 export interface RenderTarget extends DisposableResource {
@@ -79,6 +89,14 @@ export interface RenderTarget extends DisposableResource {
   readonly colorTexture: Texture;
   readonly depthTexture?: Texture;
   readonly sampleCount?: number;
+  /** Texture dimensionality (default "2d"). */
+  readonly dimension?: "2d" | "cube" | "2d-array";
+  /** Cube faces (6) or 2d-array layers. */
+  readonly layers?: number;
+  /** MRT targets: every color attachment (attachment 0 === `colorTexture`). */
+  readonly colorTextures?: readonly Texture[];
+  /** Cube/array targets: one child target per face/layer; callers render into `layerTargets[i]`. */
+  readonly layerTargets?: readonly RenderTarget[];
 }
 
 export type LdrPostprocessPassName = "bloom" | "tone-mapping" | "color-grade" | "depth-of-field" | "motion-blur" | "ssao" | "ssr" | "taa" | "outline" | "fxaa";
@@ -452,7 +470,7 @@ export interface RenderDevice {
   writeRenderTargetPixels?(target: RenderTarget, pixels: Uint8Array): void;
   presentRenderTarget?(source: RenderTarget): void;
   presentLdrPostprocess?(source: RenderTarget, options: LdrPostprocessPresentationOptions): void;
-  readPixels(x: number, y: number, width: number, height: number): Uint8Array;
+  readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array;
   readPixelsAsync?(x: number, y: number, width: number, height: number): Promise<Uint8Array>;
   /** Resolve only when all previously submitted native GPU work has completed. */
   waitForSubmittedWork?(): Promise<void>;
@@ -461,7 +479,8 @@ export interface RenderDevice {
   readDepthPixels?(x: number, y: number, width: number, height: number): Float32Array;
   beginFrame(width: number, height: number): void;
   clear(color: readonly [number, number, number, number]): void;
-  clearRenderTarget?(color: readonly [number, number, number, number]): void;
+  /** Clear the active render target; `attachment` (MRT) clears only that draw buffer via clearBufferfv. */
+  clearRenderTarget?(color: readonly [number, number, number, number], attachment?: number): void;
   draw(command: DrawCommand): void;
   endFrame(): void;
   captureState(): ReadonlyMap<string, string | number | boolean | null>;
@@ -538,6 +557,13 @@ export class MockRenderTarget implements RenderTarget {
   public readonly colorPixels: Uint8Array;
   public readonly colorFloatPixels: Float32Array | null;
   public readonly depthPixels: Float32Array | null;
+  public readonly dimension: "2d" | "cube" | "2d-array";
+  public readonly layers?: number;
+  public readonly colorTextures?: readonly Texture[];
+  public layerTargets?: readonly RenderTarget[];
+  /** MRT attachments 1..n (attachment 0 lives in colorPixels/colorFloatPixels). */
+  public readonly attachmentPixels: readonly Uint8Array[];
+  private readonly layerChild: boolean;
 
   constructor(
     public readonly id: number,
@@ -546,19 +572,39 @@ export class MockRenderTarget implements RenderTarget {
     public readonly label: string,
     public readonly colorTexture: Texture,
     public readonly depthTexture?: Texture,
-    public readonly sampleCount = 1
+    public readonly sampleCount = 1,
+    options: {
+      readonly dimension?: "2d" | "cube" | "2d-array";
+      readonly layers?: number;
+      readonly colorTextures?: readonly Texture[];
+      readonly attachmentPixels?: readonly Uint8Array[];
+      readonly layerChild?: boolean;
+    } = {}
   ) {
     this.colorPixels = new Uint8Array(width * height * 4);
     this.colorFloatPixels = colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
       ? new Float32Array(width * height * 4)
       : null;
     this.depthPixels = depthTexture ? new Float32Array(width * height).fill(1) : null;
+    this.dimension = options.dimension ?? "2d";
+    this.layers = options.layers;
+    this.colorTextures = options.colorTextures;
+    this.attachmentPixels = options.attachmentPixels ?? [];
+    this.layerChild = options.layerChild === true;
   }
 
   dispose(): void {
     this.disposed = true;
-    this.colorTexture.dispose();
-    this.depthTexture?.dispose();
+    if (!this.layerChild) {
+      this.colorTexture.dispose();
+      for (const texture of this.colorTextures ?? []) {
+        if (texture !== this.colorTexture) texture.dispose();
+      }
+      this.depthTexture?.dispose();
+      for (const child of this.layerTargets ?? []) {
+        (child as MockRenderTarget).disposed = true;
+      }
+    }
   }
 }
 
@@ -658,17 +704,79 @@ export class MockRenderDevice implements RenderDevice {
         label: descriptor.label
       });
     }
+    const label = descriptor.label ?? "render-target";
+    const dimension = descriptor.dimension ?? "2d";
+    if (descriptor.layers !== undefined && (!Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
+      throw new RenderDeviceError("Render target layer count must be a positive integer", "INVALID_RENDER_TARGET_SIZE", {
+        layers: descriptor.layers,
+        label
+      });
+    }
+    if (descriptor.layers !== undefined && dimension !== "2d-array") {
+      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\"", "INVALID_RENDER_TARGET_SIZE", {
+        dimension,
+        layers: descriptor.layers,
+        label
+      });
+    }
+    const depthOnly = descriptor.depthOnly === true;
+    if (depthOnly && (descriptor.colorAttachments?.length ?? 0) > 0) {
+      throw new RenderDeviceError("Render target cannot combine `depthOnly` with `colorAttachments`", "INVALID_RENDER_TARGET_SIZE", {
+        label
+      });
+    }
+    if (depthOnly && descriptor.depth === false) {
+      throw new RenderDeviceError("Render target cannot combine `depthOnly` with `depth: false`", "INVALID_RENDER_TARGET_SIZE", {
+        label
+      });
+    }
+    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" ? descriptor.layers ?? 1 : 1;
+    const colorAttachmentCount = depthOnly ? 0 : Math.max(1, descriptor.colorAttachments?.length ?? 1);
+    const colorTextures: Texture[] = [];
+    const attachmentPixels: Uint8Array[] = [];
+    for (let attachment = 0; attachment < colorAttachmentCount; attachment += 1) {
+      const format = descriptor.colorAttachments?.[attachment]?.format ?? descriptor.format ?? "rgba8";
+      const textureLabel = colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color";
+      colorTextures.push(new Texture({ width: descriptor.width, height: descriptor.height, format, label: textureLabel, dimension, layers: layerCount > 1 ? layerCount : undefined }));
+      if (attachment > 0) attachmentPixels.push(new Uint8Array(descriptor.width * descriptor.height * 4));
+    }
+    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension });
+    const depthTexture = depthOnly || descriptor.depth === "texture" || descriptor.depthCompare
+      ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${label}-depth`, dimension, layers: layerCount > 1 ? layerCount : undefined })
+      : undefined;
     const target = new MockRenderTarget(
       this.nextId++,
       descriptor.width,
       descriptor.height,
-      descriptor.label ?? "render-target",
-      new Texture({ width: descriptor.width, height: descriptor.height, format: descriptor.format ?? "rgba8", label: descriptor.label ?? "render-target-color" }),
-      descriptor.depth === "texture"
-        ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${descriptor.label ?? "render-target"}-depth` })
-        : undefined,
-      descriptor.sampleCount ?? 1
+      label,
+      colorTexture,
+      depthTexture,
+      descriptor.sampleCount ?? 1,
+      {
+        dimension,
+        layers: layerCount > 1 ? layerCount : undefined,
+        colorTextures: colorTextures.length > 1 ? colorTextures : undefined,
+        attachmentPixels
+      }
     );
+    if (layerCount > 1) {
+      const children: RenderTarget[] = [];
+      for (let layer = 0; layer < layerCount; layer += 1) {
+        const child = new MockRenderTarget(
+          this.nextId++,
+          descriptor.width,
+          descriptor.height,
+          `${label}-layer-${layer}`,
+          colorTexture,
+          depthTexture,
+          1,
+          { dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true }
+        );
+        children.push(child);
+        this.renderTargets.add(child);
+      }
+      target.layerTargets = children;
+    }
     this.renderTargets.add(target);
     return target;
   }
@@ -717,13 +825,27 @@ export class MockRenderDevice implements RenderDevice {
     this.activeRenderTarget = null;
   }
 
-  readPixels(x: number, y: number, width: number, height: number): Uint8Array {
+  readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array {
     this.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
     }
     const output = new Uint8Array(width * height * 4);
     const target = this.activeRenderTarget;
+    if (target && attachment !== undefined) {
+      const pixels = attachment === 0 ? target.colorPixels : target.attachmentPixels[attachment - 1];
+      if (!pixels) {
+        throw new RenderDeviceError("Render target has no color attachment at the requested index", "INVALID_RENDER_TARGET_SIZE", {
+          attachment,
+          attachments: target.attachmentPixels.length + 1
+        });
+      }
+      for (let row = 0; row < height; row += 1) {
+        const sourceOffset = ((y + row) * target.width + x) * 4;
+        output.set(pixels.subarray(sourceOffset, sourceOffset + width * 4), row * width * 4);
+      }
+      return output;
+    }
     if (!target) {
       if (this.backbufferPixels) {
         if (x + width > this.backbufferWidth || y + height > this.backbufferHeight) {
@@ -862,14 +984,33 @@ export class MockRenderDevice implements RenderDevice {
           this.activeRenderTarget.colorFloatPixels[i + 3] = color[3];
         }
       }
+      for (const attachmentPixels of this.activeRenderTarget.attachmentPixels) {
+        for (let i = 0; i < attachmentPixels.length; i += 4) {
+          attachmentPixels.set(bytes, i);
+        }
+      }
       this.activeRenderTarget.depthPixels?.fill(1);
     }
   }
 
-  clearRenderTarget(color: readonly [number, number, number, number]): void {
+  clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
     this.assertAlive();
     this.assertFrame();
     const previous = this.clearColor;
+    if (attachment !== undefined && this.activeRenderTarget) {
+      const bytes = rgbaBytes(color);
+      const pixels = attachment === 0 ? this.activeRenderTarget.colorPixels : this.activeRenderTarget.attachmentPixels[attachment - 1];
+      if (!pixels) {
+        throw new RenderDeviceError("Render target has no color attachment at the requested index", "INVALID_RENDER_TARGET_SIZE", {
+          attachment,
+          attachments: this.activeRenderTarget.attachmentPixels.length + 1
+        });
+      }
+      for (let i = 0; i < pixels.length; i += 4) {
+        pixels.set(bytes, i);
+      }
+      return;
+    }
     this.clear(color);
     this.clearColor = previous;
   }

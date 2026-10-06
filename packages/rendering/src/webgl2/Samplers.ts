@@ -17,7 +17,7 @@ export class WebGL2SamplerRegistry {
 
   readonly textureUnitBindings = new Map<string, WebGLTexture>();
 
-  uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number): void {
+  uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number, uniformType?: string): void {
     const validation = binding.validate();
     if (!validation.ok) {
       throw new RenderDeviceError("Texture binding validation failed", "INVALID_TEXTURE_BINDING", {
@@ -26,9 +26,21 @@ export class WebGL2SamplerRegistry {
       });
     }
     this.activateTextureUnit(textureUnit);
-    const dimension = binding.texture?.dimension ?? (binding.name.toLowerCase().includes("cubemap") || binding.name.toLowerCase().includes("cube") ? "cube" : "2d");
-    const target = dimension === "cube" ? this.host.gl.TEXTURE_CUBE_MAP : this.host.gl.TEXTURE_2D;
-    const handle = binding.texture ? this.host.textureRegistry.getTextureHandle(binding.texture) : dimension === "cube" ? this.host.textureRegistry.getFallbackCubeTextureHandle() : this.host.textureRegistry.getFallbackTextureHandle();
+    // `uniformType` arrives either as the GLSL type name (static shader
+    // reflection) or as a stringified GL enum (live getActiveUniform), e.g.
+    // "36289" for SAMPLER_2D_ARRAY, "36292"/"36293" for array/cube shadow,
+    // "36303"/"36311" for int/uint array samplers, "35682" for sampler2DShadow.
+    const declared = uniformType?.toLowerCase();
+    const dimension = declared === "sampler2darray" || declared === "isampler2darray" || declared === "usampler2darray" || declared === "36289" || declared === "36292" || declared === "36303" || declared === "36311"
+      ? "2d-array"
+      : declared === "samplercube" || declared === "isamplercube" || declared === "usamplercube" || declared === "samplercubeshadow" || declared === "35680" || declared === "36293"
+        ? "cube"
+        : declared === "sampler2dshadow" || declared === "sampler2d" || declared === "35682" || declared === "35678"
+          ? "2d"
+          : binding.texture?.dimension ?? (binding.name.toLowerCase().includes("cubemap") || binding.name.toLowerCase().includes("cube") ? "cube" : "2d");
+    // lane 06 Q-01-3: sampler2DArray uniforms bind to TEXTURE_2D_ARRAY units.
+    const target = dimension === "cube" ? this.host.gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : this.host.gl.TEXTURE_2D;
+    const handle = binding.texture ? this.host.textureRegistry.getTextureHandle(binding.texture) : dimension === "cube" ? this.host.textureRegistry.getFallbackCubeTextureHandle() : dimension === "2d-array" ? this.host.textureRegistry.getFallbackTextureHandle() : this.host.textureRegistry.getFallbackTextureHandle();
     if (binding.texture) {
       const lowerName = binding.name.toLowerCase();
       if (lowerName.includes("environment")) this.host.counters.nativeEnvironmentBindings += 1;
@@ -113,7 +125,7 @@ export class WebGL2SamplerRegistry {
       sampler.addressU,
       sampler.addressV,
       sampler.maxAnisotropy,
-      target === this.host.gl.TEXTURE_CUBE_MAP ? "cube" : "2d"
+      target === this.host.gl.TEXTURE_CUBE_MAP ? "cube" : target === this.host.gl.TEXTURE_2D_ARRAY ? "2d-array" : "2d"
     ].join("|");
   }
 }

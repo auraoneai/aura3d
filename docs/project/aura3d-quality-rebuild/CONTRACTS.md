@@ -2790,4 +2790,5 @@ column cites a passing test or a capture run id.
 | F-11-01 | 11 | Tier table per C-27 (R9 anisotropy L4/M8/H16/U16; R10 Ultra froxel 240x135x128) | `app.quality` | 2026-10-05 | — | proposed |
 | F-02-01 | 02 | `lights.ambient` is additive to IBL under `model: "physical"`. It never replaces IBL. | `lights.ambient` | 2026-10-05 (C-09) | — | proposed |
 | F-01-01 | 01 | Exactly one tone map per frame, in OutputPass. `DEFAULT_TONE_MAPPING = "aces"` until the PRD 12 AgX A/B. | `output.toneMapping` | 2026-10-05 (C-05) | — | proposed |
+| F-01-02 | 01 | `material.blend`: `alpha` and `premultiplied` sort back-to-front in the transparent queue; `additive` and `multiply` draw after the alpha group (order-independent); any non-`opaque` mode defaults `depthWrite: false`; `custom` requires `srcRGB`/`dstRGB` and blends alpha as (`zero`, `one`). | `material.blend` | 2026-10-06 (C-04) | `tests/unit/contracts/impl/prd01-blend.test.ts` | verified |
 

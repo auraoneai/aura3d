@@ -16,6 +16,9 @@ import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
+import { blendQueueForState, blendStateIsTransparent } from "./BlendModes";
+import { renderStateKey } from "./contracts/blend";
+import type { RenderCommandState } from "./RenderDevice";
 import { type RenderItem } from "./contracts/renderItem";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 
@@ -1094,19 +1097,23 @@ function sortForwardRenderItems(
   items: readonly RenderItem[],
   cameraPosition: readonly [number, number, number] | undefined
 ): readonly RenderItem[] {
-  return sortRenderQueueItems(items.map((item) => ({
-    item,
-    bucket: isTransparentRenderItem(item) ? "transparent" : isTransmissionRenderItem(item) ? "transmission" : "opaque",
-    depth: cameraPosition ? distanceSquaredFromCamera(item, cameraPosition) : 0,
-    pipelineKey: renderItemPipelineKey(item),
-    batchKey: renderItemPipelineKey(item),
-    instanceCount: item.instanceTransforms ? instanceTransformCount(item) : 1
-  }))).items;
+  return sortRenderQueueItems(items.map((item) => {
+    const queue = blendQueueForState(getBaseMaterial(item.material ?? new UnlitMaterial()).renderState);
+    return {
+      item,
+      bucket: queue !== "opaque" ? "transparent" : isTransmissionRenderItem(item) ? "transmission" : "opaque",
+      depth: cameraPosition ? distanceSquaredFromCamera(item, cameraPosition) : 0,
+      pipelineKey: renderItemPipelineKey(item),
+      batchKey: renderItemPipelineKey(item),
+      blendRank: queue === "transparent-unordered" ? 1 : 0,
+      instanceCount: item.instanceTransforms ? instanceTransformCount(item) : 1
+    };
+  })).items;
 }
 
 function isTransparentRenderItem(item: RenderItem): boolean {
   const material = item.material ?? new UnlitMaterial();
-  return getBaseMaterial(material).renderState.blend;
+  return blendStateIsTransparent(getBaseMaterial(material).renderState);
 }
 
 function materialNumericParameter(material: Material, name: string, fallback: number): number {
@@ -1139,7 +1146,10 @@ function renderItemPipelineKey(item: RenderItem): string {
   const material = item.material ?? new UnlitMaterial();
   const baseMaterial = getBaseMaterial(material);
   const state = baseMaterial.renderState;
-  return `${baseMaterial.name}|${state.depthTest ? "dt" : "ndt"}|${state.depthWrite ? "dw" : "ndw"}|${state.cullMode}|${state.blend ? "blend" : "opaque"}`;
+  const blendToken = state.blendMode === undefined
+    ? (state.blend ? "blend" : "opaque")
+    : typeof state.blendMode === "string" ? state.blendMode : `custom:${renderStateKey(state as RenderCommandState)}`;
+  return `${baseMaterial.name}|${state.depthTest ? "dt" : "ndt"}|${state.depthWrite ? "dw" : "ndw"}|${state.cullMode}|${blendToken}`;
 }
 
 function instanceTransformCount(item: RenderItem): number {

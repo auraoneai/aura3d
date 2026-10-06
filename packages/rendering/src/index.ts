@@ -18,7 +18,7 @@ export type {
   ShaderSources,
   UniformValue
 } from "./RenderDevice";
-export { MockRenderBuffer, MockRenderDevice, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
 export {
   buildGpuTargetInventory,
   GPU_TARGET_BUDGET_BYTES,
@@ -72,6 +72,8 @@ export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeome
 export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
 export type { AuraPrimitiveKind } from "./geometry/Primitives";
 export { InstanceBuffer } from "./resources/InstanceBuffer";
+export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
+export type { BlendQueue } from "./BlendModes";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
