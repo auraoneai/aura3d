@@ -107,6 +107,21 @@ export const prd04SceneSpecs: Record<string, Prd04SceneSpec> = {
     ],
     primaryCriterion: "anisotropy-direction"
   },
+  "prd04-transmission": {
+    ...base,
+    id: "prd04-transmission",
+    index: 410,
+    title: "Transmission capture target (P4-4)",
+    purpose: "KHR_materials_transmission drives the lane's transmission capture target (CompareTransmission sample).",
+    camera: { position: [0, 0.5, 3.1], target: [0, 0.3, 0], fov: 38, near: 0.05, far: 50 },
+    background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#26292d", intensity: 1.0 },
+    environment: { hdri: "studioSmall08", intensity: 1.0, rotation: 0 },
+    lights: [sun(2.0, [2, 4, 3])],
+    objects: [
+      { kind: "model", name: "compare-transmission", asset: "compareTransmission", position: [0, -0.55, 0], scale: 1.6, castShadow: false, receiveShadow: false }
+    ],
+    primaryCriterion: "transmission-capture-active"
+  },
   "prd04-dispersion": {
     ...base,
     id: "prd04-dispersion",

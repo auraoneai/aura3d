@@ -43,7 +43,8 @@ import {
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
-  applyTextureBudget
+  applyTextureBudget,
+  programCacheSlot
 } from "@aura3d/rendering";
 import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
@@ -120,6 +121,17 @@ export interface GLTFRenderResourceOptions {
    * glTF-spec default material ([1,1,1,1] / metallic 1 / roughness 1); flag-off is unchanged.
    */
   readonly materialsR185?: boolean;
+  /**
+   * `A3D_QR_MATERIALS_TRANSMISSION` state, forwarded by the caller (P4-3 E22 gate). Combined with
+   * `materialsR185` and `transmission` it decides whether unbacked scalar-transmission materials
+   * keep their authored factors instead of the legacy opaque-shell rewrite.
+   */
+  readonly materialsTransmission?: boolean;
+  /**
+   * Forwarded `renderer.material.transmission` mode (`AuraRendererMaterialOptions.transmission`):
+   * `"env"` means real env-refraction transmission is available (PRD-04 P4-3).
+   */
+  readonly transmission?: "auto" | "env" | "off";
 }
 
 export interface GLTFMaterialRenderStateOverride {
@@ -472,14 +484,14 @@ export async function createGLTFRenderResources(
     contract: Parameters<typeof createMaterial>[3]
   ): Promise<Material> => {
     if (!sharedMaterials) {
-      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
     }
     // The contract participates in the key: the same glTF material under two different runtime
     // contracts (skinned vs instanced, for example) must not collapse into one instance.
     const key = identicalMaterialKey(material, contract);
     const existing = sharedMaterials.get(key);
     if (existing) return existing;
-    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
     sharedMaterials.set(key, created);
     return created;
   };
@@ -1533,9 +1545,11 @@ async function createMaterial(
   getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
   options: { readonly skinned?: boolean; readonly instanced?: boolean } = {},
   renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = [],
-  materialsR185 = false
+  materialsR185 = false,
+  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">
 ): Promise<Material> {
-  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185);
+  const qr: GLTFTransmissionQrContext = { ...qrTransmission, materialsR185 };
+  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185, qrTransmission);
   if (options.skinned && !material.unlit) {
     const [
       baseColorTexture,
@@ -1623,10 +1637,10 @@ async function createMaterial(
       iridescenceThicknessTexture,
       anisotropyTexture,
       volumeThicknessTexture,
-      ...pbrExtensionScalarOptions(material)
+      ...pbrExtensionScalarOptions(material, qr)
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (options.instanced && material.unlit && !material.baseColorTexture) {
@@ -1636,7 +1650,7 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (material.unlit) {
@@ -1651,7 +1665,7 @@ async function createMaterial(
         renderState
       });
       applyAlphaCutoff(runtimeMaterial, material);
-      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
       return runtimeMaterial;
     }
     const runtimeMaterial = new UnlitMaterial({
@@ -1660,7 +1674,7 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (options.instanced && !requiresTexturedPBRMaterial(material) && !material.baseColorTexture) {
@@ -1674,7 +1688,7 @@ async function createMaterial(
       emissiveStrength: material.emissiveStrength
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (requiresTexturedPBRMaterial(material)) {
@@ -1687,13 +1701,13 @@ async function createMaterial(
     const runtimeMaterial = new TexturedPBRMaterial({
       name: material.name,
       renderState,
-      baseColor: renderPbrBaseColorFactor(material),
+      baseColor: renderPbrBaseColorFactor(material, qr),
       metallic: material.metallicFactor,
-      roughness: renderPbrRoughnessFactor(material),
+      roughness: renderPbrRoughnessFactor(material, qr),
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
       textureTexCoords: pbrTextureTexCoords(material),
-      ...pbrExtensionScalarOptions(material),
+      ...pbrExtensionScalarOptions(material, qr),
       ...extensionTextureOptions,
       baseColorTexture,
       baseColorSampler: createSampler(material.baseColorTexture ? asset.textures[material.baseColorTexture.texture] : undefined),
@@ -1714,7 +1728,7 @@ async function createMaterial(
       emissiveTextureTransform: material.emissiveTexture?.transform
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (material.baseColorTexture) {
@@ -1728,21 +1742,21 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   const runtimeMaterial = new PBRMaterial({
     name: material.name,
     renderState,
-    baseColor: renderPbrBaseColorFactor(material),
+    baseColor: renderPbrBaseColorFactor(material, qr),
     metallic: material.metallicFactor,
-    roughness: renderPbrRoughnessFactor(material),
+    roughness: renderPbrRoughnessFactor(material, qr),
     emissiveColor: material.emissiveFactor,
     emissiveStrength: material.emissiveStrength,
-    ...pbrExtensionScalarOptions(material)
+    ...pbrExtensionScalarOptions(material, qr)
   });
   applyAlphaCutoff(runtimeMaterial, material);
-  await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+  await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
   return runtimeMaterial;
 }
 
@@ -1787,12 +1801,14 @@ const BLEND_OPAQUE_ALPHA_THRESHOLD = 0.996;
 export function renderStateForGLTFMaterial(
   material: GLTFMaterialAsset,
   overrides: readonly GLTFMaterialRenderStateOverride[] = [],
-  materialsR185 = false
+  materialsR185 = false,
+  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">
 ): Partial<RenderState> {
-  const blend = requiresTransparentRenderState(material);
+  const qr: GLTFTransmissionQrContext = { ...qrTransmission, materialsR185 };
+  const blend = requiresTransparentRenderState(material, qr);
   // PRD-04 P2-12/E23: the double-sided + metallic + clearcoat back-face cull is a fudge;
   // flag-on honours authored doubleSided.
-  const cullBack = usesUnbackedScalarTransmission(material)
+  const cullBack = usesUnbackedScalarTransmission(material, qr)
     || (!materialsR185 && usesOpaqueDoubleSidedClearcoatShell(material));
   const baseState: Partial<RenderState> = {
     cullMode: cullBack ? "back" : material.doubleSided ? "none" : "back",
@@ -1803,10 +1819,14 @@ export function renderStateForGLTFMaterial(
   return override ? { ...baseState, ...override.renderState } : baseState;
 }
 
-function requiresTransparentRenderState(material: GLTFMaterialAsset): boolean {
+function requiresTransparentRenderState(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): boolean {
   if (material.alphaMode === "BLEND") return !isEffectivelyOpaqueBlendMaterial(material);
   if (material.alphaMode !== "OPAQUE") return false;
-  if (usesUnbackedScalarTransmission(material)) return false;
+  if (usesUnbackedScalarTransmission(material, qr)) return false;
+  // E22: on the real path transmissive items ride the C-01 `transmission` phase
+  // queue (blend must stay off — the sorter rejects blended transmission), not
+  // the legacy transparent queue.
+  if (qrTransmissionRealPath(qr)) return false;
   return materialHasTransmissionOrVolume(material);
 }
 
@@ -1848,12 +1868,37 @@ function materialHasTransmissionOrVolume(material: GLTFMaterialAsset): boolean {
     || material.volume?.thicknessTexture !== undefined;
 }
 
-function usesUnbackedScalarTransmission(material: GLTFMaterialAsset): boolean {
-  return material.alphaMode === "OPAQUE"
+/**
+ * P4-3 QR context for transmission-path decisions (forwarded flags + renderer mode — the
+ * assets package never resolves `A3D_QR_*` itself).
+ */
+export interface GLTFTransmissionQrContext {
+  readonly materialsR185?: boolean;
+  readonly materialsTransmission?: boolean;
+  readonly transmission?: "auto" | "env" | "off";
+}
+
+/**
+ * E22 gate (PRD-04 P4-3): real transmission rendering exists — so the legacy
+ * unbacked-scalar-transmission rewrite must not run — exactly when
+ * `A3D_QR_MATERIALS` **and** `A3D_QR_MATERIALS_TRANSMISSION` are on **and**
+ * `programCacheSlot.provided` (C-02 real) or `renderer.transmission === "env"`.
+ */
+function qrTransmissionRealPath(qr?: GLTFTransmissionQrContext): boolean {
+  return qr?.materialsR185 === true
+    && qr?.materialsTransmission === true
+    && (programCacheSlot.provided || qr.transmission === "env");
+}
+
+function usesUnbackedScalarTransmission(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): boolean {
+  const unbacked = material.alphaMode === "OPAQUE"
     && (material.transmission?.factor ?? 0) > 0.001
     && material.transmission?.texture === undefined
     && material.diffuseTransmission === undefined
     && material.volume === undefined;
+  // E22 path-gated skip: real transmission handles the material; no rewrite.
+  if (unbacked && qrTransmissionRealPath(qr)) return false;
+  return unbacked;
 }
 
 function usesOpaqueDoubleSidedClearcoatShell(material: GLTFMaterialAsset): boolean {
@@ -1864,15 +1909,15 @@ function usesOpaqueDoubleSidedClearcoatShell(material: GLTFMaterialAsset): boole
     && material.roughnessFactor <= 0.42;
 }
 
-function renderPbrBaseColorFactor(material: GLTFMaterialAsset): readonly [number, number, number, number] {
-  if (!usesUnbackedScalarTransmission(material)) return material.baseColorFactor;
+function renderPbrBaseColorFactor(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): readonly [number, number, number, number] {
+  if (!usesUnbackedScalarTransmission(material, qr)) return material.baseColorFactor;
   const maxColor = Math.max(material.baseColorFactor[0], material.baseColorFactor[1], material.baseColorFactor[2]);
   if (maxColor < 0.8) return material.baseColorFactor;
   return [0.028, 0.036, 0.044, material.baseColorFactor[3]];
 }
 
-function renderPbrRoughnessFactor(material: GLTFMaterialAsset): number {
-  if (!usesUnbackedScalarTransmission(material)) return material.roughnessFactor;
+function renderPbrRoughnessFactor(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): number {
+  if (!usesUnbackedScalarTransmission(material, qr)) return material.roughnessFactor;
   return Math.max(material.roughnessFactor, 0.72);
 }
 
@@ -1916,7 +1961,7 @@ function usesNearestSampler(texture: GLTFTextureAsset | undefined): boolean {
   return sampler.magFilter === "nearest" || sampler.minFilter.startsWith("nearest");
 }
 
-function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
+function pbrExtensionScalarOptions(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): {
   readonly clearcoatFactor?: number;
   readonly clearcoatRoughnessFactor?: number;
   readonly transmissionFactor?: number;
@@ -1945,8 +1990,8 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
       clearcoatRoughnessFactor: renderClearcoatRoughnessFactor(material)
     } : {}),
     ...(material.transmission ? {
-      transmissionFactor: usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor,
-      transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material)
+      transmissionFactor: usesUnbackedScalarTransmission(material, qr) ? 0 : material.transmission.factor,
+      transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material, qr)
     } : {}),
     ...(material.diffuseTransmission ? {
       diffuseTransmissionFactor: material.diffuseTransmission.factor,
@@ -2077,9 +2122,9 @@ async function pbrExtensionTextureOptions(
   };
 }
 
-function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset): number {
+function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): number {
   const usesUnbackedCutoutTransmission = material.alphaMode === "MASK" && material.transmission?.texture === undefined && material.volume === undefined;
-  return usesUnbackedCutoutTransmission || usesUnbackedScalarTransmission(material) ? 0 : 0.08;
+  return usesUnbackedCutoutTransmission || usesUnbackedScalarTransmission(material, qr) ? 0 : 0.08;
 }
 
 function pbrTextureTexCoords(material: GLTFMaterialAsset): Partial<Record<TexturedPBRTextureSlot, number>> {
@@ -2114,7 +2159,8 @@ async function applyPBRExtensionParameters(
   asset: GLTFAsset,
   runtimeMaterial: Material,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  qr?: GLTFTransmissionQrContext
 ): Promise<void> {
   if (material.clearcoat) {
     runtimeMaterial.setParameter("u_clearcoatFactor", material.clearcoat.factor);
@@ -2131,7 +2177,7 @@ async function applyPBRExtensionParameters(
     }
   }
   if (material.transmission) {
-    runtimeMaterial.setParameter("u_transmissionFactor", usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor);
+    runtimeMaterial.setParameter("u_transmissionFactor", usesUnbackedScalarTransmission(material, qr) ? 0 : material.transmission.factor);
     if (material.transmission.texture) {
       await setTextureParameter(asset, runtimeMaterial, "u_transmissionTexture", material.transmission.texture, "linear", getTexture);
     }

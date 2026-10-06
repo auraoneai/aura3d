@@ -12,9 +12,9 @@ import { prd04SceneSpecs, scenes } from "../../../../benchmarks/quality-rebuild/
 const benchRoot = resolve(__dirname, "../../../../benchmarks/quality-rebuild");
 
 describe("prd04 scene registration", () => {
-  it("registers exactly the ten lane scenes", () => {
-    expect(scenes).toHaveLength(10);
-    expect(Object.keys(prd04SceneSpecs)).toHaveLength(10);
+  it("registers the lane scenes (ten phase-1 scenes + prd04-transmission from P4-4)", () => {
+    expect(scenes).toHaveLength(11);
+    expect(Object.keys(prd04SceneSpecs)).toHaveLength(11);
   });
 
   it("scene ids are unique and carry the prd04- prefix", () => {

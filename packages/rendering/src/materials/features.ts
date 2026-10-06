@@ -156,7 +156,43 @@ const debugViewFeature: ShaderFeature = {
   }
 };
 
-const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature];
+/**
+ * `prd04.transmissionTarget` (P4-2): generated programs sample the lane
+ * capture for KHR_materials_transmission/volume. The texture itself is a
+ * frame resource — the C-01 path rebinds `a3d_prd04_transmissionSampler` per
+ * frame from the `prd04.transmissionTarget` blackboard entry; `bindUniforms`
+ * additionally forwards `u_prd04TransmissionTarget(Size)` material params so
+ * a captured target can be pinned on the material for tests. The legacy
+ * per-material `transmissionBackdropTexture` option is never read here.
+ */
+const transmissionTargetFeature: ShaderFeature = {
+  id: "prd04.transmissionTarget",
+  owner: OWNER,
+  flag: "A3D_QR_MATERIALS_TRANSMISSION",
+  hooks: ["fragment:pars", "fragment:indirect"],
+  chunks: ["a3d_prd04_transmission", "a3d_prd04_volume"],
+  select(input: ShaderFeatureSelectInput) {
+    const material = input.item.material as ParameterSource | undefined;
+    if (!material) return undefined;
+    for (const name of ["u_transmissionFactor", "u_diffuseTransmissionFactor", "u_volumeThicknessFactor"] as const) {
+      const v = material.getParameter(name);
+      if (typeof v === "number" && v > 0.001) return true;
+    }
+    return undefined;
+  },
+  defines(value) {
+    return { A3D_PRD04_TRANSMISSION_TARGET: value === true ? 1 : 0 };
+  },
+  bindUniforms(_value, item, set) {
+    const material = item.material as ParameterSource | undefined;
+    const target = material?.getParameter("u_prd04TransmissionTarget");
+    if (target !== undefined) set("a3d_prd04_transmissionSampler", target);
+    const size = material?.getParameter("u_prd04TransmissionTargetSize");
+    if (size !== undefined) set("a3d_prd04_transmissionSamplerSize", size);
+  }
+};
+
+const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature];
 
 let registered = false;
 

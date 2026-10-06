@@ -14,10 +14,14 @@ import {
   model,
   primitives,
   scene,
+  resolveQrFlags,
+  setTypedGLBActorQrFlags,
+  setTypedGLBActorQrTransmissionMode,
   type AuraApp,
   type AuraMaterialSpec,
   type AuraNodeInput
 } from "@aura3d/engine";
+import { prd04TransmissionDiagnostics, setRendererQrFlags } from "@aura3d/rendering";
 import { hdriAssets } from "../../../shared/assets";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import { prd04ModelAssets, prd04TextureAssets } from "../../../scenes/prd04/assets";
@@ -207,9 +211,22 @@ interface RendererDiagnosticsShape {
   readonly runtime?: { readonly backend?: string };
 }
 
-export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement, qrFlags: readonly string[] = []): Promise<ReadyPayload> {
+export async function runPrd04AuraScene(
+  spec: Prd04SceneSpec,
+  host: HTMLElement,
+  qrFlags: readonly string[] = [],
+  options: { readonly transmission?: "auto" | "env" | "off" } = {}
+): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
+  // Lane-04 seams until lane-15 wires them inside createAuraApp (qr-request):
+  // `qualityRebuild.flags` is resolved again for the actor path (createAuraApp
+  // resolves it for renderer extensions only), and `renderer.transmission`
+  // resolves through `setTypedGLBActorQrTransmissionMode`.
+  const resolvedFlags = resolveQrFlags({ options: qrFlags });
+  setTypedGLBActorQrFlags(resolvedFlags);
+  setRendererQrFlags(resolvedFlags);
+  setTypedGLBActorQrTransmissionMode(options.transmission);
   host.style.width = `${spec.resolution.width}px`;
   host.style.height = `${spec.resolution.height}px`;
 
@@ -262,9 +279,12 @@ export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement,
       // The flags actually applied to createAuraApp (requested list lands on
       // payload.qrFlags in the harness; this is the applied truth).
       appliedQrFlags: [...qrFlags],
+      appliedTransmissionMode: options.transmission ?? "auto",
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       environment: renderer?.environment,
+      materials: diagnostics.materials,
+      transmission: prd04TransmissionDiagnostics(),
       assets: diagnostics.assets.map((asset) => ({ id: asset.id, status: asset.status }))
     }
   };

@@ -20,6 +20,10 @@ export interface ProductionGLTFRenderPipelineOptions {
   readonly maxTextureSize?: GLTFRenderResourceOptions["maxTextureSize"];
   /** `A3D_QR_MATERIALS` state forwarded by `createTypedGLBActor` (PRD-04 flag channel). */
   readonly materialsR185?: GLTFRenderResourceOptions["materialsR185"];
+  /** `A3D_QR_MATERIALS_TRANSMISSION` state forwarded by `createTypedGLBActor` (P4-3 E22 gate). */
+  readonly materialsTransmission?: GLTFRenderResourceOptions["materialsTransmission"];
+  /** Forwarded `renderer.material.transmission` mode (PRD-04 P4-3). */
+  readonly transmission?: GLTFRenderResourceOptions["transmission"];
   readonly rendererInput?: GLTFRendererInputOptions;
   readonly width?: number;
   readonly height?: number;
@@ -101,6 +105,8 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
       ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
       ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
       ...(options.materialsR185 ? { materialsR185: true } : {}),
+      ...(options.materialsTransmission ? { materialsTransmission: true } : {}),
+      ...(options.transmission !== undefined ? { transmission: options.transmission } : {}),
       ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
     });
     rendererInput = resources.toRendererInput(

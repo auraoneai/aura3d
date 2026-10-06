@@ -77,6 +77,8 @@ export interface TypedGLBActorOptions {
   readonly decoders?: AuraAssetDecodersOption;
   /** Optional image decoder forwarded to the GLB resource pipeline (headless/test decode seam, C-16). */
   readonly imageDecoder?: GLTFImageDecoder;
+  /** Forwarded `renderer.material.transmission` mode (PRD-04 P4-3: `"env"` = real env refraction). */
+  readonly transmission?: "auto" | "env" | "off";
   /** Optional GPU-bytes texture budget for the pipeline load (declaration-only seam, C-17). */
   readonly textureBudget?: number;
   /** Optional max texture dimension for the pipeline load (declaration-only seam, C-17). */
@@ -209,8 +211,27 @@ export interface TypedGLBActor {
   dispose(): void;
 }
 
+type TypedGLBActorTransmissionMode = "auto" | "env" | "off";
+let qrTransmissionMode: TypedGLBActorTransmissionMode | undefined;
+
+/**
+ * Lane-04 seam mirroring `setTypedGLBActorQrFlags`: the mode `renderer.transmission`
+ * resolves to once lane-15 forwards it into `createTypedGLBActor` (qr-request;
+ * `AuraCreateAppRendererOptions.transmission` is declared C-15 but unwired).
+ * Tests and lane harnesses set it directly until then.
+ */
+export function setTypedGLBActorQrTransmissionMode(mode: TypedGLBActorTransmissionMode | undefined): void {
+  qrTransmissionMode = mode;
+}
+
+export function typedGLBActorQrTransmissionMode(): TypedGLBActorTransmissionMode | undefined {
+  return qrTransmissionMode;
+}
+
 export async function createTypedGLBActor(options: TypedGLBActorOptions): Promise<TypedGLBActor> {
   const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
+  const qrTransmission = qrMaterials && typedGLBActorQrFlags().on("A3D_QR_MATERIALS_TRANSMISSION");
+  const transmission = options.transmission ?? qrTransmissionMode;
   const renderStateOverrides = (options.materialOverrides ?? []).filter(
     (override): override is GLTFMaterialRenderStateOverride => "renderState" in override
   );
@@ -229,6 +250,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
     ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
     ...(qrMaterials ? { materialsR185: true } : {}),
+    ...(qrTransmission ? { materialsTransmission: true } : {}),
+    ...(transmission !== undefined ? { transmission } : {}),
     ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
   pipeline.resources.scene.root.name = `${options.id}-scene-root`;

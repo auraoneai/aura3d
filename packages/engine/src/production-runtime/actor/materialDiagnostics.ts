@@ -10,7 +10,7 @@
  * `inspectMaterials()` (e.g. `variant-unknown:*`, `hardware-wrap-pending`) become issues
  * keyed by code.
  */
-import { textureBudgetReport } from "@aura3d/rendering";
+import { textureBudgetReport, prd04TransmissionDiagnostics } from "@aura3d/rendering";
 import type { AuraApp } from "../../agent-api/index.js";
 import type { AuraMaterialDiagnostics } from "../../contracts/materials.js";
 import { registerDiagnosticsSection } from "../../contracts/diagnostics.js";
@@ -35,10 +35,17 @@ export function collectPrd04MaterialDiagnostics(app: AuraApp): AuraMaterialDiagn
       }
     }
   }
+  // P4-1: real transmission-capture state from the lane contributor (target
+  // allocated this frame, format, mip chain, C-28 issues like
+  // `transmission-ldr-capture`).
+  const transmission = prd04TransmissionDiagnostics();
+  for (const issue of transmission.issues) {
+    issues.push({ code: issue, material: "*", message: issue });
+  }
   return {
     programs: 0,
     programCompileMs: 0,
-    transmissionTargetActive: false,
+    transmissionTargetActive: transmission.targetActive,
     lightsDroppedByMaterial: 0,
     paths: {
       materialModel: materialsOn ? "physical-r185" : "legacy",
