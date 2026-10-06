@@ -7,7 +7,7 @@
  * `slot.get(flags)` gate on `A3D_QR_TIERS`, so flag-off rendering is unchanged.
  */
 
-import { frameStatsSlot, type DeviceCounters, type FrameStatsSample } from "../contracts/device";
+import { frameStatsSlot, renderTargetPoolSlot, type DeviceCounters, type FrameStatsSample } from "../contracts/device";
 import { registerFrameContributor, type FrameContributorContext } from "../contracts/frameGraph";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import type { QrFlags } from "../contracts/core";
@@ -16,6 +16,7 @@ import type { RenderDevice } from "../RenderDevice";
 import { setRendererQrFlags } from "../renderer/FrameGraph";
 import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
 import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
+import { RenderTargetPool } from "../resources/RenderTargetPool";
 import { installPrd11DeviceCounters } from "../webgl2/Counters";
 
 /** Everything the `frame`/`quality`/`renderer.batching` diagnostics sections need, keyed by device. */
@@ -81,6 +82,10 @@ class FrameStatsEndPass extends BaseRenderPass {
 const endPasses = new WeakMap<Prd11FrameTelemetry, FrameStatsEndPass>();
 
 frameStatsSlot.provide((capacity = 240) => new FrameStats(capacity));
+
+// Phase 2 (§6.8): real C-28 render-target pool — post chains reuse targets
+// keyed by (w, h, format, samples, depth); wired into post execution by Q-03-1.
+renderTargetPoolSlot.provide((device) => new RenderTargetPool(device));
 
 registerFrameContributor({
   id: "prd11.frameStats",
