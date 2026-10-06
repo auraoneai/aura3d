@@ -21,6 +21,12 @@ import { renderStateKey } from "./contracts/blend";
 import type { RenderCommandState } from "./RenderDevice";
 import { type RenderItem } from "./contracts/renderItem";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
+import { normalizeProgramFeatures } from "./program/ProgramFeatures";
+import { materialFeatureWarning, materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+import { qrCoreGeneratorOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
 
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
@@ -116,6 +122,24 @@ export interface ForwardPassOptions {
   readonly cameraViewProjectionMatrix?: Float32Array | readonly number[];
   readonly outputColorSpace?: "linear" | "srgb";
   readonly shaderLibrary?: ShaderLibrary;
+  /**
+   * C-02 material/feature context tier (`MaterialFeatureContext.tier`). The
+   * app's quality controller supplies this under `A3D_QR_CORE=v2` (lane 15
+   * wiring Q-15-*); defaults to the High tier when unset.
+   */
+  readonly qualityTier?: AuraQualityTierSettings;
+  /** C-08: fields of the AuraFrame UBO the options above do not already carry. */
+  readonly auraFrameCamera?: {
+    readonly projectionMatrix?: Float32Array | readonly number[];
+    readonly near?: number;
+    readonly far?: number;
+    readonly projection?: "perspective" | "orthographic";
+    readonly previousViewProjectionMatrix?: Float32Array | readonly number[];
+  };
+  /** C-40 exposure placeholder (default 1) until the output-options surface lands. */
+  readonly exposure?: number;
+  /** Seconds for `u_resolutionFarTime.w`; default 0. */
+  readonly timeSeconds?: number;
 }
 
 export interface EnvironmentLightingOptions {
@@ -224,6 +248,7 @@ export class ForwardPass extends BaseRenderPass {
   private readonly shaderLibrary: ShaderLibrary;
   private readonly skinningPaletteUploads = new SkinningPaletteUploadManager();
   private clusteredLighting: ClusteredForwardLightingResources | null = null;
+  private generatorProgramCache: ProgramCacheLike | undefined;
 
   constructor(private readonly options: ForwardPassOptions) {
     super("forward", options.inputColorResource ? [options.inputColorResource] : [], ["color"]);
@@ -233,6 +258,34 @@ export class ForwardPass extends BaseRenderPass {
   execute(context: RenderPassContext): void {
     this.skinningPaletteUploads.beginFrame();
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
+    const flags = rendererQrFlags();
+    if (qrCoreGeneratorOn(flags)) {
+      const auraFrame = rendererAuraFrame(context.device, flags);
+      if ("viewport" in auraFrame) {
+        (auraFrame as { viewport: { width: number; height: number } }).viewport = { width: context.width, height: context.height };
+      }
+      const vp = this.options.cameraViewProjectionMatrix ?? identityMatrix();
+      auraFrame.update(
+        {
+          viewMatrix: toMat4Uniform(this.options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"),
+          projectionMatrix: toMat4Uniform(this.options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"),
+          viewProjectionMatrix: toMat4Uniform(vp, "cameraViewProjectionMatrix"),
+          previousViewProjectionMatrix: this.options.auraFrameCamera?.previousViewProjectionMatrix
+            ? toMat4Uniform(this.options.auraFrameCamera.previousViewProjectionMatrix, "auraFrameCamera.previousViewProjectionMatrix")
+            : null,
+          near: this.options.auraFrameCamera?.near ?? 0.1,
+          far: this.options.auraFrameCamera?.far ?? 1000,
+          projection: this.options.auraFrameCamera?.projection ?? "perspective",
+          position: this.options.cameraPosition ?? [0, 0, 0]
+        },
+        this.options.timeSeconds ?? 0,
+        this.options.exposure ?? 1,
+        0
+      );
+      // `layout(binding = 0)` in the generated program fixes the program-side
+      // mapping, so one global bind covers every generated draw this frame.
+      if (auraFrame.buffer) context.device.bindUniformBuffer?.(auraFrame.buffer, 0);
+    }
     try {
       for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
         this.drawItem(context.device, item);
@@ -248,6 +301,7 @@ export class ForwardPass extends BaseRenderPass {
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
     const shader = this.getShader(baseMaterial, device);
+    if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -326,7 +380,16 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private getShader(material: Material, device: RenderDevice): RenderShaderProgram {
+  private getShader(material: Material, device: RenderDevice): RenderShaderProgram | undefined {
+    const flags = rendererQrFlags();
+    if (qrCoreGeneratorOn(flags) && materialUsesGeneratedProgram(material)) {
+      const warning = materialFeatureWarning(material);
+      if (warning) console.warn(`[prd01] ${warning}`);
+      const handle = this.programCache(device).acquire(this.programFeaturesFor(material));
+      // async-skip: a not-yet-ready or failed program skips the draw this frame
+      // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
+      return handle.status === "ready" ? handle.program : undefined;
+    }
     const cacheKey = shaderCacheKey(material);
     const shaderCache = getForwardPassShaderCache(device, this.shaderLibrary);
     let module = shaderCache.get(cacheKey);
@@ -338,6 +401,71 @@ export class ForwardPass extends BaseRenderPass {
     }
     return module.compile(device);
   }
+
+  private programCache(device: RenderDevice): ProgramCacheLike {
+    this.generatorProgramCache ??= rendererProgramCache(device, rendererQrFlags());
+    return this.generatorProgramCache;
+  }
+
+  private programFeaturesFor(material: Material): ProgramFeatures {
+    const flags = rendererQrFlags();
+    const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
+    const mf = material.programFeatures({ flags, tier });
+    const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
+    return normalizeProgramFeatures({ ...mf, ...axes, pass: "forward", target: "glsl300es" });
+  }
+}
+
+function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {
+  return count <= 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count <= 4 ? 4 : max;
+}
+
+/**
+ * Pass-owned feature axes (C-02): lights/shadows/environment/fog shared by every
+ * material in the pass. `clustered` is the pass's resolved state; callers that
+ * only have counts should pass `dir>8||point>8||spot>8||rect>8`.
+ */
+export function forwardPassFeatureAxes(
+  options: Pick<ForwardPassOptions, "lights" | "shadowMap" | "environmentLighting" | "environmentFog">,
+  clustered: boolean
+): Pick<ProgramFeatures, "lights" | "shadows" | "environment" | "fog"> {
+  let directional = 0;
+  let point = 0;
+  let spot = 0;
+  let rect = 0;
+  for (const light of options.lights ?? []) {
+    if (light.kind === "directional") directional += 1;
+    else if (light.kind === "point") point += 1;
+    else if (light.kind === "spot") spot += 1;
+    else rect += 1;
+  }
+  const fog = options.environmentFog;
+  const fogMode = fog === undefined || fog === false
+    ? "none"
+    : fog.mode === "linear"
+      ? "linear"
+      : fog.heightFalloff !== undefined
+        ? "height"
+        : "exp2";
+  const env = options.environmentLighting;
+  return {
+    lights: {
+      dir: lightBucket(directional),
+      point: lightBucket(point),
+      spot: lightBucket(spot),
+      rect: lightBucket(rect, 4) as 0 | 1 | 2 | 4,
+      clustered: clustered || directional > 8 || point > 8 || spot > 8 || rect > 8,
+      hemisphere: env?.proceduralMap !== undefined
+    },
+    shadows: options.shadowMap
+      ? { cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4, pcfTaps: 4, localShadows: 0, contact: false }
+      : { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false },
+    environment:
+      env?.environmentMapTexture || env?.environmentCubeMapTexture || env?.proceduralMap
+        ? "equirect"
+        : "none",
+    fog: fogMode
+  };
 }
 
 export { SkinningPaletteUploadManager } from "./forward/Deform.js";
@@ -1047,6 +1175,12 @@ function applyTransformUniforms(
   }
   if (modelMatrix && shader.reflection.uniforms.has("u_modelMatrix")) {
     uniforms.set("u_modelMatrix", modelMatrix);
+  }
+  if (shader.reflection.uniforms.has("u_geometryMatrix")) {
+    uniforms.set(
+      "u_geometryMatrix",
+      toMat4Uniform(item.geometryMatrix ?? identityMatrix(), "geometryMatrix", item.label)
+    );
   }
   if (shader.reflection.uniforms.has("u_normalMatrix")) {
     uniforms.set(

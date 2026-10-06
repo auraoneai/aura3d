@@ -39,12 +39,12 @@ describe("generateProgram (C-02 real)", () => {
     ["lit-1dir", { lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
     ["lit-full8", { lighting: "lit", lights: { dir: 2, point: 4, spot: 2, rect: 0, clustered: false, hemisphere: false } }],
     ["lit-clustered", { lighting: "lit", lights: { dir: 2, point: 8, spot: 0, rect: 0, clustered: true, hemisphere: false } }],
-    ["lit-maps", { lighting: "lit", maps: { baseColor: { uvSet: 0 }, normal: { uvSet: 0 }, metallicRoughness: { uvSet: 0 }, occlusion: { uvSet: 1 }, emissive: { uvSet: 0 } } }],
+    ["lit-maps", { lighting: "lit", maps: { baseColor: { uvSet: 0, transform: false }, normal: { uvSet: 0, transform: false }, metallicRoughness: { uvSet: 0, transform: false }, occlusion: { uvSet: 1, transform: false }, emissive: { uvSet: 0, transform: false } } }],
     ["lit-env-equirect", { lighting: "lit", environment: "equirect", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
     ["mask-instanced", { alphaMode: "mask", instancing: { color: true } }],
     ["vertex-colors", { vertexColors: true, lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
     ["flat-fog", { flatShading: true, fog: "exp2", lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
-    ["depth-mask", { pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0 } } }],
+    ["depth-mask", { pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0, transform: false } } }],
     ["distance", { pass: "distance" }],
     ["background-coverage", { backgroundCoverage: true }]
   ];
@@ -75,14 +75,14 @@ describe("generateProgram (C-02 real)", () => {
   });
 
   it("bakes §8.5 order: model · instance · geometry", () => {
-    const out = gen({ instancing: {} });
+    const out = gen({ instancing: { color: false } });
     expect(out.vertex).toContain("u_modelMatrix * instanceMatrix * a3dLocal");
     expect(out.vertex).toContain("u_geometryMatrix * vec4(transformed, 1.0)");
     expect(out.vertex).toContain("a_instanceMatrix0");
   });
 
   it("§8.7: depth fragment discards under ALPHA_MASK; distance packs radial depth", () => {
-    const depth = gen({ pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0 } } });
+    const depth = gen({ pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0, transform: false } } });
     expect(depth.fragment).toContain("a3dApplyAlpha");
     expect(depth.fragment).toContain("gl_FragCoord.z");
     const dist = gen({ pass: "distance" });
@@ -116,8 +116,8 @@ describe("ProgramKey canonicalization", () => {
         fog: (["none", "linear", "exp2", "height"] as const)[Math.floor(rand() * 4)],
         environment: (["none", "equirect", "pmrem-cube"] as const)[Math.floor(rand() * 3)],
         instancing: rand() > 0.6 ? { color: rand() > 0.5 } : undefined,
-        lights: { dir: Math.floor(rand() * 3), point: Math.floor(rand() * 5), spot: Math.floor(rand() * 3), rect: Math.floor(rand() * 2), clustered: rand() > 0.8, hemisphere: rand() > 0.7 },
-        maps: rand() > 0.5 ? { baseColor: { uvSet: rand() > 0.8 ? 1 : 0 } } : {}
+        lights: { dir: Math.floor(rand() * 3) as 0 | 1 | 2 | 4 | 8, point: Math.floor(rand() * 5) as 0 | 1 | 2 | 4 | 8, spot: Math.floor(rand() * 3) as 0 | 1 | 2 | 4 | 8, rect: Math.floor(rand() * 2) as 0 | 1 | 2 | 4, clustered: rand() > 0.8, hemisphere: rand() > 0.7 },
+        maps: rand() > 0.5 ? { baseColor: { uvSet: rand() > 0.8 ? 1 : 0 as 0 | 1, transform: false } } : {}
       });
       const key = programKey(rec);
       const prev = seen.get(key);
@@ -138,12 +138,12 @@ describe("hook splicing + extension lobes", () => {
     registerShaderChunk({ name: "test_b_chunk", owner: "prd01", stage: "fragment", glsl: "b3dFragB();" });
     registerShaderChunk({ name: "test_a_chunk", owner: "prd01", stage: "fragment", glsl: "b3dFragA();" });
     const unregB = registerShaderFeature({
-      id: "prd01.testB", order: 2, flag: "A3D_QR_CORE",
+      id: "prd01.testB", owner: "prd01", order: 2, flag: "A3D_QR_CORE",
       select: () => true, defines: () => ({ TEST_B: true }),
       chunks: ["test_b_chunk"], hooks: ["fragment:emissive"]
     });
     const unregA = registerShaderFeature({
-      id: "prd01.testA", order: 1, flag: "A3D_QR_CORE",
+      id: "prd01.testA", owner: "prd01", order: 1, flag: "A3D_QR_CORE",
       select: () => true, defines: () => ({ TEST_A: true }),
       chunks: ["test_a_chunk"], hooks: ["fragment:emissive"]
     });
@@ -169,7 +169,7 @@ describe("hook splicing + extension lobes", () => {
     registerShaderChunk({ name: "test_lobe_frag", owner: "prd04", stage: "fragment", glsl: "a3dTestLobe(material);" });
     registerShaderChunk({ name: "test_lobe_pars", owner: "prd04", stage: "fragment", glsl: "float a3dTestLobeScale = 1.0;" });
     const unreg = registerMaterialLobe({
-      id: "clearcoat", flag: "A3D_QR_CORE", glTFExtension: "KHR_materials_clearcoat",
+      id: "clearcoat", owner: "prd04", flag: "A3D_QR_CORE", glTFExtension: "KHR_materials_clearcoat",
       feature: () => ({ lobe: "clearcoat", maps: [], bits: {} }),
       chunks: { pars: "test_lobe_pars", fragment: "test_lobe_frag" },
       samplerSlots: [], bind: () => undefined
@@ -195,7 +195,7 @@ describe("hook splicing + extension lobes", () => {
       glsl: "void a3dDeform(out vec4 pos, out vec3 nrm, out vec4 tan) { pos.y += 0.0; nrm = nrm; tan = tan; }"
     });
     const unreg = registerShaderFeature({
-      id: "prd06.deform", flag: "A3D_QR_CORE", select: () => true, defines: () => ({}),
+      id: "prd06.deform", owner: "prd06", flag: "A3D_QR_CORE", select: () => true, defines: () => ({}),
       chunks: ["test_deform"], hooks: ["vertex:deform"]
     });
     try {

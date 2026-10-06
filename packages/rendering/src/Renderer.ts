@@ -33,7 +33,15 @@ import { computeOrthographicCameraFrame, computePerspectiveCameraFrame, type Ort
 import { ResolutionGovernor } from "./ResolutionGovernor";
 import { frameStatsSlot, type FrameStatsLike } from "./contracts/device";
 import { resolveCanvasPixelRatio, watchDevicePixelRatio, type AuraResolutionOptions } from "./renderer/PixelRatio";
-import type { AuraQualityTierSettings } from "./contracts/quality";
+import type { AuraQualityTier, AuraQualityTierSettings } from "./contracts/quality";
+import { QUALITY_TIERS } from "./contracts/quality";
+import { MaterialInstance } from "./MaterialInstance";
+import { materialUsesGeneratedProgram } from "./program/MaterialFeatures";
+import { ProgramWarmup } from "./program/ProgramWarmup";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+import { qrCoreGeneratorOn, rendererProgramCache } from "./renderer/qrSubFlags";
+import { forwardPassFeatureAxes } from "./ForwardPass";
+import { resolveForwardClusteredLighting } from "./forward/Lighting";
 import { assertRendererFeatures, createRendererFeatureReport, type RendererFeature, type RendererFeatureReport } from "./RendererFeatureGates";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
 import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type MeshConsolidationOptions } from "./MeshConsolidation";
@@ -49,6 +57,8 @@ export interface RendererOptions extends RenderBackendOptions {
   readonly resolution?: AuraResolutionOptions;
   /** Quality tier settings that cap the canvas pixel ratio and floor the governor. */
   readonly qualityTier?: Pick<AuraQualityTierSettings, "maxPixelRatio" | "minRenderScale">;
+  /** C-02 warm-then-block tier (default "high") for the generated-program warmup under A3D_QR_CORE. */
+  readonly qualityTierName?: AuraQualityTier;
   readonly shaderLibrary?: ShaderLibrary;
   readonly requiredFeatures?: readonly RendererFeature[];
 }
@@ -334,6 +344,8 @@ export class Renderer {
   // §6.9 resolution policy state (present only when `options.resolution` is set).
   private readonly resolutionOptions?: AuraResolutionOptions;
   private readonly qualityTier?: Pick<AuraQualityTierSettings, "maxPixelRatio" | "minRenderScale">;
+  private readonly qualityTierName?: AuraQualityTier;
+  private programWarmup?: ProgramWarmup;
   private resolutionGovernor?: ResolutionGovernor;
   private renderScaleCeiling = 1;
   private readonly unsubscribeDprWatch?: () => void;
@@ -362,6 +374,7 @@ export class Renderer {
     this.host.shadows = new RendererShadowOrchestrator(this.host);
     this.resolutionOptions = options.resolution;
     this.qualityTier = options.qualityTier;
+    this.qualityTierName = options.qualityTierName;
     if (options.resolution !== undefined && options.resolution.dynamic !== false) {
       this.resolutionGovernor = new ResolutionGovernor({
         targetFrameMs: options.resolution.targetFrameMs ?? 16.7,
@@ -715,6 +728,9 @@ export class Renderer {
     const environmentFog = collectEnvironmentFog(source);
     const explicitShadowMap = collectForwardShadowMap(source);
     const shadowOptions = collectRendererShadowOptions(source);
+    // C-02 (PRD-01 §403): pre-render warm-then-block compile of the generated
+    // programs this scene needs. Flag-off: nothing (sync path untouched).
+    await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
@@ -879,6 +895,46 @@ export class Renderer {
       rendererDepthAvailable: Boolean(postprocess && postprocessRequiresDepthTexture(postprocess) && this.device.info.capabilities?.includes("depth-textures"))
     }));
   }
+  /**
+   * C-02 (PRD-01 §8.2/§403): warm-then-block. Under `A3D_QR_CORE_GENERATOR`
+   * (default-on under `A3D_QR_CORE`), precompiles the generated programs for
+   * every allow-listed material in the frame — at the current tier and the
+   * next-lower one — before the first draw, so the pass never async-skips in
+   * steady state. Flag-off and non-generated materials are no-ops.
+   */
+  private async warmGeneratedPrograms(
+    items: readonly RenderItem[],
+    lights: readonly CollectedLight[],
+    environmentLighting: EnvironmentLightingOptions | undefined,
+    environmentFog: ForwardEnvironmentFogOptions | false | undefined,
+    shadowMap: ForwardShadowMapOptions | undefined,
+    cameraViewProjection: Float32Array | readonly number[] | undefined
+  ): Promise<void> {
+    const flags = rendererQrFlags();
+    if (!qrCoreGeneratorOn(flags)) return;
+    const tier: AuraQualityTier = this.qualityTierName ?? "high";
+    const materials = new Map<string, import("./Material").Material>();
+    for (const item of items) {
+      const m = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
+      if (m && materialUsesGeneratedProgram(m)) materials.set(`${m.shaderKey}:${m.getRevision()}`, m);
+    }
+    if (materials.size === 0) return;
+    const clustered = resolveForwardClusteredLighting(lights, this.width, this.height, cameraViewProjection);
+    const axes = forwardPassFeatureAxes({ lights, shadowMap, environmentLighting, environmentFog }, clustered !== null);
+    clustered?.dispose();
+    const ctx = { flags, tier: QUALITY_TIERS[tier] };
+    const warmup = (this.programWarmup ??= new ProgramWarmup(rendererProgramCache(this.device, flags)));
+    await warmup.warm(
+      {
+        materials: [...materials.values()].map((m) => m.programFeatures(ctx)),
+        lights: [axes.lights],
+        shadows: axes.shadows ? [axes.shadows] : [],
+        environments: [axes.environment]
+      },
+      tier
+    );
+  }
+
   renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     return this.render(scene, camera);
   }
