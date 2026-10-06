@@ -8,7 +8,7 @@ import type { QrFlags } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
-import { bindPrd07RendererFlags } from "@aura3d/rendering/lanes";
+import { bindPrd07RendererFlags } from "@aura3d/rendering";
 
 interface EffectEntry {
   readonly id: string;

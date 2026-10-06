@@ -6,7 +6,7 @@
 
 import { Texture } from "@aura3d/rendering";
 import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook } from "@aura3d/rendering/contracts";
-import type { ParticlePassDiagnostics } from "@aura3d/rendering/lanes";
+import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
 import { lowerEffectNode, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
