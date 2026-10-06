@@ -17,6 +17,7 @@ export default defineConfig({
   timeout: 120_000,
   workers: 1,
   use: {
+    baseURL: "http://127.0.0.1:5299",
     browserName: "chromium",
     headless: true,
     viewport: { width: 1280, height: 720 },
