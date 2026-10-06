@@ -68,5 +68,6 @@ qr:diag:
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
     - git lfs pull || echo "lfs pull warn"
-    - echo "=== BISECT-3: qr:benchmark replica ==="
+    - echo "=== BISECT-4: qr:benchmark replica with headless-shell ==="
+    - export QR_BENCH_CHANNEL=headless-shell
     - bash benchmarks/quality-rebuild/ci.sh
