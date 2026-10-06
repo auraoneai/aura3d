@@ -86,10 +86,26 @@ const bannedPackageTemplatePatterns = [
   /^templates\/(?:asset-viewer|asset-gallery|interactive-scene|material-studio|product-configurator|game-slice|react|svelte|vite-vanilla|vue)$/
 ];
 
+// T2.15 — every template ships the canonical agent file (skills/agent-files/AGENTS.md)
+// as AGENTS.md and .claude/CLAUDE.md, byte-for-byte. Q-05-1 asks PRD 05 to have
+// genericAgentText load this canonical text rather than duplicating it.
+const canonicalAgentFile = readFileSync("packages/aura3d-cli/skills/agent-files/AGENTS.md", "utf8");
+function fileEqualsCanonical(path: string, canonical: string, id: string): ReleaseCheck {
+  const text = existsSync(resolve(path)) ? readFileSync(resolve(path), "utf8") : "";
+  return {
+    id,
+    pass: text === canonical,
+    detail: text === canonical ? `${path} matches canonical agent file` : `${path} differs from skills/agent-files/AGENTS.md`
+  };
+}
+
 const checks: ReleaseCheck[] = [
   ...templates.flatMap((template) => [
     existsCheck(`packages/create-aura3d/templates/${template}/package.json`, `${template} package`),
     existsCheck(`packages/create-aura3d/templates/${template}/playwright.config.ts`, `${template} Playwright config`),
+    fileEqualsCanonical(`packages/create-aura3d/templates/${template}/AGENTS.md`, canonicalAgentFile, `${template} canonical AGENTS.md`),
+    fileEqualsCanonical(`packages/create-aura3d/templates/${template}/.claude/CLAUDE.md`, canonicalAgentFile, `${template} canonical CLAUDE.md`),
+    existsCheck(`packages/create-aura3d/templates/${template}/.github/workflows/aura3d-lookdev.yml`, `${template} look-dev workflow`),
     existsCheck(`packages/create-aura3d/templates/${template}/${templateEntry(template)}`, `${template} main`),
     existsCheck(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, `${template} route health test`),
     templateSmokeSpecCheck(template),
