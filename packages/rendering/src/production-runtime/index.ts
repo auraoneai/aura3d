@@ -20,10 +20,6 @@ export {
   parseProductionRadianceHDR
 } from "./PBRHDRPipeline";
 export {
-  createProductionEffectsRenderSource,
-  summarizeProductionEffectsProof
-} from "./ProductionEffectsPipeline";
-export {
   ProductionWebGPURenderer,
   createProductionWebGPUReport,
   createProductionWebGPUReadinessReport,
@@ -44,10 +40,6 @@ export type {
   ProductionToneMappingOperator,
   ProductionToneMappingPolicy
 } from "./PBRHDRPipeline";
-export type {
-  ProductionEffectsOptions,
-  ProductionEffectsSummary
-} from "./ProductionEffectsPipeline";
 export type {
   ProductionWebGPUAdapterLike,
   ProductionWebGPULike,

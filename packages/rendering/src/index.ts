@@ -424,7 +424,6 @@ export {
   createProductionOrbitControlPreset,
   createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
-  createProductionEffectsRenderSource,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
   createProductionWebGPUReport,
@@ -437,13 +436,10 @@ export {
   normalizeTransmissionBackdropCapture,
   parseProductionRadianceHDR,
   summarizeProductionAnimationWorkflow,
-  summarizeProductionEffectsProof,
   summarizeProductionProductionProof,
   summarizeProductionWebGL2Proof
 } from "./production-runtime";
 export type {
-  ProductionEffectsOptions,
-  ProductionEffectsSummary,
   ProductionAnimationMetadataInput,
   ProductionAnimationWorkflowSummary,
   DualProbeEnvironmentLightingOptions,
