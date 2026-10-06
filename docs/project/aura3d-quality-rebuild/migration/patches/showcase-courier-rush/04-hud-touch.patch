@@ -1,19 +1,19 @@
-From 003ec14dee7cac115c0b49d074fafb989890a318 Mon Sep 17 00:00:00 2001
+From 647e487d2c3d9a299c9045dae4f8ff7b7700bfad Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
-Date: Tue, 6 Oct 2026 16:28:35 +0000
-Subject: [PATCH] migration(showcase-courier-rush) step 7: mountHud motorsport
- + steer-pedals touch
-
-Replaces src/hud.ts (dispatch card, status strip, touch row, summary overlay) with the shared HUD kit: timer/score/strikes/combo/objective/speedometer/drop-off indicator on the motorsport theme, steer-pedals touch preset writing into game.input actions, and radio toasts/summary via hud.toast/hud.banner.
+Date: Tue, 6 Oct 2026 18:54:40 +0000
+Subject: [PATCH] [QR-09] courier-rush: mountHud motorsport + steer-pedals
+ touch
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
- apps/showcase-courier-rush/index.html     |   1 -
- apps/showcase-courier-rush/src/hud.ts     | 208 ----------------------
- apps/showcase-courier-rush/src/main.ts    | 150 +++++++++++++---
- apps/showcase-courier-rush/src/styles.css |   4 +
- 4 files changed, 126 insertions(+), 237 deletions(-)
+ apps/showcase-courier-rush/index.html      |   1 -
+ apps/showcase-courier-rush/src/hud.ts      | 208 ---------------------
+ apps/showcase-courier-rush/src/main.ts     | 150 ++++++++++++---
+ apps/showcase-courier-rush/src/main.ts.rej |  53 ++++++
+ apps/showcase-courier-rush/src/styles.css  |   4 +
+ 5 files changed, 179 insertions(+), 237 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/src/hud.ts
+ create mode 100644 apps/showcase-courier-rush/src/main.ts.rej
 
 diff --git a/apps/showcase-courier-rush/index.html b/apps/showcase-courier-rush/index.html
 index feddffe5..70883efc 100644
@@ -242,10 +242,10 @@ index ee50089c..00000000
 -  hud.summaryOverlay.dataset.visible = "false";
 -}
 diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
-index 8633a2ae..acc457f9 100644
+index dfa35e37..7ef25d0f 100644
 --- a/apps/showcase-courier-rush/src/main.ts
 +++ b/apps/showcase-courier-rush/src/main.ts
-@@ -60,16 +60,11 @@ import {
+@@ -29,7 +29,10 @@ import {
    createJuice,
    createOverlayDriver,
    createRumbleDriver,
@@ -255,6 +255,12 @@ index 8633a2ae..acc457f9 100644
 +  mountTouchControls,
 +  type HudDocument
  } from "@aura3d/game";
+ import { bindCourierEvidence } from "./evidence";
+ import { bindCourierDrive, courierDrive } from "./scenario-drive";
+@@ -64,14 +67,6 @@ import {
+   type VanDriveInput
+ } from "./van";
+ import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 -import {
 -  decayHudEffects,
 -  hideShiftSummary,
@@ -266,7 +272,7 @@ index 8633a2ae..acc457f9 100644
  
  interface CourierRouteReadyFlag {
    readonly ready: boolean;
-@@ -802,7 +797,107 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
+@@ -790,7 +785,107 @@ Object.defineProperty(window, "__COURIER_RUSH_DEBUG__", {
  });
  
  // ---- HUD ------------------------------------------------------------------------
@@ -375,16 +381,16 @@ index 8633a2ae..acc457f9 100644
  
  function objectiveText(state: DispatchState): string {
    const plan = currentDelivery(state);
-@@ -840,7 +935,7 @@ function handleCourierEvents(
+@@ -828,7 +923,7 @@ function handleCourierEvents(
        case "dispatch":
          playCue("dispatch");
-         if (!paused && !dropPayoffOwnsToast) {
+         if (!courierGame.session.paused && !dropPayoffOwnsToast) {
 -          showRadioToast(hud, "<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
 +          radioToast("<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
          }
          break;
        case "pickup": {
-@@ -853,7 +948,7 @@ function handleCourierEvents(
+@@ -841,7 +936,7 @@ function handleCourierEvents(
          });
          observed.pickupFired = true;
          playCue("pickup");
@@ -393,7 +399,7 @@ index 8633a2ae..acc457f9 100644
          break;
        }
        case "drop": {
-@@ -871,16 +966,15 @@ function handleCourierEvents(
+@@ -859,16 +954,15 @@ function handleCourierEvents(
            courierJuice.fire(event.early ? "combo" : "deliver", { position: [vanX, 0.25, vanZ] });
            dropLookbackRemainingSeconds = DROP_LOOKBACK_SECONDS;
          }
@@ -413,7 +419,7 @@ index 8633a2ae..acc457f9 100644
          break;
        case "strike":
          observed.strikeObserved = true;
-@@ -892,23 +986,23 @@ function handleCourierEvents(
+@@ -880,23 +974,23 @@ function handleCourierEvents(
          });
          playCue("strike");
          courierJuice.fire("strike");
@@ -442,7 +448,7 @@ index 8633a2ae..acc457f9 100644
          break;
        default:
          break;
-@@ -1108,7 +1202,7 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
+@@ -1096,7 +1190,7 @@ function pushOut(vanX: number, vanZ: number, collider: PropCollider): { x: numbe
  app.onFrame(({ dt }) => {
    const stepSeconds = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
    frameCount += 1;
@@ -451,7 +457,7 @@ index 8633a2ae..acc457f9 100644
    input.update(stepSeconds);
  
    if (input.pressed("pause")) {
-@@ -1128,18 +1222,18 @@ app.onFrame(({ dt }) => {
+@@ -1116,18 +1210,18 @@ app.onFrame(({ dt }) => {
      impactPose = null;
      legWaypoints = [];
      legKey = "";
@@ -465,7 +471,7 @@ index 8633a2ae..acc457f9 100644
      }
    }
  
-   if (paused) {
+   if (courierGame.session.paused) {
      observed.pauseFreezesSim = true;
      updateMountedEvidence();
 -    updateCourierHud(hud, currentHudFrame());
@@ -473,7 +479,7 @@ index 8633a2ae..acc457f9 100644
      refreshAudioEvidence();
      return;
    }
-@@ -1426,7 +1520,7 @@ app.onFrame(({ dt }) => {
+@@ -1412,7 +1506,7 @@ app.onFrame(({ dt }) => {
    impactFeedbackRemainingSeconds = Math.max(0, impactFeedbackRemainingSeconds - stepSeconds);
    if (frameCount % 30 === 0) mountedEvidence.diagnostics = app.diagnostics();
    updateMountedEvidence();
@@ -482,7 +488,7 @@ index 8633a2ae..acc457f9 100644
    refreshAudioEvidence();
  });
  
-@@ -1500,8 +1594,8 @@ function round3(value: number): number {
+@@ -1486,8 +1580,8 @@ function round3(value: number): number {
    return Math.round(value * 1000) / 1000;
  }
  
@@ -493,6 +499,65 @@ index 8633a2ae..acc457f9 100644
  
  void app.ready().then(() => {
    const diagnostics = app.diagnostics();
+diff --git a/apps/showcase-courier-rush/src/main.ts.rej b/apps/showcase-courier-rush/src/main.ts.rej
+new file mode 100644
+index 00000000..2cb0244f
+--- /dev/null
++++ b/apps/showcase-courier-rush/src/main.ts.rej
+@@ -0,0 +1,53 @@
++diff a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts	(rejected hunks)
++@@ -60,16 +60,11 @@ import {
++   createJuice,
++   createOverlayDriver,
++   createRumbleDriver,
++-  createTweenEngine
+++  createTweenEngine,
+++  mountHud,
+++  mountTouchControls,
+++  type HudDocument
++ } from "@aura3d/game";
++-import {
++-  decayHudEffects,
++-  hideShiftSummary,
++-  mountCourierHud,
++-  showRadioToast,
++-  showShiftSummary,
++-  updateCourierHud
++-} from "./hud";
++ 
++ interface CourierRouteReadyFlag {
++   readonly ready: boolean;
++@@ -840,7 +935,7 @@ function handleCourierEvents(
++       case "dispatch":
++         playCue("dispatch");
++         if (!paused && !dropPayoffOwnsToast) {
++-          showRadioToast(hud, "<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
+++          radioToast("<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
++         }
++         break;
++       case "pickup": {
++@@ -1128,18 +1222,18 @@ app.onFrame(({ dt }) => {
++     impactPose = null;
++     legWaypoints = [];
++     legKey = "";
++-    hideShiftSummary(hud);
+++    hideShiftSummary();
++     if (hadEnded) {
++       observed.resetRestoresShift = true;
++       playCue("dispatch");
++-      showRadioToast(hud, "<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
+++      radioToast("<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
++     }
++   }
++ 
++   if (paused) {
++     observed.pauseFreezesSim = true;
++     updateMountedEvidence();
++-    updateCourierHud(hud, currentHudFrame());
+++    syncHud();
++     refreshAudioEvidence();
++     return;
++   }
 diff --git a/apps/showcase-courier-rush/src/styles.css b/apps/showcase-courier-rush/src/styles.css
 index e9f66e3e..d12b565c 100644
 --- a/apps/showcase-courier-rush/src/styles.css

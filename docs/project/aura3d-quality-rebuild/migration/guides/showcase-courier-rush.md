@@ -1,8 +1,9 @@
 # Migration guide — showcase-courier-rush
 
-Patch set: `migration/patches/showcase-courier-rush/` (steps 5–6 of §10 so far;
-later steps land as their PRD items complete). Generated against
-`main@5f5d6088`.
+Patch set: `migration/patches/showcase-courier-rush/` — complete migration:
+steps 2–7 of §10 plus the review-corridor cleanup. Generated against
+`main@5f5d6088`; verified end-to-end with `git am` on a clean main worktree
+(parity 0/0/0/0).
 
 ## Apply
 
@@ -95,3 +96,16 @@ from `src/sound.ts`, so the sound module stays; only `hud.ts` goes away.
 Ordering: imports `mountHud`/`mountTouchControls`/`HudDocument` from
 `@aura3d/game` — those exports land with `qr/prd09-hud`; the patch compiles
 only after that PR merges.
+
+## Migration patches (added 2026-10-06)
+
+| Patch | What it does |
+|---|---|
+| `02-create-game-capture-evidence` | Mount via `createGame({id:"showcase-courier-rush", qualityRebuild:{flags:["game"]}, evidence:{sections.courier, legacyGlobals:["__COURIER_RUSH_EVIDENCE__","__AURA3D_SHOWCASE_COURIER_RUSH__"]}, scenarios: courierScenarios})`; all 17 `visualReviewCapture` branches resolved to the play arm (camera target/offset/fov/smoothing, van `targetMaxDimension`, canyon `.addMany`, traffic-light heights, chase-blend offsets); `?capture=review` parse + `data-review` dataset removed (`dataset.capture = "default"`); `__AURA3D_COMPOSITION_PROBE__` + `compositionSubjectSuppressed` deleted; `let paused` → `courierGame.session.pause/resume`; `src/evidence.ts` + `src/scenario-drive.ts` + `src/scenarios/` (play + mid-shift staged scenario via `placeVan`/`pumpFrames`); `__COURIER_RUSH_DEBUG__` kept as a test hook. |
+| `03-juice` | `createJuice` event map (pickup/deliver/combo/strike) on `courierGame.session`; DOM `pulseStrikeFlash` + `game.effects` pool deleted; `courierTween.tick(stepSeconds)` in onFrame. |
+| `04-hud-touch` | `mountHud` motorsport theme + `mountTouchControls` steer-pedals; `radioToast`/`syncHud`/`hideShiftSummary` route helpers; `./hud` DOM mount retired. |
+| `05-sound` | `courier-audio.ts` → `src/sound.ts` over `game-sfx-core` + `createGameSoundEngine`; van engine `sound.engine(vanEngineSpec)` (`setRpm`/`setLoad` per frame); `city-night` bed on unlock; generated WAVs/build scripts removed; `@aura3d/audio` dep added. |
+| `06-review-corridor` | `buildCityDressing(assets)` signature cleaned (dead `reviewCapture` param dropped); `reviewCorridorNodes()` deleted from `city.ts`. |
+
+Compile note unchanged: patches reference `@aura3d/game` + `@aura3d/audio`
+exports that land with the package PRs (#139/#158/#240/#270).

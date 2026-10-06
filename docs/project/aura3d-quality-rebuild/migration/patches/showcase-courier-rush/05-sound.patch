@@ -1,17 +1,8 @@
-From 5d8e5349fd7d6044dcb198c3658154cb7bef9be3 Mon Sep 17 00:00:00 2001
+From 568f898f72421a410220d7ec7a64552504e92057 Mon Sep 17 00:00:00 2001
 From: Gurbaksh Chahal <gchahal@veerone.com>
-Date: Tue, 6 Oct 2026 14:33:43 +0000
-Subject: [PATCH] migration(showcase-courier-rush) step 5: courier-audio.ts ->
- src/sound.ts
-
-Cue map points at game-sfx-core ids; the registered-but-never-played
-engine cue becomes a real sound.engine() loop over the van layer set
-(layer0/1/2 on-load + off-load derivations) with setRpm from van speed
-and setLoad from drive throttle every frame, and ambience.city-night
-starts as the shift bed on first unlock. Deletes courier-audio.ts,
-build-sfx.mjs, register-sfx.mjs, the generated WAVs, the courier*Sfx
-typed-asset registrations and their public copies; route-health keeps
-the same mounted evidence keys.
+Date: Tue, 6 Oct 2026 18:55:07 +0000
+Subject: [PATCH] [QR-09] courier-rush: courier-audio -> game-sfx-core +
+ real GameSoundEngine
 
 Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
 ---
@@ -25,12 +16,13 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../assets/sfx/shiftClear.wav                 |    3 -
  .../assets/sfx/shiftFail.wav                  |    3 -
  .../assets/sfx/strikeHit.wav                  |    3 -
- apps/showcase-courier-rush/package.json       |    5 +-
+ apps/showcase-courier-rush/package.json       |    2 -
  .../scripts/build-sfx.mjs                     |  306 -----
  .../scripts/register-sfx.mjs                  |   40 -
  .../scripts/write-route-health.mjs            |    2 +-
  .../src/courier-audio.ts                      |  217 ---
  apps/showcase-courier-rush/src/main.ts        |   20 +-
+ apps/showcase-courier-rush/src/main.ts.rej    |   53 -
  apps/showcase-courier-rush/src/sound.ts       |  144 ++
  .../courierAmbientCitySfx.995b1230.wav        |    3 -
  .../courierAmbientCitySfx.thumb.svg           |    1 -
@@ -54,7 +46,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  .../courierStrikeHitSfx.c75e32f0.wav          |    3 -
  .../aura-assets/courierStrikeHitSfx.thumb.svg |    1 -
  src/aura-assets.ts                            | 1224 +++--------------
- 39 files changed, 340 insertions(+), 1691 deletions(-)
+ 40 files changed, 338 insertions(+), 1743 deletions(-)
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/ambientCity.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/dispatchBlip.wav
  delete mode 100644 apps/showcase-courier-rush/assets/sfx/earlyBonus.wav
@@ -68,6 +60,7 @@ Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.gith
  delete mode 100644 apps/showcase-courier-rush/scripts/build-sfx.mjs
  delete mode 100644 apps/showcase-courier-rush/scripts/register-sfx.mjs
  delete mode 100644 apps/showcase-courier-rush/src/courier-audio.ts
+ delete mode 100644 apps/showcase-courier-rush/src/main.ts.rej
  create mode 100644 apps/showcase-courier-rush/src/sound.ts
  delete mode 100644 public/aura-assets/courierAmbientCitySfx.995b1230.wav
  delete mode 100644 public/aura-assets/courierAmbientCitySfx.thumb.svg
@@ -182,10 +175,10 @@ index 913bc087..00000000
 -oid sha256:c75e32f00e819d03e3c251128a6e8e88e3e3492db6f12e7f453c8a4be182fd4a
 -size 33560
 diff --git a/apps/showcase-courier-rush/package.json b/apps/showcase-courier-rush/package.json
-index 18071c15..c0ec2ad2 100644
+index 8119aad3..90636597 100644
 --- a/apps/showcase-courier-rush/package.json
 +++ b/apps/showcase-courier-rush/package.json
-@@ -9,14 +9,13 @@
+@@ -9,9 +9,7 @@
      "typecheck": "tsc -p tsconfig.json --noEmit",
      "build": "vite build",
      "preview": "vite preview --host 127.0.0.1",
@@ -195,13 +188,6 @@ index 18071c15..c0ec2ad2 100644
      "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
      "evidence:route-health": "node scripts/write-route-health.mjs"
    },
-   "dependencies": {
--    "@aura3d/engine": "workspace:*"
-+    "@aura3d/engine": "workspace:*",
-+    "@aura3d/audio": "workspace:*"
-   },
-   "devDependencies": {
-     "typescript": "^5.8.3",
 diff --git a/apps/showcase-courier-rush/scripts/build-sfx.mjs b/apps/showcase-courier-rush/scripts/build-sfx.mjs
 deleted file mode 100644
 index 158142dc..00000000
@@ -797,20 +783,20 @@ index 0130bb1b..00000000
 -  };
 -}
 diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
-index c0942f41..6ee39f55 100644
+index 7ef25d0f..aeaba9c1 100644
 --- a/apps/showcase-courier-rush/src/main.ts
 +++ b/apps/showcase-courier-rush/src/main.ts
-@@ -54,7 +54,7 @@ import {
+@@ -66,7 +66,7 @@ import {
    VAN_TUNE,
    type VanDriveInput
  } from "./van";
 -import { createCourierAudio, type CourierAudioController } from "./courier-audio";
 +import { createCourierSound, type CourierCue, type CourierSoundController } from "./sound";
- import {
-   decayHudEffects,
-   hideShiftSummary,
-@@ -113,14 +113,14 @@ const reducedMotion = accessibilitySettings.reducedMotion;
- const runtimeEffects = game.effects({ poolSize: 40, reducedMotion, reducedFlash: false });
+ 
+ interface CourierRouteReadyFlag {
+   readonly ready: boolean;
+@@ -114,14 +114,14 @@ const accessibilitySettings = game.accessibility.settings([
+ const reducedMotion = accessibilitySettings.reducedMotion;
  
  // ---- audio ------------------------------------------------------------------
 -const courierAudio: CourierAudioController = createCourierAudio(reducedMotion);
@@ -827,7 +813,7 @@ index c0942f41..6ee39f55 100644
    if (!audioUnlocked) return;
    void courierAudio.cue(cue);
  };
-@@ -660,7 +660,7 @@ const mountedEvidence = {
+@@ -689,7 +689,7 @@ const mountedEvidence = {
    van: { x: 0, z: 0, heading: 0, speed: 0 },
    trafficSummaries: [] as { readonly id: string; readonly x: number; readonly z: number; readonly heading: number; readonly speed: number; readonly courtesyStopped: boolean }[],
    audio: {
@@ -836,7 +822,7 @@ index c0942f41..6ee39f55 100644
      cueCount: 10,
      gestureUnlocked: false,
      sfxReady: false,
-@@ -682,12 +682,12 @@ const mountedEvidence = {
+@@ -711,12 +711,12 @@ const mountedEvidence = {
  
  function refreshAudioEvidence(): void {
    const proof = courierAudio.proof();
@@ -853,7 +839,7 @@ index c0942f41..6ee39f55 100644
  }
  
  Object.defineProperty(window, "__COURIER_RUSH_EVIDENCE__", {
-@@ -1201,6 +1201,8 @@ app.onFrame(({ dt }) => {
+@@ -1304,6 +1304,8 @@ app.onFrame(({ dt }) => {
    }
  
    // Traffic steps with the van position so nearby courtesy horns can fire.
@@ -862,9 +848,68 @@ index c0942f41..6ee39f55 100644
    const trafficEvents = trafficSim.step(stepSeconds, vanAfter.x, vanAfter.z);
    if (trafficEvents.length > 0) playCue("horn");
  
+diff --git a/apps/showcase-courier-rush/src/main.ts.rej b/apps/showcase-courier-rush/src/main.ts.rej
+deleted file mode 100644
+index 2cb0244f..00000000
+--- a/apps/showcase-courier-rush/src/main.ts.rej
++++ /dev/null
+@@ -1,53 +0,0 @@
+-diff a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts	(rejected hunks)
+-@@ -60,16 +60,11 @@ import {
+-   createJuice,
+-   createOverlayDriver,
+-   createRumbleDriver,
+--  createTweenEngine
+-+  createTweenEngine,
+-+  mountHud,
+-+  mountTouchControls,
+-+  type HudDocument
+- } from "@aura3d/game";
+--import {
+--  decayHudEffects,
+--  hideShiftSummary,
+--  mountCourierHud,
+--  showRadioToast,
+--  showShiftSummary,
+--  updateCourierHud
+--} from "./hud";
+- 
+- interface CourierRouteReadyFlag {
+-   readonly ready: boolean;
+-@@ -840,7 +935,7 @@ function handleCourierEvents(
+-       case "dispatch":
+-         playCue("dispatch");
+-         if (!paused && !dropPayoffOwnsToast) {
+--          showRadioToast(hud, "<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
+-+          radioToast("<strong>Dispatch:</strong> new job on the radio - grab it from the lit zone.", 3);
+-         }
+-         break;
+-       case "pickup": {
+-@@ -1128,18 +1222,18 @@ app.onFrame(({ dt }) => {
+-     impactPose = null;
+-     legWaypoints = [];
+-     legKey = "";
+--    hideShiftSummary(hud);
+-+    hideShiftSummary();
+-     if (hadEnded) {
+-       observed.resetRestoresShift = true;
+-       playCue("dispatch");
+--      showRadioToast(hud, "<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
+-+      radioToast("<strong>New shift.</strong> Dispatch has five jobs with your name on them.", 3);
+-     }
+-   }
+- 
+-   if (paused) {
+-     observed.pauseFreezesSim = true;
+-     updateMountedEvidence();
+--    updateCourierHud(hud, currentHudFrame());
+-+    syncHud();
+-     refreshAudioEvidence();
+-     return;
+-   }
 diff --git a/apps/showcase-courier-rush/src/sound.ts b/apps/showcase-courier-rush/src/sound.ts
 new file mode 100644
-index 00000000..9fb5647e
+index 00000000..584aeb9a
 --- /dev/null
 +++ b/apps/showcase-courier-rush/src/sound.ts
 @@ -0,0 +1,144 @@

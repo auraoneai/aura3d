@@ -56,9 +56,10 @@ jobs:
         working-directory: packages/game
         run: pnpm exec size-limit --config size-limit.json
 
-  bank-shot-shadow:
-    # Shadow-migration proof (PRD-09 §10): apply the shipped patch set onto a
-    # pristine main worktree and gate on zero remaining capture branches.
+  all-routes-shadow:
+    # Shadow-migration proof (PRD-09 §10): apply every shipped patch set onto a
+    # pristine main worktree, then gate `game-capture-parity --fail-on-any` per
+    # route and record the route-composition before/after (migration/after.json).
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,14 +68,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply migration patches to a main worktree
+      - name: Apply every migration patch set to a main worktree
         run: |
           git config user.email "qr-prd09@example.invalid"
           git config user.name "qr-prd09 shadow"
-          git worktree add /tmp/bs-shadow origin/main --detach
-          cd /tmp/bs-shadow
-          git am "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/showcase-bank-shot/*.patch
-      - name: Parity gate on migrated tree (must be 0/0/0/0)
+          git worktree add /tmp/all-shadow origin/main --detach
+          cd /tmp/all-shadow
+          for dir in "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/*/; do
+            git am "$dir"*.patch
+          done
+      - name: Capture-parity gate on the migrated tree
         run: |
+          # Per-route gate first (clear failure attribution), then the fleet
+          # sweep so routes without a patch set stay honest too.
+          for dir in docs/project/aura3d-quality-rebuild/migration/patches/*/; do
+            route=$(basename "$dir")
+            node tools/showcase-library/game-capture-parity.mjs \
+              --root /tmp/all-shadow --routes "$route" --fail-on-any
+          done
           node tools/showcase-library/game-capture-parity.mjs \
-            --root /tmp/bs-shadow --routes showcase-bank-shot --fail-on-any
+            --root /tmp/all-shadow --fail-on-art --fail-on-framing --fail-on-transient
+      - name: Route-composition before/after
+        run: |
+          node tools/quality-rebuild-capture/route-composition.mjs --json /tmp/composition-before.json
+          node tools/quality-rebuild-capture/route-composition.mjs --root /tmp/all-shadow --json /tmp/composition-after.json
+      - name: Upload composition evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd09-route-composition
+          path: |
+            /tmp/composition-before.json
+            /tmp/composition-after.json
+          retention-days: 30
+          if-no-files-found: warn
