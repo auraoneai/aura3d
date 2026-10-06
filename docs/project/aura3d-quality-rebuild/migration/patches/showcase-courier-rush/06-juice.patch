@@ -1,0 +1,145 @@
+From b440e605873272b0807977c892ff9904652309c6 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 15:44:38 +0000
+Subject: [PATCH] migration(showcase-courier-rush) step 6: juice.define
+ replaces DOM flash + effects pool
+
+PRD-09 1753: juice.define({pickup,deliver,combo,strike}) over a real
+createJuice facade (tween engine, fxParticlePass -> app.effects bursts,
+overlay driver -> C-05, rumble driver). ringShockwave/hitSpark become
+fx.burst ring/spark; pulseStrikeFlash DOM pulse becomes the strike
+preset's overlay flash + shake + rumble; runtimeEffects.update becomes
+the tween engine's tick. Adds @aura3d/game dep.
+
+Co-Authored-By: Devin AI <devin@cognition.ai>
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-courier-rush/package.json |  3 +-
+ apps/showcase-courier-rush/src/main.ts  | 43 ++++++++++++++++++-------
+ 2 files changed, 34 insertions(+), 12 deletions(-)
+
+diff --git a/apps/showcase-courier-rush/package.json b/apps/showcase-courier-rush/package.json
+index c0ec2ad2..5771bfa3 100644
+--- a/apps/showcase-courier-rush/package.json
++++ b/apps/showcase-courier-rush/package.json
+@@ -14,8 +14,9 @@
+     "evidence:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
++    "@aura3d/audio": "workspace:*",
+     "@aura3d/engine": "workspace:*",
+-    "@aura3d/audio": "workspace:*"
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-courier-rush/src/main.ts b/apps/showcase-courier-rush/src/main.ts
+index 6ee39f55..8633a2ae 100644
+--- a/apps/showcase-courier-rush/src/main.ts
++++ b/apps/showcase-courier-rush/src/main.ts
+@@ -55,11 +55,17 @@ import {
+   type VanDriveInput
+ } from "./van";
+ import { createCourierSound, type CourierCue, type CourierSoundController } from "./sound";
++import {
++  createFxParticlePass,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
+ import {
+   decayHudEffects,
+   hideShiftSummary,
+   mountCourierHud,
+-  pulseStrikeFlash,
+   showRadioToast,
+   showShiftSummary,
+   updateCourierHud
+@@ -110,7 +116,6 @@ const accessibilitySettings = game.accessibility.settings([
+   game.accessibility.reducedMotion({ enabled: prefersReducedMotion })
+ ]);
+ const reducedMotion = accessibilitySettings.reducedMotion;
+-const runtimeEffects = game.effects({ poolSize: 40, reducedMotion, reducedFlash: false });
+ 
+ // ---- audio ------------------------------------------------------------------
+ const courierAudio: CourierSoundController = createCourierSound();
+@@ -403,6 +408,26 @@ const app = createAuraApp("#app", {
+     .camera(chaseCamera)
+ });
+ 
++
++// ---- juice (PRD-09 §7.6) ----------------------------------------------------
++// `fire` composes fx/camera/overlay/rumble per event; the DOM strike flash and
++// the hand-rolled `game.effects` pool are gone (C-05 backend + C-20 bursts).
++const courierTween = createTweenEngine();
++const courierFx = createFxParticlePass(app.effects);
++const courierJuice = createJuice<"pickup" | "deliver" | "combo" | "strike", CourierCue>({
++  events: {
++    pickup: {},
++    deliver: { fx: { kind: "ring", count: 18, color: "#7ce8ff" }, shake: 0.18 },
++    combo: { fx: { kind: "ring", count: 24, color: "#ffd166" }, punch: { fovDeg: 4, ms: 160 } },
++    strike: { flash: { color: "#ff8d6a", peak: 0.3, ms: 160 }, shake: 0.4, rumble: { ms: 140, strong: 0.65 } }
++  },
++  camera: app.camera,
++  session: { reducedMotion, reducedFlash: false, hitStop: () => {}, slowMo: () => {} },
++  fx: courierFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: courierTween,
++  rumble: createRumbleDriver()
++});
+ /** Two warm emissive pools ahead of the van: readable headlight practicals. */
+ function vanHeadlightPools() {
+   return ["left", "right"].map((side) =>
+@@ -674,7 +699,7 @@ const mountedEvidence = {
+     vehicle: "engine.createGameArcadeVehicle",
+     driverAi: "engine.createVehicleDriverAi",
+     cityKit: "city.cityBlock night preset",
+-    effects: "game.effects",
++    effects: "@aura3d/game juice (C-20 bursts)",
+     input: "game.input"
+   },
+   diagnostics: undefined as unknown
+@@ -843,11 +868,7 @@ function handleCourierEvents(
+         playCue("drop");
+         if (event.early) playCue("early-bonus");
+         if (!reducedMotion) {
+-          runtimeEffects.ringShockwave([vanX, 0.25, vanZ], {
+-            color: event.early ? "#ffd166" : "#7ce8ff",
+-            intensity: 0.8,
+-            radius: 2.4
+-          });
++          courierJuice.fire(event.early ? "combo" : "deliver", { position: [vanX, 0.25, vanZ] });
+           dropLookbackRemainingSeconds = DROP_LOOKBACK_SECONDS;
+         }
+         showRadioToast(
+@@ -870,7 +891,7 @@ function handleCourierEvents(
+           timerMs: Math.round(dispatch.timerMs)
+         });
+         playCue("strike");
+-        pulseStrikeFlash(hud);
++        courierJuice.fire("strike");
+         showRadioToast(hud, "<strong>Strike " + event.strikes + "/" + MAX_STRIKES + ".</strong> Watch the panel work!", 2.2);
+         break;
+       case "timerFail":
+@@ -1188,7 +1209,7 @@ app.onFrame(({ dt }) => {
+       vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
+       impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : IMPACT_FEEDBACK_SECONDS;
+       if (!reducedMotion) {
+-        runtimeEffects.hitSpark([contactX, 0.52, contactZ], { color: "#ff8d6a", intensity: 0.82, radius: 1.08 });
++        courierFx.burst("spark", [contactX, 0.52, contactZ], { count: 16, color: "#ff8d6a" });
+       }
+       (mountedEvidence as unknown as { lastImpact: unknown }).lastImpact = {
+         source: hit.id,
+@@ -1401,7 +1422,7 @@ app.onFrame(({ dt }) => {
+     ] as const
+   });
+ 
+-  runtimeEffects.update(stepSeconds);
++  courierTween.tick(stepSeconds);
+   impactFeedbackRemainingSeconds = Math.max(0, impactFeedbackRemainingSeconds - stepSeconds);
+   if (frameCount % 30 === 0) mountedEvidence.diagnostics = app.diagnostics();
+   updateMountedEvidence();
+-- 
+2.34.1
+

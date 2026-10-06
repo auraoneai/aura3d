@@ -28,6 +28,7 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/showcase-bank-shot/
 | `05-sound` | `billiards-audio.ts` → `src/sound.ts` cue map over `game-sfx-core` ids (`sports/table`, shared `ui`/`stinger`/`ambience`); deletes `scripts/build-sfx.mjs`, generated WAVs, `bankShot*Sfx` typed-asset entries + public copies, `build:sfx` script | same cue names + buses (canonical §6.8 ids), `unlock` on first gesture, `ambient-hall` loop |
 | `08-session-pause` | `togglePause`, `let paused`, KeyP/Escape listeners → `game.session`; `#bs-pause-button` toggles session pause; `gameApp.onFrame` → `bankGame.app.onFrame`; `reducedMotion` read moves into `buildScene` | app.pause()/resume() still mirrors session state |
 | `10-evidence-sections` | `publishEvidence` + `defineProperty(__AURA3D_SHOWCASE_BANK_SHOT__)` → `evidence.sections` loader (`src/evidence.ts`) + `legacyGlobals` for `__BANK_SHOT_EVIDENCE__`/`__AURA3D_SHOWCASE_BANK_SHOT__`; deletes `scripts/write-performance-report.ts` (use `aura3d perf-report`) | all evidence keys preserved, `mountedAtEpochMs` → `collectedAtEpochMs` |
+| `11-juice` | `juice.define({pot, foul, cushion, combo})` over `createJuice` — pot fires `fx.burst("ring")` at `POCKET_CENTERS` + `hitStop(0.045)` on the real `bankGame.session`; foul → red overlay flash + shake; `cushion-touch` → small dust burst at the touching ball (`debugBallBody` position); combo → blue ring + camera punch at the cue ball; `bankTween.tick(dt)` in the frame loop | all cue names + `pushCue` calls kept inline, toasts unchanged, hit-stop is visual-only via session actors |
 
 ## Filed to PRD-14 (art/camera tasks, never kept behind a flag)
 
@@ -44,7 +45,7 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/showcase-bank-shot/
 
 ## Verification (shadow migration, scratch tree only)
 
-- `git am` applies all six patches cleanly on `main@5f5d6088`.
+- `git am` applies all seven patches cleanly on `main@5f5d6088`.
 - `game-capture-parity.mjs --root <scratch> --routes showcase-bank-shot
   --fail-on-any` → **0/0/0/0**.
 - `src/scenarios/` files import only `@aura3d/game/capture`-adjacent APIs via
@@ -52,7 +53,7 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/showcase-bank-shot/
 - `tests/browser/game-shell/*` + default-URL capture run in
   `qr-prd09-routes.yml` when PRD-14 applies the set.
 
-## Ordering dependency (step 5)
+## Ordering dependency (steps 5, 11)
 
 `src/sound.ts` points every asset at `/packs/game-sfx-core/<id>.{format}`.
 The `{format}` placeholder resolves to the probed encoding through the
@@ -61,3 +62,10 @@ PRD-09 sound slice (`qr/prd09-sound`: pack under `assets/packs/game-sfx-core`
 + `public/packs` serving symlink + probe files). Until that PR merges, apply
 step 5 knowing fetches 404 on main's `createGameAudio` (visuals/scenarios are
 unaffected).
+
+Step 11 imports `createJuice` / `createFxParticlePass` /
+`createOverlayDriver` / `createRumbleDriver` / `createTweenEngine` from
+`@aura3d/game`; those exports land with the PRD-09 juice slice
+(`qr/prd09-juice`). `app.effects`, `app.camera` and `bankGame.session` are
+already real on `main`, so the pot hit-stop works end to end once the
+package exports merge.

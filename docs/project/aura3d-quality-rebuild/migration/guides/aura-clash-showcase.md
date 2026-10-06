@@ -1,6 +1,6 @@
 # Migration guide — aura-clash-showcase
 
-Patch set: `migration/patches/aura-clash-showcase/` (step 5 of §10 so far;
+Patch set: `migration/patches/aura-clash-showcase/` (steps 5–6 of §10 so far;
 later steps land as their PRD items complete). Generated against
 `main@5f5d6088`.
 
@@ -26,6 +26,7 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/aura-clash-showcase
 | Patch | What it does | Kept play values |
 |---|---|---|
 | `05-sound` | keeps the adapter path: extends the manifest with the `round`/`fight`/`ko` announcer trio on `voice` (`creature.announcer.*`) and a `crowd-bed` music-track loop on `music` (`ambience.crowd-arena`) from `game-sfx-core`; `auraClashKoSfx` moves to the new `ko-impact` cue on `sfx` (KO announcer reads over the landing hit); wires `round` at the round ceremony, `fight` when the intro clears, `ko-impact` alongside `ko`, `startBeds()` on first round; adds `packAssetUrls` to the audio proof | all 11 CC0 samples + all 4 bus levels preserved verbatim; KO duck contract (`sfx` → 0.32 for 1.3 s) untouched; `cueCount` 16 → 20 |
+| `06-juice` | routes hit-stop through a `clashSession` adapter implementing the `GameSession.hitStop(seconds, { actors })` contract over the route's visual-only clip-clock freeze — `applyHitStopAndImpact` (light/heavy/special connects) and the guard-break freeze both call it with the struck fighter ids | freeze magnitudes unchanged (move table 0.052/0.075/0.13 s, guard-break 0.1 s); combat sim + replay determinism untouched (freeze was already visual-only); `HitSparkVfx` kept — see note below |
 
 ## Cue mapping (added)
 
@@ -37,13 +38,24 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/aura-clash-showcase
 | `ko-impact` | `auraClashKoSfx` (own sample) | sfx | same KO moment, under the line |
 | `crowd-bed` | `ambience.crowd-arena` | music | looped, first round ceremony |
 
-## Ordering dependency (step 5)
+## Ordering dependency (steps 5–6)
 
 The pack cue urls use `{format}` (`/packs/game-sfx-core/<id>.{format}`), which
 resolves through the C-25 engine path — `qr/prd09-sound` must merge before the
 migrated route fetches them. The adapter (`createGameAudio`) surface, bus ids,
 and the 11 own-sample urls are unchanged by the patch and compile against
-`main`.
+`main`. Step 6 is self-contained (`clashSession` lives in
+`AuraClashArenaApp.ts`) and also compiles against `main`; when the
+`createGame` migration lands, the adapter swaps for the real
+`game.session` (C-23 time controller freezes actors via `isFrozen`).
+
+### `HitSparkVfx` replacement — deferred (PRD-09 1755)
+
+`HitSparkVfx` (2D-authored burst frames via `AuraBurstDirector`) stays:
+§16.1 requires a scratch-build pixel comparison of an `fx.burst("spark")`
+substitute before swapping, and "not worse" is a visual judgement PRD
+07/14 should make with captures in hand — flagged here rather than
+swapped on faith.
 
 ## Verification (shadow migration, scratch tree only)
 

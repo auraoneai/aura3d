@@ -1,6 +1,6 @@
 # Migration guide — showcase-courier-rush
 
-Patch set: `migration/patches/showcase-courier-rush/` (step 5 of §10 so far;
+Patch set: `migration/patches/showcase-courier-rush/` (steps 5–6 of §10 so far;
 later steps land as their PRD items complete). Generated against
 `main@5f5d6088`.
 
@@ -26,6 +26,7 @@ git am docs/project/aura3d-quality-rebuild/migration/patches/showcase-courier-ru
 | Patch | What it does | Kept play values |
 |---|---|---|
 | `05-sound` | `courier-audio.ts` → `src/sound.ts` cue map over `game-sfx-core` ids + real `createGameSoundEngine`; van engine via `sound.engine(vanEngineSpec)` (`setRpm` from van speed, `setLoad` from throttle every frame); `city-night` ambience bed on first unlock; deletes `courier-audio.ts`, `scripts/build-sfx.mjs` + `register-sfx.mjs`, generated WAVs, `courier*Sfx` typed-asset/public entries, `build-sfx`/`register:sfx` scripts; `write-route-health.mjs` `audioAssetIds` emptied | same cue names + buses folded onto §6.8 ids (sfx/ui/ambience), cue loudness kept as `volumeDb`, `unlock` on first gesture, engine + ambient bed now actually play (main registered them but never called them) |
+| `06-juice` | `juice.define({pickup, deliver, combo, strike})` over `createJuice` — `ringShockwave` → `fx.burst("ring")`, `hitSpark` → `fx.burst("spark")`, DOM `pulseStrikeFlash` → strike preset (overlay flash + shake + rumble); `runtimeEffects.update` → `tweenEngine.tick`; `game.effects` pool deleted; `@aura3d/game` dep added | reduced-motion gating kept (`!reducedMotion` still suppresses the deliver/combo ring + contact spark), toast callouts + cue names unchanged, strike flash moved from HUD DOM pulse to C-05 overlay (backend recorded as `dom` until Q-01-1/Q-11-1 land) |
 
 ## Cue mapping
 
@@ -50,7 +51,7 @@ behaviour, and `packages/game/fixtures/courier/engine.ts` exercises it for
 `audio-live.spec.ts` (live RPM + load-blend assertions in a codec-capable
 chromium).
 
-## Ordering dependency (step 5)
+## Ordering dependency (steps 5–6)
 
 `src/sound.ts` imports `createGameSoundEngine` / `EngineLoopSpec` from
 `@aura3d/audio` and points every asset at
@@ -60,9 +61,16 @@ package only ships `createGameAudio`, so the migrated route compiles only
 after that branch merges. The `{format}` placeholder resolves to the probed
 encoding at runtime (`probeFormat` → `opus.webm`/`m4a`).
 
+Step 6 additionally imports `createJuice` / `createFxParticlePass` /
+`createOverlayDriver` / `createRumbleDriver` / `createTweenEngine` from
+`@aura3d/game`; those exports land with the PRD-09 juice slice
+(`qr/prd09-juice`). `app.effects` + `app.camera` exist on `main`, so the
+patch needs only the game package to merge — the C-05 overlay stub already
+degrades to `dom-fallback`.
+
 ## Verification (shadow migration, scratch tree only)
 
-- `git am` applies the patch cleanly on `main@5f5d6088`.
+- `git am` applies steps 5+6 cleanly in order on `main@5f5d6088`.
 - `src/sound.ts` type-checks against `packages/audio` at `qr/prd09-sound`
   (cue map, `EngineLoopSpec`, `sound.proof()` fields).
 - `audio-live.spec.ts` proves the same engine spec live: six decoded
