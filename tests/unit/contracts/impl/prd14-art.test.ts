@@ -83,7 +83,7 @@ describe("T1.1 defineArtDirection", () => {
   });
 
   it("rejects fewer than 3 references", () => {
-    const violations = violationsOf((d) => { (d as { references: unknown[] }).references = d.references.slice(0, 2); });
+    const violations = violationsOf((d) => { (d as unknown as { references: unknown[] }).references = d.references.slice(0, 2); });
     expect(violations.some((v) => v.includes("references"))).toBe(true);
   });
 
@@ -108,14 +108,14 @@ describe("T1.1 defineArtDirection", () => {
 
   it("rejects standIns[].request not matching R-14-NN", () => {
     const violations = violationsOf((d) => {
-      (d as { standIns: unknown[] }).standIns = [{ feature: "camera rig", file: "src/v2/scene/camera.ts", request: "FIXME-later", removeWhen: "C-22 real" }];
+      (d as unknown as { standIns: unknown[] }).standIns = [{ feature: "camera rig", file: "src/v2/scene/camera.ts", request: "FIXME-later", removeWhen: "C-22 real" }];
     });
     expect(violations.some((v) => v.includes("R-14-NN"))).toBe(true);
   });
 
   it("collects every violation instead of stopping at the first", () => {
     const direction = structuredClone(VALID) as GameArtDirection;
-    (direction as { references: unknown[] }).references = [];
+    (direction as unknown as { references: unknown[] }).references = [];
     (direction.lighting as { fill: string }).fill = "ambient";
     try {
       defineArtDirection(direction);
