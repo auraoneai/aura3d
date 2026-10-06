@@ -1,7 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3 } from "../nodes/types.js";
-import { AuraRuntimeError } from "../app/errors.js";
+import { AuraRuntimeError } from "./errors.js";
 import { animation } from "../nodes/animation.js";
 import { material } from "../nodes/material.js";
 import { normalizeQuaternion, slerpQuaternion, rotationQuaternion, transformPositions, boundsFromPositions, mergeBounds, multiply4, translation, identity4, scaling, clamp01 } from "../sceneMath.js";

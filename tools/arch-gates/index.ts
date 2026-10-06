@@ -13,6 +13,9 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join, resolve, dirname, relative, sep, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { generateResolutionMaps } from "../generate-resolution-maps/index";
+import { checkLayering } from "./rules/layering";
+import { checkMaxFileLines } from "./rules/maxFileLines";
+import { checkNoCycles } from "./rules/noCycles";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -20,6 +23,8 @@ export interface GateFinding {
   readonly rule: string;
   readonly file: string;
   readonly detail: string;
+  /** Fail-mode finding (T3.9/T3.14 scope): fails the run regardless of --strict. */
+  readonly enforced?: boolean;
 }
 
 export interface GateReport {
@@ -133,10 +138,13 @@ export function runGates(root: string): GateReport {
   const rules: Record<string, { findings: GateFinding[] }> = {
     "resolution-single-truth": { findings: checkResolutionSingleTruth(root) },
     "src-clean": { findings: checkSrcClean(root) },
-    "no-cross-package-relative": { findings: checkNoCrossPackageRelative(root) }
+    "no-cross-package-relative": { findings: checkNoCrossPackageRelative(root) },
+    layering: { findings: checkLayering(root) },
+    "no-cycles": { findings: checkNoCycles(root) },
+    "max-file-lines": { findings: checkMaxFileLines(root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 3, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 6, findings } };
 }
 
 function main(): void {
@@ -146,6 +154,8 @@ function main(): void {
   const outPath = outIndex >= 0 ? args[outIndex + 1] : null;
 
   const report = runGates(REPO_ROOT);
+  const enforcedCount = Object.values(report.rules).reduce(
+    (sum, r) => sum + r.findings.filter((f) => f.enforced).length, 0);
   const out = JSON.stringify(report, null, 2);
   if (outPath) {
     const dest = resolve(REPO_ROOT, outPath);
@@ -159,10 +169,16 @@ function main(): void {
   if (total > 0) {
     for (const [rule, block] of Object.entries(report.rules)) {
       for (const f of block.findings.slice(0, 20)) {
-        console.warn(`arch-gates ${strict ? "ERROR" : "WARN"} ${rule}: ${f.file} — ${f.detail}`);
+        const level = f.enforced || strict ? "ERROR" : "WARN";
+        (level === "ERROR" ? console.error : console.warn)(
+          `arch-gates ${level} ${rule}: ${f.file} — ${f.detail}`);
       }
       if (block.findings.length > 20) console.warn(`arch-gates WARN ${rule}: … and ${block.findings.length - 20} more`);
     }
+  }
+  if (enforcedCount > 0) {
+    console.error(`arch-gates: ${enforcedCount} enforced findings (fail mode)`);
+    process.exit(1);
   }
   if (strict && total > 0) {
     console.error(`arch-gates: ${total} findings (strict mode)`);

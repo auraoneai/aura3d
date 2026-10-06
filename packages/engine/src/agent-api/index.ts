@@ -214,12 +214,12 @@ export { isRenderableModelNode, isWebGLRenderableNode, resolveNativeBloomRadius,
 export { normalizeSceneSnapshot } from "./sceneMath.js";
 export { createProductionTextObservation } from "./compiler/text.js";
 export { createBuffer } from "./compiler/webglRuntime.js";
-export { renderDiagnosticPreviewToCanvas, shouldRenderOverlay, createDiagnosticsOverlay } from "./devtools/diagnosticPreview.js";
+export { renderDiagnosticPreviewToCanvas, shouldRenderOverlay, createDiagnosticsOverlay } from "./public/devtools.js";
 export { validateSceneAssets, createAssetProvenance, createInitialDiagnostics, snapshotDiagnostics } from "./diagnostics.js";
-export { lazySystems } from "./devtools/lazySystems.js";
+export { lazySystems } from "./public/devtools.js";
 export { performance } from "./performanceEvidence.js";
 export { renderer, createRendererDiagnosticReport, resolveRendererSceneCategory } from "./rendererDiagnostics.js";
-export { createAuraRouteHealthSnapshot } from "./devtools/routeHealth.js";
+export { createAuraRouteHealthSnapshot } from "./public/devtools.js";
 export { createRuntimeNodeImportedAssetEvidence } from "./RuntimeNodeHandle.js";
 export { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "./runtimeEvidence.js";
 export { collectAuraSceneEvidence } from "./sceneEvidence.js";

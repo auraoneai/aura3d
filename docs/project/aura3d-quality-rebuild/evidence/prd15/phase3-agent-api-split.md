@@ -83,6 +83,36 @@ capture edges the static map missed:
 - **Parity re-verified**: 0 names missing vs pre-split `5cf3a712` reference
   (shim fns replace clause names 1:1).
 
+
+## T3.9/T3.14 — arch gates in fail mode (2026-10-06, commit 3)
+
+`tools/arch-gates` gained three rules plus an `enforced` flag: `max-file-lines`
+(≤2,500 per `packages/*/src` .ts; index.ts capped at 300 excluding the pending
+Q-01-5 range recorded by line — lines 28–162 — in the rule config),
+`layering` (PRD §6.3 verbatim: nodes→{compiler,app,devtools,@aura3d/rendering
+values}, compiler→{app,devtools}, all→devtools except `public/devtools.ts`),
+and `no-cycles` (Tarjan SCC over value edges inside agent-api). Enforced
+findings exit 1 regardless of `--strict`; allowlisted ones warn.
+
+Real violations found and dispositioned:
+
+- **Fixed (15-owned):** `compiler/*`→`app/errors.ts` broken by moving
+  `AuraRuntimeError` verbatim to `compiler/errors.ts` (app re-exports);
+  all `*→devtools/*` edges collapsed through the new `public/devtools.ts`
+  leaf (the single legal importer); `nodes/types.ts` (2,871 > cap) split —
+  tail decls moved verbatim to `nodes/types/runtime.ts`, types.ts now 2,322.
+- **Allowlisted to 2026-10-20 (foreign-owned):** 19 foreign leaf→index
+  no-cycles edges (the filed Q-* requests), the 104-member intra-leaf SCC
+  and the `nodes/prompt/` pair SCC (pre-existing coupling surfaced by the
+  split), 9 layering edges — filed Q-07-3, Q-09-3, Q-10-2, Q-11-3.
+- Three 15-owned `nodes/{sky,text3d,weather}.ts` → `@aura3d/rendering` value
+  imports are allowlisted under this lane's own debt (evidence trail).
+
+`pnpm exec tsx tools/arch-gates/index.ts`: **0 enforced findings** (55 warns).
+Fixture tests `tests/qr/prd15/arch-gates-rules.test.ts` 9/9 — bad/clean
+fixtures per rule, the live ≤300-line assertion (277 effective), and a
+zero-enforced sweep of the real tree.
+
 ## Verification
 
 - `tsc -p tsconfig.build.json --noEmit`: **0 errors** (re-verified post-rework).

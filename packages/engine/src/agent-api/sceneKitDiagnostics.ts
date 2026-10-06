@@ -18,7 +18,7 @@ import { neon } from "./nodes/neon.js";
 import { particles } from "./nodes/particles.js";
 import { physics } from "./nodes/physics.js";
 import { product } from "./nodes/product.js";
-import { sceneKitPerformanceBudgets } from "./devtools/sceneKitBudgets.js";
+import { sceneKitPerformanceBudgets } from "./public/devtools.js";
 import { solar } from "./nodes/solar.js";
 import { cameraPreset } from "./CameraPresetLibrary.js";
 import { particleFountain } from "./particle-fountain-runtime.js";

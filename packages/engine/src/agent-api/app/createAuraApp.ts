@@ -3,7 +3,7 @@
 import { computeRuntimeAlpha } from "./frameAlpha.js";
 import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../nodes/types.js";
 import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
-import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../devtools/diagnosticPreview.js";
+import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
 import { scene } from "../nodes/scene.js";

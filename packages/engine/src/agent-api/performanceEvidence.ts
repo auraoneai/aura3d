@@ -3,7 +3,7 @@
 import type { AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraSceneSnapshot, AuraSceneKitId, AuraSceneKitBudgetDefaults, AuraSceneEvidence } from "./nodes/types.js";
 import { AuraSceneBuilder } from "./nodes/scene.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "./sceneMath.js";
-import { sceneKitPerformanceBudgets } from "./devtools/sceneKitBudgets.js";
+import { sceneKitPerformanceBudgets } from "./public/devtools.js";
 
 const helperPerformanceBudgets: readonly AuraHelperPerformanceBudget[] = [
   { helper: "physicsPlayground", maxDrawCalls: 320, maxNodes: 520, targetFpsP50: 50, maxBundleBytes: 18_000, evidence: "50 dynamic cubes plus contact/debug nodes at benchmark capture resolution" },

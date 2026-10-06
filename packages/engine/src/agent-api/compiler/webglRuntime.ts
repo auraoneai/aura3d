@@ -2,7 +2,7 @@
 
 import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer, WebGLModel } from "../nodes/types.js";
 import type { GltfPrimitive, GltfModel, GltfAnimationClip } from "./gltfRuntime.js";
-import { AuraRuntimeError } from "../app/errors.js";
+import { AuraRuntimeError } from "./errors.js";
 import { animation } from "../nodes/animation.js";
 import { collectRuntimeEffectNodes, hasRuntimePostProcessEffects } from "./effects.js";
 import { colorToClearColor } from "../colorUtils.js";

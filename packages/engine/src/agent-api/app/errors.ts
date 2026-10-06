@@ -1,21 +1,11 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraAssetRef } from "../nodes/types.js";
+import { AuraRuntimeError } from "../compiler/errors.js";
 
-export class AuraRuntimeError extends Error {
-  readonly code:
-    | "missing-canvas"
-    | "missing-asset"
-    | "failed-glb-load"
-    | "unsupported-texture"
-    | "backend-fallback";
-
-  constructor(code: AuraRuntimeError["code"], message: string) {
-    super(message);
-    this.name = "AuraRuntimeError";
-    this.code = code;
-  }
-}
+// Defined in compiler/errors.ts (compiler may not import app/); re-exported
+// here so the app/errors.js import surface is unchanged.
+export { AuraRuntimeError };
 
 export function createAuraAssetLoadError(asset: AuraAssetRef<"model">, reason: string): AuraRuntimeError {
   return new AuraRuntimeError(
