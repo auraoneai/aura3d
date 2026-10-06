@@ -17,6 +17,8 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   }
   bindPrd07RendererFlags(ctx.flags);
   const system = prd07SystemFor(app) ?? new ProductionEffectSystem(app as unknown as AppLike);
+  // §6.5 — flag-on hides the tagged prd07.legacySky.* primitives.
+  system.setSkyFlagOn(ctx.flags.on("A3D_QR_VFX_SKY"));
   if (app.canvas) attachVfxBridge(app.canvas, system);
   const atmosphere = system.atmosphere;
   return {

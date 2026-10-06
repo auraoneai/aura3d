@@ -1857,7 +1857,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   `preetham-cpu-reference.test.ts`: `PreethamSky.evaluate(dir)` at 16 directions matches a hand-computed r185 reference
   table within 1e-4. Browser: a GPU render of the same 16 directions into an `rgba16f` target, read back in the test only,
   matches within 2%.
-- [ ] **P3-T2** `atmosphere/GradientSky.ts`, `StarField.ts`, `CloudLayer.ts` (r185 cloud block), and the moon disc with
+- [x] **P3-T2** `atmosphere/GradientSky.ts`, `StarField.ts`, `CloudLayer.ts` (r185 cloud block), and the moon disc with
   phase. Unit tests: the gradient is monotonic between stops, star count is ∝ density, and stars fade to 0 at sun
   elevation > 6°.
 - [ ] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
@@ -1867,7 +1867,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - sky-region luma std > 6;
   - the horizon is brighter than the zenith at noon;
   - sun disc luminance > 10 in an `rgba16f` debug target.
-- [ ] **P3-T4** Carved `agent-api/nodes/sky.ts`. Add `sky.preetham`, `sky.gradient` and `sky.hdri` (`AuraSkyNode`). Rewrite
+- [x] **P3-T4** Carved `agent-api/nodes/sky.ts`. Add `sky.preetham`, `sky.gradient` and `sky.hdri` (`AuraSkyNode`). Rewrite
   `sky.dayNight` per §6.5 (legacy primitives registered as `prd07.legacySky.<n>` runtime nodes, plus the `sky` node and
   key light). Tests:
   - flag off → pixels identical to `85aafcd0` (`tests/qr/prd07/browser/sky-daynight-identity.spec.ts`);
@@ -1876,11 +1876,11 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P3-T5** `agent-api/compiler/sky.ts`. C-36 `NodeHandler<{ kind: "sky" }>` that validates the `AuraSkySpec` union,
   records `feature("vfx.sky")` and degrades invalid specs with `option-ignored`. Test: under `A3D_QR_STRICT` a sky node
   raises no `unknown-node-kind`.
-- [ ] **P3-T6** `atmosphere/SkyCaptureAdapter.ts`. When a visible sky node exists and no explicit environment does, and
+- [x] **P3-T6** `atmosphere/SkyCaptureAdapter.ts`. When a visible sky node exists and no explicit environment does, and
   `environmentProbeFactorySlot.provided && flags.on("A3D_QR_LIGHTING")`, it calls `fromScene({ renderFace:
   sky.renderToCubeFace, resolution: 128 })` and re-captures on `onSkyChanged`. Otherwise it reports `SKY_CAPTURE_PENDING`.
   Test (Mock): the stub path makes no capture call; the "real" path (a test double provided in-test) makes 6 face calls.
-- [ ] **P3-T7** Lane scenes `prd07-sky-timeofday` and `prd07-outdoor-sky`, with three r185 adapters (`Sky.js` with
+- [x] **P3-T7** Lane scenes `prd07-sky-timeofday` and `prd07-outdoor-sky`, with three r185 adapters (`Sky.js` with
   matching parameters; `FogExp2` tuned to equal fog at 50 m).
 
 ### Phase 4: fog (day 0)

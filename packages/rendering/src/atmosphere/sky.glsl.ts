@@ -41,6 +41,11 @@ uniform float u_cloudCoverage;
 uniform float u_cloudDensity;
 uniform float u_cloudElevation;
 uniform vec2 u_cloudScaleSpeed;
+uniform vec3 u_moonDirection;
+uniform vec3 u_moonColor;
+uniform float u_moonPhase;
+uniform float u_moonIntensity;
+uniform float u_moonAngularCos;  // cos(moon angular radius) for the disc
 
 in vec2 v_clip;
 layout(location=0) out vec4 o_color;
@@ -118,6 +123,14 @@ vec3 gradient(vec3 direction) {
   return mix(u_horizon, u_ground, t) * u_intensity;
 }
 
+vec3 moonDisc(vec3 direction) {
+  float c = dot(direction, u_moonDirection);
+  float disc = smoothstep(u_moonAngularCos, u_moonAngularCos + 0.00004, c);
+  // Phase: 0/1 = new (dark), 0.5 = full. Lit fraction is 1 - |2p - 1|.
+  float illumination = 1.0 - abs(2.0 * u_moonPhase - 1.0);
+  return u_moonColor * u_moonIntensity * illumination * 6.0 * disc;
+}
+
 float starfield(vec3 direction) {
   if (u_starDensity <= 0.0) return 0.0;
   // Equirect cell hash; a cell holds one star when hash < density*0.01.
@@ -151,6 +164,9 @@ void main() {
   // Stars shine where the sky is dark (sunfade low = night).
   color += vec3(starfield(direction)) * (1.0 - u_sunfade) * 2.0;
 #endif
+#if SKY_MOON
+  color += moonDisc(direction) * (1.0 - u_sunfade);
+#endif
 #if SKY_CLOUDS
   if (direction.y > 0.0 && u_cloudCoverage > 0.0) {
     float elevation = mix(1.0, 0.1, u_cloudElevation);
@@ -178,7 +194,8 @@ function defines(d: SkyProgramDefines): string {
     `${d.model === "GRADIENT" ? "#define MODEL_GRADIENT 1\n" : ""}` +
     `${d.model === "COLOR" ? "#define MODEL_COLOR 1\n" : ""}` +
     `${d.stars ? "#define SKY_STARS 1\n" : "#define SKY_STARS 0\n"}` +
-    `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}`
+    `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}` +
+    `${d.moon ? "#define SKY_MOON 1\n" : "#define SKY_MOON 0\n"}`
   );
 }
 

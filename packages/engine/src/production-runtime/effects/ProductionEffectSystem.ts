@@ -126,6 +126,10 @@ function mulberry32(seed: number): () => number {
 export interface AppLike {
   readonly scene: { readonly nodes: readonly EffectNodeLike[] };
   onFrame(callback: (frame: { dt: number }) => void): () => void;
+  /** Runtime-node registry — the legacy-sky hiding pass (§6.5) uses it. */
+  readonly nodes?: {
+    get(id: string): { setVisible?(visible: boolean): void; visible?: boolean } | undefined;
+  };
 }
 
 export class ProductionEffectSystem {
@@ -151,6 +155,7 @@ export class ProductionEffectSystem {
   private drawFeedQueue: ParticlePassDiagnostics | null = null;
   private disposed = false;
   private time = 0;
+  private skyFlagOn = false;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
     this.tier = options.tier ?? "high";
@@ -160,7 +165,40 @@ export class ProductionEffectSystem {
     this.offFrame = app.onFrame((frame) => this.frame(frame.dt));
   }
 
+  /** P3-T4 — sky nodes land on LiveAtmosphere (consumed by prd07.sky flag-on). */
+  private rebuildSkyFromScene(): void {
+    for (const node of this.app.scene.nodes) {
+      if ((node as { kind?: string }).kind !== "sky") continue;
+      const spec = (node as { spec?: unknown }).spec;
+      if (spec && typeof spec === "object") this.atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+    }
+    this.applyLegacySkyVisibility();
+  }
+
+  /**
+   * §6.5 — `sky.dayNight` legacy primitives are runtime-tagged
+   * `prd07.legacySky.<n>`. With `A3D_QR_VFX_SKY` on they hide through their
+   * runtime handles; flag-off the setter is never called and the frame is
+   * unchanged.
+   */
+  private applyLegacySkyVisibility(): void {
+    if (!this.skyFlagOn || !this.app.nodes) return;
+    for (const node of this.app.scene.nodes) {
+      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacySky.")) {
+        this.app.nodes.get(runtimeId)?.setVisible?.(false);
+      }
+    }
+  }
+
+  /** Bound by the C-38 extension factory with the app's resolved flag state. */
+  setSkyFlagOn(on: boolean): void {
+    this.skyFlagOn = on;
+    this.applyLegacySkyVisibility();
+  }
+
   private rebuildFromScene(): void {
+    this.rebuildSkyFromScene();
     for (const node of this.app.scene.nodes) {
       if (node.kind !== "effect") continue;
       const lowered = lowerEffectNode(node);
