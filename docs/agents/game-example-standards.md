@@ -22,7 +22,11 @@ A public game example must prove:
 - automated browser tests cover movement, restart, and at least one win, fail,
   score, lap, checkpoint, line-clear, collection, or completion mechanic;
 - screenshots show first load, after input, mid-route, fail/reset when relevant,
-  and finish/progression.
+  and finish/progression;
+- the visual bar: the genre's look preset is applied (see
+  `docs/agents/art-direction.md`), the frame shows environment light, a full
+  key shadow, genre palette and fog/grade from the look — a mechanic-correct
+  game on flat lighting and a void background is still `prototype`.
 - all current release, visual-QA, and deploy gates for that exact route pass;
   historical retained evidence cannot override a failing current gate.
 

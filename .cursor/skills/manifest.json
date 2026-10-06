@@ -4,10 +4,10 @@
   "docsBase": "https://github.com/auraoneai/aura3d/blob/main/",
   "coreSet": [
     "aura3d-core",
+    "aura3d-art-direction",
     "aura3d-assets",
     "aura3d-evidence-review",
-    "aura3d-scene-authoring",
-    "aura3d-art-direction"
+    "aura3d-scene-authoring"
   ],
   "skills": {
     "aura3d-core": {
@@ -28,7 +28,7 @@
     },
     "aura3d-art-direction": {
       "tier": "core",
-      "prd": "C5"
+      "prd": "QR13"
     },
     "aura3d-browser-game": {
       "tier": "domain",
@@ -79,23 +79,28 @@
     ],
     "mini-game": [
       "aura3d-browser-game",
+      "aura3d-materials-environments",
       "aura3d-game-art"
     ],
     "racing-starter": [
       "aura3d-browser-game",
+      "aura3d-materials-environments",
       "aura3d-game-art"
     ],
     "falling-blocks-starter": [
       "aura3d-browser-game",
+      "aura3d-materials-environments",
       "aura3d-game-art"
     ],
     "fighting-game": [
       "aura3d-browser-game",
+      "aura3d-materials-environments",
       "aura3d-character-animation",
       "aura3d-game-art"
     ],
     "character-controller": [
       "aura3d-browser-game",
+      "aura3d-materials-environments",
       "aura3d-character-animation"
     ],
     "animation-channel": [

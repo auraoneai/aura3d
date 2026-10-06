@@ -24,6 +24,26 @@ description: Sets the visual target and runs the look-dev loop for any Aura3D sc
 4. Ground contact: full-strength key shadow (`shadow: true`) plus a contact detail at the subject's feet.
 5. HUD lives in DOM/CSS, never in the 3D scene. No debug overlay in shipped frames.
 
+## The 15 looks
+
+| Look | Mood | Palette key |
+| --- | --- | --- |
+| `outdoor-day` | clean midday, saturated | greens, sky blue, warm wood |
+| `golden-hour` | warm dusk drama | amber key, teal shadow |
+| `overcast` | soft even exposure | muted greys, gentle fill |
+| `polar-night` | cold moonlit stillness | ice blue, long shadows |
+| `alpine-snow` | high-altitude glare | white field, hard rim |
+| `product-studio` | neutral softbox stage | grey stage, brand accent |
+| `interior-neutral` | plain interior light | warm walls, clean fill |
+| `interior-warm` | cozy pools of light | wood, amber pools |
+| `interior-industrial` | warehouse cool | concrete, metal, skylight shafts |
+| `night-city` | neon streets | sodium pools, neon, wet reflections |
+| `neon-arcade` | saturated game glow | cyan/magenta emissive |
+| `arena-fight` | spotlit ring | dark crowd, hard key |
+| `space` | void + single sun | graphite, hard key, rim |
+| `underwater` | teal volume | caustics, biolume |
+| `character-showcase` | portrait studio | 3/4 key, rim, soft stage |
+
 ## Look-dev loop
 
 Run until every rubric category scores >= 7, or 6 rounds, or 2 rounds with no gain:
@@ -61,3 +81,4 @@ Hard checklist (all must hold before claiming done):
 - `references/reference-frames.md` — named three.js r185 examples plus what you should see in each
 - `references/failure-gallery.md` — the failure patterns and the fix that removes each
 - `../aura3d-core/references/boundaries.md` — the boundary list (read once, do not restate)
+- [Framing and shots](references/framing-and-shots.md)

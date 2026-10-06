@@ -10,6 +10,13 @@ evidence for performance claims only; they never prove a scene looks right.
 Shared rules (claim labels, forbidden patterns, typed assets, benchmark mode)
 are in [boundaries](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+Measure with the final look active: the look sets the DPR cap, the post grade
+(bloom, AO, vignette) and shadow map size — most of the frame cost you are
+optimizing. `looks.appOptions(<id>)` already applies `quality: "auto"`; a
+manual quality override invalidates every measurement that follows.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and `npx @aura3d/cli@latest doctor`.
@@ -79,7 +86,6 @@ are in [boundaries](../aura3d-core/references/boundaries.md).
 - A performance change alters the rendered scene: rerun screenshot review
   through `aura3d-evidence-review` before shipping.
 - GPU timing is unavailable or noisy on the device: say so; do not fill in.
-- Benchmark mode: stop after the build and report the runner-owned command.
 
 ## References
 

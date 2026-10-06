@@ -13,6 +13,13 @@ unverifiable. Shared rules (claim labels, typed assets, paid generation,
 benchmark mode) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+Judge a retexture under the look it will ship in — the same map set reads warm
+under `golden-hour` and cold under `night-city`. Fix the route's look preset
+first, then iterate on maps; a recolor tuned against flat lighting drifts
+again under the real grade.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and read the `assets inspect` and
