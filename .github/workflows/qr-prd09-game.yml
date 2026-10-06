@@ -1,0 +1,57 @@
+name: QR-09 game runtime
+
+# PRD-09 lane workflow. Runs the @aura3d/game unit suites, the capture-parity
+# tool gates, the beacon size-limit check, and builds the table fixture the
+# route migration CI will serve.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/game/**"
+      - "packages/engine/src/nodes/game/**"
+      - "packages/engine/src/lanes/prd09.ts"
+      - "packages/engine/src/agent-api/GameAppRuntime.ts"
+      - "eslint/qr/**"
+      - "tools/showcase-library/game-capture-parity.mjs"
+      - "tests/unit/game/**"
+      - "tests/unit/engine/game-app-runtime.test.ts"
+      - "tests/unit/tools/game-capture-parity.test.ts"
+      - "tests/unit/tools/no-route-capture-flags.test.ts"
+      - "tests/unit/contracts/impl/prd09-game.test.ts"
+      - "migration/**"
+      - ".github/workflows/qr-prd09-game.yml"
+  push:
+    branches: ["qr/prd09-*"]
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd09-game-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: PRD-09 unit suites
+        run: >
+          pnpm exec vitest run
+          tests/unit/game
+          tests/unit/tools/game-capture-parity.test.ts
+          tests/unit/tools/no-route-capture-flags.test.ts
+          tests/unit/engine/game-app-runtime.test.ts
+          tests/unit/contracts/impl/prd09-game.test.ts
+      - name: Capture-parity tool gates
+        run: |
+          node tools/showcase-library/game-capture-parity.mjs --routes aura-clash-showcase --fail-on-any
+          node tools/showcase-library/game-capture-parity.mjs
+      - name: Beacon size-limit (< 0.5 kB gz)
+        working-directory: packages/game
+        run: pnpm exec size-limit --config size-limit.json
