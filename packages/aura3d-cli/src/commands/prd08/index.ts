@@ -6,9 +6,10 @@
  * `prd08 motion-report` lands with the motion benchmark scenes (phase 5).
  */
 import { registerCodemod, registerDoctorRule } from "../../contracts/commands.js";
-import { cameraCastCodemod, feelEvidenceOnlyRule } from "../../../../../tools/camera-cast-codemod/index.js";
+import { cameraCastCodemod } from "../../../../../tools/camera-cast-codemod/index.js";
+import { feelLintRule } from "./feelLint.js";
 
 registerCodemod(cameraCastCodemod);
-registerDoctorRule(feelEvidenceOnlyRule);
+registerDoctorRule(feelLintRule);
 
 export {};
