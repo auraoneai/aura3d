@@ -9,7 +9,7 @@ export default defineConfig({
     // nothing: vitest treats positional arguments as filters against `include`, reported
     // "No test files found", and existing scripts silently ran fewer files than they named
     // (animation-runtime:unit:raw named three files and executed two).
-    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", "tests/assets/**/*.test.ts"],
+    include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", "tests/assets/**/*.test.ts", "tests/qr/**/*.test.ts"],
     setupFiles: [],
     // Workspace packages publish `exports` to ./dist, which does not exist in a
     // source checkout; externalizing them would bypass the resolve.alias entries
