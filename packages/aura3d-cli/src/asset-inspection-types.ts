@@ -16,6 +16,10 @@ export interface AuraCliAnimationClipInspection {
   readonly samplerCount: number;
   readonly targetPaths: readonly string[];
   readonly targetNodes: readonly string[];
+  // Q-05-1 (lane 06): present only when the lane-06 clip inspector supplies them.
+  readonly duration?: number;
+  readonly hasRootMotionCandidate?: boolean;
+  readonly frameRate?: number;
 }
 
 export interface AuraCliSkeletonInspection {
