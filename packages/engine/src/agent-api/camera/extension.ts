@@ -34,7 +34,7 @@ import type {
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import type { AuraApp } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
-import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/legacy.js";
+import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/fromSpec.js";
 import {
   findRuntimeTarget,
   findSceneNodeTarget,

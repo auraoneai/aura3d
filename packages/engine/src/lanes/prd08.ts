@@ -80,6 +80,7 @@ export {
 export { createNoise1D, perlin1 } from "../agent-api/feel/Noise.js";
 export {
   createCameraController,
+  presentedViewProjection,
   type AuraCameraControllerDeps,
   type AuraCameraControllerImpl
 } from "../agent-api/camera/CameraController.js";
@@ -94,14 +95,14 @@ export {
   type LegacyCameraSpec,
   type LegacySpecRigDeps,
   type LegacyTargetSource
-} from "../agent-api/camera/rigs/legacy.js";
+} from "../agent-api/camera/rigs/fromSpec.js";
 export {
   createFovKickLayer,
   createLookAtLayer,
   createPunchLayer,
   createTraumaLayer,
   type AuraLookAtLayer
-} from "../agent-api/camera/layers.js";
+} from "../agent-api/camera/layers/index.js";
 export { ease } from "../agent-api/camera/ease.js";
 export {
   BicycleModel,

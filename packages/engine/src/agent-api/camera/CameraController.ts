@@ -39,8 +39,8 @@ import {
   createPunchLayer,
   createTraumaLayer,
   type AuraLookAtLayer
-} from "./layers.js";
-import { createFromSpecRig, staticRig, DEFAULT_POSE, type LegacyCameraSpec, type LegacySpecRigDeps } from "./rigs/legacy.js";
+} from "./layers/index.js";
+import { createFromSpecRig, staticRig, DEFAULT_POSE, type LegacyCameraSpec, type LegacySpecRigDeps } from "./rigs/fromSpec.js";
 
 export interface AuraCameraControllerDeps {
   /** Full subject resolution (runtime handle + scene-node fallback). Default: none. */
@@ -125,6 +125,19 @@ export interface AuraCameraControllerImpl extends AuraCameraController {
    * are the contract stubs until their rig implementations land (phase 3).
    */
   readonly rigs: AuraCameraRigFactories;
+  /** View-projection captured at the end of the last `update` (C-5 helper backing). */
+  readonly presentedViewProjection: () => readonly number[] | undefined;
+}
+
+/**
+ * C-5 lane side of Q-15-1: the cached view-projection of `app.camera`'s last
+ * presented pose, so the C8 call sites (`resolveCameraFrame`/`createViewProjection`
+ * in index.ts) can read one import instead of re-deriving the spec eye. Returns
+ * `undefined` on the flag-off stub (no `update` runs there) or pre-first-update.
+ */
+export function presentedViewProjection(app: { camera?: unknown }): readonly number[] | undefined {
+  const c = app.camera as Partial<AuraCameraControllerImpl> | undefined;
+  return c?.presentedViewProjection?.();
 }
 
 export function createCameraController(deps: AuraCameraControllerDeps = {}): AuraCameraControllerImpl {
@@ -141,6 +154,7 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
     : staticRig(initialPose);
   let presented: AuraCameraPose = initialPose;
   let previous: AuraCameraPose = initialPose;
+  let presentedVp: readonly number[] | undefined;
   let overrides: Partial<AuraCameraPose> = {};
   const ramps = new Map<"fov" | "roll", RampState & { value: number }>();
   let blend: BlendState | undefined;
@@ -326,6 +340,7 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       }
       previous = presented;
       presented = pose;
+      presentedVp = viewProjection(pose, deps.aspect?.() ?? 16 / 9);
       deps.applyPose?.(pose);
       return pose;
     },
@@ -403,6 +418,8 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       cutThisFrame = true;
       deps.onCut?.();
     },
+
+    presentedViewProjection: () => presentedVp,
 
     evidence() {
       const aspect = deps.aspect?.() ?? 16 / 9;
