@@ -22,7 +22,7 @@ function extractFunctionBody(source: string, name: string): string {
 
 describe("P3 material.physical mount proof", () => {
   it("every physical extension param reaches a PBRMaterial factor (none dropped at mount)", () => {
-    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
+    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/primitives.ts"), "utf8");
     const materialBuilder = extractFunctionBody(source, "createProductionPrimitiveMaterial");
 
     // Each requested extension maps onto a renderer factor. Deleting any line
@@ -44,7 +44,7 @@ describe("P3 material.physical mount proof", () => {
   });
 
   it("instanced fast path never silently drops extensions: extended materials expand", () => {
-    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
+    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/primitives.ts"), "utf8");
     const materialBuilder = extractFunctionBody(source, "createProductionPrimitiveMaterial");
 
     // The one-draw InstancedPBRMaterial path is taken ONLY when no extension is
