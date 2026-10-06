@@ -152,3 +152,44 @@ jobs:
           path: benchmarks/quality-rebuild/scenes/prd11/out-webgpu-smoke/
           if-no-files-found: warn
           retention-days: 30
+
+  wgsl-validate:
+    name: WGSL twins — naga validate (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # naga-cli pinned exact (PRD-11 §6.2 ◦); never on the Mac, CI-only.
+      - name: Install naga-cli 30.0.1
+        run: cargo install naga-cli --locked --version 30.0.1
+      - name: Emit WGSL twins
+        run: pnpm exec tsx tools/wgsl-validate/emit-twins.ts tools/wgsl-validate/out
+      - name: Validate twins with naga
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tools/wgsl-validate/out/*.wgsl)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No WGSL twins registered yet — nothing to validate (non-fatal pre-G-WGPU)."
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            echo "== naga $f"
+            naga "$f" > /dev/null
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd11-wgsl-twins
+          path: tools/wgsl-validate/out/
+          if-no-files-found: warn
+          retention-days: 30
