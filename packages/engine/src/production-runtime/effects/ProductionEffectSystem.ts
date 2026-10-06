@@ -156,6 +156,7 @@ export class ProductionEffectSystem {
   private disposed = false;
   private time = 0;
   private skyFlagOn = false;
+  private weatherFlagOn = false;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
     this.tier = options.tier ?? "high";
@@ -195,6 +196,28 @@ export class ProductionEffectSystem {
   setSkyFlagOn(on: boolean): void {
     this.skyFlagOn = on;
     this.applyLegacySkyVisibility();
+  }
+
+  /**
+   * §8.6/P5-T4 — `weather.precipitation`/`weather.wetGround` legacy primitives
+   * are runtime-tagged `prd07.legacyWeather.<n>`; under A3D_QR_VFX they hide
+   * through their runtime handles. Flag-off the setter is never called and
+   * the frame is bit-identical.
+   */
+  private applyLegacyWeatherVisibility(): void {
+    if (!this.weatherFlagOn || !this.app.nodes) return;
+    for (const node of this.app.scene.nodes) {
+      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacyWeather.")) {
+        this.app.nodes.get(runtimeId)?.setVisible?.(false);
+      }
+    }
+  }
+
+  /** Bound by the C-38 extension factory with the app's resolved flag state. */
+  setWeatherFlagOn(on: boolean): void {
+    this.weatherFlagOn = on;
+    this.applyLegacyWeatherVisibility();
   }
 
   private rebuildFromScene(): void {

@@ -41,6 +41,7 @@ function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
     roughness: spec.roughness,
     metallic: spec.metalness,
     metalness: spec.metalness,
+    ...(spec.opacity !== undefined ? { opacity: spec.opacity } : {}),
     ...(spec.emissive !== undefined ? { emissive: spec.emissive } : {}),
     ...(spec.emissiveIntensity !== undefined ? { emissiveIntensity: spec.emissiveIntensity } : {})
   };
@@ -144,6 +145,20 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
       })
     );
     log.add("fogVolume", "supported", `${volume.shape ?? "box"} @ ${volume.position} size ${volume.size} density ${volume.density ?? 0.25}`);
+  }
+  if (spec.volumetric) {
+    // P5-T8 — §6.7 froxel spec on the volumetricFog node (vfx.volumetric);
+    // flag-off the node is inert metadata.
+    nodes.push(
+      effects.volumetricFog({
+        name: "volumetric-fog",
+        density: spec.volumetric.density,
+        ...(spec.volumetric.color !== undefined ? { color: spec.volumetric.color } : {}),
+        ...(spec.volumetric.intensity !== undefined ? { intensity: spec.volumetric.intensity } : {}),
+        volumetricQuality: "ultra"
+      })
+    );
+    log.add("volumetric", "supported", `density ${spec.volumetric.density} g=${spec.volumetric.anisotropy ?? 0.6} — §6.7 node (vfx.volumetric)`);
   }
   built.camera(camera.perspective({
     position: spec.camera.position,
@@ -252,6 +267,15 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
         ...(object.seed !== undefined ? { seed: object.seed } : {})
       }));
       log.add("meshParticles", "supported", `effects.meshParticles ${object.count ?? 32} instances`);
+    } else if (object.kind === "weather") {
+      // P5-T8 — §8.2 volume + splash emitter lowered from the effects node
+      // (P5-T3/P5-T4); flag-off the node emits the legacy prims upstream.
+      nodes.push(
+        object.weather === "snow"
+          ? effects.snow({ name: object.name, intensity: object.intensity, color: "#eef4ff" })
+          : effects.rain({ name: object.name, intensity: object.intensity, color: "#bcd7ff", ...(object.wind !== undefined ? { wind: [...object.wind] } : {}) })
+      );
+      log.add("weather", "supported", `effects.${object.weather} intensity ${object.intensity} — §8.2 volume + splashes`);
     } else if (object.kind === "burstSheet") {
       // Spawns happen on the stepped clock in runPrd07AuraScene, not at build.
       log.add("burstSheet", "supported", `${object.kinds.length} kinds × ${object.ages.length} ages × ${object.panels.length} panels`);

@@ -98,7 +98,7 @@ jobs:
     timeout-minutes: 90
     env:
       QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
-      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky,prd07-fog-height,prd07-fog-transition,prd07-underwater,prd07-rain-night,prd07-snow,prd07-volumetric-shafts,prd07-lit-smoke,prd07-soft-particles,prd07-water-interleave"
     steps:
       - uses: actions/checkout@v4
         with:

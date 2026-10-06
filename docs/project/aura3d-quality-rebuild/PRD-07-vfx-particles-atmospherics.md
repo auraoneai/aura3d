@@ -1925,33 +1925,33 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 5: GPU sim, weather, volumetric
 
-- [ ] **P5-T1** `vfx/ParticleGpuSim.ts` + `vfx/shaders/gpu-sim.glsl.ts` (§8.3). Two single-target `rgba32f` ping-pong
+- [x] **P5-T1** `vfx/ParticleGpuSim.ts` + `vfx/shaders/gpu-sim.glsl.ts` (§8.3). Two single-target `rgba32f` ping-pong
   passes, ring emission, curl noise, and plane/heightfield collision. The capability check uses C-28
   `probe.floatColorBuffer`, else CPU fallback with `PARTICLE_GPU_UNAVAILABLE`. Resources are registered with C-29
   `resourceRegistrySlot`. Browser test `gpu-sim-parity.spec.ts`: 50,000 particles under gravity only match the CPU
   integrator within 1 mm after 60 steps (readback in the test only).
-- [ ] **P5-T2** `vfx/ProceduralVolumeEmitter.ts` + the §8.2 chunk, covering rain, snow, marine snow and dust motes. Test:
+- [x] **P5-T2** `vfx/ProceduralVolumeEmitter.ts` + the §8.2 chunk, covering rain, snow, marine snow and dust motes. Test:
   positions stay within the camera volume for 10,000 ids across 100 m of camera moves.
-- [ ] **P5-T3** `production-runtime/effects/WeatherVolume.ts`. `weather.rain/snow/lightning`. The splash CPU emitter uses
+- [x] **P5-T3** `production-runtime/effects/WeatherVolume.ts`. `weather.rain/snow/lightning`. The splash CPU emitter uses
   `groundHeightAt`, defaulting to C-26 `app.world.height().heightAt`. Test: rain particle y decreases between frames, and
   splash y equals the height query value (stub 0).
-- [ ] **P5-T4** Carved `agent-api/nodes/weather.ts`. `weather.precipitation` (today `index.ts:3772-3806`) and
+- [x] **P5-T4** Carved `agent-api/nodes/weather.ts`. `weather.precipitation` (today `index.ts:3772-3806`) and
   `weather.wetGround` (`:3807-3843`) add their effect/wetness nodes and register the legacy boxes as
   `prd07.legacyWeather.<n>`, hidden when the flag is on. Tests: flag-off pixel identity, and with the flag on no
   visible `primitive` node from these builders.
-- [ ] **P5-T5** `atmosphere/shaders/wetness.glsl.ts` + `atmosphere/chunks.ts`. Chunk `a3d_prd07_wetness` and
+- [x] **P5-T5** `atmosphere/shaders/wetness.glsl.ts` + `atmosphere/chunks.ts`. Chunk `a3d_prd07_wetness` and
   `ShaderFeature` `prd07.wetness` (`fragment:material`), with uniforms driven by `AtmosphereWetness.ts`. With the C-02
   generator still a stub, the effect system reports `WETNESS_PENDING`, and PRD 07 decal/puddle programs include the chunk
   directly. Test: ChunkHarness compile, plus a CPU mirror of albedo/roughness at wet = 0, 0.5 and 1.
-- [ ] **P5-T6** `atmosphere/VolumetricFogPass.ts` + `atmosphere/shaders/volumetric-{inject,integrate,apply}.glsl.ts`
+- [x] **P5-T6** `atmosphere/VolumetricFogPass.ts` + `atmosphere/shaders/volumetric-{inject,integrate,apply}.glsl.ts`
   (§8.7). Uses 2D tiled atlases, the C-27 `froxelGrid`, temporal on Ultra (needs `previousViewProjectionMatrix`), and the
   alpha-over apply. It runs only when `resolveSceneDepth(ctx).available`. Browser test `froxel-transmittance.spec.ts` uses
   a PRD 07-created depth target, not the frame: homogeneous σ = 0.05 with no light gives transmittance at 20 m of
   `exp(-1)` within 3%. A second case checks that the grid falls back to 240×135×96 with `VOLUMETRIC_GRID_REDUCED` when
   allocation fails (forced).
-- [ ] **P5-T7** `VolumetricFog.ts:105-144`. Resolves `effects.volumetricFog` to `analytic` or `froxel` by C-27 tier and
+- [x] **P5-T7** `VolumetricFog.ts:105-144`. Resolves `effects.volumetricFog` to `analytic` or `froxel` by C-27 tier and
   honours `color`. Test: the tier table maps as in §6.7. `color` changes the packed uniforms.
-- [ ] **P5-T8** Lane scenes `prd07-rain-night`, `prd07-snow`, `prd07-volumetric-shafts`, `prd07-lit-smoke`,
+- [x] **P5-T8** Lane scenes `prd07-rain-night`, `prd07-snow`, `prd07-volumetric-shafts`, `prd07-lit-smoke`,
   `prd07-soft-particles` and `prd07-water-interleave`, with three r185 adapters per §17. The last two exist for I2.
 
 ### Phase 6: decals and polish
