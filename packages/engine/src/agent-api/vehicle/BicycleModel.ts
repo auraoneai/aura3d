@@ -165,6 +165,32 @@ export class BicycleModel {
     this.lateralGValue = 0;
   }
 
+  /**
+   * Scale the velocity state (contact resolution / collision constraint).
+   * Pose is untouched; speeds never exceed `maxSpeed`.
+   */
+  scaleVelocity(scale: number): void {
+    const s = Math.max(0, scale);
+    const max = this.o.maxSpeed;
+    this.vLong = Math.max(-max, Math.min(max, this.vLong * s));
+    this.vLat = Math.max(-max, Math.min(max, this.vLat * s));
+    this.yawRate *= s;
+  }
+
+  /** Set the velocity state directly (e.g. `reset({ speed })` adapters). */
+  setVelocity(vLong: number, vLat = 0): void {
+    const max = this.o.maxSpeed;
+    this.vLong = Math.max(-max, Math.min(max, vLong));
+    this.vLat = Math.max(-max, Math.min(max, vLat));
+  }
+
+  /** Clamp position/heading in place (contact corridor resolution). */
+  setPoseState(o: { x?: number; z?: number; heading?: number }): void {
+    this.x = o.x ?? this.x;
+    this.z = o.z ?? this.z;
+    this.heading = o.heading ?? this.heading;
+  }
+
   /** One fixed step; call once per loop substep with the loop's fixedDt. */
   step(dt: number, input: BicycleModelInput = {}): BicycleModelState {
     if (dt <= 0) return this.snapshot();

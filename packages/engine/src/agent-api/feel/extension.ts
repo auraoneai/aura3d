@@ -43,6 +43,8 @@ export interface AuraFeelExtensionOptions {
   readonly sound?: SoundLike;
   /** Reduced-motion source; default `prefers-reduced-motion` media query. */
   readonly reducedMotion?: () => boolean;
+  /** I-6: `false` disables the haptics channel provider entirely. */
+  readonly haptics?: boolean;
 }
 
 export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOptions = {}): AuraFeelBusImpl {
@@ -74,7 +76,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
       : undefined,
     time: time?.hitStop ? { hitStop: (s, o) => time.hitStop!(s, o) } : undefined,
     haptics:
-      hapticCapability.vibrate || hapticCapability.gamepadRumble
+      options.haptics !== false && (hapticCapability.vibrate || hapticCapability.gamepadRumble)
         ? (o) => {
             const nav = typeof navigator !== "undefined" ? (navigator as { vibrate?: (p: number | readonly number[]) => boolean }) : undefined;
             const pads = typeof nav !== "undefined" && typeof (navigator as { getGamepads?: () => unknown[] }).getGamepads === "function"
