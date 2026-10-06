@@ -10,6 +10,8 @@ import type { AnimationPose } from "@aura3d/animation";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import type { AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
+import { StubActorAnimationApi, type AuraActorAnimationApi, type AuraResolvedClipInfo } from "../../contracts/animation.js";
+import type { AuraRuntimeNodeHandle } from "../index.js";
 
 let overrideQrAnimationFlags: QrFlags | undefined;
 let lazyQrAnimationFlags: QrFlags | undefined;
@@ -148,3 +150,90 @@ export function setActorRuntimeAnimationPose(
 
 /** Test seam for flag states that never reach the app (empty overrides). */
 export const QR_EMPTY_FLAGS: QrFlags = EMPTY_QR_FLAGS;
+
+/* ------------------------------------------------------------------------ */
+/* T0.6 (PRD-06) — the `prd06.animation` node-handle extension's               */
+/* `resolveAnimationClips()`. The lane's TypedGLBActor extension publishes a   */
+/* clip-info source per actor id (== the runtime node id) at load; bindings    */
+/* resolve once the source lands, and `[]` for non-model nodes.               */
+/* ------------------------------------------------------------------------ */
+
+export type ActorClipInfoSource = () => readonly AuraResolvedClipInfo[];
+
+interface ActorClipInfoWaiter {
+  readonly resolve: (infos: readonly AuraResolvedClipInfo[]) => void;
+  readonly reject: (error: unknown) => void;
+}
+
+const actorClipInfoSources = new Map<string, ActorClipInfoSource>();
+const actorClipInfoWaiters = new Map<string, ActorClipInfoWaiter[]>();
+
+/**
+ * Called by the `prd06.animation` TypedGLBActor extension's `onLoad`
+ * (`packages/engine/src/lanes/prd06.ts`) with the loaded actor's clip source.
+ * Returns the disposer invoked from the extension's `dispose`.
+ */
+export function registerActorClipInfoSource(actorId: string, source: ActorClipInfoSource): () => void {
+  actorClipInfoSources.set(actorId, source);
+  const waiters = actorClipInfoWaiters.get(actorId);
+  if (waiters) {
+    actorClipInfoWaiters.delete(actorId);
+    let infos: readonly AuraResolvedClipInfo[] = [];
+    let error: unknown;
+    try {
+      infos = source();
+    } catch (caught) {
+      error = caught;
+    }
+    for (const waiter of waiters) {
+      if (error !== undefined) waiter.reject(error);
+      else waiter.resolve(infos);
+    }
+  }
+  return () => {
+    if (actorClipInfoSources.get(actorId) === source) {
+      actorClipInfoSources.delete(actorId);
+    }
+  };
+}
+
+/** Resolves the loaded actor's clip infos; stays pending until it loads. */
+export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly AuraResolvedClipInfo[]> {
+  const source = actorClipInfoSources.get(nodeId);
+  if (source) {
+    try {
+      return Promise.resolve(source());
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+  return new Promise<readonly AuraResolvedClipInfo[]>((resolve, reject) => {
+    const list = actorClipInfoWaiters.get(nodeId) ?? [];
+    list.push({ resolve, reject });
+    actorClipInfoWaiters.set(nodeId, list);
+  });
+}
+
+/**
+ * The `prd06.animation` C-37 extension's `create` factory. Everything besides
+ * `resolveAnimationClips` keeps the PR 0a stub semantics until T0.18/T1.10.
+ */
+export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): AuraActorAnimationApi {
+  return new (class extends StubActorAnimationApi {
+    constructor() {
+      super(handle);
+    }
+    override resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]> {
+      if (handle.kind !== "model") {
+        return Promise.resolve([]);
+      }
+      return resolveAnimationClipsForNode(handle.id);
+    }
+  })();
+}
+
+/** Test seam: drop every resolver/waiter between specs. */
+export function resetActorClipInfoSources(): void {
+  actorClipInfoSources.clear();
+  actorClipInfoWaiters.clear();
+}
