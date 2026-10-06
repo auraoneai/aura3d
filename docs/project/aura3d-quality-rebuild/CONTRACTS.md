@@ -2788,6 +2788,7 @@ column cites a passing test or a capture run id.
 |---|---|---|---|---|---|---|
 | F-07-01 | 07 | `effects.fog()` defaults: `mode "height"`, σ_d 0.004, σ_h 0.008, b 0.2, start 2 m, maxOpacity 1, color `"sky"` | `effects.fog` | 2026-10-05 (PRD 07 §6.6) | — | proposed |
 | F-11-01 | 11 | Tier table per C-27 (R9 anisotropy L4/M8/H16/U16; R10 Ultra froxel 240x135x128) | `app.quality` | 2026-10-05 | — | proposed |
+| F-11-02 | 11 | WebGPU: experimental probe device; not used by any game; no visual parity claim. WebGL2 is the only shipping backend; sync `readPixels`/`readFloatPixels` on WebGPU throw `WEBGPU_SYNC_READBACK_UNSUPPORTED` — use the async variants. `experimental-webgpu` quality profile throws `AuraMigrationError`. | — | 2026-10-06 (PRD 11 §6.2 Phase 1 freeze) | — | proposed |
 | F-02-01 | 02 | `lights.ambient` is additive to IBL under `model: "physical"`. It never replaces IBL. | `lights.ambient` | 2026-10-05 (C-09) | — | proposed |
 | F-01-01 | 01 | Exactly one tone map per frame, in OutputPass. `DEFAULT_TONE_MAPPING = "aces"` until the PRD 12 AgX A/B. | `output.toneMapping` | 2026-10-05 (C-05) | — | proposed |
 
