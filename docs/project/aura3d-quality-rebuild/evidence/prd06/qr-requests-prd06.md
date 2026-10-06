@@ -37,6 +37,29 @@ impl, so any slot that has had `.provide()` called fails trivially. PRD-06 impl
 tests (`tests/unit/contracts/impl/prd06-deform.test.ts`) call `slot.get(flags)`
 directly instead. Owner: 01.
 
+## Q-05-1 — wire inspectAnimationClips fields into inspectGltfAnimations
+
+PRD-06 T0.7 landed the pure extractor `inspectAnimationClips(json, bin)` in
+`packages/aura3d-cli/src/commands/prd06/inspectAnimationClips.ts` (lane-owned)
+plus the standalone C-39 command `aura3d animation inspect-clips <glb>`.
+`AuraCliAnimationClipInspection` in `asset-inspection-types.ts` (owner 05) now
+carries optional `duration`, `hasRootMotionCandidate`, `frameRate`, but
+`inspectGltfAnimations`/`asset-manifest.ts` do not populate them — request that
+lane 05 call `inspectAnimationClips` (or re-implement the accessor math) so the
+manifest surfaces real durations instead of `durationSource: "defaulted"`.
+
+## Q-13-1 — wire fighterClipMap into the fighting-game template
+
+PRD-06 T0.9a shipped `tests/qr/prd06/fixtures/fighting-clipmap/fighterClipMap.ts`
+(`Record<FighterAssetKey, Record<FighterClip, {clip, standIn?}>>`) and the
+`validateClipMap`/`validateFighterClipMap` validator in
+`packages/engine/src/agent-api/GameCharacterAnimation.ts` (exported via the
+lane barrel). The `apps/aura-clash-showcase` clip map and the
+`packages/create-aura3d` `fighters.ts` template still resolve clips ad hoc —
+request lane 13 adopt `validateClipMap` + the fixture map shape so stand-in
+warnings (`FIGHTER_CLIP_STAND_IN`) and missing-clip errors
+(`FIGHTER_CLIP_MISSING`) are uniform.
+
 ## tests/browser/example-dev-server.ts — deep contracts/* subpath unresolved
 
 `packageEntryPoints` only maps exact `@aura3d/rendering/contracts` — deep
