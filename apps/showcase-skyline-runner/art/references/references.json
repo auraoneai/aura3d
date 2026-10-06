@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-skyline-runner",
+  "entries": [
+    {
+      "file": "references/winter-dusk-rooftops.json",
+      "source": "shipped comparable: winter dusk platformer skies (Celeste snowy ridgelines / INSIDE cold dusk gradients)",
+      "licence": "reference-only",
+      "why": "The five-act winter-dusk gradient bands and fog-matched parallax depth the backdrop re-cut targets"
+    },
+    {
+      "file": "references/painted-foreground.json",
+      "source": "shipped comparable: lit 3D foreground over painted backdrops (Rayman Legends stage layering / Ori environments)",
+      "licence": "reference-only",
+      "why": "Lit textured kit pieces floating over a 3-4 layer parallax painting with matched key direction"
+    },
+    {
+      "file": "references/runner-hero.json",
+      "source": "shipped comparable: compact runner hero readability (Celeste Madeline silhouette / Geometry Dash icon contrast)",
+      "licence": "reference-only",
+      "why": "A 0.44u hero that stays readable against dark blue at gameplay distance with jump/fall silhouettes"
+    }
+  ]
+}
