@@ -72,11 +72,14 @@ const game = createGame({
   },
   sound: {
     cues: {
-      hit: { asset: "kenney-hit", variants: 6 },
-      whoosh: { asset: "move-whoosh", variants: 3 },
-      announcer: { asset: "round-fight-ko", variants: 3 },
-      bed: { asset: "crowd-bed", variants: 1 },
-      music: { asset: "clash-music", variants: 1 }
+      hit: { asset: "auraClashHitSfx", variants: 6 },
+      whoosh: { asset: "auraClashDashSfx", variants: 3 },
+      blocked: { asset: "auraClashGuardSfx", variants: 2 },
+      special: { asset: "auraClashSpecialSfx", variants: 2 },
+      jump: { asset: "auraClashJumpSfx", variants: 2 },
+      announcer: { asset: "auraClashKoSfx", variants: 2 },
+      "round-start": { asset: "auraClashDrawSfx", variants: 1 },
+      win: { asset: "auraClashWinSfx", variants: 1 }
     }
   },
   juice: {
@@ -128,12 +131,14 @@ game.app.onFrame?.(({ dt }) => {
       if (ev.type === "hit") {
         pushCue("hit");
         hitStopUntilMs = performance.now() + 95;
-      } else if (ev.type === "whiff" || ev.type === "blocked") {
+      } else if (ev.type === "whiff") {
         pushCue("whoosh");
+      } else if (ev.type === "blocked") {
+        pushCue("blocked");
       } else if (ev.type === "knockout" && !koPlayed) {
         koPlayed = true;
         pushCue("announcer");
-        pushCue("bed");
+        pushCue("win");
       } else if (ev.type === "round-reset") {
         koPlayed = false;
         round.number += 1;
