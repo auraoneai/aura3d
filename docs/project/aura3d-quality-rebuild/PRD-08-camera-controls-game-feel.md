@@ -1501,12 +1501,12 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Feel bus (F)
 
-- [ ] F-1 `feel/FeelBus.ts` implementing the C-23 `AuraFeelBus`; real C-38 `feel` extension.
-- [ ] F-2 Channel dispatch: shake → `app.camera.shake.add`; punch → `app.camera.punch.trigger`; hitStop → `app.time`;
+- [x] F-1 `feel/FeelBus.ts` implementing the C-23 `AuraFeelBus`; real C-38 `feel` extension.
+- [x] F-2 Channel dispatch: shake → `app.camera.shake.add`; punch → `app.camera.punch.trigger`; hitStop → `app.time`;
   haptics → `@aura3d/input` `Haptics` (gamepad dual-rumble, `navigator.vibrate` on touch, no-op otherwise); audio →
   C-25 `GameSound.play(cue, { position, rate: 1 + jitter, volumeDb })` on the bound sound slot (no-op + `executed` 0
   when none is bound); vfx → C-20 `app.effects.burst(kind, position, { count })`; screen → S-3.
-- [ ] F-3 Presets `arcade`, `fighting`, `racing`, `platformer`, `puzzle`, `calm` with event maps for `land`, `jump`,
+- [x] F-3 Presets `arcade`, `fighting`, `racing`, `platformer`, `puzzle`, `calm` with event maps for `land`, `jump`,
   `hit-light`, `hit-heavy`, `ko`, `collect`, `boost`, `explode`, `score`, `fail`; values documented in a table in the
   source file header and exported as `feelPresets` for tests. Required starting values (tunable only with a recorded
   review in `evidence/prd08/tuning.md` citing a §16A screening or panel record):
@@ -1524,7 +1524,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
   Unit test: every preset defines all ten events (calm may map to empty specs) and no value exceeds the reduced-motion
   caps after multipliers.
-- [ ] F-4 `executed` accounting (C-23 invariant): a channel counts only if it produced an effect (layer energy > 0 on the
+- [x] F-4 `executed` accounting (C-23 invariant): a channel counts only if it produced an effect (layer energy > 0 on the
   next presented frame; haptics actuator present and called; C-25 `play` returned a `VoiceHandle`; C-20 `burst`
   reported `pixelBacked`; screen per S-3). Test with fakes, plus one test against the real PR 0a stubs proving
   `executed.vfx` counts primitive-pool bursts and `executed.screen` stays 0 without a consumer or DOM fallback.
