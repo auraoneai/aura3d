@@ -219,6 +219,10 @@ export {
 } from "../shadows/Prd02ReceiveShadowContributor.js";
 export { prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary.js";
 export {
+  a3dDistanceFalloff,
+  a3dHemisphereIrradiance
+} from "../shaders/chunks/lighting_mirrors.js";
+export {
   CONTACT_SHADOW_CHUNK_ID
 } from "../shaders/chunks/contact_shadow.glsl.js";
 export {

@@ -28,9 +28,10 @@ float a3d_rangeWindow(float d, float range) {
   return x * x;
 }
 
-// Physically-based attenuation: window / d^decay.
-float a3d_attenuation(float d, float range, float decay) {
-  float att = 1.0 / pow(max(d, 1e-4), decay);
+// three r185 getDistanceAttenuation verbatim (Frostbite E[window1]):
+// 1/max(d^decay, 0.01) with the range window folded in when range > 0.
+float a3dDistanceFalloff(float d, float range, float decay) {
+  float att = 1.0 / max(pow(d, decay), 0.01);
   return att * a3d_rangeWindow(d, range);
 }
 
@@ -60,7 +61,7 @@ vec3 a3d_punctualRadiance(int i, vec3 worldPos, vec3 n, out vec3 l, out float at
   float d = length(toLight);
   l = toLight / max(d, 1e-4);
   vec4 d3 = u_lightData[a3d_lightBase(i) + 3];
-  atten = a3d_attenuation(d, d1.w, d3.z);
+  atten = a3dDistanceFalloff(d, d1.w, d3.z);
   if (kind == 2) {
     float c = dot(-l, normalize(d1.xyz));
     atten *= a3d_spotWindow(c, d3.x, d3.y);
