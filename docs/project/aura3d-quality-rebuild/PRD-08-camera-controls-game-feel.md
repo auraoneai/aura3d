@@ -1380,7 +1380,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `hit` with distance within 0.01 of analytic; no wall → `hit: false`.
 - [x] C-10 Collision helper used by chase/shoulder/orbit/flight: asymmetric half-lives (pull-in 0.04, push-out 0.35),
   radius 0.2; reuse `createCollisionAwareOrbit` math (GameCameraRigs.ts:190-279).
-- [ ] C-11 New `camera/OccluderFade.ts`: per-node fade spring to 0.3 for nodes in `probe.occluders()` that are not the
+- [x] C-11 New `camera/OccluderFade.ts`: per-node fade spring to 0.3 for nodes in `probe.occluders()` that are not the
   subject and not tagged `cameraOpaque`; C-01 `collect` contributor `prd08.occluderFade` writes
   `RenderItem.cameraFade` and `cameraFadeOffset` (S-1). Unit test: contributor output for a 3-item list with one
   occluder sets `cameraFade` only on that item and returns the input array unchanged with the flag off.
@@ -1457,7 +1457,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   settle to +10° ± 0.05°; clearing one channel returns to +4° with the channel's half-life.
 - [x] Y-5 `camera/layers/lookAt.ts`: weighted target override with spring weight. Test: weight 1 aims the view axis at
   the override within 0.5° after 3 half-lives; weight 0 leaves the rig pose untouched (1e-6).
-- [ ] Y-6 `camera/layers/cinematicBars.ts`: target aspect, ease; draws a DOM overlay of two black bars (standalone) and
+- [x] Y-6 `camera/layers/cinematicBars.ts`: target aspect, ease; draws a DOM overlay of two black bars (standalone) and
   publishes its rect on the C-01 blackboard as `prd08.letterbox` for any C-13 composite that wants it. Test: 16:9
   canvas, target 2.39:1 → bar height `(1 − (16/9)/2.39)/2` of canvas height each, ± 1 px.
 - [x] Y-7 Reduced-motion policy in controller (§6.5 multipliers), sourced from `matchMedia('(prefers-reduced-motion:
@@ -1468,16 +1468,16 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Shader (S)
 
-- [ ] S-1 New `packages/rendering/src/shaders/camera-fade.glsl.ts`: C-02 `ShaderChunk` (GLSL per §8.2 plus `wgsl` twin)
+- [x] S-1 New `packages/rendering/src/shaders/camera-fade.glsl.ts`: C-02 `ShaderChunk` (GLSL per §8.2 plus `wgsl` twin)
   and `ShaderFeature` `prd08.cameraFade` (define `A3D_CAMERA_FADE`, uniforms `u_cameraFade`, `u_cameraFadeOffset`,
   variant key bit `cameraFade`, active only when `RenderItem.cameraFade < 0.999`). ChunkHarness test (remote,
   `qr-prd08-camera.yml`): a 64×64 quad with `u_cameraFade = 0.5` writes 50 % ± 2 % of covered pixels, `1.0` writes
   100 %, and the program without the feature compiles byte-identical source to the program generated without the chunk.
   The legacy `ShaderLibrary.ts` is not edited (optional Q-01-1); the WebGPU packed-uniform wiring is Q-11-1.
-- [ ] S-2 `camera/OccluderFade.ts` contributor (C-11 task) fills `cameraFade`/`cameraFadeOffset` per item; the offset
+- [x] S-2 `camera/OccluderFade.ts` contributor (C-11 task) fills `cameraFade`/`cameraFadeOffset` per item; the offset
   cycles `(0,0) (2,2) (2,0) (0,2)` by `FrameContributorContext.frameIndex` only when a C-13 pass with id containing
   `taa` is registered. Shadow/depth variants never request the feature (C-11 `registerDepthVariantFeature` not used).
-- [ ] S-3 `feel/FeelBus.ts` + controller publish `AuraScreenFeelUniforms` `{ flash, chroma, radialBlur, vignette, center }`
+- [x] S-3 `feel/FeelBus.ts` + controller publish `AuraScreenFeelUniforms` `{ flash, chroma, radialBlur, vignette, center }`
   per frame on the C-01 blackboard key `prd08.screenFeel` (C-23) and in `diagnostics().camera.screenFeel`. The `screen`
   channel counts as executed only for the parts that produced pixels: flash/vignette via `feel/ScreenOverlay.ts` when
   `feel.screenFallback: "dom"`, any part when a C-13 consumer reports it read the key this frame (consumer sets
@@ -1490,9 +1490,9 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   constant-speed parameterisation within 2 %.
 - [x] Q-2 `camera/rigs/rail.ts` per `AuraCameraRailOptions`; look-at track as node, point, or second spline; FOV per point
   interpolated with the same u.
-- [ ] Q-3 `camera/Sequence.ts`: `controller.play(sequence)` → shots with blend-in, bars, `skip()`; `onEnd: "return"` blends
+- [x] Q-3 `camera/Sequence.ts`: `controller.play(sequence)` → shots with blend-in, bars, `skip()`; `onEnd: "return"` blends
   back to the previous rig.
-- [ ] Q-4 `CameraChoreographer.ts:234-238`: `"catmull-rom"` uses Q-1 across keyframes (not per-segment smoothstep); update
+- [x] Q-4 `CameraChoreographer.ts:234-238`: `"catmull-rom"` uses Q-1 across keyframes (not per-segment smoothstep); update
   `sampleCameraPath`; add test that velocity at interior keyframes is non-zero.
 - [x] Q-5 `camera/rigs/fromSpec.ts`: with the flag on, the `path`/`flythrough`/`dolly` modes (legacy math at
   `index.ts:15670-15686`, PRD 15's, not edited) are presented via `rigs.rail` with 2 points; `loop` default
