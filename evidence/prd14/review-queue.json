@@ -19,7 +19,7 @@
     },
     {
       "gameId": "aura-clash-showcase",
-      "commit": "ee50196c7569d4f41c9b768f2982d60a68d69802",
+      "commit": "db43cc7fa05b28bb676c26d50778a8fbb29edc98",
       "pr": 231,
       "phase": "T2-v2-shell",
       "requestedAt": "2026-10-06",
