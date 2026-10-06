@@ -18,6 +18,9 @@ import type { RenderDevice } from "../RenderDevice.js";
 import { A3D_PRD06_SKINNING_COMMON_GLSL } from "../shaders/deform/skinning.glsl.js";
 import { A3D_PRD06_MORPH_TEXTURE_GLSL } from "../shaders/deform/morph.glsl.js";
 import { A3D_PRD06_DEFORM_GLSL } from "../shaders/deform/deform.glsl.js";
+import { registerPrd06DeformDepthFeature } from "../shaders/deform/depthFeature.js";
+import { registerSkinnedBoundsProvider } from "../contracts/shadows.js";
+import { prd06SkinnedBounds } from "../renderer/SkinnedBounds.js";
 
 /* ------------------------------------------------------------------ flags */
 
@@ -202,4 +205,14 @@ export {
   type MorphTargetTextureResult,
   type MorphTextureLimits
 } from "../resources/MorphTargetTexture.js";
-export { applySkinningUniformsCached, paletteKeyOf } from "../SkinningUniforms.js";
+export { applySkinningUniformsCached, bindBoneTexture, paletteKeyOf } from "../SkinningUniforms.js";
+
+/* --------------------------------------- T0.13 depth variant + bounds provider */
+
+// Registered through the C-11 registries only while
+// `A3D_QR_ANIMATION_SKINNED_SHADOWS` resolves on — flag-off keeps the lane's
+// registries untouched (DepthPass consumption is C-11 real, Q-02-1).
+if (prd06FlagsOn("A3D_QR_ANIMATION_SKINNED_SHADOWS")) {
+  registerPrd06DeformDepthFeature(skinningPaletteCache);
+  registerSkinnedBoundsProvider(prd06SkinnedBounds);
+}

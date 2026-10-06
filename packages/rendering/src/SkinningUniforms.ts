@@ -12,6 +12,7 @@
  */
 
 import type { SkinningPaletteBinding, SkinningPalettePath } from "./ForwardPass.js";
+import type { RenderItem } from "./contracts/renderItem.js";
 import { MAX_SKINNING_JOINTS, MAX_UNIFORM_SKINNING_JOINTS, isFiniteArrayLike } from "./ForwardPass.js";
 import { Material } from "./Material.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice.js";
@@ -191,4 +192,34 @@ export function applySkinningUniformsCached(
   }
   // ≤96-joint rigs and unstamped producers keep the legacy semantics exactly.
   return applySkinningUniforms(skinning, material, shader, uniforms);
+}
+
+/**
+ * T0.13 — the shared bone-texture binder for the `prd06.deform` depth/velocity
+ * variants (and any other pass whose shader carries `a3d_prd06_skinning_common`).
+ * Binds the texture pair the forward bind already uploaded this frame — no
+ * second upload, no allocation after the first bind per key.
+ *
+ * `set` is the feature's uniform setter (`ShaderFeature.bindUniforms`), so this
+ * never materialises a uniforms Map. Returns false when the item has no
+ * stamped palette (`select` already gates on `item.skinning`).
+ */
+export function bindBoneTexture(
+  set: (name: string, value: UniformValue) => void,
+  cache: SkinningPaletteTextureCache,
+  item: RenderItem
+): boolean {
+  const skinning = item.skinning;
+  if (!skinning) return false;
+  const key = paletteKeyOf(skinning);
+  if (!key) return false;
+  // paletteUniformSet materialises the per-key entry (first bind only); upload()
+  // dedupes per cache frame id, so it is a no-op when the forward bind already
+  // ran this frame and a one-shot upload when depth binds first.
+  const palette = cache.paletteUniformSet(key, skinning.jointCount);
+  cache.upload(key, skinning.matrices);
+  set("u_boneTexture", palette.currentBinding);
+  set("u_boneTextureWidth", palette.textureSize[0]);
+  set("u_prevBoneTexture", palette.previousBinding);
+  return true;
 }
