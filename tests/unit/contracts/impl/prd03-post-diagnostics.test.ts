@@ -94,4 +94,25 @@ describe("post/exposure diagnostics sections", () => {
     expect(latestSubmittedPostprocess()?.authored.bloom).toBe(true);
     expect(collectPostSection({} as AuraApp).submittedPasses).toContain("bloom");
   });
+
+  test("multi-app: sections never read a sibling app's submitted record (review P2)", () => {
+    // Each app's compile runs inside its async mount — possibly out of order.
+    // Canvas-keyed records must still land on the owning app; a module-global
+    // `latest` would hand B's chain to A.
+    const canvasA = {} as HTMLCanvasElement;
+    const canvasB = {} as HTMLCanvasElement;
+    const appA = { canvas: canvasA } as AuraApp;
+    const appB = { canvas: canvasB } as AuraApp;
+    // B's mount resolves first — the wrong ordering for a global `latest`.
+    createProductionRuntimePostprocess(
+      scene().add(effects.antiAlias({ mode: "fxaa" })).toJSON(), [], 320, 200, true, { canvas: canvasB });
+    createProductionRuntimePostprocess(
+      scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 320, 200, true, { canvas: canvasA });
+    const postA = collectPostSection(appA);
+    const postB = collectPostSection(appB);
+    expect(postA.submittedPasses).toContain("bloom");
+    expect(postA.submittedPasses).not.toContain("fxaa");
+    expect(postB.submittedPasses).toContain("fxaa");
+    expect(postB.submittedPasses).not.toContain("bloom");
+  });
 });

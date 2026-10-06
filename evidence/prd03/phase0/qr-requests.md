@@ -11,6 +11,12 @@ Requests lane 03 cannot satisfy inside its own ownership boundary
 | QR-03-4 | prd12 (Q-12-1) | `desktop-1440x900@2` viewport + `backingRatio = w / cssW` in the slim capture report. Until then `tests/browser/qr-prd03-capture-dsf2.spec.ts` records `canvas.width / clientWidth` per game route on GitHub macos-14. | DSF2 baselines are ratio-only until this lands | OPEN |
 | QR-03-5 | prd15 | C-39 codemod dispatch: `packages/aura3d-cli/src/cli.ts` has no `codemod` verb, so `registerCodemod(postV2Codemod)` (registered in `packages/aura3d-cli/src/commands/prd03/index.ts`) is unreachable from the CLI today. Needs the `codemod` command wired to `commands/registry.ts`. | post-v2 codemod is registered + unit-tested but not CLI-invocable | OPEN |
 
+## CCR tracking (declared per CONTRACTS.md §4)
+
+| # | Path touched | Change | Status |
+|---|---|---|---|
+| CCR-03-7 | `packages/engine/src/agent-api/compiler/renderInput.ts` (owner 15) | Review P2 on PR #133: `createProductionRuntimePostprocess` gains optional `attach?: {canvas}` and `renderInput.ts` passes `{canvas}` so the submitted-record store keys records by the owning app's canvas — a second app's compile can no longer overwrite the first app's `post`/`exposure` diagnostics. Additive only; flag-off unchanged. | LANDED (this PR) |
+
 ## Flag-off guarantee notes
 
 - `registerDiagnosticsSection` sections collect unconditionally (by C-31
