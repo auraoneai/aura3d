@@ -70,7 +70,7 @@ export default defineArtDirection({
     { feature: "rigged mech + clip set", file: "src/v2/scene/world.ts", request: "R-14-15", removeWhen: "K6 mech rig admitted" },
     { feature: "K8 impact/servo samples", file: "src/v2/audio.ts", request: "R-14-15", removeWhen: "K8 sample set admitted" }
   ],
-  criticalCategories: ["animation_quality", "env_framing"],
+  criticalCategories: ["animation_quality", "environment_world"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 2, textureMax: 1024 },
     medium: { particles: 600, shadowMap: 2048, cascades: 3, textureMax: 2048 },
