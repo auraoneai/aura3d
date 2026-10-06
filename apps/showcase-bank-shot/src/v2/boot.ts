@@ -15,12 +15,18 @@ const game = createGame({
   qualityRebuild: { flags: [ROUTE_FLAG] }
 });
 
+let frame = 0;
+game.app.onRender?.(() => { frame += 1; });
 game.start();
 void game.ready().then(() => {
+  // C-24 beacon: live getters so audits/T2.6 read the mounted app + scene
+  // (snapshotForAudit expects beacon.app.scene / beacon.app.diagnostics()).
   (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = {
     route: game.id,
-    state: game.session.state,
-    frame: 0,
+    get app() { return game.app; },
+    get scene() { return game.app.scene; },
+    get state() { return game.session.state; },
+    get frame() { return frame; },
     firstFrameAt: performance.now(),
     sessionStartedAt: performance.now()
   };
