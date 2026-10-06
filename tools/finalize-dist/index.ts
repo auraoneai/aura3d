@@ -20,9 +20,6 @@ const publicPackageNames = packageNames.filter((packageName) => {
 
 mkdirSync(rootDist, { recursive: true });
 
-const rootIndexLines: string[] = [];
-const rootTypeLines: string[] = [];
-
 for (const packageName of packageNames) {
   const source = join(rootDist, "packages", packageName, "src");
   const packageSource = join(packageRoot, packageName, "src");
@@ -40,10 +37,7 @@ for (const packageName of packageNames) {
   copyStaticRuntimeAssets(packageSource, localPackageDist);
   rewriteJavaScriptSpecifiers(localPackageDist, localPackageDist, false);
 
-  if (publicPackageNames.includes(packageName)) {
-    rootIndexLines.push(`export * from "./${packageName}/index.js";`);
-    rootTypeLines.push(`export * from "./${packageName}/index.js";`);
-  } else if (!rootPackageSurfacePackages.has(packageName)) {
+  if (!publicPackageNames.includes(packageName) && !rootPackageSurfacePackages.has(packageName)) {
     rmSync(rootPackageDist, { recursive: true, force: true });
   }
 }
@@ -58,9 +52,6 @@ for (const packageName of packageNames) {
     rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   }
 }
-
-writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
-writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 
 console.log(`Finalized dist exports for ${packageNames.length} packages.`);
 

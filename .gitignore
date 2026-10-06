@@ -276,6 +276,10 @@ release-artifacts/external-demos/
 # Generated files
 *.generated.ts
 *.generated.js
+# Resolution maps are generated but committed (PRD-15 T1.2): fresh checkouts
+# and CI must resolve them without running the generator first.
+!vite.aliases.generated.ts
+!tsconfig.paths.generated.ts
 
 # Shader compilation cache
 shader-cache/
