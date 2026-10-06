@@ -18,6 +18,7 @@
     }
   },
   "dependencies": {
+    "@aura3d/audio": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
     "@aura3d/rendering": "workspace:*"
   }
