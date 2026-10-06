@@ -1,25 +1,15 @@
 import type { TemporalHistory } from "./TemporalHistory";
+import { collectEnvironmentBackground, collectEnvironmentFog, collectEnvironmentLighting } from "./renderer/Background";
+import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, explicitCullingFrustum } from "./renderer/CullingBatching";
+import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
+import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
+import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
+import type { RendererHost } from "./renderer/RendererHost";
+import { createRenderer } from "./renderer/RendererFactory";
+import { collectItemBounds, isIterable, renderableWorldBounds, sceneFromSource, toMat4 } from "./renderer/RenderShared";
+import { RendererShadowOrchestrator, collectForwardShadowMap, collectRendererShadowOptions } from "./renderer/ShadowOrchestration";
 import { type RenderSource } from "./contracts/renderSource";
-import {
-  Bounds3 as SceneBounds3,
-  Camera,
-  DirectionalLight,
-  Light,
-  PerspectiveCamera,
-  PointLight,
-  Scene,
-  SpotLight,
-  identityMat4,
-  invertMat4,
-  multiplyMat4,
-  orthographicMat4,
-  perspectiveMat4,
-  transformPoint,
-  toMathMat4,
-  type Mat4,
-  type Vec3,
-  type SceneNode
-} from "@aura3d/scene";
+import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, PerspectiveCamera, PointLight, Scene, SpotLight, identityMat4, invertMat4, multiplyMat4, orthographicMat4, perspectiveMat4, transformPoint, toMathMat4, type Mat4, type Vec3, type SceneNode } from "@aura3d/scene";
 import { Frustum, type Ray } from "@aura3d/math";
 import { createRenderDevice, type RenderBackendOptions } from "./RenderBackend";
 import { type LdrPostprocessPassDescriptor, type RenderDevice, RenderDeviceError, type RenderDeviceDiagnostics, type RenderTarget, type RenderTargetDescriptor } from "./RenderDevice";
@@ -31,75 +21,16 @@ import { Geometry, type Bounds3 } from "./Geometry";
 import { type MorphTargetDelta } from "./MorphTarget";
 import { computeSkinnedGeometryBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 import { RenderGraph } from "./RenderGraph";
-import {
-  BloomPass,
-  FXAAPass,
-  ToneMappingPass,
-  bloomFloatPixels,
-  bloomPixels,
-  chromaticAberrationPixels,
-  colorGradePixels,
-  contactShadowPixels,
-  createDepthTextureBinding,
-  depthOfFieldPixels,
-  filmGrainPixels,
-  fusedLdrPostprocessPixels,
-  fxaaPixels,
-  motionBlurPixels,
-  outlinePixels,
-  ssaoPixels,
-  ssrPixels,
-  taaPixels,
-  toneMapFloatPixels,
-  toneMapPixels,
-  volumetricLightPixels,
-  writePostProcessPixels,
-  type BloomOptions,
-  type ChromaticAberrationOptions,
-  type ColorGradeOptions,
-  type ContactShadowPostProcessOptions,
-  type DepthTextureBinding,
-  type DepthOfFieldOptions,
-  type FXAAOptions,
-  type FilmGrainOptions,
-  type FusedLdrPostProcessPass,
-  type FusedLdrPostProcessScratch,
-  type MotionBlurOptions,
-  type OutlineOptions,
-  type SSAOOptions,
-  type SSROptions,
-  type TAAOptions,
-  type ToneMappingOptions,
-  type VolumetricLightOptions
-} from "./PostProcessPass";
-import {
-  bindRendererSsrProjection,
-  createRendererPostprocessPasses,
-  createRendererPostprocessPlanDiagnostics,
-  type RendererPostProcessPassName,
-  type RendererPostProcessPassPlan,
-  type RendererPostprocessPlanDiagnostics,
-  type RendererPostprocessPlanOptions,
-  type RendererPostprocessTargetFormat
-} from "./RendererPostprocessPlan";
+import { BloomPass, FXAAPass, ToneMappingPass, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, createDepthTextureBinding, depthOfFieldPixels, filmGrainPixels, fusedLdrPostprocessPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, volumetricLightPixels, writePostProcessPixels, type BloomOptions, type ChromaticAberrationOptions, type ColorGradeOptions, type ContactShadowPostProcessOptions, type DepthTextureBinding, type DepthOfFieldOptions, type FXAAOptions, type FilmGrainOptions, type FusedLdrPostProcessPass, type FusedLdrPostProcessScratch, type MotionBlurOptions, type OutlineOptions, type SSAOOptions, type SSROptions, type TAAOptions, type ToneMappingOptions, type VolumetricLightOptions } from "./PostProcessPass";
+import { bindRendererSsrProjection, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics, type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessPlanDiagnostics, type RendererPostprocessPlanOptions, type RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 import type { ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
 import { type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
-import {
-  computeOrthographicCameraFrame,
-  computePerspectiveCameraFrame,
-  type OrthographicCameraFrameOptions,
-  type PerspectiveCameraFrameOptions
-} from "./CameraFraming";
-import {
-  assertRendererFeatures,
-  createRendererFeatureReport,
-  type RendererFeature,
-  type RendererFeatureReport
-} from "./RendererFeatureGates";
+import { computeOrthographicCameraFrame, computePerspectiveCameraFrame, type OrthographicCameraFrameOptions, type PerspectiveCameraFrameOptions } from "./CameraFraming";
+import { assertRendererFeatures, createRendererFeatureReport, type RendererFeature, type RendererFeatureReport } from "./RendererFeatureGates";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
 import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type MeshConsolidationOptions } from "./MeshConsolidation";
 
@@ -275,34 +206,6 @@ export const DEFAULT_RENDERER_AUTO_FRAME_OPTIONS: PerspectiveCameraFrameOptions 
   farPadding: 2.4
 };
 
-export const DEFAULT_RENDERER_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
-  color: [0.78, 0.8, 0.84],
-  intensity: 0.42,
-  proceduralMap: {
-    skyColor: [0.64, 0.76, 0.94],
-    horizonColor: [0.94, 0.82, 0.62],
-    groundColor: [0.12, 0.13, 0.15],
-    specularColor: [1, 0.94, 0.78],
-    intensity: 0.5,
-    specularIntensity: 0.82
-  }
-};
-
-const DISABLED_RENDERER_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
-  color: [0, 0, 0],
-  intensity: 0,
-  proceduralMap: {
-    skyColor: [0, 0, 0],
-    horizonColor: [0, 0, 0],
-    groundColor: [0, 0, 0],
-    specularColor: [0, 0, 0],
-    intensity: 0,
-    specularIntensity: 0
-  },
-  environmentMapIntensity: 0,
-  environmentMapSpecularIntensity: 0
-};
-
 export const DEFAULT_RENDERER_DIRECT_LIGHTING = {
   key: {
     color: [1, 0.92, 0.78] as const,
@@ -342,14 +245,14 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
 
 export type RenderResourceLookup<T> = ReadonlyMap<string, T> | Readonly<Record<string, T>>;
 
-interface RenderCollectionDiagnostics {
+export interface RenderCollectionDiagnostics {
   submittedObjects: number;
   visibleObjects: number;
   culledObjects: number;
   frustumTestedObjects: number;
 }
 
-interface RendererPostprocessDiagnostics {
+export interface RendererPostprocessDiagnostics {
   readonly postprocessPasses: number;
   readonly postprocessPassNames: readonly RendererPostProcessPassName[];
   readonly postprocessTargetFormat: RendererPostprocessTargetFormat;
@@ -383,10 +286,12 @@ export interface ScenePickOptions {
   readonly lineRadius?: number;
 }
 
+export { DEFAULT_RENDERER_ENVIRONMENT_LIGHTING } from "./renderer/Background";
 export class Renderer {
   public readonly device: RenderDevice;
   private readonly graph = new RenderGraph();
   private readonly shaderLibrary: ShaderLibrary;
+  private readonly host: RendererHost;
   /**
    * Depth target reused by the renderer-owned shadow pass across frames.
    *
@@ -397,7 +302,6 @@ export class Renderer {
   private shadowDepthTarget: RenderTarget | null = null;
   private lastShadowEvidence: Record<string, unknown> | null = null;
   private submittedShadowFrameId = 0;
-
   /** Actual shadow resources selected for the most recent submitted forward pass. */
   getShadowEvidence(): Readonly<Record<string, unknown>> | null { return this.lastShadowEvidence; }
   /**
@@ -416,8 +320,7 @@ export class Renderer {
   private disposed = false;
   private animationLoop: RendererAnimationLoopImpl | null = null;
   private readonly fusedLdrPostprocessScratch: FusedLdrPostProcessScratch = {};
-
-  private constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
+  constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
     this.temporalHistory = temporalHistory;
     this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
@@ -426,25 +329,38 @@ export class Renderer {
     this.height = options.height ?? inferInitialCanvasDimension(options.canvas, "height");
     this.clearColor = options.clearColor ?? [0, 0, 0, 1];
     this.shaderLibrary = options.shaderLibrary;
+    this.host = {
+      device,
+      shaderLibrary: options.shaderLibrary,
+      fusedLdrPostprocessScratch: this.fusedLdrPostprocessScratch,
+      frameIndex: 0
+    } as unknown as RendererHost;
+    const host = this.host;
+    Object.defineProperty(host, "width", { enumerable: true, get: () => this.width, set: (value: number) => { this.width = value; } });
+    Object.defineProperty(host, "height", { enumerable: true, get: () => this.height, set: (value: number) => { this.height = value; } });
+    Object.defineProperty(host, "shadowDepthTarget", { enumerable: true, get: () => this.shadowDepthTarget, set: (value: RenderTarget | null) => { this.shadowDepthTarget = value; } });
+    this.host.post = new RendererPostprocessPipeline(this.host);
+    this.host.shadows = new RendererShadowOrchestrator(this.host);
     this.resizeCanvas(this.width, this.height);
   }
-
-  static async create(options: RendererOptions = {}): Promise<Renderer> {
-    const device = await createRenderDevice(options);
-    if (options.requiredFeatures && options.requiredFeatures.length > 0) {
-      assertRendererFeatures(device, options.requiredFeatures);
-    }
-    const shaderLibrary = options.shaderLibrary
-      ?? (await import("./ShaderLibrary.js")).createDefaultShaderLibrary();
-    // Temporal history is an optional runtime subsystem. Keep it behind the
-    // asynchronous renderer factory so non-temporal apps do not place its
-    // shaders, materials, and target owner on their critical download path.
-    const { TemporalHistory } = await import("./TemporalHistory.js");
-    return new Renderer(device, { ...options, shaderLibrary }, new TemporalHistory());
+  static create(options: RendererOptions = {}): Promise<Renderer> {
+    return createRenderer(options);
   }
-
   getFeatureReport(): RendererFeatureReport {
     return createRendererFeatureReport(this.device);
+  }
+
+  /** C-29 seam (PR 0b): renderer-side device-lifecycle delegates. */
+  onDeviceLost(listener: () => void): () => void {
+    return subscribeRendererDeviceLost(this.device, listener);
+  }
+
+  onDeviceRestored(listener: () => void): () => void {
+    return subscribeRendererDeviceRestored(this.device, listener);
+  }
+
+  isDeviceLost(): boolean {
+    return rendererDeviceIsLost(this.device);
   }
 
   resize(width: number, height: number): void {
@@ -457,7 +373,6 @@ export class Renderer {
     this.height = height;
     this.resizeCanvas(width, height);
   }
-
   resizeToDisplay(options: ResizeToDisplayOptions = {}): ResizeToDisplayResult {
     this.assertAlive();
     if (!this.canvas) {
@@ -481,7 +396,6 @@ export class Renderer {
     }
     return { resized, cssWidth, cssHeight, devicePixelRatio, width, height };
   }
-
   startAnimationLoop(callback: (timeMs: number, renderer: Renderer) => void): RendererAnimationLoop {
     this.assertAlive();
     this.animationLoop?.stop();
@@ -490,12 +404,10 @@ export class Renderer {
     loop.start();
     return loop;
   }
-
   private readonly temporalHistory: TemporalHistory;
   private readonly unsubscribeTemporalDeviceLoss?: () => void;
 
   resetTemporalHistory(_reason = "explicit-reset"): void { this.temporalHistory.reset(); }
-
   render(input: RendererInput): RenderDeviceDiagnostics;
   render(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics;
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
@@ -525,6 +437,13 @@ export class Renderer {
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
+    const frameHooks = createRendererFrameHooks({
+      device: this.device,
+      width: this.width,
+      height: this.height,
+      source,
+      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)
+    });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
       if (autoFrame) {
@@ -579,6 +498,7 @@ export class Renderer {
     this.device.beginFrame(this.width, this.height);
     try {
       this.lastShadowEvidence = null;
+      items = frameHooks.collect(items);
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
@@ -588,6 +508,7 @@ export class Renderer {
         ownedShadowPasses,
         camera: resolvedCamera?.camera
       });
+      frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -613,6 +534,7 @@ export class Renderer {
           inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
           shaderLibrary: this.shaderLibrary
         }));
+        frameHooks.addPasses(this.graph, "background", items);
       }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
@@ -634,12 +556,18 @@ export class Renderer {
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));
+      frameHooks.addPasses(this.graph, "after-opaque", items);
+      frameHooks.addPasses(this.graph, "transmission", items);
+      frameHooks.addPasses(this.graph, "transparent", items);
+      frameHooks.addPasses(this.graph, "after-transparent", items);
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
+        frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
         this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       }
+      frameHooks.runPhase("after-output", items);
     } catch (error) {
       this.lastShadowEvidence = null;
       if (postprocess?.temporal) this.temporalHistory.reset();
@@ -664,7 +592,6 @@ export class Renderer {
       rendererDepthAvailable: Boolean(postprocess && postprocessRequiresDepthTexture(postprocess) && this.device.info.capabilities?.includes("depth-textures"))
     }));
   }
-
   renderAsync(input: RendererInput): Promise<RenderDeviceDiagnostics>;
   renderAsync(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics>;
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
@@ -694,6 +621,13 @@ export class Renderer {
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget, this.width, this.height);
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
+    const frameHooks = createRendererFrameHooks({
+      device: this.device,
+      width: this.width,
+      height: this.height,
+      source,
+      camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition)
+    });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
       if (autoFrame) {
@@ -748,6 +682,7 @@ export class Renderer {
     this.device.beginFrame(this.width, this.height);
     try {
       this.lastShadowEvidence = null;
+      items = frameHooks.collect(items);
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
@@ -757,6 +692,7 @@ export class Renderer {
         ownedShadowPasses,
         camera: resolvedCamera?.camera
       });
+      frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -782,6 +718,7 @@ export class Renderer {
           inverseViewProjectionMatrix: environmentBackground.inverseViewProjectionMatrix ?? invertMat4(cameraViewProjection ?? identityMat4()),
           shaderLibrary: this.shaderLibrary
         }));
+        frameHooks.addPasses(this.graph, "background", items);
       }
       if (postprocess?.temporal && (postprocess.motionBlur || postprocess.taa)) {
         if (postprocess.execution === "cpu-deterministic" || !this.device.presentLdrPostprocess) throw new RenderDeviceError("Renderer temporal effects require native GPU presentation", "TEMPORAL_NATIVE_REQUIRED");
@@ -803,12 +740,18 @@ export class Renderer {
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));
+      frameHooks.addPasses(this.graph, "after-opaque", items);
+      frameHooks.addPasses(this.graph, "transmission", items);
+      frameHooks.addPasses(this.graph, "transparent", items);
+      frameHooks.addPasses(this.graph, "after-transparent", items);
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
+        await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
         await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
       }
+      await frameHooks.runPhaseAsync("after-output", items);
     } catch (error) {
       this.lastShadowEvidence = null;
       if (postprocess?.temporal) this.temporalHistory.reset();
@@ -833,15 +776,12 @@ export class Renderer {
       rendererDepthAvailable: Boolean(postprocess && postprocessRequiresDepthTexture(postprocess) && this.device.info.capabilities?.includes("depth-textures"))
     }));
   }
-
   renderScene(scene: RenderSource | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     return this.render(scene, camera);
   }
-
   renderItems(items: Iterable<RenderItem>, camera?: CameraLike, options: Omit<RenderSource, "renderItems"> = {}): RenderDeviceDiagnostics {
     return this.render({ ...options, renderItems: items }, camera);
   }
-
   captureFrame(source?: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RendererFrameCaptureWithMetadata {
     const diagnostics = source ? this.render(source, camera) : this.device.getDiagnostics();
     const pixels = this.device.readPixels(0, 0, this.width, this.height);
@@ -860,11 +800,9 @@ export class Renderer {
       metadata
     };
   }
-
   getDiagnostics(): RenderDeviceDiagnostics {
     return this.device.getDiagnostics();
   }
-
   dispose(): void {
     this.lastShadowEvidence = null;
     this.animationLoop?.stop();
@@ -878,12 +816,10 @@ export class Renderer {
     this.device.dispose();
     this.disposed = true;
   }
-
   /** True for renderer-lifetime targets that must survive end-of-frame disposal. */
   private isReusedTarget(target: RenderTarget): boolean {
     return target === this.forwardColorTarget?.target || target === this.shadowDepthTarget;
   }
-
   /** Allocates the shared forward-color target once per distinct configuration. */
   private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number): RenderTarget {
     const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}`;
@@ -901,29 +837,11 @@ export class Renderer {
     this.forwardColorTarget = { target, key };
     return target;
   }
-
-  /** Allocates the shared shadow depth target once, reallocating only when the size changes. */
-  private ensureShadowDepthTarget(size: number): RenderTarget {
-    const existing = this.shadowDepthTarget;
-    if (existing && !existing.disposed && existing.width === size && existing.height === size) return existing;
-    existing?.dispose();
-    const target = this.device.createRenderTarget({
-      width: size,
-      height: size,
-      label: "renderer-shadow-depth-color",
-      format: "rgba8",
-      depth: this.device.info.capabilities?.includes("depth-textures") ? "texture" : true
-    });
-    this.shadowDepthTarget = target;
-    return target;
-  }
-
   private assertAlive(): void {
     if (this.disposed || this.device.disposed) {
       throw new RenderDeviceError("Renderer is disposed", "DISPOSED_DEVICE");
     }
   }
-
   private resizeCanvas(width: number, height: number): void {
     if (!this.canvas) return;
     if (this.canvas.width !== width) {
@@ -933,384 +851,12 @@ export class Renderer {
       this.canvas.height = height;
     }
   }
-
   private executePostprocess(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): void {
-    const forwardTarget = ownedTargets[0];
-    let current = forwardTarget;
-    if (!current) {
-      throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
-    }
-    const passes = createRendererPostprocessPasses(postprocess);
-    if (passes.length === 0) {
-      if (outputTarget) {
-        this.device.setRenderTarget(current);
-        writePostProcessPixels(this.device, current, outputTarget, this.device.readPixels(0, 0, current.width, current.height));
-      } else {
-        this.device.presentRenderTarget?.(current);
-      }
-      return;
-    }
-    if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
-    for (let index = 0; index < passes.length; index += 1) {
-      const pass = passes[index]!;
-      const nextPass = passes[index + 1];
-      if (pass.name === "bloom" && isHdrRenderTarget(current)) {
-        if (nextPass?.name !== "tone-mapping") {
-          throw new RenderDeviceError("Renderer HDR bloom requires tone mapping immediately after the float bloom pass.", "HDR_BLOOM_TONEMAPPING_REQUIRED", {
-            source: current.label
-          });
-        }
-        const isCombinedLast = index + 1 === passes.length - 1;
-        const target = isCombinedLast ? outputTarget : this.device.createRenderTarget({
-          width: this.width,
-          height: this.height,
-          label: "renderer-postprocess-tone-mapping",
-          format: "rgba8",
-          depth: false
-        });
-        if (target) ownedTargets.push(target);
-        this.device.setRenderTarget(current);
-        const bloomed = bloomFloatPixels(
-          this.device.readFloatPixels(0, 0, current.width, current.height),
-          current.width,
-          current.height,
-          pass.options as BloomOptions
-        );
-        const mapped = toneMapFloatPixels(
-          bloomed.pixels,
-          current.width,
-          current.height,
-          {
-            outputColorSpace: "srgb",
-            ...(nextPass.options as ToneMappingOptions)
-          }
-        );
-        writePostProcessPixels(this.device, current, target, mapped.pixels);
-        if (target) current = target;
-        index += 1;
-        continue;
-      }
-      const isLast = index === passes.length - 1;
-      const target = isLast ? outputTarget : this.device.createRenderTarget({
-        width: this.width,
-        height: this.height,
-        label: `renderer-postprocess-${pass.name}`,
-        format: "rgba8",
-        depth: false
-      });
-      if (target) ownedTargets.push(target);
-      if (pass.name === "tone-mapping") {
-        new ToneMappingPass({
-          source: current,
-          target,
-          outputColorSpace: "srgb",
-          ...(pass.options as ToneMappingOptions)
-        }).execute({ device: this.device, width: this.width, height: this.height });
-      } else if (pass.name === "bloom") {
-        new BloomPass({
-          source: current,
-          target,
-          ...(pass.options as BloomOptions)
-        }).execute({ device: this.device, width: this.width, height: this.height });
-      } else if (pass.name === "fxaa") {
-        new FXAAPass({
-          source: current,
-          target,
-          ...(pass.options as FXAAOptions)
-        }).execute({ device: this.device, width: this.width, height: this.height });
-      } else {
-        this.executePixelPostprocessPass(pass, current, target, forwardTarget);
-      }
-      if (target) current = target;
-    }
+    return this.host.post.executePostprocess(postprocess, ownedTargets, outputTarget);
   }
-
-  private executeFusedLdrPostprocess(
-    current: RenderTarget,
-    passes: readonly RendererPostProcessPassPlan[],
-    outputTarget?: RenderTarget,
-    forceCpuDeterministic = false
-  ): boolean {
-    const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
-    if (nativeHdrBloom && (forceCpuDeterministic || !this.device.presentLdrPostprocess)) return false;
-    if (!canFuseLdrPostprocess(current, passes)) return false;
-    if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
-    // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
-    // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
-    // sampleable depth texture when the renderer has to generate the depth itself. The
-    // backend's fused path samples `depthTextureHandle` regardless and used to throw
-    // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
-    // back. Declining fusion here routes those passes through the per-pass CPU path, which
-    // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
-    if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
-      this.device.presentLdrPostprocess(current, {
-        passes: passes.map((pass) => ({
-          name: pass.name,
-          options: pass.options as Readonly<Record<string, unknown>>
-        })) as readonly LdrPostprocessPassDescriptor[],
-        ...(outputTarget ? { outputTarget } : {}),
-        toneMappingDefaults: { outputColorSpace: "srgb" }
-      });
-      return true;
-    }
-    this.device.setRenderTarget(current);
-    const pixels = fusedLdrPostprocessPixels(
-      this.device.readPixels(0, 0, current.width, current.height),
-      current.width,
-      current.height,
-      passes as readonly FusedLdrPostProcessPass[],
-      {
-        mutateInput: true,
-        scratch: this.fusedLdrPostprocessScratch,
-        toneMappingDefaults: { outputColorSpace: "srgb" }
-      }
-    );
-    writePostProcessPixels(this.device, current, outputTarget, pixels);
-    return true;
-  }
-
   private async executePostprocessAsync(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): Promise<void> {
-    const forwardTarget = ownedTargets[0];
-    let current = forwardTarget;
-    if (!current) {
-      throw new RenderDeviceError("Renderer postprocess missing forward render target", "POSTPROCESS_TARGET_MISSING");
-    }
-    const passes = createRendererPostprocessPasses(postprocess);
-    if (passes.length === 0) {
-      if (outputTarget) {
-        this.device.setRenderTarget(current);
-        writePostProcessPixels(this.device, current, outputTarget, await this.readRenderTargetPixelsAsync(current));
-      } else {
-        this.device.presentRenderTarget?.(current);
-      }
-      return;
-    }
-    if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
-    for (let index = 0; index < passes.length; index += 1) {
-      const pass = passes[index]!;
-      const nextPass = passes[index + 1];
-      if (pass.name === "bloom" && isHdrRenderTarget(current)) {
-        if (nextPass?.name !== "tone-mapping") {
-          throw new RenderDeviceError("Renderer HDR bloom requires tone mapping immediately after the float bloom pass.", "HDR_BLOOM_TONEMAPPING_REQUIRED", {
-            source: current.label
-          });
-        }
-        const isCombinedLast = index + 1 === passes.length - 1;
-        const target = isCombinedLast ? outputTarget : this.device.createRenderTarget({
-          width: this.width,
-          height: this.height,
-          label: "renderer-postprocess-tone-mapping",
-          format: "rgba8",
-          depth: false
-        });
-        if (target) ownedTargets.push(target);
-        const bloomed = bloomFloatPixels(
-          await this.readRenderTargetFloatPixelsAsync(current),
-          current.width,
-          current.height,
-          pass.options as BloomOptions
-        );
-        const mapped = toneMapFloatPixels(
-          bloomed.pixels,
-          current.width,
-          current.height,
-          {
-            outputColorSpace: "srgb",
-            ...(nextPass.options as ToneMappingOptions)
-          }
-        );
-        writePostProcessPixels(this.device, current, target, mapped.pixels);
-        if (target) current = target;
-        index += 1;
-        continue;
-      }
-      const isLast = index === passes.length - 1;
-      const target = isLast ? outputTarget : this.device.createRenderTarget({
-        width: this.width,
-        height: this.height,
-        label: `renderer-postprocess-${pass.name}`,
-        format: "rgba8",
-        depth: false
-      });
-      if (target) ownedTargets.push(target);
-      if (pass.name === "tone-mapping") {
-        const mapped = isHdrRenderTarget(current)
-          ? toneMapFloatPixels(await this.readRenderTargetFloatPixelsAsync(current), current.width, current.height, {
-              outputColorSpace: "srgb",
-              ...(pass.options as ToneMappingOptions)
-            })
-          : toneMapPixels(await this.readRenderTargetPixelsAsync(current), current.width, current.height, {
-              outputColorSpace: "srgb",
-              ...(pass.options as ToneMappingOptions)
-            });
-        writePostProcessPixels(this.device, current, target, mapped.pixels);
-      } else if (pass.name === "bloom") {
-        const bloomed = bloomPixels(await this.readRenderTargetPixelsAsync(current), current.width, current.height, pass.options as BloomOptions);
-        writePostProcessPixels(this.device, current, target, bloomed.pixels);
-      } else if (pass.name === "fxaa") {
-        const smoothed = fxaaPixels(await this.readRenderTargetPixelsAsync(current), current.width, current.height, pass.options as FXAAOptions);
-        writePostProcessPixels(this.device, current, target, smoothed.pixels);
-      } else {
-        await this.executePixelPostprocessPassAsync(pass, current, target, forwardTarget);
-      }
-      if (target) current = target;
-    }
+    return this.host.post.executePostprocessAsync(postprocess, ownedTargets, outputTarget);
   }
-
-  private async executeFusedLdrPostprocessAsync(
-    current: RenderTarget,
-    passes: readonly RendererPostProcessPassPlan[],
-    outputTarget?: RenderTarget,
-    forceCpuDeterministic = false
-  ): Promise<boolean> {
-    const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
-    if (nativeHdrBloom && (forceCpuDeterministic || !this.device.presentLdrPostprocess)) return false;
-    if (!canFuseLdrPostprocess(current, passes)) return false;
-    if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
-    // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
-    // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
-    // sampleable depth texture when the renderer has to generate the depth itself. The
-    // backend's fused path samples `depthTextureHandle` regardless and used to throw
-    // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
-    // back. Declining fusion here routes those passes through the per-pass CPU path, which
-    // consumes the caller's depth directly and is the behaviour the options already imply.
-    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
-    if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
-      this.device.presentLdrPostprocess(current, {
-        passes: passes.map((pass) => ({
-          name: pass.name,
-          options: pass.options as Readonly<Record<string, unknown>>
-        })) as readonly LdrPostprocessPassDescriptor[],
-        ...(outputTarget ? { outputTarget } : {}),
-        toneMappingDefaults: { outputColorSpace: "srgb" }
-      });
-      return true;
-    }
-    const pixels = fusedLdrPostprocessPixels(
-      await this.readRenderTargetPixelsAsync(current),
-      current.width,
-      current.height,
-      passes as readonly FusedLdrPostProcessPass[],
-      {
-        mutateInput: true,
-        scratch: this.fusedLdrPostprocessScratch,
-        toneMappingDefaults: { outputColorSpace: "srgb" }
-      }
-    );
-    writePostProcessPixels(this.device, current, outputTarget, pixels);
-    return true;
-  }
-
-  private executePixelPostprocessPass(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget): void {
-    this.device.setRenderTarget(source);
-    const input = this.device.readPixels(0, 0, source.width, source.height);
-    const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
-      ? this.readRendererOwnedDepthTexture(forwardTarget)
-      : undefined;
-    const result = pass.name === "color-grade"
-      ? colorGradePixels(input, source.width, source.height, pass.options as ColorGradeOptions).pixels
-      : pass.name === "chromatic-aberration"
-        ? chromaticAberrationPixels(input, source.width, source.height, pass.options as ChromaticAberrationOptions).pixels
-        : pass.name === "film-grain"
-          ? filmGrainPixels(input, source.width, source.height, pass.options as FilmGrainOptions).pixels
-          : pass.name === "depth-of-field"
-          ? depthOfFieldPixels(input, source.width, source.height, withRendererDepth(pass.options as DepthOfFieldOptions, rendererDepth)).pixels
-          : pass.name === "volumetric-light"
-            ? volumetricLightPixels(input, source.width, source.height, withRendererDepth(pass.options as VolumetricLightOptions, rendererDepth)).pixels
-          : pass.name === "motion-blur"
-            ? motionBlurPixels(input, source.width, source.height, pass.options as MotionBlurOptions).pixels
-            : pass.name === "contact-shadow"
-              ? contactShadowPixels(input, source.width, source.height, withRendererDepth(pass.options as ContactShadowPostProcessOptions, rendererDepth)).pixels
-            : pass.name === "ssao"
-              ? ssaoPixels(input, source.width, source.height, withRendererDepth(pass.options as SSAOOptions, rendererDepth)).pixels
-              : pass.name === "ssr"
-                ? ssrPixels(input, source.width, source.height, withRendererDepth(pass.options as SSROptions, rendererDepth)).pixels
-                  : pass.name === "taa"
-                    ? taaPixels(input, source.width, source.height, pass.options as TAAOptions).pixels
-                    : pass.name === "outline"
-                      ? outlinePixels(input, source.width, source.height, pass.options as OutlineOptions).pixels
-                      : undefined;
-    if (!result) {
-      throw new RenderDeviceError("Renderer postprocess pass is outside the supported renderer pass catalog", "POSTPROCESS_PASS_UNKNOWN", {
-        pass: pass.name
-      });
-    }
-    writePostProcessPixels(this.device, source, target, result);
-  }
-
-  private async executePixelPostprocessPassAsync(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget): Promise<void> {
-    const input = await this.readRenderTargetPixelsAsync(source);
-    const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
-      ? this.readRendererOwnedDepthTexture(forwardTarget)
-      : undefined;
-    const result = pass.name === "color-grade"
-      ? colorGradePixels(input, source.width, source.height, pass.options as ColorGradeOptions).pixels
-      : pass.name === "chromatic-aberration"
-        ? chromaticAberrationPixels(input, source.width, source.height, pass.options as ChromaticAberrationOptions).pixels
-        : pass.name === "film-grain"
-          ? filmGrainPixels(input, source.width, source.height, pass.options as FilmGrainOptions).pixels
-          : pass.name === "depth-of-field"
-          ? depthOfFieldPixels(input, source.width, source.height, withRendererDepth(pass.options as DepthOfFieldOptions, rendererDepth)).pixels
-          : pass.name === "volumetric-light"
-            ? volumetricLightPixels(input, source.width, source.height, withRendererDepth(pass.options as VolumetricLightOptions, rendererDepth)).pixels
-          : pass.name === "motion-blur"
-            ? motionBlurPixels(input, source.width, source.height, pass.options as MotionBlurOptions).pixels
-            : pass.name === "contact-shadow"
-              ? contactShadowPixels(input, source.width, source.height, withRendererDepth(pass.options as ContactShadowPostProcessOptions, rendererDepth)).pixels
-            : pass.name === "ssao"
-              ? ssaoPixels(input, source.width, source.height, withRendererDepth(pass.options as SSAOOptions, rendererDepth)).pixels
-              : pass.name === "ssr"
-                ? ssrPixels(input, source.width, source.height, withRendererDepth(pass.options as SSROptions, rendererDepth)).pixels
-                  : pass.name === "taa"
-                    ? taaPixels(input, source.width, source.height, pass.options as TAAOptions).pixels
-                    : pass.name === "outline"
-                      ? outlinePixels(input, source.width, source.height, pass.options as OutlineOptions).pixels
-                      : undefined;
-    if (!result) {
-      throw new RenderDeviceError("Renderer postprocess pass is outside the supported renderer pass catalog", "POSTPROCESS_PASS_UNKNOWN", {
-        pass: pass.name
-      });
-    }
-    writePostProcessPixels(this.device, source, target, result);
-  }
-
-  private async readRenderTargetPixelsAsync(target: RenderTarget): Promise<Uint8Array> {
-    this.device.setRenderTarget(target);
-    if (this.device.readPixelsAsync && target.colorTexture.format === "rgba8") {
-      return this.device.readPixelsAsync(0, 0, target.width, target.height);
-    }
-    return this.device.readPixels(0, 0, target.width, target.height);
-  }
-
-  private async readRenderTargetFloatPixelsAsync(target: RenderTarget): Promise<Float32Array> {
-    this.device.setRenderTarget(target);
-    if (this.device.readFloatPixelsAsync && isHdrRenderTarget(target)) {
-      return this.device.readFloatPixelsAsync(0, 0, target.width, target.height);
-    }
-    return this.device.readFloatPixels(0, 0, target.width, target.height);
-  }
-
-  private readRendererOwnedDepthTexture(forwardTarget: RenderTarget): DepthTextureBinding {
-    if (!forwardTarget.depthTexture) {
-      throw new RenderDeviceError("Renderer-owned depth postprocess requires the forward target to expose a depth texture.", "POSTPROCESS_DEPTH_TARGET_MISSING", {
-        renderTarget: forwardTarget.label
-      });
-    }
-    if (!this.device.readDepthPixels) {
-      throw new RenderDeviceError("Renderer-owned depth postprocess requires backend depth readback.", "DEPTH_READBACK_UNSUPPORTED", {
-        backend: this.device.kind
-      });
-    }
-    this.device.setRenderTarget(forwardTarget);
-    return createDepthTextureBinding({
-      label: forwardTarget.depthTexture.label,
-      width: forwardTarget.width,
-      height: forwardTarget.height,
-      data: this.device.readDepthPixels(0, 0, forwardTarget.width, forwardTarget.height)
-    });
-  }
-
   private executeRendererShadowMap(options: {
     readonly shadowOptions: RendererShadowOptions | undefined;
     readonly source: RenderSource | Iterable<RenderItem> | Scene;
@@ -1320,249 +866,9 @@ export class Renderer {
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
   }): ForwardShadowMapOptions | undefined {
-    if (!options.shadowOptions || options.shadowOptions.enabled === false) {
-      return undefined;
-    }
-    if (!this.device.info.capabilities?.includes("render-targets")) {
-      throw new RenderDeviceError("Renderer-owned shadows require render targets", "SHADOW_RENDER_TARGET_UNSUPPORTED", {
-        backend: this.device.kind
-      });
-    }
-    const light = options.shadowOptions.light ?? firstShadowCastingLight(options.source, options.lights);
-    if (light instanceof PointLight) {
-      return this.executeRendererPointShadowMap({
-        shadowOptions: options.shadowOptions,
-        items: options.items,
-        ownedTargets: options.ownedTargets,
-        ownedShadowPasses: options.ownedShadowPasses,
-        light
-      });
-    }
-    if (light && !(light instanceof DirectionalLight) && !(light instanceof SpotLight)) {
-      throw new RenderDeviceError("Renderer-owned shadow maps require directional, spot, or point lights.", "SHADOW_LIGHT_TYPE_UNSUPPORTED", {
-        lightName: light.name,
-        lightType: light.constructor.name
-      });
-    }
-    if (
-      light instanceof DirectionalLight
-      && options.camera instanceof PerspectiveCamera
-      && (options.shadowOptions.cascadeCount ?? 1) > 1
-    ) {
-      return this.executeRendererCascadedShadowMap({
-        shadowOptions: options.shadowOptions,
-        items: options.items,
-        ownedShadowPasses: options.ownedShadowPasses,
-        light,
-        camera: options.camera
-      });
-    }
-    const lightMatrix = options.shadowOptions.lightMatrix
-      ? toMat4(options.shadowOptions.lightMatrix, "shadow.lightMatrix")
-      : createRendererOwnedShadowMatrix(light, options.items, firstShadowCastingCollectedLight(options.lights));
-    const shadowMap = new ShadowMap({
-      size: options.shadowOptions.size,
-      bias: options.shadowOptions.bias,
-      filter: options.shadowOptions.filter,
-      pcfRadius: options.shadowOptions.pcfRadius,
-      pcfSamples: options.shadowOptions.pcfSamples,
-      pcfDistribution: options.shadowOptions.pcfDistribution,
-      label: options.shadowOptions.label ?? "renderer-shadow-map"
-    });
-    const shadowPass = new ShadowPass({
-      light,
-      casters: options.items,
-      shadowMap,
-      viewProjectionMatrix: lightMatrix,
-      shaderLibrary: this.shaderLibrary,
-      renderTarget: this.ensureShadowDepthTarget(shadowMap.size)
-    });
-    options.ownedShadowPasses.push(shadowPass);
-    const result = shadowPass.execute({ device: this.device, width: this.width, height: this.height });
-    if (!result.rendered) {
-      if (result.reason === "no-light" || result.reason === "light-disabled" || result.reason === "not-shadow-casting") {
-        throw new RenderDeviceError("Renderer-owned shadows require an enabled shadow-casting light.", "SHADOW_LIGHT_REQUIRED", {
-          reason: result.reason
-        });
-      }
-      return undefined;
-    }
-    return shadowPass.getForwardShadowMap({
-      lightMatrix,
-      strength: options.shadowOptions.strength,
-      slopeBias: options.shadowOptions.slopeBias,
-      texelSize: options.shadowOptions.texelSize,
-      bias: options.shadowOptions.bias,
-      filterKernel: options.shadowOptions.filterKernel
-    }) ?? undefined;
-  }
-
-  private executeRendererCascadedShadowMap(options: {
-    readonly shadowOptions: RendererShadowOptions;
-    readonly items: readonly RenderItem[];
-    readonly ownedShadowPasses: Array<{ dispose(): void }>;
-    readonly light: DirectionalLight;
-    readonly camera: PerspectiveCamera;
-  }): ForwardShadowMapOptions | undefined {
-    const cascadeCount = options.shadowOptions.cascadeCount ?? 4;
-    if (!Number.isInteger(cascadeCount) || cascadeCount < 2 || cascadeCount > 4) {
-      throw new RenderDeviceError("Renderer cascadeCount must be an integer in [2, 4].", "SHADOW_CASCADE_CONTRACT", { cascadeCount });
-    }
-    options.camera.transform.updateWorld(undefined, true);
-    const position = cameraWorldPosition(options.camera);
-    const world = options.camera.transform.worldMatrix;
-    const target: Vec3 = [
-      position[0] - (world[8] ?? 0),
-      position[1] - (world[9] ?? 0),
-      position[2] - (world[10] ?? 1)
-    ];
-    const cascades = new CascadedShadowMaps({
-      cascadeCount,
-      near: options.camera.near,
-      far: options.camera.far,
-      lambda: options.shadowOptions.cascadeLambda ?? 0.6,
-      size: options.shadowOptions.size,
-      bias: options.shadowOptions.bias,
-      filter: options.shadowOptions.filter,
-      pcfRadius: options.shadowOptions.pcfRadius,
-      pcfSamples: options.shadowOptions.pcfSamples,
-      label: options.shadowOptions.label ?? "renderer-csm"
-    });
-    const fits = cascades.computeStableCameraFits({
-      camera: {
-        position,
-        target,
-        fovYRadians: options.camera.fovYRadians,
-        aspect: options.camera.aspect
-      },
-      lightDirection: options.light.getDirection(),
-      casters: [],
-      receivers: [],
-      padding: options.shadowOptions.cascadePadding ?? 0.25,
-      stabilize: options.shadowOptions.stabilize !== false
-    });
-    const lightMatrices = fits.map(shadowCameraFitViewProjectionMatrix);
-    const cascadePass = new CascadedShadowPass({
-      light: options.light,
-      casters: options.items,
-      cascades,
-      viewProjectionMatrices: lightMatrices,
-      shaderLibrary: this.shaderLibrary
-    });
-    const result = cascadePass.execute({ device: this.device, width: this.width, height: this.height });
-    options.ownedShadowPasses.push(cascadePass);
-    if (!result.rendered) return undefined;
-    const maps = cascadePass.getForwardShadowMaps({
-      lightMatrices,
-      strength: options.shadowOptions.strength,
-      slopeBias: options.shadowOptions.slopeBias,
-      texelSize: options.shadowOptions.texelSize,
-      bias: options.shadowOptions.bias,
-      filterKernel: options.shadowOptions.filterKernel
-    });
-    const first = maps[0];
-    if (!first || maps.length !== result.cascades.length) return undefined;
-    return {
-      ...first,
-      cascades: result.cascades.map((cascade, index) => ({
-        index: cascade.index,
-        near: cascade.split.near,
-        far: cascade.split.far,
-        shadowMap: maps[index]!
-      }))
-    };
-  }
-
-  private executeRendererPointShadowMap(options: {
-    readonly shadowOptions: RendererShadowOptions;
-    readonly items: readonly RenderItem[];
-    readonly ownedTargets: RenderTarget[];
-    readonly ownedShadowPasses: Array<{ dispose(): void }>;
-    readonly light: PointLight;
-  }): ForwardShadowMapOptions | undefined {
-    if (!this.device.writeRenderTargetPixels) {
-      throw new RenderDeviceError("Renderer-owned point shadows require render-target pixel upload for the point-light atlas.", "POINT_SHADOW_ATLAS_UPLOAD_UNSUPPORTED", {
-        backend: this.device.kind
-      });
-    }
-    options.light.transform.updateWorld(undefined, true);
-    const size = options.shadowOptions.size ?? 512;
-    const faceMatrices = createPointShadowFaceMatrices(options.light);
-    const faceRects = createPointShadowFaceRects();
-    const shadowMapOptions = {
-      size,
-      bias: options.shadowOptions.bias,
-      filter: options.shadowOptions.filter,
-      pcfRadius: options.shadowOptions.pcfRadius,
-      pcfSamples: options.shadowOptions.pcfSamples,
-      pcfDistribution: options.shadowOptions.pcfDistribution
-    };
-    const atlasPixels = new Uint8Array(size * 3 * size * 2 * 4);
-    for (let face = 0; face < 6; face += 1) {
-      const faceMatrix = faceMatrices.slice(face * 16, face * 16 + 16);
-      const shadowPass = new ShadowPass({
-        light: options.light,
-        casters: options.items,
-        shadowMap: new ShadowMap({ ...shadowMapOptions, label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-face-${face}` }),
-        viewProjectionMatrix: faceMatrix,
-        shaderLibrary: this.shaderLibrary
-      });
-      options.ownedShadowPasses.push(shadowPass);
-      const result = shadowPass.execute({ device: this.device, width: this.width, height: this.height });
-      if (!result.rendered) {
-        return undefined;
-      }
-      const target = shadowPass.getRenderTarget();
-      if (!target) {
-        throw new RenderDeviceError("Renderer-owned point shadow face did not expose a render target.", "POINT_SHADOW_FACE_TARGET_MISSING", { face });
-      }
-      const facePixels = readShadowFacePixels(this.device, target);
-      blitPointShadowFace(atlasPixels, size * 3, size * 2, facePixels, size, faceRects, face);
-    }
-    const atlasTarget = this.device.createRenderTarget({
-      width: size * 3,
-      height: size * 2,
-      label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-atlas`,
-      format: "rgba8",
-      depth: false
-    });
-    options.ownedTargets.push(atlasTarget);
-    this.device.writeRenderTargetPixels(atlasTarget, atlasPixels);
-    const texture = new TextureBinding({
-      name: "u_pointShadowMapTexture",
-      texture: atlasTarget.colorTexture,
-      sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-      required: true
-    });
-    return {
-      texture: new TextureBinding({
-        name: "u_shadowMapTexture",
-        texture: atlasTarget.colorTexture,
-        sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-        required: true
-      }),
-      lightMatrix: identityMat4(),
-      strength: options.shadowOptions.strength,
-      slopeBias: options.shadowOptions.slopeBias,
-      texelSize: options.shadowOptions.texelSize,
-      bias: options.shadowOptions.bias,
-      filterKernel: options.shadowOptions.filterKernel,
-      pointLight: {
-        texture,
-        lightPosition: [options.light.transform.worldMatrix[12], options.light.transform.worldMatrix[13], options.light.transform.worldMatrix[14]],
-        range: options.light.range,
-        faceMatrices,
-        faceRects,
-        strength: options.shadowOptions.strength,
-        slopeBias: options.shadowOptions.slopeBias,
-        texelSize: [1 / Math.max(1, size * 3), 1 / Math.max(1, size * 2)],
-        bias: options.shadowOptions.bias,
-        filterKernel: options.shadowOptions.filterKernel
-      }
-    };
+    return this.host.shadows.executeRendererShadowMap(options);
   }
 }
-
 export function pickSceneRenderables(
   source: Pick<RenderSource, "geometryLibrary" | "morphTargetLibrary" | "scene">,
   ray: Ray,
@@ -1570,7 +876,6 @@ export function pickSceneRenderables(
 ): ScenePickHit | undefined {
   return pickSceneRenderableHits(source, ray, options)[0];
 }
-
 export function pickSceneRenderableHits(
   source: Pick<RenderSource, "geometryLibrary" | "morphTargetLibrary" | "scene">,
   ray: Ray,
@@ -1625,7 +930,6 @@ export function pickSceneRenderableHits(
   }
   return hits.sort((left, right) => left.distance - right.distance);
 }
-
 function pickPoints(
   node: SceneNode,
   geometry: Geometry,
@@ -1660,7 +964,6 @@ function pickPoints(
   }
   return hits;
 }
-
 function collectInstanceWorldMatrices(modelMatrix: Mat4, instanceTransforms: Float32Array | readonly number[]): readonly Mat4[] {
   const matrices: Mat4[] = [];
   for (let offset = 0; offset < instanceTransforms.length; offset += 16) {
@@ -1668,7 +971,6 @@ function collectInstanceWorldMatrices(modelMatrix: Mat4, instanceTransforms: Flo
   }
   return matrices;
 }
-
 function distanceAlongRay(ray: Ray, point: readonly [number, number, number]): number {
   return (
     (point[0] - ray.origin.x) * ray.direction.x +
@@ -1676,7 +978,6 @@ function distanceAlongRay(ray: Ray, point: readonly [number, number, number]): n
     (point[2] - ray.origin.z) * ray.direction.z
   );
 }
-
 function squaredDistanceToRayAt(ray: Ray, point: readonly [number, number, number], distance: number): number {
   const closestX = ray.origin.x + ray.direction.x * distance;
   const closestY = ray.origin.y + ray.direction.y * distance;
@@ -1686,21 +987,18 @@ function squaredDistanceToRayAt(ray: Ray, point: readonly [number, number, numbe
   const dz = point[2] - closestZ;
   return dx * dx + dy * dy + dz * dz;
 }
-
 function expandPointBounds(center: readonly [number, number, number], radius: number): SceneBounds3 {
   return new SceneBounds3(
     [center[0] - radius, center[1] - radius, center[2] - radius],
     [center[0] + radius, center[1] + radius, center[2] + radius]
   );
 }
-
 function expandSceneBounds(bounds: SceneBounds3, radius: number): SceneBounds3 {
   return new SceneBounds3(
     [bounds.min[0] - radius, bounds.min[1] - radius, bounds.min[2] - radius],
     [bounds.max[0] + radius, bounds.max[1] + radius, bounds.max[2] + radius]
   );
 }
-
 class RendererAnimationLoopImpl implements RendererAnimationLoop {
   private requestId: number | null = null;
   public running = false;
@@ -1736,7 +1034,6 @@ class RendererAnimationLoopImpl implements RendererAnimationLoop {
     }
   }
 }
-
 function readCanvasCssSize(canvas: HTMLCanvasElement | OffscreenCanvas, axis: "width" | "height"): number {
   if ("getBoundingClientRect" in canvas) {
     const bounds = canvas.getBoundingClientRect();
@@ -1747,7 +1044,6 @@ function readCanvasCssSize(canvas: HTMLCanvasElement | OffscreenCanvas, axis: "w
   }
   return axis === "width" ? canvas.width : canvas.height;
 }
-
 function inferInitialCanvasDimension(canvas: HTMLCanvasElement | OffscreenCanvas | undefined, axis: "width" | "height"): number {
   if (!canvas) return 1;
   const cssSize = readCanvasCssSize(canvas, axis);
@@ -1755,32 +1051,9 @@ function inferInitialCanvasDimension(canvas: HTMLCanvasElement | OffscreenCanvas
   const displaySize = Math.round(cssSize * dpr);
   return Math.max(1, displaySize || (axis === "width" ? canvas.width : canvas.height) || 1);
 }
-
-function collectEnvironmentLighting(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentLightingOptions | undefined {
-  if (source instanceof Scene || isIterable(source)) return undefined;
-  if (source.environmentLighting === false) return cloneEnvironmentLighting(DISABLED_RENDERER_ENVIRONMENT_LIGHTING);
-  if (source.environmentLighting) return source.environmentLighting;
-  return cloneEnvironmentLighting(DEFAULT_RENDERER_ENVIRONMENT_LIGHTING);
-}
-
-function collectEnvironmentBackground(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentBackgroundOptions | undefined {
-  if (source instanceof Scene || isIterable(source) || source.environmentBackground === false) return undefined;
-  return source.environmentBackground;
-}
-
-function collectEnvironmentFog(source: RenderSource | Iterable<RenderItem> | Scene): ForwardEnvironmentFogOptions | false | undefined {
-  if (source instanceof Scene || isIterable(source)) return undefined;
-  return source.environmentFog;
-}
-
-function collectForwardShadowMap(source: RenderSource | Iterable<RenderItem> | Scene): ForwardShadowMapOptions | undefined {
-  return source instanceof Scene || isIterable(source) ? undefined : source.shadowMap;
-}
-
 function collectRenderTarget(source: RenderSource | Iterable<RenderItem> | Scene): RenderTarget | undefined {
   return source instanceof Scene || isIterable(source) ? undefined : source.renderTarget;
 }
-
 function validateExplicitRenderTarget(target: RenderTarget | undefined, width: number, height: number): void {
   if (!target) return;
   if (target.disposed) {
@@ -1798,240 +1071,6 @@ function validateExplicitRenderTarget(target: RenderTarget | undefined, width: n
     });
   }
 }
-
-function collectRendererShadowOptions(source: RenderSource | Iterable<RenderItem> | Scene): RendererShadowOptions | undefined {
-  if (source instanceof Scene || isIterable(source)) return undefined;
-  if (source.shadow === true) return {};
-  if (!source.shadow) return undefined;
-  return source.shadow;
-}
-
-function firstShadowCastingLight(source: RenderSource | Iterable<RenderItem> | Scene, lights: readonly CollectedLight[]): Light | null {
-  const explicit = lights.find((light) => light.castsShadow && light.source.visible)?.source;
-  if (explicit) return explicit;
-  const scene = sceneFromSource(source);
-  return scene?.collectLights().find((light) => light.visible && light.castsShadow) ?? null;
-}
-
-function firstShadowCastingCollectedLight(lights: readonly CollectedLight[]): CollectedLight | undefined {
-  return lights.find((light) => light.castsShadow && light.source.visible);
-}
-
-function lightDirectionFromLight(light: Light | null): Vec3 {
-  if (!light) return [0, -1, -1];
-  const direction = light instanceof DirectionalLight ? light.getDirection() : undefined;
-  return normalizeVec3([
-    Number(direction?.[0] ?? 0),
-    Number(direction?.[1] ?? -1),
-    Number(direction?.[2] ?? -1)
-  ]);
-}
-
-function createRendererOwnedShadowMatrix(light: Light | null, items: readonly RenderItem[], collectedLight: CollectedLight | undefined): Mat4 {
-  if (light instanceof SpotLight) {
-    light.transform.updateWorld(undefined, true);
-    const near = 0.01;
-    const far = Math.max(near + 0.01, light.range);
-    const projectionMatrix = perspectiveMat4(light.angle * 2, 1, near, far);
-    return multiplyMat4(projectionMatrix, light.transform.inverseWorldMatrix);
-  }
-  return createDirectionalShadowMatrix(items, collectedLight?.direction ?? lightDirectionFromLight(light));
-}
-
-function createPointShadowFaceMatrices(light: PointLight): Float32Array {
-  light.transform.updateWorld(undefined, true);
-  const position: Vec3 = [
-    light.transform.worldMatrix[12],
-    light.transform.worldMatrix[13],
-    light.transform.worldMatrix[14]
-  ];
-  const projection = perspectiveMat4(Math.PI / 2, 1, 0.01, Math.max(0.02, light.range));
-  const faces: readonly { readonly direction: Vec3; readonly up: Vec3 }[] = [
-    { direction: [1, 0, 0], up: [0, -1, 0] },
-    { direction: [-1, 0, 0], up: [0, -1, 0] },
-    { direction: [0, 1, 0], up: [0, 0, 1] },
-    { direction: [0, -1, 0], up: [0, 0, -1] },
-    { direction: [0, 0, 1], up: [0, -1, 0] },
-    { direction: [0, 0, -1], up: [0, -1, 0] }
-  ];
-  const matrices = new Float32Array(6 * 16);
-  for (const [index, face] of faces.entries()) {
-    const view = lookAtMatrix(position, addVec3(position, face.direction), face.up);
-    matrices.set(multiplyMat4(projection, view), index * 16);
-  }
-  return matrices;
-}
-
-function createPointShadowFaceRects(): Float32Array {
-  const rects = new Float32Array(6 * 4);
-  for (let face = 0; face < 6; face += 1) {
-    const column = face % 3;
-    const row = Math.floor(face / 3);
-    rects.set([column / 3, row / 2, 1 / 3, 1 / 2], face * 4);
-  }
-  return rects;
-}
-
-function readShadowFacePixels(device: RenderDevice, target: RenderTarget): Uint8Array {
-  device.setRenderTarget(target);
-  if (target.depthTexture && device.readDepthPixels) {
-    const depth = device.readDepthPixels(0, 0, target.width, target.height);
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    for (let index = 0; index < depth.length; index += 1) {
-      const byte = Math.max(0, Math.min(255, Math.round((depth[index] ?? 1) * 255)));
-      const offset = index * 4;
-      pixels[offset] = byte;
-      pixels[offset + 1] = byte;
-      pixels[offset + 2] = byte;
-      pixels[offset + 3] = 255;
-    }
-    return pixels;
-  }
-  return device.readPixels(0, 0, target.width, target.height);
-}
-
-function blitPointShadowFace(
-  atlasPixels: Uint8Array,
-  atlasWidth: number,
-  atlasHeight: number,
-  facePixels: Uint8Array,
-  faceSize: number,
-  faceRects: Float32Array,
-  face: number
-): void {
-  const rectOffset = face * 4;
-  const destX = Math.round((faceRects[rectOffset] ?? 0) * atlasWidth);
-  const destY = Math.round((faceRects[rectOffset + 1] ?? 0) * atlasHeight);
-  for (let row = 0; row < faceSize; row += 1) {
-    const sourceOffset = row * faceSize * 4;
-    const targetOffset = ((destY + row) * atlasWidth + destX) * 4;
-    atlasPixels.set(facePixels.subarray(sourceOffset, sourceOffset + faceSize * 4), targetOffset);
-  }
-}
-
-function lookAtMatrix(eye: Vec3, target: Vec3, up: Vec3): Mat4 {
-  const forward = normalizeVec3(subtractVec3(target, eye));
-  const right = normalizeVec3(crossVec3(forward, up));
-  const correctedUp = crossVec3(right, forward);
-  return [
-    right[0], correctedUp[0], -forward[0], 0,
-    right[1], correctedUp[1], -forward[1], 0,
-    right[2], correctedUp[2], -forward[2], 0,
-    -dotVec3(right, eye), -dotVec3(correctedUp, eye), dotVec3(forward, eye), 1
-  ];
-}
-
-function createDirectionalShadowMatrix(items: readonly RenderItem[], lightDirection: readonly [number, number, number]): Mat4 {
-  const bounds = collectShadowCoverageBounds(items);
-  if (!bounds || bounds.isEmpty()) {
-    return identityMat4();
-  }
-  const basis = directionalLightBasis(lightDirection);
-  const points = boundsCorners(bounds).map((point) => projectPointToLightSpace(point, basis));
-  const lightBounds = boundsFromVec3(points);
-  const width = Math.max(0.01, lightBounds.max[0] - lightBounds.min[0]);
-  const height = Math.max(0.01, lightBounds.max[1] - lightBounds.min[1]);
-  const depth = Math.max(0.01, lightBounds.max[2] - lightBounds.min[2]);
-  const padding = Math.max(width, height, depth) * 0.08 + 0.05;
-  const viewMatrix = lightViewMatrix(basis);
-  const projectionMatrix = orthographicMat4(
-    lightBounds.min[0] - padding,
-    lightBounds.max[0] + padding,
-    lightBounds.min[1] - padding,
-    lightBounds.max[1] + padding,
-    lightBounds.min[2] - padding,
-    lightBounds.max[2] + padding
-  );
-  return multiplyMat4(projectionMatrix, viewMatrix);
-}
-
-function directionalLightBasis(lightDirection: readonly [number, number, number]): {
-  readonly right: Vec3;
-  readonly up: Vec3;
-  readonly forward: Vec3;
-} {
-  const forward = normalizeVec3(scaleVec3(normalizeVec3(lightDirection), -1));
-  const fallbackUp: Vec3 = Math.abs(forward[1]) > 0.94 ? [0, 0, 1] : [0, 1, 0];
-  const right = normalizeVec3(crossVec3(fallbackUp, forward));
-  const up = normalizeVec3(crossVec3(forward, right));
-  return { right, up, forward };
-}
-
-function lightViewMatrix(basis: { readonly right: Vec3; readonly up: Vec3; readonly forward: Vec3 }): Mat4 {
-  return [
-    basis.right[0], basis.up[0], basis.forward[0], 0,
-    basis.right[1], basis.up[1], basis.forward[1], 0,
-    basis.right[2], basis.up[2], basis.forward[2], 0,
-    0, 0, 0, 1
-  ];
-}
-
-function projectPointToLightSpace(point: Vec3, basis: { readonly right: Vec3; readonly up: Vec3; readonly forward: Vec3 }): Vec3 {
-  return [dotVec3(point, basis.right), dotVec3(point, basis.up), dotVec3(point, basis.forward)];
-}
-
-function boundsCorners(bounds: SceneBounds3): readonly Vec3[] {
-  return [
-    [bounds.min[0], bounds.min[1], bounds.min[2]],
-    [bounds.max[0], bounds.min[1], bounds.min[2]],
-    [bounds.min[0], bounds.max[1], bounds.min[2]],
-    [bounds.min[0], bounds.min[1], bounds.max[2]],
-    [bounds.max[0], bounds.max[1], bounds.min[2]],
-    [bounds.max[0], bounds.min[1], bounds.max[2]],
-    [bounds.min[0], bounds.max[1], bounds.max[2]],
-    [bounds.max[0], bounds.max[1], bounds.max[2]]
-  ];
-}
-
-function boundsFromVec3(points: readonly Vec3[]): { readonly min: Vec3; readonly max: Vec3 } {
-  const min: Vec3 = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
-  const max: Vec3 = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
-  for (const point of points) {
-    for (let axis = 0; axis < 3; axis += 1) {
-      min[axis] = Math.min(min[axis]!, point[axis]!);
-      max[axis] = Math.max(max[axis]!, point[axis]!);
-    }
-  }
-  return { min, max };
-}
-
-function normalizeVec3(value: readonly [number, number, number]): Vec3 {
-  const length = Math.hypot(value[0], value[1], value[2]);
-  if (!Number.isFinite(length) || length <= 1e-8) return [0, -1 / Math.SQRT2, -1 / Math.SQRT2];
-  return [value[0] / length, value[1] / length, value[2] / length];
-}
-
-function scaleVec3(value: Vec3, amount: number): Vec3 {
-  return [value[0] * amount, value[1] * amount, value[2] * amount];
-}
-
-function addVec3(left: Vec3, right: Vec3): Vec3 {
-  return [left[0] + right[0], left[1] + right[1], left[2] + right[2]];
-}
-
-function subtractVec3(left: Vec3, right: Vec3): Vec3 {
-  return [left[0] - right[0], left[1] - right[1], left[2] - right[2]];
-}
-
-function crossVec3(left: Vec3, right: Vec3): Vec3 {
-  return [
-    left[1] * right[2] - left[2] * right[1],
-    left[2] * right[0] - left[0] * right[2],
-    left[0] * right[1] - left[1] * right[0]
-  ];
-}
-
-function dotVec3(left: Vec3, right: Vec3): number {
-  return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
-}
-
-function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {
-  if (source instanceof Scene || isIterable(source)) return undefined;
-  if (source.postprocess === true) return {};
-  if (!source.postprocess) return undefined;
-  return source.postprocess;
-}
-
 function normalizeRendererInput(
   sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene,
   camera?: CameraLike
@@ -2041,15 +1080,12 @@ function normalizeRendererInput(
   }
   return { source: sourceOrInput, ...(camera ? { camera } : {}) };
 }
-
 function isRendererInput(value: RendererInput | RenderSource | Iterable<RenderItem> | Scene): value is RendererInput {
   return !(value instanceof Scene) && !isIterable(value) && isRecord(value) && "source" in value;
 }
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
-
 function collectCameraPolicy(source: RenderSource | Iterable<RenderItem> | Scene): RendererCameraPolicy {
   if (source instanceof Scene || isIterable(source)) return "identity";
   if (source.cameraPolicy) return source.cameraPolicy;
@@ -2057,66 +1093,6 @@ function collectCameraPolicy(source: RenderSource | Iterable<RenderItem> | Scene
   if ((source.renderItems || source.collectRenderItems) && !source.renderTarget) return "auto-frame";
   return "identity";
 }
-
-function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions): boolean {
-  return Boolean(
-    (postprocess.volumetricLight && !postprocess.volumetricLight.depth) ||
-    (postprocess.depthOfField && !postprocess.depthOfField.depth) ||
-    (postprocess.contactShadow && !postprocess.contactShadow.depth) ||
-    (postprocess.ssao && !postprocess.ssao.depth) ||
-    (postprocess.ssr && !postprocess.ssr.depth)
-  );
-}
-
-function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): boolean {
-  const sourceIsHdr = isHdrRenderTarget(source);
-  return passes.length > 0
-    && (!sourceIsHdr || passes[0]?.name === "tone-mapping" || (passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping"))
-    && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa" || pass.name === "outline" || pass.name === "fxaa")
-    && passes.every((pass, index) => {
-      const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
-      return ldrFusionPassRank(pass.name) >= previousRank;
-    });
-}
-
-function ldrFusionPassRank(name: RendererPostProcessPassName): number {
-  if (name === "bloom") return -1;
-  if (name === "tone-mapping") return 0;
-  if (name === "color-grade") return 1;
-  if (name === "depth-of-field") return 2;
-  if (name === "motion-blur") return 3;
-  if (name === "ssao") return 4;
-  if (name === "ssr") return 5;
-  if (name === "taa") return 6;
-  if (name === "outline") return 7;
-  if (name === "fxaa") return 8;
-  return Number.POSITIVE_INFINITY;
-}
-
-function isDepthPostprocessPass(name: RendererPostProcessPassName): name is "volumetric-light" | "depth-of-field" | "contact-shadow" | "ssao" | "ssr" {
-  return name === "volumetric-light" || name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
-}
-
-function postprocessPassHasDepth(options: RendererPostProcessPassPlan["options"]): boolean {
-  return typeof options === "object" && options !== null && "depth" in options && Boolean((options as { readonly depth?: unknown }).depth);
-}
-
-function withRendererDepth<T extends VolumetricLightOptions | DepthOfFieldOptions | ContactShadowPostProcessOptions | SSAOOptions | SSROptions>(options: T, depth: DepthTextureBinding | undefined): T {
-  return depth && !options.depth ? { ...options, depth } : options;
-}
-
-function defaultPostprocessTargetFormat(
-  device: RenderDevice,
-  postprocess: RendererPostProcessOptions
-): Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> {
-  if (postprocess.toneMapping === false) return "rgba8";
-  return device.info.capabilities?.includes("hdr-render-targets") ? "rgba16f" : "rgba8";
-}
-
-function isHdrRenderTarget(target: RenderTarget): boolean {
-  return target.colorTexture.format === "rgba16f" || target.colorTexture.format === "rgba32f";
-}
-
 function collectSourceCameraPosition(source: RenderSource | Iterable<RenderItem> | Scene): readonly [number, number, number] | undefined {
   if (source instanceof Scene || isIterable(source)) return undefined;
   const position = source.cameraPosition;
@@ -2128,7 +1104,6 @@ function collectSourceCameraPosition(source: RenderSource | Iterable<RenderItem>
   }
   return position;
 }
-
 export function collectRenderItems(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
@@ -2136,7 +1111,6 @@ export function collectRenderItems(
 ): readonly RenderItem[] {
   return collectRenderItemsWithDiagnostics(source, cameraViewProjection, camera).items;
 }
-
 function collectRenderItemsWithDiagnostics(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
@@ -2173,201 +1147,6 @@ function collectRenderItemsWithDiagnostics(
   }
   return { items, diagnostics };
 }
-
-function explicitCullingFrustum(
-  source: RenderSource,
-  cameraViewProjection: Mat4 | undefined,
-  camera: Camera | undefined
-): Frustum | undefined {
-  // Explicit render-item sources were historically never culled, so culling
-  // stays opt-in: only an explicit `frustumCulling: true` turns it on.
-  if (source.frustumCulling !== true) return undefined;
-  if (camera) return camera.frustum;
-  if (!cameraViewProjection) return undefined;
-  return Frustum.fromMatrix(toMathMat4(cameraViewProjection));
-}
-
-function cullExplicitRenderItems(
-  items: readonly RenderItem[],
-  frustum: Frustum | undefined,
-  diagnostics: RenderCollectionDiagnostics
-): readonly RenderItem[] {
-  if (!frustum) {
-    diagnostics.submittedObjects += items.length;
-    diagnostics.visibleObjects += items.length;
-    return items;
-  }
-  const visible: RenderItem[] = [];
-  for (const item of items) {
-    diagnostics.submittedObjects += 1;
-    if (!isFrustumCullableRenderItem(item)) {
-      diagnostics.visibleObjects += 1;
-      visible.push(item);
-      continue;
-    }
-    diagnostics.frustumTestedObjects += 1;
-    const bounds = explicitRenderItemWorldBounds(item);
-    if (!frustum.intersectsBox(bounds.toMathBox())) {
-      diagnostics.culledObjects += 1;
-      continue;
-    }
-    diagnostics.visibleObjects += 1;
-    visible.push(item);
-  }
-  return visible;
-}
-
-function isFrustumCullableRenderItem(item: RenderItem): boolean {
-  if (item.drawRange !== undefined) return false;
-  if (item.morphTargets !== undefined || item.morphWeights !== undefined) return false;
-  return true;
-}
-
-function explicitRenderItemWorldBounds(item: RenderItem): SceneBounds3 {
-  const modelMatrix = toMat4(item.modelMatrix ?? identityMat4(), "modelMatrix", item.label);
-  if (item.skinning) {
-    const local = skinnedItemLocalBounds(item.geometry, item.skinning);
-    return boundsFromLocal(local, modelMatrix, item.instanceTransforms);
-  }
-  return boundsFromLocal(item.geometry.bounds, modelMatrix, item.instanceTransforms);
-}
-
-function boundsFromLocal(
-  envelope: Bounds3,
-  modelMatrix: Mat4,
-  instanceTransforms: Float32Array | readonly number[] | undefined
-): SceneBounds3 {
-  const local = new SceneBounds3(
-    [envelope.min[0], envelope.min[1], envelope.min[2]],
-    [envelope.max[0], envelope.max[1], envelope.max[2]]
-  );
-  if (!instanceTransforms || instanceTransforms.length < 16) {
-    return local.transform(modelMatrix);
-  }
-  let bounds = new SceneBounds3();
-  for (let offset = 0; offset + 16 <= instanceTransforms.length; offset += 16) {
-    const instanceMatrix = toMat4(instanceTransforms.slice(offset, offset + 16), "instanceTransforms");
-    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, instanceMatrix)));
-  }
-  return bounds;
-}
-
-const skinnedCullingBoundsCache = new WeakMap<Geometry, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
-
-function skinnedItemLocalBounds(geometry: Geometry, skinning: SkinningPaletteBinding): Bounds3 {
-  const cached = skinnedCullingBoundsCache.get(geometry);
-  if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) {
-    return cached.bounds;
-  }
-  const bounds = computeSkinnedGeometryBounds(geometry, skinning);
-  skinnedCullingBoundsCache.set(geometry, { matrices: new Float32Array(skinning.matrices), bounds });
-  return bounds;
-}
-
-function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
-  if (left.length !== right.length) return false;
-  for (let index = 0; index < left.length; index += 1) {
-    if (left[index] !== right[index]) return false;
-  }
-  return true;
-}
-
-const staticBatchGeometryIds = new WeakMap<Geometry, number>();
-const staticBatchMaterialIds = new WeakMap<object, number>();
-let nextStaticBatchResourceId = 1;
-
-/**
- * Merges shared-material static geometry, then hands the result to batching.
- *
- * Consolidation runs first because it reduces distinct geometries; whatever it leaves unmerged (single
- * items, oversized meshes, non-indexed topology) can still be instanced by batching afterwards.
- */
-const staticMeshConsolidationCaches = new WeakMap<object, ReturnType<typeof createStaticMeshConsolidationCache>>();
-
-function applyRendererOwnedStaticMeshConsolidation(source: RenderSource, items: readonly RenderItem[]): readonly RenderItem[] {
-  if (!source.staticMeshConsolidation) return items;
-  const mergeable: MeshConsolidationInput[] = [];
-  const passthrough: RenderItem[] = [];
-  for (const item of items) {
-    // The same eligibility rule as batching: anything skinned, morphed, instanced, or draw-ranged is
-    // not static geometry and must not have a transform baked into it.
-    if (isStaticBatchCandidate(item)) {
-      mergeable.push({
-        geometry: item.geometry,
-        material: item.material,
-        modelMatrix: item.modelMatrix ?? identityMat4(),
-        ...(item.label ? { label: item.label } : {})
-      });
-    } else {
-      passthrough.push(item);
-    }
-  }
-  if (mergeable.length === 0) return items;
-  const options = source.staticMeshConsolidation === true ? {} : source.staticMeshConsolidation;
-  // Cached per render source: merging walks every vertex, so repeating it each frame costs far more
-  // than the draw calls it saves.
-  let cache = staticMeshConsolidationCaches.get(source as unknown as object);
-  if (!cache) {
-    cache = createStaticMeshConsolidationCache();
-    staticMeshConsolidationCaches.set(source as unknown as object, cache);
-  }
-  const consolidated = cache.consolidate(mergeable, {
-    labelPrefix: "renderer-consolidated-mesh",
-    ...options
-  });
-  return [...passthrough, ...consolidated.renderItems];
-}
-
-function applyRendererOwnedStaticBatching(source: RenderSource, items: readonly RenderItem[]): readonly RenderItem[] {
-  if (!source.staticBatching) return items;
-  const batchable: StaticBatchInput[] = [];
-  const passthrough: RenderItem[] = [];
-  for (const item of items) {
-    if (isStaticBatchCandidate(item)) {
-      batchable.push({
-        geometry: item.geometry,
-        material: item.material,
-        modelMatrix: item.modelMatrix ?? identityMat4(),
-        batchKey: staticBatchKey(item),
-        label: item.label,
-        castShadow: item.castShadow
-      });
-    } else {
-      passthrough.push(item);
-    }
-  }
-  if (batchable.length === 0) return items;
-  const options = source.staticBatching === true ? {} : source.staticBatching;
-  const batched = batchStaticRenderItems(batchable, {
-    labelPrefix: "renderer-static-batch",
-    ...options
-  });
-  return [...passthrough, ...batched.renderItems];
-}
-
-function isStaticBatchCandidate(item: RenderItem): item is RenderItem & { readonly material: RenderMaterial } {
-  return item.material !== undefined &&
-    item.drawRange === undefined &&
-    item.skinning === undefined &&
-    item.morphTargets === undefined &&
-    item.morphWeights === undefined &&
-    item.instanceTransforms === undefined &&
-    item.instanceColors === undefined &&
-    item.instanceAttributes === undefined;
-}
-
-function staticBatchKey(item: RenderItem & { readonly material: RenderMaterial }): string {
-  return `${resourceId(staticBatchGeometryIds, item.geometry)}:${resourceId(staticBatchMaterialIds, item.material)}:shadow-${item.castShadow !== false ? "on" : "off"}`;
-}
-
-function resourceId<T extends object>(ids: WeakMap<T, number>, resource: T): number {
-  const existing = ids.get(resource);
-  if (existing !== undefined) return existing;
-  const next = nextStaticBatchResourceId++;
-  ids.set(resource, next);
-  return next;
-}
-
 function collectSceneRenderItems(
   scene: Scene,
   source: Pick<RenderSource, "geometryLibrary" | "materialLibrary" | "morphTargetLibrary">,
@@ -2435,8 +1214,7 @@ function collectSceneRenderItems(
   }
   return items;
 }
-
-function createRenderCollectionDiagnostics(): RenderCollectionDiagnostics {
+export function createRenderCollectionDiagnostics(): RenderCollectionDiagnostics {
   return {
     submittedObjects: 0,
     visibleObjects: 0,
@@ -2444,45 +1222,10 @@ function createRenderCollectionDiagnostics(): RenderCollectionDiagnostics {
     frustumTestedObjects: 0
   };
 }
-
-function createPostprocessDiagnostics(
-  postprocess: RendererPostProcessOptions | undefined,
-  ownedTargets: readonly RenderTarget[],
-  width: number,
-  height: number,
-  context: {
-    readonly targetFormat?: RendererPostprocessTargetFormat;
-    readonly nativeLdrPostprocess?: boolean;
-    readonly rendererDepthAvailable?: boolean;
-  } = {}
-): RendererPostprocessDiagnostics | undefined {
-  if (!postprocess) return undefined;
-  const passes = createRendererPostprocessPasses(postprocess);
-  const targetFormat = context.targetFormat ?? postprocess.targetFormat ?? "rgba8";
-  return {
-    postprocessPasses: passes.length,
-    postprocessPassNames: passes.map((pass) => pass.name),
-    postprocessTargetFormat: targetFormat,
-    postprocessRenderTargets: ownedTargets.length,
-    postprocessTextures: ownedTargets.reduce((total, target) => total + 1 + (target.depthTexture ? 1 : 0), 0),
-    postprocessTargetWidth: width,
-    postprocessTargetHeight: height,
-    postprocessPlan: createRendererPostprocessPlanDiagnostics(postprocess, {
-      sourceTargetFormat: targetFormat,
-      targetFormat,
-      nativeLdrPostprocess: context.nativeLdrPostprocess,
-      rendererDepthAvailable: context.rendererDepthAvailable,
-      width,
-      height
-    })
-  };
-}
-
 const CAPTURE_NON_BLANK_LUMINANCE_THRESHOLD = 1 / 255;
 const CAPTURE_UNDEREXPOSED_LUMINANCE_THRESHOLD = 5 / 255;
 const CAPTURE_OVEREXPOSED_LUMINANCE_THRESHOLD = 250 / 255;
 const CAPTURE_CLIPPED_CHANNEL_THRESHOLD = 254;
-
 function createRendererFrameCaptureMetadata(
   device: RenderDevice,
   width: number,
@@ -2506,7 +1249,6 @@ function createRendererFrameCaptureMetadata(
     diagnosticsSummary: createRendererFrameDiagnosticsSummary(device, diagnostics)
   };
 }
-
 function createRendererFramePixelDigest(pixels: Uint8Array): RendererFrameCapturePixelDigest {
   return {
     algorithm: "sha256",
@@ -2516,7 +1258,6 @@ function createRendererFramePixelDigest(pixels: Uint8Array): RendererFrameCaptur
     byteLength: pixels.byteLength
   };
 }
-
 function createRendererFramePixelStats(pixels: Uint8Array, width: number, height: number): RendererFrameCapturePixelStats {
   const totalPixels = Math.max(0, width * height);
   const divisor = totalPixels > 0 ? totalPixels : 1;
@@ -2596,7 +1337,6 @@ function createRendererFramePixelStats(pixels: Uint8Array, width: number, height
     }
   };
 }
-
 function createRendererFrameDiagnosticsSummary(device: RenderDevice, diagnostics: RenderDeviceDiagnostics): RendererFrameCaptureDiagnosticsSummary {
   const resources = {
     buffers: diagnostics.buffers,
@@ -2640,16 +1380,13 @@ function createRendererFrameDiagnosticsSummary(device: RenderDevice, diagnostics
     lastError: diagnostics.lastError
   };
 }
-
 function captureRatio(count: number, total: number): number {
   return roundCaptureMetric(total > 0 ? count / total : 0);
 }
-
 function roundCaptureMetric(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.round(value * 1000000) / 1000000;
 }
-
 const SHA256_INITIAL_HASH = [
   0x6a09e667,
   0xbb67ae85,
@@ -2660,7 +1397,6 @@ const SHA256_INITIAL_HASH = [
   0x1f83d9ab,
   0x5be0cd19
 ] as const;
-
 const SHA256_ROUND_CONSTANTS = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -2671,7 +1407,6 @@ const SHA256_ROUND_CONSTANTS = [
   0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ] as const;
-
 function sha256Hex(bytes: Uint8Array): string {
   const paddedLength = Math.ceil((bytes.length + 9) / 64) * 64;
   const bitLengthHigh = Math.floor(bytes.length / 0x20000000);
@@ -2737,7 +1472,6 @@ function sha256Hex(bytes: Uint8Array): string {
 
   return hash.map((word) => word.toString(16).padStart(8, "0")).join("");
 }
-
 function sha256PaddedByte(bytes: Uint8Array, index: number, paddedLength: number, bitLengthHigh: number, bitLengthLow: number): number {
   if (index < bytes.length) return bytes[index]!;
   if (index === bytes.length) return 0x80;
@@ -2746,11 +1480,9 @@ function sha256PaddedByte(bytes: Uint8Array, index: number, paddedLength: number
   if (lengthOffset < 4) return (bitLengthHigh >>> ((3 - lengthOffset) * 8)) & 0xff;
   return (bitLengthLow >>> ((7 - lengthOffset) * 8)) & 0xff;
 }
-
 function rightRotate32(value: number, bits: number): number {
   return ((value >>> bits) | (value << (32 - bits))) >>> 0;
 }
-
 function withRendererFrameDiagnostics(
   diagnostics: RenderDeviceDiagnostics,
   collection: RenderCollectionDiagnostics,
@@ -2765,32 +1497,6 @@ function withRendererFrameDiagnostics(
     ...(postprocess ?? {})
   };
 }
-
-function renderableWorldBounds(
-  geometry: Geometry,
-  modelMatrix: Mat4,
-  instanceTransforms?: Float32Array | readonly number[],
-  morphTargets?: readonly MorphTargetDelta[],
-  morphWeights?: readonly number[],
-  skinning?: SkinningPaletteBinding
-): SceneBounds3 {
-  const envelope = computeSkinnedMorphTargetWeightedBounds(geometry, skinning, morphTargets, morphWeights);
-  const local = new SceneBounds3(
-    [envelope.min[0], envelope.min[1], envelope.min[2]],
-    [envelope.max[0], envelope.max[1], envelope.max[2]]
-  );
-  if (!instanceTransforms) {
-    return local.transform(modelMatrix);
-  }
-
-  let bounds = new SceneBounds3();
-  for (let offset = 0; offset < instanceTransforms.length; offset += 16) {
-    const instanceMatrix = toMat4(instanceTransforms.slice(offset, offset + 16), "instanceTransforms");
-    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, instanceMatrix)));
-  }
-  return bounds;
-}
-
 function applyViewProjection(items: readonly RenderItem[], cameraViewProjection?: Mat4): readonly RenderItem[] {
   const hasCameraViewProjection = cameraViewProjection !== undefined;
   const viewProjection = cameraViewProjection ?? identityMat4();
@@ -2809,7 +1515,6 @@ function applyViewProjection(items: readonly RenderItem[], cameraViewProjection?
     };
   });
 }
-
 function createAutoFrameCamera(
   source: RenderSource | Iterable<RenderItem> | Scene,
   items: readonly RenderItem[],
@@ -2832,46 +1537,17 @@ function createAutoFrameCamera(
     cameraPosition: frame.cameraPosition
   };
 }
-
 function collectRenderItemBounds(items: readonly RenderItem[]): SceneBounds3 | undefined {
   return collectItemBounds(items, true);
 }
-
-/**
- * Bounds over every render item, including those excluded from camera
- * auto-framing.
- *
- * `includeInAutoFrame` answers "should the camera frame this?", which is a
- * composition choice. It must not decide which geometry a shadow frustum covers:
- * a large ground plane or backdrop is commonly excluded from auto-framing while
- * still being the surface that receives shadows. Fitting the light frustum to the
- * auto-frame subset shrinks it to the caster alone, so the receiver falls outside
- * the shadow map and no shadow is ever visible.
- */
-function collectShadowCoverageBounds(items: readonly RenderItem[]): SceneBounds3 | undefined {
-  return collectItemBounds(items, false);
-}
-
-function collectItemBounds(items: readonly RenderItem[], respectAutoFrameExclusion: boolean): SceneBounds3 | undefined {
-  let bounds: SceneBounds3 | undefined;
-  for (const item of items) {
-    if (respectAutoFrameExclusion && item.includeInAutoFrame === false) continue;
-    const itemBounds = renderableWorldBounds(item.geometry, toMat4(item.modelMatrix ?? identityMat4(), "modelMatrix", item.label), item.instanceTransforms, item.morphTargets, item.morphWeights, item.skinning);
-    bounds = bounds ? bounds.union(itemBounds) : itemBounds;
-  }
-  return bounds;
-}
-
 function collectCameraFrameOptions(source: RenderSource | Iterable<RenderItem> | Scene): RendererCameraFrameOptions {
   if (source instanceof Scene || isIterable(source) || !source.cameraFrameOptions) return {};
   return source.cameraFrameOptions;
 }
-
 function collectCameraProjection(source: RenderSource | Iterable<RenderItem> | Scene): RendererCameraProjection {
   if (source instanceof Scene || isIterable(source)) return "perspective";
   return source.cameraProjection ?? "perspective";
 }
-
 function collectCameraFrameBounds(source: RenderSource | Iterable<RenderItem> | Scene): SceneBounds3 | undefined {
   if (source instanceof Scene || isIterable(source) || !source.cameraFrameBounds) return undefined;
   const bounds = source.cameraFrameBounds;
@@ -2892,7 +1568,6 @@ function collectCameraFrameBounds(source: RenderSource | Iterable<RenderItem> | 
   }
   return new SceneBounds3([min[0], min[1], min[2]], [max[0], max[1], max[2]]);
 }
-
 function resolveCamera(
   source: RenderSource | Iterable<RenderItem> | Scene,
   camera?: CameraLike,
@@ -2935,34 +1610,24 @@ function resolveCamera(
     "CAMERA_VIEW_PROJECTION_MISSING"
   );
 }
-
 function hasExplicitAutoFrameCameraPolicy(source: RenderSource | Iterable<RenderItem> | Scene): boolean {
   return !(source instanceof Scene) && !isIterable(source) && source.cameraPolicy === "auto-frame";
 }
-
-function cameraWorldPosition(camera: Camera): readonly [number, number, number] {
+export function cameraWorldPosition(camera: Camera): readonly [number, number, number] {
   const matrix = camera.transform.worldMatrix;
   return [matrix[12] ?? 0, matrix[13] ?? 0, matrix[14] ?? 0];
 }
-
 function cameraPositionFromViewMatrix(viewMatrix: Mat4): readonly [number, number, number] {
   const inverseView = invertMat4(viewMatrix);
   return [inverseView[12] ?? 0, inverseView[13] ?? 0, inverseView[14] ?? 0];
 }
-
 function maybeCameraResize(camera: Camera | CameraLike): ((width: number, height: number) => void) | undefined {
   const candidate = (camera as { readonly resize?: unknown }).resize;
   return typeof candidate === "function" ? candidate.bind(camera) as (width: number, height: number) => void : undefined;
 }
-
 function resolveSceneCamera(source: RenderSource | Iterable<RenderItem> | Scene): Camera | undefined {
   return sceneFromSource(source)?.collectCameras()[0];
 }
-
-function sceneFromSource(source: RenderSource | Iterable<RenderItem> | Scene): Scene | undefined {
-  return source instanceof Scene ? source : isIterable(source) ? undefined : source.scene;
-}
-
 function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
   let matrix: Mat4;
   try {
@@ -2978,7 +1643,6 @@ function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
     0, 0, 0, 1
   ];
 }
-
 function hasNegativeHandedness(matrix: Mat4): boolean {
   const determinant =
     matrix[0] * (matrix[5] * matrix[10] - matrix[9] * matrix[6]) -
@@ -2986,7 +1650,6 @@ function hasNegativeHandedness(matrix: Mat4): boolean {
     matrix[8] * (matrix[1] * matrix[6] - matrix[5] * matrix[2]);
   return Number.isFinite(determinant) && determinant < -1e-8;
 }
-
 function transposeMat4(matrix: Mat4): Mat4 {
   return [
     matrix[0], matrix[4], matrix[8], matrix[12],
@@ -2995,30 +1658,15 @@ function transposeMat4(matrix: Mat4): Mat4 {
     matrix[3], matrix[7], matrix[11], matrix[15]
   ];
 }
-
-function toMat4(value: Float32Array | readonly number[], field: string, label?: string): Mat4 {
-  const values = Array.from(value);
-  if (values.length !== 16 || !values.every(Number.isFinite)) {
-    throw new RenderDeviceError("Renderer matrix inputs must be finite mat4 values", "RENDERER_MATRIX_CONTRACT", {
-      field,
-      label,
-      scalars: values.length
-    });
-  }
-  return values as Mat4;
-}
-
 function lookupRenderResource<T>(lookup: RenderResourceLookup<T>, key: string): T | undefined {
   if (isReadonlyMap(lookup)) {
     return lookup.get(key);
   }
   return lookup[key];
 }
-
 function isReadonlyMap<T>(lookup: RenderResourceLookup<T>): lookup is ReadonlyMap<string, T> {
   return typeof (lookup as ReadonlyMap<string, T>).get === "function";
 }
-
 function collectRenderLights(source: RenderSource | Iterable<RenderItem> | Scene): readonly CollectedLight[] {
   if (source instanceof Scene) {
     return new LightCollector().collect(source);
@@ -3041,7 +1689,6 @@ function collectRenderLights(source: RenderSource | Iterable<RenderItem> | Scene
   }
   return [];
 }
-
 function createDefaultRendererDirectLights(): readonly CollectedLight[] {
   const key = new DirectionalLight("default-renderer-key-light");
   const fill = new DirectionalLight("default-renderer-fill-light");
@@ -3071,42 +1718,10 @@ function createDefaultRendererDirectLights(): readonly CollectedLight[] {
     };
   });
 }
-
 function normalizeDefaultLightDirection(direction: readonly [number, number, number]): readonly [number, number, number] {
   const length = Math.hypot(direction[0], direction[1], direction[2]);
   if (length <= 0 || !Number.isFinite(length)) {
     return [0, 0, -1];
   }
   return [direction[0] / length, direction[1] / length, direction[2] / length];
-}
-
-function cloneEnvironmentLighting(environment: EnvironmentLightingOptions): EnvironmentLightingOptions {
-  return {
-    color: [...environment.color] as [number, number, number],
-    intensity: environment.intensity,
-    ...(environment.proceduralMap
-      ? {
-          proceduralMap: {
-            skyColor: [...environment.proceduralMap.skyColor] as [number, number, number],
-            horizonColor: [...environment.proceduralMap.horizonColor] as [number, number, number],
-            groundColor: [...environment.proceduralMap.groundColor] as [number, number, number],
-            specularColor: [...environment.proceduralMap.specularColor] as [number, number, number],
-            intensity: environment.proceduralMap.intensity,
-            specularIntensity: environment.proceduralMap.specularIntensity
-          }
-        }
-      : {}),
-    ...(environment.environmentMapTexture ? { environmentMapTexture: environment.environmentMapTexture } : {}),
-    ...(environment.environmentCubeMapTexture ? { environmentCubeMapTexture: environment.environmentCubeMapTexture } : {}),
-    ...(environment.environmentMapIntensity !== undefined ? { environmentMapIntensity: environment.environmentMapIntensity } : {}),
-    ...(environment.environmentMapSpecularIntensity !== undefined ? { environmentMapSpecularIntensity: environment.environmentMapSpecularIntensity } : {}),
-    ...(environment.environmentMapRotation !== undefined ? { environmentMapRotation: environment.environmentMapRotation } : {}),
-    ...(environment.environmentMapMipCount !== undefined ? { environmentMapMipCount: environment.environmentMapMipCount } : {}),
-    ...(environment.environmentMapEncoding ? { environmentMapEncoding: environment.environmentMapEncoding } : {}),
-    ...(environment.environmentBrdfLutTexture ? { environmentBrdfLutTexture: environment.environmentBrdfLutTexture } : {})
-  };
-}
-
-function isIterable(value: unknown): value is Iterable<RenderItem> {
-  return typeof (value as Iterable<RenderItem>)[Symbol.iterator] === "function";
 }

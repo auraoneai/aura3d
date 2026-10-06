@@ -37,8 +37,10 @@ describe("depth shader module is cached across DepthPass instances", () => {
 
 describe("renderer reuses frame render targets", () => {
   it("reuses one shadow depth target instead of allocating per frame", () => {
-    const source = read("packages/rendering/src/Renderer.ts");
-    expect(source).toContain("private shadowDepthTarget: RenderTarget | null = null");
+    const rendererSource = read("packages/rendering/src/Renderer.ts");
+    expect(rendererSource).toContain("private shadowDepthTarget: RenderTarget | null = null");
+    // PR 0b-2: the shadow orchestration moved verbatim to renderer/ShadowOrchestration.ts.
+    const source = read("packages/rendering/src/renderer/ShadowOrchestration.ts");
     expect(source).toContain("private ensureShadowDepthTarget(size: number): RenderTarget");
     // The per-frame ShadowPass must be handed the renderer-owned target.
     expect(source).toContain("renderTarget: this.ensureShadowDepthTarget(shadowMap.size)");
