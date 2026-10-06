@@ -82,7 +82,19 @@ export { ProgramCache } from "./program/ProgramCache";
 export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
-export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { OutputPass } from "./output/OutputPass";
+export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
+export {
+  OUTPUT_VERTEX_GLSL,
+  OUTPUT_FRAGMENT_PROLOGUE_GLSL,
+  OUTPUT_FRAGMENT_EPILOGUE_GLSL,
+  TONE_MAPPING_OPERATORS_GLSL,
+  TONE_MAP_OPERATOR_FUNCTIONS,
+  outputFragmentGlsl
+} from "./output/ToneMappingOperators.glsl";
+export { InterleavedTransparentPass, mergeTransparentSegments, type TransparentEngineItem } from "./renderer/InterleavedTransparentPass";
+export { SceneDepthCopyPass, ensureSceneDepthCopyTarget } from "./renderer/SceneDepthCopyPass";
 export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
 export type { BlendQueue } from "./BlendModes";
 export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
@@ -650,7 +662,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export {
   createSpotShadowProjection,
@@ -1081,7 +1093,7 @@ export type {
 } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
-export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";

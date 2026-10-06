@@ -140,6 +140,19 @@ export interface ForwardPassOptions {
   readonly exposure?: number;
   /** Seconds for `u_resolutionFarTime.w`; default 0. */
   readonly timeSeconds?: number;
+  /**
+   * C-05 (§6.5): the HDR target carries a BACKGROUND_COVERAGE attachment, so
+   * generated programs write `outCoverage` at MRT location 1. Pass-owned;
+   * applied to every generated program in the pass.
+   */
+  readonly backgroundCoverage?: boolean;
+  /**
+   * §9.1 split (C-05): the v2 frame runs several forward passes; the
+   * RenderGraph requires unique names and single-producer writes, so each
+   * phase pass declares its own name + write resource and optional extra
+   * reads for ordering. `writes` defaults to `["color"]`.
+   */
+  readonly framePass?: { readonly name: string; readonly reads?: readonly string[]; readonly writes?: readonly string[] };
 }
 
 export interface EnvironmentLightingOptions {
@@ -251,7 +264,11 @@ export class ForwardPass extends BaseRenderPass {
   private generatorProgramCache: ProgramCacheLike | undefined;
 
   constructor(private readonly options: ForwardPassOptions) {
-    super("forward", options.inputColorResource ? [options.inputColorResource] : [], ["color"]);
+    super(
+      options.framePass?.name ?? "forward",
+      [...(options.inputColorResource ? [options.inputColorResource] : []), ...(options.framePass?.reads ?? [])],
+      options.framePass?.writes ?? ["color"]
+    );
     this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
   }
 
@@ -320,7 +337,10 @@ export class ForwardPass extends BaseRenderPass {
       }
       return;
     }
-    const binding = this.materialBinding.bind(material, shader);
+    const generated = qrCoreGeneratorOn(rendererQrFlags()) && materialUsesGeneratedProgram(baseMaterial);
+    const binding = generated
+      ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures)
+      : this.materialBinding.bind(material, shader);
     const uniforms = new Map<string, UniformValue>(binding.uniforms);
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
@@ -382,10 +402,12 @@ export class ForwardPass extends BaseRenderPass {
 
   private getShader(material: Material, device: RenderDevice): RenderShaderProgram | undefined {
     const flags = rendererQrFlags();
+    this.lastProgramFeatures = undefined;
     if (qrCoreGeneratorOn(flags) && materialUsesGeneratedProgram(material)) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
-      const handle = this.programCache(device).acquire(this.programFeaturesFor(material));
+      this.lastProgramFeatures = this.programFeaturesFor(material);
+      const handle = this.programCache(device).acquire(this.lastProgramFeatures);
       // async-skip: a not-yet-ready or failed program skips the draw this frame
       // (C-02 §A.2 semantics; warm-then-block warmup renders them ready up front).
       return handle.status === "ready" ? handle.program : undefined;
@@ -402,6 +424,9 @@ export class ForwardPass extends BaseRenderPass {
     return module.compile(device);
   }
 
+  /** Feature record for the program `getShader` most recently resolved (C-02). */
+  private lastProgramFeatures: ProgramFeatures | undefined;
+
   private programCache(device: RenderDevice): ProgramCacheLike {
     this.generatorProgramCache ??= rendererProgramCache(device, rendererQrFlags());
     return this.generatorProgramCache;
@@ -412,7 +437,13 @@ export class ForwardPass extends BaseRenderPass {
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
     const mf = material.programFeatures({ flags, tier });
     const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
-    return normalizeProgramFeatures({ ...mf, ...axes, pass: "forward", target: "glsl300es" });
+    return normalizeProgramFeatures({
+      ...mf,
+      ...axes,
+      backgroundCoverage: this.options.backgroundCoverage === true,
+      pass: "forward",
+      target: "glsl300es"
+    });
   }
 }
 
@@ -1248,6 +1279,49 @@ function sortForwardRenderItems(
 function isTransparentRenderItem(item: RenderItem): boolean {
   const material = item.material ?? new UnlitMaterial();
   return blendStateIsTransparent(getBaseMaterial(material).renderState);
+}
+
+/** C-04 bucket an item lands in for the v2 frame-order split (§9.1). */
+export type ForwardBucket = "opaque" | "transmission" | "transparent";
+
+/** Bucket one item the same way `sortForwardRenderItems` does. */
+export function forwardItemBucket(item: RenderItem): ForwardBucket {
+  const material = item.material ?? new UnlitMaterial();
+  const queue = blendQueueForState(getBaseMaterial(material).renderState);
+  if (queue !== "opaque") return "transparent";
+  return isTransmissionRenderItem(item) ? "transmission" : "opaque";
+}
+
+/**
+ * §9.1 split: `opaque` feeds the opaque phase, `transmission` the transmissive
+ * draw after contributor `transmission` passes, and `transparent` the
+ * interleaved transparent phase (each item carries its view-space distance as
+ * `sortDepth`, larger = farther, matching `TransparentQueueItem` semantics).
+ */
+export function splitForwardItems(
+  items: readonly RenderItem[],
+  cameraPosition?: readonly [number, number, number]
+): {
+  readonly opaque: readonly RenderItem[];
+  readonly transmission: readonly RenderItem[];
+  readonly transparent: readonly { readonly item: RenderItem; readonly sortDepth: number }[];
+} {
+  const opaque: RenderItem[] = [];
+  const transmission: RenderItem[] = [];
+  const transparent: { item: RenderItem; sortDepth: number }[] = [];
+  for (const item of items) {
+    const bucket = forwardItemBucket(item);
+    if (bucket === "opaque") {
+      opaque.push(item);
+    } else if (bucket === "transmission") {
+      transmission.push(item);
+    } else {
+      transparent.push({ item, sortDepth: cameraPosition ? Math.sqrt(distanceSquaredFromCamera(item, cameraPosition)) : 0 });
+    }
+  }
+  // Transparents are drawn back-to-front (farther first), matching the queue sort.
+  transparent.sort((a, b) => b.sortDepth - a.sortDepth);
+  return { opaque, transmission, transparent };
 }
 
 function materialNumericParameter(material: Material, name: string, fallback: number): number {
