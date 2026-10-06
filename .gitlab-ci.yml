@@ -68,6 +68,7 @@ qr:diag:
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
     - git lfs pull || echo "lfs pull warn"
-    - echo "=== BISECT-4: qr:benchmark replica with headless-shell ==="
-    - export QR_BENCH_CHANNEL=headless-shell
-    - bash benchmarks/quality-rebuild/ci.sh
+    - echo "=== BISECT-5: vite build only ==="
+    - git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb" || echo "lfs warn"
+    - pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+    - echo "=== BISECT-5 OK (vite build done) ==="
