@@ -2787,6 +2787,9 @@ column cites a passing test or a capture run id.
 | id | lane | statement | API | since | evidence | status |
 |---|---|---|---|---|---|---|
 | F-07-01 | 07 | `effects.fog()` defaults: `mode "height"`, σ_d 0.004, σ_h 0.008, b 0.2, start 2 m, maxOpacity 1, color `"sky"` | `effects.fog` | 2026-10-05 (PRD 07 §6.6) | — | proposed |
+| F-07-02 | 07 | CPU emitters coalesce into one instanced draw per §6.2.2 material key `(blend, atlasKey, softDepth, stretch, frameBlend)`; builder draws per frame = number of distinct material keys, bounded by the C-27 `particleBudget` cap | `effects.particles` | 2026-10-06 (PRD 07 §6.2.2) | — | proposed |
+| F-07-03 | 07 | Blend fallback limits under the C-04 stub: additive → premultiplied ×1.6 core (`additiveFallback`); alpha/premultiplied → alpha-over + `UNPREMULTIPLY_OUTPUT` define; multiply → skipped with `VFX_BLEND_SKIPPED`; every degradation reports once per batch key (`VFX_BLEND_FALLBACK`) | `effects.particles` | 2026-10-06 (PRD 07 §6.2.3) | — | proposed |
+| F-07-04 | 07 | The 14 `AuraVfxKind` impact kinds (spark, dust, debris, ring, streak, pickup, explosion-small, muzzle, splash, bubble, impact-flash, super-flash, impact-decal, aura-burst) resolve to presets with ≥ 1 emitter layer each; PRD 09 `GameFxKind` is a subset | `app.effects.presets` | 2026-10-06 (PRD 07 §6.4) | — | proposed |
 | F-11-01 | 11 | Tier table per C-27 (R9 anisotropy L4/M8/H16/U16; R10 Ultra froxel 240x135x128) | `app.quality` | 2026-10-05 | — | proposed |
 | F-02-01 | 02 | `lights.ambient` is additive to IBL under `model: "physical"`. It never replaces IBL. | `lights.ambient` | 2026-10-05 (C-09) | — | proposed |
 | F-01-01 | 01 | Exactly one tone map per frame, in OutputPass. `DEFAULT_TONE_MAPPING = "aces"` until the PRD 12 AgX A/B. | `output.toneMapping` | 2026-10-05 (C-05) | — | proposed |
