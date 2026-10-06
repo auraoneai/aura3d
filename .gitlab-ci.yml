@@ -67,7 +67,6 @@ qr:diag:
     - git lfs install --local
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
-    - git lfs pull
-    - echo "=== lfs pull done ==="
-    - node tools/quality-rebuild-capture/capture-games.mjs --validate
-    - echo "=== BISECT-2 OK (through validate) ==="
+    - git lfs pull || echo "lfs pull warn"
+    - echo "=== BISECT-3: qr:benchmark replica ==="
+    - bash benchmarks/quality-rebuild/ci.sh
