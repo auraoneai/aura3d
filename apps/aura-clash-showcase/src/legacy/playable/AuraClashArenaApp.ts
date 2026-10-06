@@ -26,8 +26,8 @@ import {
   updateFighterSecondaryMotion,
   type FighterSecondaryMotionState,
   type SecondaryMotionResult
-} from "./animation/fighterSecondaryMotion";
-import { assets } from "../aura-assets";
+} from "../../gameplay/animation/fighterSecondaryMotion";
+import { assets } from "../../aura-assets";
 import {
   assertAuraClashClipReadiness,
   auraClashPlayerClips as playerClips,
@@ -38,7 +38,7 @@ import {
   type AuraClashClipName as ClipName,
   type AuraClashClipReadiness,
   type AuraClashFighterClipMap as FighterClipMap
-} from "./animation/auraClashClipMaps";
+} from "../../gameplay/animation/auraClashClipMaps";
 import {
   AURA_CLASH_ATTACK_COOLDOWN as ATTACK_COOLDOWN,
   AURA_CLASH_SPECIAL_COOLDOWN as SPECIAL_COOLDOWN,
@@ -53,7 +53,7 @@ import {
   auraClashMoveEventTracks as moveEventTracks,
   auraClashHitWindowFromTracks,
   type AuraClashMoveId as MoveId
-} from "./combat/auraClashMoveData";
+} from "../../gameplay/combat/auraClashMoveData";
 import {
   annotateAuraClashArenaStage,
   collectAuraClashArenaStageEvidence
@@ -61,26 +61,26 @@ import {
 import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArenaTweaksState } from "./arena/ArenaTweaksPanel";
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { createPublicCrowdNodes } from "./arena/CrowdInstances";
-import { createRoundCeremony, roundCeremonyTextForCallout, roundCeremonyTextForRound, type RoundCeremonyText } from "./arena/RoundCeremony";
-import { createHangingNeonSigns, isSpringJointSignSettled } from "./arena/SpringJointSigns";
-import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
+import { createRoundCeremony, roundCeremonyTextForCallout, roundCeremonyTextForRound, type RoundCeremonyText } from "../../gameplay/arena/RoundCeremony";
+import { createHangingNeonSigns, isSpringJointSignSettled } from "../../gameplay/arena/SpringJointSigns";
+import { assertAuraClashFighterControllerBoundary } from "../../gameplay/combat/AuraClashFighterController";
 import {
   createAuraClashClipEventBridge,
   type AuraClashClipEventBridge,
   type AuraClashFighterId,
   type AuraClashPresentationEventInvocation
-} from "./combat/clipEventBridge";
+} from "../../gameplay/combat/clipEventBridge";
 import {
   DEFAULT_CLASH_AI_ROLE,
   clashAiRolePresets,
   decideClashAiRole,
   type ClashAiRolePreset
-} from "./combat/clashAiRoles";
+} from "../../gameplay/combat/clashAiRoles";
 import {
   createExchangeReplayRecorder,
   stepScrubOffset,
   type ExchangeReplayRecorder
-} from "./training/ExchangeReplay";
+} from "../../gameplay/training/ExchangeReplay";
 import {
   CLASH_INPUT_BUFFER_LIFETIME_MS,
   clashHitStopSeconds,
@@ -92,15 +92,15 @@ import {
   rivalAiWantsDash,
   type ClashMoveId,
   type RivalAiRole
-} from "./combat/clashFeel";
+} from "../../gameplay/combat/clashFeel";
 import {
   emptyComboState,
   registerComboHit,
   canCancelCombo,
   type ComboState
-} from "../fighters/ComboSystem";
-import { defaultGuardBreakRules } from "../fighters/GuardBreakSystem";
-import { defaultKnockdownRules } from "../fighters/KnockdownRecovery";
+} from "../../gameplay/fighters/ComboSystem";
+import { defaultGuardBreakRules } from "../../gameplay/fighters/GuardBreakSystem";
+import { defaultKnockdownRules } from "../../gameplay/fighters/KnockdownRecovery";
 import {
   auraClashAudioAssets,
   auraClashAudioBusLevels,
@@ -2872,7 +2872,7 @@ function syncFighterFromCombatSnapshot(fighter: FighterState, snapshot: GameComb
   fighter.meter = clamp(actor.meter, 0, 100);
 }
 
-function moveIdToHitStrength(moveId: string): import("../state/HitRegistry").HitStrength {
+function moveIdToHitStrength(moveId: string): import("../../gameplay/state/HitRegistry").HitStrength {
   if (moveId === "special") return "special";
   if (moveId === "heavy") return "heavy";
   return "light";

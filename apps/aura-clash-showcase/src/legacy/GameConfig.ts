@@ -3,7 +3,7 @@ import {
   auraClashOriginalRoster,
   type AuraClashFighterDefinition,
   type AuraClashFighterId
-} from "./fighters";
+} from "../gameplay/fighters/index";
 
 export type RouteMode =
   | "playable"

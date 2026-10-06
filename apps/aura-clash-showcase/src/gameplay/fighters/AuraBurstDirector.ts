@@ -1,6 +1,6 @@
 import type { FighterRuntimeState } from "../state/GameTypes";
-import type { HitSparkFrame } from "../rendering/HitSparkVfx";
-import { getHitSparkFrame } from "../rendering/HitSparkVfx";
+import type { HitSparkFrame } from "../../legacy/rendering/HitSparkVfx";
+import { getHitSparkFrame } from "../../legacy/rendering/HitSparkVfx";
 
 export interface AuraBurstBeat {
   atMs: number;

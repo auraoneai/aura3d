@@ -1,4 +1,4 @@
-import { AURA_CLASH_ROUTES, type AuraClashRoute } from "../seo";
+import { AURA_CLASH_ROUTES, type AuraClashRoute } from "../seo/index";
 
 export type AuraClashReadinessStatus = "ready" | "verify";
 

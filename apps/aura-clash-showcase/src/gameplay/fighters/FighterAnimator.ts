@@ -1,6 +1,6 @@
-import { AnimationStateMachine, type AnimationStateSnapshot } from "../animation/AnimationStateMachine";
-import type { FighterAnimationState } from "../animation/FighterAnimationMap";
-import { getAnimationClipMap } from "../animation/FighterAnimationMap";
+import { AnimationStateMachine, type AnimationStateSnapshot } from "../../legacy/animation/AnimationStateMachine";
+import type { FighterAnimationState } from "../../legacy/animation/FighterAnimationMap";
+import { getAnimationClipMap } from "../../legacy/animation/FighterAnimationMap";
 import type { CombatAction } from "../state/GameTypes";
 
 export interface FighterAnimatorSnapshot extends AnimationStateSnapshot {
