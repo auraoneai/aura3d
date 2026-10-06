@@ -1,0 +1,138 @@
+name: QR-03 captures
+
+# Lane 03 (PRD-03) capture evidence. "Captured" in PRD-03 means a run of this
+# workflow. Per CI-ROUTING.md, lane visual evidence goes to the GitLab macOS
+# route via the qr-gitlab-ci.yml bridge (same provider for every judged image);
+# this workflow dispatches that bridge with requester=prd03 rather than running
+# on GitHub macos-14 itself.
+#
+# The DSF2 spec (tests/browser/qr-prd03-capture-dsf2.spec.ts) records
+# canvas.width / clientWidth per game route — a device property, not a judged
+# pixel — so it runs on GitHub macos-14 without mixing providers (Q-12-1
+# workaround).
+#
+# No secrets beyond the auto-provided GITHUB_TOKEN.
+
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Comma-separated game ids from games.json (empty = all 18)"
+        required: false
+        default: ""
+      viewports:
+        description: "Desktop viewports WIDTHxHEIGHT, comma-separated"
+        required: false
+        default: "1920x1080,1280x720"
+      mobile:
+        description: "Also capture the 390x844@3x mobile run"
+        type: boolean
+        default: true
+      qr_flags:
+        description: "A3D_QR_* flag set: none | post | all | comma list"
+        required: false
+        default: "none"
+      local_build:
+        description: "Build games from this commit: auto = true on qr/** branches"
+        type: choice
+        options: [auto, "true", "false"]
+        default: auto
+      run_dsf2:
+        description: "Run the DSF2 backing-ratio spec on GitHub macos-14"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: qr-prd03-captures-${{ github.ref }}-${{ inputs.qr_flags }}
+  cancel-in-progress: false
+
+jobs:
+  gitlab-dispatch:
+    name: Dispatch GitLab games suite (requester=prd03)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check GitLab pause flag
+        run: |
+          paused="$(gh variable get QR_GITLAB_PAUSED --repo auraoneai/aura3d 2>/dev/null || echo 0)"
+          echo "QR_GITLAB_PAUSED=$paused"
+          if [ "$paused" = "1" ]; then
+            echo "::warning::GitLab is paused (budget). Per CI-ROUTING fallback, run the whole comparison via quality-rebuild-capture.yml instead and record ciProvider=github." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Dispatch qr-gitlab-ci.yml (suite=games)
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -x
+          gh workflow run qr-gitlab-ci.yml \
+            --ref "${{ github.ref_name }}" \
+            -f suite=games \
+            -f games="${{ inputs.games }}" \
+            -f viewports="${{ inputs.viewports }}" \
+            -f local_build="${{ inputs.local_build }}" \
+            -f mobile="${{ inputs.mobile }}" \
+            -f qr_flags="${{ inputs.qr_flags }}" \
+            -f requester=prd03
+          sleep 10
+          run_id="$(gh run list --repo auraoneai/aura3d --workflow qr-gitlab-ci.yml --branch "${{ github.ref_name }}" --limit 5 --json databaseId,createdAt --jq 'sort_by(.createdAt) | last | .databaseId')"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "dispatched: https://github.com/auraoneai/aura3d/actions/runs/$run_id" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Wait for the bridge run (GitLab result is the run's pass/fail)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh run watch "${{ steps.dispatch.outputs.run_id }}" --repo auraoneai/aura3d --exit-status --interval 60
+      - name: Download gitlab artifact bundle
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p tools/quality-rebuild-capture/out-bridge
+          gh run download "${{ steps.dispatch.outputs.run_id }}" --repo auraoneai/aura3d --dir tools/quality-rebuild-capture/out-bridge || true
+          find tools/quality-rebuild-capture/out-bridge -maxdepth 2 | head -50
+      - name: Upload capture artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr03-gitlab-games-${{ inputs.qr_flags }}-${{ github.run_id }}
+          path: tools/quality-rebuild-capture/out-bridge/
+          retention-days: 30
+          if-no-files-found: warn
+
+  dsf2:
+    name: DSF2 backing-ratio spec (macos-14)
+    runs-on: macos-14
+    timeout-minutes: 45
+    if: inputs.run_dsf2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: qr-prd03-capture-dsf2 (1440x900 @ DSF2)
+        env:
+          QR_DSF2_OUT: tests/reports/qr-prd03-dsf2.json
+        run: pnpm exec playwright test tests/browser/qr-prd03-capture-dsf2.spec.ts
+      - name: Upload DSF2 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qr03-dsf2-${{ github.run_id }}
+          path: |
+            tests/reports/qr-prd03-dsf2.json
+            tests/reports/browser.json
+          retention-days: 30
+          if-no-files-found: warn
