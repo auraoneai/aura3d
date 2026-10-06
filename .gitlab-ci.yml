@@ -68,7 +68,7 @@ qr:diag:
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
     - git lfs pull || echo "lfs pull warn"
-    - export QRC_GAMES=aura-clash-showcase QRC_VIEWPORTS=1920x1080 QRC_NO_MOBILE=1 QRC_LOCAL_BUILD=true
+    - export QRC_GAMES=aura-clash-showcase QRC_VIEWPORTS=1920x1080,1280x720 QRC_LOCAL_BUILD=true
     - node tools/quality-rebuild-capture/capture-games.mjs --build-only || echo "build warn"
     - node tools/quality-rebuild-capture/capture-games.mjs --skip-build --channel headless-shell
     - echo "=== BISECT4 one-game capture done ==="
