@@ -10,6 +10,7 @@ import { createWorldRuntime } from "../agent-api/world/runtime.js";
 import { registerWorldFramePasses } from "../production-runtime/world/WorldFramePasses.js";
 import { registerWorldDiagnosticsSection } from "../production-runtime/world/WorldDiagnostics.js";
 import { registerWorldNodeHandlers } from "../agent-api/compiler/world.js";
+import { registerPrd10WindFeatures, registerPrd10FoliageLobe } from "@aura3d/rendering/world";
 import "../agent-api/compiler/diagnosticOnly.prd10.js";
 
 worldQueriesSlot.provide(createWorldQueries);
@@ -35,3 +36,7 @@ registerAppExtension({
 registerWorldFramePasses();
 registerWorldDiagnosticsSection();
 registerWorldNodeHandlers();
+// T3.3/T3.4: Path G program-cache features (wind deform + foliage lobe) —
+// registered unconditionally; the registries gate them on A3D_QR_WORLD.
+registerPrd10WindFeatures();
+registerPrd10FoliageLobe();
