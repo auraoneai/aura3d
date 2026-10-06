@@ -91,7 +91,7 @@ export function createProductionModelInstanceTransforms(
 export function createProductionInstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): Float32Array {
   const matrices = new Float32Array(transforms.length * 16);
   transforms.forEach((transform, index) => {
-    const localNode: AuraPrimitiveNode = { kind: "primitive", primitive: node.primitive, ...transform };
+    const localNode: AuraPrimitiveNode = { kind: "primitive", primitive: node.primitive, size: node.size, ...transform };
     matrices.set(createModelMatrix(localNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 0), index * 16);
   });
   return matrices;
