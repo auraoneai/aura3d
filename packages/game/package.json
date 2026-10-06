@@ -24,6 +24,7 @@
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {
+    "@aura3d/engine": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
     "@aura3d/audio": "workspace:*",
     "@aura3d/input": "workspace:*",

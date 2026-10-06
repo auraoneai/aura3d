@@ -55,3 +55,26 @@ jobs:
       - name: Beacon size-limit (< 0.5 kB gz)
         working-directory: packages/game
         run: pnpm exec size-limit --config size-limit.json
+
+  bank-shot-shadow:
+    # Shadow-migration proof (PRD-09 §10): apply the shipped patch set onto a
+    # pristine main worktree and gate on zero remaining capture branches.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply migration patches to a main worktree
+        run: |
+          git config user.email "qr-prd09@example.invalid"
+          git config user.name "qr-prd09 shadow"
+          git worktree add /tmp/bs-shadow origin/main --detach
+          cd /tmp/bs-shadow
+          git am "$GITHUB_WORKSPACE"/docs/project/aura3d-quality-rebuild/migration/patches/showcase-bank-shot/*.patch
+      - name: Parity gate on migrated tree (must be 0/0/0/0)
+        run: |
+          node tools/showcase-library/game-capture-parity.mjs \
+            --root /tmp/bs-shadow --routes showcase-bank-shot --fail-on-any
