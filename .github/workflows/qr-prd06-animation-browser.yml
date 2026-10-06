@@ -70,6 +70,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Specs import @aura3d/engine, which resolves workspace deps (e.g.
+      # @aura3d/apps) through their built dist/ — browser-matrix.yml builds
+      # before playwright for the same reason.
+      - name: Build workspace packages
+        run: pnpm build:raw
       - name: Install ${{ matrix.project }} browser
         run: pnpm exec playwright install ${{ matrix.project }}
       - name: Configure native Metal browser (chromium)
