@@ -99,7 +99,7 @@ registerCliCommand({
       const gainDb = gainForTarget(measured, cls);
 
       const hash = createHash("sha256").update(readFileSync(src)).digest("hex").slice(0, 16);
-      const opus = `${id}.webm`;
+      const opus = `${id}.opus.webm`;
       const aac = `${id}.m4a`;
       if (!dryRun) {
         mkdirSync(outDir, { recursive: true });

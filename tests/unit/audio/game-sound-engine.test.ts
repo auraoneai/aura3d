@@ -97,4 +97,37 @@ describe("createGameSoundEngine (PRD-09 §7.5/1733)", () => {
     e.setRpm(2000);
     e.stop();
   });
+
+  it("{format} urls resolve through the probe to the fetched variant", async () => {
+    const ctx = new FakeContext();
+    const fetched: string[] = [];
+    const probes: string[] = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: unknown) => {
+      fetched.push(String(url));
+      return {
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(8)
+      } as Response;
+    }) as typeof fetch;
+    try {
+      createGameSoundEngine({
+        context: ctx,
+        probeBase: "/probes/",
+        cues: {
+          hit: { bus: "sfx", asset: asset("/packs/game-sfx-core/sports.billiard-clack.00.{format}") }
+        },
+        fetchProbe: async (url) => {
+          probes.push(url);
+          return new ArrayBuffer(8);
+        }
+      });
+      // The eager cue-asset load resolves the placeholder via the probe.
+      await new Promise((r) => setTimeout(r, 20));
+      expect(probes).toEqual(["/probes/probe-20ms.opus.webm"]);
+      expect(fetched).toEqual(["/packs/game-sfx-core/sports.billiard-clack.00.opus.webm"]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

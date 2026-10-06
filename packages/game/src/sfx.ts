@@ -512,3 +512,17 @@ export const SFX_IDS = [
 ] as const;
 export type SfxId = (typeof SFX_IDS)[number];
 export type SfxPack = typeof sfx;
+
+/** Base route for the shared pack, served by the public/packs symlink. */
+export const SFX_PACK_BASE = "/packs/game-sfx-core";
+
+/** URL for a pack id in a given encoding (`opus.webm` | `m4a`), or with the
+ * `{format}` placeholder the GameSoundEngine resolves via its format probe. */
+export const sfxUrl = (id: SfxId | string, ext: "opus.webm" | "m4a" | "{format}" = "{format}"): string =>
+  `${SFX_PACK_BASE}/${id}.${ext}`;
+
+/** AudioAssetRef-compatible object for a pack id (probed-encoding url + sample provenance). */
+export const sfxAsset = (id: SfxId | string) => ({
+  url: sfxUrl(id),
+  provenance: "sample" as const
+});

@@ -18,6 +18,7 @@ import { LoopHandleImpl } from "./LoopHandle";
 import { createEngineLoop, type EngineLoopHandleImpl, type EngineLayerSpec } from "./EngineLoop";
 import { MusicControllerImpl, type MusicTrackSpec } from "./MusicController";
 import { createReverbSend, type QualityTier, type ReverbPreset } from "./ReverbSend";
+import { formatExtension, probeFormat, type EncodedFormat } from "./formatProbe";
 import { syncListener, type ListenerLike } from "./listenerSync";
 import { clamp } from "./types";
 import type { SoundGraphContext, SoundNodeLike, Vec3 } from "./types";
@@ -58,6 +59,10 @@ export interface GameSoundOptions<TCue extends string> {
   readonly seed?: number;
   readonly context?: SoundGraphContext;
   readonly voiceCap?: number;
+  /** Base URL of the 20 ms format probes; default "assets/probes/". */
+  readonly probeBase?: string;
+  /** Override fetch for probes (testing). */
+  readonly fetchProbe?: (url: string) => Promise<ArrayBuffer>;
 }
 
 const VOICE_CAPS: Record<QualityTier, number> = { low: 12, medium: 24, high: 32, ultra: 48 };
@@ -90,14 +95,39 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     ctx,
     rng,
     voiceCap: options.voiceCap ?? VOICE_CAPS[tier],
-    bufferFor: (url) => buffers.get(url)
+    bufferFor: (url) => buffers.get(urlAliases.get(url) ?? url)
   });
 
   // ---- buffers -------------------------------------------------------------
   const buffers = new Map<string, AudioBuffer>();
   const pending = new Map<string, Promise<AudioBuffer | undefined>>();
+  // {format} placeholder urls -> the resolved variant url they were fetched as.
+  const urlAliases = new Map<string, string>();
   const errors: string[] = [];
+  // Packed-asset URLs may carry the {format} placeholder: it resolves once
+  // via the 20 ms decode probe (§6.8/1735) into "opus.webm" or "m4a".
+  const FORMAT_TOKEN = "{format}";
+  let probedExt: Promise<string> | undefined;
+  const resolveExtension = (): Promise<string> => {
+    if (!probedExt) {
+      probedExt = probeFormat({
+        decodeAudioData: (data) => ctx.decodeAudioData!(data),
+        fetchProbe: options.fetchProbe,
+        probeBase: options.probeBase
+      })
+        .then((format: EncodedFormat) => formatExtension(format))
+        .catch(() => "m4a");
+    }
+    return probedExt;
+  };
   const loadAsset = (url: string): Promise<AudioBuffer | undefined> => {
+    if (url.includes(FORMAT_TOKEN)) {
+      return resolveExtension().then((ext) => {
+        const resolved = url.replaceAll(FORMAT_TOKEN, ext);
+        urlAliases.set(url, resolved);
+        return loadAsset(resolved);
+      });
+    }
     if (buffers.has(url)) return Promise.resolve(buffers.get(url));
     let p = pending.get(url);
     if (!p) {

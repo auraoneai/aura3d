@@ -15,7 +15,7 @@
       "truePeak": -15.558331419344992,
       "gainAppliedDb": 10.97,
       "encodings": {
-        "opus": "ambience.city-day.webm",
+        "opus": "ambience.city-day.opus.webm",
         "aac": "ambience.city-day.m4a"
       }
     },
@@ -32,7 +32,7 @@
       "truePeak": -5.288439335938888,
       "gainAppliedDb": -2.34,
       "encodings": {
-        "opus": "ambience.city-night.webm",
+        "opus": "ambience.city-night.opus.webm",
         "aac": "ambience.city-night.m4a"
       }
     },
@@ -49,7 +49,7 @@
       "truePeak": -6.433362084542128,
       "gainAppliedDb": -5.88,
       "encodings": {
-        "opus": "ambience.crowd-arena.webm",
+        "opus": "ambience.crowd-arena.opus.webm",
         "aac": "ambience.crowd-arena.m4a"
       }
     },
@@ -66,7 +66,7 @@
       "truePeak": -5.620867819462117,
       "gainAppliedDb": -3.79,
       "encodings": {
-        "opus": "ambience.crowd-sports.webm",
+        "opus": "ambience.crowd-sports.opus.webm",
         "aac": "ambience.crowd-sports.m4a"
       }
     },
@@ -83,7 +83,7 @@
       "truePeak": -9.09353688873235,
       "gainAppliedDb": 4.62,
       "encodings": {
-        "opus": "ambience.hangar.webm",
+        "opus": "ambience.hangar.opus.webm",
         "aac": "ambience.hangar.m4a"
       }
     },
@@ -100,7 +100,7 @@
       "truePeak": -6.680714504679398,
       "gainAppliedDb": 5.68,
       "encodings": {
-        "opus": "ambience.interior-hum.webm",
+        "opus": "ambience.interior-hum.opus.webm",
         "aac": "ambience.interior-hum.m4a"
       }
     },
@@ -117,7 +117,7 @@
       "truePeak": -8.204274171165496,
       "gainAppliedDb": 7.2,
       "encodings": {
-        "opus": "ambience.space-hum.webm",
+        "opus": "ambience.space-hum.opus.webm",
         "aac": "ambience.space-hum.m4a"
       }
     },
@@ -134,7 +134,7 @@
       "truePeak": -0.14970973510969166,
       "gainAppliedDb": -8.83,
       "encodings": {
-        "opus": "ambience.underwater.webm",
+        "opus": "ambience.underwater.opus.webm",
         "aac": "ambience.underwater.m4a"
       }
     },
@@ -151,7 +151,7 @@
       "truePeak": -17.241186166790975,
       "gainAppliedDb": 8.08,
       "encodings": {
-        "opus": "ambience.wind-high.webm",
+        "opus": "ambience.wind-high.opus.webm",
         "aac": "ambience.wind-high.m4a"
       }
     },
@@ -168,7 +168,7 @@
       "truePeak": -6.127830756107513,
       "gainAppliedDb": 3.16,
       "encodings": {
-        "opus": "ambience.wind-open.webm",
+        "opus": "ambience.wind-open.opus.webm",
         "aac": "ambience.wind-open.m4a"
       }
     },
@@ -185,7 +185,7 @@
       "truePeak": -0.022089265189509107,
       "gainAppliedDb": -0.98,
       "encodings": {
-        "opus": "creature.announcer.fight.00.webm",
+        "opus": "creature.announcer.fight.00.opus.webm",
         "aac": "creature.announcer.fight.00.m4a"
       }
     },
@@ -202,7 +202,7 @@
       "truePeak": -2.9476809207594554,
       "gainAppliedDb": 1.95,
       "encodings": {
-        "opus": "creature.announcer.fight.01.webm",
+        "opus": "creature.announcer.fight.01.opus.webm",
         "aac": "creature.announcer.fight.01.m4a"
       }
     },
@@ -219,7 +219,7 @@
       "truePeak": -3.1631282942082417,
       "gainAppliedDb": 2.16,
       "encodings": {
-        "opus": "creature.announcer.ko.00.webm",
+        "opus": "creature.announcer.ko.00.opus.webm",
         "aac": "creature.announcer.ko.00.m4a"
       }
     },
@@ -236,7 +236,7 @@
       "truePeak": -2.921339268600531,
       "gainAppliedDb": 1.92,
       "encodings": {
-        "opus": "creature.announcer.ko.01.webm",
+        "opus": "creature.announcer.ko.01.opus.webm",
         "aac": "creature.announcer.ko.01.m4a"
       }
     },
@@ -253,7 +253,7 @@
       "truePeak": -0.302970948182903,
       "gainAppliedDb": -0.7,
       "encodings": {
-        "opus": "creature.announcer.perfect.00.webm",
+        "opus": "creature.announcer.perfect.00.opus.webm",
         "aac": "creature.announcer.perfect.00.m4a"
       }
     },
@@ -270,7 +270,7 @@
       "truePeak": -0.6294742429464131,
       "gainAppliedDb": -0.37,
       "encodings": {
-        "opus": "creature.announcer.perfect.01.webm",
+        "opus": "creature.announcer.perfect.01.opus.webm",
         "aac": "creature.announcer.perfect.01.m4a"
       }
     },
@@ -287,7 +287,7 @@
       "truePeak": -0.7811086122080146,
       "gainAppliedDb": -0.22,
       "encodings": {
-        "opus": "creature.announcer.round.00.webm",
+        "opus": "creature.announcer.round.00.opus.webm",
         "aac": "creature.announcer.round.00.m4a"
       }
     },
@@ -304,7 +304,7 @@
       "truePeak": -1.3546316853650653,
       "gainAppliedDb": 0.35,
       "encodings": {
-        "opus": "creature.announcer.round.01.webm",
+        "opus": "creature.announcer.round.01.opus.webm",
         "aac": "creature.announcer.round.01.m4a"
       }
     },
@@ -321,7 +321,7 @@
       "truePeak": -1.9930761339751657,
       "gainAppliedDb": 0.99,
       "encodings": {
-        "opus": "creature.grunt-heavy.00.webm",
+        "opus": "creature.grunt-heavy.00.opus.webm",
         "aac": "creature.grunt-heavy.00.m4a"
       }
     },
@@ -338,7 +338,7 @@
       "truePeak": -2.625819951058286,
       "gainAppliedDb": 1.63,
       "encodings": {
-        "opus": "creature.grunt-heavy.01.webm",
+        "opus": "creature.grunt-heavy.01.opus.webm",
         "aac": "creature.grunt-heavy.01.m4a"
       }
     },
@@ -355,7 +355,7 @@
       "truePeak": -6.424773942285245,
       "gainAppliedDb": 5.42,
       "encodings": {
-        "opus": "creature.grunt-light.00.webm",
+        "opus": "creature.grunt-light.00.opus.webm",
         "aac": "creature.grunt-light.00.m4a"
       }
     },
@@ -372,7 +372,7 @@
       "truePeak": -2.49746077243535,
       "gainAppliedDb": 1.5,
       "encodings": {
-        "opus": "creature.grunt-light.01.webm",
+        "opus": "creature.grunt-light.01.opus.webm",
         "aac": "creature.grunt-light.01.m4a"
       }
     },
@@ -389,7 +389,7 @@
       "truePeak": -0.9390468999466752,
       "gainAppliedDb": -0.06,
       "encodings": {
-        "opus": "creature.ko.00.webm",
+        "opus": "creature.ko.00.opus.webm",
         "aac": "creature.ko.00.m4a"
       }
     },
@@ -406,7 +406,7 @@
       "truePeak": -8.076964317604817,
       "gainAppliedDb": 7.08,
       "encodings": {
-        "opus": "creature.ko.01.webm",
+        "opus": "creature.ko.01.opus.webm",
         "aac": "creature.ko.01.m4a"
       }
     },
@@ -423,7 +423,7 @@
       "truePeak": -1.2374858560017323,
       "gainAppliedDb": 0.24,
       "encodings": {
-        "opus": "explosion.charge-up.00.webm",
+        "opus": "explosion.charge-up.00.opus.webm",
         "aac": "explosion.charge-up.00.m4a"
       }
     },
@@ -440,7 +440,7 @@
       "truePeak": -1.278820323138574,
       "gainAppliedDb": 0.28,
       "encodings": {
-        "opus": "explosion.charge-up.01.webm",
+        "opus": "explosion.charge-up.01.opus.webm",
         "aac": "explosion.charge-up.01.m4a"
       }
     },
@@ -457,7 +457,7 @@
       "truePeak": -1.0769406710443625,
       "gainAppliedDb": 0.08,
       "encodings": {
-        "opus": "explosion.charge-up.02.webm",
+        "opus": "explosion.charge-up.02.opus.webm",
         "aac": "explosion.charge-up.02.m4a"
       }
     },
@@ -474,7 +474,7 @@
       "truePeak": -0.8255225637353447,
       "gainAppliedDb": -0.17,
       "encodings": {
-        "opus": "explosion.large.00.webm",
+        "opus": "explosion.large.00.opus.webm",
         "aac": "explosion.large.00.m4a"
       }
     },
@@ -491,7 +491,7 @@
       "truePeak": -0.6866013405483905,
       "gainAppliedDb": -0.31,
       "encodings": {
-        "opus": "explosion.large.01.webm",
+        "opus": "explosion.large.01.opus.webm",
         "aac": "explosion.large.01.m4a"
       }
     },
@@ -508,7 +508,7 @@
       "truePeak": -0.9659062704626016,
       "gainAppliedDb": -0.03,
       "encodings": {
-        "opus": "explosion.large.02.webm",
+        "opus": "explosion.large.02.opus.webm",
         "aac": "explosion.large.02.m4a"
       }
     },
@@ -525,7 +525,7 @@
       "truePeak": -0.3005561739505868,
       "gainAppliedDb": -0.7,
       "encodings": {
-        "opus": "explosion.laser.00.webm",
+        "opus": "explosion.laser.00.opus.webm",
         "aac": "explosion.laser.00.m4a"
       }
     },
@@ -542,7 +542,7 @@
       "truePeak": -0.8148342641140791,
       "gainAppliedDb": -0.19,
       "encodings": {
-        "opus": "explosion.laser.01.webm",
+        "opus": "explosion.laser.01.opus.webm",
         "aac": "explosion.laser.01.m4a"
       }
     },
@@ -559,7 +559,7 @@
       "truePeak": 0.6019341374082148,
       "gainAppliedDb": -1.6,
       "encodings": {
-        "opus": "explosion.laser.02.webm",
+        "opus": "explosion.laser.02.opus.webm",
         "aac": "explosion.laser.02.m4a"
       }
     },
@@ -576,7 +576,7 @@
       "truePeak": -0.846863334139696,
       "gainAppliedDb": -0.15,
       "encodings": {
-        "opus": "explosion.medium.00.webm",
+        "opus": "explosion.medium.00.opus.webm",
         "aac": "explosion.medium.00.m4a"
       }
     },
@@ -593,7 +593,7 @@
       "truePeak": -0.7089598089170074,
       "gainAppliedDb": -0.29,
       "encodings": {
-        "opus": "explosion.medium.01.webm",
+        "opus": "explosion.medium.01.opus.webm",
         "aac": "explosion.medium.01.m4a"
       }
     },
@@ -610,7 +610,7 @@
       "truePeak": -0.8906497734888176,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "explosion.medium.02.webm",
+        "opus": "explosion.medium.02.opus.webm",
         "aac": "explosion.medium.02.m4a"
       }
     },
@@ -627,7 +627,7 @@
       "truePeak": -0.8886530312538616,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "explosion.shield-hit.00.webm",
+        "opus": "explosion.shield-hit.00.opus.webm",
         "aac": "explosion.shield-hit.00.m4a"
       }
     },
@@ -644,7 +644,7 @@
       "truePeak": -0.9021884996742142,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "explosion.shield-hit.01.webm",
+        "opus": "explosion.shield-hit.01.opus.webm",
         "aac": "explosion.shield-hit.01.m4a"
       }
     },
@@ -661,7 +661,7 @@
       "truePeak": -0.9316434184757226,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "explosion.shield-hit.02.webm",
+        "opus": "explosion.shield-hit.02.opus.webm",
         "aac": "explosion.shield-hit.02.m4a"
       }
     },
@@ -678,7 +678,7 @@
       "truePeak": -0.9330206882362604,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "explosion.small.00.webm",
+        "opus": "explosion.small.00.opus.webm",
         "aac": "explosion.small.00.m4a"
       }
     },
@@ -695,7 +695,7 @@
       "truePeak": -0.5284073320754514,
       "gainAppliedDb": -0.47,
       "encodings": {
-        "opus": "explosion.small.01.webm",
+        "opus": "explosion.small.01.opus.webm",
         "aac": "explosion.small.01.m4a"
       }
     },
@@ -712,7 +712,7 @@
       "truePeak": -0.9509163030335903,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "explosion.small.02.webm",
+        "opus": "explosion.small.02.opus.webm",
         "aac": "explosion.small.02.m4a"
       }
     },
@@ -729,7 +729,7 @@
       "truePeak": 0.13696532232718042,
       "gainAppliedDb": -1.14,
       "encodings": {
-        "opus": "explosion.zap.00.webm",
+        "opus": "explosion.zap.00.opus.webm",
         "aac": "explosion.zap.00.m4a"
       }
     },
@@ -746,7 +746,7 @@
       "truePeak": -0.4595646535230856,
       "gainAppliedDb": -0.54,
       "encodings": {
-        "opus": "explosion.zap.01.webm",
+        "opus": "explosion.zap.01.opus.webm",
         "aac": "explosion.zap.01.m4a"
       }
     },
@@ -763,7 +763,7 @@
       "truePeak": 1.1166545054633354,
       "gainAppliedDb": -2.12,
       "encodings": {
-        "opus": "explosion.zap.02.webm",
+        "opus": "explosion.zap.02.opus.webm",
         "aac": "explosion.zap.02.m4a"
       }
     },
@@ -780,7 +780,7 @@
       "truePeak": -0.920913902316997,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "footsteps.concrete.00.webm",
+        "opus": "footsteps.concrete.00.opus.webm",
         "aac": "footsteps.concrete.00.m4a"
       }
     },
@@ -797,7 +797,7 @@
       "truePeak": -1.0608796261598776,
       "gainAppliedDb": 0.06,
       "encodings": {
-        "opus": "footsteps.concrete.01.webm",
+        "opus": "footsteps.concrete.01.opus.webm",
         "aac": "footsteps.concrete.01.m4a"
       }
     },
@@ -814,7 +814,7 @@
       "truePeak": -0.9888082130775121,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "footsteps.concrete.02.webm",
+        "opus": "footsteps.concrete.02.opus.webm",
         "aac": "footsteps.concrete.02.m4a"
       }
     },
@@ -831,7 +831,7 @@
       "truePeak": -1.0613580196812802,
       "gainAppliedDb": 0.06,
       "encodings": {
-        "opus": "footsteps.concrete.03.webm",
+        "opus": "footsteps.concrete.03.opus.webm",
         "aac": "footsteps.concrete.03.m4a"
       }
     },
@@ -848,7 +848,7 @@
       "truePeak": -1.052804656364459,
       "gainAppliedDb": 0.05,
       "encodings": {
-        "opus": "footsteps.grass.00.webm",
+        "opus": "footsteps.grass.00.opus.webm",
         "aac": "footsteps.grass.00.m4a"
       }
     },
@@ -865,7 +865,7 @@
       "truePeak": -1.0725554455064574,
       "gainAppliedDb": 0.07,
       "encodings": {
-        "opus": "footsteps.grass.01.webm",
+        "opus": "footsteps.grass.01.opus.webm",
         "aac": "footsteps.grass.01.m4a"
       }
     },
@@ -882,7 +882,7 @@
       "truePeak": -1.0495182639555312,
       "gainAppliedDb": 0.05,
       "encodings": {
-        "opus": "footsteps.grass.02.webm",
+        "opus": "footsteps.grass.02.opus.webm",
         "aac": "footsteps.grass.02.m4a"
       }
     },
@@ -899,7 +899,7 @@
       "truePeak": -0.8992809160108415,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "footsteps.grass.03.webm",
+        "opus": "footsteps.grass.03.opus.webm",
         "aac": "footsteps.grass.03.m4a"
       }
     },
@@ -916,7 +916,7 @@
       "truePeak": -0.8413637369531023,
       "gainAppliedDb": -0.16,
       "encodings": {
-        "opus": "footsteps.gravel.00.webm",
+        "opus": "footsteps.gravel.00.opus.webm",
         "aac": "footsteps.gravel.00.m4a"
       }
     },
@@ -933,7 +933,7 @@
       "truePeak": -1.005328780616501,
       "gainAppliedDb": 0.01,
       "encodings": {
-        "opus": "footsteps.gravel.01.webm",
+        "opus": "footsteps.gravel.01.opus.webm",
         "aac": "footsteps.gravel.01.m4a"
       }
     },
@@ -950,7 +950,7 @@
       "truePeak": -0.9198961710637532,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "footsteps.gravel.02.webm",
+        "opus": "footsteps.gravel.02.opus.webm",
         "aac": "footsteps.gravel.02.m4a"
       }
     },
@@ -967,7 +967,7 @@
       "truePeak": -0.9054817164934923,
       "gainAppliedDb": -0.09,
       "encodings": {
-        "opus": "footsteps.gravel.03.webm",
+        "opus": "footsteps.gravel.03.opus.webm",
         "aac": "footsteps.gravel.03.m4a"
       }
     },
@@ -984,7 +984,7 @@
       "truePeak": -1.0003838410301793,
       "gainAppliedDb": 0,
       "encodings": {
-        "opus": "footsteps.metal.00.webm",
+        "opus": "footsteps.metal.00.opus.webm",
         "aac": "footsteps.metal.00.m4a"
       }
     },
@@ -1001,7 +1001,7 @@
       "truePeak": -1.3236833375888852,
       "gainAppliedDb": 0.32,
       "encodings": {
-        "opus": "footsteps.metal.01.webm",
+        "opus": "footsteps.metal.01.opus.webm",
         "aac": "footsteps.metal.01.m4a"
       }
     },
@@ -1018,7 +1018,7 @@
       "truePeak": -0.8929243669416529,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "footsteps.metal.02.webm",
+        "opus": "footsteps.metal.02.opus.webm",
         "aac": "footsteps.metal.02.m4a"
       }
     },
@@ -1035,7 +1035,7 @@
       "truePeak": -1.0486493631197964,
       "gainAppliedDb": 0.05,
       "encodings": {
-        "opus": "footsteps.metal.03.webm",
+        "opus": "footsteps.metal.03.opus.webm",
         "aac": "footsteps.metal.03.m4a"
       }
     },
@@ -1052,7 +1052,7 @@
       "truePeak": -0.9496265792586327,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "footsteps.water.00.webm",
+        "opus": "footsteps.water.00.opus.webm",
         "aac": "footsteps.water.00.m4a"
       }
     },
@@ -1069,7 +1069,7 @@
       "truePeak": -0.9459102273281751,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "footsteps.water.01.webm",
+        "opus": "footsteps.water.01.opus.webm",
         "aac": "footsteps.water.01.m4a"
       }
     },
@@ -1086,7 +1086,7 @@
       "truePeak": -0.5422942133736035,
       "gainAppliedDb": -0.46,
       "encodings": {
-        "opus": "footsteps.water.02.webm",
+        "opus": "footsteps.water.02.opus.webm",
         "aac": "footsteps.water.02.m4a"
       }
     },
@@ -1103,7 +1103,7 @@
       "truePeak": -0.7448813801280668,
       "gainAppliedDb": -0.26,
       "encodings": {
-        "opus": "footsteps.water.03.webm",
+        "opus": "footsteps.water.03.opus.webm",
         "aac": "footsteps.water.03.m4a"
       }
     },
@@ -1120,7 +1120,7 @@
       "truePeak": -0.9188935378825422,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "footsteps.wood.00.webm",
+        "opus": "footsteps.wood.00.opus.webm",
         "aac": "footsteps.wood.00.m4a"
       }
     },
@@ -1137,7 +1137,7 @@
       "truePeak": -0.98929765798344,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "footsteps.wood.01.webm",
+        "opus": "footsteps.wood.01.opus.webm",
         "aac": "footsteps.wood.01.m4a"
       }
     },
@@ -1154,7 +1154,7 @@
       "truePeak": -0.8967063965226338,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "footsteps.wood.02.webm",
+        "opus": "footsteps.wood.02.opus.webm",
         "aac": "footsteps.wood.02.m4a"
       }
     },
@@ -1171,7 +1171,7 @@
       "truePeak": -1.0742076415286088,
       "gainAppliedDb": 0.07,
       "encodings": {
-        "opus": "footsteps.wood.03.webm",
+        "opus": "footsteps.wood.03.opus.webm",
         "aac": "footsteps.wood.03.m4a"
       }
     },
@@ -1188,7 +1188,7 @@
       "truePeak": -0.3005561739505868,
       "gainAppliedDb": -0.7,
       "encodings": {
-        "opus": "impact.energy.heavy.00.webm",
+        "opus": "impact.energy.heavy.00.opus.webm",
         "aac": "impact.energy.heavy.00.m4a"
       }
     },
@@ -1205,7 +1205,7 @@
       "truePeak": -0.8148342641140791,
       "gainAppliedDb": -0.19,
       "encodings": {
-        "opus": "impact.energy.heavy.01.webm",
+        "opus": "impact.energy.heavy.01.opus.webm",
         "aac": "impact.energy.heavy.01.m4a"
       }
     },
@@ -1222,7 +1222,7 @@
       "truePeak": 0.6019341374082148,
       "gainAppliedDb": -1.6,
       "encodings": {
-        "opus": "impact.energy.heavy.02.webm",
+        "opus": "impact.energy.heavy.02.opus.webm",
         "aac": "impact.energy.heavy.02.m4a"
       }
     },
@@ -1239,7 +1239,7 @@
       "truePeak": -0.8886530312538616,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "impact.energy.light.00.webm",
+        "opus": "impact.energy.light.00.opus.webm",
         "aac": "impact.energy.light.00.m4a"
       }
     },
@@ -1256,7 +1256,7 @@
       "truePeak": -0.9021884996742142,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "impact.energy.light.01.webm",
+        "opus": "impact.energy.light.01.opus.webm",
         "aac": "impact.energy.light.01.m4a"
       }
     },
@@ -1273,7 +1273,7 @@
       "truePeak": -0.9316434184757226,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "impact.energy.light.02.webm",
+        "opus": "impact.energy.light.02.opus.webm",
         "aac": "impact.energy.light.02.m4a"
       }
     },
@@ -1290,7 +1290,7 @@
       "truePeak": -0.5422942133736035,
       "gainAppliedDb": -0.46,
       "encodings": {
-        "opus": "impact.energy.medium.00.webm",
+        "opus": "impact.energy.medium.00.opus.webm",
         "aac": "impact.energy.medium.00.m4a"
       }
     },
@@ -1307,7 +1307,7 @@
       "truePeak": -0.7448813801280668,
       "gainAppliedDb": -0.26,
       "encodings": {
-        "opus": "impact.energy.medium.01.webm",
+        "opus": "impact.energy.medium.01.opus.webm",
         "aac": "impact.energy.medium.01.m4a"
       }
     },
@@ -1324,7 +1324,7 @@
       "truePeak": -1.3806355771894556,
       "gainAppliedDb": 0.38,
       "encodings": {
-        "opus": "impact.energy.medium.02.webm",
+        "opus": "impact.energy.medium.02.opus.webm",
         "aac": "impact.energy.medium.02.m4a"
       }
     },
@@ -1341,7 +1341,7 @@
       "truePeak": -0.962469994527698,
       "gainAppliedDb": -0.04,
       "encodings": {
-        "opus": "impact.flesh.heavy.00.webm",
+        "opus": "impact.flesh.heavy.00.opus.webm",
         "aac": "impact.flesh.heavy.00.m4a"
       }
     },
@@ -1358,7 +1358,7 @@
       "truePeak": -1.1751653357271052,
       "gainAppliedDb": 0.18,
       "encodings": {
-        "opus": "impact.flesh.heavy.01.webm",
+        "opus": "impact.flesh.heavy.01.opus.webm",
         "aac": "impact.flesh.heavy.01.m4a"
       }
     },
@@ -1375,7 +1375,7 @@
       "truePeak": -0.969211540716487,
       "gainAppliedDb": -0.03,
       "encodings": {
-        "opus": "impact.flesh.heavy.02.webm",
+        "opus": "impact.flesh.heavy.02.opus.webm",
         "aac": "impact.flesh.heavy.02.m4a"
       }
     },
@@ -1392,7 +1392,7 @@
       "truePeak": -0.9542742758700412,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "impact.flesh.light.00.webm",
+        "opus": "impact.flesh.light.00.opus.webm",
         "aac": "impact.flesh.light.00.m4a"
       }
     },
@@ -1409,7 +1409,7 @@
       "truePeak": -0.920189140661337,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "impact.flesh.light.01.webm",
+        "opus": "impact.flesh.light.01.opus.webm",
         "aac": "impact.flesh.light.01.m4a"
       }
     },
@@ -1426,7 +1426,7 @@
       "truePeak": -0.9876303156952602,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "impact.flesh.light.02.webm",
+        "opus": "impact.flesh.light.02.opus.webm",
         "aac": "impact.flesh.light.02.m4a"
       }
     },
@@ -1443,7 +1443,7 @@
       "truePeak": -1.0999244151251228,
       "gainAppliedDb": 0.1,
       "encodings": {
-        "opus": "impact.flesh.medium.00.webm",
+        "opus": "impact.flesh.medium.00.opus.webm",
         "aac": "impact.flesh.medium.00.m4a"
       }
     },
@@ -1460,7 +1460,7 @@
       "truePeak": -1.1291717781696218,
       "gainAppliedDb": 0.13,
       "encodings": {
-        "opus": "impact.flesh.medium.01.webm",
+        "opus": "impact.flesh.medium.01.opus.webm",
         "aac": "impact.flesh.medium.01.m4a"
       }
     },
@@ -1477,7 +1477,7 @@
       "truePeak": -0.8375586436529667,
       "gainAppliedDb": -0.16,
       "encodings": {
-        "opus": "impact.flesh.medium.02.webm",
+        "opus": "impact.flesh.medium.02.opus.webm",
         "aac": "impact.flesh.medium.02.m4a"
       }
     },
@@ -1494,7 +1494,7 @@
       "truePeak": -1.0723981650953678,
       "gainAppliedDb": 0.07,
       "encodings": {
-        "opus": "impact.glass.heavy.00.webm",
+        "opus": "impact.glass.heavy.00.opus.webm",
         "aac": "impact.glass.heavy.00.m4a"
       }
     },
@@ -1511,7 +1511,7 @@
       "truePeak": -0.9482095527673605,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "impact.glass.heavy.01.webm",
+        "opus": "impact.glass.heavy.01.opus.webm",
         "aac": "impact.glass.heavy.01.m4a"
       }
     },
@@ -1528,7 +1528,7 @@
       "truePeak": -0.9131884396619893,
       "gainAppliedDb": -0.09,
       "encodings": {
-        "opus": "impact.glass.heavy.02.webm",
+        "opus": "impact.glass.heavy.02.opus.webm",
         "aac": "impact.glass.heavy.02.m4a"
       }
     },
@@ -1545,7 +1545,7 @@
       "truePeak": -1.4614134959003786,
       "gainAppliedDb": 0.46,
       "encodings": {
-        "opus": "impact.glass.light.00.webm",
+        "opus": "impact.glass.light.00.opus.webm",
         "aac": "impact.glass.light.00.m4a"
       }
     },
@@ -1562,7 +1562,7 @@
       "truePeak": -0.8797647671151596,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "impact.glass.light.01.webm",
+        "opus": "impact.glass.light.01.opus.webm",
         "aac": "impact.glass.light.01.m4a"
       }
     },
@@ -1579,7 +1579,7 @@
       "truePeak": -1.1825128936454807,
       "gainAppliedDb": 0.18,
       "encodings": {
-        "opus": "impact.glass.light.02.webm",
+        "opus": "impact.glass.light.02.opus.webm",
         "aac": "impact.glass.light.02.m4a"
       }
     },
@@ -1596,7 +1596,7 @@
       "truePeak": -1.1381691142731745,
       "gainAppliedDb": 0.14,
       "encodings": {
-        "opus": "impact.glass.medium.00.webm",
+        "opus": "impact.glass.medium.00.opus.webm",
         "aac": "impact.glass.medium.00.m4a"
       }
     },
@@ -1613,7 +1613,7 @@
       "truePeak": -0.9072573156639054,
       "gainAppliedDb": -0.09,
       "encodings": {
-        "opus": "impact.glass.medium.01.webm",
+        "opus": "impact.glass.medium.01.opus.webm",
         "aac": "impact.glass.medium.01.m4a"
       }
     },
@@ -1630,7 +1630,7 @@
       "truePeak": -0.9933941957081704,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "impact.glass.medium.02.webm",
+        "opus": "impact.glass.medium.02.opus.webm",
         "aac": "impact.glass.medium.02.m4a"
       }
     },
@@ -1647,7 +1647,7 @@
       "truePeak": -0.9046508363143742,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "impact.metal.heavy.00.webm",
+        "opus": "impact.metal.heavy.00.opus.webm",
         "aac": "impact.metal.heavy.00.m4a"
       }
     },
@@ -1664,7 +1664,7 @@
       "truePeak": -1.086297040749623,
       "gainAppliedDb": 0.09,
       "encodings": {
-        "opus": "impact.metal.heavy.01.webm",
+        "opus": "impact.metal.heavy.01.opus.webm",
         "aac": "impact.metal.heavy.01.m4a"
       }
     },
@@ -1681,7 +1681,7 @@
       "truePeak": -1.18270477820632,
       "gainAppliedDb": 0.18,
       "encodings": {
-        "opus": "impact.metal.heavy.02.webm",
+        "opus": "impact.metal.heavy.02.opus.webm",
         "aac": "impact.metal.heavy.02.m4a"
       }
     },
@@ -1698,7 +1698,7 @@
       "truePeak": -0.9671252392712731,
       "gainAppliedDb": -0.03,
       "encodings": {
-        "opus": "impact.metal.light.00.webm",
+        "opus": "impact.metal.light.00.opus.webm",
         "aac": "impact.metal.light.00.m4a"
       }
     },
@@ -1715,7 +1715,7 @@
       "truePeak": -0.9214040874821909,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "impact.metal.light.01.webm",
+        "opus": "impact.metal.light.01.opus.webm",
         "aac": "impact.metal.light.01.m4a"
       }
     },
@@ -1732,7 +1732,7 @@
       "truePeak": -1.2789787275984785,
       "gainAppliedDb": 0.28,
       "encodings": {
-        "opus": "impact.metal.light.02.webm",
+        "opus": "impact.metal.light.02.opus.webm",
         "aac": "impact.metal.light.02.m4a"
       }
     },
@@ -1749,7 +1749,7 @@
       "truePeak": -1.1522294054736684,
       "gainAppliedDb": 0.15,
       "encodings": {
-        "opus": "impact.metal.medium.00.webm",
+        "opus": "impact.metal.medium.00.opus.webm",
         "aac": "impact.metal.medium.00.m4a"
       }
     },
@@ -1766,7 +1766,7 @@
       "truePeak": -1.2072364083732754,
       "gainAppliedDb": 0.21,
       "encodings": {
-        "opus": "impact.metal.medium.01.webm",
+        "opus": "impact.metal.medium.01.opus.webm",
         "aac": "impact.metal.medium.01.m4a"
       }
     },
@@ -1783,7 +1783,7 @@
       "truePeak": -1.086360891848539,
       "gainAppliedDb": 0.09,
       "encodings": {
-        "opus": "impact.metal.medium.02.webm",
+        "opus": "impact.metal.medium.02.opus.webm",
         "aac": "impact.metal.medium.02.m4a"
       }
     },
@@ -1800,7 +1800,7 @@
       "truePeak": -1.0987721460127848,
       "gainAppliedDb": 0.1,
       "encodings": {
-        "opus": "impact.plastic.heavy.00.webm",
+        "opus": "impact.plastic.heavy.00.opus.webm",
         "aac": "impact.plastic.heavy.00.m4a"
       }
     },
@@ -1817,7 +1817,7 @@
       "truePeak": -1.0929345706301978,
       "gainAppliedDb": 0.09,
       "encodings": {
-        "opus": "impact.plastic.heavy.01.webm",
+        "opus": "impact.plastic.heavy.01.opus.webm",
         "aac": "impact.plastic.heavy.01.m4a"
       }
     },
@@ -1834,7 +1834,7 @@
       "truePeak": -1.2133834554865865,
       "gainAppliedDb": 0.21,
       "encodings": {
-        "opus": "impact.plastic.heavy.02.webm",
+        "opus": "impact.plastic.heavy.02.opus.webm",
         "aac": "impact.plastic.heavy.02.m4a"
       }
     },
@@ -1851,7 +1851,7 @@
       "truePeak": -1.2351362761845701,
       "gainAppliedDb": 0.24,
       "encodings": {
-        "opus": "impact.plastic.light.00.webm",
+        "opus": "impact.plastic.light.00.opus.webm",
         "aac": "impact.plastic.light.00.m4a"
       }
     },
@@ -1868,7 +1868,7 @@
       "truePeak": -0.9949402139712876,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "impact.plastic.light.01.webm",
+        "opus": "impact.plastic.light.01.opus.webm",
         "aac": "impact.plastic.light.01.m4a"
       }
     },
@@ -1885,7 +1885,7 @@
       "truePeak": -0.9549055444297687,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "impact.plastic.light.02.webm",
+        "opus": "impact.plastic.light.02.opus.webm",
         "aac": "impact.plastic.light.02.m4a"
       }
     },
@@ -1902,7 +1902,7 @@
       "truePeak": -0.9624318034891767,
       "gainAppliedDb": -0.04,
       "encodings": {
-        "opus": "impact.plastic.medium.00.webm",
+        "opus": "impact.plastic.medium.00.opus.webm",
         "aac": "impact.plastic.medium.00.m4a"
       }
     },
@@ -1919,7 +1919,7 @@
       "truePeak": -1.3512480292365732,
       "gainAppliedDb": 0.35,
       "encodings": {
-        "opus": "impact.plastic.medium.01.webm",
+        "opus": "impact.plastic.medium.01.opus.webm",
         "aac": "impact.plastic.medium.01.m4a"
       }
     },
@@ -1936,7 +1936,7 @@
       "truePeak": -1.0987721460127848,
       "gainAppliedDb": 0.1,
       "encodings": {
-        "opus": "impact.plastic.medium.02.webm",
+        "opus": "impact.plastic.medium.02.opus.webm",
         "aac": "impact.plastic.medium.02.m4a"
       }
     },
@@ -1953,7 +1953,7 @@
       "truePeak": -1.0999244151251228,
       "gainAppliedDb": 0.1,
       "encodings": {
-        "opus": "impact.rubber-ball.heavy.00.webm",
+        "opus": "impact.rubber-ball.heavy.00.opus.webm",
         "aac": "impact.rubber-ball.heavy.00.m4a"
       }
     },
@@ -1970,7 +1970,7 @@
       "truePeak": -1.1291717781696218,
       "gainAppliedDb": 0.13,
       "encodings": {
-        "opus": "impact.rubber-ball.heavy.01.webm",
+        "opus": "impact.rubber-ball.heavy.01.opus.webm",
         "aac": "impact.rubber-ball.heavy.01.m4a"
       }
     },
@@ -1987,7 +1987,7 @@
       "truePeak": -0.8375586436529667,
       "gainAppliedDb": -0.16,
       "encodings": {
-        "opus": "impact.rubber-ball.heavy.02.webm",
+        "opus": "impact.rubber-ball.heavy.02.opus.webm",
         "aac": "impact.rubber-ball.heavy.02.m4a"
       }
     },
@@ -2004,7 +2004,7 @@
       "truePeak": -0.9542742758700412,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "impact.rubber-ball.light.00.webm",
+        "opus": "impact.rubber-ball.light.00.opus.webm",
         "aac": "impact.rubber-ball.light.00.m4a"
       }
     },
@@ -2021,7 +2021,7 @@
       "truePeak": -0.920189140661337,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "impact.rubber-ball.light.01.webm",
+        "opus": "impact.rubber-ball.light.01.opus.webm",
         "aac": "impact.rubber-ball.light.01.m4a"
       }
     },
@@ -2038,7 +2038,7 @@
       "truePeak": -0.9876303156952602,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "impact.rubber-ball.light.02.webm",
+        "opus": "impact.rubber-ball.light.02.opus.webm",
         "aac": "impact.rubber-ball.light.02.m4a"
       }
     },
@@ -2055,7 +2055,7 @@
       "truePeak": -0.9100639999798271,
       "gainAppliedDb": -0.09,
       "encodings": {
-        "opus": "impact.rubber-ball.medium.00.webm",
+        "opus": "impact.rubber-ball.medium.00.opus.webm",
         "aac": "impact.rubber-ball.medium.00.m4a"
       }
     },
@@ -2072,7 +2072,7 @@
       "truePeak": -0.9625761201934945,
       "gainAppliedDb": -0.04,
       "encodings": {
-        "opus": "impact.rubber-ball.medium.01.webm",
+        "opus": "impact.rubber-ball.medium.01.opus.webm",
         "aac": "impact.rubber-ball.medium.01.m4a"
       }
     },
@@ -2089,7 +2089,7 @@
       "truePeak": -0.8707648872650848,
       "gainAppliedDb": -0.13,
       "encodings": {
-        "opus": "impact.rubber-ball.medium.02.webm",
+        "opus": "impact.rubber-ball.medium.02.opus.webm",
         "aac": "impact.rubber-ball.medium.02.m4a"
       }
     },
@@ -2106,7 +2106,7 @@
       "truePeak": -0.8050620711949215,
       "gainAppliedDb": -0.19,
       "encodings": {
-        "opus": "impact.stone.heavy.00.webm",
+        "opus": "impact.stone.heavy.00.opus.webm",
         "aac": "impact.stone.heavy.00.m4a"
       }
     },
@@ -2123,7 +2123,7 @@
       "truePeak": -0.8766086337783581,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "impact.stone.heavy.01.webm",
+        "opus": "impact.stone.heavy.01.opus.webm",
         "aac": "impact.stone.heavy.01.m4a"
       }
     },
@@ -2140,7 +2140,7 @@
       "truePeak": -1.4320015542584996,
       "gainAppliedDb": 0.43,
       "encodings": {
-        "opus": "impact.stone.heavy.02.webm",
+        "opus": "impact.stone.heavy.02.opus.webm",
         "aac": "impact.stone.heavy.02.m4a"
       }
     },
@@ -2157,7 +2157,7 @@
       "truePeak": -1.0458926603037557,
       "gainAppliedDb": 0.05,
       "encodings": {
-        "opus": "impact.stone.light.00.webm",
+        "opus": "impact.stone.light.00.opus.webm",
         "aac": "impact.stone.light.00.m4a"
       }
     },
@@ -2174,7 +2174,7 @@
       "truePeak": -0.9704457814346196,
       "gainAppliedDb": -0.03,
       "encodings": {
-        "opus": "impact.stone.light.01.webm",
+        "opus": "impact.stone.light.01.opus.webm",
         "aac": "impact.stone.light.01.m4a"
       }
     },
@@ -2191,7 +2191,7 @@
       "truePeak": -1.1872236988003246,
       "gainAppliedDb": 0.19,
       "encodings": {
-        "opus": "impact.stone.light.02.webm",
+        "opus": "impact.stone.light.02.opus.webm",
         "aac": "impact.stone.light.02.m4a"
       }
     },
@@ -2208,7 +2208,7 @@
       "truePeak": -1.1872236988003246,
       "gainAppliedDb": 0.19,
       "encodings": {
-        "opus": "impact.stone.medium.00.webm",
+        "opus": "impact.stone.medium.00.opus.webm",
         "aac": "impact.stone.medium.00.m4a"
       }
     },
@@ -2225,7 +2225,7 @@
       "truePeak": -1.0095416077744144,
       "gainAppliedDb": 0.01,
       "encodings": {
-        "opus": "impact.stone.medium.01.webm",
+        "opus": "impact.stone.medium.01.opus.webm",
         "aac": "impact.stone.medium.01.m4a"
       }
     },
@@ -2242,7 +2242,7 @@
       "truePeak": -0.8981983810028846,
       "gainAppliedDb": -0.1,
       "encodings": {
-        "opus": "impact.stone.medium.02.webm",
+        "opus": "impact.stone.medium.02.opus.webm",
         "aac": "impact.stone.medium.02.m4a"
       }
     },
@@ -2259,7 +2259,7 @@
       "truePeak": -0.9330386565805743,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "impact.wood.heavy.00.webm",
+        "opus": "impact.wood.heavy.00.opus.webm",
         "aac": "impact.wood.heavy.00.m4a"
       }
     },
@@ -2276,7 +2276,7 @@
       "truePeak": -0.9271789287602027,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "impact.wood.heavy.01.webm",
+        "opus": "impact.wood.heavy.01.opus.webm",
         "aac": "impact.wood.heavy.01.m4a"
       }
     },
@@ -2293,7 +2293,7 @@
       "truePeak": -0.9644638216888448,
       "gainAppliedDb": -0.04,
       "encodings": {
-        "opus": "impact.wood.heavy.02.webm",
+        "opus": "impact.wood.heavy.02.opus.webm",
         "aac": "impact.wood.heavy.02.m4a"
       }
     },
@@ -2310,7 +2310,7 @@
       "truePeak": -1.1105607542592109,
       "gainAppliedDb": 0.11,
       "encodings": {
-        "opus": "impact.wood.light.00.webm",
+        "opus": "impact.wood.light.00.opus.webm",
         "aac": "impact.wood.light.00.m4a"
       }
     },
@@ -2327,7 +2327,7 @@
       "truePeak": -0.9293640074219653,
       "gainAppliedDb": -0.07,
       "encodings": {
-        "opus": "impact.wood.light.01.webm",
+        "opus": "impact.wood.light.01.opus.webm",
         "aac": "impact.wood.light.01.m4a"
       }
     },
@@ -2344,7 +2344,7 @@
       "truePeak": -1.0943309043326268,
       "gainAppliedDb": 0.09,
       "encodings": {
-        "opus": "impact.wood.light.02.webm",
+        "opus": "impact.wood.light.02.opus.webm",
         "aac": "impact.wood.light.02.m4a"
       }
     },
@@ -2361,7 +2361,7 @@
       "truePeak": -1.0244830563753557,
       "gainAppliedDb": 0.02,
       "encodings": {
-        "opus": "impact.wood.medium.00.webm",
+        "opus": "impact.wood.medium.00.opus.webm",
         "aac": "impact.wood.medium.00.m4a"
       }
     },
@@ -2378,7 +2378,7 @@
       "truePeak": -1.0384574214270605,
       "gainAppliedDb": 0.04,
       "encodings": {
-        "opus": "impact.wood.medium.01.webm",
+        "opus": "impact.wood.medium.01.opus.webm",
         "aac": "impact.wood.medium.01.m4a"
       }
     },
@@ -2395,7 +2395,7 @@
       "truePeak": -1.061601692800179,
       "gainAppliedDb": 0.06,
       "encodings": {
-        "opus": "impact.wood.medium.02.webm",
+        "opus": "impact.wood.medium.02.opus.webm",
         "aac": "impact.wood.medium.02.m4a"
       }
     },
@@ -2412,7 +2412,7 @@
       "truePeak": 0.9652002464141272,
       "gainAppliedDb": -1.97,
       "encodings": {
-        "opus": "pickup.coin.00.webm",
+        "opus": "pickup.coin.00.opus.webm",
         "aac": "pickup.coin.00.m4a"
       }
     },
@@ -2429,7 +2429,7 @@
       "truePeak": -10.455411755248225,
       "gainAppliedDb": 9.46,
       "encodings": {
-        "opus": "pickup.coin.01.webm",
+        "opus": "pickup.coin.01.opus.webm",
         "aac": "pickup.coin.01.m4a"
       }
     },
@@ -2446,7 +2446,7 @@
       "truePeak": -0.1278137826970604,
       "gainAppliedDb": -0.87,
       "encodings": {
-        "opus": "pickup.combo-up.00.webm",
+        "opus": "pickup.combo-up.00.opus.webm",
         "aac": "pickup.combo-up.00.m4a"
       }
     },
@@ -2463,7 +2463,7 @@
       "truePeak": -0.8825821981329461,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "pickup.combo-up.01.webm",
+        "opus": "pickup.combo-up.01.opus.webm",
         "aac": "pickup.combo-up.01.m4a"
       }
     },
@@ -2480,7 +2480,7 @@
       "truePeak": -0.6521069307193794,
       "gainAppliedDb": -0.35,
       "encodings": {
-        "opus": "pickup.extra-life.00.webm",
+        "opus": "pickup.extra-life.00.opus.webm",
         "aac": "pickup.extra-life.00.m4a"
       }
     },
@@ -2497,7 +2497,7 @@
       "truePeak": -0.39816692456767283,
       "gainAppliedDb": -0.6,
       "encodings": {
-        "opus": "pickup.extra-life.01.webm",
+        "opus": "pickup.extra-life.01.opus.webm",
         "aac": "pickup.extra-life.01.m4a"
       }
     },
@@ -2514,7 +2514,7 @@
       "truePeak": -1.0043718560157475,
       "gainAppliedDb": 0,
       "encodings": {
-        "opus": "pickup.gem.00.webm",
+        "opus": "pickup.gem.00.opus.webm",
         "aac": "pickup.gem.00.m4a"
       }
     },
@@ -2531,7 +2531,7 @@
       "truePeak": -1.0902180307569915,
       "gainAppliedDb": 0.09,
       "encodings": {
-        "opus": "pickup.gem.01.webm",
+        "opus": "pickup.gem.01.opus.webm",
         "aac": "pickup.gem.01.m4a"
       }
     },
@@ -2548,7 +2548,7 @@
       "truePeak": -0.6272970902098105,
       "gainAppliedDb": -0.37,
       "encodings": {
-        "opus": "pickup.power-down.00.webm",
+        "opus": "pickup.power-down.00.opus.webm",
         "aac": "pickup.power-down.00.m4a"
       }
     },
@@ -2565,7 +2565,7 @@
       "truePeak": -1.0429125216376853,
       "gainAppliedDb": 0.04,
       "encodings": {
-        "opus": "pickup.power-down.01.webm",
+        "opus": "pickup.power-down.01.opus.webm",
         "aac": "pickup.power-down.01.m4a"
       }
     },
@@ -2582,7 +2582,7 @@
       "truePeak": -0.5759656029042706,
       "gainAppliedDb": -0.42,
       "encodings": {
-        "opus": "pickup.power-up.00.webm",
+        "opus": "pickup.power-up.00.opus.webm",
         "aac": "pickup.power-up.00.m4a"
       }
     },
@@ -2599,7 +2599,7 @@
       "truePeak": -0.782083501014587,
       "gainAppliedDb": -0.22,
       "encodings": {
-        "opus": "pickup.power-up.01.webm",
+        "opus": "pickup.power-up.01.opus.webm",
         "aac": "pickup.power-up.01.m4a"
       }
     },
@@ -2616,7 +2616,7 @@
       "truePeak": -1.1150229966601857,
       "gainAppliedDb": 0.12,
       "encodings": {
-        "opus": "sports.ball-bounce-court.00.webm",
+        "opus": "sports.ball-bounce-court.00.opus.webm",
         "aac": "sports.ball-bounce-court.00.m4a"
       }
     },
@@ -2633,7 +2633,7 @@
       "truePeak": -1.5878507458695386,
       "gainAppliedDb": 0.59,
       "encodings": {
-        "opus": "sports.ball-bounce-court.01.webm",
+        "opus": "sports.ball-bounce-court.01.opus.webm",
         "aac": "sports.ball-bounce-court.01.m4a"
       }
     },
@@ -2650,7 +2650,7 @@
       "truePeak": 0.43708283666909953,
       "gainAppliedDb": -1.44,
       "encodings": {
-        "opus": "sports.ball-bounce-court.02.webm",
+        "opus": "sports.ball-bounce-court.02.opus.webm",
         "aac": "sports.ball-bounce-court.02.m4a"
       }
     },
@@ -2667,7 +2667,7 @@
       "truePeak": -1.175360232721576,
       "gainAppliedDb": 0.18,
       "encodings": {
-        "opus": "sports.ball-bounce-hard.00.webm",
+        "opus": "sports.ball-bounce-hard.00.opus.webm",
         "aac": "sports.ball-bounce-hard.00.m4a"
       }
     },
@@ -2684,7 +2684,7 @@
       "truePeak": -0.753209971345792,
       "gainAppliedDb": -0.25,
       "encodings": {
-        "opus": "sports.ball-bounce-hard.01.webm",
+        "opus": "sports.ball-bounce-hard.01.opus.webm",
         "aac": "sports.ball-bounce-hard.01.m4a"
       }
     },
@@ -2701,7 +2701,7 @@
       "truePeak": -1.3497027454041537,
       "gainAppliedDb": 0.35,
       "encodings": {
-        "opus": "sports.ball-bounce-hard.02.webm",
+        "opus": "sports.ball-bounce-hard.02.opus.webm",
         "aac": "sports.ball-bounce-hard.02.m4a"
       }
     },
@@ -2718,7 +2718,7 @@
       "truePeak": -1.6147638371203956,
       "gainAppliedDb": 0.61,
       "encodings": {
-        "opus": "sports.billiard-clack.00.webm",
+        "opus": "sports.billiard-clack.00.opus.webm",
         "aac": "sports.billiard-clack.00.m4a"
       }
     },
@@ -2735,7 +2735,7 @@
       "truePeak": -0.8055256472156658,
       "gainAppliedDb": -0.19,
       "encodings": {
-        "opus": "sports.billiard-clack.01.webm",
+        "opus": "sports.billiard-clack.01.opus.webm",
         "aac": "sports.billiard-clack.01.m4a"
       }
     },
@@ -2752,7 +2752,7 @@
       "truePeak": 0.619100947615078,
       "gainAppliedDb": -1.62,
       "encodings": {
-        "opus": "sports.billiard-clack.02.webm",
+        "opus": "sports.billiard-clack.02.opus.webm",
         "aac": "sports.billiard-clack.02.m4a"
       }
     },
@@ -2769,7 +2769,7 @@
       "truePeak": -1.397770811993703,
       "gainAppliedDb": 0.4,
       "encodings": {
-        "opus": "sports.bumper.00.webm",
+        "opus": "sports.bumper.00.opus.webm",
         "aac": "sports.bumper.00.m4a"
       }
     },
@@ -2786,7 +2786,7 @@
       "truePeak": -1.3773416457653755,
       "gainAppliedDb": 0.38,
       "encodings": {
-        "opus": "sports.bumper.01.webm",
+        "opus": "sports.bumper.01.opus.webm",
         "aac": "sports.bumper.01.m4a"
       }
     },
@@ -2803,7 +2803,7 @@
       "truePeak": -1.546665235298705,
       "gainAppliedDb": 0.55,
       "encodings": {
-        "opus": "sports.bumper.02.webm",
+        "opus": "sports.bumper.02.opus.webm",
         "aac": "sports.bumper.02.m4a"
       }
     },
@@ -2820,7 +2820,7 @@
       "truePeak": -1.9752682540579518,
       "gainAppliedDb": 0.98,
       "encodings": {
-        "opus": "sports.cushion.00.webm",
+        "opus": "sports.cushion.00.opus.webm",
         "aac": "sports.cushion.00.m4a"
       }
     },
@@ -2837,7 +2837,7 @@
       "truePeak": -1.419171713235626,
       "gainAppliedDb": 0.42,
       "encodings": {
-        "opus": "sports.cushion.01.webm",
+        "opus": "sports.cushion.01.opus.webm",
         "aac": "sports.cushion.01.m4a"
       }
     },
@@ -2854,7 +2854,7 @@
       "truePeak": -0.7050329687505997,
       "gainAppliedDb": -0.29,
       "encodings": {
-        "opus": "sports.cushion.02.webm",
+        "opus": "sports.cushion.02.opus.webm",
         "aac": "sports.cushion.02.m4a"
       }
     },
@@ -2871,7 +2871,7 @@
       "truePeak": -0.5112196016888314,
       "gainAppliedDb": -0.49,
       "encodings": {
-        "opus": "sports.flipper.00.webm",
+        "opus": "sports.flipper.00.opus.webm",
         "aac": "sports.flipper.00.m4a"
       }
     },
@@ -2888,7 +2888,7 @@
       "truePeak": -0.22666881937795158,
       "gainAppliedDb": -0.77,
       "encodings": {
-        "opus": "sports.flipper.01.webm",
+        "opus": "sports.flipper.01.opus.webm",
         "aac": "sports.flipper.01.m4a"
       }
     },
@@ -2905,7 +2905,7 @@
       "truePeak": -1.0211238811343473,
       "gainAppliedDb": 0.02,
       "encodings": {
-        "opus": "sports.flipper.02.webm",
+        "opus": "sports.flipper.02.opus.webm",
         "aac": "sports.flipper.02.m4a"
       }
     },
@@ -2922,7 +2922,7 @@
       "truePeak": -0.7957705732113658,
       "gainAppliedDb": -0.2,
       "encodings": {
-        "opus": "sports.net-swish.00.webm",
+        "opus": "sports.net-swish.00.opus.webm",
         "aac": "sports.net-swish.00.m4a"
       }
     },
@@ -2939,7 +2939,7 @@
       "truePeak": -0.42060209907186186,
       "gainAppliedDb": -0.58,
       "encodings": {
-        "opus": "sports.net-swish.01.webm",
+        "opus": "sports.net-swish.01.opus.webm",
         "aac": "sports.net-swish.01.m4a"
       }
     },
@@ -2956,7 +2956,7 @@
       "truePeak": -1.641473854080224,
       "gainAppliedDb": 0.64,
       "encodings": {
-        "opus": "sports.net-swish.02.webm",
+        "opus": "sports.net-swish.02.opus.webm",
         "aac": "sports.net-swish.02.m4a"
       }
     },
@@ -2973,7 +2973,7 @@
       "truePeak": -6.593742786567587,
       "gainAppliedDb": 5.59,
       "encodings": {
-        "opus": "sports.plunger.00.webm",
+        "opus": "sports.plunger.00.opus.webm",
         "aac": "sports.plunger.00.m4a"
       }
     },
@@ -2990,7 +2990,7 @@
       "truePeak": -7.011744112261696,
       "gainAppliedDb": 6.01,
       "encodings": {
-        "opus": "sports.plunger.01.webm",
+        "opus": "sports.plunger.01.opus.webm",
         "aac": "sports.plunger.01.m4a"
       }
     },
@@ -3007,7 +3007,7 @@
       "truePeak": -6.85336460628596,
       "gainAppliedDb": 5.85,
       "encodings": {
-        "opus": "sports.plunger.02.webm",
+        "opus": "sports.plunger.02.opus.webm",
         "aac": "sports.plunger.02.m4a"
       }
     },
@@ -3024,7 +3024,7 @@
       "truePeak": -1.1104983382048388,
       "gainAppliedDb": 0.11,
       "encodings": {
-        "opus": "sports.pocket.00.webm",
+        "opus": "sports.pocket.00.opus.webm",
         "aac": "sports.pocket.00.m4a"
       }
     },
@@ -3041,7 +3041,7 @@
       "truePeak": -0.1800392943979539,
       "gainAppliedDb": -0.82,
       "encodings": {
-        "opus": "sports.pocket.01.webm",
+        "opus": "sports.pocket.01.opus.webm",
         "aac": "sports.pocket.01.m4a"
       }
     },
@@ -3058,7 +3058,7 @@
       "truePeak": -1.4919388856384845,
       "gainAppliedDb": 0.49,
       "encodings": {
-        "opus": "sports.pocket.02.webm",
+        "opus": "sports.pocket.02.opus.webm",
         "aac": "sports.pocket.02.m4a"
       }
     },
@@ -3075,7 +3075,7 @@
       "truePeak": -1.036022714585026,
       "gainAppliedDb": 0.04,
       "encodings": {
-        "opus": "sports.rim.00.webm",
+        "opus": "sports.rim.00.opus.webm",
         "aac": "sports.rim.00.m4a"
       }
     },
@@ -3092,7 +3092,7 @@
       "truePeak": -0.992315602021686,
       "gainAppliedDb": -0.01,
       "encodings": {
-        "opus": "sports.rim.01.webm",
+        "opus": "sports.rim.01.opus.webm",
         "aac": "sports.rim.01.m4a"
       }
     },
@@ -3109,7 +3109,7 @@
       "truePeak": -0.9477302249752446,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "sports.rim.02.webm",
+        "opus": "sports.rim.02.opus.webm",
         "aac": "sports.rim.02.m4a"
       }
     },
@@ -3126,7 +3126,7 @@
       "truePeak": -0.9168794269392235,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "stinger.alarm.00.webm",
+        "opus": "stinger.alarm.00.opus.webm",
         "aac": "stinger.alarm.00.m4a"
       }
     },
@@ -3143,7 +3143,7 @@
       "truePeak": -0.9983311750603832,
       "gainAppliedDb": 0,
       "encodings": {
-        "opus": "stinger.alarm.01.webm",
+        "opus": "stinger.alarm.01.opus.webm",
         "aac": "stinger.alarm.01.m4a"
       }
     },
@@ -3160,7 +3160,7 @@
       "truePeak": -0.8927816483852984,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "stinger.checkpoint.00.webm",
+        "opus": "stinger.checkpoint.00.opus.webm",
         "aac": "stinger.checkpoint.00.m4a"
       }
     },
@@ -3177,7 +3177,7 @@
       "truePeak": -0.8872241448580509,
       "gainAppliedDb": -0.11,
       "encodings": {
-        "opus": "stinger.checkpoint.01.webm",
+        "opus": "stinger.checkpoint.01.opus.webm",
         "aac": "stinger.checkpoint.01.m4a"
       }
     },
@@ -3194,7 +3194,7 @@
       "truePeak": -0.7309516014480593,
       "gainAppliedDb": -0.27,
       "encodings": {
-        "opus": "stinger.level-start.00.webm",
+        "opus": "stinger.level-start.00.opus.webm",
         "aac": "stinger.level-start.00.m4a"
       }
     },
@@ -3211,7 +3211,7 @@
       "truePeak": -1.1650879731676498,
       "gainAppliedDb": 0.17,
       "encodings": {
-        "opus": "stinger.level-start.01.webm",
+        "opus": "stinger.level-start.01.opus.webm",
         "aac": "stinger.level-start.01.m4a"
       }
     },
@@ -3228,7 +3228,7 @@
       "truePeak": -0.36682817951672747,
       "gainAppliedDb": -0.63,
       "encodings": {
-        "opus": "stinger.lose.00.webm",
+        "opus": "stinger.lose.00.opus.webm",
         "aac": "stinger.lose.00.m4a"
       }
     },
@@ -3245,7 +3245,7 @@
       "truePeak": -1.0511227539786923,
       "gainAppliedDb": 0.05,
       "encodings": {
-        "opus": "stinger.lose.01.webm",
+        "opus": "stinger.lose.01.opus.webm",
         "aac": "stinger.lose.01.m4a"
       }
     },
@@ -3262,7 +3262,7 @@
       "truePeak": -0.8824785980186654,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "stinger.win.00.webm",
+        "opus": "stinger.win.00.opus.webm",
         "aac": "stinger.win.00.m4a"
       }
     },
@@ -3279,7 +3279,7 @@
       "truePeak": -0.9484438718658128,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "stinger.win.01.webm",
+        "opus": "stinger.win.01.opus.webm",
         "aac": "stinger.win.01.m4a"
       }
     },
@@ -3296,7 +3296,7 @@
       "truePeak": -0.9483031165356083,
       "gainAppliedDb": -0.05,
       "encodings": {
-        "opus": "ui.back.00.webm",
+        "opus": "ui.back.00.opus.webm",
         "aac": "ui.back.00.m4a"
       }
     },
@@ -3313,7 +3313,7 @@
       "truePeak": -0.9568501311584693,
       "gainAppliedDb": -0.04,
       "encodings": {
-        "opus": "ui.back.01.webm",
+        "opus": "ui.back.01.opus.webm",
         "aac": "ui.back.01.m4a"
       }
     },
@@ -3330,7 +3330,7 @@
       "truePeak": -1.407608321536753,
       "gainAppliedDb": 0.41,
       "encodings": {
-        "opus": "ui.click.00.webm",
+        "opus": "ui.click.00.opus.webm",
         "aac": "ui.click.00.m4a"
       }
     },
@@ -3347,7 +3347,7 @@
       "truePeak": -1.134749108866762,
       "gainAppliedDb": 0.13,
       "encodings": {
-        "opus": "ui.click.01.webm",
+        "opus": "ui.click.01.opus.webm",
         "aac": "ui.click.01.m4a"
       }
     },
@@ -3364,7 +3364,7 @@
       "truePeak": -0.9223087399395492,
       "gainAppliedDb": -0.08,
       "encodings": {
-        "opus": "ui.confirm.00.webm",
+        "opus": "ui.confirm.00.opus.webm",
         "aac": "ui.confirm.00.m4a"
       }
     },
@@ -3381,7 +3381,7 @@
       "truePeak": -0.942039738237554,
       "gainAppliedDb": -0.06,
       "encodings": {
-        "opus": "ui.confirm.01.webm",
+        "opus": "ui.confirm.01.opus.webm",
         "aac": "ui.confirm.01.m4a"
       }
     },
@@ -3398,7 +3398,7 @@
       "truePeak": 0.4016112655374495,
       "gainAppliedDb": -1.4,
       "encodings": {
-        "opus": "ui.countdown-go.00.webm",
+        "opus": "ui.countdown-go.00.opus.webm",
         "aac": "ui.countdown-go.00.m4a"
       }
     },
@@ -3415,7 +3415,7 @@
       "truePeak": -1.55974131136285,
       "gainAppliedDb": 0.56,
       "encodings": {
-        "opus": "ui.countdown-go.01.webm",
+        "opus": "ui.countdown-go.01.opus.webm",
         "aac": "ui.countdown-go.01.m4a"
       }
     },
@@ -3432,7 +3432,7 @@
       "truePeak": -0.9826848542995228,
       "gainAppliedDb": -0.02,
       "encodings": {
-        "opus": "ui.countdown-tick.00.webm",
+        "opus": "ui.countdown-tick.00.opus.webm",
         "aac": "ui.countdown-tick.00.m4a"
       }
     },
@@ -3449,7 +3449,7 @@
       "truePeak": -0.9367053031512927,
       "gainAppliedDb": -0.06,
       "encodings": {
-        "opus": "ui.countdown-tick.01.webm",
+        "opus": "ui.countdown-tick.01.opus.webm",
         "aac": "ui.countdown-tick.01.m4a"
       }
     },
@@ -3466,7 +3466,7 @@
       "truePeak": 0.6937933459286107,
       "gainAppliedDb": -1.69,
       "encodings": {
-        "opus": "ui.error.00.webm",
+        "opus": "ui.error.00.opus.webm",
         "aac": "ui.error.00.m4a"
       }
     },
@@ -3483,7 +3483,7 @@
       "truePeak": 0.48519337474082247,
       "gainAppliedDb": -1.49,
       "encodings": {
-        "opus": "ui.error.01.webm",
+        "opus": "ui.error.01.opus.webm",
         "aac": "ui.error.01.m4a"
       }
     },
@@ -3500,7 +3500,7 @@
       "truePeak": -0.008415060507552325,
       "gainAppliedDb": -0.99,
       "encodings": {
-        "opus": "ui.hover.00.webm",
+        "opus": "ui.hover.00.opus.webm",
         "aac": "ui.hover.00.m4a"
       }
     },
@@ -3517,7 +3517,7 @@
       "truePeak": -1.7486155065820752,
       "gainAppliedDb": 0.75,
       "encodings": {
-        "opus": "ui.hover.01.webm",
+        "opus": "ui.hover.01.opus.webm",
         "aac": "ui.hover.01.m4a"
       }
     },
@@ -3534,7 +3534,7 @@
       "truePeak": -0.8811070463380393,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "ui.reward.00.webm",
+        "opus": "ui.reward.00.opus.webm",
         "aac": "ui.reward.00.m4a"
       }
     },
@@ -3551,7 +3551,7 @@
       "truePeak": -0.8841710597993682,
       "gainAppliedDb": -0.12,
       "encodings": {
-        "opus": "ui.reward.01.webm",
+        "opus": "ui.reward.01.opus.webm",
         "aac": "ui.reward.01.m4a"
       }
     },
@@ -3568,7 +3568,7 @@
       "truePeak": 0.8963019310228502,
       "gainAppliedDb": -1.9,
       "encodings": {
-        "opus": "ui.score-tick.00.webm",
+        "opus": "ui.score-tick.00.opus.webm",
         "aac": "ui.score-tick.00.m4a"
       }
     },
@@ -3585,7 +3585,7 @@
       "truePeak": -0.9089378094976795,
       "gainAppliedDb": -0.09,
       "encodings": {
-        "opus": "ui.score-tick.01.webm",
+        "opus": "ui.score-tick.01.opus.webm",
         "aac": "ui.score-tick.01.m4a"
       }
     },
@@ -3602,7 +3602,7 @@
       "truePeak": 0.5363176438461238,
       "gainAppliedDb": -1.54,
       "encodings": {
-        "opus": "ui.slider-tick.00.webm",
+        "opus": "ui.slider-tick.00.opus.webm",
         "aac": "ui.slider-tick.00.m4a"
       }
     },
@@ -3619,7 +3619,7 @@
       "truePeak": 1.0910288206814114,
       "gainAppliedDb": -2.09,
       "encodings": {
-        "opus": "ui.slider-tick.01.webm",
+        "opus": "ui.slider-tick.01.opus.webm",
         "aac": "ui.slider-tick.01.m4a"
       }
     },
@@ -3636,7 +3636,7 @@
       "truePeak": 0.9734070798555333,
       "gainAppliedDb": -1.97,
       "encodings": {
-        "opus": "ui.toggle.00.webm",
+        "opus": "ui.toggle.00.opus.webm",
         "aac": "ui.toggle.00.m4a"
       }
     },
@@ -3653,7 +3653,7 @@
       "truePeak": -1.2978372133809755,
       "gainAppliedDb": 0.3,
       "encodings": {
-        "opus": "ui.toggle.01.webm",
+        "opus": "ui.toggle.01.opus.webm",
         "aac": "ui.toggle.01.m4a"
       }
     },
@@ -3670,7 +3670,7 @@
       "truePeak": 2.0634716118877896,
       "gainAppliedDb": -3.06,
       "encodings": {
-        "opus": "ui.unlock.00.webm",
+        "opus": "ui.unlock.00.opus.webm",
         "aac": "ui.unlock.00.m4a"
       }
     },
@@ -3687,7 +3687,7 @@
       "truePeak": 0.9134135615485974,
       "gainAppliedDb": -1.91,
       "encodings": {
-        "opus": "ui.unlock.01.webm",
+        "opus": "ui.unlock.01.opus.webm",
         "aac": "ui.unlock.01.m4a"
       }
     },
@@ -3704,7 +3704,7 @@
       "truePeak": -0.5688729907951817,
       "gainAppliedDb": -0.43,
       "encodings": {
-        "opus": "vehicle.boost.webm",
+        "opus": "vehicle.boost.opus.webm",
         "aac": "vehicle.boost.m4a"
       }
     },
@@ -3721,7 +3721,7 @@
       "truePeak": -4.191840314268022,
       "gainAppliedDb": -1.78,
       "encodings": {
-        "opus": "vehicle.car-small.layer0.off.webm",
+        "opus": "vehicle.car-small.layer0.off.opus.webm",
         "aac": "vehicle.car-small.layer0.off.m4a"
       }
     },
@@ -3738,7 +3738,7 @@
       "truePeak": -0.9641277123299339,
       "gainAppliedDb": -4.52,
       "encodings": {
-        "opus": "vehicle.car-small.layer0.on.webm",
+        "opus": "vehicle.car-small.layer0.on.opus.webm",
         "aac": "vehicle.car-small.layer0.on.m4a"
       }
     },
@@ -3755,7 +3755,7 @@
       "truePeak": -3.499795663100306,
       "gainAppliedDb": -3.96,
       "encodings": {
-        "opus": "vehicle.car-small.layer1.off.webm",
+        "opus": "vehicle.car-small.layer1.off.opus.webm",
         "aac": "vehicle.car-small.layer1.off.m4a"
       }
     },
@@ -3772,7 +3772,7 @@
       "truePeak": -0.3019387555828467,
       "gainAppliedDb": -5.81,
       "encodings": {
-        "opus": "vehicle.car-small.layer1.on.webm",
+        "opus": "vehicle.car-small.layer1.on.opus.webm",
         "aac": "vehicle.car-small.layer1.on.m4a"
       }
     },
@@ -3789,7 +3789,7 @@
       "truePeak": -2.634763293636752,
       "gainAppliedDb": -6.02,
       "encodings": {
-        "opus": "vehicle.car-small.layer2.off.webm",
+        "opus": "vehicle.car-small.layer2.off.opus.webm",
         "aac": "vehicle.car-small.layer2.off.m4a"
       }
     },
@@ -3806,7 +3806,7 @@
       "truePeak": -0.43397501431572666,
       "gainAppliedDb": -7.27,
       "encodings": {
-        "opus": "vehicle.car-small.layer2.on.webm",
+        "opus": "vehicle.car-small.layer2.on.opus.webm",
         "aac": "vehicle.car-small.layer2.on.m4a"
       }
     },
@@ -3823,7 +3823,7 @@
       "truePeak": -14.227200249043703,
       "gainAppliedDb": 9.14,
       "encodings": {
-        "opus": "vehicle.car-sport-real.webm",
+        "opus": "vehicle.car-sport-real.opus.webm",
         "aac": "vehicle.car-sport-real.m4a"
       }
     },
@@ -3840,7 +3840,7 @@
       "truePeak": -5.686467278709166,
       "gainAppliedDb": -2.65,
       "encodings": {
-        "opus": "vehicle.car-sport.layer0.off.webm",
+        "opus": "vehicle.car-sport.layer0.off.opus.webm",
         "aac": "vehicle.car-sport.layer0.off.m4a"
       }
     },
@@ -3857,7 +3857,7 @@
       "truePeak": -0.9362525574017826,
       "gainAppliedDb": -5.44,
       "encodings": {
-        "opus": "vehicle.car-sport.layer0.on.webm",
+        "opus": "vehicle.car-sport.layer0.on.opus.webm",
         "aac": "vehicle.car-sport.layer0.on.m4a"
       }
     },
@@ -3874,7 +3874,7 @@
       "truePeak": -7.00634607754205,
       "gainAppliedDb": -1.89,
       "encodings": {
-        "opus": "vehicle.car-sport.layer1.off.webm",
+        "opus": "vehicle.car-sport.layer1.off.opus.webm",
         "aac": "vehicle.car-sport.layer1.off.m4a"
       }
     },
@@ -3891,7 +3891,7 @@
       "truePeak": -0.9410854288386823,
       "gainAppliedDb": -5.41,
       "encodings": {
-        "opus": "vehicle.car-sport.layer1.on.webm",
+        "opus": "vehicle.car-sport.layer1.on.opus.webm",
         "aac": "vehicle.car-sport.layer1.on.m4a"
       }
     },
@@ -3908,7 +3908,7 @@
       "truePeak": -1.2578624668721041,
       "gainAppliedDb": -7.72,
       "encodings": {
-        "opus": "vehicle.car-sport.layer2.off.webm",
+        "opus": "vehicle.car-sport.layer2.off.opus.webm",
         "aac": "vehicle.car-sport.layer2.off.m4a"
       }
     },
@@ -3925,7 +3925,7 @@
       "truePeak": -0.9946796471732143,
       "gainAppliedDb": -8.47,
       "encodings": {
-        "opus": "vehicle.car-sport.layer2.on.webm",
+        "opus": "vehicle.car-sport.layer2.on.opus.webm",
         "aac": "vehicle.car-sport.layer2.on.m4a"
       }
     },
@@ -3942,7 +3942,7 @@
       "truePeak": -3.414043333012316,
       "gainAppliedDb": 2.41,
       "encodings": {
-        "opus": "vehicle.gear-shift.01.webm",
+        "opus": "vehicle.gear-shift.01.opus.webm",
         "aac": "vehicle.gear-shift.01.m4a"
       }
     },
@@ -3959,7 +3959,7 @@
       "truePeak": -2.939313529116418,
       "gainAppliedDb": 1.94,
       "encodings": {
-        "opus": "vehicle.gear-shift.webm",
+        "opus": "vehicle.gear-shift.opus.webm",
         "aac": "vehicle.gear-shift.m4a"
       }
     },
@@ -3976,7 +3976,7 @@
       "truePeak": -0.9046581867125404,
       "gainAppliedDb": -4.38,
       "encodings": {
-        "opus": "vehicle.jet.layer0.off.webm",
+        "opus": "vehicle.jet.layer0.off.opus.webm",
         "aac": "vehicle.jet.layer0.off.m4a"
       }
     },
@@ -3993,7 +3993,7 @@
       "truePeak": -0.8189391984477402,
       "gainAppliedDb": -6.88,
       "encodings": {
-        "opus": "vehicle.jet.layer0.on.webm",
+        "opus": "vehicle.jet.layer0.on.opus.webm",
         "aac": "vehicle.jet.layer0.on.m4a"
       }
     },
@@ -4010,7 +4010,7 @@
       "truePeak": -1.030959799321646,
       "gainAppliedDb": -8.71,
       "encodings": {
-        "opus": "vehicle.jet.layer1.off.webm",
+        "opus": "vehicle.jet.layer1.off.opus.webm",
         "aac": "vehicle.jet.layer1.off.m4a"
       }
     },
@@ -4027,7 +4027,7 @@
       "truePeak": 1.0152746940606776,
       "gainAppliedDb": -10.54,
       "encodings": {
-        "opus": "vehicle.jet.layer1.on.webm",
+        "opus": "vehicle.jet.layer1.on.opus.webm",
         "aac": "vehicle.jet.layer1.on.m4a"
       }
     },
@@ -4044,7 +4044,7 @@
       "truePeak": -1.3711610112958053,
       "gainAppliedDb": -9.7,
       "encodings": {
-        "opus": "vehicle.jet.layer2.off.webm",
+        "opus": "vehicle.jet.layer2.off.opus.webm",
         "aac": "vehicle.jet.layer2.off.m4a"
       }
     },
@@ -4061,7 +4061,7 @@
       "truePeak": 0.35520816453149984,
       "gainAppliedDb": -10.59,
       "encodings": {
-        "opus": "vehicle.jet.layer2.on.webm",
+        "opus": "vehicle.jet.layer2.on.opus.webm",
         "aac": "vehicle.jet.layer2.on.m4a"
       }
     },
@@ -4078,7 +4078,7 @@
       "truePeak": -1.0589820640350391,
       "gainAppliedDb": -10.1,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer0.off.webm",
+        "opus": "vehicle.prop-plane.layer0.off.opus.webm",
         "aac": "vehicle.prop-plane.layer0.off.m4a"
       }
     },
@@ -4095,7 +4095,7 @@
       "truePeak": -0.947748085343652,
       "gainAppliedDb": -10.75,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer0.on.webm",
+        "opus": "vehicle.prop-plane.layer0.on.opus.webm",
         "aac": "vehicle.prop-plane.layer0.on.m4a"
       }
     },
@@ -4112,7 +4112,7 @@
       "truePeak": -1.056264927153391,
       "gainAppliedDb": -6.8,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer1.off.webm",
+        "opus": "vehicle.prop-plane.layer1.off.opus.webm",
         "aac": "vehicle.prop-plane.layer1.off.m4a"
       }
     },
@@ -4129,7 +4129,7 @@
       "truePeak": -0.9263292280510506,
       "gainAppliedDb": -7.13,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer1.on.webm",
+        "opus": "vehicle.prop-plane.layer1.on.opus.webm",
         "aac": "vehicle.prop-plane.layer1.on.m4a"
       }
     },
@@ -4146,7 +4146,7 @@
       "truePeak": -0.9788626660930033,
       "gainAppliedDb": -9.6,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer2.off.webm",
+        "opus": "vehicle.prop-plane.layer2.off.opus.webm",
         "aac": "vehicle.prop-plane.layer2.off.m4a"
       }
     },
@@ -4163,7 +4163,7 @@
       "truePeak": -0.8655913906764846,
       "gainAppliedDb": -9.75,
       "encodings": {
-        "opus": "vehicle.prop-plane.layer2.on.webm",
+        "opus": "vehicle.prop-plane.layer2.on.opus.webm",
         "aac": "vehicle.prop-plane.layer2.on.m4a"
       }
     },
@@ -4180,7 +4180,7 @@
       "truePeak": -3.593216661111769,
       "gainAppliedDb": 1.09,
       "encodings": {
-        "opus": "vehicle.thruster.layer0.off.webm",
+        "opus": "vehicle.thruster.layer0.off.opus.webm",
         "aac": "vehicle.thruster.layer0.off.m4a"
       }
     },
@@ -4197,7 +4197,7 @@
       "truePeak": -0.11640082748067579,
       "gainAppliedDb": -0.88,
       "encodings": {
-        "opus": "vehicle.thruster.layer0.on.webm",
+        "opus": "vehicle.thruster.layer0.on.opus.webm",
         "aac": "vehicle.thruster.layer0.on.m4a"
       }
     },
@@ -4214,7 +4214,7 @@
       "truePeak": -2.8070231623130497,
       "gainAppliedDb": 0.65,
       "encodings": {
-        "opus": "vehicle.thruster.layer1.off.webm",
+        "opus": "vehicle.thruster.layer1.off.opus.webm",
         "aac": "vehicle.thruster.layer1.off.m4a"
       }
     },
@@ -4231,7 +4231,7 @@
       "truePeak": -0.6240425945924447,
       "gainAppliedDb": -0.53,
       "encodings": {
-        "opus": "vehicle.thruster.layer1.on.webm",
+        "opus": "vehicle.thruster.layer1.on.opus.webm",
         "aac": "vehicle.thruster.layer1.on.m4a"
       }
     },
@@ -4248,7 +4248,7 @@
       "truePeak": -3.968323709838529,
       "gainAppliedDb": 1.48,
       "encodings": {
-        "opus": "vehicle.thruster.layer2.off.webm",
+        "opus": "vehicle.thruster.layer2.off.opus.webm",
         "aac": "vehicle.thruster.layer2.off.m4a"
       }
     },
@@ -4265,7 +4265,7 @@
       "truePeak": -0.002235821050962753,
       "gainAppliedDb": -1,
       "encodings": {
-        "opus": "vehicle.thruster.layer2.on.webm",
+        "opus": "vehicle.thruster.layer2.on.opus.webm",
         "aac": "vehicle.thruster.layer2.on.m4a"
       }
     },
@@ -4282,7 +4282,7 @@
       "truePeak": -2.3254576217524616,
       "gainAppliedDb": -0.21,
       "encodings": {
-        "opus": "vehicle.thruster.layer3.off.webm",
+        "opus": "vehicle.thruster.layer3.off.opus.webm",
         "aac": "vehicle.thruster.layer3.off.m4a"
       }
     },
@@ -4299,7 +4299,7 @@
       "truePeak": -0.8261810118819155,
       "gainAppliedDb": -0.89,
       "encodings": {
-        "opus": "vehicle.thruster.layer3.on.webm",
+        "opus": "vehicle.thruster.layer3.on.opus.webm",
         "aac": "vehicle.thruster.layer3.on.m4a"
       }
     },
@@ -4316,7 +4316,7 @@
       "truePeak": -17.194759043428427,
       "gainAppliedDb": 8.14,
       "encodings": {
-        "opus": "vehicle.tyre-skid.webm",
+        "opus": "vehicle.tyre-skid.opus.webm",
         "aac": "vehicle.tyre-skid.m4a"
       }
     },
@@ -4333,7 +4333,7 @@
       "truePeak": -14.47164892224114,
       "gainAppliedDb": 8.81,
       "encodings": {
-        "opus": "vehicle.van-real.webm",
+        "opus": "vehicle.van-real.opus.webm",
         "aac": "vehicle.van-real.m4a"
       }
     },
@@ -4350,7 +4350,7 @@
       "truePeak": -0.624444953244471,
       "gainAppliedDb": -10.85,
       "encodings": {
-        "opus": "vehicle.van.layer0.off.webm",
+        "opus": "vehicle.van.layer0.off.opus.webm",
         "aac": "vehicle.van.layer0.off.m4a"
       }
     },
@@ -4367,7 +4367,7 @@
       "truePeak": -0.9775512596697957,
       "gainAppliedDb": -11.05,
       "encodings": {
-        "opus": "vehicle.van.layer0.on.webm",
+        "opus": "vehicle.van.layer0.on.opus.webm",
         "aac": "vehicle.van.layer0.on.m4a"
       }
     },
@@ -4384,7 +4384,7 @@
       "truePeak": -0.7058129128892987,
       "gainAppliedDb": -10.35,
       "encodings": {
-        "opus": "vehicle.van.layer1.off.webm",
+        "opus": "vehicle.van.layer1.off.opus.webm",
         "aac": "vehicle.van.layer1.off.m4a"
       }
     },
@@ -4401,7 +4401,7 @@
       "truePeak": -0.9111725589078772,
       "gainAppliedDb": -10.66,
       "encodings": {
-        "opus": "vehicle.van.layer1.on.webm",
+        "opus": "vehicle.van.layer1.on.opus.webm",
         "aac": "vehicle.van.layer1.on.m4a"
       }
     },
@@ -4418,7 +4418,7 @@
       "truePeak": -0.9468425726790983,
       "gainAppliedDb": -3.62,
       "encodings": {
-        "opus": "vehicle.van.layer2.off.webm",
+        "opus": "vehicle.van.layer2.off.opus.webm",
         "aac": "vehicle.van.layer2.off.m4a"
       }
     },
@@ -4435,7 +4435,7 @@
       "truePeak": -0.8808837391640217,
       "gainAppliedDb": -4.53,
       "encodings": {
-        "opus": "vehicle.van.layer2.on.webm",
+        "opus": "vehicle.van.layer2.on.opus.webm",
         "aac": "vehicle.van.layer2.on.m4a"
       }
     },
@@ -4452,7 +4452,7 @@
       "truePeak": -1.2362930602246005,
       "gainAppliedDb": 0.24,
       "encodings": {
-        "opus": "whoosh.dash.00.webm",
+        "opus": "whoosh.dash.00.opus.webm",
         "aac": "whoosh.dash.00.m4a"
       }
     },
@@ -4469,7 +4469,7 @@
       "truePeak": -0.7892071636074685,
       "gainAppliedDb": -0.21,
       "encodings": {
-        "opus": "whoosh.dash.01.webm",
+        "opus": "whoosh.dash.01.opus.webm",
         "aac": "whoosh.dash.01.m4a"
       }
     },
@@ -4486,7 +4486,7 @@
       "truePeak": -0.4844846814658688,
       "gainAppliedDb": -0.52,
       "encodings": {
-        "opus": "whoosh.dash.02.webm",
+        "opus": "whoosh.dash.02.opus.webm",
         "aac": "whoosh.dash.02.m4a"
       }
     },
@@ -4503,7 +4503,7 @@
       "truePeak": -0.11640082748067579,
       "gainAppliedDb": -0.88,
       "encodings": {
-        "opus": "whoosh.pass-by-large.00.webm",
+        "opus": "whoosh.pass-by-large.00.opus.webm",
         "aac": "whoosh.pass-by-large.00.m4a"
       }
     },
@@ -4520,7 +4520,7 @@
       "truePeak": -0.6240425945924447,
       "gainAppliedDb": -0.38,
       "encodings": {
-        "opus": "whoosh.pass-by-large.01.webm",
+        "opus": "whoosh.pass-by-large.01.opus.webm",
         "aac": "whoosh.pass-by-large.01.m4a"
       }
     },
@@ -4537,7 +4537,7 @@
       "truePeak": -0.002235821050962753,
       "gainAppliedDb": -1,
       "encodings": {
-        "opus": "whoosh.pass-by-large.02.webm",
+        "opus": "whoosh.pass-by-large.02.opus.webm",
         "aac": "whoosh.pass-by-large.02.m4a"
       }
     },
@@ -4554,7 +4554,7 @@
       "truePeak": -0.8121864348892296,
       "gainAppliedDb": -0.19,
       "encodings": {
-        "opus": "whoosh.pass-by-small.00.webm",
+        "opus": "whoosh.pass-by-small.00.opus.webm",
         "aac": "whoosh.pass-by-small.00.m4a"
       }
     },
@@ -4571,7 +4571,7 @@
       "truePeak": 0.5899527091430208,
       "gainAppliedDb": -1.59,
       "encodings": {
-        "opus": "whoosh.pass-by-small.01.webm",
+        "opus": "whoosh.pass-by-small.01.opus.webm",
         "aac": "whoosh.pass-by-small.01.m4a"
       }
     },
@@ -4588,7 +4588,7 @@
       "truePeak": -1.5726748134609336,
       "gainAppliedDb": 0.57,
       "encodings": {
-        "opus": "whoosh.pass-by-small.02.webm",
+        "opus": "whoosh.pass-by-small.02.opus.webm",
         "aac": "whoosh.pass-by-small.02.m4a"
       }
     },
@@ -4605,7 +4605,7 @@
       "truePeak": -24.244459737786208,
       "gainAppliedDb": 23.24,
       "encodings": {
-        "opus": "whoosh.swing-heavy.00.webm",
+        "opus": "whoosh.swing-heavy.00.opus.webm",
         "aac": "whoosh.swing-heavy.00.m4a"
       }
     },
@@ -4622,7 +4622,7 @@
       "truePeak": -22.949456934508802,
       "gainAppliedDb": 21.95,
       "encodings": {
-        "opus": "whoosh.swing-heavy.01.webm",
+        "opus": "whoosh.swing-heavy.01.opus.webm",
         "aac": "whoosh.swing-heavy.01.m4a"
       }
     },
@@ -4639,7 +4639,7 @@
       "truePeak": -11.261935708749299,
       "gainAppliedDb": 10.26,
       "encodings": {
-        "opus": "whoosh.swing-heavy.02.webm",
+        "opus": "whoosh.swing-heavy.02.opus.webm",
         "aac": "whoosh.swing-heavy.02.m4a"
       }
     },
@@ -4656,7 +4656,7 @@
       "truePeak": -1.3240162925211727,
       "gainAppliedDb": 0.32,
       "encodings": {
-        "opus": "whoosh.swing-light.00.webm",
+        "opus": "whoosh.swing-light.00.opus.webm",
         "aac": "whoosh.swing-light.00.m4a"
       }
     },
@@ -4673,7 +4673,7 @@
       "truePeak": 0.6327494361153949,
       "gainAppliedDb": -1.63,
       "encodings": {
-        "opus": "whoosh.swing-light.01.webm",
+        "opus": "whoosh.swing-light.01.opus.webm",
         "aac": "whoosh.swing-light.01.m4a"
       }
     },
@@ -4690,7 +4690,7 @@
       "truePeak": -3.4903273654060274,
       "gainAppliedDb": 2.49,
       "encodings": {
-        "opus": "whoosh.swing-light.02.webm",
+        "opus": "whoosh.swing-light.02.opus.webm",
         "aac": "whoosh.swing-light.02.m4a"
       }
     }
