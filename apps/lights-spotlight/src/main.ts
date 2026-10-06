@@ -4,7 +4,7 @@ import {
   LightCollector,
   PBRMaterial
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -65,7 +65,7 @@ async function run(): Promise<void> {
     const spot = scene.collectLights().find((light): light is SpotLight => light instanceof SpotLight);
     if (!spot) throw new Error("Spot light scene did not contain a SpotLight.");
     const lights = new LightCollector().collect(scene);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,

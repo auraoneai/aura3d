@@ -1,4 +1,5 @@
-import { A3DAppLifecycle, A3DRenderer, A3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@aura3d/engine/advanced-runtime";
+import { Renderer, A3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@aura3d/engine/renderer";
+import { A3DAppLifecycle } from "@aura3d/engine/advanced-runtime";
 import type { Quat, Vec3 } from "@aura3d/scene";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
@@ -54,11 +55,10 @@ const marker = scene.createRenderableMesh({
 });
 marker.transform.setPosition(0.55, 0.08, -2.0);
 
-const renderer = await A3DRenderer.create({
+const renderer = await Renderer.create({
   canvas,
   antialias: true,
-  preserveDrawingBuffer: true,
-  clearColor: [0.07, 0.08, 0.1, 1]
+    clearColor: [0.07, 0.08, 0.1, 1]
 });
 lifecycle.addDisposable(renderer);
 

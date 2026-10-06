@@ -7,7 +7,7 @@ import {
   type RenderItem,
   type ProductionLoadedHdrEnvironment
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { DEMOS, getDemo, type DemoDefinition } from "./metadata";
 import { buildScene, createResources, type ControlValues, type GalleryState, type Ripple, type SceneFrame } from "./sceneBuilders";
 import { createAuthoredGalleryLayer, type AuthoredAssetRuntimeState } from "./authoredLayer";
@@ -398,15 +398,14 @@ async function run(): Promise<void> {
   try {
     const renderSize = syncCanvasSize();
     const rendererCreateStartedAt = performance.now();
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
       backend: "webgl2",
       antialias: true,
       alpha: true,
-      preserveDrawingBuffer: true,
-      errorCheckMode: "frame",
+            errorCheckMode: "frame",
       clearColor: [0, 0, 0, 0],
       shaderLibrary: createAdvancedGalleryShaderLibrary()
     });
@@ -568,7 +567,7 @@ window.addEventListener("beforeunload", () => {
   }
 });
 
-function bindEvents(renderer: A3DRenderer): void {
+function bindEvents(renderer: Renderer): void {
   window.addEventListener("hashchange", () => {
     routeId = normalizeHash(location.hash);
     galleryMode = isGalleryRoute(routeId);

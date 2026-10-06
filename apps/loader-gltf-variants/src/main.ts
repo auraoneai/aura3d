@@ -5,7 +5,7 @@ import {
   type GLTFAsset,
   type GLTFRenderResources
 } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -70,12 +70,11 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createVariantFixtureDataUrl() }, new LoadContext());
     const resourcesByVariant = await createVariantResources(asset);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.012, 0.014, 0.018, 1]
+            clearColor: [0.012, 0.014, 0.018, 1]
     });
     const variants = ["base", ...asset.materialVariants.map((variant) => variant.name)];
     const selectedMaterials = variants.map((variant) => inspectSelectedMaterial(asset, variant));
@@ -108,7 +107,7 @@ async function run(): Promise<void> {
         const activeVariant = variants[Math.floor(now / 900) % variants.length] ?? "base";
         const resources = resourcesByVariant.get(activeVariant) ?? resourcesByVariant.get("base");
         if (!resources) throw new Error("Variant resources were not created.");
-        const result = renderer.renderFrame(createRendererInput(resources, activeVariant, now / 1000));
+        const result = a3dRenderFrame(renderer, createRendererInput(resources, activeVariant, now / 1000));
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,
           drawCalls: result.diagnostics.drawCalls,
@@ -154,7 +153,7 @@ function inspectSelectedMaterial(asset: GLTFAsset, variant: string): string {
   return scene.collectRenderables()[0]?.renderable.material ?? "unknown";
 }
 
-function createRendererInput(resources: GLTFRenderResources, activeVariant: string, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, activeVariant: string, time: number): Parameters<typeof a3dRenderFrame>[1] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: {
