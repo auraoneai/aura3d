@@ -100,7 +100,7 @@ jobs:
       - run: pnpm exec playwright install chromium
       - name: prd02 browser specs
         continue-on-error: ${{ github.event_name == 'pull_request' }}
-        run: pnpm exec playwright test tests/qr/prd02/browser --config playwright.contracts.config.ts
+        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
 
   lane-capture:
     name: lane capture + baselines
@@ -122,10 +122,12 @@ jobs:
         run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
       - name: capture flag=none
         run: |
+          SCENES_ARG=""
+          if [ -n "${{ github.event.inputs.scenes }}" ]; then SCENES_ARG="--scenes ${{ github.event.inputs.scenes }}"; fi
           pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/capture-lane.ts \
             --flags "${{ github.event.inputs.flags || 'none' }}" \
             --engines "${{ github.event.inputs.engines || 'aura3d,three' }}" \
-            --scenes "${{ github.event.inputs.scenes }}" \
+            $SCENES_ARG \
             --out benchmarks/quality-rebuild/scenes/prd02/out
       - name: commit flag-none baseline
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.update_baseline == 'true' && (github.event.inputs.flags == '' || github.event.inputs.flags == 'none')

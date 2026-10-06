@@ -43,7 +43,7 @@ function parseArgs(argv: string[]): Args {
     const value = argv[index + 1];
     if (flag === "--dist" && value) { args.dist = resolve(value); index += 1; }
     else if (flag === "--out" && value) { args.out = resolve(value); index += 1; }
-    else if (flag === "--scenes" && value) { args.scenes = value.split(",").filter(Boolean); index += 1; }
+    else if (flag === "--scenes" && value) { const list = value.split(",").filter(Boolean); if (list.length > 0) args.scenes = list; index += 1; }
     else if (flag === "--engines" && value) { args.engines = value.split(",").filter(Boolean); index += 1; }
     else if (flag === "--flags" && value) { args.flags = value; index += 1; }
     else if (flag === "--strip") { args.strip = true; }
