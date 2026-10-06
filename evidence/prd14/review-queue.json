@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "queue": [
+    {
+      "gameId": "showcase-bank-shot",
+      "commit": "9fdee592d9c4b719744a57e01ecda12ac29fa469",
+      "pr": 183,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-06",
+      "note": "Wave-1 v2 shell; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-turbo-drift-circuit",
+      "commit": "e137b3e96f95078bcc62a828307523150178bfe0",
+      "pr": 203,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-06",
+      "note": "Wave-1 v2 shell; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "aura-clash-showcase",
+      "commit": "9352150ac11d563d627b34a95c92581147cd5eb5",
+      "pr": 231,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-06",
+      "note": "Wave-1 v2 shell; first counted G-PANEL round requested."
+    },
+    {
+      "gameId": "showcase-orbital-defense",
+      "commit": "91eb8d24837736fdd69d5a44de4d7cb3056f1f42",
+      "pr": 238,
+      "phase": "T2-v2-shell",
+      "requestedAt": "2026-10-06",
+      "note": "Wave-1 v2 shell; first counted G-PANEL round requested."
+    }
+  ]
+}
