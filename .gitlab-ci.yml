@@ -57,15 +57,21 @@ qr:diag:
   rules:
     - if: '$QR_SUITE == "all" || $QR_SUITE == "diag"'
   script:
-    - set -x
-    - uname -a
-    - curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz" -o /tmp/node.tgz && mkdir -p "$HOME/node" && tar -xzf /tmp/node.tgz -C "$HOME/node" --strip-components=1
+    - set -euo pipefail
+    - echo "=== stage: before_script replica ==="
+    - curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-arm64.tar.gz" -o /tmp/node.tgz
+    - mkdir -p "$HOME/node" && tar -xzf /tmp/node.tgz -C "$HOME/node" --strip-components=1
     - export PATH="$HOME/node/bin:$PATH"
     - node --version
     - npm install -g "pnpm@${PNPM_VERSION}" >/dev/null
-    - pnpm --version
     - command -v git-lfs >/dev/null 2>&1 || brew install git-lfs
-    - git lfs install --local || true
-    - git lfs pull --include="public/aura-assets/propRockA.52dd1f0f.glb" ; echo "LFS_PULL_ONE_EXIT=$?"
-    - ls -la public/aura-assets/propRockA.52dd1f0f.glb || true
-    - pnpm install --frozen-lockfile ; echo "PNPM_INSTALL_EXIT=$?"
+    - git lfs install --local
+    - echo "=== stage: pnpm install ==="
+    - pnpm install --frozen-lockfile
+    - echo "=== stage: playwright install ==="
+    - pnpm exec playwright install chromium
+    - echo "=== stage: git lfs pull ==="
+    - git lfs pull
+    - echo "=== stage: capture validate ==="
+    - node tools/quality-rebuild-capture/capture-games.mjs --validate
+    - echo "=== all stages passed ==="
