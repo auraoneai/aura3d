@@ -386,3 +386,5 @@ AGENTS.md
 !packages/aura3d-cli/skills/agent-files/AGENTS.md
 !packages/create-aura3d/templates/*/AGENTS.md
 !packages/create-aura3d/templates/*/.claude/CLAUDE.md
+!templates/*/AGENTS.md
+!templates/*/.claude/CLAUDE.md
