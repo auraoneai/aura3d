@@ -9,7 +9,15 @@
  * including a disposed one — and flag-off reports simply carry nulls.
  */
 
-import { prd11LatestBatchPlanReport, prd11LatestTelemetry, prd11SetRendererQrFlags, type Prd11FrameTelemetry } from "@aura3d/rendering";
+import {
+  AuraQuality,
+  prd11LatestBatchPlanReport,
+  prd11LatestQualityDiagnostics,
+  prd11LatestTelemetry,
+  prd11SetRendererQrFlags,
+  registerAuraQualityController,
+  type Prd11FrameTelemetry
+} from "@aura3d/rendering";
 import {
   QUALITY_TIERS,
   StubQualityController,
@@ -48,12 +56,12 @@ export interface AuraFrameTimingReport {
   readonly backingSize: readonly [number, number] | null;
 }
 
-/** C-31 `quality` section (PRD 11 §7.2 `AuraQualityDiagnostics`). Governor fields land in Phase 4. */
+/** C-31 `quality` section (PRD 11 §7.2 `AuraQualityDiagnostics`). */
 export interface AuraQualityDiagnosticsReport {
   readonly decision: unknown | null;
   readonly settings: AuraQualityTierSettings | null;
   readonly renderScale: number | null;
-  readonly governorSteps: readonly { readonly frame: number; readonly feature: string; readonly from: unknown; readonly to: unknown }[];
+  readonly governorSteps: readonly { readonly direction: string; readonly feature: string; readonly from: unknown; readonly to: unknown; readonly frameMsP50: number }[];
   readonly locked: boolean | null;
   readonly probe: DeviceProbe | null;
 }
@@ -133,12 +141,19 @@ registerDiagnosticsSection<AuraQualityDiagnosticsReport>({
   key: "quality",
   collect: () => {
     const telemetry = prd11LatestTelemetry();
+    const live = prd11LatestQualityDiagnostics();
     return {
-      decision: null,
-      settings: telemetry?.tier ?? null,
-      renderScale: null,
-      governorSteps: [],
-      locked: null,
+      decision: live?.decision ?? null,
+      settings: telemetry?.tier ?? (live ? QUALITY_TIERS[live.decision.tier] : null),
+      renderScale: live?.renderScale ?? null,
+      governorSteps: live?.governorSteps.map((s) => ({
+        direction: s.direction,
+        feature: s.feature,
+        from: s.from,
+        to: s.to,
+        frameMsP50: s.frameMsP50
+      })) ?? [],
+      locked: live?.locked ?? null,
       probe: telemetry?.device.probe ?? null
     };
   }
@@ -172,13 +187,38 @@ function requestedTierFromRendererOptions(options: AuraCreateAppOptions): AuraQu
   return tier === "low" || tier === "medium" || tier === "high" || tier === "ultra" ? tier : "auto";
 }
 
-registerAppExtension({
+const qualityControllerUnregisters = new WeakMap<object, () => void>();
+
+registerAppExtension<"quality">({
   id: "prd11.quality",
   owner: "prd11",
   flag: "A3D_QR_TIERS",
   member: "quality",
   create(_app, ctx) {
     prd11SetRendererQrFlags(ctx.flags);
-    return new StubQualityController(requestedTierFromRendererOptions(ctx.options));
+    const requested = requestedTierFromRendererOptions(ctx.options);
+    if (!ctx.flags.on("A3D_QR_TIERS")) {
+      return new StubQualityController(requested);
+    }
+    const renderer = ctx.options.renderer;
+    const quality = renderer && typeof renderer === "object" ? renderer.quality : undefined;
+    const overrides = quality && typeof quality === "object" && typeof (quality as { overrides?: unknown }).overrides === "object"
+      ? (quality as { overrides: Partial<AuraQualityTierSettings> }).overrides
+      : undefined;
+    const adaptive = renderer && typeof renderer === "object" ? renderer.adaptive : undefined;
+    const targetFrameRate = renderer && typeof renderer === "object" && typeof renderer.targetFrameRate === "number"
+      ? renderer.targetFrameRate
+      : undefined;
+    const controller = new AuraQuality(requested, overrides, {
+      adaptive: adaptive === false ? false : true,
+      targetFrameRate,
+      coarsePointer: typeof matchMedia === "function" ? matchMedia("(pointer: coarse)").matches : false,
+      storage: typeof localStorage !== "undefined" ? localStorage : null
+    });
+    qualityControllerUnregisters.set(controller, registerAuraQualityController(controller));
+    return controller;
+  },
+  dispose(value) {
+    qualityControllerUnregisters.get(value)?.();
   }
 });
