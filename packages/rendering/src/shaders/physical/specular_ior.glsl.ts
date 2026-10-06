@@ -16,6 +16,7 @@
  * Requires `brdf` (pow2) and `a3d_prd04_bsdf_lobes_common` (A3DPrd04Lobes).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_SPECULAR_IOR_WGSL from "../physical-wgsl/specular_ior.wgsl.js";
 
 const glsl = /* glsl */ `
 // IOR <-> F0 conversion (r185 iridescence_fragment.glsl.js:14-33).
@@ -76,6 +77,7 @@ export const A3D_PRD04_SPECULAR_IOR: ShaderChunk = {
 	name: "a3d_prd04_specular_ior",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_SPECULAR_IOR_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };

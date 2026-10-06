@@ -89,7 +89,11 @@ jobs:
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
         # All PRD-04 unit-gated browser specs: chunk conformance, lobe numeric parity,
         # transmission capture, decoders/variants. Scene captures run in the `capture` job.
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks|PRD-04 physical lobes|PRD-04 transmission|PRD-04 glTF decoders|PRD-04 WGSL twins"
+      - name: Extension matrix --check (P6-2 truthful matrix)
+        # material-conformance.json was just written by the chunk-conformance spec;
+        # the tool fails when the report is missing or the matrices drift from it.
+        run: node tools/generate-extension-matrix.mjs --check
       - name: Upload material-conformance.json
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,6 +104,7 @@ jobs:
             tests/reports/prd04-chunk-harness.json
             tests/reports/physical-lobes-numeric.json
             tests/reports/prd04-decoders-variants.json
+            tests/reports/prd04-wgsl-twins.json
           if-no-files-found: warn
 
   capture:

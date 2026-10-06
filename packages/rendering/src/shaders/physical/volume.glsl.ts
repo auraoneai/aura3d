@@ -15,6 +15,7 @@
  * `a3d_prd04_bsdf_lobes_common`.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_VOLUME_WGSL from "../physical-wgsl/volume.wgsl.js";
 
 const glsl = /* glsl */ `
 #ifdef A3D_TRANSMISSION
@@ -58,6 +59,7 @@ export const A3D_PRD04_VOLUME: ShaderChunk = {
 	name: "a3d_prd04_volume",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_VOLUME_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };

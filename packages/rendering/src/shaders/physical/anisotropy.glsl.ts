@@ -19,6 +19,7 @@
  * and `a3d_prd04_bsdf_lobes_common` (A3DPrd04Lobes).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_ANISOTROPY_WGSL from "../physical-wgsl/anisotropy.wgsl.js";
 
 const glsl = /* glsl */ `
 // Anisotropic visibility — Filament model (r185
@@ -131,6 +132,7 @@ export const A3D_PRD04_ANISOTROPY: ShaderChunk = {
 	name: "a3d_prd04_anisotropy",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_ANISOTROPY_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };
