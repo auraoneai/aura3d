@@ -46,7 +46,7 @@ export default defineArtDirection({
     { role: "character", assetKey: "mech-hero", maxTriangles: 30000, minTriangles: 10000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048, animated: { clips: ["run", "strafe", "fire", "staff"] } },
     { role: "enemy", assetKey: "intercept-drone", maxTriangles: 30000, minTriangles: 3000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024, animated: { clips: ["fly", "attack"] } },
     { role: "enemy", assetKey: "hive-drone", maxTriangles: 30000, minTriangles: 3000, textureSet: "BC+N+ORM+E", maxTextureSize: 1024, animated: { clips: ["fly", "attack"] } },
-    { role: "world", assetKey: "night-plaza-arena", kit: "K2", maxTriangles: 120000, textureSet: "BC+N+E", maxTextureSize: 2048 },
+    { role: "world", assetKey: "night-plaza-arena", kit: "K2", maxTriangles: 120000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
     { role: "prop", assetKey: "plaza-lamps", kit: "K2", maxTriangles: 5000, textureSet: "BC+N+ORM+E", maxTextureSize: 512 }
   ],
   vfx: [
