@@ -6,7 +6,7 @@
  */
 import type { ShaderChunk } from "../../../contracts/program.js";
 
-const glsl = /* glsl */ `
+export const terrainSplatGlsl = /* glsl */ `
 uniform highp sampler2D u_height;       // shared with the vertex stage
 uniform highp sampler2D u_splat0;       // layers 0..3 weights in RGBA
 uniform highp sampler2D u_splat1;       // layers 4..7 weights (optional)
@@ -72,7 +72,7 @@ bool a3dTerrainDiscardHole(vec2 uv) {
 }
 `;
 
-const wgsl = /* wgsl */ `
+export const terrainSplatWgsl = /* wgsl */ `
 @group(0) @binding(0) var u_height : texture_2d<f32>;
 @group(0) @binding(1) var u_splat0 : texture_2d<f32>;
 @group(0) @binding(2) var u_splat1 : texture_2d<f32>;
@@ -123,6 +123,6 @@ export const a3d_prd10_terrain_splat: ShaderChunk = {
   name: "a3d_prd10_terrain_splat",
   owner: "prd10",
   stage: "fragment",
-  glsl,
-  wgsl
+  glsl: terrainSplatGlsl,
+  wgsl: terrainSplatWgsl
 };

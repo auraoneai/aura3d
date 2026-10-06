@@ -6,7 +6,7 @@
  */
 import type { ShaderChunk } from "../../../contracts/program.js";
 
-const glsl = /* glsl */ `
+export const terrainCdlodGlsl = /* glsl */ `
 uniform highp sampler2D u_height;       // R32F, texelFetch only (no float filtering required)
 uniform vec4 u_terrain;                 // originX, originZ, sizeX, sizeZ
 uniform float u_heightScale;
@@ -48,7 +48,7 @@ vec3 a3dTerrainCdlod(vec2 a_grid, vec4 a_node, out vec2 outTerrainUv) {
 }
 `;
 
-const wgsl = /* wgsl */ `
+export const terrainCdlodWgsl = /* wgsl */ `
 struct A3dTerrainUniforms {
   terrain : vec4f,            // originX, originZ, sizeX, sizeZ
   heightScale : f32,
@@ -91,6 +91,6 @@ export const a3d_prd10_terrain_cdlod: ShaderChunk = {
   name: "a3d_prd10_terrain_cdlod",
   owner: "prd10",
   stage: "vertex",
-  glsl,
-  wgsl
+  glsl: terrainCdlodGlsl,
+  wgsl: terrainCdlodWgsl
 };

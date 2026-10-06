@@ -60,7 +60,7 @@ export interface WorldOccluderGrid {
   heightAt(x: number, z: number): number | null;
 }
 
-interface WorldQueriesState {
+export interface WorldQueriesState {
   wind: Required<AuraWindSpec>;
   biome: AuraBiomeRig | null;
   flags: QrFlags | null;
@@ -68,12 +68,15 @@ interface WorldQueriesState {
   waters: WorldWaterProvider[];
   kitAABBs: WorldKitAabb[];
   occluder: WorldOccluderGrid | null;
+  /** Latest §7.1.10 world diagnostics snapshot (C-31 collector writes it). */
+  diagnostics: unknown | null;
+  timeOfDay: { hour: number; hoursPerSecond: number | null };
 }
 
 const states = new WeakMap<AuraApp, WorldQueriesState>();
 
 function freshState(): WorldQueriesState {
-  return { wind: normalizeWind(), biome: null, flags: null, terrains: [], waters: [], kitAABBs: [], occluder: null };
+  return { wind: normalizeWind(), biome: null, flags: null, terrains: [], waters: [], kitAABBs: [], occluder: null, diagnostics: null, timeOfDay: { hour: 12, hoursPerSecond: null } };
 }
 
 /** Lane-internal: shared mutable world-query state for an app (created on demand). */
@@ -99,6 +102,11 @@ export function setWorldActiveBiome(app: AuraApp, rig: AuraBiomeRig | null): voi
 /** Lane-internal: the C-38 extension records the app's flags for later per-frame queries. */
 export function setWorldFlags(app: AuraApp, flags: QrFlags): void {
   worldStateFor(app).flags = flags;
+}
+
+/** Lane-internal: the C-31 diagnostics collector stores the latest snapshot here. */
+export function setWorldDiagnostics(app: AuraApp, diagnostics: unknown): void {
+  worldStateFor(app).diagnostics = diagnostics;
 }
 
 interface GroundHit {
@@ -162,6 +170,16 @@ function raycastKitAABBs(x: number, z: number, fromY: number, maxDistance: numbe
     }
   }
   return nearest;
+}
+
+/**
+ * Lane-internal: register a terrain record's provider into the app's query
+ * state (called by the C-38 extension when it scans scene nodes, and by the
+ * T2.7 node handler for nodes discovered later).
+ */
+export function registerTerrainProvider(app: AuraApp, provider: WorldTerrainProvider): void {
+  const state = worldStateFor(app);
+  if (!state.terrains.some((t) => t.nodeId === provider.nodeId)) state.terrains.push(provider);
 }
 
 /**
