@@ -1,0 +1,52 @@
+{
+  "root": "apps/showcase-cinematic-architecture",
+  "files": 2,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 404,
+      "construct": "lights.spot({ intensity: 0.2 })",
+      "mapping": "approximate",
+      "target": "lights.spot({ power: 1 })",
+      "note": "physical units: cd=lm/π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 404,
+      "construct": "lights.spot(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 413,
+      "construct": "lights.point({ intensity: 1.45 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 413,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 414,
+      "construct": "lights.point({ intensity: 1.85 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-cinematic-architecture/src/main.ts",
+      "line": 414,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

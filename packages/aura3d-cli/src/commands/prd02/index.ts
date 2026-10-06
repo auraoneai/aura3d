@@ -6,6 +6,15 @@
 import { registerCliCommand, registerCodemod } from "../../contracts/commands.js";
 import { runEnvironmentsBake } from "./environmentsBake.js";
 import { migrateLightingCodemod } from "./migrateLighting.js";
+import { runMigrateLighting } from "./migrateLightingSweep.js";
+
+registerCliCommand({
+  name: "migrate lighting",
+  owner: "prd02",
+  summary: "PRD-02 physical-light-units codemod sweep (report mode by default).",
+  usage: "aura3d migrate lighting [dir|glob...] [--report|--write] [--out <dir>]",
+  run: runMigrateLighting
+});
 
 registerCliCommand({
   name: "environments bake",

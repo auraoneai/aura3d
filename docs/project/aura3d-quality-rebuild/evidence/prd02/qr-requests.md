@@ -76,3 +76,22 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
   `prd02.probeRenderFace` or `installPrd02ProbeRenderer`; if a later phase
   wants a first-class frame-context field it lands as a C-09 additive
   member, not a cross-lane request.
+- **to:prd15** (Phase 6/7) — `registerCodemod` (C-39) fills a codemod map but
+  `packages/aura3d-cli/src/cli.ts` never dispatches `aura3d codemod <name> <glob>`,
+  so codemods were unreachable through the binary. Lane-02 registered
+  `migrate lighting` as a CliCommand (`commands/prd02/migrateLightingSweep.ts`,
+  report mode default, `--out` for JSON reports). Request: dispatch
+  `codemod` in cli.ts (or confirm the lane-command surface is the intended
+  mechanism).
+- **to:prd15** (Phase 7) — PRD-02 Phase-7 item "delete the dead
+  `packages/rendering/src/shaders/pbr-direct.frag.glsl`" breaks
+  `tests/unit/rendering/shader-library.test.ts` (default-owner 15): its
+  sync test does `readFileSync` on both packaged `.glsl` files and asserts
+  they equal `createDefaultShaderLibrary().compileSource("aura3d/pbr-direct")`.
+  Deleting only the frag file leaves the vert orphaned and the test red.
+  Request: lane-15 drops the packaged-file sync assertion (the .glsl pair is
+  a mirror of `registerLeanPbrShader`'s inline source, not runtime-loaded),
+  or approves the paired deletion of vert+frag plus that test block. Also
+  note `.github/QR_OWNERSHIP.json` lacks the CONTRACTS §4.1 row-02
+  file-level carve-out for `shaders/pbr-direct.frag.glsl` (the `shaders/`
+  dir is owner-01) — the JSON may flag the deletion to lane 01.
