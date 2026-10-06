@@ -79,3 +79,19 @@ degrades to `dom-fallback`.
 - `mountedEvidence.audio` keeps the same keys
   (`system:"audio.createGameSoundEngine"`, `cueCount`, `gestureUnlocked`,
   `sfxReady`, `recentCues`, `playedCueCount`, `contextState`, `assetUrls`).
+
+
+## Step 7 — HUD/touch (`07-hud-touch.patch`)
+
+Deletes `src/hud.ts` and the `<aside id="panel">` markup and mounts the shared
+kit: `mountHud` with the `motorsport` theme (timer, score, strikes-as-lives,
+combo, objective, speedometer, nav indicator) plus `mountTouchControls` on the
+`steer-pedals` preset writing into `game.input` actions (`throttle`, `brake`,
+`left`, `right`, `handbrake`, `reset`). `.a3g-game-hud` is appended to `#app`
+with its own absolute-positioned host; `radioToast` strips tags for
+`hud.toast`. `route-cue-maps.test.ts` keeps importing `courierAudioManifest`
+from `src/sound.ts`, so the sound module stays; only `hud.ts` goes away.
+
+Ordering: imports `mountHud`/`mountTouchControls`/`HudDocument` from
+`@aura3d/game` — those exports land with `qr/prd09-hud`; the patch compiles
+only after that PR merges.

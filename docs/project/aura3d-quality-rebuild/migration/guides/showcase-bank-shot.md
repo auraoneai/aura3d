@@ -69,3 +69,17 @@ Step 11 imports `createJuice` / `createFxParticlePass` /
 (`qr/prd09-juice`). `app.effects`, `app.camera` and `bankGame.session` are
 already real on `main`, so the pot hit-stop works end to end once the
 package exports merge.
+
+
+## Step 12 — HUD/touch (`12-hud-touch.patch`)
+
+Deletes the `#hud`/`#panel` markup (stat grid, power meter, controls list,
+evidence strip, brand blurb, action buttons) and mounts the shared kit:
+`mountHud` on the `tabletop` theme (clock countdown, score, combo, objective,
+prompt, strike meter) plus `mountTouchControls` on `aim-drag`. The touch sink
+writes the same `manualHeld` key codes the keyboard path reads, so aim/spin/
+charge share one path; `confirm`/`cancel` map to Space/KeyR. Rack clear/lost
+uses `hud.banner` + `hud.toast` (the result card is gone; R still re-racks).
+
+Ordering: imports `mountHud`/`mountTouchControls`/`HudDocument` from
+`@aura3d/game` — exports land with `qr/prd09-hud`; compiles only after merge.

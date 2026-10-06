@@ -73,3 +73,20 @@ swapped on faith.
 - `packAssetUrls` is additive in `AuraClashAudioProof` — `cueCount`,
   `typedAssetCount`, `assetUrls` keep their old shapes and bounds
   (specs assert `>= 10`).
+
+
+## Step 7 — HUD/touch (`07-hud-touch.patch`)
+
+Deletes the `.aca-hud` card grid, `.aca-controls` button strip and the
+`#toast`/`#combo-flash` divs, and mounts the shared kit on the `fighting`
+theme: two ghosted health meters, meter bars, round pips (`lives`), round
+timer, edge combo, callout prompt and ROUND/FIGHT/KO/etc. banners fired on
+callout transitions. `dpad-4btn` touch writes into a new `controls.setTouch`
+sink inside `createControls` (rising edge latches one `pressed` frame, same
+semantics as the deleted DOM buttons). `.aca-topline` (`#render-status`,
+`#clip-status`) stays — it is stage-shell status, not HUD. `playable-smoke`
+and `flagship-readiness` specs move from `#player-*` ids to
+`[data-widget-id=...]` selectors.
+
+Ordering: imports `mountHud`/`mountTouchControls`/`HudDocument` from
+`@aura3d/game` — exports land with `qr/prd09-hud`; compiles only after merge.
