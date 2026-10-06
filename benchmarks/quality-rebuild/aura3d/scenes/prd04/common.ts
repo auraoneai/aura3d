@@ -207,7 +207,7 @@ interface RendererDiagnosticsShape {
   readonly runtime?: { readonly backend?: string };
 }
 
-export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement, qrFlags: readonly string[] = []): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
   host.style.width = `${spec.resolution.width}px`;
@@ -217,6 +217,7 @@ export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement)
     scene: buildScene(spec, log),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     pixelRatio: spec.resolution.devicePixelRatio,
+    ...(qrFlags.length > 0 ? { qualityRebuild: { flags: qrFlags } } : {}),
     resize: false,
     autoStart: false
   });
@@ -258,6 +259,9 @@ export async function runPrd04AuraScene(spec: Prd04SceneSpec, host: HTMLElement)
     errors: [...diagnostics.errors],
     loadMs: Math.round(performance.now() - started),
     extra: {
+      // The flags actually applied to createAuraApp (requested list lands on
+      // payload.qrFlags in the harness; this is the applied truth).
+      appliedQrFlags: [...qrFlags],
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,
       environment: renderer?.environment,

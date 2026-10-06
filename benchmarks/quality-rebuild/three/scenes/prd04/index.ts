@@ -8,6 +8,9 @@ import type { ReadyPayload } from "../../../shared/types";
 import { prd04SceneSpecs } from "../../../scenes/prd04/index";
 import { runPrd04ThreeScene } from "./common";
 
-export const adapters: Record<string, (host: HTMLElement) => Promise<ReadyPayload>> = Object.fromEntries(
-  Object.keys(prd04SceneSpecs).map((id) => [id, (host: HTMLElement) => runPrd04ThreeScene(prd04SceneSpecs[id], host)])
+export type Prd04AdapterFn = (host: HTMLElement, options?: { readonly qrFlags?: readonly string[] }) => Promise<ReadyPayload>;
+
+export const adapters: Record<string, Prd04AdapterFn> = Object.fromEntries(
+  // three.js is the flag-free reference oracle — A3D_QR_* flags don't apply.
+  Object.keys(prd04SceneSpecs).map((id) => [id, (host) => runPrd04ThreeScene(prd04SceneSpecs[id], host)])
 );

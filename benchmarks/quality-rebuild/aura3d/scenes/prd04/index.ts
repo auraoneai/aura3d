@@ -8,6 +8,8 @@ import type { ReadyPayload } from "../../../shared/types";
 import { prd04SceneSpecs } from "../../../scenes/prd04/index";
 import { runPrd04AuraScene } from "./common";
 
-export const adapters: Record<string, (host: HTMLElement) => Promise<ReadyPayload>> = Object.fromEntries(
-  Object.keys(prd04SceneSpecs).map((id) => [id, (host: HTMLElement) => runPrd04AuraScene(prd04SceneSpecs[id], host)])
+export type Prd04AdapterFn = (host: HTMLElement, options?: { readonly qrFlags?: readonly string[] }) => Promise<ReadyPayload>;
+
+export const adapters: Record<string, Prd04AdapterFn> = Object.fromEntries(
+  Object.keys(prd04SceneSpecs).map((id) => [id, (host, options) => runPrd04AuraScene(prd04SceneSpecs[id], host, options?.qrFlags ?? [])])
 );

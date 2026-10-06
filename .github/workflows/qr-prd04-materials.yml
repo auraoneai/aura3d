@@ -85,7 +85,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install chromium
       - name: Browser conformance (ChunkHarness, ANGLE Metal)
-        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "chunk conformance"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "PRD-04 lobe chunks"
       - name: Upload material-conformance.json
         if: always()
         uses: actions/upload-artifact@v4

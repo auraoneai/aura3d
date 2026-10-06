@@ -79,4 +79,10 @@ describe("C-39 registration", () => {
     expect(pin?.owner).toBe("prd04");
     expect(report?.owner).toBe("prd04");
   });
+
+  it("the registered pin-emissive-defaults lazily resolves its .mjs implementation", () => {
+    const pin = codemodFor("pin-emissive-defaults");
+    const { rows } = pin!.transform(`material.emissive({ color: "#f00" });`, "x.ts");
+    expect(rows).toHaveLength(1);
+  });
 });

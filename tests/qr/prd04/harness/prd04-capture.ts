@@ -28,7 +28,8 @@ async function main(): Promise<void> {
     host.innerHTML = `<p style="color:#ccc;font:14px system-ui;padding:16px">Use ?engine=aura3d|three&scene=${Object.keys(prd04SceneSpecs).join("|")}</p>`;
     return;
   }
-  let loader = (engine === "aura3d" ? auraAdapters : threeAdapters)[sceneId];
+  type AdapterLoader = (host: HTMLElement, options?: { readonly qrFlags?: readonly string[] }) => Promise<unknown>;
+  let loader = (engine === "aura3d" ? auraAdapters : threeAdapters)[sceneId] as AdapterLoader | undefined;
   if (!loader) {
     // Legacy negative-control scenes (e.g. 02-pbr-product, 05-transmission):
     // top-level adapter modules default-export (host) => Promise<ReadyPayload>.
@@ -38,8 +39,13 @@ async function main(): Promise<void> {
     loader = mod.default as (host: HTMLElement) => Promise<unknown>;
   }
   if (!loader) throw new Error(`No ${engine} adapter for scene ${sceneId}`);
-  const payload = (await loader(host)) as Record<string, unknown>;
-  payload.qrFlags = flags.split(",").filter(Boolean);
+  // `flags=none` requests an empty flag set; anything else is forwarded to the
+  // adapter (the aura3d lane applies it via `qualityRebuild.flags` and reports
+  // the applied list back on `extra.appliedQrFlags`; the three.js oracle ignores
+  // it — it is the flag-free reference).
+  const requestedFlags = flags === "none" ? [] : flags.split(",").filter(Boolean);
+  const payload = (await loader(host, { qrFlags: requestedFlags })) as Record<string, unknown>;
+  payload.qrFlags = requestedFlags;
   document.body.dataset.qrReady = "true";
   window.__QR_READY__ = payload;
 }

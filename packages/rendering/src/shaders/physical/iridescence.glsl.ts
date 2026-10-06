@@ -97,7 +97,7 @@ vec3 a3dPrd04EvalIridescence( const in float outsideIOR, const in float eta2, co
 
 	// Second interface
 	vec3 baseIOR = a3dPrd04IridescenceFresnel0ToIor( clamp( baseF0, 0.0, 0.9999 ) ); // guard against 1.0
-	vec3 R1 = a3dPrd04IridescenceIorToFresnel0( baseIOR, vec3( iridescenceIOR ) );
+	vec3 R1 = a3dPrd04IridescenceIorToFresnel0( baseIOR, iridescenceIOR );
 	vec3 R23 = F_Schlick( R1, 1.0, cosTheta2 );
 	vec3 phi23 = vec3( 0.0 );
 	if ( baseIOR[ 0 ] < iridescenceIOR ) phi23[ 0 ] = PI;
