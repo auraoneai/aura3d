@@ -66,9 +66,9 @@ const characterManifest = JSON.parse(readFileSync(resolve(templateRoot, "charact
 const characterReadme = readFileSync(resolve(templateRoot, "character-controller/README.md"), "utf8");
 checks.push(
   {
-    id: "product-template-lean-product-entry",
-    pass: productSource.includes('from "@aura3d/lean/product"'),
-    detail: "product viewer imports @aura3d/lean/product"
+    id: "product-template-engine-entry",
+    pass: productSource.includes('from "@aura3d/engine"') && !productSource.includes("@aura3d/lean"),
+    detail: "product viewer imports @aura3d/engine (PRD-13 T3.7)"
   },
   {
     id: "arcade-template-engine-game-entry",
