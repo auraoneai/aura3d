@@ -340,6 +340,12 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           }
           productionController = controller;
           productionMountPending = false;
+          // PRD-01 Q-15-1 seam: hang the live `Renderer` for lane diagnostics
+          // and the C-05 output surface (`prd01.output` extension reads it).
+          const auraRenderer = (controller as { auraRenderer?: unknown }).auraRenderer;
+          if (auraRenderer) {
+            (app as unknown as Record<symbol, unknown>)[Symbol.for("a3d.prd01.renderer")] = auraRenderer;
+          }
           attachDeviceListeners(controller);
           settleMount();
           markRouteReady(snapshot, diagnosticsState);
