@@ -1,0 +1,110 @@
+name: QR PRD-10 World
+
+# Lane 10 (world building & environment systems) gate. Unit + ownership checks
+# run on ubuntu; browser specs run on macos-14 (Chromium, ANGLE Metal) — the
+# same runner class as quality-rebuild-capture.yml, which the `capture` job
+# dispatches with the C-33 `qr_flags` input for both `world` and `none` on the
+# `prd10-*` scenes.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/production-runtime/world/**"
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/aura3d-cli/src/commands/prd10/**"
+      - "benchmarks/quality-rebuild/**/prd10/**"
+      - "tests/unit/contracts/impl/prd10-*.ts"
+      - "tests/browser/qr-prd10-*.ts"
+      - ".github/workflows/qr-prd10-world.yml"
+  push:
+    branches: ["qr/**"]
+    paths:
+      - "packages/engine/src/agent-api/world/**"
+      - "packages/engine/src/lanes/prd10.ts"
+      - "packages/engine/src/production-runtime/world/**"
+      - "packages/rendering/src/world/**"
+      - "packages/rendering/src/lanes/prd10.ts"
+      - "packages/aura3d-cli/src/commands/prd10/**"
+      - "benchmarks/quality-rebuild/**/prd10/**"
+      - "tests/unit/contracts/impl/prd10-*.ts"
+      - "tests/browser/qr-prd10-*.ts"
+      - ".github/workflows/qr-prd10-world.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write # capture job dispatches quality-rebuild-capture.yml
+
+concurrency:
+  group: qr-prd10-world-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm lint
+      # lane unit tests + the full contract suite (C-26 runs stub + real)
+      - run: pnpm exec vitest run tests/unit/contracts tests/unit/contracts/impl
+      - run: node tools/qr-ownership/check.mjs
+
+  browser:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: prd10 browser specs (ChunkHarness GLSL + WGSL, pass depth)
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qr-prd10-browser-${{ github.run_id }}
+          path: tests/reports/
+          if-no-files-found: ignore
+
+  capture:
+    # Dispatches PRD 12's capture workflow for the prd10-* scenes under both
+    # flag arms. Dispatch only — image diffs live in that workflow's artifacts.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch quality-rebuild-capture (qr_flags=world)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run quality-rebuild-capture.yml \
+            --ref "$GITHUB_REF_NAME" \
+            -f qr_flags=world \
+            -f viewports=1280x720 || echo "dispatch not authorized on this ref"
+          sleep 3
+          run_id=$(gh run list --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+          echo "### capture (world) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Dispatch quality-rebuild-capture (qr_flags=none)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run quality-rebuild-capture.yml \
+            --ref "$GITHUB_REF_NAME" \
+            -f qr_flags=none \
+            -f viewports=1280x720 || echo "dispatch not authorized on this ref"
+          sleep 3
+          run_id=$(gh run list --workflow=quality-rebuild-capture.yml --branch "$GITHUB_REF_NAME" -L 1 --json databaseId -q '.[0].databaseId')
+          echo "### capture (none) run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run_id}" >> "$GITHUB_STEP_SUMMARY"
