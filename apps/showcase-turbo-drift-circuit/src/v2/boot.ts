@@ -27,7 +27,6 @@ import {
   advanceStartLights, canSimulateRace, createRaceSessionState,
   formatGapToRival, resolveRacePosition, resolveRaceHudStatus,
   startLightsLabel, updateRaceSessionTiming, updateNitro,
-  nitroSpeedMultiplier,
   type RaceSessionState
 } from "../gameplay/feel";
 import {
