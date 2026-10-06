@@ -4,7 +4,7 @@ import { invertSsrProjection } from "../ProjectionMath";
 import { RenderDeviceError, resolveGpuTargetOwner, type GpuTargetInventoryEntry, type LdrPostprocessPassDescriptor, type LdrPostprocessPresentationOptions, type RenderTarget } from "../RenderDevice";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { temporalAccumulationWeight } from "../TemporalMath";
-import { WebGL2BloomDiagnostics, WebGL2RenderTarget } from "../WebGL2Device";
+import { WebGL2RenderTarget, type WebGL2BloomDiagnostics } from "../WebGL2Device";
 import { normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloomPyramidPlan, resolveBloomPyramidResponseGain, type BloomPyramidPlan, type BloomQualityPreset } from "../postprocess/NativeBloomPyramid";
 import { BLOOM_BRIGHT_LUT_HEIGHT, BLOOM_BRIGHT_LUT_WIDTH, BLOOM_COMPOSITE_LUT_SIZE, OUTLINE_BLEND_LUT_WIDTH, OUTLINE_LIMB_RADIX, createBloomBrightThresholdLut, createBloomCompositeLut, createOutlineBlendLut, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 import type { WebGL2TextureUnit0Snapshot, WebGL2TextureUnitBindingSnapshot } from "./ContextLifecycle";

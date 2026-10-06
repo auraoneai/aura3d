@@ -12,7 +12,7 @@ import { ShadowPass } from "../ShadowPass";
 import { TextureBinding } from "../TextureBinding";
 import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
-import { RendererHost } from "./RendererHost";
+import type { RendererHost } from "./RendererHost";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, type Mat4, PerspectiveCamera, PointLight, Scene, SpotLight, type Vec3, identityMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene";
 
 export function collectForwardShadowMap(source: RenderSource | Iterable<RenderItem> | Scene): ForwardShadowMapOptions | undefined {

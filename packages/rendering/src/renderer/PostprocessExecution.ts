@@ -8,7 +8,7 @@ import type { RendererPostProcessOptions, RendererPostprocessDiagnostics } from 
 import { type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessTargetFormat, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "../RendererPostprocessPlan";
 import type { RenderSource } from "../contracts/renderSource";
 import { isIterable } from "./RenderShared";
-import { RendererHost } from "./RendererHost";
+import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 
 export function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {
