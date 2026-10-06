@@ -341,7 +341,6 @@ export async function runPrd04AuraScene(
     await nextFrame();
     app.step(0);
   }
-<<<<<<< HEAD
   await nextFrame();
 
   // P7/S6 strip capture: `spec.strip.frames` luma maps at `intervalMs` steps
