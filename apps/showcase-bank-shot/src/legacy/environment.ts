@@ -4,7 +4,7 @@ import {
   material,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "./table";
+import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "../gameplay/table";
 
 /**
  * Creates the complete 10/10 visual environment for Bank Shot:

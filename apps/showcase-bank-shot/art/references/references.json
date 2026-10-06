@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-bank-shot",
+  "entries": [
+    {
+      "file": "references/pool-hall-photos.json",
+      "source": "shipped comparable: 8 Ball Pool (Miniclip) + pool-hall photography board",
+      "licence": "reference-only",
+      "why": "Single warm pendant over felt; room falls into darkness beyond 3 m"
+    },
+    {
+      "file": "billiard-materials.json",
+      "source": "billiard felt / lacquer / resin material scans",
+      "licence": "reference-only",
+      "why": "Felt sheen, lacquered ball clearcoat, brass + oak rail finishes"
+    },
+    {
+      "file": "pool-table-geometries.json",
+      "source": "professional 9-ball table blueprints",
+      "licence": "reference-only",
+      "why": "Pocket cut geometry and cushion rail profile for the K4 table build"
+    }
+  ]
+}

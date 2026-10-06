@@ -8,7 +8,7 @@
  * AudioContext. Buses split gameplay sfx, event chimes, and the hall ambience.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type BilliardsAudioCue =
   | "cue-strike"
