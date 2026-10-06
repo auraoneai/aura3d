@@ -5,8 +5,9 @@
  * them), and re-exports the PR-B math modules.
  */
 import { registerShaderChunk } from "../contracts/program.js";
-import { SH9_CHUNK } from "../contracts/environment.js";
+import { SH9_CHUNK, environmentProbeFactorySlot } from "../contracts/environment.js";
 import { SHADOW_LOOKUP_CHUNK } from "../contracts/shadows.js";
+import { createEnvironmentProbeFactory } from "../environment/EnvironmentProbeFactory.js";
 import { SH9_CHUNK_GLSL } from "../shaders/chunks/sh9.glsl.js";
 import { LIGHTING_IBL_CHUNK_GLSL } from "../shaders/chunks/lighting_ibl.glsl.js";
 import { LIGHTING_PUNCTUAL_CHUNK_GLSL } from "../shaders/chunks/lighting_punctual.glsl.js";
@@ -26,6 +27,10 @@ const PRD02_CHUNKS = [
 for (const chunk of PRD02_CHUNKS) {
   registerShaderChunk({ name: chunk.name, owner: "prd02", glsl: chunk.glsl, stage: chunk.stage });
 }
+
+// C-09 real provider: consumers resolve the factory via
+// `environmentProbeFactorySlot.get(flags)(device)`.
+environmentProbeFactorySlot.provide(createEnvironmentProbeFactory);
 
 // Named re-exports (not `export *`): the root barrel merges contracts/index
 // and lanes/index, and contract names like `projectCubeToSH9` /
@@ -91,6 +96,34 @@ export {
   prefilterCubeGGX,
   prefilterLevelGGX
 } from "../environment/workers/cpuPrefilter.js";
+export {
+  type Prd02ProbeBuildOptions,
+  type ProbeSource,
+  CUBE_FACE_ORDER,
+  Prd02EnvironmentProbe,
+  sh9ToTexture,
+  buildProbeFromFaces,
+  buildProbeFromLevels,
+  buildRoomFaces,
+  cubeFaceViewProjection
+} from "../environment/probeBuild.js";
+export {
+  type GPUPMREMOptions,
+  GPUPMREMGenerator
+} from "../environment/GPUPMREMGenerator.js";
+export {
+  type Prd02EnvironmentProbeFactoryOptions,
+  Prd02EnvironmentProbeFactory,
+  createEnvironmentProbeFactory
+} from "../environment/EnvironmentProbeFactory.js";
+export {
+  type EnvironmentCacheKey,
+  type EnvironmentProbeLoader,
+  type BakedEnvironmentManifest,
+  EnvironmentCache,
+  environmentCacheLimit,
+  defaultProbeLoader
+} from "../environment/EnvironmentCache.js";
 export {
   SH9_CHUNK_GLSL,
   LIGHTING_IBL_CHUNK_GLSL,
