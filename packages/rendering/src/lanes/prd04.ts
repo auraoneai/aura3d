@@ -13,3 +13,17 @@ import { registerPrd04ShaderChunks } from "../shaders/physical/index.js";
 registerPrd04ShaderChunks();
 
 export { registerPrd04ShaderChunks };
+export {
+  generateProceduralMaterialTexture,
+  type ProceduralMaterialTexture,
+  type ProceduralMaterialKind,
+  type ProceduralMaterialParams
+} from "../ProceduralMaterialTextures.js";
+export { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
+export {
+  applyTextureBudget,
+  resetTextureBudgetLedger,
+  textureBudgetReport,
+  DEFAULT_TEXTURE_BUDGET_POLICY,
+  type TextureBudgetPolicy
+} from "../textures/TextureBudget.js";
