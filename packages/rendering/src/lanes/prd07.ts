@@ -67,3 +67,5 @@ export type { ParticlePassDiagnostics } from "../vfx/ParticleBatchPass";
 export { ParticleInstanceRing, PARTICLE_INSTANCE_FLOATS } from "../vfx/ParticleInstanceLayout";
 export { skyFrame, evaluateSky } from "../atmosphere/SkyEval";
 export { preethamFrame, preethamEvaluate, sunDirection } from "../atmosphere/PreethamSky";
+export { VfxAtlas } from "../vfx/VfxAtlas";
+export type { VfxAtlasManifest, VfxAtlasOptions, VfxAtlasSequence } from "../vfx/VfxAtlas";

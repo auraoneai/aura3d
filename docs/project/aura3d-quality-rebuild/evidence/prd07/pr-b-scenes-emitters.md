@@ -30,7 +30,7 @@ Branch `devin/1791292686-prd07-scenes` (off `4de6835`).
 
 ## Local verification
 
-- `vitest tests/qr/prd07` — 16 files, 56 tests green.
+- `vitest tests/qr/prd07` — 18 files, 63 tests green.
 - `tsc -p tsconfig.build.json --noEmit` — clean (rechecked after P1-T3/T9/T10 landings).
 - `tsc -p tsconfig.build.json --noEmit` — clean; bench tsconfig clean.
 - Flag-off: no `prd07.*` contributors, no `qualityRebuild.flags` → no
@@ -57,6 +57,28 @@ Branch `devin/1791292686-prd07-scenes` (off `4de6835`).
 - **P1-T19 flag-off sentinel:** flag-off spec now asserts the honest sentinel —
   `zeroPixelFrames ≥ 30` + `EFFECT_ZERO_PIXELS` error (ProductionEffectSystem is
   created flag-off precisely to report the old bug).
+
+## Follow-on 2 (P1-T11/T12/T16)
+
+- **P1-T11:** `agent-api/vfx/atlas.ts` (AuraVfxAtlasManifest v1 + builtin
+  sequence table + validators) and `vfx/VfxAtlas.ts` — manifest fetch, tier
+  page selection (1k low/medium, 2k high/ultra), KTX2-primary decode hook with
+  `VFX_ATLAS_PNG_FALLBACK` on `AssetDecoderUnavailable`, twin-page rect scaling.
+  `vfx-atlas.test.ts` (4) green.
+- **P1-T12:** `tools/vfx-atlas-bake/bake.mjs` — deterministic seeded bake
+  (mulberry32/hash2 noise, minimal PNG encoder, zlib level 9, no timestamps).
+  Emits `aura-vfx-{1k,2k}.png` + `manifest.json` + `LICENSE.md` (CC0);
+  `--size 256` twin-run sha256 verified byte-identical locally; KTX2 skipped
+  when `toktx` absent (logged). Committed output at
+  `packages/engine/assets/vfx/`; `vfx-atlas-bake.test.ts` (3) green.
+  `aura3d vfx validate-atlas` extended for the manifest format: pages
+  premultiplied (rgb ≤ a), POT, rect-in-page, ≥1px gutters.
+- **P1-T16:** `prd07-vfx.yml` now has `unit`, `typecheck`, `bake` (re-bake +
+  byte-diff), `browser` (lane playwright config), `capture` (`--flags vfx` +
+  `--flags none`, §13.2 scenes + lane scene ids — `prd07-*` expanded since
+  `--scenes` is exact-match), `games` (5 showcase games × both flag sets).
+  Artefacts upload to `evidence/prd07/<run-id>/`; capability-degraded codes
+  print as informational steps.
 
 ## NOT RUN
 

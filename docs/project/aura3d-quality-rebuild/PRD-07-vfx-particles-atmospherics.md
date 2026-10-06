@@ -1757,11 +1757,11 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   returns the R-01-1 blackboard target copy, or `{ available: false }` with `SOFT_DEPTH_PENDING`. The soft and near
   fade math is checked in `soft-depth.spec.ts` (browser): a PRD 07-created depth `RenderTarget` (`depth: "texture"`)
   holds a plane at 2 m, a particle at 1.9 m has `alpha × 0.2857` (±1/255), and particle depth beyond 2 m gives alpha 0.
-- [ ] **P1-T11** `vfx/VfxAtlas.ts`. Loads `manifest.json` and pages through C-16 `createAssetDecoderRegistry` (KTX2). On
+- [x] **P1-T11** `vfx/VfxAtlas.ts`. Loads `manifest.json` and pages through C-16 `createAssetDecoderRegistry` (KTX2). On
   `AssetDecoderUnavailable` it falls back to PNG with `VFX_ATLAS_PNG_FALLBACK`. `sequence(name)` returns the sequence. The
   page is chosen by C-27 tier (1k Low/Medium, 2k High/Ultra). Test: every `AuraVfxBuiltinSequence` resolves, rects lie
   inside the page, and the gutter is ≥ 1 px per cell at mip 0.
-- [ ] **P1-T12** `tools/vfx-atlas-bake/`.
+- [x] **P1-T12** `tools/vfx-atlas-bake/`.
   - `bake.mjs --seed 7 --size 2048` writes `packages/engine/assets/vfx/*` (PNG always; KTX2 when `toktx`/basis encoder is
     present on the runner, else only PNG with a logged skip).
   - Test `tests/qr/prd07/unit/vfx-atlas-bake.test.ts` at 256 px: two runs give an identical sha256.
@@ -1787,7 +1787,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     plus `blend: "additive"`, `size`), `prd07-flipbook` and `prd07-particles-stress`;
   - `aura3d/scenes/prd07/*.ts` and `three/scenes/prd07/*.ts`.
   Test: the C-30 conformance suite passes with the lane entries (unique ids, owner prefix, both adapters).
-- [ ] **P1-T16** `.github/workflows/prd07-vfx.yml`.
+- [x] **P1-T16** `.github/workflows/prd07-vfx.yml`.
   - `runs-on: macos-14`. Triggers: PRs touching §13.2 paths, plus `workflow_dispatch`.
   - Jobs:
     - `unit`: `pnpm exec vitest run tests/qr/prd07/unit tests/unit/contracts`;
