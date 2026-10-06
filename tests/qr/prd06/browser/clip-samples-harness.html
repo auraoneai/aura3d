@@ -21,11 +21,10 @@
         }
       });
     </script>
+    <!-- Deep `@aura3d/rendering/contracts/*` subpaths are published exports but
+         have no entry in the example-dev-server alias table (owner 15; qr-request
+         filed). The import map (strict JSON — no comments) resolves them here. -->
     <script type="importmap">
-      // Deep `@aura3d/rendering/contracts/*` subpaths are published exports but
-      // have no entry in the example-dev-server alias table (owner 15; qr-request
-      // filed). Map the specifiers this harness's engine chain reaches so the
-      // browser resolves them natively. Served .ts is transpiled by the server.
       {
         "imports": {
           "@aura3d/rendering/contracts/flags.state": "/packages/rendering/src/contracts/flags.state.ts",
