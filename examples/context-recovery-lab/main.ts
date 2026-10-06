@@ -2,6 +2,7 @@ import {
   camera,
   createAuraApp,
   lights,
+  looks,
   material,
   primitives,
   scene,
@@ -152,7 +153,7 @@ function buildScene(): AuraSceneBuilder {
   return scene()
     .background("#050910")
     .camera(camera.perspective({ position: [0, 1.35, 10.8], target: [0, 0.35, 0], fov: 40 }))
-    .add(lights.ambient({ name: "resilience ambient", color: "#a5c9e3", intensity: 0.42 }))
+    .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
     .add(lights.directional({ name: "recovery key", position: [-4, 8, 6], color: "#ffe1ad", intensity: 3.8 }))
     .add(lights.directional({ name: "recovery rim", position: [7, 4, 1], color: "#8ddfff", intensity: 2.4 }))
     .add(primitives.box({ name: "resilience floor", material: material.pbr({ color: "#0c1822", metallic: 0.42, roughness: 0.3 }) }).position(0, -1.25, 0).scale([9.5, 0.18, 7.2]))
