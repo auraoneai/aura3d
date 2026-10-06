@@ -9,7 +9,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createPrd01OutputSurface, readAura3dTonemapQuery } from "../../../../packages/engine/src/lanes/prd01/outputSurface";
-import { PRD01_OUTPUT_STATE } from "../../../../packages/engine/src/lanes/prd01/diagnostics";
+import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "../../../../packages/engine/src/lanes/prd01/diagnostics";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 import type { AuraApp, AuraCreateAppOptions } from "@aura3d/engine";
 
@@ -46,6 +46,10 @@ function makeApp(overrides: Record<PropertyKey, unknown> = {}): AuraApp {
   } as unknown as AuraApp;
 }
 
+function outputState(surface: unknown): Prd01OutputState | undefined {
+  return (surface as { [PRD01_OUTPUT_STATE]?: Prd01OutputState })[PRD01_OUTPUT_STATE];
+}
+
 function ctxWith(flags: "off" | "v2" | "sub-off" = "v2", options: Partial<AuraCreateAppOptions> = {}) {
   const a3dQr = flags === "off" ? "none" : flags === "sub-off" ? "core,-core_output" : "core";
   return {
@@ -68,7 +72,7 @@ describe("prd01 output surface (Phase 5)", () => {
     const surface = createPrd01OutputSurface(app, ctxWith());
     surface.setOutput({ toneMapping: "agx", exposure: 2, dither: true, backgroundPassthrough: true });
     expect(renderer.calls.setOutput).toEqual([{ toneMapping: "agx", exposure: 2, dithering: true, backgroundCoverage: true }]);
-    const snapshot = surface[PRD01_OUTPUT_STATE]!.snapshot();
+    const snapshot = outputState(surface)!.snapshot();
     expect(snapshot.implementation).toBe("real");
     expect(snapshot.applied).toMatchObject({ toneMapping: "agx", exposure: 2 });
   });
@@ -77,7 +81,7 @@ describe("prd01 output surface (Phase 5)", () => {
     const app = makeApp();
     const surface = createPrd01OutputSurface(app, ctxWith());
     surface.setOutput({ toneMapping: "agx" });
-    const snapshot = surface[PRD01_OUTPUT_STATE]!.snapshot();
+    const snapshot = outputState(surface)!.snapshot();
     expect(snapshot.implementation).toBe("stub");
     expect(snapshot.applied).toEqual({});
     // Mount lands late: attach the seam, then capture() flushes pending intent.
@@ -86,7 +90,7 @@ describe("prd01 output surface (Phase 5)", () => {
     const shot = await surface.capture({ type: "png-blob" });
     expect(shot).toBeInstanceOf(Blob);
     expect(renderer.calls.setOutput).toEqual([{ toneMapping: "agx" }]);
-    expect(surface[PRD01_OUTPUT_STATE]!.snapshot().implementation).toBe("real");
+    expect(outputState(surface)!.snapshot().implementation).toBe("real");
   });
 
   it("routes setOutputOverlay to the in-shader path under the flag", () => {
@@ -106,7 +110,7 @@ describe("prd01 output surface (Phase 5)", () => {
     const surface = createPrd01OutputSurface(app, ctxWith("off"));
     surface.setOutput({ toneMapping: "agx", exposure: 2 });
     expect(renderer.calls.setOutput).toEqual([]);
-    const snapshot = surface[PRD01_OUTPUT_STATE]!.snapshot();
+    const snapshot = outputState(surface)!.snapshot();
     expect(snapshot.implementation).toBe("stub");
     expect(snapshot.requested).toMatchObject({ toneMapping: "agx", exposure: 2 });
     expect(snapshot.applied).toEqual({});
@@ -118,6 +122,6 @@ describe("prd01 output surface (Phase 5)", () => {
     const surface = createPrd01OutputSurface(app, ctxWith("sub-off"));
     surface.setOutput({ toneMapping: "agx" });
     expect(renderer.calls.setOutput).toEqual([]);
-    expect(surface[PRD01_OUTPUT_STATE]!.snapshot().implementation).toBe("stub");
+    expect(outputState(surface)!.snapshot().implementation).toBe("stub");
   });
 });
