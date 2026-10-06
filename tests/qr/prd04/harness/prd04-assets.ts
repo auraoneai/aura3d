@@ -104,7 +104,9 @@ async function main(): Promise<void> {
     assetId: params.get("assetId") ?? assetUrl.split("/").pop() ?? "probe-asset",
     imageDecoder,
     decoders: {
-      basePath: params.get("decoders") ?? "/node_modules/@loaders.gl/textures/dist/libs",
+      // Same corpus dir as gltf-decoders-variants.ts — basis/draco/meshopt
+      // wasm + JS glue live under fixtures/asset-corpus/decoders/.
+      basePath: params.get("decoders") ?? "/fixtures/asset-corpus/decoders/",
       ktx2: true,
       draco: true,
       meshopt: true
@@ -140,7 +142,7 @@ async function main(): Promise<void> {
   const intent = imageColorSpaceIntent(pipeline.asset);
   const warnings = [
     ...pipeline.metadata.warnings.map((warning) => warning.code),
-    ...pipeline.resources.loadIssues.map((issue) => issue.kind)
+    ...pipeline.resources.loadIssues.map((issue) => issue.code)
   ];
 
   const report: Record<string, unknown> & { extra: Record<string, unknown>; warnings: string[] } = {
@@ -154,7 +156,7 @@ async function main(): Promise<void> {
       imageCount: pipeline.metadata.imageCount,
       textureCount: pipeline.metadata.textureCount,
       colorSpaceByImage: [...intent.intent.values()],
-      conflicts: intent.conflicts.map((conflict) => conflict.kind),
+      conflicts: intent.conflicts.map((conflict) => `image-${conflict.image}:srgb[${conflict.srgb}]|linear[${conflict.linear}]`),
       variants: [...new Set(pipeline.resources.materialVariants.map((v) => v.variant))],
       variantSelect: variantResult,
       materialsR185,
