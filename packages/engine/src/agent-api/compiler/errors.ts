@@ -7,7 +7,8 @@ export class AuraRuntimeError extends Error {
     | "missing-asset"
     | "failed-glb-load"
     | "unsupported-texture"
-    | "backend-fallback";
+    | "backend-fallback"
+    | "unknown-node-kind";
 
   constructor(code: AuraRuntimeError["code"], message: string) {
     super(message);

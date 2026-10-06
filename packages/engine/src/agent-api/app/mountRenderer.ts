@@ -8,12 +8,14 @@ import { createWebGLSceneRenderer } from "../compiler/webglRuntime.js";
 import { groups } from "../nodes/groups.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { productionRenderErrorMessage } from "../compiler/observations.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
 
 export async function createProductionSceneRenderer(
   canvas: HTMLCanvasElement,
   snapshot: AuraSceneSnapshot,
   rendererOptions?: AuraCreateAppRendererOptions,
-  runtimeNodes?: AuraRuntimeNodeRegistry
+  runtimeNodes?: AuraRuntimeNodeRegistry,
+  qrFlags?: QrFlags
 ): Promise<WebGLSceneRenderer> {
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);
   if (rendererSelection.mode !== "production") {
@@ -30,7 +32,7 @@ export async function createProductionSceneRenderer(
   }
 
   try {
-    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes);
+    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags);
   } catch (error) {
     return await createWebGLSceneRenderer(canvas, snapshot, rendererOptions, [
       `Production bridge failed and safe-basic fallback rendered instead: ${productionRenderErrorMessage(error)}`

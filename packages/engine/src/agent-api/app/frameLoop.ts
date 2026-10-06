@@ -14,6 +14,7 @@ import { groups } from "../nodes/groups.js";
 import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
 import { labels } from "../nodes/labels.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
+import { resolveQrFlags } from "../../contracts/flags.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
 import { text3D } from "../nodes/text3d.js";
@@ -55,7 +56,8 @@ export async function startProductionRender(
       );
   }
 
-  const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes);
+  const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags);
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);

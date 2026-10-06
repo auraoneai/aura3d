@@ -5,8 +5,10 @@
  */
 
 import type { PrdId, QrFlagName, QrFlags } from "@aura3d/rendering/contracts";
+import { defineContractSlot, type ContractSlot } from "@aura3d/rendering/contracts";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraSceneSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry } from "../agent-api/index";
+import { resolveQrFlags } from "./flags.js";
 
 export type AuraDegradationCode = "renderer-mount-failed" | "texture-upgrade-failed" | "sdf-text-fallback" | "pose-apply-failed" | "clip-apply-failed" | "morph-apply-failed" | "foot-planting-failed" | "extension-lobe-pending" | "capability-degraded" | "option-ignored";
 export interface AuraDegradation { readonly code: AuraDegradationCode; readonly nodeId?: string; readonly message: string; readonly cause?: unknown; readonly frame: number; readonly ownerPrd?: number; }
@@ -25,7 +27,7 @@ export interface RenderSourceContributions { addItems(items: readonly unknown[] 
 export interface AuraNodeKindMap { model: unknown; primitive: unknown; group: unknown; light: unknown; effect: unknown; interaction: unknown; label: unknown; environment: unknown;  // existing (index.ts:1474-1482)
   sky: unknown; look: unknown; probe: unknown; biome: unknown; "time-of-day": unknown; wind: unknown; terrain: unknown; water: unknown; scatter: unknown; grass: unknown; }
 
-interface AnyNodeHandler {
+export interface AnyNodeHandler {
   readonly kind: string;
   readonly owner: PrdId;
   readonly flag?: QrFlagName;
@@ -93,8 +95,37 @@ export function optionCoverageRows(): readonly OptionCoverageRow[] {
   return [...optionCoverage.values()];
 }
 
+export interface CompilerImpl {
+  compile(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene>;
+  update(compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number): unknown;
+}
+
+const stubCompiledScene = (): CompiledScene => ({
+  snapshotVersion: 0,
+  source: null,
+  actors: [],
+  features: new Set<AuraCompiledFeature>(),
+  degradations: [{ code: "capability-degraded", message: "compiler stub: no impl bound", frame: 0 }],
+  dispose(): void { /* noop */ }
+});
+
+const stubCompilerImpl: CompilerImpl = {
+  compile: async () => stubCompiledScene(),
+  update: (compiled) => compiled.source
+};
+
+/**
+ * C-36 slot (PRD-15 T3.11): `packages/engine/src/lanes/prd15.ts` calls
+ * `compilerSlot.provide(real)` once; `compileScene` selects real iff
+ * `ctx.flags.on("A3D_QR_COMPILER")`, else the stub. `updateCompiledScene`
+ * routes to the real impl once provided — the real impl no-ops on compiled
+ * scenes it did not produce, so flag-off mounts keep stub semantics.
+ */
+export const compilerSlot: ContractSlot<CompilerImpl> = defineContractSlot(
+  "C-36", "prd15", "A3D_QR_COMPILER", stubCompilerImpl
+);
+
 let compileSceneImpl: ((snapshot: AuraSceneSnapshot, ctx: SceneCompileContext) => Promise<CompiledScene>) | null = null;
-let updateCompiledSceneImpl: ((compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number) => unknown) | null = null;
 
 /** PR 0b seam: `agent-api/compiler/` binds the moved createProductionRuntime* path. */
 export function setCompilerImpl(
@@ -102,22 +133,21 @@ export function setCompilerImpl(
   update: (compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number) => unknown
 ): void {
   compileSceneImpl = compile;
-  updateCompiledSceneImpl = update;
+  void update; // superseded by compilerSlot; retained for export-surface parity
 }
 
 export async function compileScene(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene> {
+  const flags = ctx?.flags ?? resolveQrFlags({});
+  const impl = compilerSlot.get(flags);
+  if (impl !== stubCompilerImpl) return impl.compile(snapshot, ctx);
   if (compileSceneImpl) return compileSceneImpl(snapshot, ctx);
-  return {
-    snapshotVersion: 0,
-    source: null,
-    actors: [],
-    features: new Set<AuraCompiledFeature>(),
-    degradations: [{ code: "capability-degraded", message: "compiler stub: no impl bound", frame: 0 }],
-    dispose(): void { /* noop */ }
-  };
+  return stubCompilerImpl.compile(snapshot, ctx);
 }
 
 export function updateCompiledScene(compiled: CompiledScene, snapshot: AuraSceneSnapshot, runtime: AuraRuntimeNodeRegistry, timeSeconds: number): unknown /* RenderSource */ {
-  if (updateCompiledSceneImpl) return updateCompiledSceneImpl(compiled, snapshot, runtime, timeSeconds);
+  if (compilerSlot.provided) {
+    const impl = compilerSlot.get(resolveQrFlags({ options: "all" }));
+    return impl.update(compiled, snapshot, runtime, timeSeconds);
+  }
   return compiled.source;
 }
