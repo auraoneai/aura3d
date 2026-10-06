@@ -1,6 +1,25 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
+  // Bevelled Kenney platformer block (CC0). One GLB drives every cell: the
+  // settled board is a single instanced mesh and the active/hold/frame/flash
+  // surfaces reuse the same asset scaled per role.
+  blockCell: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/kenneyPlatformerBlockGrass.8cd2f9ec.glb",
+    bounds: [1.962, 2.0, 1.962],
+    hash: "sha256-8cd2f9ec083b2b7cfe89d95c53ef8adf369d1e5e6adf125f063122d4998c336f",
+    metadata: {
+      materials: [],
+      animations: [],
+      textures: [],
+      license: "CC0-1.0",
+      author: "Kenney",
+      sourcePage: "https://kenney.nl/assets/platformer-kit",
+      role: "prop"
+    }
+  },
   cabinetModel: {
     type: "model",
     format: "glb",

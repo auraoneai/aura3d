@@ -2,12 +2,16 @@ import {
   camera,
   createAuraApp,
   game,
-  lights,
+  instances,
+  looks,
   material,
   model,
-  primitives,
   scene,
-  type AuraNodeInput
+  type AuraApp,
+  type AuraColor,
+  type AuraNodeInput,
+  type AuraRuntimeNodeHandle,
+  type AuraTransformSpec
 } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
@@ -19,6 +23,8 @@ declare global {
 
 type Piece = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 type Cell = Piece | null;
+type Board = readonly (readonly Cell[])[];
+type KitState = ReturnType<typeof falling.snapshot>;
 
 interface FallingBlocksStarterEvidence {
   readonly frame: number;
@@ -29,28 +35,50 @@ interface FallingBlocksStarterEvidence {
   readonly hold: Piece | null;
   readonly gameOver: boolean;
   readonly events: readonly string[];
-  readonly lineClearProof: {
-    readonly lines: number;
-    readonly events: readonly string[];
-    readonly checksum: string;
+  readonly look: { readonly id: string; readonly category: string };
+  readonly board: {
+    readonly width: number;
+    readonly height: number;
+    readonly visibleRows: number;
+    readonly filledCells: number;
+    readonly rendering: "instanced-model";
+    readonly cellAsset: { readonly id: string; readonly url: string; readonly metres: readonly [number, number, number] };
+    readonly drawCalls: number;
   };
+  readonly flash: { readonly modelBased: boolean; readonly activeRows: readonly number[] };
   readonly evidence: unknown;
 }
 
+const LOOK_ID = "neon-arcade" as const;
 const boardWidth = 10;
 const boardHeight = 22;
 const hiddenRows = 2;
+const visibleRows = boardHeight - hiddenRows;
 const cellSize = 0.24;
 const boardOrigin = { x: -1.2, y: -2.18 };
-const pieceColors: Record<Piece, string> = {
-  I: "#5ed7df",
-  J: "#7fa5df",
-  L: "#dfbd65",
-  O: "#dccf78",
-  S: "#84d09a",
+const boardTop = boardOrigin.y + visibleRows * cellSize;
+const boardCenterY = (boardOrigin.y + boardTop) / 2;
+
+// kenneyPlatformerBlockGrass is a 1.962×2.0×1.962 m bevelled cube centred on
+// its origin. CELL_SCALE brings it to one 0.24 m board cell; the slight fill
+// reduction keeps a visible bevel gap between adjacent cells.
+const CELL_SCALE = cellSize / 2;
+const CELL_FILL_SCALE = 0.112;
+const FLASH_MS = 280;
+
+// Per-piece colours stay inside the neon-arcade palette family: the cyan
+// accent plus its complementary saturated neon hues over the dark base.
+const pieceColors: Record<Piece, AuraColor> = {
+  I: "#4de8ff",
+  J: "#7d9dd4",
+  L: "#f4a259",
+  O: "#ffd166",
+  S: "#4ce8b0",
   T: "#b987d0",
-  Z: "#d88791"
+  Z: "#ff5d7d"
 };
+const FRAME_COLOR: AuraColor = "#232c4d";
+const FRAME_ACCENT: AuraColor = "#4de8ff";
 const activeShapes: Record<Piece, readonly (readonly { readonly x: number; readonly y: number }[])[]> = {
   I: [
     [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }],
@@ -67,7 +95,7 @@ const activeShapes: Record<Piece, readonly (readonly { readonly x: number; reado
   L: [
     [{ x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
     [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
-    [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 0, y: 2 }],
+    [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
     [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }]
   ],
   O: [
@@ -89,7 +117,7 @@ const activeShapes: Record<Piece, readonly (readonly { readonly x: number; reado
     [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }]
   ],
   Z: [
-    [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
+    [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }],
     [{ x: 2, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
     [{ x: 0, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
     [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }]
@@ -124,30 +152,35 @@ const hud = game.hud.bindings([
   game.hud.objective({ valuePath: "appState.objective" }),
   game.hud.eventLog({ valuePath: "appState.events" })
 ]);
-const lineClearProof = createLineClearProof();
 
 setupPracticeBoard();
 
 const evidenceMode = navigator.webdriver;
-const app = createAuraApp("#app", {
+const app: AuraApp = createAuraApp("#app", {
   autoStart: !evidenceMode,
-  diagnostics: { overlay: true, performancePanel: true },
-  scene: buildScene()
+  scene: buildScene(falling.snapshot().board)
 });
 
-const boardNodes = Array.from({ length: boardHeight - hiddenRows }, (_, rowIndex) =>
-  Array.from({ length: boardWidth }, (_, x) => app.nodes.require(`board-cell-${x}-${rowIndex + hiddenRows}`))
-);
-const activeNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`active-cell-${index}`));
-const holdNode = app.nodes.require("hold-preview");
+// Runtime handles are re-required after every setScene rebuild because the
+// instanced settled board is mount-time data, not a mutable runtime spec.
+let activeNodes: AuraRuntimeNodeHandle[] = [];
+let flashNodes: AuraRuntimeNodeHandle[] = [];
+let holdNode: AuraRuntimeNodeHandle | undefined;
+mountRuntimeHandles();
 const hudRoot = createHud();
 let objective = "Clear the prepared line. Move, rotate, hold, or hard drop.";
 let tickAccumulator = 0;
+let settledSignature = settledCellsSignature(falling.snapshot().board);
+let previousBoard: Board = falling.snapshot().board;
+let flashRows: { readonly rows: readonly number[]; readonly until: number } = { rows: [], until: 0 };
+let activeKind: Piece | null = null;
+let holdKind: Piece | null = null;
 
 app.onFrame(({ dt }: { readonly dt: number }) => {
   input.update(dt);
   if (input.pressed("reset")) {
     setupPracticeBoard();
+    flashRows = { rows: [], until: 0 };
     routeEvents.push({ type: "reset", label: "reset" });
     objective = "Clear the prepared line. Move, rotate, hold, or hard drop.";
   }
@@ -166,9 +199,11 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   }
 
   const state = falling.snapshot();
+  rebuildSettledCells(state);
   renderBoard(state);
   renderHud(state);
   publishEvidence(state);
+  previousBoard = state.board;
 });
 
 renderBoard(falling.snapshot());
@@ -186,16 +221,13 @@ if (evidenceMode) {
   // later input-contract reads free of synchronous GPU submissions.
   await app.stepAsync(0);
   const advanceFromKeyboard = () => {
-    // Advance the real input and gameplay callback. The playable test reads
-    // simulation-owned evidence; rendering again for every key transition only
-    // blocks the browser main thread without adding gameplay coverage.
     app.advance(1 / 60);
   };
   window.addEventListener("keydown", advanceFromKeyboard);
   window.addEventListener("keyup", advanceFromKeyboard);
 }
 
-function recordKitEvents(state: ReturnType<typeof falling.snapshot>): void {
+function recordKitEvents(state: KitState): void {
   for (const event of state.events) {
     routeEvents.push({
       type: event.type,
@@ -203,7 +235,13 @@ function recordKitEvents(state: ReturnType<typeof falling.snapshot>): void {
       severity: event.type === "line-clear" ? "success" : event.type === "game-over" ? "warning" : "info",
       frame: event.frame
     });
-    if (event.type === "line-clear") objective = `Line clear. ${state.lines} line cleared. Press R to replay.`;
+    if (event.type === "line-clear") {
+      objective = `Line clear. ${state.lines} line cleared. Press R to replay.`;
+      // The kit reports the count, not the rows: the cleared rows are exactly
+      // the rows that were full in the previous snapshot's board.
+      const cleared = fullRows(previousBoard).filter((row) => row >= hiddenRows);
+      flashRows = { rows: cleared, until: performance.now() + FLASH_MS };
+    }
     if (event.type === "hold") objective = "Held piece. Press R or continue.";
     if (event.type === "rotate") objective = "Rotation accepted.";
     if (event.type === "move") objective = "Move accepted.";
@@ -224,85 +262,205 @@ function createPracticeBoard(): Cell[][] {
   return board;
 }
 
-function buildScene() {
+function buildScene(board: Board) {
   const nodes: AuraNodeInput[] = [
     model(assets.cabinetModel, { name: "typed arcade cabinet", castShadow: true })
-      .position(1.75, 0.28, -0.55)
+      .position(1.9, 0.2, -0.7)
       .scale(0.2),
-    primitives.box({ name: "falling blocks board backplate", material: material.pbr({ color: "#172027", roughness: 0.82, metallic: 0.04 }) })
-      .position(0, 0, -0.08)
-      .scale([2.76, 5.25, 0.08]),
-    primitives.box({ name: "falling blocks board frame", material: material.neon({ color: "#8ee8d5", emissive: "#8ee8d5", emissiveIntensity: 0.22 }) })
-      .position(0, 0, -0.02)
-      .scale([2.92, 5.42, 0.04]),
-    ...boardCellNodes(),
+    // Dark glossy board backing sourced from the same typed block GLB.
+    model(assets.blockCell, { name: "board glossy backplate", material: material.pbr({ color: "#0b0e18", roughness: 0.18, metalness: 0.55 }) })
+      .position(0, boardCenterY, -0.16)
+      .scale([1.42, 2.5, 0.03]),
+    ...boardFrameNodes(),
+    ...settledCellsNode(board),
     ...activeCellNodes(),
-    primitives.box({ name: "hold preview", material: material.neon({ color: "#b987d0", emissive: "#b987d0", emissiveIntensity: 0.38 }) })
-      .position(-2.02, 1.92, 0.08)
-      .scale([0.42, 0.42, 0.16])
+    ...flashRowNodes(),
+    model(assets.blockCell, { name: "hold preview", material: material.neon({ color: "#b987d0", emissive: "#b987d0", emissiveIntensity: 0.5 }) })
+      .position(-2.05, 1.92, 0.1)
+      .scale(0.09)
       .runtime(game.runtimeNode("hold-preview", { tags: ["hold", "runtime"] }))
   ];
 
+  // The neon-arcade look supplies the night-city sky gradient, key light,
+  // fog and grade — no ambient fill, background override or debug overlay.
   return scene()
-    .background("#06090d")
+    .add(looks.preset(LOOK_ID))
     .addMany(nodes)
-    .add(lights.ambient({ name: "blockfall ambient", intensity: 0.36, color: "#e8fbff" }))
-    .add(lights.directional({ name: "blockfall key", position: [3.8, 6.2, 5], intensity: 1.15, color: "#ffffff" }))
-    .camera(camera.perspective({ position: [0.25, 1.2, 7.2], target: [0.1, 0.1, 0], fov: 38 }));
+    .camera(camera.orthographic({ position: [0.35, 0.75, 4.6], target: [0, boardCenterY, 0], orthographicSize: 2.9 }));
 }
 
-function boardCellNodes(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [];
+function boardFrameNodes(): AuraNodeInput[] {
+  const rail = material.pbr({ color: FRAME_COLOR, roughness: 0.3, metalness: 0.5, emissive: FRAME_ACCENT, emissiveIntensity: 0.22 });
+  const railThickness = 0.045; // 0.09 m rails around the 2.4 × 4.8 m well
+  const railHeight = (visibleRows * cellSize) / 2 + railThickness;
+  return [
+    model(assets.blockCell, { name: "board frame left rail", material: rail })
+      .position(boardOrigin.x - railThickness, boardCenterY, 0)
+      .scale([railThickness, railHeight, 0.09]),
+    model(assets.blockCell, { name: "board frame right rail", material: rail })
+      .position(-boardOrigin.x + railThickness, boardCenterY, 0)
+      .scale([railThickness, railHeight, 0.09]),
+    model(assets.blockCell, { name: "board frame bottom rail", material: rail })
+      .position(0, boardOrigin.y - railThickness, 0)
+      .scale([0.69, railThickness, 0.09]),
+    model(assets.blockCell, { name: "board frame top rail", material: rail })
+      .position(0, boardTop + railThickness, 0)
+      .scale([0.69, railThickness, 0.09])
+  ];
+}
+
+// The settled board renders as ONE instanced bevelled-cube mesh: every filled
+// cell is an instance of the typed block GLB tinted to its piece colour.
+function settledCellsNode(board: Board): AuraNodeInput[] {
+  const transforms: AuraTransformSpec[] = [];
+  const colors: AuraColor[] = [];
   for (let y = hiddenRows; y < boardHeight; y += 1) {
     for (let x = 0; x < boardWidth; x += 1) {
-      nodes.push(
-        primitives.box({ name: `board cell ${x} ${y}`, material: material.pbr({ color: "#dccf78", roughness: 0.62, metallic: 0.02 }) })
-          .position(...cellPosition(x, y), 0)
-          .scale([cellSize * 0.86, cellSize * 0.86, 0.12])
-          .runtime(game.runtimeNode(`board-cell-${x}-${y}`, { tags: ["board-cell", "runtime"] }))
-      );
+      const cell = board[y]?.[x];
+      if (!cell) continue;
+      const [px, py] = cellPosition(x, y);
+      transforms.push({ position: [px, py, 0], scale: CELL_FILL_SCALE });
+      colors.push(pieceColors[cell]);
     }
   }
-  return nodes;
+  if (transforms.length === 0) {
+    // instances.* requires at least one transform; park a scale-0 dummy.
+    transforms.push({ position: [0, -50, 0], scale: 0 });
+    colors.push("#141828");
+  }
+  return [
+    instances.model(assets.blockCell, {
+      name: "settled board cells",
+      transforms,
+      colors,
+      material: material.pbr({ color: "#ffffff", roughness: 0.22, metalness: 0.3 }),
+      instancingAware: true
+    })
+  ];
 }
 
 function activeCellNodes(): AuraNodeInput[] {
   return Array.from({ length: 4 }, (_, index) =>
-    primitives.box({ name: `active piece cell ${index}`, material: material.neon({ color: "#5ed7df", emissive: "#5ed7df", emissiveIntensity: 0.4 }) })
-      .position(-3, -3, 0.12)
-      .scale([cellSize * 0.92, cellSize * 0.92, 0.16])
+    model(assets.blockCell, { name: `active piece cell ${index}`, material: material.neon({ color: "#4de8ff", emissive: "#4de8ff", emissiveIntensity: 0.45 }) })
+      .position(0, -50, 0.14)
+      .scale(CELL_SCALE)
       .runtime(game.runtimeNode(`active-cell-${index}`, { tags: ["active-cell", "runtime"] }))
   );
 }
 
-function renderBoard(state: ReturnType<typeof falling.snapshot>): void {
+// Line-clear flash is a model surface, not a particle pool: four instanced-GLB
+// bars stretch across the board and pulse emissive while a clear animates.
+function flashRowNodes(): AuraNodeInput[] {
+  return Array.from({ length: 4 }, (_, index) =>
+    model(assets.blockCell, { name: `line clear flash ${index}`, material: material.neon({ color: FRAME_ACCENT, emissive: FRAME_ACCENT, emissiveIntensity: 1.6 }) })
+      .position(0, -50, 0.16)
+      .scale([0.66, CELL_FILL_SCALE, 0.05])
+      .runtime(game.runtimeNode(`flash-row-${index}`, { tags: ["flash", "runtime"] }))
+  );
+}
+
+function mountRuntimeHandles(): void {
+  activeNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`active-cell-${index}`));
+  flashNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`flash-row-${index}`));
+  holdNode = app.nodes.require("hold-preview");
+}
+
+// The instanced settled mesh is mount-time data: rebuild the scene only when
+// the settled board signature changes (lock, line clear, reset) — never on
+// per-frame motion of the active piece.
+function rebuildSettledCells(state: KitState): void {
+  const signature = settledCellsSignature(state.board);
+  if (signature === settledSignature) return;
+  try {
+    app.setScene(buildScene(state.board));
+  } catch {
+    // Frame submission can be pending during a mid-frame rebuild; retry on the
+    // next frame instead of tearing down the gameplay callback.
+    return;
+  }
+  settledSignature = signature;
+  mountRuntimeHandles();
+}
+
+function settledCellsSignature(board: Board): string {
+  const cells: string[] = [];
   for (let y = hiddenRows; y < boardHeight; y += 1) {
     for (let x = 0; x < boardWidth; x += 1) {
-      const node = boardNodes[y - hiddenRows][x];
-      const cell = state.board[y][x];
-      node.setVisible(Boolean(cell)).setPosition(...cellPosition(x, y), 0);
+      const cell = board[y]?.[x];
+      if (cell) cells.push(`${x}:${y}:${cell}`);
     }
   }
+  return cells.join("|");
+}
 
-  activeNodes.forEach((node) => node.setVisible(false));
+function fullRows(board: Board): number[] {
+  const rows: number[] = [];
+  for (let y = hiddenRows; y < boardHeight; y += 1) {
+    if (board[y]?.every((cell) => cell !== null)) rows.push(y);
+  }
+  return rows;
+}
+
+function filledCellCount(board: Board): number {
+  let count = 0;
+  for (let y = hiddenRows; y < boardHeight; y += 1) {
+    for (let x = 0; x < boardWidth; x += 1) {
+      if (board[y]?.[x]) count += 1;
+    }
+  }
+  return count;
+}
+
+function renderBoard(state: KitState): void {
   if (state.active) {
-    const cells = activeShapes[state.active.kind][state.active.rotation] ?? activeShapes[state.active.kind][0];
-    cells.forEach((cell, index) => {
+    const kind = state.active.kind;
+    if (kind !== activeKind) {
+      const activeMaterial = material.neon({ color: pieceColors[kind], emissive: pieceColors[kind], emissiveIntensity: 0.45 });
+      activeNodes.forEach((node) => node.setMaterial(activeMaterial));
+      activeKind = kind;
+    }
+    const cells = activeShapes[kind][state.active.rotation] ?? activeShapes[kind][0];
+    activeNodes.forEach((node, index) => {
+      const cell = cells[index];
+      if (!cell) {
+        node.setVisible(false);
+        return;
+      }
       const x = state.active!.x + cell.x;
       const y = state.active!.y + cell.y;
-      activeNodes[index]
-        .setVisible(y >= hiddenRows)
-        .setPosition(...cellPosition(x, y), 0.14)
-        .setScale([cellSize * 0.94, cellSize * 0.94, 0.16]);
+      const [px, py] = cellPosition(x, y);
+      node.setVisible(y >= hiddenRows).setPosition(px, py, 0.14).setScale(CELL_SCALE);
     });
+  } else {
+    activeNodes.forEach((node) => node.setVisible(false));
   }
-  holdNode.setVisible(Boolean(state.hold));
+
+  const flashing = performance.now() < flashRows.until;
+  flashNodes.forEach((node, index) => {
+    const row = flashRows.rows[index];
+    if (!flashing || row === undefined) {
+      node.setVisible(false);
+      return;
+    }
+    const [, py] = cellPosition(0, row);
+    node.setVisible(true).setPosition(0, py, 0.16);
+  });
+
+  if (state.hold) {
+    if (state.hold !== holdKind) {
+      holdKind = state.hold;
+      holdNode?.setMaterial(material.neon({ color: pieceColors[holdKind], emissive: pieceColors[holdKind], emissiveIntensity: 0.5 }));
+    }
+    holdNode?.setVisible(true);
+  } else {
+    holdNode?.setVisible(false);
+  }
 }
 
 function cellPosition(x: number, y: number): [number, number] {
   return [
     boardOrigin.x + (x + 0.5) * cellSize,
-    boardOrigin.y + (boardHeight - hiddenRows - (y - hiddenRows) - 0.5) * cellSize
+    boardOrigin.y + (visibleRows - (y - hiddenRows) - 0.5) * cellSize
   ];
 }
 
@@ -317,8 +475,8 @@ function createHud(): HTMLElement {
     "min-width:310px",
     "font:600 13px/1.35 Inter, system-ui, sans-serif",
     "color:#f5fbff",
-    "background:rgba(3,9,14,0.78)",
-    "border:1px solid rgba(125,220,235,0.34)",
+    "background:rgba(8,10,22,0.72)",
+    "border:1px solid rgba(77,232,255,0.34)",
     "border-radius:8px",
     "padding:12px",
     "pointer-events:none"
@@ -327,7 +485,7 @@ function createHud(): HTMLElement {
   return root;
 }
 
-function renderHud(state: ReturnType<typeof falling.snapshot>): void {
+function renderHud(state: KitState): void {
   hudRoot.innerHTML = [
     `<strong>Aura3D Falling Blocks Starter</strong>`,
     `<div>Score ${state.score} | Lines ${state.lines} | Level ${state.level}</div>`,
@@ -337,7 +495,7 @@ function renderHud(state: ReturnType<typeof falling.snapshot>): void {
   ].join("");
 }
 
-function publishEvidence(state: ReturnType<typeof falling.snapshot>): void {
+function publishEvidence(state: KitState): void {
   const evidence = app.evidence({
     input,
     events: routeEvents,
@@ -353,6 +511,7 @@ function publishEvidence(state: ReturnType<typeof falling.snapshot>): void {
     },
     source: { expectsGame: true }
   });
+  const diagnostics = app.diagnostics();
   window.__AURA3D_FALLING_BLOCKS_STARTER__ = {
     frame: state.frame,
     score: state.score,
@@ -362,19 +521,17 @@ function publishEvidence(state: ReturnType<typeof falling.snapshot>): void {
     hold: state.hold,
     gameOver: state.gameOver,
     events: routeEvents.events().map((event: { readonly label: string }) => event.label),
-    lineClearProof,
+    look: { id: LOOK_ID, category: "studio" },
+    board: {
+      width: boardWidth,
+      height: boardHeight,
+      visibleRows,
+      filledCells: filledCellCount(state.board),
+      rendering: "instanced-model",
+      cellAsset: { id: "blockCell", url: assets.blockCell.url, metres: assets.blockCell.bounds },
+      drawCalls: diagnostics.drawCalls
+    },
+    flash: { modelBased: true, activeRows: performance.now() < flashRows.until ? flashRows.rows : [] },
     evidence
-  };
-}
-
-function createLineClearProof(): FallingBlocksStarterEvidence["lineClearProof"] {
-  const proof = game.fallingBlocks({ width: boardWidth, height: boardHeight, hiddenRows, seed: 7, gravityFrames: 999 });
-  proof.setBoard(createPracticeBoard());
-  proof.setActive({ kind: "I", x: 3, y: boardHeight - 3, rotation: 0 });
-  const cleared = proof.hardDrop();
-  return {
-    lines: cleared.lines,
-    events: cleared.events.map((event) => event.piece ? `${event.type}:${event.piece}` : event.type),
-    checksum: cleared.checksum
   };
 }

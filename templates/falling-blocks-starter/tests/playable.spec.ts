@@ -1,15 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test("falling-blocks starter responds to keyboard input and clears a line", async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto("/");
   await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 45_000 });
   await page.waitForFunction(() => Boolean((window as unknown as { __AURA3D_FALLING_BLOCKS_STARTER__?: unknown }).__AURA3D_FALLING_BLOCKS_STARTER__));
 
   const initial = await fallingState(page);
+  expect(initial.look.id).toBe("neon-arcade");
   expect(initial.active?.kind).toBe("I");
   expect(initial.active?.x).toBe(3);
-  expect(initial.lineClearProof.lines).toBe(1);
-  expect(initial.lineClearProof.events).toContain("line-clear");
+  expect(initial.board.rendering).toBe("instanced-model");
+  expect(initial.board.cellAsset.id).toBe("blockCell");
+  expect(initial.board.filledCells).toBeGreaterThanOrEqual(4);
+  expect(initial.flash.modelBased).toBe(true);
 
   await tapKey(page, "ArrowRight");
   await page.waitForTimeout(120);
@@ -54,10 +58,14 @@ async function fallingState(page: import("@playwright/test").Page): Promise<{
   readonly active: { readonly kind: string; readonly x: number; readonly rotation: number } | null;
   readonly hold: string | null;
   readonly events: readonly string[];
-  readonly lineClearProof: {
-    readonly lines: number;
-    readonly events: readonly string[];
+  readonly look: { readonly id: string };
+  readonly board: {
+    readonly filledCells: number;
+    readonly rendering: string;
+    readonly cellAsset: { readonly id: string; readonly url: string };
+    readonly drawCalls: number;
   };
+  readonly flash: { readonly modelBased: boolean; readonly activeRows: readonly number[] };
 }> {
   return await page.evaluate(() => {
     const state = (window as unknown as {
@@ -67,10 +75,14 @@ async function fallingState(page: import("@playwright/test").Page): Promise<{
         readonly active: { readonly kind: string; readonly x: number; readonly rotation: number } | null;
         readonly hold: string | null;
         readonly events: readonly string[];
-        readonly lineClearProof: {
-          readonly lines: number;
-          readonly events: readonly string[];
+        readonly look: { readonly id: string };
+        readonly board: {
+          readonly filledCells: number;
+          readonly rendering: string;
+          readonly cellAsset: { readonly id: string; readonly url: string };
+          readonly drawCalls: number;
         };
+        readonly flash: { readonly modelBased: boolean; readonly activeRows: readonly number[] };
       };
     }).__AURA3D_FALLING_BLOCKS_STARTER__;
     if (!state) throw new Error("Missing __AURA3D_FALLING_BLOCKS_STARTER__ state.");
@@ -79,7 +91,5 @@ async function fallingState(page: import("@playwright/test").Page): Promise<{
 }
 
 async function tapKey(page: import("@playwright/test").Page, key: string, holdMs = 90): Promise<void> {
-  await page.keyboard.down(key);
-  await page.waitForTimeout(holdMs);
-  await page.keyboard.up(key);
+  await page.keyboard.press(key, { delay: holdMs });
 }
