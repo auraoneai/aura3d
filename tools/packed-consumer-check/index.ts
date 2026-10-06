@@ -125,6 +125,30 @@ export function prepareConsumerCopy(templateDir: string, dest: string, tarball: 
   // explicit approval (ERR_PNPM_IGNORED_BUILDS). Mirror the root workspace's
   // allowBuilds list so esbuild (vite's optimizer) can run its postinstall.
   writeFileSync(join(dest, "pnpm-workspace.yaml"), "allowBuilds:\n  esbuild: true\n  sharp: true\n");
+  // Optional peer imports that ship a runtime fallback (try/catch → CDN) must
+  // not be required in the consumer's dependency tree for the build to pass —
+  // that is what "optional" means. `@loaders.gl/*` is dynamically imported by
+  // @aura3d/assets' KTX2 transcoder with exactly that fallback; until owner 05
+  // declares it (Q-05-8), externalize it here so the gate measures the packed
+  // surface rather than an unrelated missing optional dep.
+  if (!existsSync(join(dest, "vite.config.ts"))) {
+    writeFileSync(
+      join(dest, "vite.config.ts"),
+      [
+        'import { defineConfig } from "vite";',
+        "",
+        "export default defineConfig({",
+        "  build: {",
+        "    rollupOptions: {",
+        "      // Optional peers with runtime CDN fallbacks — not required to build.",
+        "      external: [/^@loaders\\.gl\\//]",
+        "    }",
+        "  }",
+        "});",
+        ""
+      ].join("\n")
+    );
+  }
 }
 
 function step(label: string, cwd: string, command: string, args: readonly string[]): string | undefined {

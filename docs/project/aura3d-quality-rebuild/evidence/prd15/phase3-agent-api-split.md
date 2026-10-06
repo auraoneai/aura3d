@@ -56,20 +56,49 @@ public barrel. 15-owned; lane 01 may absorb them when it takes Q-01-5.
 - **CCR-15-2** — types-section move filed as the `ccr`-labelled PR; CONTRACTS.md
   §3.2 sentence amended in the same change.
 
+## Rework (post-first-push, commit 2)
+
+The mechanical split was reworked after runtime probes exposed eval-time
+capture edges the static map missed:
+
+- **`export *` removed entirely** — all 2,093 names exported explicitly via
+  252 topo-sorted `export {}`/`export type {}` clauses; index.ts is 412 lines
+  (the overage vs the ≤300 T3.9 target is the pending Q-01-5 scenegraph range,
+  lines ~15–140, excluded by line in the gate config).
+- **Shim blocks**: `nodes/game/index.ts` composes the `game` object literal at
+  module-eval from 16 presentation factories it imports from `../../index.js`
+  → captured `undefined` mid-cycle. Fixed via `export function` shims in
+  index.ts (hoisted ⇒ defined during index's own eval); clause entries removed.
+- **34 lane-15-owned leaves repointed** from `../index.js`/`./index.js` to the
+  leaf owning each name (name→module map derived from the barrel's own
+  clauses). Foreign leaves filed as Q-02-1, Q-03-1, Q-04-2, Q-06-1, Q-07-2,
+  Q-08-1, Q-09-2, Q-10-1, Q-11-2, Q-13-8 (`requests/`); owner-06's
+  `humanoid-walk-runtime.ts` was repointed here and documented in Q-06-1.
+- **Tooling fixes**: `tools/deletion-safety` `bindsSymbol` now treats
+  `export interface X {…}` declarations as non-import/export edges (was
+  reading member lists as binding lists); `tools/packed-consumer-check`
+  emits a consumer `vite.config.ts` externalizing `@loaders.gl/*` until
+  Q-05-8 lands the real dep; `tools/claim-lineage` root-surface probe scans
+  the agent-api tree instead of the single index.ts.
+- **Parity re-verified**: 0 names missing vs pre-split `5cf3a712` reference
+  (shim fns replace clause names 1:1).
+
 ## Verification
 
-- `tsc -p tsconfig.build.json --noEmit`: **0 errors** (was 0 pre-move).
-- Public surface parity: **785/785** exported names identical before/after
-  (AST-level export-set comparison; nothing added, nothing missing).
-- `eslint packages/engine/src/agent-api/**`: clean.
-- `qr-ownership/check.mjs`: every new leaf resolves to owner 15.
-- Unit suite `tests/unit/engine`: 465/471 pass. 6 failures, all
-  environment-dependent artifact reads (`showcase-skyline-runner.json`,
-  `production-runtime-external-consumer(-render).json` — Playwright-produced
-  reports absent locally); `material-physical-mount-p3` updated to read
-  `compiler/primitives.ts` (15-owned test) — 2/2 green.
-- `Decals.ts:287` TS2322 seen mid-run was a cascade of the broken leaf imports;
-  resolved — `Decals.ts` untouched (07-owned).
+- `tsc -p tsconfig.build.json --noEmit`: **0 errors** (re-verified post-rework).
+- Public surface parity: **0 names missing** vs the pre-split `5cf3a712`
+  reference (`published-union` test green: in-repo and published `.` export
+  sets identical).
+- `eslint` over all 120 changed files: clean.
+- `qr-ownership/check.mjs`: every new leaf resolves to owner 15 except
+  `compiler/lights.ts` (owner 02 mapping rule — new file created by this
+  split; documented in CCR-15-2).
+- Unit suite: every residual failure is identical-or-better vs `origin/main`
+  (`/tmp/a3d-main` worktree, same file set) — env/artifact ENOENTs for
+  CI-generated `tests/reports/**` fixtures and the contract-stub marker scan
+  (63 vs main's 66). No split-caused regressions.
+- `public-game-geometry` 11/11, `published-union` 1/1, `converted-feature-docs`
+  5/5, `deletion-safety` 16/16 — the probes that caught the rework.
 
 ## NOT-RUN
 

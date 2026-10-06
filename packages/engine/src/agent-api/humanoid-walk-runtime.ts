@@ -1,15 +1,16 @@
-import { character as rootCharacter, sceneKits as rootSceneKits } from "./index.js";
+import { character as rootCharacter } from "./nodes/character.js";
+import { sceneKits as rootSceneKits } from "./nodes/sceneKits.js";
+import type { AuraSceneBuilder } from "./nodes/scene.js";
 import type {
   AuraApp,
   AuraAppTarget,
   AuraCreateAppOptions,
-  AuraSceneBuilder,
   AuraSceneKit
-} from "./index.js";
+} from "./nodes/types.js";
 
 export {
   createAuraApp
-} from "./index.js";
+} from "./app/createAuraApp.js";
 
 export type {
   AuraApp,

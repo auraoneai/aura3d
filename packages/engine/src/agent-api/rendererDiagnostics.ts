@@ -1,27 +1,16 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectType, AuraEffectNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraRendererRuntimeObservation, AuraSceneSnapshot } from "../nodes/types.js";
-import { AuraSceneBuilder, scene } from "../nodes/scene.js";
-import { analyzeProductionBridgeEligibility, normalizeSceneSnapshot } from "../compiler/observations.js";
-import { city } from "../nodes/city.js";
-import { colorToClearColor } from "../compiler/color.js";
-import { createAuraApp } from "../app/createAuraApp.js";
-import { createMaterialCapabilityDiagnostics } from "../nodes/materialTools.js";
-import { effects } from "../nodes/effects.composite.js";
-import { flattenSceneSnapshot } from "../index.js";
-import { game } from "../nodes/game/index.js";
-import { groups } from "../nodes/groups.js";
-import { labels } from "../nodes/labels.js";
-import { material } from "../nodes/material.js";
-import { neon } from "../nodes/neon.js";
-import { normalizeCreateAppRendererOptions, normalizeTextureBudgetBytes, rendererQualityPresets, rendererQualityProfiles, resolveRendererQualityProfile } from "../app/rendererOptions.js";
-import { physics } from "../nodes/physics.js";
-import { primitive } from "../nodes/primitives.js";
-import { product } from "../nodes/product.js";
-import { rendererColorManagementPreset, sceneExposurePresets } from "../app/colorManagement.js";
-import { shadows } from "../nodes/shadows.js";
-import { solar } from "../nodes/solar.js";
-import { text3D } from "../nodes/text3d.js";
+import type { AuraEffectType, AuraEffectNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraRendererRuntimeObservation, AuraSceneSnapshot } from "./nodes/types.js";
+import { AuraSceneBuilder } from "./nodes/scene.js";
+import { analyzeProductionBridgeEligibility } from "./compiler/observations.js";
+import { colorToClearColor } from "./colorUtils.js";
+import { createMaterialCapabilityDiagnostics } from "./nodes/materialTools.js";
+import { flattenSceneSnapshot, normalizeSceneSnapshot } from "./sceneMath.js";
+import { groups } from "./nodes/groups.js";
+import { normalizeCreateAppRendererOptions, normalizeTextureBudgetBytes, rendererQualityPresets, rendererQualityProfiles, resolveRendererQualityProfile } from "./app/rendererOptions.js";
+import { rendererColorManagementPreset, sceneExposurePresets } from "./app/colorManagement.js";
+import { shadows } from "./nodes/shadows.js";
+import { text3D } from "./nodes/text3d.js";
 
 export const renderer = {
   colorManagementPreset: (): AuraRendererColorManagementPreset => rendererColorManagementPreset,

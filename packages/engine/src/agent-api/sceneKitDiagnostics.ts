@@ -1,32 +1,27 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraCharacterClipName, AuraSceneNode, AuraCameraSpec, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitPerformanceDiagnostics, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraSceneKitBudgetDefaults } from "../nodes/types.js";
-import { AuraRuntimeError } from "../app/errors.js";
-import { MINI_GOLF_LAYOUT, prefabs } from "../nodes/prefabs/index.js";
-import { camera } from "../nodes/camera.js";
-import { character } from "../nodes/character.js";
-import { charts } from "../nodes/charts.js";
-import { city } from "../nodes/city.js";
-import { cityBlock } from "../nodes/prefabs/cityBlock.js";
-import { effects } from "../nodes/effects.composite.js";
-import { environments } from "../nodes/environments.composite.js";
-import { games } from "../nodes/games.js";
-import { geometry } from "../nodes/geometry.js";
-import { groups } from "../nodes/groups.js";
-import { interactions } from "../nodes/interactions.js";
-import { labels } from "../nodes/labels.js";
-import { lights } from "../nodes/lights.js";
-import { material } from "../nodes/material.js";
-import { model } from "../nodes/model.js";
-import { neon } from "../nodes/neon.js";
-import { particles } from "../nodes/particles.js";
-import { performance } from "./performanceEvidence.js";
-import { physics } from "../nodes/physics.js";
-import { product } from "../nodes/product.js";
-import { scene } from "../nodes/scene.js";
-import { sceneKitPerformanceBudgets } from "./sceneKitBudgets.js";
-import { sceneKits } from "../nodes/sceneKits.js";
-import { solar } from "../nodes/solar.js";
+import type { AuraColor, AuraCharacterClipName, AuraSceneNode, AuraCameraSpec, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitPerformanceDiagnostics, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraSceneKitBudgetDefaults } from "./nodes/types.js";
+import { AuraRuntimeError } from "./app/errors.js";
+import { MINI_GOLF_LAYOUT, prefabs } from "./nodes/prefabs/index.js";
+import { camera } from "./nodes/camera.js";
+import { character } from "./nodes/character.js";
+import { charts } from "./nodes/charts.js";
+import { city } from "./nodes/city.js";
+import { effects } from "./nodes/effects.composite.js";
+import { environments } from "./nodes/environments.composite.js";
+import { games } from "./nodes/games.js";
+import { interactions } from "./nodes/interactions.js";
+import { labels } from "./nodes/labels.js";
+import { lights } from "./nodes/lights.js";
+import { material } from "./nodes/material.js";
+import { neon } from "./nodes/neon.js";
+import { particles } from "./nodes/particles.js";
+import { physics } from "./nodes/physics.js";
+import { product } from "./nodes/product.js";
+import { sceneKitPerformanceBudgets } from "./devtools/sceneKitBudgets.js";
+import { solar } from "./nodes/solar.js";
+import { cameraPreset } from "./CameraPresetLibrary.js";
+import { particleFountain } from "./particle-fountain-runtime.js";
 
 interface AuraSceneKitBuild {
   readonly background: AuraColor;

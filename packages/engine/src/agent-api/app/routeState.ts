@@ -1,10 +1,10 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraSceneSnapshot } from "../nodes/types.js";
-import type { MutableDiagnostics } from "../devtools/diagnostics.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import type { MutableDiagnostics } from "../diagnostics.js";
+import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
-import { snapshotDiagnostics } from "../devtools/diagnostics.js";
+import { snapshotDiagnostics } from "../diagnostics.js";
 
 export function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
   markRouteState("ready", snapshot, diagnostics);

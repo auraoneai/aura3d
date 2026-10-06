@@ -2,13 +2,12 @@
 
 import type { AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
-import { analyzeProductionBridgeEligibility, productionRenderErrorMessage } from "../compiler/observations.js";
+import { analyzeProductionBridgeEligibility } from "../compiler/observations.js";
 import { createProductionRuntimeSceneRenderer } from "../compiler/renderer.js";
 import { createWebGLSceneRenderer } from "../compiler/webglRuntime.js";
 import { groups } from "../nodes/groups.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
-import { scene } from "../nodes/scene.js";
+import { productionRenderErrorMessage } from "../compiler/observations.js";
 
 export async function createProductionSceneRenderer(
   canvas: HTMLCanvasElement,

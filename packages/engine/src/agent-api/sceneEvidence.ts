@@ -1,21 +1,18 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraModelNode, AuraPrimitiveNode, AuraGroupNode, AuraLabelNode, AuraInteractionNode, AuraSceneSnapshot, AuraSceneEvidence } from "../nodes/types.js";
-import { AuraSceneBuilder, scene } from "../nodes/scene.js";
-import { animation } from "../nodes/animation.js";
-import { camera } from "../nodes/camera.js";
-import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence";
+import type { AuraModelNode, AuraPrimitiveNode, AuraGroupNode, AuraLabelNode, AuraInteractionNode, AuraSceneSnapshot, AuraSceneEvidence } from "./nodes/types.js";
+import { AuraSceneBuilder } from "./nodes/scene.js";
+import { animation } from "./nodes/animation.js";
+import { camera } from "./nodes/camera.js";
+import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "./GameEvidence";
 import { createAssetProvenance } from "./diagnostics.js";
 import { createRendererDiagnosticReport } from "./rendererDiagnostics.js";
-import { flattenSceneSnapshot } from "../index.js";
-import { group } from "../nodes/groups.js";
-import { interactions } from "../nodes/interactions.js";
-import { labels } from "../nodes/labels.js";
-import { model } from "../nodes/model.js";
-import { normalizeSceneSnapshot } from "../compiler/observations.js";
+import { flattenSceneSnapshot, normalizeSceneSnapshot } from "./sceneMath.js";
+import { interactions } from "./nodes/interactions.js";
+import { labels } from "./nodes/labels.js";
 import { performance, createPerformanceEvidence } from "./performanceEvidence.js";
-import { physics } from "../nodes/physics.js";
-import { primitive } from "../nodes/primitives.js";
+import { physics } from "./nodes/physics.js";
+import { assets } from "./AssetDecoders.js";
 
 export function collectAuraSceneEvidence(sceneValue: AuraSceneBuilder | AuraSceneSnapshot): AuraSceneEvidence {
   const snapshot = flattenSceneSnapshot(normalizeSceneSnapshot(sceneValue));

@@ -1,32 +1,25 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRegistry, AuraCreateAppOptions, WebGLRenderController } from "../nodes/types.js";
-import type { MutableDiagnostics } from "../devtools/diagnostics.js";
+import type { MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
 import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { animation } from "../nodes/animation.js";
 import { camera } from "../nodes/camera.js";
-import { collectAuraSceneEvidence } from "../devtools/sceneEvidence.js";
+import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { devicePixelRatioSafe, performanceNow } from "./platform.js";
-import { geometry } from "../nodes/geometry.js";
+import { devicePixelRatioSafe, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
 import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
 import { labels } from "../nodes/labels.js";
-import { model } from "../nodes/model.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { particles } from "../nodes/particles.js";
-import { performance } from "../devtools/performanceEvidence.js";
-import { physics } from "../nodes/physics.js";
-import { primitive, primitives } from "../nodes/primitives.js";
-import { product } from "../nodes/product.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
-import { scene } from "../nodes/scene.js";
 import { text3D } from "../nodes/text3d.js";
 import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
+import { round } from "../GameRuntime.js";
 
 export async function startProductionRender(
   canvas: HTMLCanvasElement,

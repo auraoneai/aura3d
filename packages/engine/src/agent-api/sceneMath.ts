@@ -1,14 +1,24 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraVec3, AuraTransformSpec, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraLabelNode } from "../nodes/types.js";
-import type { GltfBounds } from "./gltfRuntime.js";
-import { animation } from "../nodes/animation.js";
-import { clamp01 } from "../index.js";
-import { group } from "../nodes/groups.js";
-import { layoutSdfText } from "@aura3d/rendering";
-import { orbitAnimatedPosition } from "./actors.js";
-import { resolveAnimationSeconds } from "./animation.js";
-import { text3D } from "../nodes/text3d.js";
+import type { AuraVec3, AuraColor, AuraTransformSpec, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraLabelNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "./nodes/types.js";
+import type { GltfBounds } from "./compiler/gltfRuntime.js";
+import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
+import { AuraSceneBuilder } from "./nodes/scene.js";
+import { animation } from "./nodes/animation.js";
+import { camera } from "./nodes/camera.js";
+import { colorToClearColor } from "./colorUtils.js";
+import { createCameraProjection } from "./RootRuntimeSupport.js";
+import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
+import { orbitAnimatedAngle, orbitAnimatedPosition } from "./compiler/actors.js";
+import { resolveAnimationSeconds } from "./compiler/animation.js";
+import { resolveCameraFrame } from "./compiler/camera.js";
+import { text3D } from "./nodes/text3d.js";
+
+export function seededRange(index: number, salt: number, min: number, max: number): number {
+  const value = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+  const normalized = value - Math.floor(value);
+  return min + (max - min) * normalized;
+}
 
 export function normalizeQuaternion(rotation: readonly number[]): [number, number, number, number] {
   const length = Math.hypot(rotation[0] ?? 0, rotation[1] ?? 0, rotation[2] ?? 0, rotation[3] ?? 1) || 1;
@@ -114,8 +124,58 @@ export function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
   };
 }
 
+export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
+  const cameraSpec = snapshot.camera;
+  const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
+  const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
+  const projection = createCameraProjection(cameraSpec, aspect);
+  return new Float32Array(multiplyMat4(projection, view));
+}
+
+export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {
+  const extent = [
+    Math.max(0.001, bounds.max[0] - bounds.min[0]),
+    Math.max(0.001, bounds.max[1] - bounds.min[1]),
+    Math.max(0.001, bounds.max[2] - bounds.min[2])
+  ] as const;
+  const fitScale = resolveModelFitScale(node, extent, normalizeToUnit);
+  const centerX = (bounds.min[0] + bounds.max[0]) / 2;
+  const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
+  const baseSize = node?.kind === "primitive" ? primitiveSize(node) : [1, 1, 1] as const;
+  const nodeScale = typeof node?.scale === "number" ? [node.scale, node.scale, node.scale] as const : node?.scale ?? [1, 1, 1] as const;
+  const position = animatedPosition(node, time);
+  const rotation = animatedRotation(node, time);
+  return multiply4(
+    translation(position[0], position[1], position[2]),
+    multiply4(
+      rotationXYZ(rotation),
+      multiply4(
+        scaling(nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale),
+        normalizeToUnit ? translation(-centerX, -bounds.min[1], -centerZ) : identity4()
+      )
+    )
+  );
+}
+
+function resolveModelFitScale(
+  node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined,
+  extent: readonly [number, number, number],
+  normalizeToUnit: boolean
+): number {
+  if (node?.kind === "model") {
+    if (isPositiveFinite(node.targetHeight)) return node.targetHeight / extent[1];
+    if (isPositiveFinite(node.targetLength)) return node.targetLength / Math.max(extent[0], extent[2]);
+    if (isPositiveFinite(node.targetMaxDimension)) return node.targetMaxDimension / Math.max(extent[0], extent[1], extent[2]);
+  }
+  return normalizeToUnit ? AURA_NORMALIZED_MODEL_MAX_DIMENSION / Math.max(extent[0], extent[1], extent[2]) : 1;
+}
+
 export function isPositiveFinite(value: number | undefined): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+export function shouldNormalizeModelNode(node: AuraModelNode | undefined): boolean {
+  return node?.scaleMode !== "world";
 }
 
 export function animatedPosition(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | AuraLabelNode | undefined, time: number): AuraVec3 {
@@ -128,6 +188,29 @@ export function animatedPosition(node: AuraModelNode | AuraPrimitiveNode | AuraE
   }
   if (node.animation.clip !== "float") return basePosition;
   return [basePosition[0], basePosition[1] + Math.sin(resolveAnimationSeconds(node.animation, time) * speed) * 0.08, basePosition[2]];
+}
+
+function animatedRotation(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | AuraLabelNode | undefined, time: number): AuraVec3 {
+  const baseRotation = node?.rotation ?? [0, 0, 0];
+  if (!node?.animation) return baseRotation;
+  if (node.kind === "model" && !isModelTransformAnimationClip(node.animation.clip)) return baseRotation;
+  const speed = Math.max(0.05, node.animation.speed ?? 1);
+  const seconds = resolveAnimationSeconds(node.animation, time);
+  if (node.animation.clip === "turntable") {
+    return [baseRotation[0], baseRotation[1] + seconds * speed * 0.72, baseRotation[2]];
+  }
+  if (node.animation.clip === "float") {
+    return [baseRotation[0], baseRotation[1] + seconds * speed * 0.28, baseRotation[2]];
+  }
+  if (node.animation.clip === "orbit") {
+    return [baseRotation[0], baseRotation[1] + orbitAnimatedAngle(seconds, speed), baseRotation[2]];
+  }
+  if (node.animation.clip === "pulse" || node.animation.clip === "walk") return baseRotation;
+  return [baseRotation[0], baseRotation[1] + seconds * speed, baseRotation[2]];
+}
+
+export function isModelTransformAnimationClip(clip: string | undefined): boolean {
+  return clip === "turntable" || clip === "float" || clip === "orbit";
 }
 
 export function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
@@ -161,6 +244,15 @@ export function translation(x: number, y: number, z: number): Float32Array {
   ]);
 }
 
+export function identity4(): Float32Array {
+  return new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ]);
+}
+
 export function scaling(x: number, y: number, z: number): Float32Array {
   return new Float32Array([
     x, 0, 0, 0,
@@ -179,6 +271,11 @@ export function rotationXYZ(rotation: AuraVec3): Float32Array {
   const ry = new Float32Array([cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1]);
   const rz = new Float32Array([cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
   return multiply4(rz, multiply4(ry, rx));
+}
+
+export function colorToRgb(color: AuraColor): readonly [number, number, number] {
+  const clear = colorToClearColor(color);
+  return [clear[0], clear[1], clear[2]];
 }
 
 export function mixRgb(
@@ -205,8 +302,24 @@ export function clampRgb(value: readonly [number, number, number]): readonly [nu
   ];
 }
 
+export function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+export function normalize3(value: AuraVec3): AuraVec3 {
+  const length = Math.hypot(value[0], value[1], value[2]) || 1;
+  return [value[0] / length, value[1] / length, value[2] / length];
+}
+
 export function mix3(a: AuraVec3, b: AuraVec3, t: number): AuraVec3 {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+
+export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot): AuraSceneSnapshot {
+  return {
+    ...snapshot,
+    nodes: flattenSceneNodes(snapshot.nodes)
+  };
 }
 
 export function flattenSceneNodes(nodes: readonly AuraSceneNode[], parentTransform: AuraTransformSpec = {}): AuraSceneNode[] {
@@ -264,4 +377,8 @@ export function scaleToVec3(scale: number | AuraVec3 | undefined): AuraVec3 {
 
 function hasAuraTransform(transform: AuraTransformSpec): boolean {
   return Boolean(transform.position || transform.rotation || transform.scale || transform.lookAt);
+}
+
+export function normalizeSceneSnapshot(value: AuraSceneBuilder | AuraSceneSnapshot): AuraSceneSnapshot {
+  return value instanceof AuraSceneBuilder ? value.toJSON() : value;
 }

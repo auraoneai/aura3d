@@ -36,16 +36,11 @@ import {
   type ProjectedDecalRaycastOptions,
   type ProjectedDecalTriangleMesh
 } from "@aura3d/rendering";
-import { AuraNodeBuilder } from "./index.js";
-import type {
-  AuraAssetRef,
-  AuraColor,
-  AuraMaterialSpec,
-  AuraPrimitiveNode,
-  AuraSceneNode,
-  AuraVec3
-} from "./index.js";
+import { AuraNodeBuilder } from "./nodes/builder.js";
+import type { AuraAssetRef, AuraColor, AuraMaterialSpec, AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
 import { defineAuraCustomGeometry } from "./RootGeometry.js";
+import { material } from "./nodes/material.js";
+import { primitive } from "./nodes/primitives.js";
 
 /** Root authoring budget: forward-rendered transparent decals, one draw each. */
 export const AURA_DECAL_MAX_DECALS = 32;

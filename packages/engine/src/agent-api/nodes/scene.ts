@@ -4,7 +4,7 @@ import type { AuraColor, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSp
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { camera } from "./camera.js";
-import { isPositiveFinite } from "../compiler/sceneMath.js";
+import { isPositiveFinite } from "../sceneMath.js";
 import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";

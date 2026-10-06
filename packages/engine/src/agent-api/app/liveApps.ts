@@ -1,7 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraApp, AuraAppRegistry } from "../nodes/types.js";
-import { scene } from "../nodes/scene.js";
 
 /**
  * Live apps on this page, so tooling can act on a scene it did not create.

@@ -2,7 +2,6 @@
 
 import type { AuraVec3, AuraColor, AuraAssetRef, AuraAnimationSpec, AuraSceneNode, AuraSolarSystemPrefabOptions, AuraNeonTunnelOptions, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraProductStageStyle, AuraProductViewerOptions } from "../types.js";
 import { animation } from "../animation.js";
-import { camera } from "../camera.js";
 import { chartThemePalette, dataBarColor } from "../charts.js";
 import { cityBlock } from "./cityBlock.js";
 import { createLowPolyHumanoid } from "../character.js";
@@ -11,19 +10,19 @@ import { interactions } from "../interactions.js";
 import { labels } from "../labels.js";
 import { lights } from "../lights.js";
 import { material } from "../material.js";
-import { mix3 } from "../../compiler/sceneMath.js";
 import { model } from "../model.js";
-import { neonPalette, neon } from "../neon.js";
+import { neonPalette } from "../neon.js";
 import { normalizeAuraVec3 } from "../games.js";
 import { particles } from "../particles.js";
 import { physics } from "../physics.js";
 import { primitives } from "../primitives.js";
-import { productPlacement, product } from "../product.js";
-import { scene } from "../scene.js";
-import { seededRange } from "../../compiler/effects.js";
-import { shadows } from "../shadows.js";
-import { solarPlanetMaterial, solar } from "../solar.js";
+import { productPlacement } from "../product.js";
+import { seededRange, mix3 } from "../../sceneMath.js";
+import { solarPlanetMaterial } from "../solar.js";
 import { water } from "../water.js";
+import { round } from "../../GameRuntime.js";
+import { particleFountain } from "../../particle-fountain-runtime.js";
+import { productViewer } from "../../product-viewer-runtime.js";
 
 export const MINI_GOLF_LAYOUT = {
   ballStart: [-1.42, 0.16, 0.58] as AuraVec3,

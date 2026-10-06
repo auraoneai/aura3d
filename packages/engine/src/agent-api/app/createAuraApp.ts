@@ -1,8 +1,22 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import { computeRuntimeAlpha } from "./frameAlpha.js";
-import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../index.js";
-import { AuraRuntimeError, captureAuraScreenshot, collectAuraSceneEvidence, configureCanvas, createDiagnosticsOverlay, createInitialDiagnostics, createRuntimeScenePhysics, devicePixelRatioSafe, eulerToQuat, flattenSceneSnapshot, isWebGLRenderableNode, markRouteError, markRouteReady, normalizeSceneSnapshot, performanceNow, physics, productionRenderErrorMessage, registerAuraApp, renderDiagnosticPreviewToCanvas, renderer, resolveCanvas, resolveNodePhysicsShape, scene, shouldRenderOverlay, snapshotDiagnostics, startProductionRender, unregisterAuraApp, validateSceneAssets } from "../index.js";
+import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../nodes/types.js";
+import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
+import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../devtools/diagnosticPreview.js";
+import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
+import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { scene } from "../nodes/scene.js";
+import { devicePixelRatioSafe, performanceNow } from "../platform.js";
+import { renderer } from "../rendererDiagnostics.js";
+import { collectAuraSceneEvidence } from "../sceneEvidence.js";
+import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
+import { configureCanvas, resolveCanvas } from "./canvas.js";
+import { AuraRuntimeError } from "./errors.js";
+import { startProductionRender } from "./frameLoop.js";
+import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
+import { markRouteError, markRouteReady } from "./routeState.js";
+import { captureAuraScreenshot } from "./screenshot.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence.js";
 import { createGameInput } from "../GameRuntime.js";
 import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime.js";
@@ -16,6 +30,8 @@ import { resolveTierSettings } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
+import { assets } from "../AssetDecoders.js";
+import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
   let snapshot = normalizeSceneSnapshot(options.scene);

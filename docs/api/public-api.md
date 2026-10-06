@@ -19,15 +19,15 @@ pnpm verify:api-docs
 | `@aura3d/assets` | `3.0.1` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `3.0.1` | `packages/assets/src/gltf-runtime.ts` | 4 |
 | `@aura3d/audio` | `3.0.1` | `packages/audio/src/index.ts` | 31 |
-| `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 36 |
+| `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 37 |
 | `@aura3d/controls` | `3.0.1` | `packages/controls/src/index.ts` | 31 |
 | `@aura3d/core` | `3.0.1` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `3.0.1` | `packages/create-aura3d/src/index.ts` | 10 |
+| `create-aura3d` | `3.0.1` | `packages/create-aura3d/src/index.ts` | 11 |
 | `@aura3d/debug` | `3.0.1` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `3.0.1` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor` | `3.0.1` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `3.0.1` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 39 |
+| `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 21 |
 | `@aura3d/environments` | `3.0.1` | `packages/environments/src/index.ts` | 5 |
 | `@aura3d/environments/node` | `3.0.1` | `packages/environments/src/node.ts` | 6 |
 | `@aura3d/input` | `3.0.1` | `packages/input/src/index.ts` | 48 |
@@ -38,13 +38,13 @@ pnpm verify:api-docs
 | `@aura3d/materials/node` | `3.0.1` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `3.0.1` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/navigation-recast` | `3.0.1` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 22 |
-| `@aura3d/physics-rapier` | `3.0.1` | `packages/physics-rapier/src/index.ts` | 18 |
+| `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `3.0.1` | `packages/physics-rapier/src/index.ts` | 22 |
 | `@aura3d/physics/solverless` | `3.0.1` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `3.0.1` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `3.0.1` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `3.0.1` | `packages/react/src/index.ts` | 37 |
-| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 305 |
+| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 307 |
 | `@aura3d/rendering/extension-scalar-atlas` | `3.0.1` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
 | `@aura3d/rendering/lean-core-runtime` | `3.0.1` | `packages/rendering/src/lean-core-runtime.ts` | 6 |
 | `@aura3d/rendering/lean-runtime` | `3.0.1` | `packages/rendering/src/lean-runtime.ts` | 10 |
@@ -366,7 +366,8 @@ export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationRe
 export function validateGameAssets(options: AssetReadinessOptions = {}): AssetReadinessReport { return validateAssetReadiness("game", options);
 export function validateAnimationStudioAssets(options: AssetReadinessOptions = {}): AssetReadinessReport { return validateAssetReadiness("animation", options);
 export function createCharacterAssemblyPlan(options: CharacterAssemblyPlanOptions): CharacterAssemblyPlanResult { const projectDir = resolve(options.projectDir ?? process.cwd());
-export function initAgentFiles(options: { readonly projectDir?: string; readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all" }): readonly string[] { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function initAgentFiles(options: { readonly projectDir?: string;
+export function initAgentSetup(options: { readonly projectDir?: string;
 ```
 
 ## @aura3d/controls
@@ -455,6 +456,7 @@ export { probeShowcaseGameGeometry, type ShowcaseGameGeometryCategory, type Show
 export type { ExtractOptions as ShowcaseGameGeometryExtractOptions, GeometryExtractionFailure as ShowcaseGameGeometryExtractionFailure, GeometryExtractionResult as ShowcaseGameGeometryExtractionResult, GeometryExtractionSuccess as ShowcaseGameGeometryExtractionSuccess } from "./showcase-spec-game-geometry-extractor.js";
 export type { ShowcasePlatformerPlayableSurfaceMap, ShowcaseRacingTrackTopology } from "./showcase-spec-types.js";
 export { SHOWCASE_ASSET_PAIR_COMPOSITION_THRESHOLDS, validateShowcaseAssetPairComposition, validateShowcaseAssetPairCompositionFromDisk, type ShowcaseAssetPairCompositionCategory, type ShowcaseAssetPairCompositionCheck, type ShowcaseAssetPairCompositionInput, type ShowcaseAssetPairCompositionReport, type ValidateShowcaseAssetPairCompositionFromDiskOptions } from "./showcase-spec-asset-pair-composition.js";
+export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkillsManifest, selectSkills, writeAgentSkills, type AuraAgentClient, type AuraAgentTarget, type AuraSkillMode, type AuraSkillsManifest, type WriteAgentSkillsOptions, type WriteAgentSkillsResult } from "./agent-skills.js";
 ```
 
 ## @aura3d/debug
@@ -653,7 +655,7 @@ export type { A3DApp, A3DAppDiagnostics, A3DAppOptions, A3DAppQualityPreset, A3D
 export { Engine } from "@aura3d/core";
 export { Renderer, analyzeRgbaFrameMotionRegions, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport, createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "@aura3d/rendering";
 export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, FrameMotionRegion, FrameMotionRegionMetrics, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "@aura3d/rendering";
-export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeExternalParityGLTFCorpus } from "@aura3d/assets";
+export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeExternalParityGLTFCorpus } from "@aura3d/assets/browser";
 export { loadProductAsset } from "@aura3d/product-studio";
 export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@aura3d/workflows";
 export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index.js";
@@ -667,26 +669,8 @@ export * from "./devtools/AuraPerformancePanel.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
-export const workflows = { assetViewer: createAssetViewerWorkflow, productConfigurator: createProductConfiguratorWorkflow, materialStudio: createMaterialStudioWorkflow, sceneShowcase: createSceneShowcaseWorkflow, interactiveScene: createInteractiveSceneWorkflow, animationLab: createAnimationLabWorkflow, comparison: createComparisonWorkflow } as const;
-export type A3DWorkflowApi = typeof workflows;
-export type A3DEnvironmentOptions = ExternalParityEnvironmentPipelineOptions;
-export type A3DEnvironment = ExternalParityEnvironmentPipeline;
-export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment { return createExternalParityEnvironmentPipeline(options);
-export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> { return await loadRenderableAsset(urlOrAsset, options);
-export async function loadProductAssetLazy(options: ProductAssetLoadOptions): Promise<ProductAsset> { markAuraLazySystemRequested("product-gltf-loader", "loadProductAssetLazy");
-export async function createPostProcessComposerLazy(options: PostProcessComposerOptions): Promise<PostProcessComposer> { markAuraLazySystemRequested("postprocess", "createPostProcessComposerLazy");
-export interface A3DMaterialVariantController<TVariantId extends string = string> { readonly current: TVariantId;
-export function createMaterialVariantController<TVariantId extends string>(
-export interface A3DScreenshotCapture { readonly mimeType: "image/png";
-export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | A3DApp): A3DScreenshotCapture { const canvas = isA3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
-export function inspectAsset(asset: GLTFAsset, resources?: GLTFRenderResources): GLTFAssetInspectionReport { return inspectGLTFAsset(asset, resources);
-export function createCompatibilityReport(manifest: GLTFCorpusManifest): AssetCompatibilityReport { return createAssetCompatibilityReport(manifest);
-export interface A3DAssetDiagnostics { readonly kind: RenderableAsset["kind"];
-export function createAssetDiagnostics(asset: RenderableAsset): A3DAssetDiagnostics { const gltf = asset.gltf;
-export interface A3DRenderDiagnostics { readonly drawCalls: number;
-export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): A3DRenderDiagnostics { return { drawCalls: diagnostics?.drawCalls ?? 0, buffers: diagnostics?.buffers ?? 0, shaders: diagnostics?.shaders ?? 0, textureCount: diagnostics?.textures, warnings: diagnostics ? [] : ["No render diagnostics have been recorded yet."] };
-export interface A3DDiagnosticsPanel { readonly kind: "a3d-diagnostics-panel";
-export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: A3DAssetDiagnostics } = {}): A3DDiagnosticsPanel { let render = createRenderDiagnostics(initial.render);
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";
 ```
 
 ## @aura3d/environments
@@ -940,11 +924,13 @@ export * from "./Raycast.js";
 export * from "./TimeOfImpact.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
+export * from "./PhysicalCharacterController.js";
 export * from "./ArcadeCharacterController.js";
 export * from "./FightingCharacterController.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
+export * from "./PhysicalVehicleController.js";
 export * from "./ArcadeVehicleTelemetry.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
@@ -976,6 +962,10 @@ export class RapierJointHandle { readonly #joint: Rapier.ImpulseJoint;
 export interface RapierRayHit { readonly body: RapierBodyHandle;
 export interface RapierCharacterMovement { readonly requested: PhysicsVec3;
 export class RapierCharacterControllerHandle { readonly #world: RapierPhysicsWorld;
+export interface RapierWheelTuning { readonly suspensionStiffness?: number;
+export interface RapierWheelSpec extends RapierWheelTuning { readonly connection: PhysicsVec3;
+export interface RapierWheelCommand { readonly engineForce?: number;
+export interface RapierWheelState { readonly index: number;
 export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld;
 export class RapierPhysicsWorld { readonly #module: RapierModule;
 export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
@@ -1200,8 +1190,8 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { isTextureBinding, TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, describeWebGPULostDevice, resolveProductionRuntimeRendererBackend, screenWebGPURenderBundlePrototype, WEBGPU_PARITY_PLAN, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
-export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, DualProbeEnvironmentLightingOptions, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, WebGPULostDeviceReport, WebGPUParityFeatureId, WebGPUParityFeatureRow, WebGPUParityFeatureStatus, WebGPURenderBundlePrototype, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
+export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, describeWebGPULostDevice, resolveProductionRuntimeRendererBackend, screenWebGPURenderBundlePrototype, WEBGPU_PARITY_PLAN, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, rendererFeatureReport, rendererInteractiveFeatureReport, rendererProofCapture, rendererShadowReport, validateProductionRendererInput, summarizeProductionAnimationWorkflow, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
+export type { ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, DualProbeEnvironmentLightingOptions, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, WebGPULostDeviceReport, WebGPUParityFeatureId, WebGPUParityFeatureRow, WebGPUParityFeatureStatus, WebGPURenderBundlePrototype, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
 export type { PortableShaderCompilationResult, PortableShaderMaterialOptions, PortableShaderSources, PortableShaderStagePair, PortableShaderUniform } from "./PortableShaderMaterial";
@@ -1404,6 +1394,8 @@ export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
 export * from "./animation/index.js";
 export * from "./effects/ResidentGPUParticleRenderer.js";
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";
 ```
 
 ## @aura3d/rendering/extension-scalar-atlas

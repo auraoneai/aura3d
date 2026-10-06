@@ -12,7 +12,9 @@ import { createAnimationRouteProof, validateAnimationRouteProof } from "../Anima
 import { createAuraVoiceBridgePackage, createAuraVoiceDubRerenderProof, createAuraVoiceRerenderPlan, sampleAuraVoiceBridgeAtTime } from "../AuraVoiceBridge";
 import { createAuraVoiceVisemeTrack, createGlbBlendshapeVisemeCue, createPrimitiveMouthVisemeCues, sampleVisemeTrack } from "../VisemeController";
 import { createPromptAnimationEpisodePlan, createPromptAnimationStoryBible, definePromptAnimationStoryboard } from "../PromptAnimationContract";
-import { performance } from "../devtools/performanceEvidence.js";
+import { performance } from "../performanceEvidence.js";
+import { storyboard } from "../PromptAnimationContract.js";
+import { shotTimeline } from "../ShotTimeline.js";
 
 export const animation = {
   episodePlan: createPromptAnimationEpisodePlan,

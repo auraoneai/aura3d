@@ -1,9 +1,13 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const harness = readFileSync("tests/browser/root-motion-locomotion-301-harness.ts", "utf8");
 const spec = readFileSync("tests/browser/root-motion-locomotion-301.spec.ts", "utf8");
-const engine = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
+const engine = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
 const labelsSpec = readFileSync("tests/browser/label-occlusion.spec.ts", "utf8");
 
 describe("I02 typed label hero provenance", () => {

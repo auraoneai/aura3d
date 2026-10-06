@@ -6,7 +6,6 @@ import { camera } from "../nodes/camera.js";
 import { createAuraGameRules } from "../gameRules.js";
 import { createCombatWorld, createGameCameraDirector, createGameEffects, createGameInput } from "../GameRuntime";
 import { effects } from "../nodes/effects.composite.js";
-import { game } from "../nodes/game/index.js";
 
 export function createAuraGameRuntime(options: AuraGameRuntimeOptions = {}): AuraGameRuntime {
   return {

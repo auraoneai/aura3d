@@ -1,7 +1,10 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAnimationSpec, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraVec3 } from "../index.js";
-import { AuraRuntimeError, animation, cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, effects, sanitizeRuntimeMorphWeight } from "../index.js";
+import type { AuraAnimationSpec, AuraMaterialSpec, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, AuraRuntimeNodeSpec, AuraSceneNode, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
+import { animation } from "../nodes/animation.js";
+import { effects } from "../nodes/effects.composite.js";
+import { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "../runtimeEvidence.js";
+import { AuraRuntimeError } from "./errors.js";
 import { calculateRuntimeNodeBounds, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRuntimeNodeEffectAttachment } from "../RuntimeNodeHandle.js";
 import type { AnimationPose } from "@aura3d/animation";
 import { material } from "../nodes/material.js";

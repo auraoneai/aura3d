@@ -1,7 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraAssetRef } from "../nodes/types.js";
-import { model } from "../nodes/model.js";
 
 export class AuraRuntimeError extends Error {
   readonly code:

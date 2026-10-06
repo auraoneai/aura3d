@@ -2,9 +2,9 @@
 
 import type { AuraColor, AuraSceneNode, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult } from "./types.js";
 import { camera } from "./camera.js";
-import { neon } from "./neon.js";
 import { prefabs } from "./prefabs/index.js";
 import { validateChartVisualQA } from "../looks/structuralQA.js";
+import { cameraPreset } from "../CameraPresetLibrary.js";
 
 export function chartThemePalette(theme: AuraChartTheme): { readonly floor: AuraColor; readonly wall: AuraColor; readonly side: AuraColor } {
   if (theme === "light-analytics") return { floor: "#dbeafe", wall: "#eff6ff", side: "#bfdbfe" };

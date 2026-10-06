@@ -1,4 +1,4 @@
-import type { AuraVec3 } from "./index.js";
+import type { AuraVec3 } from "./nodes/types.js";
 import { sampleCameraPath, type CameraKeyframe, type CameraPath, type CameraSample } from "./CameraChoreographer.js";
 import { normalizePromptAnimationTime, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 

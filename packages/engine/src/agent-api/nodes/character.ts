@@ -6,15 +6,15 @@ import { animation } from "./animation.js";
 import { createAnimationPerformance } from "../AnimationPerformance";
 import { effects } from "./effects.composite.js";
 import { group } from "./groups.js";
-import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "../devtools/lazySystemEvidence.js";
+import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "../lazySystemEvidence.js";
 import { material } from "./material.js";
 import { model, builtInCharacterAssets } from "./model.js";
-import { performance } from "../devtools/performanceEvidence.js";
-import { performanceNow } from "../app/platform.js";
+import { performance } from "../performanceEvidence.js";
+import { performanceNow } from "../platform.js";
 import { prefabs } from "./prefabs/index.js";
-import { primitive, primitives } from "./primitives.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import { primitives } from "./primitives.js";
 import { validatePrimitiveHumanoidVisualQA } from "../looks/structuralQA.js";
+import { footPlanting } from "../FootPlanting.js";
 
 const characterClips: readonly AuraCharacterClip[] = [
   { name: "idle", duration: 2.4, captureTime: 0.4, loop: true },

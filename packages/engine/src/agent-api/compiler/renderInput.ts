@@ -1,7 +1,14 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../index.js";
-import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createModelMatrix, createProductionRuntimeMetadata, createSceneLabelOcclusionTest, createViewProjection, geometry, groups, primitive, productionActorModelBounds, productionRenderErrorMessage, resolveCameraFrame, resolveProductionActorRuntimeState, shouldNormalizeModelNode } from "../index.js";
+import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
+import { geometry } from "../nodes/geometry.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
+import { createModelMatrix, createViewProjection, shouldNormalizeModelNode } from "../sceneMath.js";
+import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createProductionRuntimeMetadata, productionActorModelBounds, resolveProductionActorRuntimeState } from "./actors.js";
+import { resolveCameraFrame } from "./camera.js";
+import { createSceneLabelOcclusionTest } from "./labels.js";
+import { productionRenderErrorMessage } from "./observations.js";
 import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderSource, includeRootSourceMetadata } from "../RootRuntimeSupport.js";
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
 import { identityMat4 } from "@aura3d/scene/math";

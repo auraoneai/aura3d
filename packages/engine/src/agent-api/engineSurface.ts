@@ -35,7 +35,8 @@ import {
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
 } from "@aura3d/workflows";
-import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "./devtools/lazySystemEvidence.js";
+import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "./lazySystemEvidence.js";
+import { renderer } from "./rendererDiagnostics.js";
 
 /** @deprecated Deleted from "." in 4.0.0 — call the workflow factories in `@aura3d/workflows` directly. */
 export const workflows = {

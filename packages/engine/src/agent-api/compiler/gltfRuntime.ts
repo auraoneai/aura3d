@@ -3,12 +3,9 @@
 import type { AuraVec3 } from "../nodes/types.js";
 import { AuraRuntimeError } from "../app/errors.js";
 import { animation } from "../nodes/animation.js";
-import { identity4, clamp01 } from "../index.js";
 import { material } from "../nodes/material.js";
-import { model } from "../nodes/model.js";
-import { normalizeQuaternion, slerpQuaternion, rotationQuaternion, transformPositions, boundsFromPositions, mergeBounds, multiply4, translation, scaling } from "./sceneMath.js";
+import { normalizeQuaternion, slerpQuaternion, rotationQuaternion, transformPositions, boundsFromPositions, mergeBounds, multiply4, translation, identity4, scaling, clamp01 } from "../sceneMath.js";
 import { primitive, primitives } from "../nodes/primitives.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 
 export interface GltfPrimitive {

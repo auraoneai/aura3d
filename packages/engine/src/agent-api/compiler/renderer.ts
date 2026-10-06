@@ -1,10 +1,18 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, WebGLSceneRenderer } from "../index.js";
-import { clamp01, colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba, createAssetProvenance, createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTextObservation, createProductionTexturesObservation, createRendererDiagnosticReport, createViewProjection, groups, isRenderableModelNode, primitive, resolveCameraFrame } from "../index.js";
+import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, WebGLSceneRenderer } from "../nodes/types.js";
+import { colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
+import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
+import { clamp01, createViewProjection } from "../sceneMath.js";
+import { resolveCameraFrame } from "./camera.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, isRenderableModelNode } from "./observations.js";
+import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
-import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../devtools/rendererReports.js";
+import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
@@ -13,6 +21,8 @@ import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
 import { camera } from "../nodes/camera.js";
+import { geometry } from "../nodes/geometry.js";
+import { material } from "../nodes/material.js";
 
 export async function createProductionRuntimeSceneRenderer(
   canvas: HTMLCanvasElement,

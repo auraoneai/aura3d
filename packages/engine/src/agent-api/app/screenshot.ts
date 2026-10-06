@@ -2,7 +2,6 @@
 
 import type { AuraScreenshot } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
-import { createAuraApp } from "./createAuraApp.js";
 
 export function captureAuraScreenshot(target?: HTMLCanvasElement): AuraScreenshot {
   if (!target) {

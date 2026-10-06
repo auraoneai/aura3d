@@ -2,18 +2,12 @@
 
 import type { AuraVec3, AuraLabelNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { WorldLabel, WorldLabelLayer } from "../WorldLabelRenderer.js";
-import { camera } from "../nodes/camera.js";
 import { createWorldLabelLayer } from "../WorldLabelRenderer.js";
-import { geometry } from "../nodes/geometry.js";
 import { groups } from "../nodes/groups.js";
 import { isRenderableModelNode } from "./observations.js";
 import { labelTelemetryRoleFor } from "../LabelTelemetry.js";
-import { labels } from "../nodes/labels.js";
-import { model } from "../nodes/model.js";
-import { primitive } from "../nodes/primitives.js";
 import { primitiveGeometryBounds } from "./primitives.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
-import { scene } from "../nodes/scene.js";
+import { round } from "../GameRuntime.js";
 
 /**
  * Translate scene label nodes into world-anchored labels for the label layer.

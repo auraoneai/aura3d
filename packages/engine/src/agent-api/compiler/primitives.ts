@@ -1,7 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneNode, AuraTransformSpec, AuraVec3, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState } from "../index.js";
-import { animation, colorToLinearRgba, createModelMatrix, geometry, primitive, shouldNormalizeModelNode } from "../index.js";
+import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneNode, AuraTransformSpec, AuraVec3, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState } from "../nodes/types.js";
+import { colorToLinearRgba } from "../colorUtils.js";
+import { animation } from "../nodes/animation.js";
+import { geometry } from "../nodes/geometry.js";
+import { primitive } from "../nodes/primitives.js";
+import { createModelMatrix, shouldNormalizeModelNode } from "../sceneMath.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
 import { createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
@@ -201,12 +205,12 @@ import { defineAuraCustomGeometry } from "../RootGeometry.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { instances } from "../nodes/instances.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
-import { colorToLinearRgb } from "./color.js";
+import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "./gltfRuntime.js";
 import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry } from "./geometry.js";
-import { clamp01 } from "../index.js";
+import { clamp01 } from "../sceneMath.js";
 
 /**
  * Build the production `PBRMaterial` for a primitive node.
@@ -468,3 +472,65 @@ function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh
   }
   return new Geometry(vertices, new IndexBuffer(Array.from(mesh.indices), vertexCount), "triangles", mesh.bounds);
 }
+
+
+
+/**
+ * Build the production `PBRMaterial` for a primitive node.
+ *
+ * ## WS-2.1a — the parameter drop this function used to be
+ *
+ * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
+ * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
+ * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
+ * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
+ * for every one of them and binds them all. The bridge between the two dropped them on the floor.
+ *
+ * How that presented, measured by `tools/material-structural-parity` before the fix:
+ *
+ * ```
+ * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
+ * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
+ * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
+ * ```
+ *
+ * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
+ * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
+ * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
+ * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
+ * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
+ * and has no way to find out why.
+ *
+ * The reason this survived so long is worth stating: three of the four lobes are scalar
+ * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
+ * arrived. The plumbing defect concealed the shading defect.
+ */
+
+
+
+
+
+
+
+
+
+
+/**
+ * Production primitive mesh (muse3jsparity-PRD C1). uvs/uv1s are optional:
+ * generators that provide them opt into textured materials; uv1 is a
+ * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
+ * selector has two distinct sets to choose between.
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+

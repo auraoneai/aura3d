@@ -2,9 +2,6 @@
 
 import type { GltfBounds } from "./gltfRuntime.js";
 import type { ProductionPrimitiveMesh } from "./primitives.js";
-import { camera } from "../nodes/camera.js";
-import { material } from "../nodes/material.js";
-import { shadows } from "../nodes/shadows.js";
 import { tilingSecondUnwrap } from "./primitives.js";
 
 export function createPlaneGeometry(): ProductionPrimitiveMesh {

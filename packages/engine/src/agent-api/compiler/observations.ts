@@ -1,24 +1,19 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraVec3, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraLightNode, AuraRendererRuntimeObservation, AuraSceneSnapshot, ProductionRuntimePrimitiveEntry, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import type { AuraVec3, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraRendererRuntimeObservation, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { CollectedLight, RenderDeviceDiagnostics, RendererShadowOptions } from "@aura3d/rendering";
-import { AuraSceneBuilder, scene } from "../nodes/scene.js";
-import { colorToLinearRgb } from "./color.js";
-import { createAssetProvenance } from "../devtools/diagnostics.js";
-import { createAuraApp } from "../app/createAuraApp.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { rotationXYZ } from "../sceneMath.js";
+import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
+import { round } from "../GameRuntime.js";
+import { colorToLinearRgb } from "../colorUtils.js";
+import { distance3 } from "../nodes/character.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
+import type { AuraLightNode, AuraSceneSnapshot, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import { normalize3 } from "../sceneMath.js";
 import { createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors } from "./lights.js";
 import { describeTextureStreamingResidency } from "./primitives.js";
-import { distance3 } from "../nodes/character.js";
-import { effects } from "../nodes/effects.composite.js";
-import { groups } from "../nodes/groups.js";
-import { lights } from "../nodes/lights.js";
-import { model, unsafeModelUrl } from "../nodes/model.js";
-import { normalize3 } from "../index.js";
-import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
-import { primitive } from "../nodes/primitives.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
-import { rotationXYZ } from "./sceneMath.js";
-import { shadows } from "../nodes/shadows.js";
 
 interface AuraProductionBridgeEligibility {
   readonly eligible: boolean;
@@ -417,8 +412,4 @@ export function productionRenderErrorMessage(error: unknown): string {
     return `${error.name}: ${error.message}`;
   }
   return String(error);
-}
-
-export function normalizeSceneSnapshot(value: AuraSceneBuilder | AuraSceneSnapshot): AuraSceneSnapshot {
-  return value instanceof AuraSceneBuilder ? value.toJSON() : value;
 }

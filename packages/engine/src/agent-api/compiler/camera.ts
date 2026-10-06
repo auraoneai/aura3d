@@ -1,11 +1,8 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraModelNode, AuraPrimitiveNode, AuraCameraSpec, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../nodes/types.js";
-import { camera } from "../nodes/camera.js";
 import { groups } from "../nodes/groups.js";
-import { mix3 } from "./sceneMath.js";
-import { model } from "../nodes/model.js";
-import { primitive } from "../nodes/primitives.js";
+import { mix3 } from "../sceneMath.js";
 
 interface RuntimeCameraTarget {
   readonly position: AuraVec3;

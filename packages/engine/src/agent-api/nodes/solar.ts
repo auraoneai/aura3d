@@ -10,6 +10,8 @@ import { material } from "./material.js";
 import { prefabs } from "./prefabs/index.js";
 import { timeline } from "./timeline.js";
 import { validateSolarVisualQA } from "../looks/structuralQA.js";
+import { cameraPreset } from "../CameraPresetLibrary.js";
+import { distance } from "../SpatialAnchoring.js";
 
 export function solarPlanetMaterial(preset: AuraSolarPlanetMaterialPreset): AuraMaterialSpec {
   if (preset === "gas-giant") return material.clearcoat({ color: "#f5d0a9", roughness: 0.2, clearcoat: 0.8, envMapIntensity: 0.88 });

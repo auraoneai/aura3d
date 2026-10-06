@@ -1,24 +1,20 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer, WebGLModel } from "../nodes/types.js";
+import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraCreateAppRendererOptions, AuraSceneSnapshot, AuraRuntimeNodeRegistry, WebGLSceneRenderer, WebGLModel } from "../nodes/types.js";
 import type { GltfPrimitive, GltfModel, GltfAnimationClip } from "./gltfRuntime.js";
 import { AuraRuntimeError } from "../app/errors.js";
 import { animation } from "../nodes/animation.js";
-import { camera } from "../nodes/camera.js";
 import { collectRuntimeEffectNodes, hasRuntimePostProcessEffects } from "./effects.js";
-import { colorToClearColor } from "./color.js";
+import { colorToClearColor } from "../colorUtils.js";
 import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry } from "./geometry.js";
-import { createViewProjection, createModelMatrix, shouldNormalizeModelNode, identity4, colorToRgb, clamp01, normalize3 } from "../index.js";
+import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
+import { createViewProjection, createModelMatrix, shouldNormalizeModelNode, multiply4, translation, identity4, colorToRgb, mixRgb, scaleRgb, clampRgb, clamp01, normalize3 } from "../sceneMath.js";
 import { createWebGLParticleModel, createWebGLRainModel } from "./safeBasic.js";
 import { isRenderableModelNode } from "./observations.js";
 import { loadGltfForWebGL, gltfTrsMatrix, sampleGltfVec3Channel, sampleGltfQuaternionChannel } from "./gltfRuntime.js";
 import { material } from "../nodes/material.js";
 import { model } from "../nodes/model.js";
-import { multiply4, translation, mixRgb, scaleRgb, clampRgb } from "./sceneMath.js";
-import { particles } from "../nodes/particles.js";
 import { primitive, primitives } from "../nodes/primitives.js";
-import { renderer, createRendererDiagnosticReport } from "../devtools/rendererDiagnostics.js";
-import { scene } from "../nodes/scene.js";
 
 export interface WebGLPrimitive {
   readonly position: WebGLBuffer;

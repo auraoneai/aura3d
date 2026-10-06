@@ -21,12 +21,12 @@ import type {
 // C-29 `Renderer`. Frame submission goes through `renderer.render` /
 // `renderer.renderAsync`; pixel proof/feature/shadow evidence moved to the
 // free functions in `production-runtime/renderProofs.ts` (re-exported through
-// `packages/engine/src/agent-api/devtools/rendererReports.ts`).
+// `packages/engine/src/agent-api/rendererReports.ts`).
 describe("CurrentRoutes explicit interactive renderer API", () => {
   it("publishes the one-renderer surface: Renderer render dispatch plus devtools proof helpers", () => {
     const barrel = readFileSync(resolve("packages/rendering/src/production-runtime/index.ts"), "utf8");
     const proofs = readFileSync(resolve("packages/rendering/src/production-runtime/renderProofs.ts"), "utf8");
-    const devtools = readFileSync(resolve("packages/engine/src/agent-api/devtools/rendererReports.ts"), "utf8");
+    const devtools = readFileSync(resolve("packages/engine/src/agent-api/rendererReports.ts"), "utf8");
     const bridge = readFileSync(resolve("packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
 
     expect(proofs).toContain("export function rendererProofCapture");

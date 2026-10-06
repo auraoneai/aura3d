@@ -1,23 +1,18 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraLabelNode, AuraSceneSnapshot, AuraCreateAppOptions } from "../nodes/types.js";
-import type { MutableDiagnostics } from "./diagnostics.js";
-import { animatedPosition, primitiveSize } from "../compiler/sceneMath.js";
-import { colorWithAlpha } from "../compiler/color.js";
-import { getParticleLife, writeParticlePosition, seededRange } from "../compiler/effects.js";
+import type { MutableDiagnostics } from "../diagnostics.js";
+import { colorWithAlpha } from "../colorUtils.js";
+import { getParticleLife, writeParticlePosition } from "../compiler/effects.js";
 import { labelDefaultPosition } from "../compiler/labels.js";
-import { labels } from "../nodes/labels.js";
 import { material } from "../nodes/material.js";
-import { model } from "../nodes/model.js";
-import { particles } from "../nodes/particles.js";
-import { prefabs } from "../nodes/prefabs/index.js";
 import { primitive } from "../nodes/primitives.js";
-import { renderer } from "./rendererDiagnostics.js";
-import { scene } from "../nodes/scene.js";
+import { renderer } from "../rendererDiagnostics.js";
+import { seededRange, animatedPosition, primitiveSize } from "../sceneMath.js";
 import { shadows } from "../nodes/shadows.js";
-import { snapshotDiagnostics } from "./diagnostics.js";
-import { ui } from "../nodes/ui.js";
-import { water } from "../nodes/water.js";
+import { snapshotDiagnostics } from "../diagnostics.js";
+import { assets } from "../AssetDecoders.js";
+import { round } from "../GameRuntime.js";
 
 /**
  * WS-2.5 — DIAGNOSTIC PREVIEW ONLY. Renamed from `renderSceneToCanvas`.
@@ -148,7 +143,7 @@ function drawRenderableNode(
   context.restore();
 }
 
-function drawLabelNode(context: CanvasRenderingContext2D, width: number, height: number, node: AuraLabelNode, index: number, time: number): void {
+export function drawLabelNode(context: CanvasRenderingContext2D, width: number, height: number, node: AuraLabelNode, index: number, time: number): void {
   const position = animatedPosition({ ...node, position: node.position ?? labelDefaultPosition(node) }, time);
   const x = width * 0.5 + (position[0] * width) / 5;
   const y = height * 0.58 - (position[1] * height) / 4 + index * 2;
@@ -434,7 +429,7 @@ function toAlphaColor(color: string, alpha: number): string {
   return `rgba(${value >> 16},${(value >> 8) & 0xff},${value & 0xff},${alpha})`;
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")

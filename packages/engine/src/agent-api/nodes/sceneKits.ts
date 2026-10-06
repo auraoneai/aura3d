@@ -1,10 +1,18 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraEffectNode, AuraInteractionNode, AuraLabelNode, AuraLightNode, AuraSceneKit, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitId } from "../index.js";
-import { buildSceneKit, createSceneKitPerformanceDiagnostics, effects, interactions, scene, timeline, ui } from "../index.js";
+import type { AuraAssetRef, AuraEffectNode, AuraInteractionNode, AuraLabelNode, AuraLightNode, AuraSceneKit, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitId } from "./types.js";
+import { buildSceneKit, createSceneKitPerformanceDiagnostics } from "../sceneKitDiagnostics.js";
+import { effects } from "./effects.composite.js";
+import { interactions } from "./interactions.js";
+import { scene } from "./scene.js";
+import { timeline } from "./timeline.js";
+import { ui } from "./ui.js";
 import { camera } from "./camera.js";
 import { lights } from "./lights.js";
 import { cityBlock } from "./prefabs/cityBlock.js";
+import { humanoidWalk } from "../humanoid-walk-runtime.js";
+import { particleFountain } from "../particle-fountain-runtime.js";
+import { productViewer } from "../product-viewer-runtime.js";
 
 export const sceneKits = {
   physicsPlayground: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("physicsPlayground", options),

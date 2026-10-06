@@ -41,6 +41,9 @@ import {
   type AuraVoiceVisemeTrack,
   type VisemeSample
 } from "./VisemeController.js";
+import { character } from "./humanoid-walk-runtime.js";
+import { storyboard } from "./PromptAnimationContract.js";
+import { shotTimeline } from "./ShotTimeline.js";
 
 export interface AuraVoiceBridgeArtifacts {
   readonly episodePlan: PromptAnimationEpisodePlan;

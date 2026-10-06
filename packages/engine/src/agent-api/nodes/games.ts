@@ -10,8 +10,8 @@ import { camera } from "./camera.js";
 import { createFightingGameKit, fighting as fightingGameKit } from "../game-kits/fighting";
 import { lights } from "./lights.js";
 import { material } from "./material.js";
-import { physics } from "./physics.js";
 import { timeline } from "./timeline.js";
+import { fighting } from "../game-kits/fighting.js";
 
 function createMiniGolfStateController(): AuraMiniGolfStateController {
   const start: AuraVec3 = MINI_GOLF_LAYOUT.ballStart;

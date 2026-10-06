@@ -10,12 +10,12 @@ import { groups } from "./groups.js";
 import { instances } from "./instances.js";
 import { lights } from "./lights.js";
 import { material } from "./material.js";
-import { neon } from "./neon.js";
 import { prefabs } from "./prefabs/index.js";
-import { primitive, primitives } from "./primitives.js";
+import { primitives } from "./primitives.js";
 import { ui } from "./ui.js";
 import { validateCityVisualQA } from "../looks/structuralQA.js";
-import { water } from "./water.js";
+import { cameraPreset } from "../CameraPresetLibrary.js";
+import { distance } from "../SpatialAnchoring.js";
 
 export function makeCityCrosswalk(namePrefix: string, x: number, z: number, orientation: "northSouth" | "eastWest"): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];

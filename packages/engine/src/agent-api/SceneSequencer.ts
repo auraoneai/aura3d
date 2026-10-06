@@ -2,6 +2,8 @@ import { createShotTransitionPlan, sampleShotTransition, type ShotTransitionPlan
 import { sceneStructureAtTime, type EpisodeSceneStructure, type EpisodeStructureArtifact } from "./EpisodeStructure.js";
 import { getShotAtTime, type ShotTimelineArtifact, type ShotTimelineShot } from "./ShotTimeline.js";
 import { normalizePromptAnimationTime, promptAnimationContractVersion, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
+import { character } from "./humanoid-walk-runtime.js";
+import { timeline } from "./nodes/timeline.js";
 
 export interface SceneSequencerSceneBinding {
   readonly sceneId: PromptAnimationId;

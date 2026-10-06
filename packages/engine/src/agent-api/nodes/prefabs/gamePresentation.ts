@@ -1,17 +1,19 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraSceneNode, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput } from "../types.js";
+import type { AuraSceneNode, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions } from "../types.js";
 import type { GameAssetBoundRacingRoute } from "../../GameGenreKits";
-import type { GamePlatformerPresentationCameraOptions, GameRacingCameraRigOptions, GameScenePresentationCameraSpec, GameRacingSceneBinding } from "../../GameSceneGeometryBindings";
+import type { GameRacingCameraRigOptions, GameScenePresentationCameraSpec, GameRacingSceneBinding } from "../../GameSceneGeometryBindings";
 import type { PublicGameGeometryCertification } from "../../PublicGameGeometry";
 import { camera } from "../camera.js";
-import { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "../../PublicGameGeometry";
-import { character } from "../character.js";
-import { createGamePlatformerPresentationCamera } from "../../GameSceneGeometryBindings";
-import { game } from "../game/index.js";
+import { certifyPublicRacingGeometry } from "../../PublicGameGeometry";
 import { material } from "../material.js";
 import { primitives } from "../primitives.js";
 import { scene } from "../scene.js";
+import { round } from "../../GameRuntime.js";
+import type { GamePlatformerPresentationCameraOptions } from "../../GameSceneGeometryBindings.js";
+import { createGamePlatformerPresentationCamera } from "../../GameSceneGeometryBindings.js";
+import { certifyPublicPlatformerGeometry } from "../../PublicGameGeometry.js";
+import type { AuraPlatformerPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions } from "../types.js";
 
 type AuraGamePresentationVec3 = readonly [number, number, number];
 

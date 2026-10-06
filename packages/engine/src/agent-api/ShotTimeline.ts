@@ -1,4 +1,4 @@
-import type { AuraColor, AuraVec3 } from "./index.js";
+import type { AuraColor, AuraVec3 } from "./nodes/types.js";
 import {
   createPromptAnimationIssue,
   normalizePromptAnimationTime,
@@ -13,6 +13,9 @@ import {
 import type { AnimationPerformanceArtifact, AnimationPerformanceCue } from "./AnimationPerformance.js";
 import type { CaptionCue, CaptionTrackArtifact } from "./DialoguePerformance.js";
 import { sampleVisemeTrack, type AuraVoiceVisemeId, type AuraVoiceVisemeTrack, type PrimitiveMouthCard } from "./VisemeController.js";
+import { camera } from "./nodes/camera.js";
+import { timeline } from "./nodes/timeline.js";
+import { performance } from "./performanceEvidence.js";
 
 export type ShotCameraMove =
   | "static"

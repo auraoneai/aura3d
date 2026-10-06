@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { lights, material, primitives, renderer, scene } from "../../../packages/engine/src";
@@ -36,7 +36,10 @@ describe("root plane winding", () => {
 
 describe("root sphere winding", () => {
   it("winds the procedural sphere outward so geometric and vertex normals agree", () => {
-    const source = readFileSync(resolve("packages/engine/src/agent-api/index.ts"), "utf8");
+    const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(resolve(d, e.name)) : e.name.endsWith(".ts") ? [resolve(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
     const startIndex = source.indexOf("function createSphereGeometry()");
     expect(startIndex, "createSphereGeometry must exist in the root agent API").toBeGreaterThan(-1);
     const body = source.slice(startIndex, source.indexOf("\n}", startIndex));
@@ -104,7 +107,10 @@ function readRootPlaneDefinition(): {
   readonly normals: (readonly [number, number, number])[];
   readonly indices: number[];
 } {
-  const source = readFileSync(resolve("packages/engine/src/agent-api/index.ts"), "utf8");
+  const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(resolve(d, e.name)) : e.name.endsWith(".ts") ? [resolve(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
   const marker = "function createPlaneGeometry()";
   const startIndex = source.indexOf(marker);
   expect(startIndex, "createPlaneGeometry must exist in the root agent API").toBeGreaterThan(-1);

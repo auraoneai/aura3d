@@ -2,7 +2,7 @@
 
 import type { AuraAppTarget } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
-import { createAuraApp } from "./createAuraApp.js";
+import { round } from "../GameRuntime.js";
 
 export function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefined {
   if (!target) {

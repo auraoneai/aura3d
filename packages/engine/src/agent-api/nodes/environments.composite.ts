@@ -1,12 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraEnvironmentMapPreset } from "./types.js";
-import { city } from "./city.js";
 import { envSourceBuilders } from "./environments.js";
-import { material } from "./material.js";
-import { neon } from "./neon.js";
-import { particles } from "./particles.js";
-import { product } from "./product.js";
 import { worldEnvBuilders } from "./environments.world.js";
 
 export const environments = {

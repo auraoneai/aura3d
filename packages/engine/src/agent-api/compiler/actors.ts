@@ -2,22 +2,19 @@
 
 import type { AnimationPose } from "@aura3d/animation";
 import type { AuraRuntimeNodeAnimationBindingMetadata, RuntimeNodeMorphTargetWeights } from "../RuntimeNodeHandle";
-import type { AuraVec3, AuraAssetRef, AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
+import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { GLTFootPlantingConfig } from "@aura3d/assets/browser";
 import type { GltfBounds } from "./gltfRuntime.js";
 import type { Mat4 } from "@aura3d/scene";
 import type { ProductionImportedAssetRenderMetadata, RenderItem } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
 import { animation } from "../nodes/animation.js";
-import { camera } from "../nodes/camera.js";
-import { createRuntimeNodeImportedAssetEvidence } from "../devtools/runtimeEvidence.js";
-import { geometry } from "../nodes/geometry.js";
+import { createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
 import { model } from "../nodes/model.js";
-import { primitives } from "../nodes/primitives.js";
-import { productionRenderErrorMessage } from "./observations.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
 import { resolveAnimationSeconds } from "./animation.js";
 import { scene } from "../nodes/scene.js";
+import type { AuraAssetRef } from "../nodes/types.js";
+import { productionRenderErrorMessage } from "./observations.js";
 
 interface ProductionRuntimeActorState {
   readonly node: AuraModelNode;

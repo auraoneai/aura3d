@@ -1,20 +1,14 @@
-import { product as rootProduct, sceneKits as rootSceneKits } from "./index.js";
-import type {
-  AuraApp,
-  AuraAppTarget,
-  AuraAssetDefinition,
-  AuraAssetMap,
-  AuraAssetRef,
-  AuraCreateAppOptions,
-  AuraProductStageStyle,
-  AuraSceneBuilder,
-  AuraSceneKit
-} from "./index.js";
+import { sceneKits as rootSceneKits } from "./nodes/sceneKits.js";
+import { product as rootProduct } from "./nodes/product.js";
+import type { AuraSceneBuilder } from "./nodes/scene.js";
+import type { AuraApp, AuraAppTarget, AuraAssetDefinition, AuraAssetMap, AuraAssetRef, AuraCreateAppOptions, AuraProductStageStyle, AuraSceneKit } from "./nodes/types.js";
 
 export {
-  createAuraApp,
+  createAuraApp
+} from "./app/createAuraApp.js";
+export {
   defineAuraAssets
-} from "./index.js";
+} from "./nodes/assets.js";
 
 export type {
   AuraApp,

@@ -4,7 +4,7 @@
 // the TDZ zone of the in-barrel `export const gameRules` and crashed any consumer
 // whose module graph enters the barrel (Package Tests / editor-runtime). A leaf
 // module breaks the cycle: both the barrel and the carve-out import from here.
-import type { AuraGameRules } from "./index.js";
+import type { AuraGameRules } from "./nodes/types.js";
 import { createGameFighting2DRules } from "./GameRuntime.js";
 
 export function createAuraGameRules(options: Partial<Omit<AuraGameRules, "kind">> = {}): AuraGameRules {

@@ -1,11 +1,10 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AnimationPose } from "@aura3d/animation";
-import type { AuraRuntimeNodeBounds, RuntimeNodeBoundsInput } from "../RuntimeNodeHandle";
-import type { AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput } from "../nodes/types.js";
-import { animation } from "../nodes/animation.js";
-import { calculateRuntimeNodeBounds } from "../RuntimeNodeHandle";
-import { translation } from "../compiler/sceneMath.js";
+import type { AuraRuntimeNodeBounds, RuntimeNodeBoundsInput } from "./RuntimeNodeHandle";
+import type { AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput } from "./nodes/types.js";
+import { calculateRuntimeNodeBounds } from "./RuntimeNodeHandle";
+import { translation } from "./sceneMath.js";
 
 export function createRuntimeNodeImportedAssetEvidence(
   input: AuraRuntimeNodeImportedAssetEvidenceInput

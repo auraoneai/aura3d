@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraCityBlockOptions, AuraColor, AuraSceneNode, AuraTransformSpec, AuraVec3 } from "../../index.js";
-import { makeBuildingDetails, makeBuildingWindowRows, makeCityCrosswalk, makeCityProps, makeCityRoadMarkings, makeCityVehicle, primitives } from "../../index.js";
+import { makeBuildingDetails, makeBuildingWindowRows, makeCityCrosswalk, makeCityProps, makeCityRoadMarkings, makeCityVehicle } from "../city.js";
+import { primitives } from "../primitives.js";
 import { instances } from "../instances.js";
 import { material } from "../material.js";
 

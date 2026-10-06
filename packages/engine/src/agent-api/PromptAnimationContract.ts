@@ -1,4 +1,6 @@
-import type { AuraAssetRef, AuraColor, AuraSceneNode, AuraVec3 } from "./index.js";
+import type { AuraAssetRef, AuraColor, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
+import { round } from "./GameRuntime.js";
+import { camera } from "./nodes/camera.js";
 
 export const promptAnimationContractVersion = "auravoice-aura3d-prompt-animation/v1" as const;
 export const promptAnimationLegacyContractVersion = "aura-prompt-animation/1.0.7" as const;

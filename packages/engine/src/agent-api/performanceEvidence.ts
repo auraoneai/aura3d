@@ -1,22 +1,9 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraSceneSnapshot, AuraSceneKitId, AuraSceneKitBudgetDefaults, AuraSceneEvidence } from "../nodes/types.js";
-import { AuraSceneBuilder } from "../nodes/scene.js";
-import { character } from "../nodes/character.js";
-import { city } from "../nodes/city.js";
-import { cityBlock } from "../nodes/prefabs/cityBlock.js";
-import { effects } from "../nodes/effects.composite.js";
-import { flattenSceneSnapshot } from "../index.js";
-import { labels } from "../nodes/labels.js";
-import { material } from "../nodes/material.js";
-import { model } from "../nodes/model.js";
-import { neon } from "../nodes/neon.js";
-import { normalizeSceneSnapshot } from "../compiler/observations.js";
-import { physics } from "../nodes/physics.js";
-import { primitive } from "../nodes/primitives.js";
-import { product } from "../nodes/product.js";
-import { sceneKitPerformanceBudgets } from "./sceneKitBudgets.js";
-import { solar } from "../nodes/solar.js";
+import type { AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraSceneSnapshot, AuraSceneKitId, AuraSceneKitBudgetDefaults, AuraSceneEvidence } from "./nodes/types.js";
+import { AuraSceneBuilder } from "./nodes/scene.js";
+import { flattenSceneSnapshot, normalizeSceneSnapshot } from "./sceneMath.js";
+import { sceneKitPerformanceBudgets } from "./devtools/sceneKitBudgets.js";
 
 const helperPerformanceBudgets: readonly AuraHelperPerformanceBudget[] = [
   { helper: "physicsPlayground", maxDrawCalls: 320, maxNodes: 520, targetFpsP50: 50, maxBundleBytes: 18_000, evidence: "50 dynamic cubes plus contact/debug nodes at benchmark capture resolution" },

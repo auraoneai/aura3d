@@ -2,6 +2,7 @@
 
 import type { AuraEffectNode, AuraSceneSnapshot, AuraFountainParticleLayer } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
+import { seededRange } from "../sceneMath.js";
 
 export function getParticleLife(seedIndex: number, seconds: number, emitter: AuraEffectNode["emitter"]): number {
   if (emitter !== "fountain") return (seededRange(seedIndex, 181, 0, 1) + seconds * 0.18) % 1;
@@ -70,12 +71,6 @@ export function writeParticlePosition(
   positions[index * 3] = x;
   positions[index * 3 + 1] = y;
   positions[index * 3 + 2] = z;
-}
-
-export function seededRange(index: number, salt: number, min: number, max: number): number {
-  const value = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
-  const normalized = value - Math.floor(value);
-  return min + (max - min) * normalized;
 }
 
 export function collectRuntimeEffectNodes(snapshot: AuraSceneSnapshot): AuraEffectNode[] {

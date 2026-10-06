@@ -1,6 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import { performance } from "../devtools/performanceEvidence.js";
+import { performance } from "./performanceEvidence.js";
 
 export function devicePixelRatioSafe(): number {
   return typeof window === "undefined" ? 1 : Math.min(2, Math.max(1, window.devicePixelRatio || 1));

@@ -4,7 +4,7 @@ import type { AuraTransformSpec, AuraPrimitiveOptions, AuraRootLodLevelSpec, Aur
 import { AuraNodeBuilder } from "./builder.js";
 import { animation } from "./animation.js";
 import { character } from "./character.js";
-import { flattenSceneNodes } from "../compiler/sceneMath.js";
+import { flattenSceneNodes } from "../sceneMath.js";
 import { geometry } from "./geometry.js";
 import { material } from "./material.js";
 import { primitive } from "./primitives.js";

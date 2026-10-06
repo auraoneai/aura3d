@@ -5,16 +5,12 @@ import type { ColliderDescriptor, CollisionEvent, ConstraintDescriptor, Contact,
 import { AuraSceneBuilder } from "./scene.js";
 import { PhysicsDebugDraw, PhysicsStepper, ScenePhysicsBridge, Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
 import { PhysicsWorld } from "@aura3d/physics/world";
-import { character } from "./character.js";
-import { flattenSceneSnapshot } from "../index.js";
-import { game } from "./game/index.js";
-import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "../devtools/lazySystemEvidence.js";
+import { markAuraLazySystemLoaded, markAuraLazySystemRequested } from "../lazySystemEvidence.js";
 import { material } from "./material.js";
-import { model } from "./model.js";
-import { normalizeSceneSnapshot } from "../compiler/observations.js";
-import { performanceNow } from "../app/platform.js";
+import { performanceNow } from "../platform.js";
 import { primitive, primitives } from "./primitives.js";
-import { primitiveSize, scaleToVec3 } from "../compiler/sceneMath.js";
+import { primitiveSize, flattenSceneSnapshot, scaleToVec3, normalizeSceneSnapshot } from "../sceneMath.js";
+import { round } from "../GameRuntime.js";
 
 type AuraPhysicsBodyOptions = RigidBodyDescriptor & {
   readonly shape?: PhysicsShape;

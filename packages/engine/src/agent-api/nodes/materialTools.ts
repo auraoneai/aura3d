@@ -1,16 +1,10 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraAssetRef, AuraMaterialSpec, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot } from "./types.js";
+import type { AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialSpec, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot } from "./types.js";
 import { AuraSceneBuilder } from "./scene.js";
-import { colorToClearColor } from "../compiler/color.js";
-import { createAuraApp } from "../app/createAuraApp.js";
-import { environments } from "./environments.composite.js";
+import { colorToClearColor } from "../colorUtils.js";
 import { groups } from "./groups.js";
-import { material } from "./material.js";
-import { model } from "./model.js";
-import { normalizeSceneSnapshot } from "../compiler/observations.js";
-import { primitive } from "./primitives.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import { normalizeSceneSnapshot } from "../sceneMath.js";
 
 function clampMaterialScalar(value: number | undefined, fallback: number, min = 0, max = 1): number {
   if (!Number.isFinite(value)) return fallback;

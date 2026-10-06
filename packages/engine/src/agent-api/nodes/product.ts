@@ -4,15 +4,14 @@ import type { AuraAssetRef, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, Aur
 import { AuraSceneBuilder, scene } from "./scene.js";
 import { animation } from "./animation.js";
 import { camera } from "./camera.js";
-import { createAssetProvenance } from "../devtools/diagnostics.js";
+import { createAssetProvenance } from "../diagnostics.js";
 import { environments } from "./environments.composite.js";
-import { group, groups } from "./groups.js";
+import { groups } from "./groups.js";
 import { interactions } from "./interactions.js";
-import { model } from "./model.js";
 import { prefabs } from "./prefabs/index.js";
-import { primitive } from "./primitives.js";
 import { timeline } from "./timeline.js";
 import { validateProductVisualQA } from "../looks/structuralQA.js";
+import { productViewer } from "../product-viewer-runtime.js";
 
 export function productPlacement(asset: AuraAssetRef<"model">): AuraProductPlacement {
   const bounds = asset.bounds ?? [1, 1, 1] as const;

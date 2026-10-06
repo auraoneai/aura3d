@@ -1,9 +1,9 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor } from "../nodes/types.js";
-import { clampNumber } from "./observations.js";
-import { renderer } from "../devtools/rendererDiagnostics.js";
+import type { AuraColor } from "./nodes/types.js";
+import { clampNumber } from "./compiler/observations.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
+import { round } from "./GameRuntime.js";
 
 export function multiplyRgb(
   color: readonly [number, number, number],

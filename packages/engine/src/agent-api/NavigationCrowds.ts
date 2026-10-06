@@ -7,6 +7,8 @@
  * If the peer shapes change, update these mirrors to match; assignability
  * with the real peer holds structurally (loader returns are covariant).
  */
+
+import { camera } from "./nodes/camera.js";
 type NavigationVec3 = readonly [number, number, number];
 interface NavigationTriangleSoup {
   readonly positions: readonly number[] | Float32Array;

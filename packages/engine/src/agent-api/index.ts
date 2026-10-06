@@ -1,1107 +1,40 @@
-import { applyRootParticleQuality, composeModelInstanceMatrices, createCameraProjection, DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, getRootRenderSource, hasRootRenderableContent, includeRootSourceMetadata, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, resolveCameraClipping, resolveRootRenderTime, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality, type AuraPerformanceQuality } from "./RootRuntimeSupport.js";
-export type { AuraPerformanceQuality } from "./RootRuntimeSupport.js";
-/*
- * WS-2.2 — module-scope physics values come from the SOLVERLESS entry.
- *
- * `Shape`, `PhysicsStepper`, `ScenePhysicsBridge` and `PhysicsDebugDraw` are solver-free: each
- * imports `PhysicsWorld` as a *type* only. But reaching them through `@aura3d/physics` — a chain of
- * `export *` that includes `PhysicsWorld` — dragged in the physical adapter, so a scene with no
- * bodies still downloaded the solver.
- *
- * This is a different defect from eager construction, which was already fixed (see `:9832`). A lazy
- * `new PhysicsWorld()` still leaves a static `import`, and a bundler keeps the module either way.
- * Deferring the *import* is what removes the bytes. `PhysicsWorld` is now loaded by
- * `await import("@aura3d/physics")` at the points that actually simulate.
- */
-import {
-  PhysicsDebugDraw,
-  PhysicsStepper,
-  ScenePhysicsBridge,
-  Shape as PhysicsShapeFactory
-} from "@aura3d/physics/solverless";
-/*
- * WS-2.2 — the solver, from a NARROW entry rather than the physics barrel.
- *
- * Static on purpose. `app.physics` is documented and tested as live synchronously for every app, so
- * `createAuraApp` cannot await a solver, and R7 forbids breaking that to save bytes. What this does
- * avoid is the barrel: `@aura3d/physics` is a chain of `export *` that also carries `HitboxWorld`,
- * `CharacterController`, `KinematicBody`, arcade vehicle telemetry, `NarrowPhase` and six fixture modules, all
- * of which arrived just to reach one class.
- */
-import { PhysicsWorld } from "@aura3d/physics/world";
-// Types only, so this is not a graph edge. `import type` states that intent explicitly.
-import type {
-  Collider,
-  ColliderDescriptor,
-  CollisionEvent,
-  Constraint,
-  ConstraintDescriptor,
-  Contact,
-  DebugLine,
-  PhysicsBackendSelection,
-  PhysicsContinuousCollisionDescriptor,
-  PhysicsShape,
-  PhysicsSnapshot,
-  PhysicsWorldDescriptor,
-  RaycastHit,
-  RaycastOptions,
-  RigidBody,
-  RigidBodyDescriptor,
-  PhysicsVehicleController,
-  PhysicsWheelSpec,
-  PhysicsWheelState,
-  PhysicsWheelCommand,
-  PhysicsWheelTuning,
-  PhysicsVehicleAxis,
-  PhysicsCharacterController,
-  PhysicsCharacterControllerDescriptor,
-  PhysicsCharacterMovement,
-  RigidBodyType,
-  ScenePhysicsNode,
-  SphereCastHit
-} from "@aura3d/physics";
-import {
-  createBeamDescriptor,
-  createDayNightSky,
-  createDualProbeEnvironmentLightingResources,
-  createExternalParityEnvironmentLighting,
-  createProductionEnvironmentLightingResources,
-  createProductionPbrHdrPipelineFromRadiance,
-  createSdfFontAtlas,
-  createSdfTextQuadMesh,
-  createSpotShadowProjection,
-  createWaterSurface,
-  createWeatherState,
-  describeSdfTextPixelBacking,
-  describeWetMaterial,
-  layoutSdfText,
-  rasterizeSdfTextLabelImage,
-  resolveFlipbookUv,
-  resolveSdfTextFrameOpacity,
-  resolveVolumetricFog,
-  selectSpotShadowAtlasTier,
-  type SdfFontAtlas,
-  type SdfTextOcclusionPolicy,
-  type SdfTextStyle,
-  sampleOceanFixture,
-  Geometry,
-  IndexBuffer,
-  InstancedPBRMaterial,
-  PBRMaterial,
-  ProductionRuntimeRenderer,
-  resolveSamplerAnisotropy,
-  Sampler,
-  srgbToLinearChannel,
-  Texture,
-  TexturedPBRMaterial,
-  VertexBuffer,
-  VertexFormat,
-  type CameraLike,
-  type CollectedLight,
-  type DayNightSkyOptions,
-  type EnvironmentLightingOptions,
-  type ForwardEnvironmentFogOptions,
-  type WaterSurfaceBoat,
-  type WaterSurfacePreset,
-  type WeatherType,
-  type ProductionImportedAssetRenderMetadata,
-  type ProductionRendererFeature,
-  type ProductionRendererInput,
-  type RenderDeviceDiagnostics,
-  type RenderItem,
-  type RendererPostProcessOptions,
-  type RendererPostprocessExecutionMode,
-  type RendererShadowOptions,
-  type RenderSource
-} from "@aura3d/rendering";
-import {
-  DirectionalLight,
-  PointLight,
-  SpotLight,
-  type Light,
-  type Mat4
-} from "@aura3d/scene";
-import { identityMat4, lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
-/*
- * WS-2.2 — TYPE-ONLY import, plus a dynamic import at the single call site below.
- *
- * `TypedGLBActor` reaches `packages/assets` -> `GLTFRenderResources` -> `GLTFLoader`, and from there
- * into `@aura3d/rendering`'s `advanced-runtime` and so `WebGPUDevice`. Measured with an esbuild
- * metafile: a scene containing **one cube and no model at all** paid 68,664 bytes of `GLTFLoader`,
- * 36,168 of `GLTFRenderResources` and 74,742 of `WebGPUDevice` because of this one static edge.
- *
- * A type-only import erases at compile time, so the graph edge disappears entirely. The value is
- * loaded by `await import(...)` at its one call site, which is already inside an async function on the
- * typed-GLB path — so a scene that uses a typed GLB pays for the loader exactly when it needs it, and
- * a scene that does not never downloads it.
- */
-import type { TypedGLBActor, TypedGLBActorEvidence } from "../production-runtime/TypedGLBActor.js";
-import {
-  AURA_NORMALIZED_MODEL_MAX_DIMENSION,
-  boundsFromAsset,
-  boundsHeight,
-  boundsMaxDimension,
-  boundsSize
-} from "./SceneGroundingUtils.js";
-import {
-  collectLabelTelemetry,
-  labelTelemetryRoleFor,
-  summarizeTextBuckets,
-  type LabelTelemetry,
-  type TextBucketSummary
-} from "./LabelTelemetry.js";
-import {
-  createWorldLabelLayer,
-  type ProjectedLabel,
-  type WorldLabel,
-  type WorldLabelLayer
-} from "./WorldLabelRenderer.js";
-import {
-  createAuraText3DGeometry,
-  defineAuraCustomGeometry,
-  selectAuraRootLodLevel,
-  type AuraCustomGeometrySpec,
-  type AuraText3DGeometry,
-  type AuraText3DOptions
-} from "./RootGeometry.js";
+import * as _mt from "./nodes/materialTools.js";
+export function proceduralTexture(texture: Parameters<typeof _mt.proceduralTexture>[0], options?: Parameters<typeof _mt.proceduralTexture>[1]): ReturnType<typeof _mt.proceduralTexture> { return _mt.proceduralTexture(texture, options); }
+export function createMaterialCapabilityDiagnostics(input?: Parameters<typeof _mt.createMaterialCapabilityDiagnostics>[0]): ReturnType<typeof _mt.createMaterialCapabilityDiagnostics> { return _mt.createMaterialCapabilityDiagnostics(input); }
+export function createMaterialInspector(...args: Parameters<typeof _mt.createMaterialInspector>): ReturnType<typeof _mt.createMaterialInspector> { return _mt.createMaterialInspector(...args); }
+export function minimumMaterialFeatureDistance(specs: Parameters<typeof _mt.minimumMaterialFeatureDistance>[0]): ReturnType<typeof _mt.minimumMaterialFeatureDistance> { return _mt.minimumMaterialFeatureDistance(specs); }
+export { PHYSICAL_SPEC_KEYS } from "./nodes/materialTools.js";
 
-export * from "./RootGeometry.js";
+import * as _createAuraGameRuntime from "./app/createAuraGameRuntime.js";
+export function createAuraGameRuntime(...args: Parameters<typeof _createAuraGameRuntime.createAuraGameRuntime>): ReturnType<typeof _createAuraGameRuntime.createAuraGameRuntime> { return _createAuraGameRuntime.createAuraGameRuntime(...args); }
 
-export * from "./SpatialAnchoring.js";
-export * from "./PhysicsRuntime.js";
-/**
- * WS-2.4: mesh surface queries on the public surface.
- *
- * Re-exported from `@aura3d/physics` so grounding anything to a mesh is a one-liner for any
- * genre, from `@aura3d/engine` alone. Without this a route wanting real per-point ground
- * height had to either deep-import `@aura3d/physics/src` (banned by the lint rule) or
- * hand-roll an analytic approximation — which is exactly what every racing route did, and
- * why wheels sank through visible road.
- */
-/*
- * WS-2.2 — re-exported from the SOLVERLESS entry, not the physics barrel.
- *
- * These are geometry queries: `MeshBVH` and `SurfaceQuery` import only `Shape`'s types. Re-exporting
- * them from `@aura3d/physics` made this barrel a static consumer of the whole solver, so grounding a
- * wheel on a mesh reached the physical solver. Same symbols, same public names.
- */
-export {
-  buildMeshBVH,
-  createMeshSurfaceQuery,
-  raycastMesh,
-  type MeshBVH,
-  type MeshRayHit,
-  type MeshSurfaceQuery,
-  type MeshSurfaceQueryOptions,
-  type SurfaceSample
-} from "@aura3d/physics/solverless";
-import { createPhysicsRuntime, type AuraCollisionLayers, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
-import { gameCameraRigs } from "./GameCameraRigs.js";
-import { gameFeelBuilders } from "./GameFeel.js";
-export * from "./FocusSelection.js";
-export * from "./WorldLabelRenderer.js";
-export * from "./GameCameraRigs.js";
-export * from "./GameFeel.js";
-export * from "./LabelTelemetry.js";
-export * from "./NavigationCrowds.js";
-export * from "./FootPlanting.js";
-export * from "./Decals.js";
-export * from "./Scatter.js";
-export * from "./AssetDecoders.js";
-export * from "./VehicleChassis.js";
-export * from "./VehicleDriverAi.js";
-// Published-union surface (PRD-15 T1.4): the names packages/engine/src/index.ts
-// exports that were missing from published ".". engineSurface holds the moved
-// facade decls; publishedUnion re-exports the contract surface plus the
-// @deprecated union names with their §6.6 destinations.
-export * from "./engineSurface.js";
-export * from "./publishedUnion.js";
-/**
- * Deliberate public surface for the shared arcade vehicle core. The racing kit
- * owns the certified circuit path; exporting the bare motion helper lets routes
- * such as showcase-courier-rush prove a different driving personality on their
- * own topology without touching kit internals. Pinned by unit test.
- */
-export {
-  createGameArcadeVehicle,
-  type GameArcadeVehicle,
-  type GameArcadeVehicleInput,
-  type GameArcadeVehicleOptions,
-  type GameArcadeVehicleState
-} from "./GameRuntime.js";
-export * from "./PlatformerMotion.js";
-export * from "./CombatFrameData.js";
-export * from "./SceneQueries.js";
-export * from "./ApplicationKits.js";
-
-export * from "./FrameEncoder.js";
-export * from "./BrowserFrameCaptureAdapter.js";
-export * from "./MediaRecorderFrameEncoder.js";
-export * from "./WebCodecsFrameEncoder.js";
-/*
- * WS-2.3 — `FfmpegFrameEncoder` is deliberately NOT re-exported here.
- *
- * It is the only file in the 37-file media surface that reaches `node:` builtins (`child_process` to
- * spawn ffmpeg; `fs/promises`/`os`/`path` to stage frames). Re-exporting it put Node builtins in every
- * browser bundle of this entry point, which is why `tools/bundle-size` had to mark four `node:`
- * specifiers external "for every browser bundle measurement" — a workaround for a dependency that
- * should not have been in the browser graph. esbuild resolves `await import()` at build time whether or
- * not the branch can run.
- *
- * Node consumers import `@aura3d/engine/media-node`. Enforced by `tools/browser-entry-purity`, which
- * bundles every browser entry with no `node:` externals so a reachable builtin fails the build.
- */
-export {
-  GameInspector,
-  createGameInspector
-} from "./GameInspector.js";
-export type {
-  GameInspectorRuntimeInput,
-  GameInspectorSnapshot
-} from "./GameInspector.js";
-import {
-  createGameInspector
-} from "./GameInspector";
-import { createPhysicalMaterialSpec } from "../material-physical/PhysicalMaterialSpec.js";
-import { createInstancedModelNode, type InstancedModelVec3 } from "../instances-model/InstancedModel.js";
-import { resolveWrinkleMapStrength, warnOnInstancingFallback, type WrinkleMapHook } from "@aura3d/rendering";
-export {
-  createGameAudio
-} from "../game/GameAudio.js";
-export type {
-  GameAudio,
-  GameAudioBusDefinition,
-  GameAudioBusId,
-  GameAudioContextLike,
-  GameAudioCueDefinition,
-  GameAudioCueEvent,
-  GameAudioEvidence,
-  GameAudioOptions
-} from "../game/GameAudio.js";
-export type {
-  GameAudioBusLevel,
-  GameAudioDuckingOptions,
-  GameAudioFootPlant,
-  GameAudioFootstepOptions,
-  GameAudioPlayingNode,
-  GameAudioPositionalOptions,
-  GameAudioVec3
-} from "../game/GameAudio.js";
-export {
-  PositionalEmitter,
-  FootstepPlayer,
-  createGameMixer,
-  attachFocusPolicy,
-  computeDistanceAttenuation,
-  computeDopplerShift,
-  resolveOcclusion
-} from "@aura3d/audio";
-export { ComboDetector, createTouchLayoutPreset, probeHaptics, playHaptic } from "@aura3d/input";
-export {
-  attachVisualScriptingGraph,
-  createVisualScriptingGraph,
-  listVisualScriptingNodeCatalog
-} from "@aura3d/scripting";
-export { createRootEditorSurface } from "@aura3d/editor-runtime";
-import {
-  attachVisualScriptingGraph as attachVisualScriptingGraphFn,
-  createVisualScriptingGraph as createVisualScriptingGraphFn,
-  listVisualScriptingNodeCatalog as listVisualScriptingNodeCatalogFn
-} from "@aura3d/scripting";
-import { createRootEditorSurface as createRootEditorSurfaceFn } from "@aura3d/editor-runtime";
-export * from "./RenderProgressTracker.js";
-export * from "./AudioVisemeAnalyzer.js";
-export * from "./ExternalPhonemeAnalyzer.js";
-export * from "./WaveformVisualizer.js";
-export * from "./VisemeTimelineTrack.js";
-export * from "./EpisodeStructure.js";
-export * from "./ShotTransitionEngine.js";
-export * from "./SceneSequencer.js";
-export * from "./CameraPresetLibrary.js";
-export * from "./ShotCompositionRules.js";
-export * from "./CameraChoreographer.js";
-export * from "./CameraPathEditor.js";
-export * from "./ThumbnailGenerator.js";
-export * from "./BatchEpisodeRenderer.js";
-export * from "./AnimationAssetManifest.js";
-export * from "./SceneGroundingUtils.js";
-export * from "./SubjectFramingUtils.js";
-export * from "./LayeredSceneComposition.js";
-export * from "./TouchControlBinding.js";
-export * from "./AssetLibraryBrowser.js";
-export * from "./DialogueAlignment.js";
-export * from "./PerformancePoseEditor.js";
-export * from "./PerformanceCaptureSession.js";
-export * from "./PerformanceBlender.js";
-export * from "./PerformanceScriptParser.js";
-export * from "./BodyLanguageLibrary.js";
-export * from "./EpisodeTemplates.js";
-export * from "./AnimationMotionQuality.js";
-export * from "./AnimationRouteProof.js";
-export * from "./AnimationEpisodePackage.js";
-
-import type {
-  GLTFootPlantingConfig,
-  GLTFSceneAnimationRuntime,
-  GLTFSceneAnimationRuntimeOptions
-} from "@aura3d/assets/browser";
-import {
-  evaluateDistancePrioritizedMipResidency,
-  type TextureStreamingCandidate,
-  type TextureStreamingResidency
-} from "@aura3d/assets/browser";
-import type { AnimationPose } from "@aura3d/animation";
-import type {
-  GameHudBindingKind,
-  GameRuntimeSubsystemOwnership
-} from "./GameRuntime";
-import { createFrameLoop } from "./FrameLoop";
-import {
-  createCombatWorld,
-  createGameCameraDirector,
-  createGameEffects,
-  applyGameCombatEventsToRuntime,
-  createGameAccessibilityFocus,
-  createGameAccessibilityLabel,
-  createGameAccessibilityRuntimeSettings,
-  createGameEventLog,
-  createGameHighContrastSource,
-  createGameHudBindings,
-  createGameHudComboBinding,
-  createGameHudCheckpointBinding,
-  createGameHudDebugToggleBinding,
-  createGameHudEventLogBinding,
-  createGameHudHealthBinding,
-  createGameHudLivesBinding,
-  createGameHudMeterBinding,
-  createGameHudObjectiveBinding,
-  createGameHudRoundBinding,
-  createGameHudScoreBinding,
-  createGameHudSnapshot,
-  createGameHudTimerBinding,
-  createGameHudValueBinding,
-  createGameBoxCollider,
-  createGameCapsuleCollider,
-  createGameColliderDebugGeometry,
-  createGameCombatDebugGeometry,
-  createGameCollisionWorld,
-  createGamePlanarCollisionWorld,
-  createGameDebugOverlayData,
-  createGameDebugSceneNodes,
-  createGameHitboxDebugGeometry,
-  createGameSimulation,
-  exportGameInputReplay,
-  createGameFighting2DRules,
-  createGameInput,
-  createGameInputReplay,
-  createGameInputReplayDriver,
-  importGameInputReplay,
-  createGameJumpAssist,
-  createGameKinematicBody,
-  createGamePauseControlsSource,
-  createGameRectCollider,
-  createGameReducedFlashSource,
-  createGameReducedMotionSource,
-  createGameSphereCollider,
-  createGameTouchControlLayout,
-  gameColliderAabb,
-  gameColliders,
-  gameEffectPresets,
-  gameGuardboxes,
-  gameHitboxes,
-  gameHurtboxes,
-  gameInputReplayEventsAt,
-  gamePushboxes,
-  runGameSimulation,
-  gameTriggerVolumes,
-  type GameInputOptions
-} from "./GameRuntime";
-import {
-  collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105,
-  type GameRuntimeEvidence,
-  type GameRuntimeEvidenceOptions,
-  type GameRuntimeSourceEvidence
-} from "./GameEvidence";
-import {
-  calculateRuntimeNodeBounds,
-  type AuraRuntimeNodeAnimationPoseBindingMetadata,
-  type AuraRuntimeNodeAnimationBindingMetadata,
-  type AuraRuntimeNodeBounds,
-  type AuraRuntimeNodeEffectAttachment,
-  type RuntimeNodeBoundsInput,
-  type RuntimeNodeMorphTargetWeights
-} from "./RuntimeNodeHandle";
-import { createRuntimeNodeSpec } from "./GameSceneBridge";
-
-// PR 0b-1 re-imports for moved carve-out modules (CONTRACTS.md §3.2).
-import { rendererColorManagementPreset, sceneExposurePresets } from "./app/colorManagement.js";
-import { createAuraApp } from "./app/createAuraApp.js";
-import { createGameApp } from "./app/createGameApp.js";
-import { normalizeCreateAppRendererOptions, normalizeTextureBudgetBytes, rendererQualityPresets, rendererQualityProfiles, resolveRendererQualityProfile } from "./app/rendererOptions.js";
-import { collectRuntimeNodeHandles, createAuraRuntimeNodeRegistry, createRuntimeNodeHandle, type MutableAuraRuntimeNodeRegistry, type MutableAuraRuntimeSceneNode } from "./app/runtimeNodes.js";
-import { applyProductionActorAnimation, resolveAnimationSeconds } from "./compiler/animation.js";
-import { createProductionRuntimeEnvironment } from "./compiler/environment.js";
-import { createProductionRuntimeEnvironmentFog } from "./compiler/fog.js";
-import { createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors } from "./compiler/lights.js";
-import { createProductionRuntimePostprocess } from "./compiler/postprocess.js";
-import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionModelInstanceTransforms, createProductionPrimitiveResources, createProductionRuntimePrimitiveEntries, describeTextureStreamingResidency, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource, upgradeProductionEnvironmentHdri, type TextureStreamingTableEntry } from "./compiler/primitives.js";
-import { createProductionRuntimeRendererInput } from "./compiler/renderInput.js";
-import { createProductionRuntimeSceneRenderer } from "./compiler/renderer.js";
-import { createWebGLParticleModel, createWebGLRainModel } from "./compiler/safeBasic.js";
-import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./compiler/shadows.js";
-import { ROOT_EXTENSION_TEXTURE_SLOTS, bitmapRgbaPixels, blankProductionPrimitiveTextureState, compositeMetallicRoughnessPixels, createProductionPrimitiveTextureIntent, createSdfTextPrimitiveResource, loadProductionPrimitiveBitmap, mipChainBytesCoarseToFine, productionPrimitiveBitmapPixels, upgradeProductionPrimitiveResource, upgradeProductionPrimitiveTextures, type RootExtensionTextureSlot } from "./compiler/textures.js";
-import { auraLazySystemEvidence, collectAuraLazySystemEvidence, ensureAuraLazySystemEvidence, markAuraLazySystemLoaded, markAuraLazySystemRequested, type MutableAuraLazySystemEvidence } from "./devtools/lazySystemEvidence.js";
-import { sceneKitPerformanceBudgets } from "./devtools/sceneKitBudgets.js";
-import { collectGeneratedCodeWarnings } from "./looks/generatedCodeWarnings.js";
-import { validateChartVisualQA, validateCityVisualQA, validateMaterialVisualQA, validateNeonVisualQA, validatePrimitiveHumanoidVisualQA, validateProductVisualQA, validateSolarVisualQA } from "./looks/structuralQA.js";
-import { camera } from "./nodes/camera.js";
-import { lightingEffectBuilders } from "./nodes/effects.lighting.js";
-import { postEffectBuilders } from "./nodes/effects.post.js";
-import { DEFAULT_MAX_SUBSTEPS } from "./app/frameLoopDefaults.js";
-import { vfxEffectBuilders } from "./nodes/effects.js";
-import { envSourceBuilders } from "./nodes/environments.js";
-import { worldEnvBuilders } from "./nodes/environments.world.js";
-import { createAuraGameRules, gameRules } from "./gameRules.js";
-import { collectGameRuntimeEvidence, game } from "./nodes/game/index.js";
-import { createGameRacingCameraRig } from "./nodes/game/racingCamera.js";
-import { instancedPrimitive, instances } from "./nodes/instances.js";
-import { lights } from "./nodes/lights.js";
-import { material } from "./nodes/material.js";
-import { collectParticleBudgetDiagnostics, particles } from "./nodes/particles.js";
-import { cityBlock } from "./nodes/prefabs/cityBlock.js";
-import { compilePromptPlan, defaultCameraPreset, defaultLightingPreset, defaultPromptEffects, definePromptPlan, interactionNode, promptPlanWarnings, repairHintsForPromptPlan, requireResolvedPromptSubject, visualSystemsForPromptPlan } from "./nodes/prompt/promptPlan.js";
-import { promptRecipes } from "./nodes/prompt/promptRecipes.js";
-import { makeSceneKit, sceneKits } from "./nodes/sceneKits.js";
-import { shadows } from "./nodes/shadows.js";
-import { sky } from "./nodes/sky.js";
-import { water } from "./nodes/water.js";
-import { weather } from "./nodes/weather.js";
-
-import {
-  createFightingGameKit,
-  fighting as fightingGameKit
-} from "./game-kits/fighting";
-import {
-  GAME_FALLING_BLOCK_PIECES,
-  createGameAssetBoundPlatformerLevel,
-  createGameAssetBoundRacingRoute,
-  createGameFallingBlocksKit,
-  createGameLocomotionKit,
-  createGamePlatformerKit,
-  createGamePlatformerSurfaceQuery,
-  createGameRacingKit,
-  createGameRacingSurfaceQuery,
-  type GameAssetBoundPlatformerLevel,
-  type GameAssetBoundRacingRoute,
-  type GameKitRect,
-  type GameKitVec2,
-  type GamePlatformerCheckpoint
-} from "./GameGenreKits";
-import {
-  createGamePlatformerSceneBinding,
-  createGamePlatformerPresentationCamera,
-  createGameRacingPresentationCamera,
-  createGameRacingSceneBinding,
-  type GamePlatformerPresentationCameraOptions,
-  type GamePlatformerSceneBinding,
-  type GameRacingPresentationCameraOptions,
-  type GameRacingCameraRigOptions,
-  type GameRacingCameraSelectionEvidence,
-  type GameRacingSceneSpeedModel,
-  type GameScenePresentationCameraSpec,
-  type GameRacingSceneBinding
-} from "./GameSceneGeometryBindings";
-import {
-  certifyPublicPlatformerGeometry,
-  certifyPublicRacingGeometry,
-  type PublicGameGeometryCertification,
-  type PublicPlatformerGeometryContract,
-  type PublicRacingGeometryContract
-} from "./PublicGameGeometry";
-export {
-  GAME_FALLING_BLOCK_PIECES,
-  createGameAssetBoundPlatformerLevel,
-  createGameAssetBoundRacingRoute,
-  createGameFallingBlocksKit,
-  createGameLocomotionKit,
-  createGamePlatformerKit,
-  createGamePlatformerSurfaceQuery,
-  createGameRacingKit,
-  createGameRacingSurfaceQuery
-} from "./GameGenreKits";
-export {
-  createGamePlatformerSceneBinding,
-  createGamePlatformerPresentationCamera,
-  createGameRacingPresentationCamera,
-  createGameRacingSceneBinding
-} from "./GameSceneGeometryBindings";
-export {
-  certifyPublicPlatformerGeometry,
-  certifyPublicRacingGeometry
-} from "./PublicGameGeometry";
-export type {
-  GameAssetBoundPlatformerLevel,
-  GameAssetBoundPlatformerLevelBinding,
-  GameAssetBoundPlatformerLevelOptions,
-  GameAssetBoundRacingRoute,
-  GameAssetBoundRacingRouteBinding,
-  GameAssetBoundRacingRouteOptions,
-  GameFallingBlockAction,
-  GameFallingBlockActivePiece,
-  GameFallingBlockBoard,
-  GameFallingBlockCell,
-  GameFallingBlockPiece,
-  GameFallingBlockRotation,
-  GameFallingBlocksEvent,
-  GameFallingBlocksKit,
-  GameFallingBlocksOptions,
-  GameFallingBlocksSnapshot,
-  GameKitRect,
-  GameKitVec2,
-  GameLocomotionClipMap,
-  GameLocomotionEventInput,
-  GameLocomotionInput,
-  GameLocomotionKit,
-  GameLocomotionOptions,
-  GameLocomotionSnapshot,
-  GameLocomotionState,
-  GamePlatformerCheckpoint,
-  GamePlatformerCollectible,
-  GamePlatformerEvent,
-  GamePlatformerEventType,
-  GamePlatformerHazard,
-  GamePlatformerInput,
-  GamePlatformerKit,
-  GamePlatformerLevel,
-  GamePlatformerGroundContact,
-  GamePlatformerSurfaceQuery,
-  GamePlatformerMovingPlatform,
-  GamePlatformerPlayerState,
-  GamePlatformerSnapshot,
-  GamePlatformerWorldAssetBinding,
-  GameRacingCameraSnapshot,
-  GameRacingEvent,
-  GameRacingEventType,
-  GameRacingInput,
-  GameRacingKit,
-  GameRacingSpeedModel,
-  GameRacingSurfaceContact,
-  GameRacingSurfaceQuery,
-  GameRacingOptions,
-  GameRacingRoute,
-  GameRacingSnapshot
-} from "./GameGenreKits";
-export type {
-  PublicGameAssetCertification,
-  PublicGameBounds2,
-  PublicGameGeometryCategory,
-  PublicGameGeometryCertification,
-  PublicGameGeometrySource,
-  PublicGameRetainedProof,
-  PublicPlatformerCheckpoint,
-  PublicPlatformerGeometryContract,
-  PublicPlatformerHazard,
-  PublicPlatformerSurface,
-  PublicRacingGeometryCheckpoint,
-  PublicRacingGeometryContract,
-  PublicRacingGeometryPoint
-} from "./PublicGameGeometry";
-export type {
-  GamePlatformerSceneBinding,
-  GamePlatformerSceneBindingOptions,
-  GamePlatformerPresentationCameraOptions,
-  GameRacingSceneBinding,
-  GameRacingSceneBindingOptions,
-  GameRacingPresentationCameraOptions,
-  GameRacingCameraRigOptions,
-  GameRacingCameraSelectionEvidence,
-  GameRacingSceneSpeedModel,
-  GameRacingScenePose,
-  GameScenePresentationCameraSpec,
-  GameSceneTransform
-} from "./GameSceneGeometryBindings";
-import {
-  createPromptAnimationEpisodePlan,
-  createPromptAnimationStoryBible,
-  definePromptAnimationStoryboard
-} from "./PromptAnimationContract";
-import {
-  applyShotPlaybackFrame,
-  createShotPlaybackPlan,
-  createShotTimeline,
-  installShotPlayback,
-  sampleShotPlaybackPlan
-} from "./ShotTimeline";
-import {
-  captionCueAtTime,
-  createCaptionTimingProof,
-  deriveCaptionTrackFromDialogue
-} from "./DialoguePerformance";
-import {
-  createAuraVoiceVisemeTrack,
-  createGlbBlendshapeVisemeCue,
-  createPrimitiveMouthVisemeCues,
-  sampleVisemeTrack
-} from "./VisemeController";
-import {
-  createAuraVoiceBridgePackage,
-  createAuraVoiceDubRerenderProof,
-  createAuraVoiceRerenderPlan,
-  sampleAuraVoiceBridgeAtTime
-} from "./AuraVoiceBridge";
-import { createAnimationDirectorPlan } from "./AnimationDirector";
-import { createAnimationPerformance } from "./AnimationPerformance";
-import {
-  createAnimationRenderOutputPackageMetadata,
-  createAnimationRenderQueue
-} from "./AnimationRenderQueue";
-import { collectPromptAnimationEvidence } from "./PromptAnimationEvidence";
-import {
-  createAnimationMotionQualityReport,
-  validateAnimationMotionQuality
-} from "./AnimationMotionQuality";
-import {
-  createAnimationRouteProof,
-  validateAnimationRouteProof
-} from "./AnimationRouteProof";
-import {
-  createAnimationEpisodePackageManifest,
-  validateAnimationEpisodePackage
-} from "./AnimationEpisodePackage";
-import {
-  createGameAppRuntime,
-  type GameAppRuntime,
-  type GameAppRuntimeOptions
-} from "./GameAppRuntime";
+import * as _gamePresentation from "./nodes/prefabs/gamePresentation.js";
+export function createGamePlatformerPresentationSurfaceNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerPresentationSurfaceNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerPresentationSurfaceNodes> { return _gamePresentation.createGamePlatformerPresentationSurfaceNodes(...args); }
+export function createGamePublicPlatformerPresentationNodes(...args: Parameters<typeof _gamePresentation.createGamePublicPlatformerPresentationNodes>): ReturnType<typeof _gamePresentation.createGamePublicPlatformerPresentationNodes> { return _gamePresentation.createGamePublicPlatformerPresentationNodes(...args); }
+export function createGamePlatformerGroundMeshNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerGroundMeshNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerGroundMeshNodes> { return _gamePresentation.createGamePlatformerGroundMeshNodes(...args); }
+export function createGamePlatformerPlatformMeshNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerPlatformMeshNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerPlatformMeshNodes> { return _gamePresentation.createGamePlatformerPlatformMeshNodes(...args); }
+export function createGamePlatformerHazardNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerHazardNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerHazardNodes> { return _gamePresentation.createGamePlatformerHazardNodes(...args); }
+export function createGamePlatformerCheckpointNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerCheckpointNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerCheckpointNodes> { return _gamePresentation.createGamePlatformerCheckpointNodes(...args); }
+export function createGamePlatformerFinishNodes(...args: Parameters<typeof _gamePresentation.createGamePlatformerFinishNodes>): ReturnType<typeof _gamePresentation.createGamePlatformerFinishNodes> { return _gamePresentation.createGamePlatformerFinishNodes(...args); }
+export function createGamePlatformerCameraRig(...args: Parameters<typeof _gamePresentation.createGamePlatformerCameraRig>): ReturnType<typeof _gamePresentation.createGamePlatformerCameraRig> { return _gamePresentation.createGamePlatformerCameraRig(...args); }
+export function certifyPublicPlatformerPresentation(...args: Parameters<typeof _gamePresentation.certifyPublicPlatformerPresentation>): ReturnType<typeof _gamePresentation.certifyPublicPlatformerPresentation> { return _gamePresentation.certifyPublicPlatformerPresentation(...args); }
+export function createGameRacingRoadMeshNodes(...args: Parameters<typeof _gamePresentation.createGameRacingRoadMeshNodes>): ReturnType<typeof _gamePresentation.createGameRacingRoadMeshNodes> { return _gamePresentation.createGameRacingRoadMeshNodes(...args); }
+export function createGameRacingCheckpointGateNodes(...args: Parameters<typeof _gamePresentation.createGameRacingCheckpointGateNodes>): ReturnType<typeof _gamePresentation.createGameRacingCheckpointGateNodes> { return _gamePresentation.createGameRacingCheckpointGateNodes(...args); }
+export function createGameRacingStartFinishNodes(...args: Parameters<typeof _gamePresentation.createGameRacingStartFinishNodes>): ReturnType<typeof _gamePresentation.createGameRacingStartFinishNodes> { return _gamePresentation.createGameRacingStartFinishNodes(...args); }
+export function createGameRacingPresentationTrackNodes(...args: Parameters<typeof _gamePresentation.createGameRacingPresentationTrackNodes>): ReturnType<typeof _gamePresentation.createGameRacingPresentationTrackNodes> { return _gamePresentation.createGameRacingPresentationTrackNodes(...args); }
+export function createGamePublicRacingPresentationNodes(...args: Parameters<typeof _gamePresentation.createGamePublicRacingPresentationNodes>): ReturnType<typeof _gamePresentation.createGamePublicRacingPresentationNodes> { return _gamePresentation.createGamePublicRacingPresentationNodes(...args); }
+export function certifyPublicRacingPresentation(...args: Parameters<typeof _gamePresentation.certifyPublicRacingPresentation>): ReturnType<typeof _gamePresentation.certifyPublicRacingPresentation> { return _gamePresentation.certifyPublicRacingPresentation(...args); }
+export { neon } from "./nodes/neon.js";
+import { createCameraProjection } from "./RootRuntimeSupport.js";
+import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
+import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
+import { resolveAnimationSeconds } from "./compiler/animation.js";
 import { orbitAnimatedAngle } from "./compiler/actors.js";
 import { resolveCameraFrame } from "./compiler/camera.js";
-import { colorToClearColor } from "./compiler/color.js";
+import { colorToClearColor } from "./colorUtils.js";
 import type { GltfBounds } from "./compiler/gltfRuntime.js";
-import { animatedPosition, flattenSceneNodes, isPositiveFinite, multiply4, primitiveSize, rotationXYZ, scaling, translation } from "./compiler/sceneMath.js";
-import { animation } from "./nodes/animation.js";
-import { model } from "./nodes/model.js";
-import { primitive } from "./nodes/primitives.js";
+import { animatedPosition, flattenSceneNodes, isPositiveFinite, multiply4, primitiveSize, rotationXYZ, scaling, translation } from "./sceneMath.js";
 import type { AuraCameraMode, AuraColor, AuraEffectNode, AuraLabelNode, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3 } from "./nodes/types.js";
-
-export { Engine } from "@aura3d/core";
-export {
-  analyzeRgbaFrameMotionRegions,
-  createAnimationMaterialStyle,
-  createAnimationRenderPreset,
-  createAnimationVisualQualityReport
-} from "@aura3d/rendering";
-export type {
-  AnimationFrameVisualInput,
-  AnimationFrameVisualQuality,
-  AnimationMaterialStyle,
-  AnimationMaterialStyleOptions,
-  AnimationRenderPresetEvidence,
-  AnimationRenderPresetOptions,
-  AnimationVisualQualityOptions,
-  AnimationVisualQualityReport,
-  FrameMotionRegion,
-  FrameMotionRegionMetrics
-} from "@aura3d/rendering";
-export {
-  asAuraAppHandle,
-  isAuraAppHandle,
-  type AuraAppFrame,
-  type AuraAppFrameCallback,
-  type AuraAppHandle,
-  type AuraAppNodeRegistryLike,
-  type AuraAppRuntimeState,
-  type AuraAppScreenshot
-} from "./AuraAppHandle";
-export {
-  createGameAppRuntime,
-  type GameAppRuntime,
-  type GameAppRuntimeEvidence,
-  type GameAppRuntimeLoopOptions,
-  type GameAppRuntimeOptions,
-  type GameAppRuntimeResize,
-  type GameAppRuntimeStatus
-} from "./GameAppRuntime";
-export {
-  FrameLoop,
-  createFrameLoop,
-  type FrameLoopCallback,
-  type FrameLoopFrame,
-  type FrameLoopOptions,
-  type FrameLoopSnapshot,
-  type FrameLoopSource
-} from "./FrameLoop";
-export {
-  createCombatWorld,
-  createGameCameraDirector,
-  createGameEffects,
-  applyGameCombatEventsToRuntime,
-  createGameAccessibilityFocus,
-  createGameAccessibilityLabel,
-  createGameAccessibilityRuntimeSettings,
-  createGameHighContrastSource,
-  createGameHudBindings,
-  createGameHudComboBinding,
-  createGameHudDebugToggleBinding,
-  createGameHudHealthBinding,
-  createGameHudMeterBinding,
-  createGameHudRoundBinding,
-  createGameHudSnapshot,
-  createGameHudTimerBinding,
-  createGameBoxCollider,
-  createGameCapsuleCollider,
-  createGameColliderDebugGeometry,
-  createGameCombatDebugGeometry,
-  createGameDebugOverlayData,
-  createGameDebugSceneNodes,
-  createGameHitboxDebugGeometry,
-  createGameSimulation,
-  createGameInput,
-  createGameInputReplay,
-  createGameInputReplayDriver,
-  createGameJumpAssist,
-  createGameKinematicBody,
-  createGamePauseControlsSource,
-  createGameRectCollider,
-  createGameReducedFlashSource,
-  createGameReducedMotionSource,
-  createGameSphereCollider,
-  createGameTouchControlLayout,
-  gameColliderAabb,
-  gameColliders,
-  gameInputReplayEventsAt,
-  createGameLoopPlan,
-  runGameSimulation,
-  type GameAccessibilityFocusOptions,
-  type GameAccessibilityLabelOptions,
-  type GameAccessibilityPauseControlsOptions,
-  type GameAccessibilityPreferenceOptions,
-  type GameAccessibilityRuntimeSettings,
-  type GameAccessibilityRuntimeSettingsOptions,
-  type GameAccessibilitySource,
-  type GameAccessibilitySourceKind,
-  type GameAabb,
-  type GameBounds3,
-  type GameCameraDirector,
-  type GameCameraDirectorOptions,
-  type GameCameraSnapshot,
-  type GameCameraTarget,
-  type GameCollisionAddBodyOptions,
-  type GameCollisionBodyHandle,
-  type GameCollisionBodyOptions,
-  type GameCollisionBodySnapshot,
-  type GameCollisionBox,
-  type GameCollisionContact,
-  type GameCollisionEvent,
-  type GameCollisionParticipant,
-  type GameCollisionQueryFilter,
-  type GameCollisionSweepHit,
-  type GameCollisionSweepOptions,
-  type GameCollisionWorld,
-  type GameCollisionWorldSnapshot,
-  type GameCombatActorOptions,
-  type GameCombatActorSnapshot,
-  type GameCombatActiveAttackSnapshot,
-  type GameCombatEvent,
-  type GameCombatEventRuntimeBridgeOptions,
-  type GameCombatEventRuntimeBridgeResult,
-  type GameCombatEventType,
-  type GameCombatMove,
-  type GameCombatWorld,
-  type GameCombatWorldSnapshot,
-  type GameBoxCollider,
-  type GameBoxColliderOptions,
-  type GameCapsuleCollider,
-  type GameCapsuleColliderOptions,
-  type GameCollider,
-  type GameColliderAxis,
-  type GameColliderBase,
-  type GameColliderDimension,
-  type GameColliderFactoryOptions,
-  type GameColliderKind,
-  type GameColliderPlane,
-  type GameDebugGeometryNode,
-  type GameDebugGeometryOptions,
-  type GameDebugGeometryPrimitive,
-  type GameDebugOverlayData,
-  type GameDebugOverlayMetric,
-  type GameDebugOverlayOptions,
-  type GameDebugOverlaySection,
-  type GameDebugSceneNode,
-  type GameDebugSceneNodeOptions,
-  type GameDebugScenePrimitive,
-  type GameEffectInstance,
-  type GameEffectAttachment,
-  type GameEffectKind,
-  type GameEffectOptions,
-  type GameEffectsController,
-  type GameEffectsSnapshot,
-  type GameEventInput,
-  type GameEventLog,
-  type GameEventLogOptions,
-  type GameEventLogSnapshot,
-  type GameEventRecord,
-  type GameEventSeverity,
-  type GameHudActorBindingOptions,
-  type GameHudBinding,
-  type GameHudBindingKind,
-  type GameHudComboBindingOptions,
-  type GameHudDebugToggleBindingOptions,
-  type GameHudEventLogBindingOptions,
-  type GameHudObjectiveBindingOptions,
-  type GameHudResolvedValue,
-  type GameHudRoundBindingOptions,
-  type GameHudScoreBindingOptions,
-  type GameHudSourceKind,
-  type GameHudSnapshot,
-  type GameHudSnapshotItem,
-  type GameHudSnapshotOptions,
-  type GameHudTimerBindingOptions,
-  type GameHudValueBindingOptions,
-  type GameHudValueFormat,
-  type GameInputActionState,
-  type GameInputAxisSettings,
-  type GameInputAxisBinding,
-  type GameInputController,
-  type GameInputOptions,
-  type GameInputReplayDriver,
-  type GameInputReplayDriverSnapshot,
-  type GameInputReplayEvent,
-  type GameInputReplayOptions,
-  type GameInputReplayPlan,
-  type GameInputSnapshot,
-  type GameJumpAssistController,
-  type GameJumpAssistOptions,
-  type GameJumpAssistSnapshot,
-  type GameJumpAssistUpdate,
-  type GameKinematicBody,
-  type GameKinematicBodyOptions,
-  type GameKinematicBodySnapshot,
-  type GameLoopPlan,
-  type GamePointerSnapshot,
-  type GameRectCollider,
-  type GameRectColliderOptions,
-  type GameRuntimeSubsystemId,
-  type GameRuntimeSubsystemOwnership,
-  type GameSimulation,
-  type GameSimulationFrame,
-  type GameSimulationOptions,
-  type GameSimulationResult,
-  type GameSimulationStepContext,
-  type GameSimulationStepResult,
-  type GameSphereCollider,
-  type GameSphereColliderOptions,
-  type GameSubsystemOwner,
-  type GameTouchControlAnchor,
-  type GameTouchControlKind,
-  type GameTouchControlLayout,
-  type GameTouchControlLayoutOptions,
-  type GameTouchControlRegion,
-  type GameTouchControlRequest,
-  type GameVec3,
-  type GamepadSnapshot
-} from "./GameRuntime";
-export {
-  collectGameSceneRuntimeNodes,
-  createGameSceneBridge,
-  createRuntimeNodeSpec,
-  type GameSceneBridge,
-  type GameSceneBridgeApp,
-  type GameSceneBridgeBodyLike,
-  type GameSceneBridgeEvidence,
-  type GameSceneBridgeNodeHandle,
-  type GameSceneRuntimeNode
-} from "./GameSceneBridge";
-export {
-  calculateRuntimeNodeBounds,
-  createRuntimeNodeEffectAttachment,
-  runtimeNodeHasTag,
-  type AuraRuntimeNodeAnimationPoseBindingMetadata,
-  type AuraRootMotionBinding,
-  type AuraRuntimeNodeAnimationBindingMetadata,
-  type AuraRuntimeNodeBounds,
-  type AuraRuntimeNodeEffectAttachment,
-  type AuraRuntimeNodeEffectKind,
-  type RuntimeNodeAnimationSpecLike,
-  type RuntimeNodeBoundsInput,
-  type RuntimeNodeHandleLike,
-  type RuntimeNodeMorphTargetWeights,
-  type RuntimeNodeVec3
-} from "./RuntimeNodeHandle";
-export {
-  createFightingGameKit,
-  fighting,
-  fighterRuntimeNode,
-  type FightingActorState,
-  type FightingControls,
-  type FightingGameKit,
-  type FightingGameKitOptions,
-  type FightingGameSnapshot,
-  type FightingStageOptions
-} from "./game-kits/fighting";
-export { gameKits } from "./game-kits";
-export type {
-  GameRuntimeEvidence,
-  GameRuntimeEvidenceApp,
-  GameRuntimeEvidenceOptions,
-  GameRuntimeSourceEvidence
-} from "./GameEvidence";
-export * from "./GameAssetValidation.js";
-export * from "./CharacterAssembly.js";
-export * from "./AssetEvidence.js";
-export * from "./AnimationController.js";
-export * from "./AnimationMixerBuilders.js";
-export * from "./AnimationDebugOverlay.js";
-export {
-  gameAssetValidation,
-  quaterniusGameReadyFighterValidationContract,
-  validateQuaterniusGameReadyFighterAsset
-} from "./GameAssetValidation.js";
-export { createAnimationController } from "./AnimationController.js";
-export * from "./PromptAnimationContract.js";
-export * from "./AuraVoiceBridge.js";
-export * from "./ShotTimeline.js";
-export * from "./DialoguePerformance.js";
-export * from "./VisemeController.js";
-export * from "./PromptAnimationEvidence.js";
-export * from "./AnimationDirector.js";
-export * from "./AnimationPerformance.js";
-export * from "./AnimationRenderQueue.js";
-export * from "./AnimationAssetManifest.js";
-export * from "./SceneGroundingUtils.js";
-export * from "./SubjectFramingUtils.js";
-export * from "./LayeredSceneComposition.js";
-export * from "./TouchControlBinding.js";
-export * from "./AssetLibraryBrowser.js";
-
-export { instances } from "./nodes/instances.js";
-
-export { shadows } from "./nodes/shadows.js";
-
-export { material } from "./nodes/material.js";
-
-export { lights } from "./nodes/lights.js";
-
-export { camera } from "./nodes/camera.js";
-
-/**
- * D3 atmosphere builders (PRD D3 boxes 1-2). ADDITIVE root surface over the
- * pure descriptors in `@aura3d/rendering` (`DayNightSky.ts`,
- * `AtmosphereWetness.ts`, `Weather.ts`).
- *
- * Every builder below composes pre-existing node kinds only (primitive,
- * light, effect); no existing builder is modified. Precipitation pixels in
- * the default production path come from weather-state-driven primitive
- * streaks/flakes, because the production bridge does not pixel-back `rain`,
- * `snow`, or `particles` effect passes (they render only in the safe-basic
- * fallback and the Canvas2D diagnostic path). The matching effect node is
- * still declared so diagnostics report the request.
- */
-export { sky } from "./nodes/sky.js";
-
-export { weather } from "./nodes/weather.js";
-
-/**
- * D3 water surface builder (PRD D3 box 3). ADDITIVE root surface over
- * `createWaterSurface` in `@aura3d/rendering`.
- *
- * Rendered material = layered opaque depth-tinted bands (bounded refraction
- * look) + fresnel-baked sky tint + white shore-foam discs mapped from
- * `OceanFoamPatch` + boat + fading wake trail. Buoyancy queries stay on the
- * fixture (`sampleOceanFixture().buoyancy`); this builder creates no planar
- * reflection/refraction targets (B4 dependency, see
- * WATER_SURFACE_PLANAR_DEPENDENCY).
- */
-export { water } from "./nodes/water.js";
-
-export { collectGameRuntimeEvidence } from "./nodes/game/index.js";
-
-export { createGameRacingCameraRig } from "./nodes/game/racingCamera.js";
-
-export { game } from "./nodes/game/index.js";
-
-export { particles } from "./nodes/particles.js";
-
-export { markAuraLazySystemRequested } from "./devtools/lazySystemEvidence.js";
-
-export { markAuraLazySystemLoaded } from "./devtools/lazySystemEvidence.js";
-
-export { collectAuraLazySystemEvidence } from "./devtools/lazySystemEvidence.js";
-
-export { sceneKits } from "./nodes/sceneKits.js";
-
-export { definePromptPlan } from "./nodes/prompt/promptPlan.js";
-
-export { compilePromptPlan } from "./nodes/prompt/promptPlan.js";
-
-export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
-
-export { createAuraApp } from "./app/createAuraApp.js";
-
-export { createGameApp } from "./app/createGameApp.js";
-
-/**
- * C1 texture intent classification (pure, unit-tested). Asset refs resolve to
- * fetchable urls; procedural inputs have no rasterizer and are reported so
- * the caller can warn instead of silently dropping them.
- */
-
-export { createProductionPrimitiveTextureIntent } from "./compiler/textures.js";
-
-/**
- * C1 metallic-roughness compositing (pure, unit-tested). glTF convention:
- * R = occlusion (unused here, forced to 255), G = roughness, B = metallic.
- * Missing channels fall back to the scalar spec values.
- */
-
-/**
- * C1 post-mount textured upgrade (muse3jsparity-PRD). Runs fire-and-forget
- * after mount: scalar first frames stay fast and honest, and every outcome —
- * textured, fallback, or skipped — is recorded on the resource with warnings.
- * Procedural inputs have no rasterizer: recorded + warned, never faked.
- */
-export { upgradeProductionPrimitiveTextures } from "./compiler/textures.js";
-
-/**
- * B3 post-mount HDRI upgrade (muse3jsparity-PRD). Fetches a Radiance `.hdr`
- * asset, runs the HDR→cubemap→GGX-prefilter→BRDF-LUT chain, and returns the
- * live lighting object plus its disposal. Throws on fetch/parse failure so
- * the caller keeps the honest procedural fallback and warns.
- */
-export { upgradeProductionEnvironmentHdri } from "./compiler/primitives.js";
-
-export { compositeMetallicRoughnessPixels } from "./compiler/textures.js";
-
-/**
- * G1 SDF text resource (muse3jsparity-PRD): replays the recorded descriptor
- * through the atlas sampler at mount, uploads the label image as a native
- * texture, and submits atlas-derived quads. Returns null (extruded fallback)
- * with a warning when the sampler cannot run — never a silent mesh swap.
- */
-
-/**
- * M2 mip-chain byte estimate (pure, unit-tested): full chain from the base
- * level, coarse-to-fine, RGBA8. Matches the GPU residency the bridge funds.
- */
-export { mipChainBytesCoarseToFine } from "./compiler/textures.js";
-
-/** M2 streaming budget normalization (pure, unit-tested): default 256 MiB, fail-closed. */
-export { normalizeTextureBudgetBytes } from "./app/rendererOptions.js";
-
-export type { TextureStreamingTableEntry } from "./compiler/primitives.js";
-
-/**
- * M2 streaming residency from the post-upgrade texture table (pure,
- * unit-tested): distance-prioritized mip funding against the budget with
- * over-budget telemetry for the unfunded tail.
- */
-export { describeTextureStreamingResidency } from "./compiler/primitives.js";
-
-/**
- * N1 spot shadow observation (pure, unit-tested): cone + atlas tier from the
- * authored spot, pixel-backing gated on the device-observed map signals with
- * the spot as caster. No signal, no claim.
- */
-export { describeProductionSpotShadow } from "./compiler/shadows.js";
 
 function transformNormals(normals: Float32Array, matrix: Float32Array): Float32Array {
   const output = new Float32Array(normals.length);
@@ -1227,32 +160,111 @@ export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot): AuraSceneSnap
   };
 }
 
+export { createGameAudio } from "../game/GameAudio.js";
+export type { GameAudio, GameAudioBusDefinition, GameAudioBusId, GameAudioContextLike, GameAudioCueDefinition, GameAudioCueEvent, GameAudioEvidence, GameAudioOptions, GameAudioBusLevel, GameAudioDuckingOptions, GameAudioFootPlant, GameAudioFootstepOptions, GameAudioPlayingNode, GameAudioPositionalOptions, GameAudioVec3 } from "../game/GameAudio.js";
+export { createAnimationAssetManifestReadiness, defineAnimationAssetManifest, validateAnimationAssetManifest } from "./AnimationAssetManifest.js";
+export type { AnimationAssetManifest, AnimationAssetManifestEntry, AnimationAssetManifestKind, AnimationAssetManifestReadiness, AnimationAssetProfile } from "./AnimationAssetManifest.js";
+export { AnimationController, auraAnimationRetargetDocumentedConstraints, auraAnimationRuntimeMitigationContract, createAnimationController, createEmbeddedGLBAnimationClipRegistryMetadata, createSourceTestGLBAnimationSwitchHarness } from "./AnimationController.js";
+export type { AnimationClipEvent, AnimationClipEventInvocation, AnimationClipEventUnsubscribe, AnimationLoopMode, AnimationPlaybackDirection, AnimationPose, AnimationPoseTransform, AnimationQuaternion, AnimationRootMotion, AnimationVector3, RegisteredAnimationClip } from "./AnimationController.js";
+export type { AuraAnimationAssetLike, AuraAnimationAssetMetadataLike, AuraAnimationBoneMetadata, AuraAnimationBoneMetadataInput, AuraAnimationClipEventSourceKind, AuraAnimationClipEventSourceMetadata, AuraAnimationClipLoopEvent, AuraAnimationClipMetadata, AuraAnimationClipPlaybackState, AuraAnimationClipSampleContext, AuraAnimationControllerClipEventInvocation, AuraAnimationControllerEventMap, AuraAnimationControllerOptions, AuraAnimationControllerSnapshot, AuraAnimationCrossFadeEvent, AuraAnimationCrossFadeOptions, AuraAnimationDiagnostic, AuraAnimationDiagnosticSeverity, AuraAnimationDiagnosticsOptions, AuraAnimationFadeState, AuraAnimationImportedRuntimeApplySnapshot, AuraAnimationImportedRuntimeClipSample, AuraAnimationImportedRuntimeLike, AuraAnimationLayerBodyMask, AuraAnimationLayerMetadata, AuraAnimationLayerRole, AuraAnimationPlayOptions, AuraAnimationPlaybackStatus, AuraAnimationPoseCaptureOptions, AuraAnimationPoseSnapshot, AuraAnimationRetargetBindingMetadata, AuraAnimationRetargetConstraint, AuraAnimationRetargetConstraintCode, AuraAnimationRetargetSnapshot, AuraAnimationRootMotionMetadata, AuraAnimationRuntimeClipSample, AuraAnimationRuntimeNodeBinding, AuraAnimationRuntimeNodeBindingOptions, AuraAnimationRuntimeNodeBindingSnapshot, AuraAnimationScrubEvent, AuraAnimationScrubOptions, AuraAnimationSkeletonMetadata, AuraAnimationStopOptions, AuraEmbeddedGLBClipMetadata, AuraEmbeddedGLBClipRegistryMetadata, AuraExternalHumanoidAnimationLibraryBindingMetadata, AuraHumanoidBoneBinding, AuraHumanoidBoneMap, AuraNamedAnimationClipDefinition, AuraPoseBakedFallbackMetadata, AuraPoseBakedFallbackRuntimeMetadata, AuraRegisteredAnimationClip, AuraSourceTestGLBAnimationClipId, AuraSourceTestGLBAnimationSwitchHarnessOptions, AuraSourceTestGLBAnimationSwitchHarnessResult, AuraSourceTestGLBAnimationSwitchStep } from "./AnimationController.js";
+export { createAnimationDebugOverlay } from "./AnimationDebugOverlay.js";
+export type { AnimationDebugOverlay, AnimationDebugOverlayEventRow, AnimationDebugOverlayMount, AnimationDebugOverlayOptions, AnimationDebugOverlaySnapshot, AnimationDebugOverlayStateRow } from "./AnimationDebugOverlay.js";
+export { animationEpisodePackageSchemaVersion, createAnimationEpisodePackageManifest, requiredAnimationEpisodePackageRoles, validateAnimationEpisodePackage } from "./AnimationEpisodePackage.js";
+export type { AnimationEpisodePackageFile, AnimationEpisodePackageFileRole, AnimationEpisodePackageManifest, AnimationEpisodePackageStatus, AnimationEpisodePackageValidationReport, CreateAnimationEpisodePackageManifestInput } from "./AnimationEpisodePackage.js";
+export { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, AnimationTrack, assignActionToAnimationLayer, attachAnimationLayer, createAnimationAction, createAnimationClip, createAnimationEventMarker, createAnimationLayer, createAnimationMixer, createAnimationTrack, crossFadeAnimations, setAnimationTimeScale, subscribeAnimationEvents } from "./AnimationMixerBuilders.js";
+export type { AnimationClipDescriptor, AnimationEvent, AnimationEventMarker, AnimationLayerOptions, AnimationMixerOptions, AnimationMixerSnapshot, AnimationTrackDescriptor, AnimationValue, LoopMode } from "./AnimationMixerBuilders.js";
+export type { RootAnimationActionOptions, RootAnimationCrossFadeOptions, RootAnimationEventMarkerOptions, RootAnimationMixerOptions } from "./AnimationMixerBuilders.js";
+export { animationMotionQualitySchemaVersion, createAnimationMotionQualityReport, defaultAnimationMotionQualityThresholds, validateAnimationMotionQuality } from "./AnimationMotionQuality.js";
+export type { AnimationMotionFrameRegionSample, AnimationMotionFrameSample, AnimationMotionQualityReport, AnimationMotionQualityStatus, AnimationMotionQualityThresholds, AnimationMotionRegionKind, AnimationMotionSegmentInput, AnimationMotionSegmentKind, AnimationMotionSegmentReport, CreateAnimationMotionQualityReportInput } from "./AnimationMotionQuality.js";
+export { captionAnimationRenderOutputKinds, collectAnimationRenderPackageOutputs, createAnimationRenderOutputPackageMetadata, createAnimationRenderQueue, createAnimationRenderReviewPackagePaths, defaultAnimationEvidenceTargets, defaultAnimationRenderOutputs, defaultAnimationViewport, defineAnimationRenderQueue, normalizeRenderCaptureTimes, requiredAnimationRenderPackageOutputKinds, validateAnimationRenderOutputPackageMetadata, validateAnimationRenderOutputs, validateAnimationRenderQueue } from "./AnimationRenderQueue.js";
+export type { AnimationEvidenceTarget, AnimationRenderOutput, AnimationRenderOutputKind, AnimationRenderOutputPackageMetadata, AnimationRenderOutputTarget, AnimationRenderPackageOutputs, AnimationRenderQueueArtifact, AnimationRenderQueueItem, AnimationRenderReviewPackagePaths, AnimationRenderSceneStateSource, AnimationThumbnailSceneStateCapture, AnimationViewport, CreateAnimationRenderOutputPackageMetadataOptions, CreateAnimationRenderQueueOptions } from "./AnimationRenderQueue.js";
+export { animationRouteProofSchemaVersion, createAnimationRouteProof, validateAnimationRouteProof } from "./AnimationRouteProof.js";
+export type { AnimationRouteProof, AnimationRouteProofAsset, AnimationRouteProofCaption, AnimationRouteProofGesture, AnimationRouteProofPlaybackState, AnimationRouteProofRenderState, AnimationRouteProofShot, AnimationRouteProofStatus, AnimationRouteProofViseme, AnimationRouteReadinessCheck, CreateAnimationRouteProofInput } from "./AnimationRouteProof.js";
 export { resolveCanvas, configureCanvas } from "./app/canvas.js";
-export { createAuraGameRuntime } from "./app/createAuraGameRuntime.js";
+
 export { AuraRuntimeError, createAuraAssetLoadError } from "./app/errors.js";
 export { startProductionRender } from "./app/frameLoop.js";
 export { registerAuraApp, unregisterAuraApp, auraAppRegistry } from "./app/liveApps.js";
-export { devicePixelRatioSafe, performanceNow } from "./app/platform.js";
+export { devicePixelRatioSafe, performanceNow } from "./platform.js";
 export { markRouteReady, markRouteError } from "./app/routeState.js";
 export { captureAuraScreenshot } from "./app/screenshot.js";
+export { assets, ensureAssetDecoders } from "./AssetDecoders.js";
+export type { CompressedTextureDecoderProbes, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat } from "./AssetDecoders.js";
+export { AssetLibraryBrowser } from "./AssetLibraryBrowser.js";
+export type { AssetLibraryAssetDetail, AssetLibraryBrowserFilter, AssetLibraryBrowserSnapshot, AssetLibraryEditorReference, AssetLibraryMarketplaceSnapshot, AssetLibraryMarketplaceSource } from "./AssetLibraryBrowser.js";
+export { analyzeAudioVisemes, createAudioDrivenVisemeTrack, mergeAudioVisemeFrames } from "./AudioVisemeAnalyzer.js";
+export type { AnalyzeAudioVisemesOptions, AudioVisemeAnalysis, AudioVisemeAnalysisFrame } from "./AudioVisemeAnalyzer.js";
+export { asAuraAppHandle, isAuraAppHandle, type AuraAppFrame, type AuraAppFrameCallback, type AuraAppHandle, type AuraAppNodeRegistryLike, type AuraAppRuntimeState, type AuraAppScreenshot } from "./AuraAppHandle";
+export { createAuraVoiceBridgePackage, createAuraVoiceDubRerenderProof, createAuraVoiceMasterClock, createAuraVoiceRerenderPlan, sampleAuraVoiceBridgeAtTime, validateAuraVoiceAssetCoverage, validateAuraVoiceAudioCoverage, validateAuraVoiceBridgeContractIds, validateAuraVoiceBridgePackage, validateAuraVoiceDubMap, validateAuraVoiceTimingDrift, validateAuraVoiceVisemeCoverage } from "./AuraVoiceBridge.js";
+export type { AuraVoiceBridgeArtifacts, AuraVoiceBridgeOptions, AuraVoiceBridgePackage, AuraVoiceDubRerenderProof, AuraVoiceMasterClock, AuraVoicePlaybackSample, AuraVoiceRerenderPlan } from "./AuraVoiceBridge.js";
+export { createBatchEpisodeRenderPlan } from "./BatchEpisodeRenderer.js";
+export type { AnimationShowBibleBatch, BatchEpisodeDefinition, BatchEpisodeRenderJob, BatchEpisodeRenderPlan } from "./BatchEpisodeRenderer.js";
+export { bodyLanguageLibrary, resolveBodyLanguageGesture } from "./BodyLanguageLibrary.js";
+export { createBrowserFrameCaptureAdapter, routeWithFrameTime } from "./BrowserFrameCaptureAdapter.js";
+export type { BrowserFrameCaptureAdapter, BrowserFrameCapturePageLike, BrowserFrameCaptureRequest, BrowserFrameCaptureResult, CreateBrowserFrameCaptureAdapterOptions } from "./BrowserFrameCaptureAdapter.js";
+export { combatFrameAdvantage, createCombatAi, solveCombatFrameData, validateCombatFrameData } from "./CombatFrameData.js";
+export type { CombatAi, CombatAiAggression, CombatAiConfig, CombatAiDecision, CombatAiObservation, CombatFrameAdvantage, CombatFrameCheck, CombatFrameData, CombatFrameLimits, CombatFrameReport, CombatMoveRequest, CombatMoveRole } from "./CombatFrameData.js";
 export { resolveProductionActorRuntimeState, applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createProductionRuntimeMetadata, productionActorModelBounds, auraProductionBoundsProbes, resolveProductionActorAnimationSeconds } from "./compiler/actors.js";
 export { resolveCameraFrame } from "./compiler/camera.js";
-export { multiplyRgb, colorToRgba, colorToLinearRgba, colorToAcesInputClearColor, colorToLinearRgb } from "./compiler/color.js";
-export { getParticleLife, writeParticlePosition, seededRange } from "./compiler/effects.js";
+export { multiplyRgb, colorToRgba, colorToLinearRgba, colorToAcesInputClearColor, colorToLinearRgb } from "./colorUtils.js";
+export { getParticleLife, writeParticlePosition } from "./compiler/effects.js";
+export { seededRange } from "./sceneMath.js";
 export { createSceneLabelOcclusionTest } from "./compiler/labels.js";
-export { isRenderableModelNode, isWebGLRenderableNode, resolveNativeBloomRadius, resolveProductionRuntimeShadowTuning, createProductionRuntimeShadowObservation, createProductionTexturesObservation, createProductionRuntimePostprocessObservation, createProductionRuntimeCollectedLights, resolveProductionShadowCasterIndex, productionRuntimeLightDirection, quaternionFromForwardDirection, normalizedDirection, nonNegativeFinite, clampNumber, productionRenderErrorMessage, normalizeSceneSnapshot } from "./compiler/observations.js";
-export { resolveProductionPrimitiveScalars, createProductionPrimitiveMaterial, createProductionPrimitiveGeometry, primitiveGeometryBounds } from "./compiler/primitives.js";
+export { isRenderableModelNode, isWebGLRenderableNode, resolveNativeBloomRadius, resolveProductionRuntimeShadowTuning, createProductionRuntimeShadowObservation, createProductionTexturesObservation, createProductionRuntimePostprocessObservation, createProductionRuntimeCollectedLights, resolveProductionShadowCasterIndex, productionRuntimeLightDirection, quaternionFromForwardDirection, normalizedDirection, nonNegativeFinite, clampNumber, productionRenderErrorMessage } from "./compiler/observations.js";
+export { normalizeSceneSnapshot } from "./sceneMath.js";
 export { createProductionTextObservation } from "./compiler/text.js";
 export { createBuffer } from "./compiler/webglRuntime.js";
 export { renderDiagnosticPreviewToCanvas, shouldRenderOverlay, createDiagnosticsOverlay } from "./devtools/diagnosticPreview.js";
-export { validateSceneAssets, createAssetProvenance, createInitialDiagnostics, snapshotDiagnostics } from "./devtools/diagnostics.js";
+export { validateSceneAssets, createAssetProvenance, createInitialDiagnostics, snapshotDiagnostics } from "./diagnostics.js";
 export { lazySystems } from "./devtools/lazySystems.js";
-export { performance } from "./devtools/performanceEvidence.js";
-export { renderer, createRendererDiagnosticReport, resolveRendererSceneCategory } from "./devtools/rendererDiagnostics.js";
+export { performance } from "./performanceEvidence.js";
+export { renderer, createRendererDiagnosticReport, resolveRendererSceneCategory } from "./rendererDiagnostics.js";
 export { createAuraRouteHealthSnapshot } from "./devtools/routeHealth.js";
-export { createRuntimeNodeImportedAssetEvidence, cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "./devtools/runtimeEvidence.js";
-export { collectAuraSceneEvidence } from "./devtools/sceneEvidence.js";
-export { sceneKitPerformanceBudget, createSceneKitPerformanceDiagnostics, buildSceneKit } from "./devtools/sceneKitDiagnostics.js";
+export { createRuntimeNodeImportedAssetEvidence } from "./RuntimeNodeHandle.js";
+export { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "./runtimeEvidence.js";
+export { collectAuraSceneEvidence } from "./sceneEvidence.js";
+export { sceneKitPerformanceBudget, createSceneKitPerformanceDiagnostics, buildSceneKit } from "./sceneKitDiagnostics.js";
+export { alignDialogueToAudio } from "./DialogueAlignment.js";
+export type { DialogueAlignmentCue, DialogueAlignmentReport } from "./DialogueAlignment.js";
+export { captionCueAtTime, captionCuesForShot, createAudioStemManifest, createCaptionTimingProof, createDialogueTimingReport, createDialogueTrack, defineAudioStemManifest, defineCaptionTrack, defineDialogueTrack, defineDubMap, deriveCaptionTrackFromDialogue, dialogueLineAtTime, lineSafeCaptionText, validateAudioStemManifest, validateCaptionTrack, validateDialogueTrack } from "./DialoguePerformance.js";
+export type { AudioStem, AudioStemManifestArtifact, AudioStemRole, CaptionCue, CaptionTimingProof, CaptionTimingProofLine, CaptionTrackArtifact, DialogueDeliveryDirection, DialogueEmotion, DialogueLine, DialogueTimingReport, DialogueTrackArtifact, DialogueWordTiming, DubMapArtifact, DubMapEntry } from "./DialoguePerformance.js";
+export { captureScreenshot, createAssetDiagnostics, createCompatibilityReport, createDiagnosticsPanel, createEnvironment, createMaterialVariantController, createPostProcessComposerLazy, createRenderDiagnostics, inspectAsset, loadAsset, loadProductAssetLazy, workflows } from "./engineSurface.js";
+export type { A3DAssetDiagnostics, A3DDiagnosticsPanel, A3DEnvironment, A3DEnvironmentOptions, A3DMaterialVariantController, A3DRenderDiagnostics, A3DScreenshotCapture, A3DWorkflowApi } from "./engineSurface.js";
+export { createEpisodeStructure, flattenEpisodeShotRefs, sceneStructureAtTime, validateEpisodeStructure } from "./EpisodeStructure.js";
+export type { CreateEpisodeStructureInput, EpisodeActStructure, EpisodeSceneStructure, EpisodeShotRef, EpisodeStructure, EpisodeStructureArtifact, EpisodeStructureMetadata, LegacyEpisodeAct, LegacyEpisodeScene, LegacyEpisodeShotReference, LegacyEpisodeStructureInput } from "./EpisodeStructure.js";
+export { episodeTemplate, episodeTemplates } from "./EpisodeTemplates.js";
+export type { EpisodeTemplate, EpisodeTemplateId } from "./EpisodeTemplates.js";
+export { createExternalPhonemeAnalyzerAdapter, probeExternalPhonemeAnalyzer } from "./ExternalPhonemeAnalyzer.js";
+export type { CreateExternalPhonemeAnalyzerAdapterOptions, ExternalPhonemeAlignment, ExternalPhonemeAnalyzerAdapter, ExternalPhonemeAnalyzerCapability, ExternalPhonemeAnalyzerInput, ExternalPhonemeAnalyzerProvider, ExternalPhonemeAnalyzerResult, ExternalPhonemeAnalyzerStatus, ExternalPhonemeTiming } from "./ExternalPhonemeAnalyzer.js";
+export { footPlanting, resolveFootPlanting } from "./FootPlanting.js";
+export type { AuraFootPlantingGround, AuraFootPlantingGroundLike, AuraFootPlantingLegOptions, AuraFootPlantingOptions, AuraFootSide, AuraFootVec3, AuraHeightfieldSpec, AuraMovingPlatformSpec, AuraResolvedFootPlanting } from "./FootPlanting.js";
+export { createFrameEncoder, createInMemoryFrameEncoderAdapter, defaultContainerForCodec, defaultFrameEncoderMimeType, supportsFrameEncoderCodec } from "./FrameEncoder.js";
+export type { CreateFrameEncoderOptions, EncodedVideoArtifact, EncodedVideoChunk, FrameEncoder, FrameEncoderAdapter, FrameEncoderCapability, FrameEncoderCodec, FrameEncoderContainer, FrameEncoderFrame, FrameEncoderOutputMode, FrameEncoderStatus } from "./FrameEncoder.js";
+export { FrameLoop, createFrameLoop, type FrameLoopCallback, type FrameLoopFrame, type FrameLoopOptions, type FrameLoopSnapshot, type FrameLoopSource } from "./FrameLoop";
+export { gameKits } from "./game-kits";
+export { createFightingGameKit, fighting, fighterRuntimeNode, type FightingActorState, type FightingControls, type FightingGameKit, type FightingGameKitOptions, type FightingGameSnapshot, type FightingStageOptions } from "./game-kits/fighting";
+export { createGameAppRuntime, type GameAppRuntime, type GameAppRuntimeEvidence, type GameAppRuntimeLoopOptions, type GameAppRuntimeOptions, type GameAppRuntimeResize, type GameAppRuntimeStatus } from "./GameAppRuntime";
+export { FOLLOW_DAMPING_CONTRACT, createCollisionAwareOrbit, createFollowRig, createGameCameraRig, createPunchIn, createShoulderCamera, createTraumaShake, gameCameraRigs } from "./GameCameraRigs.js";
+export type { CollisionAwareOrbit, CollisionAwareOrbitOptions, CollisionOrbitProbe, CollisionOrbitProbeHit, FollowRig, FollowRigOptions, GameCameraEvidence, GameCameraRig, GameCameraRigOptions, GameCameraRigSnapshot, GameCameraRigTarget, GameCameraRigVec3, PunchIn, PunchInOptions, PunchInSnapshot, ShoulderCamera, ShoulderCameraOptions, TraumaShake, TraumaShakeOptions, TraumaShakeSnapshot } from "./GameCameraRigs.js";
+export type { GameRuntimeEvidence, GameRuntimeEvidenceApp, GameRuntimeEvidenceOptions, GameRuntimeSourceEvidence } from "./GameEvidence";
+export { GAME_FEEL_HIT_STOP_DEFAULT_S, GAME_FEEL_HIT_STOP_HEAVY_S, GAME_FEEL_HIT_STOP_LIGHT_S, GAME_FEEL_HIT_STOP_SPECIAL_S, createGameFeel, gameFeelBuilders } from "./GameFeel.js";
+export type { GameFeel, GameFeelBudgetTelemetry, GameFeelEffectKind, GameFeelEffectsPort, GameFeelOptions, GameFeelReceipt, GameFeelSnapshot } from "./GameFeel.js";
+export { GAME_FALLING_BLOCK_PIECES, createGameAssetBoundPlatformerLevel, createGameAssetBoundRacingRoute, createGameFallingBlocksKit, createGameLocomotionKit, createGamePlatformerKit, createGamePlatformerSurfaceQuery, createGameRacingKit, createGameRacingSurfaceQuery } from "./GameGenreKits";
+export type { GameAssetBoundPlatformerLevel, GameAssetBoundPlatformerLevelBinding, GameAssetBoundPlatformerLevelOptions, GameAssetBoundRacingRoute, GameAssetBoundRacingRouteBinding, GameAssetBoundRacingRouteOptions, GameFallingBlockAction, GameFallingBlockActivePiece, GameFallingBlockBoard, GameFallingBlockCell, GameFallingBlockPiece, GameFallingBlockRotation, GameFallingBlocksEvent, GameFallingBlocksKit, GameFallingBlocksOptions, GameFallingBlocksSnapshot, GameKitRect, GameKitVec2, GameLocomotionClipMap, GameLocomotionEventInput, GameLocomotionInput, GameLocomotionKit, GameLocomotionOptions, GameLocomotionSnapshot, GameLocomotionState, GamePlatformerCheckpoint, GamePlatformerCollectible, GamePlatformerEvent, GamePlatformerEventType, GamePlatformerHazard, GamePlatformerInput, GamePlatformerKit, GamePlatformerLevel, GamePlatformerGroundContact, GamePlatformerSurfaceQuery, GamePlatformerMovingPlatform, GamePlatformerPlayerState, GamePlatformerSnapshot, GamePlatformerWorldAssetBinding, GameRacingCameraSnapshot, GameRacingEvent, GameRacingEventType, GameRacingInput, GameRacingKit, GameRacingSpeedModel, GameRacingSurfaceContact, GameRacingSurfaceQuery, GameRacingOptions, GameRacingRoute, GameRacingSnapshot } from "./GameGenreKits";
+export { GameInspector, createGameInspector } from "./GameInspector.js";
+export type { GameInspectorRuntimeInput, GameInspectorSnapshot } from "./GameInspector.js";
+export { createCombatWorld, createGameCameraDirector, createGameEffects, applyGameCombatEventsToRuntime, createGameAccessibilityFocus, createGameAccessibilityLabel, createGameAccessibilityRuntimeSettings, createGameHighContrastSource, createGameHudBindings, createGameHudComboBinding, createGameHudDebugToggleBinding, createGameHudHealthBinding, createGameHudMeterBinding, createGameHudRoundBinding, createGameHudSnapshot, createGameHudTimerBinding, createGameBoxCollider, createGameCapsuleCollider, createGameColliderDebugGeometry, createGameCombatDebugGeometry, createGameDebugOverlayData, createGameDebugSceneNodes, createGameHitboxDebugGeometry, createGameSimulation, createGameInput, createGameInputReplay, createGameInputReplayDriver, createGameJumpAssist, createGameKinematicBody, createGamePauseControlsSource, createGameRectCollider, createGameReducedFlashSource, createGameReducedMotionSource, createGameSphereCollider, createGameTouchControlLayout, gameColliderAabb, gameColliders, gameInputReplayEventsAt, createGameLoopPlan, runGameSimulation, type GameAccessibilityFocusOptions, type GameAccessibilityLabelOptions, type GameAccessibilityPauseControlsOptions, type GameAccessibilityPreferenceOptions, type GameAccessibilityRuntimeSettings, type GameAccessibilityRuntimeSettingsOptions, type GameAccessibilitySource, type GameAccessibilitySourceKind, type GameAabb, type GameBounds3, type GameCameraDirector, type GameCameraDirectorOptions, type GameCameraSnapshot, type GameCameraTarget, type GameCollisionAddBodyOptions, type GameCollisionBodyHandle, type GameCollisionBodyOptions, type GameCollisionBodySnapshot, type GameCollisionBox, type GameCollisionContact, type GameCollisionEvent, type GameCollisionParticipant, type GameCollisionQueryFilter, type GameCollisionSweepHit, type GameCollisionSweepOptions, type GameCollisionWorld, type GameCollisionWorldSnapshot, type GameCombatActorOptions, type GameCombatActorSnapshot, type GameCombatActiveAttackSnapshot, type GameCombatEvent, type GameCombatEventRuntimeBridgeOptions, type GameCombatEventRuntimeBridgeResult, type GameCombatEventType, type GameCombatMove, type GameCombatWorld, type GameCombatWorldSnapshot, type GameBoxCollider, type GameBoxColliderOptions, type GameCapsuleCollider, type GameCapsuleColliderOptions, type GameCollider, type GameColliderAxis, type GameColliderBase, type GameColliderDimension, type GameColliderFactoryOptions, type GameColliderKind, type GameColliderPlane, type GameDebugGeometryNode, type GameDebugGeometryOptions, type GameDebugGeometryPrimitive, type GameDebugOverlayData, type GameDebugOverlayMetric, type GameDebugOverlayOptions, type GameDebugOverlaySection, type GameDebugSceneNode, type GameDebugSceneNodeOptions, type GameDebugScenePrimitive, type GameEffectInstance, type GameEffectAttachment, type GameEffectKind, type GameEffectOptions, type GameEffectsController, type GameEffectsSnapshot, type GameEventInput, type GameEventLog, type GameEventLogOptions, type GameEventLogSnapshot, type GameEventRecord, type GameEventSeverity, type GameHudActorBindingOptions, type GameHudBinding, type GameHudBindingKind, type GameHudComboBindingOptions, type GameHudDebugToggleBindingOptions, type GameHudEventLogBindingOptions, type GameHudObjectiveBindingOptions, type GameHudResolvedValue, type GameHudRoundBindingOptions, type GameHudScoreBindingOptions, type GameHudSourceKind, type GameHudSnapshot, type GameHudSnapshotItem, type GameHudSnapshotOptions, type GameHudTimerBindingOptions, type GameHudValueBindingOptions, type GameHudValueFormat, type GameInputActionState, type GameInputAxisSettings, type GameInputAxisBinding, type GameInputController, type GameInputOptions, type GameInputReplayDriver, type GameInputReplayDriverSnapshot, type GameInputReplayEvent, type GameInputReplayOptions, type GameInputReplayPlan, type GameInputSnapshot, type GameJumpAssistController, type GameJumpAssistOptions, type GameJumpAssistSnapshot, type GameJumpAssistUpdate, type GameKinematicBody, type GameKinematicBodyOptions, type GameKinematicBodySnapshot, type GameLoopPlan, type GamePointerSnapshot, type GameRectCollider, type GameRectColliderOptions, type GameRuntimeSubsystemId, type GameRuntimeSubsystemOwnership, type GameSimulation, type GameSimulationFrame, type GameSimulationOptions, type GameSimulationResult, type GameSimulationStepContext, type GameSimulationStepResult, type GameSphereCollider, type GameSphereColliderOptions, type GameSubsystemOwner, type GameTouchControlAnchor, type GameTouchControlKind, type GameTouchControlLayout, type GameTouchControlLayoutOptions, type GameTouchControlRegion, type GameTouchControlRequest, type GameVec3, type GamepadSnapshot } from "./GameRuntime";
+export { createGameArcadeVehicle } from "./GameRuntime.js";
+export type { GameArcadeVehicle, GameArcadeVehicleInput, GameArcadeVehicleOptions, GameArcadeVehicleState } from "./GameRuntime.js";
+export { collectGameSceneRuntimeNodes, createGameSceneBridge, createRuntimeNodeSpec, type GameSceneBridge, type GameSceneBridgeApp, type GameSceneBridgeBodyLike, type GameSceneBridgeEvidence, type GameSceneBridgeNodeHandle, type GameSceneRuntimeNode } from "./GameSceneBridge";
+export { createGamePlatformerSceneBinding, createGamePlatformerPresentationCamera, createGameRacingPresentationCamera, createGameRacingSceneBinding } from "./GameSceneGeometryBindings";
+export type { GamePlatformerSceneBinding, GamePlatformerSceneBindingOptions, GamePlatformerPresentationCameraOptions, GameRacingSceneBinding, GameRacingSceneBindingOptions, GameRacingPresentationCameraOptions, GameRacingCameraRigOptions, GameRacingCameraSelectionEvidence, GameRacingSceneSpeedModel, GameRacingScenePose, GameScenePresentationCameraSpec, GameSceneTransform } from "./GameSceneGeometryBindings";
+export { blendSkyBandColor, measureFlatRegionFraction, planLayeredSceneComposition, planSkyBackdrop, platformerCompositionSpec, skyBandCountForRamp } from "./LayeredSceneComposition.js";
+export type { LayeredSceneComposition, LayeredSceneCompositionSpec, PlatformerCompositionPresetOptions, SceneCompositionLayerReport, SceneCompositionPropKind, SceneDepthLayerRole, SceneDepthLayerSpec, ScenePropPlacement, SceneProtectedZone, SkyBackdropBand, SkyBackdropPlan, SkyBackdropSpec } from "./LayeredSceneComposition.js";
+export { createMediaRecorderFrameEncoderAdapter, probeMediaRecorderFrameEncoder } from "./MediaRecorderFrameEncoder.js";
+export type { CreateMediaRecorderFrameEncoderAdapterOptions, MediaRecorderFrameEncoderCapability } from "./MediaRecorderFrameEncoder.js";
+export { bindCrowdRepresentations, crowds, describeCrowd, navigation } from "./NavigationCrowds.js";
+export type { AuraCrowdAgentLod, AuraCrowdCreateOptions, AuraCrowdDiagnostics, AuraCrowdHandle, AuraCrowdLodOptions, AuraCrowdLodTier, AuraCrowdRepresentation, AuraCrowdRepresentationOptions, AuraNavMeshBakeOptions, AuraNavMeshHandle, AuraNavigationPeer, AuraNavigationPeerLoaders } from "./NavigationCrowds.js";
 export { animation, animationStudio } from "./nodes/animation.js";
 export { defineAuraAssets } from "./nodes/assets.js";
 export { AuraNodeBuilder } from "./nodes/builder.js";
@@ -1262,235 +274,139 @@ export { makeCityCrosswalk, makeCityRoadMarkings, makeBuildingWindowRows, makeBu
 export { editor } from "./nodes/editor.js";
 export { effects } from "./nodes/effects.composite.js";
 export { environments, environmentMapPresets } from "./nodes/environments.composite.js";
+export { collectGameRuntimeEvidence, game } from "./nodes/game/index.js";
+export { createGameRacingCameraRig } from "./nodes/game/racingCamera.js";
 export { gameFeel } from "./nodes/gameFeel.js";
 export { games } from "./nodes/games.js";
 export { geometry } from "./nodes/geometry.js";
 export { group, distanceLod, groups, findGroupNode } from "./nodes/groups.js";
 export { interactions } from "./nodes/interactions.js";
 export { labels } from "./nodes/labels.js";
-export { proceduralTexture, PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, minimumMaterialFeatureDistance } from "./nodes/materialTools.js";
 export { model, unsafeModelUrl, builtInCharacterAssets } from "./nodes/model.js";
-export { neon } from "./nodes/neon.js";
 export { physics, createRuntimeScenePhysics, eulerToQuat, resolveNodePhysicsShape } from "./nodes/physics.js";
-export { createGameRacingRoadMeshNodes, createGameRacingCheckpointGateNodes, createGameRacingStartFinishNodes, createGamePublicRacingPresentationNodes, createGameRacingTopDownCamera, certifyPublicRacingPresentation, createGameRacingPresentationTrackNodes, createGamePublicPlatformerPresentationNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerCameraRig, certifyPublicPlatformerPresentation, createGamePlatformerPresentationSurfaceNodes } from "./nodes/prefabs/gamePresentation.js";
+export { createGameRacingTopDownCamera } from "./nodes/prefabs/gamePresentation.js";
 export { prefabs } from "./nodes/prefabs/index.js";
 export { primitive, primitives } from "./nodes/primitives.js";
 export { product } from "./nodes/product.js";
+export { definePromptPlan, compilePromptPlan } from "./nodes/prompt/promptPlan.js";
+export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
 export { promptSubjectIsResolved, resolvePromptPlanSubject, promptPlanToScene } from "./nodes/promptPlans.js";
 export { resolveFrameAssetRenderScale, AuraSceneBuilder, scene } from "./nodes/scene.js";
 export { solarMaterialPresetsInNodes, solar } from "./nodes/solar.js";
 export { rootSdfFontAtlas, text3D } from "./nodes/text3d.js";
 export { timeline } from "./nodes/timeline.js";
-export type { AuraVec3 } from "./nodes/types.js";
-export type { AuraColor } from "./nodes/types.js";
-export type { AuraAssetType } from "./nodes/types.js";
-export type { AuraModelFormat } from "./nodes/types.js";
-export type { AuraTextureFormat } from "./nodes/types.js";
-export type { AuraProceduralTextureKind } from "./nodes/types.js";
-export type { AuraProceduralTextureSpec } from "./nodes/types.js";
-export type { AuraMaterialTextureInput } from "./nodes/types.js";
-export type { AuraTextureTransform } from "./nodes/types.js";
-export type { AuraAssetDefinition } from "./nodes/types.js";
-export type { AuraAssetMetadata } from "./nodes/types.js";
-export type { AuraAssetRef } from "./nodes/types.js";
-export type { AuraAssetMap } from "./nodes/types.js";
-export type { AuraTransformSpec } from "./nodes/types.js";
-export type { AuraMaterialSpec } from "./nodes/types.js";
-export type { AuraEditableMaterialParameters } from "./nodes/types.js";
-export type { AuraMaterialInspectorParameter } from "./nodes/types.js";
-export type { AuraMaterialInspectorPanel } from "./nodes/types.js";
-export type { AuraMaterialVisualQAResult } from "./nodes/types.js";
-export type { AuraMaterialCapabilityFeatureId } from "./nodes/types.js";
-export type { AuraMaterialCapabilitySupport } from "./nodes/types.js";
-export type { AuraMaterialCapabilityFeature } from "./nodes/types.js";
-export type { AuraMaterialCapabilityDiagnostics } from "./nodes/types.js";
-export type { AuraMaterialCapabilityInput } from "./nodes/types.js";
-export type { AuraModelRole } from "./nodes/types.js";
-export type { AuraModelScaleMode } from "./nodes/types.js";
-export type { AuraModelOptions } from "./nodes/types.js";
-export type { AuraPrimitiveOptions } from "./nodes/types.js";
-export type { AuraBuiltinPrimitive } from "./nodes/types.js";
-export type { AuraRootLodLevelSpec } from "./nodes/types.js";
-export type { AuraRootLodSpec } from "./nodes/types.js";
-export type { AuraAnimationSpec } from "./nodes/types.js";
-export type { AuraRuntimeNodeSpec } from "./nodes/types.js";
-export type { AuraInteractionSpec } from "./nodes/types.js";
-export type { AuraCharacterClipName } from "./nodes/types.js";
-export type { AuraCharacterStyle } from "./nodes/types.js";
-export type { AuraCharacterPose } from "./nodes/types.js";
-export type { AuraCharacterJointName } from "./nodes/types.js";
-export type { AuraCharacterJoint } from "./nodes/types.js";
-export type { AuraCharacterClip } from "./nodes/types.js";
-export type { AuraCharacterSkeleton } from "./nodes/types.js";
-export type { AuraCharacterRigSpec } from "./nodes/types.js";
-export type { AuraCharacterFootPlantingSpec } from "./nodes/types.js";
-export type { AuraCharacterRootMotionSpec } from "./nodes/types.js";
-export type { AuraCharacterConstraintCorrectionSpec } from "./nodes/types.js";
-export type { AuraCharacterVisualQAGap } from "./nodes/types.js";
-export type { AuraCharacterVisualQAResult } from "./nodes/types.js";
-export type { AuraProceduralHumanMeshPartName } from "./nodes/types.js";
-export type { AuraProceduralHumanMeshPart } from "./nodes/types.js";
-export type { AuraProceduralHumanMeshDescriptor } from "./nodes/types.js";
-export type { AuraHelperBudgetId } from "./nodes/types.js";
-export type { AuraHelperPerformanceBudget } from "./nodes/types.js";
-export type { AuraSceneNode } from "./nodes/types.js";
-export type { AuraModelNode } from "./nodes/types.js";
-export type { AuraPrimitiveNode } from "./nodes/types.js";
-export type { AuraGroupNode } from "./nodes/types.js";
-export type { AuraLightType } from "./nodes/types.js";
-export type { AuraLightNode } from "./nodes/types.js";
-export type { AuraEffectType } from "./nodes/types.js";
-export type { AuraParticleMaterialMode } from "./nodes/types.js";
-export type { AuraEffectNode } from "./nodes/types.js";
-export type { AuraParticleBudgetDiagnostics } from "./nodes/types.js";
-export type { AuraLabelNode } from "./nodes/types.js";
-export type { AuraEnvironmentNode } from "./nodes/types.js";
-export type { AuraSceneCategory } from "./nodes/types.js";
-export type { AuraRendererColorManagementPreset } from "./nodes/types.js";
-export type { AuraSceneExposurePreset } from "./nodes/types.js";
-export type { AuraEnvironmentMapPreset } from "./nodes/types.js";
-export type { AuraRendererQualityPreset } from "./nodes/types.js";
-export type { AuraRendererQualityProfileId } from "./nodes/types.js";
-export type { AuraRendererMode } from "./nodes/types.js";
-export type { AuraRendererFallbackMode } from "./nodes/types.js";
-export type { AuraRendererQualityProfile } from "./nodes/types.js";
-export type { AuraCreateAppRendererOptions } from "./nodes/types.js";
-export type { AuraRendererDiagnosticReport } from "./nodes/types.js";
-export type { AuraInteractionNode } from "./nodes/types.js";
-export type { AuraPhysicsShapeKind } from "./nodes/types.js";
-export type { AuraNodePhysicsSpec } from "./nodes/types.js";
-export type { AuraPhysicsStepOptions } from "./nodes/types.js";
-export type { AuraPhysicsDebugSnapshot } from "./nodes/types.js";
-export type { AuraPhysicsSceneSummary } from "./nodes/types.js";
-export type { AuraPhysicsWheelSpec } from "./nodes/types.js";
-export type { AuraPhysicsWheelTuning } from "./nodes/types.js";
-export type { AuraPhysicsWheelCommand } from "./nodes/types.js";
-export type { AuraPhysicsWheelState } from "./nodes/types.js";
-export type { AuraPhysicsVehicleAxis } from "./nodes/types.js";
-export type { AuraPhysicsVehicleController } from "./nodes/types.js";
-export type { AuraPhysicsCharacterDescriptor } from "./nodes/types.js";
-export type { AuraPhysicsCharacterMovement } from "./nodes/types.js";
-export type { AuraPhysicsCharacterController } from "./nodes/types.js";
-export type { AuraPhysicsWorldController } from "./nodes/types.js";
-export type { AuraNodeInput } from "./nodes/types.js";
-export type { AuraCameraMode } from "./nodes/types.js";
-export type { AuraCameraSpec } from "./nodes/types.js";
-export type { AuraBoundsSpec } from "./nodes/types.js";
-export type { AuraCameraFrameAssetOptions } from "./nodes/types.js";
-export type { AuraTimelineSpec } from "./nodes/types.js";
-export type { AuraEnvironmentOptions } from "./nodes/types.js";
-export type { AuraRendererRuntimeObservation } from "./nodes/types.js";
-export type { AuraSceneSnapshot } from "./nodes/types.js";
-export type { CityBlockTimeOfDay } from "./nodes/types.js";
-export type { AuraCityCameraPreset } from "./nodes/types.js";
-export type { AuraCityBlockOptions } from "./nodes/types.js";
-export type { AuraCityStateChangeEvidence } from "./nodes/types.js";
-export type { AuraCityInstancingPlan } from "./nodes/types.js";
-export type { AuraCityVisualQAResult } from "./nodes/types.js";
-export type { AuraCityStateController } from "./nodes/types.js";
-export type { AuraSolarSystemPrefabOptions } from "./nodes/types.js";
-export type { AuraSolarPlanetMaterialPreset } from "./nodes/types.js";
-export type { AuraSolarVisualQAResult } from "./nodes/types.js";
-export type { AuraNeonPalettePreset } from "./nodes/types.js";
-export type { AuraNeonTunnelOptions } from "./nodes/types.js";
-export type { AuraNeonVisualQAResult } from "./nodes/types.js";
-export type { AuraPrimitiveHumanoidPrefabOptions } from "./nodes/types.js";
-export type { AuraDataBars3DPrefabOptions } from "./nodes/types.js";
-export type { AuraChartTheme } from "./nodes/types.js";
-export type { AuraChartVisualQAResult } from "./nodes/types.js";
-export type { AuraProductStageStyle } from "./nodes/types.js";
-export type { AuraProductViewerOptions } from "./nodes/types.js";
-export type { AuraProductPlacement } from "./nodes/types.js";
-export type { AuraProductDiagnostics } from "./nodes/types.js";
-export type { AuraProductVisualQAResult } from "./nodes/types.js";
-export type { AuraMiniGolfMetrics } from "./nodes/types.js";
-export type { AuraMiniGolfStateController } from "./nodes/types.js";
-export type { AuraMiniGolfPointerPoint } from "./nodes/types.js";
-export type { AuraMiniGolfShotInput } from "./nodes/types.js";
-export type { AuraGameLoopPlan } from "./nodes/types.js";
-export type { AuraGameInputPlan } from "./nodes/types.js";
-export type { AuraGameInputAxisBinding } from "./nodes/types.js";
-export type { AuraGameInputActionState } from "./nodes/types.js";
-export type { AuraGameInputReplayEvent } from "./nodes/types.js";
-export type { AuraGameInputSnapshot } from "./nodes/types.js";
-export type { AuraGameInputController } from "./nodes/types.js";
-export type { AuraGameRuntimeEvidence } from "./nodes/types.js";
-export type { AuraGameRules } from "./nodes/types.js";
-export type { AuraGameRuntimeOptions } from "./nodes/types.js";
-export type { AuraGameRuntime } from "./nodes/types.js";
-export type { AuraRacingPresentationTrackOptions } from "./nodes/types.js";
-export type { AuraRacingRoadMeshOptions } from "./nodes/types.js";
-export type { AuraRacingCheckpointGateOptions } from "./nodes/types.js";
-export type { AuraRacingStartFinishOptions } from "./nodes/types.js";
-export type { AuraPublicRacingPresentationOptions } from "./nodes/types.js";
-export type { AuraRacingPresentationCertificationInput } from "./nodes/types.js";
-export type { AuraPlatformerPresentationSurfaceOptions } from "./nodes/types.js";
-export type { AuraPlatformerPublicSurfaceMode } from "./nodes/types.js";
-export type { AuraPublicPlatformerPresentationOptions } from "./nodes/types.js";
-export type { AuraPlatformerSurfaceMeshOptions } from "./nodes/types.js";
-export type { AuraPlatformerHazardOptions } from "./nodes/types.js";
-export type { AuraPlatformerCheckpointOptions } from "./nodes/types.js";
-export type { AuraPlatformerFinishOptions } from "./nodes/types.js";
-export type { AuraPlatformerPresentationCertificationInput } from "./nodes/types.js";
-export type { AuraCityBrowserRuntimeState } from "./nodes/types.js";
-export type { AuraCityDayNightToggleOptions } from "./nodes/types.js";
-export type { AuraSceneKitId } from "./nodes/types.js";
-export type { AuraSceneKitCustomizeOptions } from "./nodes/types.js";
-export type { AuraSceneKitDiagnostics } from "./nodes/types.js";
-export type { AuraSceneKitPerformanceDiagnostics } from "./nodes/types.js";
-export type { AuraSceneKitDrawCallBudget } from "./nodes/types.js";
-export type { AuraSceneKitBundleBudget } from "./nodes/types.js";
-export type { AuraSceneKitFpsBudget } from "./nodes/types.js";
-export type { AuraSceneKitInstancingFamilyEvidence } from "./nodes/types.js";
-export type { AuraSceneKitInstancingEvidence } from "./nodes/types.js";
-export type { AuraSceneKitLodEvidence } from "./nodes/types.js";
-export type { AuraSceneKitLazySystemId } from "./nodes/types.js";
-export type { AuraSceneKitLazyLoadingEntry } from "./nodes/types.js";
-export type { AuraSceneKitLazyLoadingPlan } from "./nodes/types.js";
-export type { AuraLazySystemEvidence } from "./nodes/types.js";
-export type { AuraSceneKit } from "./nodes/types.js";
-export type { AuraSceneKitBudgetDefaults } from "./nodes/types.js";
-export type { AuraPromptSceneType } from "./nodes/types.js";
-export type { AuraPromptEffectId } from "./nodes/types.js";
-export type { AuraPromptCameraPreset } from "./nodes/types.js";
-export type { AuraPromptLightingPreset } from "./nodes/types.js";
-export type { AuraPromptInteractionMode } from "./nodes/types.js";
-export type { AuraPromptResolvedSubject } from "./nodes/types.js";
-export type { AuraPromptIntentSubject } from "./nodes/types.js";
-export type { AuraPromptPlanSubject } from "./nodes/types.js";
-export type { AuraPromptSubjectResolver } from "./nodes/types.js";
-export type { AuraPromptPlan } from "./nodes/types.js";
-export type { AuraPromptPlanReport } from "./nodes/types.js";
-export type { AuraCompiledPromptPlan } from "./nodes/types.js";
-export type { AuraBackend } from "./nodes/types.js";
-export type { AuraDiagnostics } from "./nodes/types.js";
-export type { AuraAssetProvenance } from "./nodes/types.js";
-export type { AuraAssetLoadState } from "./nodes/types.js";
-export type { AuraSceneEvidence } from "./nodes/types.js";
-export type { AuraFrameInfo } from "./nodes/types.js";
-export type { AuraFrameCallback } from "./nodes/types.js";
-export type { AuraRuntimeNodeSnapshot } from "./nodes/types.js";
-export type { AuraRuntimeNodeHandle } from "./nodes/types.js";
-export type { AuraRuntimeNodeImportedAssetEvidence } from "./nodes/types.js";
-export type { AuraRuntimeNodeImportedAssetDiagnostic } from "./nodes/types.js";
-export type { AuraRuntimeNodeImportedAssetEvidenceInput } from "./nodes/types.js";
-export type { AuraRuntimeNodeRegistry } from "./nodes/types.js";
-export type { AuraRuntimeState } from "./nodes/types.js";
-export type { AuraApp } from "./nodes/types.js";
-export type { AuraCreateAppOptions } from "./nodes/types.js";
-export type { AuraCreateGameAppOptions } from "./nodes/types.js";
-export type { AuraDiagnosticsOptions } from "./nodes/types.js";
-export type { AuraScreenshot } from "./nodes/types.js";
-export type { AuraAppTarget } from "./nodes/types.js";
-export type { AuraAppRegistry } from "./nodes/types.js";
-export type { WebGLRenderController } from "./nodes/types.js";
-export type { ProductionRuntimeActorEntry } from "./nodes/types.js";
-export type { ProductionRuntimePrimitiveEntry } from "./nodes/types.js";
-export type { ProductionRuntimePrimitiveResource } from "./nodes/types.js";
-export type { ProductionRuntimePrimitiveState } from "./nodes/types.js";
-export type { ProductionRuntimeLightDescriptor } from "./nodes/types.js";
-export type { AuraFountainParticleLayer } from "./nodes/types.js";
-export type { WebGLSceneRenderer } from "./nodes/types.js";
-export type { WebGLModel } from "./nodes/types.js";
+export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererMode, AuraRendererFallbackMode, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
 export { ui } from "./nodes/ui.js";
 export { visualScripting } from "./nodes/visualScripting.js";
+export { water } from "./nodes/water.js";
+export { weather } from "./nodes/weather.js";
+export { blendPerformancePoses, createPerformanceTransitionPlan } from "./PerformanceBlender.js";
+export type { PerformanceBlendResult, PerformanceTransitionPlan, PerformanceTransitionSample } from "./PerformanceBlender.js";
+export { PerformanceCaptureRecordingSession, createPerformanceCaptureSession, validatePerformanceCaptureCapability } from "./PerformanceCaptureSession.js";
+export type { PerformanceCaptureCapability, PerformanceCapturePermissionState, PerformanceCaptureRecordingSample, PerformanceCaptureRecordingSessionOptions, PerformanceCaptureRecordingSessionSnapshot, PerformanceCaptureRecordingSessionStatus, PerformanceCaptureSignal, PerformanceCaptureSourceKind } from "./PerformanceCaptureSession.js";
+export { PerformancePoseEditor } from "./PerformancePoseEditor.js";
+export type { PerformancePoseEditorSnapshot } from "./PerformancePoseEditor.js";
+export { parsePerformanceScriptCue } from "./PerformanceScriptParser.js";
+export type { PerformanceScriptCue } from "./PerformanceScriptParser.js";
+export { AURA_DYNAMIC_CAPABLE_SHAPES, AURA_SPEC_CONSTRUCTIBLE_SHAPES, AURA_STATIC_ONLY_SHAPES, assertShapeSupported, collisionMaskFor, contactRelativeSpeed, createBodyHandle, createCollisionLayers, createPhysicsRuntime, layerMask, layersCollide, toAuraCollisionEvent, toAuraRaycastResult, validateJointSpec } from "./PhysicsRuntime.js";
+export type { AuraBodyHandle, AuraBodyRegistry, AuraBodySpec, AuraColliderShape, AuraCollisionEvent, AuraCollisionHandler, AuraCollisionLayers, AuraDebugBudgetTelemetry, AuraDebugLine, AuraJointHandle, AuraJointKind, AuraJointSpec, AuraPhysicsDebugOptions, AuraPhysicsQueries, AuraPhysicsRuntime, AuraPhysicsRuntimeOptions, AuraRaycastOptions, AuraRaycastResult, AuraUnsubscribe, PhysicsVec3 } from "./PhysicsRuntime.js";
+export { measurePlatformerGeometry, platformerFeelProfile, solvePlatformerMotion, validatePlatformerMotion } from "./PlatformerMotion.js";
+export type { PlatformerFeel, PlatformerGeometryFacts, PlatformerMotionCheck, PlatformerMotionReport, PlatformerMotionRequest, PlatformerMotionSolution, PlatformerPlatformLike } from "./PlatformerMotion.js";
+export { createPromptAnimationAccessibilityProofMetadata, createPromptAnimationEpisodePlan, createPromptAnimationEpisodeReadiness, createPromptAnimationIssue, createPromptAnimationStoryBible, createPromptEpisodePlan, definePromptAnimationEpisode, definePromptAnimationStoryBible, definePromptAnimationStoryboard, definePromptEpisodePlan, normalizePromptAnimationTime, promptAnimationChildSafeDefaults, promptAnimationContractCompatibilityAdapters, promptAnimationContractVersion, promptAnimationDriftFrames, promptAnimationFrameAtTime, promptAnimationLegacyContractVersion, promptAnimationTimeAtFrame, resolvePromptAnimationContractCompatibility, storyboard, validatePromptAnimationArtifactContract, validatePromptAnimationEpisodeReadiness, validatePromptAnimationStableIds } from "./PromptAnimationContract.js";
+export type { PromptAnimationAccessibilityProofMetadata, PromptAnimationAccessibilityProofStatus, PromptAnimationArtifactBase, PromptAnimationArtifactKind, PromptAnimationAssetMode, PromptAnimationCaptionAccessibilityProof, PromptAnimationCharacter, PromptAnimationCharacterRig, PromptAnimationCharacterRole, PromptAnimationContractCompatibilityResult, PromptAnimationContractVersion, PromptAnimationEpisodePlan, PromptAnimationEpisodePlanInput, PromptAnimationEpisodeReadiness, PromptAnimationFrameRate, PromptAnimationHighContrastAccessibilityProof, PromptAnimationId, PromptAnimationIssueSeverity, PromptAnimationLanguageCode, PromptAnimationLocation, PromptAnimationMotionMode, PromptAnimationMouthFallback, PromptAnimationProductionMetadata, PromptAnimationProp, PromptAnimationPropRole, PromptAnimationPublishTarget, PromptAnimationReadinessStatus, PromptAnimationReducedMotionAccessibilityProof, PromptAnimationRenderOutputMode, PromptAnimationResolution, PromptAnimationReviewStatus, PromptAnimationRuntimeSpec, PromptAnimationSafetyMetadata, PromptAnimationSeconds, PromptAnimationShotListItem, PromptAnimationStoryBible, PromptAnimationStoryBibleInput, PromptAnimationStoryboard, PromptAnimationStoryboardScene, PromptAnimationStoryboardShot, PromptAnimationStyleGuide, PromptAnimationValidationIssue, PromptAnimationYouTubeDraftMetadata } from "./PromptAnimationContract.js";
+export { collectPromptAnimationEvidence, createPromptAnimationDeterministicScreenshotFixtureMetadata, definePromptAnimationEvidence, evaluatePromptAnimationPublishReadiness } from "./PromptAnimationEvidence.js";
+export type { CollectPromptAnimationEvidenceInput, PromptAnimationAccessibilityEvidence, PromptAnimationArtifactMetadataEvidence, PromptAnimationAssetStatusEvidence, PromptAnimationAudioEvidence, PromptAnimationConsumedAuraVoiceArtifactMetadata, PromptAnimationCoverageEvidence, PromptAnimationDeterministicCaptureEvidence, PromptAnimationDeterministicCaptureSummary, PromptAnimationEvidenceArtifact, PromptAnimationEvidenceStatus, PromptAnimationRenderedArtifactMetadata, PromptAnimationRenderedArtifactRole, PromptAnimationRouteHealthEvidence, PromptAnimationScreenshotEvidence, PromptAnimationScreenshotFixtureMetadata, PromptAnimationTimingDriftEvidence, PromptAnimationTrackEvidence } from "./PromptAnimationEvidence.js";
+export { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "./PublicGameGeometry";
+export type { PublicGameAssetCertification, PublicGameBounds2, PublicGameGeometryCategory, PublicGameGeometryCertification, PublicGameGeometrySource, PublicGameRetainedProof, PublicPlatformerCheckpoint, PublicPlatformerGeometryContract, PublicPlatformerHazard, PublicPlatformerSurface, PublicRacingGeometryCheckpoint, PublicRacingGeometryContract, PublicRacingGeometryPoint } from "./PublicGameGeometry";
+export { A3DAppLifecycle, A3DRenderer, A3DScene, A3D_APP_WORKFLOW_PRESETS, AuraColorParseError, DIAGNOSTICS_SECTION_KEYS, DIAGNOSTIC_ONLY_FIELDS, GLTFLoader, Renderer, SCREEN_FEEL_BLACKBOARD_KEY, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, StubFeelBus, StubLightingRuntime, StubModelMaterialHandle, StubPostSurface, StubTimeController, WIND_CHUNK, appExtensionsAll, assertAuraRouteReady, assertAuraScreenshotNotBlank, auditArtDirection, captureAuraAppScreenshot, captureFromUrl, compileScene, composeWorldMatrix, createA3DApp, createAnimationLabWorkflow, createAssetCompatibilityReport, createAssetPreloader, createAssetViewerWorkflow, createAuraAssetPanelRows, createAuraDiagnosticsOverlay, createAuraPerformancePanelSnapshot, createAuraRouteHealth, createComparisonWorkflow, createECSRenderSource, createExternalParityEnvironmentPipeline, createGame, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createResourceManager, createSceneShowcaseWorkflow, decomposeMatrix, diagnosticsSectionsAll, eulerToQuaternion, inspectGLTFAsset, listExternalParityEnvironmentTargets, loadProductAsset, loadRenderableAsset, lookLint, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, postPresets, registerAppExtension, registerDiagnosticsSection, registerEnvironmentSource, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, resolveA3DAppQualityPreset, resolveEnvironment, resolveQrFlags, setCompilerImpl, stubCameraRigFactories, summarizeExternalParityGLTFCorpus, updateCompiledScene, worldQueriesSlot } from "./publishedUnion.js";
+export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions, AppExtension, AppliedLookReport, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetPanelRow, AuraAssetPreloadResult, AuraAssetPreloader, AuraAssetRequiredDecoder, AuraAssetVariants, AuraAssetsOption, AuraAutoExposureOptions, AuraBiomeId, AuraBiomeRig, AuraBoneMaskSpec, AuraBoneSocket, AuraCameraController, AuraCameraEvidence, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraProbe, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSubject, AuraCompiledFeature, AuraCreateAppAnimationOptions, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDiagnosticsOverlay, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFeelBus, AuraFeelEventSpec, AuraFovKickLayer, AuraHeightFogSpec, AuraHeightQuery, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLocalShadowOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNodeHandleExtensionMap, AuraNodeKindMap, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraPerformancePanelSnapshot, AuraPostDiagnostics, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraPunchLayer, AuraQuat, AuraRendererMaterialOptions, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraResourceDescriptor, AuraResourceKind, AuraResourceManager, AuraResourceManagerEvidence, AuraResourceRecord, AuraResourceStatus, AuraRootMotionSpec, AuraRouteHealth, AuraRuntimeNodeRegistryV2, AuraScreenFeelUniforms, AuraShadowOptions, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTraumaLayer, AuraVfxEffectSpec, AuraVfxKind, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, CaptureContext, CompiledActor, CompiledScene, CreateGameOptions, DiagnosticsSection, ECSRenderLibraries, ECSRenderSourceOptions, Game, GameAcceptance, GameBeacon, GameBudgets, GameEntryV2, GameFxKind, GameFxLayer, GameGenre, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GroundRaycaster, Hud, HudMountOptions, HudWidgetSpec, NodeHandleExtension, NodeHandler, OptionCoverageRow, PauseReason, QrFlagInput, RebuildTier, RenderSourceContributions, RouteHealthQualityGate, SceneCompileContext, ShadowReport, TouchControls, TouchPreset, TransitionSpec } from "./publishedUnion.js";
+export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
+export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";
+export { createAuraText3DGeometry, defineAuraCustomGeometry, selectAuraRootLodLevel } from "./RootGeometry.js";
+export type { AuraCustomGeometrySpec, AuraRootLodSelection, AuraRootLodThreshold, AuraRootVec3, AuraText3DGeometry, AuraText3DOptions } from "./RootGeometry.js";
+export type { AuraPerformanceQuality } from "./RootRuntimeSupport.js";
+export { calculateRuntimeNodeBounds, createRuntimeNodeEffectAttachment, runtimeNodeHasTag, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRootMotionBinding, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeBounds, type AuraRuntimeNodeEffectAttachment, type AuraRuntimeNodeEffectKind, type RuntimeNodeAnimationSpecLike, type RuntimeNodeBoundsInput, type RuntimeNodeHandleLike, type RuntimeNodeMorphTargetWeights, type RuntimeNodeVec3 } from "./RuntimeNodeHandle";
+export { enforceFrameBudget, planScatterInstances, scatterWindOffset } from "./Scatter.js";
+export type { FrameBudgetDecision, FrameBudgetInput, ScatterPlan, ScatterPlanOptions } from "./Scatter.js";
+export { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsFromSize, boundsHeight, boundsMaxDimension, boundsSize, groundedAssetPlacement, groundedPlacement, groundedRenderedAssetPlacement, groundedYOffset, normalizedRenderScaleForTargetHeight, normalizedRenderScaleForTargetMaxDimension, normalizedScaleForTargetHeight, normalizedScaleForTargetMaxDimension, resolveSubjectPlacementFacts } from "./SceneGroundingUtils.js";
+export type { AssetGroundedPlacement, GroundedPlacement, GroundedPlacementOptions, RenderGroundedAssetPlacement, RenderGroundedPlacementOptions, SceneAssetBoundsMetadata, SceneAssetLike, SceneBounds, SubjectPlacementFacts, SubjectPlacementRequest, Vec3 } from "./SceneGroundingUtils.js";
+export { groundProbe, raycastPhysicsWorld, raycastSceneTargets, raycastSceneTargetsAll, sceneQueryTargets, sphereCastPhysicsWorld, sphereCastSceneTargets } from "./SceneQueries.js";
+export type { PhysicsQueryWorld, SceneQueryHit, SceneQueryTarget, SceneRay } from "./SceneQueries.js";
+export { createSceneSequencer, createSceneSequencerPlayback, sampleSceneSequencer } from "./SceneSequencer.js";
+export type { LegacySceneSequencer, LegacySceneSequencerSnapshot, SceneSequencer, SceneSequencerPlan, SceneSequencerPlaybackController, SceneSequencerPlaybackSnapshot, SceneSequencerSample, SceneSequencerSceneBinding } from "./SceneSequencer.js";
+export { createShotCompositionGuide, evaluateShotComposition } from "./ShotCompositionRules.js";
+export type { ShotCompositionGuide, ShotCompositionOverlay, ShotCompositionReport, ShotCompositionRule, ShotCompositionRuleOptions, ShotSubjectFrameBox } from "./ShotCompositionRules.js";
+export { applyShotPlaybackFrame, createShotPlaybackPlan, createShotTimeline, createShotTimelineDiagnostics, defineShotTimeline, getShotAtTime, getShotTimelineCaptureTimes, installShotPlayback, sampleShotPlaybackPlan, shotDuration, shotTimeline, validateShotTimeline } from "./ShotTimeline.js";
+export type { ApplyShotPlaybackFrameOptions, InstallShotPlaybackOptions, ShotBlockingAction, ShotCameraInstruction, ShotCameraMove, ShotCharacterBlocking, ShotHoldTrimInstruction, ShotPlaybackCharacterMouthState, ShotPlaybackFramePlan, ShotPlaybackNodeUpdate, ShotPlaybackPlan, ShotPlaybackPlanInput, ShotPlaybackRuntimeApp, ShotPlaybackRuntimeNodeHandle, ShotPropBlocking, ShotTimelineArtifact, ShotTimelineDiagnostics, ShotTimelineInput, ShotTimelineShot, ShotTransition } from "./ShotTimeline.js";
+export { createShotTransitionDescriptor, createShotTransitionPlan, sampleShotTransition } from "./ShotTransitionEngine.js";
+export type { LegacyShotTransitionSample, ShotTransitionDescriptor, ShotTransitionKind, ShotTransitionPlan, ShotTransitionSample, WipeDirection } from "./ShotTransitionEngine.js";
+export { checkSpatialInvariants, containsPoint, distanceOutsideBounds, distanceToBoundsSurface, distributeAroundBounds, distributeInRegion, fitSizeToRegion, placedBounds, placedBoundsFromAsset, placedBoundsFromWorldBounds, resolveBoundsAnchor, resolveSemanticRegion, validateSpacing } from "./SpatialAnchoring.js";
+export type { AnchorOptions, BoundsAnchor, DistributedPlacement, DistributionOptions, HelperPlacementClaim, PlacedBounds, RadialPlacementOptions, RegionFittedSize, RegionFittedSizeOptions, ResolvedAnchor, ResolvedSemanticRegion, SemanticRegion, SpatialInvariantReport } from "./SpatialAnchoring.js";
+export { resolveChaseFraming, resolveChaseFramingFromBounds, resolveSubjectRenderedSize, resolveSubjectRenderedSizeFromBounds } from "./SubjectFramingUtils.js";
+export type { ChaseFraming, ChaseFramingIntent, SubjectFitRequest, SubjectRenderedSize } from "./SubjectFramingUtils.js";
+export { createThumbnailArtifact, createThumbnailGenerationPlan, generateThumbnailArtifact } from "./ThumbnailGenerator.js";
+export type { ThumbnailArtifact, ThumbnailCaptureRuntime, ThumbnailGenerationPlan } from "./ThumbnailGenerator.js";
+export { GAME_TOUCH_LAYOUT_GENRES, bindGameTouchControls, bindGameTouchLayoutPreset, touchLayoutBindingsForGenre } from "./TouchControlBinding.js";
+export type { GameControlBindingResult, GameControlBindingSpec, GameTouchLayoutBindings, GameTouchLayoutGenre, GameTouchLayoutPresetSpec, HoldControlBinding, PulseControlBinding, TouchControlElement, TouchControlHost } from "./TouchControlBinding.js";
+export { createVehicleChassis, flatVehicleSurface, groundedFittedModelPosition, meshVehicleSurface, vehicleChassisSpecFromBounds } from "./VehicleChassis.js";
+export type { VehicleChassis, VehicleChassisSpec, VehicleChassisTelemetry, VehiclePlanarState, VehiclePose, VehicleSurface, VehicleSurfaceSample, VehicleVec3, VehicleWheelId, VehicleWheelPose } from "./VehicleChassis.js";
+export { angleDelta, createVehicleDriverAi } from "./VehicleDriverAi.js";
+export type { DriverAggression, DriverConfig, DriverInput, DriverRoute, DriverRoutePoint, DriverTelemetry, DriverVehicleState, VehicleDriverAi } from "./VehicleDriverAi.js";
+export { applyVisemeMorphInfluences, createAuraVoiceVisemeTrack, createGlbBlendshapeVisemeCue, createPrimitiveMouthVisemeCues, createVisemeController, defineAuraVoiceVisemes, glbVisemeBlendshapeExample, primitiveMouthCardForViseme, primitiveMouthVisemeExample, sampleVisemeTrack, validateVisemeTrack, visemeSampleToMorphInfluences } from "./VisemeController.js";
+export type { AuraVoiceVisemeCue, AuraVoiceVisemeFormat, AuraVoiceVisemeId, AuraVoiceVisemeTrack, GlbVisemeBlendshapeExample, PrimitiveMouthCard, PrimitiveMouthExample, PrimitiveMouthVisemeCueInput, VisemeController, VisemeSample } from "./VisemeController.js";
+export { applyManualVisemeEdits, createVisemeTimelineTrack, sampleVisemeTimelineTrack } from "./VisemeTimelineTrack.js";
+export type { VisemeTimelineManualEdit, VisemeTimelineTrackArtifact } from "./VisemeTimelineTrack.js";
+export { createAudioWaveformData, createWaveformVisualization, drawWaveformToCanvas, waveformPeakAtTime } from "./WaveformVisualizer.js";
+export type { AudioWaveformData, AudioWaveformPeak, CreateAudioWaveformDataOptions, WaveformDrawOptions, WaveformVisualization, WaveformVisualizerOptions, WaveformVisualizerPeak, WaveformVisualizerPoint } from "./WaveformVisualizer.js";
+export { createWebCodecsFrameEncoderAdapter, probeWebCodecsFrameEncoder } from "./WebCodecsFrameEncoder.js";
+export type { CreateWebCodecsFrameEncoderAdapterOptions, WebCodecsFrameEncoderCapability } from "./WebCodecsFrameEncoder.js";
+export { createWorldLabelLayer, ndcToScreen, projectWorldLabels, projectWorldPoint, resolveLabelCollisions } from "./WorldLabelRenderer.js";
+export type { LabelOcclusionTest, LabelVec3, LabelViewport, OffscreenPolicy, ProjectedLabel, WorldLabel, WorldLabelLayer, WorldLabelLayerHost } from "./WorldLabelRenderer.js";
+export { PositionalEmitter, FootstepPlayer, createGameMixer, attachFocusPolicy, computeDistanceAttenuation, computeDopplerShift, resolveOcclusion } from "@aura3d/audio";
+export { Engine } from "@aura3d/core";
+export { createRootEditorSurface } from "@aura3d/editor-runtime";
+export { ComboDetector, createTouchLayoutPreset, probeHaptics, playHaptic } from "@aura3d/input";
+export { buildMeshBVH, createMeshSurfaceQuery, raycastMesh, type MeshBVH, type MeshRayHit, type MeshSurfaceQuery, type MeshSurfaceQueryOptions, type SurfaceSample } from "@aura3d/physics/solverless";
+export { analyzeRgbaFrameMotionRegions, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport } from "@aura3d/rendering";
+export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport, FrameMotionRegion, FrameMotionRegionMetrics } from "@aura3d/rendering";
+export { attachVisualScriptingGraph, createVisualScriptingGraph, listVisualScriptingNodeCatalog } from "@aura3d/scripting";
+export { animationDirector, compilePromptEpisodePlan, createAnimationDirectorPlan, defineAnimationDirectorPlan } from "./AnimationDirector.js";
+export type { AnimationDirectorAssetSlot, AnimationDirectorBeatInput, AnimationDirectorCharacterInput, AnimationDirectorDialogueInput, AnimationDirectorInput, AnimationDirectorLocationInput, AnimationDirectorMotionRequirement, AnimationDirectorPlan, AnimationDirectorPropInput, AnimationDirectorReviewGate } from "./AnimationDirector.js";
+export { animationEmotionPoseLibrary, animationGestureLibrary, animationPerformanceCuesAtTime, createAnimationPerformance, createAnimationPerformanceCoverage, createDialogueAnimationPerformance, defineAnimationPerformance, resolveAnimationEmotionPose, resolveAnimationGesture, sampleAnimationCharacterPerformance, validateAnimationPerformance } from "./AnimationPerformance.js";
+export type { AnimationCharacterPerformanceState, AnimationEmotionPose, AnimationFacialBrow, AnimationFacialEyeShape, AnimationFacialMouthShape, AnimationGazeMode, AnimationGesture, AnimationPerformanceAction, AnimationPerformanceArtifact, AnimationPerformanceBlockingState, AnimationPerformanceBodyState, AnimationPerformanceCoverage, AnimationPerformanceCue, AnimationPerformanceFacialState, AnimationPerformanceGazeState, AnimationPerformanceGestureState, AnimationPerformancePosture } from "./AnimationPerformance.js";
+export { createAuraApp } from "./app/createAuraApp.js";
+export { createGameApp } from "./app/createGameApp.js";
+export { normalizeTextureBudgetBytes } from "./app/rendererOptions.js";
+export { createArchitectureKit, createCinematicKit, createDigitalTwinKit, createProductConfiguratorKit, createSmartCityKit } from "./ApplicationKits.js";
+export type { ArchitectureFrame, ArchitectureKit, ArchitectureKitOptions, ArchitectureSpace, CinematicFrame, CinematicKit, CinematicKitOptions, CinematicShot, CityDataLayer, CityDistrict, ConfiguratorCameraPreset, ConfiguratorFinish, ConfiguratorPart, ConfiguratorVariant, DigitalTwinFrame, DigitalTwinKit, DigitalTwinKitOptions, KitCapabilityReport, ProductConfiguratorFrame, ProductConfiguratorKit, ProductConfiguratorKitOptions, ProductConfiguratorState, SmartCityFrame, SmartCityKit, SmartCityKitOptions, TwinAlarm, TwinEquipment } from "./ApplicationKits.js";
+export { assetEvidence, collectAssetEvidence, collectGameAssetEvidence, createAssetEvidenceReport, defineAssetEvidenceReport, evaluateAssetEvidencePublishReadiness } from "./AssetEvidence.js";
+export type { AssetEvidenceAssetSummary, AssetEvidenceReport, AssetEvidenceRouteUsage, AssetEvidenceScreenshot, CollectAssetEvidenceInput } from "./AssetEvidence.js";
+export { cameraInstructionFromSample, cameraKeyframeFromPreset, createCameraChoreography, createCameraPathFromPreset, sampleCameraChoreography, sampleCameraPath, shotReverseShotCameraPaths } from "./CameraChoreographer.js";
+export type { CameraChoreographyArtifact, CameraKeyframe, CameraPath, CameraPathInterpolation, CameraSample, LegacyCameraChoreography } from "./CameraChoreographer.js";
+export { addCameraKeyframe, createCameraPathEditorState, moveCameraKeyframe, removeCameraKeyframe, sampleCameraPathEditorPreview } from "./CameraPathEditor.js";
+export type { CameraPathEditorState, CameraPathMarker } from "./CameraPathEditor.js";
+export { applyCameraPreset, cameraPreset, cameraPresetLibrary, getCameraPreset } from "./CameraPresetLibrary.js";
+export type { CameraPreset, CameraPresetId } from "./CameraPresetLibrary.js";
+export { characterAssembly, characterAssemblyPart, collectCharacterAssemblyAssets, createCharacterAssemblyPlan, defineCharacterAssemblyPlan, validateCharacterAssemblyPlan } from "./CharacterAssembly.js";
+export type { CharacterAssemblyAttachmentRule, CharacterAssemblyGameplayIntent, CharacterAssemblyMaterialOverride, CharacterAssemblyPalette, CharacterAssemblyPart, CharacterAssemblyPartInput, CharacterAssemblyPartRole, CharacterAssemblyPlan, CharacterAssemblySocket, CharacterAssemblyTransform, CharacterAssemblyValidationPolicy, CharacterAssemblyValidationReport, CreateCharacterAssemblyPlanInput } from "./CharacterAssembly.js";
+export { upgradeProductionEnvironmentHdri, describeTextureStreamingResidency, resolveProductionPrimitiveScalars, createProductionPrimitiveMaterial, createProductionPrimitiveGeometry, primitiveGeometryBounds } from "./compiler/primitives.js";
+export type { TextureStreamingTableEntry } from "./compiler/primitives.js";
+export { describeProductionSpotShadow } from "./compiler/shadows.js";
+export { createProductionPrimitiveTextureIntent, upgradeProductionPrimitiveTextures, compositeMetallicRoughnessPixels, mipChainBytesCoarseToFine } from "./compiler/textures.js";
+export { AURA_DECAL_BUDGET_NOTE, AURA_DECAL_MAX_DECALS, collectDecalBudgetTelemetry, decals, projectDecal, projectDecalIntoBox, projectDecalOntoMesh, resetDecalTelemetry, resolveDecalFadeOpacity } from "./Decals.js";
+export type { AuraDecalBudgetTelemetry, AuraDecalDescriptor, AuraDecalFadeOptions, AuraDecalFadeSample, AuraDecalNode, AuraDecalPolygonOffset, AuraDecalProjectOntoMeshOptions, AuraDecalProjectOptions } from "./Decals.js";
+export { markAuraLazySystemRequested, markAuraLazySystemLoaded, collectAuraLazySystemEvidence } from "./lazySystemEvidence.js";
+export { AURA_PRIMITIVE_AXES, clearFocus, focusCameraIntent, focusObject, focusSemanticRegion } from "./FocusSelection.js";
+export type { FocusCameraIntent, FocusIndicator, FocusInvariantReport, FocusOptions, FocusResult, FocusTarget, FocusTargetBounds } from "./FocusSelection.js";
+export { createGameAssetReadinessManifest, createGameAssetValidationIssue, createPrimaryGameAssetValidationPolicy, createQuaterniusGameReadyFighterValidationPolicy, defineGameAssetReadinessManifest, evaluateGameAssetAnimationClips, evaluateGameAssetBounds, evaluateGameAssetOrientation, fightingGameAnimationRoles, gameAssetBoundsFromSize, gameAssetValidation, gameAssetValidationContractVersion, isAuraGameModelAssetRef, quaterniusGameReadyFighterValidationContract, validateGameAssetReadiness, validatePrimaryGameAsset, validateQuaterniusGameReadyFighterAsset } from "./GameAssetValidation.js";
+export type { CreateGameAssetReadinessManifestOptions, GameAssetAnimationClipReadiness, GameAssetAnimationEvent, GameAssetAnimationPolicy, GameAssetAnimationRole, GameAssetApprovalStatus, GameAssetAxis, GameAssetBounds, GameAssetBoundsPolicy, GameAssetBoundsSource, GameAssetClipRequirement, GameAssetIntendedUse, GameAssetMaterialReadiness, GameAssetModelFormat, GameAssetOrientation, GameAssetOrientationPolicy, GameAssetProvenance, GameAssetReadinessManifest, GameAssetSkeletonReadiness, GameAssetTextureReadiness, GameAssetThumbnail, GameAssetUsageKind, GameAssetValidationCheck, GameAssetValidationContractVersion, GameAssetValidationIssue, GameAssetValidationPolicy, GameAssetValidationReport, GameAssetValidationSeverity, GameAssetValidationStatus, GamePrimaryAssetRole, QuaterniusGameReadyFighterSourceFamily, QuaterniusGameReadyFighterValidationContract } from "./GameAssetValidation.js";
+export { CSS2D_OUT_OF_SCOPE, collectLabelTelemetry, labelTelemetryRoleFor, summarizeTextBuckets, tuneLabelCollision } from "./LabelTelemetry.js";
+export type { LabelCollisionTuning, LabelTelemetry, LabelTelemetryByRole, LabelTelemetryRole, TextBucketSummary } from "./LabelTelemetry.js";
+export { camera } from "./nodes/camera.js";
+export { instances } from "./nodes/instances.js";
+export { lights } from "./nodes/lights.js";
+export { material } from "./nodes/material.js";
+export { particles } from "./nodes/particles.js";
+export { sceneKits } from "./nodes/sceneKits.js";
+export { shadows } from "./nodes/shadows.js";
+export { sky } from "./nodes/sky.js";

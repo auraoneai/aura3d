@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -22,7 +22,10 @@ function extractFunctionBody(source: string, name: string): string {
 
 describe("createAuraApp production bridge boundary", () => {
   it("keeps every eligible authored scene on the production Renderer bridge", () => {
-    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
+    const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(resolve(d, e.name)) : e.name.endsWith(".ts") ? [resolve(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
     const sceneRenderer = extractFunctionBody(source, "createProductionSceneRenderer");
     // T2.4: the bridge lives in compiler/renderer.ts (15-owned carve-out); the
     // input/postprocess/shadows builders moved to their own compiler modules.

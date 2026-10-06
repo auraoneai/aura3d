@@ -1,16 +1,14 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraMaterialSpec, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraSceneSnapshot, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence } from "../nodes/types.js";
-import type { LabelTelemetry, TextBucketSummary } from "../LabelTelemetry.js";
-import type { ProjectedLabel } from "../WorldLabelRenderer.js";
-import { AuraRuntimeError } from "../app/errors.js";
+import type { AuraAssetRef, AuraMaterialSpec, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraSceneSnapshot, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence } from "./nodes/types.js";
+import type { LabelTelemetry, TextBucketSummary } from "./LabelTelemetry.js";
+import type { ProjectedLabel } from "./WorldLabelRenderer.js";
+import { AuraRuntimeError } from "./app/errors.js";
 import { collectAuraSceneEvidence } from "./sceneEvidence.js";
-import { labels } from "../nodes/labels.js";
-import { material } from "../nodes/material.js";
-import { model, unsafeModelUrl } from "../nodes/model.js";
-import { primitives } from "../nodes/primitives.js";
+import { labels } from "./nodes/labels.js";
+import { material } from "./nodes/material.js";
 import { renderer, createRendererDiagnosticReport } from "./rendererDiagnostics.js";
-import { scene } from "../nodes/scene.js";
+import { assets } from "./AssetDecoders.js";
 
 export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadState[]): void {
   for (const node of snapshot.nodes) {
