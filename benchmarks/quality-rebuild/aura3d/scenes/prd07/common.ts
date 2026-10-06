@@ -110,7 +110,40 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
     log.add("sky-preetham", "supported", `sun ${spec.skyPreetham.elevationDeg}°/${spec.skyPreetham.azimuthDeg}°, turbidity ${spec.skyPreetham.turbidity ?? "default"}`);
   }
   if (spec.fog) {
-    log.add("fog-exp2", "partial", `${spec.fog.color} density ${spec.fog.density} — Aura fog lands in P4 (recorded; three applies FogExp2)`);
+    // §6.6 authored fields on the node — resolve-time defaults apply under
+    // A3D_QR_VFX_FOG; flag-off the node compiles to the legacy exp2 carve.
+    nodes.push(
+      effects.fog({
+        name: "fog",
+        density: spec.fog.density,
+        color: spec.fog.color,
+        // §6.6 fog mode — lands on the node as runtime data; AuraEffectNode's
+        // typed `mode` slot is the antialias union, hence the value cast.
+        mode: spec.fog.mode as never,
+        ...(spec.fog.heightDensity !== undefined ? { heightDensity: spec.fog.heightDensity } : {}),
+        ...(spec.fog.heightFalloff !== undefined ? { heightFalloff: spec.fog.heightFalloff } : {}),
+        ...(spec.fog.heightReference !== undefined ? { heightReference: spec.fog.heightReference } : {}),
+        ...(spec.fog.start !== undefined ? { start: spec.fog.start } : {}),
+        ...(spec.fog.maxOpacity !== undefined ? { maxOpacity: spec.fog.maxOpacity } : {}),
+        ...(spec.fog.absorption !== undefined ? { absorption: [...spec.fog.absorption] } : {}),
+        ...(spec.fog.near !== undefined ? { near: spec.fog.near } : {}),
+        ...(spec.fog.far !== undefined ? { far: spec.fog.far } : {}),
+        ...(spec.fog.transitionSeconds !== undefined ? { transitionSeconds: spec.fog.transitionSeconds } : {})
+      })
+    );
+    log.add(`fog-${spec.fog.mode}`, "supported", `${spec.fog.color} density ${spec.fog.density}${spec.fog.heightDensity !== undefined ? ` σh ${spec.fog.heightDensity}` : ""}${spec.fog.absorption ? ` σ=${spec.fog.absorption}` : ""} — §6.6 node (vfx.fog)`);
+  }
+  for (const volume of spec.fogVolumes ?? []) {
+    nodes.push(
+      effects.fogVolume({
+        name: "fog-volume",
+        position: [...volume.position] as [number, number, number],
+        size: [...volume.size] as [number, number, number],
+        ...(volume.density !== undefined ? { density: volume.density } : {}),
+        ...(volume.shape !== undefined ? { shape: volume.shape } : {})
+      })
+    );
+    log.add("fogVolume", "supported", `${volume.shape ?? "box"} @ ${volume.position} size ${volume.size} density ${volume.density ?? 0.25}`);
   }
   built.camera(camera.perspective({
     position: spec.camera.position,
@@ -261,7 +294,22 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
   }
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
-  if (sheets.length === 0) {
+  if (spec.fogTransition) {
+    // P4-T8 S16 — setFog(from), step to the transition point, setFog(to) with
+    // transitionSeconds, then step exactly half the transition so the capture
+    // lands at the blend midpoint.
+    const atmosphereApi = (app as unknown as { atmosphere?: { setFog(spec: unknown, o?: { transitionSeconds?: number }): void } }).atmosphere;
+    if (atmosphereApi) {
+      atmosphereApi.setFog(spec.fogTransition.from);
+      app.step(spec.fogTransition.atSeconds);
+      atmosphereApi.setFog(spec.fogTransition.to, { transitionSeconds: spec.fogTransition.to.transitionSeconds });
+      app.step((spec.fogTransition.to.transitionSeconds ?? 1) / 2);
+      log.add("fog-transition", "supported", `${spec.fogTransition.from.mode}→${spec.fogTransition.to.mode} over ${spec.fogTransition.to.transitionSeconds ?? 1}s — captured at midpoint`);
+    } else {
+      log.add("fog-transition", "missing", "app.atmosphere unavailable (flags off?)");
+      app.step(spec.time);
+    }
+  } else if (sheets.length === 0) {
     // Advance simulated time to the capture time, then settle.
     app.step(spec.time);
   } else {

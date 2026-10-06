@@ -183,8 +183,26 @@ export async function runPrd07ThreeScene(spec: Prd07SceneSpec, host: HTMLElement
 
   if (spec.background.kind === "color") scene.background = new THREE.Color(spec.background.color);
   if (spec.fog) {
-    scene.fog = new THREE.FogExp2(new THREE.Color(spec.fog.color), spec.fog.density);
-    log.add("fog-exp2", "supported", `FogExp2 ${spec.fog.color} density ${spec.fog.density}`);
+    if (spec.fog.mode === "exp2") {
+      scene.fog = new THREE.FogExp2(new THREE.Color(spec.fog.color), spec.fog.density);
+      log.add("fog-exp2", "supported", `FogExp2 ${spec.fog.color} density ${spec.fog.density}`);
+    } else {
+      // Approximation: three has no height/absorption/linear §6.6 fog — fold
+      // heightDensity into the FogExp2 constant and mark partial.
+      const approx = spec.fog.mode === "absorption"
+        ? (0.2126 * spec.fog.absorption![0] + 0.7152 * spec.fog.absorption![1] + 0.0722 * spec.fog.absorption![2])
+        : spec.fog.density + (spec.fog.heightDensity ?? 0);
+      scene.fog = new THREE.FogExp2(new THREE.Color(spec.fog.color), approx);
+      log.add(`fog-${spec.fog.mode}`, "partial", `FogExp2 approximation density ${approx.toFixed(4)} (three lacks §6.6 modes)`);
+    }
+  }
+  if (spec.fogTransition) {
+    // No three equivalent — apply the target spec statically.
+    scene.fog = new THREE.FogExp2(new THREE.Color(spec.fogTransition.to.color), spec.fogTransition.to.density);
+    log.add("fog-transition", "partial", `setFog transition has no three equivalent; target ${spec.fogTransition.to.color} density ${spec.fogTransition.to.density} applied statically`);
+  }
+  for (const _v of spec.fogVolumes ?? []) {
+    log.add("fogVolume", "missing", "local fog volumes have no three equivalent");
   }
 
   // P3-T7 sky scenes — r185 Sky.js at the same sun as the Aura spec.

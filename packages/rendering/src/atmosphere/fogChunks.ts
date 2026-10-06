@@ -7,29 +7,12 @@ import { registerShaderChunk } from "../contracts/program";
 export const FOG_CHUNK_NAME = "a3d_prd07_fog" as const;
 export const WETNESS_CHUNK_NAME = "a3d_prd07_wetness" as const;
 
-const FOG_GLSL = `
-// ${FOG_CHUNK_NAME} — analytic height/absorption fog (PRD-07 §8.2).
-// Uniform block lives in program code (u_fogDensity, u_fogColor, ...); these
-// functions take their parameters explicitly so any stage can consume them.
-float a3dHeightFogTau(float h0, float h1, float density, float falloff, float hRef) {
-  float t = exp(-falloff * (h0 - hRef));
-  float dh = (h1 - h0) == 0.0 ? 1e-6 : (h1 - h0);
-  return density * (h1 - h0) * t * ((exp(-falloff * dh) - 1.0) / (-falloff * dh));
-}
-float a3dFogAmount(vec3 worldPos, vec3 camPos, float sigmaD, float sigmaH, float falloff, float hRef, float start) {
-  float dist = distance(worldPos, camPos) - start;
-  if (dist <= 0.0) return 0.0;
-  float h0 = camPos.y;
-  float h1 = worldPos.y;
-  float tau = abs(h1 - h0) < 1e-3 ? sigmaH * dist : a3dHeightFogTau(h0, h1, sigmaH, falloff, hRef);
-  tau += sigmaD * dist;
-  return clamp(1.0 - exp(-tau), 0.0, 1.0);
-}
-vec3 a3dApplyFog(vec3 color, vec3 worldPos, vec3 camPos, vec3 fogColor, float sigmaD, float sigmaH, float falloff, float hRef, float start) {
-  float a = a3dFogAmount(worldPos, camPos, sigmaD, sigmaH, falloff, hRef, start);
-  return mix(color, fogColor, a);
-}
-`;
+import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
+
+// §8.4 uniform-block chunk (u_fogA/u_fogB/u_fogColor/u_fogAbsorption/u_fogMode/
+// u_fogNear/u_fogFar/u_fogVolumes + env uniforms u_cameraPosition/u_sunDirection/
+// u_sunColor). Packed by HeightFog.packV2; modes 0-6 incl. legacy-parity 6.
+const FOG_GLSL = PRD07_FOG_CHUNK_GLSL;
 
 const WETNESS_GLSL = `
 // ${WETNESS_CHUNK_NAME} — behind A3D_WETNESS (PRD-07 §8.3).

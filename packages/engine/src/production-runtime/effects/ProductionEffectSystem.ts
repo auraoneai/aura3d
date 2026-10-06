@@ -199,6 +199,8 @@ export class ProductionEffectSystem {
 
   private rebuildFromScene(): void {
     this.rebuildSkyFromScene();
+    const fogNodes: EffectNodeLike[] = [];
+    const fogVolumes: EffectNodeLike[] = [];
     for (const node of this.app.scene.nodes) {
       if (node.kind !== "effect") continue;
       const lowered = lowerEffectNode(node);
@@ -215,7 +217,12 @@ export class ProductionEffectSystem {
       } else {
         this.attachNonEmitter(node, lowered);
       }
+      if (lowered.consumer === "scene-fog") {
+        (lowered.effect === "fogVolume" ? fogVolumes : fogNodes).push(node);
+      }
     }
+    this.atmosphere.trackFogNodes(fogNodes);
+    this.atmosphere.trackFogVolumes(fogVolumes);
   }
 
   /**
@@ -326,6 +333,10 @@ export class ProductionEffectSystem {
   private frame(dt: number): void {
     if (this.disposed) return;
     this.time += dt;
+    // §6.6 live fog state — advance transitions + refresh runtime-handle
+    // visibility before the compiler/packers read the resolved spec.
+    this.atmosphere.tick(dt);
+    this.atmosphere.updateFogVisibility(this.app);
     // Close the previous rendered frame's draw accounting first. The visible
     // set is the scene's effect nodes that aren't hidden — headless apps have
     // no frustum, so scene-visible == in-frustum here; the contributor's

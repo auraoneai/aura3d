@@ -35,7 +35,15 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
       return system.collectedLights();
     },
     get atmosphere() {
-      return { sky: system.atmosphere.state().sky as Record<string, unknown> | null };
+      return {
+        sky: system.atmosphere.state().sky as Record<string, unknown> | null,
+        // P4 — fog snapshot + clock accessor for the prd07.fog contributor.
+        resolveFog: (t: number) => system.atmosphere.resolveFog(t),
+        fogVolumes: () => system.atmosphere.fogVolumes(),
+        noteCamera: (position: readonly [number, number, number], forward: readonly [number, number, number]) =>
+          system.atmosphere.noteCamera(position, forward),
+        clockNow: () => system.atmosphere.clockNow()
+      };
     }
   };
   try {

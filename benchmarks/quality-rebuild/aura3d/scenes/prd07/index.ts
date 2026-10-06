@@ -11,5 +11,9 @@ export const adapterSceneIds = [
   "prd07-trails-beams",
   // P3-T7 sky scenes (three adapters exist).
   "prd07-sky-timeofday",
-  "prd07-outdoor-sky"
+  "prd07-outdoor-sky",
+  // P4-T8 fog scenes — fog-transition and underwater are Aura-only (C-30).
+  "prd07-fog-height",
+  "prd07-fog-transition",
+  "prd07-underwater"
 ] as const;
