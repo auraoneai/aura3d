@@ -95,6 +95,8 @@ export { createEngineLoop, gainsForRpm } from "./game-sound/EngineLoop";
 export { MusicControllerImpl } from "./game-sound/MusicController";
 export { createReverbSend, IR_BUDGET_SECONDS, PRESET_IR_SECONDS } from "./game-sound/ReverbSend";
 export { probeFormat, formatExtension } from "./game-sound/formatProbe";
+export { measureLoudness, gainForTarget, MASTERING_TARGETS } from "./game-sound/loudness";
+export type { LoudnessInput, LoudnessMeasurement, SfxMasteringClass } from "./game-sound/loudness";
 export { VoicePool } from "./game-sound/Voice";
 export type { VoiceCueSpec, VoiceRecord, VoicePriority } from "./game-sound/Voice";
 export { syncListener } from "./game-sound/listenerSync";
