@@ -15,6 +15,7 @@ import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type 
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
+import { webGL2MaxTextureSize } from "./webglRuntime.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
@@ -25,6 +26,7 @@ import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
 import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
 import type { MountSceneCompileContext } from "./compileScene.js";
+import { createDegradationSink } from "./degradation.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 
@@ -33,7 +35,8 @@ export async function createProductionRuntimeSceneRenderer(
   snapshot: AuraSceneSnapshot,
   rendererOptions?: AuraCreateAppRendererOptions,
   runtimeNodes?: AuraRuntimeNodeRegistry,
-  qrFlags?: QrFlags
+  qrFlags?: QrFlags,
+  degradation?: import("../app/mountRenderer.js").AuraSceneDegradationOptions
 ): Promise<WebGLSceneRenderer> {
   const flags = qrFlags ?? resolveQrFlags({});
   const flattened = groups.flatten(snapshot.nodes);
@@ -94,7 +97,7 @@ export async function createProductionRuntimeSceneRenderer(
   const textureUpgradeWarnings = new Set<string>();
   void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
     textureUpgradeWarnings.add(message);
-  }, Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096)).catch((error) => {
+  }, webGL2MaxTextureSize(canvas)).catch((error) => {
     textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
   });
   const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
@@ -144,11 +147,15 @@ export async function createProductionRuntimeSceneRenderer(
     renderer: productionRenderer,
     assets: undefined,
     quality: { tier: "high" } as MountSceneCompileContext["quality"],
-    strict: flags.on("A3D_QR_STRICT"),
+    strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
     flags,
-    degrade: (d) => {
-      runtimeWarnings.add(`[${d.code}]${d.nodeId ? ` ${d.nodeId}` : ""} ${d.message}`);
-    },
+    // T4.1: the C-36 degrade handler. Strict → AuraRuntimeError with code and
+    // cause; non-strict → C-38 onDegradation + warn-once per (code,nodeId).
+    degrade: createDegradationSink({
+      strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
+      ...(degradation?.onDegradation ? { onDegradation: degradation.onDegradation } : {}),
+      warn: (message) => { runtimeWarnings.add(message); }
+    }),
     canvas,
     environmentLighting: () => currentEnvironmentLighting,
     collectedLights: productionRuntimeLights,

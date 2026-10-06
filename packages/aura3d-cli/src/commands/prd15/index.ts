@@ -9,8 +9,12 @@ import { globSync } from "node:fs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { registerCliCommand, registerCodemod, codemodFor } from "../../contracts/commands.js";
 import { createRendererImportsCodemod } from "../../codemods/renderer-imports.js";
+import { createRendererModeCodemod } from "../../codemods/renderer-mode.js";
+import { createLeanImportsCodemod } from "../../codemods/lean-imports.js";
 
 registerCodemod(createRendererImportsCodemod());
+registerCodemod(createRendererModeCodemod());
+registerCodemod(createLeanImportsCodemod());
 
 registerCliCommand({
   name: "codemod",

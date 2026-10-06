@@ -355,15 +355,9 @@ importers:
 
   packages/lean:
     dependencies:
-      '@aura3d/assets':
+      '@aura3d/engine':
         specifier: workspace:*
-        version: link:../assets
-      '@aura3d/rendering':
-        specifier: workspace:*
-        version: link:../rendering
-      '@aura3d/scene':
-        specifier: workspace:*
-        version: link:../scene
+        version: link:../..
 
   packages/materials:
     dependencies:

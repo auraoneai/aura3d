@@ -47,8 +47,6 @@ describe("public API docs", () => {
       "@aura3d/react",
       "@aura3d/rendering",
       "@aura3d/rendering/extension-scalar-atlas",
-      "@aura3d/rendering/lean-core-runtime",
-      "@aura3d/rendering/lean-runtime",
       "@aura3d/rendering/reflection-surfaces",
       "@aura3d/rendering/webgpu",
       "@aura3d/scene",

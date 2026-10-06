@@ -61,7 +61,8 @@ export function applyProductionActorFootPlanting(
   entry: ProductionRuntimeActorEntry,
   animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined,
   modelMatrix: readonly number[] | undefined,
-  runtimeWarnings: Set<string>
+  runtimeWarnings: Set<string>,
+  degrade?: (d: Omit<import("../../contracts/compiler.js").AuraDegradation, "frame">) => void
 ): void {
   const footPlanting = animationBinding?.footPlanting;
   try {
@@ -71,7 +72,8 @@ export function applyProductionActorFootPlanting(
         : { ...footPlanting, legs: footPlanting.legs.map(leg => ({ ...leg, ...(leg.contactPhase ? { contact: leg.contactPhase(animationBinding?.localTime ?? 0) } : {}) })), ...spreadFootPlantingWorldMatrix(modelMatrix) }) as GLTFootPlantingConfig | undefined
     );
   } catch (error) {
-    runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply foot planting: ${productionRenderErrorMessage(error)}`);
+    if (degrade) degrade({ code: "foot-planting-failed", nodeId: entry.actor.id, message: `Typed GLB actor "${entry.actor.id}" failed to apply foot planting: ${productionRenderErrorMessage(error)}`, cause: error });
+    else runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply foot planting: ${productionRenderErrorMessage(error)}`);
   }
 }
 
@@ -93,7 +95,8 @@ function spreadFootPlantingWorldMatrix(
 export function applyProductionActorMorphTargets(
   entry: ProductionRuntimeActorEntry,
   morphTargets: RuntimeNodeMorphTargetWeights | undefined,
-  runtimeWarnings: Set<string>
+  runtimeWarnings: Set<string>,
+  degrade?: (d: Omit<import("../../contracts/compiler.js").AuraDegradation, "frame">) => void
 ): void {
   if (!morphTargets || Object.keys(morphTargets).length === 0) return;
   try {
@@ -102,7 +105,8 @@ export function applyProductionActorMorphTargets(
       runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" has no morph target "${missing}".`);
     }
   } catch (error) {
-    runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply morph targets: ${productionRenderErrorMessage(error)}`);
+    if (degrade) degrade({ code: "morph-apply-failed", nodeId: entry.actor.id, message: `Typed GLB actor "${entry.actor.id}" failed to apply morph targets: ${productionRenderErrorMessage(error)}`, cause: error });
+    else runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply morph targets: ${productionRenderErrorMessage(error)}`);
   }
 }
 

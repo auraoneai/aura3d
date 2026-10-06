@@ -113,14 +113,6 @@
       "browser301": false
     },
     {
-      "name": "@aura3d/rendering/lean-core-runtime",
-      "file": "packages/rendering/src/lean-core-runtime.ts"
-    },
-    {
-      "name": "@aura3d/rendering/lean-runtime",
-      "file": "packages/rendering/src/lean-runtime.ts"
-    },
-    {
       "name": "@aura3d/rendering/extension-scalar-atlas",
       "file": "packages/rendering/src/extension-scalar-atlas.ts"
     },

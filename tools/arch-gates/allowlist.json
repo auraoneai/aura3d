@@ -344,5 +344,82 @@
     "expires": "2026-10-20",
     "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 11",
     "request": "Q-11-3"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+    "expires": "2026-11-30",
+    "reason": "safe-basic WebGL2 fallback; removed when T4.4 hard-cuts A3D_QR_STRICT default-on",
+    "request": "T4.4"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/rendering/src/effects/ResidentGPUParticleRenderer.ts",
+    "expires": "2026-11-30",
+    "reason": "resident GPU particle path creates its own webgpu context; owner migrates to RenderBackend",
+    "request": "Q-07-4"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+    "expires": "2026-11-30",
+    "reason": "safe-basic fallback embeds its shaders; removed with T4.4",
+    "request": "T4.4"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/production-runtime/index.ts",
+    "expires": "2026-11-30",
+    "reason": "15 self-debt: embedded skybox shader registration moves to a chunk module in the 4.0 consolidation",
+    "request": "T7.x"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/ShaderLibrary.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/ShaderLibraryCore.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/TemporalHistory.ts",
+    "expires": "2026-11-30",
+    "reason": "post-history shaders inline; owner migrates to chunks",
+    "request": "Q-03-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/LegacyPost.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy post pipeline shaders inline; owner migrates to chunks",
+    "request": "Q-03-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/animation/AnimationToonMaterial.ts",
+    "expires": "2026-11-30",
+    "reason": "toon material shaders inline; owner migrates to chunks",
+    "request": "Q-06-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/Probe.ts",
+    "expires": "2026-11-30",
+    "reason": "device probe shaders inline; owner migrates to chunks",
+    "request": "Q-11-4"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts",
+    "expires": "2026-11-30",
+    "reason": "webgpu production renderer constructs itself; owner folds into WebGPUDevice/RenderBackend",
+    "request": "Q-11-4"
   }
 ]

@@ -10,6 +10,8 @@ import { afterAll, describe, expect, it } from "vitest";
 import { checkLayering } from "../../../tools/arch-gates/rules/layering";
 import { checkNoCycles } from "../../../tools/arch-gates/rules/noCycles";
 import { checkMaxFileLines } from "../../../tools/arch-gates/rules/maxFileLines";
+import { checkSingleRenderer } from "../../../tools/arch-gates/rules/singleRenderer";
+import { checkGlslLocation } from "../../../tools/arch-gates/rules/glslLocation";
 
 const REPO = join(__dirname, "../../..");
 const tmp: string[] = [];
@@ -98,6 +100,70 @@ describe("arch-gates max-file-lines", () => {
   it("passes a small file", () => {
     const root = fixture({ [`${AA}/small.ts`]: `export const s = 1;\n` });
     expect(checkMaxFileLines(root).filter((f) => f.enforced)).toEqual([]);
+  });
+});
+
+describe("arch-gates single-renderer (T4.9 fail mode)", () => {
+  it("fails a file calling canvas.getContext(\"webgl2\") outside the allowlist", () => {
+    const root = fixture({
+      "packages/engine/src/agent-api/harness.ts": `export const boot = (c: HTMLCanvasElement) => c.getContext("webgl2");\n`
+    });
+    const findings = checkSingleRenderer(root).filter((f) => f.enforced);
+    expect(findings.length).toBe(1);
+    expect(findings[0].file).toBe("packages/engine/src/agent-api/harness.ts");
+    expect(findings[0].detail).toContain('getContext("webgl2")');
+  });
+
+  it("fails a file constructing a WebGPUDevice outside the device owners", () => {
+    const root = fixture({
+      "packages/rendering/src/effects/rogue.ts": `export const make = () => new WebGPUDevice();\n`
+    });
+    const findings = checkSingleRenderer(root).filter((f) => f.enforced);
+    expect(findings.length).toBe(1);
+    expect(findings[0].file).toBe("packages/rendering/src/effects/rogue.ts");
+  });
+
+  it("passes the device owner files themselves and clean files", () => {
+    const root = fixture({
+      "packages/rendering/src/WebGL2Device.ts": `const gl = canvas.getContext("webgl2");\nexport const make = () => new WebGL2Device();\n`,
+      "packages/engine/src/agent-api/plain.ts": `export const p = 1;\n`
+    });
+    expect(checkSingleRenderer(root).filter((f) => f.enforced)).toEqual([]);
+  });
+
+  it("passes an allowlisted file while the entry is unexpired", () => {
+    const root = fixture({
+      "packages/engine/src/agent-api/compiler/webglRuntime.ts": `const gl = c.getContext("webgl2");\n`,
+      "tools/arch-gates/allowlist.json": JSON.stringify([{
+        rule: "single-renderer",
+        file: "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+        expires: "2999-01-01",
+        reason: "fixture"
+      }])
+    });
+    expect(checkSingleRenderer(root).filter((f) => f.enforced)).toEqual([]);
+  });
+});
+
+describe("arch-gates glsl-location (T4.9 fail mode)", () => {
+  const glsl = "const v = `#version 300 es\nprecision highp float;\n`;\n";
+
+  it("fails a GLSL template string outside the chunk/post/output dirs", () => {
+    const root = fixture({
+      "packages/engine/src/agent-api/app/inline.ts": `export ${glsl}`
+    });
+    const findings = checkGlslLocation(root).filter((f) => f.enforced);
+    expect(findings.length).toBe(1);
+    expect(findings[0].file).toBe("packages/engine/src/agent-api/app/inline.ts");
+  });
+
+  it("passes GLSL under program/chunks/ and shaders/", () => {
+    const root = fixture({
+      "packages/rendering/src/program/chunks/chunk.ts": `export ${glsl}`,
+      "packages/rendering/src/shaders/deform/deform.ts": `export ${glsl}`,
+      "packages/rendering/src/post/pass.ts": `export ${glsl}`
+    });
+    expect(checkGlslLocation(root).filter((f) => f.enforced)).toEqual([]);
   });
 });
 

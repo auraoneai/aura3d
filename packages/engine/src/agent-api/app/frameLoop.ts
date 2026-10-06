@@ -57,7 +57,7 @@ export async function startProductionRender(
   }
 
   const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
-  const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags);
+  const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags, { strict: options.strict, onDegradation: options.onDegradation });
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);

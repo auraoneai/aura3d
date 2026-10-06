@@ -100,14 +100,19 @@ function readTarballExports(tarball: string, extractDir: string): ReadonlySet<st
   return keys;
 }
 
-function packEngineTarball(tmp: string): string {
-  execFileSync("pnpm", ["pack", "--pack-destination", tmp], { cwd: REPO_ROOT, stdio: "pipe" });
-  const tarball = readdirSync(tmp).find((f) => f.endsWith(".tgz"));
-  if (!tarball) throw new Error("pnpm pack produced no tarball");
+export function packTarballAt(pkgDir: string, tmp: string): string {
+  const before = new Set(readdirSync(tmp).filter((f) => f.endsWith(".tgz")));
+  execFileSync("pnpm", ["pack", "--pack-destination", tmp], { cwd: pkgDir, stdio: "pipe" });
+  const tarball = readdirSync(tmp).find((f) => f.endsWith(".tgz") && !before.has(f));
+  if (!tarball) throw new Error(`pnpm pack produced no tarball for ${pkgDir}`);
   return join(tmp, tarball);
 }
 
-export function prepareConsumerCopy(templateDir: string, dest: string, tarball: string): void {
+function packEngineTarball(tmp: string): string {
+  return packTarballAt(REPO_ROOT, tmp);
+}
+
+export function prepareConsumerCopy(templateDir: string, dest: string, tarball: string, extraDeps?: Readonly<Record<string, string>>): void {
   cpSync(templateDir, dest, {
     recursive: true,
     filter: (src) => !SKIP_DIRS.has(basename(src))
@@ -117,8 +122,11 @@ export function prepareConsumerCopy(templateDir: string, dest: string, tarball: 
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
+  const rewrites: Record<string, string> = { [ENGINE_PACKAGE]: `file:${tarball}`, ...(extraDeps ?? {}) };
   for (const section of [pkg.dependencies, pkg.devDependencies]) {
-    if (section?.[ENGINE_PACKAGE]) section[ENGINE_PACKAGE] = `file:${tarball}`;
+    for (const [name, spec] of Object.entries(rewrites)) {
+      if (section?.[name]) section[name] = spec;
+    }
   }
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
   // Consumers stand alone — pnpm refuses install-time build scripts without
@@ -167,12 +175,12 @@ export function checkTemplate(
   dest: string,
   tarball: string,
   exportsKeys: ReadonlySet<string>,
-  options: { readonly skipBuild?: boolean }
+  options: { readonly skipBuild?: boolean; readonly extraDeps?: Readonly<Record<string, string>> }
 ): TemplateCheckResult {
   const template = basename(templateDir);
   const steps: TemplateCheckResult["steps"] = { specifiers: "skip", install: "skip", typecheck: "skip", build: "skip" };
 
-  prepareConsumerCopy(templateDir, dest, tarball);
+  prepareConsumerCopy(templateDir, dest, tarball, options.extraDeps);
 
   const badSpecifiers = [...collectEngineSpecifiers(dest)].filter((s) => !specifierAllowed(s, exportsKeys));
   steps.specifiers = badSpecifiers.length === 0 ? "pass" : "fail";
@@ -213,7 +221,14 @@ function main(): void {
   const skipBuild = args.includes("--skip-build");
   const keepTmp = args.includes("--keep-tmp");
 
-  const templates = collectTemplateDirs().filter((t) => !only || basename(t).includes(only));
+  const extraDirs: string[] = [];
+  const extraPkgs: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--extra-dir") extraDirs.push(args[++i]!);
+    if (args[i] === "--extra-pkg") extraPkgs.push(args[++i]!);
+  }
+
+  const templates = [...collectTemplateDirs(), ...extraDirs].filter((t) => !only || basename(t).includes(only));
   const tmp = mkdtempSync(join(tmpdir(), "a3d-pack-check-"));
   console.log(`packed-consumer-check: ${templates.length} templates, temp dir ${tmp}`);
 
@@ -221,10 +236,23 @@ function main(): void {
   const exportsKeys = readTarballExports(tarball, join(tmp, "tarball-meta"));
   console.log(`tarball ${basename(tarball)} with ${exportsKeys.size} export keys`);
 
+  // `--extra-pkg <dir>:<specifier>` packs additional workspace packages and
+  // rewrites that specifier to its tarball in consumer package.json files
+  // (PRD-15 T4.7: fixtures depend on both @aura3d/engine and @aura3d/lean).
+  const extraDeps: Record<string, string> = {};
+  for (const entry of extraPkgs) {
+    const sep = entry.lastIndexOf(":");
+    const dir = entry.slice(0, sep);
+    const specifier = entry.slice(sep + 1);
+    const packed = packTarballAt(join(REPO_ROOT, dir), tmp);
+    extraDeps[specifier] = `file:${packed}`;
+    console.log(`extra package ${specifier} → ${basename(packed)}`);
+  }
+
   const results: TemplateCheckResult[] = [];
   for (const templateDir of templates) {
     const dest = join(tmp, `consumer-${basename(templateDir)}`);
-    const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild });
+    const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild, extraDeps });
     results.push(result);
     console.log(`${result.detail ? "FAIL" : "PASS"} ${result.template}${result.detail ? ` — ${result.detail}` : ""}`);
   }

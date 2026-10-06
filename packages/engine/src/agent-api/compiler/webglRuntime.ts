@@ -54,6 +54,10 @@ export interface WebGLPrimitive {
   readonly modelMatrix?: (time: number) => Float32Array;
 }
 
+export function webGL2MaxTextureSize(canvas: HTMLCanvasElement): number {
+  return Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096);
+}
+
 export async function createWebGLSceneRenderer(
   canvas: HTMLCanvasElement,
   snapshot: AuraSceneSnapshot,

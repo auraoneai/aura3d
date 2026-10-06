@@ -942,8 +942,18 @@ export interface AuraRendererQualityPreset {
 
 export type AuraRendererQualityProfileId = "safe-basic" | "production" | "cinematic" | "experimental-webgpu";
 
+/**
+ * @deprecated CCR-15-1 (PRD-15 T4.5): renderer selection is collapsed onto
+ * `Renderer`; use `renderer.quality` for feature levels. Removed in 4.0.0 —
+ * under A3D_QR_STRICT passing it throws `AuraMigrationError`.
+ */
 export type AuraRendererMode = "safe-basic" | "production";
 
+/**
+ * @deprecated CCR-15-1 (PRD-15 T4.5): there is no silent fallback renderer;
+ * `renderer.quality` owns feature levels. Removed in 4.0.0 — under
+ * A3D_QR_STRICT passing it throws `AuraMigrationError`.
+ */
 export type AuraRendererFallbackMode = "safe-basic";
 
 export interface AuraRendererQualityProfile {
@@ -963,7 +973,16 @@ export interface AuraRendererQualityProfile {
 }
 
 export interface AuraCreateAppRendererOptions {
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T4.5): use `quality` for feature levels.
+   * Removed in 4.0.0 — under A3D_QR_STRICT it throws `AuraMigrationError`.
+   */
   readonly mode?: AuraRendererMode;
+  /**
+   * @deprecated CCR-15-1 (PRD-15 T4.5): no fallback renderer exists; use
+   * `quality` for feature levels. Removed in 4.0.0 — under A3D_QR_STRICT it
+   * throws `AuraMigrationError`.
+   */
   readonly fallback?: AuraRendererFallbackMode;
   readonly qualityProfile?: AuraRendererQualityProfileId;
   /**

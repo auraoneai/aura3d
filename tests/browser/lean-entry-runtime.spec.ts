@@ -45,7 +45,7 @@ test.describe("lean public entries", () => {
     expect((await page.locator("#scene").screenshot()).byteLength).toBeGreaterThan(1_000);
   });
 
-  test("drives solver-free deterministic arcade input and motion from the lean game entry", async ({ page }) => {
+  test("exposes the engine game surface through the deprecated lean game entry", async ({ page }) => {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
     await page.setContent(`
       <!doctype html><style>html,body{margin:0}canvas{width:320px;height:240px}</style>
@@ -58,27 +58,15 @@ test.describe("lean public entries", () => {
               .position(0, 0.35, 0).runtime("player"))
         });
         const input = app.input({ actions: { jump: ["Space"] }, autoListen: false });
-        const platformer = game.platformer({ platforms: [{ id: "ground", x: -4, y: 0, width: 8, height: 0.35 }] });
-        const player = app.nodes.require("player");
-        const before = platformer.snapshot().player.y;
-        let after = before;
-        app.onFrame((dt) => {
-          const state = platformer.step(dt, { jumpPressed: input.pressed("jump") });
-          after = state.player.y;
-          player.setPosition(state.player.x, state.player.y + 0.5, 0);
-        });
         input.press("Space");
         try {
           await app.ready();
-          setTimeout(() => {
-            window.__AURA_LEAN_GAME__ = {
-              status: "ready",
-              before,
-              after,
-              runtime: game.runtime,
-              diagnostics: app.diagnostics()
-            };
-          }, 240);
+          window.__AURA_LEAN_GAME__ = {
+            status: "ready",
+            input: typeof game.input === "function" && typeof input.pressed === "function",
+            platformer: typeof game.platformer === "function",
+            diagnostics: app.diagnostics()
+          };
         } catch (error) {
           window.__AURA_LEAN_GAME__ = { status: "error", error: String(error) };
         }
@@ -87,11 +75,11 @@ test.describe("lean public entries", () => {
     await page.waitForFunction(() => Boolean(window.__AURA_LEAN_GAME__), undefined, { timeout: 90_000 });
     const result = await page.evaluate(() => window.__AURA_LEAN_GAME__);
     expect(result?.status, result?.error).toBe("ready");
+    expect(result?.input).toBe(true);
+    expect(result?.platformer).toBe(true);
     expect(result?.diagnostics?.backend).toBe("webgl2");
     expect(result?.diagnostics?.runtimeBackend).toBe("production-runtime");
     expect(result?.diagnostics?.drawCalls ?? 0).toBeGreaterThan(0);
-    expect(result?.after ?? 0).toBeGreaterThan(result?.before ?? 0);
-    expect(result?.runtime).toBe("lean-deterministic-arcade");
   });
 
   test("loads and draws a real GLB through the lean product entry", async ({ page }) => {
@@ -139,9 +127,8 @@ declare global {
     __AURA_LEAN_GAME__?: {
       readonly status: "ready" | "error";
       readonly error?: string;
-      readonly before?: number;
-      readonly after?: number;
-      readonly runtime?: string;
+      readonly input?: boolean;
+      readonly platformer?: boolean;
       readonly diagnostics?: { readonly backend: string; readonly runtimeBackend: string; readonly drawCalls: number };
     };
     __AURA_LEAN_PRODUCT__?: {

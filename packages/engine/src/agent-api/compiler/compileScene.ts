@@ -412,7 +412,10 @@ function updateCompiledSceneReal(
     runtime,
     ctx.runtimeWarnings,
     ctx.environmentLighting(),
-    ctx.collectedLights
+    ctx.collectedLights,
+    // T4.1: the mounted ctx's C-36 degrade handler owns pose/foot/morph
+    // failures on the flag-on path (strict throws; non-strict warns once).
+    (d) => ctx.degrade(d)
   );
   const reusedSource = reuseRenderItems(impl, input.source, runtime);
   const mergedSource = mergeContributions(mergeContributions(reusedSource, impl.persistentContributions), contributions);

@@ -17,6 +17,8 @@ import { checkLayering } from "./rules/layering";
 import { checkMaxFileLines } from "./rules/maxFileLines";
 import { checkNoCycles } from "./rules/noCycles";
 import { optionCoverageRule, scaffoldOptionCoverage } from "./rules/option-coverage";
+import { checkGlslLocation } from "./rules/glslLocation";
+import { checkSingleRenderer } from "./rules/singleRenderer";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -143,10 +145,12 @@ export function runGates(root: string): GateReport {
     layering: { findings: checkLayering(root) },
     "no-cycles": { findings: checkNoCycles(root) },
     "max-file-lines": { findings: checkMaxFileLines(root) },
-    "option-coverage": { findings: optionCoverageRule([], root) }
+    "option-coverage": { findings: optionCoverageRule([], root) },
+    "single-renderer": { findings: checkSingleRenderer(root) },
+    "glsl-location": { findings: checkGlslLocation(root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 7, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 9, findings } };
 }
 
 function main(): void {

@@ -26,8 +26,10 @@ export default defineConfig({
       "@aura3d/scene/math": new URL("./packages/scene/src/MathTypes.ts", import.meta.url).pathname,
       "@aura3d/scene": new URL("./packages/scene/src/index.ts", import.meta.url).pathname,
       "@aura3d/ecs": new URL("./packages/ecs/src/index.ts", import.meta.url).pathname,
-      "@aura3d/rendering/lean-core-runtime": new URL("./packages/rendering/src/lean-core-runtime.ts", import.meta.url).pathname,
-      "@aura3d/rendering/lean-runtime": new URL("./packages/rendering/src/lean-runtime.ts", import.meta.url).pathname,
+      // @aura3d/lean* subpaths precede the package root (prefix match, declaration order).
+      "@aura3d/lean/product": new URL("./packages/lean/src/product.ts", import.meta.url).pathname,
+      "@aura3d/lean/game": new URL("./packages/lean/src/game.ts", import.meta.url).pathname,
+      "@aura3d/lean": new URL("./packages/lean/src/index.ts", import.meta.url).pathname,
       /*
        * Aura3D Quality Rebuild contract subpaths (CONTRACTS.md §3.8). Prefix
        * matching is declaration-ordered, so every key here sits before its
