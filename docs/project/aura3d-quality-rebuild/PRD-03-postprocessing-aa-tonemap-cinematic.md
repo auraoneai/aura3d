@@ -1768,28 +1768,28 @@ test. "Flag on" means `A3D_QR_POST` resolved on through `resolveQrFlags`. All br
 remotely (§15.2).
 
 Phase 0 (day 0)
-- [ ] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the
+- [x] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the
   C-13/C-14 slots from `contracts/` and call `provide()` with `post/PostGraph.ts`/`forward/Velocity.ts`
   facades that delegate to the stub behaviour for now. Test: `tests/unit/contracts/impl/prd03-post-graph.test.ts`
   asserts that `slot.get(flags)` returns real only with `A3D_QR_POST` on. The custodian suites
   `C-13-post`/`C-14-velocity` pass for `real`.
-- [ ] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and
+- [x] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and
   `("exposure", …)`. Both are populated from `PostprocessExecution.ts` with the executed plan
   (stage name, format, size, `cpu-readback` marker) and the exposure actually sent, not from the
   authored nodes. Test: `tests/unit/agent-api/post-diagnostics.test.ts` builds a scene with
   `colorGrade({exposure:1.05})` and asserts `exposure.applied === 1` with the flag off (truthful)
   and `1.05` with the flag on after Phase 1.
-- [ ] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when
+- [x] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when
   the C-28 probe reports the extension, and returns `gpuMs: undefined` otherwise. Test: a browser
   spec asserts no exception when the extension is absent.
-- [ ] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`,
+- [x] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`,
   `linear`. Constants come from
   `node_modules/three/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js:46-200`.
   Commit 64 golden input→output triples per operator, generated once by running the three GLSL in
   a headless WebGL capture on macos-14, together with the generating script
   (`tests/qr/prd03/goldens/generate-tone-goldens.mjs`). Test:
   `tests/unit/rendering/post-tone-operators.test.ts`.
-- [ ] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes
+- [x] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes
   `prd03-hdr-bloom`, `prd03-thin-aa`, `prd03-tone-ramp` (+21b), `prd03-ao-grounding`,
   `prd03-dof-bokeh`, `prd03-taa-motion`, `prd03-night-fog-banding` (+25b) and
   `prd03-scene18-bloom` (a copy of base scene 18's inputs, for the held-out bloom check). Each has
@@ -1801,13 +1801,13 @@ Phase 0 (day 0)
   `new WebGPURenderer({ forceWebGL: true })` with a TSL `PostProcessing` chain. Both engines then run
   on WebGL2 on the same runner. Each scene declares `qrFlags: ["post"]` (C-30). Test: the C-30
   registry test lists the 8 ids as `active`.
-- [ ] `.github/workflows/post-quality.yml` (macos-14, §15.2) and
+- [x] `.github/workflows/post-quality.yml` (macos-14, §15.2) and
   `.github/workflows/qr-prd03-captures.yml`. The capture workflow dispatches
   `tools/quality-rebuild-capture` with `--flags none` and `--flags post` for the 18 games and the
   lane scenes. It also runs `tests/qr/prd03/capture-dsf2.spec.ts`, which loads each game route at
   1440×900 with `deviceScaleFactor: 2` and records `canvas.width / clientWidth`, until Q-12-1
   lands. It uses no secrets.
-- [ ] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and
+- [x] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and
   `packages/aura3d-cli/src/commands/prd03/index.ts` (`registerCodemod`). It is report-only at this
   point. Test: `tests/unit/tools/post-v2-codemod.test.ts` (fixtures in Phase 5).
 - [ ] Commit the baseline captures and `bundle.json` to `evidence/prd03/phase0/`.

@@ -4,6 +4,7 @@ import type { AuraEffectNode, AuraSceneSnapshot } from "../index.js";
 import { clampNumber, colorToRgba, groups, resolveNativeBloomRadius } from "../index.js";
 import { resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
+import { recordSubmittedPostprocess } from "../postBridge.js";
 
 export function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
@@ -69,7 +70,7 @@ export function createProductionRuntimePostprocess(
   if (!sceneKey) { sceneKey = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, sceneKey); }
   const fxaaRequested = (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
   const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
-  return {
+  const options: RendererPostProcessOptions = {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
     targetFormat: "rgba16f",
@@ -148,6 +149,29 @@ export function createProductionRuntimePostprocess(
     } : {}),
     ...(volumetricPass ? { volumetricLight: volumetricPass } : {})
   };
+  // C-31 feed (lane 03): the post/exposure diagnostics sections report what was
+  // actually submitted — including the pinned `toneMapping.exposure: 1` while
+  // authored grade exposure stays diagnostic-only until Phase 1 wiring.
+  recordSubmittedPostprocess(options, {
+    renderWidth,
+    renderHeight,
+    temporalRequested,
+    authored: {
+      bloom: bloomRequested,
+      ambientOcclusion: Boolean(authoredAmbientOcclusion),
+      contactOcclusion: Boolean(authoredContactOcclusion),
+      colorGrade: Boolean(authoredColorGrade),
+      antiAlias: Boolean(authoredAntiAlias),
+      outline: Boolean(authoredOutline),
+      ssr: Boolean(authoredSsr),
+      depthOfField: Boolean(authoredDof),
+      motionBlur: Boolean(authoredMotionBlur),
+      volumetricFog: Boolean(authoredVolumetricFog),
+      colorGradeExposure: typeof authoredColorGrade?.exposure === "number" ? authoredColorGrade.exposure : null,
+      antiAliasMode: authoredAntiAlias?.mode ?? null
+    }
+  });
+  return options;
 }
 
 const productionTemporalSceneKeys = new WeakMap<AuraSceneSnapshot, string>();

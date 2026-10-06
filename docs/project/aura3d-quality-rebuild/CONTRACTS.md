@@ -2800,4 +2800,9 @@ column cites a passing test or a capture run id.
 | F-06-03 | 06 | `createAuraApp(..., { animation: { strict: true } })` throws on empty poses and unknown clips. | `AuraCreateAppAnimationOptions.strict` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
 | F-06-04 | 06 | `animationState().tracksApplied > 0` is a precondition, not proof of quality. | `animationState().tracksApplied` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
 | F-06-05 | 06 | No `poseBakedFallback` / `tracks: []` clips. | `AnimationClipDefinition` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
+| F-03-01 | 03 | `output: { preset }` replaces the bloom/grade/antiAlias tail (PRD 03 §10). | `output.preset` | 2026-10-06 | — | proposed |
+| F-03-02 | 03 | Never stack FXAA on MSAA/TAA; `antiAlias` default is `auto` (PRD 03 §10). | `effects.antiAlias` | 2026-10-06 | — | proposed |
+| F-03-03 | 03 | Bloom threshold is linear HDR, default 1.0; do not author < 1 on lit scenes (PRD 03 §10). | `effects.bloom` | 2026-10-06 | — | proposed |
+| F-03-04 | 03 | Emissive ≥ 2.5 to glow under `neon-night` (PRD 03 §10). | `material.emissiveIntensity` | 2026-10-06 | — | proposed |
+| F-03-05 | 03 | Do not fix bloom blobs by lowering intensity; raise threshold or lower emissive (PRD 03 §10). | `effects.bloom` | 2026-10-06 | — | proposed |
 
