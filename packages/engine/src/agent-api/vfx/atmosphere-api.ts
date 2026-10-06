@@ -8,7 +8,7 @@ import type { AuraHeightFogSpec, AuraSkySpec } from "../../contracts/atmosphere"
 import { StubAppAtmosphere } from "../../contracts/atmosphere";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
-import { bindPrd07RendererFlags } from "@aura3d/rendering/lanes";
+import { bindPrd07RendererFlags } from "@aura3d/rendering";
 import { bindPrd07FogRuntime } from "../compiler/fog";
 import { prd07SystemFor } from "./effects-api";
 

@@ -7,7 +7,7 @@
 import type { AuraEffectNode, AuraSceneSnapshot } from "../index.js";
 import { clampNumber, colorToLinearRgb, groups } from "../index.js";
 import { resolveVolumetricFog, type CollectedLight, type ForwardEnvironmentFogOptions } from "@aura3d/rendering";
-import { packLegacy, parseFogColor, resolvePrd07FogSpec, skyHorizonRadiance, type Prd07FogSpec } from "@aura3d/rendering/lanes";
+import { packLegacy, parseFogColor, resolvePrd07FogSpec, skyHorizonRadiance, type Prd07FogSpec } from "@aura3d/rendering";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { LiveAtmosphere } from "../../production-runtime/effects/LiveAtmosphere";
 import { lights } from "../nodes/lights.js";
