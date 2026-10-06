@@ -7,10 +7,11 @@
 import { test, type Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 // @ts-expect-error plain .mjs helper, no typings
 import { startBuiltSiteServer } from "./serve-built-site.mjs";
 
-const repoRoot = resolve(__dirname, "..", "..", "..");
+const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..", "..", "..");
 const outDir = process.env.A3D_DIVERGENCE_DIR ?? join(repoRoot, "tests", "qr", "prd09", ".out");
 const baselinePath = join(repoRoot, "docs", "project", "aura3d-quality-rebuild", "migration", "baseline.json");
 const gamesPath = join(repoRoot, "tools", "quality-rebuild-capture", "games.json");
