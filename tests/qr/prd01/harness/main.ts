@@ -64,6 +64,17 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (tools === "program-compile") {
+    status.textContent = "running program-compile";
+    const { runProgramCompileTool } = await import("./programCompile");
+    const report = await runProgramCompileTool();
+    window.__QR_READY__ = { engine: "aura3d", scene: "program-compile", errors: report.errors };
+    (window as unknown as { __QR_PROGRAM_COMPILE__?: unknown }).__QR_PROGRAM_COMPILE__ = report;
+    status.textContent = "ready program-compile";
+    document.title = "ready program-compile";
+    return;
+  }
+
   if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
     status.textContent = `running ${tools}`;
     const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");

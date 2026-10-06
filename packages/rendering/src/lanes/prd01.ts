@@ -7,6 +7,7 @@ import { instanceBufferSlot } from "../contracts/geometry";
 import { frameUniformsSlot } from "../contracts/frameUniforms";
 import { InstanceBuffer } from "../resources/InstanceBuffer";
 import { FrameUniforms } from "../resources/UniformBlock";
+import "../program/ProgramGenerator";
 
 // C-07 real: persistent doubling buffer (stub was per-write full upload).
 instanceBufferSlot.provide((device, capacity, options) => new InstanceBuffer(device, capacity, options));

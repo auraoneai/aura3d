@@ -161,3 +161,47 @@ camera-fade patch (declined under §3.7).
 - Browser spec `tests/qr/prd01/browser/render-targets.spec.ts` covers the §15:1096
   acceptance (depth-only cube 6 faces, 2-attachment distinct clears, sampler2DArray
   layer 3) via `?tools=render-targets` in the lane harness.
+
+## PR E (Phase 3a: AuraFrame UBO) status notes — 2026-10-06
+
+- `resources/UniformBlock.ts`: std140 packer (`layoutStd140`, `uniformBlockGlsl`,
+  `UniformBlock`) + `FrameUniforms` binding the frozen `AURA_FRAME_BLOCK` at
+  binding 0 (304 bytes; offsets 0/64/128/192/256/272/288).
+- `frameUniformsSlot.provide` in `lanes/prd01.ts`; C-08 conformance covered by
+  `tests/unit/contracts/impl/prd01-frame-uniforms.test.ts`.
+- Non-01 file edits (QR-OWN gaps):
+  - `RenderDevice.ts` (owner 11): optional `bindUniformBuffer(buffer, binding)`
+    on the interface + `MockRenderDevice.uniformBufferBindings` records
+    `{bufferId, binding}` and validates `usage === "uniform"`. Custodian-neutral
+    seam: flag-off call sites never reach it.
+  - `WebGL2Device.ts`: `createBuffer` maps `usage:"uniform"` →
+    `gl.UNIFORM_BUFFER`; `bindUniformBuffer` → `bindBufferBase`.
+
+## PR F (Phase 3b: program generator) status notes — 2026-10-06
+
+- `program/ProgramFeatures.ts` (canonical normalize; sparse and explicit
+  records share a key), `program/ProgramKey.ts` (re-export of frozen
+  `computeProgramKey`), `program/ProgramGenerator.ts` (§6.4 assembly: defines,
+  AuraFrame chunks, hook splicing in (order,id) order, default bodies,
+  extension-lobe-pending C-36 sink, WGSL_PROGRAM_MISSING).
+- `program/chunks/*.glsl.ts` (owner-11 directory for WGSL twins): lane-01
+  GLSL chunks land there per PRD-01 §15's own file list — `common`, `colorspace`,
+  `brdf` (r185 port), `normal`, `instancing`, `alpha`, `lights_legacy`,
+  `indirect_default`, `fog_default`, `depth`. Lane 11's WGSL twins + UniformLayout
+  are unaffected; no conflict expected (separate filenames).
+- `contracts/program.ts`: `generateProgram` keeps the frozen signature and now
+  delegates to the lane-01 impl via `installProgramGenerator` (installed by
+  `lanes/prd01.ts` import). `PROGRAM_GENERATOR_PENDING` still throws if the lane
+  barrel is never loaded.
+- Splice convention (documented in ProgramGenerator.ts): feature `chunks[i]`
+  lands at `hooks[min(i, len-1)]`, deduped by name; `*:pars` hooks emit at
+  global scope, body hooks emit inside `main` replacing the lane-01 default.
+  `vertex:deform` is canonical — the generator emits `a3dDeform(pos,nrm,tan)`
+  iff a registered feature contributes, else the C-18 passthrough comment.
+- Conformance: `tests/unit/contracts/impl/prd01-program-generator.test.ts`
+  (23 tests: 13 representative snapshots incl. balanced braces + banned-token
+  scan, bucketed/clustered lights, §8.5 order, §8.7 depth/distance, WGSL throw,
+  500-record key-uniqueness, hook splice order, extension-lobe-pending,
+  deform passthrough↔call, contract delegation). Browser spec
+  `tests/qr/prd01/browser/program-generator-compile.spec.ts` compiles+links all
+  13 cases on real WebGL2 via `?tools=program-compile`.
