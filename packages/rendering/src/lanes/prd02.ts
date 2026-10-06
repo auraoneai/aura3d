@@ -32,6 +32,16 @@ for (const chunk of PRD02_CHUNKS) {
 // `environmentProbeFactorySlot.get(flags)(device)`.
 environmentProbeFactorySlot.provide(createEnvironmentProbeFactory);
 
+// C-11 real path: `prd02.shadows` frame contributor renders the shadow system
+// in the graph's shadows phase and binds ShadowFrameUniforms. Active only
+// under A3D_QR_LIGHTING via the registry's flag field.
+import { registerFrameContributor } from "../contracts/frameGraph.js";
+import { createPrd02ShadowsContributor } from "../shadows/Prd02ShadowsContributor.js";
+import { ensurePrd02DepthFeatures } from "../shadows/Prd02DepthShaderLibrary.js";
+
+registerFrameContributor(createPrd02ShadowsContributor());
+ensurePrd02DepthFeatures();
+
 // Named re-exports (not `export *`): the root barrel merges contracts/index
 // and lanes/index, and contract names like `projectCubeToSH9` /
 // `evaluateSH9Irradiance` would collide. The corrected lane implementation is
@@ -132,6 +142,53 @@ export {
 } from "../environment/EnvUniforms.js";
 export { createPrd02EnvironmentBackgroundShaderLibrary } from "../environment/Prd02BackgroundShaderLibrary.js";
 export { resolvePrd02EnvironmentBackground } from "../renderer/Background.js";
+export {
+  type ShadowSystemConfigInput,
+  type ShadowSystemSun,
+  type ShadowSystemLocalLight,
+  type ShadowSystemFrame,
+  type Prd02ShadowFrameUniforms,
+  Prd02ShadowSystem,
+  createShadowSystem
+} from "../shadows/ShadowSystem.js";
+export {
+  type CascadeFitterCamera,
+  type DirectionalCascadeFit,
+  type DirectionalCascadeFitOptions,
+  fitDirectionalCascades
+} from "../shadows/DirectionalCascadeFitter.js";
+export {
+  type AtlasLightRequest,
+  type AtlasTile,
+  type PlannedShadowAtlas,
+  planLocalShadowAtlas,
+  pointShadowFaceMatrix,
+  spotShadowMatrix
+} from "../shadows/ShadowAtlas.js";
+export {
+  PRD02_DEPTH_SHADER_NAME,
+  PRD02_DEPTH_MAX_INSTANCES,
+  registerPrd02DepthShader,
+  ensurePrd02DepthFeatures,
+  prd02DepthFeatures,
+  casterAlphaCutoff,
+  resolvePrd02ShadowCasterVariant,
+  prd02DepthVariantDefines,
+  prd02DepthProgram,
+  precompilePrd02DepthVariants
+} from "../shadows/Prd02DepthShaderLibrary.js";
+export {
+  shadowBindingMaterial,
+  bindShadowFrameUniforms
+} from "../shadows/ShadowFrameBinding.js";
+export {
+  createPrd02ShadowsContributor,
+  shadowSystemConfigFromSource,
+  collectShadowSystemLights,
+  shadowSystemForDevice,
+  prd02ShadowDiagnostics,
+  type Prd02ShadowDiagnostics
+} from "../shadows/Prd02ShadowsContributor.js";
 export {
   SH9_CHUNK_GLSL,
   LIGHTING_IBL_CHUNK_GLSL,

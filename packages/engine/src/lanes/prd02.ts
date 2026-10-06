@@ -76,6 +76,8 @@ import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
 import { auraLightsCounters } from "../../../rendering/src/LightUniforms.js";
+import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
+import { prd02ShadowDiagnostics } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
 import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
@@ -190,7 +192,14 @@ registerOptionCoverage([
 export class Prd02LightingRuntime {
   private rotation = 0;
   private intensity = 1;
+  private device: RenderDevice | null = null;
   private readonly pendingProbes = new Set<string>();
+
+  /**
+   * C-28 counters are consumed from the bound device, never counted here
+   * (PRD-02 Phase 4). The flag-path env/probe binding attaches the device.
+   */
+  attachDevice(device: RenderDevice): void { this.device = device; }
 
   updateProbe(name: string): Promise<void> { this.pendingProbes.add(name); return Promise.resolve(); }
   rebakeIrradiance(name?: string): Promise<void> { if (name) this.pendingProbes.add(name); return Promise.resolve(); }
@@ -205,11 +214,11 @@ export class Prd02LightingRuntime {
         source: "prd02", faceSize: 0, mipCount: 0, format: "rgba16f",
         shBound: false, backgroundDrawn: false, pmremGpuMs: null
       },
-      shadows: [],
-      droppedFeatures: [],
+      shadows: prd02ShadowDiagnostics()?.shadows ?? [],
+      droppedFeatures: prd02ShadowDiagnostics()?.droppedFeatures ?? [],
       contactShadows: { passExecuted: false },
-      programCompileCount: 0,
-      readPixelsCalls: 0
+      programCompileCount: this.device?.getDiagnostics().programCompileCount ?? 0,
+      readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0
     };
   }
 }

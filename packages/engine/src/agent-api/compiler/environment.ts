@@ -233,6 +233,11 @@ export interface Prd02EnvironmentBindOptions {
   readonly device: RenderDevice;
   readonly tier: AuraQualityTier;
   readonly flags: QrFlags;
+  /**
+   * Hooks the device into `AuraLightingDiagnostics` counters (C-28): callers
+   * with a lighting runtime pass `app.lighting.attachDevice`.
+   */
+  readonly attachDevice?: (device: RenderDevice) => void;
   /** Shared cache; a fresh one is created when omitted. */
   readonly cache?: EnvironmentCache;
   /** Live-scene capture hook; required only for `{ capture }` probes. */
@@ -261,6 +266,7 @@ export function bindPrd02EnvironmentProbe(
   resolution: AuraEnvironmentSourceResolution,
   options: Prd02EnvironmentBindOptions
 ): Prd02EnvironmentBinding {
+  options.attachDevice?.(options.device);
   const factory = environmentProbeFactorySlot.get(options.flags)(options.device);
   const cache = options.cache ?? new EnvironmentCache(options.device, factory, defaultProbeLoader(factory));
   const tier = options.tier;

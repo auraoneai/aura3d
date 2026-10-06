@@ -46,3 +46,22 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 ## to:prd11 — `TextureUpload.ts` RGB9_E5 cube upload (Q-06-1)
 
 - `Rgb9e5Cube` decodes baked presets to Float32 and uploads RGBA16F (2× memory). Native `RGB9_E5` upload needs `TextureFormat`/`TextureUpload` acceptance in the lane-11 file. Logged as pending in PRD-02 Phase 3 until the request lands.
+
+## Phase 4 qr-requests
+
+- **to:prd01** — `contracts/shadows.ts` `resolveShadowCasterVariant` is a plain
+  exported stub, not a `Slot<>`, so lanes cannot `provide(real)`. Lane-02 ships
+  `resolvePrd02ShadowCasterVariant` (rendering/src/shadows/Prd02DepthShaderLibrary.ts)
+  and injects it via `DepthPassOptions.variantResolver`. Request: expose a
+  provider slot or registry hook so `resolveShadowCasterVariant` itself resolves
+  real keys under the flag.
+- **to:prd01** — `createRegistry` (contracts/core.ts) has no enumeration
+  accessor, so `registerDepthVariantFeature` entries cannot be listed. Lane-02
+  keeps its own `prd02Features` array; request a `features()`/`entries()`
+  reader on Registry so lanes (e.g. prd06 `prd06.deform`) can share the pass.
+- **to:prd11** — `RenderDevice` has no `setViewport`; atlas tiles fold the
+  tile rect into `drawViewProjection` + a per-draw `scissor` instead. No
+  change needed, noted for awareness.
+- **to:prd11** (standing, Phase 3) — `u_prd02LocalShadowIndex` / `perLightShadowIndex`
+  can't upload through `uploadUniforms` (no ivec branch); kept as CPU-side
+  pairs + a vec4-packed `u_prd02LocalShadowIndex` uniform in the chunk.

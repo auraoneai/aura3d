@@ -4,6 +4,10 @@
  * A3D_SHADOW_FILTER: 1 = HW single tap (pcf2 tiers), 2 = Castaño 5×5
  * tent-weighted (pcf3), 3 = Vogel disk 16-tap (pcf5). PCSS is opted-in via
  * A3D_SHADOW_PCSS + the raw depth sampler (u_prd02ShadowRaw).
+ *
+ * Samplers are individually named (u_prd02CascadeCompare0..3) because sampler
+ * arrays need constant-index access in ES 3.00 and the device binds one
+ * texture unit per named uniform.
  */
 export const SHADOW_RECEIVE_CHUNK_GLSL = /* glsl */ `
 #ifndef A3D_SHADOW_FILTER
@@ -13,13 +17,21 @@ export const SHADOW_RECEIVE_CHUNK_GLSL = /* glsl */ `
 #define A3D_CASCADE_COUNT 1
 #endif
 
-uniform highp sampler2DShadow u_prd02CascadeCompare[4];
-uniform highp sampler2D u_prd02ShadowRaw;       // atlas of point/spot tiles (+ pcss-raw source)
+uniform highp sampler2DShadow u_prd02CascadeCompare0;
+uniform highp sampler2DShadow u_prd02CascadeCompare1;
+uniform highp sampler2DShadow u_prd02CascadeCompare2;
+uniform highp sampler2DShadow u_prd02CascadeCompare3;
+uniform highp sampler2DShadow u_prd02LocalCompare;  // local-light atlas (compare)
+uniform highp sampler2D u_prd02ShadowRaw;           // atlas raw depth (PCSS source)
 uniform mat4 u_prd02CascadeMatrix[4];
-uniform vec4 u_prd02CascadeSplits;              // far split distance per cascade
+uniform vec4 u_prd02CascadeSplits;                  // far split distance per cascade
+uniform vec4 u_prd02CascadeTexelWorld;              // world-space texel per cascade
 uniform float u_prd02ShadowMapSize;
-uniform vec2 u_prd02ShadowAtlasRect[6];         // local light tile origins (texel space)
+uniform float u_prd02NormalBias;                    // normal bias in texel units
+uniform float u_prd02ShadowStrength;                // 0..1 receive strength
+uniform vec4 u_prd02ShadowAtlasRect[6];             // local tile rect (normalized u0,v0,du,dv)
 uniform mat4 u_prd02LocalShadowMatrix[6];
+uniform vec4 u_prd02LocalShadowIndex[6];            // (lightIndex, tileSlot) packed vec4
 
 // Vogel disk 16-tap offsets (unit disk, golden angle spiral).
 const vec2 A3D_VOGEL_16[16] = vec2[16](
@@ -77,23 +89,47 @@ int a3d_selectCascade(float viewDepth) {
   return c;
 }
 
-float a3d_sunShadow(vec3 worldPos, float viewDepth, float normalBiasAlongN) {
+float a3d_cascadeTap0(vec3 proj) { return a3d_shadowFiltered(u_prd02CascadeCompare0, proj, 1.0 / u_prd02ShadowMapSize); }
+float a3d_cascadeTap1(vec3 proj) { return a3d_shadowFiltered(u_prd02CascadeCompare1, proj, 1.0 / u_prd02ShadowMapSize); }
+float a3d_cascadeTap2(vec3 proj) { return a3d_shadowFiltered(u_prd02CascadeCompare2, proj, 1.0 / u_prd02ShadowMapSize); }
+float a3d_cascadeTap3(vec3 proj) { return a3d_shadowFiltered(u_prd02CascadeCompare3, proj, 1.0 / u_prd02ShadowMapSize); }
+
+float a3d_sunShadow(vec3 worldPos, vec3 worldNormal, float viewDepth) {
   int c = a3d_selectCascade(viewDepth);
-  vec4 p = u_prd02CascadeMatrix[c] * vec4(worldPos, 1.0);
+  // Normal bias in world units: N × texelWorld(c) × configured texel count.
+  vec3 biased = worldPos + worldNormal * (u_prd02CascadeTexelWorld[c] * u_prd02NormalBias);
+  vec4 p = u_prd02CascadeMatrix[c] * vec4(biased, 1.0);
   vec3 proj = p.xyz / max(p.w, 1e-6);
   if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0) return 1.0;
-  return a3d_shadowFiltered(u_prd02CascadeCompare[c], proj, 1.0 / u_prd02ShadowMapSize);
+  float lit;
+  if (c == 0) lit = a3d_cascadeTap0(proj);
+#if A3D_CASCADE_COUNT >= 2
+  else if (c == 1) lit = a3d_cascadeTap1(proj);
+#endif
+#if A3D_CASCADE_COUNT >= 3
+  else if (c == 2) lit = a3d_cascadeTap2(proj);
+#endif
+#if A3D_CASCADE_COUNT >= 4
+  else lit = a3d_cascadeTap3(proj);
+#endif
+#if A3D_CASCADE_COUNT < 4
+  else lit = a3d_cascadeTap0(proj);
+#endif
+  return mix(1.0, lit, u_prd02ShadowStrength);
 }
 
 // Local (point/spot) tile lookup in the atlas — compare path.
-float a3d_localShadow(int shadowIndex, vec3 worldPos) {
-  vec4 p = u_prd02LocalShadowMatrix[shadowIndex] * vec4(worldPos, 1.0);
+// shadowIndex indexes the packed u_prd02ShadowAtlasRect/u_prd02LocalShadowMatrix
+// slot for this light (from u_prd02LocalShadowIndex / perLightShadowIndex).
+float a3d_localShadow(int shadowIndex, vec3 worldPos, vec3 worldNormal) {
+  if (shadowIndex < 0 || shadowIndex >= 6) return 1.0;
+  vec3 biased = worldPos + worldNormal * (u_prd02NormalBias / max(u_prd02ShadowMapSize, 1.0));
+  vec4 p = u_prd02LocalShadowMatrix[shadowIndex] * vec4(biased, 1.0);
   vec3 proj = p.xyz / max(p.w, 1e-6);
   if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0) return 1.0;
-  // Atlas tiles live in the raw atlas; compare texture reads the same rect.
-  // shadowIndex selects the tile; the caller offsets uv into the tile rect.
-  vec2 rect = u_prd02ShadowAtlasRect[shadowIndex];
-  vec2 uv = rect + proj.xy * (u_prd02ShadowMapSize / 4.0);
-  return a3d_shadowFiltered(u_prd02CascadeCompare[0], vec3(uv, proj.z), 1.0 / u_prd02ShadowMapSize);
+  vec4 rect = u_prd02ShadowAtlasRect[shadowIndex];
+  vec2 uv = rect.xy + proj.xy * rect.zw;
+  float lit = a3d_shadowFiltered(u_prd02LocalCompare, vec3(uv, proj.z), 1.0 / u_prd02ShadowMapSize);
+  return mix(1.0, lit, u_prd02ShadowStrength);
 }
 `;

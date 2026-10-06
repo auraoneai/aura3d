@@ -67,4 +67,24 @@ vec3 a3d_punctualRadiance(int i, vec3 worldPos, vec3 n, out vec3 l, out float at
   }
   return lightColor * max(dot(n, l), 0.0) * atten;
 }
+
+// Shadow factor for punctual light i (PRD-02 Phase 4): the composed program
+// must also #include a3d_prd02_shadow_lookup and define A3D_PUNCTUAL_SHADOWS
+// to activate it; otherwise this returns 1.0. Directional shadows come from
+// the CSM samplers; spot/point sample their atlas tile via shadowIndex
+// (u_lightData[i][3].w — the tile slot stamped by the shadow planner).
+float a3d_punctualShadowFactor(int i, vec3 worldPos, vec3 worldNormal, float viewDepth) {
+#if defined(A3D_PUNCTUAL_SHADOWS) && A3D_PUNCTUAL_SHADOWS
+  vec4 d0 = u_lightData[a3d_lightBase(i) + 0];
+  int kind = int(d0.w + 0.5);
+  if (kind == 0) {
+    return a3d_sunShadow(worldPos, worldNormal, viewDepth);
+  }
+  if (kind == 1 || kind == 2) {
+    vec4 d3 = u_lightData[a3d_lightBase(i) + 3];
+    return a3d_localShadow(int(d3.w + 0.5), worldPos, worldNormal);
+  }
+#endif
+  return 1.0;
+}
 `;
