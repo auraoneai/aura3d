@@ -957,6 +957,12 @@ export interface AuraAssetDefinition {
   readonly sizeBytes?: number;
   readonly optional?: boolean;
   readonly metadata?: AuraAssetMetadata;
+  // C-17 additions (PR 0a, PRD 05)
+  readonly variants?: import("../contracts/assets").AuraAssetVariants;
+  readonly requiredDecoders?: readonly import("../contracts/assets").AuraAssetRequiredDecoder[];
+  readonly lods?: readonly import("../contracts/assets").AuraAssetLodLevel[];
+  readonly colliderUrl?: string;
+  readonly budget?: import("../contracts/assets").AuraAssetBudget;
 }
 
 export interface AuraAssetMetadata {
@@ -1022,6 +1028,10 @@ export interface AuraTransformSpec {
   readonly rotation?: AuraVec3;
   readonly scale?: number | AuraVec3;
   readonly lookAt?: AuraVec3;
+  /** C-06 (PR 0a): Euler order, default "ZYX" = today's behaviour. */
+  readonly rotationOrder?: import("../contracts/sceneGraph").AuraEulerOrder;
+  /** C-06 (PR 0a): wins over `rotation` when set. */
+  readonly quaternion?: import("../contracts/sceneGraph").AuraQuat;
 }
 
 export interface AuraMaterialSpec {
@@ -1117,6 +1127,31 @@ export interface AuraMaterialSpec {
     readonly iridescenceThickness?: AuraTextureTransform;
     readonly anisotropy?: AuraTextureTransform;
   };
+  // C-15 additions (PR 0a; owner tags per CONTRACTS.md)
+  /** C-04 (PRD 01): named blend state. */
+  readonly blend?: import("@aura3d/rendering/contracts").AuraBlendMode;
+  /** PRD 01. */
+  readonly depthWrite?: boolean;
+  /** PRD 04: KHR_materials_specular. */
+  readonly specularIntensity?: number;
+  readonly specularColor?: AuraColor;
+  readonly specularIntensityMap?: AuraMaterialTextureInput;
+  readonly specularColorMap?: AuraMaterialTextureInput;
+  /** PRD 04. */
+  readonly dispersion?: number;
+  readonly transmissionMap?: AuraMaterialTextureInput;
+  readonly thicknessMap?: AuraMaterialTextureInput;
+  /** PRD 04: alpha handling. */
+  readonly alphaMode?: "opaque" | "mask" | "blend";
+  readonly alphaCutoff?: number;
+  readonly alphaToCoverage?: boolean;
+  readonly doubleSided?: boolean;
+  readonly unlit?: boolean;
+  /** C-12 (PRD 02): per-material / per-slot sampler overrides. */
+  readonly sampling?: import("@aura3d/rendering/contracts").AuraTextureSampling;
+  readonly slotSampling?: Partial<Record<import("../contracts/materials").AuraMaterialTextureSlot, import("@aura3d/rendering/contracts").AuraTextureSampling>>;
+  /** PRD 10: emissive practical light scale. */
+  readonly practical?: boolean;
 }
 
 export interface AuraEditableMaterialParameters {
@@ -1246,6 +1281,14 @@ export interface AuraModelOptions extends AuraTransformSpec {
   readonly physics?: AuraNodePhysicsSpec;
   /** Exact glTF node names to suppress when composing a typed model into a route. */
   readonly hiddenNodeNames?: readonly string[];
+  /** C-15 (PR 0a, PRD 04): material override table. */
+  readonly materialOverrides?: readonly import("../contracts/materials").AuraModelMaterialOverride[];
+  /** C-15 (PR 0a, PRD 04): named material variant. */
+  readonly variant?: string;
+  /** C-17 (PR 0a, PRD 05): LOD control; widened union accepts the authored form too. */
+  readonly lod?: false | "auto" | import("../contracts/assets").AuraAssetLodOption | AuraRootLodSpec;
+  /** C-17 (PR 0a, PRD 05): collider resolution. */
+  readonly collider?: "auto" | "bounds" | false;
   /**
    * Wrinkle-detail hook (E1 face-rig demo): per-frame the engine resolves
    * `resolveWrinkleMapStrength(liveMorphWeights, wrinkle)` and uploads it as
@@ -1301,6 +1344,19 @@ export interface AuraAnimationSpec {
   readonly chain?: "root" | "left-arm" | "right-arm" | "left-leg" | "right-leg";
   readonly rootBob?: boolean;
   readonly jointHierarchy?: boolean;
+  // C-19 additions (PR 0a, PRD 06)
+  readonly crossFade?: number | false;
+  readonly transition?: "crossfade" | "inertialize";
+  readonly warp?: boolean;
+  readonly syncGroup?: string;
+  readonly layer?: string;
+  readonly blendMode?: "override" | "additive";
+  readonly additiveReference?: { readonly clip?: string; readonly time?: number };
+  readonly mask?: import("../contracts/animation").AuraBoneMaskSpec;
+  readonly weight?: number;
+  readonly rootMotion?: import("../contracts/animation").AuraRootMotionSpec | false;
+  readonly fallback?: "error" | "first";
+  readonly restPoseReset?: boolean;
 }
 
 export interface AuraRuntimeNodeSpec {
@@ -1539,7 +1595,7 @@ export interface AuraGroupNode extends AuraTransformSpec {
   readonly runtime?: AuraRuntimeNodeSpec;
 }
 
-export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox" | "spot";
+export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox" | "spot" | "hemisphere";
 
 export interface AuraLightNode extends AuraTransformSpec {
   readonly kind: "light";
@@ -1554,7 +1610,10 @@ export interface AuraLightNode extends AuraTransformSpec {
   readonly penumbra?: number;
   readonly distance?: number;
   readonly decay?: number;
-  readonly shadow?: boolean;
+  /** C-10 (PR 0a): source power in lumens (point/spot). */
+  readonly power?: number;
+  /** C-10 (PR 0a): shadow options; boolean stays accepted. */
+  readonly shadow?: boolean | import("../contracts/lighting").AuraLocalShadowOptions | import("../contracts/lighting").AuraDirectionalShadowOptions;
 }
 
 export type AuraEffectType =
@@ -1788,6 +1847,29 @@ export interface AuraCreateAppRendererOptions {
    * over-budget telemetry instead of silent thrash. Default 256 MiB.
    */
   readonly textureBudgetBytes?: number;
+  // C-38 additions (PR 0a, all optional)
+  readonly quality?: unknown /* C-27 AuraQualityOptions (prd11) */;
+  readonly output?: import("../contracts/output").AuraOutputOptions;
+  readonly resolution?: unknown /* prd01 */;
+  readonly msaa?: unknown /* prd03 */;
+  readonly compile?: unknown /* C-36 (prd15) */;
+  readonly strictMount?: boolean;
+  readonly debug?: unknown;
+  readonly renderScale?: number;
+  readonly backend?: unknown /* prd01 */;
+  readonly adaptive?: unknown /* prd11 */;
+  readonly targetFrameRate?: number;
+  readonly batching?: unknown /* prd11 */;
+  readonly vfx?: unknown /* C-20 (prd07) */;
+  readonly vfxOverrides?: Readonly<Record<string, unknown>>;
+  readonly skinnedShadows?: boolean /* C-19 (prd06) */;
+  readonly morph?: "gpu" | "cpu" /* C-19 (prd06) */;
+  readonly skinnedPbr?: "unified" | "fork" /* C-19 (prd06) */;
+  readonly materialStrictness?: "warn" | "strict" /* C-15 (prd04) */;
+  readonly materialModel?: "legacy" | "physical-r185" /* C-15 (prd04) */;
+  readonly transmission?: "auto" | "env" | "off" /* C-15 (prd04) */;
+  readonly alphaToCoverage?: boolean /* C-15 (prd04) */;
+  readonly debugView?: import("../contracts/materials").AuraRendererMaterialOptions["debugView"];
 }
 
 export interface AuraRendererDiagnosticReport {
@@ -2054,8 +2136,13 @@ export class AuraNodeBuilder<TNode extends AuraSceneNode> {
     return this.with({ position: [x, y, z] as const });
   }
 
-  rotate(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3 }> {
-    return this.with({ rotation: [x, y, z] as const });
+  rotate(x: number, y: number, z: number, order?: import("../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../contracts/sceneGraph").AuraEulerOrder }> {
+    return this.with(order === undefined ? { rotation: [x, y, z] as const } : { rotation: [x, y, z] as const, rotationOrder: order });
+  }
+
+  /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
+  quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<TNode & { readonly quaternion: import("../contracts/sceneGraph").AuraQuat }> {
+    return this.with({ quaternion: [x, y, z, w] as const });
   }
 
   scale(value: number | AuraVec3): AuraNodeBuilder<TNode & { readonly scale: number | AuraVec3 }> {
@@ -4322,8 +4409,8 @@ function normalizeCreateAppRendererOptions(options: AuraCreateAppRendererOptions
     fallback: options?.fallback ?? "safe-basic",
     qualityProfile: profile.id,
     textureBudgetBytes: normalizeTextureBudgetBytes(options?.textureBudgetBytes),
-    profile
-  };
+    profile: profile
+  } as Required<AuraCreateAppRendererOptions> & { readonly profile: AuraRendererQualityProfile };
 }
 
 interface AuraProductionBridgeEligibility {
@@ -10395,6 +10482,22 @@ export interface AuraDiagnostics {
   readonly labels?: readonly ProjectedLabel[];
   readonly labelTelemetry?: LabelTelemetry;
   readonly textBuckets?: TextBucketSummary;
+  // C-31 section keys (PR 0a, all optional; populated by registered sections)
+  readonly output?: unknown; readonly resolution?: unknown; readonly programs?: unknown; readonly frameAllocations?: unknown;
+  readonly lighting?: unknown; readonly shadows?: unknown;
+  readonly post?: unknown; readonly exposure?: unknown;
+  readonly materials?: unknown;
+  readonly animation?: unknown;
+  readonly effects?: unknown; readonly atmosphere?: unknown;
+  readonly camera?: unknown; readonly loop?: unknown;
+  readonly game?: unknown;
+  readonly world?: unknown;
+  readonly frame?: unknown; readonly "renderer.batching"?: unknown; readonly quality?: unknown;
+  readonly appliedLook?: import("../contracts/diagnostics").AppliedLookReport; readonly frameTiming?: unknown;
+  readonly look?: unknown;
+  readonly degradations?: readonly import("../contracts/compiler").AuraDegradation[];
+  readonly compiledFeatures?: readonly string[];
+  readonly qrFlags?: readonly string[];
 }
 
 export interface AuraAssetProvenance {
@@ -10667,6 +10770,10 @@ export interface AuraRuntimeNodeRegistry {
   has(id: string): boolean;
   ids(): readonly string[];
   all(): readonly AuraRuntimeNodeHandle[];
+  // C-37 merge (PR 0a, optional until PRD 15's real add/remove lands)
+  add?(node: AuraSceneNode | AuraNodeBuilder<AuraSceneNode>, options?: { readonly parent?: string }): AuraRuntimeNodeHandle;
+  remove?(idOrHandle: string | AuraRuntimeNodeHandle): boolean;
+  readonly version?: number;
 }
 
 export interface AuraRuntimeState {
@@ -10768,6 +10875,29 @@ export interface AuraApp {
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
   screenshot(): AuraScreenshot;
   dispose(): void;
+  // C-38 extension surface (PR 0a, all optional until providers register)
+  readonly lighting?: import("../contracts/app").AuraAppExtensionMap["lighting"];
+  readonly camera?: import("../contracts/app").AuraAppExtensionMap["camera"];
+  readonly time?: import("../contracts/app").AuraAppExtensionMap["time"];
+  readonly feel?: import("../contracts/app").AuraAppExtensionMap["feel"];
+  readonly effects?: import("../contracts/app").AuraAppExtensionMap["effects"];
+  readonly atmosphere?: import("../contracts/app").AuraAppExtensionMap["atmosphere"];
+  readonly world?: import("../contracts/app").AuraAppExtensionMap["world"];
+  readonly quality?: import("../contracts/app").AuraAppExtensionMap["quality"];
+  readonly output?: import("../contracts/app").AuraAppExtensionMap["output"];
+  readonly post?: import("../contracts/app").AuraAppExtensionMap["post"];
+  // C-38 flattened methods (PR 0a, all optional)
+  setOutput?(output: Partial<import("../contracts/output").AuraOutputOptions>): void;
+  setOutputOverlay?(overlay: import("../contracts/output").AuraOutputOverlay): { readonly applied: boolean; readonly reason?: "no-post-pass" | "disposed" | "dom-fallback" };
+  capture?(options?: { readonly type?: "image-bitmap" | "png-blob" }): Promise<ImageBitmap | Blob>;
+  onRendererError?(listener: (e: { readonly code: string; readonly message: string; readonly cause?: unknown }) => void): () => void;
+  addPostPass?(p: import("../contracts/post").AuraCustomPostPass): () => void;
+  setQualityTier?(t: import("@aura3d/rendering/contracts").AuraQualityTier | "auto"): void;
+  cutCamera?(): void;
+  precompile?(snapshot: AuraSceneSnapshot): Promise<unknown>;
+  lookSignature?(): Promise<string>;
+  lookManifest?(): unknown /* AuraLookManifest (prd09) */;
+  onRender?(cb: (f: { readonly alpha: number; readonly realDt: number; readonly simTime: number }) => void): () => void;
 }
 
 export interface AuraCreateAppOptions {
@@ -10795,7 +10925,6 @@ export interface AuraCreateAppOptions {
   };
   readonly diagnostics?: boolean | AuraDiagnosticsOptions;
   readonly renderer?: AuraCreateAppRendererOptions;
-  readonly pixelRatio?: number;
   /**
    * Native renderer quality applied before the first production frame. Use this
    * when a known device/capture budget must constrain the initial render; later
@@ -10804,6 +10933,19 @@ export interface AuraCreateAppOptions {
   readonly performanceQuality?: AuraPerformanceQuality;
   readonly autoStart?: boolean;
   readonly resize?: boolean;
+  // C-38 additions (PR 0a, all optional)
+  readonly pixelRatio?: number | { readonly max?: number; readonly min?: number };
+  readonly qualityRebuild?: { readonly flags?: readonly string[] };
+  readonly lighting?: import("../contracts/lighting").AuraLightingOptions;
+  readonly output?: import("../contracts/output").AuraOutputOptions;
+  readonly assets?: import("../contracts/assets").AuraAssetsOption;
+  readonly animation?: import("../contracts/animation").AuraCreateAppAnimationOptions;
+  readonly camera?: import("../contracts/camera").AuraCameraOption;
+  readonly accessibility?: { readonly reducedMotion?: boolean; readonly reducedFlash?: boolean; readonly highContrast?: boolean };
+  readonly strict?: boolean;
+  readonly onDegradation?: (d: import("../contracts/compiler").AuraDegradation) => void;
+  readonly compat?: { readonly post?: "3.0" };
+  readonly loop?: import("../contracts/time").AuraLoopOptions;
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
@@ -11130,7 +11272,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
   const canvas = resolveCanvas(target);
   if (canvas) {
-    configureCanvas(canvas, options.pixelRatio ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe(), options.resize ?? true);
+    const pixelRatioOption = typeof options.pixelRatio === "number" ? options.pixelRatio : options.pixelRatio?.max ?? undefined;
+    configureCanvas(canvas, pixelRatioOption ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe(), options.resize ?? true);
     initializeRootPerformanceQuality(canvas);
     // Apply a caller's device/capture budget before the production controller
     // derives its first backing size, LODs, particle pool and shadow target.
@@ -12277,7 +12420,7 @@ async function startProductionRender(
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
-  const pixelRatio = options.pixelRatio ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe();
+  const pixelRatio = (typeof options.pixelRatio === "number" ? options.pixelRatio : options.pixelRatio?.max ?? undefined) ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe();
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;

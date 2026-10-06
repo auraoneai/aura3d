@@ -11,6 +11,10 @@ export default defineConfig({
     // (animation-runtime:unit:raw named three files and executed two).
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts", "tests/assets/**/*.test.ts"],
     setupFiles: [],
+    // Workspace packages publish `exports` to ./dist, which does not exist in a
+    // source checkout; externalizing them would bypass the resolve.alias entries
+    // below that map every @aura3d specifier to src/. Inline so aliases win.
+    server: { deps: { inline: [/^@aura3d\//, /^@aura3d$/] } },
     coverage: {
       reporter: ["text", "json"]
     }
@@ -24,6 +28,14 @@ export default defineConfig({
       "@aura3d/ecs": new URL("./packages/ecs/src/index.ts", import.meta.url).pathname,
       "@aura3d/rendering/lean-core-runtime": new URL("./packages/rendering/src/lean-core-runtime.ts", import.meta.url).pathname,
       "@aura3d/rendering/lean-runtime": new URL("./packages/rendering/src/lean-runtime.ts", import.meta.url).pathname,
+      /*
+       * Aura3D Quality Rebuild contract subpaths (CONTRACTS.md §3.8). Prefix
+       * matching is declaration-ordered, so every key here sits before its
+       * package root for the same reason documented below.
+       */
+      "@aura3d/rendering/contracts/flags.state": new URL("./packages/rendering/src/contracts/flags.state.ts", import.meta.url).pathname,
+      "@aura3d/rendering/contracts": new URL("./packages/rendering/src/contracts/index.ts", import.meta.url).pathname,
+      "@aura3d/rendering/lanes": new URL("./packages/rendering/src/lanes/index.ts", import.meta.url).pathname,
       "@aura3d/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/controls": new URL("./packages/controls/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/production-runtime": new URL("./packages/rendering/src/production-runtime/index.ts", import.meta.url).pathname,
@@ -49,6 +61,18 @@ export default defineConfig({
       "@aura3d/engine/lean-product": new URL("./packages/engine/src/agent-api/lean-product.ts", import.meta.url).pathname,
       "@aura3d/engine/lean-game": new URL("./packages/engine/src/agent-api/lean-game.ts", import.meta.url).pathname,
       "@aura3d/engine/lean": new URL("./packages/engine/src/agent-api/lean.ts", import.meta.url).pathname,
+      "@aura3d/engine/contracts": new URL("./packages/engine/src/contracts/index.ts", import.meta.url).pathname,
+      "@aura3d/engine-runtime/contracts": new URL("./packages/engine/src/contracts/index.ts", import.meta.url).pathname,
+      "@aura3d/engine/lanes": new URL("./packages/engine/src/lanes/index.ts", import.meta.url).pathname,
+      "@aura3d/engine-runtime/lanes": new URL("./packages/engine/src/lanes/index.ts", import.meta.url).pathname,
+      "@aura3d/animation/pose": new URL("./packages/animation/src/contracts/pose.ts", import.meta.url).pathname,
+      "@aura3d/animation/contracts": new URL("./packages/animation/src/contracts/pose.ts", import.meta.url).pathname,
+      "@aura3d/game/art": new URL("./packages/game/src/art/index.ts", import.meta.url).pathname,
+      "@aura3d/game/capture": new URL("./packages/game/src/capture/index.ts", import.meta.url).pathname,
+      "@aura3d/game": new URL("./packages/game/src/index.ts", import.meta.url).pathname,
+      "@aura3d/audio/contracts": new URL("./packages/audio/src/contracts/gameSound.ts", import.meta.url).pathname,
+      "@aura3d/assets/contracts": new URL("./packages/assets/src/contracts/decoders.ts", import.meta.url).pathname,
+      "@aura3d/cli/contracts": new URL("./packages/aura3d-cli/src/contracts/commands.ts", import.meta.url).pathname,
       "@aura3d/engine": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
       "@aura3d/cli": new URL("./packages/aura3d-cli/src/index.ts", import.meta.url).pathname,
       "@aura3d/react": new URL("./packages/react/src/index.ts", import.meta.url).pathname,

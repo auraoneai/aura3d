@@ -209,6 +209,16 @@ export interface SceneSpec {
   readonly time: number;
   /** Frames rendered after everything is loaded and before READY is published. */
   readonly settleFrames: number;
+  // C-30 additions (PR 0a, optional until PRD 12 makes them required)
+  readonly owner?: import("./contracts").SceneOwner;
+  readonly referenceProfile?: import("./contracts").ReferenceProfile;
+  readonly dprs?: readonly (1 | 2)[];
+  readonly masks?: readonly import("./contracts").MaskId[];
+  readonly brokenControls?: readonly import("./contracts").BrokenControlId[];
+  readonly strip?: import("./contracts").StripSpec;
+  readonly primaryCriterion?: string;
+  readonly primaryRegion?: import("./contracts").RegionId;
+  readonly qrFlags?: readonly string[];
 }
 
 export type CapabilityStatus = "supported" | "partial" | "missing" | "not-applicable";
@@ -231,3 +241,5 @@ export interface ReadyPayload {
   readonly loadMs: number;
   readonly extra?: Readonly<Record<string, unknown>>;
 }
+
+export * from "./contracts";

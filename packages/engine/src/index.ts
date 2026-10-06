@@ -287,3 +287,7 @@ function isA3DApp(value: HTMLCanvasElement | OffscreenCanvas | A3DApp): value is
 function findCanvasFromRenderer(renderer: A3DAppRendererLike | undefined): HTMLCanvasElement | OffscreenCanvas | undefined {
   return (renderer as (A3DAppRendererLike & { readonly canvas?: HTMLCanvasElement | OffscreenCanvas }) | undefined)?.canvas;
 }
+
+// Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";

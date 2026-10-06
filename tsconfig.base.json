@@ -56,6 +56,48 @@
       "@aura3d/materials": [
         "packages/materials/src/index.ts"
       ],
+      "@aura3d/rendering/contracts/flags.state": [
+        "packages/rendering/src/contracts/flags.state.ts"
+      ],
+      "@aura3d/rendering/contracts": [
+        "packages/rendering/src/contracts/index.ts"
+      ],
+      "@aura3d/rendering/lanes": [
+        "packages/rendering/src/lanes/index.ts"
+      ],
+      "@aura3d/engine/contracts": [
+        "packages/engine/src/contracts/index.ts"
+      ],
+      "@aura3d/engine-runtime/contracts": [
+        "packages/engine/src/contracts/index.ts"
+      ],
+      "@aura3d/engine/lanes": [
+        "packages/engine/src/lanes/index.ts"
+      ],
+      "@aura3d/engine-runtime/lanes": [
+        "packages/engine/src/lanes/index.ts"
+      ],
+      "@aura3d/animation/pose": [
+        "packages/animation/src/contracts/pose.ts"
+      ],
+      "@aura3d/game": [
+        "packages/game/src/index.ts"
+      ],
+      "@aura3d/audio/contracts": [
+        "packages/audio/src/contracts/gameSound.ts"
+      ],
+      "@aura3d/game/art": [
+        "packages/game/src/art/index.ts"
+      ],
+      "@aura3d/game/capture": [
+        "packages/game/src/capture/index.ts"
+      ],
+      "@aura3d/assets/contracts": [
+        "packages/assets/src/contracts/decoders.ts"
+      ],
+      "@aura3d/cli/contracts": [
+        "packages/aura3d-cli/src/contracts/commands.ts"
+      ],
       "@aura3d/engine": [
         "packages/engine/src/index.ts"
       ],

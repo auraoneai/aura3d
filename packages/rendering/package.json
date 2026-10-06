@@ -26,6 +26,18 @@
     "./reflection-surfaces": {
       "types": "./dist/reflection-surfaces.d.ts",
       "import": "./dist/reflection-surfaces.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "import": "./dist/contracts/index.js"
+    },
+    "./reference": {
+      "types": "./dist/reference/index.d.ts",
+      "import": "./dist/reference/index.js"
+    },
+    "./world": {
+      "types": "./dist/world/index.d.ts",
+      "import": "./dist/world/index.js"
     }
   },
   "main": "./dist/index.js",

@@ -1,0 +1,48 @@
+name: QR contracts
+
+# Aura3D Quality Rebuild contract gate (CONTRACTS.md §1.1, §3.8). Runs the
+# unit conformance suites everywhere and the browser conformance specs on
+# macos-14 (Chromium, ANGLE Metal) — the same runner class as
+# quality-rebuild-capture.yml.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['qr/**', 'aura3d-quality-rebuild/**']
+  workflow_dispatch:
+
+concurrency:
+  group: qr-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm lint
+      - run: pnpm exec vitest run tests/unit/contracts
+      - run: node tools/qr-ownership/check.mjs
+
+  browser:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Browser conformance specs
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/contracts
+        continue-on-error: true
