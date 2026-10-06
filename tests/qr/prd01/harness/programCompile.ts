@@ -26,12 +26,12 @@ const CASES: readonly [string, Partial<ProgramFeatures>][] = [
   ["lit-1dir", { lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
   ["lit-full8", { lighting: "lit", lights: { dir: 2, point: 4, spot: 2, rect: 0, clustered: false, hemisphere: false } }],
   ["lit-clustered", { lighting: "lit", lights: { dir: 2, point: 8, spot: 0, rect: 0, clustered: true, hemisphere: false } }],
-  ["lit-maps", { lighting: "lit", maps: { baseColor: { uvSet: 0 }, normal: { uvSet: 0 }, metallicRoughness: { uvSet: 0 }, occlusion: { uvSet: 1 }, emissive: { uvSet: 0 } } }],
+  ["lit-maps", { lighting: "lit", maps: { baseColor: { uvSet: 0, transform: false }, normal: { uvSet: 0, transform: false }, metallicRoughness: { uvSet: 0, transform: false }, occlusion: { uvSet: 1, transform: false }, emissive: { uvSet: 0, transform: false } } }],
   ["lit-env-equirect", { lighting: "lit", environment: "equirect", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
   ["mask-instanced", { alphaMode: "mask", instancing: { color: true } }],
   ["vertex-colors", { vertexColors: true, lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
   ["flat-fog", { flatShading: true, fog: "exp2", lighting: "lit", lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } }],
-  ["depth-mask", { pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0 } } }],
+  ["depth-mask", { pass: "depth", alphaMode: "mask", maps: { baseColor: { uvSet: 0, transform: false } } }],
   ["distance", { pass: "distance" }],
   ["background-coverage", { backgroundCoverage: true }]
 ];

@@ -240,7 +240,7 @@ function stubShader(id: number): RenderShaderProgram {
     marker: "stub",
     disposed: false,
     reflection: { attributes: new Map(), uniforms: new Set(), attributeDetails: new Map(), uniformDetails: new Map() },
-    dispose() {
+    dispose(this: { disposed: boolean }) {
       this.disposed = true;
     }
   } as unknown as RenderShaderProgram;
@@ -274,6 +274,7 @@ describe("PRD-01 §15 Phase 6c — VAO eviction on RenderBuffer.dispose (§6.1)"
           vertexBuffer,
           vertexCount: 3,
           vertexFormat: VertexFormat.P3,
+          topology: "triangles",
           instanceAttributes: [{ buffer: inst, shaderName: "a_instanceMatrix0", components: 4, offset: 0, stride: 64, divisor: 1 }]
         },
         shader as never,
@@ -296,8 +297,8 @@ describe("PRD-01 §15 Phase 6c — VAO eviction on RenderBuffer.dispose (§6.1)"
     const shader = stubShader(11);
     const vb1 = makeBuffer(host, binder, 1);
     const vb2 = makeBuffer(host, binder, 2);
-    binder.bindVertexArrayForCommand({ vertexBuffer: vb1, vertexCount: 3, vertexFormat: VertexFormat.P3 }, shader as never, vb1);
-    binder.bindVertexArrayForCommand({ vertexBuffer: vb2, vertexCount: 3, vertexFormat: VertexFormat.P3 }, shader as never, vb2);
+    binder.bindVertexArrayForCommand({ vertexBuffer: vb1, vertexCount: 3, vertexFormat: VertexFormat.P3, topology: "triangles" }, shader as never, vb1);
+    binder.bindVertexArrayForCommand({ vertexBuffer: vb2, vertexCount: 3, vertexFormat: VertexFormat.P3, topology: "triangles" }, shader as never, vb2);
     expect(binder.vertexArrayCache.size).toBe(2);
     vb1.dispose();
     expect(binder.vertexArrayCache.size).toBe(1);
