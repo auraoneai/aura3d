@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-siege-golf",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-siege-golf",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 3.5,
+        "modeling_assets": 3.0,
+        "texture_quality": 2.5,
+        "material_quality": 3.0,
+        "pbr_credibility": 2.5,
+        "lighting": 4.5,
+        "shadows": 4.5,
+        "ambient_lighting": 4.0,
+        "ibl_reflections": 1.5,
+        "tone_mapping": 5.0,
+        "color_management": 5.0,
+        "anti_aliasing": 6.0,
+        "postprocessing": 4.0,
+        "vfx": 3.0,
+        "particles": 1.5,
+        "animation_quality": 3.0,
+        "character_presentation": 1.0,
+        "camera": 4.5,
+        "composition": 3.5,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 2.0,
+        "gameplay_readability": 6.0,
+        "ui_hud": 4.0,
+        "typography": 6.0,
+        "polish_juice": 3.0,
+        "mobile_presentation": 3.5,
+        "overall_visual_quality": 3.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Single straight lane on an infinite flat green plane, with ellipsoid blobs as hills and trees; no world identity beyond a box \"castle\"."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Almost everything is primitives (boxes, bevel boxes, ellipsoids, cylinders); crates and barrels are the only authored-looking props."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Flat vertex colors everywhere; only the crates and barrels carry textures, and they clash stylistically."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Uniform matte plastic; grass, wood, stone and ball are indistinguishable in response."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No roughness or metal variation and no specular cues; the ball has no highlight worth mentioning."
+        },
+        {
+          "category": "lighting",
+          "seen": "Clean single sun with decent key/fill balance, but no time-of-day mood, no rim light and no light accents at the goal."
+        },
+        {
+          "category": "shadows",
+          "seen": "Soft shadows present and stable; contact shadows under props are weak, and fence shadows band and stretch in the wide shot."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Flat hemispheric fill with no visible AO, so objects float and box seams don't darken."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No visible environment reflections on the ball, crates or anything else."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "No clipping and a pleasant pastel range on desktop; slightly flat. Mobile is visibly washed."
+        },
+        {
+          "category": "color_management",
+          "seen": "Coherent palette, but salmon-orange obstacles and signs compete with the goal and the teal/green clash is muddy."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are clean at desktop resolution, with mild shimmer likely on thin fence rails (inferred)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom on the target ring is the only visible pass; no AO, color grade or vignette, and the mobile softness looks unintended."
+        },
+        {
+          "category": "vfx",
+          "seen": "Emissive ring and beam plus a ring decal at the ball; no impact, sink or celebration effects visible."
+        },
+        {
+          "category": "particles",
+          "seen": "A few dots on the fairway (possibly aim dots); no dust, sparkle, debris or confetti on a 3-star finish."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Crate tumble implies rigid-body physics; nothing else animates (flags, trees, ball spin cues)."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "No character, avatar or golfer; the ball is the protagonist and has no personality."
+        },
+        {
+          "category": "camera",
+          "seen": "Opening chase cam is serviceable; the wide cam is generic, and neither frames the \"siege\" fantasy."
+        },
+        {
+          "category": "composition",
+          "seen": "Symmetrical corridor with a dead center line; wide shot is ~40% empty plane and the giant blob crowds the goal."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Ellipsoid \"trees\" are ambiguous in size; no atmospheric perspective, no detail falloff and a flat horizon."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, haze gradient, god rays or sky detail beyond cube clouds."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Lane, ball, target and obstacles read clearly; obstacle color is too close to the goal ring's coral."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Desktop right panel is a debug/dev tool (raw float sliders, \"(J)\" hotkey label) shipped as HUD; mobile UI is cleaner but buries the view and shows conflicting states."
+        },
+        {
+          "category": "typography",
+          "seen": "Clean system sans with legible hierarchy; generic, with no game-brand voice."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "3-star completion with no celebration, no screen effects, nothing shown landing or popping."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Modal plus control bar eat ~45% of the screen; the scene is washed and blurred, with contradictory UI text."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as a competent engine test scene with primitive art, below \"dated programmer-art\" in authored intent."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-bank-shot",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-bank-shot",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.0,
+        "modeling_assets": 3.0,
+        "texture_quality": 2.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.0,
+        "shadows": 2.0,
+        "ambient_lighting": 2.0,
+        "ibl_reflections": 2.0,
+        "tone_mapping": 4.0,
+        "color_management": 4.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 2.0,
+        "vfx": 1.0,
+        "particles": 0.0,
+        "animation_quality": 2.0,
+        "character_presentation": 1.0,
+        "camera": 3.0,
+        "composition": 3.0,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 5.0,
+        "ui_hud": 5.0,
+        "typography": 5.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 2.0,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Black void on desktop; empty untextured box room on mobile. No pool hall, no lamp, no props."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Table is boxy kit-bash: block legs, disc pockets, flat rail strips. Balls are fine spheres. No cue stick at all."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "No visible textures. Felt is flat color, rails have no wood grain, balls lack numbers and stripes."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Rails read as orange plastic. Felt has no fiber or sheen. Balls have a decent gloss highlight, which is the only credible material."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Spec highlights exist, but there is no energy-conserving roughness variety and the felt behaves like an unlit or emissive surface."
+        },
+        {
+          "category": "lighting",
+          "seen": "Arbitrary colored hotspots (cyan, magenta, orange) contradict the \"one lamp\" fiction. No overhead light pool. Felt is evenly lit."
+        },
+        {
+          "category": "shadows",
+          "seen": "No readable ball shadows on the felt and no table shadow on the floor, so nothing grounds the objects."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Pure black ambient with no AO in pockets, rail joins, or under balls."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "Balls show point-light glints only, with no environment reflection. Rails have no reflection either."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Desktop is mostly in range but the felt blue is oversaturated. The mobile lamp hotspot clips hard to white."
+        },
+        {
+          "category": "color_management",
+          "seen": "Palette is garish: electric blue felt against orange rails against neon accents. Probably sRGB-correct, but authored without restraint."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges and decal lines look acceptable at 1080p. Mobile at small scale shows shimmer-prone sub-pixel balls."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No visible bloom discipline, AO, DOF, vignette, or grading. The rail glows look like light leaks, not deliberate bloom."
+        },
+        {
+          "category": "vfx",
+          "seen": "Only the aim line and target-circle decals. No impact, pocket, or charge effects."
+        },
+        {
+          "category": "particles",
+          "seen": "None visible in any frame."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Physics balls only. No cue animation, and nothing changes between \"mid\" and \"action\" except ball positions."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The player avatar in pool is the cue stick, and it is absent, so there is no physical agency in-world."
+        },
+        {
+          "category": "camera",
+          "seen": "A single static high 3/4 shot never moves. Mobile camera is far too distant."
+        },
+        {
+          "category": "composition",
+          "seen": "The table is off-center against a void with huge dead space top and bottom, and the HUD crowds the right edge."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Without shadows, room, or fog, the table reads as a floating model and scale is ambiguous."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No lamp haze, smoke, dust, or fog."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Ball positions and decals read clearly on desktop. Stripes vs. solids cannot be told apart, which is fatal for \"clear your suit.\" Mobile is close to unreadable."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean dark-glass panel and a consistent grid, but it is a dev dashboard: debug backend text, empty \"\u2026\" placeholders, duplicated status messages."
+        },
+        {
+          "category": "typography",
+          "seen": "Legible sans with sensible hierarchy. Generic, with tiny label sizes and no game identity."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback on any action and placeholder text visible. Reads as a prototype, as its own label says."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Tiny table in a dark box, a blown hotspot, and 40% of the screen spent on buttons. Effectively unplayable visually."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "A clean programmer-art prototype. Sits below \"dated but competent\" because the void, missing cue, and missing shadows are basic omissions."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

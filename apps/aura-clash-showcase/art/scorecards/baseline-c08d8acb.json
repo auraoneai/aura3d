@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "aura-clash-showcase",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "aura-clash-showcase",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 4.0,
+        "modeling_assets": 4.0,
+        "texture_quality": 4.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.0,
+        "shadows": 2.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 2.0,
+        "tone_mapping": 3.0,
+        "color_management": 4.0,
+        "anti_aliasing": 4.0,
+        "postprocessing": 2.0,
+        "vfx": 2.0,
+        "particles": 2.0,
+        "animation_quality": 4.0,
+        "character_presentation": 3.0,
+        "camera": 3.0,
+        "composition": 3.0,
+        "scale_depth_perception": 4.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 5.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 3.0,
+        "mobile_presentation": 2.0,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "The stock brownstone street kit is reasonably detailed but unrelated to the arena: a flat plane dropped in front of a facade."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Character meshes and buildings are decent purchased or scanned assets. Lamp posts, signs, and arena borders are box primitives."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Building textures are acceptable. Character textures are erased by flat tint overrides, and the floor is untextured."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Everything has the same matte response. Brick, glass, asphalt, cloth, and skin are indistinguishable in sheen."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No visible specular, no roughness variation, and windows show no reflections. It reads like Lambert shading."
+        },
+        {
+          "category": "lighting",
+          "seen": "Flat, low-contrast fill with no key, no rim to separate fighters from the busy background, and a sourceless floor hotspot."
+        },
+        {
+          "category": "shadows",
+          "seen": "No cast shadows from fighters; foot decals stand in for them. No contact shadowing under the facade."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Uniform grey ambient with no AO and no grounding."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No visible environment reflections on glass, floor, or characters (inferred: likely no envmap or a dim one)."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Murky mid-grey exposure. Blacks are lifted and highlights are weak, so nothing pops."
+        },
+        {
+          "category": "color_management",
+          "seen": "No obvious sRGB double-gamma errors, but the palette is desaturated mud apart from the UI-colored team tints."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Thin floor lines and railings show crawling and stair-stepping (partly inferred through JPEG)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No meaningful bloom on emissive signs or lines, no color grade, no DoF, no vignette."
+        },
+        {
+          "category": "vfx",
+          "seen": "Hit moments have no sparks, flashes, or trails beyond translucent smears."
+        },
+        {
+          "category": "particles",
+          "seen": "A handful of tiny specks, invisible at gameplay scale."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Poses look like competent mocap (stance, kick, launch), but the smear/ghosting obscures them (inferred)."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "Fighters are small and monochrome-tinted, which makes them look like placeholders. Silhouettes get lost against the facade."
+        },
+        {
+          "category": "camera",
+          "seen": "Wide, distant, high-ish framing. Orbiting the angle mid-fight hurts the 2D-plane readability that fighters depend on."
+        },
+        {
+          "category": "composition",
+          "seen": "Subjects sit in the middle third, the foreground is wasted, the background is busy, and combo labels block the action."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Facade scale reads correctly, but the tiny crowd figurines break scale. No fog or value falloff for depth."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, haze, volumetrics, rain, or steam, despite a night street that calls for them."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Team colors make P1 and P2 identifiable. Combo plates occlude hits and the smears confuse state."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "The HUD cards are clean and consistent, but they sit outside the game and look like a web dashboard. Debug-style nav (\"Evidence\", \"Deploy check\", \"npm\") ships in production."
+        },
+        {
+          "category": "typography",
+          "seen": "Bold condensed names and the tracked mono labels work. Small labels are low contrast."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No hitstop, shake, flash, or impact audio-visual feedback is visible. Floating text clips into characters."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Portrait stack with tiny fighters, a black void in a third of the canvas, keyboard hints instead of touch controls, and cropped buttons."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "An early-2010s tech-demo feel wrapped in a polished web shell."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}
