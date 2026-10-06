@@ -219,6 +219,10 @@ export async function runPrd04AuraScene(
 ): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
+  // Stage marker: the capture spec surfaces `window.__QR_STAGE__` on timeouts so a
+  // hung page reports WHERE it wedged instead of a bare waitForFunction error.
+  const stage = (s: string) => { (window as { __QR_STAGE__?: string }).__QR_STAGE__ = s; };
+  stage("flags");
   // Lane-04 seams until lane-15 wires them inside createAuraApp (qr-request):
   // `qualityRebuild.flags` is resolved again for the actor path (createAuraApp
   // resolves it for renderer extensions only), and `renderer.transmission`
@@ -230,6 +234,7 @@ export async function runPrd04AuraScene(
   host.style.width = `${spec.resolution.width}px`;
   host.style.height = `${spec.resolution.height}px`;
 
+  stage("create-app");
   const app: AuraApp = createAuraApp(host, {
     scene: buildScene(spec, log),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
@@ -238,8 +243,10 @@ export async function runPrd04AuraScene(
     resize: false,
     autoStart: false
   });
+  stage("app-ready");
   await app.ready();
 
+  stage("first-draw");
   const drawDeadline = performance.now() + 90_000;
   while (performance.now() < drawDeadline) {
     app.step(0);
@@ -248,6 +255,7 @@ export async function runPrd04AuraScene(
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   if (spec.environment) {
+    stage("hdri");
     const hdriDeadline = performance.now() + 180_000;
     while (performance.now() < hdriDeadline) {
       const environment = (app.diagnostics().renderer as unknown as RendererDiagnosticsShape | undefined)?.environment;
@@ -257,12 +265,14 @@ export async function runPrd04AuraScene(
     }
   }
 
+  stage("settle");
   app.step(spec.time);
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     app.step(0);
   }
   await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  stage("diagnostics");
 
   const diagnostics = app.diagnostics();
   const renderer = app.diagnostics().renderer as unknown as RendererDiagnosticsShape | undefined;
