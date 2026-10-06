@@ -492,23 +492,40 @@ function hideResultCard(): void {
   resultCard.classList.add("is-hidden");
 }
 
+// T1.12: cache element refs + last written string so a constant frame writes
+// zero DOM mutations (ui.setText re-resolves the selector every call).
+const hudCache = new Map<string, { el: HTMLElement; text: string }>();
+function hudText(selector: string, value: string): void {
+  let entry = hudCache.get(selector);
+  if (!entry) {
+    entry = { el: ui.text(selector), text: "" };
+    hudCache.set(selector, entry);
+  }
+  if (entry.text !== value) {
+    entry.el.textContent = value;
+    entry.text = value;
+  }
+}
+
 function syncHud(): void {
   const snap = flow.snapshot();
-  ui.setText("#stat-score", String(snap.score));
-  ui.setText("#stat-ball", `${snap.ball} OF 3`);
-  ui.setText("#stat-mult", `X${snap.multiplier}`);
-  ui.setText("#stat-banks", `${snap.banksDown} OF 5`);
-  ui.setText("#stat-live", String(snap.activeBalls));
-  ui.setText("#stat-tilt", snap.tiltLocked ? "TILT" : `${snap.tiltStrikes} OF 3`);
-  ui.setText("#vb-mission", snap.missionLine);
+  hudText("#stat-score", String(snap.score));
+  hudText("#stat-ball", `${snap.ball} OF 3`);
+  hudText("#stat-mult", `X${snap.multiplier}`);
+  hudText("#stat-banks", `${snap.banksDown} OF 5`);
+  hudText("#stat-live", String(snap.activeBalls));
+  hudText("#stat-tilt", snap.tiltLocked ? "TILT" : `${snap.tiltStrikes} OF 3`);
+  hudText("#vb-mission", snap.missionLine);
   const charge = plunger.state();
-  powerFill.style.width = Math.round(charge.charge * 100) + "%";
-  powerLabel.textContent = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
-  ui.setText("#vb-ev-backend", snap.backend);
-  ui.setText("#vb-ev-flipper", "joint");
-  ui.setText("#vb-ev-sensors", String(snap.sensorEventCount));
-  ui.setText("#vb-ev-joints", String(snap.jointCount));
-  banner.textContent = paused
+  const width = Math.round(charge.charge * 100) + "%";
+  if (powerFill.style.width !== width) powerFill.style.width = width;
+  const plungerText = plunger.charging ? `Plunge ${Math.round(charge.charge * 100)}%` : "Plunger";
+  if (powerLabel.textContent !== plungerText) powerLabel.textContent = plungerText;
+  hudText("#vb-ev-backend", snap.backend);
+  hudText("#vb-ev-flipper", "joint");
+  hudText("#vb-ev-sensors", String(snap.sensorEventCount));
+  hudText("#vb-ev-joints", String(snap.jointCount));
+  const bannerText = paused
     ? "PAUSED - P TO RESUME"
     : snap.phase === "attract"
       ? "VAULT BREAKERS - HOLD SPACE, RELEASE TO SERVE"
@@ -517,6 +534,7 @@ function syncHud(): void {
         : snap.phase === "game-over"
           ? "GAME OVER - R OR PLAY AGAIN"
           : snap.multiball ? "MULTIBALL" : snap.missionLine;
+  if (banner.textContent !== bannerText) banner.textContent = bannerText;
 }
 
 // ------------------------------------------------------------- actions -------

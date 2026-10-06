@@ -854,40 +854,33 @@ function releaseShot(powerOverride?: number, pitchOverride?: number): void {
   }
 }
 
+// T1.12: last-written strings so a constant frame writes zero DOM mutations.
+function setTextIf(el: HTMLElement, value: string): void {
+  if (el.textContent !== value) el.textContent = value;
+}
+
 function updateHUD(): void {
   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
   const config = heatConfig(scoreState.heat);
-  elHeatBadge.textContent = `Heat ${scoreState.heat} · ${config.name}`;
-  elScoreVal.textContent = String(scoreState.score);
-  elTargetVal.textContent = scoreState.heat === 2
+  setTextIf(elHeatBadge, `Heat ${scoreState.heat} · ${config.name}`);
+  setTextIf(elScoreVal, String(scoreState.score));
+  setTextIf(elTargetVal, scoreState.heat === 2
     ? `${scoreState.madeSpotIds.length}/3 SPOTS`
     : scoreState.heat === 4
       ? `${Math.min(3, scoreState.streak)}/3 SWISHES`
-      : scoreState.heat === 5 ? "GOLD MAKE" : String(scoreState.target);
-  elStreakVal.textContent = String(scoreState.streak);
-  elHeatTimer.textContent = `${Math.ceil(scoreState.heatTimer)}s`;
-  elShotClock.textContent = scoreState.shotClock.toFixed(1);
+      : scoreState.heat === 5 ? "GOLD MAKE" : String(scoreState.target));
+  setTextIf(elStreakVal, String(scoreState.streak));
+  setTextIf(elHeatTimer, `${Math.ceil(scoreState.heatTimer)}s`);
+  setTextIf(elShotClock, scoreState.shotClock.toFixed(1));
 
-  if (scoreState.shotClock < 3.0) {
-    elShotClock.classList.add("critical");
-  } else {
-    elShotClock.classList.remove("critical");
-  }
-
-  if (scoreState.onFire) {
-    elFireBadge.classList.remove("hidden");
-  } else {
-    elFireBadge.classList.add("hidden");
-  }
+  elShotClock.classList.toggle("critical", scoreState.shotClock < 3.0);
+  elFireBadge.classList.toggle("hidden", !scoreState.onFire);
 
   const isGold = isCurrentPossessionGold(scoreState.possession);
-  elSpotDesc.textContent = `${currentSpot.name}`;
-  elShotType.textContent = isGold ? "GOLD BALL ×2" : "Standard Ball";
-  if (isGold) {
-    elShotType.style.color = "var(--accent-gold)";
-  } else {
-    elShotType.style.color = "var(--text-muted)";
-  }
+  setTextIf(elSpotDesc, `${currentSpot.name}`);
+  setTextIf(elShotType, isGold ? "GOLD BALL ×2" : "Standard Ball");
+  const shotTypeColor = isGold ? "var(--accent-gold)" : "var(--text-muted)";
+  if (elShotType.style.color !== shotTypeColor) elShotType.style.color = shotTypeColor;
 
   // Update Sweet Zone on meter track
   const sweetLeft = Math.max(0, (currentSpot.sweetPower - 0.08) * 100);
@@ -897,7 +890,7 @@ function updateHUD(): void {
 
   elMeterFill.style.width = `${chargePower * 100}%`;
   if (ballState.result) {
-    elLastResult.textContent = ballState.result.toUpperCase();
+    setTextIf(elLastResult, ballState.result.toUpperCase());
   }
 
   // Modal display for heat-cleared / game-over

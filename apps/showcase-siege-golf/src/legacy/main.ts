@@ -995,6 +995,25 @@ const panel = document.getElementById("panel")!;
 panel.dataset.capture = visualReviewCapture ? "review" : "default";
 const powerFill = document.getElementById("sg-power-fill")!;
 const powerLabel = document.getElementById("sg-power-label")!;
+// T1.12: mobile HUD elements were re-fetched by getElementById every frame.
+const mobilePowerFill = document.getElementById("sg-mobile-power-fill")!;
+const mobilePowerLabel = document.getElementById("sg-mobile-power-label")!;
+const mobileState = document.getElementById("sg-mobile-state")!;
+
+// T1.12: cache element refs + last written string so a constant frame writes
+// zero DOM mutations (ui.setText re-resolves the selector every call).
+const hudCache = new Map<string, { el: HTMLElement; text: string }>();
+function hudText(selector: string, value: string): void {
+  let entry = hudCache.get(selector);
+  if (!entry) {
+    entry = { el: ui.text(selector), text: "" };
+    hudCache.set(selector, entry);
+  }
+  if (entry.text !== value) {
+    entry.el.textContent = value;
+    entry.text = value;
+  }
+}
 
 function hideResultCard(): void {
   resultCard.classList.add("is-hidden");
@@ -1035,20 +1054,20 @@ function queueResultCard(title: string, detail: string, stars: string, nextLabel
 
 function syncHud(): void {
   const hole = flow.hole;
-  ui.setText("#stat-hole", (holeIndex + 1) + "/" + SIEGE_GOLF_HOLES.length);
-  ui.setText("#stat-par", String(hole.par));
-  ui.setText("#stat-strokes", String(flow.strokes));
-  ui.setText("#stat-targets", flow.snapshot().targetsSunk + "/" + hole.pins.length);
-  ui.setText("#stat-sensors", String(flow.snapshot().sensorEventCount));
+  hudText("#stat-hole", (holeIndex + 1) + "/" + SIEGE_GOLF_HOLES.length);
+  hudText("#stat-par", String(hole.par));
+  hudText("#stat-strokes", String(flow.strokes));
+  hudText("#stat-targets", flow.snapshot().targetsSunk + "/" + hole.pins.length);
+  hudText("#stat-sensors", String(flow.snapshot().sensorEventCount));
   const played = [
     ...roundEntries,
     ...(flow.phase === "hole-complete" ? [{ holeIndex, par: hole.par, strokes: flow.strokes }] : [])
   ].filter((entry) => entry.strokes !== undefined);
   if (played.length > 0) {
     const totals = roundTotals(played);
-    ui.setText("#stat-round", versusPar(totals.totalStrokes, totals.totalPar) + " · " + totals.totalStars + "★");
+    hudText("#stat-round", versusPar(totals.totalStrokes, totals.totalPar) + " · " + totals.totalStars + "★");
   } else {
-    ui.setText("#stat-round", "E");
+    hudText("#stat-round", "E");
   }
   const chargeState = shot.state;
   // The meter used to sit at literally 0% width whenever Space was not held,
@@ -1057,34 +1076,35 @@ function syncHud(): void {
   // charge it now reports the power the shot will actually use.
   const shownPower = shot.charging ? chargeState.charge : previewPowerFraction();
   const shownPowerPct = Math.round(shownPower * 100);
-  powerFill.style.width = shownPowerPct + "%";
-  const mobilePowerFill = document.getElementById("sg-mobile-power-fill")!;
-  const mobilePowerLabel = document.getElementById("sg-mobile-power-label")!;
-  const mobileState = document.getElementById("sg-mobile-state")!;
-  mobilePowerFill.style.width = shownPowerPct + "%";
-  mobilePowerLabel.textContent = shownPowerPct + "%";
-  mobileState.textContent = paused
+  const widthText = shownPowerPct + "%";
+  if (powerFill.style.width !== widthText) powerFill.style.width = widthText;
+  if (mobilePowerFill.style.width !== widthText) mobilePowerFill.style.width = widthText;
+  if (mobilePowerLabel.textContent !== widthText) mobilePowerLabel.textContent = widthText;
+  const mobileStateText = paused
     ? "Paused"
     : flow.phase === "simulating"
       ? "Ball in flight"
       : flow.phase === "hole-complete"
         ? "Target sunk"
         : shot.charging ? "Charging" : "Aim";
-  powerLabel.textContent = shot.charging
+  if (mobileState.textContent !== mobileStateText) mobileState.textContent = mobileStateText;
+  const powerText = shot.charging
     ? "Power " + shownPowerPct + "%"
     : flow.phase === "simulating" ? "Ball in motion" : "Power " + shownPowerPct + "%";
-  ui.setText("#sg-ev-backend", flow.sim.backend);
-  ui.setText("#sg-ev-bodies", String(flow.sim.bodyCount));
-  ui.setText("#sg-ev-sensors", String(flow.snapshot().sensorEventCount));
-  ui.setText("#sg-ev-hash", flow.lastShotHash || "pending");
-  ui.setText("#sg-ev-resetmatch", flow.resetHashMatch === null ? "n/a" : flow.resetHashMatch ? "match" : "MISMATCH");
-  banner.textContent = paused
+  if (powerLabel.textContent !== powerText) powerLabel.textContent = powerText;
+  hudText("#sg-ev-backend", flow.sim.backend);
+  hudText("#sg-ev-bodies", String(flow.sim.bodyCount));
+  hudText("#sg-ev-sensors", String(flow.snapshot().sensorEventCount));
+  hudText("#sg-ev-hash", flow.lastShotHash || "pending");
+  hudText("#sg-ev-resetmatch", flow.resetHashMatch === null ? "n/a" : flow.resetHashMatch ? "match" : "MISMATCH");
+  const bannerText = paused
     ? hole.name + " · Par " + hole.par + " · Paused"
     : flow.phase === "hole-complete"
       ? hole.name + " · Par " + hole.par + " · Complete"
       : flow.phase === "hole-failed"
         ? hole.name + " · Par " + hole.par + " · Failed"
         : hole.name + " · Par " + hole.par + " · Stroke " + (flow.strokes + 1);
+  if (banner.textContent !== bannerText) banner.textContent = bannerText;
 }
 
 function syncBlurb(): void {
