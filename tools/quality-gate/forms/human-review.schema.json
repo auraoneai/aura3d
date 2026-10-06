@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://auraone.ai/aura3d/schemas/human-review.schema.json",
+  "title": "Human review export (PRD-14 §7.3 human[] entry)",
+  "description": "One human-review form export as consumed by tools/quality-gate/src/scorecard.ts (the scorecard's human[] entries).",
+  "type": "object",
+  "required": ["schema", "gameId", "round", "human"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": { "const": "aura3d.human-review/1" },
+    "gameId": { "type": "string", "minLength": 1 },
+    "round": { "type": "string", "minLength": 1 },
+    "human": {
+      "type": "object",
+      "required": [
+        "judge", "device", "tier", "playedMinutes", "visual", "nonVisual",
+        "measuredFps", "competitiveWithModernThree", "notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "judge": {
+          "type": "object",
+          "required": ["kind", "id"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "human" },
+            "id": { "type": "string", "minLength": 1, "description": "Reviewer login (never an agent id)." },
+            "model": { "type": "string" }
+          }
+        },
+        "device": { "type": "string", "minLength": 1, "description": "e.g. 'MacBook Air M2 / Safari 18'" },
+        "tier": { "enum": ["low", "medium", "high", "ultra"] },
+        "playedMinutes": { "type": "number", "minimum": 5 },
+        "visual": {
+          "type": "object",
+          "required": [
+            "environment_world", "modeling_assets", "texture_quality", "material_quality",
+            "pbr_credibility", "lighting", "shadows", "ambient_lighting", "ibl_reflections",
+            "tone_mapping", "color_management", "anti_aliasing", "postprocessing", "vfx",
+            "particles", "animation_quality", "character_presentation", "camera", "composition",
+            "scale_depth_perception", "atmospheric_effects", "gameplay_readability", "ui_hud",
+            "typography", "polish_juice", "mobile_presentation", "overall_visual_quality"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "environment_world": { "$ref": "#/definitions/score" },
+            "modeling_assets": { "$ref": "#/definitions/score" },
+            "texture_quality": { "$ref": "#/definitions/score" },
+            "material_quality": { "$ref": "#/definitions/score" },
+            "pbr_credibility": { "$ref": "#/definitions/score" },
+            "lighting": { "$ref": "#/definitions/score" },
+            "shadows": { "$ref": "#/definitions/score" },
+            "ambient_lighting": { "$ref": "#/definitions/score" },
+            "ibl_reflections": { "$ref": "#/definitions/score" },
+            "tone_mapping": { "$ref": "#/definitions/score" },
+            "color_management": { "$ref": "#/definitions/score" },
+            "anti_aliasing": { "$ref": "#/definitions/score" },
+            "postprocessing": { "$ref": "#/definitions/score" },
+            "vfx": { "$ref": "#/definitions/score" },
+            "particles": { "$ref": "#/definitions/score" },
+            "animation_quality": { "$ref": "#/definitions/score" },
+            "character_presentation": { "$ref": "#/definitions/score" },
+            "camera": { "$ref": "#/definitions/score" },
+            "composition": { "$ref": "#/definitions/score" },
+            "scale_depth_perception": { "$ref": "#/definitions/score" },
+            "atmospheric_effects": { "$ref": "#/definitions/score" },
+            "gameplay_readability": { "$ref": "#/definitions/score" },
+            "ui_hud": { "$ref": "#/definitions/score" },
+            "typography": { "$ref": "#/definitions/score" },
+            "polish_juice": { "$ref": "#/definitions/score" },
+            "mobile_presentation": { "$ref": "#/definitions/score" },
+            "overall_visual_quality": { "$ref": "#/definitions/score" }
+          }
+        },
+        "nonVisual": {
+          "type": "object",
+          "required": ["sound_audio", "controls", "physics_feel", "game_feel", "loading_transitions"],
+          "additionalProperties": false,
+          "properties": {
+            "sound_audio": { "$ref": "#/definitions/score" },
+            "controls": { "$ref": "#/definitions/score" },
+            "physics_feel": { "$ref": "#/definitions/score" },
+            "game_feel": { "$ref": "#/definitions/score" },
+            "loading_transitions": { "$ref": "#/definitions/score" }
+          }
+        },
+        "measuredFps": {
+          "type": "object",
+          "required": ["p50", "p95"],
+          "additionalProperties": false,
+          "properties": {
+            "p50": { "type": "number", "exclusiveMinimum": 0 },
+            "p95": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "competitiveWithModernThree": { "type": "boolean" },
+        "notes": { "type": "string", "minLength": 200 }
+      }
+    }
+  },
+  "definitions": {
+    "score": { "type": "number", "minimum": 0, "maximum": 10, "multipleOf": 0.5 }
+  }
+}
