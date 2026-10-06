@@ -1304,9 +1304,9 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `previousModelMatrix` (C-14). Dev warning when a handle moves > 5 u in one fixed step without `teleport`. Unit tests:
   alpha 0/0.5/1 results; yaw 350° → 10° interpolates through 0° (not 180°); teleport produces no intermediate
   positions; the contributor returns the same array when the flag is off; `handle.rotation` is never overwritten.
-- [ ] L-8 Lane benchmark harness: `tests/qr/prd08/harness/camera-feel-harness.{html,ts}` builds a scene with 20 moving
+- [x] L-8 Lane benchmark harness: `tests/qr/prd08/harness/camera-feel-harness.{html,ts}` builds a scene with 20 moving
   runtime nodes on `createAuraApp` + `FixedStepDriver` (no dependency on `createGameApp`).
-- [ ] L-9 New `tests/qr/prd08/browser/frame-pacing.spec.ts` on the L-8 harness: Playwright overrides
+- [x] L-9 New `tests/qr/prd08/browser/frame-pacing.spec.ts` on the L-8 harness: Playwright overrides
   `requestAnimationFrame` with a scripted clock (60/120/144 Hz and fixed 100/250 ms intervals) and records per
   presented frame `performance.now()`, `simTime`, presented node positions and `renderSubmissionsLastTick`; writes the
   CSV of §20 item 3; asserts S1, S2, S3. A second, non-gating run uses CDP CPU throttle rate 6 to record real-world
