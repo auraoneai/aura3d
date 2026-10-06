@@ -36,3 +36,8 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **Change**: (a) drop the seeded `"light.power"` diagnostic-only row — PRD 02 has wired it (`physicalLightDescriptor` consumes lumens → candela); audit trail in `compiler/diagnosticOnly.prd02.ts`. (b) re-export `probes` from `agent-api/nodes/probes.ts` in the public `effects`/`environments` style (top-level `probes` builder namespace).
 - **Workaround in place**: `probes` is exported from `@aura3d/engine/lanes` (`lanes/prd02.ts`) until the public surface lands.
 - **Raised**: 2026-10-06, Phase 2 (`qr/prd02-engine-composition`).
+
+## to:prd15 (Phase 3a additions)
+- `tests/browser/contracts/C-12-sampler.spec.ts` does not exist — the C-12 conformance spec named in CONTRACTS §933 was never written in PR 0a/0b. Lane 02 covers the mapping with `tests/unit/contracts/impl/prd02-sampler-c12.test.ts` (device mock); please add the browser spec (1-mip downgrade; compare sampler compiles).
+- `setRendererQrFlags` (`renderer/FrameGraph.ts`) is never called from `createAuraApp` — engine-side flag plumbing for rendering-layer flag checks is missing. Lane 02's `webgl2/Samplers.ts` C-12 mapping and mip-mapped env bindings read `rendererQrFlags()`; without wiring they only see the flag in tests. Please add `setRendererQrFlags(qrFlags)` at `createAuraApp.ts:26` (lane-15 file) or point us at the intended call site.
+- C-12 has no `defineContractSlot` in `contracts/sampling.ts` — the "provide(real)" semantics for `resolveLightingSamplerBudget`/the WebGL2 mapping is implemented flag-gated inside `webgl2/Samplers.ts` + `environment/LightingSamplerBudget.ts`. If consumers (lanes 04/05/10) must call the real impl via a slot, a `ContractSlot` needs adding to the frozen file.
