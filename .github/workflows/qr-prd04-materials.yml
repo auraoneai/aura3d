@@ -1,0 +1,128 @@
+name: QR PRD-04 materials
+
+# Lane 04 workflow (PRD-04 §13 P1-13): unit tests + ChunkHarness conformance +
+# flag-`none`/flag-set scene captures on macos-14 (Chromium, ANGLE Metal) — the
+# same runner class as quality-rebuild-capture.yml / qr-contracts.yml.
+# Artifacts: tests/reports/material-conformance.json + tests/reports/prd04/.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/rendering/src/shaders/physical/**"
+      - "packages/rendering/src/shaders/physical-wgsl/**"
+      - "packages/rendering/src/materials/**"
+      - "packages/rendering/src/lanes/prd04.ts"
+      - "packages/rendering/src/textures/**"
+      - "packages/assets/src/{GLTFRenderResources,GLTFExtensionSupport,MikkTSpaceTangents}.ts"
+      - "packages/engine/src/production-runtime/{TypedGLBActor,ModelMaterialOverrides}.ts"
+      - "packages/engine/src/production-runtime/material-physical/**"
+      - "packages/engine/src/agent-api/compiler/{modelMaterials,textures}.ts"
+      - "packages/engine/src/agent-api/nodes/material.ts"
+      - "packages/aura3d-cli/src/commands/prd04/**"
+      - "tools/codemods/pin-emissive-defaults.mjs"
+      - "tools/codemods/prd04-model-tint-report.mjs"
+      - "tools/generate-extension-matrix.mjs"
+      - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"
+      - "tests/qr/prd04/**"
+      - "fixtures/asset-corpus/**"
+      - ".github/workflows/qr-prd04-materials.yml"
+  push:
+    branches: ['qr/**']
+    paths:
+      - "tests/qr/prd04/**"
+      - "benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd04/**"
+      - "packages/rendering/src/shaders/physical/**"
+      - ".github/workflows/qr-prd04-materials.yml"
+  workflow_dispatch:
+    inputs:
+      flags:
+        description: "QrFlag list for the capture job (none|materials|comma list)"
+        required: false
+        default: "none"
+
+concurrency:
+  group: qr-prd04-materials-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRD04_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - name: Lane unit tests (chunk registration, r185 oracle, scenes, codemods)
+        run: pnpm exec vitest run -c tests/qr/prd04/vitest.config.ts
+      - name: Contract conformance
+        run: pnpm exec vitest run tests/unit/contracts
+      - name: Ownership check
+        run: node tools/qr-ownership/check.mjs
+
+  browser:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Browser conformance (ChunkHarness, ANGLE Metal)
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "chunk conformance"
+      - name: Upload material-conformance.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-material-conformance
+          path: |
+            tests/reports/material-conformance.json
+            tests/reports/prd04-chunk-harness.json
+          if-no-files-found: warn
+
+  capture:
+    name: Lane captures (flags=${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }})
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Scene captures (prd04-* + legacy reference scenes, both engines)
+        env:
+          PRD04_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }}
+          PRD04_SCENES: "prd04-texture-transform,prd04-normal-tangent,prd04-iridescence,prd04-anisotropy,prd04-dispersion,prd04-variants,prd04-ktx2,prd04-tiled-ground,prd04-tinted-hero,prd04-alpha-mask,02-pbr-product,03-damaged-helmet,04-clearcoat,05-transmission,06-metal-roughness-sweep,07-sheen-fabric,08-skinned-character"
+          PRD04_ENGINES: "aura3d,three"
+        run: pnpm exec playwright test --config tests/qr/prd04/playwright.config.ts --grep "lane captures"
+      - name: Upload captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd04-captures-${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'none' }}
+          path: tests/reports/prd04/
+          if-no-files-found: warn
