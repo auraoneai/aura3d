@@ -23,8 +23,8 @@ import { upgradeProductionPrimitiveTextures } from "./textures.js";
 import { camera } from "../nodes/camera.js";
 import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
-import { compileScene, updateCompiledScene } from "../../contracts/compiler.js";
-import { asRuntimeCompiled, type MountSceneCompileContext } from "./compileScene.js";
+import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
+import type { MountSceneCompileContext } from "./compileScene.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 
@@ -159,7 +159,10 @@ export async function createProductionRuntimeSceneRenderer(
   const compiled = asRuntimeCompiled(compiledScene);
   if (compiled) {
     actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
-    primitiveEntries = compiled.primitiveEntries;
+    primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
+    // C-37: bind the mounted compiled scene so registry add/remove can take the
+    // subtree-compile path (no remount) under A3D_QR_COMPILER.
+    (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
   }
   const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
   const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
@@ -273,7 +276,7 @@ export async function createProductionRuntimeSceneRenderer(
     if (compiled) {
       // C-36 real path: per-frame update on the mounted compiled scene.
       updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time);
-      return compiled.lastInput!;
+      return compiled.lastInput! as ProductionRendererInput;
     }
     runtimeWarnings.clear();
     return createProductionRuntimeRendererInput(
@@ -345,6 +348,7 @@ export async function createProductionRuntimeSceneRenderer(
       disposeHdriEnvironment?.();
       productionRenderer.dispose();
       if (compiled) {
+        (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);
         compiled.dispose();
         return;
       }

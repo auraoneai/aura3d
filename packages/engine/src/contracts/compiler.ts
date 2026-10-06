@@ -151,3 +151,31 @@ export function updateCompiledScene(compiled: CompiledScene, snapshot: AuraScene
   }
   return compiled.source;
 }
+
+/**
+ * The mounted state a real C-36 compiled scene carries (agent-api/compiler/compileScene.ts).
+ * Declared here so the renderer and the runtime-node registry can consume it without
+ * importing the impl — importing the impl would close an agent-api import cycle.
+ */
+export interface RuntimeCompiledSceneInternals {
+  source: unknown /* RenderSource */ | null;
+  lastInput: unknown /* ProductionRendererInput */ | null;
+  actorEntries: readonly unknown[];
+  primitiveEntries: readonly unknown[];
+  liveNodes: readonly import("../agent-api/nodes/types.js").AuraSceneNode[];
+  addSubtree(node: import("../agent-api/nodes/types.js").AuraSceneNode, parentId?: string): void;
+  removeSubtree(runtimeId: string): boolean;
+  dispose(): void;
+}
+
+const runtimeCompiledInternals = new WeakMap<CompiledScene, RuntimeCompiledSceneInternals>();
+
+/** Called by the real impl's constructor — self-binds its mounted internals. */
+export function bindRuntimeCompiled(scene: CompiledScene, internals: RuntimeCompiledSceneInternals): void {
+  runtimeCompiledInternals.set(scene, internals);
+}
+
+/** Runtime internals of a real-compiled scene, or null for stubs/foreign impls. */
+export function asRuntimeCompiled(compiled: CompiledScene): RuntimeCompiledSceneInternals | null {
+  return runtimeCompiledInternals.get(compiled) ?? null;
+}

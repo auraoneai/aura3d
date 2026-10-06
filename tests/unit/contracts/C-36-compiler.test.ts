@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import "@aura3d/engine";
 import { DIAGNOSTIC_ONLY_FIELDS, compileScene, updateCompiledScene } from "@aura3d/engine/contracts";
 import type { MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";
-import { asRuntimeCompiled } from "../../../packages/engine/src/agent-api/compiler/compileScene";
+import { asRuntimeImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene";
 import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { registerNodeHandler } from "../../../packages/engine/src/contracts/compiler";
@@ -53,13 +53,13 @@ describe("C-36 compiler", () => {
     expect(compiled.source).toBeNull();
     expect(compiled.actors).toEqual([]);
     expect(compiled.degradations[0]?.code).toBe("capability-degraded");
-    expect(asRuntimeCompiled(compiled)).toBeNull();
+    expect(asRuntimeImpl(compiled)).toBeNull();
   });
 
   it("flag on: real impl compiles entries and produces a RenderSource", async () => {
     const flags = resolveQrFlags({ options: ["compiler"] });
     const compiled = await compileScene(litScene(), mountCtx(flags));
-    const impl = asRuntimeCompiled(compiled);
+    const impl = asRuntimeImpl(compiled);
     expect(impl).not.toBeNull();
     expect(impl!.primitiveEntries.length).toBe(1);
     expect(compiled.source).toBeTruthy();
@@ -69,7 +69,7 @@ describe("C-36 compiler", () => {
     expect(source).toBeTruthy();
     const items = source.collectRenderItems ? [...source.collectRenderItems()] : (source.renderItems ?? []);
     expect([...items].length).toBeGreaterThan(0);
-    expect(compiled.lastInput).not.toBeNull();
+    expect(asRuntimeImpl(compiled)!.lastInput).not.toBeNull();
     compiled.dispose();
   });
 
@@ -103,7 +103,7 @@ describe("C-36 compiler", () => {
       flag: "A3D_QR_MATERIALS",
       compile(node, _ctx, out) {
         calls.push(`compile:${node.kind}`);
-        out.feature("materials.test");
+        out.feature("world.materials-test");
       },
       update(node, _handle, _ctx, out, t) {
         calls.push(`update:${node.kind}:${t}`);
@@ -113,7 +113,7 @@ describe("C-36 compiler", () => {
     try {
       const flags = resolveQrFlags({ options: ["compiler", "materials"] });
       const compiled = await compileScene(litScene(), mountCtx(flags));
-      expect(compiled.features.has("materials.test" as never)).toBe(true);
+      expect(compiled.features.has("world.materials-test")).toBe(true);
       expect(calls).toContain("compile:primitive");
       const source = updateCompiledScene(compiled, litScene(), undefined as never, 1) as Record<string, unknown>;
       expect(calls).toContain("update:primitive:1");
@@ -129,7 +129,7 @@ describe("C-36 compiler", () => {
     const flags = resolveQrFlags({ options: ["compiler"] });
     const warnings = new Set<string>();
     const compiled = await compileScene(snapshot, mountCtx(flags, { runtimeWarnings: warnings }));
-    const impl = asRuntimeCompiled(compiled)!;
+    const impl = asRuntimeImpl(compiled)!;
     updateCompiledScene(compiled, snapshot, undefined as never, 0);
 
     const legacyWarnings = new Set<string>();
@@ -144,7 +144,8 @@ describe("C-36 compiler", () => {
       stubLighting(),
       []
     );
-    const a = JSON.parse(JSON.stringify({ source: impl.lastInput!.source, camera: impl.lastInput!.camera }));
+    const lastInput = asRuntimeImpl(compiled)!.lastInput!;
+    const a = JSON.parse(JSON.stringify({ source: lastInput.source, camera: lastInput.camera }));
     const b = JSON.parse(JSON.stringify({ source: legacy.source, camera: legacy.camera }));
     expect(a).toEqual(b);
     compiled.dispose();

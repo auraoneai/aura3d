@@ -39,6 +39,9 @@ import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInput, RenderItem, RenderSource } from "@aura3d/rendering";
 import { isKnownNodeKind, resolveNodeHandler } from "./handlers.js";
 import { AuraRuntimeError } from "./errors.js";
+import { bindRuntimeCompiled } from "../../contracts/compiler.js";
+import type { RuntimeCompiledSceneInternals } from "../../contracts/compiler.js";
+export { asRuntimeCompiled } from "../../contracts/compiler.js";
 
 /** Internal context fields the mount supplies beyond the frozen C-36 shape. */
 export interface MountSceneCompileContext extends SceneCompileContext {
@@ -104,20 +107,146 @@ export class CompiledSceneImpl implements CompiledScene {
   source: RenderSource | null;
   /** Latest frame input (source + camera) for `renderer.ts`'s render calls. */
   lastInput: ProductionRendererInput | null = null;
+  /** Mutable entry lists — C-37 add/remove grow and shrink them without remount. */
+  actorEntries: ProductionRuntimeActorEntry[];
+  primitiveEntries: ProductionRuntimePrimitiveEntry[];
+  handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[];
+  actors: CompiledActor[];
+  /** Flattened node set the per-frame update draws from (base + dynamically added). */
+  liveNodes: AuraSceneNode[];
+  /** Raw (pre-flatten) nodes added via the C-37 subtree path, keyed by their root runtime id. */
+  dynamicRoots = new Map<string, AuraSceneNode>();
+  /** Flattened nodes belonging to each dynamic root (for subtree dispose). */
+  dynamicFlat = new Map<string, AuraSceneNode[]>();
+  /** RenderItem reuse cache for A3D_QR_COMPILER frames (T3.12): node version → last item. */
+  itemCache = new Map<string, { version: number; item: RenderItem }>();
+  /** Source contributions made by dynamically added subtree handlers. */
+  persistentContributions = createContributions();
   private disposed = false;
+  private readonly rawSceneNodes: readonly AuraSceneNode[];
 
   constructor(
     readonly snapshotVersion: number,
     source: RenderSource | null,
-    readonly actors: readonly CompiledActor[],
+    actors: CompiledActor[],
     readonly features: ReadonlySet<AuraCompiledFeature>,
     readonly degradations: readonly AuraDegradation[],
-    readonly actorEntries: readonly ProductionRuntimeActorEntry[],
-    readonly primitiveEntries: readonly ProductionRuntimePrimitiveEntry[],
-    readonly handledNodes: readonly { node: AuraSceneNode; handler: AnyNodeHandler }[],
-    readonly mountCtx: MountSceneCompileContext
+    actorEntries: ProductionRuntimeActorEntry[],
+    primitiveEntries: ProductionRuntimePrimitiveEntry[],
+    handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[],
+    readonly mountCtx: MountSceneCompileContext,
+    sceneNodes: readonly AuraSceneNode[],
+    flatNodes: AuraSceneNode[]
   ) {
     this.source = source;
+    this.actors = actors;
+    this.actorEntries = actorEntries;
+    this.primitiveEntries = primitiveEntries;
+    this.handledNodes = handledNodes;
+    this.rawSceneNodes = sceneNodes;
+    this.liveNodes = flatNodes;
+    bindRuntimeCompiled(this as unknown as import("../../contracts/compiler.js").CompiledScene, this as unknown as RuntimeCompiledSceneInternals);
+  }
+
+  /**
+   * C-37 subtree compile (no remount): flatten the incoming node, run the same
+   * per-node pipeline mount used (entries, actors, handlers), and merge into the
+   * live entry lists. Model actors resolve asynchronously and join when loaded.
+   */
+  addSubtree(node: AuraSceneNode, parentId?: string): void {
+    const parent = parentId ? findNodeByRuntimeId(this.rawSceneNodes, parentId) ?? findDynamicRoot(this.dynamicRoots, parentId) : undefined;
+    const effective = parent && parent.kind === "group"
+      ? ({ ...parent, children: [node] } as AuraSceneNode)
+      : node;
+    const flatNodes = groups.flatten([effective]).slice();
+    this.dynamicRoots.set(runtimeIdOf(node), node);
+    this.dynamicFlat.set(runtimeIdOf(node), flatNodes);
+    this.liveNodes = this.liveNodes.concat(flatNodes);
+
+    const contributions = this.persistentContributions;
+    const out = new SourceContributions(contributions);
+    const ctx = this.mountCtx;
+    const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes);
+    this.primitiveEntries.push(...extraPrimitive);
+
+    const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
+      isRenderableModelNode(candidate) && createAssetProvenance(candidate.asset).source === "typed-aura-assets-manifest"
+    );
+    for (const [index, modelNode] of newModelNodes.entries()) {
+      void (async () => {
+        const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
+        const actor = await createTypedGLBActor({
+          asset: modelNode.asset,
+          id: modelNode.runtime?.id ?? modelNode.asset.id ?? `added-model-${index + 1}`,
+          name: modelNode.name ?? modelNode.asset.id ?? `added-model-${index + 1}`,
+          width: ctx.canvas.width,
+          height: ctx.canvas.height,
+          ...(modelNode.hiddenNodeNames ? { hiddenNodeNames: modelNode.hiddenNodeNames } : {}),
+          ...(modelNode.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
+          ...applyModelTintBridge(modelNode)
+        });
+        if (this.disposed || !runtimeIdStillLive(this, runtimeIdOf(modelNode))) {
+          actor.dispose();
+          return;
+        }
+        this.actorEntries.push({ node: modelNode, actor });
+        this.actors.push({ nodeId: actor.id, dispose: () => actor.dispose() });
+      })();
+    }
+
+    for (const flatNode of flatNodes) {
+      const kind = String((flatNode as { kind?: string }).kind ?? "");
+      if (!isKnownNodeKind(kind)) {
+        if (ctx.strict) {
+          throw new AuraRuntimeError("unknown-node-kind", `Aura3D scene node kind "${kind}" is not in the C-36 catalog and has no registered handler.`);
+        }
+        ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(flatNode), message: `scene node kind "${kind}" is unknown to the compiler; node ignored` });
+        continue;
+      }
+      const handler = resolveNodeHandler(kind, ctx.flags);
+      if (handler && handler.owner !== "prd15") {
+        this.handledNodes.push({ node: flatNode, handler });
+        void handler.compile(flatNode, ctx, out);
+      }
+    }
+    this.itemCache.clear();
+  }
+
+  /** C-37 subtree dispose (no remount). */
+  removeSubtree(runtimeId: string): boolean {
+    const flatForRoot = this.dynamicFlat.get(runtimeId);
+    const targets: AuraSceneNode[] = flatForRoot ?? this.liveNodes.filter((n) => runtimeIdOf(n) === runtimeId);
+    if (targets.length === 0) return false;
+    const targetSet = new Set(targets);
+    this.dynamicRoots.delete(runtimeId);
+    this.dynamicFlat.delete(runtimeId);
+    this.liveNodes = this.liveNodes.filter((n) => !targetSet.has(n));
+    const keepPrimitive: ProductionRuntimePrimitiveEntry[] = [];
+    for (const entry of this.primitiveEntries) {
+      if (targetSet.has(entry.node)) {
+        for (const { geometry, material, texturedMaterial, textureDisposer } of entry.resources) {
+          textureDisposer?.();
+          geometry.dispose();
+          material.dispose();
+          texturedMaterial?.dispose();
+        }
+      } else keepPrimitive.push(entry);
+    }
+    this.primitiveEntries = keepPrimitive;
+    const keepActors: ProductionRuntimeActorEntry[] = [];
+    for (const entry of this.actorEntries) {
+      if (targetSet.has(entry.node)) entry.actor.dispose();
+      else keepActors.push(entry);
+    }
+    this.actorEntries = keepActors;
+    this.actors = this.actors.filter((a) => keepActors.some((e) => e.actor.id === a.nodeId));
+    this.handledNodes = this.handledNodes.filter(({ node, handler }) => {
+      if (!targetSet.has(node)) return true;
+      handler.dispose?.(node);
+      return false;
+    });
+    this.itemCache.clear();
+    return true;
   }
 
   dispose(): void {
@@ -136,9 +265,27 @@ export class CompiledSceneImpl implements CompiledScene {
   }
 }
 
-export function asRuntimeCompiled(compiled: CompiledScene): CompiledSceneImpl | null {
-  return compiled instanceof CompiledSceneImpl ? compiled : null;
-}
+const runtimeIdOf = (node: AuraSceneNode): string =>
+  ("runtime" in node ? node.runtime?.id : undefined) ?? (node as { name?: string }).name ?? "";
+
+const findNodeByRuntimeId = (nodes: readonly AuraSceneNode[], runtimeId: string): AuraSceneNode | undefined => {
+  for (const node of nodes) {
+    if (("runtime" in node ? node.runtime?.id : undefined) === runtimeId) return node;
+    if (node.kind === "group") {
+      const inner = findNodeByRuntimeId(node.children, runtimeId);
+      if (inner) return inner;
+    }
+  }
+  return undefined;
+};
+
+const findDynamicRoot = (roots: Map<string, AuraSceneNode>, runtimeId: string): AuraSceneNode | undefined =>
+  roots.get(runtimeId) ?? [...roots.values()].map((n) => findNodeByRuntimeId([n], runtimeId)).find(Boolean);
+
+const runtimeIdStillLive = (impl: CompiledSceneImpl, runtimeId: string): boolean =>
+  impl.liveNodes.some((n) => runtimeIdOf(n) === runtimeId);
+
+
 
 async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene> {
   const mount = ctx as MountSceneCompileContext;
@@ -192,7 +339,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
       }
       recordDegrade({
         code: "option-ignored",
-        nodeId: (node as { runtime?: { id?: string } }).runtime?.id ?? (node as { name?: string }).name,
+        nodeId: runtimeIdOf(node),
         message: `scene node kind "${kind}" is unknown to the compiler; node ignored`
       });
       continue;
@@ -223,12 +370,18 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     actorEntries,
     primitiveEntries,
     handledNodes,
-    mount
+    mount,
+    snapshot.nodes,
+    flattened.slice()
   );
   // Build the t=0 frame so `compiled.source` is a real RenderSource at mount.
   updateCompiledSceneReal(compiled, snapshot, mount.runtimeNodes as AuraRuntimeNodeRegistry, 0);
   return compiled;
 }
+
+/** Typed impl cast for this module and tests (external callers use `asRuntimeCompiled`). */
+export const asRuntimeImpl = (compiled: CompiledScene): CompiledSceneImpl | null =>
+  compiled instanceof CompiledSceneImpl ? compiled : null;
 
 function updateCompiledSceneReal(
   compiled: CompiledScene,
@@ -236,7 +389,7 @@ function updateCompiledSceneReal(
   runtime: AuraRuntimeNodeRegistry,
   timeSeconds: number
 ): unknown {
-  const impl = asRuntimeCompiled(compiled);
+  const impl = asRuntimeImpl(compiled);
   if (!impl) return compiled.source; // flag-off compiled / foreign impl: no-op
 
   const ctx = impl.mountCtx;
@@ -249,8 +402,9 @@ function updateCompiledSceneReal(
     handler.update?.(node, runtimeId ? runtime?.get(runtimeId) : undefined, ctx, out, timeSeconds);
   }
 
+  const liveSnapshot = impl.liveNodes === undefined ? snapshot : { ...snapshot, nodes: impl.liveNodes };
   const input = createProductionRuntimeRendererInput(
-    snapshot,
+    liveSnapshot,
     ctx.canvas,
     impl.actorEntries,
     impl.primitiveEntries,
@@ -260,10 +414,50 @@ function updateCompiledSceneReal(
     ctx.environmentLighting(),
     ctx.collectedLights
   );
-  const mergedSource = mergeContributions(input.source, contributions);
+  const reusedSource = reuseRenderItems(impl, input.source, runtime);
+  const mergedSource = mergeContributions(mergeContributions(reusedSource, impl.persistentContributions), contributions);
   impl.lastInput = { ...input, source: mergedSource };
   impl.source = mergedSource;
   return mergedSource;
+}
+
+/**
+ * T3.12 RenderItem reuse: an item produced from an entry whose node version (and
+ * ancestor versions — group transforms are baked at flatten/compile time) has not
+ * changed keeps its object identity, so unchanged nodes cost no re-allocation.
+ */
+function reuseRenderItems(
+  impl: CompiledSceneImpl,
+  source: RenderSource,
+  runtime: AuraRuntimeNodeRegistry
+): RenderSource {
+  const collect = source.collectRenderItems ?? (() => source.renderItems ?? []);
+  const items = [...collect()];
+  const nextCache = new Map<string, { version: number; item: RenderItem }>();
+  const nodeForItem = (item: RenderItem): AuraSceneNode | undefined => {
+    const label = item.label ?? "";
+    const primitive = /^primitive-(\d+):/.exec(label);
+    if (primitive) return impl.primitiveEntries[Number(primitive[1])]?.node;
+    const actor = /^actor-(\d+):/.exec(label);
+    if (actor) return impl.actorEntries[Number(actor[1])]?.node;
+    return undefined;
+  };
+  const reused = items.map((item) => {
+    const node = nodeForItem(item);
+    const runtimeId = node ? runtimeIdOf(node) : "";
+    const handle = runtimeId ? runtime?.get(runtimeId) : undefined;
+    if (!handle) return item;
+    const version = handle.version ?? 0;
+    const cached = impl.itemCache.get(runtimeId);
+    if (cached && cached.version === version) {
+      nextCache.set(runtimeId, cached);
+      return cached.item;
+    }
+    nextCache.set(runtimeId, { version, item });
+    return item;
+  });
+  impl.itemCache = nextCache;
+  return { ...source, collectRenderItems: () => reused };
 }
 
 /** The real C-36 impl, provided once from `lanes/prd15.ts`. */

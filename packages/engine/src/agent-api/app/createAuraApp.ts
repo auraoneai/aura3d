@@ -640,6 +640,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       unregisterAuraApp(app);
     }
   };
+  // C-37 (PRD 15 T3.12): the registry's add/remove path needs the live scene —
+  // flag-off appends to the snapshot and remounts via setScene (with the
+  // RUNTIME_ADD_REMOUNT diagnostic); flag-on with a mounted compiled scene takes
+  // the subtree-compile path bound by compiler/renderer.ts.
+  runtimeNodes.configure({
+    flags: qrFlags,
+    getScene: () => snapshot,
+    setScene: (next) => app.setScene(next),
+    diagnostic: (message) => { diagnosticsState.warnings = [...diagnosticsState.warnings, message]; }
+  });
   const extensionDisposers: Array<() => void> = [];
   for (const ext of appExtensionsAll()) {
     const value = ext.create(app, { flags: qrFlags, options });

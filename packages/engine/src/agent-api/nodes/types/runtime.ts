@@ -133,6 +133,8 @@ export interface AuraRuntimeNodeHandle {
   readonly kind: AuraSceneNode["kind"];
   readonly name?: string;
   readonly tags: readonly string[];
+  /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
+  readonly version: number;
   position: AuraVec3;
   rotation: AuraVec3;
   scale: number | AuraVec3;
