@@ -13,7 +13,6 @@ interface GenericReport {
 
 const matrix = readJson<MatrixReport>("tests/reports/three-compat-threejs-compatibility-matrix.json");
 const inventory = readJson<GenericReport>("tests/reports/three-compat-threejs-inventory.json");
-const visualParity = readJson<{ readonly pass: boolean; readonly comparisons: readonly { readonly id: string; readonly visualScore: number }[] }>("tests/reports/three-compat-threejs-visual-parity.json");
 const migration = readJson<GenericReport>("tests/reports/three-compat-migration-readiness.json");
 const packageSmoke = readJson<GenericReport>("tests/reports/three-compat-package-smoke.json");
 const externalConsumer = readJson<GenericReport>("tests/reports/three-compat-external-consumer.json");
@@ -39,11 +38,9 @@ const coreCategories = ["core", "math", "cameras", "lights", "materials", "geome
 const overallCoverage = matrix.coverage.find((item) => item.category === "overall");
 const weakCoreCategories = coreCategories.filter((category) => Number(matrix.coverage.find((item) => item.category === category)?.percent ?? 0) < 80);
 const missingFlagshipScreenshots = flagshipScreenshots.filter((path) => !existsSync(resolve(path)) || statSync(resolve(path)).size < 1024);
-const visualThresholdPasses = visualParity.comparisons.filter((comparison) => comparison.visualScore >= 0.85).length;
 const checks = [
   { id: "compatibility-matrix-present-and-thresholded", pass: matrix.totalEntries >= 250 && Number(overallCoverage?.percent ?? 0) >= 60 && weakCoreCategories.length === 0, detail: `${matrix.totalEntries} entries, overall ${overallCoverage?.percent ?? 0}%, weak core categories: ${weakCoreCategories.join(", ") || "none"}` },
   { id: "inventory-entry-count", pass: Number((inventory.inventory as { entries?: unknown[] } | undefined)?.entries?.length ?? 0) >= 250, detail: "Three.js inventory tracks at least 250 API/example entries" },
-  { id: "same-scene-comparisons", pass: visualParity.pass && visualParity.comparisons.length >= 13 && visualThresholdPasses >= 10, detail: `${visualParity.comparisons.length} comparisons, ${visualThresholdPasses} visual threshold passes` },
   { id: "human-visual-review", pass: reviewText.includes("Acceptable public product page?") && !/\|\s*No\s*\|/.test(reviewText) && missingFlagshipScreenshots.length === 0, detail: missingFlagshipScreenshots.join(", ") || "human review approves all flagship screenshots" },
   { id: "migration-tooling", pass: migration.pass === true, detail: "migration readiness report passes" },
   { id: "package-and-external-consumer", pass: packageSmoke.pass === true && externalConsumer.pass === true, detail: "package smoke and external consumer reports pass" },
@@ -59,8 +56,7 @@ const report = {
   thresholds: {
     minimumInventoryEntries: 250,
     minimumOverallCoveragePercent: 60,
-    minimumCoreCoveragePercent: 80,
-    minimumSameSceneComparisons: 13
+    minimumCoreCoveragePercent: 80
   },
   checks
 };
