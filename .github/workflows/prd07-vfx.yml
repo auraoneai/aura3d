@@ -33,6 +33,16 @@ jobs:
           pnpm exec vitest run --config tests/qr/prd07/vitest.config.ts
           pnpm exec vitest run tests/unit/contracts/impl/prd07-registration.test.ts
 
+  grep-gate:
+    # P7-T3 / §10 item 6 — fails when a legacy-seam symbol appears outside the
+    # allowlist (new seams are forbidden; after the removal PR the emptied
+    # allowlist makes any leftover fail).
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grep gate
+        run: bash tests/qr/prd07/grep-gate.sh
+
   typecheck:
     runs-on: macos-14
     steps:

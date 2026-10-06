@@ -1976,12 +1976,12 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 7: promotion and removal
 
-- [ ] **P7-T1** Request the flag state changes at checkpoints. PRD 15 records them in `contracts/flags.state.ts`, with
+- [x] **P7-T1** Request the flag state changes at checkpoints. PRD 15 records them in `contracts/flags.state.ts`, with
   this lane's evidence links.
 - [ ] **P7-T2** Removal PR: the §5 "Delete" list; `legacyPrimitiveNodes`; the `prd07.legacy*` runtime nodes in the sky
   and weather builders; `renderer.vfx` accepted as a no-op with `QR_FLAG_REMOVED`. Re-file R-02-3, R-03-2 and R-15-4
   for the owners' removals.
-- [ ] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
+- [x] **P7-T3** Grep gate (§10 item 6) as a failing step in `prd07-vfx.yml`.
 - [ ] **P7-T4** C-40 rows flipped to `verified` with run ids. PRD 13 writes the skill text from them.
 
 ## 16. Test requirements
