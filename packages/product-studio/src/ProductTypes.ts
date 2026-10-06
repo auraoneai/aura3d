@@ -1,4 +1,4 @@
-import type { GLTFAsset, GLTFRenderResources } from "@aura3d/assets";
+import type { GLTFAsset, GLTFRenderResources } from "@aura3d/assets/browser";
 import type {
   CameraLike,
   CollectedLight,

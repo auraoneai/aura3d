@@ -39,7 +39,7 @@ export {
   inspectGLTFAsset,
   loadRenderableAsset,
   summarizeExternalParityGLTFCorpus
-} from "@aura3d/assets";
+} from "@aura3d/assets/browser";
 export { loadProductAsset } from "@aura3d/product-studio";
 export {
   createAnimationLabWorkflow,

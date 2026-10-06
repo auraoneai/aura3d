@@ -1,6 +1,6 @@
 import type { AnimationClip, AnimationMixerSnapshot } from "@aura3d/animation";
 import type { RenderDeviceDiagnostics, RenderItem, RenderSource, CameraLike } from "@aura3d/rendering";
-import type { RenderableAsset, RenderableScene, CreateRenderableSceneOptions, LoadRenderableAssetOptions } from "@aura3d/assets";
+import type { RenderableAsset, RenderableScene, CreateRenderableSceneOptions, LoadRenderableAssetOptions } from "@aura3d/assets/browser";
 import type { ProductAsset, ProductAssetLoadOptions, ProductRenderScene } from "@aura3d/product-studio";
 
 export type A3DWorkflowKind =

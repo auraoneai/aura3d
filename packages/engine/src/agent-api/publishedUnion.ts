@@ -113,7 +113,7 @@ export { createA3DApp } from "@aura3d/apps";
 /** @deprecated Deleted from "." in 4.0.0. */
 export { createAnimationLabWorkflow } from "@aura3d/workflows";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAssetCompatibilityReport } from "@aura3d/assets";
+export { createAssetCompatibilityReport } from "@aura3d/assets/browser";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
 export { createAssetPreloader } from "../runtime/AssetPreloader.js";
 /** @deprecated Deleted from "." in 4.0.0. */
@@ -147,18 +147,18 @@ export type { ECSRenderLibraries } from "../ecs/ECSRenderSource.js";
 /** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
 export type { ECSRenderSourceOptions } from "../ecs/ECSRenderSource.js";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
-export { GLTFLoader } from "@aura3d/assets";
+export { GLTFLoader } from "@aura3d/assets/browser";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
-export { inspectGLTFAsset } from "@aura3d/assets";
+export { inspectGLTFAsset } from "@aura3d/assets/browser";
 /** @deprecated Deleted from "." in 4.0.0. */
 export { listExternalParityEnvironmentTargets } from "@aura3d/rendering";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
 export { loadProductAsset } from "@aura3d/product-studio";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
-export { loadRenderableAsset } from "@aura3d/assets";
+export { loadRenderableAsset } from "@aura3d/assets/browser";
 /** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
 export { Renderer } from "@aura3d/rendering";
 /** @deprecated Deleted from "." in 4.0.0. */
 export { resolveA3DAppQualityPreset } from "@aura3d/apps";
 /** @deprecated Deleted from "." in 4.0.0. */
-export { summarizeExternalParityGLTFCorpus } from "@aura3d/assets";
+export { summarizeExternalParityGLTFCorpus } from "@aura3d/assets/browser";

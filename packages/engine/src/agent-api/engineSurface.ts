@@ -16,7 +16,7 @@ import {
   type GLTFRenderResources,
   type LoadRenderableAssetOptions,
   type RenderableAsset
-} from "@aura3d/assets";
+} from "@aura3d/assets/browser";
 import type { ProductAsset, ProductAssetLoadOptions } from "@aura3d/product-studio";
 import {
   createExternalParityEnvironmentPipeline,
