@@ -7,6 +7,20 @@
   </head>
   <body>
     <canvas id="app" width="64" height="64"></canvas>
+    <script>
+      // Surface module-load failures (parse errors, failed imports, 404s) as a
+      // real `error` status instead of a bare waitForFunction timeout.
+      window.addEventListener("error", (event) => {
+        if (!window.__PRD06_CLIP_SAMPLES__) {
+          window.__PRD06_CLIP_SAMPLES__ = { status: "error", error: `harness module failed: ${event.message}` };
+        }
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        if (!window.__PRD06_CLIP_SAMPLES__) {
+          window.__PRD06_CLIP_SAMPLES__ = { status: "error", error: `harness module rejected: ${String(event.reason)}` };
+        }
+      });
+    </script>
     <script type="module" src="./clip-samples-harness.ts"></script>
   </body>
 </html>
