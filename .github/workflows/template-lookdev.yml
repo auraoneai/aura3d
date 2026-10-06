@@ -94,6 +94,12 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
+      # PRD-13 T3.13 — runtime look floor: probe every built template's first
+      # frame for specular>0 / shadow≥0.8 / pixelRatio≥min(dpr,2) / look.lint
+      # clean. Reuses the capture tool's scaffolded dist/ trees.
+      - name: Look floor (runtime)
+        run: node tools/agent-templates/look-floor.mjs --runtime --work tools/agent-templates/out/template-lookdev/work
+
       - name: Report capture outcome
         if: always()
         run: |

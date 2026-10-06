@@ -8,11 +8,11 @@ test.setTimeout(90_000);
 // PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
 // environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
 // subject bounds within ±10% — plus this template's bespoke assertions.
-test("Aura3D episode builder screenshot clears the look floor", async ({ page }) => {
+test("Aura3D falling blocks starter screenshot clears the look floor", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.15, y: 0.3, width: 0.7, height: 0.55 } });
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.15, y: 0.15, width: 0.7, height: 0.7 } });
   const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
