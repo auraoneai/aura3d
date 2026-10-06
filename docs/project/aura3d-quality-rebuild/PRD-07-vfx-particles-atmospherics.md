@@ -1853,14 +1853,14 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 3: sky (day 0)
 
-- [ ] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
+- [x] **P3-T1** `atmosphere/PreethamSky.ts` + `atmosphere/shaders/sky.glsl.ts`. Port per §8.5, with the MIT header. Unit
   `preetham-cpu-reference.test.ts`: `PreethamSky.evaluate(dir)` at 16 directions matches a hand-computed r185 reference
   table within 1e-4. Browser: a GPU render of the same 16 directions into an `rgba16f` target, read back in the test only,
   matches within 2%.
 - [x] **P3-T2** `atmosphere/GradientSky.ts`, `StarField.ts`, `CloudLayer.ts` (r185 cloud block), and the moon disc with
   phase. Unit tests: the gradient is monotonic between stops, star count is ∝ density, and stars fade to 0 at sun
   elevation > 6°.
-- [ ] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
+- [x] **P3-T3** `atmosphere/SkyBackgroundPass.ts`. Implements C-21 `SkyBackgroundPassLike` and the `prd07.sky` contributor
   `passes(ctx)`. The fullscreen triangle is cached at construction. Evaluation is per pixel on Medium+, and on Low uses a
   256×128 sky-view re-rendered only on spec change. `renderToCubeFace` and `horizonRadiance(8)` are implemented. Impl test
   `prd07-C-21.test.ts`. Browser test `sky-background.spec.ts`:
