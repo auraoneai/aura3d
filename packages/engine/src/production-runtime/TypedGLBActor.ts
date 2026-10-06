@@ -77,6 +77,10 @@ export interface TypedGLBActorOptions {
   readonly decoders?: AuraAssetDecodersOption;
   /** Optional image decoder forwarded to the GLB resource pipeline (headless/test decode seam, C-16). */
   readonly imageDecoder?: GLTFImageDecoder;
+  /** Optional tangent-generation policy forwarded to resource creation (PRD-04 P5-4, C-18). `"legacy"` keeps the in-repo generator under `A3D_QR_MATERIALS`. */
+  readonly tangents?: boolean | "auto" | "generate" | "legacy";
+  /** Compressed texture capabilities for the C-16 ktx2 target pick (PRD-04 P5-2). */
+  readonly compressedTextureCapabilities?: { readonly astc: boolean; readonly bptc: boolean; readonly etc2: boolean; readonly s3tc: boolean; readonly s3tcSrgb: boolean };
   /** Forwarded `renderer.material.transmission` mode (PRD-04 P4-3: `"env"` = real env refraction). */
   readonly transmission?: "auto" | "env" | "off";
   /** Optional GPU-bytes texture budget for the pipeline load (declaration-only seam, C-17). */
@@ -238,22 +242,41 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   const typedOverrides = (options.materialOverrides ?? []).filter(
     (override): override is TypedGLBActorMaterialOverride => !("renderState" in override)
   );
-  const pipeline = await loadProductionGLTFRenderPipeline({
-    url: options.asset.url,
-    assetId: options.id,
-    assetName: options.name ?? options.id,
-    width: options.width,
-    height: options.height,
-    ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
-    ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
-    ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
-    ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
-    ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
-    ...(qrMaterials ? { materialsR185: true } : {}),
-    ...(qrTransmission ? { materialsTransmission: true } : {}),
-    ...(transmission !== undefined ? { transmission } : {}),
-    ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
-  });
+  // P5-2: decoder-missing failures surface a `decoder-missing:<id>` issue before the error
+  // propagates as the actor's load failure (AssetDecoderUnavailable names the decoder).
+  const loadIssues: string[] = [];
+  let pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
+  try {
+    pipeline = await loadProductionGLTFRenderPipeline({
+      url: options.asset.url,
+      assetId: options.id,
+      assetName: options.name ?? options.id,
+      width: options.width,
+      height: options.height,
+      ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
+      ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
+      ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
+      ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
+      ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
+      ...(options.decoders ? { decoders: options.decoders } : {}),
+      ...(options.compressedTextureCapabilities ? { compressedTextureCapabilities: options.compressedTextureCapabilities } : {}),
+      ...(options.tangents !== undefined ? { tangents: options.tangents } : {}),
+      ...(qrMaterials ? { materialsR185: true } : {}),
+      ...(qrTransmission ? { materialsTransmission: true } : {}),
+      ...(transmission !== undefined ? { transmission } : {}),
+      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AssetDecoderUnavailable") {
+      loadIssues.push(`decoder-missing:${(error as { decoderId?: string }).decoderId ?? "unknown"}`);
+    }
+    throw error;
+  }
+  // P5-1/P5-4: resource-level load issues (colorspace-conflict, tangent-derivative-fallback)
+  // surface through inspectMaterials() warnings alongside variant issues.
+  for (const issue of pipeline.resources.loadIssues) {
+    loadIssues.push(`${issue.code}:${issue.detail}`);
+  }
   pipeline.resources.scene.root.name = `${options.id}-scene-root`;
   if (options.hiddenNodeNames && options.hiddenNodeNames.length > 0) {
     const hidden = new Set(options.hiddenNodeNames);
@@ -393,6 +416,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
           extensions: [],
           lightsEvaluated: "uniform-16",
           warnings: [
+            ...loadIssues,
             ...materialVariantIssues,
             // P2-8: hardwareWrap requested but the legacy textured shader lacks Q-01-2's
             // `mode > 2.5` passthrough — the material surfaces it for inspection.

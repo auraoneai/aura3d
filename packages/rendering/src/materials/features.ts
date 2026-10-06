@@ -13,6 +13,8 @@ import {
   type ShaderFeature,
   type ShaderFeatureSelectInput
 } from "../contracts/program";
+import { Material, type RenderState } from "../Material.js";
+import { MaterialInstance } from "../MaterialInstance.js";
 import type { UniformValue } from "../RenderDevice";
 
 /**
@@ -59,6 +61,17 @@ const UV_TRANSFORM_SLOTS = [
 ] as const;
 
 type ParameterSource = { getParameter(name: string): UniformValue | undefined };
+
+/**
+ * Resolve the base material's render state across `Material`/`MaterialInstance`. The return
+ * type admits C-04's `alphaToCoverage`, which `renderStateForGLTFMaterial` sets at runtime
+ * even though the material `RenderState` type predates it (see P5-5).
+ */
+function renderStateOf(material: ParameterSource | undefined): (RenderState & { alphaToCoverage?: boolean }) | undefined {
+  if (material instanceof MaterialInstance) return material.baseMaterial.renderState;
+  if (material instanceof Material) return material.renderState;
+  return undefined;
+}
 
 /** u_<slot>UvTransform mat3 (Float32Array, 9) stored on the material, if any. */
 function transformParam(material: ParameterSource | undefined, slot: string): Float32Array | undefined {
@@ -192,7 +205,34 @@ const transmissionTargetFeature: ShaderFeature = {
   }
 };
 
-const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature];
+/**
+ * `prd04.alphaToCoverage` (P5-5): `a3d_prd04_alpha_a2c` splices at `fragment:alpha` for MASK
+ * materials that requested alpha-to-coverage (`renderState.alphaToCoverage`, set by
+ * `renderStateForGLTFMaterial` under the lane flag) and only when the tier's framebuffer
+ * carries MSAA samples — on a 0-sample tier the smoothing has nothing to write into and the
+ * plain MASK discard path keeps running.
+ */
+export const alphaToCoverageFeature: ShaderFeature = {
+  id: "prd04.alphaToCoverage",
+  owner: OWNER,
+  flag: FLAG,
+  hooks: ["fragment:alpha"],
+  chunks: ["a3d_prd04_alpha_a2c"],
+  select(input: ShaderFeatureSelectInput) {
+    const material = input.item.material as ParameterSource | undefined;
+    if (!material) return undefined;
+    const cutoff = material.getParameter("u_alphaCutoff");
+    const maskMode = typeof cutoff === "number" && cutoff > 0;
+    return maskMode
+      && renderStateOf(material)?.alphaToCoverage === true
+      && (input.tier.msaaSamples ?? 0) > 0 ? true : undefined;
+  },
+  defines(value) {
+    return { A3D_PRD04_ALPHA_TO_COVERAGE: value === true ? 1 : 0 };
+  }
+};
+
+const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature];
 
 let registered = false;
 
