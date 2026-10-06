@@ -449,6 +449,10 @@ export interface RenderDevice {
   getShaderCompilationDiagnostics?(sources: ShaderSources): Promise<readonly ShaderCompilationDiagnostic[]>;
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget;
   setRenderTarget(target: RenderTarget | null): void;
+  /** The currently bound render target, or null for the default framebuffer.
+   *  Optional (PRD-07 P6-T4): offscreen mini-passes that divert mid-frame need
+   *  it to restore the caller's binding; when absent they must stay off. */
+  getRenderTarget?(): RenderTarget | null;
   writeRenderTargetPixels?(target: RenderTarget, pixels: Uint8Array): void;
   presentRenderTarget?(source: RenderTarget): void;
   presentLdrPostprocess?(source: RenderTarget, options: LdrPostprocessPresentationOptions): void;
@@ -685,6 +689,10 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     this.activeRenderTarget = target;
+  }
+
+  getRenderTarget(): RenderTarget | null {
+    return this.activeRenderTarget;
   }
 
   writeRenderTargetPixels(target: RenderTarget, pixels: Uint8Array): void {

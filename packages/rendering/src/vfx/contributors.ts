@@ -29,6 +29,8 @@ import {
 import { packFogVolumes, type Prd07FogVolume } from "../atmosphere/FogVolumes";
 import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
+import { DecalPass } from "./DecalPass";
+import type { DecalBatch } from "./DecalBatch";
 import { resolveSceneDepth } from "./SceneDepthAdapter";
 import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgroundPass";
 import { VolumetricFogPass, froxelGridFor, type VolumetricFogPassInput, type FroxelGridSpec } from "../atmosphere/VolumetricFogPass";
@@ -48,6 +50,8 @@ export interface VfxFrameSource {
   beamFeed?(): readonly BeamDrawSpec[];
   /** §6.2.11 instanced mesh batches for prd07.mesh. */
   meshFeed?(): readonly MeshParticleFeed[];
+  /** §6.9 merged decal ring for prd07.decals (P6-T1). */
+  decalFeed?(): DecalBatch;
 }
 
 /** What the engine-side atmosphere state publishes on the RenderSource. */
@@ -64,6 +68,7 @@ const particlePasses = new WeakMap<RenderDevice, ParticleBatchPass>();
 const ribbonPasses = new WeakMap<RenderDevice, RibbonPass>();
 const beamPasses = new WeakMap<RenderDevice, BeamPass>();
 const meshPasses = new WeakMap<RenderDevice, MeshParticlePass>();
+const decalPasses = new WeakMap<RenderDevice, DecalPass>();
 
 export function particlePassFor(device: RenderDevice): ParticleBatchPass {
   let pass = particlePasses.get(device);
@@ -305,12 +310,62 @@ const gpuSimContributor: FrameContributor = {
   passes: () => []
 };
 
-const decalsContributor: FrameContributor = {
+/**
+ * P6-T1 — prd07.decals (§6.9): merged page×blend draws after opaque, before
+ * transparents. Decal nodes (hidden `prd07.legacyDecal.*` primitives under
+ * the flag) are published by the engine on `vfx.decalFeed()`; one draw per
+ * page×blend group replaces E46's one-draw-per-decal.
+ */
+function decalPassFor(device: RenderDevice): DecalPass {
+  let pass = decalPasses.get(device);
+  if (!pass) {
+    pass = new DecalPass(device, {
+      fog: true,
+      fogUniforms: (ctx) => {
+        const entry = ctx.blackboard.get("prd07.fog") as
+          | { uniforms: PackedFogUniforms; volumes: readonly Prd07FogVolume[]; sunColor: Vec3 }
+          | undefined;
+        if (!entry) return null;
+        const f = entry.uniforms;
+        return new Map<string, import("../RenderDevice").UniformValue>([
+          ["u_fogA", f.fogA],
+          ["u_fogB", f.fogB],
+          ["u_fogColor", f.fogColor],
+          ["u_fogAbsorption", f.fogAbsorption],
+          ["u_fogMode", f.fogMode],
+          ["u_fogNear", f.fogNear],
+          ["u_fogFar", f.fogFar],
+          ["u_fogVolumes", packFogVolumes(entry.volumes)],
+          ["u_cameraPosition", [...(ctx.camera?.position ?? [0, 0, 0])]],
+          ["u_sunColor", [...entry.sunColor]]
+        ]);
+      },
+      onNote: (code, message) => console.warn(`[${code}] ${message}`)
+    });
+    decalPasses.set(device, pass);
+  }
+  return pass;
+}
+
+export const decalsContributor: FrameContributor = {
   id: "prd07.decals",
   owner: "prd07",
   flag: "A3D_QR_VFX_DECALS",
   phases: ["after-opaque"],
-  passes: () => []
+  passes: (phase, ctx) => {
+    if (phase !== "after-opaque") return [];
+    const vfx = (ctx.source as Prd07FrameSource).vfx;
+    const batch = vfx?.decalFeed?.();
+    if (!batch || batch.size === 0) return [];
+    const pass = decalPassFor(ctx.device);
+    const now = ctx.timeSeconds;
+    return [{
+      name: "prd07.decals",
+      reads: ["aura.scene.depth"],
+      writes: ["aura.scene.color"],
+      execute: () => pass.draw(batch, ctx, now)
+    }];
+  }
 };
 
 /** Per-device froxel pass cache — the grid spec selects the atlas layout. */

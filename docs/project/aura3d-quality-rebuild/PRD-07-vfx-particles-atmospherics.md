@@ -1956,23 +1956,23 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 6: decals and polish
 
-- [ ] **P6-T1** `vfx/DecalBatch.ts` + `vfx/shaders/decal.glsl.ts`. Ring-allocated merged geometry per page × blend, lit per
+- [x] **P6-T1** `vfx/DecalBatch.ts` + `vfx/shaders/decal.glsl.ts`. Ring-allocated merged geometry per page × blend, lit per
   §8.8, tier cap, life/fade. In `agent-api/Decals.ts`, when `A3D_QR_VFX_DECALS` is on, decals route to `DecalBatch` and
   `AURA_DECAL_MAX_DECALS` is replaced by the tier cap. Test (Mock): 100 decals on one page → 1 draw, and cap eviction is
   oldest-first. Flag off: the draw list is identical to today's.
-- [ ] **P6-T2** Decal page in the atlas baker (scorch, crack, tyre-track, puddle, with normal/roughness).
-- [ ] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
+- [x] **P6-T2** Decal page in the atlas baker (scorch, crack, tyre-track, puddle, with normal/roughness).
+- [x] **P6-T3** `orientation: "surface"` trails drawn by `prd07.decals` with polygon offset. Test: no depth-fighting on a
   plane at 50 m (browser; max abs diff between two consecutive frames ≤ 1/255 in the mark region).
-- [ ] **P6-T4** Optional half-resolution particle target for batches flagged `lowRes`, with a bilateral depth-aware
+- [x] **P6-T4** Optional half-resolution particle target for batches flagged `lowRes`, with a bilateral depth-aware
   upsample when depth is available, else a plain bilinear upsample. Enabled when measured particle GPU ms exceeds the
   tier budget. Off by default.
-- [ ] **P6-T5** Codemod `vfx-pools-to-effects` (`packages/aura3d-cli/src/commands/prd07/codemods.ts`, C-39). It reports
+- [x] **P6-T5** Codemod `vfx-pools-to-effects` (`packages/aura3d-cli/src/commands/prd07/codemods.ts`, C-39). It reports
   the E25 pool patterns and rewrites the `primitives.box/sphere` + `.runtime` + `setScale(life)` pattern into
   `app.effects.burst`. Test: pure-function fixture from `apps/showcase-blockfall-reactor/src/clear-fx.ts`, copied as a
   fixture, never edited in place.
-- [ ] **P6-T6** Route notes `docs/project/aura3d-quality-rebuild/evidence/prd07/route-notes.md` for PRD 14, one section per
+- [x] **P6-T6** Route notes `docs/project/aura3d-quality-rebuild/evidence/prd07/route-notes.md` for PRD 14, one section per
   game, with anchors.
-- [ ] **P6-T7** Lane scene `prd07-decals` (three r185 `DecalGeometry` adapter).
+- [x] **P6-T7** Lane scene `prd07-decals` (three r185 `DecalGeometry` adapter).
 
 ### Phase 7: promotion and removal
 

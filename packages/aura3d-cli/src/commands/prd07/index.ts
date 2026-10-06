@@ -1,6 +1,8 @@
 // PRD-07 P1-T19 — lane CLI commands and codemods (C-39).
+// P6-T5: the codemod itself lives in ./codemods.ts (E25 report + rewrites).
 
 import { registerCliCommand, registerCodemod } from "../../contracts/commands";
+import { vfxPoolsToEffectsCodemod } from "./codemods";
 
 export function registerPrd07Cli(): void {
   try {
@@ -124,23 +126,7 @@ export function registerPrd07Cli(): void {
   }
 
   try {
-    registerCodemod({
-      name: "vfx-pools-to-effects",
-      owner: "prd07",
-      description: "Rewrite effects.spawnLoop(pool) calls to effects.spawn(preset) per the §6.7 table",
-      transform(source) {
-        const rows: { file: string; line: number; construct: string; mapping: "exact" | "approximate" | "none"; target?: string; note?: string }[] = [];
-        let code = source;
-        const re = /effects\.spawnLoop\s*\(\s*([^,)]+)/g;
-        let match: RegExpExecArray | null;
-        while ((match = re.exec(code))) {
-          const line = code.slice(0, match.index).split("\n").length;
-          rows.push({ file: "", line, construct: match[0], mapping: "approximate", target: `effects.spawn(${match[1].trim()}`, note: "loop lifetime: move to spawned-instance handle.stop()" });
-        }
-        code = code.replace(/effects\.spawnLoop\s*\(/g, "effects.spawn(");
-        return { code, rows };
-      }
-    });
+    registerCodemod(vfxPoolsToEffectsCodemod());
   } catch (error) {
     if (!(error instanceof Error && error.message.startsWith("CODEMOD_DUPLICATE"))) throw error;
   }

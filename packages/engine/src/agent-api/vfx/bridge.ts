@@ -26,7 +26,8 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
         lightsFeed: () => system.collectedLights(),
         ribbonFeed: () => system.ribbonFeed(),
         beamFeed: () => system.beamFeed(),
-        meshFeed: () => system.meshFeed()
+        meshFeed: () => system.meshFeed(),
+        decalFeed: () => system.decalFeed()
       };
     },
     // P2-T7: transient pool lights flow into the compiled collectedLights

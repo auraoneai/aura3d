@@ -7,13 +7,6 @@
 import type { Texture } from "../Texture";
 import type { AuraQualityTier } from "../contracts/quality";
 
-export interface VfxAtlasManifestPage {
-  readonly id: string;
-  readonly uri: string;
-  readonly size: number;
-  readonly premultiplied: true;
-  readonly colorSpace: "srgb";
-}
 export interface VfxAtlasManifestSequence {
   readonly page: string;
   readonly rect: readonly [number, number, number, number];
@@ -23,15 +16,39 @@ export interface VfxAtlasManifestSequence {
   readonly fps?: number;
   readonly loop?: boolean;
 }
+export interface VfxAtlasManifestPage {
+  readonly id: string;
+  readonly uri: string;
+  readonly size: number;
+  readonly premultiplied: boolean;
+  readonly colorSpace: "srgb" | "linear";
+}
+/** §6.9/P6-T2 — decal atlas block: albedo + tangent-normal + roughness twins per size. */
+export interface VfxAtlasManifestDecals {
+  readonly entries: Readonly<Record<string, { readonly page: string; readonly rect: readonly [number, number, number, number] }>>;
+  readonly albedo: readonly VfxAtlasManifestPage[];
+  readonly normal: readonly VfxAtlasManifestPage[];
+  readonly roughness: readonly VfxAtlasManifestPage[];
+}
 export interface VfxAtlasManifest {
   readonly version: 1;
   readonly pages: readonly VfxAtlasManifestPage[];
   readonly sequences: Readonly<Record<string, VfxAtlasManifestSequence>>;
+  readonly decals?: VfxAtlasManifestDecals;
 }
 
 export interface VfxAtlasSequence extends VfxAtlasManifestSequence {
   readonly name: string;
   readonly texture: Texture;
+}
+
+/** Resolved decal: atlas rects plus the three channel textures at the tier's size. */
+export interface VfxAtlasDecal {
+  readonly name: string;
+  readonly rect: readonly [number, number, number, number];
+  readonly albedo: Texture;
+  readonly normal: Texture;
+  readonly roughness: Texture;
 }
 
 export interface VfxAtlasOptions {
@@ -53,7 +70,8 @@ export class VfxAtlas {
   private constructor(
     readonly manifest: VfxAtlasManifest,
     private readonly pages: ReadonlyMap<string, Texture>,
-    private readonly pageSizes: ReadonlyMap<string, number>
+    private readonly pageSizes: ReadonlyMap<string, number>,
+    private readonly decalTextures?: { readonly albedo: Texture; readonly normal: Texture; readonly roughness: Texture }
   ) {}
 
   static async load(options: VfxAtlasOptions): Promise<VfxAtlas> {
@@ -79,7 +97,23 @@ export class VfxAtlas {
       }
       pageSizes.set(page.id, page.size);
     }
-    return new VfxAtlas(manifest, pages, pageSizes);
+    // P6-T2 decal channels: page the tier-size variant of each channel.
+    let decalTextures: VfxAtlas["decalTextures"];
+    if (manifest.decals) {
+      const pick = async (channel: readonly VfxAtlasManifestPage[]) => {
+        const page: VfxAtlasManifestPage | undefined = channel.find((candidate) => (candidate.size >= 2048) === want2k) ?? channel[0];
+        if (!page) return null;
+        pageSizes.set(page.id, page.size);
+        return options.decodeTexture(`${basePath}${page.uri}`, page);
+      };
+      const [albedo, normal, roughness] = await Promise.all([
+        pick(manifest.decals.albedo),
+        pick(manifest.decals.normal),
+        pick(manifest.decals.roughness)
+      ]);
+      if (albedo && normal && roughness) decalTextures = { albedo, normal, roughness };
+    }
+    return new VfxAtlas(manifest, pages, pageSizes, decalTextures);
   }
 
   sequence(name: string): VfxAtlasSequence | null {
@@ -97,5 +131,23 @@ export class VfxAtlas {
     const scale = twinSize / declaredSize;
     const [x, y, w, h] = entry.rect;
     return { name, texture: twinTexture, ...entry, rect: [x * scale, y * scale, w * scale, h * scale] };
+  }
+
+  /** P6-T2 — decal entry (scorch/crack/tyre-track/puddle), rect scaled to the paged channel size. */
+  decal(name: string): VfxAtlasDecal | null {
+    const decals = this.manifest.decals;
+    const entry = decals?.entries[name];
+    if (!decals || !entry || !this.decalTextures) return null;
+    const declaredSize = decals.albedo.find((page) => page.id === entry.page)?.size;
+    const pagedSize = this.pageSizes.get(entry.page) ?? declaredSize;
+    const scale = declaredSize && pagedSize ? pagedSize / declaredSize : 1;
+    const [x, y, w, h] = entry.rect;
+    return {
+      name,
+      rect: [x * scale, y * scale, w * scale, h * scale],
+      albedo: this.decalTextures.albedo,
+      normal: this.decalTextures.normal,
+      roughness: this.decalTextures.roughness
+    };
   }
 }

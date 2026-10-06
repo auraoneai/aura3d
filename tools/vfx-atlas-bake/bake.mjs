@@ -77,6 +77,75 @@ const SPRITES = {
   "debris-chips": (u, v, f, s) => { const cell = Math.floor(u * 6) + Math.floor(v * 6) * 6; const n = hash2(cell, Math.round(f * 2), s); const cx = ((u * 6) % 1) - 0.5, cy = ((v * 6) % 1) - 0.5; const on = n > 0.6 ? 1 : 0; const a = on * clamp01(0.3 - Math.max(Math.abs(cx), Math.abs(cy)) / 0.3) * 0.9; return [a * 0.5, a * 0.45, a * 0.4, a]; }
 };
 
+// ---------- decal sprites (PRD-07 P6-T2) ----------
+// Each: (u, v, seed) -> {height, color:[r,g,b,a] premultiplied 0..1, rough}.
+// Height feeds a finite-difference tangent normal map; rough feeds a gray page.
+function segDist(u, v, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const t = clamp01(((u - x1) * dx + (v - y1) * dy) / (dx * dx + dy * dy || 1e-9));
+  return Math.hypot(u - (x1 + dx * t), v - (y1 + dy * t));
+}
+
+const DECALS = {
+  "scorch": (u, v, s) => {
+    const r = Math.hypot(u - 0.5, v - 0.5);
+    const n = fbm(u * 5, v * 5, s + 21);
+    const a = clamp01(dot(r, 0.45) * (0.75 + n * 0.5));
+    const height = -dot(r, 0.35) * 0.6 + n * 0.05;
+    return { height, color: [0.06 * a, 0.05 * a, 0.045 * a, a], rough: 0.95 };
+  },
+  "crack": (u, v, s) => {
+    // Main fissure wanders top→bottom with jitter clamped inside the cell.
+    const pts = [];
+    let x = 0.5 + (hash2(1, 0, s) - 0.5) * 0.1, y = -0.04;
+    let ang = Math.PI / 2 + (hash2(2, 0, s) - 0.5) * 0.3;
+    for (let i = 0; i < 6; i += 1) {
+      pts.push([x, y]);
+      const len = 0.14 + hash2(i, 3, s) * 0.06;
+      x += Math.cos(ang) * len;
+      y += Math.sin(ang) * len;
+      ang += (hash2(i, 4, s) - 0.5) * 0.7;
+      ang = Math.max(Math.PI * 0.28, Math.min(Math.PI * 0.72, ang)); // keep it heading down
+      x = Math.max(0.12, Math.min(0.88, x));
+    }
+    let d = 1;
+    for (let i = 0; i < pts.length - 1; i += 1) {
+      d = Math.min(d, segDist(u, v, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]));
+    }
+    for (const [bi, bj] of [[1, 2], [3, 4]]) {
+      const [bx, by] = pts[bi];
+      const a2 = Math.atan2(pts[bj][1] - by, pts[bj][0] - bx) + (hash2(bi, 9, s) - 0.5) * 1.2;
+      d = Math.min(d, segDist(u, v, bx, by, bx + Math.cos(a2) * 0.16, by + Math.sin(a2) * 0.16));
+    }
+    const w = 0.014 + 0.006 * fbm(u * 20, v * 20, s + 5);
+    const fade = clamp01(1 - Math.hypot(u - 0.5, v - 0.5) * 1.4);
+    const alpha = clamp01(1 - d / w) * fade;
+    return { height: -alpha * 0.8, color: [0.02 * alpha, 0.02 * alpha, 0.02 * alpha, alpha * 0.9], rough: 0.9 };
+  },
+  "tyre-track": (u, v) => {
+    const band = Math.min(Math.abs(u - 0.36), Math.abs(u - 0.64));
+    const inside = clamp01((0.10 - band) / 0.015);
+    const tread = 0.5 + 0.5 * Math.sin(v * 40 + u * 14);
+    const treadStep = clamp01((tread - 0.45) * 8);
+    const height = inside * (treadStep * 0.5 + 0.1);
+    // Tread ridges denser/darker than the grooves so the pattern reads in albedo.
+    const a = inside * (0.25 + treadStep * 0.6);
+    return { height, color: [0.05 * a, 0.05 * a, 0.055 * a, a], rough: 0.85 };
+  },
+  "puddle": (u, v, s) => {
+    const wx = u + (fbm(u * 3, v * 3, s + 31) - 0.5) * 0.18;
+    const wy = v + (fbm(u * 3, v * 3, s + 37) - 0.5) * 0.18;
+    const r = Math.hypot(wx - 0.5, wy - 0.5);
+    const inside = clamp01((0.38 - r) / 0.04);
+    const ripple = inside > 0 ? Math.sin(r * 45 + fbm(u * 4, v * 4, s + 41) * 4) * 0.03 : 0;
+    const height = inside > 0 ? 0.02 + ripple : 0;
+    const a = inside * 0.9;
+    return { height, color: [0.07 * a, 0.09 * a, 0.11 * a, a], rough: 0.06 + (1 - inside) * 0.9 };
+  }
+};
+
+const DECAL_LAYOUT = ["scorch", "crack", "tyre-track", "puddle"];
+
 // name -> grid spec
 const LAYOUT = [
   ["soft-dot", 1, 1], ["glow", 1, 1], ["flare", 1, 1], ["spark-streak", 1, 1],
@@ -167,6 +236,53 @@ function bakePage(size, pageId) {
   return { rgba, sequences };
 }
 
+// P6-T2 — one 2×2 decal page per size: albedo premultiplied like the vfx
+// pages, plus finite-difference tangent normal and roughness channel twins.
+function bakeDecalPage(size, pageId) {
+  const cell = size / 2;
+  const rgba = Buffer.alloc(size * size * 4);
+  const normals = Buffer.alloc(size * size * 4);
+  const roughness = Buffer.alloc(size * size * 4);
+  const height = new Float32Array(size * size);
+  const entries = {};
+  DECAL_LAYOUT.forEach((name, k) => {
+    const gx = k % 2, gy = (k / 2) | 0;
+    const seed = [...name].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, SEED);
+    entries[name] = { page: pageId, rect: [gx * cell, gy * cell, cell, cell] };
+    for (let py = 0; py < cell; py += 1) {
+      for (let px = 0; px < cell; px += 1) {
+        const { height: h, color, rough } = DECALS[name](px / cell, py / cell, seed);
+        const i = (gy * cell + py) * size + gx * cell + px;
+        height[i] = h;
+        const j = i * 4;
+        const ab = Math.round(clamp01(color[3]) * 255);
+        rgba[j] = Math.min(Math.round(clamp01(color[0]) * 255), ab);
+        rgba[j + 1] = Math.min(Math.round(clamp01(color[1]) * 255), ab);
+        rgba[j + 2] = Math.min(Math.round(clamp01(color[2]) * 255), ab);
+        rgba[j + 3] = ab;
+        const rb = Math.round(clamp01(rough) * 255);
+        roughness[j] = rb; roughness[j + 1] = rb; roughness[j + 2] = rb; roughness[j + 3] = 255;
+      }
+    }
+  });
+  // Tangent normals from the height field (central differences, up-pointing z).
+  const texel = 1 / size;
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const i = y * size + x;
+      const dx = (height[y * size + Math.min(size - 1, x + 1)] - height[y * size + Math.max(0, x - 1)]) / (2 * texel);
+      const dy = (height[Math.min(size - 1, y + 1) * size + x] - height[Math.max(0, y - 1) * size + x]) / (2 * texel);
+      const inv = 1 / Math.hypot(dx, dy, 1);
+      const j = i * 4;
+      normals[j] = Math.round(((-dx * inv) * 0.5 + 0.5) * 255);
+      normals[j + 1] = Math.round(((-dy * inv) * 0.5 + 0.5) * 255);
+      normals[j + 2] = Math.round((inv * 0.5 + 0.5) * 255);
+      normals[j + 3] = 255;
+    }
+  }
+  return { rgba, normals, roughness, entries };
+}
+
 function emitPng(path, width, height, rgba) {
   writeFileSync(path, encodePng(width, height, rgba));
   return path;
@@ -199,7 +315,22 @@ function bake(outDir, size) {
     const ktx2 = maybeKtx2(pngPath);
     pages.push({ id: pageId, uri: `${pageId}.${ktx2 ? "ktx2" : "png"}`, size: s, premultiplied: true, colorSpace: "srgb" });
   }
-  const manifest = { version: 1, pages, sequences };
+  // P6-T2 — decal page + tangent-normal + roughness twins (albedo channel
+  // premultiplied like the vfx pages; normal/roughness are opaque gray/RGB).
+  const decalEntries = {};
+  const decalPages = { albedo: [], normal: [], roughness: [] };
+  for (const s of [size, size / 2]) {
+    const pageId = `${largeId}-decals${s === size ? "" : "-half"}`;
+    const baked = bakeDecalPage(s, pageId);
+    emitPng(join(outDir, `${pageId}.png`), s, s, baked.rgba);
+    emitPng(join(outDir, `${pageId}-normal.png`), s, s, baked.normals);
+    emitPng(join(outDir, `${pageId}-roughness.png`), s, s, baked.roughness);
+    decalPages.albedo.push({ id: pageId, uri: `${pageId}.png`, size: s, premultiplied: true, colorSpace: "srgb" });
+    decalPages.normal.push({ id: `${pageId}-normal`, uri: `${pageId}-normal.png`, size: s, premultiplied: false, colorSpace: "linear" });
+    decalPages.roughness.push({ id: `${pageId}-roughness`, uri: `${pageId}-roughness.png`, size: s, premultiplied: false, colorSpace: "linear" });
+    if (s === size) Object.assign(decalEntries, baked.entries);
+  }
+  const manifest = { version: 1, pages, sequences, decals: { entries: decalEntries, ...decalPages } };
   writeFileSync(join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
   writeFileSync(join(outDir, "LICENSE.md"), "CC0 — generated in-repo by tools/vfx-atlas-bake/bake.mjs (seed " + SEED + ").\n");
 }

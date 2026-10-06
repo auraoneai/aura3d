@@ -12,19 +12,21 @@
 import {
   camera,
   createAuraApp,
+  decals,
   effects,
   lights,
   primitives,
   scene,
   sky,
   type AuraApp,
+  type AuraColor,
   type AuraMaterialSpec,
   type AuraNodeInput,
   type AuraSceneBuilder
 } from "@aura3d/engine";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { AuraVfxKind } from "@aura3d/engine/contracts";
-import type { BurstSheetSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
+import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
 
 declare const __AURA3D_VERSION__: string;
 
@@ -276,6 +278,31 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
           : effects.rain({ name: object.name, intensity: object.intensity, color: "#bcd7ff", ...(object.wind !== undefined ? { wind: [...object.wind] } : {}) })
       );
       log.add("weather", "supported", `effects.${object.weather} intensity ${object.intensity} — §8.2 volume + splashes`);
+    } else if (object.kind === "decal") {
+      if (object.runtime) {
+        // Runtime decals spawn through app.effects.decal after ready() —
+        // see runPrd07AuraScene. Under A3D_QR_VFX_DECALS they draw through
+        // the same merged pass.
+        log.add("decal", "supported", `runtime decal "${object.name}" via app.effects.decal`);
+      } else {
+        // §6.9 — decals.project stamps the prd07.legacyDecal carve tag:
+        // flag-off the primitive renders exactly as authored; flag-on it
+        // hides and the merged DecalBatch draws it instead (one draw/page).
+        const n = object.normal ?? [0, 1, 0];
+        const yaw = ((object.rotationDeg ?? 0) * Math.PI) / 180;
+        const rotation: [number, number, number] =
+          n[1] > 0.5 ? [0, yaw, 0] : n[2] > 0.5 ? [Math.PI / 2, 0, yaw] : [0, 0, yaw];
+        nodes.push(decals.project({
+          name: object.name,
+          color: object.color as AuraColor,
+          size: object.size,
+          position: object.position,
+          normal: n,
+          rotation,
+          ...(object.opacity !== undefined ? { opacity: object.opacity } : {})
+        }));
+        log.add("decal", "supported", `decals.project "${object.name}" ${object.size[0]}×${object.size[1]} on "${object.target}"`);
+      }
     } else if (object.kind === "burstSheet") {
       // Spawns happen on the stepped clock in runPrd07AuraScene, not at build.
       log.add("burstSheet", "supported", `${object.kinds.length} kinds × ${object.ages.length} ages × ${object.panels.length} panels`);
@@ -318,6 +345,16 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
   }
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
+  const runtimeDecals = spec.objects.filter((o): o is DecalObjectSpec => o.kind === "decal" && o.runtime === true);
+  for (const d of runtimeDecals) {
+    const effectsApi = app.effects;
+    if (effectsApi) {
+      effectsApi.decal(
+        { position: [d.position[0], d.position[1], d.position[2]], normal: [...(d.normal ?? [0, 1, 0])] as [number, number, number] },
+        { size: Math.max(d.size[0], d.size[1]), color: d.color as AuraColor, ...(d.opacity !== undefined ? { opacity: d.opacity } : {}) }
+      );
+    }
+  }
   if (spec.fogTransition) {
     // P4-T8 S16 — setFog(from), step to the transition point, setFog(to) with
     // transitionSeconds, then step exactly half the transition so the capture

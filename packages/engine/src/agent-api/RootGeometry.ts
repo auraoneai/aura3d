@@ -6,6 +6,8 @@ export interface AuraCustomGeometrySpec {
   readonly kind: "aura-custom-geometry";
   readonly positions: readonly AuraRootVec3[];
   readonly normals?: readonly AuraRootVec3[];
+  /** Optional UVs (one per position) — the decal batch path samples pages with them. */
+  readonly uvs?: readonly (readonly [number, number])[];
   readonly indices: readonly number[];
   readonly bounds?: { readonly min: AuraRootVec3; readonly max: AuraRootVec3 };
 }
@@ -87,6 +89,7 @@ export function defineAuraCustomGeometry(spec: Omit<AuraCustomGeometrySpec, "kin
   }
   if (spec.normals && spec.normals.length !== spec.positions.length) throw new Error("Aura3D custom geometry normals must match the position count.");
   spec.normals?.forEach((normal, index) => validateVec3(normal, `normal ${index}`));
+  if (spec.uvs && spec.uvs.length !== spec.positions.length) throw new Error("Aura3D custom geometry uvs must match the position count.");
   if (spec.bounds) {
     validateVec3(spec.bounds.min, "bounds min");
     validateVec3(spec.bounds.max, "bounds max");
@@ -96,6 +99,7 @@ export function defineAuraCustomGeometry(spec: Omit<AuraCustomGeometrySpec, "kin
     kind: "aura-custom-geometry",
     positions: spec.positions.map((value) => [...value] as AuraRootVec3),
     ...(spec.normals ? { normals: spec.normals.map((value) => [...value] as AuraRootVec3) } : {}),
+    ...(spec.uvs ? { uvs: spec.uvs.map((value) => [...value] as readonly [number, number]) } : {}),
     indices: [...spec.indices],
     ...(spec.bounds ? { bounds: { min: [...spec.bounds.min] as AuraRootVec3, max: [...spec.bounds.max] as AuraRootVec3 } } : {})
   };
