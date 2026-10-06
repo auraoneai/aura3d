@@ -97,7 +97,9 @@ function slabHit(origin: V3, dir: V3, half: V3): number {
     tMin = Math.max(tMin, Math.min(t1, t2));
     tMax = Math.min(tMax, Math.max(t1, t2));
   }
-  return tMax >= tMin && tMax > 0 ? Math.max(tMin, 0) : -1;
+  // Inside the box (tMin < 0 < tMax) the exit face is at tMax; outside it is tMin.
+  if (tMax < tMin || tMax <= 0) return -1;
+  return tMin > 0 ? tMin : tMax;
 }
 
 function boxHit(origin: V3, dir: V3, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): number {

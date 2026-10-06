@@ -42,6 +42,30 @@ describe("migrate lighting codemod (C-39)", () => {
 });
 
 describe("aura3d environments bake (C-39)", () => {
+  it("bakes an HDRI source at 128px: 4 mips, 27 SH floats, SH matches projection within 1e-4", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "bake-hdr-"));
+    const writer = io();
+    const rc = await runEnvironmentsBake([
+      "--hdr", "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "--face-size", "128", "--samples", "8", "--out", dir, "--name", "studio-test"
+    ], writer);
+    expect(rc).toBe(0);
+    const manifest = JSON.parse(readFileSync(join(dir, "studio-test.manifest.json"), "utf8"));
+    expect(manifest.mipCount).toBe(4);
+    const sh9Buf = readFileSync(join(dir, "studio-test.sh9.f32"));
+    const sh9File = new Float32Array(sh9Buf.buffer.slice(sh9Buf.byteOffset, sh9Buf.byteOffset + sh9Buf.byteLength));
+    expect(sh9File.length).toBe(27);
+    // SH of the same cube recomputed from the decode path matches within 1e-4.
+    const { decodeHdrEquirect, equirectToCubeFaces, projectCubeToSH9 } = await import("@aura3d/rendering/lanes");
+    const img = decodeHdrEquirect(readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"));
+    const faces = equirectToCubeFaces(img, 128);
+    const sh9 = projectCubeToSH9(faces, 128);
+    for (let i = 0; i < 27; i += 1) {
+      expect(Math.abs(sh9File[i]! - sh9[i]!)).toBeLessThan(1e-4);
+    }
+    rmSync(dir, { recursive: true, force: true });
+  }, 60000);
+
   it("bakes a KTX2 specular cube + 27-float SH9 strip + manifest", async () => {
     const dir = mkdtempSync(join(tmpdir(), "bake-"));
     const writer = io();
