@@ -41,7 +41,10 @@ interface PerfReport {
 const P95_BUDGET_MS = 16.7; // 60 fps frame budget
 
 function intervalsOf(perf: TelemetryPerf | readonly number[] | undefined): number[] {
-  const raw = Array.isArray(perf) ? perf : perf?.frameIntervals ?? perf?.samples ?? [];
+  const obj = perf && !Array.isArray(perf) ? (perf as TelemetryPerf) : undefined;
+  const raw: readonly unknown[] = Array.isArray(perf)
+    ? perf
+    : obj?.frameIntervals ?? obj?.samples ?? [];
   return raw.filter((v): v is number => typeof v === "number" && Number.isFinite(v) && v > 0);
 }
 
