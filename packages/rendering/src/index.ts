@@ -790,7 +790,7 @@ export type {
   FrameVisualQualityResult,
   FrameVisualQualityThresholds
 } from "./FrameVisualMetrics";
-export { LightCollector } from "./LightCollector";
+export { LightCollector, collectLight } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";

@@ -19,6 +19,8 @@ describe("prd07 lane scene registrations (C-30)", () => {
     expect(ids).toContain("prd07-particles-fountain");
     expect(ids).toContain("prd07-flipbook");
     expect(ids).toContain("prd07-particles-stress");
+    expect(ids).toContain("prd07-impact-library");
+    expect(ids).toContain("prd07-trails-beams");
   });
 
   it("entries flow into ALL_SCENES once", () => {
@@ -27,10 +29,17 @@ describe("prd07 lane scene registrations (C-30)", () => {
     expect(ALL_SCENES.length).toBe(new Set(ALL_SCENES.map((entry) => entry.id)).size);
   });
 
-  it("both adapters exist for every registered id", () => {
+  it("both adapters exist for parity ids; Aura-only ids carry admittedAsReference:false", () => {
     for (const entry of scenes) {
-      expect(existsSync(join(benchDir, "aura3d/scenes/prd07", `${entry.id}.ts`)), `aura3d adapter ${entry.id}`).toBe(true);
-      expect(existsSync(join(benchDir, "three/scenes/prd07", `${entry.id}.ts`)), `three adapter ${entry.id}`).toBe(true);
+      const spec = entry.spec as Prd07SceneSpec;
+      const auraAdapter = join(benchDir, "aura3d/scenes/prd07", `${entry.id}.ts`);
+      const threeAdapter = join(benchDir, "three/scenes/prd07", `${entry.id}.ts`);
+      expect(existsSync(auraAdapter), `aura3d adapter ${entry.id}`).toBe(true);
+      if (spec.admittedAsReference === false) {
+        expect(existsSync(threeAdapter), `three adapter ${entry.id} must not exist (Aura-only)`).toBe(false);
+      } else {
+        expect(existsSync(threeAdapter), `three adapter ${entry.id}`).toBe(true);
+      }
     }
   });
 
@@ -45,6 +54,28 @@ describe("prd07 lane scene registrations (C-30)", () => {
       expect(spec.settleFrames).toBeGreaterThanOrEqual(0);
       expect(spec.time).toBeGreaterThan(0);
     }
+  });
+
+  it("impact-library sheet covers all 14 kinds at the four S3 ages, Aura-only", () => {
+    const sheet = scenes.find((entry) => entry.id === "prd07-impact-library")!.spec as Prd07SceneSpec;
+    expect(sheet.admittedAsReference).toBe(false);
+    const burst = sheet.objects.find((object) => object.kind === "burstSheet")!;
+    expect(burst.kind).toBe("burstSheet");
+    const kinds = (burst as { kinds: readonly string[] }).kinds;
+    const ages = (burst as { ages: readonly number[] }).ages;
+    expect(kinds).toHaveLength(14);
+    expect(ages).toEqual([0.03, 0.08, 0.2, 0.5]);
+    expect(sheet.time).toBeGreaterThanOrEqual(Math.max(...ages) + 0.01);
+  });
+
+  it("trails-beams carries every S11 element kind", () => {
+    const scene = scenes.find((entry) => entry.id === "prd07-trails-beams")!.spec as Prd07SceneSpec;
+    const kinds = new Set(scene.objects.map((object) => object.kind));
+    for (const required of ["trail", "beam", "lightCone", "auroraRibbon", "meshParticles"]) {
+      expect(kinds.has(required as never), required).toBe(true);
+    }
+    const trails = scene.objects.filter((object) => object.kind === "trail");
+    expect(trails.length).toBeGreaterThanOrEqual(3); // dash ribbon + twin contrails
   });
 
   it("fountain replica pins seed 1414, 2000 sprites, additive", () => {

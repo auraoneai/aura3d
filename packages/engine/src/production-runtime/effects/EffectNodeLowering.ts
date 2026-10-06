@@ -42,6 +42,34 @@ export interface EffectNodeLike {
   readonly direction?: AuraVec3;
   readonly softDistance?: number;
   readonly nearFade?: number;
+  /** One-shot spawn count at t=0 (effects.burst). */
+  readonly burst?: number;
+  // §6.2.9 trail fields (effects.trail). `path` seeds a static ring (bench
+  // scenes); `target` is resolved per frame when it names a scene node.
+  readonly width?: number;
+  readonly maxPoints?: number;
+  readonly minVertexDistance?: number;
+  readonly orientation?: "camera" | "surface";
+  readonly surfaceNormal?: AuraVec3;
+  readonly path?: readonly (readonly number[])[];
+  readonly target?: string;
+  // §6.2.10 beam-family fields (light-beam / lightCone / auroraRibbon).
+  readonly from?: AuraVec3;
+  readonly to?: AuraVec3;
+  readonly widthWorld?: number;
+  readonly segmentCount?: number;
+  readonly length?: number;
+  readonly coneAngle?: number;
+  readonly softness?: number;
+  readonly segments?: number;
+  readonly sway?: number;
+  readonly shimmer?: number;
+  readonly colorTop?: string | readonly number[];
+  // §6.2.11 mesh-particle fields.
+  readonly spin?: number;
+  readonly groundBounce?: number;
+  readonly castShadow?: boolean;
+  readonly mesh?: string;
 }
 
 export interface LoweredParticleEffect {
@@ -66,7 +94,7 @@ export interface LoweredOtherEffect {
   readonly type: "other";
   readonly nodeId: string;
   readonly effect: string;
-  readonly consumer: "post" | "scene-fog" | "none";
+  readonly consumer: "post" | "scene-fog" | "ribbon-pass" | "mesh-pass" | "none";
   readonly sim: "none";
 }
 
@@ -160,7 +188,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           nodeId,
           origin: position,
           capacity: count,
-          emissionRate: node.rate ?? node.emissionRate ?? count / 2.5,
+          emissionRate: node.rate ?? node.emissionRate ?? (node.burst !== undefined ? 0 : count / 2.5),
           life: asRange(node.lifetime) ?? [1.2, 2.4],
           speed: speedRange,
           spread: node.spread ?? (node.emitter === "ambient" ? 1 : node.emitter === "swirl" ? 0.35 : 0.18),
@@ -173,7 +201,8 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           stretch: materialMode === "spark" ? 0.02 : 0,
           drag: node.drag ?? 0.12,
           seed: seedOverride ?? (node.seed ?? hashSeed(nodeId)),
-          ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {})
+          ...(node.prewarm !== undefined ? { prewarm: node.prewarm } : {}),
+          ...(node.burst !== undefined ? { burst: node.burst } : {})
         }
       };
     }
@@ -256,6 +285,15 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     }
     case "light-beam":
       return { type: "beam", nodeId, effect, consumer: "beam-pass", sim: "procedural" };
+    case "lightCone":
+    case "auroraRibbon":
+      return { type: "beam", nodeId, effect, consumer: "beam-pass", sim: "procedural" };
+    case "trail":
+      return { type: "other", nodeId, effect, consumer: "ribbon-pass", sim: "none" };
+    case "meshParticles":
+      return { type: "other", nodeId, effect, consumer: "mesh-pass", sim: "none" };
+    case "fogVolume":
+      return { type: "other", nodeId, effect, consumer: "scene-fog", sim: "none" };
     case "fog":
     case "volumetric-fog":
       return { type: "other", nodeId, effect, consumer: "scene-fog", sim: "none" };

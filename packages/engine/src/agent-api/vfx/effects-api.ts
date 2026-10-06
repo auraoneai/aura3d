@@ -21,24 +21,39 @@ export interface AuraEffectsExtensionContext {
   readonly options: AuraCreateAppOptions;
 }
 
-const BURST_PRESETS: Record<string, { speed: [number, number]; life: [number, number]; gravity: number; color: [number, number, number]; size: [number, number]; spread: number; additive: boolean }> = {
+interface BurstPreset {
+  readonly speed: [number, number];
+  readonly life: [number, number];
+  readonly gravity: number;
+  readonly color: [number, number, number];
+  readonly size: [number, number];
+  readonly spread: number;
+  readonly additive: boolean;
+  /** P2-T7 §6.2.12 light layer — flashes a transient pool light on spawn. */
+  readonly light?: { readonly intensity: number; readonly range: number; readonly duration: number };
+}
+
+const BURST_PRESETS: Record<string, BurstPreset> = {
   spark: { speed: [2, 5], life: [0.25, 0.6], gravity: -4, color: [4, 2.4, 0.8], size: [0.03, 0.07], spread: 1, additive: true },
   dust: { speed: [0.4, 1.2], life: [0.8, 1.6], gravity: -0.4, color: [0.55, 0.5, 0.42], size: [0.12, 0.3], spread: 1, additive: false },
   debris: { speed: [2, 4.5], life: [0.5, 1.1], gravity: -9.8, color: [0.4, 0.32, 0.25], size: [0.05, 0.12], spread: 1, additive: false },
   ring: { speed: [4, 6], life: [0.3, 0.5], gravity: 0, color: [1.5, 2.6, 4.5], size: [0.05, 0.1], spread: 1, additive: true },
   streak: { speed: [6, 9], life: [0.2, 0.4], gravity: 0, color: [4.5, 3, 1.2], size: [0.04, 0.08], spread: 0.4, additive: true },
   pickup: { speed: [1.5, 2.5], life: [0.5, 0.9], gravity: 1.5, color: [1.2, 4, 1.6], size: [0.06, 0.12], spread: 1, additive: true },
-  "explosion-small": { speed: [3, 7], life: [0.4, 0.9], gravity: -2, color: [6, 2.2, 0.6], size: [0.15, 0.35], spread: 1, additive: true },
-  muzzle: { speed: [3, 6], life: [0.05, 0.12], gravity: 0, color: [8, 5, 1.5], size: [0.06, 0.15], spread: 0.3, additive: true },
+  "explosion-small": { speed: [3, 7], life: [0.4, 0.9], gravity: -2, color: [6, 2.2, 0.6], size: [0.15, 0.35], spread: 1, additive: true, light: { intensity: 14, range: 10, duration: 0.45 } },
+  muzzle: { speed: [3, 6], life: [0.05, 0.12], gravity: 0, color: [8, 5, 1.5], size: [0.06, 0.15], spread: 0.3, additive: true, light: { intensity: 10, range: 6, duration: 0.12 } },
   splash: { speed: [1.5, 3.5], life: [0.5, 1], gravity: -7, color: [0.4, 0.6, 1.2], size: [0.05, 0.12], spread: 1, additive: false },
   bubble: { speed: [0.4, 0.9], life: [1.2, 2.4], gravity: 0.8, color: [0.5, 0.7, 1.2], size: [0.05, 0.12], spread: 1, additive: false },
-  "impact-flash": { speed: [0.5, 1.5], life: [0.12, 0.25], gravity: 0, color: [6, 4.5, 2], size: [0.2, 0.4], spread: 0.2, additive: true },
-  "super-flash": { speed: [1, 3], life: [0.15, 0.35], gravity: 0, color: [9, 7, 4], size: [0.3, 0.6], spread: 1, additive: true },
+  "impact-flash": { speed: [0.5, 1.5], life: [0.12, 0.25], gravity: 0, color: [6, 4.5, 2], size: [0.2, 0.4], spread: 0.2, additive: true, light: { intensity: 8, range: 6, duration: 0.25 } },
+  "super-flash": { speed: [1, 3], life: [0.15, 0.35], gravity: 0, color: [9, 7, 4], size: [0.3, 0.6], spread: 1, additive: true, light: { intensity: 20, range: 14, duration: 0.35 } },
   "impact-decal": { speed: [0, 0], life: [2, 3], gravity: 0, color: [0.15, 0.12, 0.1], size: [0.2, 0.35], spread: 0.05, additive: false },
-  "aura-burst": { speed: [2, 4], life: [0.5, 1.1], gravity: 0, color: [1.5, 2.5, 6], size: [0.08, 0.2], spread: 1, additive: true }
+  "aura-burst": { speed: [2, 4], life: [0.5, 1.1], gravity: 0, color: [1.5, 2.5, 6], size: [0.08, 0.2], spread: 1, additive: true, light: { intensity: 10, range: 8, duration: 0.6 } }
 };
 
 let nextInstanceId = 0;
+
+/** Concurrent transient-instance pool cap (E20's `poolSize ?? 96` default). */
+const EFFECT_INSTANCE_CAP = 96;
 
 /** Real `AuraAppEffects` — pooled effect instances over the emitter system. */
 export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): import("../../contracts/effects").AuraAppEffects {
@@ -67,6 +82,39 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     ])
   );
 
+  // P2-T1: presets that also hit the C-22 camera layers. `shake` feeds
+  // trauma.add() after an optional configure(); `punch`/`fovKick` trigger the
+  // named layers. All calls are optional-chained — the PR 0a app may have no
+  // camera extension; we note once and continue (VFX_LAYER_UNAVAILABLE).
+  const CAMERA_LAYERS: Record<string, { shake?: number; configure?: { maxAngleDeg?: number; maxOffset?: number; frequency?: number; decayPerSecond?: number }; punch?: { fov?: number; dolly?: number; attack?: number; hold?: number; release?: number } }> = {
+    "super-flash": { shake: 0.25, configure: { maxAngleDeg: 2.5 } },
+    "explosion-small": { shake: 0.45, configure: { maxAngleDeg: 3 } },
+    "impact-flash": { shake: 0.2 },
+    muzzle: { shake: 0.12 },
+    streak: { shake: 0.08 },
+    ring: { shake: 0.15 }
+  };
+  let cameraWarned = false;
+  const applyPresetLayers = (kind: string): void => {
+    const layer = CAMERA_LAYERS[kind];
+    if (!layer) return;
+    const cam = app.camera;
+    if (!cam?.shake) {
+      if (!cameraWarned) {
+        cameraWarned = true;
+        system.diagnostics.note("VFX_LAYER_UNAVAILABLE", kind, "camera layers skipped — no C-22 camera extension");
+      }
+      return;
+    }
+    if (layer.configure) cam.shake.configure(layer.configure);
+    if (layer.shake) cam.shake.add(layer.shake);
+    if (layer.punch) cam.punch?.trigger(layer.punch);
+    // super-flash also flashes the C-05 output overlay (impact library spec).
+    if (kind === "super-flash") {
+      app.setOutputOverlay?.({ flash: [9, 7, 4, 0.85] });
+    }
+  };
+
   const spawnEmitter = (
     kind: string,
     position: AuraVec3,
@@ -74,13 +122,33 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   ): AuraEffectInstanceHandle => {
     const id = `fx-${nextInstanceId++}`;
     const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
+    applyPresetLayers(kind);
     const color = toVec3(options.color, preset.color);
+    // P2-T7 §6.2.12 light layer — tier-capped transient pool flash.
+    if (preset.light) {
+      system.flashLight({
+        position: [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0],
+        color: [color[0], color[1], color[2]],
+        intensity: preset.light.intensity * (options.intensity ?? 1),
+        range: preset.light.range,
+        duration: preset.light.duration
+      });
+    }
+    // Pool cap: recycle the oldest live instance when the pool is full.
+    if (instances.size >= EFFECT_INSTANCE_CAP) {
+      const oldest = instances.keys().next().value!;
+      const entry = instances.get(oldest)!;
+      entry.alive = false;
+      if (entry.emitterId) system.removeInstance(entry.emitterId);
+      instances.delete(oldest);
+    }
     const emitterId = system.addInstance(id, {
       kind: "effect",
       effect: "particles",
       id,
       position,
       particleCount: options.continuous ? Math.max(64, options.count ?? 64) : Math.max(1, options.count ?? 24),
+      ...(options.continuous ? {} : { burst: Math.max(1, options.count ?? 24) }),
       materialMode: preset.additive ? "additive-glow" : "soft-alpha",
       speed: options.speed ?? preset.speed[1],
       gravity: preset.gravity,
@@ -157,6 +225,70 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   };
 }
 
+/** Live-app registry + pending `createGameEffects` controllers (§6.3.4).
+ * A controller created with `autoMount` (default) and no explicit `app` binds
+ * itself when exactly one flag-on app is live; `GAME_EFFECTS_UNBOUND` is raised
+ * on every live app's diagnostics otherwise. */
+const liveApps = new Set<AuraApp>();
+const appForEffectsValue = new WeakMap<object, AuraApp>();
+const flagOnByApp = new WeakMap<AuraApp, boolean>();
+interface PendingGameEffects {
+  readonly label: string;
+  readonly bind: (app: AuraApp) => void;
+}
+const pendingGameEffects = new Set<PendingGameEffects>();
+let gameEffectsUnboundReason: string | null = null;
+
+export function registerPendingGameEffects(rec: PendingGameEffects): void {
+  pendingGameEffects.add(rec);
+  adoptGameEffects(rec);
+}
+
+function adoptGameEffects(rec: PendingGameEffects): void {
+  const flagOn = [...liveApps].filter((a) => flagOnByApp.get(a) === true);
+  if (flagOn.length === 1) {
+    pendingGameEffects.delete(rec);
+    rec.bind(flagOn[0]);
+    gameEffectsUnboundReason = null;
+    return;
+  }
+  if (liveApps.size === 0) return; // stay pending until an app registers
+  const reason = `game-effects "${rec.label}" cannot bind: ${flagOn.length} flag-on apps live`;
+  gameEffectsUnboundReason = reason;
+  for (const app of liveApps) {
+    prd07SystemFor(app)?.diagnostics.note("GAME_EFFECTS_UNBOUND", rec.label, reason);
+  }
+}
+
+function adoptPendingGameEffects(): void {
+  for (const rec of [...pendingGameEffects]) adoptGameEffects(rec);
+}
+
+export function gameEffectsUnbound(): string | null {
+  return gameEffectsUnboundReason;
+}
+
+/** True when this app's effects extension ran under A3D_QR_VFX (real API). */
+export function prd07FlagOnFor(app: object): boolean {
+  return flagOnByApp.get(app as AuraApp) === true;
+}
+
+export function unregisterPendingGameEffects(rec: PendingGameEffects): void {
+  pendingGameEffects.delete(rec);
+}
+
+/** Test hook — clears live apps + pending controllers between cases. */
+export function resetPrd07AppRegistry(): void {
+  liveApps.clear();
+  pendingGameEffects.clear();
+  gameEffectsUnboundReason = null;
+}
+
+function releasePrd07App(value: object): void {
+  const app = appForEffectsValue.get(value);
+  if (app) liveApps.delete(app);
+}
+
 /** C-38 factory: returns the real API under A3D_QR_VFX, the PR 0a stub otherwise.
  * The ProductionEffectSystem is created even when the flag is off — the
  * diagnostics section needs it to detect the flag-off zero-pixel state
@@ -167,10 +299,18 @@ export function createEffectsExtension(app: AuraApp, ctx: AuraEffectsExtensionCo
   bindPrd07RendererFlags(ctx.flags);
   const system = registerPrd07System(app, () => new ProductionEffectSystem(app as unknown as AppLike));
   if (app.canvas) attachVfxBridge(app.canvas, system);
-  if (!ctx.flags.on("A3D_QR_VFX")) {
-    return new StubAppEffects(() => null);
-  }
-  return createAppEffects(app, system);
+  const flagOn = ctx.flags.on("A3D_QR_VFX");
+  flagOnByApp.set(app, flagOn);
+  liveApps.add(app);
+  const fx = flagOn ? createAppEffects(app, system) : new StubAppEffects(() => null);
+  appForEffectsValue.set(fx, app);
+  adoptPendingGameEffects();
+  return fx;
+}
+
+/** Called by the lane's AppExtension dispose hook — drops the app from the live registry. */
+export function prd07AppDisposed(value: object): void {
+  releasePrd07App(value);
 }
 
 /** Per-app system registry — also backs app.diagnostics() collection. */

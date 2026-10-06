@@ -26,6 +26,23 @@ export function registerPrd07OptionCoverage(): void {
     { builder: "effects.spawn", field: "effect", probeValueA: "burst", probeValueB: "trail", ownerPrd: 7 },
     { builder: "effects.burst", field: "kind", probeValueA: "spark", probeValueB: "dust", ownerPrd: 7 },
     { builder: "sky", field: "spec", probeValueA: { model: "gradient" }, probeValueB: { model: "preetham" }, ownerPrd: 7 },
-    { builder: "sky", field: "captureEnvironment", probeValueA: false, probeValueB: true, ownerPrd: 7 }
+    { builder: "sky", field: "captureEnvironment", probeValueA: false, probeValueB: true, ownerPrd: 7 },
+    // P2-T5 builder fields
+    { builder: "effect.trail", field: "maxPoints", probeValueA: 48, probeValueB: 16, ownerPrd: 7 },
+    { builder: "effect.trail", field: "minVertexDistance", probeValueA: 0.05, probeValueB: 0.2, ownerPrd: 7 },
+    { builder: "effect.trail", field: "width", probeValueA: 0.3, probeValueB: 1.2, ownerPrd: 7 },
+    { builder: "effect.trail", field: "orientation", probeValueA: "camera", probeValueB: "surface", ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "coneAngle", probeValueA: 0.35, probeValueB: 0.7, ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "length", probeValueA: 6, probeValueB: 20, ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "softness", probeValueA: 0.4, probeValueB: 0.9, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "segments", probeValueA: 96, probeValueB: 32, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "sway", probeValueA: 1, probeValueB: 3, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "shimmer", probeValueA: 0.6, probeValueB: 1.5, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "groundBounce", probeValueA: 0.35, probeValueB: 0.8, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "castShadow", probeValueA: false, probeValueB: true, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "spin", probeValueA: 1, probeValueB: 6, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "scatteringAnisotropy", probeValueA: 0.3, probeValueB: 0.8, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "heightFalloff", probeValueA: 0.5, probeValueB: 1, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "density", probeValueA: 0.25, probeValueB: 1.2, ownerPrd: 7 }
   ]);
 }

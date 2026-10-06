@@ -43,7 +43,7 @@ export class LightCollector {
   }
 }
 
-function collectLight(light: Light): CollectedLight {
+export function collectLight(light: Light): CollectedLight {
   const matrix = matrixElements(light.transform.worldMatrix);
   const position: [number, number, number] = [matrix[12], matrix[13], matrix[14]];
   const direction = light instanceof DirectionalLight

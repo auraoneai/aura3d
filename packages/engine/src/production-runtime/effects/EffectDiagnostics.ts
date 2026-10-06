@@ -25,6 +25,8 @@ export interface EffectDiagnosticsReport {
   readonly gpuMs?: number;
   /** C-28 — device readback count observed by the particle pass (must stay 0). */
   readonly deviceReadbacks?: number;
+  /** C-27 budget accounting: tier cap + particles refused over the cap. */
+  readonly budget?: { readonly tier: string; readonly cap: number; readonly culled: number };
 }
 
 const ZERO_PIXEL_FRAME_LIMIT = 30;
@@ -38,6 +40,7 @@ export class EffectDiagnostics {
   private batches = 0;
   private liveParticles = 0;
   private deviceReadbacks: number | null = null;
+  private budget: { readonly tier: string; readonly cap: number; readonly culled: number } | null = null;
   private readonly warned = new Set<string>();
 
   track(node: Omit<TrackedEffectNode, "drawCalls" | "instancesDrawn" | "zeroPixelFrames">): TrackedEffectNode {
@@ -83,6 +86,10 @@ export class EffectDiagnostics {
     this.deviceReadbacks = readbacks;
   }
 
+  setBudget(budget: { readonly tier: string; readonly cap: number; readonly culled: number }): void {
+    this.budget = budget;
+  }
+
   /**
    * Close a rendered frame. `visibleNodeIds` are the nodes the app reports as
    * visible + in-frustum this frame; a node that is tracked, particle-backed,
@@ -126,7 +133,8 @@ export class EffectDiagnostics {
       errors: [...this.errors],
       pixelBacked: [...this.pixelBacked],
       ...(this.gpuMs !== null ? { gpuMs: this.gpuMs } : {}),
-      ...(this.deviceReadbacks !== null ? { deviceReadbacks: this.deviceReadbacks } : {})
+      ...(this.deviceReadbacks !== null ? { deviceReadbacks: this.deviceReadbacks } : {}),
+      ...(this.budget !== null ? { budget: this.budget } : {})
     };
   }
 

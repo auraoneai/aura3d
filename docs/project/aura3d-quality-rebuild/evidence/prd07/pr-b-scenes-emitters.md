@@ -80,11 +80,54 @@ Branch `devin/1791292686-prd07-scenes` (off `4de6835`).
   Artefacts upload to `evidence/prd07/<run-id>/`; capability-degraded codes
   print as informational steps.
 
+## Follow-on 3 (P2-T9 — non-emitter wiring + S3/S11 scenes)
+
+- **Non-emitter consumers wired end-to-end.** The `beam-pass`, `ribbon-pass`
+  and `mesh-pass` lowerings previously produced diagnostics rows but no draws —
+  `ProductionEffectSystem` skipped them entirely. Now the system owns a
+  `RibbonBatch` (trails, `path`-preseeded + live `trailPush`), a beam-spec map
+  (`beamSpec` → `BeamDrawSpec` per lowered beam-family node) and stepped
+  `MeshParticleBatch`es; all three surface on the `vfx` bridge getter
+  (`ribbonFeed`/`beamFeed`/`meshFeed`) for three new transparent-phase
+  contributors `prd07.ribbons`/`prd07.beams`/`prd07.mesh` (flag `A3D_QR_VFX`).
+- **`BeamPass.ts` + `beam.glsl.ts`:** one draw per beam-family node —
+  camera-facing tapered strip (`light-beam`), open radial fan (`lightCone`),
+  folded curtain (`auroraRibbon` with `AURORA` define: fold bands, top color,
+  shimmer). Additive, depthTest on / depthWrite off, SOFT_PARTICLES soft-depth
+  fade when `SceneDepthAdapter` exposes depth.
+- **`MeshParticlePass.ts`:** instanced tetra draw per batch — 4 `vec4`
+  `a_instanceN` columns + `a_color` + `a_emissive` (23 floats/instance),
+  `mat4` assembled in-shader (`InstanceVertexAttribute` has no mat4 attr).
+  Spawn is mulberry32-seeded at attach (position jitter, radial velocity,
+  gravity, groundBounce restitution).
+- **`VfxNodeOptions` + `vfxEffect()` cast** in `nodes/effects.ts` keeps the
+  new builders type-safe without touching the prd15-owned `AuraEffectType`
+  union (ccr follow-up).
+- **Scenes:** `prd07-impact-library` (S3, Aura-only,
+  `admittedAsReference: false`): `BurstSheetSpec` — 14 kinds × 4 ages
+  (0.03/0.08/0.2/0.5 s) × dark+light panels, staged `app.effects.burst` spawns
+  at `spec.time − age` so every cell is mid-life at capture.
+  `prd07-trails-beams` (S11, Aura-only): dash ribbon + twin contrails (trail
+  nodes with static rings), slash beam, downlight cone, aurora curtain,
+  meshParticles debris. Both registered via `scenes/prd07/index.ts` →
+  `ALL_SCENES` (C-30); conformance test updated (parity ids keep requiring
+  both adapters; Aura-only ids assert no three adapter).
+- **Tests:** `scene-registry.test.ts` +2 (sheet covers 14 kinds/4 ages,
+  trails-beams element kinds), new `non-emitter-wiring.test.ts` (4) — ribbon
+  preseed + live push, beam-spec kinds, stepped mesh batch, flag-off.
+  96 lane tests green; `tsc -p tsconfig.build.json` and
+  `-p benchmarks/quality-rebuild/tsconfig.json` clean.
+
 ## NOT RUN
 
 - Browser spec + all captures — remote-only per lane policy; runs in
   `prd07-vfx.yml` (browser job) and the capture/games jobs. Assertions above
   are unverified until CI green.
+- S3 judgement (≥11 of 14 kinds `vfx` ≥ 6, zero E21 flags) and S11 judge ≥ 6
+  per element — needs the capture pipeline on `main.ts` router wiring.
 - `main.ts` page router globs top-level scene files only — `scenes/prd07/` and
   the `a3d-qr` URL param need prd12/prd15 wiring (qr-request issue filed as
   part of this PR's notes); lane adapters read `a3d-qr` themselves meanwhile.
+- `AuraEffectType` union lacks `trail|lightCone|auroraRibbon|meshParticles|
+  fogVolume` — builders cast via `vfxEffect()`; union append is a ccr to
+  prd15 (files `agent-api/index.ts`).

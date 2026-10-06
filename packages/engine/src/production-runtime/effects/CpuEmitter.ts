@@ -24,6 +24,8 @@ export interface EmitterDescriptor {
   readonly seed: number;
   /** Seconds of simulation applied at creation (steady-state at t=0, capped at 30s). */
   readonly prewarm?: number;
+  /** One-shot particles spawned at t=0 (effects.burst); emissionRate stays for continuous flow. */
+  readonly burst?: number;
 }
 
 export interface EmitterState {
@@ -60,6 +62,8 @@ export function createEmitter(desc: EmitterDescriptor): EmitterState {
     age: new Float32Array(n), life: new Float32Array(n), size: new Float32Array(n),
     seedA: new Float32Array(n)
   };
+  const burstCount = Math.min(desc.burst ?? 0, n);
+  for (let i = 0; i < burstCount; i++) spawn(state);
   if (desc.prewarm && desc.prewarm > 0) {
     // Same fixed-step path as live sim so prewarmed state is identical to an
     // emitter that ran for `prewarm` seconds.

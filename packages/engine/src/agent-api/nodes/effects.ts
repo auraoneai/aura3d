@@ -8,6 +8,25 @@ import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../..
 import { particles } from "./particles.js";
 
 /**
+ * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,
+ * prd15) does not yet declare the PRD-07 §6.2.9–11 fields, so the builders
+ * take a widened option bag and copy defined fields through
+ * `withEmitterOptions` — identical to the §6.2 emitter-option pattern above.
+ */
+type VfxNodeOptions = Omit<AuraEffectNode, "kind" | "effect"> & Record<string, unknown>;
+
+/**
+ * Lane effect kinds ("trail", "lightCone", "auroraRibbon", "meshParticles",
+ * "fogVolume") are not yet members of the shared `AuraEffectType` union
+ * (prd15-owned; union append filed as a ccr request). The runtime lowering
+ * (`EffectNodeLowering.ts`) switches on the plain string, so the cast is
+ * type-surface only — no runtime difference, flag-on or flag-off.
+ */
+function vfxEffect(kind: string): AuraEffectNode["effect"] {
+  return kind as unknown as AuraEffectNode["effect"];
+}
+
+/**
  * Copy every defined PRD-07 §6.2 emitter option onto the node value so it
  * reaches `EffectNodeLowering` on the raw spec object (AuraEffectNode carries
  * no typed slots for the new surface yet — fields ride through as data).
@@ -221,4 +240,100 @@ export const vfxEffectBuilders = {
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22
 	    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.9 trail ribbon: the node carries the ring options; lowering
+   * maps it to a `RibbonTrail` on the prd07 RibbonBatch. `target` is a runtime
+   * node id, `handle.socket(bone)` (C-19), or a callback — resolved by the
+   * production system, never by the builder.
+   */
+  trail: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("trail"),
+      name: options.name ?? "trail ribbon",
+      color: options.color ?? "#7dfcff",
+      intensity: options.intensity ?? 1,
+      width: options.width ?? 0.3,
+      maxPoints: options.maxPoints ?? 48,
+      minVertexDistance: options.minVertexDistance ?? 0.05,
+      orientation: options.orientation ?? "camera"
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.10 / PRD 14 §8.9 light cone: open additive cone mesh attached to
+   * a spot light (or free-standing via `position`/`direction`), depth-write
+   * off, axial + radial falloff, soft depth.
+   */
+  lightCone: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("lightCone"),
+      name: options.name ?? "light cone",
+      color: options.color ?? "#ffe9b0",
+      intensity: options.intensity ?? 1,
+      position: options.position ?? [0, 0, 0],
+      direction: options.direction ?? [0, -1, 0],
+      length: options.length ?? 6,
+      coneAngle: options.coneAngle ?? 0.35,
+      softness: options.softness ?? 0.4
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 aurora ribbon (PRD 14 §8.2 geometry/fragment): an animated curtain —
+   * a ribbon strip whose fragment adds curtain fold + scrolling shimmer.
+   */
+  auroraRibbon: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("auroraRibbon"),
+      name: options.name ?? "aurora ribbon",
+      color: options.color ?? "#54f0a8",
+      colorTop: options.colorTop ?? "#7a5cff",
+      intensity: options.intensity ?? 1.4,
+      width: options.width ?? 12,
+      height: options.height ?? 8,
+      segments: options.segments ?? 96,
+      sway: options.sway ?? 1,
+      shimmer: options.shimmer ?? 0.6
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 §6.2.11 mesh particles: instanced one-mesh draw (primitive or
+   * single-primitive GLB) with CPU sim — gravity, drag, spin, ground bounce,
+   * sleep. Transforms come from MeshParticleBatch, never
+   * `createProductionInstanceTransforms` (E17 regression guard).
+   */
+  meshParticles: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("meshParticles"),
+      name: options.name ?? "mesh particles",
+      particleCount: options.particleCount ?? 32,
+      color: options.color ?? "#b0a89a",
+      gravity: options.gravity ?? -9.8,
+      drag: options.drag ?? 0.1,
+      spin: options.spin ?? 1,
+      groundBounce: options.groundBounce ?? 0.35,
+      castShadow: options.castShadow ?? false,
+      mesh: options.mesh ?? "tetrahedron"
+    }, options as unknown as Record<string, unknown>)),
+
+  /**
+   * P2-T5 fog volume: a bounded density box for the volumetric path — distinct
+   * from scene `fog`/`volumetric-fog` (global). Height falloff and scattering
+   * ride through to the P4 volumetric pass.
+   */
+  fogVolume: (options: VfxNodeOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+      kind: "effect",
+      effect: vfxEffect("fogVolume"),
+      name: options.name ?? "fog volume",
+      color: options.color ?? "#9fb7d9",
+      density: options.density ?? 0.25,
+      position: options.position ?? [0, 0, 0],
+      size: options.size ?? [8, 4, 8],
+      scatteringAnisotropy: options.scatteringAnisotropy ?? 0.3,
+      heightFalloff: options.heightFalloff ?? 0.5
+    }, options as unknown as Record<string, unknown>)),
 };

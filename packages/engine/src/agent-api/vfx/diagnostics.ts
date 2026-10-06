@@ -34,9 +34,9 @@ export function collectEffectsSection(app: AuraApp): import("../../contracts/eff
     batches: report.batches,
     liveParticles: report.liveParticles,
     budget: {
-      tier: "medium",
-      cap: 10000,
-      culled: 0,
+      tier: system.tier,
+      cap: report.budget?.cap ?? 0,
+      culled: report.budget?.culled ?? 0,
       declared,
       observedLive: report.liveParticles,
       observedDraws: report.nodes.reduce((sum, n) => sum + n.drawCalls, 0)

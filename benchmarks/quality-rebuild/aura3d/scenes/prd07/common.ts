@@ -22,7 +22,8 @@ import {
   type AuraSceneBuilder
 } from "@aura3d/engine";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
-import type { EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
+import type { AuraVfxKind } from "@aura3d/engine/contracts";
+import type { BurstSheetSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
 
 declare const __AURA3D_VERSION__: string;
 
@@ -144,6 +145,64 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
         nodes.push(particleNode({ ...member }, spec));
       }
       log.add("emitterSet", "supported", `${object.emitters.length} emitters, ${object.emitters.reduce((s: number, e: EmitterMemberSpec) => s + e.count, 0)} total particles`);
+    } else if (object.kind === "trail") {
+      nodes.push(effects.trail({
+        name: object.name,
+        color: object.color,
+        path: object.path,
+        ...(object.width !== undefined ? { width: object.width } : {}),
+        ...(object.maxPoints !== undefined ? { maxPoints: object.maxPoints } : {}),
+        ...(object.orientation !== undefined ? { orientation: object.orientation } : {})
+      }));
+      log.add("trail", "supported", `effects.trail ${object.path.length} path points, width ${object.width ?? 0.3}`);
+    } else if (object.kind === "beam") {
+      nodes.push(effects.beam({
+        name: object.name,
+        from: object.from,
+        to: object.to,
+        color: object.color,
+        ...(object.widthWorld !== undefined ? { widthWorld: object.widthWorld } : {}),
+        ...(object.intensity !== undefined ? { intensity: object.intensity } : {})
+      }));
+      log.add("beam", "supported", `effects.beam ${object.from} → ${object.to}`);
+    } else if (object.kind === "lightCone") {
+      nodes.push(effects.lightCone({
+        name: object.name,
+        color: object.color,
+        position: object.position,
+        direction: object.direction,
+        ...(object.length !== undefined ? { length: object.length } : {}),
+        ...(object.coneAngle !== undefined ? { coneAngle: object.coneAngle } : {}),
+        ...(object.softness !== undefined ? { softness: object.softness } : {}),
+        ...(object.intensity !== undefined ? { intensity: object.intensity } : {})
+      }));
+      log.add("lightCone", "supported", `effects.lightCone length ${object.length ?? 6}`);
+    } else if (object.kind === "auroraRibbon") {
+      nodes.push(effects.auroraRibbon({
+        name: object.name,
+        color: object.color,
+        ...(object.colorTop !== undefined ? { colorTop: object.colorTop } : {}),
+        position: object.position,
+        ...(object.width !== undefined ? { width: object.width } : {}),
+        ...(object.height !== undefined ? { height: object.height } : {}),
+        ...(object.segments !== undefined ? { segments: object.segments } : {}),
+        ...(object.sway !== undefined ? { sway: object.sway } : {}),
+        ...(object.shimmer !== undefined ? { shimmer: object.shimmer } : {}),
+        ...(object.intensity !== undefined ? { intensity: object.intensity } : {})
+      }));
+      log.add("auroraRibbon", "supported", `effects.auroraRibbon ${object.width ?? 12}×${object.height ?? 8}`);
+    } else if (object.kind === "meshParticles") {
+      nodes.push(effects.meshParticles({
+        name: object.name,
+        color: object.color,
+        position: object.position,
+        ...(object.count !== undefined ? { particleCount: object.count } : {}),
+        ...(object.seed !== undefined ? { seed: object.seed } : {})
+      }));
+      log.add("meshParticles", "supported", `effects.meshParticles ${object.count ?? 32} instances`);
+    } else if (object.kind === "burstSheet") {
+      // Spawns happen on the stepped clock in runPrd07AuraScene, not at build.
+      log.add("burstSheet", "supported", `${object.kinds.length} kinds × ${object.ages.length} ages × ${object.panels.length} panels`);
     }
   }
 
@@ -182,8 +241,43 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
     await sleep(50);
   }
 
-  // Advance simulated time to the capture time, then settle.
-  app.step(spec.time);
+  const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
+  if (sheets.length === 0) {
+    // Advance simulated time to the capture time, then settle.
+    app.step(spec.time);
+  } else {
+    // S3 staged spawn: cell (kind, age, panel) bursts at spec.time − age so
+    // every column shows exactly `age` seconds of life at capture.
+    let elapsed = 0;
+    for (const sheet of sheets) {
+      const rows = sheet.kinds.length;
+      const cols = sheet.ages.length;
+      const [sx, sy] = sheet.spacing;
+      const cells: { at: number; kind: string; position: [number, number, number]; seed: number }[] = [];
+      for (let pi = 0; pi < sheet.panels.length; pi++) {
+        const panel = sheet.panels[pi];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const age = sheet.ages[c];
+            cells.push({
+              at: spec.time - age,
+              kind: sheet.kinds[r],
+              position: [panel[0] + (c - (cols - 1) / 2) * sx, panel[1] + ((rows - 1) / 2 - r) * sy, panel[2]],
+              seed: (sheet.seed ?? 0) + pi * 997 + r * 31 + c
+            });
+          }
+        }
+      }
+      cells.sort((a, b) => a.at - b.at);
+      const effectsApi = app.effects;
+      const burst = effectsApi ? effectsApi.burst.bind(effectsApi) : null;
+      for (const cell of cells) {
+        if (cell.at > elapsed) { app.step(cell.at - elapsed); elapsed = cell.at; }
+        burst?.(cell.kind as AuraVfxKind, cell.position, { count: sheet.burstCount, seed: cell.seed });
+      }
+    }
+    app.step(spec.time - elapsed);
+  }
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await nextFrame();
     app.step(0);

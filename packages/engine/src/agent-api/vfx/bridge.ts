@@ -22,8 +22,17 @@ export function attachVfxBridge(canvas: HTMLCanvasElement, system: ProductionEff
     get vfx() {
       return {
         feed: (hook: Parameters<ProductionEffectSystem["feed"]>[0]) => system.feed(hook),
-        afterDraw: (diag: Parameters<ProductionEffectSystem["afterDraw"]>[0]) => system.afterDraw(diag)
+        afterDraw: (diag: Parameters<ProductionEffectSystem["afterDraw"]>[0]) => system.afterDraw(diag),
+        lightsFeed: () => system.collectedLights(),
+        ribbonFeed: () => system.ribbonFeed(),
+        beamFeed: () => system.beamFeed(),
+        meshFeed: () => system.meshFeed()
       };
+    },
+    // P2-T7: transient pool lights flow into the compiled collectedLights
+    // merge (renderInput.ts) — fresh each frame because the getter re-reads.
+    get collectedLights() {
+      return system.collectedLights();
     },
     get atmosphere() {
       return { sky: system.atmosphere.state().sky as Record<string, unknown> | null };
