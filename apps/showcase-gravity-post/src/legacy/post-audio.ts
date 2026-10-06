@@ -7,7 +7,7 @@
  * plays exactly while its system is active and stops the moment it is not.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type GravityPostCue =
   | "launch-whoosh"
