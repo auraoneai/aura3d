@@ -317,6 +317,9 @@ test-data/
 !public/aura-assets/Textures/*.png
 
 fixtures/
+# Lane-owned reference-game fixtures (PRD-09 §10) are tracked sources.
+!packages/game/fixtures/
+!packages/game/fixtures/**
 # Immutable, hash-bound showcase compiler specs and evidence.
 !tests/fixtures/
 !tests/fixtures/showcase-spec/
