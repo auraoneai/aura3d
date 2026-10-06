@@ -160,6 +160,38 @@ function writeIfChanged(path: string, content: string, changed: string[]): void 
   }
 }
 
+/** Splice a generated `paths` block into tsconfig.base.json#compilerOptions.
+ * Several repo tools raw-JSON.parse tsconfig.base.json for its paths map
+ * (tools/agent-docs/simulation.ts, tools/eslint-plugin-aura3d-boundaries,
+ * tools/foundation-code) and cannot follow `extends`; the block therefore
+ * stays present but is machine-generated here — never hand-maintained. */
+export function spliceTsconfigPaths(baseText: string, pathsObject: Record<string, string[]>): string {
+  const serialized = JSON.stringify(pathsObject, null, 2)
+    .split("\n")
+    .map((line, i) => (i === 0 ? line : `    ${line}`))
+    .join("\n");
+  const block = `"paths": ${serialized.replace(/\n$/, "")}`;
+  const start = baseText.indexOf('"paths": {');
+  if (start >= 0) {
+    const braceStart = start + '"paths": '.length;
+    let depth = 0;
+    let end = braceStart;
+    for (; end < baseText.length; end += 1) {
+      if (baseText[end] === "{") depth += 1;
+      else if (baseText[end] === "}") {
+        depth -= 1;
+        if (depth === 0) { end += 1; break; }
+      }
+    }
+    return `${baseText.slice(0, start)}${block}${baseText.slice(end)}`;
+  }
+  const marker = '"compilerOptions": {';
+  const insertAt = baseText.indexOf(marker);
+  if (insertAt < 0) throw new Error("tsconfig.base.json has no compilerOptions");
+  const at = insertAt + marker.length;
+  return `${baseText.slice(0, at)}\n    ${block},${baseText.slice(at)}`;
+}
+
 export function generateResolutionMaps(root: string, mode: "write" | "check"): { ok: boolean; changed: string[]; diffs: string[] } {
   const aura = JSON.parse(readFileSync(join(root, "aura.exports.json"), "utf8")) as AuraExportsFile;
   const exportsObject = buildPackageExports(aura);
@@ -176,14 +208,22 @@ export function generateResolutionMaps(root: string, mode: "write" | "check"): {
       diffs.push("package.json#exports differs from generated output");
     }
   }
+  const tsconfigPaths = buildTsconfigPaths(aura) as { compilerOptions: { paths: Record<string, string[]> } };
   const artifacts: Array<[string, string]> = [
-    [join(root, "tsconfig.paths.generated.json"), `${JSON.stringify(buildTsconfigPaths(aura), null, 2)}\n`],
+    [join(root, "tsconfig.paths.generated.json"), `${JSON.stringify(tsconfigPaths, null, 2)}\n`],
     [join(root, "vite.aliases.generated.ts"), buildViteAliases(aura)],
     [join(root, "tools/finalize-dist/manifest.generated.json"), `${JSON.stringify(buildManifest(aura), null, 2)}\n`]
   ];
   for (const [path, content] of artifacts) {
     if (mode === "write") writeIfChanged(path, content, changed);
     else if (!existsSync(path) || readFileSync(path, "utf8") !== content) diffs.push(`${path} differs from generated output`);
+  }
+  // tsconfig.base.json keeps the same generated block inline (see spliceTsconfigPaths).
+  const basePath = join(root, "tsconfig.base.json");
+  if (existsSync(basePath)) {
+    const baseNext = spliceTsconfigPaths(readFileSync(basePath, "utf8"), tsconfigPaths.compilerOptions.paths);
+    if (mode === "write") writeIfChanged(basePath, baseNext, changed);
+    else if (readFileSync(basePath, "utf8") !== baseNext) diffs.push("tsconfig.base.json#compilerOptions.paths differs from generated output");
   }
   for (const [subpath, entry] of Object.entries(aura.deprecated ?? {})) {
     const stubPath = join(root, entry.source!);
