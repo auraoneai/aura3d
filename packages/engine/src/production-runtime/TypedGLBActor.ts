@@ -2,34 +2,20 @@ import {
   createGLTFSceneAnimationRuntime,
   loadProductionGLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult,
-  type GLTFSceneAnimationMaterialSink,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
   type GLTFScenePose,
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
 
-/**
- * Builds the `resolveAnimationMaterial` adapter for animation-pointer `material:*` tracks from
- * a loaded pipeline's material library. First material wins on duplicate names; the library
- * keeps names individually addressable, so pointer tracks always drive a deterministic sink.
- */
-export function createGLBActorAnimationMaterialResolver(
-  resources: { readonly materialLibrary?: ReadonlyMap<string, Material> | undefined }
-): (name: string) => GLTFSceneAnimationMaterialSink | undefined {
-  const byName = new Map<string, Material>();
-  for (const material of resources.materialLibrary?.values() ?? []) {
-    if (!byName.has(material.name)) byName.set(material.name, material);
-  }
-  return (name: string) => {
-    const material = byName.get(name);
-    if (!material) return undefined;
-    return {
-      name: material.name,
-      setAnimationParameter: (parameter, value) => material.setParameter(parameter, value)
-    };
-  };
-}
+import type { GLTFMaterialRenderStateOverride } from "@aura3d/assets";
+import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
+import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
+import { typedGLBActorExtensions } from "./actor/extensions";
+import "./actor/TypedGLBActorLod";
+
+export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
+
 import {
   consolidateStaticMeshes,
   type Material,
@@ -70,6 +56,18 @@ export interface TypedGLBActorOptions {
    * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
    */
   readonly consolidateStaticMeshes?: boolean;
+  /** Optional per-material render-state overrides forwarded to the pipeline load (declaration-only seam, C-32). */
+  readonly materialOverrides?: readonly GLTFMaterialRenderStateOverride[];
+  /** Optional asset variant selector (declaration-only seam, C-17). */
+  readonly variant?: "optimized" | "source" | "mobile";
+  /** Optional decoder configuration forwarded to the asset pipeline (declaration-only seam, C-16/C-17). */
+  readonly decoders?: AuraAssetDecodersOption;
+  /** Optional GPU-bytes texture budget for the pipeline load (declaration-only seam, C-17). */
+  readonly textureBudget?: number;
+  /** Optional max texture dimension for the pipeline load (declaration-only seam, C-17). */
+  readonly maxTextureSize?: number;
+  /** Optional LOD selection policy consumed by the lane-05 LOD extension (declaration-only seam, C-17). */
+  readonly lod?: AuraModelLodOption;
 }
 
 export interface TypedGLBActorTintOptions {
@@ -202,8 +200,6 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     asset: pipeline.asset,
     resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(pipeline.resources)
   });
-  let lastApply: GLTFSceneAnimationApplyResult | null = null;
-  let lastMorphApply: TypedGLBActorMorphApplyResult | undefined;
   const setTint = (tint: TypedGLBActorTintOptions): void => tintTypedGLBActorMaterials(pipeline, tint);
   if (options.tint) setTint(options.tint);
   const staticConsolidation = options.consolidateStaticMeshes
@@ -227,48 +223,52 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
     } : {}),
     get evidence() {
-      return createTypedGLBActorEvidence(actor, lastApply, lastMorphApply);
+      return createTypedGLBActorEvidence(actor, animationTrack.lastApply, animationTrack.lastMorphApply);
     },
     playClip(name, time) {
-      lastApply = animation.applyClipByName(name, time);
-      return lastApply;
+      return animationTrack.playClip(name, time);
     },
     playRootMotionClip(name, motionOptions) {
-      const result = animation.applyRootMotionClip(name, motionOptions);
-      lastApply = result.applyResult;
-      return result;
+      return animationTrack.playRootMotionClip(name, motionOptions);
     },
     playRootMotionClips(samples, motionOptions) {
-      const result = animation.applyRootMotionClips(samples, motionOptions);
-      lastApply = result.applyResult;
-      return result;
+      return animationTrack.playRootMotionClips(samples, motionOptions);
     },
     applyRetargetedPose(pose, time = 0) {
-      lastApply = animation.applyPose(pose, "retargeted-pose", time);
-      return lastApply;
+      return animationTrack.applyRetargetedPose(pose, time);
     },
     playRetargetedClip(pose, time = 0) {
-      lastApply = animation.applyPose(pose, "retargeted-clip", time);
-      return lastApply;
+      return animationTrack.playRetargetedClip(pose, time);
     },
     applyMorphTargets(weights) {
-      lastMorphApply = applyTypedGLBActorMorphTargets(actor, weights);
-      return lastMorphApply;
+      return animationTrack.applyMorphTargets(weights);
     },
     collectRenderItems(transformOptions = {}) {
-      return collectTypedGLBActorRenderItems(actor, transformOptions);
+      let items = collectTypedGLBActorRenderItems(actor, transformOptions);
+      for (const extension of typedGLBActorExtensions()) {
+        items = extension.collectRenderItems?.(actor, items) ?? items;
+      }
+      return items;
     },
     snapshot() {
       return animation.snapshot();
     },
     setTint,
     dispose() {
+      for (const extension of typedGLBActorExtensions()) {
+        extension.dispose?.(actor);
+      }
       for (const item of staticConsolidation?.renderItems ?? []) {
         if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
       }
       pipeline.dispose();
     }
   };
+
+  const animationTrack = createTypedGLBActorAnimationTrack(animation, actor);
+  for (const extension of typedGLBActorExtensions()) {
+    extension.onLoad?.(actor, pipeline);
+  }
   return actor;
 }
 
@@ -346,132 +346,6 @@ function toTypedGLBActorMat4(value: Mat4 | readonly number[]): Mat4 {
     throw new Error(`TypedGLBActor modelMatrix must contain 16 numbers, got ${value.length}.`);
   }
   return [...value] as Mat4;
-}
-
-export function createTypedGLBActorEvidence(
-  actor: TypedGLBActor,
-  lastApply: GLTFSceneAnimationApplyResult | null = null,
-  lastMorphApply?: TypedGLBActorMorphApplyResult
-): TypedGLBActorEvidence {
-  const snapshot = actor.animation.snapshot();
-  const renderItems = actor.collectRenderItems();
-  const morphTargetCount = actor.pipeline.asset.meshes.reduce((total, mesh) => total + mesh.morphTargets.length, 0);
-  return {
-    kind: "aura-typed-glb-actor-evidence",
-    id: actor.id,
-    name: actor.name,
-    url: actor.asset.url,
-    ...(actor.asset.hash ? { assetHash: actor.asset.hash } : {}),
-    ...(typeof actor.asset.sizeBytes === "number" ? { assetSizeBytes: actor.asset.sizeBytes } : {}),
-    ...(actor.asset.bounds ? { bounds: actor.asset.bounds } : {}),
-    clips: snapshot.clips,
-    skinningBindingCount: snapshot.skinningBindingCount,
-    morphTargetCount,
-    renderItemCount: renderItems.length,
-    skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
-    morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,
-    lastClip: lastApply?.clipName ?? null,
-    lastTracksApplied: lastApply?.tracksApplied ?? 0,
-    lastTransformTracksApplied: lastApply?.transformTracksApplied ?? 0,
-    lastMaterialTracksApplied: lastApply?.materialTracksApplied ?? 0,
-    lastLightTracksApplied: lastApply?.lightTracksApplied ?? 0,
-    lastFootPlantingGroundedFeet: lastApply?.footPlanting?.groundedFeet ?? 0,
-    lastFootPlantingTargetError: lastApply?.footPlanting?.averageTargetError ?? 0,
-    lastFootPlantingHipOffset: lastApply?.footPlanting?.hipOffset ?? 0,
-    lastFootPlantingMissingLegs: lastApply?.footPlanting ? [...lastApply.footPlanting.missingLegNodes] : [],
-    lastFootPlantingFeet: lastApply?.footPlanting?.feet,
-    lastFootPlantingSurfaces: lastApply?.footPlanting?.surfaces,
-    lastFootPlantingDeformation: lastApply?.footPlanting?.legDeformation,
-    footPlantingConfigured: lastApply?.footPlanting !== undefined,
-    lastSkinningPalettesUpdated: lastApply?.skinningPalettesUpdated ?? 0,
-    ...(lastMorphApply ? { lastMorphApply } : {}),
-    missingTargets: lastApply?.missingTargets ?? [],
-    warnings: [
-      ...(snapshot.skinningBindingCount < 1 ? ["No skinning bindings were detected for this typed GLB actor."] : []),
-      ...(snapshot.clips.length < 1 ? ["No animation clips were detected for this typed GLB actor."] : []),
-      ...(morphTargetCount < 1 ? ["No morph targets were detected for this typed GLB actor."] : [])
-    ],
-    ...(actor.staticConsolidation ? { staticConsolidation: actor.staticConsolidation } : {})
-  };
-}
-
-function applyTypedGLBActorMorphTargets(
-  actor: TypedGLBActor,
-  weights: Readonly<Record<string, number>>
-): TypedGLBActorMorphApplyResult {
-  const requested = normalizeTypedGLBActorMorphWeights(weights);
-  const requestedTargets = [...requested.keys()];
-  const appliedTargets = new Set<string>();
-  const activeWeights: Record<string, number> = {};
-  const missingTargets = new Set<string>();
-  let affectedRenderableCount = 0;
-  let appliedWeightCount = 0;
-
-  const meshesByName = new Map(actor.pipeline.asset.meshes.map((mesh) => [mesh.name, mesh]));
-  for (const { renderable } of actor.pipeline.resources.scene.collectRenderables()) {
-    const mesh = meshesByName.get(renderable.geometry);
-    if (!mesh || mesh.morphTargets.length === 0) continue;
-    const nextWeights = mesh.morphTargets.map((target, index) => {
-      const aliases = typedGLBActorMorphTargetAliases(mesh.name, target.name, index);
-      for (const alias of aliases) {
-        const weight = requested.get(alias);
-        if (weight !== undefined) {
-          appliedTargets.add(alias);
-          activeWeights[alias] = weight;
-          return weight;
-        }
-      }
-      return 0;
-    });
-    renderable.morphWeights = nextWeights;
-    affectedRenderableCount += 1;
-    appliedWeightCount += nextWeights.filter((weight) => Math.abs(weight) > 0.000001).length;
-  }
-
-  for (const target of requestedTargets) {
-    if (!appliedTargets.has(target)) missingTargets.add(target);
-  }
-
-  return {
-    requestedTargets,
-    appliedTargets: [...appliedTargets],
-    missingTargets: [...missingTargets],
-    activeWeights,
-    affectedRenderableCount,
-    appliedWeightCount
-  };
-}
-
-function normalizeTypedGLBActorMorphWeights(weights: Readonly<Record<string, number>>): Map<string, number> {
-  const normalized = new Map<string, number>();
-  for (const [name, weight] of Object.entries(weights)) {
-    const target = name.trim();
-    if (!target) continue;
-    normalized.set(target, clampTypedGLBActorMorphWeight(weight));
-  }
-  return normalized;
-}
-
-function clampTypedGLBActorMorphWeight(weight: number): number {
-  if (!Number.isFinite(weight)) return 0;
-  return Math.min(1, Math.max(0, weight));
-}
-
-function typedGLBActorMorphTargetAliases(
-  meshName: string,
-  targetName: string | undefined,
-  targetIndex: number
-): readonly string[] {
-  const fallback = `target-${targetIndex}`;
-  const numberedFallback = `${meshName}-morph-${targetIndex + 1}`;
-  const aliases = new Set<string>([fallback, numberedFallback, `${meshName}.${fallback}`, `${meshName}:${fallback}`]);
-  if (targetName && targetName.trim().length > 0) {
-    const trimmed = targetName.trim();
-    aliases.add(trimmed);
-    aliases.add(`${meshName}.${trimmed}`);
-    aliases.add(`${meshName}:${trimmed}`);
-  }
-  return [...aliases];
 }
 
 function tintTypedGLBActorMaterials(pipeline: ProductionGLTFRenderPipeline, tint: TypedGLBActorTintOptions): void {

@@ -165,7 +165,6 @@ jobs:
           [[ "$games" =~ ^[a-z0-9,-]*$ ]] || { echo "::error::games must match ^[a-z0-9,-]*$"; exit 1; }
           [[ "$viewports" =~ ^[0-9x,]+$ ]] || { echo "::error::viewports must match ^[0-9x,]+$"; exit 1; }
           [[ "$flags" =~ ^[A-Za-z0-9_,.-]+$ ]] || { echo "::error::invalid flags"; exit 1; }
-          [ "$flags" = "none" ] || { echo "::error::flags=$flags is not consumed until C-33 (PR 0b-3) adds --flags to the capture tools; use flags=none"; exit 1; }
           [[ "$requester" =~ ^[A-Za-z0-9_.-]{1,40}$ ]] || { echo "::error::invalid requester"; exit 1; }
           [[ "$local_build" =~ ^(true|false)$ ]] || { echo "::error::local must be true|false"; exit 1; }
           [[ "$mobile" =~ ^(true|false)$ ]] || { echo "::error::mobile must be true|false"; exit 1; }

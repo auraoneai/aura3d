@@ -29,6 +29,8 @@ import {
 } from "./cli-options.js";
 import { assetsAddHelp, mainHelp } from "./cli-help.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
+import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
+import "./commands/registry.js";
 
 const args = process.argv.slice(2);
 const {
@@ -240,7 +242,20 @@ async function main(): Promise<void> {
     const setup = initAgentSetup({ agent: agent as "claude" | "cursor" | "copilot" | "generic" | "all", skills: skills as "core" | "all" | "none", template: readOption("--template") });
     console.log(JSON.stringify(setup, null, 2));
   } else {
-    console.log(mainHelp(profileUsage()));
+    // C-39 fallthrough: lane-registered commands resolve by longest argv-prefix match;
+    // the remaining argv is passed to the command's run().
+    for (let words = Math.min(args.length, 4); words > 0; words--) {
+      const registered = cliCommandFor(args.slice(0, words).join(" "));
+      if (registered) {
+        process.exitCode = await registered.run(args.slice(words), {
+          cwd: process.cwd(),
+          stdout: (line) => console.log(line),
+          stderr: (line) => console.error(line)
+        });
+        return;
+      }
+    }
+    console.log(mainHelp(profileUsage()) + registeredCommandsHelp());
   }
 }
 
@@ -289,6 +304,12 @@ function runAnimationCommand(action: string | undefined): void {
   });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;
+}
+
+function registeredCommandsHelp(): string {
+  const names = cliCommandNames();
+  if (names.length === 0) return "";
+  return `\nLane commands:\n${names.map((name) => `  aura3d ${name} — ${cliCommandFor(name)?.summary ?? ""}`).join("\n")}`;
 }
 
 main().catch((error) => {
