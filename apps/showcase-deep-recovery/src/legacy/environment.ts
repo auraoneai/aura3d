@@ -7,8 +7,8 @@
  * - Abyssal hydrothermal vents & glowing crystal clusters
  */
 import { model, primitives, material, lights, text3D, type AuraNodeInput } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
-import { WORLD_BOUNDS, BUOY_STATION } from "./reef";
+import { assets } from "../../../../src/aura-assets";
+import { WORLD_BOUNDS, BUOY_STATION } from "../gameplay/reef";
 
 export function createDeepOceanEnvironment(options: { readonly review?: boolean } = {}): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [];
