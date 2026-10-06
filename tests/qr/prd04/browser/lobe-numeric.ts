@@ -165,6 +165,12 @@ const NEEDS: Record<string, string[]> = {
 
 const DFG_CASES = new Set(["environmentBRDF", "multiscatteringSingle", "multiscatteringMulti", "brdfGGXMultiscatter"]);
 
+/** Numeric literal usable inside a float ctor — "1" is an int literal to GLSL. */
+function glslFloat(v: number): string {
+	if (Object.is(v, -0)) return "-0.0";
+	return Number.isInteger(v) ? `${v}.0` : String(v);
+}
+
 function buildFragment(c: GoldenCase, width: number): string {
 	const axes = c.argorder.map((name) => c.axes[name]!);
 	const parts: string[] = [PREAMBLE, BRDF_R185_SHIM_CHUNK.glsl];
@@ -173,7 +179,9 @@ function buildFragment(c: GoldenCase, width: number): string {
 		parts.push(`uniform ${Array.isArray(value) ? "vec3" : "float"} u_f_${name};`);
 	}
 	for (let i = 0; i < axes.length; i++) {
-		parts.push(`const float AX${i}[${axes[i]!.length}] = float[](${axes[i]!.join(", ")});`);
+		// GLSL ES 3.0 forbids int literals inside float[] ctors — emit "1.0", not "1"
+		// (ANGLE/Metal rejects `float[](1, 0)`; SwiftShader tolerates it).
+		parts.push(`const float AX${i}[${axes[i]!.length}] = float[](${axes[i]!.map(glslFloat).join(", ")});`);
 	}
 	let decode = "";
 	let stride = 1;
