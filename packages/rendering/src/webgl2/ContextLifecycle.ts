@@ -35,13 +35,26 @@ export class WebGL2ContextLifecycle {
       this.contextRestoredListener = (() => {
         this.host.contextLost = false;
         this.lastError = null;
-        for (const listener of [...this.deviceRestoredListeners]) {
-          try {
-            listener();
-          } catch {
-            // As above.
-          }
+        // PRD 11 Phase 5: registered restore hooks (GPU object invalidation,
+        // C-29 ResourceRegistry.rebuild, C-02 precompile) must resolve BEFORE
+        // onDeviceRestored listeners fire (C-29 semantics). With no hooks the
+        // notification stays synchronous and byte-identical to the carve-out.
+        const hooks = [...this.restoredHooks];
+        if (hooks.length === 0) {
+          this.notifyRestoredListeners();
+          return;
         }
+        const notify = (): void => this.notifyRestoredListeners();
+        void (async () => {
+          for (const hook of hooks) {
+            try {
+              await hook();
+            } catch {
+              // A failed hook must not starve the restore notification; the
+              // resource owners report their own failures via rebuild stats.
+            }
+          }
+        })().then(notify, notify);
       }) as EventListener;
       canvas.addEventListener("webglcontextlost", this.contextLostListener);
       canvas.addEventListener("webglcontextrestored", this.contextRestoredListener);
@@ -55,6 +68,9 @@ export class WebGL2ContextLifecycle {
   readonly deviceLostListeners = new Set<() => void>();
 
   readonly deviceRestoredListeners = new Set<() => void>();
+
+  /** Phase 5: hooks resolved before `deviceRestoredListeners` notify (§6.9). */
+  readonly restoredHooks = new Set<() => Promise<void> | void>();
 
   frameActive = false;
 
@@ -72,6 +88,22 @@ export class WebGL2ContextLifecycle {
   onDeviceRestored(listener: () => void): () => void {
     this.deviceRestoredListeners.add(listener);
     return () => this.deviceRestoredListeners.delete(listener);
+  }
+
+  /** Register a restore hook; it must resolve before restored listeners fire. */
+  onRestoredHook(hook: () => Promise<void> | void): () => void {
+    this.restoredHooks.add(hook);
+    return () => this.restoredHooks.delete(hook);
+  }
+
+  private notifyRestoredListeners(): void {
+    for (const listener of [...this.deviceRestoredListeners]) {
+      try {
+        listener();
+      } catch {
+        // A listener that throws is the listener's problem; the device stays consistent.
+      }
+    }
   }
 
   isDeviceLost(): boolean {
