@@ -4,10 +4,11 @@
  * `playwright test --config tests/qr/prd02/playwright.prd02.config.ts`.
  * Reuses the root launch options (system Chrome / WebGPU flags) unchanged.
  */
-import { defineConfig, mergeConfig } from "@playwright/test";
+import { defineConfig } from "@playwright/test";
 import rootConfig from "../../../playwright.config";
 
-export default mergeConfig(rootConfig, {
+export default defineConfig({
+  ...rootConfig,
   testDir: "../../..",
   testMatch: ["tests/qr/prd02/browser/**/*.spec.ts"],
   reporter: [["list"], ["json", { outputFile: "tests/reports/qr-prd02-browser.json" }]]

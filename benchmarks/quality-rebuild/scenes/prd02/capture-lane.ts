@@ -120,8 +120,9 @@ async function captureOne(
   const result: CaptureResult = { engine, scene, control: control ?? "default", status: "error", wallMs: 0 };
   try {
     await page.goto(`${baseUrl}/scenes/prd02/lane.html?engine=${engine}&scene=${scene}${flagsQuery}${controlQuery}`, { waitUntil: "load", timeout: 60_000 });
-    await page.waitForFunction(() => Boolean(window.__QR_READY__ || window.__QR_ERROR__), undefined, { timeout: timeoutMs, polling: 250 });
-    const state = await page.evaluate(() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null }));
+    // String payloads: esbuild `__name` must not leak into page.evaluate.
+    await page.waitForFunction("() => Boolean(window.__QR_READY__ || window.__QR_ERROR__)", undefined, { timeout: timeoutMs, polling: 250 });
+    const state = await page.evaluate("() => ({ ready: window.__QR_READY__ ?? null, error: window.__QR_ERROR__ ?? null })") as { ready: unknown; error: string | null };
     if (state.error) {
       result.error = state.error;
     } else {
@@ -156,26 +157,23 @@ async function metricsPass(
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(`${baseUrl}/scenes/prd02/lane.html?mode=metrics`, { waitUntil: "load", timeout: 60_000 });
-  await page.waitForFunction(() => Boolean((window as { __qrPrd02?: unknown }).__qrPrd02), undefined, { timeout: 60_000, polling: 250 });
+  await page.waitForFunction("() => Boolean(window.__qrPrd02)", undefined, { timeout: 60_000, polling: 250 });
 
-  const report = await page.evaluate(async ({ sceneIds, engines }) => {
-    const api = (window as unknown as { __qrPrd02: {
-      specs: { getPrd02Spec: (id: string) => unknown };
-      masks: { analyticMasks: (spec: never, size: { width: number; height: number }) => Record<string, Uint8Array>; shadowReceiverMask: (a: never, b: never) => Uint8Array };
-      sceneMetrics: { computeSceneMetrics: (id: string, spec: never, capture: unknown) => unknown };
-      regionMetrics: Record<string, unknown>;
-    } }).__qrPrd02;
+  // NOTE: passed as a STRING, not a function — tsx/esbuild wraps evaluated
+  // functions in its `__name` helper, which does not exist in page context.
+  const report = await page.evaluate(`async ({ sceneIds, engines }) => {
+    const api = window.__qrPrd02;
 
-    const loadPixels = async (path: string): Promise<{ width: number; height: number; data: Uint8ClampedArray } | null> => {
+    const loadPixels = async (path) => {
       try {
-        const response = await fetch(`/captures/${path.split("/").map(encodeURIComponent).join("/")}`);
+        const response = await fetch("/captures/" + path.split("/").map(encodeURIComponent).join("/"));
         if (!response.ok) return null;
         const blob = await response.blob();
         const bitmap = await createImageBitmap(blob);
         const canvas = document.createElement("canvas");
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
         ctx.drawImage(bitmap, 0, 0);
         const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
         return { width: bitmap.width, height: bitmap.height, data: imageData.data };
@@ -184,26 +182,26 @@ async function metricsPass(
       }
     };
 
-    const out: Record<string, unknown> = {};
+    const out = {};
     for (const sceneId of sceneIds) {
-      const spec = api.specs.getPrd02Spec(sceneId) as { masks?: readonly string[]; brokenControls?: readonly string[]; strip?: { frames: number } };
-      const aura = await loadPixels(`${sceneId}/aura3d.png`);
-      const three = engines.includes("three") ? await loadPixels(`${sceneId}/three.png`) : aura;
+      const spec = api.specs.getPrd02Spec(sceneId);
+      const aura = await loadPixels(sceneId + "/aura3d.png");
+      const three = engines.includes("three") ? await loadPixels(sceneId + "/three.png") : aura;
       if (!aura || !three) {
         out[sceneId] = { error: "missing capture(s)" };
         continue;
       }
-      const controls: Record<string, { width: number; height: number; data: Uint8ClampedArray }> = {};
+      const controls = {};
       for (const control of spec.brokenControls ?? []) {
         for (const engine of ["aura3d", "three"]) {
-          const pixels = await loadPixels(`${sceneId}/${engine}-${control}.png`);
-          if (pixels) controls[`${engine === "aura3d" ? "aura" : "three"}-${control}`] = pixels;
+          const pixels = await loadPixels(sceneId + "/" + engine + "-" + control + ".png");
+          if (pixels) controls[(engine === "aura3d" ? "aura" : "three") + "-" + control] = pixels;
         }
       }
-      out[sceneId] = api.sceneMetrics.computeSceneMetrics(sceneId, spec as never, { aura, three, controls });
+      out[sceneId] = api.sceneMetrics.computeSceneMetrics(sceneId, spec, { aura, three, controls });
     }
     return out;
-  }, { sceneIds, engines });
+  }`, { sceneIds, engines });
 
   await context.close();
   return report as Record<string, unknown>;
