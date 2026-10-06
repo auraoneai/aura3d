@@ -59,11 +59,28 @@ export interface SubmittedPostprocessRecord {
 }
 
 let latest: SubmittedPostprocessRecord | null = null;
+
+/**
+ * Per-canvas binding (review P2): a module-global record is overwritten by
+ * whichever app compiles most recently, and the compile runs inside the
+ * app's async mount — after `ext.create` — so factory-time binding cannot
+ * attribute it. The compile's canvas is the one handle that reaches both
+ * sides: `createProductionRuntimePostprocess` records it, and the section
+ * collectors resolve it through `app.canvas`. Headless apps (no canvas)
+ * keep reading `latest`.
+ */
+const canvasRecords = new WeakMap<HTMLCanvasElement, SubmittedPostprocessRecord>();
 let sequence = 0;
 
 export function recordSubmittedPostprocess(
   options: RendererPostProcessOptions,
-  context: { readonly renderWidth: number; readonly renderHeight: number; readonly temporalRequested: boolean; readonly authored: AuthoredPostSummary }
+  context: {
+    readonly renderWidth: number;
+    readonly renderHeight: number;
+    readonly temporalRequested: boolean;
+    readonly authored: AuthoredPostSummary;
+    readonly canvas?: HTMLCanvasElement;
+  }
 ): void {
   sequence += 1;
   latest = {
@@ -75,6 +92,7 @@ export function recordSubmittedPostprocess(
     options,
     authored: context.authored
   };
+  if (context.canvas) canvasRecords.set(context.canvas, latest);
 }
 
 export function latestSubmittedPostprocess(): SubmittedPostprocessRecord | null {
@@ -149,8 +167,8 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
   });
 }
 
-export function collectPostSection(_app: AuraApp): PostSectionReport {
-  const submitted = latestSubmittedPostprocess();
+export function collectPostSection(app: AuraApp): PostSectionReport {
+  const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: "post-graph-v2-pending" }));
   const empty = {
     present: false,
@@ -194,8 +212,8 @@ export function collectPostSection(_app: AuraApp): PostSectionReport {
   };
 }
 
-export function collectExposureSection(_app: AuraApp): ExposureSectionReport {
-  const submitted = latestSubmittedPostprocess();
+export function collectExposureSection(app: AuraApp): ExposureSectionReport {
+  const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
   const toneMapping = submitted?.options.toneMapping;
   const toneMappingOptions = typeof toneMapping === "object" && toneMapping !== null ? toneMapping : undefined;
   return {

@@ -11,7 +11,8 @@ export function createProductionRuntimePostprocess(
   lights: readonly CollectedLight[] = [],
   renderWidth = 1280,
   renderHeight = 720,
-  temporalSupported = true
+  temporalSupported = true,
+  attach?: { readonly canvas?: HTMLCanvasElement }
 ): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
@@ -153,6 +154,7 @@ export function createProductionRuntimePostprocess(
   // actually submitted — including the pinned `toneMapping.exposure: 1` while
   // authored grade exposure stays diagnostic-only until Phase 1 wiring.
   recordSubmittedPostprocess(options, {
+    canvas: attach?.canvas,
     renderWidth,
     renderHeight,
     temporalRequested,

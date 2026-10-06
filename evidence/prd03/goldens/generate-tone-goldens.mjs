@@ -19,7 +19,7 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { applyToneOperator, POST_TONE_OPERATORS } from "../../../../packages/rendering/src/post/ToneOperators.ts";
+import { applyToneOperator, POST_TONE_OPERATORS } from "../../../packages/rendering/src/post/ToneOperators.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 

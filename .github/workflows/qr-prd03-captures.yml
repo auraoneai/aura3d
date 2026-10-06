@@ -72,6 +72,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -x
+          # Bound the attribution window BEFORE dispatching: concurrent runs of
+          # this workflow (one per qr_flags on the same ref) must never select
+          # each other's bridge run — pick the oldest run created after our own
+          # dispatch on this exact head SHA (review P1, run-id race).
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           gh workflow run qr-gitlab-ci.yml \
             --ref "${{ github.ref_name }}" \
             -f suite=games \
@@ -81,8 +86,18 @@ jobs:
             -f mobile="${{ inputs.mobile }}" \
             -f qr_flags="${{ inputs.qr_flags }}" \
             -f requester=prd03
-          sleep 10
-          run_id="$(gh run list --repo auraoneai/aura3d --workflow qr-gitlab-ci.yml --branch "${{ github.ref_name }}" --limit 5 --json databaseId,createdAt --jq 'sort_by(.createdAt) | last | .databaseId')"
+          run_id=""
+          for _ in $(seq 1 12); do
+            sleep 10
+            run_id="$(gh run list --repo auraoneai/aura3d --workflow qr-gitlab-ci.yml --branch "${{ github.ref_name }}" --limit 20 --json databaseId,createdAt,headSha,event --jq \
+              --arg since "$dispatched_at" --arg sha "${{ github.sha }}" \
+              '[ .[] | select(.event == "workflow_dispatch" and .headSha == $sha and .createdAt >= $since) ] | sort_by(.createdAt) | first | .databaseId // empty')"
+            [ -n "$run_id" ] && break
+          done
+          if [ -z "$run_id" ]; then
+            echo "::error::No qr-gitlab-ci.yml run appeared for ${{ github.sha }} after $dispatched_at"
+            exit 1
+          fi
           echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
           echo "dispatched: https://github.com/auraoneai/aura3d/actions/runs/$run_id" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Wait for the bridge run (GitLab result is the run's pass/fail)
