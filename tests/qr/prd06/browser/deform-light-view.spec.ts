@@ -21,7 +21,7 @@ declare global {
         readonly controlRawVsCpu: number;
         readonly animatedVsBindCpu: number;
       };
-      readonly stats?: { readonly joints: number; readonly vertices: number };
+      readonly stats?: { readonly joints: number; readonly vertices: number; readonly pixels: number };
       readonly masks?: Record<"deform" | "cpu" | "bindGpu" | "bindCpu" | "control", string>;
     };
   }
