@@ -19,6 +19,12 @@ npm test         # route-health + screenshot
 - `src/controller.ts` — pure kinematic `stepCharacterSpeed` (accel/decel toward walk/run targets).
 - `src/main.ts` — keyboard input → `stepCharacterSpeed` → `createLocomotionKit(...).sample(speed)` →
   blended clip weights + state, exposed as a proof object.
+- The E1-certified `showcaseWalkAnimatedGirl` rig plays its certified `Take 001` clip paced by
+  locomotion speed (0 when idle, run-paced when sprinting) on a full-bleed canvas under the
+  `outdoor-day` look — no ambient/directional fills or background override.
+- The `shoulder` camera rig (`camera.rigs.shoulder({ target: "hero" })` + per-frame `setPose`)
+  tracks the hero; camera state goes to the C-22 camera, never into evidence fields.
+- The HUD is a DOM panel (no `<pre>` debug block).
 
 ## Physics capsule path (optional)
 

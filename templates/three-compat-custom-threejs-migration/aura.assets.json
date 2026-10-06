@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "ship",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyPirateKitShipMedium.279ea019.glb",
+      "outputPath": "public/aura-assets/kenneyPirateKitShipMedium.279ea019.glb",
+      "url": "/aura-assets/kenneyPirateKitShipMedium.279ea019.glb",
+      "hash": "sha256-279ea019268f855240c3cebf7616644c8141c20bee617da72eae4733b8e310af",
+      "sizeBytes": 144944,
+      "bounds": [4.8, 10.964, 10.6],
+      "materials": ["colormap"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Pirate Kit ship-medium (CC0)"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "tree",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyMiniForestTree.0075d505.glb",
+      "outputPath": "public/aura-assets/kenneyMiniForestTree.0075d505.glb",
+      "url": "/aura-assets/kenneyMiniForestTree.0075d505.glb",
+      "hash": "sha256-0075d5059c1ea855fecc1dba3c6262c3a01924c50b971ddde2eb8b0b5a62851a",
+      "sizeBytes": 23476,
+      "bounds": [1.835, 2.684, 1.964],
+      "materials": ["colormap"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Mini Forest tree (CC0)"
+    },
+    {
+      "id": "rocks",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyMiniForestRocksHigh.226728a0.glb",
+      "outputPath": "public/aura-assets/kenneyMiniForestRocksHigh.226728a0.glb",
+      "url": "/aura-assets/kenneyMiniForestRocksHigh.226728a0.glb",
+      "hash": "sha256-226728a03989a1ce52ea64b55e3d9e2ff89004f7eaca9f74c2fafda7c84bbe49",
+      "sizeBytes": 31952,
+      "bounds": [2, 2, 2],
+      "materials": ["colormap"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Mini Forest rocks-high (CC0)"
+    }
+  ]
+}
