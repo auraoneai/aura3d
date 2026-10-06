@@ -1,4 +1,39 @@
-# IC-0 diagnostics branch — probes which stage of the capture jobs fails on saas-macos runners.
+spec:
+  inputs:
+    suite:
+      description: "games | benchmark | all (games + benchmark) | unit (Linux typecheck/lint/unit) | probe (GPU launch probe)"
+      default: all
+      options: [all, games, benchmark, unit, probe]
+    games:
+      description: "Comma-separated game ids from tools/quality-rebuild-capture/games.json (empty = all 18)"
+      default: ""
+      regex: ^[a-z0-9,-]*$
+    viewports:
+      description: "Desktop viewports WIDTHxHEIGHT, comma-separated"
+      default: "1920x1080,1280x720"
+      regex: ^[0-9x,]+$
+    local_build:
+      description: "Build and serve every selected game from this commit"
+      type: boolean
+      default: false
+    mobile:
+      description: "Also capture the 390x844@3x mobile run"
+      type: boolean
+      default: true
+    qr_flags:
+      description: "A3D_QR_* flag set (none | all | comma list)"
+      default: none
+      regex: ^[A-Za-z0-9_,.-]+$
+    requester:
+      description: "Lane tag recorded in the report, e.g. prd02"
+      default: unspecified
+      regex: ^[A-Za-z0-9_.-]{1,40}$
+    github_run:
+      description: "GitHub bridge run id (set by .github/workflows/qr-gitlab-ci.yml)"
+      default: ""
+      regex: ^[0-9]*$
+---
+# IC-0 diagnostics — single probe job; not for merge.
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "trigger" || $CI_PIPELINE_SOURCE == "api" || $CI_PIPELINE_SOURCE == "web"'
@@ -29,12 +64,8 @@ qr:diag:
     - node --version
     - npm install -g "pnpm@${PNPM_VERSION}" >/dev/null
     - pnpm --version
+    - command -v git-lfs >/dev/null 2>&1 || brew install git-lfs
     - git lfs install --local || true
     - git lfs pull --include="public/aura-assets/propRockA.52dd1f0f.glb" ; echo "LFS_PULL_ONE_EXIT=$?"
-    - git lfs pull --include="apps/aura-clash-showcase/public/aura-assets/arenaNeonDowntownTextured.312f2320.glb" ; echo "LFS_PULL_GLB_EXIT=$?"
-    - ls -la public/aura-assets/propRockA.52dd1f0f.glb
+    - ls -la public/aura-assets/propRockA.52dd1f0f.glb || true
     - pnpm install --frozen-lockfile ; echo "PNPM_INSTALL_EXIT=$?"
-  artifacts:
-    when: always
-    expire_in: 7 days
-    paths: []
