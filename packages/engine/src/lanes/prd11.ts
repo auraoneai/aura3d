@@ -9,7 +9,7 @@
  * including a disposed one — and flag-off reports simply carry nulls.
  */
 
-import { prd11LatestTelemetry, prd11SetRendererQrFlags, type Prd11FrameTelemetry } from "@aura3d/rendering";
+import { prd11LatestBatchPlanReport, prd11LatestTelemetry, prd11SetRendererQrFlags, type Prd11FrameTelemetry } from "@aura3d/rendering";
 import {
   QUALITY_TIERS,
   StubQualityController,
@@ -149,15 +149,7 @@ registerDiagnosticsSection<AuraBatchPlanReport>({
   owner: "prd11",
   flag: "A3D_QR_TIERS",
   key: "renderer.batching",
-  collect: () => ({
-    inputItems: 0,
-    outputDraws: 0,
-    instancedBatches: 0,
-    multiDrawBatches: 0,
-    reasonsNotBatched: {},
-    planBuildMs: 0,
-    planVersion: 0
-  })
+  collect: () => prd11LatestBatchPlanReport()
 });
 
 /**
