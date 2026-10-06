@@ -1,6 +1,6 @@
 /** Neon arcade room with a real catalog pinball cabinet. */
 import { lights, material, model, primitives, type AuraSceneNode } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export function createVaultBreakersEnvironment(): AuraSceneNode[] {
   const darkFloor = material.reflectiveFloor({
