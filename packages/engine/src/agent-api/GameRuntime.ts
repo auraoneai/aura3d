@@ -10,6 +10,9 @@ import { Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
 import { PhysicsWorld } from "@aura3d/physics/world";
 import type { GameEffectKind, MutableGameEffectInstance } from "./vfx/gameEffects.js";
 import { createGameEffects, publicGameEffectInstance, resolveEffectAttachmentPosition, defaultEffectColor, defaultEffectDuration, defaultEffectRadius, effectToSceneNode } from "./vfx/gameEffects.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { AuraTimeController } from "../contracts/time.js";
+import { createQrGameCameraDirector } from "./camera/gameDirector.js";
 
 import type {
   Collider,
@@ -1124,6 +1127,10 @@ export interface GameCameraDirectorOptions {
   readonly smoothing?: number;
   readonly deadZone?: number;
   readonly reducedMotion?: boolean;
+  /** §7.2 R-12: `true` pins the legacy snapshot director even under `A3D_QR_CAMERA`. */
+  readonly legacySpec?: boolean;
+  /** Resolved QR flag set; unset = flag off. */
+  readonly flags?: QrFlags;
 }
 
 export interface GameCameraTarget {
@@ -1306,6 +1313,10 @@ export interface GameCombatEventRuntimeBridgeOptions {
   readonly combat?: GameCombatWorld | GameCombatWorldSnapshot;
   readonly effects?: GameEffectsController;
   readonly camera?: GameCameraDirector;
+  /** §6.6: app.time target for combat hitStop events (seconds). */
+  readonly time?: Pick<AuraTimeController, "hitStop">;
+  /** Set false to opt out of auto hitStop forwarding (default true). */
+  readonly autoHitStop?: boolean;
   readonly hudBindings?: readonly GameHudBinding[];
   readonly round?: Record<string, unknown>;
   readonly rules?: Record<string, unknown>;
@@ -2724,6 +2735,12 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
 }
 
 export function createGameCameraDirector(options: GameCameraDirectorOptions = {}): GameCameraDirector {
+  // R-12: flag-on returns a real camera-controller director (rigs.fighting +
+  // shake layer); it structurally implements GameCameraDirector and adds
+  // `bind(app)` for presenting through `app.camera.setPose`.
+  if (options.legacySpec !== true && options.flags?.on("A3D_QR_CAMERA") === true) {
+    return createQrGameCameraDirector(options);
+  }
   const baseFov = options.baseFov ?? 42;
   const baseDistance = options.distance ?? 6.2;
   const targetY = options.targetY ?? 0.95;
@@ -2797,13 +2814,21 @@ export function applyGameCombatEventsToRuntime(
 ): GameCombatEventRuntimeBridgeResult {
   const effectIds: string[] = [];
   let cameraImpacts = 0;
+  const forwardHitStop = (event: GameCombatEvent): void => {
+    if (options.autoHitStop === false || !options.time || !event.hitStop || event.hitStop <= 0) return;
+    options.time.hitStop(event.hitStop, {
+      scope: event.targetId ? [event.attackerId, event.targetId] : [event.attackerId]
+    });
+  };
   for (const event of events) {
     if (event.type === "hit") {
       const effect = options.effects?.hitSpark(event.position, { ownerId: event.attackerId });
       if (effect) effectIds.push(effect.id);
+      forwardHitStop(event);
       options.camera?.impact(1.1);
       if (options.camera) cameraImpacts += 1;
     } else if (event.type === "blocked") {
+      forwardHitStop(event);
       const effect = options.effects?.blockSpark(event.position, { ownerId: event.attackerId });
       if (effect) effectIds.push(effect.id);
       options.camera?.impact(0.55);
