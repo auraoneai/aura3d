@@ -11,7 +11,7 @@
     },
     {
       "gameId": "showcase-turbo-drift-circuit",
-      "commit": "e137b3e96f95078bcc62a828307523150178bfe0",
+      "commit": "6198ddb75cc47af25d28dbf915717caf3b115bed",
       "pr": 203,
       "phase": "T2-v2-shell",
       "requestedAt": "2026-10-06",
