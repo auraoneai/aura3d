@@ -78,6 +78,8 @@ export type WebGL2ErrorCheckMode = "strict" | "frame";
 
 export class WebGL2Buffer implements RenderBuffer {
   public disposed = false;
+  /** PRD-01 Phase 6 (CONTRACTS §6.1): device-side cleanup hook — VAO eviction. */
+  public onDispose?: () => void;
 
   constructor(
     public readonly id: number,
@@ -90,8 +92,10 @@ export class WebGL2Buffer implements RenderBuffer {
 
   dispose(): void {
     if (!this.disposed) {
-      this.gl.deleteBuffer(this.handle);
       this.disposed = true;
+      // Evict VAOs referencing this buffer before the GL object goes away.
+      this.onDispose?.();
+      this.gl.deleteBuffer(this.handle);
     }
   }
 }
@@ -243,6 +247,7 @@ export class WebGL2Device implements RenderDevice {
 
 
   private buffers = new Set<WebGL2Buffer>();
+  private disposedBufferCount = 0;
   private shaders = new Set<WebGL2ShaderProgram>();
   private renderTargets = new Set<WebGL2RenderTarget>();
 
@@ -572,6 +577,14 @@ export class WebGL2Device implements RenderDevice {
     }
 
     const buffer = new WebGL2Buffer(this.nextId++, usage, byteLength, target, handle, this.gl);
+    buffer.onDispose = () => {
+      // §6.1 declared leak fix: cached VAOs key on buffer ids; a dead buffer's
+      // entries must die with it, and the live-buffer set drops the corpse
+      // (`disposedBuffers` stays meaningful via the monotonic counter).
+      this.host.drawBinder.evictVertexArraysForBuffer(buffer.id);
+      this.buffers.delete(buffer);
+      this.disposedBufferCount += 1;
+    };
     this.buffers.add(buffer);
     return buffer;
   }
@@ -1287,7 +1300,7 @@ export class WebGL2Device implements RenderDevice {
       stateCacheBufferBinds: stateCacheStats.byOperation.bindBuffer?.issued ?? 0,
       stateCacheVertexArrayBinds: stateCacheStats.byOperation.bindVertexArray?.issued ?? 0,
       stateCacheSamplerBinds: stateCacheStats.byOperation.bindSampler?.issued ?? 0,
-      disposedBuffers: [...this.buffers].filter((buffer) => buffer.disposed).length,
+      disposedBuffers: this.disposedBufferCount + [...this.buffers].filter((buffer) => buffer.disposed).length,
       disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].filter((target) => target.colorTexture.disposed).length + this.host.counters.releasedTextureHandles,

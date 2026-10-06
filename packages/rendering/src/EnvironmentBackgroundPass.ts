@@ -35,6 +35,7 @@ const BACKGROUND_RENDER_STATE = {
 export class EnvironmentBackgroundPass extends BaseRenderPass {
   private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, ShaderModule>>();
   private readonly shaderLibrary: ShaderLibrary;
+  private cachedDraw?: { readonly device: RenderDevice; readonly shader: RenderShaderProgram; readonly geometry: Geometry; readonly pipeline: RenderPipeline };
 
   constructor(private readonly options: EnvironmentBackgroundOptions) {
     super("environment-background", [], [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
@@ -43,9 +44,13 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     validateEnvironmentBackgroundOptions(this.options);
-    const geometry = createFullscreenTriangleGeometry();
-    try {
-      const shader = this.getShader(context.device);
+    const shader = this.getShader(context.device);
+    // Phase 6: persistent fullscreen geometry + pipeline — steady state makes
+    // no RenderPipeline constructions and no buffer creates.
+    let cached = this.cachedDraw;
+    if (!cached || cached.device !== context.device || cached.shader !== shader) {
+      cached?.geometry.dispose();
+      const geometry = createFullscreenTriangleGeometry();
       const pipeline = new RenderPipeline({
         label: "environment-background",
         shader,
@@ -53,16 +58,16 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
         topology: geometry.topology,
         renderState: BACKGROUND_RENDER_STATE
       });
-      const command = pipeline.createDrawCommand({
-        label: "environment-background",
-        vertexBuffer: geometry.vertexBuffer.upload(context.device),
-        vertexCount: geometry.vertexBuffer.vertexCount,
-        uniforms: createEnvironmentBackgroundUniforms(this.options)
-      });
-      context.device.draw(command);
-    } finally {
-      geometry.dispose();
+      cached = { device: context.device, shader, geometry, pipeline };
+      this.cachedDraw = cached;
     }
+    const command = cached.pipeline.createDrawCommand({
+      label: "environment-background",
+      vertexBuffer: cached.geometry.vertexBuffer.upload(context.device),
+      vertexCount: cached.geometry.vertexBuffer.vertexCount,
+      uniforms: createEnvironmentBackgroundUniforms(this.options)
+    });
+    context.device.draw(command);
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {

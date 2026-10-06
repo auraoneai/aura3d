@@ -387,7 +387,7 @@ export class Renderer {
   private renderScaleCeiling = 1;
   private readonly unsubscribeDprWatch?: () => void;
   /** C-28 FrameStats feeding the governor (intervalMs until lane 11's gpuMs lands). */
-  private readonly frameStats?: FrameStatsLike;
+  private readonly frameStatsMonitor?: FrameStatsLike;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
     this.temporalHistory = temporalHistory;
@@ -423,7 +423,7 @@ export class Renderer {
       });
       // C-28 slot: the default impl is a real FrameStats (gpuMs stays null
       // until prd11's timer queries land); flags would pick prd11's provider.
-      this.frameStats = frameStatsSlot.get({ values: {}, on: () => false })(240);
+      this.frameStatsMonitor = frameStatsSlot.get({ values: {}, on: () => false })(240);
     }
     // §6.9: re-evaluate the canvas pixel ratio when the display DPR changes.
     this.unsubscribeDprWatch = options.resolution !== undefined && this.canvas
@@ -436,6 +436,11 @@ export class Renderer {
   }
   static create(options: RendererOptions = {}): Promise<Renderer> {
     return createRenderer(options);
+  }
+
+  /** C-28 monitor (PRD-01 Phase 6): lane capture reads cpuSubmitMs percentiles. */
+  get frameStats(): FrameStatsLike | undefined {
+    return this.frameStatsMonitor;
   }
 
   /** C-05: current output configuration (`app.setOutput` / `renderer.output` seam). */
@@ -575,7 +580,7 @@ export class Renderer {
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     this.assertAlive();
     // §6.9: FrameStats samples every render while a governor exists (resolution opt-in).
-    this.frameStats?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
+    this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -816,8 +821,8 @@ export class Renderer {
       throw error;
     } finally {
       this.device.endFrame();
-      if (this.resolutionGovernor && this.frameStats) {
-        const frameSample = this.frameStats.end();
+      if (this.resolutionGovernor && this.frameStatsMonitor) {
+        const frameSample = this.frameStatsMonitor.end();
         this.resolutionGovernor.sample(frameSample.intervalMs, frameSample.gpuMs);
       }
       for (const shadowPass of ownedShadowPasses) {
@@ -842,7 +847,7 @@ export class Renderer {
   renderAsync(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics>;
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
     this.assertAlive();
-    this.frameStats?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
+    this.frameStatsMonitor?.begin(typeof performance !== "undefined" ? performance.now() : Date.now());
     const { source, camera: inputCamera } = normalizeRendererInput(sourceOrInput, camera);
     sceneFromSource(source)?.updateWorldTransforms();
     const cameraPolicy = collectCameraPolicy(source);
@@ -1086,8 +1091,8 @@ export class Renderer {
       throw error;
     } finally {
       this.device.endFrame();
-      if (this.resolutionGovernor && this.frameStats) {
-        const frameSample = this.frameStats.end();
+      if (this.resolutionGovernor && this.frameStatsMonitor) {
+        const frameSample = this.frameStatsMonitor.end();
         this.resolutionGovernor.sample(frameSample.intervalMs, frameSample.gpuMs);
       }
       for (const shadowPass of ownedShadowPasses) {

@@ -94,9 +94,9 @@ export class MaterialBinding {
    * u_geometryMatrix — so this validates material-owned generated uniforms
    * and renames parameters instead of replaying the legacy checks.
    */
-  bindGenerated(materialLike: Material | MaterialInstance, shader: RenderShaderProgram, features?: ProgramFeatures): MaterialBindingResult {
+  bindGenerated(materialLike: Material | MaterialInstance, shader: RenderShaderProgram, features?: ProgramFeatures, into?: Map<string, UniformValue>): MaterialBindingResult {
     const material = materialLike instanceof MaterialInstance ? materialLike.baseMaterial : materialLike;
-    const uniforms = new Map<string, UniformValue>();
+    const uniforms = into ?? new Map<string, UniformValue>();
     const diagnostics: string[] = [];
     const warnings: string[] = [];
 

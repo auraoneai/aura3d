@@ -41,6 +41,14 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
   return cache;
 }
 
+/**
+ * PRD-01 Phase 6 (C-31): read-only access for diagnostics — never creates the
+ * singleton, so callers that lack the app's QrFlags can't pollute the map.
+ */
+export function rendererProgramCachePeek(device: RenderDevice): ProgramCacheLike | undefined {
+  return caches.get(device);
+}
+
 export function rendererAuraFrame(device: RenderDevice, flags: QrFlags): FrameUniformsLike {
   let fu = auraFrames.get(device);
   if (!fu) {

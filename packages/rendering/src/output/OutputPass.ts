@@ -70,6 +70,7 @@ function overlayUniforms(overlay: OutputOverlayUniforms, aspect: number, enabled
 
 export class OutputPass implements OutputPassLike, DisposableResource {
   private readonly modules = new Map<string, ShaderModule>();
+  private readonly drawCache = new Map<string, { readonly geometry: Geometry; readonly pipeline: RenderPipeline }>();
   public disposed = false;
 
   constructor(private readonly device: RenderDevice) {}
@@ -86,6 +87,7 @@ export class OutputPass implements OutputPassLike, DisposableResource {
     const overlay = options.overlay ?? null;
     const overlayActive = overlay !== null && overlayEnabledAmounts(overlay);
     const key: OutputVariantKey = { toneMapping, coverage: useCoverage, overlay: overlay !== null };
+    const cacheKey = variantCacheKey(key);
     const shader = this.moduleFor(key).compile(this.device);
 
     const uniforms = new Map<string, UniformValue>();
@@ -100,8 +102,12 @@ export class OutputPass implements OutputPassLike, DisposableResource {
       overlayUniforms(overlay, input.width / Math.max(1, input.height), overlayActive, uniforms);
     }
 
-    const geometry = createFullscreenTriangleGeometry();
-    try {
+    // Phase 6: persistent fullscreen geometry + pipeline per variant — zero
+    // RenderPipeline constructions and zero buffer creates in steady state.
+    let cached = this.drawCache.get(cacheKey);
+    if (!cached || cached.pipeline.shader !== shader) {
+      cached?.geometry.dispose();
+      const geometry = createFullscreenTriangleGeometry();
       const pipeline = new RenderPipeline({
         label: "prd01-output",
         shader,
@@ -109,18 +115,18 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         topology: geometry.topology,
         renderState: OUTPUT_RENDER_STATE
       });
-      const command = pipeline.createDrawCommand({
-        label: "prd01-output",
-        vertexBuffer: geometry.vertexBuffer.upload(this.device),
-        vertexCount: geometry.vertexBuffer.vertexCount,
-        uniforms
-      });
-      this.device.setRenderTarget(output === "canvas" ? null : output);
-      this.device.draw(command);
-      this.device.setRenderTarget(input);
-    } finally {
-      geometry.dispose();
+      cached = { geometry, pipeline };
+      this.drawCache.set(cacheKey, cached);
     }
+    const command = cached.pipeline.createDrawCommand({
+      label: "prd01-output",
+      vertexBuffer: cached.geometry.vertexBuffer.upload(this.device),
+      vertexCount: cached.geometry.vertexBuffer.vertexCount,
+      uniforms
+    });
+    this.device.setRenderTarget(output === "canvas" ? null : output);
+    this.device.draw(command);
+    this.device.setRenderTarget(input);
   }
 
   private moduleFor(key: OutputVariantKey): ShaderModule {
@@ -147,5 +153,7 @@ export class OutputPass implements OutputPassLike, DisposableResource {
     this.disposed = true;
     for (const module of this.modules.values()) module.dispose();
     this.modules.clear();
+    for (const cached of this.drawCache.values()) cached.geometry.dispose();
+    this.drawCache.clear();
   }
 }

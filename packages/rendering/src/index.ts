@@ -82,7 +82,7 @@ export { ProgramCache } from "./program/ProgramCache";
 export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
-export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass } from "./renderer/qrSubFlags";
 export { OutputPass } from "./output/OutputPass";
 export { createHdrTarget, ensureHdrTarget, type HdrTargetOptions } from "./output/HdrTarget";
 export {

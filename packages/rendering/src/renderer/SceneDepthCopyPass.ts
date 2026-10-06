@@ -11,7 +11,7 @@
 
 import { Geometry } from "../Geometry";
 import { DEFAULT_RENDER_STATE } from "../Material";
-import type { RenderDevice, RenderTarget, UniformValue } from "../RenderDevice";
+import type { RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice";
 import { RenderPipeline } from "../RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import { ShaderModule } from "../ShaderModule";
@@ -59,6 +59,7 @@ function createFullscreenTriangleGeometry(): Geometry {
 
 export class SceneDepthCopyPass extends BaseRenderPass {
   private static module: ShaderModule | null = null;
+  private cachedDraw?: { readonly device: RenderDevice; readonly shader: RenderShaderProgram; readonly geometry: Geometry; readonly pipeline: RenderPipeline };
 
   constructor(
     private readonly input: RenderTarget,
@@ -80,8 +81,12 @@ export class SceneDepthCopyPass extends BaseRenderPass {
     const shader = SceneDepthCopyPass.module.compile(context.device);
     const uniforms = new Map<string, UniformValue>();
     uniforms.set("u_depth", new TextureBinding({ name: "u_depth", texture: depthTexture, required: true }));
-    const geometry = createFullscreenTriangleGeometry();
-    try {
+    // Phase 6: persistent fullscreen geometry + pipeline — steady state makes
+    // no RenderPipeline constructions and no buffer creates.
+    let cached = this.cachedDraw;
+    if (!cached || cached.device !== context.device || cached.shader !== shader) {
+      cached?.geometry.dispose();
+      const geometry = createFullscreenTriangleGeometry();
       const pipeline = new RenderPipeline({
         label: "prd01-scene-depth-copy",
         shader,
@@ -89,18 +94,18 @@ export class SceneDepthCopyPass extends BaseRenderPass {
         topology: geometry.topology,
         renderState: DEPTH_COPY_RENDER_STATE
       });
-      const command = pipeline.createDrawCommand({
-        label: "prd01-scene-depth-copy",
-        vertexBuffer: geometry.vertexBuffer.upload(context.device),
-        vertexCount: geometry.vertexBuffer.vertexCount,
-        uniforms
-      });
-      context.device.setRenderTarget(this.copy);
-      context.device.draw(command);
-      context.device.setRenderTarget(this.input);
-    } finally {
-      geometry.dispose();
+      cached = { device: context.device, shader, geometry, pipeline };
+      this.cachedDraw = cached;
     }
+    const command = cached.pipeline.createDrawCommand({
+      label: "prd01-scene-depth-copy",
+      vertexBuffer: cached.geometry.vertexBuffer.upload(context.device),
+      vertexCount: cached.geometry.vertexBuffer.vertexCount,
+      uniforms
+    });
+    context.device.setRenderTarget(this.copy);
+    context.device.draw(command);
+    context.device.setRenderTarget(this.input);
   }
 }
 
