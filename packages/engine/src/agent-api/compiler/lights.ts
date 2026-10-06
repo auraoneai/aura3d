@@ -351,6 +351,59 @@ export function readLightingModelFromUrl(url?: URL | string): { readonly model: 
   return { model: null, disabled: false };
 }
 
+// ---------- PRD-02 §6.5 — `?a3dLighting=` surgical kill switches ----------
+
+/** Internal kill switches (PRD-02 §6.5, parsed here — not QrFlags):
+ *  `pmrem=cpu`, `atlas=off`, `shadowFilter=legacy-grid`, `shadows=off`,
+ *  `background=off` — plus `csm=off`/`probes=off`/`contact=off` URL aliases
+ *  for the real `A3D_QR_LIGHTING_*` sub-flags. */
+export interface Prd02LightingKillSwitches {
+  readonly pmrem: "cpu" | null;
+  readonly atlas: boolean;          // false = sun-only shadows
+  readonly shadowFilter: "legacy-grid" | null;
+  readonly shadows: boolean;        // false = no shadow passes at all
+  readonly background: boolean;     // false = prd02 background contributor off
+  readonly csm: boolean;            // false = single fitted map
+  readonly probes: boolean;
+  readonly contact: boolean;
+}
+
+const KILL_SWITCH_DEFAULT: Prd02LightingKillSwitches = {
+  pmrem: null, atlas: true, shadowFilter: null,
+  shadows: true, background: true, csm: true, probes: true, contact: true
+};
+
+/** Parse `?a3dLighting=` (comma-separated `k=v` pairs; `a3dLighting=0|off`
+ *  is the lane kill handled by `readLightingModelFromUrl`, not here). */
+export function readLightingKillSwitches(url?: URL | string): Prd02LightingKillSwitches {
+  const href = url !== undefined
+    ? (typeof url === "string" ? url : url.href)
+    : (typeof location !== "undefined" ? location.href : undefined);
+  if (!href) return KILL_SWITCH_DEFAULT;
+  const raw = new URL(href, "http://localhost/").searchParams.get("a3dLighting");
+  if (!raw || raw === "0" || raw === "off" || raw === "false") return KILL_SWITCH_DEFAULT;
+  const out = { ...KILL_SWITCH_DEFAULT } as Record<keyof Prd02LightingKillSwitches, unknown>;
+  for (const pair of raw.split(",")) {
+    const eq = pair.indexOf("=");
+    if (eq < 0) continue;
+    const key = pair.slice(0, eq).trim();
+    const value = pair.slice(eq + 1).trim();
+    const off = value === "0" || value === "off" || value === "false";
+    switch (key) {
+      case "pmrem": out.pmrem = value === "cpu" ? "cpu" : null; break;
+      case "atlas": out.atlas = !off; break;
+      case "shadowFilter": out.shadowFilter = value === "legacy-grid" ? "legacy-grid" : null; break;
+      case "shadows": out.shadows = !off; break;
+      case "background": out.background = !off; break;
+      case "csm": out.csm = !off; break;
+      case "probes": out.probes = !off; break;
+      case "contact": out.contact = !off; break;
+      default: break;
+    }
+  }
+  return out as Prd02LightingKillSwitches;
+}
+
 /**
  * True when A3D_QR_LIGHTING applies for this compile: `ctx.flags` when the
  * C-36 context is available, else the ambient `?a3d-qr=` URL / `A3D_QR=`

@@ -12,6 +12,7 @@ import { probeToEquirectTexture } from "../environment/probeBuild";
 import { isIterable } from "./RenderShared";
 import { Scene } from "@aura3d/scene";
 import { rendererQrFlags } from "./FrameGraph";
+import { readPrd02KillSwitches } from "../passes/Prd02SubFlags";
 
 /** Specular-cube background binding uses the mip chain (PRD-02 §8.7 blurriness→lod). */
 const PRD02_BACKGROUND_SAMPLER = new Sampler({
@@ -34,6 +35,9 @@ type RenderSourceWithProbe = RenderSource & {
 export function collectEnvironmentBackground(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentBackgroundOptions | undefined {
   if (source instanceof Scene || isIterable(source) || source.environmentBackground === false) return undefined;
   if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+    // `?a3dLighting=background=off` → fall through to the authored
+    // environmentBackground (§6.5 kill switch, §17 toggle-delta).
+    if (!readPrd02KillSwitches(source).background) return source.environmentBackground;
     const resolved = resolvePrd02EnvironmentBackground(source);
     if (resolved) return resolved;
   }

@@ -228,6 +228,7 @@ import { environmentProbeFactorySlot, type AuraQualityTier, type QrFlags } from 
 import type { RenderDevice } from "../../../../rendering/src/RenderDevice.js";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
+import { readLightingKillSwitches } from "./lights.js";
 
 export interface Prd02EnvironmentBindOptions {
   readonly device: RenderDevice;
@@ -252,6 +253,8 @@ export interface Prd02EnvironmentBinding {
   /** Non-null while a higher-quality probe is being acquired. */
   readonly pending: Promise<EnvironmentProbe> | null;
   readonly resolution: AuraEnvironmentSourceResolution;
+  /** §6.5 `?a3dLighting=pmrem=cpu` kill switch, echoed for diagnostics. */
+  readonly pmremMode: "cpu" | "auto";
 }
 
 /**
@@ -271,31 +274,34 @@ export function bindPrd02EnvironmentProbe(
   const cache = options.cache ?? new EnvironmentCache(options.device, factory, defaultProbeLoader(factory));
   const tier = options.tier;
   const request = resolution.probe;
+  // §6.5 `pmrem=cpu`: the CPU prefilter is the lane's sole impl today — the
+  // mode is echoed so the capture report can label it (toggle-delta reads it).
+  const pmremMode: "cpu" | "auto" = readLightingKillSwitches().pmrem === "cpu" ? "cpu" : "auto";
   if (request === "neutral") {
-    return { probe: cache.neutral(tier), pending: null, resolution };
+    return { probe: cache.neutral(tier), pending: null, resolution, pmremMode };
   }
   const floor = cache.neutral(tier);
   if (typeof request === "object" && "capture" in request) {
     const req = options.captureRequest;
-    if (!req) return { probe: floor, pending: null, resolution };
-    return { probe: factory.fromScene(req, { faceSize: Math.max(128, req.resolution ?? 128) as 128 | 256 | 512 | 1024 }), pending: null, resolution };
+    if (!req) return { probe: floor, pending: null, resolution, pmremMode };
+    return { probe: factory.fromScene(req, { faceSize: Math.max(128, req.resolution ?? 128) as 128 | 256 | 512 | 1024 }), pending: null, resolution, pmremMode };
   }
   if (typeof request === "object" && "hdri" in request) {
     const pending = cache.acquire({ url: request.hdri, tier }).then((probe) => {
       options.onUpgrade?.(probe);
       return probe;
     });
-    return { probe: floor, pending, resolution };
+    return { probe: floor, pending, resolution, pmremMode };
   }
   if (typeof request === "object" && "preset" in request) {
     const pending = cache.acquire({ preset: request.preset, tier }).then((probe) => {
       options.onUpgrade?.(probe);
       return probe;
     });
-    return { probe: floor, pending, resolution };
+    return { probe: floor, pending, resolution, pmremMode };
   }
   // spaceBake and any future request kinds: neutral floor, no upgrade.
-  return { probe: floor, pending: null, resolution };
+  return { probe: floor, pending: null, resolution, pmremMode };
 }
 
 let prd02SourcesRegistered = false;

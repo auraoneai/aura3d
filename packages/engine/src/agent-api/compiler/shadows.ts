@@ -3,7 +3,7 @@
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../index.js";
 import { groups, resolveProductionRuntimeShadowTuning, resolveRendererSceneCategory } from "../index.js";
 import { createSpotShadowProjection, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions } from "@aura3d/rendering";
-import { collectPrd02Lights, prd02LightingOn, resolveLightingTier, selectShadowedLights } from "./lights.js";
+import { collectPrd02Lights, prd02LightingOn, readLightingKillSwitches, resolveLightingTier, selectShadowedLights, type Prd02LightingKillSwitches } from "./lights.js";
 
 /** PRD-02 flag path returns a RendererShadowOptions-shaped view of the
  *  resolved `ShadowSystemConfig` plus the config itself on `prd02Shadows`
@@ -19,6 +19,8 @@ export interface Prd02ShadowOptions extends RendererShadowOptions {
     readonly intensity?: number;
     readonly lights?: "sun" | "shadowed";
   };
+  /** `?a3dLighting=` kill switches resolved at compile (PRD-02 §6.5). */
+  readonly prd02KillSwitches?: Prd02LightingKillSwitches;
 }
 
 export function createProductionRuntimeShadowOptions(
@@ -232,6 +234,7 @@ export function createPrd02ShadowOptions(
     cascadeLambda: config.splitLambda,
     label: `aura3d-prd02-${tier}-${config.mapSize}px-${config.cascades}casc-shadow-map`,
     prd02Shadows: config,
-    ...(contactRequest ? { prd02Contact: contactRequest } : {})
+    ...(contactRequest ? { prd02Contact: contactRequest } : {}),
+    prd02KillSwitches: readLightingKillSwitches()
   };
 }

@@ -15,6 +15,7 @@ import {
   type ReflectionFaceRenderer
 } from "./ReflectionProbeSystem";
 import { IrradianceVolumeSystem, type IrradianceVolumeSpec } from "./IrradianceVolume";
+import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_PROBES } from "../passes/Prd02SubFlags";
 
 export const PROBES_SUB_FLAG = "A3D_QR_LIGHTING_PROBES";
 export const PROBE_SELECTION_BLACKBOARD_KEY = "prd02.probeSelection";
@@ -154,7 +155,10 @@ export function createPrd02ProbesContributor(): FrameContributor {
     phases: ["shadows"],
     order: -1, // capture before the shadow pass consumes probe-relevant state
     passes: (phase, ctx) =>
-      phase === "shadows" && probeNodesFromSource(ctx).length > 0
+      phase === "shadows"
+        && !prd02SubFlagOff(ctx.flags, SUB_FLAG_PROBES)
+        && readPrd02KillSwitches(ctx.source).probes
+        && probeNodesFromSource(ctx).length > 0
         ? [new Prd02ProbesRenderPass(ctx)]
         : []
   };

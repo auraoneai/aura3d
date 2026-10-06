@@ -16,6 +16,8 @@ export {
   prd02LightingOn,
   readLightingModelFromUrl,
   resolveLightingModel,
+  readLightingKillSwitches,
+  type Prd02LightingKillSwitches,
   type PhysicalLightDescriptor,
   type ShadowedLightSelection,
   type HemisphereIrradiance,
@@ -206,6 +208,33 @@ export class Prd02LightingRuntime {
   setEnvironmentRotation(radians: number): void { this.rotation = radians; }
   setEnvironmentIntensity(value: number): void { this.intensity = value; }
 
+  /** §17 timing spans (item: C-31 `lighting` section). C-28 exposes only a
+   *  capability flag today — no per-pass GPU timer API exists on
+   *  `RenderDevice` — so every span is `null` and `timingsSource` reports
+   *  "none" unless a real query path lands; the capture report fills the
+   *  budgets via the §17 toggle-delta method (`?a3dLighting=*=off`). */
+  lightingTimings(): {
+    readonly pmrem: number | null;
+    readonly shadowCascade: readonly (number | null)[];
+    readonly shadowLocal: number | null;
+    readonly contactShadow: number | null;
+    readonly background: number | null;
+    readonly probes: number | null;
+    readonly timingsSource: "timer-query" | "none";
+    readonly timerQueryAvailable: boolean;
+  } {
+    return {
+      pmrem: null,
+      shadowCascade: [],
+      shadowLocal: null,
+      contactShadow: null,
+      background: null,
+      probes: null,
+      timingsSource: "none",
+      timerQueryAvailable: this.device?.probe?.timerQuery === true
+    };
+  }
+
   /** Observed values only — fields the runtime cannot measure are null (C-31). */
   diagnostics(): AuraLightingDiagnostics {
     void this.rotation; void this.intensity;
@@ -233,7 +262,7 @@ registerAppExtension({
 
 // ---------- C-31 diagnostics sections ("lighting" / "shadows") ----------
 
-interface AppLike { readonly lighting?: { diagnostics(): AuraLightingDiagnostics } }
+interface AppLike { readonly lighting?: { diagnostics(): AuraLightingDiagnostics; lightingTimings?(): unknown } }
 
 registerDiagnosticsSection({
   id: "prd02.lighting",
@@ -249,7 +278,8 @@ registerDiagnosticsSection({
       environment: diag?.environment ?? null,
       lightsEvaluated: counters?.lightsEvaluated ?? null,
       lightsCulledByRange: null,
-      lightsDroppedByCap: counters?.lightsDroppedByCap ?? null
+      lightsDroppedByCap: counters?.lightsDroppedByCap ?? null,
+      timings: lighting?.lightingTimings?.() ?? null
     };
   }
 });

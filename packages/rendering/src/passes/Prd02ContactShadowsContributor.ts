@@ -15,8 +15,9 @@ import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02Depth
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "../ShaderLibraryCore";
 import { QUALITY_TIERS } from "../contracts/quality";
 import type { AuraQualityTier } from "../contracts/quality";
+import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CONTACT } from "./Prd02SubFlags";
 
-export const CONTACT_SHADOWS_SUB_FLAG = "A3D_QR_LIGHTING_CONTACT";
+export const CONTACT_SHADOWS_SUB_FLAG = SUB_FLAG_CONTACT;
 
 interface ContactShadowsDiagnostics {
   readonly contactShadows: { readonly passExecuted: boolean; readonly depthSource: string };
@@ -48,6 +49,9 @@ function tierNameOf(ctx: FrameContributorContext): AuraQualityTier | null {
 
 /** C-27 tier + opt-in + sub-flag resolution. Returns null when the pass must not run. */
 export function contactShadowRequest(ctx: FrameContributorContext): ContactShadowOptions | null {
+  // `A3D_QR_LIGHTING_CONTACT=off` or `?a3dLighting=contact=off` veto even
+  // Ultra/`effects.contactShadows` requests (§6.5 kill switch).
+  if (prd02SubFlagOff(ctx.flags, SUB_FLAG_CONTACT) || !readPrd02KillSwitches(ctx.source).contact) return null;
   const optIn = contactShadowOptIn(ctx);
   if (ctx.flags.on(CONTACT_SHADOWS_SUB_FLAG)) {
     return optIn ?? {};

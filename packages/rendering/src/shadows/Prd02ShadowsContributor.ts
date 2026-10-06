@@ -15,6 +15,7 @@ import { collectRendererShadowOptions } from "../renderer/ShadowOrchestration";
 import { sceneFromSource } from "../renderer/RenderShared";
 import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
 import { bindShadowFrameUniforms, shadowBindingMaterial } from "./ShadowFrameBinding";
+import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
 
 const DEFAULT_NORMAL_BIAS_TEXELS = 1.5;
 
@@ -25,11 +26,17 @@ export function shadowSystemConfigFromSource(ctx: FrameContributorContext): Shad
   const cascades = (options?.cascadeCount ?? tierShadow.cascades) as 1 | 2 | 3 | 4;
   // RendererShadowOptions.filter is "none" | "pcf" (legacy); "pcf" → the
   // flag-path filtered compare pipeline, "none" → a single hard tap.
-  const filter: ShadowSystemConfigInput["filter"] = options?.filter === "none" ? "hard" : "pcf";
+  const kill = readPrd02KillSwitches(ctx.source);
+  // `shadowFilter=legacy-grid` keeps the unfiltered single-tap path (§6.5);
+  // `A3D_QR_LIGHTING_CSM` off or `?a3dLighting=csm=off` → one fitted map.
+  const filter: ShadowSystemConfigInput["filter"] =
+    kill.shadowFilter === "legacy-grid" ? "hard"
+      : options?.filter === "none" ? "hard" : "pcf";
+  const csmOn = kill.csm && !prd02SubFlagOff(ctx.flags, SUB_FLAG_CSM);
   return {
     enabled: options?.enabled !== false,
     mapSize: options?.size ?? tierShadow.mapSize,
-    cascades,
+    cascades: (csmOn ? cascades : 1) as 1 | 2 | 3 | 4,
     maxDistance: ctx.camera?.far ?? 200,
     splitLambda: options?.cascadeLambda ?? 0.6,
     filter,
@@ -60,6 +67,7 @@ export function collectShadowSystemLights(ctx: FrameContributorContext): {
   readonly sunDirection: Vec3 | null;
   readonly localLights: ShadowSystemLocalLight[];
 } {
+  const atlasOn = readPrd02KillSwitches(ctx.source).atlas;
   const scene = sceneFromSource(ctx.source);
   const lights = scene?.collectLights().filter((light) => light.visible && light.castsShadow) ?? [];
   const sun = lights.find((light) => light.kind === "directional") ?? null;
@@ -93,7 +101,8 @@ export function collectShadowSystemLights(ctx: FrameContributorContext): {
     const length = Math.hypot(sunDirection[0], sunDirection[1], sunDirection[2]) || 1;
     sunDirection = [sunDirection[0] / length, sunDirection[1] / length, sunDirection[2] / length];
   }
-  return { sunDirection, localLights };
+  // `?a3dLighting=atlas=off` → sun-only shadows (no local-light atlas tiles).
+  return { sunDirection, localLights: atlasOn ? localLights : [] };
 }
 
 /**
@@ -185,7 +194,9 @@ export function createPrd02ShadowsContributor(): FrameContributor {
     phases: ["shadows"],
     order: 0,
     passes(phase, ctx) {
-      return phase === "shadows" ? [new Prd02ShadowsRenderPass(ctx)] : [];
+      // `?a3dLighting=shadows=off` → no prd02 shadow passes (§6.5 kill switch).
+      return phase === "shadows" && readPrd02KillSwitches(ctx.source).shadows
+        ? [new Prd02ShadowsRenderPass(ctx)] : [];
     }
   };
 }

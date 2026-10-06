@@ -206,6 +206,14 @@ export {
   prd02ContactShadowDiagnostics
 } from "../passes/Prd02ContactShadowsContributor.js";
 export {
+  prd02SubFlagOff,
+  readPrd02KillSwitches,
+  SUB_FLAG_CSM,
+  SUB_FLAG_PROBES,
+  SUB_FLAG_CONTACT,
+  type Prd02KillSwitchesLike
+} from "../passes/Prd02SubFlags.js";
+export {
   CONTACT_SHADOW_CHUNK_ID
 } from "../shaders/chunks/contact_shadow.glsl.js";
 export {
