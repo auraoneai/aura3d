@@ -8,7 +8,7 @@
  * AudioContext. Buses split gameplay sfx, ambience, and UI confirmations.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 /** Logical gameplay cue identifiers used by the route. */
 export type GolfAudioCue =
