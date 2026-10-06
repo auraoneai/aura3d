@@ -340,6 +340,9 @@ importers:
       '@aura3d/engine-runtime':
         specifier: workspace:*
         version: link:../engine
+      '@aura3d/input':
+        specifier: workspace:*
+        version: link:../input
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math

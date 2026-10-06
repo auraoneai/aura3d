@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@aura3d/engine-runtime": "workspace:*",
+    "@aura3d/input": "workspace:*",
     "@aura3d/math": "workspace:*",
     "@aura3d/rendering": "workspace:*"
   }
