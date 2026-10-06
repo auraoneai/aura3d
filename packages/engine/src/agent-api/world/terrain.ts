@@ -121,6 +121,8 @@ export interface TerrainRecord {
   readonly heightScale: number;
   /** Set when the height source resolves ("array"/"procedural" at build, "asset" at compile). */
   grid: TerrainHeightGrid | null;
+  /** Bumped by `world.extrude` conformToTerrain edits so the runtime re-uploads heights. */
+  gridVersion?: number;
 }
 
 /** module-level registry keyed by node id — the C-36 handler fills `grid` for asset sources. */
