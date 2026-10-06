@@ -116,10 +116,14 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
   await app.ready();
 
   // Continuous rAF loop: optional simulated game-logic load, then a stepped frame.
+  // `window.__PRD11_LOAD_MS__` overrides `?loadMs=` live, so lane specs can
+  // start/stop the load mid-session (governor recovery needs this).
   let frames = 0;
   let lastDrawCalls = 0;
   const loop = (): void => {
-    if (loadMs > 0) busyLoop(loadMs);
+    const live = (window as unknown as { __PRD11_LOAD_MS__?: number }).__PRD11_LOAD_MS__;
+    const burn = live ?? loadMs;
+    if (burn > 0) busyLoop(burn);
     app.step(0);
     frames += 1;
     try {
