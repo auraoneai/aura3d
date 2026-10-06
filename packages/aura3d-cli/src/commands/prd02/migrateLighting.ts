@@ -82,6 +82,18 @@ export const migrateLightingCodemod: AuraCodemod = {
       cursor = m.index;
     }
     void cursor;
+    // PRD-02 §6.5 checkbox: report deprecated `shadows.contact` call sites —
+    // the rename to `shadows.blobShadow` is applied by PRD 14/13, not here.
+    const CONTACT_CALL = /shadows\.contact\s*\(/g;
+    while ((m = CONTACT_CALL.exec(source)) !== null) {
+      rows.push({
+        file: fileName, line: lineOf(source, m.index),
+        construct: "shadows.contact(…)",
+        mapping: "exact",
+        target: "shadows.blobShadow(…)",
+        note: "deprecated alias (C-10); rename applied by PRD 14/13"
+      });
+    }
     edits.sort((a, b) => b.start - a.start);
     for (const e of edits) code = code.slice(0, e.start) + e.text + code.slice(e.end);
     return { code, rows };

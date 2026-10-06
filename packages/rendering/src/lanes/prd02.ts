@@ -37,9 +37,13 @@ environmentProbeFactorySlot.provide(createEnvironmentProbeFactory);
 // under A3D_QR_LIGHTING via the registry's flag field.
 import { registerFrameContributor } from "../contracts/frameGraph.js";
 import { createPrd02ShadowsContributor } from "../shadows/Prd02ShadowsContributor.js";
+import { createPrd02ContactShadowsContributor } from "../passes/Prd02ContactShadowsContributor.js";
+import { createPrd02ProbesContributor } from "../probes/Prd02ProbesContributor.js";
 import { ensurePrd02DepthFeatures } from "../shadows/Prd02DepthShaderLibrary.js";
 
 registerFrameContributor(createPrd02ShadowsContributor());
+registerFrameContributor(createPrd02ContactShadowsContributor());
+registerFrameContributor(createPrd02ProbesContributor());
 ensurePrd02DepthFeatures();
 
 // Named re-exports (not `export *`): the root barrel merges contracts/index
@@ -189,6 +193,55 @@ export {
   prd02ShadowDiagnostics,
   type Prd02ShadowDiagnostics
 } from "../shadows/Prd02ShadowsContributor.js";
+export {
+  CONTACT_MASK_BLACKBOARD_KEY,
+  ContactShadowPass,
+  type ContactShadowOptions,
+  type ContactShadowPassInput
+} from "../passes/ContactShadowPass.js";
+export {
+  CONTACT_SHADOWS_SUB_FLAG,
+  createPrd02ContactShadowsContributor,
+  contactShadowRequest,
+  prd02ContactShadowDiagnostics
+} from "../passes/Prd02ContactShadowsContributor.js";
+export {
+  CONTACT_SHADOW_CHUNK_ID
+} from "../shaders/chunks/contact_shadow.glsl.js";
+export {
+  ReflectionProbeSystem,
+  boxWeight,
+  type ReflectionProbeSpec,
+  type ProbeSelection,
+  type ProbeAssignment,
+  type ReflectionFaceRenderer
+} from "../probes/ReflectionProbeSystem.js";
+export {
+  IrradianceVolumeSystem,
+  type IrradianceVolumeSpec,
+  type IrradianceVolume
+} from "../probes/IrradianceVolume.js";
+export {
+  PROBES_SUB_FLAG,
+  PROBE_SELECTION_BLACKBOARD_KEY,
+  IRRADIANCE_VOLUME_BLACKBOARD_KEY,
+  PROBE_RENDER_FACE_KEY,
+  ENV_SPECULAR_BLACKBOARD_KEY,
+  ROUGHNESS_TO_LOD_BLACKBOARD_KEY,
+  createPrd02ProbesContributor,
+  installPrd02ProbeRenderer,
+  probeNodesFromSource
+} from "../probes/Prd02ProbesContributor.js";
+export {
+  fetchLtcLutTextures,
+  gaussLegendreRectDiffuse,
+  rectDiffuseReference,
+  LTC_LUT_SIZE,
+  LTC_LUT_BYTES,
+  LTC_LUT_SOURCE_URL,
+  type LtcLutTextures,
+  type LtcLutLoader
+} from "../probes/LtcLuts.js";
 export {
   SH9_CHUNK_GLSL,
   LIGHTING_IBL_CHUNK_GLSL,

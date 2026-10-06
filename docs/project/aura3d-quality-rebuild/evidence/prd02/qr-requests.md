@@ -65,3 +65,14 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **to:prd11** (standing, Phase 3) — `u_prd02LocalShadowIndex` / `perLightShadowIndex`
   can't upload through `uploadUniforms` (no ivec branch); kept as CPU-side
   pairs + a vec4-packed `u_prd02LocalShadowIndex` uniform in the chunk.
+- **to:prd01** (Phase 5) — `Texture`'s `2d-array` dimension has no upload path
+  in `TextureUpload` (2D + cube only). `IrradianceVolume` ships its 3× RGBA16F
+  SH textures with per-layer `mipLevels` payloads (mipLevels[z] = layer z).
+  Request: a real `texImage3D` upload + mip-levels-are-mips convention for
+  `dimension: "2d-array"`.
+- **note (intra-lane, C-09 is lane-02-owned)** (Phase 5) — `prd02.probes`
+  needs the scene's per-face capture closure
+  (`EnvironmentCaptureRequest.renderFace`). Delivered via blackboard
+  `prd02.probeRenderFace` or `installPrd02ProbeRenderer`; if a later phase
+  wants a first-class frame-context field it lands as a C-09 additive
+  member, not a cross-lane request.

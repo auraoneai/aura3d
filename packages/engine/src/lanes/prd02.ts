@@ -77,7 +77,7 @@ import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
 import { auraLightsCounters } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
-import { prd02ShadowDiagnostics } from "@aura3d/rendering";
+import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
 import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
@@ -216,7 +216,7 @@ export class Prd02LightingRuntime {
       },
       shadows: prd02ShadowDiagnostics()?.shadows ?? [],
       droppedFeatures: prd02ShadowDiagnostics()?.droppedFeatures ?? [],
-      contactShadows: { passExecuted: false },
+      contactShadows: prd02ContactShadowDiagnostics().contactShadows,
       programCompileCount: this.device?.getDiagnostics().programCompileCount ?? 0,
       readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0
     };

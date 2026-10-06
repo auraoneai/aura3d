@@ -10,6 +10,15 @@ import { collectPrd02Lights, prd02LightingOn, resolveLightingTier, selectShadowe
  *  (additive member; legacy consumers ignore it). */
 export interface Prd02ShadowOptions extends RendererShadowOptions {
   readonly prd02Shadows?: ShadowSystemConfig;
+  /** `effects.contactShadows()` opt-in consumed by the prd02.contactShadows
+   *  contributor (PRD-02 §6.5; additive member, legacy consumers ignore it). */
+  readonly prd02Contact?: {
+    readonly length?: number;
+    readonly thickness?: number;
+    readonly steps?: number;
+    readonly intensity?: number;
+    readonly lights?: "sun" | "shadowed";
+  };
 }
 
 export function createProductionRuntimeShadowOptions(
@@ -207,6 +216,12 @@ export function createPrd02ShadowOptions(
     max: 1 + QUALITY_TIERS[tier].shadow.localShadowLights
   });
   const config = resolveShadowSystemConfig(snapshot, collected.descriptors, tier, { cameraFar: options.cameraFar });
+  const contactNode = groups.flatten(snapshot.nodes).find(
+    (node) => node.kind === "effect" && (node.effect as string) === "contact-shadows"
+  );
+  const contactRequest = contactNode && "contactShadows" in contactNode
+    ? (contactNode as { readonly contactShadows?: Prd02ShadowOptions["prd02Contact"] }).contactShadows
+    : undefined;
   return {
     enabled: config.enabled && selection.casters.length > 0,
     size: config.mapSize,
@@ -216,6 +231,7 @@ export function createPrd02ShadowOptions(
     cascadeCount: config.cascades,
     cascadeLambda: config.splitLambda,
     label: `aura3d-prd02-${tier}-${config.mapSize}px-${config.cascades}casc-shadow-map`,
-    prd02Shadows: config
+    prd02Shadows: config,
+    ...(contactRequest ? { prd02Contact: contactRequest } : {})
   };
 }
