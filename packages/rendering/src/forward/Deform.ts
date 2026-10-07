@@ -14,6 +14,7 @@ import { decideSkinningPalettePath } from "../WebGPUSkinningLimits.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import { applySkinningUniforms, applySkinningUniformsCached, paletteKeyOf } from "../SkinningUniforms.js";
 import { prd06FlagsOn, skinningPaletteCache } from "../lanes/prd06.js";
+import { bindPrd06MorphTextureUniforms } from "../shaders/deform/forwardFeature.js";
 
 export {
   applySkinningUniforms,
@@ -169,6 +170,18 @@ export function applyGpuMorphUniforms(
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>
 ): boolean {
+  // T2.2: a generated `prd06.deform` program (A3D_MORPH) declares
+  // `u_morphTexture` — bind the §8.2 array texture + packed top-K list and keep
+  // the item's geometry unchanged (the CPU morph dispatch at ForwardPass.ts
+  // `resolveRenderGeometry` is skipped when this returns true). Falls back to
+  // the legacy uniform path when the build reports a CPU fallback. This is the
+  // lane-side `bindUniforms` consumer until lane 01 wires the C-02 per-item
+  // select/bind loop into program acquisition (qr-request Q-01-4).
+  if (shader.reflection.uniforms.has("u_morphTexture")) {
+    if (bindPrd06MorphTextureUniforms(item, shader, uniforms)) return true;
+    // Texture build fell back to CPU (limits/bucket ceiling) — CPU morph below.
+    return false;
+  }
   if (
     !shader.reflection.uniforms.has("u_morphPositionDeltas") ||
     !shader.reflection.uniforms.has("u_morphWeights") ||

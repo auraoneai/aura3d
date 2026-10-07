@@ -131,7 +131,7 @@ void main() { outColor = texelFetch(u_arr, ivec3(0, 0, int(u_layer)), 0); }`
         vertexCount: 3,
         renderState: { depthTest: false, depthWrite: true, cullMode: "none", blend: false, depthCompare: "always" },
         shader,
-        uniforms: new Map<string, unknown>([
+        uniforms: new Map<string, import("../../../../packages/rendering/src/RenderDevice.js").UniformValue>([
           ["u_arr", new TextureBinding({ name: "u_arr", texture })],
           ["u_layer", layer]
         ])

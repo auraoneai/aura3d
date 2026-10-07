@@ -9,6 +9,7 @@
 import { describe, expect, it } from "vitest";
 import type { QrFlags, QrFlagName, QrFlagValue } from "@aura3d/rendering/contracts";
 import { deformResources, skinningPaletteCache } from "../../../../packages/rendering/src/lanes/prd06";
+import { setRendererQrFlags } from "../../../../packages/rendering/src/renderer/FrameGraph";
 import { buildMorphTargetTexture } from "../../../../packages/rendering/src/resources/MorphTargetTexture";
 import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { VertexBuffer } from "../../../../packages/rendering/src/VertexBuffer";
@@ -17,8 +18,7 @@ import { IndexBuffer } from "../../../../packages/rendering/src/IndexBuffer";
 import type { MorphTargetDelta } from "../../../../packages/rendering/src/MorphTarget";
 import type { RenderDevice } from "../../../../packages/rendering/src/RenderDevice";
 
-function flags(on: boolean): QrFlags {
-  const values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>> = { A3D_QR_ANIMATION: on };
+function flagsOf(values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>>): QrFlags {
   return {
     values,
     on(name: QrFlagName): boolean {
@@ -26,6 +26,10 @@ function flags(on: boolean): QrFlags {
       return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
     }
   };
+}
+
+function flags(on: boolean): QrFlags {
+  return flagsOf({ A3D_QR_ANIMATION: on });
 }
 
 describe("C-18 deformResources slot", () => {
@@ -38,8 +42,28 @@ describe("C-18 deformResources slot", () => {
     expect(() => stub.skinningPalettes.acquire({} as RenderDevice, {}, 4)).toThrow(/PRD06_PENDING/);
     const real = deformResources.get(flags(true));
     expect(real.skinningPalettes).toBe(skinningPaletteCache);
-    expect(real.buildMorphTargetTexture).toBe(buildMorphTargetTexture);
+    expect(typeof real.buildMorphTargetTexture).toBe("function");
     expect(deformResources.provided).toBe(true);
+  });
+
+  it("T2.1: the provided morph builder follows A3D_QR_ANIMATION_GPU_MORPH", () => {
+    const vertices = new VertexBuffer(VertexFormat.P3N3T4T2, 8);
+    const geometry = new Geometry(vertices, new IndexBuffer([0, 1, 2], 8));
+    const real = deformResources.get(flags(true));
+    try {
+      // Sub-flag off (default): the provided builder degrades to the CPU fallback
+      // even though the slot itself resolves on A3D_QR_ANIMATION.
+      setRendererQrFlags(flagsOf({ A3D_QR_ANIMATION: true, A3D_QR_ANIMATION_GPU_MORPH: false }));
+      expect(real.buildMorphTargetTexture(geometry, [{ positions: [[1, 0, 0]] } as MorphTargetDelta], { maxTextureSize: 4096, maxArrayLayers: 2048 }))
+        .toMatchObject({ fallback: "cpu" });
+      // Sub-flag on: the real §8.2 array texture builder runs.
+      setRendererQrFlags(flagsOf({ A3D_QR_ANIMATION: true, A3D_QR_ANIMATION_GPU_MORPH: true }));
+      const packed = real.buildMorphTargetTexture(geometry, [{ positions: [[1, 0, 0]] } as MorphTargetDelta], { maxTextureSize: 4096, maxArrayLayers: 2048 });
+      expect("texture" in packed).toBe(true);
+      if ("texture" in packed) expect(packed.texture.dimension).toBe("2d-array");
+    } finally {
+      setRendererQrFlags(flagsOf({}));
+    }
   });
 
   it("the real cache satisfies SkinningPaletteTextureCacheLike end-to-end", () => {

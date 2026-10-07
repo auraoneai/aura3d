@@ -7,7 +7,7 @@
 export const A3D_PRD06_SKINNING_COMMON_GLSL = /* glsl */ `
 #ifdef A3D_SKINNING
 uniform highp sampler2D u_boneTexture;        // RGBA32F, 4 texels per mat4, persistent per skin
-uniform int u_boneTextureWidth;               // multiple of 4
+uniform float u_boneTextureWidth;             // multiple of 4 — §8.1 int, bound as float (no integer uniform uploads yet)
 #ifdef A3D_VELOCITY
 uniform highp sampler2D u_prevBoneTexture;
 #endif
@@ -19,7 +19,7 @@ layout(location = 8) in vec4 a_joints1;       // existing JOINTS_1 location
 layout(location = 9) in vec4 a_weights1;      // existing WEIGHTS_1 location
 #endif
 mat4 a3dBone(highp sampler2D tex, float jf) {
-  int i = int(jf + 0.5) * 4; int y = i / u_boneTextureWidth; int x = i - y * u_boneTextureWidth;
+  int i = int(jf + 0.5) * 4; int w = int(u_boneTextureWidth + 0.5); int y = i / w; int x = i - y * w;
   return mat4(texelFetch(tex, ivec2(x, y), 0), texelFetch(tex, ivec2(x + 1, y), 0),
               texelFetch(tex, ivec2(x + 2, y), 0), texelFetch(tex, ivec2(x + 3, y), 0));
 }

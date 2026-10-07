@@ -30,6 +30,13 @@ WebGPU still re-upload whole textures every revision bump. Request parity so the
 `qualityRebuild.flags` → `?a3d-qr=` → `A3D_QR`/`VITE_A3D_QR` → per-flag
 `A3D_QR_*` itself.
 
+Same seam carries the §970 option aliases: `renderer.morph: "gpu" | "cpu"` →
+`A3D_QR_ANIMATION_GPU_MORPH`, `renderer.skinnedShadows` →
+`A3D_QR_ANIMATION_SKINNED_SHADOWS`, `renderer.skinnedPbr: "unified" | "fork"`
+(Q-01-2) — the fields exist on `A3DRendererOptions` (`nodes/types.ts:1030+`)
+but no app path translates them into flag values. Lane 06 reads only the flag
+side (`prd06FlagsOn`), so the aliases are inert until installation lands.
+
 ## tests/unit/contracts/harness.ts — conformance() cannot take provided slots
 
 `conformance(slot, suite)` passes `slot.provided` — a boolean — as the real
@@ -66,6 +73,40 @@ warnings (`FIGHTER_CLIP_STAND_IN`) and missing-clip errors
 subpaths (`@aura3d/rendering/contracts/deform`, `.../deform-shapes`) miss and
 throw. Lane harnesses work around it with strict-JSON importmaps inside the
 harness HTML (`tests/qr/prd06/browser/*-harness.html`). Owner: 15.
+
+## Q-01-4 — forward path needs a per-item select/bindUniforms consumer at program-acquire
+
+`contracts/program.ts`'s `ShaderFeature.select`/`bindUniforms` contract is only
+honored on the depth path today: `Prd02DepthShaderLibrary` calls
+`feature.select({item, pass:"depth", tier, flags})` per item
+(`shadows/Prd02DepthShaderLibrary.ts:95-204`). The forward pass acquires
+programs through the material's `programFeatures(ctx)` stamp and never calls
+`feature.select(item, "forward", tier, flags)` — so a `vertex:deform`
+contributor like `prd06.deform` gets compiled with the pre-select `true` stamp
+(no `A3D_SKINNING`/`A3D_MORPH` defines), and nobody calls its `bindUniforms`.
+
+PRD-06 works around it lane-locally: `forward/Deform.ts` (lane-owned carve)
+checks `shader.reflection.uniforms.has("u_morphTexture")` and calls
+`bindPrd06MorphTextureUniforms` directly — so a generated program that *did*
+get the deform chunks bound correctly, and any program that didn't keeps the
+legacy CPU morph path untouched. Request lane 01 add the real consumer:
+per-item `select` at program-acquire (feeding `computeProgramKey`) plus
+`bindUniforms` at draw, so forward and depth behave identically and the
+morph-bucket program keys actually materialize.
+
+## Q-01-5 — MultiDraw has no integer-uniform upload path
+
+`webgl2/MultiDraw.ts:115-194` uploads only floats: `number` → `uniform1f`,
+arrays → `uniformMatrix4fv`/`uniform4fv`/`uniform3fv`/`uniform2fv`. There is no
+`uniform1i`/`uniformNi`v dispatch, and `ReadonlyMap<string, UniformValue>`
+cannot express an int array (`Int32Array`/`Uint32Array` are `UniformValue`
+members but never reach an `uniform*i` call). §8.2's `int`/`ivec4` morph
+uniforms are therefore declared `float`/`vec4` in the prd06 chunks with
+`int(x + 0.5)` casts in GLSL — documented in `shaders/deform/morph.glsl.ts`.
+Request an `uniform1i`/`uniformNiv` path so the next consumer needing real
+integer uniforms does not have to repeat the float-encoding workaround.
+(Related: Q-01-3's `sampler2DArray`/`TEXTURE_2D_ARRAY` support already landed —
+the only missing piece for §8.2 texture-array bindings is integer uploads.)
 
 ## Q-06-1 (inbound → lane 15) — drain takeClipApplyDegradations through ctx.degrade
 

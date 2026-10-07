@@ -19,6 +19,7 @@ import { A3D_PRD06_SKINNING_COMMON_GLSL } from "../shaders/deform/skinning.glsl.
 import { A3D_PRD06_MORPH_TEXTURE_GLSL } from "../shaders/deform/morph.glsl.js";
 import { A3D_PRD06_DEFORM_GLSL } from "../shaders/deform/deform.glsl.js";
 import { registerPrd06DeformDepthFeature } from "../shaders/deform/depthFeature.js";
+import { registerPrd06DeformFeature } from "../shaders/deform/forwardFeature.js";
 import { registerSkinnedBoundsProvider } from "../contracts/shadows.js";
 import { prd06SkinnedBounds } from "../renderer/SkinnedBounds.js";
 
@@ -170,10 +171,32 @@ export const deformResources: ContractSlot<DeformResources> = defineContractSlot
 /** One process-wide cache: forward binds and depth variants share it (§9.1). */
 export const skinningPaletteCache = new SkinningPaletteTextureCache();
 
+/**
+ * §970 (T2.1): the real `buildMorphTargetTexture` is provided under
+ * `A3D_QR_ANIMATION_GPU_MORPH` — the sub-flag off (alias
+ * `renderer.morph: "cpu"`) returns the C-18 cpu fallback so
+ * `resolveRenderGeometry` stays on the persistent-VBO path (T2.3). The read
+ * defers to call time so app-installed flags win over import-order.
+ */
+const buildMorphTargetTextureProvided: DeformResources["buildMorphTargetTexture"] = (geometry, targets, limits, format) =>
+  prd06FlagsOn("A3D_QR_ANIMATION_GPU_MORPH")
+    ? buildMorphTargetTexture(geometry, targets, limits, format)
+    : { fallback: "cpu", reason: "A3D_QR_ANIMATION_GPU_MORPH off" };
+
 deformResources.provide({
   skinningPalettes: skinningPaletteCache,
-  buildMorphTargetTexture
+  buildMorphTargetTexture: buildMorphTargetTextureProvided
 });
+
+/* --------------------------------------------------------- forward feature */
+
+// T2.2 (PRD-06 §269/§1145): the forward `prd06.deform` C-02 feature. Registered
+// unconditionally — the registry entry's `A3D_QR_ANIMATION` flag gates
+// contribution through `shaderFeaturesFor(flags)`, so flag-off programs stay
+// byte-identical and import order cannot strand the registration. The morph
+// builder keeps its GPU_MORPH deferral: with the sub-flag off, `select` emits
+// no morph segment and `bindUniforms` falls back to CPU morphs.
+registerPrd06DeformFeature(skinningPaletteCache, buildMorphTargetTextureProvided);
 
 /* ------------------------------------------------- deform shader chunks */
 
