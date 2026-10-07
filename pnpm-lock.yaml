@@ -57,6 +57,9 @@ importers:
       '@aura3d/engine-runtime':
         specifier: workspace:*
         version: link:packages/engine
+      '@aura3d/game':
+        specifier: workspace:*
+        version: link:packages/game
       '@aura3d/input':
         specifier: workspace:*
         version: link:packages/input
@@ -299,9 +302,6 @@ importers:
       '@aura3d/core':
         specifier: workspace:*
         version: link:../core
-      '@aura3d/debug':
-        specifier: workspace:*
-        version: link:../debug
       '@aura3d/ecs':
         specifier: workspace:*
         version: link:../ecs
@@ -332,9 +332,6 @@ importers:
       '@aura3d/workflows':
         specifier: workspace:*
         version: link:../workflows
-      create-aura3d:
-        specifier: workspace:*
-        version: link:../create-aura3d
 
   packages/game:
     dependencies:

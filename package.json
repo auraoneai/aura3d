@@ -168,6 +168,7 @@
     "@aura3d/ecs": "workspace:*",
     "@aura3d/editor-runtime": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
+    "@aura3d/game": "workspace:*",
     "@aura3d/input": "workspace:*",
     "@aura3d/math": "workspace:*",
     "@aura3d/navigation-recast": "workspace:*",

@@ -41,7 +41,6 @@
     "@aura3d/assets": "workspace:*",
     "@aura3d/audio": "workspace:*",
     "@aura3d/core": "workspace:*",
-    "@aura3d/debug": "workspace:*",
     "@aura3d/ecs": "workspace:*",
     "@aura3d/editor-runtime": "workspace:*",
     "@aura3d/input": "workspace:*",
@@ -50,8 +49,7 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*",
     "@aura3d/scripting": "workspace:*",
-    "@aura3d/workflows": "workspace:*",
-    "create-aura3d": "workspace:*"
+    "@aura3d/workflows": "workspace:*"
   },
   "sideEffects": false,
   "peerDependencies": {

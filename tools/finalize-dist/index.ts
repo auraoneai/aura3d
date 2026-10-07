@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { basename, dirname, join, relative } from "node:path";
 
 const root = process.cwd();
 const packageRoot = join(root, "packages");
@@ -127,6 +127,35 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
   }
 
   if (specifier.startsWith("./") || specifier.startsWith("../")) {
+    // Cross-package relative imports (e.g. `../../../rendering/src/LightUniforms.js`
+    // inside emitted engine code) resolve to a sibling package's SOURCE tree —
+    // legal in-repo, dead inside the packed tarball. Rewrite onto the sibling's
+    // emitted mirror: `dist/<pkg>/...` for the root bundle pass,
+    // `packages/<pkg>/dist/...` for the local package-dist pass.
+    const resolved = join(dirname(file), specifier);
+    const crossMatch = /(?:^|\/)([a-z0-9-]+)\/src\/(.+)$/i.exec(resolved);
+    // Only when the specifier leaves the file's own package: for the root pass
+    // that's `dist/<pkg>/`; for the local pass, `packages/<pkg>/dist`.
+    const emittingPackage = rewriteWorkspacePackages
+      ? relative(distRoot, file).split(/[\\/]/)[0]
+      : basename(dirname(distRoot));
+    if (crossMatch && packageNameSet.has(crossMatch[1]!) && crossMatch[1] !== emittingPackage) {
+      const crossPackage = crossMatch[1]!;
+      const rest = crossMatch[2]!;
+      const targetBase = rewriteWorkspacePackages
+        ? join(distRoot, crossPackage, rest)
+        : join(packageRoot, crossPackage, "dist", rest);
+      const target = existsSync(targetBase)
+        ? targetBase
+        : existsSync(`${targetBase}.js`)
+          ? `${targetBase}.js`
+          : existsSync(join(targetBase, "index.js"))
+            ? join(targetBase, "index.js")
+            : targetBase;
+      let next = relative(dirname(file), target).replaceAll("\\", "/");
+      if (!next.startsWith(".")) next = `./${next}`;
+      return next;
+    }
     if (specifier.endsWith(".js") || specifier.endsWith(".json")) return specifier;
     const base = join(dirname(file), specifier);
     if (existsSync(`${base}.js`)) return `${specifier}.js`;
