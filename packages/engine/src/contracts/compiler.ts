@@ -77,7 +77,6 @@ export const DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: 
   "animation.additiveReference": { reason: "C-19: additive reference is PRD 06's", ownerPrd: 6 },
   "animation.mask": { reason: "C-19: bone masks are PRD 06's", ownerPrd: 6 },
   "animation.weight": { reason: "C-19: layer weights are PRD 06's", ownerPrd: 6 },
-  "animation.rootMotion": { reason: "C-19: root motion is PRD 06's", ownerPrd: 6 },
   "animation.restPoseReset": { reason: "C-19: rest-pose reset is PRD 06's", ownerPrd: 6 }
 };
 

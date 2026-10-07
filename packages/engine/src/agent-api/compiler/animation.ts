@@ -195,6 +195,89 @@ export function applyProductionActorAnimation(
       commitCursors();
       binding.onSample?.(result.motion);
     } else {
+      // T3.7 (PRD-06 §6.8) — C-19 `play(clip, {rootMotion: AuraRootMotionSpec})`
+      // on the spec path: `node.animation.rootMotion` as a spec object removes the
+      // authored delta from the pose (the runtime samples the root track at t=0)
+      // and either integrates it into the node transform (`mode: "apply"`) or
+      // only reports it (`"extract-only"`, recorded on `entry.rootMotionReport`
+      // until CCR-06-3 lands a consumer). Axes mask the applied delta; "yaw"
+      // extracts the root rotation track's Y-rotation. Flag-off or a binding
+      // root-motion path keeps the existing clip playback byte-identical.
+      const specRootMotion = animation.rootMotion;
+      if (
+        specRootMotion !== undefined && specRootMotion !== false &&
+        qrAnimationFlags().on("A3D_QR_ANIMATION") &&
+        typeof entry.actor.playRootMotionClips === "function" &&
+        typeof entry.actor.animation?.rootMotionTargetFor === "function"
+      ) {
+        const seconds = resolveProductionActorAnimationSeconds(animation, animationBinding, time);
+        const runtimeId = (node.runtime as { readonly id?: string } | undefined)?.id;
+        const runtimeNode = runtimeId !== undefined ? runtimeNodes?.get(runtimeId) : undefined;
+        const playbackId = `root-motion:${runtimeId ?? entry.actor.id}:${clipName}`;
+        const cursors = entry.rootMotionCursors ?? new Map<string, number>();
+        const previous = cursors.get(playbackId);
+        const fromTime = previous === undefined ? 0 : Math.min(previous, seconds);
+        const loop = animation.loop ?? true;
+        const axes = specRootMotion.axes;
+        const includeAxis = (axis: "x" | "y" | "z" | "yaw") => axes === undefined || axes.includes(axis);
+        const yawDelta = includeAxis("yaw") && typeof entry.actor.animation.rootMotionYawDelta === "function"
+          ? entry.actor.animation.rootMotionYawDelta(clipName, specRootMotion.bone, fromTime, seconds, loop)
+          : 0;
+        const commitCursors = () => {
+          entry.rootMotionCursors = new Map(cursors);
+          entry.rootMotionCursors.set(playbackId, seconds);
+        };
+        const result = entry.actor.playRootMotionClips([{
+          clipName,
+          target: entry.actor.animation.rootMotionTargetFor(clipName, specRootMotion.bone),
+          fromTime,
+          toTime: seconds,
+          weight: 1,
+          loop,
+          additive: false
+        }], {
+          worldFromLocal: [...modelMatrix] as Mat4,
+          move: requested => {
+            if (fromTime === seconds) return [0, 0, 0] as const;
+            const masked: readonly [number, number, number] = [
+              includeAxis("x") ? requested[0] : 0,
+              includeAxis("y") ? requested[1] : 0,
+              includeAxis("z") ? requested[2] : 0
+            ];
+            if (specRootMotion.mode === "extract-only") {
+              // Report-only: nothing integrates, but the cursor still advances.
+              commitCursors();
+              return [0, 0, 0] as const;
+            }
+            if (runtimeNode && typeof runtimeNode.translate === "function") {
+              runtimeNode.translate(masked[0], masked[1], masked[2]);
+              if (yawDelta !== 0 && typeof runtimeNode.setRotation === "function") {
+                const rotation = runtimeNode.rotation;
+                runtimeNode.setRotation(rotation[0], rotation[1] + yawDelta, rotation[2]);
+              }
+            } else {
+              // No mutable runtime node: fold into the node's model matrix
+              // (applied in renderInput before foot planting and draw).
+              const offset = entry.rootMotionOffset ?? [0, 0, 0];
+              entry.rootMotionOffset = [offset[0] + masked[0], offset[1] + masked[1], offset[2] + masked[2]];
+              entry.rootMotionYaw = (entry.rootMotionYaw ?? 0) + yawDelta;
+            }
+            // Advance cursors before the refresh/re-pose so a failed apply
+            // cannot move the node twice (carved-path semantics).
+            commitCursors();
+            refreshAfterMovement();
+            return masked;
+          }
+        });
+        commitCursors();
+        entry.rootMotionReport = {
+          requested: result.motion.requested,
+          accepted: result.motion.accepted,
+          rejected: result.motion.rejected,
+          ...(yawDelta !== 0 ? { yawDelta } : {})
+        };
+        return;
+      }
       entry.rootMotionCursors = undefined;
       // T0.3 — when the bound controller published clip samples (C-19 §5.2) and the
       // lane flag is on, drive the GLB blend directly so retimed/weighted playback
@@ -273,6 +356,34 @@ export function applyProductionActorAnimation(
   } catch (error) {
     runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply clip "${clipName}": ${productionRenderErrorMessage(error)}`);
     recordClipApplyFailure((node.runtime as { readonly id?: string } | undefined)?.id, `clip "${clipName}" failed to apply on actor "${entry.actor.id}"`, error);
+  }
+}
+
+/**
+ * T3.7 (PRD-06 §6.8) — folds a spec-level root-motion transform into the node's
+ * model matrix for apply-mode `animation.rootMotion` on nodes with no mutable
+ * runtime handle: `rootMotionYaw` rotates the basis about world Y at the node
+ * origin, `rootMotionOffset` adds the accumulated world-space displacement.
+ * Applied right after `createModelMatrix` so foot planting and draw see the
+ * moved transform in the same frame.
+ */
+export function applySpecRootMotionTransform(entry: ProductionRuntimeActorEntry, modelMatrix: number[]): void {
+  const yaw = entry.rootMotionYaw ?? 0;
+  if (yaw !== 0) {
+    const c = Math.cos(yaw);
+    const s = Math.sin(yaw);
+    for (const column of [0, 4, 8]) {
+      const x = modelMatrix[column]!;
+      const z = modelMatrix[column + 2]!;
+      modelMatrix[column] = c * x + s * z;
+      modelMatrix[column + 2] = -s * x + c * z;
+    }
+  }
+  const offset = entry.rootMotionOffset;
+  if (offset !== undefined) {
+    modelMatrix[12] = modelMatrix[12]! + offset[0];
+    modelMatrix[13] = modelMatrix[13]! + offset[1];
+    modelMatrix[14] = modelMatrix[14]! + offset[2];
   }
 }
 

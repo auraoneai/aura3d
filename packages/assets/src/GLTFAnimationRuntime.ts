@@ -775,6 +775,88 @@ export class GLTFSceneAnimationRuntime {
     return { motion, applyResult: this.lastApply };
   }
 
+  /**
+   * T3.7 (PRD-06 §6.8) — resolve the root-motion translation track target for
+   * spec-level `play(clip, {rootMotion})`: with `bone` set, the bone's own
+   * `translation`/`position` track; without it, the clip's root-motion
+   * candidate (largest planar displacement on a hips/root/pelvis node, then
+   * any translation track by displacement). Throws when nothing qualifies.
+   */
+  rootMotionTargetFor(clipName: string, bone?: string): string {
+    const clip = this.clipsByName.get(clipName);
+    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const isTranslation = (target: string) => target.endsWith(".translation") || target.endsWith(".position");
+    if (bone !== undefined) {
+      for (const leaf of ["translation", "position"] as const) {
+        const candidate = `${bone}.${leaf}`;
+        if (clip.tracks.some(track => track.target === candidate && track.valueType === "vector3")) return candidate;
+      }
+      throw new Error(`Root motion bone "${bone}" has no translation track in glTF animation clip "${clipName}".`);
+    }
+    let best: string | undefined;
+    let bestDistance = -1;
+    let fallback: string | undefined;
+    for (const track of clip.tracks) {
+      if (track.valueType !== "vector3" || !isTranslation(track.target)) continue;
+      fallback ??= track.target;
+      const keys = track.keyframes ?? [];
+      if (keys.length < 2) continue;
+      const first = vec3OfKeyframeValue(keys[0]!.value);
+      const last = vec3OfKeyframeValue(keys[keys.length - 1]!.value);
+      if (!first || !last) continue;
+      const distance = Math.hypot(last[0] - first[0], last[2] - first[2]);
+      const rooted = /hips|root|pelvis/i.test(track.target);
+      if (distance > 0.05 && (rooted || best === undefined || distance > bestDistance)) {
+        if (rooted || best === undefined || !/hips|root|pelvis/i.test(best)) {
+          best = track.target;
+          bestDistance = distance;
+        }
+      }
+    }
+    const resolved = best ?? fallback;
+    if (resolved === undefined) {
+      throw new Error(`glTF animation clip "${clipName}" has no translation track for root motion.`);
+    }
+    return resolved;
+  }
+
+  /**
+   * T3.7 — yaw delta (radians, about local Y) authored on `bone`'s rotation
+   * track between `fromTime`/`toTime` (loop-aware). Returns 0 when the clip
+   * has no matching rotation track.
+   */
+  rootMotionYawDelta(clipName: string, bone: string | undefined, fromTime: number, toTime: number, loop: boolean): number {
+    const clip = this.clipsByName.get(clipName);
+    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const node = bone ?? this.rootMotionTargetFor(clipName).replace(/\.(translation|position)$/, "");
+    const track = clip.tracks.find(candidate =>
+      candidate.valueType === "quaternion" &&
+      (candidate.target === `${node}.rotation` || candidate.target === `${node}.quaternion`)
+    );
+    if (!track) return 0;
+    const yawAt = (time: number): number => {
+      const q = track.sample(time);
+      const arr = (Array.isArray(q) || ArrayBuffer.isView(q)) ? q as ArrayLike<number> : undefined;
+      const [x, y, z, w] = arr !== undefined && arr.length >= 4
+        ? [arr[0]!, arr[1]!, arr[2]!, arr[3]!]
+        : [0, 0, 0, 1];
+      // forward = q * (0,0,1); yaw = atan2(forward.x, forward.z)
+      const fx = 2 * (x * z + w * y);
+      const fz = 1 - 2 * (x * x + y * y);
+      return Math.atan2(fx, fz);
+    };
+    const wrap01 = (t: number) => ((t % clip.duration) + clip.duration) % clip.duration;
+    const unwrap = (delta: number) => delta - Math.round(delta / (Math.PI * 2)) * Math.PI * 2;
+    if (!loop || clip.duration <= 0) {
+      const clamp = (t: number) => Math.max(0, Math.min(clip.duration, t));
+      return unwrap(yawAt(clamp(toTime)) - yawAt(clamp(fromTime)));
+    }
+    // Continuous-loop yaw: same-cycle delta plus per-cycle contribution per wrap.
+    const perCycle = unwrap(yawAt(clip.duration) - yawAt(0));
+    const crossings = Math.floor(toTime / clip.duration) - Math.floor(fromTime / clip.duration);
+    return unwrap(yawAt(wrap01(toTime)) - yawAt(wrap01(fromTime))) + crossings * perCycle;
+  }
+
   applyClipByName(name: string, time: number): GLTFSceneAnimationApplyResult {
     const clip = this.clipsByName.get(name);
     if (!clip) {
