@@ -16,7 +16,7 @@ import {
   type Game,
   type QrFlagInput
 } from "@aura3d/engine/contracts";
-import { createGameImpl, type Prd09Game } from "./createGame";
+import { createGameImpl, type Prd09CreateGameOptions, type Prd09Game } from "./createGame";
 
 export const C24_GAME_SLOT = defineContractSlot<typeof stubCreateGame>(
   "C-24",
@@ -41,14 +41,18 @@ const currentUrl = (): string | undefined =>
   typeof location !== "undefined" ? location.href : undefined;
 
 export function createGame<TCue extends string, TEvent extends string>(
-  options: CreateGameOptions<TCue, TEvent>
-): Game<TCue, TEvent> {
+  options: Prd09CreateGameOptions<TCue, TEvent>
+): Prd09Game<TCue, TEvent> {
   const flags = resolveQrFlags({
     options: options.qualityRebuild?.flags as QrFlagInput | undefined,
     url: currentUrl(),
     env: envFlags()
   });
-  return C24_GAME_SLOT.get(flags)(options);
+  // Public types describe the impl surface (Prd09CreateGameOptions → Prd09Game);
+  // the slot's declared signature stays contract-shaped for the flag-off stub.
+  return C24_GAME_SLOT.get(flags)(
+    options as unknown as CreateGameOptions<TCue, TEvent>
+  ) as Prd09Game<TCue, TEvent>;
 }
 
 export { captureFromUrl, lookSignature, lookManifest, type LookSource } from "./capture/index";

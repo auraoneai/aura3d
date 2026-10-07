@@ -33,7 +33,7 @@ import { createAccessibility } from "./session/accessibility";
 import { captureFromUrl } from "./capture/captureFromUrl";
 import { lookSignature, type LookSource } from "./capture/lookSignature";
 import { installGameBeacon } from "./evidence/beacon";
-import { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
+import { installEvidenceChannel, createPerfRing, type EvidenceChannelContract, type EvidenceSectionCollect } from "./evidence/channel";
 import { GameShellImpl, GameHudImpl, GameFxLayerImpl } from "./components";
 import { mountHud } from "./hud/HudKit";
 import { mountTouchControls } from "./touch/TouchControls";
@@ -280,7 +280,11 @@ export function createGameImpl<TCue extends string, TEvent extends string>(
       capture: () => capture,
       perf: () => perfRing.summary()
     },
-    loader: options.evidence?.sections,
+    loader: options.evidence?.sections === undefined
+      ? undefined
+      : typeof options.evidence.sections === "function"
+        ? options.evidence.sections
+        : () => Promise.resolve(options.evidence!.sections as Readonly<Record<string, EvidenceSectionCollect>>),
     legacyGlobals: options.evidence?.legacyGlobals
   });
 

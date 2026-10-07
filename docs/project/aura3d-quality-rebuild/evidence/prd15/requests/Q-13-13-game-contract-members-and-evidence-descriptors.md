@@ -10,3 +10,17 @@ Found by `pnpm pack:check` (T1.6 packed-consumer gate, T8.2 evidence) — five g
 Document the descriptor-literal convention in `docs/agents/templates.md` (or the template AGENTS files): evidence descriptors are `as const` arrays and omit `debugOnly`/`interactive` unless non-default. Consider generating the arrays from a typed helper if more templates add evidence bindings.
 
 Files: `packages/engine/src/contracts/game.ts`, `contracts/stubs/game.ts`, `agent-api/GameEvidence.ts`, `templates/{character-controller,mini-game,falling-blocks-starter,racing-starter,fighting-game}/src/main.ts`.
+
+## Follow-ups from pack:check iterations (2026-10-07)
+
+- `createGame` public wrapper re-typed to the impl surface
+  (`Prd09CreateGameOptions` → `Prd09Game`): the contract `CreateGameOptions`
+  is narrower than what every shipped template passes (`target: "#app"`
+  selector, `input`, `autoStart`, `diagnostics`, `evidence`). The C-24 slot
+  keeps the contract-shaped signature for the flag-off stub.
+- `EvidenceChannelContract.sections` widened to also accept a synchronous
+  `Record<string, EvidenceSectionCollect>` (per-section lazy getters) —
+  normalized to a promise loader in `createGame`.
+- `format: "seconds"` → `"clock"` in fighting-game + racing-starter
+  hudBindings (`GameHudValueFormat` has no "seconds"; `clock` renders the
+  intended `m:ss`).
