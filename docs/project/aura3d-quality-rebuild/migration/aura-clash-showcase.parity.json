@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-10-06T15:04:01.713Z",
+  "routes": [
+    {
+      "route": "aura-clash-showcase",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 3
+      },
+      "findings": [
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 458,
+          "kind": "UNKNOWN",
+          "text": "const captureMode = new URLSearchParams(window.location.search).get(\"capture\");"
+        },
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 459,
+          "kind": "UNKNOWN",
+          "text": "const reviewCapture = captureMode === \"match-start\" || captureMode === \"combat-impact\";"
+        },
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 500,
+          "kind": "UNKNOWN",
+          "text": "<main class=\"aca\" data-evidence-mode=\"${hudMode.evidence ? \"true\" : \"false\"}\" data-training=\"${hudMode.training ? \"true\" : \"false\"}\" data-review-capture=\"${reviewCapture ? \"true\" : \"false\"}\" tabindex="
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "ART": 0,
+    "FRAMING": 0,
+    "TRANSIENT": 0,
+    "UNKNOWN": 3
+  }
+}

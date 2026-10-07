@@ -1,16 +1,31 @@
-// PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from ForwardPass.ts; 0 changed logic lines.
+// PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from ForwardPass.ts.
+// PRD-06 T0.10: `applySkinningUniforms`/`createSkinningPaletteTexture`/sizing
+// helpers moved to `../SkinningUniforms.js` (re-exported below); the flag-on
+// path goes through `SkinningPaletteTextureCache` (C-18) instead of allocating
+// a fresh palette texture per draw.
 
 import type { SkinningPaletteBinding, SkinningPaletteDecisionRecord, SkinningPaletteDiagnostics, SkinningPalettePath } from "../ForwardPass.js";
-import { MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS, MAX_UNIFORM_SKINNING_JOINTS, isFiniteArrayLike } from "../ForwardPass.js";
+import { MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS, MAX_UNIFORM_SKINNING_JOINTS } from "../ForwardPass.js";
 import { Geometry } from "../Geometry.js";
 import { Material } from "../Material.js";
 import { applyMorphTargets } from "../MorphTarget.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
-import { Sampler } from "../Sampler.js";
-import { Texture } from "../Texture.js";
-import { TextureBinding } from "../TextureBinding.js";
 import { decideSkinningPalettePath } from "../WebGPUSkinningLimits.js";
 import type { RenderItem } from "../contracts/renderItem.js";
+import { applySkinningUniforms, applySkinningUniformsCached, paletteKeyOf } from "../SkinningUniforms.js";
+import { prd06FlagsOn, skinningPaletteCache } from "../lanes/prd06.js";
+
+export {
+  applySkinningUniforms,
+  createSkinningPaletteTexture,
+  ceilToMultiple,
+  SKINNING_PALETTE_TEXTURE_MAX_WIDTH
+} from "../SkinningUniforms.js";
+
+/** T0.10: adds the C-18 cache's per-frame texture-creation counter (E21 probe). */
+export interface SkinningPaletteDiagnosticsQr extends SkinningPaletteDiagnostics {
+  readonly texturesCreatedThisFrame: number;
+}
 
 export class SkinningPaletteUploadManager {
   private static readonly validatedGeometryJointCounts = new WeakMap<Geometry, Set<number>>();
@@ -24,8 +39,15 @@ export class SkinningPaletteUploadManager {
   private cpuFallbackCount = 0;
   private decisions: SkinningPaletteDecisionRecord[] = [];
   private decisionOverflow = 0;
+  /**
+   * C-18 palette cache (T0.10). Always allocated — it is inert while
+   * `A3D_QR_ANIMATION` is off because `bind` never consults it without a
+   * stamped `paletteKey`.
+   */
+  private readonly paletteCache = skinningPaletteCache;
 
   beginFrame(): void {
+    this.paletteCache.beginFrame();
     this.submissions = 0;
     this.jointsUploaded = 0;
     this.maxJointCount = 0;
@@ -43,7 +65,7 @@ export class SkinningPaletteUploadManager {
    * Each submission also records its `decideSkinningPalettePath` decision (same inputs the
    * upload path used) so the CPU-fallback reason code travels with the diagnostics.
    */
-  diagnostics(): SkinningPaletteDiagnostics {
+  diagnostics(): SkinningPaletteDiagnosticsQr {
     return {
       submissions: this.submissions,
       jointsUploaded: this.jointsUploaded,
@@ -54,8 +76,22 @@ export class SkinningPaletteUploadManager {
       cpuFallbackCount: this.cpuFallbackCount,
       maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
       decisions: [...this.decisions],
-      decisionOverflow: this.decisionOverflow
+      decisionOverflow: this.decisionOverflow,
+      texturesCreatedThisFrame: this.paletteCache.diagnostics().createdThisFrame
     };
+  }
+
+  /**
+   * T0.10 dispose seam: `prd06.animation` TypedGLBActor extension calls this when
+   * the actor runtime tears down so the palette textures (and their GL handles)
+   * die with the actor instead of leaking across mounts.
+   */
+  releasePalette(key: object): void {
+    this.paletteCache.release(key);
+  }
+
+  releaseAllPalettes(): void {
+    this.paletteCache.releaseAll();
   }
 
   bind(
@@ -67,7 +103,11 @@ export class SkinningPaletteUploadManager {
   ): void {
     // Recorded before the upload so a contract throw still leaves its reason code behind.
     this.recordDecision(item, skinning, shader);
-    const path = applySkinningUniforms(skinning, material, shader, uniforms);
+    // T0.10: flag-on + stamped paletteKey → cached C-18 path (texSubImage2D);
+    // anything else keeps the verbatim pre-rebuild submission path.
+    const path = prd06FlagsOn("A3D_QR_ANIMATION") && paletteKeyOf(skinning)
+      ? applySkinningUniformsCached(skinning, material, shader, uniforms, this.paletteCache)
+      : applySkinningUniforms(skinning, material, shader, uniforms);
     if (path === "data-texture") this.dataTextureSubmissions += 1;
     else this.uniformArraySubmissions += 1;
     const eightInfluence = item.geometry.vertexBuffer.format.hasAttribute("joints1")
@@ -209,95 +249,6 @@ export function applyGpuMorphUniforms(
   return true;
 }
 
-export function applySkinningUniforms(
-  skinning: SkinningPaletteBinding,
-  material: Material,
-  shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
-): SkinningPalettePath {
-  if (!shader.reflection.uniforms.has("u_jointMatrices") || !shader.reflection.uniforms.has("u_jointCount")) {
-    throw new RenderDeviceError("Skinned render item requires a shader with joint palette uniforms", "SKINNING_SHADER_CONTRACT", {
-      material: material.name
-    });
-  }
-  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > MAX_SKINNING_JOINTS) {
-    throw new RenderDeviceError(`Skinning jointCount must be an integer in [1, ${MAX_SKINNING_JOINTS}]`, "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount,
-      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
-      maxJoints: MAX_SKINNING_JOINTS
-    });
-  }
-  if (skinning.matrices.length !== skinning.jointCount * 16) {
-    throw new RenderDeviceError("Skinning matrix palette length must equal jointCount * 16", "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount,
-      matrixScalars: skinning.matrices.length
-    });
-  }
-  if (!isFiniteArrayLike(skinning.matrices)) {
-    throw new RenderDeviceError("Skinning matrix palette must contain finite values", "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount
-    });
-  }
-  uniforms.set("u_jointCount", skinning.jointCount);
-  // Over the uniform-array limit the palette travels as an RGBA32F data texture, four
-  // texels per matrix. A mat4 uniform costs four vec4 slots, so a uniform array cannot
-  // be grown far enough for large rigs without exhausting MAX_VERTEX_UNIFORM_VECTORS.
-  const path: SkinningPalettePath = skinning.jointCount > MAX_UNIFORM_SKINNING_JOINTS ? "data-texture" : "uniform-array";
-  if (path === "data-texture") {
-    if (!shader.reflection.uniforms.has("u_jointPaletteTexture") || !shader.reflection.uniforms.has("u_jointPaletteMode")) {
-      throw new RenderDeviceError(
-        `Skinning palettes above ${MAX_UNIFORM_SKINNING_JOINTS} joints require a shader with data-texture palette uniforms`,
-        "SKINNING_SHADER_CONTRACT",
-        { material: material.name, jointCount: skinning.jointCount }
-      );
-    }
-    const texture = createSkinningPaletteTexture(skinning, material.name);
-    uniforms.set("u_jointPaletteMode", 1);
-    uniforms.set("u_jointPaletteTexture", new TextureBinding({
-      name: "u_jointPaletteTexture",
-      texture,
-      sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-      required: true
-    }));
-    uniforms.set("u_jointPaletteTextureSize", [texture.width, texture.height]);
-    // The uniform array is still declared by the shader, so give it a valid value.
-    uniforms.set("u_jointMatrices", new Float32Array(MAX_UNIFORM_SKINNING_JOINTS * 16));
-    return path;
-  }
-  if (shader.reflection.uniforms.has("u_jointPaletteMode")) {
-    uniforms.set("u_jointPaletteMode", 0);
-    if (shader.reflection.uniforms.has("u_jointPaletteTextureSize")) uniforms.set("u_jointPaletteTextureSize", [1, 1]);
-    if (shader.reflection.uniforms.has("u_jointPaletteTexture")) {
-      uniforms.set("u_jointPaletteTexture", new TextureBinding({ name: "u_jointPaletteTexture", required: false }));
-    }
-  }
-  uniforms.set("u_jointMatrices", skinning.matrices);
-  return path;
-}
-
-export function createSkinningPaletteTexture(skinning: SkinningPaletteBinding, materialName: string): Texture {
-  const texelsPerMatrix = 4;
-  const totalTexels = skinning.jointCount * texelsPerMatrix;
-  const width = Math.min(SKINNING_PALETTE_TEXTURE_MAX_WIDTH, Math.max(texelsPerMatrix, ceilToMultiple(Math.ceil(Math.sqrt(totalTexels)), texelsPerMatrix)));
-  const height = Math.ceil(totalTexels / width);
-  const data = new Float32Array(width * height * 4);
-  data.set(skinning.matrices.subarray(0, Math.min(skinning.matrices.length, data.length)));
-  if (skinning.matrices.length > data.length) {
-    throw new RenderDeviceError("Skinning palette does not fit the data texture", "INVALID_SKINNING_PALETTE", {
-      material: materialName,
-      jointCount: skinning.jointCount
-    });
-  }
-  return new Texture({
-    width,
-    height,
-    format: "rgba32f",
-    colorSpace: "linear",
-    label: `aura3d-skinning-palette-${skinning.jointCount}-joints`,
-    data
-  });
-}
-
 export function validateSkinningGeometryContract(item: RenderItem, skinning: SkinningPaletteBinding): void {
   const format = item.geometry.vertexBuffer.format;
   if (!format.hasAttribute("joints") || !format.hasAttribute("weights")) {
@@ -432,8 +383,4 @@ export function validateSkinningGeometryContract(item: RenderItem, skinning: Ski
   }
 }
 
-export function ceilToMultiple(value: number, multiple: number): number {
-  return Math.ceil(value / multiple) * multiple;
-}
 
-export const SKINNING_PALETTE_TEXTURE_MAX_WIDTH = 1024;
