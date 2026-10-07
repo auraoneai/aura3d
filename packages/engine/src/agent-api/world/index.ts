@@ -24,6 +24,7 @@ import { worldKits } from "./kits.js";
 import { worldPlaceAlong, worldPlaceGrid, worldPlacePoisson } from "./placement.js";
 import { worldRoom } from "./room.js";
 import { worldStreet } from "./street.js";
+import { worldBiome, worldBiomes, worldTimeOfDay, worldWind } from "./timeOfDay.js";
 
 /** §7.1 `world.*` builder namespace. */
 export const world = {
@@ -38,5 +39,9 @@ export const world = {
   placeGrid: worldPlaceGrid,
   placePoisson: worldPlacePoisson,
   room: worldRoom,
-  street: worldStreet
+  street: worldStreet,
+  biome: worldBiome,
+  biomes: worldBiomes,
+  timeOfDay: worldTimeOfDay,
+  wind: worldWind
 } as const;

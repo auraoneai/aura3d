@@ -40,6 +40,7 @@ lane 01 does until the change lands.
 | Q-12-2 | 12 | `tools/compare-engines/index.ts` root-canvas `toDataURL` readback → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
 | Q-13-2 | 13 | `tools/agent-docs/simulation.ts` + `tools/agent-dogfood/index.ts` class-(b) readbacks → `app.capture()` | C-05 | `evidence/prd01/readback-triage.json` (class b) |
 | Q-15-9 | 15 | `index.ts:9608` safe-basic catch: emit C-36 degradation `{code:"renderer-mount-failed"}` (lands in `diagnostics().degradations` + `onDegradation`) and honor `renderer.strictMount` (reject `ready()`, no safe-basic draw) under `A3D_QR_CORE` | C-36, C-05 | `onRendererError` forwarding handles the code verbatim once emitted; `renderer-mount-failure.spec.ts` asserts (1)-(3) today, (4) + no-safe-basic-draw at integrated I9 |
+| Q-15-10 | 15 | `compiler/renderInput.ts`: adopt or supersede `setPrd01ModelMatrixCache` + `agent-api/sceneGraph.ts` `createModelMatrixCache` (static-node matrices + per-spec-array instance transform/color retention) when the `compiler/sceneGraph.ts` bridge lands; replace the module-level opt-in with a flag thread if one materializes | C-07, §15 Phase-6 | `prd01-scene-graph.test.ts` cache describe-block |
 
 ## PR D (Phase 2: resolution + readback) status notes — 2026-10-06
 
@@ -205,3 +206,82 @@ camera-fade patch (declined under §3.7).
   deform passthrough↔call, contract delegation). Browser spec
   `tests/qr/prd01/browser/program-generator-compile.spec.ts` compiles+links all
   13 cases on real WebGL2 via `?tools=program-compile`.
+
+## PR G (Phase 5: tonemap A/B prep) status notes — 2026-10-06
+
+- Q-15-1 seam landed lane-side: `ProductionWebGL2Renderer.auraRenderer` →
+  `ProductionRuntimeRenderer.auraRenderer` → controller `auraRenderer` →
+  `createAuraApp` attach at `Symbol.for("a3d.prd01.renderer")` (webgl2 only;
+  undefined for WebGPU/disposed mounts). DPR/`setRenderScaleCeiling` wiring
+  itself remains lane 15's.
+- C-05 surface real under `A3D_QR_CORE_OUTPUT`: `setOutput`/`setOutputOverlay`
+  forward through the seam once mount lands; earlier calls merge into
+  `pendingOutput` and flush on the error-watch interval or at `capture()`.
+  Flag-off keeps the DOM-overlay fallback and records requested-vs-applied.
+- C-05 URL reader (`readAura3dTonemapQuery`, re-exported via `lanes/prd01.ts`):
+  `?aura3d-tonemap=aces|agx` + `?aura3d-exp=<n>` (also `tm`/`exp` for the lane
+  capture) win over `options.output`.
+- A/B capture matrix: `tests/qr/prd01/capture.mjs` records `aces` + `agx` on
+  the aura3d engine for every lane scene under `core`; the ramp scene keeps
+  the full `aces|agx|neutral × 0.5|1|2` matrix on both engines. Aura harness
+  reads `tm`/`exp` into `app.setOutput`.
+- Q-12-1 filed in-repo: `evidence/prd01/decisions/tonemap-default.md` (gh is
+  unauthenticated — no GitHub issue). `DEFAULT_TONE_MAPPING` stays `"aces"`;
+  flipping it is a separate PR against the G-PANEL outcome.
+
+## PR H (Phase 6: submission perf) status notes — 2026-10-06
+
+- `ForwardPass.drawItem` steady state: per-device (WeakMap, survives the
+  per-frame `new ForwardPass` rebuilds at `Renderer.ts:767` and
+  `InterleavedTransparentPass.ts:73`) pipeline cache keyed on
+  `shader.id|vertexFormatId|topology|renderStateId:flipBit|requiredAttrsId`
+  and pooled `Map` uniform packets (`bindGenerated(material, shader, features,
+  into)` writes in place). `RenderPipeline.constructedCount` dev counter backs
+  the "0 constructions after frame 2" lane assertion. `uploadUniforms` keeps a
+  per-program last-value cache (textures compare texture/sampler/transform,
+  scalars `===`, arrays element-wise vs retained snapshot).
+- Instancing (flagged path) is attribute-matrix only: persistent per-device
+  `InstanceBuffer` slots (`instanceBufferSlot`) keyed on count/colors with
+  pow2 capacity growth; slot resize disposes the old buffer (§6.1 eviction
+  covers the VAOs). `u_instanceMatrices` still lands in the packet for
+  legacy-carried material params but the generated program never declares it —
+  upload is skipped by reflection. Legacy `u_instanceMatrices[64]` uniform
+  path untouched for flag-off.
+- VAO eviction (§6.1 declared unflagged fix): `WebGL2Buffer.onDispose` →
+  `drawBinder.evictVertexArraysForBuffer(buffer.id)` — the binder reverse-indexes
+  every VAO key by its vertex/index/instance buffer ids, `gl.deleteVertexArray`s
+  matching entries and removes the buffer from `device.buffers`.
+  `diagnostics.disposedBuffers` stays live via a monotonic counter.
+- Fullscreen passes (`OutputPass`, `SceneDepthCopyPass`,
+  `EnvironmentBackgroundPass`) cache geometry+pipeline per variant — the
+  `createFullscreenTriangleGeometry()`+`new RenderPipeline` per execute was
+  leaking a GPU buffer per frame.
+- Compiler-side seam (lane-15 file, flag-gated — same pattern as the Phase-5
+  `createAuraApp` seam): `renderInput.ts` `setPrd01ModelMatrixCache`, installed
+  by `createAuraApp` when `A3D_QR_CORE` resolves on. Static nodes
+  (`!node.animation`) reuse Phase-1's fingerprinted `createModelMatrixCache`
+  (`agent-api/sceneGraph.ts`) — zero-alloc fingerprint compare on the hot path.
+  `instanceTransforms`/`instanceColors`/model-instance arrays are retained per
+  spec array (WeakMap on `node.instances`/`node.instanceColors` + numeric
+  content fold; spec arrays are mount-frozen). Q-15-10: lane 15 to adopt or
+  supersede this seam when compiler/sceneGraph.ts lands.
+- Q-11-3 unchanged: `applyRendererOwnedStaticMeshConsolidation` already runs at
+  `Renderer.ts:1593` gated on `source.staticMeshConsolidation`; renderInput's
+  `source` is rebuilt per frame so flipping it here would re-merge every frame —
+  the mount-site call is lane 11's. Unit coverage (576 static boxes → 1 item,
+  conserved vertex count) is in `tests/qr/prd01/unit/submission-perf.test.ts`.
+- Diagnostics: `prd01.programs` reports `deviceProgramCompiles` +
+  ProgramCache `reused`/`keys`; `prd01.frameAllocations` reports C-28 counters
+  + `cpuSubmitMs`/`cpuFrameMs` percentiles (`FrameStatsLike.percentiles`).
+  `rendererProgramCachePeek` reads the cache without creating it.
+- Lane capture assertions wired: lane adapter measures a steady-state window
+  (default 120 frames; `measureFrames` option; `jsHeapDeltaBytes` via
+  `performance.memory` — `partial` where unavailable) → capability rows
+  `zero-program-compiles`, `zero-object-creates`, `zero-pipeline-constructions`,
+  `js-heap-delta`. The 18-base-scene adapter asserts
+  `deviceProgramCompiles` delta 0 over 30 post-settle frames (§17.2 I8).
+- Deferred: `cpuSubmitMs ≤ 40% of flag-off` comparison is a lane-12 runner job —
+  the numbers are recorded (`frameAllocations.cpuSubmitMs`); the ratio verdict
+  lands in CI evidence.
+
+

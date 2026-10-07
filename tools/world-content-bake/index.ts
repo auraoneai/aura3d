@@ -18,6 +18,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { bakeSpaceSky, SPACE_CUBE_FACES } from "../../packages/rendering/src/world/space/SpaceSkyBake.js";
 
 // ------------------------------------------------------------- utilities ---
 
@@ -425,6 +426,19 @@ export function bakeAll(outDir = WORLD_ASSETS_DIR()): readonly BakeOutput[] {
   put("water/water-caustics-4x4-1024.rgba", bakeCausticsAtlas(19), "rgba8", 1024, 1024, "16-frame worley caustics atlas, seed 19");
   put("noise/macro-variation-512.rgba", bakeMacroVariation(23), "rgba8", 512, 512, "4-octave tiling value noise, seed 23");
   put("noise/blue-noise-64.rgba", bakeBlueNoise(37), "rgba8", 64, 64, "high-pass (blue-noise approx), seed 37");
+  // T6.6 — space fallback cube: six RGBA32F faces at 512², the CPU bake of
+  // `a3d_prd10_space_bake` (seed 0, §8.8 default ramp/intensity).
+  const space = bakeSpaceSky({ faceSize: 512, seed: 0 });
+  space.faces.forEach((face, i) => {
+    put(
+      `hdri/space-default-512-${SPACE_CUBE_FACES[i]}.f32`,
+      new Uint8Array(face.buffer, face.byteOffset, face.byteLength),
+      "rgba32f",
+      space.faceSize,
+      space.faceSize,
+      `§8.8 space bake face ${SPACE_CUBE_FACES[i]} (seed 0, CPU twin of a3d_prd10_space_bake)`
+    );
+  });
   return outputs;
 }
 
@@ -441,6 +455,18 @@ export function updateManifest(outputs: readonly BakeOutput[], manifestPath = jo
       hash: out.sha256,
       license: "CC0",
       generated: out.generated
+    };
+  }
+  // T6.6 — cubemap group entry the `space-bake` probe resolves (BiomeResolver).
+  const spaceFaces = outputs.filter((o) => o.file.startsWith("hdri/space-default-512-"));
+  if (spaceFaces.length === 6) {
+    manifest.cubemaps = manifest.cubemaps ?? {};
+    manifest.cubemaps["world/space-default"] = {
+      format: "rgba32f",
+      faceSize: 512,
+      faces: Object.fromEntries(
+        spaceFaces.map((o) => [o.file.match(/space-default-512-(\w+)\.f32$/)![1], `world/${o.file.replace(/\.[^.]+$/, "")}`])
+      )
     };
   }
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

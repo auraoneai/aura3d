@@ -30,17 +30,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "digital-twin-data",
-  verdict: "both-render-and-bind-data-with-visible-aura-losses",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls,
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
-    observedLosses: [
-      "Aura submits 362 draws versus Three.js 182 for the same workcell and data marker.",
-      "All four retained normal/incident frames were reopened after the shared HDR, ACES, and linear-color corrections. Background, geometry, framing, and overall contrast now align closely; the Aura data marker retains slightly brighter peak color and broader per-pixel material/lighting differences remain."
-    ],
     claimBoundary: "This is deterministic browser-side sample telemetry bound to visible scene state. It does not claim PLC connectivity, real facility data, validated safety logic, production digital-twin integration, or visual parity."
   },
   browser

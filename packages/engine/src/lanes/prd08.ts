@@ -141,7 +141,9 @@ export {
   type AuraFeelBusImpl,
   type FeelChannel
 } from "../agent-api/feel/FeelBus.js";
-export { FEEL_PRESETS, type AuraFeelPresetName } from "../agent-api/feel/presets.js";
+export { FEEL_PRESETS, feelPresets, FEEL_PRESET_EVENTS, type AuraFeelPresetName } from "../agent-api/feel/presets.js";
+export { bindFeelSound, type FeelSoundListener } from "../agent-api/feel/bindFeelSound.js";
+export { combatFeelEvent, emitCombatFeel, type CombatFeelEvent, type CombatFeelMove } from "../agent-api/feel/combatFeel.js";
 export { createScreenOverlay, type AuraScreenOverlay } from "../agent-api/feel/ScreenOverlay.js";
 export {
   createAuraFeelBus,
@@ -215,3 +217,14 @@ registerAppExtension({
 });
 
 export {};
+
+// X-3 (Q-15-4 lane side): byte-parity adapters so packages/lean shares lane-08
+// math instead of a private copy.
+export {
+  createLeanCameraRigAdapter,
+  createLeanGameFeelAdapter,
+  type LeanCameraRigAdapterOptions,
+  type LeanCameraRigAdapter,
+  type LeanGameFeelAdapterOptions,
+  type LeanGameFeelAdapter
+} from "../agent-api/camera/leanAdapters.js";

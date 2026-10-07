@@ -194,15 +194,31 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
         setPosition: () => {}
       };
     },
-    decal(_at, options) {
-      system.diagnostics.note("VFX_DECAL_PENDING", "", `decal kind "${options.kind ?? "decal"}" lands with P6 decals`);
+    decal(at, options) {
+      // P6-T1 — runtime decal routed through the merged DecalBatch (§6.9)
+      // under A3D_QR_VFX_DECALS.
+      const id = `fx-${nextInstanceId++}`;
+      const size = Math.max(0.01, options?.size ?? 0.5);
+      system.addInstance(id, {
+        kind: "effect",
+        effect: "decal",
+        id,
+        position: at.position,
+        decal: {
+          size: [size, size],
+          normal: at.normal,
+          baseOpacity: options?.opacity ?? 0.85,
+          ...(options?.color !== undefined ? { color: options.color as never } : {}),
+          ...(options?.lifetime !== undefined ? { lifetime: options.lifetime } : {})
+        }
+      });
       return {
-        id: `fx-${nextInstanceId++}`,
+        id,
         get alive() {
-          return false;
+          return true;
         },
-        stop: () => {},
-        setPosition: () => {}
+        stop: () => system.removeInstance(id),
+        setPosition: (p: AuraVec3) => system.setInstanceOrigin(id, p as readonly number[])
       };
     },
     get presets() {

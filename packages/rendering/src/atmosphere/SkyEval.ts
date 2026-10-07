@@ -130,9 +130,11 @@ export interface SkyProgramDefines {
   readonly clouds: boolean;
   readonly sunDisc: boolean;
   readonly moon: boolean;
+  /** P4-T7 — background fog: apply a3dApplyFog at backgroundDistance. */
+  readonly fog: boolean;
 }
 
-export function skyProgramDefines(frame: SkyFrame): SkyProgramDefines {
+export function skyProgramDefines(frame: SkyFrame, extra?: { readonly fog?: boolean }): SkyProgramDefines {
   return {
     model:
       frame.model === "preetham" ? "PREETHAM" :
@@ -141,10 +143,11 @@ export function skyProgramDefines(frame: SkyFrame): SkyProgramDefines {
     stars: frame.showStars,
     clouds: frame.clouds.coverage > 0,
     sunDisc: true,
-    moon: frame.moon !== null
+    moon: frame.moon !== null,
+    fog: extra?.fog === true
   };
 }
 
 export function skyProgramKey(d: SkyProgramDefines): string {
-  return `prd07.sky.${d.model}${d.stars ? ".stars" : ""}${d.clouds ? ".clouds" : ""}${d.sunDisc ? ".disc" : ""}${d.moon ? ".moon" : ""}`;
+  return `prd07.sky.${d.model}${d.stars ? ".stars" : ""}${d.clouds ? ".clouds" : ""}${d.sunDisc ? ".disc" : ""}${d.moon ? ".moon" : ""}${d.fog ? ".fog" : ""}`;
 }

@@ -107,6 +107,13 @@ const EPS = 1e-6;
 export class RibbonBatch {
   private readonly trails = new Map<string, RibbonTrail>();
 
+  /**
+   * §6.9/P6-T3: producers that route `surface` trails through the decal pass
+   * narrow this to ["camera"] under A3D_QR_VFX_DECALS so the ribbon pass does
+   * not double-draw them. Default draws both groups (flag-off identical).
+   */
+  enabledOrientations: readonly RibbonOrientation[] = ["camera", "surface"];
+
   upsertTrail(options: RibbonTrailOptions): RibbonTrail {
     let trail = this.trails.get(options.id);
     if (!trail) {
@@ -223,10 +230,10 @@ export class RibbonBatch {
     return { vertices, indices, vertexCount, triangleCount: segments * 2, orientation };
   }
 
-  /** One merged geometry per orientation group (the draw-key split). */
+  /** One merged geometry per enabled orientation group (the draw-key split). */
   buildAll(cameraPosition: AuraVec3): RibbonGeometry[] {
     const out: RibbonGeometry[] = [];
-    for (const orientation of ["camera", "surface"] as const) {
+    for (const orientation of this.enabledOrientations) {
       const group = [...this.trails.values()].filter((t) => t.options.orientation === orientation);
       if (group.length === 0) continue;
       let totalVerts = 0;

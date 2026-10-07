@@ -26,6 +26,7 @@ import type {
   AuraSceneSnapshot,
   AuraVec3
 } from "@aura3d/engine";
+import { RenderPipeline } from "@aura3d/rendering";
 import type { CapabilityEntry, CapabilityStatus, ReadyPayload } from "../../../shared/types";
 import type {
   Prd01LaneSceneSpec,
@@ -281,9 +282,30 @@ function buildSnapshot(spec: Prd01LaneSceneSpec, log: CapabilityLog): AuraSceneS
   return builder.toJSON();
 }
 
+interface SteadyStateCounters {
+  readonly programCompiles: number | null;
+  readonly bufferCreates: number | null;
+  readonly renderTargetsCreated: number | null;
+}
+
+/** C-28 counters via the lane's diagnostics sections (null when unobservable). */
+function steadyStateCounters(app: AuraApp): SteadyStateCounters {
+  const d = app.diagnostics() as unknown as {
+    programs?: { deviceProgramCompiles?: number | null };
+    frameAllocations?: { device?: { bufferCreates?: number; renderTargetsCreated?: number } | null };
+  };
+  return {
+    programCompiles: d.programs?.deviceProgramCompiles ?? null,
+    bufferCreates: d.frameAllocations?.device?.bufferCreates ?? null,
+    renderTargetsCreated: d.frameAllocations?.device?.renderTargetsCreated ?? null
+  };
+}
+
 export interface LaneMountOptions {
   readonly settleFrames?: number;
   readonly stepDt?: number;
+  /** Phase 6 (§15): steady-state measurement window length in frames. */
+  readonly measureFrames?: number;
 }
 
 export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSpec, host: HTMLElement, options: LaneMountOptions = {}): Promise<ReadyPayload> {
@@ -301,6 +323,20 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
     qualityRebuild: { flags: [qrList] }
   });
   await app.ready();
+
+  // Phase 5 (§14): tonemap A/B + exposure ramp. `tm`/`exp` go through the C-05
+  // surface (in-shader path under A3D_QR_CORE_OUTPUT; recorded intent otherwise).
+  const tmParams = new URLSearchParams(window.location.search);
+  const tmName = tmParams.get("tm") ?? tmParams.get("aura3d-tonemap");
+  const expParam = tmParams.get("exp") ?? tmParams.get("aura3d-exp");
+  const tmExposure = expParam === null ? NaN : Number(expParam);
+  if (tmName !== null || Number.isFinite(tmExposure)) {
+    app.setOutput?.({
+      ...(tmName !== null ? { toneMapping: tmName as "aces" | "agx" | "neutral" | "none" | "linear" | "reinhard" } : {}),
+      ...(Number.isFinite(tmExposure) ? { exposure: tmExposure } : {})
+    });
+    log.add("tone-mapping-variant", app.setOutput ? "supported" : "missing", `setOutput toneMapping=${tmName ?? "default"} exposure=${tmExposure}`);
+  }
 
   const drawDeadline = performance.now() + 60_000;
   while (performance.now() < drawDeadline) {
@@ -321,6 +357,32 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
     }
   }
 
+  // Phase 6 (§15): steady-state measurement window. After the settle frames
+  // the flagged path must be flat — zero program compiles, zero GL object
+  // creations (C-28 deltas), zero RenderPipeline constructions, and a JS heap
+  // delta ≤ 16 KB/frame. `performance.memory` is Chromium-only; absent → the
+  // heap row reports "partial" rather than fabricating a number.
+  const measureFrames = options.measureFrames ?? 120;
+  const stepDt2 = options.stepDt ?? 1 / 30;
+  const heapBefore = (performance as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize;
+  const before = steadyStateCounters(app);
+  const pipelineBefore = RenderPipeline.constructedCount;
+  for (let frame = 0; frame < measureFrames; frame += 1) {
+    if (!animated) app.step(stepDt2);
+    await nextFrame();
+  }
+  const after = steadyStateCounters(app);
+  const heapAfter = (performance as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize;
+  const pipelineDelta = RenderPipeline.constructedCount - pipelineBefore;
+  const compileDelta = (after.programCompiles ?? 0) - (before.programCompiles ?? 0);
+  const bufferDelta = (after.bufferCreates ?? 0) - (before.bufferCreates ?? 0);
+  const targetDelta = (after.renderTargetsCreated ?? 0) - (before.renderTargetsCreated ?? 0);
+  const heapDeltaPerFrame = heapBefore !== undefined && heapAfter !== undefined ? (heapAfter - heapBefore) / measureFrames : null;
+  log.add("zero-program-compiles", compileDelta === 0 ? "supported" : "missing", `programCompiles delta ${compileDelta} over ${measureFrames} frames`);
+  log.add("zero-object-creates", bufferDelta === 0 && targetDelta === 0 ? "supported" : "missing", `bufferCreates ${bufferDelta} renderTargetsCreated ${targetDelta} over ${measureFrames} frames`);
+  log.add("zero-pipeline-constructions", pipelineDelta === 0 ? "supported" : "missing", `RenderPipeline.constructedCount delta ${pipelineDelta} over ${measureFrames} frames`);
+  log.add("js-heap-delta", heapDeltaPerFrame === null ? "partial" : heapDeltaPerFrame <= 16_384 ? "supported" : "missing", heapDeltaPerFrame === null ? "performance.memory unavailable" : `jsHeapDelta ${heapDeltaPerFrame.toFixed(0)} B/frame over ${measureFrames} frames`);
+
   const diagnostics = app.diagnostics();
 
   return {
@@ -337,7 +399,8 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
       drawCalls: diagnostics.drawCalls,
       output: (diagnostics as unknown as Record<string, unknown>).output,
       resolution: (diagnostics as unknown as Record<string, unknown>).resolution,
-      programs: (diagnostics as unknown as Record<string, unknown>).programs
+      programs: (diagnostics as unknown as Record<string, unknown>).programs,
+      frameAllocations: (diagnostics as unknown as Record<string, unknown>).frameAllocations
     }
   };
 }

@@ -18,8 +18,23 @@ import { ParticleBatchPass, type ParticlePassDiagnostics } from "./ParticleBatch
 import { BeamPass, type BeamDrawSpec } from "./BeamPass";
 import { MeshParticlePass, type MeshParticleFeed } from "./MeshParticlePass";
 import { RibbonBatch } from "./RibbonBatch";
+import {
+  PRD07_FOG_DEFAULTS,
+  packV2,
+  parseFogColor,
+  resolvePrd07FogSpec,
+  skyHorizonRadiance,
+  type Vec3
+} from "../atmosphere/HeightFog";
+import { packFogVolumes, type Prd07FogVolume } from "../atmosphere/FogVolumes";
+import { evaluateSky, skyFrame } from "../atmosphere/SkyEval";
 import { RibbonPass } from "./RibbonPass";
+import { DecalPass } from "./DecalPass";
+import type { DecalBatch } from "./DecalBatch";
+import { resolveSceneDepth } from "./SceneDepthAdapter";
 import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgroundPass";
+import { VolumetricFogPass, froxelGridFor, type VolumetricFogPassInput, type FroxelGridSpec } from "../atmosphere/VolumetricFogPass";
+import type { PackedFogUniforms } from "../atmosphere/HeightFog";
 
 /** What the engine-side effects system publishes on the RenderSource. */
 export interface VfxFrameSource {
@@ -35,6 +50,8 @@ export interface VfxFrameSource {
   beamFeed?(): readonly BeamDrawSpec[];
   /** §6.2.11 instanced mesh batches for prd07.mesh. */
   meshFeed?(): readonly MeshParticleFeed[];
+  /** §6.9 merged decal ring for prd07.decals (P6-T1). */
+  decalFeed?(): DecalBatch;
 }
 
 /** What the engine-side atmosphere state publishes on the RenderSource. */
@@ -51,6 +68,7 @@ const particlePasses = new WeakMap<RenderDevice, ParticleBatchPass>();
 const ribbonPasses = new WeakMap<RenderDevice, RibbonPass>();
 const beamPasses = new WeakMap<RenderDevice, BeamPass>();
 const meshPasses = new WeakMap<RenderDevice, MeshParticlePass>();
+const decalPasses = new WeakMap<RenderDevice, DecalPass>();
 
 export function particlePassFor(device: RenderDevice): ParticleBatchPass {
   let pass = particlePasses.get(device);
@@ -178,29 +196,244 @@ const skyContributor: FrameContributor = {
     const pass = skyDrawPassFor(ctx.device);
     pass.setSpec(atmosphere.sky, ctx.timeSeconds);
     pass.setViewProjection(contextViewProjection(ctx));
+    // P4-T7 — the prd07.fog contributor's collect ran first this frame; when the
+    // spec affects the background, bind its packed §8.4 uniforms (mode, colour,
+    // volumes) + camera/sun so a3dApplyFog shades the sky at backgroundDistance.
+    const fogEntry = ctx.flags.on("A3D_QR_VFX_FOG")
+      ? (ctx.blackboard.get("prd07.fog") as
+          | {
+              uniforms: ReturnType<typeof packV2>;
+              volumes: readonly Prd07FogVolume[];
+              sunColor: Vec3;
+              affectsBackground: boolean;
+              backgroundDistance: number;
+            }
+          | undefined)
+      : undefined;
+    pass.setFog(
+      fogEntry && fogEntry.affectsBackground
+        ? {
+            uniforms: fogEntry.uniforms,
+            volumes: packFogVolumes(fogEntry.volumes),
+            sunColor: fogEntry.sunColor,
+            cameraPosition: ctx.camera?.position ?? [0, 0, 0],
+            backgroundDistance: fogEntry.backgroundDistance
+          }
+        : null
+    );
     return [pass];
   }
 };
 
-const decalsContributor: FrameContributor = {
+/**
+ * P4-T4 — prd07.fog: notes the camera pose on LiveAtmosphere (the compiler's
+ * packLegacy path reads it) and publishes the packed §8.4 uniforms +
+ * fog-volume segments on the blackboard for the prd07.sky pass and any
+ * C-02 generator material that binds `a3d_prd07_fog`.
+ */
+const fogContributor: FrameContributor = {
+  id: "prd07.fog",
+  owner: "prd07",
+  flag: "A3D_QR_VFX_FOG",
+  phases: ["background"],
+  collect: (items, ctx) => {
+    const atmosphere = (ctx.source as Prd07FrameSource).atmosphere as {
+      resolveFog?: (t: number) => Record<string, unknown> | null;
+      fogVolumes?: () => readonly unknown[];
+      noteCamera?: (position: readonly [number, number, number], forward: readonly [number, number, number]) => void;
+      clockNow?: () => number;
+      sky?: Record<string, unknown> | null;
+    } | undefined;
+    if (!atmosphere) return items;
+    const cam = ctx.camera;
+    const forward: readonly [number, number, number] = cam
+      ? [-cam.viewMatrix[2], -cam.viewMatrix[6], -cam.viewMatrix[10]]
+      : [0, 0, -1];
+    if (cam) atmosphere.noteCamera?.(cam.position, forward);
+    const spec = atmosphere.resolveFog?.(atmosphere.clockNow?.() ?? ctx.timeSeconds) ?? null;
+    const resolved = resolvePrd07FogSpec(spec as Parameters<typeof resolvePrd07FogSpec>[0]);
+    const sky = atmosphere.sky ?? null;
+    const azimuth = Math.atan2(forward[0], forward[2]);
+    const fogColor = resolved.color === "sky"
+      ? skyHorizonRadiance(sky, azimuth) ?? PRD07_FOG_DEFAULTS.fallbackColor
+      : parseFogColor(resolved.color, PRD07_FOG_DEFAULTS.fallbackColor);
+    // Legacy generator (C-04 stub) → parity-mode slots; real C-02 → v2 slots.
+    const parity = ctx.flags.values["A3D_QR_CORE"] !== "v2";
+    const packed = packV2(resolved, {
+      fogColor,
+      cameraY: cam?.position[1] ?? 0,
+      parity
+    });
+    // §6.6 sun inscatter colour — sky radiance at the sun direction (clamped);
+    // only multiplied by sunInscatter (default 0) so the approximation is inert.
+    let sunColor: Vec3 = [1, 1, 1];
+    if (sky) {
+      try {
+        const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
+        const sunDir = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? ([0, 1, 0] as Vec3);
+        const e = evaluateSky(frame, sunDir);
+        sunColor = [Math.min(e[0], 8), Math.min(e[1], 8), Math.min(e[2], 8)];
+      } catch {
+        // keep the unit fallback
+      }
+    }
+    ctx.blackboard.set("prd07.fog", {
+      uniforms: packed,
+      volumes: (atmosphere.fogVolumes?.() ?? []) as readonly Prd07FogVolume[],
+      sunColor,
+      affectsBackground: resolved.affectsBackground !== false,
+      backgroundDistance: resolved.backgroundDistance ?? cam?.far ?? 1000
+    });
+    return items;
+  },
+  passes: () => []
+};
+
+/**
+ * P5-T1 — prd07.gpuSim: steps each ParticleGpuSim published on the blackboard
+ * under "prd07.gpuSims" (engine producers push {sim, emitCount}) during the
+ * collect phase — before shadows — so draws read frame N-1 state (§6.2.3).
+ * Requires floatColorBuffer; producers gate on `ParticleGpuSim.isAvailable`
+ * and keep the CPU emitter otherwise (PARTICLE_GPU_UNAVAILABLE).
+ */
+const gpuSimContributor: FrameContributor = {
+  id: "prd07.gpuSim",
+  owner: "prd07",
+  flag: "A3D_QR_VFX",
+  phases: ["collect"],
+  collect: (items, ctx) => {
+    const sims = ctx.blackboard.get("prd07.gpuSims") as readonly { sim: { step(dt: number, emitCount: number, time: number): unknown }; emitCount: number }[] | undefined;
+    if (!sims) return items;
+    for (const entry of sims) entry.sim.step(1 / 60, entry.emitCount, ctx.timeSeconds);
+    return items;
+  },
+  passes: () => []
+};
+
+/**
+ * P6-T1 — prd07.decals (§6.9): merged page×blend draws after opaque, before
+ * transparents. Decal nodes (hidden `prd07.legacyDecal.*` primitives under
+ * the flag) are published by the engine on `vfx.decalFeed()`; one draw per
+ * page×blend group replaces E46's one-draw-per-decal.
+ */
+function decalPassFor(device: RenderDevice): DecalPass {
+  let pass = decalPasses.get(device);
+  if (!pass) {
+    pass = new DecalPass(device, {
+      fog: true,
+      fogUniforms: (ctx) => {
+        const entry = ctx.blackboard.get("prd07.fog") as
+          | { uniforms: PackedFogUniforms; volumes: readonly Prd07FogVolume[]; sunColor: Vec3 }
+          | undefined;
+        if (!entry) return null;
+        const f = entry.uniforms;
+        return new Map<string, import("../RenderDevice").UniformValue>([
+          ["u_fogA", f.fogA],
+          ["u_fogB", f.fogB],
+          ["u_fogColor", f.fogColor],
+          ["u_fogAbsorption", f.fogAbsorption],
+          ["u_fogMode", f.fogMode],
+          ["u_fogNear", f.fogNear],
+          ["u_fogFar", f.fogFar],
+          ["u_fogVolumes", packFogVolumes(entry.volumes)],
+          ["u_cameraPosition", [...(ctx.camera?.position ?? [0, 0, 0])]],
+          ["u_sunColor", [...entry.sunColor]]
+        ]);
+      },
+      onNote: (code, message) => console.warn(`[${code}] ${message}`)
+    });
+    decalPasses.set(device, pass);
+  }
+  return pass;
+}
+
+export const decalsContributor: FrameContributor = {
   id: "prd07.decals",
   owner: "prd07",
   flag: "A3D_QR_VFX_DECALS",
   phases: ["after-opaque"],
-  passes: () => []
+  passes: (phase, ctx) => {
+    if (phase !== "after-opaque") return [];
+    const vfx = (ctx.source as Prd07FrameSource).vfx;
+    const batch = vfx?.decalFeed?.();
+    if (!batch || batch.size === 0) return [];
+    const pass = decalPassFor(ctx.device);
+    const now = ctx.timeSeconds;
+    return [{
+      name: "prd07.decals",
+      reads: ["aura.scene.depth"],
+      writes: ["aura.scene.color"],
+      execute: () => pass.draw(batch, ctx, now)
+    }];
+  }
 };
 
+/** Per-device froxel pass cache — the grid spec selects the atlas layout. */
+const volumetricPasses = new WeakMap<import("../RenderDevice").RenderDevice, Map<string, VolumetricFogPass>>();
+function volumetricPassFor(device: import("../RenderDevice").RenderDevice, grid: FroxelGridSpec): VolumetricFogPass {
+  const key = `${grid.tileWidth}x${grid.tileHeight}x${grid.slices}`;
+  let map = volumetricPasses.get(device);
+  if (!map) volumetricPasses.set(device, (map = new Map()));
+  let pass = map.get(key);
+  if (!pass) map.set(key, (pass = new VolumetricFogPass(device, grid)));
+  return pass;
+}
+
+/**
+ * P5-T6 — prd07.volumetric: froxel volumetrics (§6.7). Runs only when the
+ * C-27 tier maps to a froxel grid AND `resolveSceneDepth(ctx).available`
+ * (the stub reports false → VOLUMETRIC_DEPTH_PENDING, analytic fog covers
+ * every tier instead). Temporal reprojection (Ultra) needs C-01
+ * previousViewProjectionMatrix — null → VOLUMETRIC_TEMPORAL_PENDING.
+ */
 const volumetricContributor: FrameContributor = {
   id: "prd07.volumetric",
   owner: "prd07",
   flag: "A3D_QR_VFX_VOLUMETRIC",
-  phases: ["after-opaque", "post-hdr"],
-  passes: () => []
+  phases: ["after-opaque"],
+  passes: (phase, ctx) => {
+    if (phase !== "after-opaque") return [];
+    const depth = resolveSceneDepth(ctx);
+    const grid = froxelGridFor(ctx.tier.volumetricFog);
+    if (!grid || !depth.available || !ctx.camera) return [];
+    const pass = volumetricPassFor(ctx.device, grid);
+    // Fog spec comes from the prd07.fog blackboard entry (written in collect).
+    const fogEntry = ctx.flags.on("A3D_QR_VFX_FOG")
+      ? (ctx.blackboard.get("prd07.fog") as { uniforms?: PackedFogUniforms; volumes?: readonly Prd07FogVolume[]; sunColor?: Vec3 } | undefined)
+      : undefined;
+    const sky = ((ctx.source as Prd07FrameSource).atmosphere as { sky?: Record<string, unknown> | null } | undefined)?.sky ?? null;
+    let sunDirection: Vec3 = [0, 1, 0];
+    if (sky) {
+      try {
+        const frame = skyFrame(sky as Parameters<typeof skyFrame>[0]);
+        sunDirection = frame.preetham?.sunDirection ?? frame.gradient?.sunDirection ?? sunDirection;
+      } catch { /* keep default */ }
+    }
+    const input: VolumetricFogPassInput = {
+      fog: fogEntry?.uniforms ?? null,
+      fogColor: [0.663, 0.737, 0.812],
+      volumes: fogEntry?.volumes ?? [],
+      sunDirection,
+      sunColor: (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3,
+      ambientColor: [0.2, 0.22, 0.26],
+      sceneDepth: depth.source.texture,
+      depthLinearize: [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]
+    };
+    return [{
+      name: "prd07.volumetric",
+      reads: ["aura.scene.depth", "aura.scene.color"],
+      writes: ["aura.scene.color"],
+      execute: () => {
+        const { apply } = pass.update(input, ctx);
+        apply(null); // stub target: the canvas framebuffer (after-opaque).
+      }
+    }];
+  }
 };
 
 /** Idempotent lane registration (P1-T1): safe on repeated barrel imports. */
 export function registerPrd07Contributors(): void {
-  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, skyContributor, decalsContributor, volumetricContributor]) {
+  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, fogContributor, skyContributor, decalsContributor, volumetricContributor]) {
     try {
       registerFrameContributor(contributor);
     } catch (error) {

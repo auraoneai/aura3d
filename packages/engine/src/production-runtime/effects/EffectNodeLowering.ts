@@ -42,6 +42,8 @@ export interface EffectNodeLike {
   readonly direction?: AuraVec3;
   readonly softDistance?: number;
   readonly nearFade?: number;
+  /** P6-T4: mark the batch eligible for the optional half-res particle path. */
+  readonly lowRes?: boolean;
   /** One-shot spawn count at t=0 (effects.burst). */
   readonly burst?: number;
   // §6.2.9 trail fields (effects.trail). `path` seeds a static ring (bench
@@ -70,6 +72,19 @@ export interface EffectNodeLike {
   readonly groundBounce?: number;
   readonly castShadow?: boolean;
   readonly mesh?: string;
+  // §6.9 decal descriptor on `effect: "decal"` runtime instances (P6).
+  readonly decal?: {
+    readonly size?: readonly [number, number];
+    readonly baseOpacity?: number;
+    readonly fade?: { readonly angleStart?: number; readonly angleEnd?: number; readonly near?: number; readonly far?: number };
+    readonly polygonOffset?: { readonly factor: number; readonly units: number };
+    readonly normalOffset?: number;
+    readonly normal?: AuraVec3;
+    readonly textureUrl?: string;
+    readonly color?: string | readonly number[];
+    /** Seconds before fade-out ends the decal (default: permanent). */
+    readonly lifetime?: number;
+  };
 }
 
 export interface LoweredParticleEffect {
@@ -94,7 +109,7 @@ export interface LoweredOtherEffect {
   readonly type: "other";
   readonly nodeId: string;
   readonly effect: string;
-  readonly consumer: "post" | "scene-fog" | "ribbon-pass" | "mesh-pass" | "none";
+  readonly consumer: "post" | "scene-fog" | "ribbon-pass" | "mesh-pass" | "decal-pass" | "none";
   readonly sim: "none";
 }
 
@@ -109,6 +124,8 @@ export interface LoweredBatchSpec {
   readonly stretch: boolean;
   readonly frameBlend: boolean;
   readonly atlasKey: string;
+  /** P6-T4: half-res path eligibility (default off). */
+  readonly lowRes?: boolean;
 }
 
 const COLOR_TABLE: Record<string, readonly [number, number, number]> = {
@@ -179,12 +196,14 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           ...(node.nearFade !== undefined ? { nearFade: node.nearFade } : {}),
           stretch: materialMode === "spark",
           frameBlend: false,
-          atlasKey: "soft-dot"
+          atlasKey: "soft-dot",
+          ...(node.lowRes === true ? { lowRes: true } : {})
         },
         emitter: {
           // §6.2.2 material key — identical blend/atlas/flags merge into one
           // instanced draw in ProductionEffectSystem.feed.
-          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.0`,
+          // Trailing bit: lowRes batches never merge with full-res ones.
+          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}`, 
           nodeId,
           origin: position,
           capacity: count,
@@ -223,10 +242,11 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           softDepth: true,
           stretch: isRain,
           frameBlend: false,
-          atlasKey: isRain ? "streak" : "soft-dot"
+          atlasKey: isRain ? "streak" : "soft-dot",
+          ...(node.lowRes === true ? { lowRes: true } : {})
         },
         emitter: {
-          key: `eff.alpha.${isRain ? "streak" : "soft-dot"}.1.${isRain}.0`,
+          key: `eff.alpha.${isRain ? "streak" : "soft-dot"}.1.${isRain}.${node.lowRes === true ? 1 : 0}`,
           nodeId,
           origin: position,
           capacity: count,
@@ -260,10 +280,11 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           softDepth: false,
           stretch: false,
           frameBlend: true,
-          atlasKey: `flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}`
+          atlasKey: `flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}`,
+          ...(node.lowRes === true ? { lowRes: true } : {})
         },
         emitter: {
-          key: `eff.alpha.flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}.0.0.1`,
+          key: `eff.alpha.flipbook.${node.spriteColumns ?? 8}x${node.spriteRows ?? 8}.0.0.${node.lowRes === true ? 1 : 0}`,
           nodeId,
           origin: position,
           capacity: count,
@@ -292,6 +313,8 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       return { type: "other", nodeId, effect, consumer: "ribbon-pass", sim: "none" };
     case "meshParticles":
       return { type: "other", nodeId, effect, consumer: "mesh-pass", sim: "none" };
+    case "decal":
+      return { type: "other", nodeId, effect, consumer: "decal-pass", sim: "none" };
     case "fogVolume":
       return { type: "other", nodeId, effect, consumer: "scene-fog", sim: "none" };
     case "fog":

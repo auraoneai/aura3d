@@ -2,6 +2,7 @@ import type { QrFlagName, QrFlags } from "../contracts/core";
 import type { RenderDevice } from "../RenderDevice";
 import { programCacheSlot, type ProgramCacheLike } from "../contracts/program";
 import { frameUniformsSlot, type FrameUniformsLike } from "../contracts/frameUniforms";
+import { OutputPass } from "../output/OutputPass";
 
 /**
  * PRD-01 §15 sub-flag resolution: `A3D_QR_CORE_GENERATOR` and
@@ -40,6 +41,14 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
   return cache;
 }
 
+/**
+ * PRD-01 Phase 6 (C-31): read-only access for diagnostics — never creates the
+ * singleton, so callers that lack the app's QrFlags can't pollute the map.
+ */
+export function rendererProgramCachePeek(device: RenderDevice): ProgramCacheLike | undefined {
+  return caches.get(device);
+}
+
 export function rendererAuraFrame(device: RenderDevice, flags: QrFlags): FrameUniformsLike {
   let fu = auraFrames.get(device);
   if (!fu) {
@@ -47,4 +56,17 @@ export function rendererAuraFrame(device: RenderDevice, flags: QrFlags): FrameUn
     auraFrames.set(device, fu);
   }
   return fu;
+}
+
+// ── C-05: the OutputPass belongs to the device — one shader-variant cache ──
+
+const outputPasses = new WeakMap<RenderDevice, OutputPass>();
+
+export function rendererOutputPass(device: RenderDevice): OutputPass {
+  let pass = outputPasses.get(device);
+  if (!pass) {
+    pass = new OutputPass(device);
+    outputPasses.set(device, pass);
+  }
+  return pass;
 }

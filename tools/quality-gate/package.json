@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/quality-gate",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lane-12 quality gate commands. Runs standalone: pnpm --dir tools/quality-gate <script> (CONTRACTS §4.4; root aliases pending Q-15-1).",
+  "scripts": {
+    "capture": "bash ../../benchmarks/quality-rebuild/ci.sh",
+    "games": "node ../quality-rebuild-capture/capture-games.mjs",
+    "metrics": "cd metrics && python -m metrics run",
+    "gate": "tsx --tsconfig ../../tsconfig.base.json src/cli.ts gate",
+    "calibrate": "tsx --tsconfig ../../tsconfig.base.json src/cli.ts calibrate",
+    "report": "tsx --tsconfig ../../tsconfig.base.json src/cli.ts report",
+    "classify-tools": "tsx --tsconfig ../../tsconfig.base.json src/cli.ts classify-tools",
+    "propose-golden": "tsx --tsconfig ../../tsconfig.base.json src/cli.ts propose-golden"
+  },
+  "devDependencies": {
+    "tsx": "4.21.0",
+    "typescript": "5.8.3"
+  }
+}

@@ -157,3 +157,49 @@ describe("game camera rig aggregator", () => {
     );
   });
 });
+
+// ── X-7 presented gates (C21 replacement) ────────────────────────────────────
+// The retired gates asserted juice "fired"/"adopted" — rig-return numbers that
+// never reached the frame. These read the presented pose and per-frame layer
+// energy instead (the same shape `diagnostics().camera` exposes). Recorded
+// pre-change failures: evidence/prd08/gates.md.
+import { createCameraController } from "../../../packages/engine/src/agent-api/camera/CameraController";
+import type { AuraCameraSubject } from "../../../packages/engine/src/contracts/camera";
+
+const subjectAt = (position: readonly [number, number, number], over: Partial<AuraCameraSubject> = {}): AuraCameraSubject => ({
+  position,
+  velocity: [0, 0, 0],
+  forward: [0, 0, 1],
+  bounds: { min: position, max: position },
+  ...over
+});
+
+describe("X-7 presented gates (replaces fired/adopted)", () => {
+  it("presented pose follows a moving subject through a chase rig", () => {
+    const hero = subjectAt([0, 0, 0], { velocity: [0, 0, 20], forward: [0, 0, 1] });
+    const controller = createCameraController({ resolveSubject: (ref) => (ref === "hero" ? hero : undefined) });
+    const before = { ...controller.presented() };
+    controller.use(controller.rigs.chase({ target: "hero", distance: { base: 4, perSpeed: 0, max: 8 }, height: 2, lookHeight: 0 }));
+    for (let i = 0; i < 90; i += 1) controller.update(1 / 60, i * (1000 / 60));
+    const pose = controller.presented();
+    // Pre-change code would leave `presented` at the default pose: the rig's
+    // numbers were only read into evidence.
+    expect(pose.position[2]).not.toBeCloseTo(before.position[2], 1);
+    expect(pose.target[2]).toBeCloseTo(hero.position[2], 1);
+    expect(controller.evidence().rig).toBe("chase");
+  });
+
+  it("shake reaches the presented pose with layer energy > 0 on submitted frames", () => {
+    const controller = createCameraController({});
+    controller.use(controller.rigs.static({ position: [0, 0, 0], target: [0, 0, -1] }));
+    controller.update(1 / 60, 0);
+    const rest = controller.presented();
+    controller.shake.add(0.8);
+    const after = controller.update(1 / 60, 16.7);
+    const energy = controller.evidence().layers.find((l) => l.id === "trauma")?.energy ?? 0;
+    expect(energy).toBeGreaterThan(0);
+    // The offset must land on the presented pose, not just in evidence.
+    const moved = Math.abs(after.position[0] - rest.position[0]) + Math.abs(after.position[1] - rest.position[1]);
+    expect(moved).toBeGreaterThan(0);
+  });
+});

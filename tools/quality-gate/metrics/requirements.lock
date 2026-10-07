@@ -1,0 +1,11 @@
+# PRD-12 T1.7 — metrics runner pins (versions locked 2026-10-06 from PyPI).
+# CI installs: pip install -r tools/quality-gate/metrics/requirements.lock
+# lpips is spec-pinned (§7.5). torch is the CPU build for the CI metrics runner.
+lpips==0.1.4
+torch==2.14.1
+numpy==2.5.3
+scikit-image==0.26.0
+Pillow==12.3.0
+flip-evaluator==1.7
+# Optional but used when present (scipy.ndimage fast path for SSIM windows):
+scipy==1.17.1

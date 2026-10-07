@@ -11156,6 +11156,13 @@ export interface WebGLSceneRenderer {
   onDeviceLost?(listener: () => void): () => void;
   onDeviceRestored?(listener: () => void): () => void;
   deviceLost?(): boolean;
+  /**
+   * PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is
+   * WebGL2, so `app[Symbol.for("a3d.prd01.renderer")]` can reach the live
+   * output surface. `unknown` here — the renderer type lives in
+   * `@aura3d/rendering` and consumers narrow it themselves.
+   */
+  readonly auraRenderer?: unknown;
   dispose(): void;
 }
 

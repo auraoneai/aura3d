@@ -21,7 +21,18 @@ export class WebGL2DrawCallBinder {
 
   readonly uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
 
+  /**
+   * PRD-01 Phase 6: per-program last-value uniform cache — skips the GL call
+   * when the incoming value equals what was last uploaded for this program
+   * (numbers by value, arrays element-wise vs a retained snapshot, texture
+   * bindings by texture/sampler/transform identity).
+   */
+  private readonly uniformValueCache = new WeakMap<WebGL2ShaderProgram, Map<string, unknown>>();
+
   readonly vertexArrayCache = new Map<string, WebGL2VertexArrayCacheEntry>();
+
+  /** buffer id → VAO keys referencing it (PRD-01 Phase 6 §6.1 eviction index). */
+  private readonly bufferVaoIndex = new Map<number, Set<string>>();
 
   readonly vertexFormatIds = new WeakMap<VertexFormat, number>();
 
@@ -103,6 +114,11 @@ export class WebGL2DrawCallBinder {
 
   uploadUniforms(shader: WebGL2ShaderProgram, uniforms: ReadonlyMap<string, unknown>): void {
     let textureUnit = 0;
+    let valueCache = this.uniformValueCache.get(shader);
+    if (!valueCache) {
+      valueCache = new Map();
+      this.uniformValueCache.set(shader, valueCache);
+    }
     for (const [name, value] of uniforms) {
       if (!shader.reflection.uniforms.has(name)) {
         continue;
@@ -112,15 +128,55 @@ export class WebGL2DrawCallBinder {
         throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
       }
       if (isTextureBinding(value)) {
+        textureUnit += 1;
+        // Last-value check: same texture + sampler + transform → the unit
+        // binding from the previous upload still holds.
+        const lastTexture = valueCache.get(name) as
+          | { texture: unknown; sampler: unknown; offset: readonly number[]; scale: readonly number[]; rotation: number }
+          | undefined;
+        const textureUnchanged =
+          lastTexture !== undefined &&
+          lastTexture.texture === value.texture &&
+          lastTexture.sampler === value.sampler &&
+          lastTexture.rotation === value.rotation &&
+          lastTexture.offset[0] === value.offset[0] &&
+          lastTexture.offset[1] === value.offset[1] &&
+          lastTexture.scale[0] === value.scale[0] &&
+          lastTexture.scale[1] === value.scale[1];
+        if (textureUnchanged) continue;
         // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
         // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
-        this.host.samplers.uploadTextureUniform(location, value, textureUnit, shader.reflection.uniformDetails.get(name)?.type);
-        textureUnit += 1;
+        this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
+        valueCache.set(name, {
+          texture: value.texture,
+          sampler: value.sampler,
+          offset: value.offset,
+          scale: value.scale,
+          rotation: value.rotation
+        });
       } else if (typeof value === "number") {
+        if (valueCache.get(name) === value) continue;
         this.host.gl.uniform1f(location, value);
+        valueCache.set(name, value);
       } else if (Array.isArray(value) || ArrayBuffer.isView(value)) {
         const length = (value as ArrayLike<number>).length;
         const floatData = value as Float32List;
+        // Last-value check against a retained snapshot: element-wise equal →
+        // the previous upload still holds (skip the GL call).
+        const lastArray = valueCache.get(name) as Float32Array | undefined;
+        if (lastArray !== undefined && lastArray.length === length) {
+          let same = true;
+          for (let i = 0; i < length; i += 1) {
+            if (lastArray[i] !== floatData[i]) {
+              same = false;
+              break;
+            }
+          }
+          if (same) continue;
+          for (let i = 0; i < length; i += 1) lastArray[i] = floatData[i];
+        } else {
+          valueCache.set(name, Float32Array.from(floatData as ArrayLike<number>));
+        }
         if (length === 16 || (length > 16 && length % 16 === 0 && /(?:Matrix|Matrices)$/.test(name))) {
           this.host.gl.uniformMatrix4fv(location, false, floatData);
         } else if (length > 16 && length % 4 === 0) {
@@ -208,7 +264,11 @@ export class WebGL2DrawCallBinder {
     this.host.stateCache.bindVertexArray(handle, () => this.host.gl.bindVertexArray(handle));
     this.host.stateCache.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle));
     const boundLocations = this.bindVertexFormat(shader, command.vertexFormat!);
+    const instanceBufferIds: number[] = [];
     if (command.instanceAttributes && command.instanceAttributes.length > 0) {
+      for (const attribute of command.instanceAttributes) {
+        instanceBufferIds.push(this.requireBuffer(attribute.buffer).id);
+      }
       this.bindInstanceAttributes(shader, command.instanceAttributes, boundLocations);
     }
     if (indexBuffer) {
@@ -218,7 +278,37 @@ export class WebGL2DrawCallBinder {
     this.applyDefaultAttributes(shader, boundLocations);
     const entry: WebGL2VertexArrayCacheEntry = { key, handle, boundLocations };
     this.vertexArrayCache.set(key, entry);
+    for (const bufferId of [vertexBuffer.id, indexBuffer?.id, ...instanceBufferIds]) {
+      if (bufferId === undefined) continue;
+      let keys = this.bufferVaoIndex.get(bufferId);
+      if (!keys) {
+        keys = new Set();
+        this.bufferVaoIndex.set(bufferId, keys);
+      }
+      keys.add(key);
+    }
     return entry;
+  }
+
+  /**
+   * PRD-01 Phase 6 (CONTRACTS §6.1 declared leak fix): delete every cached VAO
+   * that references `bufferId` — the key embeds vertex/index/instance buffer
+   * ids, so the index is the authoritative reverse map. Called from
+   * `WebGL2Buffer.dispose` before the GL buffer is deleted.
+   */
+  evictVertexArraysForBuffer(bufferId: number): number {
+    const keys = this.bufferVaoIndex.get(bufferId);
+    if (!keys || keys.size === 0) return 0;
+    let evicted = 0;
+    for (const key of keys) {
+      const entry = this.vertexArrayCache.get(key);
+      if (!entry) continue;
+      this.vertexArrayCache.delete(key);
+      evicted += 1;
+      if (entry.handle) this.host.gl.deleteVertexArray(entry.handle);
+      for (const set of this.bufferVaoIndex.values()) set.delete(key);
+    }
+    return evicted;
   }
 
   bindNoVertexArray(): void {
