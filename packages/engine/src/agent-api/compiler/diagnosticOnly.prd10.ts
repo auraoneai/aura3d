@@ -10,11 +10,11 @@
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage, type OptionCoverageRow } from "../../contracts/compiler";
 
 export const PRD10_DIAGNOSTIC_ONLY: Readonly<Record<string, { readonly reason: string; readonly ownerPrd: number }>> = {
-  "instances.model.static": { reason: "C-10: static/dynamic chunking is PRD 10 scatter's, unwired until Phase 4", ownerPrd: 10 },
-  "instances.model.chunkSize": { reason: "C-10: chunk sizing is PRD 10 scatter's, unwired until Phase 4", ownerPrd: 10 },
-  "instances.model.shadowLod": { reason: "C-10/C-11: impostor shadow LOD is PRD 10 scatter's, unwired until Phase 4", ownerPrd: 10 },
-  "instances.model.wind": { reason: "C-10: a3d_prd10_wind hook is PRD 10's, unwired until Phase 4", ownerPrd: 10 },
-  "instances.model.impostor": { reason: "C-10: impostor bake is PRD 10's, unwired until Phase 4", ownerPrd: 10 },
+  "instances.model.static": { reason: "T3.8: stamps §7.1.5 placements on the node; inert without A3D_QR_WORLD (no scatter handler)", ownerPrd: 10 },
+  "instances.model.chunkSize": { reason: "T3.8: placements chunk size (default 32 at >256 instances); inert without A3D_QR_WORLD", ownerPrd: 10 },
+  "instances.model.shadowLod": { reason: "T3.8: placements shadow LOD; inert without A3D_QR_WORLD", ownerPrd: 10 },
+  "instances.model.wind": { reason: "T3.8: placements wind flag → a3d_prd10_wind feature; inert without A3D_QR_WORLD", ownerPrd: 10 },
+  "instances.model.impostor": { reason: "T3.8: placements impostor ref; inert without A3D_QR_WORLD", ownerPrd: 10 },
   "material.practical": { reason: "C-10: `practical` material flag is PRD 10 time-of-day's, unwired until Phase 6", ownerPrd: 10 }
 };
 
