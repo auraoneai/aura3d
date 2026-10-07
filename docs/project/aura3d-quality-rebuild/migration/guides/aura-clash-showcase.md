@@ -1,8 +1,8 @@
 # Migration guide — aura-clash-showcase
 
-Patch set: `migration/patches/aura-clash-showcase/` (steps 5–6 of §10 so far;
-later steps land as their PRD items complete). Generated against
-`main@5f5d6088`.
+Patch set: `migration/patches/aura-clash-showcase/` (steps 5–8 of §10).
+Generated against `main@5f5d6088`; step 8 regenerates against the merged
+packages tree.
 
 ## Apply
 
@@ -90,3 +90,42 @@ and `flagship-readiness` specs move from `#player-*` ids to
 
 Ordering: imports `mountHud`/`mountTouchControls`/`HudDocument` from
 `@aura3d/game` — exports land with `qr/prd09-hud`; compiles only after merge.
+
+## Step 8 — createGame + scenario ids (`08-create-game-scenarios.patch`)
+
+Mounts the root stage through `createGame` (C-24): the shipped
+`createAuraApp(canvas, …)` options are preserved verbatim
+(`autoStart:false`, production renderer, authored pixelRatio, probe-gated
+crowd) — `createGame` now forwards all `AuraCreateAppOptions` fields, not
+just the day-0 subset. `clashGame.app` replaces `rootStageApp` for
+`step`/`stepAsync`/`setScene`/`diagnostics`/`dispose`; `void
+clashGame.ready()` (not `start()`) moves the session to `playing` because
+the combat sim owns the RAF loop and steps the stage manually.
+
+Capture contract: `?capture=match-start` / `?capture=combat-impact` are
+deleted — `captureMode`, `reviewCapture`, `combatReviewCapture` and the
+`data-review-capture` attribute are folded to the shipped play arm
+(crowd, dressing, signs all retained; `stageSpotlightProbeEnabled` keeps
+its own crowd omission). `PosterScenarios.ts` routes now point at
+`?scenario=match-start` / `?scenario=combat-impact`, staged by the new
+`src/scenarios/index.ts` through `src/scenario-drive.ts` (`pumpFrames`,
+`setPositions`, `queuePlayerAttack`, `reset` — the same ops the test
+driver exposes, extracted to `arenaTestDriver` and bound unconditionally;
+the `__AURA_CLASH_ARENA_TEST_DRIVER__` global stays behind
+`auraTestDriver`).
+
+Evidence: `writeProof` no longer publishes `__AURA3D_GAME_EVIDENCE__`
+directly — the channel owns that name — it writes
+`mountedEvidence.auraClash`, read back lazily through
+`sections.auraClash` (`src/game-evidence.ts`). `__AURA_CLASH_ARENA_PROOF__`
+stays a route-owned global (not a channel alias) so existing probes keep
+the raw proof shape. `__AURA_CLASH_VISUAL_REVIEW__` and the spotlight /
+crowd probes are unchanged.
+
+Parity after step 8: **0 ART / 0 FRAMING / 0 TRANSIENT / 0 UNKNOWN**
+(was 3 UNKNOWN identifier tokens).
+
+Ordering: the `AuraCreateAppOptions` passthrough in
+`packages/game/src/createGame.ts` lands in the same PR on the branch —
+the patch compiles only where that fix (and `@aura3d/game` +
+`@aura3d/audio`) exists, i.e. merged `main`.
