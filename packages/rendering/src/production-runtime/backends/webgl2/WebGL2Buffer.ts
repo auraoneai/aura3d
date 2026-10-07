@@ -1,2 +1,2 @@
-export interface WebGL2BufferDescriptor { readonly label: string; readonly backend?: 'webgl2'; readonly detail?: string; }
-export class WebGL2Buffer { readonly backend = 'webgl2' as const; constructor(readonly descriptor: WebGL2BufferDescriptor) {} }
+/** @deprecated PRD 11 Phase 1 WebGPU freeze: placeholder removed; barrel export pending Q-15-5. */
+export {};
