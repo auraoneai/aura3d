@@ -1,0 +1,62 @@
+name: QR prd08 camera/loop/feel
+
+# Lane-08 gate (PRD-08 §4.1, CONTRACTS.md §1.1): typecheck, lint (repo-wide,
+# same as qr-contracts), the lane's unit suites (tests/qr/prd08 + the prd08
+# contract impls), the camera-cast codemod fixtures, and ownership coverage
+# for lane-08 paths. Browser conformance (C-22 presented/evidence) runs on
+# macos-14 under the qr-contracts browser job once the specs exist (phase 3).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/engine/src/agent-api/{camera,feel,time,controls,vehicle}/**'
+      - 'packages/engine/src/{FrameLoop,GameRuntime,GameFeel,GameCameraRigs,CameraChoreographer,VehicleChassis}.ts'
+      - 'packages/engine/src/agent-api/nodes/camera.ts'
+      - 'packages/engine/src/lanes/prd08.ts'
+      - 'packages/physics/src/{Raycast,ScenePhysicsBridge}.ts'
+      - 'packages/scene/src/MathTypes.ts'
+      - 'packages/input/**'
+      - 'tools/camera-cast-codemod/**'
+      - 'benchmarks/quality-rebuild/motion/**'
+      - 'benchmarks/quality-rebuild/scenes/prd08/**'
+      - 'tests/qr/prd08/**'
+      - 'tests/unit/contracts/impl/prd08-*.ts'
+      - 'docs/project/aura3d-quality-rebuild/PRD-08-camera-controls-game-feel.md'
+      - '.github/workflows/qr-prd08-camera.yml'
+  push:
+    branches: ['qr/prd08-*']
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd08-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm lint
+      - name: Lane-08 unit suites (frame loop, time, interpolation, spring, spline, framing, noise, bicycle, fromSpec parity, codemod)
+        run: pnpm exec vitest run --config tests/qr/prd08/vitest.config.ts
+      - name: C-22/C-23 impl conformance
+        run: pnpm exec vitest run tests/unit/contracts/impl/prd08-time.test.ts tests/unit/contracts/impl/prd08-camera.test.ts
+      - name: camera-cast codemod report (must list every known cast site)
+        run: |
+          node tools/camera-cast-codemod/index.mjs apps packages/create-aura3d/templates --report \
+            | tee /tmp/camera-cast.md
+          grep -q 'showcase-courier-rush/src/main.ts:1394' /tmp/camera-cast.md
+          grep -q 'showcase-patrol-wing/src/main.ts:805' /tmp/camera-cast.md
+          grep -q 'showcase-turbo-drift-circuit/src/main.ts:2760' /tmp/camera-cast.md
+          grep -q 'showcase-cinematic-architecture/src/main.ts:500' /tmp/camera-cast.md
+          grep -q 'showcase-skyline-runner/src/feel.ts' /tmp/camera-cast.md
+          grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
+      - run: node tools/qr-ownership/check.mjs

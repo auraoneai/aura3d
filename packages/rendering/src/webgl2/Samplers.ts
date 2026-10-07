@@ -2,9 +2,47 @@
 
 import { RenderDeviceError } from "../RenderDevice";
 import type { Sampler } from "../Sampler";
+import type { Texture } from "../Texture";
+import { isCompressedTextureFormat, isFloatColorTextureFormat } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import type { WebGL2DeviceHost } from "./DeviceHost";
 import { addressMode, magFilter, minFilter } from "./TextureFormats";
+import { rendererQrFlags } from "../renderer/FrameGraph";
+
+/** Mip levels the upload path will leave resident on the GPU (C-12 §semantics).
+ * `undefined` = mips are generated at upload (never "exactly one level"). */
+function textureResidentMipLevels(texture: Texture | undefined): number | undefined {
+  if (!texture) return undefined;
+  if (texture.dimension === "cube") {
+    return texture.cubeFaces[0]?.mipLevels.length ?? 0;
+  }
+  if (texture.mipLevels.length > 0) return texture.mipLevels.length;
+  if (texture.source) return undefined; // generateMipmap at upload
+  if (isCompressedTextureFormat(texture.format)) return texture.textureLevels.length;
+  // data/null-data 2D: float formats are pinned to level 0; the rest get
+  // generateMipmap on upload.
+  return isFloatColorTextureFormat(texture.format) ? 1 : undefined;
+}
+
+/** C-12: a texture with exactly one mip level downgrades `*-mipmap-*` to the
+ * matching non-mip filter so it never samples an incomplete texture. */
+function prd02EffectiveMinFilter(sampler: Sampler, residentLevels: number | undefined): Sampler["minFilter"] {
+  if (residentLevels !== 1) return sampler.minFilter;
+  switch (sampler.minFilter) {
+    case "nearest-mipmap-nearest":
+    case "nearest-mipmap-linear":
+      return "nearest";
+    case "linear-mipmap-nearest":
+    case "linear-mipmap-linear":
+      return "linear";
+    default:
+      return sampler.minFilter;
+  }
+}
+
+function prd02SamplerEnabled(): boolean {
+  return rendererQrFlags().on("A3D_QR_LIGHTING");
+}
 
 export class WebGL2SamplerRegistry {
   constructor(readonly host: WebGL2DeviceHost) {}
@@ -47,7 +85,7 @@ export class WebGL2SamplerRegistry {
       if (lowerName.includes("shadow")) this.host.counters.nativeShadowMapBindings += 1;
     }
     this.bindTextureForUnit(textureUnit, target, handle);
-    const samplerHandle = this.getSamplerHandle(binding.sampler, target);
+    const samplerHandle = this.getSamplerHandle(binding.sampler, target, binding.texture ?? undefined);
     this.host.stateCache.bindSampler(textureUnit, samplerHandle, () => this.host.gl.bindSampler(textureUnit, samplerHandle));
     this.host.gl.uniform1i(location, textureUnit);
   }
@@ -89,22 +127,42 @@ export class WebGL2SamplerRegistry {
     this.host.counters.samplerAnisotropyUploadCount += 1;
   }
 
-  getSamplerHandle(sampler: Sampler, target: GLenum): WebGLSampler {
-    const key = this.samplerKey(sampler, target);
+  getSamplerHandle(sampler: Sampler, target: GLenum, texture?: Texture): WebGLSampler {
+    const c12 = prd02SamplerEnabled();
+    const residentLevels = c12 ? textureResidentMipLevels(texture) : undefined;
+    const key = this.samplerKey(sampler, target, c12, residentLevels);
     const cached = this.samplerObjectCache.get(key);
     if (cached) return cached;
     const handle = this.host.gl.createSampler();
     if (!handle) {
       throw new RenderDeviceError("Failed to allocate WebGL sampler", "WEBGL_ALLOCATION_FAILED");
     }
-    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MIN_FILTER, minFilter(this.host.gl, sampler.minFilter));
-    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MAG_FILTER, magFilter(this.host.gl, sampler.magFilter));
-    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_S, addressMode(this.host.gl, sampler.addressU));
-    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_T, addressMode(this.host.gl, sampler.addressV));
+    // C-12 (flag on): compare samplers force LINEAR so hardware PCF applies.
+    const compareOn = c12 && sampler.compare !== undefined;
+    const effectiveMin = c12
+      ? (compareOn ? "linear" : prd02EffectiveMinFilter(sampler, residentLevels))
+      : sampler.minFilter;
+    const effectiveMag = compareOn ? "linear" : sampler.magFilter;
+    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MIN_FILTER, minFilter(this.host.gl, effectiveMin));
+    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MAG_FILTER, magFilter(this.host.gl, effectiveMag));
+    const wrapSMode = c12 && sampler.mirror ? "mirror-repeat" : sampler.addressU;
+    const wrapTMode = c12 && sampler.mirror ? "mirror-repeat" : sampler.addressV;
+    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_S, addressMode(this.host.gl, wrapSMode));
+    this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_T, addressMode(this.host.gl, wrapTMode));
     this.host.counters.samplerParameterUploadCount += 4;
     if (target === this.host.gl.TEXTURE_CUBE_MAP) {
-      this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_R, addressMode(this.host.gl, sampler.addressV));
+      const wrapRMode = c12 && sampler.mirror ? "mirror-repeat" : (c12 ? (sampler.addressW ?? sampler.addressV) : sampler.addressV);
+      this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_R, addressMode(this.host.gl, wrapRMode));
       this.host.counters.samplerParameterUploadCount += 1;
+    }
+    if (compareOn) {
+      this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_COMPARE_MODE, this.host.gl.COMPARE_REF_TO_TEXTURE);
+      this.host.gl.samplerParameteri(
+        handle,
+        this.host.gl.TEXTURE_COMPARE_FUNC,
+        sampler.compare === "greater-equal" ? this.host.gl.GEQUAL : this.host.gl.LEQUAL
+      );
+      this.host.counters.samplerParameterUploadCount += 2;
     }
     if (sampler.maxAnisotropy > 1 && this.host.anisotropicFilteringExtension) {
       this.host.gl.samplerParameterf(
@@ -118,14 +176,18 @@ export class WebGL2SamplerRegistry {
     return handle;
   }
 
-  samplerKey(sampler: Sampler, target: GLenum): string {
-    return [
+  samplerKey(sampler: Sampler, target: GLenum, c12: boolean = prd02SamplerEnabled(), residentLevels?: number): string {
+    const key = [
       sampler.minFilter,
       sampler.magFilter,
       sampler.addressU,
       sampler.addressV,
       sampler.maxAnisotropy,
       target === this.host.gl.TEXTURE_CUBE_MAP ? "cube" : target === this.host.gl.TEXTURE_2D_ARRAY ? "2d-array" : "2d"
-    ].join("|");
+    ];
+    if (c12) {
+      key.push(sampler.compare ?? "-", sampler.addressW ?? "-", sampler.mirror ? "m" : "-", residentLevels === 1 ? "1l" : "-");
+    }
+    return key.join("|");
   }
 }

@@ -1,0 +1,37 @@
+{
+  "root": "apps/showcase-meshy-relic-pilot",
+  "files": 3,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
+      "line": 45,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
+      "line": 45,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
+      "line": 46,
+      "construct": "lights.point({ intensity: 1.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 15 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-meshy-relic-pilot/src/main.ts",
+      "line": 46,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

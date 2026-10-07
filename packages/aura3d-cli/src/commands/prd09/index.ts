@@ -1,5 +1,7 @@
 /**
  * C-39 lane command registrations — prd09 registers its `aura3d` commands
- * here via registerCliCommand (CONTRACTS.md). Empty in PR 0a.
+ * here via registerCliCommand (CONTRACTS.md).
  */
+import "./sfx-admit";
+
 export {};
