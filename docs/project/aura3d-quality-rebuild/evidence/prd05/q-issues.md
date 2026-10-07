@@ -282,3 +282,92 @@ Meanwhile: the standalone gate `tests/qr/prd05/browser/assets-lod-transition`
 drives `collectRenderItems` per frame against a mutated `pipeline.camera`,
 which proves selection, hysteresis, and per-chain switching end-to-end; the
 integrated per-frame path activates the moment the request lands.
+
+## Q-05-7 → lane 01 (`layout(binding=N)` UBOs illegal in GLSL ES 3.00)
+
+`resources/UniformBlock.ts` `uniformBlockGlsl` emits
+`layout(std140, binding = N) uniform AuraFrame` — the `binding` layout
+qualifier is not legal in GLSL ES 3.00 — so **every C-02 generated program
+fails shader compile on real WebGL2** (verified: `WebGL shader compile
+failed`, `ERROR: 'binding' : invalid layout qualifier`). No
+`gl.uniformBlockBinding` call exists anywhere in the codebase to substitute.
+ChunkHarness's own AuraFrame fixture (`contracts/testing/ChunkHarness.ts:24`)
+correctly writes `layout(std140)` without binding, which is why the gap
+never surfaced. Ask: emit `layout(std140)` and call
+`gl.uniformBlockBinding(program, getUniformBlockIndex(program,"AuraFrame"), 0)`
+at link time in WebGL2Device.
+
+Meanwhile: `apps/asset-lookdev` shims `device.createShaderProgram`
+(`installGeneratedProgramUboShim`) — strips the qualifier and binds named
+blocks to their C-08 points post-link.
+
+## Q-05-8 → lane 01 (`hookSplice` emits `requires` AFTER the requiring chunk)
+
+`program/ProgramGenerator.ts:132-153`: chunk dependencies are pushed onto
+`pending` and spliced **after** the chunk that declared them — so a
+`fragment:end` chunk with `requires` gets its dependencies inlined *inside
+`main()`* (uniform declarations at function scope → `uniform: only allowed
+at global scope`), and a `fragment:pars` chunk's helpers land after the code
+that calls them (`use-before-def` — e.g. `a3d_prd04_debug_view` references
+`A3DPrd04Lobes` before `a3d_prd04_bsdf_lobes_common` defines it → syntax
+error). Needs post-order DFS (requires first, then the chunk) at minimum for
+pars-stage deps.
+
+Meanwhile: lane-05 chunks declare `requires: []` and reach every hook via
+the feature's own `hooks`/`chunks` lists.
+
+## Q-05-9 → lane 04 (`prd04.debugView` is never invoked on the generated path)
+
+`shaders/physical/debug_view.glsl.ts` (chunk `a3d_prd04_debug_view`, spliced
+at `fragment:end` by feature `prd04.debugView`) only **defines**
+`A3DPrd04DebugInput` + `a3dPrd04DebugView()` — nothing calls it and nothing
+writes `a3dColor`. Combined with Q-05-8 (its `requires` land inside main and
+break compile outright), the C-15 debug channels are dead on the generated
+path end-to-end.
+
+Meanwhile: `prd05.debugView` owns the material channels itself (channels
+5-10 in `shaders/debug-view.glsl.ts`: baseColor/worldNormal/roughness/
+metallic/occlusion/uvLayout read `a3dBaseColor`/`v_normal`/`a3dRoughness`/
+`a3dMetallic`/`u_occlusionMap` in scope at `fragment:end`).
+
+## Q-05-10 → lane 01 (`ProgramCache.options.flags` never set → features dead)
+
+`qrSubFlags.ts` `rendererProgramCache` calls
+`programCacheSlot.get(flags)(device)` — the slot factory signature is
+`(device, options) => new ProgramCache(device, options)` but **no options
+are ever passed**, so `options.flags` is `undefined` →
+`generateProgramImpl(features, {flags: undefined})` → `contributingFeatures`
+early-returns (`if (!flags) return out`) → no registered feature ever
+contributes chunks/defines. Every `material.programFeatures().features[...]`
+bit is silently dropped on the real path.
+
+Meanwhile: the look-dev adapter hands the singleton the resolved flags
+post-construction (`cache.options.flags = resolved`).
+
+## Q-05-6 (referenced; filed earlier — forward path never calls
+`select`/`bindUniforms`): feature activation on forward draws comes solely
+from `material.programFeatures(ctx).features` — the look-dev adapter
+injects the bit via a cloned material (`LookdevDebugMaterial`) and stamps
+the feature uniforms (`a3d_prd05_debugSampler`, `u_prd05LodLevel`,
+`u_prd05TexelBand`) the uninvoked `bindUniforms` would have produced.
+
+## Q-15-8 → lane 15 (lane-owned alias ordering in vite configs)
+
+Generated `vite.aliases.generated.ts` is lane 15's; the look-dev app's own
+`vite.config.ts` must sort aliases longest-first or `/packages/engine`
+shadows `/packages/engine/src/...` subpaths. Filed here since the file is
+lane-owned; workaround is local (explicit sorted alias table in
+`apps/asset-lookdev/vite.config.ts`).
+
+## Q-02-2 → lane 02 (`HdrEquirect.ts` uses `Buffer` at module scope)
+
+`packages/rendering/src/environment/HdrEquirect.ts` evaluates `Buffer`
+helpers at module top level → `ReferenceError: Buffer is not defined` in
+browser bundles. `apps/asset-lookdev` ships `src/buffer-polyfill.ts` as its
+first import; the file should declare its dependency or guard the calls.
+
+## Q-15-9 → lane 15/asset-corpus barrel (`node:crypto` in browser bundles)
+
+`packages/assets/src/asset-corpus` barrel evaluates `node:crypto` at module
+scope → crash in the browser bundle; consumers must import
+`ProductionGLTFRenderPipeline.js` directly, bypassing the index.

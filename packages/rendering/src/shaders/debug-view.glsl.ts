@@ -14,14 +14,20 @@
  *   3 → facet view: flat world normals from `dFdx/dFdy(v_worldPosition)`.
  *   4 → LOD strip: `u_prd05LodLevel` (stamped from `RenderItem.lodLevel` by
  *     the `prd05.typed-glb-actor-lod` extension) mapped to a per-level hue.
+ *   5 → base colour, post-decode linear (`a3dBaseColor.rgb`).
+ *   6 → world normal `normalize(v_normal) * 0.5 + 0.5`.
+ *   7 → roughness `a3dRoughness` (post metallic-roughness map).
+ *   8 → metallic `a3dMetallic`.
+ *   9 → occlusion `texture(u_occlusionMap, v_uv).r`.
+ *  10 → UV layout: `fract(v_uv)` red/green scatter (the 2-D wireframe view
+ *      is a canvas overlay in the look-dev app, not a shader channel).
  *
- * Occlusion/base-colour/normal/roughness/metallic/UV views reuse lane 04's
- * `u_prd04DebugView` channels — both features coexist; the look-dev app sets
- * the param for the channel it wants. Activation is the material parameter
- * `u_prd05DebugView` (number), which the look-dev app sets — the
- * pre-declared `debugView` renderer option reaches `u_prd04DebugView` for
- * lane-04 channels; this param carries the prd05-only views so no shared
- * C-15 enum change is needed.
+ * Channels 5–10 were meant to reuse lane 04's `u_prd04DebugView` feature, but
+ * on the generated path `a3d_prd04_debug_view` only DEFINES
+ * `a3dPrd04DebugView` — nothing calls it at `fragment:end` — so this chunk
+ * owns the material-channel views itself (Q-05-9). Activation is the
+ * material parameter `u_prd05DebugView` (number) set by the look-dev app, so
+ * no shared C-15 enum change is needed.
  *
  * The fragment:end body is fully `#ifdef`-gated on the channel defines, so
  * the chunk compiles standalone in the ChunkHarness (which declares none of
@@ -35,16 +41,25 @@ import type { UniformValue } from "../RenderDevice";
 
 /** `u_prd05DebugView` value → channel define suffix. */
 export const PRD05_DEBUG_VIEW_CHANNELS = [
-  "TEXEL_DENSITY", "MIP_LEVEL", "FACET", "LOD_LEVEL"
+  "TEXEL_DENSITY", "MIP_LEVEL", "FACET", "LOD_LEVEL",
+  "BASE_COLOR", "WORLD_NORMAL", "ROUGHNESS", "METALLIC", "OCCLUSION", "UV_LAYOUT"
 ] as const;
 
-export type Prd05DebugViewChannel = "texelDensity" | "mipLevel" | "facet" | "lodLevel";
+export type Prd05DebugViewChannel =
+  | "texelDensity" | "mipLevel" | "facet" | "lodLevel"
+  | "baseColor" | "normal" | "roughness" | "metallic" | "occlusion" | "uvLayout";
 
 const CHANNEL_BY_NAME: Readonly<Record<Prd05DebugViewChannel, number>> = {
   texelDensity: 1,
   mipLevel: 2,
   facet: 3,
-  lodLevel: 4
+  lodLevel: 4,
+  baseColor: 5,
+  normal: 6,
+  roughness: 7,
+  metallic: 8,
+  occlusion: 9,
+  uvLayout: 10
 };
 
 /** Material-param value for a named channel (what the look-dev app sets). */
@@ -58,14 +73,14 @@ export function prd05DebugViewDefineName(value: number): string | undefined {
 }
 
 const glslPars = /* glsl */ `
-#if defined(A3D_PRD05_DEBUG_VIEW_TEXEL_DENSITY) || defined(A3D_PRD05_DEBUG_VIEW_MIP_LEVEL) || defined(A3D_PRD05_DEBUG_VIEW_FACET) || defined(A3D_PRD05_DEBUG_VIEW_LOD_LEVEL)
+#if defined(A3D_PRD05_DEBUG_VIEW_TEXEL_DENSITY) || defined(A3D_PRD05_DEBUG_VIEW_MIP_LEVEL) || defined(A3D_PRD05_DEBUG_VIEW_FACET) || defined(A3D_PRD05_DEBUG_VIEW_LOD_LEVEL) || defined(A3D_PRD05_DEBUG_VIEW_BASE_COLOR) || defined(A3D_PRD05_DEBUG_VIEW_WORLD_NORMAL) || defined(A3D_PRD05_DEBUG_VIEW_ROUGHNESS) || defined(A3D_PRD05_DEBUG_VIEW_METALLIC) || defined(A3D_PRD05_DEBUG_VIEW_OCCLUSION) || defined(A3D_PRD05_DEBUG_VIEW_UV_LAYOUT)
 uniform highp sampler2D a3d_prd05_debugSampler;
 uniform float u_prd05LodLevel;
 uniform vec2 u_prd05TexelBand;
 
 // 0..1 → blue → green → yellow → red heatmap.
 vec3 a3dPrd05DebugHeat( float t ) {
-	vec3 c = clamp( t, 0.0, 1.0 );
+	float c = clamp( t, 0.0, 1.0 );
 	vec3 cool = mix( vec3( 0.05, 0.1, 0.45 ), vec3( 0.05, 0.55, 0.45 ), clamp( c * 2.0, 0.0, 1.0 ) );
 	vec3 hot = mix( vec3( 0.05, 0.55, 0.45 ), vec3( 0.9, 0.12, 0.05 ), clamp( ( c - 0.5 ) * 2.0, 0.0, 1.0 ) );
 	return mix( cool, hot, step( 0.5, c ) );
@@ -104,7 +119,11 @@ export const debugViewEndChunk: ShaderChunk = {
   name: "a3d_prd05_debug_view_end",
   owner: "prd05",
   stage: "fragment",
-  requires: ["a3d_prd05_debug_view"],
+  // No `requires` on the pars chunk: hookSplice appends required chunks
+  // AFTER the requiring one at the SAME hook, so the pars chunk's
+  // uniform declarations would land inside main() (Q-05-8). The feature's
+  // hooks list already splices the pars chunk at fragment:pars.
+  requires: [],
   glsl: /* glsl */ `
 #ifdef A3D_PRD05_DEBUG_VIEW_TEXEL_DENSITY
 	#ifdef A3D_NEED_UV0
@@ -126,6 +145,30 @@ export const debugViewEndChunk: ShaderChunk = {
 	}
 #elif defined( A3D_PRD05_DEBUG_VIEW_LOD_LEVEL )
 	a3dColor = a3dPrd05DebugHeat( clamp( u_prd05LodLevel / 4.0, 0.0, 1.0 ) );
+#elif defined( A3D_PRD05_DEBUG_VIEW_BASE_COLOR )
+	a3dColor = a3dBaseColor.rgb;
+#elif defined( A3D_PRD05_DEBUG_VIEW_WORLD_NORMAL )
+	#ifdef A3D_NEED_NORMAL
+		a3dColor = normalize( v_normal ) * 0.5 + 0.5;
+	#else
+		a3dColor = vec3( 0.4 );
+	#endif
+#elif defined( A3D_PRD05_DEBUG_VIEW_ROUGHNESS )
+	a3dColor = vec3( a3dRoughness );
+#elif defined( A3D_PRD05_DEBUG_VIEW_METALLIC )
+	a3dColor = vec3( a3dMetallic );
+#elif defined( A3D_PRD05_DEBUG_VIEW_OCCLUSION )
+	#if defined( USE_OCCLUSION_MAP ) && defined( A3D_NEED_UV0 )
+		a3dColor = vec3( texture( u_occlusionMap, v_uv ).r );
+	#else
+		a3dColor = vec3( 1.0 );
+	#endif
+#elif defined( A3D_PRD05_DEBUG_VIEW_UV_LAYOUT )
+	#ifdef A3D_NEED_UV0
+		a3dColor = vec3( fract( v_uv ), 0.0 );
+	#else
+		a3dColor = vec3( 0.4 );
+	#endif
 #endif
 `,
   wgsl: `// fragment:end splice — WGSL twin lands with the C-02 webgpu emitter.`

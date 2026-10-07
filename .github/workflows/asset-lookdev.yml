@@ -1,0 +1,61 @@
+name: Asset look-dev
+
+# PRD-05 §6.7 — the apps/asset-lookdev stage driven by capture.mjs on
+# macos-14 Chromium/ANGLE Metal (SwiftShader aborts the run before capture).
+# Dispatched by `aura3d assets lookdev <id...>` (or by hand) with a CSV of
+# manifest asset ids; artifacts land in tests/reports/lookdev/<id>/ —
+# contact.jpg, debug.jpg, gameplay.jpg, metrics.json, review.json per asset.
+
+on:
+  workflow_dispatch:
+    inputs:
+      assets:
+        description: "Manifest asset ids (CSV), e.g. skylineArcticRunnerHero,siegeGolfBall"
+        required: true
+        type: string
+      stage:
+        description: "lookdev.stage.json version tag to record (default: the file's own version)"
+        required: false
+        type: string
+        default: ""
+      group:
+        description: "Optional manifest artDirection group to capture together"
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: asset-lookdev-${{ github.ref }}-${{ inputs.assets }}
+  cancel-in-progress: false
+
+env:
+  A3D_LOOKDEV_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  capture:
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # sharp lives in tools/asset-optimize (Q-15-6: tool-local deps install via npm).
+      - run: npm install --prefix tools/asset-optimize
+      - run: pnpm exec playwright install chromium
+      - name: Look-dev capture (ANGLE Metal, no SwiftShader)
+        run: node apps/asset-lookdev/capture.mjs --assets "${{ inputs.assets }}" --out tests/reports/lookdev
+      - name: Upload look-dev artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-lookdev-${{ inputs.assets }}
+          path: tests/reports/lookdev/**
+          if-no-files-found: warn
