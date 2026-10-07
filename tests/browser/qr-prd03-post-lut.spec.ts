@@ -22,6 +22,11 @@ test.describe("PRD-03 Phase 2 — display LUT bake + cache", () => {
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase2-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+    );
     const all = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase2?: () => Promise<{ lut: Phase2Result["lut"]; rebake: Phase2Result["rebake"] }> }).runQrPrd03Phase2!;
       const { lut, rebake } = await run();

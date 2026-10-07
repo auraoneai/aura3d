@@ -39,6 +39,11 @@ test.describe("PRD-03 Phase 1 — FXAA r185 port vs three FXAAShader", () => {
 
   test("flag-on FXAA matches three r185 within dither tolerance", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/qr-prd03-post-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+    );
     const harness = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Post?: () => Promise<HarnessResult> }).runQrPrd03Post!;
       return (await run()).fxaa;

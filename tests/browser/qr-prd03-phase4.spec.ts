@@ -39,6 +39,11 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase4-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase4?: unknown }).runQrPrd03Phase4 === "function",
+    );
     result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase4?: () => Promise<Phase4Result> }).runQrPrd03Phase4!;
       return run();

@@ -25,6 +25,11 @@ test.describe("PRD-03 Phase 2 — v2 single tone-operator eval", () => {
     server = await startExampleDevServer();
     const page = await browser.newPage();
     await page.goto(`${server.origin}/tests/browser/qr-prd03-phase2-harness.html`);
+    // Deferred module script may still be resolving after `load` — wait for the
+    // harness global before evaluating (was flaky: `run is not a function`).
+    await page.waitForFunction(
+      () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+    );
     const result = await page.evaluate(async () => {
       const run = (window as { runQrPrd03Phase2?: () => Promise<{ tone: ToneResult }> }).runQrPrd03Phase2!;
       return (await run()).tone;
