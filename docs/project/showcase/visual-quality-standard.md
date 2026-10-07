@@ -17,6 +17,10 @@ occluders, empty proof staging, and scene-level change outside HUD-only
 regions. A named human reviewer remains mandatory for art direction, lighting,
 coherence, polish, and public-demo acceptability.
 
+The agent-facing look recipes, hard checklist and look-dev loop that produce
+frames meeting this standard live in
+[`docs/agents/art-direction.md`](../../agents/art-direction.md).
+
 ## Global Acceptance Criteria
 
 - The typed primary asset is readable within 3 seconds at a desktop browser viewport.

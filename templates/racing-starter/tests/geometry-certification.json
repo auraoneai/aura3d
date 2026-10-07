@@ -1,0 +1,34 @@
+{
+  "schema": "aura3d.game-geometry-certification/1",
+  "generatedBy": "aura3d assets certify-game-geometry --category racing --assets carModel,trackModel",
+  "result": {
+    "ok": false,
+    "mode": "screen",
+    "wroteManifest": false,
+    "manifestPath": "/home/ubuntu/repos/aura3d/packages/create-aura3d/templates/racing-starter/aura.assets.json",
+    "rows": [
+      {
+        "assetId": "carModel",
+        "category": "racing",
+        "pass": false,
+        "reasons": [
+          "No mesh primitive in carModel has a road/track/asphalt/kerb material or node name."
+        ],
+        "blockers": [
+          "asset-extraction:racing-road-mesh-not-found:carModel"
+        ]
+      },
+      {
+        "assetId": "trackModel",
+        "category": "racing",
+        "pass": false,
+        "reasons": [
+          "No mesh primitive in trackModel has a road/track/asphalt/kerb material or node name."
+        ],
+        "blockers": [
+          "asset-extraction:racing-road-mesh-not-found:trackModel"
+        ]
+      }
+    ]
+  }
+}

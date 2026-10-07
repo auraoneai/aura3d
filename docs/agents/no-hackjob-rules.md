@@ -42,8 +42,9 @@ or unplayable route:
    presentation code.
 5. Update docs and route evidence after the proof passes.
 
-Do not swap GLBs or repaint primitives to make a route look different while the
-root cause remains unproven.
+Do not swap GLBs, repaint primitives, or relight a route to make it look
+different while the root cause remains unproven. A look preset change without a
+recapture and re-judge is the same hack.
 
 ## Public API Boundary
 

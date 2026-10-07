@@ -5,6 +5,7 @@ import { charts, city, neon, physics, product, resolveFrameAssetRenderScale, sol
 import { gameCameraRigs } from "../GameCameraRigs.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
+import { stubCameraRigFactories } from "../../contracts/camera.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
 
@@ -205,5 +206,13 @@ export const camera = {
   humanoid: (): AuraCameraSpec => camera.perspective({ position: [1.2, 1.12, 3.45], target: [0, 0.78, -0.55], fov: 36 }),
   miniGolf: (): AuraCameraSpec => camera.follow({ targetNode: "white physics golf ball", distance: 4.2, fov: 48 }),
   neon: (): AuraCameraSpec => camera.flythrough({ from: [0, 0.36, 1.6], to: [0, 0.36, -5.8], target: [0, 0.26, -6.8], fov: 54, captureTime: 0.16 }),
+  /**
+   * C-22 rig factories (`chase`, `shoulder`, `topDown`, `fromSpec`, …) —
+   * `AuraCameraRig` values for `app.camera.use(rig)` + `app.camera.setPose`,
+   * as distinct from the `AuraCameraSpec` builders above that mount through
+   * the scene camera slot. Stub factories until PRD 08 lands the real rigs:
+   * each returns a static rig carrying its authored pose.
+   */
+  rigs: stubCameraRigFactories,
   ...gameCameraRigs
 } as const;

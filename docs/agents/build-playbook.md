@@ -145,7 +145,9 @@ Round 1 failure repairs:
   `character.lowPolyHumanoid({ clip: "benchmark-pose", showJoints: false, motionTrail: false })`
   so the authored skinned neutral human, planted-foot phase, clean silhouette,
   path, contact shadow, face cues, stride, and walk-cycle animation are visible.
-- Benchmark prompts: write the smallest complete scene first, run finite
+- Benchmark prompts: write the smallest complete scene first, apply the genre
+  look preset from `docs/agents/art-direction.md`, and run `aura3d look
+  capture` when it is available (the look-dev loop). Otherwise run finite
   commands such as `npm run build`, and exit. Do not run dev servers,
   Playwright, browser screenshot capture, or manual visual verification from
   inside the agent process.
