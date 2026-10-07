@@ -1,9 +1,21 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PRD-10 §7.3/T4.6: `water.surface` deprecated — with A3D_QR_WORLD on it emits
+// a `world.water({ kind: "lake" })` node (preset → Gerstner preset mapping)
+// instead of the opaque band/foam/box-boat fixture; flag off is unchanged.
 
 import type { AuraSceneNode } from "../nodes/types.js";
 import { primitives } from "../nodes/primitives.js";
 import { createWaterSurface, sampleOceanFixture, type WaterSurfaceBoat, type WaterSurfacePreset } from "@aura3d/rendering";
 import { material } from "./material.js";
+import { worldWater, type AuraWaterNode } from "../world/water.js";
+import { worldBuilderSubflagOn } from "../world/flags.js";
+
+/** §10.6 preset → waves mapping; the fixture's "storm" rides on "rough". */
+function gerstnerPresetFor(preset: WaterSurfacePreset | undefined): "calm" | "moderate" | "rough" {
+  if (preset === "calm") return "calm";
+  if (preset === "rough" || preset === "storm") return "rough";
+  return "moderate";
+}
 
 export const water = {
   surface: (options: {
@@ -12,12 +24,25 @@ export const water = {
     readonly boat?: WaterSurfaceBoat;
     readonly withBoatHull?: boolean;
   } = {}): {
-    readonly nodes: readonly AuraSceneNode[];
+    readonly nodes: readonly (AuraSceneNode | AuraWaterNode)[];
     readonly bandCount: number;
     readonly foamCount: number;
     readonly wakeActive: boolean;
     readonly wakeSegmentCount: number;
   } => {
+    if (worldBuilderSubflagOn("A3D_QR_WORLD_WATER")) {
+      console.warn(
+        "water.surface is deprecated (PRD-10 §7.3): emitting a world.water lake node — migrate to world.water() directly"
+      );
+      const node = worldWater({
+        kind: "lake",
+        shape: { kind: "circle", center: [0, -2.4], radius: 6 },
+        waves: gerstnerPresetFor(options.preset),
+        reflection: { low: "ibl", medium: "ibl", high: "planar", ultra: "planar" },
+        refraction: { low: false, medium: true, high: true, ultra: true }
+      }).toJSON();
+      return { nodes: [node], bandCount: 0, foamCount: 0, wakeActive: false, wakeSegmentCount: 0 };
+    }
     const state = createWaterSurface({ preset: options.preset, seed: options.seed, boat: options.boat });
     const nodes: AuraSceneNode[] = [];
     const bandSpan = 4 / state.bands.length;

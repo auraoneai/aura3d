@@ -1,16 +1,23 @@
 // Three-compat migration example: the classic hand-rolled three.js starter
-// (ground plane + a few lit primitives) rebuilt with the public
-// @aura3d/engine API — no manual renderer, scene graph, or render loop.
-import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
+// (ground plane + a lit mesh) rebuilt with the public @aura3d/engine API —
+// typed GLB hero, `outdoor-day` look for light/sky/grade, no manual renderer,
+// scene graph, or render loop.
+import { camera, createAuraApp, interactions, looks, material, model, primitives, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const LOOK_ID = "outdoor-day" as const;
 
 createAuraApp("#app", {
   scene: scene()
-    .background("#101521")
-    .camera(camera.orbit({ target: [0, 0.7, 0], distance: 6 }))
-    .add(primitives.plane({ name: "ground", size: [10, 1, 10], material: material.pbr({ color: "#1b2334", roughness: 0.9 }), receiveShadow: true }))
-    .add(primitives.box({ name: "migrated box mesh", size: 1, position: [-1.6, 0.5, 0], rotation: [0, 0.6, 0], material: material.pbr({ color: "#e2674a", roughness: 0.5 }), castShadow: true }))
-    .add(primitives.sphere({ name: "migrated sphere mesh", size: 1.1, position: [0.2, 0.55, -0.4], material: material.metal({ color: "#bcd0e6", roughness: 0.18 }), castShadow: true }))
-    .add(primitives.torus({ name: "migrated torus mesh", size: 0.9, position: [1.9, 0.75, 0.6], rotation: [0.9, 0, 0.4], material: material.pbr({ color: "#5dbb8d", roughness: 0.4 }), castShadow: true }))
-    .add(lights.ambient({ intensity: 0.3 }))
-    .add(lights.directional({ name: "sun", position: [4, 6, 3], intensity: 1.5 }))
+    .add(looks.preset(LOOK_ID))
+    .add(primitives.plane({ name: "harbour water", size: [26, 1, 26], material: material.pbr({ color: "#28506b", roughness: 0.35, metallic: 0.15 }), receiveShadow: true }))
+    // Pirate ship is 4.8×11×10.6 m (mast up +Y); scale to a 7 m sailboat.
+    .add(model(assets.ship, { name: "migrated ship mesh" }).position(0, 0.12, -0.4).rotate(0, -0.5, 0).scale(0.62))
+    .add(interactions.orbit({ target: "migrated ship mesh" }))
+    .camera(camera.orbit({ target: [0, 2.4, 0], distance: 13, fov: 40 }))
 });
+
+(window as unknown as { __AURA3D_CUSTOM_THREEJS_MIGRATION__?: unknown }).__AURA3D_CUSTOM_THREEJS_MIGRATION__ = {
+  look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+  hero: { assetId: assets.ship.id, url: assets.ship.url, provenance: "Kenney Pirate Kit ship-medium, CC0-1.0" }
+};

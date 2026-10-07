@@ -1,4 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+//
+// PRD-13 T1.11 (§7.4): every visualQA result additionally returns, always and
+// additively, `{ deprecated: true, kind: "structural-name-heuristic" }` — no
+// existing key changes or disappears. The same checks with renamed keys live
+// on the `structuralQA` namespace at the bottom of this file. The
+// `@deprecated` JSDoc on the namespace properties is requested (Q-04-1,
+// Q-15-2) since those properties live in other lanes' files.
 
 import type { AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraChartVisualQAResult, AuraCityStateChangeEvidence, AuraCityVisualQAResult, AuraEffectNode, AuraGroupNode, AuraLabelNode, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraModelNode, AuraNeonVisualQAResult, AuraPrimitiveNode, AuraProductDiagnostics, AuraProductVisualQAResult, AuraSceneNode, AuraSolarVisualQAResult, AuraVec3 } from "../nodes/types.js";
 import { createAssetProvenance } from "../diagnostics.js";
@@ -13,7 +20,22 @@ import { solarMaterialPresetsInNodes } from "../nodes/solar.js";
 import { instances } from "../nodes/instances.js";
 import { material } from "../nodes/material.js";
 
-export function validateMaterialVisualQA(nodes: readonly AuraSceneNode[]): AuraMaterialVisualQAResult {
+/** §7.4 additive marker on every visualQA result. */
+export interface AuraDeprecatedVisualQA {
+  readonly deprecated: true;
+  readonly kind: "structural-name-heuristic";
+}
+
+/** structuralQA result: same checks, renamed keys, no pixel claims. */
+export interface AuraStructuralQAResult {
+  readonly kind: "structural-name-heuristic";
+  readonly ok: boolean;
+  readonly checks: Readonly<Record<string, boolean>>;
+}
+
+type DeprecatedQA<T> = T & AuraDeprecatedVisualQA;
+
+export function validateMaterialVisualQA(nodes: readonly AuraSceneNode[]): DeprecatedQA<AuraMaterialVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const specs = flattened
@@ -73,11 +95,13 @@ export function validateMaterialVisualQA(nodes: readonly AuraSceneNode[]): AuraM
     emissiveGlows,
     clearcoatLayeredHighlight,
     minimumMaterialDistance,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
 
-export function validateNeonVisualQA(nodes: readonly AuraSceneNode[]): AuraNeonVisualQAResult {
+export function validateNeonVisualQA(nodes: readonly AuraSceneNode[]): DeprecatedQA<AuraNeonVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const ringCount = names.filter((name) => name.includes("neon tunnel tube ring") || name.includes("receding neon tunnel top segment")).length;
@@ -103,11 +127,13 @@ export function validateNeonVisualQA(nodes: readonly AuraSceneNode[]): AuraNeonV
     hasReflections,
     hasDepthCues,
     overexposureRisk,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
 
-export function validateChartVisualQA(nodes: readonly AuraSceneNode[]): AuraChartVisualQAResult {
+export function validateChartVisualQA(nodes: readonly AuraSceneNode[]): DeprecatedQA<AuraChartVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const bars = names.filter((name) => name.includes("height-colored data bar")).length;
@@ -121,10 +147,10 @@ export function validateChartVisualQA(nodes: readonly AuraSceneNode[]): AuraChar
   const orphanPlanes = names.filter((name) => name.includes("orphan") || name.includes("cobweb") || name.includes("stray"));
   if (orphanPlanes.length > 0) problems.push(`stray geometry markers found: ${orphanPlanes.join(", ")}`);
   const score = Math.max(1, 5 - problems.length);
-  return { passes: problems.length === 0, score, bars, labels: labelsCount, legends, selectedOutlines, problems };
+  return { passes: problems.length === 0, score, bars, labels: labelsCount, legends, selectedOutlines, problems, deprecated: true, kind: "structural-name-heuristic" };
 }
 
-export function validatePrimitiveHumanoidVisualQA(nodes: readonly AuraSceneNode[]): AuraCharacterVisualQAResult {
+export function validatePrimitiveHumanoidVisualQA(nodes: readonly AuraSceneNode[]): DeprecatedQA<AuraCharacterVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const authoredHumanoid = flattened.find((node): node is AuraModelNode =>
     node.kind === "model" && (node.asset.id === builtInCharacterAssets.humanoid.id || String(node.name ?? "").toLowerCase().includes("authored skinned humanoid"))
@@ -163,7 +189,9 @@ export function validatePrimitiveHumanoidVisualQA(nodes: readonly AuraSceneNode[
       impossibleProportions: false,
       score,
       gaps: [],
-      problems
+      problems,
+      deprecated: true,
+      kind: "structural-name-heuristic"
     };
   }
   const primitiveByName = (name: string): AuraPrimitiveNode | undefined =>
@@ -232,11 +260,13 @@ export function validatePrimitiveHumanoidVisualQA(nodes: readonly AuraSceneNode[
     impossibleProportions,
     score,
     gaps,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
 
-export function validateCityVisualQA(nodes: readonly AuraSceneNode[], options: { readonly changed?: AuraCityStateChangeEvidence } = {}): AuraCityVisualQAResult {
+export function validateCityVisualQA(nodes: readonly AuraSceneNode[], options: { readonly changed?: AuraCityStateChangeEvidence } = {}): DeprecatedQA<AuraCityVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const buildings = flattened.reduce((total, node) => {
@@ -281,11 +311,13 @@ export function validateCityVisualQA(nodes: readonly AuraSceneNode[], options: {
     facadeDetails,
     dayNightChanged,
     instancing,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
 
-export function validateProductVisualQA(nodes: readonly AuraSceneNode[], diagnostics?: AuraProductDiagnostics): AuraProductVisualQAResult {
+export function validateProductVisualQA(nodes: readonly AuraSceneNode[], diagnostics?: AuraProductDiagnostics): DeprecatedQA<AuraProductVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const modelNodes = flattened.filter((node): node is AuraModelNode => node.kind === "model");
@@ -333,11 +365,13 @@ export function validateProductVisualQA(nodes: readonly AuraSceneNode[], diagnos
     cleanHeroMode,
     centeredAndSeated,
     typedAssetProvenance,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
 
-export function validateSolarVisualQA(nodes: readonly AuraSceneNode[]): AuraSolarVisualQAResult {
+export function validateSolarVisualQA(nodes: readonly AuraSceneNode[]): DeprecatedQA<AuraSolarVisualQAResult> {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
   const planets = names.filter((name) => name.includes("material labeled orbiting planet")).length;
@@ -384,6 +418,139 @@ export function validateSolarVisualQA(nodes: readonly AuraSceneNode[]): AuraSola
     hasSunCorona,
     hasBloom,
     deterministicCapturePhase,
-    problems
+    problems,
+    deprecated: true,
+    kind: "structural-name-heuristic"
   };
 }
+
+// ---------------------------------------------------------------------------
+// §7.4 — `structuralQA`: the same checks, renamed keys, no pixel claims.
+// `visualQA` names claim pixels (e.g. `chromeReflectsEnvironment`); the
+// structural names say exactly what is measured (`...NodesNamed`, `...Count`
+// thresholds). Each converter mirrors the validator's thresholds; keep them
+// in sync when a validator changes.
+// ---------------------------------------------------------------------------
+
+export const structuralQA = {
+  material(nodes: readonly AuraSceneNode[]): AuraStructuralQAResult {
+    const qa = validateMaterialVisualQA(nodes);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        fiveMaterialClassesNamed: qa.classes.length >= 5,
+        fivePlinthNodesNamed: qa.plinths >= 5,
+        fiveLabelNodesNamed: qa.labels >= 5,
+        fiveReflectionCardNodesNamed: qa.reflectionCards >= 5,
+        chromeReflectionNodesNamed: qa.chromeReflectsEnvironment,
+        glassTransparencyNodesNamed: qa.glassTransparent,
+        rubberNonReflectiveNodeNamed: qa.rubberNonReflective,
+        emissiveGlowNodesNamed: qa.emissiveGlows,
+        clearcoatLayeredHighlightNodesNamed: qa.clearcoatLayeredHighlight,
+        materialClassesFeatureDistance: qa.minimumMaterialDistance >= 0.28
+      }
+    };
+  },
+
+  neon(nodes: readonly AuraSceneNode[]): AuraStructuralQAResult {
+    const qa = validateNeonVisualQA(nodes);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        tunnelDepthElementsNamed: qa.ringCount >= 24,
+        fogDepthCuePresent: qa.hasFog,
+        bloomPassPresent: qa.hasBloom,
+        reflectiveFloorNodesNamed: qa.hasReflections,
+        vanishingDepthNodesNamed: qa.hasDepthCues,
+        bloomWhiteoutRisk: qa.overexposureRisk
+      }
+    };
+  },
+
+  charts(nodes: readonly AuraSceneNode[]): AuraStructuralQAResult {
+    const qa = validateChartVisualQA(nodes);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        dataBarsNamed: qa.bars >= 36,
+        axisLabelsNamed: qa.labels >= 12,
+        legendSwatchesNamed: qa.legends >= 3,
+        selectionOutlinesNamed: qa.selectedOutlines > 0
+      }
+    };
+  },
+
+  character(nodes: readonly AuraSceneNode[]): AuraStructuralQAResult {
+    const qa = validatePrimitiveHumanoidVisualQA(nodes);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.connected && !qa.impossibleProportions && qa.problems.length === 0,
+      checks: {
+        humanoidStructureConnected: qa.connected,
+        proportionsPlausible: !qa.impossibleProportions,
+        noGapViolations: qa.gaps.length === 0
+      }
+    };
+  },
+
+  city(nodes: readonly AuraSceneNode[], options: { readonly changed?: AuraCityStateChangeEvidence } = {}): AuraStructuralQAResult {
+    const qa = validateCityVisualQA(nodes, options);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        cityBuildingsNamed: qa.buildings >= 18,
+        modularWindowsNamed: qa.windows >= 40,
+        streetsNamed: qa.streets >= 8,
+        crosswalkStripesNamed: qa.crosswalks >= 16,
+        streetLightingNamed: qa.lights >= 10,
+        cityPropsNamed: qa.props >= 10,
+        facadeDetailNamed: qa.facadeDetails >= 45,
+        instancedPrimitivesPresent: qa.instancing.instanced,
+        dayNightStateEvidence: qa.dayNightChanged
+      }
+    };
+  },
+
+  product(nodes: readonly AuraSceneNode[], diagnostics?: AuraProductDiagnostics): AuraStructuralQAResult {
+    const qa = validateProductVisualQA(nodes, diagnostics);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        singleTypedModelPresent: qa.modelCount === 1,
+        photographySoftboxesNamed: qa.softboxes >= 5,
+        reflectionCardsNamed: qa.reflectionCards >= 2,
+        contactShadowNamed: qa.contactShadows >= 1,
+        materialReadabilityCuesNamed: qa.materialReadabilityCues >= 3,
+        freeOfInspectionGuides: qa.inspectionGuides === 0,
+        cleanHeroModeReported: qa.cleanHeroMode,
+        centeredAndSeatedReported: qa.centeredAndSeated,
+        typedProvenanceReported: qa.typedAssetProvenance
+      }
+    };
+  },
+
+  solar(nodes: readonly AuraSceneNode[]): AuraStructuralQAResult {
+    const qa = validateSolarVisualQA(nodes);
+    return {
+      kind: "structural-name-heuristic",
+      ok: qa.passes,
+      checks: {
+        sixPlanetsNamed: qa.planets >= 6,
+        planetMaterialPresetsNamed: qa.materialPresets.length >= 6,
+        orbitSegmentsNamed: qa.orbitSegments >= 72,
+        orbitLabelsNamed: qa.labels >= 12,
+        labelLeaderLinesNamed: qa.leaderLines >= 6,
+        starfieldNamed: qa.stars >= 24,
+        dustLayerNamed: qa.dust >= 6,
+        sunCoronaShaderNamed: qa.hasSunCorona,
+        bloomPassPresent: qa.hasBloom,
+        deterministicOrbitCapture: qa.deterministicCapturePhase
+      }
+    };
+  }
+} as const;

@@ -1,0 +1,145 @@
+{
+  "root": "apps/showcase-deep-recovery",
+  "files": 15,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 53,
+      "construct": "lights.point({ intensity: 8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 101 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 58,
+      "construct": "lights.spot({ intensity: 8 })",
+      "mapping": "approximate",
+      "target": "lights.spot({ power: 25 })",
+      "note": "physical units: cd=lm/π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 128,
+      "construct": "lights.point({ intensity: 1.55 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 19 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 128,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 133,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 138,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 143,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 148,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 153,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 158,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 282,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 838,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 840,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 842,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 844,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 947,
+      "construct": "lights.point({ intensity: 10.5 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 132 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 947,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 948,
+      "construct": "lights.point({ intensity: 7.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 90 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/environment.ts",
+      "line": 948,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

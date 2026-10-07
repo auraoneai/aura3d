@@ -318,6 +318,9 @@
       ],
       "@aura3d/engine": [
         "packages/engine/src/public/index.ts"
+      ],
+      "@aura3d/rendering/world": [
+        "packages/rendering/src/world/index.ts"
       ]
     }
   }

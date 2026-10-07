@@ -1,18 +1,22 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
-import { resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { resolveCameraClipping } from "../RootRuntimeSupport.js";
+import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
+import { authoredPostContextFor, recordSubmittedPostprocess } from "../postBridge.js";
 
 export function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
   lights: readonly CollectedLight[] = [],
   renderWidth = 1280,
   renderHeight = 720,
-  temporalSupported = true
+  temporalSupported = true,
+  attach?: { readonly canvas?: HTMLCanvasElement }
 ): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
@@ -66,19 +70,50 @@ export function createProductionRuntimePostprocess(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "depth-of-field"
   );
   const authoredMotionBlur = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "motion-blur");
-  const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa");
+  // PRD-03 Phase 1 (flag A3D_QR_POST): the authored anti-alias mode resolves
+  // through the C-27 tier row — "auto" (or a missing mode) resolves via
+  // `resolvePostAntiAlias`, which never returns FXAA on a multisampled
+  // forward target. Flag-off keeps the legacy "mode ?? fxaa" semantics and
+  // the resolution stays null.
+  const authoredPostContext = authoredPostContextFor(attach?.canvas);
+  const postFlagOn = authoredPostContext?.flags.post === true;
+  const resolvedTier = authoredPostContext?.qualityTier && authoredPostContext.qualityTier !== "auto" ? authoredPostContext.qualityTier : "high";
+  // `postAuthored` carries the authored/default split: a node whose list lacks
+  // `mode` counts as `auto` (the factory's `mode ?? "fxaa"` fill is a default,
+  // not an authored choice). Nodes serialized without `postAuthored` resolve
+  // from `mode` directly.
+  const authoredAaMode: AuraAntiAliasMode = authoredAntiAlias
+    ? authoredAntiAlias.postAuthored !== undefined
+      ? authoredAntiAlias.postAuthored.includes("mode")
+        ? ((authoredAntiAlias.mode ?? "auto") as AuraAntiAliasMode)
+        : "auto"
+      : ((authoredAntiAlias.mode ?? "auto") as AuraAntiAliasMode)
+    : "auto";
+  const resolvedAa = postFlagOn && authoredAntiAlias
+    ? resolvePostAntiAlias({
+      settings: QUALITY_TIERS[resolvedTier],
+      tier: resolvedTier,
+      authored: authoredAaMode,
+      renderPixels: Math.max(1, Math.round(renderWidth)) * Math.max(1, Math.round(renderHeight)),
+      // Compile-time facts: a static frame qualifies (moving 0/0). When the
+      // route's geometry cannot support temporal inputs, mark one mover
+      // without history so TAA resolves to its coverage fallback.
+      velocity: { moving: temporalSupported ? 0 : 1, movingWithHistory: 0 }
+    })
+    : null;
+  const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa");
   let sceneKey = productionTemporalSceneKeys.get(snapshot);
   if (!sceneKey) { sceneKey = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, sceneKey); }
-  const fxaaRequested = (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
+  const fxaaRequested = resolvedAa ? resolvedAa.mode === "fxaa" : (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
   const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
-  return {
+  const options: RendererPostProcessOptions = {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
     targetFormat: "rgba16f",
     ...(temporalRequested ? {
       temporal: { sceneKey },
       ...(authoredMotionBlur ? { motionBlur: { samples: 8, scale: clampNumber(authoredMotionBlur.intensity ?? .5, 0, 2) } } : {}),
-      ...(authoredAntiAlias?.mode === "taa" ? { taa: { blend: .9 } } : {})
+      ...(authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa" ? { taa: { blend: .9 } } : {})
     } : {}),
     ...(bloomRequested ? {
       bloom: {
@@ -108,13 +143,24 @@ export function createProductionRuntimePostprocess(
         bias: 0.025
       }
     } : {}),
-    toneMapping: {
-      exposure: 1,
-      whitePoint: 1,
-      operator: "aces",
-      inputColorSpace: "linear",
-      outputColorSpace: "srgb"
-    },
+    // PRD-03 §6.4 (flag-on): exposure is a linear multiplier,
+    // `output.exposure × colorGrade.exposure` (autoEv lands with C-13 auto-exposure).
+    // The operator comes from C-38 `options.output`; "none" disables the pass.
+    toneMapping: postFlagOn && authoredPostContext?.output?.toneMapping === "none"
+      ? false
+      : {
+        exposure: postFlagOn
+          ? (authoredPostContext?.output?.exposure ?? 1) * (typeof authoredColorGrade?.exposure === "number" ? authoredColorGrade.exposure : 1)
+          : 1,
+        whitePoint: 1,
+        operator: postFlagOn
+          ? (authoredPostContext?.output?.toneMapping && authoredPostContext.output.toneMapping !== "none"
+            ? authoredPostContext.output.toneMapping
+            : "aces")
+          : "aces",
+        inputColorSpace: "linear",
+        outputColorSpace: "srgb"
+      },
     ...(authoredColorGrade ? {
       colorGrade: {
         contrast: clampNumber(authoredColorGrade.contrast ?? 1, 0, 3),
@@ -134,7 +180,13 @@ export function createProductionRuntimePostprocess(
         opacity: clampNumber(authoredOutline.intensity ?? 0.9, 0, 1)
       }
     } : {}),
-    ...(fxaaRequested && authoredAntiAlias ? { fxaa: {} } : {}),
+    // Flag-on: the resolved mode carries the forward-target sample count and
+    // the FXAA pass presents through the dedicated r185 split + dither; a
+    // `smaa` resolution submits no pass — SMAA is not implemented on the
+    // legacy chain (Phase 3); the honest no-AA frame is reported via the
+    // resolution reason in the submitted record.
+    ...(resolvedAa ? { sampleCount: resolvedAa.sampleCount } : {}),
+    ...(fxaaRequested && authoredAntiAlias ? { fxaa: resolvedAa ? { variant: "r185" as const } : {} } : {}),
     ...(authoredSsr ? {
       ssr: {
         intensity: clampNumber(authoredSsr.intensity ?? 0.9, 0, 2),
@@ -148,8 +200,47 @@ export function createProductionRuntimePostprocess(
         maxRadius: Math.max(0, Math.min(8, Math.round(authoredDof.maxBlur ?? 4)))
       }
     } : {}),
-    ...(volumetricPass ? { volumetricLight: volumetricPass } : {})
+    ...(volumetricPass ? { volumetricLight: volumetricPass } : {}),
+    // PRD-03 §6.11 / CCR-03-1 (flag-on): forward the real camera clipping so
+    // depth-gated passes linearize against the authored range instead of the
+    // 0.1/1000 placeholder.
+    ...(postFlagOn ? {
+      depthRange: {
+        ...resolveCameraClipping({ near: snapshot.camera?.near, far: snapshot.camera?.far }),
+        projection: (snapshot.camera?.mode === "orthographic" || snapshot.camera?.mode === "isometric" ? "orthographic" : "perspective") as "perspective" | "orthographic"
+      }
+    } : {})
   };
+  // C-31 feed (lane 03): the post/exposure diagnostics sections report what was
+  // actually submitted — including the pinned `toneMapping.exposure: 1` while
+  // authored grade exposure stays diagnostic-only until Phase 1 wiring.
+  recordSubmittedPostprocess(options, {
+    canvas: attach?.canvas,
+    renderWidth,
+    renderHeight,
+    temporalRequested,
+    authored: {
+      bloom: bloomRequested,
+      ambientOcclusion: Boolean(authoredAmbientOcclusion),
+      contactOcclusion: Boolean(authoredContactOcclusion),
+      colorGrade: Boolean(authoredColorGrade),
+      antiAlias: Boolean(authoredAntiAlias),
+      outline: Boolean(authoredOutline),
+      ssr: Boolean(authoredSsr),
+      depthOfField: Boolean(authoredDof),
+      motionBlur: Boolean(authoredMotionBlur),
+      volumetricFog: Boolean(authoredVolumetricFog),
+      colorGradeExposure: typeof authoredColorGrade?.exposure === "number" ? authoredColorGrade.exposure : null,
+      antiAliasMode: authoredAntiAlias?.mode ?? null,
+      resolvedAntiAlias: resolvedAa
+        ? { mode: resolvedAa.mode, sampleCount: resolvedAa.sampleCount, ...(resolvedAa.reason ? { reason: resolvedAa.reason } : {}) }
+        : null,
+      depthRange: options.depthRange
+        ? { near: options.depthRange.near, far: options.depthRange.far, projection: options.depthRange.projection ?? "perspective" }
+        : null
+    }
+  });
+  return options;
 }
 
 const productionTemporalSceneKeys = new WeakMap<AuraSceneSnapshot, string>();

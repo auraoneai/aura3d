@@ -20,6 +20,7 @@
  * `a3d_prd04_bsdf_lobes_common` (A3DPrd04Lobes).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_SHEEN_WGSL from "../physical-wgsl/sheen.wgsl.js";
 
 const glsl = /* glsl */ `
 // Factor resolution (r185 lights_physical_fragment.glsl.js:111-129).
@@ -124,6 +125,7 @@ export const A3D_PRD04_SHEEN: ShaderChunk = {
 	name: "a3d_prd04_sheen",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_SHEEN_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };

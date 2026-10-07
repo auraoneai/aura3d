@@ -7,7 +7,7 @@ import {
   game,
   installShotPlayback,
   labels,
-  lights,
+  looks,
   material,
   model,
   primitives,
@@ -118,9 +118,12 @@ document.body.dataset.animationShotCount = String(episode.shotTimeline.shots.len
 document.body.dataset.animationCaptionCount = String(episode.captionTrack.cues.length);
 document.body.dataset.animationStoryBibleProps = String(storyBible.props.length);
 
+const LOOK_ID = "character-showcase" as const;
+
 const app = createAuraApp("#app", {
   scene: scene()
-    .background("#081b2a")
+    .background(looks.describe(LOOK_ID).v0.background)
+    .add(looks.preset(LOOK_ID))
     .add(createCharacterBody("miko", "Miko", "miko", [-0.8, 0.75, 0], [0.32, 0.42, 0.32], 0.72, "#7de2ff"))
     .add(createMouthCard("miko:mouth", "Miko", [-0.8, 0.8, 0.32], "#f8fff2"))
     .add(createCharacterBody("luma", "Luma", "luma", [0.8, 0.72, 0], [0.3, 0.38, 0.3], 0.68, "#ffe18e"))
@@ -144,7 +147,6 @@ const app = createAuraApp("#app", {
         .scale([0.12, 0.24, 0.04])
     )
     .add(labels.hud(firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D animation channel"))
-    .add(lights.studio({ intensity: 1.2 }))
     .add(effects.bloom({ intensity: 0.18, color: "#7de2ff" }))
     .camera(camera.perspective({ position: [0, 1.4, 4.2], target: [0, 0.7, 0], fov: 42 })),
   diagnostics: true

@@ -1,6 +1,13 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+//
+// PRD-13 T1.9: each recipe takes an optional `look`. Passing one selects the
+// flag-on bodies below: the look group supplies environment/key/rim/post, so
+// the recipe carries no `lights.ambient`, no primitive HUD geometry, no node
+// whose name matches a fake-effect stem (`fakeEffectNames.ts`), and grounds on
+// a textured material preset. Omitting `look` returns the legacy body
+// byte-identical (the flag-off path; §12 "flag-off census equals today's").
 
-import type { AuraAssetRef, AuraInteractionNode, AuraPromptInteractionMode, AuraPromptPlan } from "../../nodes/types.js";
+import type { AuraAssetRef, AuraGroupNode, AuraInteractionNode, AuraPromptInteractionMode, AuraPromptPlan, AuraSceneNode } from "../../nodes/types.js";
 import { prefabs } from "../prefabs/index.js";
 import { AuraNodeBuilder } from "../builder.js";
 import { interactions } from "../interactions.js";
@@ -13,10 +20,100 @@ import { timeline } from "../timeline.js";
 import { camera } from "../camera.js";
 import { lights } from "../lights.js";
 import { material } from "../material.js";
-// APPLIED BY LANE 15 (T6.11 no-cycles): verbatim move from promptPlan.ts — importing it back created the prompt SCC.
+import type { AuraLookId, AuraLookNode } from "../../../contracts/looks.js";
+import { looks } from "../../looks/looks.js";
 
+// APPLIED BY LANE 15 (T6.11 no-cycles): verbatim move from promptPlan.ts —
+// importing it back created the prompt SCC.
+export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
+  if (mode === "keyboard") return interactions.keyboard({ target });
+  if (mode === "pointer") return interactions.pointer({ target });
+  return interactions.orbit({ target });
+}
 
-export const promptRecipes = {
+/** The look's nodes as one authored group (records `aura-look:<id>` so
+ *  `looks.resolveDefault`/`authoredLookIds` and the C-36 handler see it). */
+function lookNode(id: AuraLookId): AuraSceneNode {
+  const built = looks.preset(id);
+  return (built instanceof AuraNodeBuilder ? built.toJSON() : built as AuraLookNode) as AuraSceneNode;
+}
+
+const productViewerLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look: AuraLookId): AuraSceneBuilder =>
+  scene()
+    .background(looks.describe(look).v0.background)
+    .add(lookNode(look))
+    .add(primitives.plane({ name: "woven product studio floor", material: material.fabric({ color: "#e4e8ee", roughness: 0.82 }) }).position(0, -0.02, -0.5).scale([4.4, 1, 3.1]))
+    .add(primitives.cylinder({ name: "low ceramic product plinth", material: material.ceramic({ color: "#f4f7fa" }) }).position(0, 0.16, -0.5).scale([1.14, 0.16, 1.14]))
+    .add(model(asset, { name: plan.subject.label ?? "product subject" })
+      .position(0, 0.34, -0.5)
+      .rotate(0, -0.38, 0)
+      .scale(0.9)
+      .animate({ clip: "turntable", speed: 0.42, duration: 8, captureTime: 0.32 }))
+    .add(interactionNode(plan.interaction ?? "orbit"))
+    .camera(camera.orbit({ distance: 3.1, target: [0, 0.52, -0.5], fov: 36 }))
+    .timeline(timeline.loop({ seconds: 8 }));
+
+const cinematicSceneLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look: AuraLookId): AuraSceneBuilder =>
+  scene()
+    .background(looks.describe(look).v0.background)
+    .add(lookNode(look))
+    .add(primitives.plane({ name: "rainy alley back wall", material: material.fabric({ color: "#101722", roughness: 0.9 }) }).position(0, 1.06, -2.55).rotate(1.5708, 0, 0).scale([6.25, 1, 3.1]))
+    .add(primitives.plane({ name: "textured asphalt ground", material: material.blackRubber({ color: "#0c1119", roughness: 0.62 }) }).position(0, -0.07, -0.55).scale([7.0, 1, 5.9]))
+    .add(primitives.box({ name: "left alley slab", material: material.matteClay({ color: "#121a26" }) }).position(-2.9, 0.9, -0.95).rotate(0, 0.18, 0).scale([0.42, 2.25, 3.25]))
+    .add(primitives.box({ name: "right alley slab", material: material.matteClay({ color: "#101723" }) }).position(2.95, 0.92, -1.05).rotate(0, -0.16, 0).scale([0.42, 2.35, 3.15]))
+    .add(primitives.box({ name: "foreground left occluder frame", material: material.matteClay({ color: "#070b12" }) }).position(-3.35, 0.72, 1.0).rotate(0, -0.18, 0).scale([0.5, 1.72, 1.65]))
+    .add(primitives.box({ name: "foreground right occluder frame", material: material.matteClay({ color: "#070b12" }) }).position(3.28, 0.7, 0.96).rotate(0, 0.18, 0).scale([0.5, 1.72, 1.65]))
+    .add(primitives.box({ name: "rear door depth plane", material: material.pbr({ color: "#07111c", roughness: 0.35, metallic: 0.18 }) }).position(0.02, 0.6, -2.38).scale([1.14, 1.18, 0.08]))
+    .add(primitives.box({ name: "cyan neon sign", material: material.glowingEmissive({ color: "#32ddff", emissiveIntensity: 2.6 }) }).position(-2.22, 1.35, -1.55).rotate(0.05, 0, -0.24).scale([0.055, 1.48, 0.12]))
+    .add(primitives.box({ name: "short cyan practical fixture", material: material.glowingEmissive({ color: "#63eaff", emissiveIntensity: 2.2 }) }).position(-1.82, 0.74, -1.85).rotate(0.05, 0, 0.12).scale([0.045, 0.76, 0.12]))
+    .add(primitives.sphere({ name: "warm street practical lamp", material: material.glowingEmissive({ color: "#ffbd68", emissiveIntensity: 2.4 }) }).position(1.86, 0.78, -1.28).scale(0.34))
+    .add(model(asset, { name: plan.subject.label ?? "cinematic subject" }).position(-0.08, 0.02, -0.86).rotate(-0.08, -0.74, 0.02).scale(1.48))
+    .add(interactionNode(plan.interaction ?? "orbit"))
+    .camera(camera.dolly({ from: [0.46, 1.05, 4.28], to: [0.08, 0.86, 3.14], target: [-0.08, 0.56, -0.86], seconds: 8, fov: 39 }))
+    .timeline(timeline.loop({ seconds: 8 }));
+
+const miniGameLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look: AuraLookId): AuraSceneBuilder =>
+  scene()
+    .background(looks.describe(look).v0.background)
+    .add(lookNode(look))
+    .add(primitives.plane({ name: "woven arena floor", material: material.fabric({ color: "#16222e", roughness: 0.74 }) }).position(0, -0.08, -0.35).scale([5.8, 1, 4.05]))
+    .add(primitives.box({ name: "north arena rail", material: material.brushedMetal({ color: "#22333f" }) }).position(0, 0.18, -2.18).scale([5.85, 0.32, 0.14]))
+    .add(primitives.box({ name: "south arena rail", material: material.brushedMetal({ color: "#1c2e3a" }) }).position(0, 0.18, 1.52).scale([5.85, 0.32, 0.14]))
+    .add(primitives.box({ name: "left arena rail", material: material.brushedMetal({ color: "#1c2e3a" }) }).position(-2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
+    .add(primitives.box({ name: "right arena rail", material: material.brushedMetal({ color: "#22333f" }) }).position(2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
+    .add(primitives.box({ name: "start lane marking", material: material.glowingEmissive({ color: "#55e7ff", emissiveIntensity: 1.6 }) }).position(-1.98, 0.03, 0.62).scale([0.94, 0.045, 0.15]))
+    .add(primitives.box({ name: "center lane marking", material: material.glowingEmissive({ color: "#2c91ad", emissiveIntensity: 1.2 }) }).position(0.1, 0.025, 0.3).rotate(0, -0.28, 0).scale([1.75, 0.035, 0.08]))
+    .add(model(asset, { name: plan.subject.label ?? "player" }).position(-1.42, 0.02, 0.54).rotate(0, 0.72, 0).scale(0.74))
+    .add(primitives.box({ name: "orange boost pack pickup", material: material.glowingEmissive({ color: "#ff8a4c", emissiveIntensity: 2.0 }) }).position(-1.08, 0.42, 0.48).rotate(0, 0.52, 0).scale([0.28, 0.08, 0.12]))
+    .add(primitives.box({ name: "route arrow shaft", material: material.glowingEmissive({ color: "#7dfcff", emissiveIntensity: 1.8 }) }).position(-0.86, 0.08, 0.18).rotate(0, -0.42, 0).scale([0.86, 0.04, 0.08]))
+    .add(primitives.box({ name: "route arrow head", material: material.glowingEmissive({ color: "#7dfcff", emissiveIntensity: 1.8 }) }).position(-0.42, 0.1, -0.04).rotate(0, -0.42, 0.78).scale([0.28, 0.045, 0.08]))
+    .add(primitives.box({ name: "danger floor plate", material: material.glowingEmissive({ color: "#ff0b2e", emissiveIntensity: 1.4 }) }).position(-0.18, 0.055, -0.58).rotate(0, 0.08, 0).scale([0.92, 0.04, 0.2]))
+    .add(primitives.box({ name: "rolling red hazard block", material: material.glowingEmissive({ color: "#ff0b2e", emissiveIntensity: 1.8 }) }).position(-0.18, 0.34, -0.18).rotate(0, 0.56, 0).scale([0.86, 0.58, 0.38]))
+    .add(primitives.sphere({ name: "hazard warning beacon", material: material.glowingEmissive({ color: "#ff2a42", emissiveIntensity: 2.4 }) }).position(-0.18, 0.84, -0.18).scale(0.22))
+    .add(primitives.sphere({ name: "coin pickup 1", material: material.glowingEmissive({ color: "#ffd84a", emissiveIntensity: 3.2 }) }).position(-0.42, 0.48, 0.8).scale(0.34))
+    .add(primitives.sphere({ name: "coin pickup 2", material: material.glowingEmissive({ color: "#ffd84a", emissiveIntensity: 3.2 }) }).position(0.48, 0.48, 0.18).scale(0.34))
+    .add(primitives.sphere({ name: "coin pickup 3", material: material.glowingEmissive({ color: "#ffd84a", emissiveIntensity: 3.2 }) }).position(1.26, 0.48, -0.62).scale(0.34))
+    .add(primitives.box({ name: "goal portal left", material: material.glowingEmissive({ color: "#ff8a4c", emissiveIntensity: 2.2 }) }).position(1.72, 0.48, -1.22).scale([0.14, 0.92, 0.18]))
+    .add(primitives.box({ name: "goal portal right", material: material.glowingEmissive({ color: "#ff8a4c", emissiveIntensity: 2.2 }) }).position(2.12, 0.48, -1.22).scale([0.14, 0.92, 0.18]))
+    .add(primitives.box({ name: "goal portal top", material: material.glowingEmissive({ color: "#ffbd68", emissiveIntensity: 2.2 }) }).position(1.92, 0.94, -1.22).scale([0.52, 0.12, 0.18]))
+    .add(interactionNode(plan.interaction ?? "keyboard", "player"))
+    .camera(camera.perspective({ position: [0, 3.22, 4.38], target: [0, 0.26, -0.42], fov: 39 }))
+    .timeline(timeline.loop({ seconds: 6 }));
+
+const materialStudioLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look: AuraLookId): AuraSceneBuilder =>
+  scene()
+    .background(looks.describe(look).v0.background)
+    .add(lookNode(look))
+    .add(primitives.plane({ name: "woven material studio floor", material: material.fabric({ color: "#20262e", roughness: 0.7 }) }).position(0, -0.08, -0.5).scale([6.0, 1, 3.6]))
+    .add(model(asset, { name: plan.subject.label ?? "material reference" }).position(-1.25, 0.02, -0.72).rotate(-0.08, -0.42, 0).scale(0.92))
+    .add(primitives.sphere({ name: "matte swatch", material: material.fabric({ color: "#c7d2e2", roughness: 0.95 }) }).position(0.3, 0.5, -0.85).scale(0.44))
+    .add(primitives.sphere({ name: "metal swatch", material: material.brushedMetal({ color: "#dde8f2" }) }).position(1.08, 0.5, -0.85).scale(0.44))
+    .add(primitives.sphere({ name: "emissive swatch", material: material.glowingEmissive({ color: "#ff4bd8", emissiveIntensity: 2.6 }) }).position(1.86, 0.5, -0.85).scale(0.44))
+    .add(interactionNode(plan.interaction ?? "orbit"))
+    .camera(camera.orbit({ distance: 3.6, target: [0.25, 0.45, -0.75], fov: 43 }))
+    .timeline(timeline.loop({ seconds: 8 }));
+
+const legacyRecipes = {
 	  "product-viewer": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
 	    scene()
 	      .background("#070b10")
@@ -121,8 +218,23 @@ export const promptRecipes = {
       .timeline(timeline.loop({ seconds: 8 }))
 } as const;
 
-export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
-  if (mode === "keyboard") return interactions.keyboard({ target });
-  if (mode === "pointer") return interactions.pointer({ target });
-  return interactions.orbit({ target });
-}
+/**
+ * PRD-13 T1.9 recipe surface (§7.3). `look === undefined` selects the legacy
+ * body (the flag-off path — `compilePromptPlan` calls it that way). A look id
+ * selects the rewritten body: no `lights.ambient`, no primitive HUD, no
+ * fake-effect names, textured ground, and the `aura-look:<id>` group carries
+ * environment/key/rim/post.
+ */
+export const promptRecipes = {
+  "product-viewer": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look?: AuraLookId): AuraSceneBuilder =>
+    look === undefined ? legacyRecipes["product-viewer"](asset, plan) : productViewerLookRecipe(asset, plan, look),
+
+  "cinematic-scene": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look?: AuraLookId): AuraSceneBuilder =>
+    look === undefined ? legacyRecipes["cinematic-scene"](asset, plan) : cinematicSceneLookRecipe(asset, plan, look),
+
+  "mini-game": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look?: AuraLookId): AuraSceneBuilder =>
+    look === undefined ? legacyRecipes["mini-game"](asset, plan) : miniGameLookRecipe(asset, plan, look),
+
+  "material-studio": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan, look?: AuraLookId): AuraSceneBuilder =>
+    look === undefined ? legacyRecipes["material-studio"](asset, plan) : materialStudioLookRecipe(asset, plan, look)
+} as const;

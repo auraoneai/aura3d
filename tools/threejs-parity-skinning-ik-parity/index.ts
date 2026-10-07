@@ -79,7 +79,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 const ASSET = {
@@ -530,7 +529,7 @@ function computeDiff(a, b) {
     if (delta > 20) changedPixels += 1;
   }
   const meanDelta = total / (a.width * a.height);
-  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
+  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels };
 }
 
 async function drawSideBySide(canvas, a3dDataUrl, threeDataUrl, diff) {
@@ -547,7 +546,7 @@ async function drawSideBySide(canvas, a3dDataUrl, threeDataUrl, diff) {
   context.fillText("Three.js loaded bone IK reference", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta}, similarity proxy ${diff.structuralSimilarityProxy}`, 18, ASSET.height + 48);
+  context.fillText(`mean delta ${diff.meanDelta}`, 18, ASSET.height + 48);
   return canvas.toDataURL("image/png");
 }
 

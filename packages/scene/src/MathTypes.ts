@@ -67,6 +67,58 @@ export function quatFromEuler(x: number, y: number, z: number): Quat {
   );
 }
 
+/**
+ * QR (lane 08): rotates `up` around the unit look direction `forward` by
+ * `roll` radians (Rodrigues' formula), giving the camera up vector for
+ * rolled/banked views. `forward` must be normalized; `up` is re-orthogonalized
+ * against it first so a roll of 0 returns a clean up.
+ */
+export function rollUpVector(forward: Readonly<Vec3>, up: Readonly<Vec3>, roll: number): Vec3 {
+  const k = toMathVec3(forward).normalize();
+  const u = toMathVec3(up);
+  const orth = u.subtract(k.clone().multiplyScalar(u.dot(k)));
+  if (orth.lengthSquared() <= EPSILON || roll === 0) {
+    return orth.lengthSquared() <= EPSILON ? [0, 1, 0] : orth.normalize().toArray();
+  }
+  const v = orth.normalize();
+  const cos = Math.cos(roll);
+  const sin = Math.sin(roll);
+  const crossed = k.clone().cross(v);
+  const term = k.clone().multiplyScalar(k.dot(v) * (1 - cos));
+  return new Vector3(
+    v.x * cos + crossed.x * sin + term.x,
+    v.y * cos + crossed.y * sin + term.y,
+    v.z * cos + crossed.z * sin + term.z
+  ).toArray();
+}
+
+/** QR (lane 08): XYZ-intrinsic Euler → Quat tuple. */
+export function quatFromEulerXYZ(x: number, y: number, z: number): Quat {
+  return fromMathQuat(Quaternion.fromEuler(x, y, z, "XYZ").normalize());
+}
+
+/** QR (lane 08): Quat tuple → XYZ-intrinsic Euler (three.js convention). */
+export function eulerXYZFromQuat(value: Readonly<Quat>): Vec3 {
+  const [x, y, z, w] = normalizeQuat(value);
+  const m13 = 2 * (x * z + y * w);
+  const pitch = Math.asin(Math.max(-1, Math.min(1, m13)));
+  const m11 = 1 - 2 * (y * y + z * z);
+  const m12 = 2 * (x * y - z * w);
+  const m23 = 2 * (x * z - x * w);
+  const m33 = 1 - 2 * (x * x + y * y);
+  if (Math.abs(m13) >= 0.9999999) {
+    const m32 = 2 * (y * z + x * w);
+    const m22 = 2 * (x * x + z * z);
+    return [Math.atan2(m32, m22), pitch, 0];
+  }
+  return [Math.atan2(-m23, m33), pitch, Math.atan2(-m12, m11)];
+}
+
+/** QR (lane 08): normalized slerp between Quat tuples. */
+export function slerpQuat(a: Readonly<Quat>, b: Readonly<Quat>, t: number): Quat {
+  return fromMathQuat(toMathQuat(a).normalize().slerp(toMathQuat(b).normalize(), t));
+}
+
 export function multiplyMat4(a: Readonly<Mat4>, b: Readonly<Mat4>): Mat4 {
   return fromMathMat4(toMathMat4(a).multiply(toMathMat4(b)));
 }

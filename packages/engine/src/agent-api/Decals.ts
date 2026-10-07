@@ -156,6 +156,13 @@ const DEFAULT_POLYGON_OFFSET: AuraDecalPolygonOffset = { factor: -2, units: -2 }
 const DEFAULT_NORMAL_OFFSET = 0.012;
 const DEFAULT_OPACITY = 0.85;
 
+// PRD-07 P6-T1 — every decal primitive is runtime-tagged `prd07.legacyDecal.<n>`
+// (the §6.5 carve pattern): when A3D_QR_VFX_DECALS is on, ProductionEffectSystem
+// hides the tagged primitives and routes the decal through DecalBatch instead.
+// Flag-off: the tag is inert metadata and the primitive draws exactly as today.
+let legacyDecalCounter = 0;
+const legacyDecalTag = () => ({ id: `prd07.legacyDecal.${legacyDecalCounter++}`, tags: ["prd07.legacyDecal"] });
+
 let maxObservedDecals = 0;
 
 function isFiniteVec3(value: readonly number[], label: string): asserts value is AuraVec3 {
@@ -278,7 +285,7 @@ export function projectDecal(options: AuraDecalProjectOptions): AuraNodeBuilder<
       normal,
       ...(textureUrl ? { textureUrl } : {}),
     },
-  });
+  }).runtime(legacyDecalTag());
   return builder;
 }
 
@@ -310,15 +317,19 @@ export function projectDecalOntoMesh(options: AuraDecalProjectOntoMeshOptions): 
   const vertexCount = projected.geometry.vertexBuffer.vertexCount;
   const positions: AuraVec3[] = [];
   const normals: AuraVec3[] = [];
+  const uvs: (readonly [number, number])[] = [];
   for (let index = 0; index < vertexCount; index += 1) {
     const position = projected.geometry.vertexBuffer.getAttribute(index, "position");
     const normal = projected.geometry.vertexBuffer.getAttribute(index, "normal");
+    const uv = projected.geometry.vertexBuffer.getAttribute(index, "uv");
     positions.push([position[0]!, position[1]!, position[2]!]);
     normals.push([normal[0]!, normal[1]!, normal[2]!]);
+    uvs.push([uv[0] ?? 0, uv[1] ?? 0]);
   }
   const geometry = defineAuraCustomGeometry({
     positions,
     normals,
+    uvs,
     indices: projected.geometry.indexBuffer ? Array.from(projected.geometry.indexBuffer.data) : [],
   });
   const textureUrl = options.texture?.url;
@@ -331,7 +342,7 @@ export function projectDecalOntoMesh(options: AuraDecalProjectOntoMeshOptions): 
     castShadow: false,
     receiveShadow: false,
     decal: {
-      size: [size[0], size[1]],
+      size: [size[0], size[1]] as [number, number],
       baseOpacity,
       fade,
       polygonOffset,
@@ -339,7 +350,7 @@ export function projectDecalOntoMesh(options: AuraDecalProjectOntoMeshOptions): 
       normal: [...projected.hit.normal] as AuraVec3,
       ...(textureUrl ? { textureUrl } : {}),
     },
-  });
+  }).runtime(legacyDecalTag());
 }
 
 /** Box-projected variant for callers that already solved placement (no raycast). */
@@ -361,15 +372,19 @@ export function projectDecalIntoBox(
   const vertexCount = projected.geometry.vertexBuffer.vertexCount;
   const positions: AuraVec3[] = [];
   const normals: AuraVec3[] = [];
+  const uvs: (readonly [number, number])[] = [];
   for (let index = 0; index < vertexCount; index += 1) {
     const position = projected.geometry.vertexBuffer.getAttribute(index, "position");
     const normal = projected.geometry.vertexBuffer.getAttribute(index, "normal");
+    const uv = projected.geometry.vertexBuffer.getAttribute(index, "uv");
     positions.push([position[0]!, position[1]!, position[2]!]);
     normals.push([normal[0]!, normal[1]!, normal[2]!]);
+    uvs.push([uv[0] ?? 0, uv[1] ?? 0]);
   }
   const geometry = defineAuraCustomGeometry({
     positions,
     normals,
+    uvs,
     indices: projected.geometry.indexBuffer ? Array.from(projected.geometry.indexBuffer.data) : [],
   });
   const textureUrl = options.texture?.url;
@@ -382,15 +397,15 @@ export function projectDecalIntoBox(
     castShadow: false,
     receiveShadow: false,
     decal: {
-      size: [box.size[0], box.size[1]],
+      size: [box.size[0], box.size[1]] as [number, number],
       baseOpacity,
       fade,
       polygonOffset,
       normalOffset: box.normalOffset ?? normalOffset,
-      normal: box.basis ? [...box.basis.normal] as AuraVec3 : [0, 0, 1],
+      normal: (box.basis ? [...box.basis.normal] : [0, 0, 1]) as AuraVec3,
       ...(textureUrl ? { textureUrl } : {}),
     },
-  });
+  }).runtime(legacyDecalTag());
 }
 
 function smoothstep(edge0: number, edge1: number, value: number): number {

@@ -9,6 +9,14 @@ The installed official Meshy CLI is the command authority. Do not reproduce
 its API or trust remembered flags. Paid-generation controls are shared in
 [boundaries](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+Decide the look before writing the generation prompt — the recipe row's palette
+and material mood belong in the Meshy text ("matte ceramic", "sun-faded
+plastic") so the returned PBR set lands inside the frame's lighting instead of
+fighting it. Judge the result under the scene's look preset, not in a neutral
+viewer.
+
 ## Establish the contract
 
 1. Run `meshy --version` and require the repository pin `0.2.0`.

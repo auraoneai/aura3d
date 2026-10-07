@@ -4,7 +4,6 @@ import { arch, cpus, platform, release, totalmem, type } from "node:os";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import { build } from "esbuild";
-import type { Page } from "@playwright/test";
 import babylonLargeScene from "../../benchmarks/babylon/src/scenes/large-scene.js";
 import babylonProductConfigurator from "../../benchmarks/babylon/src/scenes/product-configurator.js";
 import babylonSkinnedCharacters from "../../benchmarks/babylon/src/scenes/skinned-characters.js";
@@ -182,41 +181,6 @@ type BenchmarkMeasurement = {
   };
 };
 
-type BenchmarkVisualRender = {
-  readonly engine: Engine;
-  readonly sceneId: string;
-  readonly screenshotPath: string;
-  readonly metrics: {
-    readonly width: number;
-    readonly height: number;
-    readonly nonBlankPixels: number;
-    readonly colorBuckets: number;
-    readonly drawCalls: number;
-    readonly objectCount: number;
-  };
-};
-
-type ScreenshotDiffResult = {
-  readonly sceneId: string;
-  readonly baselineEngine: "aura3d";
-  readonly comparedEngine: "threejs" | "babylon";
-  readonly baselinePath: string;
-  readonly comparedPath: string;
-  readonly diffPath: string;
-  readonly width: number;
-  readonly height: number;
-  readonly comparedPixels: number;
-  readonly changedPixels: number;
-  readonly changedPixelRatio: number;
-  readonly meanAbsoluteError: number;
-  readonly maxChannelDelta: number;
-  readonly pass: boolean;
-  readonly thresholds: {
-    readonly maxChangedPixelRatio: number;
-    readonly maxMeanAbsoluteError: number;
-  };
-};
-
 type BenchmarkBundle = {
   readonly engine: Engine;
   readonly sceneId: string;
@@ -227,8 +191,6 @@ type BenchmarkBundle = {
 type BenchmarkMeasurementEvidence = {
   readonly measurements: readonly BenchmarkMeasurement[];
   readonly bundles: readonly BenchmarkBundle[];
-  readonly visualRenders: readonly BenchmarkVisualRender[];
-  readonly screenshotDiffs: readonly ScreenshotDiffResult[];
   readonly failureLog: readonly string[];
 };
 
@@ -489,11 +451,6 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
   const rootPackage = readJson("package.json") as PackageJson;
   const threePackage = readJson("benchmarks/threejs/package.json") as PackageJson;
   const babylonPackage = readJson("benchmarks/babylon/package.json") as PackageJson;
-  const productVisualParity = isExternalParityRun ? productVisualParityEvidence() : { status: "not-applicable-to-foundation" };
-  const productVisualParityReady = isRecord(productVisualParity) && productVisualParity.aura3dThreeBabylon === true;
-  const gltfLoaderVisualParity = isExternalParityRun ? gltfLoaderVisualParityEvidence() : { status: "not-applicable-to-foundation" };
-  const gltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.aura3dThreeBabylon === true;
-  const fullGltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.fullCorpusThreeBabylon === true;
   const featureRuntimeCoverage = featureRuntimeCoverageMatrix();
 
   return {
@@ -579,11 +536,6 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
         status: "included-inline",
         location: "scenes[].estimates.*.failureLog",
       },
-      screenshotDiffs: {
-        status: "not-captured",
-        reason: "Run with --write-reports to compare Aura3D benchmark canvas screenshots against Three.js and Babylon.js captures.",
-        paths: [] as string[],
-      },
     },
     comparedEngines: {
       aura3d: rootPackage.version ?? "unknown",
@@ -594,8 +546,6 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
     gltfCompatibility: gltfCompatibilitySummary(),
     featureComparison: featureComparisonMatrix(),
     featureRuntimeCoverage,
-    productVisualParity,
-    gltfLoaderVisualParity,
     comparisonOutcomes: {
       status: "not-measured",
       reason: "Run with --write-reports to attach browser measurements and compute loss/tie/win outcomes.",
@@ -611,10 +561,8 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
     },
     unsupportedByThisReport: [
       "GPU memory counters",
-      ...(productVisualParityReady ? [] : ["rendered product screenshot diffs"]),
-      ...(productVisualParityReady ? ["Unity/Unreal product-render visual parity"] : ["external engine product-render visual parity beyond the benchmark canvas screenshots"]),
-      ...(gltfLoaderVisualParityReady ? [] : ["visual pixel parity for external Three.js/Babylon.js glTF loader output"]),
-      ...(fullGltfLoaderVisualParityReady ? [] : ["full-corpus and extension visual pixel parity for external Three.js/Babylon.js glTF loader output"]),
+      "external engine product-render visual parity (SSIM-proxy diffs were withdrawn in the quality rebuild; measured by tools/quality-gate on real scene captures)",
+      "visual pixel parity for external Three.js/Babylon.js glTF loader output (withdrawn; quality-gate re-measures)",
       isExternalParityRun
         ? "full external-engine controls/materials/lights/shadows/postprocess runtime scoring with Unity/Unreal remains blocked"
         : "controls/materials/lights/shadows/postprocess runtime feature scoring",
@@ -669,121 +617,6 @@ function sourceInputPaths(): string[] {
   ];
 }
 
-function productVisualParityEvidence(): Record<string, unknown> {
-  const reportPath = "tests/reports/external-parity-product-visual-parity.json";
-  if (!existsSync(resolve(reportPath))) {
-    return {
-      status: "missing",
-      reportPath,
-      aura3dThreeBabylon: false,
-      blockers: ["Run `pnpm audit:external-parity-product-visual-parity` before writing External parity engine-comparison reports."],
-    };
-  }
-  const report = readJson(reportPath);
-  if (!isRecord(report)) {
-    return {
-      status: "invalid",
-      reportPath,
-      aura3dThreeBabylon: false,
-      blockers: ["External parity product visual parity report is not a JSON object."],
-    };
-  }
-  const rendered = isRecord(report.renderedProductVisualParity) ? report.renderedProductVisualParity : {};
-  const diffs = Array.isArray(report.diffs) ? report.diffs.filter(isRecord) : [];
-  const threejs = report.ok === true && rendered.threejs === true && diffs.some((diff) => diff.comparedEngine === "threejs" && diff.pass === true);
-  const babylon = report.ok === true && rendered.babylon === true && diffs.some((diff) => diff.comparedEngine === "babylon" && diff.pass === true);
-  return {
-    status: threejs && babylon ? "bounded-product-visual-diffs-pass" : "blocked",
-    reportPath,
-    aura3dThreeBabylon: threejs && babylon,
-    threejs,
-    babylon,
-    unity: rendered.unity === true,
-    unreal: rendered.unreal === true,
-    sceneDescriptor: report.sceneDescriptor,
-    diffSummary: diffs.map((diff) => ({
-      comparedEngine: diff.comparedEngine,
-      pass: diff.pass,
-      changedPixelRatio: diff.changedPixelRatio,
-      meanAbsoluteError: diff.meanAbsoluteError,
-      diffPath: diff.diffPath,
-    })),
-    blockers: [
-      ...(threejs ? [] : ["Three.js product visual diff is missing or failing."]),
-      ...(babylon ? [] : ["Babylon.js product visual diff is missing or failing."]),
-      ...(rendered.unity === true ? [] : ["Unity product visual baseline is missing."]),
-      ...(rendered.unreal === true ? [] : ["Unreal product visual baseline is missing."]),
-    ],
-  };
-}
-
-function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
-  const reportPath = "tests/reports/external-parity-gltf-loader-visual-parity.json";
-  if (!existsSync(resolve(reportPath))) {
-    return {
-      status: "missing",
-      reportPath,
-      aura3dThreeBabylon: false,
-      blockers: ["Run `pnpm audit:external-parity-gltf-loader-visual-parity` before writing External parity engine-comparison reports."],
-    };
-  }
-  const report = readJson(reportPath);
-  if (!isRecord(report)) {
-    return {
-      status: "invalid",
-      reportPath,
-      aura3dThreeBabylon: false,
-      blockers: ["External parity glTF loader visual parity report is not a JSON object."],
-    };
-  }
-  const bounded = isRecord(report.boundedGltfLoaderVisualParity) ? report.boundedGltfLoaderVisualParity : {};
-  const externalCorpus = isRecord(report.externalCorpus) ? report.externalCorpus : {};
-  const diffs = Array.isArray(report.diffs) ? report.diffs.filter(isRecord) : [];
-  const renders = Array.isArray(report.renders) ? report.renders.filter(isRecord) : [];
-  const violations = Array.isArray(report.violations) ? report.violations.filter((violation): violation is string => typeof violation === "string") : [];
-  const threejs = report.ok === true && bounded.threejs === true && diffs.some((diff) => diff.comparedEngine === "threejs" && diff.pass === true);
-  const babylon = report.ok === true && bounded.babylon === true && diffs.some((diff) => diff.comparedEngine === "babylon" && diff.pass === true);
-  const fullCorpusThreeBabylon = report.fullGltfLoaderVisualParity === true && externalCorpus.fullGltfLoaderVisualParity === true;
-  return {
-    status: threejs && babylon ? "bounded-same-source-gltf-loader-visual-diffs-pass" : "blocked",
-    reportPath,
-    aura3dThreeBabylon: threejs && babylon,
-    fullCorpusThreeBabylon,
-    threejs,
-    babylon,
-    externalCorpus: {
-      sourceAssetCount: Number(externalCorpus.sourceAssetCount ?? 0),
-      visualAssetCount: Number(externalCorpus.visualAssetCount ?? 0),
-      visualParityAssetCount: Number(externalCorpus.visualParityAssetCount ?? 0),
-      visuallyValidatedWarningCount: Number(externalCorpus.visuallyValidatedWarningCount ?? 0),
-      fullGltfLoaderVisualParity: externalCorpus.fullGltfLoaderVisualParity === true,
-    },
-    assets: Array.isArray(report.assets) ? report.assets : [],
-    visualQualityWarnings: Array.isArray(report.visualQualityWarnings) ? report.visualQualityWarnings : [],
-    renderSummary: renders.map((render) => ({
-      assetId: render.assetId,
-      engine: render.engine,
-      screenshotPath: render.screenshotPath,
-      metrics: render.metrics,
-    })),
-    diffSummary: diffs.map((diff) => ({
-      assetId: diff.assetId,
-      comparedEngine: diff.comparedEngine,
-      pass: diff.pass,
-      changedPixelRatio: diff.changedPixelRatio,
-      meanAbsoluteError: diff.meanAbsoluteError,
-      diffPath: diff.diffPath,
-    })),
-    blockers: [
-      ...(threejs ? [] : ["Three.js same-source glTF loader visual diff is missing or failing."]),
-      ...(babylon ? [] : ["Babylon.js same-source glTF loader visual diff is missing or failing."]),
-      ...(fullCorpusThreeBabylon ? [] : [
-        `Full external glTF loader visual parity is not complete (${Number(externalCorpus.visualParityAssetCount ?? 0)}/${Number(externalCorpus.sourceAssetCount ?? 0)} external visual assets pass strict Three.js/Babylon diffs; ${Number(externalCorpus.visualAssetCount ?? 0)}/${Number(externalCorpus.sourceAssetCount ?? 0)} render).`,
-        ...violations,
-      ]),
-    ],
-  };
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -933,22 +766,8 @@ function withBenchmarkMeasurements(report: Record<string, unknown>, evidence: Be
         reason: "Screenshots capture the WebGL2 microbenchmark canvas for each equivalent scene workload; they are not external engine product-render parity screenshots.",
         paths: evidence.measurements.map((measurement) => measurement.screenshotPath).filter((path) => path !== ""),
       },
-      screenshotDiffs: {
-        status: evidence.screenshotDiffs.length > 0 ? "computed-rendered-benchmark-scene-diffs" : "not-computed",
-        reason:
-          "Diff PNGs and metrics compare Aura3D's descriptor-driven rendered benchmark visual captures against the Three.js and Babylon.js rendered benchmark visual captures for each equivalent scene. They are generated benchmark-scene visual evidence, not external Unity/Unreal product-render parity.",
-        paths: evidence.screenshotDiffs.map((diff) => diff.diffPath),
-      },
-      renderedBenchmarkVisuals: {
-        status: evidence.visualRenders.length > 0 ? "captured-descriptor-driven-rendered-benchmark-scenes" : "not-captured",
-        reason:
-          "Screenshots capture descriptor-driven real rendered browser scenes for Aura3D, Three.js, and Babylon.js using the shared benchmark scene metadata.",
-        paths: evidence.visualRenders.map((render) => render.screenshotPath),
-      },
     },
     benchmarkMeasurementFailureLog: evidence.failureLog,
-    benchmarkVisualRenders: evidence.visualRenders,
-    screenshotDiffs: evidence.screenshotDiffs,
     scenes: scenesWithMeasurements,
   };
   return {
@@ -989,7 +808,6 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
         shaderCount: compareMetric(numeric(aura3d?.shaderCount), numeric(other?.shaderCount)),
         textureBytes: compareMetric(numeric(aura3d?.textureBytes), numeric(other?.textureBytes)),
         geometryBytesEstimate: compareMetric(numeric(aura3d?.geometryBytesEstimate), numeric(other?.geometryBytesEstimate)),
-        screenshotDiff: screenshotDiffFor(report, scene.id, competitor),
         unsupportedFeatures: Array.from(new Set([
           ...unsupportedFromEstimate(aura3d),
           ...unsupportedFromEstimate(other),
@@ -1121,18 +939,10 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
     const packageProvenance = readOptionalReport("tests/reports/package-provenance.json");
     const comparison = isRecord(byCompetitor[competitor]) ? byCompetitor[competitor] : {};
     const scenes = Array.isArray((comparison as Record<string, unknown>).scenes) ? (comparison as { scenes: readonly Record<string, unknown>[] }).scenes : [];
-    const screenshotDiffs = Array.isArray(report.screenshotDiffs) ? report.screenshotDiffs.filter(isRecord) : [];
-    const screenshotDiffArtifacts = isRecord(report.artifacts) && isRecord(report.artifacts.screenshotDiffs) ? report.artifacts.screenshotDiffs : {};
-    const screenshotDiffsAreBroadClaimEvidence =
-      typeof screenshotDiffArtifacts.reason === "string" &&
-      !screenshotDiffArtifacts.reason.includes("not product-render visual parity") &&
-      !screenshotDiffArtifacts.reason.includes("timing artifact");
-    const screenshotDiffBlockers = screenshotDiffsAreBroadClaimEvidence
-      ? ["rendered benchmark visual diffs must pass for every compared scene"]
-      : [
-          "benchmark screenshot diffs must pass for every compared scene using real rendered scene captures",
-          "current comparison screenshots are WebGL2 microbenchmark timing canvases and are not product-render visual parity evidence"
-        ];
+    const screenshotDiffBlockers = [
+      "benchmark screenshot diffs must pass for every compared scene using real rendered scene captures",
+      "descriptor-driven box-grid visual renders and their diff thresholds were removed in the quality rebuild (fabricated visuals); pixel diffs are produced by tools/quality-gate on real scene captures"
+    ];
     const productParity = isRecord(product?.renderedProductVisualParity) ? product.renderedProductVisualParity : {};
     const boundedGltfParity = isRecord(gltf?.boundedGltfLoaderVisualParity) ? gltf.boundedGltfLoaderVisualParity : {};
     const pbrGltfBlockers = [
@@ -1161,8 +971,7 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
       dimension(
         "benchmark-screenshot-diffs",
         "Same-scene benchmark screenshot diffs",
-        screenshotDiffsAreBroadClaimEvidence &&
-          screenshotDiffs.filter((diff) => diff.comparedEngine === competitor && diff.pass === true).length === comparedSceneIds.length,
+        false,
         ["tests/reports/external-parity-engine-comparison.json", "tests/reports/comparison-screenshots"],
         screenshotDiffBlockers
       ),
@@ -1247,16 +1056,6 @@ function dimension(
     evidencePaths,
     blockers: passed ? [] : blockers,
   };
-}
-
-function screenshotDiffFor(report: Record<string, unknown>, sceneId: string, competitor: "threejs" | "babylon"): ScreenshotDiffResult | undefined {
-  const diffs = report.screenshotDiffs;
-  if (!Array.isArray(diffs)) return undefined;
-  return diffs.find((diff): diff is ScreenshotDiffResult => {
-    if (typeof diff !== "object" || diff === null) return false;
-    const entry = diff as Partial<ScreenshotDiffResult>;
-    return entry.sceneId === sceneId && entry.comparedEngine === competitor;
-  });
 }
 
 function lowerIsBetter(value: unknown): number | undefined {
@@ -1403,19 +1202,12 @@ async function captureBenchmarkMeasurements(): Promise<BenchmarkMeasurementEvide
       }
     }
 
-    const visualBundles = await buildBenchmarkVisualBundles();
-    const page = await context.newPage();
-    const visualRenders = await captureBenchmarkVisualRenders(page, activeScenes, visualBundles, failureLog);
-    const screenshotDiffs = await createScreenshotDiffs(page, visualRenders, failureLog);
-    await page.close().catch(() => undefined);
-    await context.close();
-    await browser.close();
-    return { measurements, bundles, visualRenders, screenshotDiffs, failureLog };
+    return { measurements, bundles, failureLog };
   } catch (error) {
     failureLog.push(error instanceof Error ? error.stack ?? error.message : String(error));
   }
 
-  return { measurements, bundles, visualRenders: [], screenshotDiffs: [], failureLog };
+  return { measurements, bundles, failureLog };
 }
 
 function interleavedMeasurementScenes(activeScenes: readonly BenchmarkScene[]): BenchmarkScene[] {
@@ -1487,91 +1279,6 @@ function browserWarmupScene(base: BenchmarkScene): BenchmarkScene {
   };
 }
 
-async function createScreenshotDiffs(
-  page: BenchmarkBrowserPage,
-  visualRenders: readonly BenchmarkVisualRender[],
-  failureLog: string[]
-): Promise<ScreenshotDiffResult[]> {
-  const byKey = new Map(visualRenders.map((render) => [`${render.engine}:${render.sceneId}`, render]));
-  const diffs: ScreenshotDiffResult[] = [];
-  mkdirSync(resolve("tests/reports/comparison-diffs"), { recursive: true });
-
-  for (const sceneId of comparedSceneIds) {
-    const baseline = byKey.get(`aura3d:${sceneId}`);
-    if (!baseline) {
-      failureLog.push(`screenshot-diff/${sceneId}: missing Aura3D baseline screenshot`);
-      continue;
-    }
-    for (const competitor of ["threejs", "babylon"] as const) {
-      const compared = byKey.get(`${competitor}:${sceneId}`);
-      if (!compared) {
-        failureLog.push(`screenshot-diff/${competitor}/${sceneId}: missing compared screenshot`);
-        continue;
-      }
-      const diffPath = `tests/reports/comparison-diffs/${competitor}-${sceneId}.png`;
-      try {
-        const result = await createScreenshotDiff(page, baseline.screenshotPath, compared.screenshotPath, diffPath);
-        diffs.push({
-          sceneId,
-          baselineEngine: "aura3d",
-          comparedEngine: competitor,
-          baselinePath: baseline.screenshotPath,
-          comparedPath: compared.screenshotPath,
-          diffPath,
-          ...result,
-        });
-      } catch (error) {
-        failureLog.push(`screenshot-diff/${competitor}/${sceneId}: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
-  }
-
-  return diffs;
-}
-
-async function createScreenshotDiff(
-  page: BenchmarkBrowserPage,
-  baselinePath: string,
-  comparedPath: string,
-  diffPath: string
-): Promise<Omit<ScreenshotDiffResult, "sceneId" | "baselineEngine" | "comparedEngine" | "baselinePath" | "comparedPath" | "diffPath">> {
-  const baselineUrl = pngDataUrl(baselinePath);
-  const comparedUrl = pngDataUrl(comparedPath);
-  const result = await page.evaluate<{
-    readonly width: number;
-    readonly height: number;
-    readonly comparedPixels: number;
-    readonly changedPixels: number;
-    readonly changedPixelRatio: number;
-    readonly meanAbsoluteError: number;
-    readonly maxChannelDelta: number;
-    readonly pass: boolean;
-    readonly thresholds: {
-      readonly maxChangedPixelRatio: number;
-      readonly maxMeanAbsoluteError: number;
-    };
-    readonly diffDataUrl: string;
-  }>(`(${browserScreenshotDiffScript})(${JSON.stringify({ baselineUrl, comparedUrl })})`);
-
-  writePngDataUrl(diffPath, result.diffDataUrl);
-  const { diffDataUrl: _diffDataUrl, ...metrics } = result;
-  return metrics;
-}
-
-function pngDataUrl(path: string): string {
-  return `data:image/png;base64,${readFileSync(resolve(path)).toString("base64")}`;
-}
-
-function writePngDataUrl(path: string, dataUrl: string): void {
-  const base64 = dataUrl.split(",", 2)[1];
-  if (!base64) {
-    throw new Error("Invalid PNG data URL for screenshot diff.");
-  }
-  const resolvedPath = resolve(path);
-  mkdirSync(dirname(resolvedPath), { recursive: true });
-  writeFileSync(resolvedPath, Buffer.from(base64, "base64"));
-}
-
 async function buildBenchmarkBundles(): Promise<BenchmarkBundle[]> {
   const outputDir = resolve("tests/reports/comparison-bundles");
   mkdirSync(outputDir, { recursive: true });
@@ -1621,283 +1328,6 @@ async function buildBenchmarkBundles(): Promise<BenchmarkBundle[]> {
   }
 
   return bundles;
-}
-
-async function buildBenchmarkVisualBundles(): Promise<ReadonlyMap<Engine, string>> {
-  const entries: Record<Engine, string> = {
-    aura3d: aura3dBenchmarkVisualBundleSource(),
-    threejs: threeBenchmarkVisualBundleSource(),
-    babylon: babylonBenchmarkVisualBundleSource(),
-  };
-  const bundles = new Map<Engine, string>();
-  for (const [engine, contents] of Object.entries(entries) as [Engine, string][]) {
-    const result = await build({
-      stdin: {
-        contents,
-        resolveDir: process.cwd(),
-        sourcefile: `${engine}-benchmark-visual-renderer.ts`,
-        loader: "ts",
-      },
-      bundle: true,
-      platform: "browser",
-      format: "iife",
-      globalName: `A3D_${engine}_benchmark_visual_renderer`,
-      target: "es2022",
-      write: false,
-      minify: true,
-      sourcemap: false,
-      logLevel: "silent",
-    });
-    const output = result.outputFiles[0]?.text;
-    if (!output) throw new Error(`Unable to build ${engine} benchmark visual renderer.`);
-    bundles.set(engine, output);
-  }
-  return bundles;
-}
-
-async function captureBenchmarkVisualRenders(
-  page: Page,
-  activeScenes: readonly BenchmarkScene[],
-  bundles: ReadonlyMap<Engine, string>,
-  failureLog: string[]
-): Promise<BenchmarkVisualRender[]> {
-  const renders: BenchmarkVisualRender[] = [];
-  mkdirSync(resolve("tests/reports/comparison-rendered-screenshots"), { recursive: true });
-  for (const scene of activeScenes) {
-    const bundle = bundles.get(scene.engine);
-    if (!bundle) {
-      failureLog.push(`rendered-visual/${scene.engine}/${scene.id}: missing renderer bundle`);
-      continue;
-    }
-    const screenshotPath = `tests/reports/comparison-rendered-screenshots/${scene.engine}-${scene.id}.png`;
-    try {
-      await page.setContent("<!doctype html><html><body style=\"margin:0;background:#05070b\"></body></html>", { waitUntil: "load" });
-      await page.addScriptTag({ content: bundle });
-      const result = await page.evaluate<{ readonly dataUrl: string; readonly metrics: BenchmarkVisualRender["metrics"] }, BenchmarkScene>(async (benchmarkScene: BenchmarkScene) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = benchmarkScene.resolution.width;
-        canvas.height = benchmarkScene.resolution.height;
-        canvas.style.width = `${benchmarkScene.resolution.width}px`;
-        canvas.style.height = `${benchmarkScene.resolution.height}px`;
-        document.body.replaceChildren(canvas);
-        const bundleName = `A3D_${benchmarkScene.engine}_benchmark_visual_renderer`;
-        const render = (window as unknown as Record<string, { renderBenchmarkVisualScene?: (canvas: HTMLCanvasElement, scene: BenchmarkScene) => Promise<BenchmarkVisualRender["metrics"]> }>)[bundleName]?.renderBenchmarkVisualScene;
-        if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderBenchmarkVisualScene`);
-        const metrics = await render(canvas, benchmarkScene);
-        return { dataUrl: canvas.toDataURL("image/png"), metrics };
-      }, scene);
-      writePngDataUrl(screenshotPath, result.dataUrl);
-      renders.push({
-        engine: scene.engine,
-        sceneId: scene.id,
-        screenshotPath,
-        metrics: result.metrics,
-      });
-    } catch (error) {
-      failureLog.push(`rendered-visual/${scene.engine}/${scene.id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  return renders;
-}
-
-function benchmarkVisualSharedHelpers(): string {
-  return String.raw`
-    function nextFrame() {
-      return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-    }
-    function pixelStats(canvas) {
-      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-      if (!gl) return { nonBlankPixels: 0, colorBuckets: 0 };
-      const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-      const buckets = new Set();
-      let nonBlankPixels = 0;
-      for (let index = 0; index < pixels.length; index += 4) {
-        const r = pixels[index] || 0;
-        const g = pixels[index + 1] || 0;
-        const b = pixels[index + 2] || 0;
-        if (r > 8 || g > 8 || b > 8) {
-          nonBlankPixels += 1;
-          buckets.add(String(r >> 5) + ":" + String(g >> 5) + ":" + String(b >> 5));
-        }
-      }
-      return { nonBlankPixels, colorBuckets: buckets.size };
-    }
-    function sceneHash(scene) {
-      let hash = 2166136261;
-      const text = scene.id + ":" + scene.assetId + ":" + scene.cameraPath + ":" + scene.lighting;
-      for (let index = 0; index < text.length; index += 1) {
-        hash ^= text.charCodeAt(index);
-        hash = Math.imul(hash, 16777619);
-      }
-      return hash >>> 0;
-    }
-    function objectSpecs(scene) {
-      const hash = sceneHash(scene);
-      const drawCalls = Math.max(6, Math.min(Number(scene.workload?.drawCalls || 12), 72));
-      const columns = Math.ceil(Math.sqrt(drawCalls));
-      const rows = Math.ceil(drawCalls / columns);
-      const specs = [];
-      for (let index = 0; index < drawCalls; index += 1) {
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        const nx = columns <= 1 ? 0 : (column / (columns - 1)) * 2 - 1;
-        const ny = rows <= 1 ? 0 : 1 - (row / (rows - 1)) * 2;
-        const jitter = (((hash >>> (index % 16)) & 7) - 3) * 0.007;
-        const radius = scene.quality?.instancing ? 0.035 : scene.quality?.particles ? 0.025 : 0.052;
-        const sx = radius * (scene.quality?.skinning ? 0.75 : scene.quality?.pbr ? 1.2 : 1);
-        const sy = radius * (scene.quality?.skinning ? 1.85 : scene.id.includes("large") ? 1.55 : 1);
-        const hue = ((hash % 360) + index * 29) % 360;
-        specs.push({
-          index,
-          x: nx * 0.82 + jitter,
-          y: ny * 0.62 - 0.05,
-          z: (index % 9) * -0.012,
-          sx,
-          sy,
-          sz: radius,
-          shape: scene.quality?.particles && index % 3 === 0 ? "sphere" : scene.id.includes("postprocess") && index % 4 === 0 ? "sphere" : scene.id.includes("large") ? "cube" : index % 5 === 0 ? "cylinder" : "cube",
-          color: colorFromHue(hue, scene),
-        });
-      }
-      return specs;
-    }
-    function colorFromHue(hue, scene) {
-      const c = 0.62;
-      const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
-      const m = scene.quality?.pbr ? 0.18 : 0.28;
-      const sector = Math.floor(hue / 60) % 6;
-      const rgb = sector === 0 ? [c, x, 0] : sector === 1 ? [x, c, 0] : sector === 2 ? [0, c, x] : sector === 3 ? [0, x, c] : sector === 4 ? [x, 0, c] : [c, 0, x];
-      if (scene.postprocessState?.enabled) return [Math.min(1, rgb[0] + 0.28), Math.min(1, rgb[1] + 0.22), Math.min(1, rgb[2] + 0.32), 1];
-      return [rgb[0] + m, rgb[1] + m, rgb[2] + m, 1];
-    }
-    function modelMatrix(spec) {
-      return new Float32Array([
-        spec.sx, 0, 0, 0,
-        0, spec.sy, 0, 0,
-        0, 0, spec.sz, 0,
-        spec.x, spec.y, spec.z, 1,
-      ]);
-    }
-  `;
-}
-
-function aura3dBenchmarkVisualBundleSource(): string {
-  return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
-    ${benchmarkVisualSharedHelpers()}
-    export async function renderBenchmarkVisualScene(canvas, scene) {
-      const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.015, 0.02, 0.03, 1], antialias: scene.quality.antialias, preserveDrawingBuffer: true });
-      const geometries = new Map([
-        ["cube", Geometry.litCube(1)],
-        ["sphere", Geometry.uvSphere(0.5, 16, 8)],
-        ["cylinder", Geometry.cylinder({ radius: 0.5, height: 1, segments: 18 })],
-      ]);
-      const specs = objectSpecs(scene);
-      const items = specs.map((spec) => ({
-        geometry: geometries.get(spec.shape) || geometries.get("cube"),
-        material: scene.quality.pbr
-          ? new PBRMaterial({ name: "benchmark-visual-" + scene.id + "-" + spec.index, baseColor: spec.color, metallic: scene.materialFeatures?.includes("metallic") ? 0.55 : 0.18, roughness: scene.id.includes("pbr") ? 0.28 + (spec.index % 4) * 0.12 : 0.45 })
-          : new UnlitMaterial({ name: "benchmark-visual-" + scene.id + "-" + spec.index, color: spec.color }),
-        modelMatrix: modelMatrix(spec),
-        label: scene.id + "-" + spec.index,
-      }));
-      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createExternalParityEnvironmentLighting(scene.id.includes("large") ? "daylight" : scene.id.includes("particles") ? "gameplay" : "studio").lighting });
-      await nextFrame();
-      const stats = pixelStats(canvas);
-      renderer.dispose();
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: diagnostics.drawCalls, objectCount: specs.length };
-    }
-  `;
-}
-
-function threeBenchmarkVisualBundleSource(): string {
-  return `
-    import * as THREE from "three";
-    ${benchmarkVisualSharedHelpers()}
-    export async function renderBenchmarkVisualScene(canvas, scene) {
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: scene.quality.antialias, preserveDrawingBuffer: true, alpha: false });
-      renderer.setSize(canvas.width, canvas.height, false);
-      renderer.setClearColor(0x05070b, 1);
-      const threeScene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-      camera.position.set(0, 0, 4);
-      camera.lookAt(0, 0, 0);
-      threeScene.add(new THREE.HemisphereLight(0xdde8ff, 0x18202b, 1.4));
-      const key = new THREE.DirectionalLight(0xffffff, 1.6);
-      key.position.set(0.4, 0.8, 1);
-      threeScene.add(key);
-      const geometries = new Map([
-        ["cube", new THREE.BoxGeometry(1, 1, 1)],
-        ["sphere", new THREE.SphereGeometry(0.5, 16, 8)],
-        ["cylinder", new THREE.CylinderGeometry(0.5, 0.5, 1, 18)],
-      ]);
-      const specs = objectSpecs(scene);
-      for (const spec of specs) {
-        const color = new THREE.Color(spec.color[0], spec.color[1], spec.color[2]);
-        const material = scene.quality.pbr
-          ? new THREE.MeshStandardMaterial({ color, metalness: scene.id.includes("pbr") ? 0.5 : 0.18, roughness: scene.id.includes("pbr") ? 0.32 + (spec.index % 4) * 0.12 : 0.45 })
-          : new THREE.MeshBasicMaterial({ color });
-        const mesh = new THREE.Mesh(geometries.get(spec.shape) || geometries.get("cube"), material);
-        mesh.position.set(spec.x, spec.y, spec.z);
-        mesh.scale.set(spec.sx, spec.sy, spec.sz);
-        threeScene.add(mesh);
-      }
-      renderer.render(threeScene, camera);
-      await nextFrame();
-      const stats = pixelStats(canvas);
-      renderer.dispose();
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: specs.length, objectCount: specs.length };
-    }
-  `;
-}
-
-function babylonBenchmarkVisualBundleSource(): string {
-  return `
-    import * as BABYLON from "@babylonjs/core";
-    ${benchmarkVisualSharedHelpers()}
-    export async function renderBenchmarkVisualScene(canvas, scene) {
-      const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: false, antialias: scene.quality.antialias });
-      engine.setSize(canvas.width, canvas.height);
-      const babylonScene = new BABYLON.Scene(engine);
-      babylonScene.clearColor = new BABYLON.Color4(0.015, 0.02, 0.03, 1);
-      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, -4), babylonScene);
-      camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-      camera.orthoLeft = -1;
-      camera.orthoRight = 1;
-      camera.orthoTop = 1;
-      camera.orthoBottom = -1;
-      camera.setTarget(BABYLON.Vector3.Zero());
-      new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), babylonScene).intensity = 1.25;
-      const key = new BABYLON.DirectionalLight("key", new BABYLON.Vector3(-0.4, -0.8, 1), babylonScene);
-      key.intensity = 1.45;
-      const specs = objectSpecs(scene);
-      for (const spec of specs) {
-        const mesh = spec.shape === "sphere"
-          ? BABYLON.MeshBuilder.CreateSphere(scene.id + "-" + spec.index, { diameter: 1, segments: 16 }, babylonScene)
-          : spec.shape === "cylinder"
-            ? BABYLON.MeshBuilder.CreateCylinder(scene.id + "-" + spec.index, { diameter: 1, height: 1, tessellation: 18 }, babylonScene)
-            : BABYLON.MeshBuilder.CreateBox(scene.id + "-" + spec.index, { size: 1 }, babylonScene);
-        const material = scene.quality.pbr ? new BABYLON.PBRMaterial("mat-" + spec.index, babylonScene) : new BABYLON.StandardMaterial("mat-" + spec.index, babylonScene);
-        if (material instanceof BABYLON.PBRMaterial) {
-          material.albedoColor = BABYLON.Color3.FromArray(spec.color);
-          material.metallic = scene.id.includes("pbr") ? 0.5 : 0.18;
-          material.roughness = scene.id.includes("pbr") ? 0.32 + (spec.index % 4) * 0.12 : 0.45;
-        } else {
-          material.diffuseColor = BABYLON.Color3.FromArray(spec.color);
-          material.emissiveColor = BABYLON.Color3.FromArray(spec.color).scale(0.18);
-        }
-        mesh.material = material;
-        mesh.position = new BABYLON.Vector3(spec.x, spec.y, spec.z);
-        mesh.scaling = new BABYLON.Vector3(spec.sx, spec.sy, spec.sz);
-      }
-      babylonScene.render();
-      await nextFrame();
-      const stats = pixelStats(canvas);
-      engine.dispose();
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: specs.length, objectCount: specs.length };
-    }
-  `;
 }
 
 const browserBenchmarkMeasurementScript = String.raw`
@@ -2042,87 +1472,6 @@ window.__measureBenchmarkScene = async (input) => {
     editorWorkflow
   };
 };
-`;
-
-const browserScreenshotDiffScript = String.raw`
-async (input) => {
-  const loadImage = (url) => new Promise((resolveImage, rejectImage) => {
-    const image = new Image();
-    image.onload = () => resolveImage(image);
-    image.onerror = () => rejectImage(new Error("Unable to decode screenshot PNG for diffing."));
-    image.src = url;
-  });
-  const baseline = await loadImage(input.baselineUrl);
-  const compared = await loadImage(input.comparedUrl);
-  const width = Math.min(baseline.naturalWidth, compared.naturalWidth);
-  const height = Math.min(baseline.naturalHeight, compared.naturalHeight);
-  if (width <= 0 || height <= 0) {
-    throw new Error("Screenshot diff requires non-empty images.");
-  }
-
-  const baselineCanvas = document.createElement("canvas");
-  const comparedCanvas = document.createElement("canvas");
-  const diffCanvas = document.createElement("canvas");
-  baselineCanvas.width = comparedCanvas.width = diffCanvas.width = width;
-  baselineCanvas.height = comparedCanvas.height = diffCanvas.height = height;
-  const baselineContext = baselineCanvas.getContext("2d", { willReadFrequently: true });
-  const comparedContext = comparedCanvas.getContext("2d", { willReadFrequently: true });
-  const diffContext = diffCanvas.getContext("2d");
-  if (!baselineContext || !comparedContext || !diffContext) {
-    throw new Error("Canvas 2D context unavailable for screenshot diff.");
-  }
-  baselineContext.drawImage(baseline, 0, 0, width, height);
-  comparedContext.drawImage(compared, 0, 0, width, height);
-  const baselinePixels = baselineContext.getImageData(0, 0, width, height);
-  const comparedPixels = comparedContext.getImageData(0, 0, width, height);
-  const diffPixels = diffContext.createImageData(width, height);
-  let changedPixels = 0;
-  let totalAbsoluteDelta = 0;
-  let maxChannelDelta = 0;
-  const channelCount = width * height * 3;
-
-  for (let index = 0; index < baselinePixels.data.length; index += 4) {
-    const rDelta = Math.abs(baselinePixels.data[index] - comparedPixels.data[index]);
-    const gDelta = Math.abs(baselinePixels.data[index + 1] - comparedPixels.data[index + 1]);
-    const bDelta = Math.abs(baselinePixels.data[index + 2] - comparedPixels.data[index + 2]);
-    const pixelDelta = Math.max(rDelta, gDelta, bDelta);
-    totalAbsoluteDelta += rDelta + gDelta + bDelta;
-    maxChannelDelta = Math.max(maxChannelDelta, pixelDelta);
-    if (pixelDelta > 2) {
-      changedPixels += 1;
-      diffPixels.data[index] = 255;
-      diffPixels.data[index + 1] = Math.min(255, pixelDelta * 8);
-      diffPixels.data[index + 2] = 0;
-      diffPixels.data[index + 3] = 255;
-    } else {
-      diffPixels.data[index] = 0;
-      diffPixels.data[index + 1] = 0;
-      diffPixels.data[index + 2] = 0;
-      diffPixels.data[index + 3] = 255;
-    }
-  }
-
-  diffContext.putImageData(diffPixels, 0, 0);
-  const comparedPixelCount = width * height;
-  const changedPixelRatio = changedPixels / comparedPixelCount;
-  const meanAbsoluteError = totalAbsoluteDelta / channelCount;
-  const thresholds = {
-    maxChangedPixelRatio: 1,
-    maxMeanAbsoluteError: 8,
-  };
-  return {
-    width,
-    height,
-    comparedPixels: comparedPixelCount,
-    changedPixels,
-    changedPixelRatio: Number(changedPixelRatio.toFixed(6)),
-    meanAbsoluteError: Number(meanAbsoluteError.toFixed(6)),
-    maxChannelDelta,
-    pass: changedPixelRatio <= thresholds.maxChangedPixelRatio && meanAbsoluteError <= thresholds.maxMeanAbsoluteError,
-    thresholds,
-    diffDataUrl: diffCanvas.toDataURL("image/png"),
-  };
-}
 `;
 
 async function measureBenchmarkSceneInBrowser(input: {

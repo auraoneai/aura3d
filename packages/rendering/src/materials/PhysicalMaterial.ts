@@ -3,6 +3,11 @@ import {
   type ExternalParityMaterialExtension,
   type ExternalParityMaterialExtensionState
 } from "./MaterialExtensions";
+import { Material, type MaterialDescriptor } from "../Material";
+import type { MaterialFeatureContext, ProgramFeatureSource } from "../contracts/materialLobes";
+import type { Texture } from "../Texture";
+import type { Sampler } from "../Sampler";
+import { physicalFeatureSet } from "./PhysicalFeatures";
 
 export type ExternalParityMaterialKind =
   | "chrome"
@@ -131,3 +136,82 @@ function classifyMaterial(descriptor: ExternalParityPhysicalMaterialDescriptor):
   if (descriptor.metallic > 0.5) return "rough-metal";
   return "dielectric";
 }
+
+// ---------------------------------------------------------------------------
+// C-03 real implementation (PRD-04 §7.3, phase 3): the glTF-faithful physical
+// material descriptor and the `ProgramFeatureSource` every generated-path
+// material implements. Inert until C-02's program generator consumes
+// `programFeatures()` — nothing on the legacy path reads it.
+// ---------------------------------------------------------------------------
+
+export type Prd04Vec3 = readonly [number, number, number];
+export type Prd04Vec4 = readonly [number, number, number, number];
+
+/** Texture slots a generated physical program can sample (mirrors KHR/glTF). */
+export type PhysicalMapSlot =
+  | "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive"
+  | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal"
+  | "transmission" | "diffuseTransmission" | "diffuseTransmissionColor"
+  | "volumeThickness" | "specular" | "specularColor"
+  | "sheenColor" | "sheenRoughness" | "anisotropy"
+  | "iridescence" | "iridescenceThickness";
+
+export interface PhysicalMapBinding {
+  readonly texture: Texture;
+  readonly sampler: Sampler;
+  /** glTF texCoord index (KHR_texture_transform may override). */
+  readonly texCoord: 0 | 1;
+  /** Column-major mat3 from `uvTransformMatrix` (KHR_texture_transform T·R·S). */
+  readonly transform?: Float32Array | readonly number[];
+}
+
+/** glTF material descriptor — PRD-04 §7.3 verbatim. */
+export interface PhysicalMaterialDescriptor {
+  readonly baseColorFactor: Prd04Vec4;
+  readonly metallicFactor: number;
+  readonly roughnessFactor: number;
+  readonly emissiveFactor: Prd04Vec3;
+  readonly emissiveStrength: number;
+  readonly normalScale: number;
+  readonly occlusionStrength: number;
+  readonly ior: number;                                            // default 1.5
+  readonly specular?: { readonly factor: number; readonly colorFactor: Prd04Vec3 };
+  readonly clearcoat?: { readonly factor: number; readonly roughnessFactor: number; readonly normalScale: number };
+  readonly sheen?: { readonly colorFactor: Prd04Vec3; readonly roughnessFactor: number };
+  readonly iridescence?: { readonly factor: number; readonly ior: number; readonly thicknessMin: number; readonly thicknessMax: number };
+  readonly anisotropy?: { readonly strength: number; readonly rotation: number };
+  readonly transmission?: { readonly factor: number };
+  readonly volume?: { readonly thicknessFactor: number; readonly attenuationDistance: number; readonly attenuationColor: Prd04Vec3 };
+  readonly dispersion?: number;
+  readonly diffuseTransmission?: { readonly factor: number; readonly colorFactor: Prd04Vec3 };
+  readonly alphaMode: "opaque" | "mask" | "blend";
+  readonly alphaCutoff: number;
+  readonly alphaToCoverage: boolean;
+  readonly doubleSided: boolean;
+  readonly unlit: boolean;
+  readonly textures: Partial<Record<PhysicalMapSlot, PhysicalMapBinding>>;
+}
+
+/**
+ * Abstract generated-path physical material (C-03 `ProgramFeatureSource`).
+ * Concrete subclasses (`TexturedPBRMaterial`, `PBRMaterial`, …) either hold a
+ * descriptor directly or derive one from their legacy options; `programFeatures`
+ * is pure — the C-02 generator consumes it, no legacy uniforms change.
+ */
+export abstract class PhysicalMaterial extends Material implements ProgramFeatureSource {
+  public readonly physicalDescriptor: PhysicalMaterialDescriptor;
+  public readonly vertexColors: boolean;
+
+  protected constructor(descriptor: PhysicalMaterialDescriptor, material?: Omit<MaterialDescriptor, "shaderKey"> & { readonly shaderKey?: string; readonly vertexColors?: boolean }) {
+    const { vertexColors = false, ...rest } = material ?? {};
+    super({ shaderKey: rest.shaderKey ?? "a3d-prd04-physical", ...rest });
+    this.physicalDescriptor = descriptor;
+    this.vertexColors = vertexColors;
+  }
+
+  programFeatures(ctx: MaterialFeatureContext): ReturnType<ProgramFeatureSource["programFeatures"]> {
+    return physicalFeatureSet(this.physicalDescriptor, ctx, { vertexColors: this.vertexColors });
+  }
+}
+
+export type PhysicalFeatureSet = ReturnType<ProgramFeatureSource["programFeatures"]>;   // alias only (CONTRACTS App. A)

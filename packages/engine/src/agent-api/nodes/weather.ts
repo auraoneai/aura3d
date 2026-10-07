@@ -1,11 +1,18 @@
-// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts.
+// PRD-07 P5-T4: legacy streak/flake/slab/puddle primitives are runtime-tagged
+// `prd07.legacyWeather.<n>` — identical pixels with A3D_QR_VFX off; hidden by
+// the effect system when the flag is on and the real volume/wetness path
+// draws instead.
 
 import type { AuraSceneNode } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
 import { effects } from "./effects.composite.js";
 import { primitives } from "./primitives.js";
 import { createWeatherState, describeWetMaterial, type WeatherType } from "@aura3d/rendering";
 import { lights } from "./lights.js";
 import { material } from "./material.js";
+
+const legacyTag = (n: number) => ({ id: `prd07.legacyWeather.${n}`, tags: ["prd07.legacyWeather"] });
 
 export const weather = {
   /** Rain/snow declaration + weather-state-driven primitive streaks/flakes for production-path pixels. */
@@ -34,10 +41,10 @@ export const weather = {
       const z = Math.max(-4.5, Math.min(2.5, drop.z * 2.4));
       if (snowing) {
         nodes.push(primitives.sphere({ name: `d3 snow flake ${index}`, material: material.pbr({ color: "#eef4ff", roughness: 0.85, metallic: 0 }) })
-          .position(x, y, z).scale(0.035).toJSON());
+          .position(x, y, z).scale(0.035).runtime(legacyTag(index)).toJSON());
       } else {
         nodes.push(primitives.box({ name: `d3 rain streak ${index}`, material: material.pbr({ color: "#bcd7ff", roughness: 0.35, metallic: 0 }) })
-          .position(x, y, z).scale([0.014, Math.max(0.08, drop.length * 2.4), 0.014]).toJSON());
+          .position(x, y, z).scale([0.014, Math.max(0.08, drop.length * 2.4), 0.014]).runtime(legacyTag(index)).toJSON());
       }
     });
     return { nodes, dropCount: drops.length, wetness: state.wetness };
@@ -65,11 +72,19 @@ export const weather = {
     const size = Math.max(2, Math.min(14, options.size ?? 8));
     const nodes: AuraSceneNode[] = [
       primitives.box({ name: "d3 weather ground slab", material: material.pbr({ color: probe.response.albedoColor, roughness: probe.response.roughness, metallic: 0 }) })
-        .position(0, -0.02, 0).scale([size, 0.04, size]).toJSON()
+        .position(0, -0.02, 0).scale([size, 0.04, size]).runtime(legacyTag(0)).toJSON(),
+      // §6.8/P5-T4 — the wetness node beside its legacy slab + puddles.
+      new AuraNodeBuilder<import("../index.js").AuraEffectNode>({
+        kind: "effect",
+        effect: "wetness" as never,
+        name: "weather wetness",
+        intensity: probe.response.wetness
+      }).toJSON()
     ];
     probe.weather.puddlePatches.forEach((patch, index) => {
       nodes.push(primitives.cylinder({ name: `d3 puddle disc ${index}`, material: material.pbr({ color: "#16283a", roughness: 0.05, metallic: 0.1 }) })
-        .position(patch.x * 2.4, 0.005, patch.z * 2.4).scale([Math.max(0.06, patch.radius * 3), 0.006, Math.max(0.06, patch.radius * 3)]).toJSON());
+        .position(patch.x * 2.4, 0.005, patch.z * 2.4).scale([Math.max(0.06, patch.radius * 3), 0.006, Math.max(0.06, patch.radius * 3)])
+        .runtime(legacyTag(index + 1)).toJSON());
     });
     return {
       nodes,

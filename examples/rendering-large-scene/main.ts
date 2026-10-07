@@ -5,6 +5,7 @@ import {
   effects,
   instances,
   lights,
+  looks,
   material,
   primitives,
   scene,
@@ -85,7 +86,7 @@ function buildScene(view: LargeWorldView) {
     .camera(views[view])
     .add(effects.fog({ name: "data highlands depth haze", color: "#102b3a", density: 0.018, intensity: 0.3 }))
     .add(effects.bloom({ name: "data highlands signal bloom", intensity: 0.24, threshold: 0.78, radius: 0.32 }))
-    .add(lights.ambient({ name: "data highlands ambient", color: "#b8ddff", intensity: 0.42 }))
+    .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
     .add(lights.directional({ name: "data highlands sun", position: [11, 18, 9], color: "#ffe6b5", intensity: 2.8 }))
     .add(primitives.box({
       name: "large world foundation",

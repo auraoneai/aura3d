@@ -1,40 +1,99 @@
+// Product viewer: a typed GLB on a plinth under the `product-studio` look
+// (studio HDRI + key light + neutral backdrop + contrast grade), framed by
+// camera.frameAsset — the orbit autoframe that fits the product at 45–70% of
+// frame height. Orbit interaction is the only pointer control.
 import {
   camera,
   createAuraApp,
-  environments,
   interactions,
+  looks,
   material,
   model,
   primitives,
   scene
-} from "@aura3d/lean/product";
+} from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
-// PART C2 game-ready adoption: the plinth wears the @aura3d/materials
-// "carPaint" preset shell (clearcoat 1 + flake normal scale) in a pearl studio
-// base, and the floor carries the "glassThin" preset color/roughness values as
-// a glass display deck (transmission itself lives in the full engine API).
-const carPaintPlinth = material.clearcoatPaint({ color: "#d7dce2", roughness: 0.3, metallic: 0.55, clearcoat: 1 });
-const glassThinDeck = material.pbr({ color: "#9fc6d4", roughness: 0.08, metallic: 0 });
+declare global {
+  interface Window {
+    __AURA3D_PRODUCT_VIEWER__?: ProductViewerEvidence;
+    __AURA3D_ROUTE_READY__?: unknown;
+  }
+}
+
+interface ProductViewerEvidence {
+  readonly look: { readonly id: string; readonly category: string };
+  readonly camera: {
+    readonly mode: string;
+    readonly fov: number;
+    readonly distance: number;
+    readonly subjectHeightFraction: readonly [number, number];
+    readonly orbit: boolean;
+  };
+  readonly product: { readonly assetId: string; readonly url: string; readonly metres: readonly [number, number, number] };
+  readonly evidence: { readonly entry: string };
+}
+
+const LOOK_ID = "product-studio" as const;
+
+// The look supplies the studio backdrop, HDRI environment and key light; the
+// scene adds only the plinth/deck and the typed product — no adoption-preset
+// material shells, ambient/fill overrides, or .background() calls.
+const plinthMaterial = material.pbr({ color: "#3a3f47", roughness: 0.34, metalness: 0.4 });
+const deckMaterial = material.pbr({ color: "#24272e", roughness: 0.62, metalness: 0.1 });
+
+// frameAsset fits the product to ~1/padding of frame height; padding 1.6 puts
+// the subject at ~60% — inside the look's 45–70% framing band.
+const autoframe = camera.frameAsset(assets.product, {
+  targetHeight: 1.62,
+  padding: 1.6,
+  fov: 32,
+  azimuth: 0.62,
+  elevation: 0.28,
+  position: [0, 0.18, -0.62]
+});
 
 const productScene = scene()
-  .background("#071018")
-  .add(primitives.plane({ name: "glass deck floor", material: glassThinDeck })
-    .position(0, -0.05, -0.62).scale([6.2, 1, 5.2]))
-  .add(primitives.box({ name: "carPaint product plinth", material: carPaintPlinth })
-    .position(0, 0.06, -0.62).scale([1.82, 0.18, 1.4]))
-  .add(model(assets.product, { name: "typed studio product" }).position(0, 1.08, -0.62).scale(0.66))
-  .add(environments.studio())
-  .add(interactions.orbit())
-  .camera(camera.perspective({ position: [2.65, 2.05, 4.55], target: [0, 1.02, -0.62], fov: 32 }));
+  .add(looks.preset(LOOK_ID))
+  .add(
+    primitives.plane({ name: "studio deck floor", material: deckMaterial })
+      .position(0, -0.05, -0.62)
+      .scale([6.2, 1, 5.2])
+  )
+  .add(
+    primitives.box({ name: "product plinth", material: plinthMaterial })
+      .position(0, 0.06, -0.62)
+      .scale([1.82, 0.18, 1.4])
+  )
+  .add(
+    model(assets.product, { name: "typed studio product", castShadow: true })
+      .position(0, 1.08, -0.62)
+      .scale(0.66)
+  )
+  .add(interactions.orbit({ target: "typed studio product" }))
+  .camera(autoframe);
 
 const app = createAuraApp("#app", { scene: productScene });
+
+window.__AURA3D_PRODUCT_VIEWER__ = {
+  look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+  camera: {
+    mode: autoframe.mode,
+    fov: autoframe.fov ?? 32,
+    distance: autoframe.distance ?? 0,
+    subjectHeightFraction: [0.45, 0.7],
+    orbit: true
+  },
+  product: { assetId: assets.product.id, url: assets.product.url, metres: assets.product.bounds },
+  evidence: { entry: "@aura3d/engine" }
+};
+
 void app.ready().then(() => {
   const diagnostics = app.diagnostics();
   document.body.dataset.aura3dReady = "true";
-  document.body.dataset.aura3dRuntimeBackend = diagnostics.runtimeBackend;
+  document.body.dataset.aura3dRuntimeBackend = diagnostics.backend;
   document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
-  (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
+  window.__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
 }).catch((error: unknown) => {
   document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });

@@ -19,6 +19,7 @@
  * a3dPrd04ResolveRoughness, a3dPrd04EnvironmentBRDF).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_CLEARCOAT_WGSL from "../physical-wgsl/clearcoat.wgsl.js";
 
 const glsl = /* glsl */ `
 // Factor resolution (r185 lights_physical_fragment.glsl.js:56-80).
@@ -85,6 +86,7 @@ export const A3D_PRD04_CLEARCOAT: ShaderChunk = {
 	name: "a3d_prd04_clearcoat",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_CLEARCOAT_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };

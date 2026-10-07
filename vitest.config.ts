@@ -51,6 +51,7 @@ export default defineConfig({
       "@aura3d/rendering/production-runtime": new URL("./packages/rendering/src/production-runtime/index.ts", import.meta.url).pathname,
       "@aura3d/rendering/advanced-runtime": new URL("./packages/rendering/src/advanced-runtime/index.ts", import.meta.url).pathname,
       "@aura3d/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,
+      "@aura3d/rendering/world": new URL("./packages/rendering/src/world/index.ts", import.meta.url).pathname,
       "@aura3d/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/controls": new URL("./packages/controls/src/index.ts", import.meta.url).pathname,
       /*

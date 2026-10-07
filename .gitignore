@@ -323,8 +323,13 @@ test-data/
 fixtures/
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
+# Lane-owned reference-game fixtures (PRD-09 §10) are tracked sources.
+!packages/game/fixtures/
+!packages/game/fixtures/**
 # Immutable, hash-bound showcase compiler specs and evidence.
 !tests/fixtures/
+# PRD-09 lane-09 owns packages/game/fixtures/ (route fixture code for specs).
+!packages/game/fixtures/
 !tests/fixtures/showcase-spec/
 !tests/fixtures/showcase-spec/**
 # QR lane fixtures are tracked source (PRD-06 T0.9a tests/qr/prd06/fixtures/).
@@ -390,3 +395,9 @@ AGENTS.md
 !.claude/skills/
 .cursor/rules/
 .github/copilot-instructions.md
+# PRD-13 T2.15: agent files shipped as template/skills content (not local control files).
+!packages/aura3d-cli/skills/agent-files/AGENTS.md
+!packages/create-aura3d/templates/*/AGENTS.md
+!packages/create-aura3d/templates/*/.claude/CLAUDE.md
+!templates/*/AGENTS.md
+!templates/*/.claude/CLAUDE.md

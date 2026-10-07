@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraEffectNode, AuraSceneSnapshot, AuraFountainParticleLayer } from "../nodes/types.js";
+import { registerOptionCoverage } from "../../contracts/compiler.js";
 import { groups } from "../nodes/groups.js";
 import { seededRange } from "../sceneMath.js";
 
@@ -81,4 +82,50 @@ export function hasRuntimePostProcessEffects(effectNodes: readonly AuraEffectNod
   return effectNodes.some((node) => node.effect === "bloom" || node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"
     || node.effect === "color-grade" || node.effect === "anti-alias" || node.effect === "outline"
     || node.effect === "screen-space-reflections" || node.effect === "depth-of-field" || node.effect === "motion-blur");
+}
+
+// PRD-07 P1-T15 — option-coverage rows for the prd07 surface (C-37).
+// Each row declares a builder field and two probe values; the coverage test in
+// tests/unit/contracts asserts every field appears in the compiled map.
+export function registerPrd07OptionCoverage(): void {
+  registerOptionCoverage([
+    { builder: "effect", field: "effect", probeValueA: "particles", probeValueB: "rain", ownerPrd: 7 },
+    { builder: "effect", field: "materialMode", probeValueA: "additive-glow", probeValueB: "smoke", ownerPrd: 7 },
+    { builder: "effect", field: "particleCount", probeValueA: 64, probeValueB: 2000, ownerPrd: 7 },
+    { builder: "effect", field: "emitter", probeValueA: "fountain", probeValueB: "swirl", ownerPrd: 7 },
+    { builder: "effect", field: "emissionRate", probeValueA: 20, probeValueB: 600, ownerPrd: 7 },
+    { builder: "effect", field: "gravity", probeValueA: -9.8, probeValueB: 0, ownerPrd: 7 },
+    { builder: "effect", field: "turbulence", probeValueA: 0, probeValueB: 0.7, ownerPrd: 7 },
+    { builder: "effect", field: "speed", probeValueA: 1, probeValueB: 20, ownerPrd: 7 },
+    { builder: "effect", field: "spriteColumns", probeValueA: 1, probeValueB: 6, ownerPrd: 7 },
+    { builder: "effect", field: "frameRate", probeValueA: 0, probeValueB: 12, ownerPrd: 7 },
+    { builder: "atmosphere.fog", field: "mode", probeValueA: "exp2", probeValueB: "height", ownerPrd: 7 },
+    { builder: "atmosphere.fog", field: "heightDensity", probeValueA: 0, probeValueB: 0.04, ownerPrd: 7 },
+    { builder: "atmosphere.fog", field: "heightFalloff", probeValueA: 1, probeValueB: 0.1, ownerPrd: 7 },
+    { builder: "atmosphere.fog", field: "maxOpacity", probeValueA: 0.5, probeValueB: 0.95, ownerPrd: 7 },
+    { builder: "atmosphere.fog", field: "sunInscatter", probeValueA: 0, probeValueB: 0.6, ownerPrd: 7 },
+    { builder: "atmosphere.setSky", field: "model", probeValueA: "preetham", probeValueB: "gradient", ownerPrd: 7 },
+    { builder: "atmosphere.setWetness", field: "value", probeValueA: 0, probeValueB: 1, ownerPrd: 7 },
+    { builder: "effects.spawn", field: "effect", probeValueA: "burst", probeValueB: "trail", ownerPrd: 7 },
+    { builder: "effects.burst", field: "kind", probeValueA: "spark", probeValueB: "dust", ownerPrd: 7 },
+    { builder: "sky", field: "spec", probeValueA: { model: "gradient" }, probeValueB: { model: "preetham" }, ownerPrd: 7 },
+    { builder: "sky", field: "captureEnvironment", probeValueA: false, probeValueB: true, ownerPrd: 7 },
+    // P2-T5 builder fields
+    { builder: "effect.trail", field: "maxPoints", probeValueA: 48, probeValueB: 16, ownerPrd: 7 },
+    { builder: "effect.trail", field: "minVertexDistance", probeValueA: 0.05, probeValueB: 0.2, ownerPrd: 7 },
+    { builder: "effect.trail", field: "width", probeValueA: 0.3, probeValueB: 1.2, ownerPrd: 7 },
+    { builder: "effect.trail", field: "orientation", probeValueA: "camera", probeValueB: "surface", ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "coneAngle", probeValueA: 0.35, probeValueB: 0.7, ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "length", probeValueA: 6, probeValueB: 20, ownerPrd: 7 },
+    { builder: "effect.lightCone", field: "softness", probeValueA: 0.4, probeValueB: 0.9, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "segments", probeValueA: 96, probeValueB: 32, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "sway", probeValueA: 1, probeValueB: 3, ownerPrd: 7 },
+    { builder: "effect.auroraRibbon", field: "shimmer", probeValueA: 0.6, probeValueB: 1.5, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "groundBounce", probeValueA: 0.35, probeValueB: 0.8, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "castShadow", probeValueA: false, probeValueB: true, ownerPrd: 7 },
+    { builder: "effect.meshParticles", field: "spin", probeValueA: 1, probeValueB: 6, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "scatteringAnisotropy", probeValueA: 0.3, probeValueB: 0.8, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "heightFalloff", probeValueA: 0.5, probeValueB: 1, ownerPrd: 7 },
+    { builder: "effect.fogVolume", field: "density", probeValueA: 0.25, probeValueB: 1.2, ownerPrd: 7 }
+  ]);
 }

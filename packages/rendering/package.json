@@ -26,6 +26,14 @@
     "./contracts/*": {
       "types": "./dist/contracts/*.d.ts",
       "import": "./dist/contracts/*.js"
+    },
+    "./reference": {
+      "types": "./dist/reference/index.d.ts",
+      "import": "./dist/reference/index.js"
+    },
+    "./world": {
+      "types": "./dist/world/index.d.ts",
+      "import": "./dist/world/index.js"
     }
   },
   "main": "./dist/index.js",

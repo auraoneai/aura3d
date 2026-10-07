@@ -1,4 +1,15 @@
-import { camera, createAuraApp, game, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  game,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene,
+  type AuraApp
+} from "@aura3d/engine";
 import { createRecastNavigation, type NavigationVec3, type RecastCrowdHandle, type RecastNavMeshHandle } from "@aura3d/navigation-recast";
 import { assets } from "../../src/aura-assets.js";
 
@@ -97,7 +108,7 @@ async function createVisual(): Promise<AuraApp> {
   let builder = scene()
     .background("#05070b")
     .camera(camera.perspective({ position: [0, 7.2, 11.5], target: [0, 0.25, -0.5], fov: 42 }))
-    .add(lights.ambient({ intensity: 0.42, color: "#ffffff" }))
+    .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
     .add(lights.directional({ name: "crowd key", position: [7, 13, 8], intensity: 2.4, color: "#fff4e6" }))
     .add(model(CITY, { name: "typed skyline context", scaleMode: "fit", targetHeight: 3.5, castShadow: false, receiveShadow: false }).position(0, 0, -6.2))
     .add(primitives.box({ name: "walkable navigation deck", material: material.pbr({ color: "#273244", roughness: 0.82 }) }).position(0, -0.08, 0).scale([10, 0.16, 6]))

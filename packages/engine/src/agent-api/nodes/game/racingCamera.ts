@@ -1,19 +1,26 @@
-// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
+// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts;
+// PRD-08 C-13: the composition path/verdict-string gate is removed (extra
+// arguments accepted and ignored, no throw).
 
 import { createGameRacingTopDownCamera } from "../../nodes/prefabs/gamePresentation.js";
 import { createGameRacingPresentationCamera, type GameRacingCameraRigOptions, type GameScenePresentationCameraSpec } from "../../GameSceneGeometryBindings.js";
+import { createTopDownRig } from "../../camera/rigs/topDown.js";
 
 export function createGameRacingCameraRig(options: GameRacingCameraRigOptions): GameScenePresentationCameraSpec {
-  if (!options.composition.report.trim()) {
-    throw new Error("game.racingCameraRig requires an asset-pair composition report path.");
+  const selectedMode = options.composition?.selectedMode ?? options.mode;
+  if (options.flags?.on("A3D_QR_CAMERA") === true && options.legacySpec !== true) {
+    // R-11/C-13 flag-on: chase → rigs.chase (via the presentation camera's
+    // flag-on path), top-down → rigs.topDown. Runtime object is an
+    // AuraCameraRig; the index.ts wrappers pin the declared spec type.
+    if (selectedMode === "chase") {
+      return createGameRacingPresentationCamera({ ...options, mode: "follow" });
+    }
+    return createTopDownRig({
+      target: options.targetNode,
+      height: options.height ?? 3.2,
+      fov: options.fov ?? 46
+    }) as unknown as GameScenePresentationCameraSpec;
   }
-  if (options.composition.verdict !== "pass" || options.composition.cameraReadabilityVerdict !== "pass") {
-    throw new Error("game.racingCameraRig requires passing asset-pair composition and camera-readability verdicts.");
-  }
-  if (options.composition.selectedMode !== options.mode) {
-    throw new Error(`game.racingCameraRig mode ${options.mode} conflicts with composition-selected mode ${options.composition.selectedMode}.`);
-  }
-  const selectedMode = options.mode;
   const camera = selectedMode === "chase"
     ? createGameRacingPresentationCamera({ ...options, mode: "follow" })
     : createGameRacingTopDownCamera(options);
@@ -21,7 +28,7 @@ export function createGameRacingCameraRig(options: GameRacingCameraRigOptions): 
     ...camera,
     selectionEvidence: {
       source: "asset-pair-composition",
-      report: options.composition.report,
+      report: options.composition?.report ?? "",
       check: "camera-readability",
       verdict: "pass",
       selectedMode

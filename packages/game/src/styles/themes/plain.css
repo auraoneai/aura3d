@@ -1,0 +1,14 @@
+/* §7.7 theme "plain" — mirror of HUD_THEMES["plain"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-plain {
+  --a3g-font: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --a3g-fg: #e6e6e6;
+  --a3g-fg-dim: #9aa0a8;
+  --a3g-accent: #8ab4ff;
+  --a3g-accent2: #a78bfa;
+  --a3g-warn: #fbbf24;
+  --a3g-danger: #f87171;
+  --a3g-bg: rgba(0,0,0,0.65);
+  --a3g-edge: rgba(255,255,255,0.2);
+  --a3g-glow: none;
+  --a3g-radius: 4px;
+}

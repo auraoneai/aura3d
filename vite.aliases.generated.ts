@@ -95,4 +95,5 @@ export const aliasEntries = [
   ["@aura3d/engine/renderer", "./packages/engine/src/public/renderer.ts"],
   ["@aura3d/engine/devtools", "./packages/engine/src/public/devtools.ts"],
   ["@aura3d/engine", "./packages/engine/src/public/index.ts"],
+  ["@aura3d/rendering/world", "./packages/rendering/src/world/index.ts"],
 ] as const;

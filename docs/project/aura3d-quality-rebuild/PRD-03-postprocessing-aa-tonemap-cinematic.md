@@ -1768,28 +1768,28 @@ test. "Flag on" means `A3D_QR_POST` resolved on through `resolveQrFlags`. All br
 remotely (§15.2).
 
 Phase 0 (day 0)
-- [ ] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the
+- [x] `packages/rendering/src/lanes/prd03.ts` and `packages/engine/src/lanes/prd03.ts`: import the
   C-13/C-14 slots from `contracts/` and call `provide()` with `post/PostGraph.ts`/`forward/Velocity.ts`
   facades that delegate to the stub behaviour for now. Test: `tests/unit/contracts/impl/prd03-post-graph.test.ts`
   asserts that `slot.get(flags)` returns real only with `A3D_QR_POST` on. The custodian suites
   `C-13-post`/`C-14-velocity` pass for `real`.
-- [ ] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and
+- [x] `packages/engine/src/lanes/prd03.ts`: `registerDiagnosticsSection("post", …)` and
   `("exposure", …)`. Both are populated from `PostprocessExecution.ts` with the executed plan
   (stage name, format, size, `cpu-readback` marker) and the exposure actually sent, not from the
   authored nodes. Test: `tests/unit/agent-api/post-diagnostics.test.ts` builds a scene with
   `colorGrade({exposure:1.05})` and asserts `exposure.applied === 1` with the flag off (truthful)
   and `1.05` with the flag on after Phase 1.
-- [ ] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when
+- [x] `post/PostTimer.ts`: wraps each graph stage in `EXT_disjoint_timer_query_webgl2` queries when
   the C-28 probe reports the extension, and returns `gpuMs: undefined` otherwise. Test: a browser
   spec asserts no exception when the extension is absent.
-- [ ] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`,
+- [x] `packages/rendering/src/post/ToneOperators.ts`: TS `aces`, `agx`, `neutral`, `reinhard`,
   `linear`. Constants come from
   `node_modules/three/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js:46-200`.
   Commit 64 golden input→output triples per operator, generated once by running the three GLSL in
   a headless WebGL capture on macos-14, together with the generating script
   (`tests/qr/prd03/goldens/generate-tone-goldens.mjs`). Test:
   `tests/unit/rendering/post-tone-operators.test.ts`.
-- [ ] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes
+- [x] `benchmarks/quality-rebuild/{scenes,aura3d/scenes,three/scenes}/prd03/`: add the scenes
   `prd03-hdr-bloom`, `prd03-thin-aa`, `prd03-tone-ramp` (+21b), `prd03-ao-grounding`,
   `prd03-dof-bokeh`, `prd03-taa-motion`, `prd03-night-fog-banding` (+25b) and
   `prd03-scene18-bloom` (a copy of base scene 18's inputs, for the held-out bloom check). Each has
@@ -1801,29 +1801,29 @@ Phase 0 (day 0)
   `new WebGPURenderer({ forceWebGL: true })` with a TSL `PostProcessing` chain. Both engines then run
   on WebGL2 on the same runner. Each scene declares `qrFlags: ["post"]` (C-30). Test: the C-30
   registry test lists the 8 ids as `active`.
-- [ ] `.github/workflows/post-quality.yml` (macos-14, §15.2) and
+- [x] `.github/workflows/post-quality.yml` (macos-14, §15.2) and
   `.github/workflows/qr-prd03-captures.yml`. The capture workflow dispatches
   `tools/quality-rebuild-capture` with `--flags none` and `--flags post` for the 18 games and the
   lane scenes. It also runs `tests/qr/prd03/capture-dsf2.spec.ts`, which loads each game route at
   1440×900 with `deviceScaleFactor: 2` and records `canvas.width / clientWidth`, until Q-12-1
   lands. It uses no secrets.
-- [ ] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and
+- [x] `tools/quality-rebuild/codemods/post-v2.mjs` (pure `AuraCodemod`) and
   `packages/aura3d-cli/src/commands/prd03/index.ts` (`registerCodemod`). It is report-only at this
   point. Test: `tests/unit/tools/post-v2-codemod.test.ts` (fixtures in Phase 5).
 - [ ] Commit the baseline captures and `bundle.json` to `evidence/prd03/phase0/`.
 
 Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
-- [ ] `agent-api/compiler/postprocess.ts`, flag on: set
+- [x] `agent-api/compiler/postprocess.ts`, flag on: set
   `toneMapping.exposure = (options.output?.exposure ?? 1) × (colorGrade.exposure ?? 1)` (replacing
   the literal 1 that came from `index.ts:12898-12904`) and
   `operator = options.output?.toneMapping ?? DEFAULT_TONE_MAPPING`. Test: `post-diagnostics.test.ts`
   asserts the bridge output `toneMapping.exposure === 1.05` for `colorGrade({exposure:1.05})` with
   the flag on and `1` with it off.
-- [ ] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared
+- [x] `agent-api/compiler/postprocess.ts`: read `options.output` (the C-38 pre-declared
   `AuraCreateAppOptions.output`) at compile time through `SceneCompileContext`. If PR 0b-1 does not
   pass create options into the context, raise CCR-03-6 to add `SceneCompileContext.output?`.
   Test: a unit test with a fake renderer captures the options.
-- [ ] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on,
+- [x] `agent-api/compiler/postprocess.ts` + `renderer/PostprocessExecution.ts`: with the flag on,
   pass `depthRange: { near, far, projection }` from the compiled camera's
   `resolveCameraClipping` result (`RootRuntimeSupport.ts:16-21`) through
   `RendererPostProcessOptions.depthRange` (CCR-03-1) into `presentLdrPostprocess` options, which
@@ -1831,7 +1831,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-depth-range.test.ts` asserts the device receives 0.05/100 for a
   default root camera with the flag on and 0.1/1000 with it off. A browser test checks DOF focus
   at 10 m on a 0.05/100 camera.
-- [ ] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185
+- [x] `packages/rendering/src/post/shaders/fxaa.glsl.ts`: a verbatim port of three r185
   `FXAAShader.js` (6.5, 8.13), recomputing luma per tap, with `triangularDither` before the write.
   In `webgl2/LegacyPost.ts`, with the flag on and mode `fxaa`: run the present program with no
   `fxaa` option (`u_hasFxaa = 0`) into a pooled RGBA8 target, then this FXAA program to the output.
@@ -1844,7 +1844,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
     threshold) is unchanged within 1 LSB.
   - (c) A 1-px black/white checkerboard matches three within 2 LSB mean. It is *expected* to blur,
     as three's does; no FXAA variant can tell texture edges from geometry edges.
-- [ ] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by
+- [x] `packages/rendering/src/post/PostAntiAlias.ts` `resolvePostAntiAlias` (7.2), called by
   `compiler/postprocess.ts`:
   - Mode from C-27 `msaaSamples/postAntiAlias` and the authored `antiAlias` mode. An `antiAlias`
     node whose `postAuthored` lacks `mode` counts as `auto`.
@@ -1855,7 +1855,7 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   Test: `tests/unit/rendering/post-tiers.test.ts` asserts that no resolved plan has both
   `sampleCount 4` and `fxaa`, that 3840×2160 msaa resolves to non-msaa, and that the flag-off
   output equals today's `fxaaRequested` logic (`index.ts:12859`).
-- [ ] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test:
+- [x] `post/shaders/common.glsl.ts` `triangularDither` (PCG2D hash). Test:
   `tests/browser/post-banding.spec.ts` renders `prd03-night-fog-banding` on the FXAA path and
   asserts two things: the longest run of identical 8-bit values along the gradient is ≤ 1.5× the
   ideal quantization run, and Sobel on 8-bit luma with threshold 1 finds < 0.5% contour pixels.

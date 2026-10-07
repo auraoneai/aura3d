@@ -43,7 +43,8 @@ import {
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
-  applyTextureBudget
+  applyTextureBudget,
+  programCacheSlot
 } from "@aura3d/rendering";
 import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
@@ -59,6 +60,7 @@ import {
   type GLTFTextureAsset
 } from "./GLTFLoader";
 import type { KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
+import { generateMikkTSpaceTangents, mikkTSpaceAvailable } from "./MikkTSpaceTangents";
 import { decodeImageInBrowser } from "./gltf/ImageDecode";
 
 export interface DecodedGLTFImage {
@@ -106,8 +108,12 @@ export interface GLTFRenderResourceOptions {
    * override queries and diagnostics are unaffected; only the underlying instance is shared.
    */
   readonly deduplicateIdenticalMaterials?: boolean;
-  /** Optional tangent-generation policy for the decode/load path (declaration-only seam, C-18). */
-  readonly tangents?: boolean | "auto" | "generate";
+  /**
+   * Optional tangent-generation policy for the decode/load path (C-18). `"legacy"` forces the
+   * in-repo triangle-average generator; under `A3D_QR_MATERIALS` any other value (including
+   * unset) prefers MikkTSpace when the module is registered (PRD-04 P5-4).
+   */
+  readonly tangents?: boolean | "auto" | "generate" | "legacy";
   /** Optional GPU-bytes texture budget applied during resource creation (declaration-only seam, C-17). */
   readonly textureBudget?: number;
   /** Optional max texture dimension applied during resource creation (C-27 policy, PRD-04 P2-11). */
@@ -120,6 +126,17 @@ export interface GLTFRenderResourceOptions {
    * glTF-spec default material ([1,1,1,1] / metallic 1 / roughness 1); flag-off is unchanged.
    */
   readonly materialsR185?: boolean;
+  /**
+   * `A3D_QR_MATERIALS_TRANSMISSION` state, forwarded by the caller (P4-3 E22 gate). Combined with
+   * `materialsR185` and `transmission` it decides whether unbacked scalar-transmission materials
+   * keep their authored factors instead of the legacy opaque-shell rewrite.
+   */
+  readonly materialsTransmission?: boolean;
+  /**
+   * Forwarded `renderer.material.transmission` mode (`AuraRendererMaterialOptions.transmission`):
+   * `"env"` means real env-refraction transmission is available (PRD-04 P4-3).
+   */
+  readonly transmission?: "auto" | "env" | "off";
 }
 
 export interface GLTFMaterialRenderStateOverride {
@@ -134,6 +151,8 @@ export interface GLTFRenderResources {
   readonly materialLibrary: ReadonlyMap<string, Material>;
   readonly renderableBindings: readonly GLTFRenderableBinding[];
   readonly materialFidelityDiagnostics: readonly GLTFRenderResourceMaterialFidelityDiagnostic[];
+  /** PRD-04 P5: load-time lane issues (`colorspace-conflict`, `tangent-derivative-fallback`). */
+  readonly loadIssues: readonly GLTFRenderResourceLoadIssue[];
   readonly morphTargetLibrary: ReadonlyMap<string, readonly MorphTargetDelta[]>;
   readonly textureLibrary: ReadonlyMap<string, Texture>;
   readonly bounds: CameraFrameBounds;
@@ -180,6 +199,75 @@ export interface GLTFRenderResourceMaterialFidelityDiagnostic {
   readonly sourceMeshIndex?: number;
   readonly primitiveIndex?: number;
   readonly detail: string;
+}
+
+/**
+ * PRD-04 P5: load-time lane issues surfaced through diagnostics — non-fatal deviations a
+ * caller should see (`colorspace-conflict`, `tangent-derivative-fallback`).
+ */
+export interface GLTFRenderResourceLoadIssue {
+  readonly code: "colorspace-conflict" | "tangent-derivative-fallback";
+  readonly detail: string;
+}
+
+/** Texture slots read sRGB-authored data; every other slot decodes linear. */
+const IMAGE_COLORSPACE_SLOTS: readonly {
+  readonly slot: string;
+  readonly colorSpace: "srgb" | "linear";
+  readonly texture: (material: GLTFMaterialAsset) => GLTFResolvedTextureInfo | undefined;
+}[] = [
+  { slot: "baseColor", colorSpace: "srgb", texture: (material) => material.baseColorTexture },
+  { slot: "emissive", colorSpace: "srgb", texture: (material) => material.emissiveTexture },
+  { slot: "metallicRoughness", colorSpace: "linear", texture: (material) => material.metallicRoughnessTexture },
+  { slot: "normal", colorSpace: "linear", texture: (material) => material.normalTexture },
+  { slot: "occlusion", colorSpace: "linear", texture: (material) => material.occlusionTexture },
+  { slot: "clearcoat", colorSpace: "linear", texture: (material) => material.clearcoat?.texture },
+  { slot: "clearcoatRoughness", colorSpace: "linear", texture: (material) => material.clearcoat?.roughnessTexture },
+  { slot: "clearcoatNormal", colorSpace: "linear", texture: (material) => material.clearcoat?.normalTexture },
+  { slot: "sheenColor", colorSpace: "srgb", texture: (material) => material.sheen?.colorTexture },
+  { slot: "sheenRoughness", colorSpace: "linear", texture: (material) => material.sheen?.roughnessTexture },
+  { slot: "transmission", colorSpace: "linear", texture: (material) => material.transmission?.texture },
+  { slot: "diffuseTransmission", colorSpace: "linear", texture: (material) => material.diffuseTransmission?.texture },
+  { slot: "diffuseTransmissionColor", colorSpace: "srgb", texture: (material) => material.diffuseTransmission?.colorTexture },
+  { slot: "volumeThickness", colorSpace: "linear", texture: (material) => material.volume?.thicknessTexture },
+  { slot: "specular", colorSpace: "linear", texture: (material) => material.specular?.texture },
+  { slot: "specularColor", colorSpace: "srgb", texture: (material) => material.specular?.colorTexture },
+  { slot: "anisotropy", colorSpace: "linear", texture: (material) => material.anisotropy?.texture },
+  { slot: "iridescence", colorSpace: "linear", texture: (material) => material.iridescence?.texture },
+  { slot: "iridescenceThickness", colorSpace: "linear", texture: (material) => material.iridescence?.thicknessTexture },
+  { slot: "sgDiffuse", colorSpace: "srgb", texture: (material) => material.pbrSpecularGlossiness?.diffuseTexture },
+  { slot: "sgSpecularGlossiness", colorSpace: "linear", texture: (material) => material.pbrSpecularGlossiness?.specularGlossinessTexture }
+];
+
+/**
+ * PRD-04 P5-1: per-image colour-space intent derived from material slot usage, for the C-16
+ * decode path (a KTX2/Basis transcode target must be chosen before any slot samples the
+ * image). An image used both sRGB and linear records a `colorspace-conflict` in
+ * `conflicts`; its intent resolves `"linear"` so no gamma curve is baked into the decoded
+ * payload — the per-slot usage space still applies at the `Texture` level.
+ */
+export function imageColorSpaceIntent(asset: GLTFAsset): {
+  readonly intent: ReadonlyMap<number, "srgb" | "linear">;
+  readonly conflicts: readonly { readonly image: number; readonly srgb: string; readonly linear: string }[];
+} {
+  const usages = new Map<number, { srgb: string[]; linear: string[] }>();
+  for (const material of asset.materials) {
+    for (const slot of IMAGE_COLORSPACE_SLOTS) {
+      const info = slot.texture(material);
+      if (!info) continue;
+      const usage = usages.get(info.image) ?? { srgb: [], linear: [] };
+      (slot.colorSpace === "srgb" ? usage.srgb : usage.linear).push(`${material.name}:${slot.slot}`);
+      usages.set(info.image, usage);
+    }
+  }
+  const intent = new Map<number, "srgb" | "linear">();
+  const conflicts: { image: number; srgb: string; linear: string }[] = [];
+  for (const [image, usage] of usages) {
+    const conflict = usage.srgb.length > 0 && usage.linear.length > 0;
+    intent.set(image, usage.linear.length > 0 || !conflict && usage.srgb.length === 0 ? "linear" : "srgb");
+    if (conflict) conflicts.push({ image, srgb: usage.srgb.join(","), linear: usage.linear.join(",") });
+  }
+  return { intent, conflicts };
 }
 
 export interface GLTFMaterialOverrideQuery {
@@ -404,6 +492,29 @@ export async function createGLTFRenderResources(
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {})
   });
 
+  // P5-1: per-image colour-space intent, resolved once from material slot usage and passed
+  // into the C-16 decode options (`ktx2BasisTranscoderOptions.loaderOptions.colorSpace`) so a
+  // once-per-image transcode knows the intended space. Conflicts become `loadIssues`.
+  const colorSpaceIntent = imageColorSpaceIntent(asset);
+  const loadIssues: GLTFRenderResourceLoadIssue[] = colorSpaceIntent.conflicts.map((conflict) => ({
+    code: "colorspace-conflict" as const,
+    detail: `glTF image ${conflict.image} is used as sRGB (${conflict.srgb}) and linear (${conflict.linear}); decoding as linear.`
+  }));
+  const decodeOptionsForImage = (imageIndex: number): GLTFRenderResourceOptions =>
+    options.materialsR185 === true
+      ? {
+          ...options,
+          ktx2BasisTranscoderOptions: {
+            ...options.ktx2BasisTranscoderOptions,
+            loaderOptions: {
+              ...options.ktx2BasisTranscoderOptions?.loaderOptions,
+              // Flag-on only: pre-intent decode options stay byte-identical off-flag.
+              colorSpace: colorSpaceIntent.intent.get(imageIndex) ?? "linear"
+            }
+          }
+        }
+      : options;
+
   const getTexture = async (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace): Promise<Texture> => {
     const textureAsset = asset.textures[info.texture];
     const image = asset.images[info.image];
@@ -417,7 +528,7 @@ export async function createGLTFRenderResources(
       setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
       return texture;
     }
-    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, options));
+    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, decodeOptionsForImage(imageIndex)));
     const texturePromise = (async () => {
       const decoded = await decoder(image, info.image, asset);
       const texture = new Texture({
@@ -472,21 +583,29 @@ export async function createGLTFRenderResources(
     contract: Parameters<typeof createMaterial>[3]
   ): Promise<Material> => {
     if (!sharedMaterials) {
-      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
     }
     // The contract participates in the key: the same glTF material under two different runtime
     // contracts (skinned vs instanced, for example) must not collapse into one instance.
     const key = identicalMaterialKey(material, contract);
     const existing = sharedMaterials.get(key);
     if (existing) return existing;
-    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
     sharedMaterials.set(key, created);
     return created;
   };
 
   try {
+    // P5-4: under `A3D_QR_MATERIALS` prefer MikkTSpace-generated tangents (r185's frame) over
+    // the legacy triangle-average generator, unless `tangents === "legacy"` or the MikkTSpace
+    // module is not registered. `tangent-derivative-fallback` is reported inside createGeometry
+    // only when a tangent-needing program lands on the derivative frame.
+    const tangentGeneration = {
+      useMikkTSpace: options.materialsR185 === true && options.tangents !== "legacy" && mikkTSpaceAvailable(),
+      mikkTSpaceWanted: options.materialsR185 === true && options.tangents !== "legacy"
+    };
     for (const mesh of asset.meshes) {
-      geometryLibrary.set(mesh.name, createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant)));
+      geometryLibrary.set(mesh.name, await createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant), tangentGeneration, loadIssues));
       if (mesh.morphTargets.length > 0) {
         morphTargetLibrary.set(mesh.name, mesh.morphTargets.map((target) => ({
           ...(target.name ? { name: target.name } : {}),
@@ -550,6 +669,7 @@ export async function createGLTFRenderResources(
     materialLibrary,
     renderableBindings,
     materialFidelityDiagnostics,
+    loadIssues,
     morphTargetLibrary,
     textureLibrary,
     bounds,
@@ -1235,7 +1355,17 @@ function materialForMesh(
   return materialIndex === undefined ? undefined : asset.materials[materialIndex];
 }
 
-function createGeometry(mesh: GLTFMeshAsset, material: GLTFMaterialAsset | undefined): Geometry {
+interface GLTFTangentGenerationContext {
+  readonly useMikkTSpace: boolean;
+  readonly mikkTSpaceWanted: boolean;
+}
+
+async function createGeometry(
+  mesh: GLTFMeshAsset,
+  material: GLTFMaterialAsset | undefined,
+  tangentGeneration: GLTFTangentGenerationContext,
+  loadIssues: GLTFRenderResourceLoadIssue[]
+): Promise<Geometry> {
   const usedTexCoordSets = usedRenderTexCoordSets(material);
   const texcoords = selectRenderTexcoords(mesh, material, 0);
   const texcoords1 = usedTexCoordSets.has(1) ? selectRenderTexcoords(mesh, material, 1) : [];
@@ -1250,8 +1380,20 @@ function createGeometry(mesh: GLTFMeshAsset, material: GLTFMaterialAsset | undef
     ? generateMeshNormals(mesh.positions, mesh.indices, mesh.topology)
     : mesh.normals;
   const renderTangents = needsTangent && mesh.tangents.length === 0
-    ? generateMeshTangents(mesh.positions, texcoords, mesh.indices, mesh.topology, renderNormals)
+    ? await generateRenderTangents(mesh, texcoords, renderNormals, tangentGeneration)
     : mesh.tangents;
+  /*
+   * P5-4: `tangent-derivative-fallback` is reported only when a generated program will
+   * actually use the derivative frame — the material needs a tangent frame but the produced
+   * vertex format carries no tangent attribute (e.g. a normal-mapped mesh without UVs).
+   * A successful MikkTSpace->legacy fallback still produces the generated-attribute path.
+   */
+  if (tangentGeneration.mikkTSpaceWanted && materialNeedsTangents(material) && !format.hasAttribute("tangent")) {
+    loadIssues.push({
+      code: "tangent-derivative-fallback",
+      detail: `glTF mesh ${mesh.name}: material needs a tangent frame but no tangent attribute was produced; the generated program uses the derivative frame.`
+    });
+  }
   const vertices = new VertexBuffer(format, mesh.positions.length);
   for (let index = 0; index < mesh.positions.length; index += 1) {
     vertices.setAttribute(index, "position", mesh.positions[index]!);
@@ -1303,6 +1445,60 @@ function generateMeshNormals(
     normals[ic] = add3(normals[ic]!, normal);
   }
   return normals.map((normal) => normalize3(normal));
+}
+
+/**
+ * P5-4: tangent generation for a mesh with no authored TANGENT. MikkTSpace when the lane flag
+ * asked for it and the module is registered; otherwise the legacy triangle-average generator.
+ * The `tangent-derivative-fallback` load issue is reported by the caller — only when the
+ * produced vertex format leaves a tangent-needing program on the derivative frame.
+ */
+async function generateRenderTangents(
+  mesh: GLTFMeshAsset,
+  texcoords: readonly (readonly [number, number])[],
+  renderNormals: readonly (readonly [number, number, number])[],
+  tangentGeneration: GLTFTangentGenerationContext
+): Promise<readonly (readonly [number, number, number, number])[]> {
+  if (tangentGeneration.useMikkTSpace) {
+    try {
+      const generated = await generateMikkTSpaceTangents({
+        positions: flatten3(mesh.positions),
+        normals: flatten3(renderNormals),
+        uvs: flatten2(texcoords),
+        ...(mesh.indices && mesh.indices.length > 0 ? { indices: new Uint32Array(mesh.indices) } : {})
+      });
+      // The MikkTSpace helper unwelds indexed input (output is per-index, xyzw); scatter back
+      // per vertex — last write wins, matching how indexed TANGENT attributes behave.
+      const count = mesh.positions.length;
+      const rows: [number, number, number, number][] = Array.from({ length: count }, () => [0, 0, 0, 1]);
+      if (mesh.indices && mesh.indices.length > 0) {
+        mesh.indices.forEach((vertexIndex, i) => {
+          rows[vertexIndex] = [generated[i * 4] ?? 0, generated[i * 4 + 1] ?? 0, generated[i * 4 + 2] ?? 0, generated[i * 4 + 3] ?? 1];
+        });
+      } else {
+        for (let i = 0; i < count; i += 1) {
+          rows[i] = [generated[i * 4] ?? 0, generated[i * 4 + 1] ?? 0, generated[i * 4 + 2] ?? 0, generated[i * 4 + 3] ?? 1];
+        }
+      }
+      return rows;
+    } catch {
+      // MikkTSpace failure falls back to the legacy generator silently — the program still
+      // runs the generated-attribute path (P5-4 reports the issue only for the derivative path).
+    }
+  }
+  return generateMeshTangents(mesh.positions, texcoords, mesh.indices, mesh.topology, renderNormals);
+}
+
+function flatten3(rows: readonly (readonly [number, number, number])[]): Float32Array {
+  const flat = new Float32Array(rows.length * 3);
+  rows.forEach(([x, y, z], i) => { flat[i * 3] = x; flat[i * 3 + 1] = y; flat[i * 3 + 2] = z; });
+  return flat;
+}
+
+function flatten2(rows: readonly (readonly [number, number])[]): Float32Array {
+  const flat = new Float32Array(rows.length * 2);
+  rows.forEach(([x, y], i) => { flat[i * 2] = x; flat[i * 2 + 1] = y; });
+  return flat;
 }
 
 function generateMeshTangents(
@@ -1533,9 +1729,11 @@ async function createMaterial(
   getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
   options: { readonly skinned?: boolean; readonly instanced?: boolean } = {},
   renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = [],
-  materialsR185 = false
+  materialsR185 = false,
+  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">
 ): Promise<Material> {
-  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185);
+  const qr: GLTFTransmissionQrContext = { ...qrTransmission, materialsR185 };
+  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185, qrTransmission);
   if (options.skinned && !material.unlit) {
     const [
       baseColorTexture,
@@ -1623,10 +1821,10 @@ async function createMaterial(
       iridescenceThicknessTexture,
       anisotropyTexture,
       volumeThicknessTexture,
-      ...pbrExtensionScalarOptions(material)
+      ...pbrExtensionScalarOptions(material, qr)
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (options.instanced && material.unlit && !material.baseColorTexture) {
@@ -1636,7 +1834,7 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (material.unlit) {
@@ -1651,7 +1849,7 @@ async function createMaterial(
         renderState
       });
       applyAlphaCutoff(runtimeMaterial, material);
-      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
       return runtimeMaterial;
     }
     const runtimeMaterial = new UnlitMaterial({
@@ -1660,7 +1858,7 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (options.instanced && !requiresTexturedPBRMaterial(material) && !material.baseColorTexture) {
@@ -1674,7 +1872,7 @@ async function createMaterial(
       emissiveStrength: material.emissiveStrength
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (requiresTexturedPBRMaterial(material)) {
@@ -1687,13 +1885,13 @@ async function createMaterial(
     const runtimeMaterial = new TexturedPBRMaterial({
       name: material.name,
       renderState,
-      baseColor: renderPbrBaseColorFactor(material),
+      baseColor: renderPbrBaseColorFactor(material, qr),
       metallic: material.metallicFactor,
-      roughness: renderPbrRoughnessFactor(material),
+      roughness: renderPbrRoughnessFactor(material, qr),
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
       textureTexCoords: pbrTextureTexCoords(material),
-      ...pbrExtensionScalarOptions(material),
+      ...pbrExtensionScalarOptions(material, qr),
       ...extensionTextureOptions,
       baseColorTexture,
       baseColorSampler: createSampler(material.baseColorTexture ? asset.textures[material.baseColorTexture.texture] : undefined),
@@ -1714,7 +1912,7 @@ async function createMaterial(
       emissiveTextureTransform: material.emissiveTexture?.transform
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   if (material.baseColorTexture) {
@@ -1728,21 +1926,21 @@ async function createMaterial(
       renderState
     });
     applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
     return runtimeMaterial;
   }
   const runtimeMaterial = new PBRMaterial({
     name: material.name,
     renderState,
-    baseColor: renderPbrBaseColorFactor(material),
+    baseColor: renderPbrBaseColorFactor(material, qr),
     metallic: material.metallicFactor,
-    roughness: renderPbrRoughnessFactor(material),
+    roughness: renderPbrRoughnessFactor(material, qr),
     emissiveColor: material.emissiveFactor,
     emissiveStrength: material.emissiveStrength,
-    ...pbrExtensionScalarOptions(material)
+    ...pbrExtensionScalarOptions(material, qr)
   });
   applyAlphaCutoff(runtimeMaterial, material);
-  await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+  await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
   return runtimeMaterial;
 }
 
@@ -1787,26 +1985,38 @@ const BLEND_OPAQUE_ALPHA_THRESHOLD = 0.996;
 export function renderStateForGLTFMaterial(
   material: GLTFMaterialAsset,
   overrides: readonly GLTFMaterialRenderStateOverride[] = [],
-  materialsR185 = false
+  materialsR185 = false,
+  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">
 ): Partial<RenderState> {
-  const blend = requiresTransparentRenderState(material);
+  const qr: GLTFTransmissionQrContext = { ...qrTransmission, materialsR185 };
+  const blend = requiresTransparentRenderState(material, qr);
   // PRD-04 P2-12/E23: the double-sided + metallic + clearcoat back-face cull is a fudge;
   // flag-on honours authored doubleSided.
-  const cullBack = usesUnbackedScalarTransmission(material)
+  const cullBack = usesUnbackedScalarTransmission(material, qr)
     || (!materialsR185 && usesOpaqueDoubleSidedClearcoatShell(material));
-  const baseState: Partial<RenderState> = {
+  // P5-5 (C-04): under the lane flag a MASK material requests alpha-to-coverage. The material
+  // RenderState type predates C-04's `RenderCommandState.alphaToCoverage`, so the field rides
+  // the state object at runtime (validateRenderState preserves unknown keys); the
+  // `prd04.alphaToCoverage` feature reads it and only honours it when the tier has MSAA
+  // samples. Flag-off omits the key entirely.
+  const baseState: Partial<RenderState> & { alphaToCoverage?: boolean } = {
     cullMode: cullBack ? "back" : material.doubleSided ? "none" : "back",
     blend,
-    depthWrite: !blend
+    depthWrite: !blend,
+    ...(materialsR185 && material.alphaMode === "MASK" ? { alphaToCoverage: true } : {})
   };
   const override = overrides.find((entry) => matchesTextOrPattern(material.name, entry.materialName));
   return override ? { ...baseState, ...override.renderState } : baseState;
 }
 
-function requiresTransparentRenderState(material: GLTFMaterialAsset): boolean {
+function requiresTransparentRenderState(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): boolean {
   if (material.alphaMode === "BLEND") return !isEffectivelyOpaqueBlendMaterial(material);
   if (material.alphaMode !== "OPAQUE") return false;
-  if (usesUnbackedScalarTransmission(material)) return false;
+  if (usesUnbackedScalarTransmission(material, qr)) return false;
+  // E22: on the real path transmissive items ride the C-01 `transmission` phase
+  // queue (blend must stay off — the sorter rejects blended transmission), not
+  // the legacy transparent queue.
+  if (qrTransmissionRealPath(qr)) return false;
   return materialHasTransmissionOrVolume(material);
 }
 
@@ -1848,12 +2058,37 @@ function materialHasTransmissionOrVolume(material: GLTFMaterialAsset): boolean {
     || material.volume?.thicknessTexture !== undefined;
 }
 
-function usesUnbackedScalarTransmission(material: GLTFMaterialAsset): boolean {
-  return material.alphaMode === "OPAQUE"
+/**
+ * P4-3 QR context for transmission-path decisions (forwarded flags + renderer mode — the
+ * assets package never resolves `A3D_QR_*` itself).
+ */
+export interface GLTFTransmissionQrContext {
+  readonly materialsR185?: boolean;
+  readonly materialsTransmission?: boolean;
+  readonly transmission?: "auto" | "env" | "off";
+}
+
+/**
+ * E22 gate (PRD-04 P4-3): real transmission rendering exists — so the legacy
+ * unbacked-scalar-transmission rewrite must not run — exactly when
+ * `A3D_QR_MATERIALS` **and** `A3D_QR_MATERIALS_TRANSMISSION` are on **and**
+ * `programCacheSlot.provided` (C-02 real) or `renderer.transmission === "env"`.
+ */
+function qrTransmissionRealPath(qr?: GLTFTransmissionQrContext): boolean {
+  return qr?.materialsR185 === true
+    && qr?.materialsTransmission === true
+    && (programCacheSlot.provided || qr.transmission === "env");
+}
+
+function usesUnbackedScalarTransmission(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): boolean {
+  const unbacked = material.alphaMode === "OPAQUE"
     && (material.transmission?.factor ?? 0) > 0.001
     && material.transmission?.texture === undefined
     && material.diffuseTransmission === undefined
     && material.volume === undefined;
+  // E22 path-gated skip: real transmission handles the material; no rewrite.
+  if (unbacked && qrTransmissionRealPath(qr)) return false;
+  return unbacked;
 }
 
 function usesOpaqueDoubleSidedClearcoatShell(material: GLTFMaterialAsset): boolean {
@@ -1864,15 +2099,15 @@ function usesOpaqueDoubleSidedClearcoatShell(material: GLTFMaterialAsset): boole
     && material.roughnessFactor <= 0.42;
 }
 
-function renderPbrBaseColorFactor(material: GLTFMaterialAsset): readonly [number, number, number, number] {
-  if (!usesUnbackedScalarTransmission(material)) return material.baseColorFactor;
+function renderPbrBaseColorFactor(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): readonly [number, number, number, number] {
+  if (!usesUnbackedScalarTransmission(material, qr)) return material.baseColorFactor;
   const maxColor = Math.max(material.baseColorFactor[0], material.baseColorFactor[1], material.baseColorFactor[2]);
   if (maxColor < 0.8) return material.baseColorFactor;
   return [0.028, 0.036, 0.044, material.baseColorFactor[3]];
 }
 
-function renderPbrRoughnessFactor(material: GLTFMaterialAsset): number {
-  if (!usesUnbackedScalarTransmission(material)) return material.roughnessFactor;
+function renderPbrRoughnessFactor(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): number {
+  if (!usesUnbackedScalarTransmission(material, qr)) return material.roughnessFactor;
   return Math.max(material.roughnessFactor, 0.72);
 }
 
@@ -1916,7 +2151,7 @@ function usesNearestSampler(texture: GLTFTextureAsset | undefined): boolean {
   return sampler.magFilter === "nearest" || sampler.minFilter.startsWith("nearest");
 }
 
-function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
+function pbrExtensionScalarOptions(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): {
   readonly clearcoatFactor?: number;
   readonly clearcoatRoughnessFactor?: number;
   readonly transmissionFactor?: number;
@@ -1945,8 +2180,8 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
       clearcoatRoughnessFactor: renderClearcoatRoughnessFactor(material)
     } : {}),
     ...(material.transmission ? {
-      transmissionFactor: usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor,
-      transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material)
+      transmissionFactor: usesUnbackedScalarTransmission(material, qr) ? 0 : material.transmission.factor,
+      transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material, qr)
     } : {}),
     ...(material.diffuseTransmission ? {
       diffuseTransmissionFactor: material.diffuseTransmission.factor,
@@ -2077,9 +2312,9 @@ async function pbrExtensionTextureOptions(
   };
 }
 
-function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset): number {
+function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset, qr?: GLTFTransmissionQrContext): number {
   const usesUnbackedCutoutTransmission = material.alphaMode === "MASK" && material.transmission?.texture === undefined && material.volume === undefined;
-  return usesUnbackedCutoutTransmission || usesUnbackedScalarTransmission(material) ? 0 : 0.08;
+  return usesUnbackedCutoutTransmission || usesUnbackedScalarTransmission(material, qr) ? 0 : 0.08;
 }
 
 function pbrTextureTexCoords(material: GLTFMaterialAsset): Partial<Record<TexturedPBRTextureSlot, number>> {
@@ -2114,7 +2349,8 @@ async function applyPBRExtensionParameters(
   asset: GLTFAsset,
   runtimeMaterial: Material,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  qr?: GLTFTransmissionQrContext
 ): Promise<void> {
   if (material.clearcoat) {
     runtimeMaterial.setParameter("u_clearcoatFactor", material.clearcoat.factor);
@@ -2131,7 +2367,7 @@ async function applyPBRExtensionParameters(
     }
   }
   if (material.transmission) {
-    runtimeMaterial.setParameter("u_transmissionFactor", usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor);
+    runtimeMaterial.setParameter("u_transmissionFactor", usesUnbackedScalarTransmission(material, qr) ? 0 : material.transmission.factor);
     if (material.transmission.texture) {
       await setTextureParameter(asset, runtimeMaterial, "u_transmissionTexture", material.transmission.texture, "linear", getTexture);
     }

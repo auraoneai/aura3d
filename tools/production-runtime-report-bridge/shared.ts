@@ -157,5 +157,4 @@ function passesRequiredScreenshotPixelStats(path: string, stats: ProductionPngSt
     && stats.detailEdgeDensity >= 0.001
     && stats.localContrast >= 6;
 }
-export function writeThreeJsParityReports(): void { const readiness = readJson('tests/reports/production-runtime-threejs-parity-readiness.json'); writeJsonReport('tests/reports/production-runtime-threejs-visual-parity.json', { schema: 'a3d-production-runtime-threejs-visual-parity', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); writeJsonReport('tests/reports/production-runtime-threejs-runtime-parity.json', { schema: 'a3d-production-runtime-threejs-runtime-parity', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); }
 export function writeWorkflowReadiness(): Json { return bridgeReport('tests/reports/production-runtime-workflows-readiness.json', 'tests/reports/production-runtime-workflow-readiness.json', 'a3d-production-runtime-workflow-readiness'); }

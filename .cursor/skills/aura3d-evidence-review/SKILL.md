@@ -6,8 +6,9 @@ description: Reviews Aura3D work before it is called done, public, or shippable 
 # Aura3D evidence review
 
 A compiling route is not proof. This skill turns a finished change into an
-evidence bundle and one claim label. Label meanings and the benchmark
-exception are in [boundaries](../aura3d-core/references/boundaries.md).
+evidence bundle and one claim label — claim labels live here only; other
+skills link to them, never restate or reinterpret them. Label meanings and the
+benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md).
 
 ## Establish the contract
 
@@ -43,17 +44,18 @@ exception are in [boundaries](../aura3d-core/references/boundaries.md).
    mobile viewports and retain the PNGs with hashes.
 4. For kit-based or prompt-plan scenes, collect structured evidence:
    `collectAuraSceneEvidence(scene)` for bodies, cameras, clips, and asset
-   provenance; the matching helper such as `product.visualQA(nodes)`,
-   `character.visualQA(nodes)`, `charts.visualQA(nodes)`, `city.visualQA(nodes)`,
-   `solar.visualQA(nodes)`, or `material.visualQA(nodes)`; and
-   `compilePromptPlan(plan).report.repairHints`.
+   provenance; `app.diagnostics().look` (resolved look, expansion, lint
+   findings); and `compilePromptPlan(plan).report.repairHints`. Structural
+   name heuristics exist under `structuralQA.*` — they are diagnostics, never
+   acceptance evidence.
 5. Open the screenshots yourself and grade each rubric item `pass`, `warn`,
    or `fail` in one batch. Every verdict cites a file: a PNG, a report field,
    or a validation failure line.
-6. Critique loop, at most 3 rounds. For each `fail`, apply the cheapest
-   targeted fix (a repair hint, the matching scene kit, a better typed asset),
-   rerun only the affected gates, and regrade. Do not change labels, rubric
-   items, or thresholds to make a round pass.
+6. Critique loop, at most 6 rounds for visual findings (the look-dev loop).
+   For each `fail`, apply the highest-leverage fix — lint codes first, then
+   the lowest rubric category (a repair hint, the matching scene kit, a better
+   typed asset), rerun only the affected gates, and regrade. Do not change
+   labels, rubric items, or thresholds to make a round pass.
 7. Grade cinematic scenes on the ladder: L0 text only, L1 primitive sketch,
    L2 asset-backed draft, L3 realtime cinematic scene, L4 production handoff.
    Only L3 or better is public product proof.
@@ -74,6 +76,8 @@ exception are in [boundaries](../aura3d-core/references/boundaries.md).
 - renderer-internal imports offered as root API proof;
 - CSS, DOM, or canvas stand-ins for particles, bloom, lighting, or labels;
 - stale route-health that names assets the source no longer uses;
+- `structuralQA`/`visualQA` name-heuristic output as acceptance evidence — it
+  diagnoses, it does not prove pixels;
 - an in-repo scorer as release proof (use a neutral human or opposite-vendor
   model reviewer);
 - a report generated with missing evidence inputs, even when it exits 0.
@@ -84,11 +88,12 @@ exception are in [boundaries](../aura3d-core/references/boundaries.md).
   work `blocked`, name the missing gate, and do not substitute a weaker check.
 - `assets validate --release` lists provenance failures: label `prototype`
   until durable evidence exists.
-- After 3 critique rounds any rubric item still fails: stop, report the
+- After 6 critique rounds any rubric item still fails: stop, report the
   failing items with their evidence, and label `prototype`.
-- Browser evidence could not be captured (no remote runner available): label
-  the claim `prototype`, list the exact commands a runner must execute, and
-  do not describe visual results you did not see.
+- Browser evidence could not be captured (no capture runner available): the
+  claim stays `prototype` AND the report names which look-dev loop step
+  failed (capture, judge, or lint); do not describe visual results you did
+  not see.
 - The claim needs WebGPU, PBR, postprocess, skinned animation, morph, or game
   runtime proof and the pixels do not show it: remove the claim.
 

@@ -18,8 +18,20 @@ export interface AuraLookLintContext { readonly appliedLook?: AppliedLookReport;
 export interface AuraLookLintRule { readonly code: AuraLookLintCode | `look/${string}`; readonly owner: PrdId; run(s: AuraSceneSnapshot, c: AuraLookLintContext): readonly AuraLookLintFinding[]; }
 
 const lookLintRules = new Map<string, AuraLookLintRule>();
+// Codes installed as PRD 13 defaults (§6.2, T1.5): a lane's registerLookLintRule
+// call for the same code replaces the default without the duplicate-code throw.
+const lookLintDefaultCodes = new Set<string>();
+// The provider's default rules live in agent-api (they need engine imports);
+// this hook installs them lazily at the first lookLint call, so a lane that
+// registers before any diagnostics run always wins its code.
+let lookLintDefaultsProvider: (() => void) | undefined;
+let lookLintDefaultsInstalled = false;
 
 export function lookLint(s: AuraSceneSnapshot, c: AuraLookLintContext): readonly AuraLookLintFinding[] {
+  if (!lookLintDefaultsInstalled) {
+    lookLintDefaultsInstalled = true;
+    lookLintDefaultsProvider?.();
+  }
   const findings: AuraLookLintFinding[] = [];
   for (const rule of lookLintRules.values()) {
     findings.push(...rule.run(s, c));
@@ -28,8 +40,32 @@ export function lookLint(s: AuraSceneSnapshot, c: AuraLookLintContext): readonly
 }
 
 export function registerLookLintRule(rule: AuraLookLintRule): void {
-  if (lookLintRules.has(rule.code)) throw new Error(`LOOK_RULE_DUPLICATE:${rule.code}`);
+  if (lookLintRules.has(rule.code) && !lookLintDefaultCodes.has(rule.code)) {
+    throw new Error(`LOOK_RULE_DUPLICATE:${rule.code}`);
+  }
+  lookLintDefaultCodes.delete(rule.code);
   lookLintRules.set(rule.code, rule);
+}
+
+/** PRD 13 internal: installs default rule bodies for codes no lane registered.
+ *  Re-registration of a defaulted code is allowed (the lane version wins). */
+export function registerLookLintDefaults(rules: readonly AuraLookLintRule[]): void {
+  for (const rule of rules) {
+    if (!lookLintRules.has(rule.code)) {
+      lookLintRules.set(rule.code, rule);
+      lookLintDefaultCodes.add(rule.code);
+    }
+  }
+}
+
+/** PRD 13 internal: hook the lazy default install into the first lookLint call. */
+export function setLookLintDefaultsProvider(provider: () => void): void {
+  lookLintDefaultsProvider = provider;
+}
+
+/** Test seam: registered codes, for assertions about lazy default behaviour. */
+export function lookLintRegisteredCodes(): readonly string[] {
+  return [...lookLintRules.keys()];
 }
 
 export interface AuraLookDiagnostics { readonly id: AuraLookId | "engine-default" | null; readonly expansion: "v1-contracts" | "v0-current-engine" | "none"; readonly missingContracts: readonly ("world.biome" | "environments.preset" | "output.preset" | "quality.auto" | "lights.hemisphere")[]; readonly lint: readonly AuraLookLintFinding[]; }

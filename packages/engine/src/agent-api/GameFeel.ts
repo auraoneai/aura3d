@@ -22,6 +22,7 @@ import type {
   GameEffectsSnapshot,
   GameVec3
 } from "./GameRuntime.js";
+import type { AuraFeelBus, AuraTimeController } from "../contracts/time.js";
 
 /** Combat-proven hit-stop defaults, generalized (fighting kit values). */
 export const GAME_FEEL_HIT_STOP_LIGHT_S = 0.045;
@@ -44,6 +45,21 @@ export interface GameFeelOptions {
   /** Per-update wall-clock budget in milliseconds. Default 2. */
   readonly budgetMs?: number;
   readonly enabled?: boolean;
+  /**
+   * T-7/T-8 (§6.6): when the app is attached, `hitStop(durationMs)` forwards
+   * to `app.time.hitStop(durationMs / 1000, { scope: "global" })` — this kit
+   * stays millisecond-based, the controller is seconds-based. `effectiveDt`
+   * is kept for detached use only.
+   */
+  readonly time?: Pick<AuraTimeController, "hitStop">;
+  /**
+   * F-5: `gameFeel.create({ app })` — when `app.feel` is bound, the
+   * damageFlash/speedLines/landingDust triggers emit `vfx` channel events on
+   * the feel bus, so pixels are produced by the C-20 consumer rather than a
+   * local `effects` port. The local port still wins when both are given
+   * (explicit wiring beats convention).
+   */
+  readonly app?: { readonly feel?: Pick<AuraFeelBus, "define" | "emit"> };
 }
 
 export interface GameFeelReceipt {
@@ -119,6 +135,17 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
   let lineRemainingMs = 0;
   let dustSpawned = 0;
 
+  // F-5: feel-bus routing. `define` runs once at create; emitted vfx count
+  // toward effectsSpawned because C-20 renders them (unrendered only when
+  // neither port is bound).
+  const feelBus = options.effects === undefined ? options.app?.feel : undefined;
+  if (feelBus) {
+    feelBus.define("gamefeel.damage-flash", { vfx: { kind: "damage-flash", count: 1 }, screen: { flash: 0.35 } });
+    feelBus.define("gamefeel.speed-lines", { vfx: { kind: "speed-lines", count: 1 }, screen: { radialBlur: 0.25 } });
+    feelBus.define("gamefeel.landing-dust", { vfx: { kind: "landing-dust", count: 1 } });
+  }
+  let feelVfxSpawned = 0;
+
   let updates = 0;
   let lastMs = 0;
   let maxMs = 0;
@@ -161,7 +188,7 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
       lineIntensity: lineRemainingMs > 0 ? lineIntensity : 0,
       dustSpawned,
       effectsActive: effectsSnapshot?.active ?? 0,
-      effectsSpawned: effectsSnapshot?.spawned ?? 0,
+      effectsSpawned: (effectsSnapshot?.spawned ?? 0) + feelVfxSpawned,
       budget: budget()
     };
   };
@@ -197,6 +224,13 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
       assertFinite(durationMs, api, "durationMs");
       if (durationMs <= 0) throw new RangeError(`${api} durationMs must be > 0.`);
       if (!enabled) return disabled("hitStop");
+      // T-7: attached → forward (seconds) to app.time; local ms freeze stays
+      // exclusively for detached use so the two don't double-freeze a sim
+      // that also consumes effectiveDt.
+      if (options.time) {
+        options.time.hitStop(durationMs / 1000, { scope: "global" });
+        return { accepted: true };
+      }
       // Generalized from the fighting kit: a full freeze for the window.
       hitStopRemainingMs = Math.max(hitStopRemainingMs, durationMs);
       return { accepted: true };
@@ -207,6 +241,12 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
         throw new RangeError(`${api} color must be a non-empty string.`);
       }
       if (!enabled) return disabled("damageFlash");
+      if (feelBus) {
+        feelBus.emit("gamefeel.damage-flash", { position });
+        feelVfxSpawned += 1;
+        flashRemainingMs = 120;
+        return { accepted: true };
+      }
       if (!effects) return unwired("damageFlash");
       const effect = effects.spawn("impact-flash", position, { color, intensity: 1, duration: 0.12 });
       flashRemainingMs = 120;
@@ -217,6 +257,13 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
       assertFinite(intensity, api, "intensity");
       if (intensity < 0 || intensity > 1) throw new RangeError(`${api} intensity must be in [0, 1].`);
       if (!enabled) return disabled("speedLines");
+      if (feelBus) {
+        feelBus.emit("gamefeel.speed-lines", { position, strength: intensity });
+        feelVfxSpawned += 1;
+        lineIntensity = intensity;
+        lineRemainingMs = 280;
+        return { accepted: true };
+      }
       if (!effects) return unwired("speedLines");
       const effect = effects.spawn(intensity > 0.6 ? "slash-trail" : "dash-trail", position, {
         intensity,
@@ -232,6 +279,12 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
         throw new RangeError(`${api} position must be a finite [x, y, z] tuple.`);
       }
       if (!enabled) return disabled("landingDust");
+      if (feelBus) {
+        feelBus.emit("gamefeel.landing-dust", { position });
+        feelVfxSpawned += 1;
+        dustSpawned += 1;
+        return { accepted: true };
+      }
       if (!effects) return unwired("landingDust");
       const effect = effects.spawn("ground-dust", position, { intensity: 0.8, duration: 0.34 });
       dustSpawned += 1;

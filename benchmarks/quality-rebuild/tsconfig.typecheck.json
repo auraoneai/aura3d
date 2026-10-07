@@ -1,0 +1,23 @@
+{
+  "$comment": "Lane-12 scoped typecheck for the quality-rebuild harness + quality-gate sources (CI-safe: noEmit, no repo build).",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "types": ["vite/client"],
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "strict": false
+  },
+  "include": [
+    "./shared/**/*.ts",
+    "./scenes/**/*.ts",
+    "./three/**/*.ts",
+    "./main.ts",
+    "../../tools/quality-gate/src/**/*.ts",
+    "../../tools/quality-rebuild-capture/**/*.mts"
+  ]
+}

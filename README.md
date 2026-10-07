@@ -77,8 +77,9 @@ developer can keep owning after the AI has written the first pass.
   Node-media dependencies.
 - `@aura3d/engine`: public TypeScript runtime for browser 3D scenes and apps.
 - `create-aura3d`: one-command Vite scaffolds for Aura3D projects.
-- `@aura3d/cli`: typed GLB/glTF asset workflow, catalog search, validation,
-  diagnostics, and deploy checks.
+- `@aura3d/cli`: typed GLB/glTF asset workflow, catalog search, look presets
+  and the look-dev loop (`aura3d look capture`), validation, diagnostics, and
+  deploy checks.
 - Package modules for animation, rendering, scene, physics, materials, React,
   product-studio, workflows, controls, environments, and Three.js migration.
 

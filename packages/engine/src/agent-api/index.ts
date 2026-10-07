@@ -290,6 +290,10 @@ export { prefabs } from "./nodes/prefabs/index.js";
 export { primitive, primitives } from "./nodes/primitives.js";
 export { product } from "./nodes/product.js";
 export { definePromptPlan, compilePromptPlan, promptPlanToScene } from "./nodes/prompt/promptPlan.js";
+// CCR-13: lane-13 (prd13) prompt-plan V2 strict path — re-exported through the
+// lane barrel `src/lanes/prd13.ts` and surfaced here like the v1 row.
+export { compilePromptPlanV2, promptPlanToSceneV2, AuraPromptPlanError } from "./nodes/prompt/promptPlanV2.js";
+export type { AuraPromptPlanV2, AuraCompilePromptPlanOptions, AuraPromptPlanErrorCode, AuraPromptPlanReportV2, AuraCompiledPromptPlanV2 } from "./nodes/prompt/promptPlanV2.js";
 export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
 export { promptSubjectIsResolved, resolvePromptPlanSubject } from "./nodes/promptPlans.js";
 export { resolveFrameAssetRenderScale, AuraSceneBuilder, scene } from "./nodes/scene.js";
@@ -406,6 +410,7 @@ export type { LabelCollisionTuning, LabelTelemetry, LabelTelemetryByRole, LabelT
 export { camera } from "./nodes/camera.js";
 export { instances } from "./nodes/instances.js";
 export { lights } from "./nodes/lights.js";
+export { looks } from "./looks/looks.js";
 export { material } from "./nodes/material.js";
 export { particles } from "./nodes/particles.js";
 export { sceneKits } from "./nodes/sceneKits.js";

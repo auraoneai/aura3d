@@ -21,6 +21,7 @@
  * `a3d_prd04_bsdf_lobes_common` (A3DPrd04Lobes, a3dDFG).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_IRIDESCENCE_WGSL from "../physical-wgsl/iridescence.wgsl.js";
 
 const glsl = /* glsl */ `
 const mat3 a3d_prd04_XYZ_TO_REC709 = mat3(
@@ -203,6 +204,7 @@ export const A3D_PRD04_IRIDESCENCE: ShaderChunk = {
 	name: "a3d_prd04_iridescence",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_IRIDESCENCE_WGSL,
 	stage: "fragment",
 	requires: ["brdf", "a3d_prd04_bsdf_lobes_common"]
 };

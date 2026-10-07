@@ -81,7 +81,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 interface StereoResources {
@@ -159,7 +158,7 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
-        `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
+        `Mean RGB delta is ${diff.meanDelta}.`,
         "Three.js StereoEffect uses scissor and viewport half-width calls on one renderer canvas.",
         "This artifact proves A3D public stereo-rig side-by-side semantics against a bounded same-scene workload. It is not a blanket visual equality claim."
       ]
@@ -467,8 +466,7 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return {
     meanDelta: Number(meanDelta.toFixed(4)),
     maxDelta: Number(maxDelta.toFixed(4)),
-    changedPixels,
-    structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4))
+    changedPixels
   };
 }
 
@@ -487,7 +485,7 @@ async function drawStacked(canvas: HTMLCanvasElement, a3dDataUrl: string, threeD
   context.fillText("Top: A3D side-by-side stereo | Bottom: Three.js StereoEffect", 20, SCENE.height * 2 + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height * 2 + 50);
+  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels}`, 20, SCENE.height * 2 + 50);
   return canvas.toDataURL("image/png");
 }
 

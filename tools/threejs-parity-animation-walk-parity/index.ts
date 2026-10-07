@@ -69,7 +69,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 const ASSET = {
@@ -383,7 +382,7 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
     if (delta > 22) changedPixels += 1;
   }
   const meanDelta = total / (a.width * a.height);
-  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
+  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels };
 }
 
 async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
@@ -400,7 +399,7 @@ async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, thr
   context.fillText("Three.js AnimationMixer Walk", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#46515f";
   context.font = "12px sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta}, similarity proxy ${diff.structuralSimilarityProxy}`, 18, ASSET.height + 48);
+  context.fillText(`mean delta ${diff.meanDelta}`, 18, ASSET.height + 48);
   return canvas.toDataURL("image/png");
 }
 

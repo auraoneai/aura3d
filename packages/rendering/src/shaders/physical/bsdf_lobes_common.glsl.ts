@@ -21,6 +21,7 @@
  * a3dDFG.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_BSDF_LOBES_COMMON_WGSL from "../physical-wgsl/bsdf_lobes_common.wgsl.js";
 
 const glsl = /* glsl */ `
 struct A3DPrd04Lobes {
@@ -112,6 +113,7 @@ export const A3D_PRD04_BSDF_LOBES_COMMON: ShaderChunk = {
 	name: "a3d_prd04_bsdf_lobes_common",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_BSDF_LOBES_COMMON_WGSL,
 	stage: "fragment",
 	requires: ["brdf"]
 };

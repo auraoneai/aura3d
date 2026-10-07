@@ -454,6 +454,10 @@
     {
       "name": "@aura3d/engine",
       "file": "packages/engine/src/public/index.ts"
+    },
+    {
+      "name": "@aura3d/rendering/world",
+      "file": "packages/rendering/src/world/index.ts"
     }
   ],
   "subpaths": [

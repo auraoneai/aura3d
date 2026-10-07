@@ -79,6 +79,28 @@ routes need retained playable-surface evidence that binds the character contact
 point, camera, checkpoints, hazards, and finish to the rendered world. Input
 tests alone are not enough.
 
+## Apply the Genre Look
+
+A mechanics-correct game on flat lighting is still a prototype. Before any
+prop work, apply the genre look from the recipe table in
+`docs/agents/art-direction.md`: platformer → `outdoor-day`, racing →
+`golden-hour`, fighting/arena → `arena-fight`, falling blocks → `neon-arcade`.
+The preset supplies environment light, key shadow, fog, background and the
+post grade; `looks.appOptions(<id>)` applies its DPR and quality caps.
+
+Then run the look-dev loop: `aura3d look capture --route / --shots
+opening,mid,action`, judge the frames against the quality-bar rubric,
+`aura3d look lint`, one fix per round. When the capture command is not
+available, stop at `npm run build` and label the route `prototype`.
+
+| Genre | Look | Frame reads as |
+| --- | --- | --- |
+| platformer | `outdoor-day` | blue sky, fog depth, warm key, gold pickups glowing |
+| racing | `golden-hour` | low warm sun, rim on the car, asphalt reflection |
+| fighting | `arena-fight` | spotlight cones, rim on fighters, dark crowd |
+| falling blocks | `neon-arcade` | neon piece hues, glossy board, clear-flash bloom |
+| character | `outdoor-day` | silhouette against horizon fog, contact shadow |
+
 ## Add Typed Assets
 
 When the game needs a character, vehicle, arena, prop, or world model, register
@@ -104,14 +126,15 @@ release examples, `new GLTFLoader()`, or `import * as THREE`.
 ## Minimal Playable Route
 
 ```ts
-import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
+import { createAuraApp, game, looks, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 const app = createAuraApp("#app", {
   scene: scene()
+    .add(looks.preset("arena-fight"))
     .add(model(assets.playerFighter).runtime(game.runtimeNode("player", { tags: ["player"] })))
-    .add(model(assets.arena).runtime(game.runtimeNode("arena", { tags: ["stage"] })))
-    .add(lights.studio())
+    .add(model(assets.arena).runtime(game.runtimeNode("arena", { tags: ["stage"] }))),
+  ...looks.appOptions("arena-fight")
 });
 
 const player = app.nodes.require("player");
@@ -188,7 +211,7 @@ or animation quality by itself.
 For a focused 1v1 starter, use the current fighting helper:
 
 ```ts
-import { createAuraApp, game, games, lights, model, scene } from "@aura3d/engine";
+import { createAuraApp, game, games, looks, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 const stage = games.fighting.stagePreset("neon-dojo");
@@ -204,9 +227,10 @@ const fighting = game.fighting({
 const app = createAuraApp("#app", {
   scene: stage.nodes
     .reduce((builder, node) => builder.add(node), scene())
+    .add(looks.preset("arena-fight"))
     .add(model(assets.playerFighter).runtime(game.runtimeNode("player", { tags: ["fighter"] })))
-    .add(model(assets.rivalFighter).runtime(game.runtimeNode("opponent", { tags: ["fighter"] })))
-    .add(lights.studio())
+    .add(model(assets.rivalFighter).runtime(game.runtimeNode("opponent", { tags: ["fighter"] }))),
+  ...looks.appOptions("arena-fight")
 });
 
 const player = app.nodes.require("player");
