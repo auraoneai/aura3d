@@ -37,6 +37,9 @@ export class BatchedGeometryPool {
   private dirty = false;
   /** Set when any packed member needed 32-bit indices. */
   private needsUint32 = false;
+  /** Device that performed the last `upload`, for context-restore rebuild. */
+  private lastDevice: RenderDevice | null = null;
+  private restoreRegistered = false;
 
   /**
    * Appends `geometry` to the arenas. Every member must share the vertex
@@ -92,6 +95,7 @@ export class BatchedGeometryPool {
 
   /** One upload per build; subsequent calls return the live arenas. */
   upload(device: RenderDevice): { vertexBuffer: RenderBuffer; indexBuffer: RenderBuffer | null; indexType: "uint16" | "uint32" } {
+    this.lastDevice = device;
     if (!this.dirty && this.vertexArena) {
       return { vertexBuffer: this.vertexArena, indexBuffer: this.indexArena, indexType: this.needsUint32 ? "uint32" : "uint16" };
     }
@@ -107,6 +111,24 @@ export class BatchedGeometryPool {
     }
     this.dirty = false;
     return { vertexBuffer: this.vertexArena, indexBuffer: this.indexArena, indexType: this.needsUint32 ? "uint32" : "uint16" };
+  }
+
+  /**
+   * PRD 11 Phase 5 (§6.9): register with the C-29 `ResourceRegistry` once.
+   * The CPU-side `vertexFloats`/`indexData` arrays are the retained source —
+   * rebuild marks the arenas dirty and re-uploads on the last device.
+   */
+  registerForRestore(registry: { register<T extends object>(handle: T, descriptor: { kind: string; rebuild: () => Promise<void> | void }): T }): void {
+    if (this.restoreRegistered) return;
+    this.restoreRegistered = true;
+    registry.register(this, {
+      kind: "a3d-prd11-geometry-pool",
+      rebuild: () => {
+        if (!this.lastDevice) return;
+        this.dirty = true;
+        this.upload(this.lastDevice);
+      }
+    });
   }
 
   get vertexFormat(): VertexFormat | null {
