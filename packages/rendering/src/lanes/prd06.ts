@@ -18,6 +18,7 @@ import type { RenderDevice } from "../RenderDevice.js";
 import { A3D_PRD06_SKINNING_COMMON_GLSL } from "../shaders/deform/skinning.glsl.js";
 import { A3D_PRD06_MORPH_TEXTURE_GLSL } from "../shaders/deform/morph.glsl.js";
 import { A3D_PRD06_DEFORM_GLSL } from "../shaders/deform/deform.glsl.js";
+import { registerPrd06WgslTwins } from "../shaders/deform/twins.js";
 import { registerPrd06DeformDepthFeature } from "../shaders/deform/depthFeature.js";
 import { registerPrd06DeformFeature } from "../shaders/deform/forwardFeature.js";
 import { registerSkinnedBoundsProvider } from "../contracts/shadows.js";
@@ -227,6 +228,13 @@ registerShaderChunk({
   // `vertex:pars` (duplicate attribute/uniform declarations). Helpers land via
   // the feature's `chunks`/`hooks` pairing instead.
 });
+
+/* T2.7 — WGSL twins (C-02 `ShaderChunk.wgsl` equivalent via the lane-11 twin
+ * manifest, which C-02 consumers already read). Storage-buffer bones sized to
+ * the rig + prevBones (skinning twin), morph `texture_2d_array` (morph twin),
+ * and the deform entry helpers. Emitted/validated by tools/wgsl-validate;
+ * Q-11-1 owns the device-side binding. */
+registerPrd06WgslTwins();
 
 // `buildMorphTargetTexture` collides with the PR-0a contracts/deform stub export;
 // reach the real impl through `deformResources.get(flags)` or the direct module.

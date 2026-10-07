@@ -91,6 +91,13 @@ describe("decideSkinningPalettePath — CPU-fallback reason codes", () => {
     expect(decision.path).toBe("data-texture");
   });
 
+  it("T2.7 — the DEFAULT data-texture ceiling is MAX_SKINNING_JOINTS: 191 joints take the GPU path with no overrides", () => {
+    const decision = decideSkinningPalettePath({ jointCount: 191 });
+    expect(decision.cpuFallback).toBe(false);
+    expect(decision.path).toBe("data-texture");
+    expect(decision.reason).toBe("none-data-texture");
+  });
+
   it("rejects non-integer joint counts instead of guessing", () => {
     expect(() => decideSkinningPalettePath({ jointCount: -1 })).toThrow(/non-negative integer/);
   });
