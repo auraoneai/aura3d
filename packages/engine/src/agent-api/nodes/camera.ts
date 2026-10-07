@@ -7,6 +7,32 @@ import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 
+
+
+import { resolveQrFlags } from "../../contracts/flags.js";
+import { smoothingToHalflife } from "../camera/Spring.js";
+
+// X-1: `smoothing` is a legacy scalar; under A3D_QR_CAMERA damping is
+// expressed as a half-life. Warn once per spec object with the equivalent.
+const smoothingWarned = new WeakSet<object>();
+function warnSmoothingDeprecated(options: object | undefined): void {
+  if (!options || smoothingWarned.has(options)) return;
+  const smoothing = (options as { smoothing?: number }).smoothing;
+  if (smoothing === undefined || !resolveQrFlags({}).on("A3D_QR_CAMERA")) return;
+  smoothingWarned.add(options);
+  console.warn(
+    `[aura3d] camera spec 'smoothing' is deprecated under A3D_QR_CAMERA; ` +
+    `it maps to a half-life of ${smoothingToHalflife(smoothing).toFixed(3)}s ` +
+    `(use rig halflife options on app.camera rigs instead).`
+  );
+}
+
+
+
+
+
+
+
 export const camera = {
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
@@ -41,22 +67,25 @@ export const camera = {
     fov: options.fov ?? 45,
     captureTime: options.captureTime
   }),
-  follow: (options: Omit<AuraCameraSpec, "mode"> & { readonly targetNode: string }): AuraCameraSpec => ({
-    mode: "follow",
-    ...resolveCameraClipping(options),
-    targetNode: options.targetNode,
-    distance: options.distance ?? 5,
-    position: options.position,
-    target: options.target ?? [0, 1, 0],
-    offset: options.offset,
-    targetOffset: options.targetOffset,
-    offsetMode: options.offsetMode,
-    fov: options.fov ?? 50,
-    easing: options.easing,
-    captureTime: options.captureTime,
-    smoothing: options.smoothing ?? 0.18,
-    subjectEmphasis: options.subjectEmphasis ?? 0.62
-  }),
+  follow: (options: Omit<AuraCameraSpec, "mode"> & { readonly targetNode: string }): AuraCameraSpec => {
+    warnSmoothingDeprecated(options);
+    return {
+      mode: "follow",
+      ...resolveCameraClipping(options),
+      targetNode: options.targetNode,
+      distance: options.distance ?? 5,
+      position: options.position,
+      target: options.target ?? [0, 1, 0],
+      offset: options.offset,
+      targetOffset: options.targetOffset,
+      offsetMode: options.offsetMode,
+      fov: options.fov ?? 50,
+      easing: options.easing,
+      captureTime: options.captureTime,
+      smoothing: options.smoothing ?? 0.18,
+      subjectEmphasis: options.subjectEmphasis ?? 0.62
+    };
+  },
   path: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "path",
     ...resolveCameraClipping(options),

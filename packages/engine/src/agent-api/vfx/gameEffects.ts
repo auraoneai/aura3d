@@ -1,7 +1,27 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2, GameRuntime.ts region) — verbatim move; 0 changed logic lines.
 
-import type { GameEffectAttachment, GameEffectInstance, GameEffectOptions, GameEffectsController, GameEffectsOptions, GameEffectsSnapshot, GameVec3 } from "../GameRuntime.js";
+import type { GameEffectAttachment, GameEffectInstance, GameEffectOptions, GameEffectPreset, GameEffectsController, GameEffectsSnapshot, GameVec3 } from "../GameRuntime.js";
 import { addVec3, round, vec3 } from "../GameRuntime.js";
+import { prd07FlagOnFor, registerPendingGameEffects } from "./effects-api.js";
+
+/** Carved options declaration (GameRuntime.ts:1155-1164 is re-exported from
+ * here per §7.8). The `app`/`autoMount`/`legacyPrimitiveNodes` fields are the
+ * PRD-07 auto-mount additions. */
+export interface GameEffectsOptions {
+  readonly poolSize?: number;
+  readonly reducedMotion?: boolean;
+  readonly reducedFlash?: boolean;
+  readonly sparks?: GameEffectPreset;
+  readonly trails?: GameEffectPreset;
+  readonly superBurst?: GameEffectPreset;
+  readonly presets?: Record<string, GameEffectPreset>;
+  /** Bind to this app's `app.effects` (§6.3.4); requires A3D_QR_VFX. */
+  readonly app?: unknown;
+  /** Default true — register in the realm pending list when no `app` is given. */
+  readonly autoMount?: boolean;
+  /** Bound only: `nodes()` returns the legacy primitive nodes instead of []. */
+  readonly legacyPrimitiveNodes?: boolean;
+}
 
 export type GameEffectKind =
   | "hit-spark"
@@ -16,12 +36,54 @@ export type GameEffectKind =
   | "ring-shockwave"
   | "super-flash";
 
+/** §7.8 kind mapping — game-effects kind → AuraVfxKind preset name, plus the
+ * option translation (blue 0.6× block-spark; duration/radius → count/speed). */
+const GAME_TO_VFX: Record<GameEffectKind, { preset: string; color?: [number, number, number]; intensityScale?: number }> = {
+  "hit-spark": { preset: "spark" },
+  "block-spark": { preset: "spark", color: [0.4, 0.7, 1], intensityScale: 0.6 },
+  "impact-decal": { preset: "impact-decal" },
+  "ground-dust": { preset: "dust" },
+  "dash-trail": { preset: "streak" },
+  "slash-trail": { preset: "streak" },
+  "impact-flash": { preset: "impact-flash" },
+  "aura-burst": { preset: "aura-burst" },
+  shockwave: { preset: "ring" },
+  "ring-shockwave": { preset: "ring" },
+  "super-flash": { preset: "super-flash" }
+};
+
+interface BoundEffectsApp {
+  effects?: {
+    spawn(effect: string, at: readonly number[], options?: Record<string, unknown>): { stop(o?: { immediate?: boolean }): void };
+    liveCount: number;
+    clear(): void;
+  };
+  onFrame?(cb: (frame: { dt: number }) => void): () => void;
+}
+
 export function createGameEffects(options: GameEffectsOptions = {}): GameEffectsController {
   const poolSize = options.poolSize ?? 96;
   const reducedMotion = options.reducedMotion ?? false;
   const reducedFlash = options.reducedFlash ?? false;
+  const legacyPrimitiveNodes = options.legacyPrimitiveNodes ?? false;
   let spawned = 0;
   let effects: MutableGameEffectInstance[] = [];
+  // §6.3.4 bound state: when bound, spawn forwards to app.effects.spawn and
+  // the app's onFrame drives update(). The local pool is still maintained so
+  // snapshot()/update() semantics don't change for consumers (GameFeel ports).
+  let boundApp: BoundEffectsApp | null = options.app ? (options.app as BoundEffectsApp) : null;
+  let boundOff: (() => void) | null = null;
+  const boundSpawn = (kind: GameEffectKind, position: GameVec3, effectOptions: GameEffectOptions): void => {
+    const fx = boundApp?.effects;
+    if (!fx) return;
+    const map = GAME_TO_VFX[kind];
+    fx.spawn(map.preset, position, {
+      color: effectOptions.color ?? map.color,
+      intensity: (effectOptions.intensity ?? 1) * (map.intensityScale ?? 1),
+      count: Math.max(4, Math.round((effectOptions.radius ?? defaultEffectRadius(kind)) * 32)),
+      seed: spawned
+    });
+  };
   const snapshot = (): GameEffectsSnapshot => ({
     kind: "aura-game-effects",
     active: effects.length,
@@ -33,6 +95,7 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
   });
   const spawn = (kind: GameEffectKind, position: GameVec3, effectOptions: GameEffectOptions = {}): GameEffectInstance => {
     spawned += 1;
+    boundSpawn(kind, resolveEffectAttachmentPosition(effectOptions.attachment, position), effectOptions);
     const flashLimited = reducedFlash && (kind === "impact-flash" || kind === "super-flash");
     const motionLimited = reducedMotion && (kind === "dash-trail" || kind === "slash-trail" || kind === "shockwave" || kind === "ring-shockwave");
     const attachment = effectOptions.attachment;
@@ -54,7 +117,7 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
     effects.push(effect);
     return publicGameEffectInstance(effect);
   };
-  return {
+  const controller: GameEffectsController = {
     spawn,
     emit(combatEvents, effectOptions) {
       const emitted: GameEffectInstance[] = [];
@@ -89,12 +152,29 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
     },
     snapshot,
     nodes() {
+      if (boundApp && !legacyPrimitiveNodes) return [];
       return effects.map(effectToSceneNode);
     },
     clear() {
       effects = [];
+      boundApp?.effects?.clear();
     }
   };
+
+  // §6.3.4 adoption: explicit flag-on app binds now; otherwise (autoMount
+  // default) the controller registers in the realm pending list and the
+  // effects extension binds it when exactly one flag-on app is live.
+  const bind = (app: BoundEffectsApp): void => {
+    boundApp = app;
+    boundOff = app.onFrame?.((frame) => controller.update(frame.dt)) ?? null;
+  };
+  if (options.app && prd07FlagOnFor(options.app as object)) {
+    bind(options.app as BoundEffectsApp);
+  } else if (options.autoMount !== false && !boundApp) {
+    registerPendingGameEffects({ label: "game-effects", bind: (app) => bind(app as BoundEffectsApp) });
+  }
+  void boundOff;
+  return controller;
 }
 
 export type MutableGameEffectInstance = Omit<GameEffectInstance, "age" | "attachment"> & {

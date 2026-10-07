@@ -1,0 +1,38 @@
+{
+  "schema": "a3d-quality-panel-round/1.0",
+  "roundId": "round-0",
+  "panel": "vision-only-single-judge",
+  "sealed": false,
+  "note": "Seed record. The §41 quality-floor notes relocated here from AURA3D-VERIFICATION-MATRIX.md (2026-09-22 Mac GPU pass) as admitted losses, per PRD-12 T0.11.",
+  "aggregates": [],
+  "admittedLosses": [
+    {
+      "route": "showcase-turbo-drift-circuit",
+      "loss": "Weakest frame of the set: washed-out grey, low chase camera. Functional but below the set's bar; flagged for follow-up framing/lighting pass."
+    },
+    {
+      "route": "showcase-courier-rush",
+      "loss": "Van overexposed (bloom blowout) at spawn. Playable; flagged."
+    },
+    {
+      "route": "showcase-aurora-lander",
+      "loss": "Opening frame mostly empty sky (lander high, terrain far below). Framing note, not breakage."
+    },
+    {
+      "route": "showcase-blockfall-reactor",
+      "loss": "Exposes no window.__*_EVIDENCE__ global, breaking the sibling-route evidence convention; QA used DOM/HUD fallback."
+    },
+    {
+      "route": "showcase-turbo-drift-circuit",
+      "loss": "Exposes no window.__*_EVIDENCE__ global, breaking the sibling-route evidence convention; QA used DOM/HUD fallback."
+    },
+    {
+      "route": "showcase-courier-rush",
+      "loss": "Evidence lacks drawCalls field; minor convention gap."
+    },
+    {
+      "route": "showcase-patrol-wing",
+      "loss": "Evidence lacks drawCalls field; minor convention gap."
+    }
+  ]
+}

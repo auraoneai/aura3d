@@ -21,7 +21,7 @@ import {
   resolveGpuTargetOwner,
   spreadGpuTargetInventory,
 } from "./RenderDevice";
-import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TexturePixelData } from "./Texture";
+import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TextureFormat, type TexturePixelData } from "./Texture";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { type VertexAttribute, type VertexFormat } from "./VertexFormat";
@@ -69,6 +69,8 @@ export interface WebGL2DeviceOptions {
   readonly antialias?: boolean;
   readonly alpha?: boolean;
   readonly preserveDrawingBuffer?: boolean;
+  /** §6.9 (lane 01): forwarded to getContext when set; absent = browser default. */
+  readonly powerPreference?: WebGLPowerPreference;
   readonly errorCheckMode?: WebGL2ErrorCheckMode;
 }
 
@@ -76,6 +78,8 @@ export type WebGL2ErrorCheckMode = "strict" | "frame";
 
 export class WebGL2Buffer implements RenderBuffer {
   public disposed = false;
+  /** PRD-01 Phase 6 (CONTRACTS §6.1): device-side cleanup hook — VAO eviction. */
+  public onDispose?: () => void;
 
   constructor(
     public readonly id: number,
@@ -88,8 +92,10 @@ export class WebGL2Buffer implements RenderBuffer {
 
   dispose(): void {
     if (!this.disposed) {
-      this.gl.deleteBuffer(this.handle);
       this.disposed = true;
+      // Evict VAOs referencing this buffer before the GL object goes away.
+      this.onDispose?.();
+      this.gl.deleteBuffer(this.handle);
     }
   }
 }
@@ -114,9 +120,27 @@ export class WebGL2ShaderProgram implements RenderShaderProgram {
   }
 }
 
+export interface WebGL2RenderTargetOptions {
+  readonly dimension?: "2d" | "cube" | "2d-array";
+  readonly layers?: number;
+  readonly colorTextures?: readonly Texture[];
+  readonly extraColorHandles?: readonly WebGLTexture[];
+  readonly layerFramebuffers?: readonly WebGLFramebuffer[];
+  readonly layerTargets?: readonly RenderTarget[];
+  /** Layer children share the parent's GL resources; dispose only marks them. */
+  readonly layerChild?: boolean;
+}
+
 export class WebGL2RenderTarget implements RenderTarget {
   public disposed = false;
   public needsResolve = false;
+  public readonly dimension: "2d" | "cube" | "2d-array";
+  public readonly layers?: number;
+  public readonly colorTextures?: readonly Texture[];
+  public layerTargets?: readonly RenderTarget[];
+  private readonly extraColorHandles: readonly WebGLTexture[];
+  private readonly layerFramebuffers: readonly WebGLFramebuffer[];
+  private readonly layerChild: boolean;
 
   constructor(
     public readonly id: number,
@@ -132,19 +156,44 @@ export class WebGL2RenderTarget implements RenderTarget {
     public readonly sampleCount: number,
     public readonly drawFramebuffer: WebGLFramebuffer,
     public readonly multisampleColorHandle: WebGLRenderbuffer | null,
-    private readonly gl: WebGL2RenderingContext
-  ) {}
+    private readonly gl: WebGL2RenderingContext,
+    options: WebGL2RenderTargetOptions = {}
+  ) {
+    this.dimension = options.dimension ?? "2d";
+    this.layers = options.layers;
+    this.colorTextures = options.colorTextures;
+    this.layerTargets = options.layerTargets;
+    this.extraColorHandles = options.extraColorHandles ?? [];
+    this.layerFramebuffers = options.layerFramebuffers ?? [];
+    this.layerChild = options.layerChild === true;
+  }
 
   dispose(): void {
     if (!this.disposed) {
+      if (this.layerChild) {
+        this.disposed = true;
+        return;
+      }
+      for (const framebuffer of this.layerFramebuffers) {
+        if (framebuffer !== this.framebuffer) this.gl.deleteFramebuffer(framebuffer);
+      }
       this.gl.deleteFramebuffer(this.framebuffer);
       if (this.drawFramebuffer !== this.framebuffer) this.gl.deleteFramebuffer(this.drawFramebuffer);
       this.gl.deleteTexture(this.colorHandle);
+      for (const handle of this.extraColorHandles) {
+        this.gl.deleteTexture(handle);
+      }
       if (this.depthHandle) this.gl.deleteRenderbuffer(this.depthHandle);
       if (this.multisampleColorHandle) this.gl.deleteRenderbuffer(this.multisampleColorHandle);
       if (this.depthTextureHandle) this.gl.deleteTexture(this.depthTextureHandle);
       this.colorTexture.dispose();
+      for (const texture of this.colorTextures ?? []) {
+        if (texture !== this.colorTexture) texture.dispose();
+      }
       this.depthTexture?.dispose();
+      for (const child of this.layerTargets ?? []) {
+        (child as WebGL2RenderTarget).disposed = true;
+      }
       this.disposed = true;
     }
   }
@@ -198,6 +247,7 @@ export class WebGL2Device implements RenderDevice {
 
 
   private buffers = new Set<WebGL2Buffer>();
+  private disposedBufferCount = 0;
   private shaders = new Set<WebGL2ShaderProgram>();
   private renderTargets = new Set<WebGL2RenderTarget>();
 
@@ -284,7 +334,8 @@ export class WebGL2Device implements RenderDevice {
     const gl = options.canvas.getContext("webgl2", {
       antialias: options.antialias ?? true,
       alpha: options.alpha ?? false,
-      preserveDrawingBuffer: options.preserveDrawingBuffer ?? false
+      preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
+      ...(options.powerPreference !== undefined ? { powerPreference: options.powerPreference } : {})
     });
     if (!gl) {
       throw new RenderDeviceError("WebGL2 is not available for the provided canvas", "WEBGL2_UNAVAILABLE");
@@ -421,8 +472,8 @@ export class WebGL2Device implements RenderDevice {
     this.host.lifecycle.clear(color);
   }
 
-  clearRenderTarget(color: readonly [number, number, number, number]): void {
-    this.host.lifecycle.clearRenderTarget(color);
+  clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
+    this.host.lifecycle.clearRenderTarget(color, attachment);
   }
 
   endFrame(): void {
@@ -433,8 +484,8 @@ export class WebGL2Device implements RenderDevice {
     this.host.drawBinder.draw(command);
   }
 
-  readPixels(x: number, y: number, width: number, height: number): Uint8Array {
-    return this.host.probe.readPixels(x, y, width, height);
+  readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array {
+    return this.host.probe.readPixels(x, y, width, height, attachment);
   }
 
   readFloatPixels(x: number, y: number, width: number, height: number): Float32Array {
@@ -507,7 +558,11 @@ export class WebGL2Device implements RenderDevice {
       throw new RenderDeviceError("Failed to allocate WebGL buffer", "WEBGL_ALLOCATION_FAILED");
     }
 
-    const target = usage === "index" ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
+    const target = usage === "index"
+      ? this.gl.ELEMENT_ARRAY_BUFFER
+      : usage === "uniform"
+        ? this.gl.UNIFORM_BUFFER
+        : this.gl.ARRAY_BUFFER;
     this.host.drawBinder.bindNoVertexArray();
     this.stateCache.bindBuffer(target, handle, () => this.gl.bindBuffer(target, handle));
     this.gl.bufferData(target, byteLength, this.gl.DYNAMIC_DRAW);
@@ -522,6 +577,14 @@ export class WebGL2Device implements RenderDevice {
     }
 
     const buffer = new WebGL2Buffer(this.nextId++, usage, byteLength, target, handle, this.gl);
+    buffer.onDispose = () => {
+      // §6.1 declared leak fix: cached VAOs key on buffer ids; a dead buffer's
+      // entries must die with it, and the live-buffer set drops the corpse
+      // (`disposedBuffers` stays meaningful via the monotonic counter).
+      this.host.drawBinder.evictVertexArraysForBuffer(buffer.id);
+      this.buffers.delete(buffer);
+      this.disposedBufferCount += 1;
+    };
     this.buffers.add(buffer);
     return buffer;
   }
@@ -540,6 +603,15 @@ export class WebGL2Device implements RenderDevice {
     this.stateCache.bindBuffer(webglBuffer.target, webglBuffer.handle, () => this.gl.bindBuffer(webglBuffer.target, webglBuffer.handle));
     this.gl.bufferSubData(webglBuffer.target, byteOffset, data);
     this.host.counters.bufferUpdateCount += 1;
+  }
+
+  bindUniformBuffer(buffer: RenderBuffer, binding: number): void {
+    this.host.lifecycle.assertAlive();
+    const webglBuffer = this.host.drawBinder.requireBuffer(buffer);
+    if (webglBuffer.target !== this.gl.UNIFORM_BUFFER) {
+      throw new RenderDeviceError("Buffer was not created with usage 'uniform'", "INVALID_BUFFER_USAGE", { bufferId: buffer.id });
+    }
+    this.gl.bindBufferBase(this.gl.UNIFORM_BUFFER, binding, webglBuffer.handle);
   }
 
   readBuffer(buffer: RenderBuffer, byteOffset = 0, byteLength = buffer.byteLength - byteOffset): Uint8Array {
@@ -601,6 +673,15 @@ export class WebGL2Device implements RenderDevice {
 
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
     this.host.lifecycle.assertAlive();
+    if (
+      (descriptor.dimension !== undefined && descriptor.dimension !== "2d") ||
+      descriptor.layers !== undefined ||
+      descriptor.depthOnly === true ||
+      descriptor.depthCompare === true ||
+      (descriptor.colorAttachments?.length ?? 0) > 0
+    ) {
+      return this.createFeatureRenderTarget(descriptor);
+    }
     if (
       !Number.isInteger(descriptor.width) ||
       descriptor.width <= 0 ||
@@ -767,6 +848,308 @@ export class WebGL2Device implements RenderDevice {
     return target;
   }
 
+  /**
+   * PR 0a render-target fields (CONTRACTS §3.4): `dimension`/`layers` (cube +
+   * 2d-array layered targets rendered through `layerTargets`), `depthOnly`
+   * (no color attachment), `depthCompare` (comparison-sampler depth texture)
+   * and `colorAttachments` (MRT, per-layer `drawBuffers` state).
+   */
+  private createFeatureRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
+    const gl = this.gl;
+    if (
+      !Number.isInteger(descriptor.width) ||
+      descriptor.width <= 0 ||
+      !Number.isInteger(descriptor.height) ||
+      descriptor.height <= 0
+    ) {
+      throw new RenderDeviceError("Render target dimensions must be positive integers", "INVALID_RENDER_TARGET_SIZE", {
+        width: descriptor.width,
+        height: descriptor.height,
+        label: descriptor.label
+      });
+    }
+    const dimension = descriptor.dimension ?? "2d";
+    if (descriptor.layers !== undefined && (!Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
+      throw new RenderDeviceError("Render target layer count must be a positive integer", "INVALID_RENDER_TARGET_SIZE", {
+        layers: descriptor.layers,
+        label: descriptor.label
+      });
+    }
+    if (descriptor.layers !== undefined && dimension !== "2d-array") {
+      throw new RenderDeviceError("Render target `layers` only applies to dimension \"2d-array\"", "INVALID_RENDER_TARGET_SIZE", {
+        dimension,
+        layers: descriptor.layers,
+        label: descriptor.label
+      });
+    }
+    const layerCount = dimension === "cube" ? 6 : dimension === "2d-array" ? descriptor.layers ?? 1 : 1;
+    const depthOnly = descriptor.depthOnly === true;
+    if (depthOnly && (descriptor.colorAttachments?.length ?? 0) > 0) {
+      throw new RenderDeviceError("Render target cannot combine `depthOnly` with `colorAttachments`", "INVALID_RENDER_TARGET_SIZE", {
+        label: descriptor.label
+      });
+    }
+    if (depthOnly && descriptor.depth === false) {
+      throw new RenderDeviceError("Render target cannot combine `depthOnly` with `depth: false`", "INVALID_RENDER_TARGET_SIZE", {
+        label: descriptor.label
+      });
+    }
+    const sampleCount = descriptor.sampleCount ?? 1;
+    const colorAttachmentCount = depthOnly ? 0 : Math.max(1, descriptor.colorAttachments?.length ?? 1);
+    if (sampleCount > 1 && (depthOnly || descriptor.depthCompare === true || descriptor.colorAttachments !== undefined || layerCount > 1)) {
+      throw new RenderDeviceError("Multisample render targets do not support layered, depth-only, compare or MRT descriptors", "INVALID_RENDER_TARGET_SAMPLE_COUNT", {
+        sampleCount,
+        label: descriptor.label
+      });
+    }
+    const maxSamples = Number(gl.getParameter(gl.MAX_SAMPLES) ?? 1);
+    if (!Number.isInteger(sampleCount) || sampleCount < 1 || sampleCount > maxSamples) {
+      throw new RenderDeviceError("WebGL2 render-target sampleCount must be an integer supported by MAX_SAMPLES.", "INVALID_RENDER_TARGET_SAMPLE_COUNT", {
+        sampleCount,
+        maxSamples,
+        label: descriptor.label
+      });
+    }
+
+    const label = descriptor.label ?? "render-target";
+    const textureTarget = dimension === "cube" ? gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+    const depthMode = depthOnly || descriptor.depth === "texture" || (layerCount > 1 && descriptor.depth !== false) ? "texture" : descriptor.depth === false ? "none" : "renderbuffer";
+    const depthCompare = descriptor.depthCompare === true;
+
+    const colorFormats: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">[] = depthOnly
+      ? []
+      : colorAttachmentCount === 1 && !descriptor.colorAttachments
+        ? [descriptor.format ?? "rgba8"]
+        : (descriptor.colorAttachments ?? [{ format: descriptor.format ?? "rgba8" }]).map((attachment) => attachment.format);
+    const colorHandles: WebGLTexture[] = [];
+    const colorTextures: Texture[] = [];
+    let depthTextureHandle: WebGLTexture | null = null;
+    const layerFramebuffers: WebGLFramebuffer[] = [];
+
+    const cleanup = (): void => {
+      for (const handle of colorHandles) gl.deleteTexture(handle);
+      if (depthTextureHandle) gl.deleteTexture(depthTextureHandle);
+      for (const framebuffer of layerFramebuffers) gl.deleteFramebuffer(framebuffer);
+    };
+
+    const previousActiveTexture = gl.getParameter(gl.ACTIVE_TEXTURE) as GLenum;
+    gl.activeTexture(gl.TEXTURE0);
+    const previousTexture = gl.getParameter(gl.TEXTURE_BINDING_2D) as WebGLTexture | null;
+    const previousCubeTexture = gl.getParameter(gl.TEXTURE_BINDING_CUBE_MAP) as WebGLTexture | null;
+    const previousArrayTexture = gl.getParameter(gl.TEXTURE_BINDING_2D_ARRAY) as WebGLTexture | null;
+    const previousFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+
+    for (let attachment = 0; attachment < colorFormats.length; attachment += 1) {
+      const format = colorFormats[attachment];
+      const textureFormat = resolveRenderTargetFormat(gl, format);
+      const handle = gl.createTexture();
+      if (!handle) {
+        cleanup();
+        throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
+      }
+      colorHandles.push(handle);
+      colorTextures.push(
+        new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension, layers: dimension === "2d" ? undefined : layerCount })
+      );
+      gl.bindTexture(textureTarget, handle);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      if (dimension === "2d") {
+        gl.texImage2D(textureTarget, 0, textureFormat.internalFormat, descriptor.width, descriptor.height, 0, gl.RGBA, textureFormat.type, null);
+      } else if (dimension === "cube") {
+        gl.texStorage2D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height);
+      } else {
+        gl.texStorage3D(textureTarget, 1, textureFormat.internalFormat, descriptor.width, descriptor.height, layerCount);
+      }
+    }
+
+    let depthTexture: Texture | undefined;
+    if (depthMode === "texture") {
+      depthTextureHandle = gl.createTexture();
+      if (!depthTextureHandle) {
+        cleanup();
+        throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
+      }
+      depthTexture = new Texture({
+        width: descriptor.width,
+        height: descriptor.height,
+        format: "depth24",
+        label: `${label}-depth`,
+        dimension,
+        layers: dimension === "2d" ? undefined : layerCount
+      });
+      gl.bindTexture(textureTarget, depthTextureHandle);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      if (depthCompare) {
+        gl.texParameteri(textureTarget, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        gl.texParameteri(textureTarget, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+      }
+      if (dimension === "2d-array") {
+        gl.texImage3D(textureTarget, 0, gl.DEPTH_COMPONENT24, descriptor.width, descriptor.height, layerCount, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+      } else if (dimension === "cube") {
+        gl.texStorage2D(textureTarget, 1, gl.DEPTH_COMPONENT24, descriptor.width, descriptor.height);
+      } else {
+        gl.texImage2D(textureTarget, 0, gl.DEPTH_COMPONENT24, descriptor.width, descriptor.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+      }
+    }
+
+    let depthRenderbufferHandle: WebGLRenderbuffer | null = null;
+    if (depthMode === "renderbuffer") {
+      depthRenderbufferHandle = gl.createRenderbuffer();
+      if (!depthRenderbufferHandle) {
+        cleanup();
+        throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
+      }
+      const previousRenderbuffer = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
+      gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbufferHandle);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, descriptor.width, descriptor.height);
+      gl.bindRenderbuffer(gl.RENDERBUFFER, previousRenderbuffer);
+    }
+
+    const drawBuffers = depthOnly
+      ? [gl.NONE]
+      : colorFormats.map((_, attachment) => gl.COLOR_ATTACHMENT0 + attachment);
+    const attachLayer = (framebuffer: WebGLFramebuffer, layer: number): boolean => {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      if (depthOnly) {
+        gl.drawBuffers([gl.NONE]);
+        gl.readBuffer(gl.NONE);
+      } else if (drawBuffers.length > 1) {
+        gl.drawBuffers(drawBuffers);
+      }
+      for (let attachment = 0; attachment < colorHandles.length; attachment += 1) {
+        if (dimension === "cube") {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + layer, colorHandles[attachment], 0);
+        } else if (dimension === "2d-array") {
+          gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, colorHandles[attachment], 0, layer);
+        } else {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, colorHandles[attachment], 0);
+        }
+      }
+      if (depthTextureHandle) {
+        if (dimension === "cube") {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + layer, depthTextureHandle, 0);
+        } else if (dimension === "2d-array") {
+          gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, depthTextureHandle, 0, layer);
+        } else {
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTextureHandle, 0);
+        }
+      }
+      if (depthRenderbufferHandle) {
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderbufferHandle);
+      }
+      return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    };
+
+    for (let layer = 0; layer < layerCount; layer += 1) {
+      const framebuffer = gl.createFramebuffer();
+      if (!framebuffer) {
+        cleanup();
+        throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
+      }
+      layerFramebuffers.push(framebuffer);
+      if (!attachLayer(framebuffer, layer)) {
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        cleanup();
+        if (depthRenderbufferHandle) gl.deleteRenderbuffer(depthRenderbufferHandle);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, previousFramebuffer);
+        gl.bindTexture(gl.TEXTURE_2D, previousTexture);
+        if (previousCubeTexture !== null) gl.bindTexture(gl.TEXTURE_CUBE_MAP, previousCubeTexture);
+        if (previousArrayTexture !== null) gl.bindTexture(gl.TEXTURE_2D_ARRAY, previousArrayTexture);
+        gl.activeTexture(previousActiveTexture);
+        this.stateCache.invalidate();
+        throw new RenderDeviceError("WebGL render target framebuffer status is invalid", "FRAMEBUFFER_INVALID", { status, layer, label });
+      }
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, previousFramebuffer);
+    gl.bindTexture(gl.TEXTURE_2D, previousTexture);
+    if (previousCubeTexture !== null) gl.bindTexture(gl.TEXTURE_CUBE_MAP, previousCubeTexture);
+    if (previousArrayTexture !== null) gl.bindTexture(gl.TEXTURE_2D_ARRAY, previousArrayTexture);
+    gl.activeTexture(previousActiveTexture);
+    this.stateCache.invalidate();
+
+    const colorTexture = colorTextures[0] ?? new Texture({ width: descriptor.width, height: descriptor.height, format: "rgba8", label: `${label}-colorless`, dimension });
+    let parentColorHandle = colorHandles[0];
+    if (!parentColorHandle) {
+      // Depth-only targets keep a placeholder Texture in `colorTexture`; give it a
+      // real (never-attached, never-registered) GL handle so dispose stays sound.
+      parentColorHandle = gl.createTexture();
+      if (!parentColorHandle) {
+        cleanup();
+        if (depthRenderbufferHandle) gl.deleteRenderbuffer(depthRenderbufferHandle);
+        throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
+      }
+    }
+    const target = new WebGL2RenderTarget(
+      this.nextId++,
+      descriptor.width,
+      descriptor.height,
+      label,
+      colorTexture,
+      depthTexture,
+      layerFramebuffers[0],
+      parentColorHandle,
+      depthRenderbufferHandle,
+      depthTextureHandle,
+      1,
+      layerFramebuffers[0],
+      null,
+      gl,
+      {
+        dimension,
+        layers: layerCount > 1 ? layerCount : undefined,
+        colorTextures: colorTextures.length > 1 ? colorTextures : undefined,
+        extraColorHandles: colorHandles.slice(1),
+        layerFramebuffers,
+        layerChild: false
+      }
+    );
+    if (layerCount > 1) {
+      const children: RenderTarget[] = layerFramebuffers.map(
+        (framebuffer, layer) =>
+          new WebGL2RenderTarget(
+            this.nextId++,
+            descriptor.width,
+            descriptor.height,
+            `${label}-layer-${layer}`,
+            colorTexture,
+            depthTexture,
+            framebuffer,
+            colorHandles[0],
+            null,
+            depthTextureHandle,
+            1,
+            framebuffer,
+            null,
+            gl,
+            { dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true }
+          )
+      );
+      // layerTargets shares parent GL resources; children only mark dispose.
+      target.layerTargets = children;
+      for (const child of children) {
+        this.renderTargets.add(child as WebGL2RenderTarget);
+      }
+    }
+    this.renderTargets.add(target);
+    if (/shadow|(?:^|-)csm(?:-|$)/i.test(label)) this.host.counters.shadowRenderTargetsAllocated += 1;
+    for (let attachment = 0; attachment < colorHandles.length; attachment += 1) {
+      this.host.textureRegistry.textures.set(colorTextures[attachment], colorHandles[attachment]);
+      this.host.textureRegistry.textureUploadModes.set(colorTextures[attachment], colorFormats[attachment]);
+    }
+    if (depthTexture && depthTextureHandle) {
+      this.host.textureRegistry.textures.set(depthTexture, depthTextureHandle);
+      this.host.textureRegistry.textureUploadModes.set(depthTexture, "depth-render-target");
+    }
+    return target;
+  }
+
   setRenderTarget(target: RenderTarget | null): void {
     this.host.lifecycle.assertAlive();
     if (this.host.activeRenderTarget && this.host.activeRenderTarget !== target) {
@@ -917,7 +1300,7 @@ export class WebGL2Device implements RenderDevice {
       stateCacheBufferBinds: stateCacheStats.byOperation.bindBuffer?.issued ?? 0,
       stateCacheVertexArrayBinds: stateCacheStats.byOperation.bindVertexArray?.issued ?? 0,
       stateCacheSamplerBinds: stateCacheStats.byOperation.bindSampler?.issued ?? 0,
-      disposedBuffers: [...this.buffers].filter((buffer) => buffer.disposed).length,
+      disposedBuffers: this.disposedBufferCount + [...this.buffers].filter((buffer) => buffer.disposed).length,
       disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].filter((target) => target.colorTexture.disposed).length + this.host.counters.releasedTextureHandles,

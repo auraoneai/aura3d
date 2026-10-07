@@ -1,0 +1,496 @@
+From 17e6d1684c536f6b98193424b5fcc719b60d37ee Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:19:33 +0000
+Subject: [PATCH] [QR-09] patrol-wing: createGame + capture cleanup + prop
+ engine loop + evidence/drive
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-patrol-wing/src/evidence.ts     |   8 ++
+ apps/showcase-patrol-wing/src/main.ts         | 127 +++++++++---------
+ .../src/scenario-drive.ts                     |  11 ++
+ .../src/scenarios/index.ts                    |  11 ++
+ apps/showcase-patrol-wing/src/sky.ts          |  35 +----
+ apps/showcase-patrol-wing/src/wing-audio.ts   |  33 ++++-
+ 6 files changed, 132 insertions(+), 93 deletions(-)
+ create mode 100644 apps/showcase-patrol-wing/src/evidence.ts
+ create mode 100644 apps/showcase-patrol-wing/src/scenario-drive.ts
+ create mode 100644 apps/showcase-patrol-wing/src/scenarios/index.ts
+
+diff --git a/apps/showcase-patrol-wing/src/evidence.ts b/apps/showcase-patrol-wing/src/evidence.ts
+new file mode 100644
+index 00000000..049095dc
+--- /dev/null
++++ b/apps/showcase-patrol-wing/src/evidence.ts
+@@ -0,0 +1,8 @@
++/** Lazy route evidence sections (PRD-09 §6.5). */
++export type EvidenceCollect = () => Record<string, unknown>;
++let collect: EvidenceCollect | undefined;
++export function bindPatrolEvidence(fn: EvidenceCollect): void { collect = fn; }
++export const sections = {
++  patrol: (): Record<string, unknown> =>
++    (collect ?? (() => ({ status: "unbound" })))()
++};
+diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+index 086be8a4..1c2e9285 100644
+--- a/apps/showcase-patrol-wing/src/main.ts
++++ b/apps/showcase-patrol-wing/src/main.ts
+@@ -14,7 +14,6 @@
+  */
+ import {
+   camera,
+-  createGameApp,
+   effects,
+   game,
+   lights,
+@@ -26,6 +25,16 @@ import {
+   type AuraRuntimeNodeHandle,
+   type AuraSceneNode
+ } from "@aura3d/engine";
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
++import { bindPatrolEvidence } from "./evidence";
++import { bindPatrolDrive } from "./scenario-drive";
+ import { assets } from "../../../src/aura-assets";
+ import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome, type Vec3 } from "./flight";
+ import {
+@@ -73,8 +82,7 @@ type PatrolWindow = Window & {
+ const patrolWindow = window as PatrolWindow;
+ const reducedMotion = typeof window.matchMedia === "function"
+   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
++document.body.dataset.capture = "default";
+ 
+ const APP_ID = "showcase-patrol-wing";
+ const PRIMARY_ASSET_REFS = [assets.patrolAircraftMeshy, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
+@@ -181,7 +189,7 @@ let frameCount = 0;
+ let timeInPatrolValue = 0;
+ let failTimer = 0;
+ let gradeTimer = 0;
+-let paused = false;
++
+ let cameraMode: "chase" | "cockpit" = "chase";
+ let evidenceCombatFocus = false;
+ /** Live target point used only by the deterministic combat review composition. */
+@@ -231,8 +239,7 @@ function heroNodes(): AuraSceneNode[] {
+       name: "patrol-plane",
+       role: "primaryCharacter",
+       scaleMode: "fit",
+-      targetMaxDimension: visualReviewCapture ? 5.6 : 4.2
+-    })
++      targetMaxDimension: 4.2})
+       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
+       .rotate(0, PAD_HEADING_YAW, 0)
+       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
+@@ -279,10 +286,7 @@ function heroNodes(): AuraSceneNode[] {
+         name: `drone-slot-${slot}`,
+         role: slot === 0 ? "primaryCharacter" : "setDressing",
+         scaleMode: "fit",
+-        targetMaxDimension: visualReviewCapture
+-          ? (slot === 0 ? 2.5 : 1.92)
+-          : (slot === 0 ? 2.05 : 1.78)
+-      })
++        targetMaxDimension: (slot === 0 ? 2.05 : 1.78)})
+         .position(0, -60 - slot, 0)
+         .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
+         .toJSON()
+@@ -313,7 +317,7 @@ function heroNodes(): AuraSceneNode[] {
+           material: material.emissive({ name: `orb ${orb} glow`, color: "#8a3b18", emissive: "#ff9d3d", emissiveIntensity: 2.1, roughness: 0.3 })
+         })
+         .position(0, -70 - orb, 0)
+-        .scale(visualReviewCapture ? 0.24 : 0.38)
++        .scale(0.38)
+         .runtime({ id: `orb-${orb}`, tags: ["return-fire"] })
+         .toJSON()
+     );
+@@ -329,7 +333,7 @@ function heroNodes(): AuraSceneNode[] {
+         })
+       })
+         .position(0, -70, 0)
+-        .scale([0.045, 0.045, visualReviewCapture ? 0.72 : 0.7])
++        .scale([0.045, 0.045, 0.7])
+         .runtime({ id: `orb-trail-${orb}`, tags: ["return-fire", "projectile-feedback", "renderer-owned"] })
+         .toJSON()
+     );
+@@ -441,13 +445,13 @@ const chaseCameraSpec = camera.follow({
+   // The review lens is a little lower and tighter so the typed aircraft owns
+   // the foreground while the island, rings, drones, and horizon still supply
+   // a readable flight corridor. Public gameplay keeps the wider chase.
+-  offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
+-  targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
+-  fov: visualReviewCapture ? 50 : 47,
++  offset: ([0, 2.5, 7.25]) as [number, number, number],
++  targetOffset: [0.34, 0.6, -0.7],
++  fov: 47,
+   // Exact review evidence captures the visible and suppressed subject at the
+   // same authored camera pose. Follow smoothing would advance between those
+   // two renderer submissions and turn camera motion into false subject pixels.
+-  smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,
++  smoothing: reducedMotion ? 0 : 0.06,
+   subjectEmphasis: 0.82
+ });
+ 
+@@ -460,7 +464,7 @@ function buildScene(): ReturnType<typeof scene> {
+   // opaque and reads as layered colour bands; the accent slivers are dropped
+   // entirely because at 0.08 unit scale they were invisible except as artifacts.
+   const atmosphereMaterial = material.pbr({ name: "review flight atmosphere", color: "#4f8fbf", roughness: 0.92, metallic: 0 });
+-  const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
++  const flightAtmosphere = Array.from({ length: 8}, (_, index) => {
+     const side = index % 2 === 0 ? -1 : 1;
+     const lane = Math.floor(index / 2);
+     const x = side * (9 + lane * 3.1);
+@@ -506,7 +510,7 @@ function buildScene(): ReturnType<typeof scene> {
+     material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 1.15 }),
+     material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.9 })
+   ];
+-  const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
++  const flightStreaks = Array.from({ length: 16}, (_, index) => {
+     const lane = index % 8;
+     const depth = Math.floor(index / 8);
+     const side = lane % 2 === 0 ? -1 : 1;
+@@ -517,16 +521,16 @@ function buildScene(): ReturnType<typeof scene> {
+       .toJSON();
+   });
+   return scene()
+-    .background(visualReviewCapture ? "#16364e" : "#254760")
+-    .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
++    .background("#254760")
++    .addMany(arenaNodes())
+     .addMany(heroNodes())
+     .addMany(flightAtmosphere)
+-    .addMany(visualReviewCapture ? [] : skyBandNodes)
+-    .addMany(visualReviewCapture ? [] : flightStreaks)
++    .addMany(skyBandNodes)
++    .addMany(flightStreaks)
+     .addMany(arenaLighting().nodes)
+     .addMany([
+-      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
+-      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
++      effects.fog({ name: "coastal haze", density: 0.0042, color: "#42647a", intensity: 0.42}),
++      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
+       effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }),
+       effects.antiAlias({ mode: "fxaa" }),
+       lights.spot({ name: "lead aircraft landing spot", position: [0, 14, 12], target: [0, 8, 0], angle: 0.5, penumbra: 0.45, distance: 60, decay: 2, intensity: 3.2, color: "#fff2d8", shadow: true }),
+@@ -538,7 +542,9 @@ function buildScene(): ReturnType<typeof scene> {
+ }
+ 
+ // ---------------------------------------------------------------- mount -------
+-const gameApp = createGameApp("#app", {
++const patrolGame = createGame({
++  id: "showcase-patrol-wing",
++  target: "#app",
+   diagnostics: { overlay: false, performancePanel: false },
+   physics: {
+     seed: 20260917,
+@@ -564,10 +570,28 @@ const gameApp = createGameApp("#app", {
+     touch: true
+   },
+   loop: { fixedDt: FLIGHT_DT, maxSubSteps: 4 },
+-  scene: buildScene()
++  scene: buildScene(),
++  qualityRebuild: { flags: ["game"] },
++  evidence: {
++    schema: 1,
++    sections: async () => (await import("./evidence")).sections,
++    legacyGlobals: ["__AURA3D_SHOWCASE_PATROL_WING__"]
++  },
++  scenarios: async () => (await import("./scenarios")).patrolScenarios
++});
++const app = patrolGame.runtime;
++patrolGame.start();
++const input = patrolGame.input!;
++bindPatrolEvidence(() => collectPatrolEvidence());
++bindPatrolDrive({
++  pumpFrames: (n) => {
++    const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
++    app.pause();
++    for (let i = 0; i < bounded; i += 1) app.advance(FLIGHT_DT);
++    app.resume();
++  },
++  stage: (id) => patrolWindow.__PW_SCENARIO__?.(id) ?? "unbound"
+ });
+-const app = gameApp.app;
+-const input = gameApp.input!;
+ if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
+ 
+ const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
+@@ -675,7 +699,7 @@ function syncHud(): void {
+   ui.setText("#pw-ev-flight", "authored");
+   ui.setText("#pw-ev-sensors", String(arena.sensorEventCount()));
+   ui.setText("#pw-ev-ghost", ghostPlayer?.playing ? "playing" : ghostRecorder.frameCount > 0 ? "recorded" : "idle");
+-  banner.textContent = paused
++  banner.textContent = patrolGame.session.paused
+     ? "PAUSED - P TO RESUME"
+     : stateValue === "preflight"
+       ? "PATROL WING - SHIFT THROTTLE UP, TAKE OFF"
+@@ -842,10 +866,11 @@ function resetToPad(nextPatrol?: number): void {
+ }
+ 
+ function togglePause(): void {
+-  paused = !paused;
++  if (patrolGame.session.patrolGame.session.paused) patrolGame.session.resume();
++  else patrolGame.session.pause("user");
+   syncHud();
+   publishEvidence();
+-  if (paused) app.pause();
++  if (patrolGame.session.patrolGame.session.paused) app.pause();
+   else app.resume();
+ }
+ 
+@@ -918,13 +943,13 @@ function spawnWave(wave: number): void {
+ }
+ 
+ // ------------------------------------------------------------- evidence -------
+-function publishEvidence(): void {
++function collectPatrolEvidence(): Record<string, unknown> {
+   const evidence = {
+     // Contract keys from the PRD evidence section.
+     mounted: true,
+     status: "ready" as const,
+     patrol: patrolValue,
+-    state: paused ? "paused" : stateValue,
++    state: patrolGame.session.paused ? "paused" : stateValue,
+     hull: Math.round(hullValue),
+     ringIndex: rings.nextRing,
+     ringValidity: rings.validity,
+@@ -989,6 +1014,11 @@ function publishEvidence(): void {
+     mountedAtEpochMs: Date.now()
+   };
+   patrolWindow.__PATROL_WING_EVIDENCE__ = evidence;
++  return evidence;
++}
++
++function publishEvidence(): void {
++  collectPatrolEvidence();
+ }
+ 
+ // Renderer-owned capture used by specs and probes (no compositor dependency).
+@@ -1457,11 +1487,11 @@ function syncOrbVisuals(): void {
+ }
+ 
+ // ------------------------------------------------------------- frame loop -----
+-gameApp.onFrame(({ dt }) => {
++patrolGame.runtime.onFrame(({ dt }) => {
+   input.update(dt);
+   frameCount += 1;
+ 
+-  if (paused) {
++  if (patrolGame.session.paused) {
+     manualAdvanceFrame();
+     return;
+   }
+@@ -1624,29 +1654,4 @@ syncPlaneVisual();
+ syncHud();
+ publishEvidence();
+ 
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  configurable: true,
+-  value: {
+-    category: "application",
+-    subject: { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], rotation: [0, PAD_HEADING_YAW, 0], targetSize: 4.4 },
+-    async settleSubjectPose() {
+-      app.pause();
+-      await app.ready();
+-      // The retained route-primary artifact must show the named flight game,
+-      // not a parked aircraft on an empty pad. Stage the real deterministic
+-      // drone-hit exchange used by the playable evidence producer: the
+-      // FlightModel is airborne and banked, the typed interceptor is live, and
+-      // cannon/impact geometry is bound to actual combat events. This hook is
+-      // called only by the evidence producer; normal visitors still boot at
+-      // the preflight pad and must take off with Shift.
+-      patrolWindow.__PW_SCENARIO__?.("drone-pass");
+-      app.pause();
+-      await app.stepAsync(0);
+-    },
+-    async setSubjectSuppressed(suppressed: boolean) {
+-      app.pause();
+-      planeHandle.setVisible(!suppressed);
+-      await app.stepAsync(0);
+-    }
+-  }
+-});
++
+diff --git a/apps/showcase-patrol-wing/src/scenario-drive.ts b/apps/showcase-patrol-wing/src/scenario-drive.ts
+new file mode 100644
+index 00000000..337b7299
+--- /dev/null
++++ b/apps/showcase-patrol-wing/src/scenario-drive.ts
+@@ -0,0 +1,11 @@
++/** Imperative drive surface for `?capture=scenario` staging (PRD-09). */
++export interface PatrolDrive {
++  pumpFrames(frames: number): void;
++  stage(id: string): string;
++}
++let drive: PatrolDrive | undefined;
++export function bindPatrolDrive(d: PatrolDrive): void { drive = d; }
++export function patrolDrive(): PatrolDrive {
++  if (!drive) throw new Error("patrol drive unbound (scenario requested before boot)");
++  return drive;
++}
+diff --git a/apps/showcase-patrol-wing/src/scenarios/index.ts b/apps/showcase-patrol-wing/src/scenarios/index.ts
+new file mode 100644
+index 00000000..59445d7d
+--- /dev/null
++++ b/apps/showcase-patrol-wing/src/scenarios/index.ts
+@@ -0,0 +1,11 @@
++import type { GameScenario } from "@aura3d/engine";
++import { patrolDrive } from "../scenario-drive";
++
++const stage = (id: string) => () => patrolDrive().stage(id);
++
++export const patrolScenarios: GameScenario[] = [
++  { description: "Preflight pad (default boot).", setup() {} },
++  { description: "Airborne ring-run at the first gate.", setup: stage("ring-run") },
++  { description: "Combat pass against the seeded drone wave.", setup: stage("drone-pass") },
++  { description: "Cannon exchange + real hull damage.", setup: stage("drone-hit") }
++];
+diff --git a/apps/showcase-patrol-wing/src/sky.ts b/apps/showcase-patrol-wing/src/sky.ts
+index d452b1eb..da8a256f 100644
+--- a/apps/showcase-patrol-wing/src/sky.ts
++++ b/apps/showcase-patrol-wing/src/sky.ts
+@@ -265,9 +265,9 @@ export function setArenaTimeOfDay(nodes: { get(id: string): { setVisible(visible
+ }
+ 
+ /** Static arena scene nodes: terrain, ocean, pad, gates, props. */
+-export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): readonly AuraSceneNode[] {
++export function arenaNodes(): readonly AuraSceneNode[] {
+   const nodes: AuraSceneNode[] = [];
+-  const reviewCapture = options.reviewCapture === true;
++
+ 
+   const mesh = islandTerrainMesh();
+   nodes.push(
+@@ -305,11 +305,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+   // The review lens keeps three far banks so the judged chase frame retains a
+   // horizon and flight-scale cue; the full seven-bank set stays default-only
+   // to bound review-capture overdraw.
+-  for (const [index, cloud] of (reviewCapture ? [
+-    [3, 12.5, -38, 6.0, 0.82, 2.9],
+-    [22, 9.5, -27, 4.2, 0.64, 2.0],
+-    [-34, 12, -52, 5.8, 0.74, 2.7]
+-  ] : [
++  for (const [index, cloud] of ([
+     [-18, 10.5, -30, 5.2, 0.72, 2.4],
+     [3, 12.5, -38, 6.0, 0.82, 2.9],
+     [22, 9.5, -27, 4.2, 0.64, 2.0],
+@@ -461,7 +457,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+   // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0). The
+   // close combat review lens omits this distant silhouette: at that angle the
+   // dish collapsed into a detached black disc behind the real drone target.
+-  if (!reviewCapture) nodes.push(
++  if (true) nodes.push(
+     // Tower lattice base
+     primitives
+       .cylinder({
+@@ -571,7 +567,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+   // The compact combat lens keeps enough typed rocks and trees to establish
+   // scale and a flight canyon, but each placement remains snapped to the same
+   // heightfield that defines the visible island and the crash surface.
+-  const props = reviewCapture
++  const props = false
+     // Preserve a layered typed island in the close combat lens. The previous
+     // conifer-only/z<4 filter left the dogfight suspended over a single flat
+     // green wedge; retaining rocks plus conifers at three depth bands gives
+@@ -584,26 +580,7 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}):
+     nodes.push(modelNode(`prop-${prop.asset}-${prop.position[0].toFixed(1)}`, prop.asset, prop.position, prop.scale, prop.yaw, "setDressing", undefined));
+   }
+ 
+-  if (reviewCapture) {
+-    // Four renderer-owned coast beacons frame the real typed island without
+-    // pretending to be additional gameplay sensors. Their stepped silhouettes
+-    // create near/mid/far depth behind the typed plane and interceptor, while
+-    // the emissive caps make the attack corridor legible at review distance.
+-    const beaconBody = material.pbr({ name: "coast beacon body", color: "#193447", roughness: 0.58, metallic: 0.68 });
+-    const beaconCap = material.emissive({ name: "coast beacon cap", color: "#ff6b62", emissive: "#ff3d5e", emissiveIntensity: 2.1 });
+-    const beaconPositions = [
+-      [-19, 5.6, -2], [18, 6.3, -4], [-13, 7.1, 8], [12, 5.4, 10]
+-    ] as const;
+-    for (const [index, [x, y, z]] of beaconPositions.entries()) {
+-      nodes.push(
+-        primitives.cylinder({ name: `review coast beacon ${index}`, material: beaconBody })
+-          .position(x, y, z).scale([0.18, 1.2 + index * 0.14, 0.18]).toJSON(),
+-        primitives.sphere({ name: `review coast beacon cap ${index}`, material: beaconCap })
+-          .position(x, y + 1.45 + index * 0.14, z).scale(0.22).toJSON()
+-      );
+-    }
+-  }
+-
++  
+   return nodes;
+ }
+ 
+diff --git a/apps/showcase-patrol-wing/src/wing-audio.ts b/apps/showcase-patrol-wing/src/wing-audio.ts
+index f2b0996b..b4a6641a 100644
+--- a/apps/showcase-patrol-wing/src/wing-audio.ts
++++ b/apps/showcase-patrol-wing/src/wing-audio.ts
+@@ -9,6 +9,7 @@
+  * volume; the ambient wind bed loops quietly underneath everything.
+  */
+ import { createGameAudio, type GameAudio } from "@aura3d/engine";
++import { createGameSoundEngine } from "@aura3d/audio";
+ import { assets } from "../../../src/aura-assets";
+ 
+ export type WingAudioCue =
+@@ -117,7 +118,7 @@ export interface WingAudioProof {
+ export interface WingAudioController {
+   readonly cue: (name: WingAudioCue) => Promise<void>;
+   readonly unlock: () => Promise<void>;
+-  /** Map throttle (0..1) to the engine-bed bus volume. */
++  /** Map throttle (0..1) onto the `sound.engine` prop loop (live rpm pitch). */
+   readonly setEngineIntensity: (throttle: number, airborne: boolean) => void;
+   readonly proof: () => WingAudioProof;
+ }
+@@ -151,6 +152,24 @@ export function createWingAudio(): WingAudioController {
+     });
+   }
+   const audio = cachedAudio;
++  // PRD-09 wave-3: prop drone is a real `sound.engine` loop — live rpm pitch
++  // tracked to the throttle axis (was a static loop cue + bus-volume ride).
++  const propSound = createGameSoundEngine<"prop">({
++    buses: { sfx: 0.85 },
++    cues: {
++      prop: {
++        id: "prop",
++        bus: "sfx",
++        asset: { url: wingAudioManifest["engine-loop"].asset.url }
++      }
++    }
++  });
++  const propLoop = propSound.engine({
++    cue: "prop",
++    rpmRange: [400, 2400],
++    pitchRange: [0.8, 1.4]
++  });
++  let propRunning = false;
+   return {
+     async cue(name) {
+       await audio.cue(name);
+@@ -159,8 +178,16 @@ export function createWingAudio(): WingAudioController {
+       await audio.unlock();
+     },
+     setEngineIntensity(throttle, airborne) {
+-      const level = airborne ? 0.15 + Math.min(1, Math.max(0, throttle)) * 0.85 : 0.0;
+-      audio.setBusVolume("engine", level);
++      const t = Math.min(1, Math.max(0, throttle));
++      if (airborne && t > 0.02) {
++        propRunning = true;
++        void propSound.unlock().then(() => propLoop.start());
++        propLoop.setRpm(400 + (2400 - 400) * t);
++        propLoop.setLoad(t);
++      } else if (propRunning || !airborne) {
++        propRunning = false;
++        propLoop.stop();
++      }
+     },
+     proof() {
+       const evidence = audio.evidence;
+-- 
+2.34.1
+

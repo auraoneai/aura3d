@@ -1705,6 +1705,14 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly lut?: string;
   /** Anti-alias mode (muse3jsparity-PRD A3): fxaa executes natively; taa/off never submit a pass. */
   readonly mode?: "fxaa" | "taa" | "off";
+  /**
+   * CCR-03-3 (additive, PRD-03): the option keys the caller actually passed to
+   * the effect factory. Inert — never consumed by the legacy bridge; the v2
+   * bridge and flag-on tier-AA resolution use it to tell authored fields from
+   * factory defaults (e.g. an `antiAlias` node whose `postAuthored` lacks
+   * `mode` counts as `auto`).
+   */
+  readonly postAuthored?: readonly string[];
   /** Outline width in pixels, 1-6 (muse3jsparity-PRD A3). */
   readonly width?: number;
   /** Depth-of-field focus as a linear-distance fraction, 0 = near, 1 = far (muse3jsparity-PRD A3). */
@@ -11160,6 +11168,13 @@ export interface WebGLSceneRenderer {
   onDeviceLost?(listener: () => void): () => void;
   onDeviceRestored?(listener: () => void): () => void;
   deviceLost?(): boolean;
+  /**
+   * PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is
+   * WebGL2, so `app[Symbol.for("a3d.prd01.renderer")]` can reach the live
+   * output surface. `unknown` here — the renderer type lives in
+   * `@aura3d/rendering` and consumers narrow it themselves.
+   */
+  readonly auraRenderer?: unknown;
   dispose(): void;
 }
 

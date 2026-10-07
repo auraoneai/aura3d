@@ -26,7 +26,50 @@ import {
   type AuraNodeInput
 } from "@aura3d/engine";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
+import { installFetchDedupe } from "../shared/fetch-once";
+import type { BrokenControlId } from "../shared/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec } from "../shared/types";
+
+/**
+ * Per-run overrides from the page router (PRD-12 §7.1/§8.4). Broken controls
+ * expressible through the public API today: no-shadows (castShadow: false),
+ * no-ibl (environments.hdri intensity 0), dpr-half (pixelRatio 0.5x), flat-sky
+ * (color background). no-aa / no-tonemap / albedo-only are NOT expressible and
+ * are never captured: the scene throws `NotExpressibleVariantError`, recorded
+ * by capture as an audit failure and measured on the three side (§8.4).
+ */
+export interface RunOptions {
+  readonly variant?: "default" | "aura3d-tuned" | BrokenControlId;
+  readonly dpr?: 1 | 2;
+  readonly qrFlags?: readonly string[];
+}
+
+export class NotExpressibleVariantError extends Error {
+  readonly variant: string;
+  constructor(variant: string) {
+    super(`broken-control ${variant} not expressible via the Aura public API`);
+    this.name = "NotExpressibleVariantError";
+    this.variant = variant;
+  }
+}
+
+const AURA_EXPRESSIBLE_VARIANTS: ReadonlySet<string> = new Set(["no-shadows", "no-ibl", "dpr-half", "flat-sky"]);
+
+function applyVariantSpec(spec: SceneSpec, variant: string | undefined): SceneSpec {
+  if (!variant || variant === "default" || variant === "aura3d-tuned") return spec;
+  if (!AURA_EXPRESSIBLE_VARIANTS.has(variant)) throw new NotExpressibleVariantError(variant);
+  if (variant === "no-shadows") {
+    return { ...spec, lights: spec.lights.map((light) => ("castShadow" in light ? { ...light, castShadow: false } : light)) };
+  }
+  if (variant === "no-ibl") {
+    return { ...spec, environment: spec.environment ? { ...spec.environment, intensity: 0 } : spec.environment };
+  }
+  if (variant === "flat-sky") {
+    if (spec.background.kind !== "hdri") return spec;
+    return { ...spec, background: { kind: "color", color: spec.background.fallbackColor } };
+  }
+  return spec;
+}
 
 declare const __AURA3D_VERSION__: string;
 
@@ -128,11 +171,17 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
     far: spec.camera.far
   }));
 
-  // Tone mapping / exposure
-  log.add("tone-mapping:aces-filmic", "supported", "Production bridge submits operator \"aces\"; no public option to select an operator.");
-  log.add("tone-mapping:agx", "missing", "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\".");
-  log.add("tone-mapping:neutral", "missing", "No public tone-mapping selector (Khronos PBR Neutral unavailable).");
-  log.add("exposure", spec.exposure === 1 ? "partial" : "missing", "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed.");
+  // Tone mapping / exposure. Under `A3D_QR_CORE_OUTPUT` the C-05 surface
+  // (`app.setOutput`) is the public selector and drives the real operator list;
+  // flag-off keeps the legacy production bridge (single "aces" present path).
+  const tmQuery = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const tmName = tmQuery.get("tm") ?? tmQuery.get("aura3d-tonemap");
+  const expParam = tmQuery.get("exp") ?? tmQuery.get("aura3d-exp");
+  const tmExposure = expParam === null ? NaN : Number(expParam);
+  log.add("tone-mapping:aces-filmic", "supported", "C-05 `app.setOutput` selects the operator under A3D_QR_CORE_OUTPUT (aces is the frozen default); flag-off keeps the single \"aces\" present path.");
+  log.add("tone-mapping:agx", tmName === "agx" ? "supported" : "partial", "A3D_QR_CORE_OUTPUT adds the r185 AgX operator via `app.setOutput`/?aura3d-tonemap; flag-off has no public selector.");
+  log.add("tone-mapping:neutral", tmName === "neutral" ? "supported" : "partial", "A3D_QR_CORE_OUTPUT adds the Khronos PBR Neutral operator via `app.setOutput`; flag-off has no public selector.");
+  log.add("exposure", "partial", "`app.setOutput({ exposure })` multiplies into u_exposure under A3D_QR_CORE_OUTPUT (spec.exposure stays un-wired: createAuraApp takes no exposure option).");
 
   // Environment
   if (spec.environment) {
@@ -276,24 +325,45 @@ interface RendererDiagnosticsShape {
   readonly shadows?: Readonly<Record<string, unknown>>;
   readonly bloom?: Readonly<Record<string, unknown>>;
   readonly runtime?: { readonly backend?: string };
+  readonly lighting?: { readonly fallbackLightsActive?: boolean };
+  readonly appliedLook?: { readonly exposure?: number; readonly toneMapping?: string };
 }
 
 function rendererDiagnostics(app: AuraApp): RendererDiagnosticsShape | undefined {
   return app.diagnostics().renderer as unknown as RendererDiagnosticsShape | undefined;
 }
 
-export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: RunOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
+  installFetchDedupe();
   const log = new CapabilityLog();
+  const variant = opts.variant ?? "default";
+  const spec = applyVariantSpec(rawSpec, variant);
+  if (variant !== "default" && variant !== "aura3d-tuned") {
+    log.add(`variant:${variant}`, "supported", "Broken-control variant applied through the public API.");
+  }
   const builtScene = buildAuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    pixelRatio: spec.resolution.devicePixelRatio,
+    pixelRatio: (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio),
     resize: false,
     autoStart: false
   });
   await app.ready();
+
+  // PRD-01 Phase 5: `tm`/`exp` (or `aura3d-tonemap`/`aura3d-exp`) select the
+  // output operator through the C-05 surface — the base-scene A/B wiring.
+  const runQuery = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const runTm = runQuery.get("tm") ?? runQuery.get("aura3d-tonemap");
+  const runExpParam = runQuery.get("exp") ?? runQuery.get("aura3d-exp");
+  const runExposure = runExpParam === null ? NaN : Number(runExpParam);
+  if (runTm !== null || Number.isFinite(runExposure)) {
+    app.setOutput?.({
+      ...(runTm !== null ? { toneMapping: runTm as "aces" | "agx" | "neutral" | "none" | "linear" | "reinhard" } : {}),
+      ...(Number.isFinite(runExposure) ? { exposure: runExposure } : {})
+    });
+  }
 
   // Wait for the first real draw (all typed GLBs are loaded by the mount).
   const drawDeadline = performance.now() + 90_000;
@@ -325,6 +395,20 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
   }
   await nextFrame();
 
+  // PRD-01 Phase 6 (§15/I8): the flagged path must compile nothing after
+  // ready+settle — read the C-31 programs section before and after an extra
+  // window so a warmup straggler can't hide behind the settle loop.
+  const programsBefore = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  for (let frame = 0; frame < 30; frame += 1) {
+    app.step(0);
+    await nextFrame();
+  }
+  const programsAfter = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  if (programsBefore !== null || programsAfter !== null) {
+    const delta = (programsAfter ?? 0) - (programsBefore ?? 0);
+    log.add("zero-program-compiles", delta === 0 ? "supported" : "missing", `programCompiles delta ${delta} over 30 extra frames`);
+  }
+
   const diagnostics = app.diagnostics();
   const renderer = rendererDiagnostics(app);
   const assetErrors = diagnostics.assets.filter((asset) => asset.status !== "ready");
@@ -338,6 +422,19 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
     log.add("bloom-pass", renderer.bloom.rendered ? "supported" : "missing", `bloom.rendered=${String(renderer.bloom.rendered)}`);
   }
 
+  const rendererShadows = renderer?.shadows as { mapRendered?: boolean; mapSampled?: boolean; mapSize?: number; strength?: number; casterName?: string } | undefined;
+  const assetHashes: Record<string, string> = {};
+  for (const object of spec.objects) {
+    if (object.kind === "model") assetHashes[object.asset] = modelAssets[object.asset as ModelAssetId].sha256;
+  }
+  if (spec.environment) assetHashes[spec.environment.hdri] = hdriAssets[spec.environment.hdri].sha256;
+  if (spec.background.kind === "hdri") assetHashes[spec.background.hdri] = hdriAssets[spec.background.hdri].sha256;
+
+  // C-30 ReadyPayloadV2: appliedLook/fallbackLights come from diagnostics()
+  // (C-31 sections by lanes 05/12); wherever the stub reports null, null stays null.
+  const appliedLook = renderer?.appliedLook;
+  const fallbackLights = renderer?.lighting?.fallbackLightsActive ?? null;
+
   return {
     engine: "aura3d",
     scene: spec.id,
@@ -347,6 +444,21 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
     warnings: [...diagnostics.warnings, ...(renderer?.warnings ?? [])],
     errors: [...diagnostics.errors],
     loadMs: Math.round(performance.now() - started),
+    variant,
+    dpr: opts.dpr ?? 1,
+    appliedExposure: appliedLook?.exposure ?? null,
+    appliedToneMapping: appliedLook?.toneMapping ?? renderer?.toneMapping ?? null,
+    lightUnits: renderer ? "aura-internal" : "unknown",
+    shadows: rendererShadows ? {
+      mapRendered: rendererShadows.mapRendered ?? false,
+      mapSampled: rendererShadows.mapSampled ?? false,
+      mapSize: rendererShadows.mapSize ?? null,
+      strength: rendererShadows.strength ?? null,
+      casterName: rendererShadows.casterName ?? null
+    } : null,
+    fallbackLightsActive: fallbackLights,
+    assetHashes,
+    qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,

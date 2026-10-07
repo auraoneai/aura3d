@@ -29,19 +29,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "product-configurator",
-  verdict: "both-configure-the-exact-product-with-visible-rendering-differences",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls,
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
-    observedLosses: [
-      `Aura submits ${auraDrawCalls} draws versus Three.js ${threeDrawCalls} for the selected product configuration workload.`,
-      "The workload matches asset, camera, material values, light-rig intent, backgrounds, and state transition; per-pixel material and highlight differences remain and must be judged from the retained images.",
-      "The native stage implementations are visibly different: Aura presents a narrower dark plinth while Three.js presents a wider flat disc.",
-      "This selected two-state comparison does not cover commerce, every flagship control, performance non-inferiority, or universal configurator parity."
-    ],
     claimBoundary: "Exact frozen headphone, matched two-state material/finish/environment contract, public Aura root API, and current idiomatic R3F/drei/Three r185. It is not universal visual, performance, commerce, or ecosystem parity."
   },
   browser

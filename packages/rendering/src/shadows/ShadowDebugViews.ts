@@ -10,7 +10,24 @@ export interface ExternalParityShadowDebugView {
 export function createExternalParityShadowDebugViews(input: {
   readonly cascade: ExternalParityCascadedShadowPipeline;
   readonly contact: ExternalParityContactShadow;
+  /** E34 (PRD-02 §6.5): with `A3D_QR_LIGHTING` on the lane's R8 contact mask
+   *  replaces this debug view — it is omitted under the flag. */
+  readonly flags?: { on(name: string): boolean };
 }): readonly ExternalParityShadowDebugView[] {
+  const contactView: readonly ExternalParityShadowDebugView[] = input.flags?.on("A3D_QR_LIGHTING")
+    ? []
+    : [
+        {
+          id: "contact-shadow",
+          label: "Contact Shadow",
+          metrics: {
+            radius: input.contact.radius,
+            opacity: input.contact.opacity,
+            softness: input.contact.softness,
+            anchorStrength: input.contact.anchorStrength
+          }
+        }
+      ];
   return [
     {
       id: "shadow-atlas",
@@ -32,15 +49,6 @@ export function createExternalParityShadowDebugViews(input: {
         stableTexelSnapping: input.cascade.stableTexelSnapping
       }
     },
-    {
-      id: "contact-shadow",
-      label: "Contact Shadow",
-      metrics: {
-        radius: input.contact.radius,
-        opacity: input.contact.opacity,
-        softness: input.contact.softness,
-        anchorStrength: input.contact.anchorStrength
-      }
-    }
+    ...contactView
   ];
 }

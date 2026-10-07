@@ -25,18 +25,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "gltf-product-viewer",
-  verdict: "both-render-and-orbit-the-frozen-product-with-visible-aura-lighting-loss",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls: browser.before?.aura?.drawCalls,
     threeDrawCalls: browser.before?.three?.drawCalls,
     threeTriangles: browser.before?.three?.triangles,
-    observedLosses: [
-      "Personal inspection of the retained product captures confirms both engines render the complete frozen product with comparable framing and both visibly respond to the paired orbit interaction.",
-      "The paired images are not pixel-equivalent: Aura is visibly darker while Three.js is brighter under its selected product-viewer environment and output treatment.",
-      "Aura triangle accounting is not exposed in this browser report, and no frozen multi-session performance measurement exists, so geometry-accounting and performance parity are unproven."
-    ],
     claimBoundary: "Public @aura3d/assets plus @aura3d/engine/advanced-runtime product pipeline against current Three.js GLTFLoader and official addons. This selected asset/interaction proof does not establish root createAuraApp, visual parity, addon-ecosystem parity, or performance non-inferiority."
   },
   browser

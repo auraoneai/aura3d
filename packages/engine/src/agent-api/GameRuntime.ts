@@ -8,8 +8,12 @@
 import { Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
 // Static, from the narrow entry: createGameCollisionWorld is synchronous public API. See world.ts.
 import { PhysicsWorld } from "@aura3d/physics/world";
-import type { GameEffectKind, MutableGameEffectInstance } from "./vfx/gameEffects.js";
+import type { GameEffectKind, GameEffectsOptions, MutableGameEffectInstance } from "./vfx/gameEffects.js";
 import { createGameEffects, publicGameEffectInstance, resolveEffectAttachmentPosition, defaultEffectColor, defaultEffectDuration, defaultEffectRadius, effectToSceneNode } from "./vfx/gameEffects.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { AuraTimeController } from "../contracts/time.js";
+import { createQrGameCameraDirector } from "./camera/gameDirector.js";
+import { createBicycleModel, type BicycleModel, type BicycleTyreParams } from "./vehicle/BicycleModel.js";
 
 import type {
   Collider,
@@ -390,11 +394,17 @@ export interface GameInputAxisBinding extends GameInputAxisSettings {
   readonly pointerDelta?: "x" | "y";
 }
 
+export type GameInputDeviceKind = "keyboard" | "pointer" | "touch" | "gamepad";
+
 export interface GameInputOptions {
   readonly actions: Record<string, readonly string[]>;
   readonly axes?: Record<string, GameInputAxisBinding>;
   readonly axisDefaults?: GameInputAxisSettings;
-  readonly bufferMs?: number;
+  /**
+   * Buffered-press window. A number applies to every action; a record sets
+   * per-action windows (defaults: jump 130 ms, attack 150 ms, others 120 ms).
+   */
+  readonly bufferMs?: number | Readonly<Record<string, number>>;
   readonly target?: EventTarget;
   readonly autoListen?: boolean;
   readonly pointer?: boolean;
@@ -455,7 +465,23 @@ export interface GameInputController {
   held(action: string): boolean;
   released(action: string): boolean;
   buffered(action: string, windowMs?: number): boolean;
+  /** I-5: consume an action's buffered press; returns true when one existed. */
+  consume(action: string): boolean;
   combo(actions: readonly string[], windowMs?: number): boolean;
+  /** I-3: the device kind that last produced input. */
+  activeDevice(): GameInputDeviceKind | undefined;
+  /**
+   * I-3: display label for `action` on `device` (default: activeDevice).
+   * Keyboard → `KeyboardEvent.code` name; gamepad → standard glyph; touch →
+   * the region label (or the action name capitalised).
+   */
+  prompt(action: string, device?: GameInputDeviceKind): string | undefined;
+  /** I-2: virtual touch device port for `mountTouchControls` (I-1). */
+  readonly touch: {
+    press(binding: string): void;
+    release(binding: string): void;
+    setAxis(name: string, value: number): void;
+  };
   axis(name: string, negativeAction?: string, positiveAction?: string): number;
   press(binding: string): void;
   release(binding: string): void;
@@ -601,6 +627,20 @@ export interface GameArcadeVehicleOptions {
   readonly drag?: number;
   readonly steerRate?: number;
   readonly boostAcceleration?: number;
+  /** §6.9/V-2: "unicycle" (today's integrator) or "bicycle" (V-1 slip model). */
+  readonly model?: "unicycle" | "bicycle";
+  readonly mass?: number;
+  readonly cgToFront?: number;
+  readonly cgToRear?: number;
+  readonly yawInertia?: number;
+  readonly maxSteer?: number;
+  readonly steerReferenceSpeed?: number;
+  readonly tyre?: BicycleTyreParams;
+  readonly handbrakeRearGrip?: number;
+  readonly dragCoefficient?: number;
+  readonly rollingResistance?: number;
+  readonly torqueCurve?: readonly (readonly [number, number])[];
+  readonly steerAssist?: number;
 }
 
 export interface GameArcadeVehicleInput {
@@ -609,6 +649,8 @@ export interface GameArcadeVehicleInput {
   readonly steer?: number;
   readonly drifting?: boolean;
   readonly boost?: boolean;
+  /** V-4: rear-grip 0.45 handbrake (bicycle model). */
+  readonly handbrake?: boolean;
 }
 
 export interface GameArcadeVehicleState {
@@ -617,6 +659,13 @@ export interface GameArcadeVehicleState {
   readonly heading: number;
   readonly speed: number;
   readonly drift: number;
+  /** V-2 extended state (bicycle model only). */
+  readonly lateralVelocity?: number;
+  readonly yawRate?: number;
+  readonly slipAngle?: number;
+  readonly drifting?: boolean;
+  readonly rpm?: number;
+  readonly lateralG?: number;
 }
 
 export interface GameArcadeVehicle {
@@ -651,6 +700,17 @@ export interface GameKinematicBodyOptions {
   readonly coyoteMs?: number;
   readonly jumpBufferMs?: number;
   readonly bounds?: GameBounds3;
+  /** §6.9/P-1: horizontal accel integration rates under `A3D_QR_CAMERA`. */
+  readonly groundAccel?: number;
+  readonly groundDecel?: number;
+  /** Rate used when reversing direction on the ground (skid, default 110). */
+  readonly turnAccel?: number;
+  /** Fraction of groundAccel applied while airborne (default 0.65). */
+  readonly airControl?: number;
+  /** `true` keeps the legacy instant `velocity = axis·speed` behaviour. */
+  readonly instantVelocity?: boolean;
+  /** Resolved QR flag set; unset = flag off. */
+  readonly flags?: QrFlags;
 }
 
 export interface GameKinematicBodySnapshot {
@@ -1124,6 +1184,10 @@ export interface GameCameraDirectorOptions {
   readonly smoothing?: number;
   readonly deadZone?: number;
   readonly reducedMotion?: boolean;
+  /** §7.2 R-12: `true` pins the legacy snapshot director even under `A3D_QR_CAMERA`. */
+  readonly legacySpec?: boolean;
+  /** Resolved QR flag set; unset = flag off. */
+  readonly flags?: QrFlags;
 }
 
 export interface GameCameraTarget {
@@ -1150,17 +1214,7 @@ export interface GameCameraDirector {
   snapshot(): GameCameraSnapshot;
 }
 
-export type { GameEffectKind } from "./vfx/gameEffects.js";
-
-export interface GameEffectsOptions {
-  readonly poolSize?: number;
-  readonly reducedMotion?: boolean;
-  readonly reducedFlash?: boolean;
-  readonly sparks?: GameEffectPreset;
-  readonly trails?: GameEffectPreset;
-  readonly superBurst?: GameEffectPreset;
-  readonly presets?: Record<string, GameEffectPreset>;
-}
+export type { GameEffectKind, GameEffectsOptions } from "./vfx/gameEffects.js";
 
 export interface GameEffectOptions {
   readonly color?: string;
@@ -1306,6 +1360,10 @@ export interface GameCombatEventRuntimeBridgeOptions {
   readonly combat?: GameCombatWorld | GameCombatWorldSnapshot;
   readonly effects?: GameEffectsController;
   readonly camera?: GameCameraDirector;
+  /** §6.6: app.time target for combat hitStop events (seconds). */
+  readonly time?: Pick<AuraTimeController, "hitStop">;
+  /** Set false to opt out of auto hitStop forwarding (default true). */
+  readonly autoHitStop?: boolean;
   readonly hudBindings?: readonly GameHudBinding[];
   readonly round?: Record<string, unknown>;
   readonly rules?: Record<string, unknown>;
@@ -1661,7 +1719,13 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   const actions = options.actions;
   const axes = options.axes ?? {};
   const axisDefaults = options.axisDefaults ?? {};
-  const bufferMs = options.bufferMs ?? 120;
+  const bufferMsOption = options.bufferMs ?? 120;
+  const bufferMs = typeof bufferMsOption === "number" ? bufferMsOption : 120;
+  // I-5: per-action windows — record overrides, then 130/150/120 defaults.
+  const bufferFor = (action: string): number =>
+    typeof bufferMsOption === "object"
+      ? bufferMsOption[action] ?? 120
+      : bufferMsOption ?? (action === "jump" ? 130 : action === "attack" ? 150 : 120);
   const activeBindings = new Set<string>();
   const activeActionOverrides = new Set<string>();
   const pendingPressedBindings = new Set<string>();
@@ -1713,6 +1777,11 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     activeActionOverrides.delete(binding);
     if (shouldRecord) record("release", binding);
   };
+  // I-3: last device kind that produced input (for prompt()).
+  let lastDevice: GameInputDeviceKind | undefined;
+  const markDevice = (kind: GameInputDeviceKind) => {
+    lastDevice = kind;
+  };
   const pollGamepads = () => {
     for (const binding of gamepadBindings) activeBindings.delete(binding);
     gamepadBindings.clear();
@@ -1732,6 +1801,7 @@ export function createGameInput(options: GameInputOptions): GameInputController 
           buttonNames.push(name);
         }
       });
+      if (buttonNames.length > 0) markDevice("gamepad");
       latestGamepads.push({
         connected: true,
         index: pad.index,
@@ -1834,6 +1904,7 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   const onKeyDown = (event: Event) => {
     const keyboard = event as KeyboardEvent;
     if (keyboard.repeat) return;
+    markDevice("keyboard");
     if (keyboard.code) pressBinding(keyboard.code);
     if (keyboard.key && keyboard.key !== keyboard.code) pressBinding(keyboard.key);
   };
@@ -1845,6 +1916,7 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   const onPointerDown = (event: Event) => {
     if (options.pointer === false) return;
     const next = event as PointerEvent;
+    markDevice(next.pointerType === "touch" ? "touch" : "pointer");
     pressBinding(next.button === 2 ? "PointerSecondary" : "PointerPrimary");
     pressBinding(`PointerButton${next.button}`);
     pointer = {
@@ -1884,6 +1956,7 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   };
   const onTouchStart = (event: Event) => {
     if (options.touch === false) return;
+    markDevice("touch");
     const touch = (event as TouchEvent).touches[0];
     pressBinding("TouchPrimary");
     if (touch) pointer = { active: true, x: touch.clientX, y: touch.clientY, dx: 0, dy: 0, buttons: [0] };
@@ -1922,8 +1995,59 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     released(action) {
       return releasedEdges.has(action);
     },
-    buffered(action, windowMs = bufferMs) {
+    buffered(action, windowMs = bufferFor(action)) {
       return pressedEdges.has(action) || time * 1000 - (lastPressedAt.get(action) ?? Number.NEGATIVE_INFINITY) <= windowMs;
+    },
+    consume(action) {
+      const had = pressedEdges.has(action) || lastPressedAt.has(action);
+      pressedEdges.delete(action);
+      lastPressedAt.delete(action);
+      return had;
+    },
+    activeDevice() {
+      return lastDevice;
+    },
+    prompt(action, device = lastDevice) {
+      const bindings = actions[action] ?? [];
+      const deviceOf = (binding: string): GameInputDeviceKind => {
+        if (/^(pad:|gamepad)/i.test(binding)) return "gamepad";
+        if (/^touch/i.test(binding)) return "touch";
+        if (/^pointer/i.test(binding)) return "pointer";
+        return "keyboard";
+      };
+      const gamepadLabel = (binding: string): string => {
+        const tail = binding.replace(/^pad:/i, "");
+        const named: Record<string, string> = {
+          GamepadA: "A", GamepadB: "B", GamepadX: "X", GamepadY: "Y",
+          GamepadLB: "LB", GamepadRB: "RB", GamepadLT: "LT", GamepadRT: "RT",
+          GamepadStart: "Start", GamepadBack: "Back"
+        };
+        if (named[binding]) return named[binding];
+        const buttonMatch = /Button(\d+)$/.exec(binding);
+        if (buttonMatch) return `Button ${buttonMatch[1]}`;
+        return `pad-${tail.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+      };
+      const pick = bindings.find((binding) => deviceOf(binding) === device);
+      if (!pick) return undefined;
+      if (device === "gamepad") return gamepadLabel(pick);
+      if (device === "touch") {
+        const label = pick.replace(/^touch:?/i, "");
+        return label.length > 0 && !/^touch/i.test(pick) ? label : action.charAt(0).toUpperCase() + action.slice(1);
+      }
+      return pick;
+    },
+    touch: {
+      press(binding) {
+        markDevice("touch");
+        pressBinding(binding);
+      },
+      release(binding) {
+        releaseBinding(binding);
+      },
+      setAxis(name, value) {
+        markDevice("touch");
+        axisValues.set(name, clamp(value, -1, 1));
+      }
     },
     combo(sequence, windowMs = bufferMs * Math.max(1, sequence.length)) {
       if (sequence.length === 0) return false;
@@ -1996,7 +2120,68 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   };
 }
 
+/** V-2/V-3/V-4: "bicycle" delegates to the V-1 slip-angle BicycleModel. */
+function createBicycleArcadeVehicle(options: GameArcadeVehicleOptions): GameArcadeVehicle {
+  const maxSpeed = Math.max(0.001, options.maxSpeed);
+  const model: BicycleModel = createBicycleModel({
+    maxSpeed,
+    mass: options.mass,
+    cgToFront: options.cgToFront,
+    cgToRear: options.cgToRear,
+    yawInertia: options.yawInertia,
+    maxSteer: options.maxSteer,
+    steerReferenceSpeed: options.steerReferenceSpeed,
+    tyre: options.tyre,
+    handbrakeRearGrip: options.handbrakeRearGrip,
+    dragCoefficient: options.dragCoefficient,
+    rollingResistance: options.rollingResistance,
+    torqueCurve: options.torqueCurve,
+    steerAssist: options.steerAssist
+  });
+  const snapshot = (): GameArcadeVehicleState => {
+    const s = model.snapshot();
+    return {
+      x: s.x,
+      z: s.z,
+      heading: s.heading,
+      speed: s.vLong,
+      drift: Math.min(1, Math.abs(s.rearSlipAngle) / 0.12),
+      lateralVelocity: s.vLat,
+      yawRate: s.yawRate,
+      slipAngle: s.slipAngle,
+      drifting: s.drifting,
+      rpm: s.rpm,
+      lateralG: s.lateralG
+    };
+  };
+  return {
+    kind: "aura-game-arcade-vehicle",
+    step(dt, input = {}) {
+      model.step(clamp(dt, 0, 0.05), {
+        steer: input.steer,
+        throttle: input.throttle,
+        brake: input.brake,
+        handbrake: input.handbrake === true || input.drifting === true
+      });
+      return snapshot();
+    },
+    constrain(constraint) {
+      model.setPoseState({ x: constraint.x, z: constraint.z, heading: constraint.heading });
+      const speedScale = Math.max(0, constraint.speedMultiplier ?? 1);
+      model.scaleVelocity(speedScale * clamp(constraint.driftMultiplier ?? 1, 0.5, 1));
+      return snapshot();
+    },
+    reset(next = {}) {
+      model.reset({ x: next.x, z: next.z, heading: next.heading });
+      model.setVelocity(next.speed ?? 0);
+      return snapshot();
+    },
+    snapshot
+  };
+}
+
 export function createGameArcadeVehicle(options: GameArcadeVehicleOptions): GameArcadeVehicle {
+  if (options.model === "bicycle") return createBicycleArcadeVehicle(options);
   const maxSpeed = Math.max(0.001, options.maxSpeed);
   const acceleration = options.acceleration ?? 16;
   const brakeStrength = options.brakeStrength ?? 24;
@@ -2066,6 +2251,14 @@ export function createGameArcadeVehicle(options: GameArcadeVehicleOptions): Game
 export function createGameKinematicBody(options: GameKinematicBodyOptions = {}): GameKinematicBody {
   let position = vec3(options.position, [0, options.groundY ?? 0, 0]);
   let velocity = vec3(options.velocity, [0, 0, 0]);
+  // P-1 (§6.9): accel-limited horizontal movement under A3D_QR_CAMERA.
+  // `move` records the intent; updateBody integrates vx toward it.
+  const accelOn = options.instantVelocity !== true && options.flags?.on("A3D_QR_CAMERA") === true;
+  const groundAccel = options.groundAccel ?? 60;
+  const groundDecel = options.groundDecel ?? 70;
+  const turnAccel = options.turnAccel ?? 110;
+  const airControl = options.airControl ?? 0.65;
+  let targetVx: number | undefined;
   const size = vec3(options.size ?? kinematicSizeFromCollider(options.collider), [0.72, 1.7, 0.42]);
   const gravity = typeof options.gravity === "boolean" ? (options.gravity ? -18 : 0) : options.gravity ?? -18;
   const groundY = options.groundY ?? 0;
@@ -2136,7 +2329,20 @@ export function createGameKinematicBody(options: GameKinematicBodyOptions = {}):
     } else {
       grounded = false;
     }
-    if (grounded && friction > 0) {
+    if (accelOn && targetVx !== undefined) {
+      const current = velocity[0];
+      const reversing =
+        Math.sign(targetVx) !== Math.sign(current) && Math.abs(current) > 0.01 && Math.abs(targetVx) > 0.01;
+      const rate = !grounded
+        ? groundAccel * airControl
+        : reversing
+          ? turnAccel
+          : Math.abs(targetVx) > Math.abs(current)
+            ? groundAccel
+            : groundDecel;
+      const dv = clamp(targetVx - current, -rate * seconds, rate * seconds);
+      velocity = [current + dv, velocity[1], velocity[2]];
+    } else if (grounded && friction > 0) {
       const damping = Math.max(0, 1 - friction * seconds);
       velocity = [velocity[0] * damping, velocity[1], velocity[2] * damping];
     }
@@ -2173,7 +2379,12 @@ export function createGameKinematicBody(options: GameKinematicBodyOptions = {}):
     move(axisOrCommand, speedOrDt) {
       if (typeof axisOrCommand === "number") {
         const next = clamp(axisOrCommand, -1, 1);
-        velocity = [next * (speedOrDt ?? maxSpeed), velocity[1], velocity[2]];
+        const target = next * (speedOrDt ?? maxSpeed);
+        if (accelOn) {
+          targetVx = target;
+        } else {
+          velocity = [target, velocity[1], velocity[2]];
+        }
         if (Math.abs(next) > 0.01) facing = next >= 0 ? 1 : -1;
         return undefined;
       }
@@ -2184,11 +2395,20 @@ export function createGameKinematicBody(options: GameKinematicBodyOptions = {}):
           : command.x !== undefined
             ? clamp(command.x, -maxSpeed, maxSpeed)
             : velocity[0];
-      velocity = [
-        horizontal,
-        command.y !== undefined ? command.y : velocity[1],
-        command.z !== undefined ? clamp(command.z, -maxSpeed, maxSpeed) : velocity[2]
-      ];
+      if (accelOn) {
+        targetVx = horizontal;
+        velocity = [
+          velocity[0],
+          command.y !== undefined ? command.y : velocity[1],
+          command.z !== undefined ? clamp(command.z, -maxSpeed, maxSpeed) : velocity[2]
+        ];
+      } else {
+        velocity = [
+          horizontal,
+          command.y !== undefined ? command.y : velocity[1],
+          command.z !== undefined ? clamp(command.z, -maxSpeed, maxSpeed) : velocity[2]
+        ];
+      }
       if (Math.abs(horizontal) > 0.01) facing = horizontal >= 0 ? 1 : -1;
       if (command.jump) {
         lastJumpRequestedAt = elapsed;
@@ -2724,6 +2944,12 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
 }
 
 export function createGameCameraDirector(options: GameCameraDirectorOptions = {}): GameCameraDirector {
+  // R-12: flag-on returns a real camera-controller director (rigs.fighting +
+  // shake layer); it structurally implements GameCameraDirector and adds
+  // `bind(app)` for presenting through `app.camera.setPose`.
+  if (options.legacySpec !== true && options.flags?.on("A3D_QR_CAMERA") === true) {
+    return createQrGameCameraDirector(options);
+  }
   const baseFov = options.baseFov ?? 42;
   const baseDistance = options.distance ?? 6.2;
   const targetY = options.targetY ?? 0.95;
@@ -2797,13 +3023,21 @@ export function applyGameCombatEventsToRuntime(
 ): GameCombatEventRuntimeBridgeResult {
   const effectIds: string[] = [];
   let cameraImpacts = 0;
+  const forwardHitStop = (event: GameCombatEvent): void => {
+    if (options.autoHitStop === false || !options.time || !event.hitStop || event.hitStop <= 0) return;
+    options.time.hitStop(event.hitStop, {
+      scope: event.targetId ? [event.attackerId, event.targetId] : [event.attackerId]
+    });
+  };
   for (const event of events) {
     if (event.type === "hit") {
       const effect = options.effects?.hitSpark(event.position, { ownerId: event.attackerId });
       if (effect) effectIds.push(effect.id);
+      forwardHitStop(event);
       options.camera?.impact(1.1);
       if (options.camera) cameraImpacts += 1;
     } else if (event.type === "blocked") {
+      forwardHitStop(event);
       const effect = options.effects?.blockSpark(event.position, { ownerId: event.attackerId });
       if (effect) effectIds.push(effect.id);
       options.camera?.impact(0.55);

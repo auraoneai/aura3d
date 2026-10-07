@@ -1,0 +1,148 @@
+name: QR prd02 lighting quality
+
+# PRD-02 lane gate (Lighting, IBL, Reflections and Shadows). Mirrors
+# qr-contracts.yml conventions: unit + browser + lane-capture on the
+# PR/push path; workflow_dispatch controls which lane flags and whether
+# the committed flag-none baseline (§16.1) is refreshed.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "benchmarks/quality-rebuild/scenes/prd02/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd02/**"
+      - "benchmarks/quality-rebuild/three/scenes/prd02/**"
+      - "tests/qr/prd02/**"
+      - "packages/rendering/src/environment/**"
+      - "packages/rendering/src/probes/**"
+      - "packages/rendering/src/shadows/**"
+      - "packages/rendering/src/environment/sh9.ts"
+      - "packages/rendering/src/runtime/lightingAdapter.ts"
+      - "packages/rendering/src/agent-api/environment.ts"
+      - "packages/rendering/src/agent-api/lights.ts"
+      - "packages/rendering/src/shaders/chunks/lighting_ibl.glsl.ts"
+      - "packages/rendering/src/shaders/chunks/lighting_punctual.glsl.ts"
+      - "packages/rendering/src/shaders/chunks/shadow_receive.glsl.ts"
+      - "packages/rendering/src/shaders/chunks/shadow_caster.glsl.ts"
+      - "packages/rendering/src/shaders/chunks/sh9.glsl.ts"
+      - "packages/rendering/src/shaders/chunks/contact_shadow.glsl.ts"
+      - "packages/rendering/src/workers/cpuPrefilter.ts"
+      - "packages/rendering/src/build/prefilterBaker.ts"
+      - "packages/aura3d-cli/src/commands/prd02/**"
+      - "packages/engine/src/lanes/prd02.ts"
+      - "packages/engine/src/agent-api/compiler/environment.ts"
+      - "packages/engine/src/agent-api/compiler/lights.ts"
+      - "packages/engine/src/agent-api/compiler/shadows.ts"
+      - "eslint/qr/prd02*.js"
+      - "docs/project/aura3d-quality-rebuild/evidence/prd02/**"
+      - "docs/project/aura3d-quality-rebuild/PRD-02-lighting-ibl-reflection-shadows.md"
+      - ".github/workflows/lighting-quality.yml"
+  push:
+    branches:
+      - "qr/prd02-*"
+      - "qr/prd02/**"
+  workflow_dispatch:
+    inputs:
+      flags:
+        description: "Flags to capture under (none / lighting / lighting,csm / lighting,probes / lighting,contact)"
+        default: "none"
+      scenes:
+        description: "Comma-separated prd02- scene ids; empty = all"
+        default: ""
+      engines:
+        description: "Comma-separated engines (aura3d,three)"
+        default: "aura3d,three"
+      update_baseline:
+        description: "Commit captures as the flag-none baseline (flags=none only)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit (prd02)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: lane typecheck
+        run: pnpm exec tsc --noEmit -p benchmarks/quality-rebuild/scenes/prd02/tsconfig.json
+      - name: lane unit tests
+        run: pnpm exec vitest run --config tests/qr/prd02/vitest.config.ts
+      - name: scene lint (lane config)
+        run: pnpm exec eslint "benchmarks/quality-rebuild/scenes/prd02/**/*.ts" "benchmarks/quality-rebuild/{aura3d,three}/scenes/prd02/**/*.ts" "tests/qr/prd02/**/*.ts" || true
+
+  browser:
+    name: browser conformance (prd02)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: prd02 browser specs
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
+        run: pnpm exec playwright test tests/qr/prd02/browser --config tests/qr/prd02/playwright.prd02.config.ts
+
+  lane-capture:
+    name: lane capture + baselines
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: build lane bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/scenes/prd02/vite.lane.config.ts
+      - name: capture flag=none
+        run: |
+          SCENES_ARG=""
+          if [ -n "${{ github.event.inputs.scenes }}" ]; then SCENES_ARG="--scenes ${{ github.event.inputs.scenes }}"; fi
+          pnpm exec tsx benchmarks/quality-rebuild/scenes/prd02/capture-lane.ts \
+            --flags "${{ github.event.inputs.flags || 'none' }}" \
+            --engines "${{ github.event.inputs.engines || 'aura3d,three' }}" \
+            $SCENES_ARG \
+            --out benchmarks/quality-rebuild/scenes/prd02/out
+      - name: commit flag-none baseline
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.update_baseline == 'true' && (github.event.inputs.flags == '' || github.event.inputs.flags == 'none')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "qr-prd02-bot"
+          git config user.email "qr-prd02-bot@users.noreply.github.com"
+          mkdir -p docs/project/aura3d-quality-rebuild/evidence/prd02/baseline
+          cp -r benchmarks/quality-rebuild/scenes/prd02/out docs/project/aura3d-quality-rebuild/evidence/prd02/baseline/prd02-"$(date +%Y%m%d)"
+          git add docs/project/aura3d-quality-rebuild/evidence/prd02/baseline
+          git commit -m "chore(qr-02): refresh prd02 flag-none baseline" || echo "no baseline changes"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prd02-lane-capture-${{ github.sha }}
+          path: benchmarks/quality-rebuild/scenes/prd02/out
+          retention-days: 30
