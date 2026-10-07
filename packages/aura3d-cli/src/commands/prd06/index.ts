@@ -7,6 +7,9 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { registerCliCommand, registerCodemod, type AuraCodemod } from "../../contracts/commands.js";
 import { inspectAnimationClips, readGlbDocument } from "./inspectAnimationClips.js";
+import { validateHeroGlb } from "./validateHero.js";
+import { parseAnimationClipMap } from "../../animation-asset-validator.js";
+import type { AnimationAssetHeroProfile } from "../../animation-asset-validator.js";
 
 /**
  * T0.7 — `aura3d animation inspect-clips <model.glb>` prints the resolved
@@ -27,6 +30,38 @@ registerCliCommand({
     const { json, bin } = readGlbDocument(new Uint8Array(readFileSync(file)));
     io.stdout(JSON.stringify(inspectAnimationClips(json, bin), null, 2));
     return 0;
+  }
+});
+
+/**
+ * T4.6 — `aura3d animation validate-hero <model.glb> [--profile
+ * hero-character|template-hero] [--map action=clip,...]` runs the §6.9 hero
+ * bar: geometry (triangles/skins/joints), texture, and the profile's required
+ * clip set with durations. Prints the report as JSON; exit 1 on any failure.
+ */
+registerCliCommand({
+  name: "animation validate-hero",
+  owner: "prd06",
+  summary: "Validate a character GLB against the hero-character / template-hero bar (§6.9).",
+  usage: "aura3d animation validate-hero <model.glb> [--profile hero-character|template-hero] [--map idle=Idle,run=Run]",
+  run: async (argv, io) => {
+    const file = argv.find((arg) => !arg.startsWith("--"));
+    if (!file) {
+      io.stderr("Usage: aura3d animation validate-hero <model.glb> [--profile hero-character|template-hero] [--map action=clip,...]");
+      return 1;
+    }
+    const profileArg = argv.find((arg) => arg.startsWith("--profile="))?.slice("--profile=".length)
+      ?? (argv.includes("--profile") ? argv[argv.indexOf("--profile") + 1] : undefined);
+    const profile: AnimationAssetHeroProfile = profileArg === "template-hero" ? "template-hero" : "hero-character";
+    const mapArg = argv.find((arg) => arg.startsWith("--map="))?.slice("--map=".length)
+      ?? (argv.includes("--map") ? argv[argv.indexOf("--map") + 1] : undefined);
+    const clipMap = mapArg !== undefined ? parseAnimationClipMap(mapArg) : undefined;
+    const report = validateHeroGlb(new Uint8Array(readFileSync(file)), {
+      profile,
+      ...(clipMap !== undefined ? { clipMap } : {})
+    });
+    io.stdout(JSON.stringify({ profile, ok: report.ok, reasonCodes: report.reasonCodes, failures: report.failures, messages: report.messages }, null, 2));
+    return report.ok ? 0 : 1;
   }
 });
 

@@ -46,6 +46,18 @@ export interface GltfAnimationDocument {
     }[];
   }[];
   readonly nodes?: readonly { readonly name?: string }[];
+  /** T4.6 — hero validation needs geometry fields (meshes/skins/materials). */
+  readonly meshes?: readonly {
+    readonly primitives?: readonly {
+      readonly mode?: number;
+      readonly indices?: number;
+      readonly attributes?: { readonly POSITION?: number };
+    }[];
+  }[];
+  readonly skins?: readonly { readonly joints?: readonly number[] }[];
+  readonly materials?: readonly {
+    readonly pbrMetallicRoughness?: { readonly baseColorTexture?: unknown };
+  }[];
 }
 
 export interface AuraCliInspectedAnimationClip {
