@@ -494,6 +494,7 @@ export class Renderer {
       const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
+      frameHooks.setForwardTarget(forwardTarget);
     }
     this.device.beginFrame(this.width, this.height);
     try {
@@ -678,6 +679,7 @@ export class Renderer {
       const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
+      frameHooks.setForwardTarget(forwardTarget);
     }
     this.device.beginFrame(this.width, this.height);
     try {

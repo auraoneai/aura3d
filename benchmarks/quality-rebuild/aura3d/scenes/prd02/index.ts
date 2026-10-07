@@ -1,7 +1,15 @@
 /**
- * Lane prd02 scene index (CONTRACTS.md §3.8). Scene ids are `<owner>-<slug>`.
- * Empty array until lane 02 lands its scenes.
+ * Lane prd02 Aura-side adapters (PRD-02 §16.1). Each scene id maps to a module
+ * default-equivalent: `(host) => ReadyPayload`, run through the shared
+ * `aura3d/common.ts` translator so lane scenes get zero tuning beyond the spec.
  */
-import type { BenchSceneRegistration } from "../../../shared/registry";
+import { runAuraScene } from "../../common";
+import type { ReadyPayload, SceneSpec } from "../../../shared/types";
+import { getPrd02Spec } from "../../../scenes/prd02/specs";
 
-export const scenes: readonly BenchSceneRegistration[] = [];
+export type Prd02Adapter = (host: HTMLElement) => Promise<ReadyPayload>;
+
+export function auraAdapterFor(sceneId: string): Prd02Adapter {
+  const spec: SceneSpec = getPrd02Spec(sceneId);
+  return (host) => runAuraScene(spec, host);
+}

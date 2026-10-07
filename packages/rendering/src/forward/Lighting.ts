@@ -3,12 +3,24 @@
 import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
+import { AURA_LIGHTS_MAX } from "../LightUniforms.js";
 import type { CollectedLight } from "../LightCollector.js";
 import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { createShadowFilterKernel, type ShadowFilterKernel } from "../ShadowMap.js";
 import { TextureBinding } from "../TextureBinding.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { ForwardSpotShadowMapOptions } from "../shadows/SpotShadowMaps.js";
+import { rendererQrFlags } from "../renderer/FrameGraph.js";
+
+/** PRD-02 §6.3: flag-on default is full-strength shadowing (1.0), not 0.65. */
+export function prd02ShadowStrengthDefault(): number {
+  return rendererQrFlags().on("A3D_QR_LIGHTING") ? 1 : 0.65;
+}
+
+/** C-11 `receiveShadow`: flag-on honours `item.receiveShadow === false`. */
+function receiveShadowDisabled(item: RenderItem): boolean {
+  return rendererQrFlags().on("A3D_QR_LIGHTING") && item.receiveShadow === false;
+}
 
 export function selectForwardShadowMap(
   shadowMap: ForwardShadowMapOptions | undefined,
@@ -74,7 +86,7 @@ export function applyForwardShadowMapUniforms(
       diagnostics: validation.diagnostics
     });
   }
-  const strength = shadowMap.strength ?? 0.65;
+  const strength = shadowMap.strength ?? prd02ShadowStrengthDefault();
   const bias = shadowMap.bias ?? 0.001;
   const slopeBias = shadowMap.slopeBias ?? 1;
   const texelSize = shadowMap.texelSize ?? [
@@ -107,10 +119,11 @@ export function applyForwardShadowMapUniforms(
   }
   const filterKernel = shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
   const pcfSamples = packForwardShadowPcfSamples(filterKernel, item.label);
+  const shadowed = !receiveShadowDisabled(item);
   uniforms.set("u_shadowMapTexture", shadowMap.texture);
-  uniforms.set("u_shadowMapEnabled", 1);
+  uniforms.set("u_shadowMapEnabled", shadowed ? 1 : 0);
   uniforms.set("u_shadowMapMatrix", toMat4Uniform(shadowMap.lightMatrix, "shadowMap.lightMatrix", item.label));
-  uniforms.set("u_shadowMapStrength", strength);
+  uniforms.set("u_shadowMapStrength", shadowed ? strength : 0);
   uniforms.set("u_shadowMapBias", bias);
   uniforms.set("u_shadowMapSlopeBias", slopeBias);
   uniforms.set("u_shadowMapTexelSize", texelSize);
@@ -178,7 +191,7 @@ export function applyForwardPointShadowMapUniforms(
   const faceMatrices = toFloat32Array(pointShadowMap.faceMatrices, 6 * 16, "pointShadowMap.faceMatrices", item.label);
   const faceRects = toFloat32Array(pointShadowMap.faceRects, 6 * 4, "pointShadowMap.faceRects", item.label);
   validatePointShadowFaceRects(faceRects, item.label);
-  const strength = pointShadowMap.strength ?? 0.65;
+  const strength = pointShadowMap.strength ?? prd02ShadowStrengthDefault();
   const bias = pointShadowMap.bias ?? 0.001;
   const slopeBias = pointShadowMap.slopeBias ?? 1;
   const texelSize = pointShadowMap.texelSize ?? [
@@ -210,13 +223,14 @@ export function applyForwardPointShadowMapUniforms(
     });
   }
   const filterKernel = pointShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const pointShadowed = !receiveShadowDisabled(item);
   uniforms.set("u_pointShadowMapTexture", pointShadowMap.texture);
-  uniforms.set("u_pointShadowMapEnabled", 1);
+  uniforms.set("u_pointShadowMapEnabled", pointShadowed ? 1 : 0);
   uniforms.set("u_pointShadowLightPosition", pointShadowMap.lightPosition);
   uniforms.set("u_pointShadowRange", pointShadowMap.range);
   uniforms.set("u_pointShadowFaceMatrices", faceMatrices);
   uniforms.set("u_pointShadowFaceRects", faceRects);
-  uniforms.set("u_pointShadowStrength", strength);
+  uniforms.set("u_pointShadowStrength", pointShadowed ? strength : 0);
   uniforms.set("u_pointShadowBias", bias);
   uniforms.set("u_pointShadowSlopeBias", slopeBias);
   uniforms.set("u_pointShadowTexelSize", texelSize);
@@ -302,7 +316,7 @@ export function applyForwardSpotShadowMapUniforms(
     });
   }
   const shadowMatrix = toFloat32Array(spotShadowMap.shadowMatrix, 16, "spotShadowMap.shadowMatrix", item.label);
-  const strength = spotShadowMap.strength ?? 0.65;
+  const strength = spotShadowMap.strength ?? prd02ShadowStrengthDefault();
   const bias = spotShadowMap.bias ?? 0.001;
   const slopeBias = spotShadowMap.slopeBias ?? 1;
   const texelSize = spotShadowMap.texelSize ?? [
@@ -334,14 +348,15 @@ export function applyForwardSpotShadowMapUniforms(
     });
   }
   const filterKernel = spotShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const spotShadowed = !receiveShadowDisabled(item);
   uniforms.set("u_spotShadowMapTexture", spotShadowMap.texture);
-  uniforms.set("u_spotShadowMapEnabled", 1);
+  uniforms.set("u_spotShadowMapEnabled", spotShadowed ? 1 : 0);
   uniforms.set("u_spotShadowLightPosition", spotShadowMap.lightPosition);
   uniforms.set("u_spotShadowLightDirection", spotShadowMap.lightDirection);
   uniforms.set("u_spotShadowMatrix", shadowMatrix);
   uniforms.set("u_spotShadowCone", [spotShadowMap.angle, spotShadowMap.penumbra ?? 0]);
   uniforms.set("u_spotShadowRange", spotShadowMap.range);
-  uniforms.set("u_spotShadowStrength", strength);
+  uniforms.set("u_spotShadowStrength", spotShadowed ? strength : 0);
   uniforms.set("u_spotShadowBias", bias);
   uniforms.set("u_spotShadowSlopeBias", slopeBias);
   uniforms.set("u_spotShadowTexelSize", texelSize);
@@ -462,7 +477,11 @@ export function resolveForwardClusteredLighting(
   height: number,
   cameraViewProjectionMatrix: Float32Array | readonly number[] | undefined
 ): ClusteredForwardLightingResources | null {
-  return (lights?.length ?? 0) > 16
+  // PRD-02 §6.3: under A3D_QR_LIGHTING the AuraLights std140 block packs 32
+  // lights directly, so clustering only engages above 32. Legacy stays at 16
+  // (byte-identical flag-off behaviour).
+  const threshold = rendererQrFlags().on("A3D_QR_LIGHTING") ? AURA_LIGHTS_MAX : 16;
+  return (lights?.length ?? 0) > threshold
     ? createClusteredForwardLighting(
         lights ?? [],
         width,

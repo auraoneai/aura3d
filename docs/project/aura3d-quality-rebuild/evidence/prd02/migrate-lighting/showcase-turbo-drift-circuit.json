@@ -1,0 +1,66 @@
+{
+  "root": "apps/showcase-turbo-drift-circuit",
+  "files": 21,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3408,
+      "construct": "lights.point({ intensity: 0.42 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 5 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3408,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3410,
+      "construct": "lights.point({ intensity: 0.18 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 2 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3410,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3412,
+      "construct": "lights.point({ intensity: 0.12 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 2 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3412,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3417,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+      "line": 3419,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

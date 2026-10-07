@@ -1,0 +1,321 @@
+From dc9dfb54f37e826baa5e4e6268f36cf1a74c5274 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 17:26:06 +0000
+Subject: [PATCH] [QR-09] blockfall: probe globals -> scenario registry
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-blockfall-reactor/src/main.ts   | 112 ++++--------------
+ .../src/scenario-drive.ts                     |  35 ++++++
+ .../src/scenarios/acceptance.ts               |  17 +++
+ .../src/scenarios/attract.ts                  |  13 ++
+ .../src/scenarios/index.ts                    |  19 +++
+ .../src/scenarios/rotation-trap.ts            |   8 ++
+ 6 files changed, 118 insertions(+), 86 deletions(-)
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenario-drive.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/index.ts
+ create mode 100644 apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+
+diff --git a/apps/showcase-blockfall-reactor/src/main.ts b/apps/showcase-blockfall-reactor/src/main.ts
+index a91e4265..57363133 100644
+--- a/apps/showcase-blockfall-reactor/src/main.ts
++++ b/apps/showcase-blockfall-reactor/src/main.ts
+@@ -1,6 +1,5 @@
+ import {
+   camera,
+-  createGame,
+   effects,
+   game,
+   geometry,
+@@ -15,6 +14,9 @@ import {
+   type GameFallingBlocksEvent,
+   type GameFallingBlocksSnapshot
+ } from "@aura3d/engine";
++import { createGame } from "@aura3d/game";
++import { blockfallScenarios } from "./scenarios";
++import { bindBlockfallDrive, type BlockfallAcceptanceScenario } from "./scenario-drive";
+ import { assets } from "../../../src/aura-assets";
+ import {
+   ACTIVE_BLOCK_SCALE,
+@@ -88,18 +90,8 @@ import "./styles.css";
+ 
+ type BlockfallWindow = Window & {
+   __AURA3D_SHOWCASE_BLOCKFALL_REACTOR__?: unknown;
+-  __AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__?: {
+-    readonly scenarios: readonly BlockfallAcceptanceScenario[];
+-    readonly apply: (scenario: BlockfallAcceptanceScenario) => unknown;
+-    readonly resume: () => unknown;
+-    readonly unfreeze: () => void;
+-    /** Evidence staging: boxes the active piece in so the next rotate press is refused. */
+-    readonly stageRotationTrap: () => boolean;
+-  };
+ };
+ 
+-type BlockfallAcceptanceScenario = "play" | "single-clear" | "quad" | "level-up" | "danger" | "game-over";
+-
+ const blockfallWindow = window as BlockfallWindow;
+ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
+ const highContrast = mediaMatches("(prefers-contrast: more)");
+@@ -665,6 +657,7 @@ const blockfallGame = createGame({
+   },
+   input: inputOptions,
+   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
++  scenarios: blockfallScenarios,
+   qualityRebuild: { flags: ["game"] }
+ });
+ const gameApp = blockfallGame.runtime;
+@@ -676,60 +669,8 @@ if (!input) throw new Error("Blockfall Reactor failed to create Aura3D input.");
+ const cabinetHandle = app.nodes.require("blockfall-reactor-cabinet") as AuraRuntimeNodeHandle;
+ const lowerLeftCell = cellPosition(0, 0, 0);
+ const upperRightCell = cellPosition(BOARD_WIDTH - 1, VISIBLE_HEIGHT - 1, 0);
+-Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+-  value: {
+-    category: "falling-blocks",
+-    camera: reactorCamera,
+-    subject: { position: cabinetPosition, rotation: [0, -Math.PI / 2, 0], targetSize: cabinetTargetSize },
+-    playSpacePoints: [lowerLeftCell, upperRightCell],
+-    contactPoint: cellPosition(Math.floor(BOARD_WIDTH / 2), 0, 0),
+-    setSubjectSuppressed: async (suppressed: boolean) => {
+-      app.pause();
+-      await app.ready();
+-      cabinetHandle.setScale(suppressed ? 0.0001 : 1);
+-      await app.stepAsync(0);
+-    }
+-  },
+-  configurable: true
+-});
+ 
+-/**
+- * BF-A7 evidence hook: the retained bloom stills toggle the shipped effect's own
+- * intensity between 0 ("before") and the shipped value ("after") on one mounted
+- * scene, so the pair differs only by the bloom pass. See
+- * tests/browser/blockfall-bloom-stills.spec.ts.
+- */
+-Object.defineProperty(window, "__AURA3D_BLOCKFALL_BLOOM_PROBE__", {
+-  value: {
+-    shippedIntensity: reducedFlash ? 0.12 : 0.26,
+-    intensity: () => bloomEffectNode.intensity,
+-    // The declared node field is readonly for authors; the stills probe is the one
+-    // sanctioned writer, so it goes through a local mutable alias of the same object.
+-    setIntensity(next: number) {
+-      const mutableBloom = bloomEffectNode as { intensity?: number };
+-      mutableBloom.intensity = next;
+-    }
+-  },
+-  configurable: true
+-});
+ 
+-/**
+- * Deterministic attract probe for browser evidence: enters/exits through the
+- * exact same code path the idle timer and player input use, so specs do not
+- * have to wait out ATTRACT_IDLE_SECONDS in real time.
+- */
+-Object.defineProperty(window, "__AURA3D_BLOCKFALL_ATTRACT_PROBE__", {
+-  value: {
+-    // Lazy read: ATTRACT_IDLE_SECONDS is declared later in module scope.
+-    get idleEntryAfterSeconds() {
+-      return ATTRACT_IDLE_SECONDS;
+-    },
+-    isActive: () => attractState.active,
+-    enter: () => enterAttract("probe"),
+-    exit: () => exitAttract("probe")
+-  },
+-  configurable: true
+-});
+ 
+ const lockedHandles = new Map<string, AuraRuntimeNodeHandle>();
+ const activeHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(activeNodeId(index)) as AuraRuntimeNodeHandle);
+@@ -1012,35 +953,22 @@ const manualInputState = {
+ installDomControls();
+ syncAll(true);
+ 
+-/**
+- * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
+- * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
+- * after the real state transition has landed. This gives browser review stable
+- * quad/level/danger/outcome frames without substituting authored evidence for
+- * gameplay truth.
+- */
+-const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+-blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
+-  scenarios: acceptanceScenarios,
+-  apply: applyAcceptanceScenario,
+-  resume() {
++// PRD-09: binds the scenario drive used by `?capture=scenario&scenario=<id>`.
++// The deleted window probes (ACCEPTANCE/ATTRACT/BLOOM/COMPOSITION) funnelled
++// through the same functions; staging itself is unchanged.
++bindBlockfallDrive({
++  applyAcceptance: (scenario) => applyAcceptanceScenario(scenario),
++  resumeFromAcceptance: () => {
+     const result = applyAcceptanceScenario("play");
+     acceptanceScenario = null;
+     app.resume();
+     return result;
+   },
+-  unfreeze() {
++  unfreezeAcceptance: () => {
+     acceptanceScenario = null;
+     app.resume();
+   },
+-  /**
+-   * Evidence staging (round 7): boxes the active piece in through real kit
+-   * transitions so the next rotate press is genuinely refused — every wall
+-   * kick collides, so the kit emits no "rotate" event and the rotation-denied
+-   * feedback path fires. Locked cells fill the whole well except the active
+-   * piece's own cells, which keep their current state.
+-   */
+-  stageRotationTrap() {
++  stageRotationTrap: () => {
+     const snapshot = fallingBlocks.snapshot();
+     const active = snapshot.active;
+     if (!active || snapshot.gameOver || paused) return false;
+@@ -1054,8 +982,20 @@ blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
+     );
+     fallingBlocks.setBoard(trapped);
+     return true;
+-  }
+-};
++  },
++  enterAttract: (reason = "scenario") => enterAttract(reason),
++  exitAttract: (reason = "scenario") => exitAttract(reason),
++  attractActive: () => attractState.active
++});
++
++/**
++ * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
++ * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
++ * after the real state transition has landed. This gives browser review stable
++ * quad/level/danger/outcome frames without substituting authored evidence for
++ * gameplay truth.
++ */
++const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+ 
+ let lastPublishedLevel = 1;
+ 
+diff --git a/apps/showcase-blockfall-reactor/src/scenario-drive.ts b/apps/showcase-blockfall-reactor/src/scenario-drive.ts
+new file mode 100644
+index 00000000..99644008
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenario-drive.ts
+@@ -0,0 +1,35 @@
++/**
++ * scenario-drive.ts — gameplay-only surface the `src/scenarios/` modules use.
++ * Bound once from `main.ts`; scenario files never reach for route internals
++ * directly. Replaces the deleted __AURA3D_BLOCKFALL_{ACCEPTANCE,ATTRACT,
++ * BLOOM,COMPOSITION}_PROBE__ window globals (PRD-09).
++ */
++export type BlockfallAcceptanceScenario =
++  "play" | "single-clear" | "quad" | "level-up" | "danger" | "game-over";
++
++export interface BlockfallDrive {
++  /** Runs the exact acceptance staging on the live kit, then freezes the app. */
++  applyAcceptance(scenario: BlockfallAcceptanceScenario): unknown;
++  /** Restages "play" and resumes the app (was ACCEPTANCE_PROBE.resume). */
++  resumeFromAcceptance(): unknown;
++  /** Clears the acceptance freeze without restaging. */
++  unfreezeAcceptance(): void;
++  /** Boxes the active piece in so the next rotate press is refused. */
++  stageRotationTrap(): boolean;
++  enterAttract(reason?: string): void;
++  exitAttract(reason?: string): void;
++  attractActive(): boolean;
++}
++
++let active: BlockfallDrive | undefined;
++
++export function bindBlockfallDrive(impl: BlockfallDrive): void {
++  active = impl;
++}
++
++export function blockfallDrive(): BlockfallDrive {
++  if (active === undefined) {
++    throw new Error("Blockfall scenario drive is not bound yet — call createGame first.");
++  }
++  return active;
++}
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts b/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+new file mode 100644
+index 00000000..a004eb4d
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/acceptance.ts
+@@ -0,0 +1,17 @@
++/** Exact acceptance staging — the deleted ACCEPTANCE_PROBE.apply surface. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive, type BlockfallAcceptanceScenario } from "../scenario-drive";
++
++function acceptance(id: BlockfallAcceptanceScenario, description: string): GameScenario {
++  return {
++    description,
++    setup: () => { blockfallDrive().applyAcceptance(id); }
++  };
++}
++
++export const playScenario = acceptance("play", "Deterministic opening board: T piece mid-field.");
++export const singleClearScenario = acceptance("single-clear", "O hard-drop that clears exactly one line.");
++export const quadScenario = acceptance("quad", "Vertical I quad clear with a live follow-through piece.");
++export const levelUpScenario = acceptance("level-up", "Ten cleared lines across three quads; level-up beat armed.");
++export const dangerScenario = acceptance("danger", "Stepped stack near the top-out threshold.");
++export const gameOverScenario = acceptance("game-over", "Spawn band occupied; next lock emits game-over.");
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/attract.ts b/apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+new file mode 100644
+index 00000000..e64db46c
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/attract.ts
+@@ -0,0 +1,13 @@
++/** Attract-mode staging — the deleted ATTRACT_PROBE surface. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive } from "../scenario-drive";
++
++export const attractEnterScenario: GameScenario = {
++  description: "Enters the expert-run attract loop immediately (no 45 s idle wait).",
++  setup: () => { blockfallDrive().enterAttract("scenario"); }
++};
++
++export const attractExitScenario: GameScenario = {
++  description: "Exits the attract loop back into a fresh playable game.",
++  setup: () => { blockfallDrive().exitAttract("scenario"); }
++};
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/index.ts b/apps/showcase-blockfall-reactor/src/scenarios/index.ts
+new file mode 100644
+index 00000000..dd90b689
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/index.ts
+@@ -0,0 +1,19 @@
++import type { GameScenario } from "@aura3d/engine";
++import {
++  playScenario, singleClearScenario, quadScenario,
++  levelUpScenario, dangerScenario, gameOverScenario
++} from "./acceptance";
++import { attractEnterScenario, attractExitScenario } from "./attract";
++import { rotationTrapScenario } from "./rotation-trap";
++
++export const blockfallScenarios: Readonly<Record<string, GameScenario>> = {
++  "play": playScenario,
++  "single-clear": singleClearScenario,
++  "quad": quadScenario,
++  "level-up": levelUpScenario,
++  "danger": dangerScenario,
++  "game-over": gameOverScenario,
++  "rotation-trap": rotationTrapScenario,
++  "attract-enter": attractEnterScenario,
++  "attract-exit": attractExitScenario
++};
+diff --git a/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts b/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+new file mode 100644
+index 00000000..fed064b7
+--- /dev/null
++++ b/apps/showcase-blockfall-reactor/src/scenarios/rotation-trap.ts
+@@ -0,0 +1,8 @@
++/** Rotation-denied staging — the deleted ACCEPTANCE_PROBE.stageRotationTrap. */
++import type { GameScenario } from "@aura3d/engine";
++import { blockfallDrive } from "../scenario-drive";
++
++export const rotationTrapScenario: GameScenario = {
++  description: "Boxes the active piece in through real kit transitions so the next rotate is refused.",
++  setup: () => { blockfallDrive().stageRotationTrap(); }
++};
+-- 
+2.34.1
+
