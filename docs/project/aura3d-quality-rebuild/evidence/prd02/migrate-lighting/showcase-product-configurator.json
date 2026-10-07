@@ -1,0 +1,22 @@
+{
+  "root": "apps/showcase-product-configurator",
+  "files": 1,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 328,
+      "construct": "lights.point({ intensity: 0.22 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 3 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 328,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

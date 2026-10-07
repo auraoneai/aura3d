@@ -1,0 +1,10 @@
+{
+  "probe": "s6-tiling",
+  "spec": "tests/qr/prd04/browser/texture-tiling.spec.ts",
+  "control": {
+    "description": "flag-off tiled ground clamps anisotropy and drops mipmap filtering — far-third temporal luma stddev stays high, failing the <= 50% shimmer gate",
+    "expected": "fail",
+    "asserts": ["stripOff.farThirdLumaStd > 2 * stripOn.farThirdLumaStd", "anisotropy flag-off != 16/8 tier values"]
+  },
+  "status": "awaiting first flagged CI capture — values land here from tests/reports/prd04/probes/s6-tiling-control.json"
+}

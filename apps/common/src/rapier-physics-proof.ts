@@ -1,6 +1,13 @@
 import { game } from "@aura3d/engine";
 
-/** Route-level evidence that the selected Rapier physical runtime is actually executing. */
+/**
+ * Route-level evidence that the selected Rapier physical runtime is actually executing.
+ *
+ * @deprecated PRD-09: the shared game runtime owns physics evidence now
+ * (`game.evidence`/`__AURA3D_GAME_EVIDENCE__`). This helper is deleted in the
+ * first PRD-09 PR once `rg -l rapier-physics-proof apps` returns 0 — the
+ * blockfall/turbo patch sets remove the remaining imports.
+ */
 export function createShowcaseRapierPhysicsProof(routeId: string) {
   const angularWorld = game.collisionWorld({
     backend: "rapier",

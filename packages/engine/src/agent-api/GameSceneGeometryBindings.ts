@@ -25,9 +25,29 @@ import {
 // WS-2.2: mesh surface queries are geometry, not simulation — no solver needed.
 import { createMeshSurfaceQuery, type MeshSurfaceQuery } from "@aura3d/physics/solverless";
 import { meshVehicleSurface, type VehicleSurface } from "./VehicleChassis";
+import { resolveQrFlags } from "../contracts/flags.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { AuraCameraRig } from "../contracts/camera.js";
+import { createChaseRig } from "./camera/rigs/chase.js";
+import { createFollow2dRig } from "./camera/rigs/follow2d.js";
+import { createTopDownRig } from "./camera/rigs/topDown.js";
+import { createFromSpecRig } from "./camera/rigs/fromSpec.js";
 
 type Vec3 = readonly [number, number, number];
 type Euler3 = readonly [number, number, number];
+
+/** §7.2 R-11: flag plumbing shared by the game camera spec builders. */
+interface QrCameraSpecGate {
+  /** `true` pins the legacy spec shape even under `A3D_QR_CAMERA`. */
+  readonly legacySpec?: boolean;
+  /** Resolved QR flag set (e.g. from `createAuraApp` options); unset = flag off. */
+  readonly flags?: QrFlags;
+}
+
+function qrCameraSpecOn(options: QrCameraSpecGate | undefined): boolean {
+  if (options?.legacySpec === true) return false;
+  return (options?.flags ?? resolveQrFlags({})).on("A3D_QR_CAMERA");
+}
 
 export interface GameRacingCameraSelectionEvidence {
   readonly source: "asset-pair-composition";
@@ -188,15 +208,18 @@ export interface GameRacingPresentationCameraOptions {
   readonly target?: Vec3;
   readonly fov?: number;
   readonly smoothing?: number;
+  readonly legacySpec?: boolean;
+  readonly flags?: QrFlags;
 }
 
 export interface GameRacingCameraRigOptions extends Omit<GameRacingPresentationCameraOptions, "mode"> {
   readonly mode: "chase" | "top-down";
-  readonly composition: {
-    readonly report: string;
-    readonly verdict: "pass" | "fail";
-    readonly cameraReadabilityVerdict: "pass" | "fail";
-    readonly selectedMode: "chase" | "top-down";
+  /** C-13: vestigial — accepted for back-compat, no longer read or gated on. */
+  readonly composition?: {
+    readonly report?: string;
+    readonly verdict?: "pass" | "fail";
+    readonly cameraReadabilityVerdict?: "pass" | "fail";
+    readonly selectedMode?: "chase" | "top-down";
   };
 }
 
@@ -295,6 +318,8 @@ export interface GamePlatformerPresentationCameraOptions {
   readonly distance?: number;
   readonly height?: number;
   readonly fov?: number;
+  readonly legacySpec?: boolean;
+  readonly flags?: QrFlags;
 }
 
 export function createGameRacingSceneBinding(options: GameRacingSceneBindingOptions): GameRacingSceneBinding {
@@ -466,7 +491,39 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
   };
 }
 
+/**
+ * R-11 flag-on mapping (§7.2): returns a live `AuraCameraRig`.
+ * follow + targetNode → `rigs.chase`; overview → `rigs.topDown`; a static
+ * perspective spec without a bound subject → `rigs.fromSpec` of the legacy pose.
+ */
+function racingCameraSpecRig(options: GameRacingPresentationCameraOptions): AuraCameraRig {
+  if (options.mode === "overview") {
+    return createTopDownRig({
+      target: options.targetNode,
+      height: options.height ?? 3.75,
+      fov: options.fov ?? 42
+    });
+  }
+  if (options.targetNode) {
+    return createChaseRig({
+      target: options.targetNode,
+      distance: options.distance ?? 3.6,
+      height: options.height ?? 1.85,
+      lookAhead: { seconds: 0.4, max: options.lookAhead ?? 0.46 },
+      fov: options.fov ?? 44,
+      bank: { gain: 0.6, maxDeg: 7 }
+    });
+  }
+  return createFromSpecRig(createGameRacingPresentationCamera({ ...options, legacySpec: true }));
+}
+
 export function createGameRacingPresentationCamera(options: GameRacingPresentationCameraOptions): GameScenePresentationCameraSpec {
+  // R-11: flag-on returns an AuraCameraRig; the declared return stays
+  // GameScenePresentationCameraSpec because the index.ts wrappers (lane 15)
+  // pin it — the runtime object is the rig (C-38 runtime shape change).
+  if (qrCameraSpecOn(options)) {
+    return racingCameraSpecRig(options) as unknown as GameScenePresentationCameraSpec;
+  }
   if (options.mode === "overview") {
     const track = options.target ?? options.sceneBinding.trackModel.position;
     const distance = positiveOrDefault(options.distance, 5.9);
@@ -673,7 +730,23 @@ export function createGamePlatformerSceneBinding(options: GamePlatformerSceneBin
   };
 }
 
+/** R-11 flag-on mapping: establishing → `rigs.fromSpec` of the legacy pose, follow → `rigs.follow2d`. */
+function platformerCameraSpecRig(options: GamePlatformerPresentationCameraOptions): AuraCameraRig {
+  if (options.mode === "establishing") {
+    return createFromSpecRig(createGamePlatformerPresentationCamera({ ...options, legacySpec: true }));
+  }
+  return createFollow2dRig({
+    target: options.targetNode ?? "player",
+    distance: options.distance ?? 5.1,
+    fov: options.fov ?? 42,
+    lead: Math.abs(options.lookAhead ?? 1.2)
+  });
+}
+
 export function createGamePlatformerPresentationCamera(options: GamePlatformerPresentationCameraOptions): GameScenePresentationCameraSpec {
+  if (qrCameraSpecOn(options)) {
+    return platformerCameraSpecRig(options) as unknown as GameScenePresentationCameraSpec;
+  }
   const player = options.sceneBinding.toScenePlayer(options.player);
   if (options.mode === "establishing") {
     const world = options.sceneBinding.worldModel.position;

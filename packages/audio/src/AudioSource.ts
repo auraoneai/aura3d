@@ -16,6 +16,26 @@ export class AudioSource {
   loop: boolean;
   /** Playback-rate multiplier; the positional emitter drives this for doppler. Defaults to 1. */
   playbackRate = 1;
+
+  /**
+   * Live playback rate (PRD-09 §7.5): ramps the running source's
+   * `playbackRate` via `setTargetAtTime` (τ = rampMs/3) and stores the value
+   * for the next `play()`. No-op while idle — the stored rate still applies
+   * to the next source node.
+   */
+  setPlaybackRate(rate: number, rampMs = 0): void {
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new RangeError("Audio source playback rate must be a positive finite number");
+    }
+    this.playbackRate = rate;
+    const param = this.node?.playbackRate;
+    if (!param) return;
+    if (rampMs > 0 && typeof param.setTargetAtTime === "function") {
+      param.setTargetAtTime(rate, this.options.context.currentTime, rampMs / 3000);
+    } else {
+      param.value = rate;
+    }
+  }
   readonly gain: GainNode;
 
   private stateRef: AudioSourceState = "idle";

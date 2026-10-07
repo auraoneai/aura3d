@@ -10,7 +10,7 @@
 // added, no draws happen, and the frame is pixel-identical.
 
 import { Scene, identityMat4, type Mat4 } from "@aura3d/scene";
-import type { RenderDevice } from "../RenderDevice";
+import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import type { RenderGraph } from "../RenderGraph";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { RenderItem } from "../ForwardPass";
@@ -84,11 +84,8 @@ export interface RendererFrameHooksInput {
   readonly tier?: AuraQualityTierSettings;
 }
 
-const STUB_SCENE_DEPTH = {
-  texture: null,
-  available: false,
-  linearize: { near: 0.1, far: 1000, orthographic: false }
-} as const;
+/** C-01 blackboard key for the forward color target (R-01-1). */
+export const PRD01_FORWARD_TARGET = "prd01.forwardTarget";
 
 class ContributorTransparentPass extends BaseRenderPass {
   constructor(
@@ -124,7 +121,22 @@ export class RendererFrameHooks {
         : source;
   }
 
+  private forwardTarget: RenderTarget | null = null;
+
+  /**
+   * R-01-1: the Renderer hands the forward color target in after
+   * `ensureForwardColorTarget`; `ctx.sceneDepth` then exposes the real depth
+   * texture and the blackboard publishes it at `"prd01.forwardTarget"`.
+   */
+  setForwardTarget(target: RenderTarget | null): void {
+    this.forwardTarget = target;
+  }
+
   private context(items: readonly RenderItem[]): FrameContributorContext {
+    const depthTexture = this.forwardTarget?.depthTexture ?? null;
+    if (this.forwardTarget) {
+      this.blackboard.set(PRD01_FORWARD_TARGET, this.forwardTarget);
+    }
     return {
       device: this.input.device,
       width: this.input.width,
@@ -136,7 +148,15 @@ export class RendererFrameHooks {
       items,
       tier: this.input.tier ?? QUALITY_TIERS.high,
       flags: this.flags,
-      sceneDepth: STUB_SCENE_DEPTH,
+      sceneDepth: {
+        texture: depthTexture,
+        available: depthTexture !== null,
+        linearize: {
+          near: this.input.camera?.near ?? 0.1,
+          far: this.input.camera?.far ?? 1000,
+          orthographic: this.input.camera?.projection === "orthographic"
+        }
+      },
       blackboard: this.blackboard
     };
   }

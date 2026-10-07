@@ -1,0 +1,4698 @@
+{
+  "schema": "aura3d.assets/1.1",
+  "pack": "game-sfx-core",
+  "entries": [
+    {
+      "id": "ambience.city-day",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "25db67fdee8565b9",
+      "class": "ambience",
+      "lufs": -30.96684445308208,
+      "truePeak": -15.558331419344992,
+      "gainAppliedDb": 10.97,
+      "encodings": {
+        "opus": "ambience.city-day.opus.webm",
+        "aac": "ambience.city-day.m4a"
+      }
+    },
+    {
+      "id": "ambience.city-night",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "cbac5d22ebba3f97",
+      "class": "ambience",
+      "lufs": -17.66165400999288,
+      "truePeak": -5.288439335938888,
+      "gainAppliedDb": -2.34,
+      "encodings": {
+        "opus": "ambience.city-night.opus.webm",
+        "aac": "ambience.city-night.m4a"
+      }
+    },
+    {
+      "id": "ambience.crowd-arena",
+      "role": "audio",
+      "source": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/crowd-shoutingspeaking-ambience",
+      "author": "Starninjas",
+      "hash": "4b5af763ff4e715a",
+      "class": "ambience",
+      "lufs": -14.119499783397094,
+      "truePeak": -6.433362084542128,
+      "gainAppliedDb": -5.88,
+      "encodings": {
+        "opus": "ambience.crowd-arena.opus.webm",
+        "aac": "ambience.crowd-arena.m4a"
+      }
+    },
+    {
+      "id": "ambience.crowd-sports",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "8bb8e4ea2c433daf",
+      "class": "ambience",
+      "lufs": -16.213348978630023,
+      "truePeak": -5.620867819462117,
+      "gainAppliedDb": -3.79,
+      "encodings": {
+        "opus": "ambience.crowd-sports.opus.webm",
+        "aac": "ambience.crowd-sports.m4a"
+      }
+    },
+    {
+      "id": "ambience.hangar",
+      "role": "audio",
+      "source": "https://opengameart.org/content/scifi-city-ambient-loop",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/scifi-city-ambient-loop",
+      "author": "TinyWorlds",
+      "hash": "d4354800bbf190a1",
+      "class": "ambience",
+      "lufs": -24.617984674510517,
+      "truePeak": -9.09353688873235,
+      "gainAppliedDb": 4.62,
+      "encodings": {
+        "opus": "ambience.hangar.opus.webm",
+        "aac": "ambience.hangar.m4a"
+      }
+    },
+    {
+      "id": "ambience.interior-hum",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "1feb0246828ee03f",
+      "class": "ambience",
+      "lufs": -26.19113837086443,
+      "truePeak": -6.680714504679398,
+      "gainAppliedDb": 5.68,
+      "encodings": {
+        "opus": "ambience.interior-hum.opus.webm",
+        "aac": "ambience.interior-hum.m4a"
+      }
+    },
+    {
+      "id": "ambience.space-hum",
+      "role": "audio",
+      "source": "https://opengameart.org/content/dark-ambience-0",
+      "license": "CC-BY-4.0",
+      "sourceUrl": "https://opengameart.org/content/dark-ambience-0",
+      "author": "SpringySpringo (remix of Sliv)",
+      "hash": "e02ba8d4597c72bb",
+      "class": "ambience",
+      "lufs": -33.818305899620256,
+      "truePeak": -8.204274171165496,
+      "gainAppliedDb": 7.2,
+      "encodings": {
+        "opus": "ambience.space-hum.opus.webm",
+        "aac": "ambience.space-hum.m4a"
+      }
+    },
+    {
+      "id": "ambience.underwater",
+      "role": "audio",
+      "source": "https://opengameart.org/content/aquaria",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/aquaria",
+      "author": "CynicMusic / Raj Krishan Ghosh",
+      "hash": "d9fbf26771b157b8",
+      "class": "ambience",
+      "lufs": -11.16960015902657,
+      "truePeak": -0.14970973510969166,
+      "gainAppliedDb": -8.83,
+      "encodings": {
+        "opus": "ambience.underwater.opus.webm",
+        "aac": "ambience.underwater.m4a"
+      }
+    },
+    {
+      "id": "ambience.wind-high",
+      "role": "audio",
+      "source": "https://opengameart.org/content/wind-whoosh-loop",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/wind-whoosh-loop",
+      "author": "SketchMan3",
+      "hash": "01ad2a39ec61bf01",
+      "class": "ambience",
+      "lufs": -28.081749184580676,
+      "truePeak": -17.241186166790975,
+      "gainAppliedDb": 8.08,
+      "encodings": {
+        "opus": "ambience.wind-high.opus.webm",
+        "aac": "ambience.wind-high.m4a"
+      }
+    },
+    {
+      "id": "ambience.wind-open",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "5dfc24bbba6378c1",
+      "class": "ambience",
+      "lufs": -23.15944780716887,
+      "truePeak": -6.127830756107513,
+      "gainAppliedDb": 3.16,
+      "encodings": {
+        "opus": "ambience.wind-open.opus.webm",
+        "aac": "ambience.wind-open.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.fight.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "author": "Kenney Vleugels",
+      "hash": "fc16c61cd474da6c",
+      "class": "one-shot",
+      "lufs": -13.434369108716695,
+      "truePeak": -0.022089265189509107,
+      "gainAppliedDb": -0.98,
+      "encodings": {
+        "opus": "creature.announcer.fight.00.opus.webm",
+        "aac": "creature.announcer.fight.00.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.fight.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "author": "VoiceBosch (SoundBiter SFX)",
+      "hash": "6330360d750f18b4",
+      "class": "one-shot",
+      "lufs": -17.44644373461496,
+      "truePeak": -2.9476809207594554,
+      "gainAppliedDb": 1.95,
+      "encodings": {
+        "opus": "creature.announcer.fight.01.opus.webm",
+        "aac": "creature.announcer.fight.01.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.ko.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "author": "VoiceBosch (SoundBiter SFX)",
+      "hash": "9e749db348d34ec4",
+      "class": "one-shot",
+      "lufs": -16.028349216630172,
+      "truePeak": -3.1631282942082417,
+      "gainAppliedDb": 2.16,
+      "encodings": {
+        "opus": "creature.announcer.ko.00.opus.webm",
+        "aac": "creature.announcer.ko.00.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.ko.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/dragon-announcer-audio-pack",
+      "author": "VoiceBosch (SoundBiter SFX)",
+      "hash": "6cb5c56a47d6179a",
+      "class": "one-shot",
+      "lufs": -16.203515497619755,
+      "truePeak": -2.921339268600531,
+      "gainAppliedDb": 1.92,
+      "encodings": {
+        "opus": "creature.announcer.ko.01.opus.webm",
+        "aac": "creature.announcer.ko.01.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.perfect.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "author": "Kenney Vleugels",
+      "hash": "70d80e1bdd30649e",
+      "class": "one-shot",
+      "lufs": -14.303838518220767,
+      "truePeak": -0.302970948182903,
+      "gainAppliedDb": -0.7,
+      "encodings": {
+        "opus": "creature.announcer.perfect.00.opus.webm",
+        "aac": "creature.announcer.perfect.00.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.perfect.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "author": "Kenney Vleugels",
+      "hash": "109cf00bedc2dc65",
+      "class": "one-shot",
+      "lufs": -14.528244237380148,
+      "truePeak": -0.6294742429464131,
+      "gainAppliedDb": -0.37,
+      "encodings": {
+        "opus": "creature.announcer.perfect.01.opus.webm",
+        "aac": "creature.announcer.perfect.01.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.round.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "author": "Kenney Vleugels",
+      "hash": "cb553cdc365409f9",
+      "class": "one-shot",
+      "lufs": -13.933999173500965,
+      "truePeak": -0.7811086122080146,
+      "gainAppliedDb": -0.22,
+      "encodings": {
+        "opus": "creature.announcer.round.00.opus.webm",
+        "aac": "creature.announcer.round.00.m4a"
+      }
+    },
+    {
+      "id": "creature.announcer.round.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/voiceover-pack-fighter-40-taunts",
+      "author": "Kenney Vleugels",
+      "hash": "0ab798f390fcdbc5",
+      "class": "one-shot",
+      "lufs": -14.68976315522731,
+      "truePeak": -1.3546316853650653,
+      "gainAppliedDb": 0.35,
+      "encodings": {
+        "opus": "creature.announcer.round.01.opus.webm",
+        "aac": "creature.announcer.round.01.m4a"
+      }
+    },
+    {
+      "id": "creature.grunt-heavy.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "author": "RubberDuck / Chasersgaming",
+      "hash": "2f590aec7086b232",
+      "class": "one-shot",
+      "lufs": -15.676849310265077,
+      "truePeak": -1.9930761339751657,
+      "gainAppliedDb": 0.99,
+      "encodings": {
+        "opus": "creature.grunt-heavy.00.opus.webm",
+        "aac": "creature.grunt-heavy.00.m4a"
+      }
+    },
+    {
+      "id": "creature.grunt-heavy.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "author": "RubberDuck / Chasersgaming",
+      "hash": "e7e67dd4b5ae627d",
+      "class": "one-shot",
+      "lufs": -19.739574787098725,
+      "truePeak": -2.625819951058286,
+      "gainAppliedDb": 1.63,
+      "encodings": {
+        "opus": "creature.grunt-heavy.01.opus.webm",
+        "aac": "creature.grunt-heavy.01.m4a"
+      }
+    },
+    {
+      "id": "creature.grunt-light.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "author": "RubberDuck / Chasersgaming",
+      "hash": "73ee84f2bb3e1b37",
+      "class": "one-shot",
+      "lufs": -18.193234806815735,
+      "truePeak": -6.424773942285245,
+      "gainAppliedDb": 5.42,
+      "encodings": {
+        "opus": "creature.grunt-light.00.opus.webm",
+        "aac": "creature.grunt-light.00.m4a"
+      }
+    },
+    {
+      "id": "creature.grunt-light.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/80-cc0-creature-sfx",
+      "author": "RubberDuck / Chasersgaming",
+      "hash": "164059a171a8a7d8",
+      "class": "one-shot",
+      "lufs": -17.676565147031713,
+      "truePeak": -2.49746077243535,
+      "gainAppliedDb": 1.5,
+      "encodings": {
+        "opus": "creature.grunt-light.01.opus.webm",
+        "aac": "creature.grunt-light.01.m4a"
+      }
+    },
+    {
+      "id": "creature.ko.00",
+      "role": "audio",
+      "source": "https://opengameart.org/content/5-hit-sounds-dying",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/5-hit-sounds-dying",
+      "author": "fluffrabbit",
+      "hash": "233ca827e78149ea",
+      "class": "one-shot",
+      "lufs": -12.10730721153953,
+      "truePeak": -0.9390468999466752,
+      "gainAppliedDb": -0.06,
+      "encodings": {
+        "opus": "creature.ko.00.opus.webm",
+        "aac": "creature.ko.00.m4a"
+      }
+    },
+    {
+      "id": "creature.ko.01",
+      "role": "audio",
+      "source": "https://opengameart.org/content/5-hit-sounds-dying",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/5-hit-sounds-dying",
+      "author": "fluffrabbit",
+      "hash": "72e93282958e106a",
+      "class": "one-shot",
+      "lufs": -19.63601761145141,
+      "truePeak": -8.076964317604817,
+      "gainAppliedDb": 7.08,
+      "encodings": {
+        "opus": "creature.ko.01.opus.webm",
+        "aac": "creature.ko.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.charge-up.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4423d459fc15fdd8",
+      "class": "one-shot",
+      "lufs": -14.130342543065092,
+      "truePeak": -1.2374858560017323,
+      "gainAppliedDb": 0.24,
+      "encodings": {
+        "opus": "explosion.charge-up.00.opus.webm",
+        "aac": "explosion.charge-up.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.charge-up.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8f158744623b8d7a",
+      "class": "one-shot",
+      "lufs": -14.913321596773239,
+      "truePeak": -1.278820323138574,
+      "gainAppliedDb": 0.28,
+      "encodings": {
+        "opus": "explosion.charge-up.01.opus.webm",
+        "aac": "explosion.charge-up.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.charge-up.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d6edcbde2c7190e2",
+      "class": "one-shot",
+      "lufs": -14.07370096008131,
+      "truePeak": -1.0769406710443625,
+      "gainAppliedDb": 0.08,
+      "encodings": {
+        "opus": "explosion.charge-up.02.opus.webm",
+        "aac": "explosion.charge-up.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.large.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "cdda50600a4928f2",
+      "class": "one-shot",
+      "lufs": -12.844456393808409,
+      "truePeak": -0.8255225637353447,
+      "gainAppliedDb": -0.17,
+      "encodings": {
+        "opus": "explosion.large.00.opus.webm",
+        "aac": "explosion.large.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.large.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d0c659b2c8108a7b",
+      "class": "one-shot",
+      "lufs": -19.51552650787394,
+      "truePeak": -0.6866013405483905,
+      "gainAppliedDb": -0.31,
+      "encodings": {
+        "opus": "explosion.large.01.opus.webm",
+        "aac": "explosion.large.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.large.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "7b74e7c5c9df8023",
+      "class": "one-shot",
+      "lufs": -20.566640571376503,
+      "truePeak": -0.9659062704626016,
+      "gainAppliedDb": -0.03,
+      "encodings": {
+        "opus": "explosion.large.02.opus.webm",
+        "aac": "explosion.large.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.laser.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "a56d95794cd732d6",
+      "class": "one-shot",
+      "lufs": -17.964032948178673,
+      "truePeak": -0.3005561739505868,
+      "gainAppliedDb": -0.7,
+      "encodings": {
+        "opus": "explosion.laser.00.opus.webm",
+        "aac": "explosion.laser.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.laser.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e678aca631495b7d",
+      "class": "one-shot",
+      "lufs": -18.673101255862218,
+      "truePeak": -0.8148342641140791,
+      "gainAppliedDb": -0.19,
+      "encodings": {
+        "opus": "explosion.laser.01.opus.webm",
+        "aac": "explosion.laser.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.laser.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e5e0b6ccc4d5720c",
+      "class": "one-shot",
+      "lufs": -17.728673910293427,
+      "truePeak": 0.6019341374082148,
+      "gainAppliedDb": -1.6,
+      "encodings": {
+        "opus": "explosion.laser.02.opus.webm",
+        "aac": "explosion.laser.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8c7197bb3a1c5046",
+      "class": "one-shot",
+      "lufs": -17.96478432872829,
+      "truePeak": -0.846863334139696,
+      "gainAppliedDb": -0.15,
+      "encodings": {
+        "opus": "explosion.medium.00.opus.webm",
+        "aac": "explosion.medium.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9c3a1c73cadf0de5",
+      "class": "one-shot",
+      "lufs": -22.437355897181508,
+      "truePeak": -0.7089598089170074,
+      "gainAppliedDb": -0.29,
+      "encodings": {
+        "opus": "explosion.medium.01.opus.webm",
+        "aac": "explosion.medium.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "3cb48d86dab63140",
+      "class": "one-shot",
+      "lufs": -15.239336819519073,
+      "truePeak": -0.8906497734888176,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "explosion.medium.02.opus.webm",
+        "aac": "explosion.medium.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.shield-hit.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c2916f2a062c8ddd",
+      "class": "one-shot",
+      "lufs": -11.304572209136033,
+      "truePeak": -0.8886530312538616,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "explosion.shield-hit.00.opus.webm",
+        "aac": "explosion.shield-hit.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.shield-hit.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5574e69dd04e5f59",
+      "class": "one-shot",
+      "lufs": -11.623746904630446,
+      "truePeak": -0.9021884996742142,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "explosion.shield-hit.01.opus.webm",
+        "aac": "explosion.shield-hit.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.shield-hit.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "051b0eafc479695a",
+      "class": "one-shot",
+      "lufs": -11.263696176770585,
+      "truePeak": -0.9316434184757226,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "explosion.shield-hit.02.opus.webm",
+        "aac": "explosion.shield-hit.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.small.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "4b597d658d0ae101",
+      "class": "one-shot",
+      "lufs": -16.875567387613266,
+      "truePeak": -0.9330206882362604,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "explosion.small.00.opus.webm",
+        "aac": "explosion.small.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.small.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fdd04d6f0032d4d5",
+      "class": "one-shot",
+      "lufs": -15.302565168420857,
+      "truePeak": -0.5284073320754514,
+      "gainAppliedDb": -0.47,
+      "encodings": {
+        "opus": "explosion.small.01.opus.webm",
+        "aac": "explosion.small.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.small.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "be2b8ddc62e4a24c",
+      "class": "one-shot",
+      "lufs": -16.372851967417336,
+      "truePeak": -0.9509163030335903,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "explosion.small.02.opus.webm",
+        "aac": "explosion.small.02.m4a"
+      }
+    },
+    {
+      "id": "explosion.zap.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4e4bf11c671a4be0",
+      "class": "one-shot",
+      "lufs": -11.939003885391484,
+      "truePeak": 0.13696532232718042,
+      "gainAppliedDb": -1.14,
+      "encodings": {
+        "opus": "explosion.zap.00.opus.webm",
+        "aac": "explosion.zap.00.m4a"
+      }
+    },
+    {
+      "id": "explosion.zap.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "169cf3876647bae0",
+      "class": "one-shot",
+      "lufs": -10.411825640547997,
+      "truePeak": -0.4595646535230856,
+      "gainAppliedDb": -0.54,
+      "encodings": {
+        "opus": "explosion.zap.01.opus.webm",
+        "aac": "explosion.zap.01.m4a"
+      }
+    },
+    {
+      "id": "explosion.zap.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "2a203a007d24cc7e",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 1.1166545054633354,
+      "gainAppliedDb": -2.12,
+      "encodings": {
+        "opus": "explosion.zap.02.opus.webm",
+        "aac": "explosion.zap.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.concrete.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d7267e183067757c",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.920913902316997,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "footsteps.concrete.00.opus.webm",
+        "aac": "footsteps.concrete.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.concrete.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "507a75eb19b89708",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0608796261598776,
+      "gainAppliedDb": 0.06,
+      "encodings": {
+        "opus": "footsteps.concrete.01.opus.webm",
+        "aac": "footsteps.concrete.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.concrete.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b21fa546d7494119",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9888082130775121,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "footsteps.concrete.02.opus.webm",
+        "aac": "footsteps.concrete.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.concrete.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8b513c2f03163240",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0613580196812802,
+      "gainAppliedDb": 0.06,
+      "encodings": {
+        "opus": "footsteps.concrete.03.opus.webm",
+        "aac": "footsteps.concrete.03.m4a"
+      }
+    },
+    {
+      "id": "footsteps.grass.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9d49497777405d78",
+      "class": "one-shot",
+      "lufs": -25.70462816253087,
+      "truePeak": -1.052804656364459,
+      "gainAppliedDb": 0.05,
+      "encodings": {
+        "opus": "footsteps.grass.00.opus.webm",
+        "aac": "footsteps.grass.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.grass.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fb28781bd22b2eef",
+      "class": "one-shot",
+      "lufs": -24.886282392982977,
+      "truePeak": -1.0725554455064574,
+      "gainAppliedDb": 0.07,
+      "encodings": {
+        "opus": "footsteps.grass.01.opus.webm",
+        "aac": "footsteps.grass.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.grass.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "73a520139f5be716",
+      "class": "one-shot",
+      "lufs": -25.363861408610145,
+      "truePeak": -1.0495182639555312,
+      "gainAppliedDb": 0.05,
+      "encodings": {
+        "opus": "footsteps.grass.02.opus.webm",
+        "aac": "footsteps.grass.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.grass.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "0546e1d8ab2def71",
+      "class": "one-shot",
+      "lufs": -25.960809144191128,
+      "truePeak": -0.8992809160108415,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "footsteps.grass.03.opus.webm",
+        "aac": "footsteps.grass.03.m4a"
+      }
+    },
+    {
+      "id": "footsteps.gravel.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c05fa4a9dc9a7aab",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8413637369531023,
+      "gainAppliedDb": -0.16,
+      "encodings": {
+        "opus": "footsteps.gravel.00.opus.webm",
+        "aac": "footsteps.gravel.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.gravel.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "980fb9a1c9227aed",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.005328780616501,
+      "gainAppliedDb": 0.01,
+      "encodings": {
+        "opus": "footsteps.gravel.01.opus.webm",
+        "aac": "footsteps.gravel.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.gravel.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "db52bafdc66304f3",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9198961710637532,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "footsteps.gravel.02.opus.webm",
+        "aac": "footsteps.gravel.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.gravel.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "68272e3f1cabcabd",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9054817164934923,
+      "gainAppliedDb": -0.09,
+      "encodings": {
+        "opus": "footsteps.gravel.03.opus.webm",
+        "aac": "footsteps.gravel.03.m4a"
+      }
+    },
+    {
+      "id": "footsteps.metal.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6e797cf8a5bfc52d",
+      "class": "one-shot",
+      "lufs": -21.640558892651985,
+      "truePeak": -1.0003838410301793,
+      "gainAppliedDb": 0,
+      "encodings": {
+        "opus": "footsteps.metal.00.opus.webm",
+        "aac": "footsteps.metal.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.metal.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "947915c2eb6ac57e",
+      "class": "one-shot",
+      "lufs": -21.9816309840181,
+      "truePeak": -1.3236833375888852,
+      "gainAppliedDb": 0.32,
+      "encodings": {
+        "opus": "footsteps.metal.01.opus.webm",
+        "aac": "footsteps.metal.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.metal.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8ac5869ea434cf0d",
+      "class": "one-shot",
+      "lufs": -21.347303842176995,
+      "truePeak": -0.8929243669416529,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "footsteps.metal.02.opus.webm",
+        "aac": "footsteps.metal.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.metal.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "dbfb7c1d00257669",
+      "class": "one-shot",
+      "lufs": -20.161343093653368,
+      "truePeak": -1.0486493631197964,
+      "gainAppliedDb": 0.05,
+      "encodings": {
+        "opus": "footsteps.metal.03.opus.webm",
+        "aac": "footsteps.metal.03.m4a"
+      }
+    },
+    {
+      "id": "footsteps.water.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "480ee82b690136ea",
+      "class": "one-shot",
+      "lufs": -23.76594936162675,
+      "truePeak": -0.9496265792586327,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "footsteps.water.00.opus.webm",
+        "aac": "footsteps.water.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.water.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "822ca475d71e18ef",
+      "class": "one-shot",
+      "lufs": -22.15999113291587,
+      "truePeak": -0.9459102273281751,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "footsteps.water.01.opus.webm",
+        "aac": "footsteps.water.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.water.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8f702781627c95cf",
+      "class": "one-shot",
+      "lufs": -19.437356079997784,
+      "truePeak": -0.5422942133736035,
+      "gainAppliedDb": -0.46,
+      "encodings": {
+        "opus": "footsteps.water.02.opus.webm",
+        "aac": "footsteps.water.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.water.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "1b3a14886d25a471",
+      "class": "one-shot",
+      "lufs": -19.265448921873805,
+      "truePeak": -0.7448813801280668,
+      "gainAppliedDb": -0.26,
+      "encodings": {
+        "opus": "footsteps.water.03.opus.webm",
+        "aac": "footsteps.water.03.m4a"
+      }
+    },
+    {
+      "id": "footsteps.wood.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5f1c252942a220d6",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9188935378825422,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "footsteps.wood.00.opus.webm",
+        "aac": "footsteps.wood.00.m4a"
+      }
+    },
+    {
+      "id": "footsteps.wood.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e4f68e1c9fd55b4d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.98929765798344,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "footsteps.wood.01.opus.webm",
+        "aac": "footsteps.wood.01.m4a"
+      }
+    },
+    {
+      "id": "footsteps.wood.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9ff095b05cee5eec",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8967063965226338,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "footsteps.wood.02.opus.webm",
+        "aac": "footsteps.wood.02.m4a"
+      }
+    },
+    {
+      "id": "footsteps.wood.03",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "2a68a083daa9eda0",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0742076415286088,
+      "gainAppliedDb": 0.07,
+      "encodings": {
+        "opus": "footsteps.wood.03.opus.webm",
+        "aac": "footsteps.wood.03.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "a56d95794cd732d6",
+      "class": "one-shot",
+      "lufs": -17.964032948178673,
+      "truePeak": -0.3005561739505868,
+      "gainAppliedDb": -0.7,
+      "encodings": {
+        "opus": "impact.energy.heavy.00.opus.webm",
+        "aac": "impact.energy.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e678aca631495b7d",
+      "class": "one-shot",
+      "lufs": -18.673101255862218,
+      "truePeak": -0.8148342641140791,
+      "gainAppliedDb": -0.19,
+      "encodings": {
+        "opus": "impact.energy.heavy.01.opus.webm",
+        "aac": "impact.energy.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e5e0b6ccc4d5720c",
+      "class": "one-shot",
+      "lufs": -17.728673910293427,
+      "truePeak": 0.6019341374082148,
+      "gainAppliedDb": -1.6,
+      "encodings": {
+        "opus": "impact.energy.heavy.02.opus.webm",
+        "aac": "impact.energy.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c2916f2a062c8ddd",
+      "class": "one-shot",
+      "lufs": -11.304572209136033,
+      "truePeak": -0.8886530312538616,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "impact.energy.light.00.opus.webm",
+        "aac": "impact.energy.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5574e69dd04e5f59",
+      "class": "one-shot",
+      "lufs": -11.623746904630446,
+      "truePeak": -0.9021884996742142,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "impact.energy.light.01.opus.webm",
+        "aac": "impact.energy.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "051b0eafc479695a",
+      "class": "one-shot",
+      "lufs": -11.263696176770585,
+      "truePeak": -0.9316434184757226,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "impact.energy.light.02.opus.webm",
+        "aac": "impact.energy.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8f702781627c95cf",
+      "class": "one-shot",
+      "lufs": -19.437356079997784,
+      "truePeak": -0.5422942133736035,
+      "gainAppliedDb": -0.46,
+      "encodings": {
+        "opus": "impact.energy.medium.00.opus.webm",
+        "aac": "impact.energy.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "1b3a14886d25a471",
+      "class": "one-shot",
+      "lufs": -19.265448921873805,
+      "truePeak": -0.7448813801280668,
+      "gainAppliedDb": -0.26,
+      "encodings": {
+        "opus": "impact.energy.medium.01.opus.webm",
+        "aac": "impact.energy.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.energy.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "03fd29fd857c67b4",
+      "class": "one-shot",
+      "lufs": -19.371672452154325,
+      "truePeak": -1.3806355771894556,
+      "gainAppliedDb": 0.38,
+      "encodings": {
+        "opus": "impact.energy.medium.02.opus.webm",
+        "aac": "impact.energy.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b33a8f14068aec24",
+      "class": "one-shot",
+      "lufs": -17.848361976382094,
+      "truePeak": -0.962469994527698,
+      "gainAppliedDb": -0.04,
+      "encodings": {
+        "opus": "impact.flesh.heavy.00.opus.webm",
+        "aac": "impact.flesh.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f92f5cb6ba4ff276",
+      "class": "one-shot",
+      "lufs": -18.020483443235992,
+      "truePeak": -1.1751653357271052,
+      "gainAppliedDb": 0.18,
+      "encodings": {
+        "opus": "impact.flesh.heavy.01.opus.webm",
+        "aac": "impact.flesh.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7993dd4c156b9979",
+      "class": "one-shot",
+      "lufs": -15.094015076372523,
+      "truePeak": -0.969211540716487,
+      "gainAppliedDb": -0.03,
+      "encodings": {
+        "opus": "impact.flesh.heavy.02.opus.webm",
+        "aac": "impact.flesh.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7d3ba0bb5e60a11b",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9542742758700412,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "impact.flesh.light.00.opus.webm",
+        "aac": "impact.flesh.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7642a4fd43e547af",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.920189140661337,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "impact.flesh.light.01.opus.webm",
+        "aac": "impact.flesh.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5069e3571a77d7f7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9876303156952602,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "impact.flesh.light.02.opus.webm",
+        "aac": "impact.flesh.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "486988aa2d6440ff",
+      "class": "one-shot",
+      "lufs": -16.629460325594522,
+      "truePeak": -1.0999244151251228,
+      "gainAppliedDb": 0.1,
+      "encodings": {
+        "opus": "impact.flesh.medium.00.opus.webm",
+        "aac": "impact.flesh.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e71d23abcc3f10d9",
+      "class": "one-shot",
+      "lufs": -16.505453576330552,
+      "truePeak": -1.1291717781696218,
+      "gainAppliedDb": 0.13,
+      "encodings": {
+        "opus": "impact.flesh.medium.01.opus.webm",
+        "aac": "impact.flesh.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.flesh.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6492f9ccbc8d24dc",
+      "class": "one-shot",
+      "lufs": -16.1416255357971,
+      "truePeak": -0.8375586436529667,
+      "gainAppliedDb": -0.16,
+      "encodings": {
+        "opus": "impact.flesh.medium.02.opus.webm",
+        "aac": "impact.flesh.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b44b39a940e8948e",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0723981650953678,
+      "gainAppliedDb": 0.07,
+      "encodings": {
+        "opus": "impact.glass.heavy.00.opus.webm",
+        "aac": "impact.glass.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "58686e0e562612cc",
+      "class": "one-shot",
+      "lufs": -24.591430272619384,
+      "truePeak": -0.9482095527673605,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "impact.glass.heavy.01.opus.webm",
+        "aac": "impact.glass.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "4978654ac840ad51",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9131884396619893,
+      "gainAppliedDb": -0.09,
+      "encodings": {
+        "opus": "impact.glass.heavy.02.opus.webm",
+        "aac": "impact.glass.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d750cf88097d0c3e",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.4614134959003786,
+      "gainAppliedDb": 0.46,
+      "encodings": {
+        "opus": "impact.glass.light.00.opus.webm",
+        "aac": "impact.glass.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "05e513fbd4282906",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8797647671151596,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "impact.glass.light.01.opus.webm",
+        "aac": "impact.glass.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "710db7451bb7857b",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.1825128936454807,
+      "gainAppliedDb": 0.18,
+      "encodings": {
+        "opus": "impact.glass.light.02.opus.webm",
+        "aac": "impact.glass.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9252d50bfb85edb1",
+      "class": "one-shot",
+      "lufs": -22.66684769198856,
+      "truePeak": -1.1381691142731745,
+      "gainAppliedDb": 0.14,
+      "encodings": {
+        "opus": "impact.glass.medium.00.opus.webm",
+        "aac": "impact.glass.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d3d806cb3012c9dd",
+      "class": "one-shot",
+      "lufs": -22.191965369617893,
+      "truePeak": -0.9072573156639054,
+      "gainAppliedDb": -0.09,
+      "encodings": {
+        "opus": "impact.glass.medium.01.opus.webm",
+        "aac": "impact.glass.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.glass.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "48616f22c95589ed",
+      "class": "one-shot",
+      "lufs": -23.190124548374346,
+      "truePeak": -0.9933941957081704,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "impact.glass.medium.02.opus.webm",
+        "aac": "impact.glass.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e07045693e4a2b3d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9046508363143742,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "impact.metal.heavy.00.opus.webm",
+        "aac": "impact.metal.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "83554049f81f4db9",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.086297040749623,
+      "gainAppliedDb": 0.09,
+      "encodings": {
+        "opus": "impact.metal.heavy.01.opus.webm",
+        "aac": "impact.metal.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b914c8f1eb7c0f34",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.18270477820632,
+      "gainAppliedDb": 0.18,
+      "encodings": {
+        "opus": "impact.metal.heavy.02.opus.webm",
+        "aac": "impact.metal.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "33b5e6e37c6e9d54",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9671252392712731,
+      "gainAppliedDb": -0.03,
+      "encodings": {
+        "opus": "impact.metal.light.00.opus.webm",
+        "aac": "impact.metal.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fba69c467ddd85da",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9214040874821909,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "impact.metal.light.01.opus.webm",
+        "aac": "impact.metal.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "25a96f90a9a1f88a",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.2789787275984785,
+      "gainAppliedDb": 0.28,
+      "encodings": {
+        "opus": "impact.metal.light.02.opus.webm",
+        "aac": "impact.metal.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "a96f879fec0864a8",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.1522294054736684,
+      "gainAppliedDb": 0.15,
+      "encodings": {
+        "opus": "impact.metal.medium.00.opus.webm",
+        "aac": "impact.metal.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e8a9eaba7c4d2742",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.2072364083732754,
+      "gainAppliedDb": 0.21,
+      "encodings": {
+        "opus": "impact.metal.medium.01.opus.webm",
+        "aac": "impact.metal.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.metal.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7e89ce2ca0dbda95",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.086360891848539,
+      "gainAppliedDb": 0.09,
+      "encodings": {
+        "opus": "impact.metal.medium.02.opus.webm",
+        "aac": "impact.metal.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c1d2c4f9910d4529",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0987721460127848,
+      "gainAppliedDb": 0.1,
+      "encodings": {
+        "opus": "impact.plastic.heavy.00.opus.webm",
+        "aac": "impact.plastic.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "0d18737d93ba7aa0",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0929345706301978,
+      "gainAppliedDb": 0.09,
+      "encodings": {
+        "opus": "impact.plastic.heavy.01.opus.webm",
+        "aac": "impact.plastic.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fd53e24efec3d5c1",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.2133834554865865,
+      "gainAppliedDb": 0.21,
+      "encodings": {
+        "opus": "impact.plastic.heavy.02.opus.webm",
+        "aac": "impact.plastic.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f0e982611e97512f",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.2351362761845701,
+      "gainAppliedDb": 0.24,
+      "encodings": {
+        "opus": "impact.plastic.light.00.opus.webm",
+        "aac": "impact.plastic.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c3cd1c073d186ae8",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9949402139712876,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "impact.plastic.light.01.opus.webm",
+        "aac": "impact.plastic.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d0bf60905b59ff63",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9549055444297687,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "impact.plastic.light.02.opus.webm",
+        "aac": "impact.plastic.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f4bbee66ca191ec7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9624318034891767,
+      "gainAppliedDb": -0.04,
+      "encodings": {
+        "opus": "impact.plastic.medium.00.opus.webm",
+        "aac": "impact.plastic.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "84253095543c094d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.3512480292365732,
+      "gainAppliedDb": 0.35,
+      "encodings": {
+        "opus": "impact.plastic.medium.01.opus.webm",
+        "aac": "impact.plastic.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.plastic.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c1d2c4f9910d4529",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0987721460127848,
+      "gainAppliedDb": 0.1,
+      "encodings": {
+        "opus": "impact.plastic.medium.02.opus.webm",
+        "aac": "impact.plastic.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "486988aa2d6440ff",
+      "class": "one-shot",
+      "lufs": -16.629460325594522,
+      "truePeak": -1.0999244151251228,
+      "gainAppliedDb": 0.1,
+      "encodings": {
+        "opus": "impact.rubber-ball.heavy.00.opus.webm",
+        "aac": "impact.rubber-ball.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e71d23abcc3f10d9",
+      "class": "one-shot",
+      "lufs": -16.505453576330552,
+      "truePeak": -1.1291717781696218,
+      "gainAppliedDb": 0.13,
+      "encodings": {
+        "opus": "impact.rubber-ball.heavy.01.opus.webm",
+        "aac": "impact.rubber-ball.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6492f9ccbc8d24dc",
+      "class": "one-shot",
+      "lufs": -16.1416255357971,
+      "truePeak": -0.8375586436529667,
+      "gainAppliedDb": -0.16,
+      "encodings": {
+        "opus": "impact.rubber-ball.heavy.02.opus.webm",
+        "aac": "impact.rubber-ball.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7d3ba0bb5e60a11b",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9542742758700412,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "impact.rubber-ball.light.00.opus.webm",
+        "aac": "impact.rubber-ball.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "7642a4fd43e547af",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.920189140661337,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "impact.rubber-ball.light.01.opus.webm",
+        "aac": "impact.rubber-ball.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5069e3571a77d7f7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9876303156952602,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "impact.rubber-ball.light.02.opus.webm",
+        "aac": "impact.rubber-ball.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "49e7ca88743fca97",
+      "class": "one-shot",
+      "lufs": -15.77254585316583,
+      "truePeak": -0.9100639999798271,
+      "gainAppliedDb": -0.09,
+      "encodings": {
+        "opus": "impact.rubber-ball.medium.00.opus.webm",
+        "aac": "impact.rubber-ball.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "4d0096364ba9e461",
+      "class": "one-shot",
+      "lufs": -18.393552290696814,
+      "truePeak": -0.9625761201934945,
+      "gainAppliedDb": -0.04,
+      "encodings": {
+        "opus": "impact.rubber-ball.medium.01.opus.webm",
+        "aac": "impact.rubber-ball.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.rubber-ball.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d130ae541951243d",
+      "class": "one-shot",
+      "lufs": -18.11472941367016,
+      "truePeak": -0.8707648872650848,
+      "gainAppliedDb": -0.13,
+      "encodings": {
+        "opus": "impact.rubber-ball.medium.02.opus.webm",
+        "aac": "impact.rubber-ball.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "112d4f93ddcc370b",
+      "class": "one-shot",
+      "lufs": -20.789008463553902,
+      "truePeak": -0.8050620711949215,
+      "gainAppliedDb": -0.19,
+      "encodings": {
+        "opus": "impact.stone.heavy.00.opus.webm",
+        "aac": "impact.stone.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "142fd6c77f13d25f",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8766086337783581,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "impact.stone.heavy.01.opus.webm",
+        "aac": "impact.stone.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b0cab75d1befa32b",
+      "class": "one-shot",
+      "lufs": -20.618491283217075,
+      "truePeak": -1.4320015542584996,
+      "gainAppliedDb": 0.43,
+      "encodings": {
+        "opus": "impact.stone.heavy.02.opus.webm",
+        "aac": "impact.stone.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "36b4ea107222d073",
+      "class": "one-shot",
+      "lufs": -21.78966318250922,
+      "truePeak": -1.0458926603037557,
+      "gainAppliedDb": 0.05,
+      "encodings": {
+        "opus": "impact.stone.light.00.opus.webm",
+        "aac": "impact.stone.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "61235a18de3f3d92",
+      "class": "one-shot",
+      "lufs": -19.398433276413005,
+      "truePeak": -0.9704457814346196,
+      "gainAppliedDb": -0.03,
+      "encodings": {
+        "opus": "impact.stone.light.01.opus.webm",
+        "aac": "impact.stone.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "059558ec751115ca",
+      "class": "one-shot",
+      "lufs": -22.901388283311853,
+      "truePeak": -1.1872236988003246,
+      "gainAppliedDb": 0.19,
+      "encodings": {
+        "opus": "impact.stone.light.02.opus.webm",
+        "aac": "impact.stone.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "059558ec751115ca",
+      "class": "one-shot",
+      "lufs": -22.901388283311853,
+      "truePeak": -1.1872236988003246,
+      "gainAppliedDb": 0.19,
+      "encodings": {
+        "opus": "impact.stone.medium.00.opus.webm",
+        "aac": "impact.stone.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "4237fa2cd80364ad",
+      "class": "one-shot",
+      "lufs": -24.124947250757533,
+      "truePeak": -1.0095416077744144,
+      "gainAppliedDb": 0.01,
+      "encodings": {
+        "opus": "impact.stone.medium.01.opus.webm",
+        "aac": "impact.stone.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.stone.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8ca3a99d85d84575",
+      "class": "one-shot",
+      "lufs": -22.69611092633448,
+      "truePeak": -0.8981983810028846,
+      "gainAppliedDb": -0.1,
+      "encodings": {
+        "opus": "impact.stone.medium.02.opus.webm",
+        "aac": "impact.stone.medium.02.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "15ff82332f342c30",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9330386565805743,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "impact.wood.heavy.00.opus.webm",
+        "aac": "impact.wood.heavy.00.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f1b07a53ac10c615",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9271789287602027,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "impact.wood.heavy.01.opus.webm",
+        "aac": "impact.wood.heavy.01.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "ce1e06f2a05f2634",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9644638216888448,
+      "gainAppliedDb": -0.04,
+      "encodings": {
+        "opus": "impact.wood.heavy.02.opus.webm",
+        "aac": "impact.wood.heavy.02.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "eb45e35b4bed784d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.1105607542592109,
+      "gainAppliedDb": 0.11,
+      "encodings": {
+        "opus": "impact.wood.light.00.opus.webm",
+        "aac": "impact.wood.light.00.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "4b76bf3ccc8e60d1",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9293640074219653,
+      "gainAppliedDb": -0.07,
+      "encodings": {
+        "opus": "impact.wood.light.01.opus.webm",
+        "aac": "impact.wood.light.01.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b183cf7a5bd78381",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0943309043326268,
+      "gainAppliedDb": 0.09,
+      "encodings": {
+        "opus": "impact.wood.light.02.opus.webm",
+        "aac": "impact.wood.light.02.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.medium.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "1723a9fd25103ed4",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0244830563753557,
+      "gainAppliedDb": 0.02,
+      "encodings": {
+        "opus": "impact.wood.medium.00.opus.webm",
+        "aac": "impact.wood.medium.00.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.medium.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "15271dbe8e2872db",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0384574214270605,
+      "gainAppliedDb": 0.04,
+      "encodings": {
+        "opus": "impact.wood.medium.01.opus.webm",
+        "aac": "impact.wood.medium.01.m4a"
+      }
+    },
+    {
+      "id": "impact.wood.medium.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "3f3f1917428b828f",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.061601692800179,
+      "gainAppliedDb": 0.06,
+      "encodings": {
+        "opus": "impact.wood.medium.02.opus.webm",
+        "aac": "impact.wood.medium.02.m4a"
+      }
+    },
+    {
+      "id": "pickup.coin.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8a91f969e932df70",
+      "class": "one-shot",
+      "lufs": -20.861071516322912,
+      "truePeak": 0.9652002464141272,
+      "gainAppliedDb": -1.97,
+      "encodings": {
+        "opus": "pickup.coin.00.opus.webm",
+        "aac": "pickup.coin.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.coin.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4b857968d64f9ac9",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -10.455411755248225,
+      "gainAppliedDb": 9.46,
+      "encodings": {
+        "opus": "pickup.coin.01.opus.webm",
+        "aac": "pickup.coin.01.m4a"
+      }
+    },
+    {
+      "id": "pickup.combo-up.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "9048d651b51f5280",
+      "class": "one-shot",
+      "lufs": -11.607952498620168,
+      "truePeak": -0.1278137826970604,
+      "gainAppliedDb": -0.87,
+      "encodings": {
+        "opus": "pickup.combo-up.00.opus.webm",
+        "aac": "pickup.combo-up.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.combo-up.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "2a2adebaacbf07cc",
+      "class": "one-shot",
+      "lufs": -12.088750824770964,
+      "truePeak": -0.8825821981329461,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "pickup.combo-up.01.opus.webm",
+        "aac": "pickup.combo-up.01.m4a"
+      }
+    },
+    {
+      "id": "pickup.extra-life.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d673bfcd3aee3220",
+      "class": "one-shot",
+      "lufs": -10.422263711805419,
+      "truePeak": -0.6521069307193794,
+      "gainAppliedDb": -0.35,
+      "encodings": {
+        "opus": "pickup.extra-life.00.opus.webm",
+        "aac": "pickup.extra-life.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.extra-life.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "a9387a2cb0b13b8c",
+      "class": "one-shot",
+      "lufs": -11.255516468255097,
+      "truePeak": -0.39816692456767283,
+      "gainAppliedDb": -0.6,
+      "encodings": {
+        "opus": "pickup.extra-life.01.opus.webm",
+        "aac": "pickup.extra-life.01.m4a"
+      }
+    },
+    {
+      "id": "pickup.gem.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "f2f44effce087e47",
+      "class": "one-shot",
+      "lufs": -12.453982748507963,
+      "truePeak": -1.0043718560157475,
+      "gainAppliedDb": 0,
+      "encodings": {
+        "opus": "pickup.gem.00.opus.webm",
+        "aac": "pickup.gem.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.gem.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "5a33494e622c15c4",
+      "class": "one-shot",
+      "lufs": -13.24233290468983,
+      "truePeak": -1.0902180307569915,
+      "gainAppliedDb": 0.09,
+      "encodings": {
+        "opus": "pickup.gem.01.opus.webm",
+        "aac": "pickup.gem.01.m4a"
+      }
+    },
+    {
+      "id": "pickup.power-down.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "e0215fcfd8b9d787",
+      "class": "one-shot",
+      "lufs": -11.45932406446342,
+      "truePeak": -0.6272970902098105,
+      "gainAppliedDb": -0.37,
+      "encodings": {
+        "opus": "pickup.power-down.00.opus.webm",
+        "aac": "pickup.power-down.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.power-down.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d2d046cd0247045f",
+      "class": "one-shot",
+      "lufs": -11.402683409898929,
+      "truePeak": -1.0429125216376853,
+      "gainAppliedDb": 0.04,
+      "encodings": {
+        "opus": "pickup.power-down.01.opus.webm",
+        "aac": "pickup.power-down.01.m4a"
+      }
+    },
+    {
+      "id": "pickup.power-up.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8c361b624b560c0b",
+      "class": "one-shot",
+      "lufs": -12.228162687798148,
+      "truePeak": -0.5759656029042706,
+      "gainAppliedDb": -0.42,
+      "encodings": {
+        "opus": "pickup.power-up.00.opus.webm",
+        "aac": "pickup.power-up.00.m4a"
+      }
+    },
+    {
+      "id": "pickup.power-up.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "83786b43d828a399",
+      "class": "one-shot",
+      "lufs": -15.337959776214966,
+      "truePeak": -0.782083501014587,
+      "gainAppliedDb": -0.22,
+      "encodings": {
+        "opus": "pickup.power-up.01.opus.webm",
+        "aac": "pickup.power-up.01.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-court.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d8f26c33a665dcbd",
+      "class": "one-shot",
+      "lufs": -21.940306641343163,
+      "truePeak": -1.1150229966601857,
+      "gainAppliedDb": 0.12,
+      "encodings": {
+        "opus": "sports.ball-bounce-court.00.opus.webm",
+        "aac": "sports.ball-bounce-court.00.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-court.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "903d5050718595e8",
+      "class": "one-shot",
+      "lufs": -26.0911420053404,
+      "truePeak": -1.5878507458695386,
+      "gainAppliedDb": 0.59,
+      "encodings": {
+        "opus": "sports.ball-bounce-court.01.opus.webm",
+        "aac": "sports.ball-bounce-court.01.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-court.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "1d988631a6e5201e",
+      "class": "one-shot",
+      "lufs": -24.45845099238395,
+      "truePeak": 0.43708283666909953,
+      "gainAppliedDb": -1.44,
+      "encodings": {
+        "opus": "sports.ball-bounce-court.02.opus.webm",
+        "aac": "sports.ball-bounce-court.02.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-hard.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4e6581c73465cdd7",
+      "class": "one-shot",
+      "lufs": -29.806977046190287,
+      "truePeak": -1.175360232721576,
+      "gainAppliedDb": 0.18,
+      "encodings": {
+        "opus": "sports.ball-bounce-hard.00.opus.webm",
+        "aac": "sports.ball-bounce-hard.00.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-hard.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "e0b8c370503b2c5c",
+      "class": "one-shot",
+      "lufs": -28.250093088231193,
+      "truePeak": -0.753209971345792,
+      "gainAppliedDb": -0.25,
+      "encodings": {
+        "opus": "sports.ball-bounce-hard.01.opus.webm",
+        "aac": "sports.ball-bounce-hard.01.m4a"
+      }
+    },
+    {
+      "id": "sports.ball-bounce-hard.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "b31d716165be60e4",
+      "class": "one-shot",
+      "lufs": -28.930842035881202,
+      "truePeak": -1.3497027454041537,
+      "gainAppliedDb": 0.35,
+      "encodings": {
+        "opus": "sports.ball-bounce-hard.02.opus.webm",
+        "aac": "sports.ball-bounce-hard.02.m4a"
+      }
+    },
+    {
+      "id": "sports.billiard-clack.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "f41b3d106360fc68",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.6147638371203956,
+      "gainAppliedDb": 0.61,
+      "encodings": {
+        "opus": "sports.billiard-clack.00.opus.webm",
+        "aac": "sports.billiard-clack.00.m4a"
+      }
+    },
+    {
+      "id": "sports.billiard-clack.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "2a10c5ff4b2fbaa5",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8055256472156658,
+      "gainAppliedDb": -0.19,
+      "encodings": {
+        "opus": "sports.billiard-clack.01.opus.webm",
+        "aac": "sports.billiard-clack.01.m4a"
+      }
+    },
+    {
+      "id": "sports.billiard-clack.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "1c5e885f72b64c38",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.619100947615078,
+      "gainAppliedDb": -1.62,
+      "encodings": {
+        "opus": "sports.billiard-clack.02.opus.webm",
+        "aac": "sports.billiard-clack.02.m4a"
+      }
+    },
+    {
+      "id": "sports.bumper.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4b2111252ccb64ee",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.397770811993703,
+      "gainAppliedDb": 0.4,
+      "encodings": {
+        "opus": "sports.bumper.00.opus.webm",
+        "aac": "sports.bumper.00.m4a"
+      }
+    },
+    {
+      "id": "sports.bumper.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8ca8b2d450741c04",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.3773416457653755,
+      "gainAppliedDb": 0.38,
+      "encodings": {
+        "opus": "sports.bumper.01.opus.webm",
+        "aac": "sports.bumper.01.m4a"
+      }
+    },
+    {
+      "id": "sports.bumper.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "bf24ebb417b62795",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.546665235298705,
+      "gainAppliedDb": 0.55,
+      "encodings": {
+        "opus": "sports.bumper.02.opus.webm",
+        "aac": "sports.bumper.02.m4a"
+      }
+    },
+    {
+      "id": "sports.cushion.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "1ea667aa6795d5f1",
+      "class": "one-shot",
+      "lufs": -24.547600497956868,
+      "truePeak": -1.9752682540579518,
+      "gainAppliedDb": 0.98,
+      "encodings": {
+        "opus": "sports.cushion.00.opus.webm",
+        "aac": "sports.cushion.00.m4a"
+      }
+    },
+    {
+      "id": "sports.cushion.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8e95c1d3ae94b5b9",
+      "class": "one-shot",
+      "lufs": -26.253887025960733,
+      "truePeak": -1.419171713235626,
+      "gainAppliedDb": 0.42,
+      "encodings": {
+        "opus": "sports.cushion.01.opus.webm",
+        "aac": "sports.cushion.01.m4a"
+      }
+    },
+    {
+      "id": "sports.cushion.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "399520d483a1466f",
+      "class": "one-shot",
+      "lufs": -24.148070806410995,
+      "truePeak": -0.7050329687505997,
+      "gainAppliedDb": -0.29,
+      "encodings": {
+        "opus": "sports.cushion.02.opus.webm",
+        "aac": "sports.cushion.02.m4a"
+      }
+    },
+    {
+      "id": "sports.flipper.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "12bf175b9afcea11",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.5112196016888314,
+      "gainAppliedDb": -0.49,
+      "encodings": {
+        "opus": "sports.flipper.00.opus.webm",
+        "aac": "sports.flipper.00.m4a"
+      }
+    },
+    {
+      "id": "sports.flipper.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "9f985e766c3557ee",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.22666881937795158,
+      "gainAppliedDb": -0.77,
+      "encodings": {
+        "opus": "sports.flipper.01.opus.webm",
+        "aac": "sports.flipper.01.m4a"
+      }
+    },
+    {
+      "id": "sports.flipper.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "48cc0f01e2b62be7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.0211238811343473,
+      "gainAppliedDb": 0.02,
+      "encodings": {
+        "opus": "sports.flipper.02.opus.webm",
+        "aac": "sports.flipper.02.m4a"
+      }
+    },
+    {
+      "id": "sports.net-swish.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "7a9758ccad8899ba",
+      "class": "one-shot",
+      "lufs": -18.98682660076031,
+      "truePeak": -0.7957705732113658,
+      "gainAppliedDb": -0.2,
+      "encodings": {
+        "opus": "sports.net-swish.00.opus.webm",
+        "aac": "sports.net-swish.00.m4a"
+      }
+    },
+    {
+      "id": "sports.net-swish.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "5743373c9dde00c6",
+      "class": "one-shot",
+      "lufs": -23.93774598732919,
+      "truePeak": -0.42060209907186186,
+      "gainAppliedDb": -0.58,
+      "encodings": {
+        "opus": "sports.net-swish.01.opus.webm",
+        "aac": "sports.net-swish.01.m4a"
+      }
+    },
+    {
+      "id": "sports.net-swish.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "96c84883a30845ed",
+      "class": "one-shot",
+      "lufs": -27.68151811564642,
+      "truePeak": -1.641473854080224,
+      "gainAppliedDb": 0.64,
+      "encodings": {
+        "opus": "sports.net-swish.02.opus.webm",
+        "aac": "sports.net-swish.02.m4a"
+      }
+    },
+    {
+      "id": "sports.plunger.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8a346186fd297254",
+      "class": "one-shot",
+      "lufs": -19.995448636145213,
+      "truePeak": -6.593742786567587,
+      "gainAppliedDb": 5.59,
+      "encodings": {
+        "opus": "sports.plunger.00.opus.webm",
+        "aac": "sports.plunger.00.m4a"
+      }
+    },
+    {
+      "id": "sports.plunger.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "8a990afdc03aebb9",
+      "class": "one-shot",
+      "lufs": -20.948410516924344,
+      "truePeak": -7.011744112261696,
+      "gainAppliedDb": 6.01,
+      "encodings": {
+        "opus": "sports.plunger.01.opus.webm",
+        "aac": "sports.plunger.01.m4a"
+      }
+    },
+    {
+      "id": "sports.plunger.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "9851a69d0c613e13",
+      "class": "one-shot",
+      "lufs": -28.011694027657448,
+      "truePeak": -6.85336460628596,
+      "gainAppliedDb": 5.85,
+      "encodings": {
+        "opus": "sports.plunger.02.opus.webm",
+        "aac": "sports.plunger.02.m4a"
+      }
+    },
+    {
+      "id": "sports.pocket.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "43d086d50f90493a",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.1104983382048388,
+      "gainAppliedDb": 0.11,
+      "encodings": {
+        "opus": "sports.pocket.00.opus.webm",
+        "aac": "sports.pocket.00.m4a"
+      }
+    },
+    {
+      "id": "sports.pocket.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "a2c495237fb0dc0d",
+      "class": "one-shot",
+      "lufs": -24.440207343810833,
+      "truePeak": -0.1800392943979539,
+      "gainAppliedDb": -0.82,
+      "encodings": {
+        "opus": "sports.pocket.01.opus.webm",
+        "aac": "sports.pocket.01.m4a"
+      }
+    },
+    {
+      "id": "sports.pocket.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-casino-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-casino-audio",
+      "author": "Kenney Vleugels",
+      "hash": "006cf9822d15d706",
+      "class": "one-shot",
+      "lufs": -22.98572934499304,
+      "truePeak": -1.4919388856384845,
+      "gainAppliedDb": 0.49,
+      "encodings": {
+        "opus": "sports.pocket.02.opus.webm",
+        "aac": "sports.pocket.02.m4a"
+      }
+    },
+    {
+      "id": "sports.rim.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "183eebee20eb0a53",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.036022714585026,
+      "gainAppliedDb": 0.04,
+      "encodings": {
+        "opus": "sports.rim.00.opus.webm",
+        "aac": "sports.rim.00.m4a"
+      }
+    },
+    {
+      "id": "sports.rim.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "08e972c73e53c91d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.992315602021686,
+      "gainAppliedDb": -0.01,
+      "encodings": {
+        "opus": "sports.rim.01.opus.webm",
+        "aac": "sports.rim.01.m4a"
+      }
+    },
+    {
+      "id": "sports.rim.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9a6f16e3c2eff6fe",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9477302249752446,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "sports.rim.02.opus.webm",
+        "aac": "sports.rim.02.m4a"
+      }
+    },
+    {
+      "id": "stinger.alarm.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6ae9bb261c6536d1",
+      "class": "one-shot",
+      "lufs": -11.573025553290693,
+      "truePeak": -0.9168794269392235,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "stinger.alarm.00.opus.webm",
+        "aac": "stinger.alarm.00.m4a"
+      }
+    },
+    {
+      "id": "stinger.alarm.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "da78c642bbd95da2",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9983311750603832,
+      "gainAppliedDb": 0,
+      "encodings": {
+        "opus": "stinger.alarm.01.opus.webm",
+        "aac": "stinger.alarm.01.m4a"
+      }
+    },
+    {
+      "id": "stinger.checkpoint.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "5e9f2b4a0b14e65a",
+      "class": "one-shot",
+      "lufs": -11.468780120869791,
+      "truePeak": -0.8927816483852984,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "stinger.checkpoint.00.opus.webm",
+        "aac": "stinger.checkpoint.00.m4a"
+      }
+    },
+    {
+      "id": "stinger.checkpoint.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "568967a3d9f8a8f6",
+      "class": "one-shot",
+      "lufs": -10.547762760588435,
+      "truePeak": -0.8872241448580509,
+      "gainAppliedDb": -0.11,
+      "encodings": {
+        "opus": "stinger.checkpoint.01.opus.webm",
+        "aac": "stinger.checkpoint.01.m4a"
+      }
+    },
+    {
+      "id": "stinger.level-start.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "eb6cb435f3f2ab14",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.7309516014480593,
+      "gainAppliedDb": -0.27,
+      "encodings": {
+        "opus": "stinger.level-start.00.opus.webm",
+        "aac": "stinger.level-start.00.m4a"
+      }
+    },
+    {
+      "id": "stinger.level-start.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "704433167121712c",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.1650879731676498,
+      "gainAppliedDb": 0.17,
+      "encodings": {
+        "opus": "stinger.level-start.01.opus.webm",
+        "aac": "stinger.level-start.01.m4a"
+      }
+    },
+    {
+      "id": "stinger.lose.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "272e60bc62a1685f",
+      "class": "one-shot",
+      "lufs": -8.529510954747009,
+      "truePeak": -0.36682817951672747,
+      "gainAppliedDb": -0.63,
+      "encodings": {
+        "opus": "stinger.lose.00.opus.webm",
+        "aac": "stinger.lose.00.m4a"
+      }
+    },
+    {
+      "id": "stinger.lose.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "19fd2f5bb8448e02",
+      "class": "one-shot",
+      "lufs": -12.620575815831584,
+      "truePeak": -1.0511227539786923,
+      "gainAppliedDb": 0.05,
+      "encodings": {
+        "opus": "stinger.lose.01.opus.webm",
+        "aac": "stinger.lose.01.m4a"
+      }
+    },
+    {
+      "id": "stinger.win.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "7dfa3198ab951f09",
+      "class": "one-shot",
+      "lufs": -12.70409619558105,
+      "truePeak": -0.8824785980186654,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "stinger.win.00.opus.webm",
+        "aac": "stinger.win.00.m4a"
+      }
+    },
+    {
+      "id": "stinger.win.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4dc9824b319efd91",
+      "class": "one-shot",
+      "lufs": -12.471505790128615,
+      "truePeak": -0.9484438718658128,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "stinger.win.01.opus.webm",
+        "aac": "stinger.win.01.m4a"
+      }
+    },
+    {
+      "id": "ui.back.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "07db973f79f6ae0f",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9483031165356083,
+      "gainAppliedDb": -0.05,
+      "encodings": {
+        "opus": "ui.back.00.opus.webm",
+        "aac": "ui.back.00.m4a"
+      }
+    },
+    {
+      "id": "ui.back.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "61581c58194e3f19",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9568501311584693,
+      "gainAppliedDb": -0.04,
+      "encodings": {
+        "opus": "ui.back.01.opus.webm",
+        "aac": "ui.back.01.m4a"
+      }
+    },
+    {
+      "id": "ui.click.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "59175ac17cd49a68",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.407608321536753,
+      "gainAppliedDb": 0.41,
+      "encodings": {
+        "opus": "ui.click.00.opus.webm",
+        "aac": "ui.click.00.m4a"
+      }
+    },
+    {
+      "id": "ui.click.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "c394b46bc6737f7f",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.134749108866762,
+      "gainAppliedDb": 0.13,
+      "encodings": {
+        "opus": "ui.click.01.opus.webm",
+        "aac": "ui.click.01.m4a"
+      }
+    },
+    {
+      "id": "ui.confirm.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "063564703b6094d7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.9223087399395492,
+      "gainAppliedDb": -0.08,
+      "encodings": {
+        "opus": "ui.confirm.00.opus.webm",
+        "aac": "ui.confirm.00.m4a"
+      }
+    },
+    {
+      "id": "ui.confirm.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "33b17a9a9a2397c6",
+      "class": "one-shot",
+      "lufs": -13.259300803636465,
+      "truePeak": -0.942039738237554,
+      "gainAppliedDb": -0.06,
+      "encodings": {
+        "opus": "ui.confirm.01.opus.webm",
+        "aac": "ui.confirm.01.m4a"
+      }
+    },
+    {
+      "id": "ui.countdown-go.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "cd4390dd2b24f090",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.4016112655374495,
+      "gainAppliedDb": -1.4,
+      "encodings": {
+        "opus": "ui.countdown-go.00.opus.webm",
+        "aac": "ui.countdown-go.00.m4a"
+      }
+    },
+    {
+      "id": "ui.countdown-go.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f703b6b1c62dae1c",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.55974131136285,
+      "gainAppliedDb": 0.56,
+      "encodings": {
+        "opus": "ui.countdown-go.01.opus.webm",
+        "aac": "ui.countdown-go.01.m4a"
+      }
+    },
+    {
+      "id": "ui.countdown-tick.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "1527944e16eb14b4",
+      "class": "one-shot",
+      "lufs": -7.184722177606567,
+      "truePeak": -0.9826848542995228,
+      "gainAppliedDb": -0.02,
+      "encodings": {
+        "opus": "ui.countdown-tick.00.opus.webm",
+        "aac": "ui.countdown-tick.00.m4a"
+      }
+    },
+    {
+      "id": "ui.countdown-tick.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "29b4842f6d8c0ba2",
+      "class": "one-shot",
+      "lufs": -8.56565325076512,
+      "truePeak": -0.9367053031512927,
+      "gainAppliedDb": -0.06,
+      "encodings": {
+        "opus": "ui.countdown-tick.01.opus.webm",
+        "aac": "ui.countdown-tick.01.m4a"
+      }
+    },
+    {
+      "id": "ui.error.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "46e67425d1633977",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.6937933459286107,
+      "gainAppliedDb": -1.69,
+      "encodings": {
+        "opus": "ui.error.00.opus.webm",
+        "aac": "ui.error.00.m4a"
+      }
+    },
+    {
+      "id": "ui.error.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "76810ec365f41078",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.48519337474082247,
+      "gainAppliedDb": -1.49,
+      "encodings": {
+        "opus": "ui.error.01.opus.webm",
+        "aac": "ui.error.01.m4a"
+      }
+    },
+    {
+      "id": "ui.hover.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4eb47e2e1540c448",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.008415060507552325,
+      "gainAppliedDb": -0.99,
+      "encodings": {
+        "opus": "ui.hover.00.opus.webm",
+        "aac": "ui.hover.00.m4a"
+      }
+    },
+    {
+      "id": "ui.hover.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d0bc0fcba496d73d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.7486155065820752,
+      "gainAppliedDb": 0.75,
+      "encodings": {
+        "opus": "ui.hover.01.opus.webm",
+        "aac": "ui.hover.01.m4a"
+      }
+    },
+    {
+      "id": "ui.reward.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "692ee3a6f1821402",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8811070463380393,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "ui.reward.00.opus.webm",
+        "aac": "ui.reward.00.m4a"
+      }
+    },
+    {
+      "id": "ui.reward.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d21d0f0b782445db",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.8841710597993682,
+      "gainAppliedDb": -0.12,
+      "encodings": {
+        "opus": "ui.reward.01.opus.webm",
+        "aac": "ui.reward.01.m4a"
+      }
+    },
+    {
+      "id": "ui.score-tick.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "320c6aafb2c7a503",
+      "class": "one-shot",
+      "lufs": -18.45327831758713,
+      "truePeak": 0.8963019310228502,
+      "gainAppliedDb": -1.9,
+      "encodings": {
+        "opus": "ui.score-tick.00.opus.webm",
+        "aac": "ui.score-tick.00.m4a"
+      }
+    },
+    {
+      "id": "ui.score-tick.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6fbcda22bc45349c",
+      "class": "one-shot",
+      "lufs": -22.682394548402065,
+      "truePeak": -0.9089378094976795,
+      "gainAppliedDb": -0.09,
+      "encodings": {
+        "opus": "ui.score-tick.01.opus.webm",
+        "aac": "ui.score-tick.01.m4a"
+      }
+    },
+    {
+      "id": "ui.slider-tick.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9d057b918024c787",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.5363176438461238,
+      "gainAppliedDb": -1.54,
+      "encodings": {
+        "opus": "ui.slider-tick.00.opus.webm",
+        "aac": "ui.slider-tick.00.m4a"
+      }
+    },
+    {
+      "id": "ui.slider-tick.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "869442f54214be90",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 1.0910288206814114,
+      "gainAppliedDb": -2.09,
+      "encodings": {
+        "opus": "ui.slider-tick.01.opus.webm",
+        "aac": "ui.slider-tick.01.m4a"
+      }
+    },
+    {
+      "id": "ui.toggle.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "efdd1d1e2904fb2d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 0.9734070798555333,
+      "gainAppliedDb": -1.97,
+      "encodings": {
+        "opus": "ui.toggle.00.opus.webm",
+        "aac": "ui.toggle.00.m4a"
+      }
+    },
+    {
+      "id": "ui.toggle.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-ui-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-ui-audio",
+      "author": "Kenney Vleugels",
+      "hash": "aa8ad6e4745e87c8",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.2978372133809755,
+      "gainAppliedDb": 0.3,
+      "encodings": {
+        "opus": "ui.toggle.01.opus.webm",
+        "aac": "ui.toggle.01.m4a"
+      }
+    },
+    {
+      "id": "ui.unlock.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "ba9ba60b172b3ebc",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": 2.0634716118877896,
+      "gainAppliedDb": -3.06,
+      "encodings": {
+        "opus": "ui.unlock.00.opus.webm",
+        "aac": "ui.unlock.00.m4a"
+      }
+    },
+    {
+      "id": "ui.unlock.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4ab93bab96522d8e",
+      "class": "one-shot",
+      "lufs": -14.407507631598294,
+      "truePeak": 0.9134135615485974,
+      "gainAppliedDb": -1.91,
+      "encodings": {
+        "opus": "ui.unlock.01.opus.webm",
+        "aac": "ui.unlock.01.m4a"
+      }
+    },
+    {
+      "id": "vehicle.boost",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5297afd01c3e91a1",
+      "class": "loop",
+      "lufs": -20.503478800304496,
+      "truePeak": -0.5688729907951817,
+      "gainAppliedDb": -0.43,
+      "encodings": {
+        "opus": "vehicle.boost.opus.webm",
+        "aac": "vehicle.boost.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "160b1995990d720e",
+      "class": "loop",
+      "lufs": -18.215316232548798,
+      "truePeak": -4.191840314268022,
+      "gainAppliedDb": -1.78,
+      "encodings": {
+        "opus": "vehicle.car-small.layer0.off.opus.webm",
+        "aac": "vehicle.car-small.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8ab85f9fa85e9e69",
+      "class": "loop",
+      "lufs": -15.476281083122526,
+      "truePeak": -0.9641277123299339,
+      "gainAppliedDb": -4.52,
+      "encodings": {
+        "opus": "vehicle.car-small.layer0.on.opus.webm",
+        "aac": "vehicle.car-small.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fd2e7cf13c6bd63a",
+      "class": "loop",
+      "lufs": -16.03873190868624,
+      "truePeak": -3.499795663100306,
+      "gainAppliedDb": -3.96,
+      "encodings": {
+        "opus": "vehicle.car-small.layer1.off.opus.webm",
+        "aac": "vehicle.car-small.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e1df3a942842a24f",
+      "class": "loop",
+      "lufs": -14.188283887957624,
+      "truePeak": -0.3019387555828467,
+      "gainAppliedDb": -5.81,
+      "encodings": {
+        "opus": "vehicle.car-small.layer1.on.opus.webm",
+        "aac": "vehicle.car-small.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "ca4143b7f5c5d1cb",
+      "class": "loop",
+      "lufs": -13.982262441589558,
+      "truePeak": -2.634763293636752,
+      "gainAppliedDb": -6.02,
+      "encodings": {
+        "opus": "vehicle.car-small.layer2.off.opus.webm",
+        "aac": "vehicle.car-small.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-small.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5f364bd42269e111",
+      "class": "loop",
+      "lufs": -12.733909866607524,
+      "truePeak": -0.43397501431572666,
+      "gainAppliedDb": -7.27,
+      "encodings": {
+        "opus": "vehicle.car-small.layer2.on.opus.webm",
+        "aac": "vehicle.car-small.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport-real",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "3d23c98a201de29c",
+      "class": "loop",
+      "lufs": -29.141358050346174,
+      "truePeak": -14.227200249043703,
+      "gainAppliedDb": 9.14,
+      "encodings": {
+        "opus": "vehicle.car-sport-real.opus.webm",
+        "aac": "vehicle.car-sport-real.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "2ad56275827517d9",
+      "class": "loop",
+      "lufs": -17.34918581416423,
+      "truePeak": -5.686467278709166,
+      "gainAppliedDb": -2.65,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer0.off.opus.webm",
+        "aac": "vehicle.car-sport.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f592ec53043887cf",
+      "class": "loop",
+      "lufs": -14.564068083461768,
+      "truePeak": -0.9362525574017826,
+      "gainAppliedDb": -5.44,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer0.on.opus.webm",
+        "aac": "vehicle.car-sport.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "9170cc95f0ba7b7d",
+      "class": "loop",
+      "lufs": -18.114635086928473,
+      "truePeak": -7.00634607754205,
+      "gainAppliedDb": -1.89,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer1.off.opus.webm",
+        "aac": "vehicle.car-sport.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "ce286b2d637b0d71",
+      "class": "loop",
+      "lufs": -14.589118677122388,
+      "truePeak": -0.9410854288386823,
+      "gainAppliedDb": -5.41,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer1.on.opus.webm",
+        "aac": "vehicle.car-sport.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "f65e4272a229b894",
+      "class": "loop",
+      "lufs": -12.276303730605905,
+      "truePeak": -1.2578624668721041,
+      "gainAppliedDb": -7.72,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer2.off.opus.webm",
+        "aac": "vehicle.car-sport.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.car-sport.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c06e84fb6734ddd0",
+      "class": "loop",
+      "lufs": -11.534886823216683,
+      "truePeak": -0.9946796471732143,
+      "gainAppliedDb": -8.47,
+      "encodings": {
+        "opus": "vehicle.car-sport.layer2.on.opus.webm",
+        "aac": "vehicle.car-sport.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.gear-shift.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "f3b692d5c83263c2",
+      "class": "one-shot",
+      "lufs": -24.85734321907559,
+      "truePeak": -3.414043333012316,
+      "gainAppliedDb": 2.41,
+      "encodings": {
+        "opus": "vehicle.gear-shift.01.opus.webm",
+        "aac": "vehicle.gear-shift.01.m4a"
+      }
+    },
+    {
+      "id": "vehicle.gear-shift",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "2ef665bd8b65dbe6",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -2.939313529116418,
+      "gainAppliedDb": 1.94,
+      "encodings": {
+        "opus": "vehicle.gear-shift.opus.webm",
+        "aac": "vehicle.gear-shift.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "10192b37affba9e4",
+      "class": "loop",
+      "lufs": -15.617028556329583,
+      "truePeak": -0.9046581867125404,
+      "gainAppliedDb": -4.38,
+      "encodings": {
+        "opus": "vehicle.jet.layer0.off.opus.webm",
+        "aac": "vehicle.jet.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "885aeda16116b715",
+      "class": "loop",
+      "lufs": -13.120381736058969,
+      "truePeak": -0.8189391984477402,
+      "gainAppliedDb": -6.88,
+      "encodings": {
+        "opus": "vehicle.jet.layer0.on.opus.webm",
+        "aac": "vehicle.jet.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "b04bcfb4a8237312",
+      "class": "loop",
+      "lufs": -11.293842638125515,
+      "truePeak": -1.030959799321646,
+      "gainAppliedDb": -8.71,
+      "encodings": {
+        "opus": "vehicle.jet.layer1.off.opus.webm",
+        "aac": "vehicle.jet.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fcf4aec5587aa29c",
+      "class": "loop",
+      "lufs": -9.460829322440647,
+      "truePeak": 1.0152746940606776,
+      "gainAppliedDb": -10.54,
+      "encodings": {
+        "opus": "vehicle.jet.layer1.on.opus.webm",
+        "aac": "vehicle.jet.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "c572d0cfc4560edf",
+      "class": "loop",
+      "lufs": -10.304009125638181,
+      "truePeak": -1.3711610112958053,
+      "gainAppliedDb": -9.7,
+      "encodings": {
+        "opus": "vehicle.jet.layer2.off.opus.webm",
+        "aac": "vehicle.jet.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.jet.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "dc1a5c00a93d24bd",
+      "class": "loop",
+      "lufs": -9.409869253033618,
+      "truePeak": 0.35520816453149984,
+      "gainAppliedDb": -10.59,
+      "encodings": {
+        "opus": "vehicle.jet.layer2.on.opus.webm",
+        "aac": "vehicle.jet.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "8b242c4cf7d66610",
+      "class": "loop",
+      "lufs": -9.899091765870587,
+      "truePeak": -1.0589820640350391,
+      "gainAppliedDb": -10.1,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer0.off.opus.webm",
+        "aac": "vehicle.prop-plane.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "ee53af299758b664",
+      "class": "loop",
+      "lufs": -9.253579811824341,
+      "truePeak": -0.947748085343652,
+      "gainAppliedDb": -10.75,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer0.on.opus.webm",
+        "aac": "vehicle.prop-plane.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "ef86c8c8d4cc257b",
+      "class": "loop",
+      "lufs": -13.196534065957605,
+      "truePeak": -1.056264927153391,
+      "gainAppliedDb": -6.8,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer1.off.opus.webm",
+        "aac": "vehicle.prop-plane.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5a1b1cc6d335944d",
+      "class": "loop",
+      "lufs": -12.867179607196986,
+      "truePeak": -0.9263292280510506,
+      "gainAppliedDb": -7.13,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer1.on.opus.webm",
+        "aac": "vehicle.prop-plane.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "a9f8b516f8c18ad4",
+      "class": "loop",
+      "lufs": -10.39672915020997,
+      "truePeak": -0.9788626660930033,
+      "gainAppliedDb": -9.6,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer2.off.opus.webm",
+        "aac": "vehicle.prop-plane.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.prop-plane.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "e100065a0c2ddc2c",
+      "class": "loop",
+      "lufs": -10.247337261994117,
+      "truePeak": -0.8655913906764846,
+      "gainAppliedDb": -9.75,
+      "encodings": {
+        "opus": "vehicle.prop-plane.layer2.on.opus.webm",
+        "aac": "vehicle.prop-plane.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "fea8611058b83b02",
+      "class": "loop",
+      "lufs": -21.09429788187452,
+      "truePeak": -3.593216661111769,
+      "gainAppliedDb": 1.09,
+      "encodings": {
+        "opus": "vehicle.thruster.layer0.off.opus.webm",
+        "aac": "vehicle.thruster.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "0fdc474d93f209de",
+      "class": "loop",
+      "lufs": -19.827162710262467,
+      "truePeak": -0.11640082748067579,
+      "gainAppliedDb": -0.88,
+      "encodings": {
+        "opus": "vehicle.thruster.layer0.on.opus.webm",
+        "aac": "vehicle.thruster.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5fcb7e569e82856e",
+      "class": "loop",
+      "lufs": -20.65124590791309,
+      "truePeak": -2.8070231623130497,
+      "gainAppliedDb": 0.65,
+      "encodings": {
+        "opus": "vehicle.thruster.layer1.off.opus.webm",
+        "aac": "vehicle.thruster.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "924636edc923fe4a",
+      "class": "loop",
+      "lufs": -19.465602854512827,
+      "truePeak": -0.6240425945924447,
+      "gainAppliedDb": -0.53,
+      "encodings": {
+        "opus": "vehicle.thruster.layer1.on.opus.webm",
+        "aac": "vehicle.thruster.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "82053466066d36a6",
+      "class": "loop",
+      "lufs": -21.477497259729105,
+      "truePeak": -3.968323709838529,
+      "gainAppliedDb": 1.48,
+      "encodings": {
+        "opus": "vehicle.thruster.layer2.off.opus.webm",
+        "aac": "vehicle.thruster.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5f7731c30196d737",
+      "class": "loop",
+      "lufs": -19.750573413383684,
+      "truePeak": -0.002235821050962753,
+      "gainAppliedDb": -1,
+      "encodings": {
+        "opus": "vehicle.thruster.layer2.on.opus.webm",
+        "aac": "vehicle.thruster.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer3.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "6396e3d5067ec180",
+      "class": "loop",
+      "lufs": -19.793073936694395,
+      "truePeak": -2.3254576217524616,
+      "gainAppliedDb": -0.21,
+      "encodings": {
+        "opus": "vehicle.thruster.layer3.off.opus.webm",
+        "aac": "vehicle.thruster.layer3.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.thruster.layer3.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "04f558ca5abf3078",
+      "class": "loop",
+      "lufs": -19.112078169275684,
+      "truePeak": -0.8261810118819155,
+      "gainAppliedDb": -0.89,
+      "encodings": {
+        "opus": "vehicle.thruster.layer3.on.opus.webm",
+        "aac": "vehicle.thruster.layer3.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.tyre-skid",
+      "role": "audio",
+      "source": "https://opengameart.org/content/wind-whoosh-loop",
+      "license": "CC0",
+      "sourceUrl": "https://opengameart.org/content/wind-whoosh-loop",
+      "author": "SketchMan3",
+      "hash": "9bf7b55019c40673",
+      "class": "loop",
+      "lufs": -28.144968495082782,
+      "truePeak": -17.194759043428427,
+      "gainAppliedDb": 8.14,
+      "encodings": {
+        "opus": "vehicle.tyre-skid.opus.webm",
+        "aac": "vehicle.tyre-skid.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van-real",
+      "role": "audio",
+      "source": "https://opengameart.org/content/free-general-ambience-sounds",
+      "license": "CC-BY-SA-4.0",
+      "sourceUrl": "https://opengameart.org/content/free-general-ambience-sounds",
+      "author": "Gregor Quendel",
+      "hash": "35bc4cf87ab921e9",
+      "class": "loop",
+      "lufs": -28.810065112479673,
+      "truePeak": -14.47164892224114,
+      "gainAppliedDb": 8.81,
+      "encodings": {
+        "opus": "vehicle.van-real.opus.webm",
+        "aac": "vehicle.van-real.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer0.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "1577b1e8cc0a461a",
+      "class": "loop",
+      "lufs": -9.147820055573304,
+      "truePeak": -0.624444953244471,
+      "gainAppliedDb": -10.85,
+      "encodings": {
+        "opus": "vehicle.van.layer0.off.opus.webm",
+        "aac": "vehicle.van.layer0.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer0.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "d7deee8d7217ce63",
+      "class": "loop",
+      "lufs": -8.948168067158267,
+      "truePeak": -0.9775512596697957,
+      "gainAppliedDb": -11.05,
+      "encodings": {
+        "opus": "vehicle.van.layer0.on.opus.webm",
+        "aac": "vehicle.van.layer0.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer1.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "2e417f8da6445ef6",
+      "class": "loop",
+      "lufs": -9.652611163867869,
+      "truePeak": -0.7058129128892987,
+      "gainAppliedDb": -10.35,
+      "encodings": {
+        "opus": "vehicle.van.layer1.off.opus.webm",
+        "aac": "vehicle.van.layer1.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer1.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "307dfd8fbfe7e6f2",
+      "class": "loop",
+      "lufs": -9.335384558606693,
+      "truePeak": -0.9111725589078772,
+      "gainAppliedDb": -10.66,
+      "encodings": {
+        "opus": "vehicle.van.layer1.on.opus.webm",
+        "aac": "vehicle.van.layer1.on.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer2.off",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "538eac0b79afc25a",
+      "class": "loop",
+      "lufs": -16.38498224322381,
+      "truePeak": -0.9468425726790983,
+      "gainAppliedDb": -3.62,
+      "encodings": {
+        "opus": "vehicle.van.layer2.off.opus.webm",
+        "aac": "vehicle.van.layer2.off.m4a"
+      }
+    },
+    {
+      "id": "vehicle.van.layer2.on",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "3b1adf8645a40c35",
+      "class": "loop",
+      "lufs": -15.473259792994279,
+      "truePeak": -0.8808837391640217,
+      "gainAppliedDb": -4.53,
+      "encodings": {
+        "opus": "vehicle.van.layer2.on.opus.webm",
+        "aac": "vehicle.van.layer2.on.m4a"
+      }
+    },
+    {
+      "id": "whoosh.dash.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "c60069ed7108678d",
+      "class": "one-shot",
+      "lufs": -12.8659170907666,
+      "truePeak": -1.2362930602246005,
+      "gainAppliedDb": 0.24,
+      "encodings": {
+        "opus": "whoosh.dash.00.opus.webm",
+        "aac": "whoosh.dash.00.m4a"
+      }
+    },
+    {
+      "id": "whoosh.dash.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "5d85717cfca231f7",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -0.7892071636074685,
+      "gainAppliedDb": -0.21,
+      "encodings": {
+        "opus": "whoosh.dash.01.opus.webm",
+        "aac": "whoosh.dash.01.m4a"
+      }
+    },
+    {
+      "id": "whoosh.dash.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "69e25a1b7b0781f5",
+      "class": "one-shot",
+      "lufs": -15.547351750089495,
+      "truePeak": -0.4844846814658688,
+      "gainAppliedDb": -0.52,
+      "encodings": {
+        "opus": "whoosh.dash.02.opus.webm",
+        "aac": "whoosh.dash.02.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-large.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "0fdc474d93f209de",
+      "class": "one-shot",
+      "lufs": -19.827162710262467,
+      "truePeak": -0.11640082748067579,
+      "gainAppliedDb": -0.88,
+      "encodings": {
+        "opus": "whoosh.pass-by-large.00.opus.webm",
+        "aac": "whoosh.pass-by-large.00.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-large.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "924636edc923fe4a",
+      "class": "one-shot",
+      "lufs": -19.465602854512827,
+      "truePeak": -0.6240425945924447,
+      "gainAppliedDb": -0.38,
+      "encodings": {
+        "opus": "whoosh.pass-by-large.01.opus.webm",
+        "aac": "whoosh.pass-by-large.01.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-large.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/sci-fi-sounds",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+      "author": "Kenney Vleugels",
+      "hash": "5f7731c30196d737",
+      "class": "one-shot",
+      "lufs": -19.750573413383684,
+      "truePeak": -0.002235821050962753,
+      "gainAppliedDb": -1,
+      "encodings": {
+        "opus": "whoosh.pass-by-large.02.opus.webm",
+        "aac": "whoosh.pass-by-large.02.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-small.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "90e1c90b9da3d0be",
+      "class": "one-shot",
+      "lufs": -15.832696066921516,
+      "truePeak": -0.8121864348892296,
+      "gainAppliedDb": -0.19,
+      "encodings": {
+        "opus": "whoosh.pass-by-small.00.opus.webm",
+        "aac": "whoosh.pass-by-small.00.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-small.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "322d62ab7da97388",
+      "class": "one-shot",
+      "lufs": -13.245154832870517,
+      "truePeak": 0.5899527091430208,
+      "gainAppliedDb": -1.59,
+      "encodings": {
+        "opus": "whoosh.pass-by-small.01.opus.webm",
+        "aac": "whoosh.pass-by-small.01.m4a"
+      }
+    },
+    {
+      "id": "whoosh.pass-by-small.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-digital-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-digital-audio",
+      "author": "Kenney Vleugels",
+      "hash": "a64a69368af9d85d",
+      "class": "one-shot",
+      "lufs": null,
+      "truePeak": -1.5726748134609336,
+      "gainAppliedDb": 0.57,
+      "encodings": {
+        "opus": "whoosh.pass-by-small.02.opus.webm",
+        "aac": "whoosh.pass-by-small.02.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-heavy.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "276403e72c3b71c4",
+      "class": "one-shot",
+      "lufs": -38.54567323531164,
+      "truePeak": -24.244459737786208,
+      "gainAppliedDb": 23.24,
+      "encodings": {
+        "opus": "whoosh.swing-heavy.00.opus.webm",
+        "aac": "whoosh.swing-heavy.00.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-heavy.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "d5df6a4130cbb016",
+      "class": "one-shot",
+      "lufs": -35.179833118327956,
+      "truePeak": -22.949456934508802,
+      "gainAppliedDb": 21.95,
+      "encodings": {
+        "opus": "whoosh.swing-heavy.01.opus.webm",
+        "aac": "whoosh.swing-heavy.01.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-heavy.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "a11ae62fb1a62842",
+      "class": "one-shot",
+      "lufs": -33.41938117799569,
+      "truePeak": -11.261935708749299,
+      "gainAppliedDb": 10.26,
+      "encodings": {
+        "opus": "whoosh.swing-heavy.02.opus.webm",
+        "aac": "whoosh.swing-heavy.02.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-light.00",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "4cd96dc630bed984",
+      "class": "one-shot",
+      "lufs": -13.875355850422237,
+      "truePeak": -1.3240162925211727,
+      "gainAppliedDb": 0.32,
+      "encodings": {
+        "opus": "whoosh.swing-light.00.opus.webm",
+        "aac": "whoosh.swing-light.00.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-light.01",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "6c2064d0ef988d1e",
+      "class": "one-shot",
+      "lufs": -11.74150167523142,
+      "truePeak": 0.6327494361153949,
+      "gainAppliedDb": -1.63,
+      "encodings": {
+        "opus": "whoosh.swing-light.01.opus.webm",
+        "aac": "whoosh.swing-light.01.m4a"
+      }
+    },
+    {
+      "id": "whoosh.swing-light.02",
+      "role": "audio",
+      "source": "https://kenney.nl/assets/kenney-rpg-audio",
+      "license": "CC0",
+      "sourceUrl": "https://kenney.nl/assets/kenney-rpg-audio",
+      "author": "Kenney Vleugels",
+      "hash": "ddb93a3671233f95",
+      "class": "one-shot",
+      "lufs": -22.852143333874,
+      "truePeak": -3.4903273654060274,
+      "gainAppliedDb": 2.49,
+      "encodings": {
+        "opus": "whoosh.swing-light.02.opus.webm",
+        "aac": "whoosh.swing-light.02.m4a"
+      }
+    }
+  ]
+}

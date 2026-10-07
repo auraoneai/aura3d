@@ -9,6 +9,10 @@ import { normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloom
 import { BLOOM_BRIGHT_LUT_HEIGHT, BLOOM_BRIGHT_LUT_WIDTH, BLOOM_COMPOSITE_LUT_SIZE, OUTLINE_BLEND_LUT_WIDTH, OUTLINE_LIMB_RADIX, createBloomBrightThresholdLut, createBloomCompositeLut, createOutlineBlendLut, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 import type { WebGL2TextureUnit0Snapshot, WebGL2TextureUnitBindingSnapshot } from "./ContextLifecycle";
 import type { WebGL2DeviceHost } from "./DeviceHost";
+// PRD-03 Phase 1 — the r185 FXAA finalize (post/shaders/fxaa.glsl.ts). The
+// split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
+// `u_hasFxaa` taps stay the default path.
+import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
 
 export interface NativeBloomOptions {
   readonly threshold: number;
@@ -132,6 +136,8 @@ export class WebGL2LegacyPostPipeline {
   ldrPostprocessProgram: WebGLProgram | null = null;
 
   motionBlurProgram: WebGLProgram | null = null;
+
+  nativeFxaaFinalizeProgram: WebGLProgram | null = null;
 
   motionBlurVelocitySize: { readonly width: number; readonly height: number } | null = null;
 
@@ -280,7 +286,12 @@ export class WebGL2LegacyPostPipeline {
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
     const sourceIsHdr = source.colorTexture.format !== "rgba8";
-    const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions
+    // PRD-03 Phase 1: `fxaa.variant === "r185"` splits the finalize — the
+    // legacy stage presents tone/grade into an RGBA8 intermediate and the
+    // dedicated r185 FXAA + triangular-dither program writes the output, so
+    // the FXAA taps no longer re-run `finalColorAt` per tap.
+    const fxaaSplit = (fxaaPass?.options as { readonly variant?: unknown } | undefined)?.variant === "r185";
+    const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions || fxaaSplit
       ? this.ensureBloomPingPongResources(source.width, source.height, sourceIsHdr && Boolean(bloomOptions))
       : undefined;
     if (bloomOptions && !sourceIsHdr) {
@@ -440,18 +451,43 @@ export class WebGL2LegacyPostPipeline {
         );
         temporarySourceIndex = outlineTargetIndex;
       }
-      this.drawNativeLdrStage(
-        ldrSourceHandle,
-        webglOutputTarget?.framebuffer ?? null,
-        outputWidth,
-        outputHeight,
-        program,
-        vertexArray,
-        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : tonePass,
-        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : colorPass,
-        fxaaPass,
-        options.toneMappingDefaults
-      );
+      if (fxaaSplit && bloomResources) {
+        const fxaaScratchIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
+        this.drawNativeLdrStage(
+          ldrSourceHandle,
+          bloomResources.framebuffers[fxaaScratchIndex],
+          source.width,
+          source.height,
+          program,
+          vertexArray,
+          depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : tonePass,
+          depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : colorPass,
+          undefined,
+          options.toneMappingDefaults
+        );
+        this.executeNativeFxaaFinalize(
+          bloomResources.textures[fxaaScratchIndex],
+          webglOutputTarget?.framebuffer ?? null,
+          outputWidth,
+          outputHeight,
+          source.width,
+          source.height,
+          vertexArray
+        );
+      } else {
+        this.drawNativeLdrStage(
+          ldrSourceHandle,
+          webglOutputTarget?.framebuffer ?? null,
+          outputWidth,
+          outputHeight,
+          program,
+          vertexArray,
+          depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : tonePass,
+          depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : colorPass,
+          fxaaPass,
+          options.toneMappingDefaults
+        );
+      }
       this.host.gl.flush();
     } finally {
       this.restoreFullscreenPresentationState(previousState, outputWidth, outputHeight);
@@ -2116,6 +2152,40 @@ void main() {
 }
 `, "webgl2-taa-presentation");
     return this.taaPresentationProgram;
+  }
+
+  ensureNativeFxaaFinalizeProgram(): WebGLProgram {
+    if (this.nativeFxaaFinalizeProgram) {
+      return this.nativeFxaaFinalizeProgram;
+    }
+    this.nativeFxaaFinalizeProgram = this.createFullscreenProgram(FXAA_185_FRAGMENT_GLSL, "webgl2-fxaa-185-finalize");
+    return this.nativeFxaaFinalizeProgram;
+  }
+
+  /**
+   * PRD-03 Phase 1 — the split finalize for `fxaa.variant === "r185"`: samples
+   * the completed LDR intermediate (source resolution) and writes the r185
+   * FXAA blend plus the ±1-LSB triangular dither to the output.
+   */
+  executeNativeFxaaFinalize(
+    sourceTexture: WebGLTexture,
+    framebuffer: WebGLFramebuffer | null,
+    outputWidth: number,
+    outputHeight: number,
+    sourceWidth: number,
+    sourceHeight: number,
+    vertexArray: WebGLVertexArrayObject
+  ): void {
+    const program = this.ensureNativeFxaaFinalizeProgram();
+    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer);
+    this.host.gl.viewport(0, 0, outputWidth, outputHeight);
+    this.host.gl.useProgram(program);
+    this.host.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_source"), 0);
+    this.host.gl.uniform2f(this.host.gl.getUniformLocation(program, "u_texelSize"), 1 / sourceWidth, 1 / sourceHeight);
+    this.host.gl.uniform2f(this.host.gl.getUniformLocation(program, "u_outputTexel"), 1 / outputWidth, 1 / outputHeight);
+    this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
   }
 
   createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {

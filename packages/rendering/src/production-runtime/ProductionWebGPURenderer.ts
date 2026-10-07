@@ -91,47 +91,15 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
   }
 
   renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof {
+    // PRD 11 Phase 1 freeze: the synchronous proof path depended on the
+    // CPU-shadowed framebuffer (sync render + sync readPixels), which no longer
+    // exists. The `ProductionProductionRenderer` interface still requires this
+    // signature (owner lane 15), so it throws toward the async path instead of
+    // fabricating pixels.
     this.validateImportedAsset(input);
-    const target = this.createProofTarget();
-    let transmissionBackdropCapture: RuntimeParityTransmissionBackdropCaptureProof | undefined;
-    let transmissionBackdropTexture: Texture | undefined;
-    try {
-      const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
-      if (captureOptions) {
-        const backdrop = createTransmissionBackdropSource(input.source);
-        this.renderer.render({ source: { ...backdrop.source, renderTarget: target }, camera: input.camera });
-        this.renderer.device.setRenderTarget(target);
-        const scenePixels = this.renderer.device.readPixels(0, 0, this.width, this.height);
-        const mipLevels = createSceneColorMipLevels(scenePixels, this.width, this.height);
-        transmissionBackdropTexture = new Texture({
-          width: this.width,
-          height: this.height,
-          colorSpace: "srgb",
-          mipLevels,
-          label: "a3d-webgpu-renderer-owned-scene-color-transmission-backdrop"
-        });
-        const materialBindings = bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions);
-        transmissionBackdropCapture = {
-          mode: "renderer-owned-scene-color-readback",
-          width: this.width,
-          height: this.height,
-          byteLength: scenePixels.byteLength,
-          mipCount: mipLevels.length,
-          strength: captureOptions.strength,
-          refractionScale: captureOptions.refractionScale,
-          materialBindings,
-          excludedTransmissionItems: backdrop.excludedTransmissionItems
-        };
-      }
-      const diagnostics = this.renderer.render({ source: { ...input.source, renderTarget: target }, camera: input.camera });
-      this.renderer.device.setRenderTarget(target);
-      const pixels = analyzePixels(this.renderer.device.readPixels(0, 0, this.width, this.height), this.width, this.height);
-      const features = this.getFeatures(diagnostics, input, pixels);
-      return this.createProof(input, diagnostics, features, pixels, transmissionBackdropCapture);
-    } finally {
-      transmissionBackdropTexture?.dispose();
-      target.dispose();
-    }
+    throw new Error(
+      "Production WebGPU renderImportedAsset is frozen: synchronous render/readback was removed in the PRD 11 Phase 1 freeze. Use renderImportedAssetAsync (native texture-to-buffer readback)."
+    );
   }
 
   async renderImportedAssetAsync(input: ProductionRendererInput): Promise<ProductionRenderProof> {
@@ -355,13 +323,13 @@ export const WEBGPU_PARITY_PLAN: readonly WebGPUParityFeatureRow[] = [
   {
     id: "spot-shadows",
     status: "unproven",
-    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    wgslFoundation: "frozen: production-runtime/shaders/wgsl/pbr.wgsl removed (PRD 11 Phase 1)",
     evidence: "B1 spot shadows have no WebGPU dispatch/render/pixel proof yet."
   },
   {
     id: "textured-pbr",
     status: "proven",
-    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    wgslFoundation: "frozen: production-runtime/shaders/wgsl/pbr.wgsl removed (PRD 11 Phase 1)",
     evidence: "Proven 2026-09-04 on Apple Metal 3 (vendor=apple arch=metal-3): adapter real; backend webgpu strict "
       + "(backend='auto' selected webgpu, fallback=false); dispatch nativePbrSubmissions=110; render nativeSubmissions=110, "
       + "pipelines=2, passes=110, uploads=170, bindings=404; pixel native texture-to-buffer readback with 140,378 non-black "
@@ -380,7 +348,7 @@ export const WEBGPU_PARITY_PLAN: readonly WebGPUParityFeatureRow[] = [
   {
     id: "compute-particles",
     status: "unproven",
-    wgslFoundation: "production-runtime/shaders/wgsl/pbr.wgsl",
+    wgslFoundation: "frozen: production-runtime/shaders/wgsl/pbr.wgsl removed (PRD 11 Phase 1)",
     evidence: "Particle compute-dispatch reuse has no WebGPU dispatch proof yet."
   }
 ];

@@ -1,0 +1,19 @@
+{
+  "name": "sunset",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "sunset.specular.ktx2",
+  "sh9": "sunset.sh9.f32",
+  "sha256": {
+    "specular": "e38bb254e2f0d45f8f455d21c8c9fefb3b655725c4642ace8c953864ecfa00fd",
+    "sh9": "94551a4af6e2a5a890d1272eb9504121f6e72d3354f42a142351c436628dfaf0"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128
+}

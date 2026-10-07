@@ -8,12 +8,24 @@ import type {
   AuraCliSceneHierarchyInspection,
   AuraCliSkeletonInspection,
 } from "./asset-inspection-types.js";
+import type {
+  AssetBudgetMeasurement,
+  AuraCliAdmissionRecord,
+  AuraCliDerivedAsset,
+  AuraCliLookDevRecord,
+} from "./contracts/assetManifest.js";
 
 export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
 export type AuraAssetQuality = "ungraded" | "blocked" | "prototype" | "candidate" | "release";
+// PRD-05 §7.2 — the C-17 union plus the legacy 1.0 roles. Roles outside the
+// C-17 set ("product", "weapon", "track", "environment", "unknown",
+// "debug", "abstract") stay valid for 1.0 entries and map to profiles in
+// `admission/profiles.ts`.
 export type AuraCliAssetRole =
+  | "hero"
   | "character"
   | "vehicle"
+  | "enemy"
   | "world"
   | "environment"
   | "track"
@@ -21,6 +33,12 @@ export type AuraCliAssetRole =
   | "weapon"
   | "prop"
   | "set-dressing"
+  | "backdrop"
+  | "proxy"
+  | "hdri"
+  | "texture-set"
+  | "vfx-atlas"
+  | "audio"
   | "debug"
   | "abstract"
   | "unknown";
@@ -211,11 +229,68 @@ export interface AuraCliAssetProvenance {
 }
 
 export interface AuraCliAssetManifest {
-  readonly schema: "aura3d.assets/1.0";
+  // Reader accepts 1.0 and 1.1; the writer emits 1.1 once `A3D_QR_ASSETS` is
+  // on (C-17 stub rule), otherwise preserves the schema it was handed.
+  readonly schema: "aura3d.assets/1.0" | "aura3d.assets/1.1";
   readonly assetBasePath: string;
   readonly outputDir: string;
   readonly typegen: string;
   readonly assets: readonly AuraCliAssetEntry[];
+}
+
+/** §7.2 — measurement detail carried by `AuraCliDerivedAssetDetail.measurements`. */
+export interface AssetBudgetMeasurementDetail extends AssetBudgetMeasurement {
+  readonly vertices?: number;
+  readonly primitives?: number;
+  readonly materials?: number;
+  readonly textureCount?: number;
+  readonly fileBytes?: number;
+  readonly maxTextureDimension?: number;
+}
+
+/** §7.2 — lane-05 extension of the C-17 `AuraCliDerivedAsset`. */
+export interface AuraCliDerivedAssetDetail extends AuraCliDerivedAsset {
+  readonly sourceHash: string;
+  readonly outputPath: string;
+  readonly extensionsUsed: readonly string[];
+  readonly requiredDecoders: readonly ("meshopt" | "draco" | "ktx2")[];
+  readonly lods: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[];
+  readonly measurements: { readonly before: AssetBudgetMeasurementDetail; readonly after: AssetBudgetMeasurementDetail };
+  readonly optimize?: "not-needed";
+}
+
+/** §7.0 — C-17 admission record plus `derivedHash`/`quality`. */
+export interface AuraCliAdmissionRecordDetail extends AuraCliAdmissionRecord {
+  readonly derivedHash?: string;
+  readonly quality?: AuraAssetQuality;
+}
+
+/** §7.0 — look-dev review; `judge` matches the C-32 `JudgeIdentity` shape. */
+export interface AuraCliLookDevReview {
+  readonly reviewer: string;
+  readonly verdict: "accept" | "reject";
+  readonly notes: string;
+  readonly at: string;
+  readonly judge?: { readonly kind: "human" | "vision-model"; readonly id: string; readonly model?: string };
+  readonly score?: number;
+  readonly axes?: Readonly<Record<string, number>>;
+}
+
+/** §7.0 — C-17 look-dev record plus `derivedHash`, `stageVersion`, `contactSheet`, `metrics`. */
+export interface AuraCliLookDevRecordDetail extends Omit<AuraCliLookDevRecord, "reviews"> {
+  readonly reviews: readonly AuraCliLookDevReview[];
+  readonly derivedHash?: string;
+  readonly stageVersion?: string;
+  readonly contactSheet?: string;
+  readonly metrics?: Readonly<Record<string, unknown>>;
+}
+
+/** §7.2 — audio-side metadata written by `assets add --type audio` (R-09-1). */
+export interface AuraCliAudioMetadata {
+  readonly loudnessLufs?: number;
+  readonly truePeakDb?: number;
+  readonly author?: string;
+  readonly sourceUrl?: string;
 }
 
 export interface AuraCliAssetEntry {
@@ -248,6 +323,18 @@ export interface AuraCliAssetEntry {
   readonly suitabilityReason?: string;
   readonly renderedProbe?: AuraCliRenderedProbe;
   readonly gameGeometry?: AuraCliGameGeometryMetadata;
+  // ---- schema 1.1 fields (PRD-05 §7.2 / C-17) ----
+  readonly derived?: AuraCliDerivedAssetDetail;
+  readonly admission?: AuraCliAdmissionRecordDetail;
+  readonly lookDev?: AuraCliLookDevRecordDetail;
+  readonly artDirection?: string;
+  /** Byte-identical source dedup: this entry aliases another manifest id. */
+  readonly aliasOf?: string;
+  /** G2 camera override (§6.4). */
+  readonly gameplayCamera?: { readonly distance: number; readonly fovDegrees: number };
+  /** C-17 clip objects for lane 06 (Q-05-1). */
+  readonly animationClips?: readonly { readonly name: string; readonly duration: number; readonly channelCount: number }[];
+  readonly audio?: AuraCliAudioMetadata;
   readonly warnings: readonly string[];
 }
 
@@ -283,6 +370,10 @@ export interface AddAssetOptions {
   readonly orientation?: AuraCliOrientationInspection;
   readonly gameGeometry?: AuraCliGameGeometryMetadata;
   readonly retrievedAt?: string;
+  /** `assets/art-direction/<id>.json` id (G10, §6.4). */
+  readonly artDirection?: string;
+  /** R-09-1: written into `entry.audio` for `--type audio` adds. */
+  readonly audio?: AuraCliAudioMetadata;
 }
 
 export interface ReadRenderedProbeMetadataOptions {
