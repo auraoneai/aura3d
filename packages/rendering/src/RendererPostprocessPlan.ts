@@ -44,6 +44,10 @@ export interface RendererPostprocessPlanOptions {
   readonly taa?: TAAOptions | RendererTaaOptions | false;
   readonly outline?: OutlineOptions | boolean;
   readonly fxaa?: FXAAOptions | boolean;
+  /** PRD-03 C-13: the assembled v2 pipeline bag (flag-on); also stamps `v2` on the transitional descriptors. */
+  readonly pipeline?: unknown;
+  /** PRD-03 C-13: true when the bridge selected the v2 post graph. */
+  readonly v2?: boolean;
 }
 
 export type RendererPostProcessPassName =
@@ -178,7 +182,11 @@ export interface RendererPostprocessPlanDiagnostics {
 export function createRendererPostprocessPasses(postprocess: RendererPostprocessPlanOptions): readonly RendererPostProcessPassPlan[] {
   const passes: RendererPostProcessPassPlan[] = [];
   if (postprocess.bloom) {
-    passes.push({ name: "bloom", options: postprocess.bloom === true ? {} : postprocess.bloom });
+    // §7.2 carve: flag-on stamp `v2` so normalizeNativeBloomOptions accepts
+    // the HDR field ranges ([0,64] threshold, knee [0,1]) while the
+    // transitional legacy chain still executes.
+    const options = postprocess.bloom === true ? {} : postprocess.bloom;
+    passes.push({ name: "bloom", options: postprocess.v2 ? { ...options, v2: true } : options });
   }
   if (postprocess.toneMapping !== false) {
     passes.push({ name: "tone-mapping", options: postprocess.toneMapping ?? {} });

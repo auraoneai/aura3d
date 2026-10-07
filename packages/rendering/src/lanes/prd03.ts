@@ -24,3 +24,27 @@ export { velocityHistorySlot, VelocityHistory, type VelocitySurface, type Veloci
 export { PostTimer } from "../post/PostTimer.js";
 export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneMapping, neutralToneMapping, reinhardToneMapping, linearToneMapping, cineonToneMapping, type AuraToneOperator, type Vec3 } from "../post/ToneOperators.js";
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";
+// Phase 2: graph descriptors + concrete option types (the §6.1 table is the
+// contract real's own data — it stays on the critical path with PostGraph).
+export {
+  POST_STAGE_DESCRIPTORS,
+  POST_INSERT_ANCHORS,
+  validatePostPassSpace,
+  type PostStageDescriptor,
+  type PostStageInput,
+  type PostTargetFormat,
+  type GtaoOptions,
+  type BloomOptionsV2,
+  type TaaOptions,
+  type DofOptions,
+  type MotionBlurOptions,
+  type GodRayOptions,
+  type ColorGradeOptionsV2,
+  type LutTexture3D,
+  type AutoExposureOptionsV2,
+  type Rgb
+} from "../post/PostGraph.js";
+// Phase-2 GPU modules (post/shaders/*, PostResources, CubeLut,
+// bloomNormalization) deliberately do NOT export here: the v2 bundle gate
+// requires `post/` GPU code to be reachable only through the deferred
+// `import("../post/v2Entry.js")` in PostprocessExecution.

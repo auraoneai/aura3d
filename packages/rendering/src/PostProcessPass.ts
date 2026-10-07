@@ -23,6 +23,12 @@ export interface BloomOptions {
   readonly softKnee?: number;
   /** LDR composite highlight shoulder in [0, 1]; 0 keeps the legacy clamp. */
   readonly shoulder?: number;
+  /**
+   * PRD-03 §7.2 carve (additive): stamped by the plan when the v2 chain is
+   * active so `normalizeNativeBloomOptions` accepts the HDR field ranges
+   * (threshold [0, 64], knee [0, 1]). Never authored by callers.
+   */
+  readonly v2?: true;
 }
 
 export interface FXAAOptions {

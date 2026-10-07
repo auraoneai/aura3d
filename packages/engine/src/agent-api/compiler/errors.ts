@@ -9,6 +9,8 @@ export class AuraRuntimeError extends Error {
     | "unsupported-texture"
     | "backend-fallback"
     | "unknown-node-kind"
+    // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
+    | "POST_FIELD_UNSUPPORTED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,
     // including "renderer-mount-failed" from the T4.2 mount path.
     | import("../../contracts/compiler.js").AuraDegradationCode;

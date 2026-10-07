@@ -22,13 +22,16 @@ import {
   registeredPostPasses,
   type PostInsertAt,
   type PostPassDescriptor,
+  type PostPipelineOptions,
   type PostSpace,
   type AuraQualityTier,
+  type AuraQualityTierSettings,
   type QrFlags
 } from "@aura3d/rendering/contracts";
+import type { BloomOptionsV2 } from "@aura3d/rendering";
 import type { AuraCustomPostPass, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
-import type { AuraApp, AuraCreateAppOptions } from "./index.js";
+import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneSnapshot } from "./index.js";
 
 /* ------------------------------------------------------------------------- */
 /* Submitted postprocess telemetry                                           */
@@ -51,6 +54,10 @@ export interface AuthoredPostSummary {
   readonly resolvedAntiAlias?: { readonly mode: string; readonly sampleCount: number; readonly reason?: string } | null;
   /** Phase 1 (flag-on): the camera clipping forwarded to the legacy chain (CCR-03-1). */
   readonly depthRange?: { readonly near: number; readonly far: number; readonly projection: string } | null;
+  /** Phase 2 (§7.1): field-validation diagnostics — deprecated + unsupported + informational. */
+  readonly fieldDiagnostics?: readonly PostFieldDiagnostic[];
+  /** Phase 2 (C-13): the assembled v2 pipeline options, when strict+flag-on. */
+  readonly v2?: boolean;
 }
 
 export interface SubmittedPostprocessRecord {
@@ -125,12 +132,15 @@ export interface AuthoredPostContext {
   readonly flags: { readonly post: boolean };
   readonly output: AuraOutputOptions | undefined;
   readonly qualityTier: AuraQualityTier | "auto" | null;
+  /** `compat.post === "3.0"` forces `pipeline: "legacy"` on the v2 bridge (§7.1). */
+  readonly compatPost3: boolean;
 }
 
 interface MutableAuthoredPostContext {
   flags: { readonly post: boolean };
   output: AuraOutputOptions | undefined;
   qualityTier: AuraQualityTier | "auto" | null;
+  compatPost3: boolean;
 }
 
 let authoredContext: MutableAuthoredPostContext | null = null;
@@ -149,7 +159,8 @@ export function recordAuthoredPostContext(ctx: { readonly flags: QrFlags; readon
   authoredContext = {
     flags: { post: ctx.flags.on("A3D_QR_POST") },
     output: options.output ?? options.renderer?.output,
-    qualityTier: authoredContext?.qualityTier ?? null
+    qualityTier: authoredContext?.qualityTier ?? null,
+    compatPost3: options.compat?.post === "3.0"
   };
   if (app?.canvas) canvasAuthored.set(app.canvas, authoredContext);
 }
@@ -168,7 +179,7 @@ function recordPostQualityTier(tier: AuraQualityTier | "auto", canvas?: HTMLCanv
   if (target) {
     target.qualityTier = tier;
   } else {
-    authoredContext = { flags: { post: false }, output: undefined, qualityTier: tier };
+    authoredContext = { flags: { post: false }, output: undefined, qualityTier: tier, compatPost3: false };
     if (canvas) canvasAuthored.set(canvas, authoredContext);
   }
 }
@@ -280,7 +291,7 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
   }
   const plan = planForSubmitted(submitted.options, submitted.renderWidth, submitted.renderHeight);
   return {
-    pipeline: "legacy",
+    pipeline: submitted.authored.v2 ? "v2" : "legacy",
     present: true,
     requestedPasses: plan.requestedPassNames,
     submittedPasses: plan.submittedPassNames,
@@ -298,7 +309,17 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
       ...plan.plannedVsActual.dropped
     ],
     customPasses: custom,
-    warnings: plan.clarityWarnings,
+    warnings: [
+      ...plan.clarityWarnings,
+      // §7.1: flag-off unknown fields warn as `option-ignored`; deprecated
+      // fields + informational diagnostics keep their §7.1 names.
+      ...(submitted.authored.fieldDiagnostics ?? []).map((diagnostic) =>
+        diagnostic.code === "POST_FIELD_UNSUPPORTED" && !authoredContext?.flags.post
+          ? `option-ignored:${diagnostic.effect}.${diagnostic.field}`
+          : diagnostic.field
+            ? `${diagnostic.code}:${diagnostic.effect}.${diagnostic.field}`
+            : `${diagnostic.code}:${diagnostic.effect}`)
+    ],
     source: "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics"
   };
 }
@@ -389,4 +410,291 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // back into `createAuraApp` scope.
   recordAuthoredPostContext(ctx, app);
   return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Phase 2 — C-13 v2 bridge: field validation + v2 option assembly            */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Own keys allowed on every effect node regardless of `effect` — the node's
+ * shared bag fields (`AuraEffectNode`) plus the transform spec and the lane
+ * bookkeeping field `postAuthored` (CCR-03-3).
+ */
+export const POST_EFFECT_COMMON_FIELDS: readonly string[] = [
+  "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored",
+  "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"
+];
+
+/**
+ * §7.1 allowlist: v2-executed fields per post-relevant `effect` value. A field
+ * absent from the node's `postAuthored` list takes its v2 default; a field
+ * present but not in this list or `POST_EFFECT_DEPRECATED_FIELDS` throws
+ * `POST_FIELD_UNSUPPORTED` (flag on) before the first frame.
+ */
+export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  bloom: ["threshold", "knee", "scatter", "color", "clampLuminance"],
+  "ambient-occlusion": ["radius", "intensity", "falloff", "multiBounce"],
+  "contact-occlusion": ["radius", "intensity", "falloff", "multiBounce"],
+  "color-grade": ["exposure", "temperature", "tint", "contrast", "saturation", "vibrance",
+    "lift", "gamma", "gain", "shadows", "midtones", "highlights", "lut", "lutIntensity"],
+  "anti-alias": ["mode", "sharpness"],
+  vignette: ["intensity", "smoothness", "roundness", "color"],
+  "film-grain": ["intensity", "size", "luminanceResponse"],
+  "chromatic-aberration": ["intensity"],
+  // Lane-07 factories route through this bridge on the v2 chain (§6.9).
+  "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference"],
+  "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur"],
+  "motion-blur": ["shutter", "maxBlur"],
+  "screen-space-reflections": ["maxDistance", "intensity"],
+  outline: ["color", "width", "threshold"]
+};
+
+/**
+ * §7.1 deprecated fields — accepted with a `post-field-deprecated` diagnostic,
+ * mapped where the spec says so (bloom `radius` → `scatter`, `maxIntensity` /
+ * `antiBlowout` → `clampLuminance`; DOF `focus`/`aperture` convert with real
+ * near/far). Everything else is ignored.
+ */
+export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  bloom: ["quality", "softKnee", "shoulder", "maxIntensity", "antiBlowout", "radius"],
+  "ambient-occlusion": ["density", "color"],
+  "contact-occlusion": ["density", "color"],
+  "depth-of-field": ["focus", "aperture"]
+};
+
+export interface PostFieldDiagnostic {
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE";
+  readonly effect: string;
+  readonly field?: string;
+  readonly message: string;
+}
+
+function isAuthored(node: AuraEffectNode, field: string): boolean {
+  return node.postAuthored === undefined || node.postAuthored.includes(field);
+}
+
+/**
+ * Validates one effect node's own keys against the allowlists. Returns the
+ * diagnostics the caller either throws on (flag on, unknown fields) or warns
+ * with (flag off / deprecated). `undefined` for non-post effects — those are
+ * other lanes' to validate.
+ */
+export function validatePostEffectNode(node: AuraEffectNode): readonly PostFieldDiagnostic[] | undefined {
+  const fields = POST_EFFECT_FIELDS[node.effect];
+  if (!fields) return undefined;
+  const deprecated = POST_EFFECT_DEPRECATED_FIELDS[node.effect] ?? [];
+  const diagnostics: PostFieldDiagnostic[] = [];
+  // §7.1 applies to AUTHORED fields: `postAuthored` (CCR-03-3) lists the keys
+  // the caller actually wrote — factory-default own keys are excluded. Nodes
+  // built without the bridge marker fall back to validating every own key.
+  const keys = node.postAuthored ?? Object.keys(node);
+  for (const key of keys) {
+    if (POST_EFFECT_COMMON_FIELDS.includes(key) || fields.includes(key)) continue;
+    if (deprecated.includes(key)) {
+      diagnostics.push({
+        code: "post-field-deprecated",
+        effect: node.effect,
+        field: key,
+        message: `effects.${node.effect} field "${key}" is deprecated under the v2 post chain (§7.1 mapping).`
+      });
+      continue;
+    }
+    diagnostics.push({
+      code: "POST_FIELD_UNSUPPORTED",
+      effect: node.effect,
+      field: key,
+      message: `effects.${node.effect} field "${key}" has no v2 post-chain consumer (POST_FIELD_UNSUPPORTED).`
+    });
+  }
+  return diagnostics;
+}
+
+/* V2 option bags ---------------------------------------------------------- */
+
+const V2_BLOOM_DEFAULTS = { threshold: 1.0, knee: 0.25, intensity: 0.25, scatter: 0.7, clampLuminance: 64 } as const;
+
+function numberField(node: AuraEffectNode, field: string, fallback: number): number {
+  const value = (node as unknown as Record<string, unknown>)[field];
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function authoredNumber(node: AuraEffectNode, field: string, fallback: number): number {
+  return isAuthored(node, field) ? numberField(node, field, fallback) : fallback;
+}
+
+interface RgbLike { readonly r: number; readonly g: number; readonly b: number }
+
+function rgbField(node: AuraEffectNode, field: string, fallback: RgbLike): RgbLike {
+  const value = (node as unknown as Record<string, unknown>)[field];
+  if (Array.isArray(value) && value.length >= 3) {
+    return { r: Number(value[0]), g: Number(value[1]), b: Number(value[2]) };
+  }
+  if (value && typeof value === "object" && "r" in value) {
+    const v = value as { r: unknown; g: unknown; b: unknown };
+    return { r: Number(v.r), g: Number(v.g), b: Number(v.b) };
+  }
+  return fallback;
+}
+
+/**
+ * §6.6 v2 bloom mapping: authored fields win; fields absent from
+ * `postAuthored` take the v2 defaults (factory defaults are legacy). A
+ * threshold < 1 is honored as linear HDR and reported
+ * `BLOOM_THRESHOLD_BELOW_HDR_WHITE`. `radius` aliases `scatter`;
+ * `maxIntensity`/`antiBlowout` map to `clampLuminance`.
+ */
+export function mapBloomOptionsV2(node: AuraEffectNode, mipLevels: 3 | 5 | 6): { readonly options: BloomOptionsV2; readonly diagnostics: readonly PostFieldDiagnostic[] } {
+  const diagnostics: PostFieldDiagnostic[] = [];
+  const nodeFields = node as unknown as Record<string, unknown>;
+  const threshold = authoredNumber(node, "threshold", V2_BLOOM_DEFAULTS.threshold);
+  if (threshold < 1) {
+    diagnostics.push({
+      code: "BLOOM_THRESHOLD_BELOW_HDR_WHITE",
+      effect: "bloom",
+      field: "threshold",
+      message: `bloom threshold ${threshold} is below HDR white; honored as linear HDR (§6.6).`
+    });
+  }
+  const scatterAuthored = isAuthored(node, "scatter") ? numberField(node, "scatter", NaN) : NaN;
+  const radiusAlias = isAuthored(node, "radius") ? numberField(node, "radius", NaN) : NaN;
+  const maxIntensity = isAuthored(node, "maxIntensity") ? numberField(node, "maxIntensity", NaN) : NaN;
+  const antiBlowout = isAuthored(node, "antiBlowout") ? nodeFields.antiBlowout === true : false;
+  const clampLuminance = authoredNumber(node, "clampLuminance",
+    Number.isFinite(maxIntensity) ? maxIntensity : antiBlowout ? V2_BLOOM_DEFAULTS.clampLuminance : V2_BLOOM_DEFAULTS.clampLuminance);
+  const tintAuthored = isAuthored(node, "color");
+  const tint = tintAuthored ? rgbField(node, "color", { r: 1, g: 1, b: 1 }) : { r: 1, g: 1, b: 1 };
+  return {
+    options: {
+      threshold: Math.min(64, Math.max(0, threshold)),
+      knee: Math.min(1, Math.max(0, authoredNumber(node, "knee", V2_BLOOM_DEFAULTS.knee))),
+      intensity: Math.min(4, Math.max(0, authoredNumber(node, "intensity", V2_BLOOM_DEFAULTS.intensity))),
+      scatter: Math.min(1, Math.max(0, Number.isFinite(scatterAuthored) ? scatterAuthored : Number.isFinite(radiusAlias) ? radiusAlias : V2_BLOOM_DEFAULTS.scatter)),
+      tint: [tint.r, tint.g, tint.b] as const,
+      clampLuminance,
+      mips: mipLevels
+    },
+    diagnostics
+  };
+}
+
+/**
+ * The v2 root post pipeline (C-13): assembles `PostPipelineOptions` from the
+ * snapshot's effect nodes + C-38 `output` + C-27 tier settings. Throws
+ * `AuraRuntimeError("POST_FIELD_UNSUPPORTED", ...)` on an unknown effect-node
+ * field — this runs inside the compile, so `app.ready()` rejects before the
+ * first frame instead of the error dying inside `diagnostics.errors`.
+ */
+export function createRootPostPipeline(
+  snapshot: AuraSceneSnapshot,
+  camera: { readonly near?: number; readonly far?: number; readonly mode?: string } | undefined,
+  output: AuraOutputOptions | undefined,
+  tierSettings: AuraQualityTierSettings
+): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
+  const nodes = groups.flatten(snapshot.nodes);
+  const diagnostics: PostFieldDiagnostic[] = [];
+  for (const node of nodes) {
+    if (node.kind !== "effect") continue;
+    const nodeDiagnostics = validatePostEffectNode(node);
+    if (nodeDiagnostics) diagnostics.push(...nodeDiagnostics);
+    const unsupported = nodeDiagnostics?.find((d) => d.code === "POST_FIELD_UNSUPPORTED");
+    if (unsupported) {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", unsupported.message);
+    }
+  }
+
+  const effect = (kind: string) => nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === kind);
+  const bloomNode = effect("bloom");
+  const gradeNode = effect("color-grade");
+  const vignetteNode = effect("vignette");
+  const grainNode = effect("film-grain");
+  const caNode = effect("chromatic-aberration");
+  const volumetricNode = effect("volumetric-fog");
+  const dofNode = effect("depth-of-field");
+  const mbNode = effect("motion-blur");
+  const ssrNode = effect("screen-space-reflections");
+
+  const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
+  if (bloom) diagnostics.push(...bloom.diagnostics);
+
+  const exposure = (output?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
+  const toneMapping = output?.toneMapping ?? "aces";
+
+  const options: PostPipelineOptions = {
+    antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
+    depthRange: {
+      near: camera?.near ?? 0.1,
+      far: camera?.far ?? 1000,
+      projection: camera?.mode === "orthographic" || camera?.mode === "isometric" ? "orthographic" : "perspective"
+    },
+    renderScale: tierSettings.minRenderScale,
+    ...(bloom ? { bloom: bloom.options } : {}),
+    exposure,
+    toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
+    dither: output?.dither !== false,
+    backgroundPassthrough: output?.backgroundPassthrough === true,
+    ...(volumetricNode ? {
+      godRays: {
+        density: numberField(volumetricNode, "density", 0.18),
+        intensity: numberField(volumetricNode, "intensity", 0.7),
+        color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
+        lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined
+      }
+    } : {}),
+    ...(dofNode ? {
+      dof: {
+        // §7.1: legacy `focus` fraction converts with real near/far; the new
+        // `focusDistance` field (metres) wins when authored.
+        focusDistance: isAuthored(dofNode, "focusDistance")
+          ? numberField(dofNode, "focusDistance", 3)
+          : (camera?.near ?? 0.1) + numberField(dofNode, "focus", 0.02) * ((camera?.far ?? 1000) - (camera?.near ?? 0.1)),
+        fStop: numberField(dofNode, "fStop", 2.8),
+        focalLengthMm: numberField(dofNode, "focalLength", 50),
+        maxBlurPx: numberField(dofNode, "maxBlur", 12),
+        halfRes: true,
+        sensorHeightMm: 24
+      }
+    } : {}),
+    ...(mbNode ? {
+      motionBlur: {
+        shutter: numberField(mbNode, "shutter", numberField(mbNode, "intensity", 0.5)),
+        maxBlurPx: numberField(mbNode, "maxBlur", 32)
+      }
+    } : {}),
+    ...(ssrNode ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
+    ...(gradeNode ? {
+      grade: {
+        temperature: authoredNumber(gradeNode, "temperature", 0),
+        tint: authoredNumber(gradeNode, "tint", 0),
+        contrast: authoredNumber(gradeNode, "contrast", 1),
+        saturation: authoredNumber(gradeNode, "saturation", 1),
+        vibrance: authoredNumber(gradeNode, "vibrance", 0),
+        lift: rgbField(gradeNode, "lift", { r: 0, g: 0, b: 0 }),
+        gamma: rgbField(gradeNode, "gamma", { r: 1, g: 1, b: 1 }),
+        gain: rgbField(gradeNode, "gain", { r: 1, g: 1, b: 1 }),
+        shadows: rgbField(gradeNode, "shadows", { r: 1, g: 1, b: 1 }),
+        midtones: rgbField(gradeNode, "midtones", { r: 1, g: 1, b: 1 }),
+        highlights: rgbField(gradeNode, "highlights", { r: 1, g: 1, b: 1 }),
+        lutIntensity: authoredNumber(gradeNode, "lutIntensity", 1)
+      }
+    } : {}),
+    ...(gradeNode?.lut ? { lut: { source: gradeNode.lut, intensity: numberField(gradeNode, "lutIntensity", 1) } } : {}),
+    ...(vignetteNode ? {
+      vignette: {
+        intensity: numberField(vignetteNode, "intensity", 0.3),
+        smoothness: numberField(vignetteNode, "smoothness", 1),
+        roundness: numberField(vignetteNode, "roundness", 1),
+        color: rgbField(vignetteNode, "color", { r: 0, g: 0, b: 0 })
+      }
+    } : {}),
+    ...(grainNode ? {
+      filmGrain: {
+        intensity: numberField(grainNode, "intensity", 0.05),
+        size: numberField(grainNode, "size", 1),
+        luminanceResponse: numberField(grainNode, "luminanceResponse", 1)
+      }
+    } : {}),
+    ...(caNode ? { chromaticAberration: { intensity: numberField(caNode, "intensity", 0.0015) } } : {})
+  };
+  return { options, diagnostics };
 }

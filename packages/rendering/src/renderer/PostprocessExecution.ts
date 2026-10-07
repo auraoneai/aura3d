@@ -10,6 +10,9 @@ import type { RenderSource } from "../contracts/renderSource";
 import { isIterable } from "./RenderShared";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
+import type { PostPipelineOptions } from "../contracts/post";
+import { webgl2DeviceHost } from "../webgl2/Counters";
+import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 
 export function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {
   if (source instanceof Scene || isIterable(source)) return undefined;
@@ -113,6 +116,43 @@ export function createPostprocessDiagnostics(
 export class RendererPostprocessPipeline {
   constructor(readonly host: RendererHost) {}
 
+  /**
+   * PRD-03 C-13 / Phase 2: flag-on (`v2` + pipeline bag) on a WebGL2 device
+   * routes the present through `executePostGraphWebGL2` — the device
+   * internals carve (CONTRACTS §3.1) — instead of the per-pass loop. Returns
+   * true when the v2 seam executed.
+   */
+  private tryExecutePostGraphV2(
+    postprocess: RendererPostProcessOptions,
+    current: RenderTarget,
+    passes: readonly RendererPostProcessPassPlan[],
+    outputTarget?: RenderTarget,
+    v2Modules?: typeof import("../post/v2Entry")
+  ): boolean {
+    if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") return false;
+    const pipeline = postprocess.pipeline;
+    if (!pipeline || typeof pipeline !== "object") return false;
+    // Transitional seam: the v2 path delegates to the native fused present,
+    // which only covers the fused pass names. Scenes authoring anything
+    // outside that set (film-grain, chromatic-aberration, volumetric-light,
+    // contact-shadow) — or requesting cpu-deterministic — keep the legacy
+    // route so nothing authored is silently dropped.
+    if (postprocess.execution === "cpu-deterministic") return false;
+    if (!canFuseLdrPostprocess(current, passes)) return false;
+    const descriptors = passes.map((pass) => ({
+      name: pass.name,
+      options: pass.options as Readonly<Record<string, unknown>>
+    })) as readonly LdrPostprocessPassDescriptor[];
+    executePostGraphWebGL2(webgl2DeviceHost(this.host.device), current, {
+      pipeline: pipeline as PostPipelineOptions,
+      passes: descriptors,
+      ...(v2Modules ? { v2: v2Modules } : {}),
+      ...(outputTarget ? { outputTarget } : {}),
+      ...(postprocess.depthRange ? { depthRange: postprocess.depthRange } : {})
+    });
+    return true;
+  }
+
   executePostprocess(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): void {
     const forwardTarget = ownedTargets[0];
     let current = forwardTarget;
@@ -129,6 +169,7 @@ export class RendererPostprocessPipeline {
       }
       return;
     }
+    if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
     if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
@@ -268,6 +309,14 @@ export class RendererPostprocessPipeline {
       }
       return;
     }
+    // C-13 v2 seam: the ONLY import() of `post/` GPU modules in the
+    // renderer — the deferred chunk the bundle gate measures. The sync
+    // `executePostprocess` path runs the same carve without the bag (the
+    // transitional fused mapping needs none of it).
+    const v2Modules = postprocess.v2 === true && this.host.device.kind === "webgl2"
+      ? await import("../post/v2Entry")
+      : undefined;
+    if (this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2Modules)) return;
     if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;

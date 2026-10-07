@@ -1861,41 +1861,41 @@ Phase 1 (own-module code from day 0; wiring after PR 0b-1 / 0b-2)
   ideal quantization run, and Sobel on 8-bit luma with threshold 1 finds < 0.5% contour pixels.
 
 Phase 2
-- [ ] `packages/rendering/src/post/PostGraph.ts`: stage descriptors `{name, inputs,
+- [x] `packages/rendering/src/post/PostGraph.ts`: stage descriptors `{name, inputs,
   outputs:{format, scale}, enabled(options)}`, the fixed order of 6.1, and C-13 insertion-point
   dispatch with `space` validation. Test: `tests/unit/rendering/post-graph-order.test.ts` asserts
   the stage order for every option combination (2^10 enumerations), that no stage before OutputPass
   has an `rgba8` output, and that a `display` pass before tonemap throws
   `POSTPROCESS_SPACE_INVALID:<id>`.
-- [ ] `post/PostResources.ts`: a pool keyed `(w,h,format,samples)` on top of C-28
+- [x] `post/PostResources.ts`: a pool keyed `(w,h,format,samples)` on top of C-28
   `renderTargetPoolSlot`, released on resize. Test: a unit test asserts the allocation count is
   constant across 100 frames when the C-28 stub (allocate-per-acquire) is active.
-- [ ] `webgl2/LegacyPost.ts` `executePostGraphWebGL2` plus `createLegacyOutputPass` (CCR-03-5), and
+- [x] `webgl2/LegacyPost.ts` `executePostGraphWebGL2` plus `createLegacyOutputPass` (CCR-03-5), and
   the `renderer/PostprocessExecution.ts` v2 branch. Test: a browser spec asserts exactly one tone
   operator evaluation per pixel. It renders the HDR ramp through v2 with operator `aces`, compares
   against `ToneOperators.aces`, and requires ≤ 1 LSB with no double-curve signature.
-- [ ] `post/shaders/bloom.glsl.ts` per 6.6, plus `postprocess/NativeBloomPyramid.ts`:
+- [x] `post/shaders/bloom.glsl.ts` per 6.6, plus `postprocess/NativeBloomPyramid.ts`:
   `bloomNormalization(mips, scatter)` and mips starting at half resolution.
   `resolveBloomPyramidResponseGain` (`:106-109`) stays only for the flag-off path. Tests:
   - `tests/unit/rendering/native-bloom-pyramid.test.ts` (lane 03's): a constant input E above
     threshold yields composite bloom E ±2%, computed through a TS mirror of the up/down weights.
   - Browser: a constant-color HDR quad (luma 2.0, threshold 1.0, knee 0) gives a bloom contribution
     of 1.0 ±3% × intensity.
-- [ ] `webgl2/LegacyPost.ts` `normalizeNativeBloomOptions` (moved from `WebGL2Device.ts:4481` in
+- [x] `webgl2/LegacyPost.ts` `normalizeNativeBloomOptions` (moved from `WebGL2Device.ts:4481` in
   the 0b-2 carve; if the carve leaves it in the device, it is Q-01-8): with the flag on, accept
   threshold [0,64] and knee [0,1] and drop the softKnee ≤ 0.5 throw (`:4484-4496`). Deprecated
   fields map per 7.1. Test: one unit test per mapping, plus a deprecation diagnostic.
-- [ ] `post/shaders/composite.glsl.ts` (S10 linear: exposure, bloom, CA, linear grade),
+- [x] `post/shaders/composite.glsl.ts` (S10 linear: exposure, bloom, CA, linear grade),
   `displayGrade.glsl.ts` and `lutBake.glsl.ts` (S10b, 33³ RGBA8, rebaked only when the
   display-grade hash changes). Test: `tests/browser/post-lut.spec.ts` checks a 4096-step ramp LUT
   against the analytic display grade within 1 LSB, and a rebake count of 1 across 60 frames with
   constant params.
-- [ ] `post/CubeLut.ts` `parseCubeLut`: supports `LUT_3D_SIZE`, `DOMAIN_MIN/MAX` and comments;
+- [x] `post/CubeLut.ts` `parseCubeLut`: supports `LUT_3D_SIZE`, `DOMAIN_MIN/MAX` and comments;
   throws on 1D LUTs and on size > 65. Test: `tests/unit/rendering/post-cube-lut.test.ts` with an
   identity LUT and the fixture `tests/qr/prd03/fixtures/luts/teal-orange-33.cube`.
-- [ ] `post/shaders/finalize.glsl.ts`: dither + grain + RCAS, fused with FXAA and S10b. Test:
+- [x] `post/shaders/finalize.glsl.ts`: dither + grain + RCAS, fused with FXAA and S10b. Test:
   covered by the banding and FXAA specs run on v2.
-- [ ] `packages/engine/src/agent-api/postBridge.ts` `createRootPostPipeline(snapshot, camera,
+- [x] `packages/engine/src/agent-api/postBridge.ts` `createRootPostPipeline(snapshot, camera,
   output, tierSettings)`, `POST_EFFECT_FIELDS`, `POST_EFFECT_DEPRECATED_FIELDS`; called from
   `compiler/postprocess.ts` when the flag is on. It applies v2 defaults to fields absent from
   `postAuthored`. Test: `tests/unit/agent-api/post-bridge.test.ts` has one case per field
@@ -1906,16 +1906,16 @@ Phase 2
     (the test fails on an allowlisted but unasserted field);
   - the throw rejects `app.ready()` rather than landing in `diagnostics.errors`;
   - with the flag off, the same scene only warns (`option-ignored`).
-- [ ] `nodes/effects.post.ts`: add the inert `postAuthored` field to the six carved factories
+- [x] `nodes/effects.post.ts`: add the inert `postAuthored` field to the six carved factories
   (`Object.keys(options)` at call time). Factory defaults stay byte-identical. Test: a snapshot
   test asserts the node objects equal today's except for `postAuthored`, and that the legacy bridge
   output is byte-equal (C-36 conformance "flag-off byte-equal RenderSource").
-- [ ] Bundle gate for v2: `Renderer`-side code reaches `post/` only through `import()` taken in
+- [x] Bundle gate for v2: `Renderer`-side code reaches `post/` only through `import()` taken in
   `PostprocessExecution.ts` when v2 is selected. Test: `pnpm check:bundle-size` passes for all
   gated targets, and an esbuild metafile assertion in `tests/unit/rendering/post-bundle-split.test.ts`
   shows `post/shaders/*` in a deferred chunk, outside the critical path of the cinematic-scene and
   mini-game starters.
-- [ ] `benchmarks/quality-rebuild/aura3d/scenes/prd03/bloomMapping.ts` `mapThreeUnrealBloom(strength,
+- [x] `benchmarks/quality-rebuild/aura3d/scenes/prd03/bloomMapping.ts` `mapThreeUnrealBloom(strength,
   radius, threshold): BloomOptionsV2`: calibrate once on `prd03-hdr-bloom` to ±10% halo energy,
   commit the calibration log and freeze the mapping. Use it in `prd03-scene18-bloom`. File Q-12-2
   so the shared `aura3d/common.ts:254-256` adopts it.

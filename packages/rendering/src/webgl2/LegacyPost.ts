@@ -13,6 +13,8 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
+import type { PostPipelineOptions } from "../contracts/post";
+import type { LdrPostprocessPassName } from "../RenderDevice";
 
 export interface NativeBloomOptions {
   readonly threshold: number;
@@ -2472,12 +2474,29 @@ function normalizeLdrDepthRange(range: { readonly near: number; readonly far: nu
   return { near, far };
 }
 
-function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>): NativeBloomOptions {
+export function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>): NativeBloomOptions {
+  // PRD-03 §7.2 carve (0b-2): flag-on (`v2` stamp) accepts the HDR option
+  // ranges — threshold [0,64], `knee` ratio [0,1] — and drops the
+  // `softKnee ≤ 0.5` throw. §7.1 deprecated fields map while the
+  // transitional legacy chain still executes: `knee` feeds the soft-knee
+  // slot (§6.6 `threshold × kneeRatio` absolute width), authored
+  // `scatter`/`radius` map onto the legacy `radius` integer, and
+  // `maxIntensity`/`antiBlowout`/`clampLuminance`/`quality`/`shoulder` are
+  // accepted and ignored (deprecation diagnostics live in the bridge).
+  const v2 = options["v2"] === true;
   const threshold = bloomNumberOption(options, "threshold", 0.75);
   const intensity = bloomNumberOption(options, "intensity", 0.35);
-  const radius = bloomNumberOption(options, "radius", 1);
-  if (threshold < 0 || threshold > 1) {
-    throw new RenderDeviceError("Bloom threshold must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { threshold });
+  const knee = bloomNumberOption(options, "knee", NaN);
+  const scatter = bloomNumberOption(options, "scatter", NaN);
+  const radius = Number.isFinite(scatter)
+    ? Math.round(scatter)
+    : bloomNumberOption(options, "radius", 1);
+  if (threshold < 0 || threshold > (v2 ? 64 : 1)) {
+    throw new RenderDeviceError(
+      v2 ? "Bloom threshold must be finite and in [0, 64]." : "Bloom threshold must be finite and in [0, 1].",
+      "INVALID_POSTPROCESS_OPTIONS",
+      { threshold }
+    );
   }
   if (intensity < 0) {
     throw new RenderDeviceError("Bloom intensity must be finite and non-negative.", "INVALID_POSTPROCESS_OPTIONS", { intensity });
@@ -2485,8 +2504,12 @@ function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>)
   if (!Number.isInteger(radius) || radius < 0 || radius > 16) {
     throw new RenderDeviceError("Bloom radius must be an integer in [0, 16].", "INVALID_POSTPROCESS_OPTIONS", { radius });
   }
-  const softKnee = bloomNumberOption(options, "softKnee", 0);
-  if (!(softKnee >= 0) || softKnee > 0.5) {
+  if (v2 && Number.isFinite(knee) && (knee < 0 || knee > 1)) {
+    throw new RenderDeviceError("Bloom knee must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { knee });
+  }
+  const authoredSoftKnee = bloomNumberOption(options, "softKnee", 0);
+  const softKnee = v2 && Number.isFinite(knee) ? Math.min(0.5, threshold * knee) : authoredSoftKnee;
+  if (!v2 && (!(authoredSoftKnee >= 0) || authoredSoftKnee > 0.5)) {
     throw new RenderDeviceError("Bloom softKnee must be finite and in [0, 0.5].", "INVALID_POSTPROCESS_OPTIONS", { softKnee });
   }
   const shoulder = bloomNumberOption(options, "shoulder", 0);
@@ -2691,4 +2714,83 @@ function toneMappingOperatorId(value: string): number {
   if (value === "uncharted2") return 4;
   if (value === "agx") return 5;
   return 6;
+}
+
+/* ------------------------------------------------------------------------- */
+/* C-13 v2 seam (PRD-03 Phase 2, CCR-03-5)                                    */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * The §6.1 OUT stage adapted onto the proven native tone program (C-05
+ * OutputPass stub): single tonemap operator + sRGB encode. `exposure`
+ * defaults to the pipeline bag's §6.4 product — while the transitional
+ * chain applies exposure here, the final graph applies it in S10 composite
+ * and this pass receives `1`.
+ */
+export function createLegacyOutputPass(
+  pipeline: PostPipelineOptions,
+  base?: Readonly<Record<string, unknown>>
+): LdrPostprocessPassDescriptor {
+  const operator = pipeline.toneMapping === "none" ? "linear" : pipeline.toneMapping;
+  return {
+    name: "tone-mapping",
+    options: {
+      ...(base ?? {}),
+      operator,
+      exposure: pipeline.exposure,
+      inputColorSpace: "srgb-linear",
+      outputColorSpace: "srgb",
+      // §6.1 OUT.dithering: false — the S12 finalize owns the triangular
+      // dither; a second dither here would double-dither.
+      ...(pipeline.dither === false ? { dithering: false } : {})
+    }
+  };
+}
+
+/**
+ * `executePostGraphWebGL2` — the C-13 device carve (CONTRACTS §3.1 /
+ * PRD-03 §7.2). It receives the device's GL internals (the registered
+ * `WebGL2DeviceHost`) plus the already-planned LDR descriptors, replaces
+ * the legacy `tone-mapping` descriptor with `createLegacyOutputPass`,
+ * stamps `v2` on bloom options (the §7.2 field-range carve), and runs the
+ * proven native fused path. Phases 3–6 grow this seam stage-by-stage into
+ * the real v2 GPU loop (S1–S12) without touching `WebGL2Device.ts`.
+ */
+export function executePostGraphWebGL2(
+  host: WebGL2DeviceHost | null,
+  source: RenderTarget,
+  request: {
+    readonly pipeline: PostPipelineOptions;
+    readonly passes: readonly LdrPostprocessPassDescriptor[];
+    /**
+     * The deferred `post/v2Entry` module bag (import()ed by the async path —
+     * the only `post/` GPU code edge in the renderer). Undefined on the sync
+     * path; the transitional fused mapping does not need it.
+     */
+    readonly v2?: typeof import("../post/v2Entry");
+    readonly outputTarget?: RenderTarget;
+    readonly depthRange?: { readonly near: number; readonly far: number };
+  }
+): void {
+  if (!host) {
+    throw new RenderDeviceError("PostGraph v2 requires a WebGL2 device host.", "POST_GRAPH_V2_UNSUPPORTED");
+  }
+  const passes = request.passes.map((pass) => {
+    if (pass.name === ("tone-mapping" as LdrPostprocessPassName)) {
+      return createLegacyOutputPass(request.pipeline, pass.options);
+    }
+    if (pass.name === ("bloom" as LdrPostprocessPassName)) {
+      return { name: pass.name, options: { ...pass.options, v2: true } } as LdrPostprocessPassDescriptor;
+    }
+    return pass;
+  });
+  host.post.presentLdrPostprocess(source, {
+    passes,
+    ...(request.outputTarget ? { outputTarget: request.outputTarget } : {}),
+    toneMappingDefaults: { outputColorSpace: "srgb" },
+    depthRange: {
+      near: request.depthRange?.near ?? request.pipeline.depthRange.near,
+      far: request.depthRange?.far ?? request.pipeline.depthRange.far
+    }
+  });
 }
