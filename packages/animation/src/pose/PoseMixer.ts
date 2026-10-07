@@ -209,7 +209,7 @@ export class PoseAction {
     return this;
   }
 
-  crossFadeTo(fadeInAction: PoseAction, duration: number, warp = false): this {
+  crossFadeTo(fadeInAction: PoseAction, duration: number, warp = false): PoseAction {
     return fadeInAction.crossFadeFrom(this, duration, warp);
   }
 
