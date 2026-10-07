@@ -1290,10 +1290,10 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   extension starts it for `createAuraApp({ autoStart: true, loop })` when `A3D_QR_CAMERA_LOOP` is on. Test
   `tests/qr/prd08/unit/render-interpolation.test.ts`: with a fake app, `step` is called exactly once per tick and
   `advance` N times for substeps ∈ {0,1,2,6}. `createGameApp` adoption is request Q-09-5.
-- [ ] L-5 Request Q-15-2 (render dt clamp at `index.ts:11328, 12319, 12382`) and Q-15-3 (alpha in payloads at
+- [x] L-5 Request Q-15-2 (render dt clamp at `index.ts:11328, 12319, 12382`) and Q-15-3 (alpha in payloads at
   `:11508, :11694`). Lane side: export `DEFAULT_MAX_FRAME_DT` from `app/frameLoopDefaults.ts` and
   `currentFrameAlpha(app)` from `app/frameAlpha.ts` so the PRD 15 edit is a one-line import each.
-- [ ] L-6 `app/frameAlpha.ts` (carved from `index.ts:11290-11302`): under the flag, `runtimeAlpha` returns the
+- [x] L-6 `app/frameAlpha.ts` (carved from `index.ts:11290-11302`): under the flag, `runtimeAlpha` returns the
   `FixedStepDriver`/`FrameLoop` alpha instead of `(dt % fixedDt)/fixedDt`; flag off keeps the modulo.
 - [x] L-7 New `time/Interpolation.ts`: `InterpolationStore` with `capturePrevious()`, `captureCurrent()`,
   `resolve(alpha)`; per handle prev/curr position (lerp), rotation (XYZ Euler → `@aura3d/math` `Quaternion` via
@@ -1304,14 +1304,14 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `previousModelMatrix` (C-14). Dev warning when a handle moves > 5 u in one fixed step without `teleport`. Unit tests:
   alpha 0/0.5/1 results; yaw 350° → 10° interpolates through 0° (not 180°); teleport produces no intermediate
   positions; the contributor returns the same array when the flag is off; `handle.rotation` is never overwritten.
-- [ ] L-8 Lane benchmark harness: `tests/qr/prd08/harness/camera-feel-harness.{html,ts}` builds a scene with 20 moving
+- [x] L-8 Lane benchmark harness: `tests/qr/prd08/harness/camera-feel-harness.{html,ts}` builds a scene with 20 moving
   runtime nodes on `createAuraApp` + `FixedStepDriver` (no dependency on `createGameApp`).
-- [ ] L-9 New `tests/qr/prd08/browser/frame-pacing.spec.ts` on the L-8 harness: Playwright overrides
+- [x] L-9 New `tests/qr/prd08/browser/frame-pacing.spec.ts` on the L-8 harness: Playwright overrides
   `requestAnimationFrame` with a scripted clock (60/120/144 Hz and fixed 100/250 ms intervals) and records per
   presented frame `performance.now()`, `simTime`, presented node positions and `renderSubmissionsLastTick`; writes the
   CSV of §20 item 3; asserts S1, S2, S3. A second, non-gating run uses CDP CPU throttle rate 6 to record real-world
   pacing for the evidence pack. Runs remotely only (`qr-prd08-camera.yml`).
-- [ ] L-10 Request Q-14-1 (filed in Phase 1, not deferred): remove the explicit `maxSubSteps: 2` from the six game loop
+- [x] L-10 Request Q-14-1 (filed in Phase 1, not deferred): remove the explicit `maxSubSteps: 2` from the six game loop
   configs (§5 table) so they get the new default; capture before/after sim-speed at the measured fps.
 
 ### Time (T)
@@ -1533,7 +1533,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   when not rendered.
 - [x] F-6 Platformer kit emits `land` (with `strength = impactVelocity/terminal`) and `jump`; racing kit emits `boost`,
   `drift-start`, `collision`; combat emits `hit-light`/`hit-heavy`/`ko` mapped from move strength.
-- [ ] F-7 Evidence-only feel checks, registered from lane-08 files only:
+- [x] F-7 Evidence-only feel checks, registered from lane-08 files only:
   (a) source scan `feel/lint/feelSourceScan.ts` registered as C-39 doctor rule `feel/evidence-only` from
   `packages/aura3d-cli/src/commands/prd08/feelLint.ts` (no edit to `cli.ts`, owner 05; `aura3d doctor --look` hosts it,
   PRD 13). TypeScript AST scan of route/template sources. Flags any value returned by `.update(`/`.follow(`/`.snap(` on an object
@@ -1602,7 +1602,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Audio (A) — lane-08 glue only; the playback graph is PRD 09's (R17, C-25)
 
-- [ ] A-1…A-2, A-4, A-6…A-9 of the earlier draft moved to requests Q-09-1…Q-09-4 (§12.3) with the same numbers
+- [x] A-1…A-2, A-4, A-6…A-9 of the earlier draft moved to requests Q-09-1…Q-09-4 (§12.3) with the same numbers
   (panner model by tier, occlusion lowpass `20000·(1-occ)^2 + 400` Hz, live `setRate` τ 0.03 s, limiter −6 dB/12/6,
   jitter, voice limit 4, `PositionalEmitter.ts:232` live rate, default-cue removal, OfflineAudioContext checks: L/R
   energy ratio > 3:1 at +x with listener facing −z; 440 Hz loop with `setRate(2)` at 0.5 s → 880 ± 10 Hz in 0.7–1.0 s).
@@ -1618,7 +1618,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Facts, codemod, hand-off (D) — templates and skills are PRD 13's (R20)
 
-- [ ] D-1…D-5 Template specs, delivered to PRD 13 as request Q-13-1 (one issue, five sections, each with the exact edit):
+- [x] D-1…D-5 Template specs, delivered to PRD 13 as request Q-13-1 (one issue, five sections, each with the exact edit):
   - mini-game (`templates/mini-game/src/main.ts`): replace static `camera.perspective` (`:171-175`) and the
     `game.cameraRig({ kind: "side-view-follow" })` instance (`:76`) with
     `app.camera.use(camera.rigs.follow2d({ target: "hero", framing: { subjectHeightFraction: 0.28 } }))`; remove the
@@ -1638,7 +1638,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   are the one CONTRACTS edit a lane may make, §6.4): rig-by-genre table (§6.4), framing fractions, feel preset table
   (F-3), `app.time` usage, touch kit usage, screen-feel reference behaviour (§8.3) and the forbidden evidence-only
   pattern. Skill text itself is Q-13-2.
-- [ ] D-7 `tests/templates` assertions → request Q-13-3.
+- [x] D-7 `tests/templates` assertions → request Q-13-3.
 - [x] D-8 `tools/camera-cast-codemod/index.mjs` registered as C-39 codemod `camera-cast` + fixture tests for the five
   style-(a) cast sites and the cinematic-architecture cast (§2.2 G1, excerpts copied into `fixtures/`), plus
   "reported, not rewritten" fixtures for the two style-(b) sites. Report-mode run over `apps/` and
@@ -1649,14 +1649,14 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [x] X-1 `nodes/camera.ts`: deprecation warning for `smoothing` (once per spec, flag on) with the computed half-life.
 - [ ] X-2 Delete `createGameCameraRig` aggregator (GameCameraRigs.ts:525-596 plus its option/evidence types) when the
   flag reaches `default-on` and `camera-cast` reports 0 remaining callers.
-- [ ] X-3 Lean delegation → request Q-15-4 (lane side: `camera/leanAdapters.ts` with tests).
-- [ ] X-4 Removal of `smoothedCameraFrames`/`resolveCameraFrame` (`index.ts:15696-15745`) → request Q-15-1 after C-14
+- [x] X-3 Lean delegation → request Q-15-4 (lane side: `camera/leanAdapters.ts` with tests).
+- [x] X-4 Removal of `smoothedCameraFrames`/`resolveCameraFrame` (`index.ts:15696-15745`) → request Q-15-1 after C-14
   parity is green.
 - [x] X-5 Dev-mode `Object.freeze` on camera specs in `camera/extension.ts`, behind the PR 0a option
   `createAuraApp({ camera: { freezeSpecs: true } })`; error text points to `app.camera`. Default-on in dev after flag
   `default-on` (§10 item 6).
-- [ ] X-6 `@aura3d/controls` README → request Q-15-5.
-- [ ] X-7 Replacement gates in `tests/qr/prd08/` for the "fired/adopted" gates listed in §2.1 C21: they read
+- [x] X-6 `@aura3d/controls` README → request Q-15-5.
+- [x] X-7 Replacement gates in `tests/qr/prd08/` for the "fired/adopted" gates listed in §2.1 C21: they read
   `diagnostics().camera` (presented pose/VP and layer energy on submitted frames) instead of rig/evidence inputs. Each
   replacement must fail on the pre-change code for at least one scene (recorded in `evidence/prd08/gates.md`). The
   lane-08 tests `tests/unit/engine/{game-camera-rigs,fixed-step-determinism}.test.ts` are rewritten in place; the

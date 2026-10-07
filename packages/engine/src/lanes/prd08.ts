@@ -217,3 +217,14 @@ registerAppExtension({
 });
 
 export {};
+
+// X-3 (Q-15-4 lane side): byte-parity adapters so packages/lean shares lane-08
+// math instead of a private copy.
+export {
+  createLeanCameraRigAdapter,
+  createLeanGameFeelAdapter,
+  type LeanCameraRigAdapterOptions,
+  type LeanCameraRigAdapter,
+  type LeanGameFeelAdapterOptions,
+  type LeanGameFeelAdapter
+} from "../agent-api/camera/leanAdapters.js";
