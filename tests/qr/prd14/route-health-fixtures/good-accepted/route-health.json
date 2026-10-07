@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "good-accepted",
+  "route": "/apps/good-accepted/",
+  "publicShowcase": true,
+  "qualityGate": {
+    "status": "accepted",
+    "acceptedBy": [
+      "gchahal",
+      "reviewer-two"
+    ],
+    "acceptedAt": "2026-11-06",
+    "scorecard": "apps/good-accepted/art/scorecards/IC-4-abc1234.json"
+  }
+}
