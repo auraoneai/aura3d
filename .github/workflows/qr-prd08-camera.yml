@@ -60,3 +60,26 @@ jobs:
           grep -q 'showcase-skyline-runner/src/feel.ts' /tmp/camera-cast.md
           grep -q 'showcase-blockfall-reactor/src/camera-feel.ts' /tmp/camera-cast.md
       - run: node tools/qr-ownership/check.mjs
+
+  browser:
+    # Remote-only per PRD-08 §15 (no local browser runs).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck:raw
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: L-9 frame pacing (S1/S2/S3, scripted rAF)
+        run: pnpm exec playwright test --config tests/qr/prd08/playwright.config.ts
+      - name: Frame-pacing CSV evidence (§20 item 3)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd08-frame-pacing
+          path: tests/reports/prd08/
+          if-no-files-found: warn

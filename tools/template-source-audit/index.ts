@@ -71,9 +71,12 @@ checks.push(
     detail: "product viewer imports @aura3d/lean/product"
   },
   {
-    id: "arcade-template-lean-game-entry",
-    pass: gameSource.includes('from "@aura3d/lean/game"'),
-    detail: "mini-game imports @aura3d/lean/game"
+    id: "arcade-template-engine-game-entry",
+    pass:
+      gameSource.includes('from "@aura3d/engine"') &&
+      gameSource.includes("@aura3d/engine/contracts") &&
+      !gameSource.includes("@aura3d/lean/game"),
+    detail: "mini-game imports createGame via @aura3d/engine/contracts (PRD-13 T3.1)"
   },
   {
     id: "physical-character-opt-in-installs-selected-packages",

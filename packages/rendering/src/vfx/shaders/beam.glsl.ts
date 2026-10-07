@@ -48,7 +48,7 @@ in vec4 v_color;
 in vec3 v_world;
 uniform sampler2D u_sceneDepth;
 uniform vec4 u_depthLinearize;
-uniform int u_outputColorSpace;
+uniform float u_outputColorSpace;
 uniform float u_time;
 uniform float u_shimmer;
 layout(location = 0) out vec4 o_color;

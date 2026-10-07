@@ -226,7 +226,11 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     diagnosticsState.warnings = [...fresh.warnings];
     diagnosticsState.errors = [];
     validateSceneAssets(renderSnapshot, diagnosticsState.assets);
-    diagnosticsState.warnings.push(...collectGeneratedCodeWarnings(renderSnapshot));
+    diagnosticsState.warnings.push(
+      ...collectGeneratedCodeWarnings(renderSnapshot, qrFlags, {
+        production: options.renderer?.qualityProfile === "production"
+      })
+    );
   };
   const render = (time = performanceNow()) => {
     if (disposed) return;

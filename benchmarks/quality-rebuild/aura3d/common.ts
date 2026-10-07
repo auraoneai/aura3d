@@ -26,7 +26,50 @@ import {
   type AuraNodeInput
 } from "@aura3d/engine";
 import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
+import { installFetchDedupe } from "../shared/fetch-once";
+import type { BrokenControlId } from "../shared/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec } from "../shared/types";
+
+/**
+ * Per-run overrides from the page router (PRD-12 §7.1/§8.4). Broken controls
+ * expressible through the public API today: no-shadows (castShadow: false),
+ * no-ibl (environments.hdri intensity 0), dpr-half (pixelRatio 0.5x), flat-sky
+ * (color background). no-aa / no-tonemap / albedo-only are NOT expressible and
+ * are never captured: the scene throws `NotExpressibleVariantError`, recorded
+ * by capture as an audit failure and measured on the three side (§8.4).
+ */
+export interface RunOptions {
+  readonly variant?: "default" | "aura3d-tuned" | BrokenControlId;
+  readonly dpr?: 1 | 2;
+  readonly qrFlags?: readonly string[];
+}
+
+export class NotExpressibleVariantError extends Error {
+  readonly variant: string;
+  constructor(variant: string) {
+    super(`broken-control ${variant} not expressible via the Aura public API`);
+    this.name = "NotExpressibleVariantError";
+    this.variant = variant;
+  }
+}
+
+const AURA_EXPRESSIBLE_VARIANTS: ReadonlySet<string> = new Set(["no-shadows", "no-ibl", "dpr-half", "flat-sky"]);
+
+function applyVariantSpec(spec: SceneSpec, variant: string | undefined): SceneSpec {
+  if (!variant || variant === "default" || variant === "aura3d-tuned") return spec;
+  if (!AURA_EXPRESSIBLE_VARIANTS.has(variant)) throw new NotExpressibleVariantError(variant);
+  if (variant === "no-shadows") {
+    return { ...spec, lights: spec.lights.map((light) => ("castShadow" in light ? { ...light, castShadow: false } : light)) };
+  }
+  if (variant === "no-ibl") {
+    return { ...spec, environment: spec.environment ? { ...spec.environment, intensity: 0 } : spec.environment };
+  }
+  if (variant === "flat-sky") {
+    if (spec.background.kind !== "hdri") return spec;
+    return { ...spec, background: { kind: "color", color: spec.background.fallbackColor } };
+  }
+  return spec;
+}
 
 declare const __AURA3D_VERSION__: string;
 
@@ -282,20 +325,28 @@ interface RendererDiagnosticsShape {
   readonly shadows?: Readonly<Record<string, unknown>>;
   readonly bloom?: Readonly<Record<string, unknown>>;
   readonly runtime?: { readonly backend?: string };
+  readonly lighting?: { readonly fallbackLightsActive?: boolean };
+  readonly appliedLook?: { readonly exposure?: number; readonly toneMapping?: string };
 }
 
 function rendererDiagnostics(app: AuraApp): RendererDiagnosticsShape | undefined {
   return app.diagnostics().renderer as unknown as RendererDiagnosticsShape | undefined;
 }
 
-export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: RunOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
+  installFetchDedupe();
   const log = new CapabilityLog();
+  const variant = opts.variant ?? "default";
+  const spec = applyVariantSpec(rawSpec, variant);
+  if (variant !== "default" && variant !== "aura3d-tuned") {
+    log.add(`variant:${variant}`, "supported", "Broken-control variant applied through the public API.");
+  }
   const builtScene = buildAuraScene(spec, log);
   const app = createAuraApp(host, {
     scene: builtScene,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    pixelRatio: spec.resolution.devicePixelRatio,
+    pixelRatio: (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio),
     resize: false,
     autoStart: false
   });
@@ -371,6 +422,19 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
     log.add("bloom-pass", renderer.bloom.rendered ? "supported" : "missing", `bloom.rendered=${String(renderer.bloom.rendered)}`);
   }
 
+  const rendererShadows = renderer?.shadows as { mapRendered?: boolean; mapSampled?: boolean; mapSize?: number; strength?: number; casterName?: string } | undefined;
+  const assetHashes: Record<string, string> = {};
+  for (const object of spec.objects) {
+    if (object.kind === "model") assetHashes[object.asset] = modelAssets[object.asset as ModelAssetId].sha256;
+  }
+  if (spec.environment) assetHashes[spec.environment.hdri] = hdriAssets[spec.environment.hdri].sha256;
+  if (spec.background.kind === "hdri") assetHashes[spec.background.hdri] = hdriAssets[spec.background.hdri].sha256;
+
+  // C-30 ReadyPayloadV2: appliedLook/fallbackLights come from diagnostics()
+  // (C-31 sections by lanes 05/12); wherever the stub reports null, null stays null.
+  const appliedLook = renderer?.appliedLook;
+  const fallbackLights = renderer?.lighting?.fallbackLightsActive ?? null;
+
   return {
     engine: "aura3d",
     scene: spec.id,
@@ -380,6 +444,21 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
     warnings: [...diagnostics.warnings, ...(renderer?.warnings ?? [])],
     errors: [...diagnostics.errors],
     loadMs: Math.round(performance.now() - started),
+    variant,
+    dpr: opts.dpr ?? 1,
+    appliedExposure: appliedLook?.exposure ?? null,
+    appliedToneMapping: appliedLook?.toneMapping ?? renderer?.toneMapping ?? null,
+    lightUnits: renderer ? "aura-internal" : "unknown",
+    shadows: rendererShadows ? {
+      mapRendered: rendererShadows.mapRendered ?? false,
+      mapSampled: rendererShadows.mapSampled ?? false,
+      mapSize: rendererShadows.mapSize ?? null,
+      strength: rendererShadows.strength ?? null,
+      casterName: rendererShadows.casterName ?? null
+    } : null,
+    fallbackLightsActive: fallbackLights,
+    assetHashes,
+    qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
       backend: diagnostics.backend,
       renderSize: diagnostics.renderSize,

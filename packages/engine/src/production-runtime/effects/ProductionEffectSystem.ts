@@ -8,7 +8,7 @@ import { Texture } from "@aura3d/rendering";
 import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook } from "@aura3d/rendering/contracts";
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
-import { MeshParticleBatch, RibbonBatch, RibbonTrail, type BeamDrawSpec, type MeshParticleFeed } from "@aura3d/rendering";
+import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterState } from "./CpuEmitter";
 import { lowerEffectNode, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
@@ -49,6 +49,96 @@ function effectColor4(node: EffectNodeLike): readonly [number, number, number, n
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2]), Number(c[3] ?? 1)];
   if (typeof c === "string") { const [r, g, b] = hexToRgb(c); return [r, g, b, 1]; }
   return [1, 1, 1, 1];
+}
+
+/**
+ * Local copy of the agent-api `eulerToQuat` (XYZ half-angle formula — the
+ * default node-rotation path; importing agent-api here would cycle).
+ */
+function prd07EulerToQuat(rotation: readonly [number, number, number]): readonly [number, number, number, number] {
+  const [x, y, z] = rotation;
+  const c1 = Math.cos(x / 2), c2 = Math.cos(y / 2), c3 = Math.cos(z / 2);
+  const s1 = Math.sin(x / 2), s2 = Math.sin(y / 2), s3 = Math.sin(z / 2);
+  return [
+    s1 * c2 * c3 + c1 * s2 * s3,
+    c1 * s2 * c3 - s1 * c2 * s3,
+    c1 * c2 * s3 + s1 * s2 * c3,
+    c1 * c2 * c3 - s1 * s2 * s3
+  ];
+}
+
+/** Minimal rotation quaternion taking unit vector `a` to unit vector `b`. */
+function quatFromUnitVectors(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number]
+): readonly [number, number, number, number] {
+  const an = Math.hypot(a[0], a[1], a[2]) || 1;
+  const bn = Math.hypot(b[0], b[1], b[2]) || 1;
+  const ax = a[0] / an, ay = a[1] / an, az = a[2] / an;
+  const bx = b[0] / bn, by = b[1] / bn, bz = b[2] / bn;
+  const dot = ax * bx + ay * by + az * bz;
+  if (dot > 0.999999) return [0, 0, 0, 1];
+  if (dot < -0.999999) {
+    // 180°: pick any orthogonal axis.
+    const px = Math.abs(ax) < 0.9 ? 1 : 0;
+    const py = px === 1 ? 0 : 1;
+    const vx = ay * 0 - az * py, vy = az * px - ax * 0, vz = ax * py - ay * px;
+    const vn = Math.hypot(vx, vy, vz) || 1;
+    return [vx / vn, vy / vn, vz / vn, 0];
+  }
+  const cx = ay * bz - az * by;
+  const cy = az * bx - ax * bz;
+  const cz = ax * by - ay * bx;
+  const w = 1 + dot;
+  const n = Math.hypot(cx, cy, cz, w) || 1;
+  return [cx / n, cy / n, cz / n, w / n];
+}
+
+function decalColor4(color: string | readonly number[] | undefined): readonly [number, number, number, number] {
+  if (typeof color === "string") { const [r, g, b] = hexToRgb(color); return [r, g, b, 1]; }
+  if (Array.isArray(color) && color.length >= 3) return [Number(color[0]), Number(color[1]), Number(color[2]), Number(color[3] ?? 1)];
+  return [1, 1, 1, 1];
+}
+
+/**
+ * §6.9 decal → DecalBatch vertex data. `primitive: "plane"` decals become a
+ * transformed quad (`decalQuadGeometry`); `primitive: "custom"` decals keep
+ * their baked projected vertices (positions + normals + uvs + indices).
+ */
+function decalNodeGeometry(
+  node: Record<string, unknown>,
+  decal: { size?: readonly [number, number]; normalOffset?: number }
+): DecalVertexData | null {
+  if (node.primitive === "plane") {
+    const size = decal.size ?? [1, 1];
+    const quaternion = (node.quaternion as readonly [number, number, number, number] | undefined)
+      ?? prd07EulerToQuat((node.rotation as readonly [number, number, number] | undefined) ?? [0, 0, 0]);
+    const position = (node.position as readonly [number, number, number] | undefined) ?? [0, 0, 0];
+    return decalQuadGeometry(quaternion, position, [size[0], size[1]], decal.normalOffset ?? 0.012);
+  }
+  const geometry = node.geometry as {
+    positions?: readonly (readonly number[])[];
+    normals?: readonly (readonly number[])[];
+    uvs?: readonly (readonly number[])[];
+    indices?: readonly number[];
+  } | undefined;
+  if (!geometry?.positions || !geometry.indices || geometry.positions.length === 0 || geometry.indices.length === 0) return null;
+  const vertices = new Float32Array(geometry.positions.length * 8);
+  for (let i = 0; i < geometry.positions.length; i += 1) {
+    const p = geometry.positions[i];
+    const n = geometry.normals?.[i] ?? [0, 1, 0];
+    const uv = geometry.uvs?.[i] ?? [0, 0];
+    const o = i * 8;
+    vertices[o + 0] = p[0] ?? 0;
+    vertices[o + 1] = p[1] ?? 0;
+    vertices[o + 2] = p[2] ?? 0;
+    vertices[o + 3] = n[0] ?? 0;
+    vertices[o + 4] = n[1] ?? 1;
+    vertices[o + 5] = n[2] ?? 0;
+    vertices[o + 6] = uv[0] ?? 0;
+    vertices[o + 7] = uv[1] ?? 0;
+  }
+  return { vertices, indices: new Uint32Array(geometry.indices) };
 }
 
 /** Convert a lowered beam-family node into the pass's draw spec. */
@@ -151,18 +241,38 @@ export class ProductionEffectSystem {
   readonly ribbons = new RibbonBatch();
   private readonly trails = new Map<string, TrailBinding>();
   private readonly beams = new Map<string, EffectNodeLike>();
+  /** P6 runtime decals spawned via effects.decal (drawn by DecalBatch). */
+  private readonly decalNodes = new Map<string, EffectNodeLike>();
   private readonly meshBatches = new Map<string, MeshParticleBatch>();
   private drawFeedQueue: ParticlePassDiagnostics | null = null;
   private disposed = false;
   private time = 0;
   private skyFlagOn = false;
+  private weatherFlagOn = false;
+  private decalFlagOn = false;
+  /** §6.9 merged decal ring — C-27 tier cap replaces AURA_DECAL_MAX_DECALS. */
+  private readonly decals: DecalBatch;
+  /** Last hook passed to feed — lets the host push P6-T4 GPU-ms samples in. */
+  private lastHook: ParticleRenderHook | null = null;
 
   constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
     this.tier = options.tier ?? "high";
+    this.decals = new DecalBatch(DECAL_TIER_CAP[this.tier]);
     this.budgetCap = QUALITY_TIERS[this.tier].particleBudget;
     this.transientLights = new TransientLightPool(this.tier);
     this.rebuildFromScene();
     this.offFrame = app.onFrame((frame) => this.frame(frame.dt));
+  }
+
+  /** P6-T4 — measured particle GPU ms; auto-engages the half-res path past the
+   *  tier budget (PARTICLE_GPU_BUDGET_MS). Off until a runtime measures. */
+  noteParticleGpuMs(ms: number): void {
+    this.lastHook?.noteGpuMs?.(ms, PARTICLE_GPU_BUDGET_MS[this.tier] ?? PARTICLE_GPU_BUDGET_MS.default);
+  }
+
+  /** P6-T4 — force the half-res particle path on/off regardless of budget. */
+  setParticleLowRes(on: boolean): void {
+    this.lastHook?.setLowResEnabled?.(on);
   }
 
   /** P3-T4 — sky nodes land on LiveAtmosphere (consumed by prd07.sky flag-on). */
@@ -197,8 +307,58 @@ export class ProductionEffectSystem {
     this.applyLegacySkyVisibility();
   }
 
+  /**
+   * §8.6/P5-T4 — `weather.precipitation`/`weather.wetGround` legacy primitives
+   * are runtime-tagged `prd07.legacyWeather.<n>`; under A3D_QR_VFX they hide
+   * through their runtime handles. Flag-off the setter is never called and
+   * the frame is bit-identical.
+   */
+  private applyLegacyWeatherVisibility(): void {
+    if (!this.weatherFlagOn || !this.app.nodes) return;
+    for (const node of this.app.scene.nodes) {
+      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacyWeather.")) {
+        this.app.nodes.get(runtimeId)?.setVisible?.(false);
+      }
+    }
+  }
+
+  /** Bound by the C-38 extension factory with the app's resolved flag state. */
+  setWeatherFlagOn(on: boolean): void {
+    this.weatherFlagOn = on;
+    this.applyLegacyWeatherVisibility();
+  }
+
+  /**
+   * §6.9/P6-T1 — decal primitives are runtime-tagged `prd07.legacyDecal.<n>`.
+   * Under A3D_QR_VFX_DECALS the tag hides them through their runtime handles
+   * and DecalBatch draws them instead; flag-off the setter is never called
+   * and the forward decal path is byte-identical to today.
+   */
+  private applyLegacyDecalVisibility(): void {
+    if (!this.decalFlagOn || !this.app.nodes) return;
+    for (const node of this.app.scene.nodes) {
+      const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+      if (typeof runtimeId === "string" && runtimeId.startsWith("prd07.legacyDecal.")) {
+        this.app.nodes.get(runtimeId)?.setVisible?.(false);
+      }
+    }
+  }
+
+  /** Bound by the C-38 extension factory with the app's resolved flag state. */
+  setDecalFlagOn(on: boolean): void {
+    this.decalFlagOn = on;
+    this.applyLegacyDecalVisibility();
+    // P6-T3 — surface trails move to the decal pass under the flag; the ribbon
+    // pass keeps only the camera-oriented group (no double draw).
+    this.ribbons.enabledOrientations = on ? ["camera"] : ["camera", "surface"];
+  }
+
   private rebuildFromScene(): void {
     this.rebuildSkyFromScene();
+    this.applyLegacyDecalVisibility();
+    const fogNodes: EffectNodeLike[] = [];
+    const fogVolumes: EffectNodeLike[] = [];
     for (const node of this.app.scene.nodes) {
       if (node.kind !== "effect") continue;
       const lowered = lowerEffectNode(node);
@@ -215,7 +375,12 @@ export class ProductionEffectSystem {
       } else {
         this.attachNonEmitter(node, lowered);
       }
+      if (lowered.consumer === "scene-fog") {
+        (lowered.effect === "fogVolume" ? fogVolumes : fogNodes).push(node);
+      }
     }
+    this.atmosphere.trackFogNodes(fogNodes);
+    this.atmosphere.trackFogVolumes(fogVolumes);
   }
 
   /**
@@ -246,6 +411,8 @@ export class ProductionEffectSystem {
       this.trails.set(lowered.nodeId, { trail, node });
     } else if (lowered.consumer === "mesh-pass") {
       this.meshBatches.set(lowered.nodeId, seedMeshBatch(node));
+    } else if (lowered.consumer === "decal-pass") {
+      this.decalNodes.set(lowered.nodeId, node);
     }
     // "post"/"scene-fog"/"none" consumers have no lane state (P3/P4).
   }
@@ -263,6 +430,97 @@ export class ProductionEffectSystem {
   /** Per-frame feed: mesh batches for the prd07.mesh contributor. */
   meshFeed(): MeshParticleFeed[] {
     return [...this.meshBatches.entries()].map(([nodeId, batch]) => ({ nodeId, batch }));
+  }
+
+  /**
+   * Per-frame feed: the merged DecalBatch the prd07.decals contributor draws
+   * (§6.9). Syncs authored decal nodes (plane quads + projected customs) into
+   * the ring each call so live edits propagate; stale ids are removed.
+   */
+  decalFeed(): DecalBatch {
+    this.syncDecals();
+    return this.decals;
+  }
+
+  private syncDecals(): void {
+    const seen = new Set<string>();
+    const nodes = (this.app.scene.nodes ?? []) as unknown as readonly Record<string, unknown>[];
+    for (let i = 0; i < nodes.length; i += 1) {
+      const node = nodes[i];
+      if (node.kind !== "primitive") continue;
+      const decal = node.decal as {
+        size?: readonly [number, number];
+        baseOpacity?: number;
+        fade?: { angleStart?: number; angleEnd?: number; near?: number; far?: number };
+        polygonOffset?: { factor: number; units: number };
+        normalOffset?: number;
+        textureUrl?: string;
+      } | undefined;
+      if (!decal) continue;
+      const runtimeId = (node.runtime as { id?: string } | undefined)?.id;
+      const id = runtimeId ?? `decal.${i}`;
+      seen.add(id);
+      const material = (node.material ?? {}) as { color?: unknown; roughness?: number; blend?: unknown; texture?: { url?: string } };
+      const [r, g, b] = typeof material.color === "string" ? hexToRgb(material.color) : [1, 1, 1] as const;
+      const geometry = decalNodeGeometry(node, decal);
+      if (!geometry) continue;
+      this.decals.upsert({
+        id,
+        pageKey: decal.textureUrl ?? material.texture?.url ?? `flat:${String(material.color ?? "#ffffff")}`,
+        blend: material.blend === "multiply" ? "multiply" : "alpha",
+        geometry,
+        color: [r, g, b, decal.baseOpacity ?? 1],
+        roughness: material.roughness ?? 0.5,
+        fade: decal.fade,
+        polygonOffset: decal.polygonOffset,
+        life: Number.POSITIVE_INFINITY
+      }, this.time);
+    }
+    // §6.9/P6-T3 — surface-oriented trails ride the decal pass with polygon
+    // offset; per-vertex color/fade baked into stride-16 vertices.
+    for (const [nodeId, binding] of this.trails) {
+      const trailId = `surface-trail.${nodeId}`;
+      if (binding.trail.options.orientation !== "surface") continue;
+      const strip = this.ribbons.buildGeometry(binding.trail, [0, 0, 0]); // camera unused for surface
+      if (!strip) continue;
+      seen.add(trailId);
+      this.decals.upsert({
+        id: trailId,
+        pageKey: "surface-trails",
+        blend: "alpha",
+        geometry: ribbonStripToDecalGeometry(strip),
+        polygonOffset: { factor: -2, units: -2 },
+        life: Number.POSITIVE_INFINITY
+      }, this.time);
+    }
+    // Runtime decals spawned via effects.decal — quads at their origin,
+    // facing `decal.normal` (default +Z, matching Decals.ts).
+    for (const [nodeId, node] of this.decalNodes) {
+      const d = node.decal;
+      const runtimeId = `runtime-decal.${nodeId}`;
+      if (!d) continue;
+      seen.add(runtimeId);
+      const position = node.position ?? [0, 0, 0];
+      const size = d.size ?? [1, 1];
+      const normal = d.normal ?? [0, 0, 1];
+      // Quad in the decal's facing plane: quaternion from +Z to `normal`.
+      const quat = quatFromUnitVectors([0, 0, 1], normal);
+      this.decals.upsert({
+        id: runtimeId,
+        pageKey: d.textureUrl ?? `flat:${typeof d.color === "string" ? d.color : "#ffffff"}`,
+        blend: "alpha",
+        geometry: decalQuadGeometry(quat, [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0], [size[0], size[1]], d.normalOffset ?? 0.012),
+        color: decalColor4(d.color),
+        roughness: 0.5,
+        fade: d.fade,
+        polygonOffset: d.polygonOffset,
+        life: d.lifetime ?? Number.POSITIVE_INFINITY
+      }, this.time);
+    }
+    // Remove slots whose nodes left the scene.
+    for (const existing of this.decals.ids()) {
+      if (!seen.has(existing)) this.decals.remove(existing);
+    }
   }
 
   /** Append a live trail point (target-follow / scripted motion callers). */
@@ -304,14 +562,19 @@ export class ProductionEffectSystem {
 
   setInstanceOrigin(nodeId: string, origin: readonly number[]): void {
     const binding = this.emitters.get(nodeId);
-    if (!binding) return;
-    binding.state.desc = { ...binding.state.desc, origin: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as never };
+    if (binding) {
+      binding.state.desc = { ...binding.state.desc, origin: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as never };
+      return;
+    }
+    const decalNode = this.decalNodes.get(nodeId);
+    if (decalNode) this.decalNodes.set(nodeId, { ...decalNode, position: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as typeof decalNode.position });
   }
 
   removeInstance(nodeId: string): void {
     const binding = this.emitters.get(nodeId);
     if (!binding) {
       this.beams.delete(nodeId);
+      this.decalNodes.delete(nodeId);
       const trail = this.trails.get(nodeId);
       if (trail) { trail.trail.clear(); this.ribbons.removeTrail(nodeId); this.trails.delete(nodeId); }
       this.meshBatches.delete(nodeId);
@@ -326,6 +589,10 @@ export class ProductionEffectSystem {
   private frame(dt: number): void {
     if (this.disposed) return;
     this.time += dt;
+    // §6.6 live fog state — advance transitions + refresh runtime-handle
+    // visibility before the compiler/packers read the resolved spec.
+    this.atmosphere.tick(dt);
+    this.atmosphere.updateFogVisibility(this.app);
     // Close the previous rendered frame's draw accounting first. The visible
     // set is the scene's effect nodes that aren't hidden — headless apps have
     // no frustum, so scene-visible == in-frustum here; the contributor's
@@ -398,8 +665,10 @@ export class ProductionEffectSystem {
         ...(group.first.lowered.batch.softDistance !== undefined ? { softDistance: group.first.lowered.batch.softDistance } : {}),
         ...(group.first.lowered.batch.nearFade !== undefined ? { nearFade: group.first.lowered.batch.nearFade } : {}),
         stretch: group.first.lowered.batch.stretch,
-        frameBlend: group.first.lowered.batch.frameBlend
+        frameBlend: group.first.lowered.batch.frameBlend,
+        ...(group.first.lowered.batch.lowRes === true ? { lowRes: true } : {})
       };
+      this.lastHook = hook;
       let handle = this.batchHandles.get(key) ?? null;
       handle = hook.upsertBatch(desc);
       this.batchHandles.set(key, handle);

@@ -22,6 +22,9 @@ Prompt-to-visual workflow:
 
   `docs/agents/benchmark-recipes.md`. Copy the smallest matching scene-kit
   recipe and make only prompt-required edits.
+- Every scene starts from a look: add `looks.preset(<genre>)` and spread
+  `looks.appOptions(<genre>)` before any kit or prop work (see
+  `docs/agents/art-direction.md` for the recipe table).
 - Use `sceneKits.<name>()` before prefabs or primitives. Scene kits return scene
   nodes, camera, lights, effects, interactions, UI, diagnostics, acceptance
   evidence, `customize(...)`, and `toAppOptions()`.

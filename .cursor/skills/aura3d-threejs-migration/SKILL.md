@@ -11,6 +11,14 @@ separately installed on-ramp with an honest record of what each shim does not
 reproduce. Shared rules (claim labels, forbidden patterns, typed assets) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+The migration replaces a hand-tuned renderer stack with a look preset: the
+target genre's recipe row maps `toneMapping`, `scene.environment`, exposure and
+fog into `looks.preset(<id>)` + `looks.appOptions(<id>)`. Keep the original
+lighting intent visible in the approximation ledger rather than porting raw
+toneMapping constants.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help`, and check the installed
@@ -111,3 +119,4 @@ reproduce. Shared rules (claim labels, forbidden patterns, typed assets) are in
 - [Ledger coverage test](https://github.com/auraoneai/aura3d/blob/main/tests/unit/three-compat/approximation-ledger-p1.test.ts)
 - [Migration browser test](https://github.com/auraoneai/aura3d/blob/main/tests/browser/three-compat-threejs-migration.spec.ts)
 - [Custom migration template](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/three-compat-custom-threejs-migration/src/main.ts)
+- [three.js lighting stack → Aura3D look](references/look-mapping.md)

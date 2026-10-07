@@ -12,19 +12,21 @@
 import {
   camera,
   createAuraApp,
+  decals,
   effects,
   lights,
   primitives,
   scene,
   sky,
   type AuraApp,
+  type AuraColor,
   type AuraMaterialSpec,
   type AuraNodeInput,
   type AuraSceneBuilder
 } from "@aura3d/engine";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload } from "../../../shared/types";
 import type { AuraVfxKind } from "@aura3d/engine/contracts";
-import type { BurstSheetSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
+import type { BurstSheetSpec, DecalObjectSpec, EmitterMemberSpec, Prd07SceneSpec } from "../../../scenes/prd07/specs";
 
 declare const __AURA3D_VERSION__: string;
 
@@ -41,6 +43,7 @@ function toAuraMaterial(spec: MaterialSpec): AuraMaterialSpec {
     roughness: spec.roughness,
     metallic: spec.metalness,
     metalness: spec.metalness,
+    ...(spec.opacity !== undefined ? { opacity: spec.opacity } : {}),
     ...(spec.emissive !== undefined ? { emissive: spec.emissive } : {}),
     ...(spec.emissiveIntensity !== undefined ? { emissiveIntensity: spec.emissiveIntensity } : {})
   };
@@ -110,7 +113,54 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
     log.add("sky-preetham", "supported", `sun ${spec.skyPreetham.elevationDeg}°/${spec.skyPreetham.azimuthDeg}°, turbidity ${spec.skyPreetham.turbidity ?? "default"}`);
   }
   if (spec.fog) {
-    log.add("fog-exp2", "partial", `${spec.fog.color} density ${spec.fog.density} — Aura fog lands in P4 (recorded; three applies FogExp2)`);
+    // §6.6 authored fields on the node — resolve-time defaults apply under
+    // A3D_QR_VFX_FOG; flag-off the node compiles to the legacy exp2 carve.
+    nodes.push(
+      effects.fog({
+        name: "fog",
+        density: spec.fog.density,
+        color: spec.fog.color,
+        // §6.6 fog mode — lands on the node as runtime data; AuraEffectNode's
+        // typed `mode` slot is the antialias union, hence the value cast.
+        mode: spec.fog.mode as never,
+        ...(spec.fog.heightDensity !== undefined ? { heightDensity: spec.fog.heightDensity } : {}),
+        ...(spec.fog.heightFalloff !== undefined ? { heightFalloff: spec.fog.heightFalloff } : {}),
+        ...(spec.fog.heightReference !== undefined ? { heightReference: spec.fog.heightReference } : {}),
+        ...(spec.fog.start !== undefined ? { start: spec.fog.start } : {}),
+        ...(spec.fog.maxOpacity !== undefined ? { maxOpacity: spec.fog.maxOpacity } : {}),
+        ...(spec.fog.absorption !== undefined ? { absorption: [...spec.fog.absorption] } : {}),
+        ...(spec.fog.near !== undefined ? { near: spec.fog.near } : {}),
+        ...(spec.fog.far !== undefined ? { far: spec.fog.far } : {}),
+        ...(spec.fog.transitionSeconds !== undefined ? { transitionSeconds: spec.fog.transitionSeconds } : {})
+      })
+    );
+    log.add(`fog-${spec.fog.mode}`, "supported", `${spec.fog.color} density ${spec.fog.density}${spec.fog.heightDensity !== undefined ? ` σh ${spec.fog.heightDensity}` : ""}${spec.fog.absorption ? ` σ=${spec.fog.absorption}` : ""} — §6.6 node (vfx.fog)`);
+  }
+  for (const volume of spec.fogVolumes ?? []) {
+    nodes.push(
+      effects.fogVolume({
+        name: "fog-volume",
+        position: [...volume.position] as [number, number, number],
+        size: [...volume.size] as [number, number, number],
+        ...(volume.density !== undefined ? { density: volume.density } : {}),
+        ...(volume.shape !== undefined ? { shape: volume.shape } : {})
+      })
+    );
+    log.add("fogVolume", "supported", `${volume.shape ?? "box"} @ ${volume.position} size ${volume.size} density ${volume.density ?? 0.25}`);
+  }
+  if (spec.volumetric) {
+    // P5-T8 — §6.7 froxel spec on the volumetricFog node (vfx.volumetric);
+    // flag-off the node is inert metadata.
+    nodes.push(
+      effects.volumetricFog({
+        name: "volumetric-fog",
+        density: spec.volumetric.density,
+        ...(spec.volumetric.color !== undefined ? { color: spec.volumetric.color } : {}),
+        ...(spec.volumetric.intensity !== undefined ? { intensity: spec.volumetric.intensity } : {}),
+        volumetricQuality: "ultra"
+      })
+    );
+    log.add("volumetric", "supported", `density ${spec.volumetric.density} g=${spec.volumetric.anisotropy ?? 0.6} — §6.7 node (vfx.volumetric)`);
   }
   built.camera(camera.perspective({
     position: spec.camera.position,
@@ -219,6 +269,40 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
         ...(object.seed !== undefined ? { seed: object.seed } : {})
       }));
       log.add("meshParticles", "supported", `effects.meshParticles ${object.count ?? 32} instances`);
+    } else if (object.kind === "weather") {
+      // P5-T8 — §8.2 volume + splash emitter lowered from the effects node
+      // (P5-T3/P5-T4); flag-off the node emits the legacy prims upstream.
+      nodes.push(
+        object.weather === "snow"
+          ? effects.snow({ name: object.name, intensity: object.intensity, color: "#eef4ff" })
+          : effects.rain({ name: object.name, intensity: object.intensity, color: "#bcd7ff", ...(object.wind !== undefined ? { wind: [...object.wind] } : {}) })
+      );
+      log.add("weather", "supported", `effects.${object.weather} intensity ${object.intensity} — §8.2 volume + splashes`);
+    } else if (object.kind === "decal") {
+      if (object.runtime) {
+        // Runtime decals spawn through app.effects.decal after ready() —
+        // see runPrd07AuraScene. Under A3D_QR_VFX_DECALS they draw through
+        // the same merged pass.
+        log.add("decal", "supported", `runtime decal "${object.name}" via app.effects.decal`);
+      } else {
+        // §6.9 — decals.project stamps the prd07.legacyDecal carve tag:
+        // flag-off the primitive renders exactly as authored; flag-on it
+        // hides and the merged DecalBatch draws it instead (one draw/page).
+        const n = object.normal ?? [0, 1, 0];
+        const yaw = ((object.rotationDeg ?? 0) * Math.PI) / 180;
+        const rotation: [number, number, number] =
+          n[1] > 0.5 ? [0, yaw, 0] : n[2] > 0.5 ? [Math.PI / 2, 0, yaw] : [0, 0, yaw];
+        nodes.push(decals.project({
+          name: object.name,
+          color: object.color as AuraColor,
+          size: object.size,
+          position: object.position,
+          normal: n,
+          rotation,
+          ...(object.opacity !== undefined ? { opacity: object.opacity } : {})
+        }));
+        log.add("decal", "supported", `decals.project "${object.name}" ${object.size[0]}×${object.size[1]} on "${object.target}"`);
+      }
     } else if (object.kind === "burstSheet") {
       // Spawns happen on the stepped clock in runPrd07AuraScene, not at build.
       log.add("burstSheet", "supported", `${object.kinds.length} kinds × ${object.ages.length} ages × ${object.panels.length} panels`);
@@ -261,7 +345,32 @@ export async function runPrd07AuraScene(spec: Prd07SceneSpec, host: HTMLElement)
   }
 
   const sheets = spec.objects.filter((o): o is BurstSheetSpec => o.kind === "burstSheet");
-  if (sheets.length === 0) {
+  const runtimeDecals = spec.objects.filter((o): o is DecalObjectSpec => o.kind === "decal" && o.runtime === true);
+  for (const d of runtimeDecals) {
+    const effectsApi = app.effects;
+    if (effectsApi) {
+      effectsApi.decal(
+        { position: [d.position[0], d.position[1], d.position[2]], normal: [...(d.normal ?? [0, 1, 0])] as [number, number, number] },
+        { size: Math.max(d.size[0], d.size[1]), color: d.color as AuraColor, ...(d.opacity !== undefined ? { opacity: d.opacity } : {}) }
+      );
+    }
+  }
+  if (spec.fogTransition) {
+    // P4-T8 S16 — setFog(from), step to the transition point, setFog(to) with
+    // transitionSeconds, then step exactly half the transition so the capture
+    // lands at the blend midpoint.
+    const atmosphereApi = (app as unknown as { atmosphere?: { setFog(spec: unknown, o?: { transitionSeconds?: number }): void } }).atmosphere;
+    if (atmosphereApi) {
+      atmosphereApi.setFog(spec.fogTransition.from);
+      app.step(spec.fogTransition.atSeconds);
+      atmosphereApi.setFog(spec.fogTransition.to, { transitionSeconds: spec.fogTransition.to.transitionSeconds });
+      app.step((spec.fogTransition.to.transitionSeconds ?? 1) / 2);
+      log.add("fog-transition", "supported", `${spec.fogTransition.from.mode}→${spec.fogTransition.to.mode} over ${spec.fogTransition.to.transitionSeconds ?? 1}s — captured at midpoint`);
+    } else {
+      log.add("fog-transition", "missing", "app.atmosphere unavailable (flags off?)");
+      app.step(spec.time);
+    }
+  } else if (sheets.length === 0) {
     // Advance simulated time to the capture time, then settle.
     app.step(spec.time);
   } else {

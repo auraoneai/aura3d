@@ -1,7 +1,7 @@
 # Benchmark Recipes
 
 Use these recipes only when the benchmark prompt matches the recipe family.
-Read `llms.txt` first, copy the smallest matching scene-kit recipe, make only
+Read `llms.txt` first, add the genre's `looks.preset` from the recipe row, copy the smallest matching scene-kit recipe, make only
 prompt-required edits, run finite commands such as `npm install` and
 `npm run build`, return the build/run commands, and stop. Do not run
 `npm run dev`, `npm run preview`, Playwright, browser screenshot capture, or

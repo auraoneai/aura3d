@@ -244,5 +244,93 @@
       "frames": 2,
       "fps": 6
     }
+  },
+  "decals": {
+    "entries": {
+      "scorch": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          0,
+          0,
+          1024,
+          1024
+        ]
+      },
+      "crack": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          1024,
+          0,
+          1024,
+          1024
+        ]
+      },
+      "tyre-track": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          0,
+          1024,
+          1024,
+          1024
+        ]
+      },
+      "puddle": {
+        "page": "aura-vfx-2k-decals",
+        "rect": [
+          1024,
+          1024,
+          1024,
+          1024
+        ]
+      }
+    },
+    "albedo": [
+      {
+        "id": "aura-vfx-2k-decals",
+        "uri": "aura-vfx-2k-decals.png",
+        "size": 2048,
+        "premultiplied": true,
+        "colorSpace": "srgb"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half",
+        "uri": "aura-vfx-2k-decals-half.png",
+        "size": 1024,
+        "premultiplied": true,
+        "colorSpace": "srgb"
+      }
+    ],
+    "normal": [
+      {
+        "id": "aura-vfx-2k-decals-normal",
+        "uri": "aura-vfx-2k-decals-normal.png",
+        "size": 2048,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half-normal",
+        "uri": "aura-vfx-2k-decals-half-normal.png",
+        "size": 1024,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      }
+    ],
+    "roughness": [
+      {
+        "id": "aura-vfx-2k-decals-roughness",
+        "uri": "aura-vfx-2k-decals-roughness.png",
+        "size": 2048,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      },
+      {
+        "id": "aura-vfx-2k-decals-half-roughness",
+        "uri": "aura-vfx-2k-decals-half-roughness.png",
+        "size": 1024,
+        "premultiplied": false,
+        "colorSpace": "linear"
+      }
+    ]
   }
 }

@@ -18,17 +18,12 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "primitive-scene",
-  verdict: "both-render-frozen-primitive-contract-with-visible-aura-lighting-loss",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls: browser.aura?.drawCalls,
     threeDrawCalls: browser.three?.drawCalls,
-    observedLosses: [
-      "Personal inspection of both retained captures confirms aligned camera, geometry, background, and intended blue/red/gray authored palette after converting Aura material and light inputs from sRGB to linear and disabling its additional procedural environment.",
-      "The images are not pixel-equivalent: Aura's floor and sphere remain visibly brighter because the selected Aura and Three lighting/material pipelines do not produce identical irradiance and tone response.",
-      "This correctness workload has no frozen multi-session performance measurement, so performance non-inferiority is unproven."
-    ],
     claimBoundary: "Public low-level @aura3d/rendering primitive PBR workload against current Three.js r185. It proves meaningful output under the frozen scene contract, not root createAuraApp, visual parity, physical-lighting parity, or performance parity."
   },
   browser
