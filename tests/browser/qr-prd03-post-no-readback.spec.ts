@@ -48,6 +48,8 @@ test.describe("PRD-03 Phase 3 — §6.9 CPU-readback ban", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03NoReadback?: unknown }).runQrPrd03NoReadback === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -56,6 +58,8 @@ test.describe("PRD-03 Phase 3 — §6.9 CPU-readback ban", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03NoReadback?: unknown }).runQrPrd03NoReadback === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     result = await page.evaluate(async () => {

@@ -47,6 +47,8 @@ test.describe("PRD-03 Phase 7 — WGSL twins compile (getCompilationInfo)", () =
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Wgsl?: unknown }).runQrPrd03Wgsl === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -55,6 +57,8 @@ test.describe("PRD-03 Phase 7 — WGSL twins compile (getCompilationInfo)", () =
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Wgsl?: unknown }).runQrPrd03Wgsl === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     const result = await page.evaluate(async () => {

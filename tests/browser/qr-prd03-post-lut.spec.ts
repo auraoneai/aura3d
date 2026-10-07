@@ -34,6 +34,8 @@ test.describe("PRD-03 Phase 2 — display LUT bake + cache", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -42,6 +44,8 @@ test.describe("PRD-03 Phase 2 — display LUT bake + cache", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     const all = await page.evaluate(async () => {

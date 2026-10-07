@@ -51,6 +51,8 @@ test.describe("PRD-03 Phase 1 — FXAA r185 port vs three FXAAShader", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -59,6 +61,8 @@ test.describe("PRD-03 Phase 1 — FXAA r185 port vs three FXAAShader", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     const harness = await page.evaluate(async () => {

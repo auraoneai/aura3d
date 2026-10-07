@@ -51,6 +51,8 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase4?: unknown }).runQrPrd03Phase4 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -59,6 +61,8 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase4?: unknown }).runQrPrd03Phase4 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     result = await page.evaluate(async () => {

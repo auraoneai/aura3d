@@ -37,6 +37,8 @@ test.describe("PRD-03 Phase 2 — v2 single tone-operator eval", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -45,6 +47,8 @@ test.describe("PRD-03 Phase 2 — v2 single tone-operator eval", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase2?: unknown }).runQrPrd03Phase2 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     const result = await page.evaluate(async () => {

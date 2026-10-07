@@ -54,6 +54,8 @@ test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -62,6 +64,8 @@ test.describe("PRD-03 Phase 6 — SMAA / auto-exposure / custom passes", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Phase6?: unknown }).runQrPrd03Phase6 === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     result = await page.evaluate(async () => {

@@ -50,6 +50,8 @@ test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
     try {
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     } catch {
       // Cold CI transform of the engine module graph can outrun one
@@ -58,6 +60,8 @@ test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
       await page.reload();
       await page.waitForFunction(
       () => typeof (window as { runQrPrd03Post?: unknown }).runQrPrd03Post === "function",
+      undefined,
+      { timeout: 150_000 },
     );
     }
     harness = await page.evaluate(async () => {
