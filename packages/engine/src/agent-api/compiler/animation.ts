@@ -14,7 +14,9 @@ import { resolveProductionActorAnimationSeconds } from "../compiler/actors.js";
 import { productionRenderErrorMessage } from "../compiler/observations.js";
 import { isModelTransformAnimationClip } from "../sceneMath.js";
 import type { Mat4 } from "@aura3d/scene";
-import type { AuraDegradation } from "../../contracts/compiler.js";
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+import type { AuraDegradation, SceneCompileContext } from "../../contracts/compiler.js";
+import type { AuraCreateAppAnimationOptions } from "../../contracts/animation.js";
 import { ANIMATION_EMPTY_POSE, consumePendingEmptyPoseRejection, qrAnimationFlags, rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
 
 export { rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
@@ -309,6 +311,38 @@ function resolveRuntimeBindingClipSamples(
     mapped.push({ clipName: resolvedName, time: Math.max(0, sample.localTime), weight: sample.weight, additive: sample.additive, mask });
   }
   return mapped.length > 0 ? mapped : undefined;
+}
+
+/* ------------------------------------------------------------------------ */
+/* T0.19 (PRD-06) — C-38 `animation?: AuraCreateAppAnimationOptions`          */
+/* resolution. Lane 15 owns the app-options seam; this is the pure resolver   */
+/* it calls (`resolvePrd06Options(ctx, appOptions)`), mirroring the §5.2      */
+/* precedence: options first, then flag/ctx defaults.                          */
+/* ------------------------------------------------------------------------ */
+
+/** Resolved PRD-06 app options: every member concrete after resolution. */
+export interface Prd06ResolvedOptions {
+  /** `animation.strict` (post-CCR-06-1) else the compile ctx strict mode. */
+  readonly strict: boolean;
+  /** Clip-authoring defaults era: `"3.1"` under `A3D_QR_ANIMATION`, `"3.0"` off. */
+  readonly defaults: "3.0" | "3.1";
+  /** `animation.mixer` else `A3D_QR_ANIMATION_POSE_MIXER` ("pose" on / "legacy" off). */
+  readonly mixer: "pose" | "legacy";
+  /** `animation.tier` else the compile ctx quality tier. */
+  readonly tier: AuraQualityTier;
+}
+
+export function resolvePrd06Options(
+  ctx: Pick<SceneCompileContext, "strict" | "quality" | "flags">,
+  appOptions?: AuraCreateAppAnimationOptions
+): Prd06ResolvedOptions {
+  const flags = ctx.flags ?? qrAnimationFlags();
+  return {
+    strict: appOptions?.strict ?? ctx.strict,
+    defaults: appOptions?.defaults ?? (flags.on("A3D_QR_ANIMATION") ? "3.1" : "3.0"),
+    mixer: appOptions?.mixer ?? (flags.on("A3D_QR_ANIMATION_POSE_MIXER") ? "pose" : "legacy"),
+    tier: appOptions?.tier ?? ctx.quality.tier
+  };
 }
 
 export function resolveAnimationSeconds(animation: AuraAnimationSpec | undefined, time: number): number {

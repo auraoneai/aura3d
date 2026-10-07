@@ -8,13 +8,15 @@
 
 import type { AnimationPose } from "@aura3d/animation";
 import { createBoneMask } from "@aura3d/animation/lanes";
+import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
-import type { AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
+import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
 import {
   StubActorAnimationApi,
   type AuraActorAnimationApi,
   type AuraActorAnimationStateSnapshot,
+  type AuraAnimationDiagnostics,
   type AuraBoneMaskSpec,
   type AuraBoneSocket,
   type AuraResolvedClipInfo
@@ -223,11 +225,91 @@ export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly A
   });
 }
 
+/* ------------------------------------------------------------------------ */
+/* T0.18 (PRD-06) — C-19 `animationState()` + the `socket()` bone lookup and   */
+/* the C-31 `animation` diagnostics rows. The `prd06.animation` TypedGLBActor  */
+/* extension publishes, per actor id, the runtime's last apply result and a   */
+/* bone→world-matrix lookup; the handle-side api merges those with the        */
+/* node's bound-clip samples. `bones?` per-bone samples stay with CCR-06-4 —  */
+/* until then callers read bones through `socket(bone)`.                      */
+/* ------------------------------------------------------------------------ */
+
+/** Latest `apply*` result from the loaded actor's animation runtime. */
+export type ActorAnimationApplySource = () => GLTFSceneAnimationApplyResult | null | undefined;
+
+/** Bone name → the scene node's current world matrix (a fresh copy each call). */
+export type ActorBoneMatrixSource = (bone: string) => readonly number[] | Float32Array | null | undefined;
+
+const actorAnimationApplySources = new Map<string, ActorAnimationApplySource>();
+const actorBoneMatrixSources = new Map<string, ActorBoneMatrixSource>();
+
+function registerSource<T>(map: Map<string, T>, actorId: string, source: T): () => void {
+  map.set(actorId, source);
+  return () => {
+    if (map.get(actorId) === source) map.delete(actorId);
+  };
+}
+
+/** Registered from the `prd06.animation` actor extension's `onLoad`. */
+export function registerActorAnimationApplySource(actorId: string, source: ActorAnimationApplySource): () => void {
+  return registerSource(actorAnimationApplySources, actorId, source);
+}
+
+/** Registered from the `prd06.animation` actor extension's `onLoad`. */
+export function registerActorBoneMatrixSource(actorId: string, source: ActorBoneMatrixSource): () => void {
+  return registerSource(actorBoneMatrixSources, actorId, source);
+}
+
+/** Test seam: drop every state source between specs. */
+export function resetActorAnimationStateSources(): void {
+  actorAnimationApplySources.clear();
+  actorBoneMatrixSources.clear();
+}
+
+/**
+ * C-31 `animation` section collect (T0.18): one row per actor with a published
+ * apply source. Fields the runtime does not yet instrument — mixerMs,
+ * constraintsMs, springsMs, paletteBytes, cpuMs — report 0 and stay listed in
+ * `diagnosticOnly.prd06.ts` until Phase 1+ wires them.
+ */
+export function collectPrd06AnimationDiagnostics(): AuraAnimationDiagnostics {
+  const actors = [...actorAnimationApplySources.entries()].map(([id, source]) => {
+    const apply = source() ?? null;
+    return {
+      id,
+      activeClip: apply?.clipName ?? null,
+      tracksApplied: apply?.tracksApplied ?? 0,
+      activeActions: apply?.blendedClipCount ?? (apply ? 1 : 0),
+      mixerMs: 0,
+      constraintsMs: 0,
+      springsMs: 0,
+      paletteBytes: 0,
+      morphActive: apply?.morphWeightTracksApplied ?? 0,
+      morphDropped: apply?.missingTargets.length ?? 0,
+      cpuMs: 0
+    };
+  });
+  return { actors };
+}
+
+interface RuntimeNodeHandleAnimationSnapshot {
+  readonly animation?: { readonly clip?: string };
+  readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata & {
+    readonly clipSamples?: readonly {
+      readonly clipName: string;
+      readonly localTime: number;
+      readonly weight: number;
+      readonly layer?: string;
+    }[];
+  };
+}
+
 /**
  * T1.10 (PRD-06 §10, C-19/C-37) — loaded actors keyed by node/handle id so the
  * `prd06.animation` handle extension can drive the per-actor `PoseMixer`.
  * The `prd06.animation` actor extension (lanes/prd06.ts) publishes on load and
- * unpublishes on dispose.
+ * unpublishes on dispose. T0.18's apply/bone-matrix source registries (above)
+ * feed `animationState()`/`socket()` reads on the same api.
  */
 const prd06AnimationActors = new Map<string, TypedGLBActor>();
 
@@ -313,7 +395,27 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
 
   override animationState(): AuraActorAnimationStateSnapshot | undefined {
     const mixer = this.mixer();
-    if (mixer === undefined) return super.animationState();
+    if (mixer === undefined) {
+      // T0.18's pre-mixer snapshot: binding clipSamples + the actor's lastApply.
+      if (this.nodeHandle.kind !== "model") return undefined;
+      const snapshot = this.nodeHandle.snapshot() as RuntimeNodeHandleAnimationSnapshot | undefined;
+      const binding = snapshot?.animationBinding;
+      const lastApply = actorAnimationApplySources.get(this.nodeId)?.() ?? null;
+      const activeActions = (binding?.clipSamples ?? []).map((sample) => ({
+        clip: sample.clipName,
+        layer: sample.layer ?? "base",
+        weight: sample.weight,
+        time: sample.localTime
+      }));
+      const activeClip = lastApply?.clipName ?? binding?.activeClipId ?? snapshot?.animation?.clip ?? null;
+      if (activeClip === null && activeActions.length === 0 && lastApply === null) return undefined;
+      return {
+        activeClip,
+        tracksApplied: lastApply?.tracksApplied ?? 0,
+        activeActions,
+        timeScale: binding?.speed ?? 1
+      };
+    }
     const runtime = this.actor!.animation;
     const lastApply = typeof runtime.snapshot === "function" ? runtime.snapshot().lastApply : undefined;
     const base = mixer.baseAction();
@@ -331,7 +433,27 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
   }
 
   override socket(bone: string): AuraBoneSocket {
-    return super.socket(bone);
+    // T0.18 — live `transform.worldMatrix` reads through the actor extension's
+    // bone-matrix source (lanes/prd06.ts); `valid: false` until it loads.
+    const matrix = (): Float32Array | null => {
+      const value = actorBoneMatrixSources.get(this.nodeId)?.(bone);
+      return value ? Float32Array.from(value).subarray(0, 16) : null;
+    };
+    return {
+      bone,
+      worldMatrix: (out?: Float32Array) => {
+        const current = matrix();
+        if (!current) return out ?? new Float32Array(16);
+        if (out) {
+          out.set(current);
+          return out;
+        }
+        return current;
+      },
+      get valid() {
+        return matrix() !== null;
+      }
+    };
   }
 }
 
