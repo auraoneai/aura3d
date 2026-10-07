@@ -98,6 +98,11 @@ function declaredDeps(manifest: PackageManifest): Set<string> {
   return declared;
 }
 
+/** devDependencies may be consumed by tests/ as well as src/. */
+function devDeps(manifest: PackageManifest): Set<string> {
+  return new Set(Object.keys(manifest.devDependencies ?? {}));
+}
+
 interface PackageInfo {
   readonly dir: string;
   readonly manifestPath: string;
@@ -173,12 +178,13 @@ export function checkDepsTruth(root: string): GateFinding[] {
     return names;
   }
 
-  const scans: { manifestPath: string; manifest: PackageManifest; files: string[]; ownDir: string }[] = [];
+  const scans: { manifestPath: string; manifest: PackageManifest; files: string[]; testFiles: string[]; ownDir: string }[] = [];
   for (const [dir, info] of infos) {
     scans.push({
       manifestPath: info.manifestPath,
       manifest: info.manifest,
       files: listFiles(join(root, "packages", dir, "src")),
+      testFiles: listFiles(join(root, "packages", dir, "tests")),
       ownDir: dir
     });
   }
@@ -188,13 +194,15 @@ export function checkDepsTruth(root: string): GateFinding[] {
     for (const entry of readdirSync(root, { withFileTypes: true })) {
       if (entry.isFile() && ROOT_FILE_EXTS.test(entry.name)) files.push(join(root, entry.name));
     }
-    scans.push({ manifestPath: "package.json", manifest: rootManifest, files, ownDir: ROOT_DIR });
+    scans.push({ manifestPath: "package.json", manifest: rootManifest, files, testFiles: files, ownDir: ROOT_DIR });
   }
 
   for (const scan of scans) {
     const enforced = ownerOf(root, scan.manifestPath) === "15";
     const imported = importedDirs(root, scan.files, paths, scan.manifestPath);
+    const testImported = importedDirs(root, scan.testFiles, paths, scan.manifestPath);
     const declared = declaredDeps(scan.manifest);
+    const dev = devDeps(scan.manifest);
 
     const declaredDirs = new Map<string, string>(); // dir -> dep name used
     for (const dep of declared) {
@@ -213,6 +221,8 @@ export function checkDepsTruth(root: string): GateFinding[] {
     }
     for (const [dir, dep] of [...declaredDirs.entries()].sort()) {
       if (imported.has(dir)) continue;
+      // devDependencies are satisfied by tests/ imports too (src/ alone for prod deps).
+      if (dev.has(dep) && testImported.has(dir)) continue;
       findings.push({
         file: scan.manifestPath,
         detail: `unused-dependency: manifest declares ${dep} but src/ never imports packages/${dir}`,
