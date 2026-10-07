@@ -239,9 +239,36 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
    generator so regeneration stays consistent.
 
 ### Fresh-failure audit vs main (7758a2710)
-- `check:skills` stale-AGENTS.md failure on the old merge commit was
-  transient — new main carries regenerated files; `pnpm skills:sync` is a
-  no-op on this branch.
+- `check:skills` stale-AGENTS.md: NOT transient — lane-13 added canonical
+  `packages/aura3d-cli/skills/agent-files/AGENTS.md`, and `**/AGENTS.md`
+  in .gitignore swallowed the four generated mirror copies, so every CI
+  checkout failed `stale` permanently. Fixed in `7c64ce34d`: unignored
+  `**/skills/agent-files/AGENTS.md` and committed the generated mirrors.
+- `deps-truth` flagged `packages/editor-runtime` as `unused-dependency`
+  for `@aura3d/engine` — the dep is consumed by `tests/`, which the gate
+  never scanned. Fixed in `aeccce6af`: devDependencies now count tests/
+  imports as use (and the dep moved to devDependencies, which is the
+  honest block for a test-only import).
+- arch-gates remaining 31 enforced findings (glsl-location, layering,
+  no-cycles, single-renderer, deps-truth on other packages) all point at
+  files byte-identical to `7758a2710` — pre-existing main findings owned
+  by other lanes.
+- `Type Check` / `unit` / `Build and Test on Node 22` / `Lane 03 unit`:
+  the `tools/_quarantine` dangling-import tsc class — identical error set
+  on clean main.
+- `T1.x unit tests`: 6 failing test files (`prd01-render-targets`,
+  `prd05-debug-view`, `prd12-registry`, `prd13-looks`, `prd14-turbo-drift`,
+  `prd03-post-cube-lut`) — test files and every touched impl file are
+  byte-identical to main.
+- `unit (prd02)`: `benchmarks/quality-rebuild/aura3d/common.ts` AA-mode
+  type mismatch — file and `effects.antiAlias` node type identical to
+  main.
+- `all-routes-shadow`: lane-09's `git am` replay queue targets
+  `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts`, which
+  lane-14's `63f95e3a1` deleted on main — stale patch queue on main, not
+  merge-caused.
+- Chromium Browser And Visual Checks shards: the known GPU-less runner
+  flake (identical failures on unmodified ic0-base runs).
 - `prd12-registry`, `prd05-debug-view`, `prd03-post-cube-lut` vitest
   failures reproduce identically on clean main — lane-12 test drift vs
   lane-05 registry rows, not merge-caused.
