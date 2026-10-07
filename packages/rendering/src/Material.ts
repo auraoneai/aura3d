@@ -1,6 +1,7 @@
 import { type UniformValue } from "./RenderDevice";
 import type { BlendMode, DepthCompare as DepthCompareV2 } from "./contracts/blend";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
+import { defaultProgramFeatures } from "./program/MaterialFeatures";
 
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
@@ -140,6 +141,17 @@ export class Material {
 
   isDirty(): boolean {
     return this.dirty;
+  }
+
+  /**
+   * C-02 (PRD-01): the feature record this material contributes to a program
+   * key. Default derives maps/lighting/alphaMode/skinning/instancing from
+   * parameters via `program/MaterialFeatures.defaultProgramFeatures`;
+   * subclasses may override for material-specific bits. Lights/shadows/
+   * environment/fog/pass/target/backgroundCoverage are supplied by the pass.
+   */
+  programFeatures(ctx: import("./contracts/materialLobes").MaterialFeatureContext): Omit<import("./contracts/program").ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage"> {
+    return defaultProgramFeatures(this, ctx);
   }
 
   getRevision(): number {

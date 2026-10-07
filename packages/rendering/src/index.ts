@@ -74,6 +74,15 @@ export type { AuraPrimitiveKind } from "./geometry/Primitives";
 export { InstanceBuffer } from "./resources/InstanceBuffer";
 export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
 export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
+export { normalizeProgramFeatures, DEFAULT_PROGRAM_FEATURES, totalLightCount } from "./program/ProgramFeatures";
+export { programKey } from "./program/ProgramKey";
+export { generateProgramImpl, registerProgramWgslEmitter, programDegradationLog, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
+export type { ProgramDegradation, GenerateProgramOptions } from "./program/ProgramGenerator";
+export { ProgramCache } from "./program/ProgramCache";
+export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
+export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
+export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export { qrCoreGeneratorOn, qrCoreOutputOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
 export { blendQueueForState, blendStateIsTransparent, blendModeDefaultDepthWrite, blendEquationName, QUEUE_BY_MODE } from "./BlendModes";
 export type { BlendQueue } from "./BlendModes";
 export { ResolutionGovernor, RESOLUTION_GOVERNOR_STEP, RESOLUTION_GOVERNOR_DOWN_FACTOR, RESOLUTION_GOVERNOR_UP_FACTOR } from "./ResolutionGovernor";
@@ -634,7 +643,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms } from "./ForwardPass";
+export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export {
   createSpotShadowProjection,
