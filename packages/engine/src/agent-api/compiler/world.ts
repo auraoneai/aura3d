@@ -31,6 +31,12 @@ import {
   type AuraScatterNode,
   type ScatterInstance
 } from "../world/scatter.js";
+import {
+  waterRecordFor,
+  worldWater,
+  type AuraWaterNode,
+  type AuraWaterOptions
+} from "../world/water.js";
 
 const LAYER_COLORS: Readonly<Record<string, readonly [number, number, number]>> = {
   "grass-meadow": [0.29, 0.42, 0.18],
@@ -225,10 +231,38 @@ export function registerWorldNodeHandlers(): () => void {
     }
   });
 
+  // T4.6 — `kind: "water"` (flag A3D_QR_WORLD_WATER). Resolves a WaterRecord
+  // (creating it for builderless JSON nodes), marks `world.water`, and lists
+  // the node on `prd10.waters` for the frame contributor.
+  const unregisterWater = registerNodeHandler({
+    kind: "water",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD_WATER",
+    compile(node, _ctx, out) {
+      const waterNode = node as unknown as AuraWaterNode;
+      let record = waterRecordFor(waterNode.id);
+      if (!record) {
+        const options: AuraWaterOptions = { ...waterNode.options, id: waterNode.id, name: waterNode.name };
+        worldWater(options);
+        record = waterRecordFor(waterNode.id)!;
+      }
+      waterRecords.set(waterNode.id, record);
+      out.set("prd10.waters", [waterNode.id]);
+      out.feature("world.water");
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      void node; // water params are static; wave time comes from frame time
+    },
+    dispose(node) {
+      waterRecords.delete((node as unknown as AuraWaterNode).id);
+    }
+  });
+
   return () => {
     unregisterTerrain();
     unregisterScatter();
     unregisterGrass();
+    unregisterWater();
   };
 }
 
@@ -239,6 +273,7 @@ export interface ScatterCompileRecord {
 }
 export const scatterRecords = new Map<string, ScatterCompileRecord>();
 export const grassRecords = new Map<string, AuraGrassNode>();
+export const waterRecords = new Map<string, import("../world/water.js").WaterRecord>();
 
 /** Pack planned instances → row-major mat3x4 (same layout as placements). */
 function packScatterMatrices(instances: readonly ScatterInstance[]): Float32Array {

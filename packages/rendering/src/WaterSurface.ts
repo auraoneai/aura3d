@@ -1,6 +1,11 @@
 /**
  * D3 rendered water material descriptor (PRD D3 box 3).
  *
+ * @deprecated PRD-10 T4.7 — superseded by `world/water/WaterMaterial` (§8.6)
+ *   under `A3D_QR_WORLD`. Kept while owner-01/owner-15 importers exist
+ *   (`rendering/index.ts`, `agent-api` `water.surface`, d3-water-surface
+ *   tests); deletion tracked under qr-request Q-14-1.
+ *
  * NEW `WaterSurface.ts` rendered material: layered depth-tinted bands for a
  * bounded refraction look, a fresnel-weighted environment reflection tint, a
  * shore-foam mask mapped from `OceanFoamPatch` discs, and a boat-wake hook.

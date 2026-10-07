@@ -324,6 +324,94 @@ function lodBiasOf(ctx: FrameContributorContext): number {
 }
 
 /**
+ * Draws every registered terrain with the given view-projection. Shared by the
+ * `background` pass (main camera VP) and the §9.1 planar-reflection re-draw
+ * (oblique-clipped mirror VP, `viewPosition` = mirror eye).
+ */
+export function drawTerrains(
+  ctx: FrameContributorContext,
+  device: RenderDevice,
+  ds: DeviceTerrainState,
+  camera: { position: readonly [number, number, number] },
+  viewProjection: Float32Array
+): void {
+  const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
+  const lodBias = lodBiasOf(ctx);
+  for (const id of terrainRecordIds()) {
+    const record = terrainRecordFor(id);
+    if (!record?.grid) continue;
+    let st = ds.terrains.get(id);
+    if (!st) {
+      st = buildTerrainState(device, ds, record, tier) ?? undefined;
+      if (!st) continue;
+    }
+    const ranges = lodBias === 1 ? st.ranges : cdlodRanges(st.ranges.length, st.tree.leafSize, lodBias, record.options.lod?.morphRatio ?? 0.33);
+    const nodes = selectCdlodNodes(st.tree, camera.position, ranges, {});
+    if (nodes.length === 0 || nodes.length > st.instCap) continue;
+    const inst = new Float32Array(nodes.length * 4);
+    nodes.forEach((n: (typeof nodes)[number], i: number) => {
+      inst[i * 4] = n.origin[0];
+      inst[i * 4 + 1] = n.origin[1];
+      inst[i * 4 + 2] = n.size;
+      inst[i * 4 + 3] = n.level;
+    });
+    device.updateBuffer(st.instBuf, 0, inst);
+    const uniforms = new Map<string, UniformValue>([
+      ["u_height", new TextureBinding({ name: "u_height", texture: st.heightTex, sampler: NEAREST })],
+      ["u_splat0", new TextureBinding({ name: "u_splat0", texture: st.splatTex0, sampler: LINEAR })],
+      ["u_splat1", new TextureBinding({ name: "u_splat1", texture: st.splatTex1 ?? st.splatTex0, sampler: LINEAR })],
+      ["u_holes", new TextureBinding({ name: "u_holes", texture: st.holesTex, sampler: LINEAR })],
+      ["u_macroVariation", new TextureBinding({ name: "u_macroVariation", texture: st.macroTex, sampler: LINEAR })],
+      ["u_terrain", new Float32Array([record.origin[0], record.origin[2], record.size[0], record.size[1]])],
+      ["u_heightScale", record.heightScale],
+      ["u_heightTexSize", new Float32Array([record.grid.columns, record.grid.rows])],
+      ["u_morph", st.morph],
+      ["u_gridDim", st.patchN],
+      ["u_viewProjection", viewProjection],
+      ["u_cameraPosition", new Float32Array([camera.position[0], camera.position[1], camera.position[2]])],
+      ["u_terrainWorldSize", Math.min(record.size[0], record.size[1])],
+      ["u_terrainHeightScale", record.heightScale],
+      ["u_layerCount", st.layerCount],
+      ["u_solidMode", 1],
+      ["u_layerParams", st.layerParams],
+      ["u_layerTintOrm", st.layerTintOrm],
+      ["u_ambient", new Float32Array([0.25, 0.28, 0.32])],
+      ["u_keyLightDir", new Float32Array([0.42, -0.9, 0.18])],
+      ["u_keyLightColor", new Float32Array([1.4, 1.35, 1.25])]
+    ]);
+    device.draw({
+      label: `prd10.terrain.${id}`,
+      topology: "triangles",
+      renderState: { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" },
+      vertexBuffer: st.patchVB,
+      vertexFormat: PATCH_FORMAT,
+      vertexCount: st.vertexCount,
+      indexBuffer: st.patchIB,
+      indexType: st.indexType,
+      indexCount: st.indexCount,
+      instanceCount: nodes.length,
+      instanceAttributes: [
+        { buffer: st.instBuf, shaderName: "a_node", components: 4, offset: 0, stride: 16, divisor: 1 }
+      ],
+      shader: ds.program!,
+      uniforms
+    });
+  }
+}
+
+/**
+ * §9.1 step 2 — terrain re-draw for a planar water reflection. Called from
+ * `WaterRuntime`'s `reflectionViewPass` render callback while the reflection
+ * target is bound; CDLOD selects against the mirror eye.
+ */
+export function drawTerrainsForReflection(ctx: FrameContributorContext, device: RenderDevice, mirrorViewProjection: Float32Array, mirrorEye: readonly [number, number, number]): void {
+  const ds = deviceState(device);
+  if (!ds.program) ds.program = terrainProgram(device);
+  if (!ds.program) return;
+  drawTerrains(ctx, device, ds, { position: mirrorEye }, mirrorViewProjection);
+}
+
+/**
  * The Path S terrain pass for the `background` phase. Selects CDLOD nodes for
  * the camera and issues one instanced draw per terrain (patch geometry shared
  * per patch size across terrains on the device).
@@ -340,68 +428,7 @@ export function terrainBackgroundPass(ctx: FrameContributorContext): RenderPass 
       if (!ds.program) return;
       const camera = ctx.camera;
       if (!camera) return;
-      const tier = ((ctx.tier as { tier?: AuraWorldQualityTier }).tier ?? "high") as AuraWorldQualityTier;
-      const lodBias = lodBiasOf(ctx);
-      for (const id of terrainRecordIds()) {
-        const record = terrainRecordFor(id);
-        if (!record?.grid) continue;
-        let st = ds.terrains.get(id);
-        if (!st) {
-          st = buildTerrainState(device, ds, record, tier) ?? undefined;
-          if (!st) continue;
-        }
-        const ranges = lodBias === 1 ? st.ranges : cdlodRanges(st.ranges.length, st.tree.leafSize, lodBias, record.options.lod?.morphRatio ?? 0.33);
-        const nodes = selectCdlodNodes(st.tree, camera.position, ranges, {});
-        if (nodes.length === 0 || nodes.length > st.instCap) continue;
-        const inst = new Float32Array(nodes.length * 4);
-        nodes.forEach((n: (typeof nodes)[number], i: number) => {
-          inst[i * 4] = n.origin[0];
-          inst[i * 4 + 1] = n.origin[1];
-          inst[i * 4 + 2] = n.size;
-          inst[i * 4 + 3] = n.level;
-        });
-        device.updateBuffer(st.instBuf, 0, inst);
-        const uniforms = new Map<string, UniformValue>([
-          ["u_height", new TextureBinding({ name: "u_height", texture: st.heightTex, sampler: NEAREST })],
-          ["u_splat0", new TextureBinding({ name: "u_splat0", texture: st.splatTex0, sampler: LINEAR })],
-          ["u_splat1", new TextureBinding({ name: "u_splat1", texture: st.splatTex1 ?? st.splatTex0, sampler: LINEAR })],
-          ["u_holes", new TextureBinding({ name: "u_holes", texture: st.holesTex, sampler: LINEAR })],
-          ["u_macroVariation", new TextureBinding({ name: "u_macroVariation", texture: st.macroTex, sampler: LINEAR })],
-          ["u_terrain", new Float32Array([record.origin[0], record.origin[2], record.size[0], record.size[1]])],
-          ["u_heightScale", record.heightScale],
-          ["u_heightTexSize", new Float32Array([record.grid.columns, record.grid.rows])],
-          ["u_morph", st.morph],
-          ["u_gridDim", st.patchN],
-          ["u_viewProjection", camera.viewProjectionMatrix],
-          ["u_cameraPosition", new Float32Array([camera.position[0], camera.position[1], camera.position[2]])],
-          ["u_terrainWorldSize", Math.min(record.size[0], record.size[1])],
-          ["u_terrainHeightScale", record.heightScale],
-          ["u_layerCount", st.layerCount],
-          ["u_solidMode", 1],
-          ["u_layerParams", st.layerParams],
-          ["u_layerTintOrm", st.layerTintOrm],
-          ["u_ambient", new Float32Array([0.25, 0.28, 0.32])],
-          ["u_keyLightDir", new Float32Array([0.42, -0.9, 0.18])],
-          ["u_keyLightColor", new Float32Array([1.4, 1.35, 1.25])]
-        ]);
-        device.draw({
-          label: `prd10.terrain.${id}`,
-          topology: "triangles",
-          renderState: { depthTest: true, depthWrite: true, cullMode: "none", blend: false, depthCompare: "less-equal" },
-          vertexBuffer: st.patchVB,
-          vertexFormat: PATCH_FORMAT,
-          vertexCount: st.vertexCount,
-          indexBuffer: st.patchIB,
-          indexType: st.indexType,
-          indexCount: st.indexCount,
-          instanceCount: nodes.length,
-          instanceAttributes: [
-            { buffer: st.instBuf, shaderName: "a_node", components: 4, offset: 0, stride: 16, divisor: 1 }
-          ],
-          shader: ds.program,
-          uniforms
-        });
-      }
+      drawTerrains(ctx, device, ds, camera, camera.viewProjectionMatrix);
     }
   };
 }

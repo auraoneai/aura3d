@@ -8,6 +8,7 @@ import type { AuraBiomeId, AuraWorldQueries } from "../../contracts/world.js";
 import type { AuraApp } from "../index.js";
 import type { AuraTerrainHandle } from "./terrain.js";
 import { createTerrainHandle, terrainRecordFor, terrainRecordIds } from "./terrain.js";
+import { waterRecordFor, waterRecordIds, createWaterHandle, type AuraWaterHandle } from "./water.js";
 import { terrainHeightBilinear } from "@aura3d/rendering/world";
 import type { AuraWindOptions } from "./wind.js";
 import { createWorldQueries, registerTerrainProvider, setWorldWind, worldStateFor } from "./queries.js";
@@ -27,11 +28,7 @@ export interface AuraWorldRuntime extends AuraWorldQueries {
   diagnostics(): AuraWorldDiagnostics;
 }
 
-export interface AuraWaterHandle {
-  readonly id: string;
-  heightAt(x: number, z: number, timeSeconds?: number): number;
-  normalAt(x: number, z: number, timeSeconds?: number): readonly [number, number, number];
-}
+export type { AuraWaterHandle } from "./water.js";
 
 /** Every number is measured from submitted draws in the last frame; unmeasurable = null. */
 export interface AuraWorldDiagnostics {
@@ -163,7 +160,13 @@ export function createWorldRuntime(
       return createTerrainHandle(record);
     },
     water(nameOrId) {
-      throw new Error(`world.water("${nameOrId}"): water nodes land in PRD-10 Phase 4`);
+      const record = waterRecordFor(nameOrId);
+      if (!record) {
+        throw new Error(
+          `world.water("${nameOrId}"): no water node with that id (have: ${waterRecordIds().join(", ") || "none"})`
+        );
+      }
+      return createWaterHandle(record);
     },
     diagnostics() {
       return (state.diagnostics as AuraWorldDiagnostics | null) ?? emptyWorldDiagnostics("S");

@@ -284,7 +284,8 @@ describe("prd10 app.world runtime", () => {
     runtime.timeOfDay.animate({ hoursPerSecond: 1 });
     runtime.timeOfDay.pause();
     expect(runtime.timeOfDay.get()).toBe(20);
-    expect(() => runtime.water("x")).toThrow(/Phase 4/);
+    // Phase 4: `water()` resolves handles — unknown ids name the registered set.
+    expect(() => runtime.water("x")).toThrow(/no water node with that id/);
     expect(runtime.height().heightAt(10, 10)).toBeCloseTo(4.5, 4);
     const ground = runtime.ground().raycastDown(10, 10);
     expect(ground).not.toBeNull();
