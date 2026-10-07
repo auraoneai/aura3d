@@ -248,6 +248,10 @@ export type ActorBoneMatrixSource = (bone: string) => readonly number[] | Float3
 const actorAnimationApplySources = new Map<string, ActorAnimationApplySource>();
 const actorBoneMatrixSources = new Map<string, ActorBoneMatrixSource>();
 
+/** T3.6 — C-19 code, warn-once per (nodeId, bone) when the actor is loaded. */
+export const ANIMATION_SOCKET_UNKNOWN_BONE = "ANIMATION_SOCKET_UNKNOWN_BONE";
+const socketUnknownBoneWarned = new Set<string>();
+
 function registerSource<T>(map: Map<string, T>, actorId: string, source: T): () => void {
   map.set(actorId, source);
   return () => {
@@ -269,6 +273,7 @@ export function registerActorBoneMatrixSource(actorId: string, source: ActorBone
 export function resetActorAnimationStateSources(): void {
   actorAnimationApplySources.clear();
   actorBoneMatrixSources.clear();
+  socketUnknownBoneWarned.clear();
 }
 
 /**
@@ -469,10 +474,27 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       const value = actorBoneMatrixSources.get(this.nodeId)?.(bone);
       return value ? Float32Array.from(value).subarray(0, 16) : null;
     };
+    // T3.6 — `valid: false` + `ANIMATION_SOCKET_UNKNOWN_BONE` once per
+    // (node, bone), and only after the actor is loaded (pre-load calls stay
+    // silent — the bone cannot be judged unknown yet).
+    const warnUnknownOnce = (): void => {
+      if (this.actor === undefined) return;
+      const key = `${this.nodeId}:${bone}`;
+      if (socketUnknownBoneWarned.has(key)) return;
+      socketUnknownBoneWarned.add(key);
+      if (typeof console !== "undefined") {
+        console.warn(`${ANIMATION_SOCKET_UNKNOWN_BONE}: node "${this.nodeId}" has no bone "${bone}".`);
+      }
+    };
+    const probe = (): Float32Array | null => {
+      const current = matrix();
+      if (current === null) warnUnknownOnce();
+      return current;
+    };
     return {
       bone,
       worldMatrix: (out?: Float32Array) => {
-        const current = matrix();
+        const current = probe();
         if (!current) return out ?? new Float32Array(16);
         if (out) {
           out.set(current);
@@ -481,7 +503,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
         return current;
       },
       get valid() {
-        return matrix() !== null;
+        return probe() !== null;
       }
     };
   }

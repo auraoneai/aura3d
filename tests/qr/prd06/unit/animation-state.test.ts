@@ -9,12 +9,14 @@
  * interim read.
  */
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import {
+  ANIMATION_SOCKET_UNKNOWN_BONE,
   collectPrd06AnimationDiagnostics,
   createPrd06ActorAnimationApi,
+  registerPrd06AnimationActor,
   registerActorAnimationApplySource,
   registerActorBoneMatrixSource,
   resetActorAnimationStateSources,
@@ -162,6 +164,44 @@ describe("prd06 socket() (T0.18 interim bone read, C-19)", () => {
     const missing = api.socket("NoSuchBone");
     expect(missing.valid).toBe(false);
     expect(missing.worldMatrix()[15]).toBe(0);
+  });
+
+  it("T3.6 — ANIMATION_SOCKET_UNKNOWN_BONE warns once per (node, bone) once loaded", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    // Actor loaded (registered) but the bone lookup knows no "Nope".
+    registerPrd06AnimationActor({ id: "hero", animation: undefined, pipeline: { resources: { scene: { traverse: () => {} } } } } as never);
+    registerActorBoneMatrixSource("hero", () => null);
+    const api = createPrd06ActorAnimationApi(fakeModelHandle("hero"));
+    const missing = api.socket("Nope");
+    expect(missing.valid).toBe(false);
+    missing.worldMatrix();
+    missing.worldMatrix();
+    const calls = warn.mock.calls.filter((c) => String(c[0]).includes(ANIMATION_SOCKET_UNKNOWN_BONE));
+    expect(calls).toHaveLength(1);
+    expect(String(calls[0]![0])).toContain("hero");
+    expect(String(calls[0]![0])).toContain("Nope");
+    // A different bone warns separately (per-bone keying).
+    api.socket("Other").valid;
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes(ANIMATION_SOCKET_UNKNOWN_BONE))).toHaveLength(2);
+    warn.mockRestore();
+  });
+
+  it("T3.6 — socket reads post-constraint values (bone matrix source is live)", () => {
+    // The extension's bone source reads node.transform.worldMatrix per call,
+    // which the runtime updates after constraints write the pose — so the
+    // socket matrix automatically reflects post-constraint values.
+    const hips = new Float32Array(16);
+    hips.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 9, 0, 1]);
+    let source: Record<string, Float32Array | null> = { Hips: hips };
+    registerActorBoneMatrixSource("hero", (bone) => source[bone] ?? null);
+    const api = createPrd06ActorAnimationApi(fakeModelHandle("hero"));
+    expect(api.socket("Hips").worldMatrix()[13]).toBe(9);
+    // Simulate a constraint having rewritten the node transform: the next
+    // read sees the new value without re-registration.
+    const moved = new Float32Array(16);
+    moved.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 4.5, 0, 1]);
+    source = { Hips: moved };
+    expect(api.socket("Hips").worldMatrix()[13]).toBeCloseTo(4.5, 5);
   });
 });
 
