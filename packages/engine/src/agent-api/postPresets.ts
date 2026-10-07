@@ -175,10 +175,9 @@ export function expandPostPreset(
   // §6.8: presets naming agx/neutral render aces with a capability-degraded
   // report until C-05's operator selection is real. An authored
   // `output.toneMapping` wins untouched — the degrade is preset-declared only.
-  const mergedOutput: AuraOutputOptions = { ...preset.output, ...output };
-  if (output?.toneMapping === undefined && (preset.output.toneMapping === "agx" || preset.output.toneMapping === "neutral")) {
-    mergedOutput.toneMapping = "aces";
-  }
+  const mergedOutput: AuraOutputOptions = { ...preset.output, ...output,
+    ...(output?.toneMapping === undefined && (preset.output.toneMapping === "agx" || preset.output.toneMapping === "neutral")
+      ? { toneMapping: "aces" as const } : {}) };
   return { output: mergedOutput, nodes: merged, preset };
 }
 

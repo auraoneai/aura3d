@@ -45,7 +45,6 @@ export { resolvePostTier, type PostTierContext, type PostTierResolution } from "
 export {
   POST_STAGE_DESCRIPTORS,
   POST_INSERT_ANCHORS,
-  validatePostPassSpace,
   type PostStageDescriptor,
   type PostStageInput,
   type PostTargetFormat,

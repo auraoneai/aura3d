@@ -32,7 +32,12 @@ const DEFERRED_ONLY_INPUTS = [
   "packages/rendering/src/post/shaders/depthDownsample.glsl.ts",
   "packages/rendering/src/post/shaders/gtao.glsl.ts",
   "packages/rendering/src/post/shaders/gtaoDenoise.glsl.ts",
-  "packages/rendering/src/post/shaders/godrays.glsl.ts"
+  "packages/rendering/src/post/shaders/godrays.glsl.ts",
+  // Phase 6: S8 auto-exposure + S11 SMAA GLSL, and the §8.14 lazy texture
+  // chunk (reached only via `import("./smaa/textures.js")` inside v2Stages).
+  "packages/rendering/src/post/shaders/exposure.glsl.ts",
+  "packages/rendering/src/post/shaders/smaa.glsl.ts",
+  "packages/rendering/src/post/smaa/textures.ts"
 ];
 
 function workspaceAliasPlugin(): Plugin {

@@ -185,6 +185,7 @@ export class RendererPostprocessPipeline {
       passes: descriptors,
       ...(v2Modules ? { v2: v2Modules } : {}),
       ...(postprocess.cameraFrame ? { cameraFrame: postprocess.cameraFrame } : {}),
+      ...(postprocess.postFrameContext ? { frameContext: postprocess.postFrameContext } : {}),
       ...(temporal ? { temporal } : {}),
       ...(outputTarget ? { outputTarget } : {}),
       ...(postprocess.depthRange ? { depthRange: postprocess.depthRange } : {})

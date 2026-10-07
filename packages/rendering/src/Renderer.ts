@@ -28,7 +28,7 @@ import type { ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
-import { type TextureFormat } from "./Texture";
+import { type Texture, type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { computeOrthographicCameraFrame, computePerspectiveCameraFrame, type OrthographicCameraFrameOptions, type PerspectiveCameraFrameOptions } from "./CameraFraming";
 import { ResolutionGovernor } from "./ResolutionGovernor";
@@ -306,6 +306,22 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
    * submit time; ignored flag-off.
    */
   readonly cameraFrame?: FrameCamera | null;
+  /**
+   * CCR-03-12 (PRD-03 Phase 6, additive): the pieces of the
+   * `FrameContributorContext` a C-13 custom post pass's `enabled()`/
+   * `uniforms()` callback may read — `source`, `items`, `sceneDepth`. Bound
+   * by the Renderer at submit time alongside `cameraFrame`; ignored
+   * flag-off.
+   */
+  readonly postFrameContext?: {
+    readonly source: unknown;
+    readonly items: readonly RenderItem[];
+    readonly sceneDepth: {
+      readonly texture: Texture | null;
+      readonly available: boolean;
+      readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+    };
+  } | null;
 }
 
 export type RenderResourceLookup<T> = ReadonlyMap<string, T> | Readonly<Record<string, T>>;
@@ -839,7 +855,23 @@ export class Renderer {
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
-        postprocess = { ...postprocess, cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera };
+        postprocess = {
+          ...postprocess,
+          cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera,
+          postFrameContext: {
+            source,
+            items,
+            sceneDepth: {
+              texture: ownedTargets[0]?.depthTexture ?? null,
+              available: (ownedTargets[0]?.depthTexture ?? null) !== null,
+              linearize: {
+                near: frameCamera?.near ?? 0.1,
+                far: frameCamera?.far ?? 1000,
+                orthographic: frameCamera?.projection === "orthographic"
+              }
+            }
+          }
+        };
         frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
         this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
@@ -1126,7 +1158,23 @@ export class Renderer {
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
         const frameCamera = toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition);
-        postprocess = { ...postprocess, cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera };
+        postprocess = {
+          ...postprocess,
+          cameraFrame: frameCamera && temporalPrevVp ? { ...frameCamera, previousViewProjectionMatrix: temporalPrevVp } : frameCamera,
+          postFrameContext: {
+            source,
+            items,
+            sceneDepth: {
+              texture: ownedTargets[0]?.depthTexture ?? null,
+              available: (ownedTargets[0]?.depthTexture ?? null) !== null,
+              linearize: {
+                near: frameCamera?.near ?? 0.1,
+                far: frameCamera?.far ?? 1000,
+                orthographic: frameCamera?.projection === "orthographic"
+              }
+            }
+          }
+        };
         await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
         await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();

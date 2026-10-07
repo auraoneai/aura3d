@@ -734,6 +734,12 @@ export function createRootPostPipeline(
   if (grainNode && !grainEnabled) tierDisabled("S12-film-grain", "grain off on Low");
   const caEnabled = tierResolution === undefined || tierResolution.allowsChromaticAberration;
   if (caNode && !caEnabled) tierDisabled("S10-chromatic-aberration", "CA off on Low");
+  // S8 auto-exposure: authored `output.autoExposure` (CCR-03-2) gated by the
+  // C-27 tier row (off on Low; "if preset" otherwise).
+  const authoredAe = effectiveOutput?.autoExposure;
+  const aeRequested = authoredAe !== undefined && authoredAe !== false;
+  const aeEnabled = tierResolution === undefined || tierResolution.autoExposure;
+  if (aeRequested && !aeEnabled) tierDisabled("S8-auto-exposure", "auto-exposure off on Low");
 
   const options: PostPipelineOptions = {
     antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
@@ -837,7 +843,17 @@ export function createRootPostPipeline(
         luminanceResponse: numberField(grainNode, "luminanceResponse", 1)
       }
     } : {}),
-    ...(caNode && caEnabled ? { chromaticAberration: { intensity: numberField(caNode, "intensity", 0.0015) } } : {})
+    ...(caNode && caEnabled ? { chromaticAberration: { intensity: numberField(caNode, "intensity", 0.0015) } } : {}),
+    ...(aeRequested && aeEnabled ? {
+      autoExposure: {
+        minEv: (authoredAe as { readonly minEv?: number })?.minEv ?? -4,
+        maxEv: (authoredAe as { readonly maxEv?: number })?.maxEv ?? 4,
+        speedUp: (authoredAe as { readonly speedUp?: number })?.speedUp ?? 3,
+        speedDown: (authoredAe as { readonly speedDown?: number })?.speedDown ?? 1,
+        meteringMask: (authoredAe as { readonly meteringMask?: "center-weighted" | "average" })?.meteringMask ?? "center-weighted",
+        compensationEv: (authoredAe as { readonly compensationEv?: number })?.compensationEv ?? 0
+      }
+    } : {})
   };
   return { options, diagnostics };
 }
