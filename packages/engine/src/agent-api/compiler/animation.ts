@@ -5,6 +5,7 @@
 // byte-identical to the carve.
 
 import type { AnimationPose } from "@aura3d/animation";
+import { createBoneMask } from "@aura3d/animation/lanes";
 import type { PoseAction } from "@aura3d/animation/lanes";
 import type { AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry } from "../nodes/types.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
@@ -33,6 +34,22 @@ export function takeClipApplyDegradations(): Omit<AuraDegradation, "frame">[] {
 const clipNameResolveOptions = (): { readonly fallback: "error" | "first" } => ({
   fallback: qrAnimationFlags().on("A3D_QR_ANIMATION") ? "error" : "first"
 });
+
+/**
+ * T1.10 (C-19) — per-node `animation.fallback` overrides the ambient resolve
+ * policy under the lane flag; flag-off keeps the ambient 3.0 `first`.
+ */
+const resolveClipNameOptionsForSpec = (spec: AuraAnimationSpec): { readonly fallback: "error" | "first" } =>
+  spec.fallback !== undefined && qrAnimationFlags().on("A3D_QR_ANIMATION")
+    ? { fallback: spec.fallback }
+    : clipNameResolveOptions();
+
+/** C-19 `animation.mask` → bind-order Float32Array over the runtime skeleton. */
+type AnimationRuntimeWithMask = { skeletonJointNames?: () => readonly string[] };
+const animationMaskForRuntime = (runtime: AnimationRuntimeWithMask, spec: AuraAnimationSpec["mask"]): Float32Array | undefined => {
+  if (spec === undefined || typeof runtime.skeletonJointNames !== "function") return undefined;
+  return createBoneMask(spec, { jointNames: runtime.skeletonJointNames() });
+};
 
 const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {
   pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
@@ -136,7 +153,7 @@ export function applyProductionActorAnimation(
 ): void {
   const animation = node.animation;
   if (!animation?.clip || isModelTransformAnimationClip(animation.clip)) return;
-  const clipName = entry.actor.animation.resolveClipName(animation.clip, clipNameResolveOptions());
+  const clipName = entry.actor.animation.resolveClipName(animation.clip, resolveClipNameOptionsForSpec(animation));
   if (!clipName) {
     const available = entry.actor.animation.clipNames();
     const message = `ANIMATION_CLIP_NOT_FOUND: typed GLB actor "${entry.actor.id}" has no clip named "${animation.clip}". Available clips: ${available.length > 0 ? available.join(", ") : "(none)"}.`;
@@ -196,7 +213,8 @@ export function applyProductionActorAnimation(
         // clips under 3.1. `clip` change → `crossFadeTo(new, crossFade ?? 0.2,
         // {warp})`; `speed` → `setEffectiveTimeScale`; per-actor dt is
         // `rawDt * app.time.scale * handle.timeScale` (C-23, both stub 1
-        // today); `restPoseReset` defaults to true.
+        // today); `restPoseReset` defaults to true. T1.10 (C-19) adds the
+        // spec fields: `layer`/`weight`/`mask`/`blendMode`/`additiveReference`.
         const runtime = entry.actor.animation;
         let state = productionActorPoseStates.get(entry.actor);
         if (state === undefined) {
@@ -205,11 +223,31 @@ export function applyProductionActorAnimation(
         }
         if (state.activeClip !== clipName || state.baseAction === null || !state.baseAction.playing) {
           const fadeSeconds = animation.crossFade === false ? 0 : animation.crossFade ?? 0.2;
-          state.baseAction = runtime.mixer().crossFadeTo(clipName, fadeSeconds, {
-            warp: animation.warp === true,
-            transition: animation.transition,
-            syncGroup: animation.syncGroup
-          });
+          const additiveWanted = animation.blendMode === "additive";
+          const effectiveClipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"
+            ? runtime.ensureAdditiveClip(clipName, animation.additiveReference)
+            : clipName;
+          const mixer = runtime.mixer();
+          if (animation.layer !== undefined) {
+            // C-19 `animation.layer` — the clip joins a named layer; when the
+            // clip changes the old layer action fades out over `crossFade`.
+            mixer.stopLayer(animation.layer, fadeSeconds);
+            state.baseAction = mixer.playLayer(animation.layer, effectiveClipName, {
+              weight: animation.weight,
+              blendMode: animation.blendMode,
+              additive: additiveWanted,
+              mask: animationMaskForRuntime(runtime, animation.mask)
+            });
+            if (fadeSeconds > 0) state.baseAction.fadeIn(fadeSeconds);
+          } else {
+            state.baseAction = mixer.crossFadeTo(effectiveClipName, fadeSeconds, {
+              warp: animation.warp === true,
+              transition: animation.transition,
+              syncGroup: animation.syncGroup,
+              additive: additiveWanted,
+              weight: animation.weight
+            });
+          }
           if (animation.loop === false) {
             state.baseAction.setLoop("once", 1);
             state.baseAction.clampWhenFinished = true;

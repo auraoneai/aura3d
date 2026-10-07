@@ -49,3 +49,48 @@ Masked-out bound tracks contribute weight 0 through the per-bone mask array (sam
 ## NOT RUN
 
 - Browser/pose consumer paths beyond `applyClips` — actor `PoseMixer` wiring lands with T1.9–T1.11 (`crossFadeTo` on the actor handle, `A3D_QR_ANIMATION_POSE_MIXER` routing of `AnimationMixer.blendBase`/`AnimationController.blendStates`).
+
+## T1.9 — stateful per-actor PoseMixer (commit 535ee30c)
+
+- `node.animation.clip` on a skinned actor now drives a per-actor `PoseMixer`
+  under `A3D_QR_ANIMATION` when the runtime exposes `mixer()`/`applyPoseMixer`
+  (stub runtimes keep `playClip`): `clip` change → `crossFadeTo(new,
+  crossFade ?? 0.2, {warp, transition, syncGroup})`, `speed` →
+  `setEffectiveTimeScale`, `loop: false` → `setLoop("once", 1)` +
+  `clampWhenFinished`, `startTime` seeds the action, `restPoseReset` defaults
+  true and routes to `applyPoseMixer(dt, {restPoseReset})`.
+- Per-actor state lives in a `WeakMap<TypedGLBActor, {baseAction, activeClip,
+  lastTimeMs}>` because `ProductionRuntimeActorEntry` is rebuilt per frame.
+- Per-actor dt: `rawDt * appScale * actorHandleTimeScale` — `appScale` via the
+  `setActorAnimationAppTimeScale` seam (app.time.scale, prd08 to wire);
+  `handle.timeScale` read structurally (stub 1 today).
+- `rootMotion` spec + `clipSamples` binding + empty poses bypass the mixer path
+  (root-motion/binding branches unchanged).
+- `PoseMixer.activeActions()` added; `GLTFSceneAnimationRuntime.applyPoseMixer`
+  evaluates the mixer pose (bone TRS writes), resets uncovered channels to rest
+  (`restPoseReset` default), and keeps non-pose tracks on the legacy
+  accumulator path sampled at each action's clock/effective weight.
+
+## T1.10 — C-19 handle members + spec-field wiring
+
+- `actorAnimationHandle.ts`: `Prd06ActorAnimationApi` (extends the PR 0a stub)
+  implements `crossFadeTo`/`playLayer`/`stopLayer`/`animationState` against the
+  actor's PoseMixer. `registerPrd06AnimationActor(actor)` (called by the
+  `prd06.animation` actor extension on load, removed on dispose) is the
+  handle→actor link; every member checks `A3D_QR_ANIMATION` per call and falls
+  back to stub semantics when off/unloaded (C-37 conformance).
+- New runtime members: `PoseMixer.baseAction()` +
+  `activeActionEntries()` (layer-annotated) for `animationState()`;
+  `PoseCrossFadeOptions.weight`/`additive` forwarded to the fade-in action;
+  `GLTFSceneAnimationRuntime.ensureAdditiveClip(clip, ref)` lazily compiles a
+  `makeClipAdditive` variant under `clip#additive:{ref|self}:{time}`;
+  `skeletonJointNames()` for mask binding.
+- `compiler/animation.ts` wires the remaining C-19 spec fields in the mixer
+  block: `fallback` (per-node override, flag-gated), `layer` (plays the clip on
+  a named layer — old layer actions fade out over `crossFade`), `weight`,
+  `mask` (`createBoneMask` over the runtime skeleton), `blendMode: "additive"`
+  + `additiveReference` (synthesized additive clip + additive action).
+- `diagnosticOnly.prd06.ts` (open on PR #343) loses its wired spec rows
+  (crossFade/transition/warp/syncGroup) once T1.10 merges.
+- Tests: 3 new cases in `animation-controller.test.ts` (real PoseMixer — drive
+  members + snapshot shape, additive layer, flag-off stub conformance).

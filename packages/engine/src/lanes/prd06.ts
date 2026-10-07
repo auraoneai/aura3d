@@ -15,7 +15,8 @@ import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import { registerTypedGLBActorExtension } from "../production-runtime/actor/extensions.js";
 import {
   createPrd06ActorAnimationApi,
-  registerActorClipInfoSource
+  registerActorClipInfoSource,
+  registerPrd06AnimationActor
 } from "../agent-api/app/actorAnimationHandle.js";
 
 // T0.9a: `validateClipMap` ships for templates/games through the lane barrel
@@ -42,9 +43,12 @@ registerTypedGLBActorExtension({
       actor.id,
       registerActorClipInfoSource(actor.id, () => actor.animation.resolvedClipInfos())
     );
+    actorClipInfoDisposers.set(`${actor.id}:actor`, registerPrd06AnimationActor(actor));
   },
   dispose: (actor) => {
-    actorClipInfoDisposers.get(actor.id)?.();
-    actorClipInfoDisposers.delete(actor.id);
+    for (const key of [actor.id, `${actor.id}:actor`]) {
+      actorClipInfoDisposers.get(key)?.();
+      actorClipInfoDisposers.delete(key);
+    }
   }
 });

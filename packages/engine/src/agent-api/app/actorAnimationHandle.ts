@@ -7,11 +7,20 @@
 // same rejection on the render side, and flags resolve from URL/env per §5.2.
 
 import type { AnimationPose } from "@aura3d/animation";
+import { createBoneMask } from "@aura3d/animation/lanes";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import type { AuraRuntimeNodeAnimationPoseBindingMetadata } from "../RuntimeNodeHandle.js";
-import { StubActorAnimationApi, type AuraActorAnimationApi, type AuraResolvedClipInfo } from "../../contracts/animation.js";
+import {
+  StubActorAnimationApi,
+  type AuraActorAnimationApi,
+  type AuraActorAnimationStateSnapshot,
+  type AuraBoneMaskSpec,
+  type AuraBoneSocket,
+  type AuraResolvedClipInfo
+} from "../../contracts/animation.js";
 import type { AuraRuntimeNodeHandle } from "../index.js";
+import type { TypedGLBActor } from "../../production-runtime/TypedGLBActor.js";
 
 let overrideQrAnimationFlags: QrFlags | undefined;
 let lazyQrAnimationFlags: QrFlags | undefined;
@@ -215,25 +224,127 @@ export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly A
 }
 
 /**
- * The `prd06.animation` C-37 extension's `create` factory. Everything besides
- * `resolveAnimationClips` keeps the PR 0a stub semantics until T0.18/T1.10.
+ * T1.10 (PRD-06 §10, C-19/C-37) — loaded actors keyed by node/handle id so the
+ * `prd06.animation` handle extension can drive the per-actor `PoseMixer`.
+ * The `prd06.animation` actor extension (lanes/prd06.ts) publishes on load and
+ * unpublishes on dispose.
  */
-export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): AuraActorAnimationApi {
-  return new (class extends StubActorAnimationApi {
-    constructor() {
-      super(handle);
-    }
-    override resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]> {
-      if (handle.kind !== "model") {
-        return Promise.resolve([]);
-      }
-      return resolveAnimationClipsForNode(handle.id);
-    }
-  })();
+const prd06AnimationActors = new Map<string, TypedGLBActor>();
+
+export function registerPrd06AnimationActor(actor: TypedGLBActor): () => void {
+  prd06AnimationActors.set(actor.id, actor);
+  return () => {
+    prd06AnimationActors.delete(actor.id);
+  };
 }
 
-/** Test seam: drop every resolver/waiter between specs. */
+/** The mixer's synthesized additive key reports back as the authored clip name. */
+const authoredClipName = (clipName: string): string => clipName.split("#additive:")[0]!;
+
+/**
+ * C-37 `prd06.animation` api: `resolveAnimationClips` (T0.9) plus the T1.10
+ * mixer members — `crossFadeTo`/`playLayer`/`stopLayer`/`animationState`. Every
+ * member degrades to the PR 0a stub when the lane flag is off, the actor has
+ * not loaded, or the runtime predates the PoseMixer path.
+ */
+class Prd06ActorAnimationApi extends StubActorAnimationApi {
+  constructor(private readonly nodeId: string, private readonly nodeHandle: AuraRuntimeNodeHandle) {
+    super(nodeHandle);
+  }
+
+  private get actor(): TypedGLBActor | undefined {
+    return prd06AnimationActors.get(this.nodeId);
+  }
+
+  private mixer() {
+    if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return undefined;
+    const runtime = this.actor?.animation;
+    return runtime !== undefined && typeof runtime.mixer === "function" ? runtime.mixer() : undefined;
+  }
+
+  override crossFadeTo(clip: string, seconds: number, options?: { transition?: "crossfade" | "inertialize"; warp?: boolean }): this {
+    const mixer = this.mixer();
+    if (mixer === undefined) return super.crossFadeTo(clip, seconds, options);
+    mixer.crossFadeTo(clip, seconds, {
+      transition: options?.transition,
+      warp: options?.warp === true
+    });
+    return this;
+  }
+
+  override playLayer(
+    layer: string,
+    clip: string,
+    options?: { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive" }
+  ): this {
+    const mixer = this.mixer();
+    if (mixer === undefined) return super.playLayer(layer, clip, options);
+    const runtime = this.actor!.animation;
+    const mask = options?.mask !== undefined && typeof runtime.skeletonJointNames === "function"
+      ? createBoneMask(options.mask, { jointNames: runtime.skeletonJointNames() })
+      : undefined;
+    const additiveWanted = options?.blendMode === "additive";
+    const clipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"
+      ? runtime.ensureAdditiveClip(clip)
+      : clip;
+    const action = mixer.playLayer(layer, clipName, {
+      weight: options?.weight,
+      blendMode: options?.blendMode,
+      additive: additiveWanted,
+      mask
+    });
+    if (options?.fadeIn !== undefined && options.fadeIn > 0) action.fadeIn(options.fadeIn);
+    return this;
+  }
+
+  override stopLayer(layer: string, fadeOut?: number): this {
+    const mixer = this.mixer();
+    if (mixer === undefined) return super.stopLayer(layer, fadeOut);
+    mixer.stopLayer(layer, fadeOut ?? 0);
+    return this;
+  }
+
+  override resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]> {
+    if (this.nodeHandle.kind !== "model") {
+      return Promise.resolve([]);
+    }
+    return resolveAnimationClipsForNode(this.nodeId);
+  }
+
+  override animationState(): AuraActorAnimationStateSnapshot | undefined {
+    const mixer = this.mixer();
+    if (mixer === undefined) return super.animationState();
+    const runtime = this.actor!.animation;
+    const lastApply = typeof runtime.snapshot === "function" ? runtime.snapshot().lastApply : undefined;
+    const base = mixer.baseAction();
+    return {
+      activeClip: base === null ? null : authoredClipName(base.clipName),
+      tracksApplied: (lastApply?.transformTracksApplied ?? 0) + (lastApply?.morphWeightTracksApplied ?? 0),
+      activeActions: mixer.activeActionEntries().map(({ action, layer }) => ({
+        clip: authoredClipName(action.clipName),
+        layer,
+        weight: action.effectiveWeight,
+        time: action.time
+      })),
+      timeScale: base?.timeScale ?? 1
+    };
+  }
+
+  override socket(bone: string): AuraBoneSocket {
+    return super.socket(bone);
+  }
+}
+
+/**
+ * The `prd06.animation` C-37 extension's `create` factory.
+ */
+export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle): AuraActorAnimationApi {
+  return new Prd06ActorAnimationApi(handle.id, handle);
+}
+
+/** Test seam: drop every resolver/waiter/actor between specs. */
 export function resetActorClipInfoSources(): void {
   actorClipInfoSources.clear();
   actorClipInfoWaiters.clear();
+  prd06AnimationActors.clear();
 }

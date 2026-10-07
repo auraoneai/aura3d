@@ -1,5 +1,5 @@
 import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
-import { bindSkeleton, compileClip, createPoseBuffer, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
+import { bindSkeleton, compileClip, createPoseBuffer, makeClipAdditive, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
@@ -1009,6 +1009,37 @@ export class GLTFSceneAnimationRuntime {
       actions.length > 0 ? actions.length : undefined
     );
     return this.lastApply;
+  }
+
+  /**
+   * T1.10 (PRD-06 §10, C-19 `blendMode: "additive"`/`additiveReference`) — lazily
+   * compile an additive variant of `clipName` via `makeClipAdditive` (reference
+   * defaults to the clip's own first frame) and register it on the mixer under
+   * a synthesized name. Returns the registered clip key for `clipAction`/`playLayer`.
+   */
+  ensureAdditiveClip(clipName: string, reference?: { readonly clip?: string; readonly time?: number }): string {
+    const pose = this.poseRuntime();
+    const source = this.clipsByName.get(clipName);
+    if (source === undefined) {
+      return clipName;
+    }
+    const referenceClip = reference?.clip === undefined ? undefined : this.clipsByName.get(reference.clip);
+    const referenceTime = reference?.time ?? 0;
+    const name = `${clipName}#additive:${reference?.clip ?? "self"}:${referenceTime}`;
+    if (!pose.compiled.has(name)) {
+      const additive = makeClipAdditive(source, referenceClip === undefined ? referenceTime : { clip: referenceClip, time: referenceTime });
+      const compiledClip = compileClip(additive);
+      pose.compiled.set(name, compiledClip);
+      pose.mixer.addCompiledClip(name, compiledClip, additive);
+    }
+    return name;
+  }
+
+  /**
+   * T1.10 (C-19 `animation.mask`) — bind-order joint names for `createBoneMask`.
+   */
+  skeletonJointNames(): readonly string[] {
+    return this.poseRuntime().binding.jointNames;
   }
 
   private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer } {

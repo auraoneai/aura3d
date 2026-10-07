@@ -53,6 +53,9 @@ export type PoseCrossFadeOptions = {
   readonly transition?: PoseTransition;
   readonly halfLife?: number;
   readonly syncGroup?: string;
+  /** Forwarded to the fade-in action (C-19 `animation.weight`/`blendMode: "additive"`). */
+  readonly weight?: number;
+  readonly additive?: boolean;
 };
 
 export type PoseLayerOptions = PoseActionOptions & {
@@ -431,6 +434,28 @@ export class PoseMixer {
     return all;
   }
 
+  /** The active base (non-additive, base-layer) action, or null when none plays. */
+  baseAction(): PoseAction | null {
+    return this.activeBaseAction();
+  }
+
+  /**
+   * Same active set as {@link activeActions} annotated with the owning layer
+   * name — `""` for the base layer — for `animationState()` snapshots (C-37).
+   */
+  activeActionEntries(): readonly { readonly action: PoseAction; readonly layer: string }[] {
+    const all: { action: PoseAction; layer: string }[] = [];
+    for (const action of this.actions) {
+      if (action.playing && action.enabled) all.push({ action, layer: "" });
+    }
+    for (const layer of this.layers) {
+      for (const action of layer.actions) {
+        if (action.playing && action.enabled) all.push({ action, layer: layer.name });
+      }
+    }
+    return all;
+  }
+
   /**
    * `crossFadeTo(clip, seconds, options)` — mirrors `node.play` semantics:
    * the current active base action fades out over `seconds` (default driven by
@@ -439,7 +464,11 @@ export class PoseMixer {
    */
   crossFadeTo(name: string, seconds: number, options: PoseCrossFadeOptions = {}): PoseAction {
     const transition = options.transition ?? "crossfade";
-    const fadeIn = this.clipAction(name, { syncGroup: options.syncGroup });
+    const fadeIn = this.clipAction(name, {
+      syncGroup: options.syncGroup,
+      weight: options.weight,
+      additive: options.additive
+    });
     const current = this.activeBaseAction();
 
     if (transition === "inertialize" && this.inertializer !== null && this.latestPose !== null && this.previousPose !== null) {

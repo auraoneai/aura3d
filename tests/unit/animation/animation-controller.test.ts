@@ -18,10 +18,14 @@ import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import {
   createPrd06ActorAnimationApi,
   registerActorClipInfoSource,
+  registerPrd06AnimationActor,
   resetActorClipInfoSources,
   resetQrAnimationFlags,
   setQrAnimationFlags
 } from "../../../packages/engine/src/agent-api/app/actorAnimationHandle";
+import { AnimationClip, AnimationTrack } from "@aura3d/animation";
+import { bindSkeleton, compileClip, PoseMixer } from "@aura3d/animation/lanes";
+import type { TypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
 
 type ClipId = "idle" | "walk" | "jab" | "attack" | "ghost";
 
@@ -512,5 +516,115 @@ describe("PRD-06 clip drive + resolveAnimationClips (T0.4–T0.6, T0.8)", () => 
     expect(clip?.duration).toBe(2.5);
     expect(clip?.metadata?.durationSource).toBe("metadata");
     expect(clip?.metadata?.source).toBe("embedded-glb-clip-registry");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T1.10 — C-19 mixer members on the `prd06.animation` C-37 handle extension.
+// ---------------------------------------------------------------------------
+
+const T110_JOINT_NAMES = ["Hips", "Spine", "Head"];
+
+const makeT110Clip = (name: string, x = 0): AnimationClip =>
+  new AnimationClip({
+    name,
+    duration: 2,
+    tracks: [
+      new AnimationTrack<[number, number, number, number]>({
+        target: `${T110_JOINT_NAMES[0]}.rotation`,
+        valueType: "quaternion",
+        keyframes: [
+          { time: 0, value: [0, 0, 0, 1] },
+          { time: 2, value: [x, x, 0, Math.sqrt(Math.max(0, 1 - 2 * x * x))] }
+        ]
+      })
+    ]
+  });
+
+function makeT110Actor(id: string) {
+  const binding = bindSkeleton({
+    joints: [0, 1, 2],
+    jointNames: T110_JOINT_NAMES,
+    parentIndices: [-1, 0, 1],
+    resolveNode: (index) => ({
+      name: T110_JOINT_NAMES[index]!,
+      position: [0, index, 0],
+      rotation: [0, 0, 0, 1],
+      scale: [1, 1, 1]
+    })
+  });
+  const mixer = new PoseMixer({ skeleton: binding });
+  for (const clip of [makeT110Clip("Idle"), makeT110Clip("Walk", 0.2), makeT110Clip("Attack", 0.4)]) {
+    mixer.addCompiledClip(clip.name, compileClip(clip), clip);
+  }
+  const actor = {
+    id,
+    animation: {
+      mixer: () => mixer,
+      skeletonJointNames: () => T110_JOINT_NAMES,
+      ensureAdditiveClip: (clipName: string) => {
+        const source = mixer.sourceClip(clipName) ?? makeT110Clip(clipName, 0.4);
+        mixer.addCompiledClip(`${clipName}#additive:self:0`, compileClip(source), source);
+        return `${clipName}#additive:self:0`;
+      },
+      snapshot: () => ({ clipCount: 3, nodeTargetCount: 3, morphTargetNodeCount: 0, skinningBindingCount: 1, clips: ["Idle", "Walk", "Attack"], lastApply: { transformTracksApplied: 3, morphWeightTracksApplied: 0 } })
+    }
+  };
+  return { actor: actor as unknown as TypedGLBActor, mixer };
+}
+
+describe("PRD-06 T1.10 — C-19 handle members on prd06.animation", () => {
+  it("crossFadeTo / playLayer / stopLayer drive the actor's PoseMixer; animationState reports it", () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const { actor, mixer } = makeT110Actor("actor-t110");
+    registerPrd06AnimationActor(actor);
+    const api = createPrd06ActorAnimationApi({ id: "actor-t110", kind: "model" } as AuraRuntimeNodeHandle);
+
+    api.crossFadeTo("Idle", 0);
+    mixer.update(0.1);
+    let state = api.animationState();
+    expect(state?.activeClip).toBe("Idle");
+    expect(state?.activeActions).toHaveLength(1);
+    expect(state?.activeActions[0]).toMatchObject({ clip: "Idle", layer: "" });
+    expect(state?.tracksApplied).toBe(3);
+    expect(state?.timeScale).toBe(1);
+
+    api.playLayer("upper", "Attack", { weight: 0.5, fadeIn: 0.1 });
+    state = api.animationState();
+    expect(state?.activeActions.some((entry) => entry.layer === "upper" && entry.clip === "Attack")).toBe(true);
+
+    api.stopLayer("upper", 0);
+    state = api.animationState();
+    expect(state?.activeActions.some((entry) => entry.layer === "upper")).toBe(false);
+
+    api.crossFadeTo("Walk", 0.2, { warp: true });
+    state = api.animationState();
+    expect(state?.activeClip).toBe("Walk");
+  });
+
+  it("blendMode 'additive' on playLayer registers + plays an additive action", () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const { actor, mixer } = makeT110Actor("actor-t110-add");
+    registerPrd06AnimationActor(actor);
+    const api = createPrd06ActorAnimationApi({ id: "actor-t110-add", kind: "model" } as AuraRuntimeNodeHandle);
+
+    api.crossFadeTo("Idle", 0);
+    api.playLayer("hits", "Attack", { blendMode: "additive", weight: 0.8 });
+    const entries = api.animationState()?.activeActions ?? [];
+    const additiveEntry = entries.find((entry) => entry.layer === "hits");
+    expect(additiveEntry?.clip).toBe("Attack"); // authored name, not the synthesized key
+    expect(mixer.activeActionEntries().find((entry) => entry.layer === "hits")?.action.additive).toBe(true);
+  });
+
+  it("flag off falls back to stub members (C-37 conformance)", () => {
+    // No flag installed → every member stubs.
+    const { actor, mixer } = makeT110Actor("actor-t110-off");
+    registerPrd06AnimationActor(actor);
+    const api = createPrd06ActorAnimationApi({ id: "actor-t110-off", kind: "model" } as AuraRuntimeNodeHandle);
+
+    api.crossFadeTo("Idle", 0.1).playLayer("l", "Walk").stopLayer("l");
+    expect(mixer.activeActions()).toHaveLength(0); // mixer untouched
+    // Stub semantics: single remembered clip, no real mixer stats.
+    expect(api.animationState()).toEqual({ activeClip: "Walk", tracksApplied: 0, activeActions: [], timeScale: 1 });
   });
 });
