@@ -18,6 +18,9 @@ import { FrameStats, diffDeviceCounters } from "../quality/FrameStats";
 import { gpuTimingBackendForDevice } from "../quality/DeviceProbe";
 import { RenderTargetPool } from "../resources/RenderTargetPool";
 import { installPrd11DeviceCounters } from "../webgl2/Counters";
+import { batchPlanCacheFor, prd11LatestBatchPlanReport } from "../renderer/CullingBatching";
+import { registerPrd11DrawIdShader } from "../batching/shaders/drawId.glsl";
+import { registerPrd11InstanceEmissiveShader } from "../batching/shaders/instanceEmissive.glsl";
 
 /** Everything the `frame`/`quality`/`renderer.batching` diagnostics sections need, keyed by device. */
 export interface Prd11FrameTelemetry {
@@ -87,6 +90,12 @@ frameStatsSlot.provide((capacity = 240) => new FrameStats(capacity));
 // keyed by (w, h, format, samples, depth); wired into post execution by Q-03-1.
 renderTargetPoolSlot.provide((device) => new RenderTargetPool(device));
 
+// Phase 3 (§6.6): C-02 chunk/feature registrations for the multi-draw and
+// per-instance-emissive paths. Inert until a real program generator consumes
+// them; `SHADER_CHUNK_DUPLICATE`-safe via module-local guards.
+registerPrd11DrawIdShader();
+registerPrd11InstanceEmissiveShader();
+
 registerFrameContributor({
   id: "prd11.frameStats",
   owner: "prd11",
@@ -118,6 +127,24 @@ registerFrameContributor({
 });
 
 /**
+ * Phase 3 batching contributor (`prd11.batching`, flag
+ * `A3D_QR_TIERS_BATCHING`): content-keyed `BatchPlan` over the collected item
+ * list. Late order so items other contributors add during `collect` (LOD,
+ * particles) are included. The plan cache keys by device — FrameGraph and
+ * contributors are per-device.
+ */
+registerFrameContributor({
+  id: "prd11.batching",
+  owner: "prd11",
+  flag: "A3D_QR_TIERS_BATCHING",
+  phases: ["collect"],
+  order: 900,
+  collect(items, ctx: FrameContributorContext) {
+    return batchPlanCacheFor(ctx.device).apply(items);
+  }
+});
+
+/**
  * Engine-side wire (C-38 seam): `createAuraApp` resolves QR flags but owns the
  * call into `renderer/FrameGraph.ts`'s module-level flag store. Lane 11's
  * `quality` app extension (`packages/engine/src/lanes/prd11.ts`) forwards the
@@ -127,3 +154,6 @@ registerFrameContributor({
 export function prd11SetRendererQrFlags(flags: QrFlags): void {
   setRendererQrFlags(flags);
 }
+
+/** C-31 `renderer.batching` report surface for the engine diagnostics collector. */
+export { prd11LatestBatchPlanReport };
