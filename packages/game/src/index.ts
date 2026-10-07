@@ -71,3 +71,6 @@ export type {
   CaptureContext,
   GameBeacon
 } from "@aura3d/engine/contracts";
+
+export { sfx, SFX_IDS } from "./sfx";
+export type { SfxId, SfxPack } from "./sfx";
