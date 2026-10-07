@@ -188,8 +188,6 @@ export type {
   TouchControlsDeps
 } from "./touch/TouchControls.js";
 export { registerGameFonts } from "./fonts/register.js";
-||||||| 5f5d6088
-} from "@aura3d/engine-runtime/contracts";
 
 // PRD-09 Phase 4 — HUD surface (§7.7, §17).
 export { mountHud } from "./hud/HudKit.js";
