@@ -3,5 +3,22 @@
   "assetBasePath": "/aura-assets/",
   "outputDir": "public/aura-assets",
   "typegen": "src/aura-assets.ts",
-  "assets": []
+  "assets": [
+    {
+      "id": "asset",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/kenneyCarKitSedanSports.2889c428.glb",
+      "outputPath": "public/aura-assets/kenneyCarKitSedanSports.2889c428.glb",
+      "url": "/aura-assets/kenneyCarKitSedanSports.2889c428.glb",
+      "hash": "sha256-2889c428ca1dd9c975c3ff760eb8757883490410555ab60b818f712f583826d6",
+      "sizeBytes": 177676,
+      "bounds": [2, 2, 2.55],
+      "materials": ["colormap"],
+      "animations": [],
+      "textures": [],
+      "license": "CC0-1.0",
+      "provenance": "Kenney Car Kit sedan-sports (CC0)"
+    }
+  ]
 }

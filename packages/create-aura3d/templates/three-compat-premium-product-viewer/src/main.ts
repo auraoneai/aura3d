@@ -1,18 +1,33 @@
-// Three-compat premium product viewer: a hero sphere on a studio stage with
-// plinth, sweep, and softbox-style lighting via the public @aura3d/engine API.
-// Swap the sphere for `model(assets.product)` once you add a typed asset.
-import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
+// Three-compat premium product viewer: a typed Khronos CC0 GLB (ToyCar, the
+// KHR_materials_clearcoat/transmission/sheen sample) on a studio plinth under
+// the `product-studio` look — studio HDRI, key shadow, neutral backdrop,
+// grade — with orbit autoframing. Mirrors three.js r185
+// `webgl_materials_physical_clearcoat` (no parity claim).
+import { camera, createAuraApp, interactions, looks, material, model, primitives, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const LOOK_ID = "product-studio" as const;
+
+const autoframe = camera.frameAsset(assets.product, {
+  targetHeight: 1.1,
+  padding: 1.55,
+  fov: 32,
+  azimuth: 0.55,
+  elevation: 0.3
+});
 
 createAuraApp("#app", {
   scene: scene()
-    .background("#0a0d13")
-    .camera(camera.orbit({ target: [0, 0.95, 0], distance: 4.4 }))
-    .add(primitives.box({ name: "studio sweep floor", size: [7, 0.1, 7], position: [0, -0.05, 0], material: material.pbr({ color: "#171e2b", roughness: 0.85 }), receiveShadow: true }))
-    .add(primitives.box({ name: "studio sweep backdrop", size: [7, 3.2, 0.12], position: [0, 1.55, -3], material: material.pbr({ color: "#131927", roughness: 0.9 }), receiveShadow: true }))
-    .add(primitives.cylinder({ name: "product plinth", size: [1.5, 0.5, 1.5], position: [0, 0.25, 0], material: material.pbr({ color: "#222c3f", roughness: 0.4, metalness: 0.3 }), castShadow: true, receiveShadow: true }))
-    .add(primitives.sphere({ name: "hero product", size: 1.05, position: [0, 1.05, 0], material: material.metal({ color: "#e7d9b8", roughness: 0.14, clearcoat: 0.6 }), castShadow: true }))
-    .add(lights.studio())
-    .add(lights.rect({ name: "softbox key", position: [2.6, 2.8, 2.2], intensity: 1.4, width: 2, height: 1.4 }))
-    .add(lights.point({ name: "cool rim", position: [-2.6, 2.2, -1.8], intensity: 1.2, color: "#a9c8ff" }))
-    .add(effects.bloom({ intensity: 0.22, threshold: 0.78 }))
+    .add(looks.preset(LOOK_ID))
+    .add(primitives.cylinder({ name: "product plinth", size: [1.6, 0.28, 1.6], position: [0, 0.14, 0], material: material.pbr({ color: "#24272e", roughness: 0.42, metallic: 0.25 }), castShadow: true, receiveShadow: true }))
+    // ToyCar is authored at ~7.3 m; scale to a desk-model 1.55 m length.
+    .add(model(assets.product, { name: "Khronos ToyCar clearcoat sample" }).position(0, 0.28, 0).rotate(0, 0.65, 0).scale(0.0021))
+    .add(interactions.orbit({ target: "Khronos ToyCar clearcoat sample" }))
+    .camera(autoframe)
 });
+
+(window as unknown as { __AURA3D_PREMIUM_PRODUCT_VIEWER__?: unknown }).__AURA3D_PREMIUM_PRODUCT_VIEWER__ = {
+  look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category },
+  hero: { assetId: assets.product.id, url: assets.product.url, provenance: "Khronos glTF-Sample-Assets ToyCar, CC0-1.0" },
+  mirrors: "three.js r185 webgl_materials_physical_clearcoat"
+};
