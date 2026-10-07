@@ -1,0 +1,225 @@
+name: Agent output eval
+
+# T0.5 — the 12 §18.3 prompts x 3 seeds eval matrix (PRD-13 §6.7):
+#   pack (ubuntu) -> agent cells (ubuntu, Claude Code via Kiro Prism, 45-min
+#   wall clock each) -> capture (macos-14, the T0.1 capture tool in --source
+#   mode against the agent-built dist/ dirs, flags none and all) -> panel
+#   packet artifact for the G-PANEL judges.
+#
+# Secrets: KIRO_PRISM_API_KEY is exposed only to the `agent` job; nothing here
+# runs on pull_request, so untrusted code never sees it.
+# Triggers are dispatch + weekly schedule — main-only, never fork code.
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompts:
+        description: "Comma-separated prompt ids from benchmarks/agent-eval/prompts.json (empty = all 12)"
+        required: false
+        default: ""
+      seeds:
+        description: "Comma-separated seeds"
+        required: false
+        default: "0,1,2"
+      agent:
+        description: "Agent runner (claude-code | stub)"
+        required: false
+        default: "claude-code"
+      dry_run:
+        description: "Force the stub agent + fixed project (pipeline smoke test)"
+        type: boolean
+        required: false
+        default: false
+      model:
+        description: "Pinned agent model id (Kiro Prism route)"
+        required: false
+        default: "kiro-prism/claude-opus-5.5"
+      template:
+        description: "create-aura3d template override (empty = product-viewer default)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 3 * * 0" # weekly, Sun 03:17 UTC, main only
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-output-eval-${{ github.run_id }}
+
+env:
+  QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+  EVAL_PROMPTS: ${{ github.event_name == 'workflow_dispatch' && inputs.prompts || '' }}
+  EVAL_SEEDS: ${{ github.event_name == 'workflow_dispatch' && inputs.seeds || '0,1,2' }}
+  EVAL_AGENT: ${{ github.event_name == 'workflow_dispatch' && inputs.agent || 'claude-code' }}
+  EVAL_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+  A3D_EVAL_AGENT_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.model || 'kiro-prism/claude-opus-5.5' }}
+  EVAL_TEMPLATE: ${{ github.event_name == 'workflow_dispatch' && inputs.template || '' }}
+
+jobs:
+  pack:
+    name: Pack release tarballs
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:raw
+      - name: Pack release candidate
+        run: node tools/release/publish-all.mjs --pack-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-tarballs-${{ github.run_id }}
+          path: tests/reports/release-tarballs/
+          retention-days: 7
+
+  agent:
+    name: Agent cell ${{ matrix.prompt }}-s${{ matrix.seed }}
+    runs-on: ubuntu-latest # no GPU needed for the agent leg
+    timeout-minutes: 90
+    needs: pack
+    strategy:
+      fail-fast: false
+      matrix:
+        prompt: [P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P11, P12]
+        seed: [0, 1, 2]
+    env:
+      KIRO_PRISM_API_KEY: ${{ secrets.KIRO_PRISM_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-tarballs-${{ github.run_id }}
+          path: tests/reports/release-tarballs
+      - name: Run agent cell
+        id: cell
+        continue-on-error: true
+        run: |
+          pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-eval/run.ts \
+            --only "${{ matrix.prompt }}" --seeds "${{ matrix.seed }}" \
+            --agent "$EVAL_AGENT" $EVAL_DRY_RUN \
+            ${EVAL_TEMPLATE:+--template "$EVAL_TEMPLATE"} \
+            --out "benchmarks/agent-eval/runs/${{ github.run_id }}"
+      - name: Upload cell artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-cell-${{ matrix.prompt }}-s${{ matrix.seed }}
+          path: benchmarks/agent-eval/runs/${{ github.run_id }}/${{ matrix.prompt }}-s${{ matrix.seed }}/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Report cell outcome
+        if: always()
+        run: |
+          echo "cell=${{ steps.cell.outcome }}"
+          test "${{ steps.cell.outcome }}" = "success"
+
+  capture:
+    name: Capture agent output (macos-14, flags ${{ matrix.qr_flags }})
+    runs-on: macos-14
+    timeout-minutes: 180
+    needs: agent
+    strategy:
+      fail-fast: false
+      matrix:
+        qr_flags: ["none", "all"]
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.1.3 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Download agent cells
+        uses: actions/download-artifact@v4
+        with:
+          pattern: agent-cell-*
+          path: eval-cells
+          merge-multiple: true
+      - name: Capture agent dist dirs
+        id: capture
+        continue-on-error: true
+        env:
+          QRC_FLAGS: ${{ matrix.qr_flags }}
+          QRC_OUT: tools/agent-templates/out/agent-eval-${{ matrix.qr_flags }}
+        run: |
+          sources=$(find eval-cells -name index.html -path "*/dist/*" -exec dirname {} \; | sort | paste -sd, -)
+          echo "sources: $sources"
+          node tools/agent-templates/capture-templates.mjs --source "$sources"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-eval-capture-${{ matrix.qr_flags }}
+          path: tools/agent-templates/out/agent-eval-${{ matrix.qr_flags }}/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Report capture outcome
+        if: always()
+        run: |
+          echo "capture=${{ steps.capture.outcome }}"
+          test "${{ steps.capture.outcome }}" = "success"
+
+  panel-packet:
+    name: Assemble panel packet
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: capture
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: agent-eval-capture-*
+          path: panel-packet/captures
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: agent-cell-*
+          path: panel-packet/cells
+          merge-multiple: true
+      - name: Write packet manifest
+        run: |
+          node -e '
+            const fs = require("fs"), path = require("path");
+            const manifest = {
+              schema: "aura3d.panel-packet/1",
+              runId: process.env.GITHUB_RUN_ID,
+              sha: process.env.GITHUB_SHA,
+              generatedAt: new Date().toISOString(),
+              captures: [], cells: []
+            };
+            for (const d of fs.readdirSync("panel-packet/captures", { withFileTypes: true }).filter(e => e.isDirectory())) {
+              const report = path.join("panel-packet/captures", d.name, "report.json");
+              manifest.captures.push({ dir: d.name, report: fs.existsSync(report) ? report : null });
+            }
+            for (const d of fs.readdirSync("panel-packet/cells", { withFileTypes: true }).filter(e => e.isDirectory())) {
+              const runJson = path.join("panel-packet/cells", d.name, "run.json");
+              manifest.cells.push({ cellId: d.name, runJson: fs.existsSync(runJson) ? runJson : null });
+            }
+            fs.writeFileSync("panel-packet/manifest.json", JSON.stringify(manifest, null, 2));
+            console.log(`packet: ${manifest.captures.length} capture sets, ${manifest.cells.length} cells`);
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-eval-panel-packet-${{ github.run_id }}
+          path: panel-packet/
+          retention-days: 90
