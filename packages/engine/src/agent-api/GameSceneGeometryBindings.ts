@@ -739,7 +739,9 @@ function platformerCameraSpecRig(options: GamePlatformerPresentationCameraOption
     target: options.targetNode ?? "player",
     distance: options.distance ?? 5.1,
     fov: options.fov ?? 42,
-    lead: Math.abs(options.lookAhead ?? 1.2)
+    lead: Math.abs(options.lookAhead ?? 1.2),
+    // P-5: subject occupies ~28% of frame height by default.
+    framing: { subjectHeightFraction: 0.28 }
   });
 }
 

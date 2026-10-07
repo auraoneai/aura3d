@@ -1501,12 +1501,12 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Feel bus (F)
 
-- [ ] F-1 `feel/FeelBus.ts` implementing the C-23 `AuraFeelBus`; real C-38 `feel` extension.
-- [ ] F-2 Channel dispatch: shake → `app.camera.shake.add`; punch → `app.camera.punch.trigger`; hitStop → `app.time`;
+- [x] F-1 `feel/FeelBus.ts` implementing the C-23 `AuraFeelBus`; real C-38 `feel` extension.
+- [x] F-2 Channel dispatch: shake → `app.camera.shake.add`; punch → `app.camera.punch.trigger`; hitStop → `app.time`;
   haptics → `@aura3d/input` `Haptics` (gamepad dual-rumble, `navigator.vibrate` on touch, no-op otherwise); audio →
   C-25 `GameSound.play(cue, { position, rate: 1 + jitter, volumeDb })` on the bound sound slot (no-op + `executed` 0
   when none is bound); vfx → C-20 `app.effects.burst(kind, position, { count })`; screen → S-3.
-- [ ] F-3 Presets `arcade`, `fighting`, `racing`, `platformer`, `puzzle`, `calm` with event maps for `land`, `jump`,
+- [x] F-3 Presets `arcade`, `fighting`, `racing`, `platformer`, `puzzle`, `calm` with event maps for `land`, `jump`,
   `hit-light`, `hit-heavy`, `ko`, `collect`, `boost`, `explode`, `score`, `fail`; values documented in a table in the
   source file header and exported as `feelPresets` for tests. Required starting values (tunable only with a recorded
   review in `evidence/prd08/tuning.md` citing a §16A screening or panel record):
@@ -1524,14 +1524,14 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
   Unit test: every preset defines all ten events (calm may map to empty specs) and no value exceeds the reduced-motion
   caps after multipliers.
-- [ ] F-4 `executed` accounting (C-23 invariant): a channel counts only if it produced an effect (layer energy > 0 on the
+- [x] F-4 `executed` accounting (C-23 invariant): a channel counts only if it produced an effect (layer energy > 0 on the
   next presented frame; haptics actuator present and called; C-25 `play` returned a `VoiceHandle`; C-20 `burst`
   reported `pixelBacked`; screen per S-3). Test with fakes, plus one test against the real PR 0a stubs proving
   `executed.vfx` counts primitive-pool bursts and `executed.screen` stays 0 without a consumer or DOM fallback.
-- [ ] F-5 `GameFeel.ts`: `gameFeel.create({ app })` routes `damageFlash`/`speedLines`/`landingDust` through `app.feel`
+- [x] F-5 `GameFeel.ts`: `gameFeel.create({ app })` routes `damageFlash`/`speedLines`/`landingDust` through `app.feel`
   (effects reach pixels through C-20; PRD 07's auto-mount is theirs); remove the `effectsSpawned` counter from evidence
   when not rendered.
-- [ ] F-6 Platformer kit emits `land` (with `strength = impactVelocity/terminal`) and `jump`; racing kit emits `boost`,
+- [x] F-6 Platformer kit emits `land` (with `strength = impactVelocity/terminal`) and `jump`; racing kit emits `boost`,
   `drift-start`, `collision`; combat emits `hit-light`/`hit-heavy`/`ko` mapped from move strength.
 - [ ] F-7 Evidence-only feel checks, registered from lane-08 files only:
   (a) source scan `feel/lint/feelSourceScan.ts` registered as C-39 doctor rule `feel/evidence-only` from
@@ -1549,53 +1549,53 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 ### Vehicle (V)
 
 - [x] V-1 New `vehicle/BicycleModel.ts` per §6.9 with fixed-step integration at the loop's `fixedDt`; pure, deterministic.
-- [ ] V-2 `GameRuntime.ts:2007-2045` `createGameArcadeVehicle`: add `model` option; `"bicycle"` delegates to V-1; extend
+- [x] V-2 `GameRuntime.ts:2007-2045` `createGameArcadeVehicle`: add `model` option; `"bicycle"` delegates to V-1; extend
   state with `lateralVelocity`, `yawRate`, `slipAngle`, `drifting`, `rpm`, `lateralG`.
-- [ ] V-3 Torque curve + quadratic drag + rolling resistance; default curve peaks at 0.6·maxSpeed.
-- [ ] V-4 Handbrake rear-grip scale 0.45; counter-steer assist (0 = none, 1 = full yaw-rate damping).
-- [ ] V-5 `GameGenreKits.ts:1343-1580` `game.racing`: default `model: "bicycle"`; wire `createVehicleChassis`
+- [x] V-3 Torque curve + quadratic drag + rolling resistance; default curve peaks at 0.6·maxSpeed.
+- [x] V-4 Handbrake rear-grip scale 0.45; counter-steer assist (0 = none, 1 = full yaw-rate damping).
+- [x] V-5 `GameGenreKits.ts:1343-1580` `game.racing`: default `model: "bicycle"`; wire `createVehicleChassis`
   (VehicleChassis.ts:297) as default presentation for the player car (pitch/roll/suspension/wheels); emit F-6 events.
-- [ ] V-6 Chase rig integration: `bank` reads `lateralG`; FOV `perSpeed` reads `|vLong|`.
+- [x] V-6 Chase rig integration: `bank` reads `lateralG`; FOV `perSpeed` reads `|vLong|`.
 - [x] V-7 Tests `tests/qr/prd08/unit/bicycle-vehicle.test.ts`: straight-line top speed within 2 % of `maxSpeed`;
   steady-state cornering yaw rate ≤ `μg/v`; handbrake drift (S12); determinism across identical input streams.
 
 ### Platformer (P)
 
-- [ ] P-1 `GameRuntime.ts:2181-2186` `createGameKinematicBody` (`:2074`) `body.move`: integrate toward target velocity with `groundAccel`, `groundDecel`,
+- [x] P-1 `GameRuntime.ts:2181-2186` `createGameKinematicBody` (`:2074`) `body.move`: integrate toward target velocity with `groundAccel`, `groundDecel`,
   `turnAccel`, `airControl` (§6.9); keep the old instant behaviour behind `instantVelocity: true`.
-- [ ] P-2 `GameGenreKits.ts:851-872` + `:1054-1057`: add level option `feel` (default `"responsive"`); when set, take
+- [x] P-2 `GameGenreKits.ts:851-872` + `:1054-1057`: add level option `feel` (default `"responsive"`); when set, take
   `fallGravityMultiplier` from `platformerFeelProfile(feel).fallMultiplier` (1.6) unless the level sets it explicitly,
   and implement apex hang (gravity × `apexHangGravityScale`, default 0.5, while `|vy| < apexHangFraction·jumpVelocity`).
   Do **not** call `solvePlatformerMotion` by default (it re-derives gravity/jump from geometry, M5). `feel: false`
   restores `fallGravityMultiplier: 1` and no apex hang. Keep coyote 110 / buffer 130 / release 0.45. Test: with the
   default feel, time from apex-band exit to landing is ≥ 10 % shorter than with `feel: false`, and apex dwell
   (|vy| < 0.14·v0) lasts ≥ 1.5× longer.
-- [ ] P-3 Presentation state `{ squash, stretch, lean, landImpact }`: stretch on jump (scaleY 1.12, XZ 0.94, 0.1 s), squash on
+- [x] P-3 Presentation state `{ squash, stretch, lean, landImpact }`: stretch on jump (scaleY 1.12, XZ 0.94, 0.1 s), squash on
   land (scaleY 0.86 × strength, 0.12 s), lean = `−vx/maxSpeed · 8°`; applied to the player runtime node unless
   `presentation: false`.
-- [ ] P-4 Emit `land`/`jump` feel events (F-6).
-- [ ] P-5 Kit camera default: `rigs.follow2d` with framing 0.28.
-- [ ] P-6 Tests `tests/qr/prd08/unit/platformer-accel.test.ts`: S13 timings; `tests/unit/engine/platformer-motion.test.ts`
+- [x] P-4 Emit `land`/`jump` feel events (F-6).
+- [x] P-5 Kit camera default: `rigs.follow2d` with framing 0.28.
+- [x] P-6 Tests `tests/qr/prd08/unit/platformer-accel.test.ts`: S13 timings; `tests/unit/engine/platformer-motion.test.ts`
   (lane 08) updated for new flag-on defaults, flag-off assertions unchanged.
 
 ### Input and controls (I)
 
-- [ ] I-1 New `controls/TouchControls.ts` `mountTouchControls(app, input, layout, options)`: DOM overlay sibling of the
+- [x] I-1 New `controls/TouchControls.ts` `mountTouchControls(app, input, layout, options)`: DOM overlay sibling of the
   canvas; one element per `GameTouchControlRegion`; pointer capture; stick via `VirtualTouchJoystick`
   (`packages/input/src/VirtualTouchControls.ts`); buttons map to actions; `env(safe-area-inset-*)`; `aria-label` per control;
   min target 48 CSS px. Exported from the lane barrel for PRD 09's C-24 wrapper (R16); layouts come from
   `createGameTouchControlLayout` (`GameRuntime.ts:1600`) or PRD 09's `TouchLayouts.ts` presets, read-only.
-- [ ] I-2 `createGameInput` (GameRuntime.ts:1668-1936): register a `touch` virtual device fed by I-1.
-- [ ] I-3 `input.activeDevice()` tracking the last device with input (keyboard/gamepad/touch); `input.prompt(action)` →
+- [x] I-2 `createGameInput` (GameRuntime.ts:1668-1936): register a `touch` virtual device fed by I-1.
+- [x] I-3 `input.activeDevice()` tracking the last device with input (keyboard/gamepad/touch); `input.prompt(action)` →
   label/glyph from the binding table: keyboard → `KeyboardEvent.code` display name (`"Space"`, `"Arrow Left"`); gamepad →
   standard-mapping glyph id (`"pad-a"`, `"pad-rt"`, …, labelled "A"/"RT"); touch → the bound touch region's `label`
   (or the action name capitalised). Test: binding `jump: ["Space", "pad:0", "touch:jump"]` returns `Space`/`A`/`Jump`
   for each active device.
-- [ ] I-4 Auto show/hide: show on first `touchstart`, hide on keyboard/gamepad input; `options.autoHide` default true.
-- [ ] I-5 Per-action `bufferMs` and `consume(action)`; defaults jump 130 ms, attack 150 ms, others 120 ms (existing).
-- [ ] I-6 Haptics: `Haptics` (packages/input/src/Haptics.ts) reachable via feel bus; gamepad `vibrationActuator`,
+- [x] I-4 Auto show/hide: show on first `touchstart`, hide on keyboard/gamepad input; `options.autoHide` default true.
+- [x] I-5 Per-action `bufferMs` and `consume(action)`; defaults jump 130 ms, attack 150 ms, others 120 ms (existing).
+- [x] I-6 Haptics: `Haptics` (packages/input/src/Haptics.ts) reachable via feel bus; gamepad `vibrationActuator`,
   touch `navigator.vibrate(ms)`; respects a `haptics: false` user setting.
-- [ ] I-7 Tests: new `tests/qr/prd08/unit/touch-controls-mount.test.ts` (jsdom: pointer events → axis values) and
+- [x] I-7 Tests: new `tests/qr/prd08/unit/touch-controls-mount.test.ts` (jsdom: pointer events → axis values) and
   `tests/qr/prd08/unit/touch-device-prompts.test.ts` (I-3); browser test in `tests/qr/prd08/browser/camera-feel.spec.ts`
   with Playwright touch emulation on the lane harness. `tests/unit/engine/touch-control-binding.test.ts` (owner 15 by
   first import, `TouchControlBinding.ts`) is not edited.
@@ -1606,13 +1606,13 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   (panner model by tier, occlusion lowpass `20000·(1-occ)^2 + 400` Hz, live `setRate` τ 0.03 s, limiter −6 dB/12/6,
   jitter, voice limit 4, `PositionalEmitter.ts:232` live rate, default-cue removal, OfflineAudioContext checks: L/R
   energy ratio > 3:1 at +x with listener facing −z; 440 Hz loop with `setRate(2)` at 0.5 s → 880 ± 10 Hz in 0.7–1.0 s).
-- [ ] A-3 `camera/extension.ts`: when a C-25 `GameSound` is bound (lane-08 export `bindFeelSound(app, sound)` from
+- [x] A-3 `camera/extension.ts`: when a C-25 `GameSound` is bound (lane-08 export `bindFeelSound(app, sound)` from
   `feel/`, which PRD 09's `createGame` can call; no contract change), call `setListener({ position, forward, up })` from `presented()` once per presented frame. Test with a fake
   `GameSound`: one call per presented frame, values equal the presented pose within 1e-6.
-- [ ] A-5 `GameGenreKits.ts` racing kit and `game.craft`: create `GameSound.engine({ cue, rpmRange, pitchRange })` when
+- [x] A-5 `GameGenreKits.ts` racing kit and `game.craft`: create `GameSound.engine({ cue, rpmRange, pitchRange })` when
   a sound slot is bound and call `setRpm(state.rpm)`/`setLoad(throttle)` each fixed step. Test with a fake: rpm series
   equals the vehicle model's `rpm` series.
-- [ ] A-10 `tests/qr/prd08/unit/feel-audio-dispatch.test.ts`: feel `audio` channel calls `GameSound.play` with
+- [x] A-10 `tests/qr/prd08/unit/feel-audio-dispatch.test.ts`: feel `audio` channel calls `GameSound.play` with
   `rate ∈ [1 − pitchJitter, 1 + pitchJitter]` and the event position; `executed.audio` increments only when a
   `VoiceHandle` is returned (the C-25 stub returns one for asset cues, `null` otherwise).
 
@@ -1634,7 +1634,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   - falling-blocks-starter (`:251`): `rigs.static` with the current pose tilted 10° about X; preset `puzzle`.
   The same five configurations are built by this lane as lane-harness scenes `tests/qr/prd08/harness/templates/*.ts`
   so their standalone metrics (S6, S7, S10, S14) are proven without editing templates.
-- [ ] D-6 Facts F-08-1…F-08-6 committed to `evidence/prd08/facts.md` and appended to CONTRACTS Appendix B (C-40 rows
+- [x] D-6 Facts F-08-1…F-08-6 committed to `evidence/prd08/facts.md` and appended to CONTRACTS Appendix B (C-40 rows
   are the one CONTRACTS edit a lane may make, §6.4): rig-by-genre table (§6.4), framing fractions, feel preset table
   (F-3), `app.time` usage, touch kit usage, screen-feel reference behaviour (§8.3) and the forbidden evidence-only
   pattern. Skill text itself is Q-13-2.
@@ -1646,7 +1646,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Removals / deprecations (X)
 
-- [ ] X-1 `nodes/camera.ts`: deprecation warning for `smoothing` (once per spec, flag on) with the computed half-life.
+- [x] X-1 `nodes/camera.ts`: deprecation warning for `smoothing` (once per spec, flag on) with the computed half-life.
 - [ ] X-2 Delete `createGameCameraRig` aggregator (GameCameraRigs.ts:525-596 plus its option/evidence types) when the
   flag reaches `default-on` and `camera-cast` reports 0 remaining callers.
 - [ ] X-3 Lean delegation → request Q-15-4 (lane side: `camera/leanAdapters.ts` with tests).

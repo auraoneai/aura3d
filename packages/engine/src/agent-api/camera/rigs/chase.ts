@@ -81,7 +81,8 @@ export function createChaseRig(o: ChaseRigOptions): AuraCameraRig {
     update(ctx) {
       const subject = ctx.subject(o.target);
       if (!subject) return ctx.previous;
-      const speed = length3(subject.velocity);
+      // V-6: bicycle telemetry vLong feeds perSpeed when published, else |v|.
+      const speed = subject.telemetry?.vLong ?? length3(subject.velocity);
 
       // Yaw of subject heading (springed through the shortest arc).
       const targetYaw =
@@ -119,9 +120,10 @@ export function createChaseRig(o: ChaseRigOptions): AuraCameraRig {
       const desiredEye = add(add(subject.position, mul(yawDir(yaw), -dist)), [0, height, 0]);
       eye = desiredEye;
 
-      // Bank from lateral acceleration (centripetal estimate: yawRate·speed).
+      // Bank from lateral acceleration — V-6 prefers published lateralG over
+      // the centripetal estimate yawRate·speed.
       if (bank.gain !== 0) {
-        const latAccel = yawRate * speed;
+        const latAccel = subject.telemetry?.lateralG ?? yawRate * speed;
         const targetBank = clamp(-latAccel * bank.gain, bank.maxDeg) * (Math.PI / 180);
         bankDeg = springDamp(bankDeg, targetBank, bank.halflife ?? 0.25, ctx.dt);
       }
