@@ -79,7 +79,7 @@ export function sliverRatio(doc: Document, limitDeg = SLIVER_MIN_ANGLE_DEG): num
 }
 
 /** True when any mesh has boundary edges (open shells) → doubleSided must stay. */
-function hasOpenShells(doc: Document): boolean {
+export function hasOpenShells(doc: Document): boolean {
   for (const mesh of doc.getRoot().listMeshes()) {
     for (const prim of mesh.listPrimitives()) {
       const indices = prim.getIndices()?.getArray() as ArrayLike<number> | undefined;

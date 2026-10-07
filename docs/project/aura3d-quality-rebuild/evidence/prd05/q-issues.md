@@ -371,3 +371,34 @@ first import; the file should declare its dependency or guard the calls.
 `packages/assets/src/asset-corpus` barrel evaluates `node:crypto` at module
 scope → crash in the browser bundle; consumers must import
 `ProductionGLTFRenderPipeline.js` directly, bypassing the index.
+
+## Q-12-2 → lane 12 (`.gitattributes` has no `assets/library/**` LFS rule)
+
+The §6.6 curated library staged ~217 MB of GLB/.hdr/.zip bytes under
+`assets/library/` in PR F (Phase 5). `.gitattributes` is lane-12-owned and
+currently covers `public/aura-assets/*`, `assets/source/**`,
+`fixtures/asset-corpus/*` etc. but NOT `assets/library/**`, so the entries
+land as plain git objects. Requested follow-up: add
+`assets/library/**/*.glb`, `*.hdr`, `*.zip`, `*.ktx2` LFS patterns and run
+`git lfs migrate import --include="assets/library/**"` once; until then the
+kit is honest plain-git (works, just heavy).
+
+## Q-13-1 → lane 13 (skill/agent-facing text for Phase-5 surface)
+
+C-40 F-05-07..11 landed new agent-facing surface that lane 13 should fold
+into skills/`llms.txt` once verified:
+
+- `assets library add|list|sync` (C-39) — curated §6.6 kits at `aura.library.json`
+- `assets resolve` is library-first now (canonical `library:<id>` ids)
+- `assets import-meshy --source-entry` (§6.5 release path: candidate must be
+  release-admitted with sliver-check/remesh/bake in `derived.steps`)
+- `assets optimize --from-generated --remote --blender` flags
+- HDRI env entries carry `sunDirection`/`luminanceP99`/`whiteBalanceK`
+
+## Q-05-7 → lane 05 (open shells + derived assets under assets/library)
+
+`AuraLibraryEntry` reads `AuraCliAssetEntry`-shaped admission/derived
+records; the two shapes converge in `library-manifest.ts`. Keep an eye on
+typegen drift between `aura.assets.json` (1.1) and `aura.library.json`
+(1.0) schemas — a shared `admission`/`derived` block would let both reuse
+the same writer (tracked as possible Phase-6 refactor, not blocking).

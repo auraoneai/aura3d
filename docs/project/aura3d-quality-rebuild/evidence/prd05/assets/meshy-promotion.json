@@ -1,0 +1,209 @@
+{
+  "generatedAt": "2026-10-07T10:34:12.341Z",
+  "rule": "§6.5 — Meshy imports reach release only via assets optimize --from-generated (sliver-check+remesh+bake) then G1–G11 + approved look-dev; sliver ratio >15% tris with min angle <10° fails the pre-check.",
+  "sliverThreshold": 0.15,
+  "sliverMinAngleDeg": 10,
+  "decisions": [
+    {
+      "id": "courierVanMeshyV1Decimated",
+      "url": "/aura-assets/courierVanMeshyV1Decimated.6c1aa6f0.glb",
+      "role": "vehicle",
+      "optimizeProfile": "traffic-vehicle",
+      "decision": "hold-prestage",
+      "triangles": 76000,
+      "sliverRatio": 0.2454,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 24.5% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "courierVanMeshyV2Decimated",
+      "url": "/aura-assets/courierVanMeshyV2Decimated.6f509ab0.glb",
+      "role": "vehicle",
+      "optimizeProfile": "traffic-vehicle",
+      "decision": "hold-prestage",
+      "triangles": 80000,
+      "sliverRatio": 0.2357,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 23.6% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "deepSubMeshy",
+      "url": "/aura-assets/deepSubMeshy.f6feb67e.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 80000,
+      "sliverRatio": 0.1777,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 17.8% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "galleryThief",
+      "url": "/aura-assets/galleryThief.528ad4aa.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 49999,
+      "sliverRatio": 0.1809,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 18.1% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "gravityPostMeshyFreight",
+      "url": "/aura-assets/gravityPostMeshyFreight.1db015a8.glb",
+      "role": "prop",
+      "optimizeProfile": "prop-large",
+      "decision": "hold-prestage",
+      "triangles": 83333,
+      "sliverRatio": 0.1243,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "mechHeroDecimated",
+      "url": "/aura-assets/mechHeroDecimated.0e52ceb3.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 99999,
+      "sliverRatio": 0.1728,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 17.3% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "neonArena",
+      "url": "/aura-assets/neonArena.7327d83f.glb",
+      "role": "world",
+      "optimizeProfile": "world-chunk",
+      "decision": "hold-prestage",
+      "triangles": 249999,
+      "sliverRatio": 0.1921,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 19.2% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "patrolAircraftMeshy",
+      "url": "/aura-assets/patrolAircraftMeshy.183e83f8.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 60000,
+      "sliverRatio": 0.2118,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 21.2% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "pulseArena",
+      "url": "/aura-assets/pulseArena.2445a728.glb",
+      "role": "world",
+      "optimizeProfile": "world-chunk",
+      "decision": "hold-prestage",
+      "triangles": 237500,
+      "sliverRatio": 0.202,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 20.2% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "rooftopShooterMeshyV1",
+      "url": "/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 50000,
+      "sliverRatio": 0.156,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "sliver ratio 15.6% > 15% — Quadriflow remesh mandatory before UV/bake",
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "skylineHeroMeshyV2",
+      "url": "/aura-assets/skylineHeroMeshyV2.9bdd5ae2.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 80000,
+      "sliverRatio": 0.1202,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    },
+    {
+      "id": "skylineHeroRunner",
+      "url": "/aura-assets/skylineHeroRunner.67a8a30b.glb",
+      "role": "character",
+      "optimizeProfile": "npc-character",
+      "decision": "hold-prestage",
+      "triangles": 47999,
+      "sliverRatio": 0.1077,
+      "openShells": true,
+      "notes": "open shells detected — keep doubleSided cleared per §6.5",
+      "blockers": [
+        "derived.steps missing sliver-check/remesh/bake (needs remote worker: Blender + toktx)",
+        "no G1–G11 admission record on the derived output",
+        "no approved look-dev record on the derived output"
+      ]
+    }
+  ]
+}
