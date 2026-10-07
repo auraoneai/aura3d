@@ -113,7 +113,7 @@ registerCliCommand({
   name: "assets optimize",
   owner: "prd05",
   summary: "Optimize assets through the §6.3 step pipeline (tools/asset-optimize).",
-  usage: "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>]",
+  usage: "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
   run: async (argv, io) =>
     optimizeAssetsVerb({ projectDir: io.cwd, argv, stdout: io.stdout, stderr: io.stderr }),
 });

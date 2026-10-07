@@ -89,7 +89,7 @@ jobs:
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
           ids="${{ github.event.inputs.ids }}"
-          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir .optimize-out)
+          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir optimize-out)
           if [ -n "$ids" ]; then
             args+=(--ids "$ids" --allow-local-small --no-manifest)
           else
@@ -103,5 +103,5 @@ jobs:
           name: asset-optimize-${{ github.sha }}
           path: |
             evidence/prd05/assets/optimize-ci.json
-            .optimize-out/
+            optimize-out/
           retention-days: 14
