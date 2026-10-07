@@ -6,7 +6,19 @@ import type { AuraVec3, AuraRuntimeNodeHandle } from "../agent-api/index";
 
 export interface AuraCameraPose { readonly position: AuraVec3; readonly target: AuraVec3; readonly up: AuraVec3; readonly roll: number; readonly fov: number; readonly near: number; readonly far: number; readonly orthographicSize?: number; }
 export type AuraEaseName = "linear" | "inQuad" | "outQuad" | "inOutQuad" | "inCubic" | "outCubic" | "inOutCubic" | "outBack" | "outElastic" | "inOutSine" | "outExpo";
-export interface AuraCameraSubject { readonly position: AuraVec3; readonly velocity: AuraVec3; readonly forward: AuraVec3; readonly bounds: { readonly min: AuraVec3; readonly max: AuraVec3 }; }
+export interface AuraCameraSubject {
+  readonly position: AuraVec3;
+  readonly velocity: AuraVec3;
+  readonly forward: AuraVec3;
+  readonly bounds: { readonly min: AuraVec3; readonly max: AuraVec3 };
+  /**
+   * V-6 (additive): model telemetry a rig may prefer over kinematic
+   * estimates — bicycle-model subjects publish `lateralG` (bank input) and
+   * `vLong` (perSpeed FOV input); rigs fall back to `yawRate·speed` /
+   * `|velocity|` when absent.
+   */
+  readonly telemetry?: { readonly lateralG?: number; readonly vLong?: number };
+}
 export interface AuraCameraProbe { sphereCast(from: AuraVec3, to: AuraVec3, radius: number): { readonly hit: boolean; readonly distance: number; readonly node?: string }; occluders(from: AuraVec3, to: AuraVec3): readonly string[]; }
 export interface AuraCameraRigContext { readonly dt: number; readonly time: number; readonly aspect: number; readonly previous: AuraCameraPose; subject(ref: string | AuraRuntimeNodeHandle): AuraCameraSubject | undefined; readonly probe: AuraCameraProbe; }
 export interface AuraCameraRig { readonly id: string; update(ctx: AuraCameraRigContext): AuraCameraPose; reset?(pose?: AuraCameraPose): void; }

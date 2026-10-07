@@ -1,6 +1,8 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from WebGL2Device.ts; 0 changed logic lines.
 
 import { RenderDeviceError, type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderShaderProgram } from "../RenderDevice";
+import { resolveBlendMode } from "../contracts/blend";
+import type { BlendEquation, BlendFactor } from "../contracts/blend";
 import { isTextureBinding } from "../TextureBinding";
 import type { VertexAttribute, VertexFormat } from "../VertexFormat";
 import { WebGL2Buffer, WebGL2ShaderProgram } from "../WebGL2Device";
@@ -19,7 +21,18 @@ export class WebGL2DrawCallBinder {
 
   readonly uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
 
+  /**
+   * PRD-01 Phase 6: per-program last-value uniform cache — skips the GL call
+   * when the incoming value equals what was last uploaded for this program
+   * (numbers by value, arrays element-wise vs a retained snapshot, texture
+   * bindings by texture/sampler/transform identity).
+   */
+  private readonly uniformValueCache = new WeakMap<WebGL2ShaderProgram, Map<string, unknown>>();
+
   readonly vertexArrayCache = new Map<string, WebGL2VertexArrayCacheEntry>();
+
+  /** buffer id → VAO keys referencing it (PRD-01 Phase 6 §6.1 eviction index). */
+  private readonly bufferVaoIndex = new Map<number, Set<string>>();
 
   readonly vertexFormatIds = new WeakMap<VertexFormat, number>();
 
@@ -101,6 +114,11 @@ export class WebGL2DrawCallBinder {
 
   uploadUniforms(shader: WebGL2ShaderProgram, uniforms: ReadonlyMap<string, unknown>): void {
     let textureUnit = 0;
+    let valueCache = this.uniformValueCache.get(shader);
+    if (!valueCache) {
+      valueCache = new Map();
+      this.uniformValueCache.set(shader, valueCache);
+    }
     for (const [name, value] of uniforms) {
       if (!shader.reflection.uniforms.has(name)) {
         continue;
@@ -110,13 +128,55 @@ export class WebGL2DrawCallBinder {
         throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
       }
       if (isTextureBinding(value)) {
-        this.host.samplers.uploadTextureUniform(location, value, textureUnit);
         textureUnit += 1;
+        // Last-value check: same texture + sampler + transform → the unit
+        // binding from the previous upload still holds.
+        const lastTexture = valueCache.get(name) as
+          | { texture: unknown; sampler: unknown; offset: readonly number[]; scale: readonly number[]; rotation: number }
+          | undefined;
+        const textureUnchanged =
+          lastTexture !== undefined &&
+          lastTexture.texture === value.texture &&
+          lastTexture.sampler === value.sampler &&
+          lastTexture.rotation === value.rotation &&
+          lastTexture.offset[0] === value.offset[0] &&
+          lastTexture.offset[1] === value.offset[1] &&
+          lastTexture.scale[0] === value.scale[0] &&
+          lastTexture.scale[1] === value.scale[1];
+        if (textureUnchanged) continue;
+        // lane 06 Q-01-3: pass the declared uniform type so sampler2DArray
+        // uniforms bind TEXTURE_2D_ARRAY units even when texture.dimension is absent.
+        this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
+        valueCache.set(name, {
+          texture: value.texture,
+          sampler: value.sampler,
+          offset: value.offset,
+          scale: value.scale,
+          rotation: value.rotation
+        });
       } else if (typeof value === "number") {
+        if (valueCache.get(name) === value) continue;
         this.host.gl.uniform1f(location, value);
+        valueCache.set(name, value);
       } else if (Array.isArray(value) || ArrayBuffer.isView(value)) {
         const length = (value as ArrayLike<number>).length;
         const floatData = value as Float32List;
+        // Last-value check against a retained snapshot: element-wise equal →
+        // the previous upload still holds (skip the GL call).
+        const lastArray = valueCache.get(name) as Float32Array | undefined;
+        if (lastArray !== undefined && lastArray.length === length) {
+          let same = true;
+          for (let i = 0; i < length; i += 1) {
+            if (lastArray[i] !== floatData[i]) {
+              same = false;
+              break;
+            }
+          }
+          if (same) continue;
+          for (let i = 0; i < length; i += 1) lastArray[i] = floatData[i];
+        } else {
+          valueCache.set(name, Float32Array.from(floatData as ArrayLike<number>));
+        }
         if (length === 16 || (length > 16 && length % 16 === 0 && /(?:Matrix|Matrices)$/.test(name))) {
           this.host.gl.uniformMatrix4fv(location, false, floatData);
         } else if (length > 16 && length % 4 === 0) {
@@ -204,7 +264,11 @@ export class WebGL2DrawCallBinder {
     this.host.stateCache.bindVertexArray(handle, () => this.host.gl.bindVertexArray(handle));
     this.host.stateCache.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle, () => this.host.gl.bindBuffer(this.host.gl.ARRAY_BUFFER, vertexBuffer.handle));
     const boundLocations = this.bindVertexFormat(shader, command.vertexFormat!);
+    const instanceBufferIds: number[] = [];
     if (command.instanceAttributes && command.instanceAttributes.length > 0) {
+      for (const attribute of command.instanceAttributes) {
+        instanceBufferIds.push(this.requireBuffer(attribute.buffer).id);
+      }
       this.bindInstanceAttributes(shader, command.instanceAttributes, boundLocations);
     }
     if (indexBuffer) {
@@ -214,7 +278,37 @@ export class WebGL2DrawCallBinder {
     this.applyDefaultAttributes(shader, boundLocations);
     const entry: WebGL2VertexArrayCacheEntry = { key, handle, boundLocations };
     this.vertexArrayCache.set(key, entry);
+    for (const bufferId of [vertexBuffer.id, indexBuffer?.id, ...instanceBufferIds]) {
+      if (bufferId === undefined) continue;
+      let keys = this.bufferVaoIndex.get(bufferId);
+      if (!keys) {
+        keys = new Set();
+        this.bufferVaoIndex.set(bufferId, keys);
+      }
+      keys.add(key);
+    }
     return entry;
+  }
+
+  /**
+   * PRD-01 Phase 6 (CONTRACTS §6.1 declared leak fix): delete every cached VAO
+   * that references `bufferId` — the key embeds vertex/index/instance buffer
+   * ids, so the index is the authoritative reverse map. Called from
+   * `WebGL2Buffer.dispose` before the GL buffer is deleted.
+   */
+  evictVertexArraysForBuffer(bufferId: number): number {
+    const keys = this.bufferVaoIndex.get(bufferId);
+    if (!keys || keys.size === 0) return 0;
+    let evicted = 0;
+    for (const key of keys) {
+      const entry = this.vertexArrayCache.get(key);
+      if (!entry) continue;
+      this.vertexArrayCache.delete(key);
+      evicted += 1;
+      if (entry.handle) this.host.gl.deleteVertexArray(entry.handle);
+      for (const set of this.bufferVaoIndex.values()) set.delete(key);
+    }
+    return evicted;
   }
 
   bindNoVertexArray(): void {
@@ -359,7 +453,13 @@ export class WebGL2DrawCallBinder {
       else this.host.gl.disable(this.host.gl.DEPTH_TEST);
     });
     this.host.stateCache.depthMask(renderState.depthWrite, () => this.host.gl.depthMask(renderState.depthWrite));
-    this.host.stateCache.depthFunc(renderState.depthCompare === "always" ? this.host.gl.ALWAYS : this.host.gl.LEQUAL, () => this.host.gl.depthFunc(renderState.depthCompare === "always" ? this.host.gl.ALWAYS : this.host.gl.LEQUAL));
+    const depthCompare = renderState.depthCompareV2 ?? renderState.depthCompare;
+    const depthFuncEnum = this.depthCompareEnum(depthCompare);
+    this.host.stateCache.depthFunc(depthFuncEnum, () => this.host.gl.depthFunc(depthFuncEnum));
+    this.host.stateCache.setEnabled(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE, renderState.alphaToCoverage === true, () => {
+      if (renderState.alphaToCoverage === true) this.host.gl.enable(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE);
+      else this.host.gl.disable(this.host.gl.SAMPLE_ALPHA_TO_COVERAGE);
+    });
     const colorWrite = renderState.colorWrite ?? [true, true, true, true] as const;
     this.host.stateCache.colorMask(colorWrite[0], colorWrite[1], colorWrite[2], colorWrite[3], () => this.host.gl.colorMask(colorWrite[0], colorWrite[1], colorWrite[2], colorWrite[3]));
     if (renderState.scissor) {
@@ -398,11 +498,70 @@ export class WebGL2DrawCallBinder {
       this.host.stateCache.setEnabled(this.host.gl.CULL_FACE, true, () => this.host.gl.enable(this.host.gl.CULL_FACE));
       this.host.stateCache.cullFace(renderState.cullMode === "front" ? this.host.gl.FRONT : this.host.gl.BACK, () => this.host.gl.cullFace(renderState.cullMode === "front" ? this.host.gl.FRONT : this.host.gl.BACK));
     }
-    if (renderState.blend) {
+    if (renderState.blendMode !== undefined) {
+      // C-04 (§6.8): blendMode wins over `blend`; full factor/equation vocab.
+      const resolved = resolveBlendMode(renderState);
+      if (resolved === "opaque") {
+        this.host.stateCache.setEnabled(this.host.gl.BLEND, false, () => this.host.gl.disable(this.host.gl.BLEND));
+      } else {
+        this.host.stateCache.setEnabled(this.host.gl.BLEND, true, () => this.host.gl.enable(this.host.gl.BLEND));
+        const colorEq = this.blendEquationEnum(resolved.color.equation);
+        const alphaEq = this.blendEquationEnum(resolved.alpha.equation);
+        this.host.stateCache.blendEquation(colorEq, alphaEq, () => this.host.gl.blendEquationSeparate(colorEq, alphaEq));
+        const sC = this.blendFactorEnum(resolved.color.src);
+        const dC = this.blendFactorEnum(resolved.color.dst);
+        const sA = this.blendFactorEnum(resolved.alpha.src);
+        const dA = this.blendFactorEnum(resolved.alpha.dst);
+        this.host.stateCache.blendFuncSeparate(sC, dC, sA, dA, () => this.host.gl.blendFuncSeparate(sC, dC, sA, dA));
+      }
+    } else if (renderState.blend) {
       this.host.stateCache.setEnabled(this.host.gl.BLEND, true, () => this.host.gl.enable(this.host.gl.BLEND));
+      // C-04: restore FUNC_ADD only after a blendMode draw changed the equation;
+      // a fresh context is already FUNC_ADD so nothing is emitted flag-off.
+      if (this.host.stateCache.blendEquationDiffers(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD)) {
+        this.host.stateCache.blendEquation(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD, () => this.host.gl.blendEquationSeparate(this.host.gl.FUNC_ADD, this.host.gl.FUNC_ADD));
+      }
       this.host.stateCache.blendFunc(this.host.gl.SRC_ALPHA, this.host.gl.ONE_MINUS_SRC_ALPHA, () => this.host.gl.blendFunc(this.host.gl.SRC_ALPHA, this.host.gl.ONE_MINUS_SRC_ALPHA));
     } else {
       this.host.stateCache.setEnabled(this.host.gl.BLEND, false, () => this.host.gl.disable(this.host.gl.BLEND));
+    }
+  }
+
+  depthCompareEnum(compare: string): GLenum {
+    switch (compare) {
+      case "never": return this.host.gl.NEVER;
+      case "less": return this.host.gl.LESS;
+      case "equal": return this.host.gl.EQUAL;
+      case "less-equal": return this.host.gl.LEQUAL;
+      case "greater": return this.host.gl.GREATER;
+      case "not-equal": return this.host.gl.NOTEQUAL;
+      case "greater-equal": return this.host.gl.GEQUAL;
+      default: return this.host.gl.ALWAYS;
+    }
+  }
+
+  blendEquationEnum(equation: BlendEquation): GLenum {
+    switch (equation) {
+      case "add": return this.host.gl.FUNC_ADD;
+      case "subtract": return this.host.gl.FUNC_SUBTRACT;
+      case "reverse-subtract": return this.host.gl.FUNC_REVERSE_SUBTRACT;
+      case "min": return this.host.gl.MIN;
+      case "max": return this.host.gl.MAX;
+    }
+  }
+
+  blendFactorEnum(factor: BlendFactor): GLenum {
+    switch (factor) {
+      case "zero": return this.host.gl.ZERO;
+      case "one": return this.host.gl.ONE;
+      case "src-color": return this.host.gl.SRC_COLOR;
+      case "one-minus-src-color": return this.host.gl.ONE_MINUS_SRC_COLOR;
+      case "src-alpha": return this.host.gl.SRC_ALPHA;
+      case "one-minus-src-alpha": return this.host.gl.ONE_MINUS_SRC_ALPHA;
+      case "dst-color": return this.host.gl.DST_COLOR;
+      case "one-minus-dst-color": return this.host.gl.ONE_MINUS_DST_COLOR;
+      case "dst-alpha": return this.host.gl.DST_ALPHA;
+      case "one-minus-dst-alpha": return this.host.gl.ONE_MINUS_DST_ALPHA;
     }
   }
 

@@ -30,7 +30,8 @@ test.describe("ExternalParity physical material matrix browser evidence", () => 
     const externalParityMaterials = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const matrix = rendering.analyzeExternalParityMaterialMatrix();
-      const transmission = rendering.evaluateExternalParityTransmission({
+      const { evaluateExternalParityTransmission } = await import("/tests/qr/prd04/oracles/external-parity-transmission.ts");
+      const transmission = evaluateExternalParityTransmission({
         baseColor: [0.8, 0.95, 1],
         thickness: 0.2,
         attenuationColor: [0.95, 0.98, 1],

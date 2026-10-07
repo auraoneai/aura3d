@@ -1,5 +1,8 @@
 /**
- * Lane prd09 barrel — owned by lane 09 (CONTRACTS.md §3.8). `provide()` calls
- * for that lane's real implementations live here; empty in PR 0a.
+ * Lane prd09 barrel — owned by lane 09 (CONTRACTS.md §3.8). Registers the
+ * lane's node-handle extensions behind `A3D_QR_GAME`.
  */
-export {};
+import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
+import { instanceTransformsExtension } from "../agent-api/nodes/game/instanceTransforms.js";
+
+registerNodeHandleExtension(instanceTransformsExtension);

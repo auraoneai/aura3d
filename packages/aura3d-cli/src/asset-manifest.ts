@@ -10,6 +10,7 @@ import type {
   AuraCliAssetEntry,
   AuraCliAssetManifest,
 } from "./index.js";
+import { qrAssetsFlagEnabled } from "./admission/qrFlags.js";
 
 export function readAssetManifest(projectDir: string): AuraCliAssetManifest {
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
@@ -31,7 +32,13 @@ export function readAssetManifest(projectDir: string): AuraCliAssetManifest {
 }
 
 export function writeAssetManifest(projectDir: string, manifest: AuraCliAssetManifest): void {
-  writeFileSync(resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
+  // C-17 stub rule: the writer emits "aura3d.assets/1.1" once A3D_QR_ASSETS
+  // is on. With the flag off it preserves the schema it was handed (the
+  // migration tool may hand it a 1.1 document deliberately).
+  const schema = qrAssetsFlagEnabled() || manifest.schema === "aura3d.assets/1.1"
+    ? "aura3d.assets/1.1" as const
+    : "aura3d.assets/1.0" as const;
+  writeFileSync(resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST), `${JSON.stringify({ ...manifest, schema }, null, 2)}\n`);
 }
 
 export function writeTypedAssets(projectDir: string, manifest = readAssetManifest(projectDir)): string {
@@ -61,7 +68,9 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
       const metadata = {
         materials: asset.materials,
         animations: asset.animations,
-        animationClips: asset.animations,
+        // C-17: 1.1 entries carry {name, duration, channelCount} clip objects
+        // (Q-05-1); 1.0 entries keep the legacy clip-name list.
+        animationClips: asset.animationClips ?? asset.animations,
         animationMetadata: asset.animationMetadata ?? createReadinessAnimationMetadata(asset.animations),
         humanoid: asset.humanoid?.humanoid ?? false,
         humanoidStatus: asset.humanoid?.status ?? "unknown",
@@ -159,7 +168,7 @@ function isAssetManifest(value: unknown): value is AuraCliAssetManifest {
   return value !== null &&
     typeof value === "object" &&
     "schema" in value &&
-    value.schema === "aura3d.assets/1.0" &&
+    (value.schema === "aura3d.assets/1.0" || value.schema === "aura3d.assets/1.1") &&
     "assets" in value &&
     Array.isArray(value.assets);
 }
