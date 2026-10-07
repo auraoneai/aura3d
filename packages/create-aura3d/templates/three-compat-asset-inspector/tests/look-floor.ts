@@ -79,7 +79,10 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
   // context is not preserveDrawingBuffer, so a post-composite gl.readPixels
   // reads a cleared buffer. Profiling the composited frame keeps the same
   // assertions without depending on context attributes.
-  const png = await canvas.screenshot();
+  // Software-GL runners present frames slowly (seconds each); the element
+  // screenshot forces another composited frame, so give the capture real headroom
+  // rather than the ~30 s action default.
+  const png = await canvas.screenshot({ timeout: 180_000 });
 
   const report = await page.evaluate(async (dataUrl): Promise<LookFloorReport> => {
     const BRIGHT_LUMA = 48;

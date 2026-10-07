@@ -134,6 +134,15 @@ const hudBindings = game.hud.bindings([
 ]);
 const runtimeEffects = game.effects({ poolSize: 64 });
 
+interface DroneState { alive: boolean; x: number; z: number }
+interface BoltState { live: boolean; x: number; z: number; dx: number; dz: number; ttl: number }
+
+// Declared before createGame: the engine calls `scene: buildScene` eagerly
+// inside createGame(), and buildScene maps these pools into nodes — leaving
+// them below the call site throws a TDZ error before the app mounts.
+const drones: DroneState[] = Array.from({ length: DRONE_POOL }, () => ({ alive: false, x: 0, z: 0 }));
+const bolts: BoltState[] = Array.from({ length: BOLT_POOL }, () => ({ live: false, x: 0, z: 0, dx: 0, dz: 0, ttl: 0 }));
+
 const auraGame = createGame({
   id: "arena-shooter",
   target: document.querySelector<HTMLElement>("#app")!,
@@ -193,12 +202,6 @@ const hudFrame = ui.text("#hud-frame");
 const hudCamera = ui.text("#hud-camera");
 const hudAssets = ui.text("#hud-assets");
 const pauseButton = ui.button("#hud-pause-button");
-
-interface DroneState { alive: boolean; x: number; z: number }
-interface BoltState { live: boolean; x: number; z: number; dx: number; dz: number; ttl: number }
-
-const drones: DroneState[] = Array.from({ length: DRONE_POOL }, () => ({ alive: false, x: 0, z: 0 }));
-const bolts: BoltState[] = Array.from({ length: BOLT_POOL }, () => ({ live: false, x: 0, z: 0, dx: 0, dz: 0, ttl: 0 }));
 
 let shipX = 0;
 let shipZ = 1.6;
