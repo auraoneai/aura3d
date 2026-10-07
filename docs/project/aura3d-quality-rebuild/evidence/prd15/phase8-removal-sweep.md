@@ -294,3 +294,31 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
   assertions fail only under software-GL (SMAA coverage ratio,
   auto-exposure settle timing, invert LSB) — real-GPU assertions the
   macos-14 lane exercises, not module-load failures.
+
+## Post-merge CI repair (2nd wave, commits 0c686dfc0 + bbb52fe43)
+
+- Lane 03 specs follow-on failure after `1ad2a1995`: `beforeAll` 60 s
+  timeout — cold dev-server transform of the engine graph exceeds the
+  repo's global `timeout: 60_000` on macOS CI (~9 s warm locally). Fixed
+  in `0c686dfc0`: `test.describe.configure({ timeout: 240_000 })` inside
+  each of the 8 `qr-prd03-*.spec.ts` describes.
+- `check:agent-docs` sim failure (`llms-agent-simulation-builds-working-app`):
+  generated workspace `playwright.config.ts` had no GPU launch args, so
+  WebGL2 availability was a dice roll on GPU-less ubuntu runners and the
+  `data-aura3d-ready` poll could stall to its 90 s cap. Fixed in
+  `0c686dfc0` by adding swiftshader launch args to
+  `writeWorkspacePlaywrightConfig` in `tools/agent-docs/simulation.ts`.
+  Verified `pnpm check:agent-docs` exits 0 locally.
+- three.js benchmark vite build failure: `setTypedGLBActorQrFlags` (plus
+  `setTypedGLBActorQrTransmissionMode`, `registeredTypedGLBActors`) had
+  been removed from the `.` public union by this sweep while five
+  consumers still imported them from `@aura3d/engine` — rollup errored at
+  `benchmarks/quality-rebuild/aura3d/scenes/prd04/common.ts:23`. Fixed in
+  `bbb52fe43`: repointed the imports in the two benchmark scenes and the
+  three `tests/qr/prd04/harness` files to the published
+  `@aura3d/engine/lanes` subpath where the names now live
+  (`packages/engine/src/lanes/prd04.ts`). Verified
+  `pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts`
+  passes locally (✓ built in 7.71 s). These are cross-lane consumer fixes
+  (lane-04 harness + shared benchmark scenes); cross-lane edits are
+  covered by the §6.6 convention since the names only moved import path.
