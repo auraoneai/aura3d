@@ -2,6 +2,7 @@
 
 import type { AuraColor, AuraLightNode, AuraVec3 } from "../index.js";
 import { AuraNodeBuilder } from "../index.js";
+import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
 
 export const lights = {
   ambient: (options: { readonly name?: string; readonly intensity?: number; readonly color?: AuraColor } = {}) =>
@@ -12,26 +13,42 @@ export const lights = {
       intensity: options.intensity ?? 0.28,
       color: options.color ?? "#ffffff"
     }),
-  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean } = {}) =>
+  hemisphere: (options: { readonly name?: string; readonly skyColor?: AuraColor; readonly groundColor?: AuraColor; readonly intensity?: number; readonly position?: AuraVec3 } = {}) =>
+    new AuraNodeBuilder<AuraLightNode>({
+      kind: "light",
+      light: "hemisphere",
+      name: options.name ?? "hemisphere light",
+      position: options.position ?? [0, 1, 0],
+      intensity: options.intensity ?? 1,
+      color: options.skyColor ?? "#bcd7ff",
+      // CCR-02-2 additive field: the C-36 handler reads groundColor.
+      ...(options.groundColor !== undefined ? { groundColor: options.groundColor } : {})
+    } as AuraLightNode),
+  directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraDirectionalShadowOptions } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "directional",
       name: options.name,
       position: options.position ?? [3, 4, 3],
+      ...(options.target !== undefined ? { target: options.target } : {}),
       intensity: options.intensity ?? 1.5,
       color: options.color ?? "#ffffff",
       shadow: options.shadow
     }),
-  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor } = {}) =>
+  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "point",
       name: options.name,
       position: options.position ?? [2, 2.5, 1.5],
-      intensity: options.intensity ?? 2,
+      intensity: options.intensity ?? 8,
+      ...(options.power !== undefined ? { power: options.power } : {}),
+      ...(options.distance !== undefined ? { distance: options.distance } : {}),
+      ...(options.decay !== undefined ? { decay: options.decay } : {}),
+      ...(options.shadow !== undefined ? { shadow: options.shadow } : {}),
       color: options.color ?? "#ffffff"
     }),
-  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean } = {}) =>
+  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly power?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "spot",
@@ -42,7 +59,8 @@ export const lights = {
       penumbra: options.penumbra ?? 0.4,
       distance: options.distance ?? 12,
       decay: options.decay,
-      intensity: options.intensity ?? 8,
+      intensity: options.intensity ?? 30,
+      ...(options.power !== undefined ? { power: options.power } : {}),
       color: options.color ?? "#ffffff",
       shadow: options.shadow
     }),
@@ -55,18 +73,21 @@ export const lights = {
       color: "#ffffff",
       position: [0, 3, 4]
     }),
-  rect: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number } = {}) =>
+  rect: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "rect",
       name: options.name ?? "rect area light",
       position: options.position ?? [0, 2.6, 1.8],
+      ...(options.target !== undefined ? { target: options.target } : {}),
       intensity: options.intensity ?? 1.4,
       color: options.color ?? "#ffffff",
       width: options.width ?? 2.2,
-      height: options.height ?? 1.2
-    }),
-  softbox: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number } = {}) =>
+      height: options.height ?? 1.2,
+      // CCR-02-2 additive field.
+      ...(options.twoSided !== undefined ? { twoSided: options.twoSided } : {})
+    } as AuraLightNode),
+  softbox: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "softbox",

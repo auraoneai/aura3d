@@ -1271,20 +1271,20 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Loop and interpolation (L)
 
-- [ ] L-1 `packages/engine/src/agent-api/FrameLoop.ts`: add `maxFrameDt` option (default 0.1, applied only with
+- [x] L-1 `packages/engine/src/agent-api/FrameLoop.ts`: add `maxFrameDt` option (default 0.1, applied only with
   `A3D_QR_CAMERA_LOOP`); clamp `dt` in `tick()` (`:179-185`, the `dt` computed at `:181`) and in `step()` (`:124-126`,
   before `* this.timeScale`). Count clamped ticks as `clampedFrames` in `snapshot()`. Unit test in
   `tests/unit/engine/fixed-step-determinism.test.ts` (lane 08): a 2.0 s rAF gap advances sim by exactly
   `min(maxFrameDt, maxSubSteps·fixedDt)` and increments `clampedFrames` by 1; with the flag off the old result holds.
-- [ ] L-2 `FrameLoop.ts:62` and carved `app/frameLoopDefaults.ts` (`DEFAULT_MAX_SUBSTEPS`, from `index.ts:7061` and
+- [x] L-2 `FrameLoop.ts:62` and carved `app/frameLoopDefaults.ts` (`DEFAULT_MAX_SUBSTEPS`, from `index.ts:7061` and
   `:8204`): default 5 → 6 under `A3D_QR_CAMERA_LOOP`; add `overload: "slow-motion" | "catch-up"` (C-23
   `AuraLoopOptions`, default `"slow-motion"`, semantics §6.7) to `FrameLoopOptions`; replace the clamp at
   `FrameLoop.ts:144-146` with the policy switch; count `overloadFrames` in `snapshot()`; add the substep-cap guard
   (§6.7). Unit tests for both policies at `fixedDt 1/120`, 100 ms ticks. Until PR 0b-1 merges, the constant lives in
   `time/loopDefaults.ts` and `frameLoopDefaults.ts` re-exports it after the carve.
-- [ ] L-3 `FrameLoop.ts`: add `onTick(callback(frame: { realDt, substeps, alpha, simTime }))` emitted **once** after the
+- [x] L-3 `FrameLoop.ts`: add `onTick(callback(frame: { realDt, substeps, alpha, simTime }))` emitted **once** after the
   substep loop, including ticks with 0 substeps.
-- [ ] L-4 New `time/FixedStepDriver.ts`: `createFixedStepDriver(app, options: AuraLoopOptions)` that owns a `FrameLoop`,
+- [x] L-4 New `time/FixedStepDriver.ts`: `createFixedStepDriver(app, options: AuraLoopOptions)` that owns a `FrameLoop`,
   calls the public `app.advance(fixedDt)` (`index.ts:11582`) per substep and `app.step(0)` once per tick, publishes
   `alpha/realDt/simTime` to `app.onRender` subscribers, and records `renderSubmissionsLastTick`. The C-38 `time`
   extension starts it for `createAuraApp({ autoStart: true, loop })` when `A3D_QR_CAMERA_LOOP` is on. Test
@@ -1295,7 +1295,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   `currentFrameAlpha(app)` from `app/frameAlpha.ts` so the PRD 15 edit is a one-line import each.
 - [ ] L-6 `app/frameAlpha.ts` (carved from `index.ts:11290-11302`): under the flag, `runtimeAlpha` returns the
   `FixedStepDriver`/`FrameLoop` alpha instead of `(dt % fixedDt)/fixedDt`; flag off keeps the modulo.
-- [ ] L-7 New `time/Interpolation.ts`: `InterpolationStore` with `capturePrevious()`, `captureCurrent()`,
+- [x] L-7 New `time/Interpolation.ts`: `InterpolationStore` with `capturePrevious()`, `captureCurrent()`,
   `resolve(alpha)`; per handle prev/curr position (lerp), rotation (XYZ Euler → `@aura3d/math` `Quaternion` via
   `Euler`, shortest-path slerp, back to XYZ Euler), scale (lerp). Register C-37 handle extension `prd08.time`
   (`interpolate`, `timeScale`, `teleport(x, y, z, rotation?)`) and the C-01 `collect` contributor
@@ -1316,20 +1316,20 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Time (T)
 
-- [ ] T-1 New `time/TimeController.ts` implementing the C-23 `AuraTimeController`; `scale` setter clamps to [0, 4];
+- [x] T-1 New `time/TimeController.ts` implementing the C-23 `AuraTimeController`; `scale` setter clamps to [0, 4];
   registered as the real C-38 `time` extension.
-- [ ] T-2 `FrameLoop.ts`: replace readonly `timeScale` (`:46, :63`) with a getter reading the TimeController (keep
+- [x] T-2 `FrameLoop.ts`: replace readonly `timeScale` (`:46, :63`) with a getter reading the TimeController (keep
   constructor option as initial value; PR 0b's `setTimeScale` wiring stays valid); `step()` reads it per call.
-- [ ] T-3 `hitStop(seconds, { scope: "global" })`: sim dt 0; overlapping calls take max remaining. Unit test.
-- [ ] T-4 `hitStop(seconds, { scope: actors })`: sets `handle.timeScale = 0` (C-37 `prd08.time`) for listed handles; the
+- [x] T-3 `hitStop(seconds, { scope: "global" })`: sim dt 0; overlapping calls take max remaining. Unit test.
+- [x] T-4 `hitStop(seconds, { scope: actors })`: sets `handle.timeScale = 0` (C-37 `prd08.time`) for listed handles; the
   following lane-08 integrators multiply their dt by the bound handle's `timeScale`: `createGameKinematicBody`
   update/move (`GameRuntime.ts:2074`), `createGameArcadeVehicle` update (`:2007`), `createCombatWorld` actor step
   (`:2541`), `createGamePlatformerKit` player body (`GameGenreKits.ts:895`). Animation freeze is PRD 06's read of
   `handle.timeScale` (C-23 semantics; no request). Unit test: in a two-actor combat world, a scoped hit-stop freezes
   both listed actors' positions for the duration while a third, unlisted actor's position keeps changing.
-- [ ] T-5 `slowMo(scale, seconds, { easeOut })` + `scaleTo(value, halflife)` using `damp`. Unit test: `scaleTo(0.25, 0.1)`
+- [x] T-5 `slowMo(scale, seconds, { easeOut })` + `scaleTo(value, halflife)` using `damp`. Unit test: `scaleTo(0.25, 0.1)`
   reaches 0.625 ± 0.01 after 0.1 s; `slowMo(0.3, 1, { easeOut: 0.2 })` returns to 1 ± 0.01 at t = 1.2 s.
-- [ ] T-6 `app.time` via the C-38 `time` factory; `GameSession` delegation is PRD 09's (R15) and needs no request.
+- [x] T-6 `app.time` via the C-38 `time` factory; `GameSession` delegation is PRD 09's (R15) and needs no request.
 - [ ] T-7 `GameRuntime.ts:3596, 3617` (`resolveAttack`): combat world, on hit event with `hitStop > 0` (seconds), calls
   `app.time.hitStop(hitStop, { scope: [attackerId, defenderId] })` when the world is bound to an app (`combat({ app })` or
   `bind(app)`); option `autoHitStop` default true under the flag. Unit test with a fake app.
@@ -1339,96 +1339,96 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Camera controller (C)
 
-- [ ] C-1 New `camera/CameraController.ts` implementing the C-22 `AuraCameraController` (types imported from
+- [x] C-1 New `camera/CameraController.ts` implementing the C-22 `AuraCameraController` (types imported from
   `contracts/camera.ts`); internal state: rig, blend {from pose, t, duration, ease}, layers sorted by order, presented
   pose, previous VP.
-- [ ] C-2 New `camera/rigs/fromSpec.ts`: `rigs.fromSpec(spec)` reproducing `applyCameraOffset` (`index.ts:15616`),
+- [x] C-2 New `camera/rigs/fromSpec.ts`: `rigs.fromSpec(spec)` reproducing `applyCameraOffset` (`index.ts:15616`),
   `resolveCameraTarget` (`:15629`), `resolveCameraEye` (`:15654-15689`) and the smoothing filter (`:15707-15745`)
   exactly. These functions stay in PRD 15's `index.ts`, so the math is **copied verbatim** into `fromSpec.ts` with a
   header comment naming the source lines; C-14 proves equality and Q-15-1 deletes the originals later.
-- [ ] C-3 New `camera/extension.ts`: real C-38 factory for member `camera` (flag `A3D_QR_CAMERA`) that constructs one
+- [x] C-3 New `camera/extension.ts`: real C-38 factory for member `camera` (flag `A3D_QR_CAMERA`) that constructs one
   controller per app, calls `controller.use(rigs.fromSpec(app.scene.camera), { blend: 0 })` on every new scene
   snapshot (detected by snapshot identity in an `app.onFrame` hook), applies `freezeSpecs` (X-5), and presents through
   `setPose` every frame. Registered from `packages/engine/src/lanes/prd08.ts`.
-- [ ] C-4 `packages/scene/src/MathTypes.ts`: add `rollUpVector(forward, up, roll)` (Rodrigues) next to `lookAtMat4`
+- [x] C-4 `packages/scene/src/MathTypes.ts`: add `rollUpVector(forward, up, roll)` (Rodrigues) next to `lookAtMat4`
   (`:90`) with unit tests: roll π/2 maps up to ±right; a straight-down camera (`forward = [0,−1,0]`, `up = [0,0,−1]`)
   yields a finite `lookAtMat4`; `roll = 0` returns `up` bit-for-bit. Wiring into `createViewProjection`
   (`index.ts:17758-17765`) is Q-15-1 after CCR-08-1; until then `setPose` writes `up`/`roll` only into evidence
   (`rollApplied: false`).
-- [ ] C-5 Lane side of Q-15-1: provide `presentedViewProjection(app)` in `camera/CameraController.ts` (cached VP of the
+- [x] C-5 Lane side of Q-15-1: provide `presentedViewProjection(app)` in `camera/CameraController.ts` (cached VP of the
   presented pose) so PRD 15 can replace the C8 call sites (`resolveCameraFrame(` at `index.ts:12354, 13602, 13760,
   13857, 17760`; `createViewProjection(` at `:13809, 13856, 16089, 16187`) with one import. Standalone check: with the
   flag on, the eye the legacy resolution returns for the written spec (read through the C-22 stub `presented()` on a
   second, flag-off controller over the same snapshot) equals the real controller's `presented().position` within 1e-6,
   which proves `u_cameraPosition` is the presented eye.
-- [ ] C-6 Implement `setPose`, `setFov`, `setRoll` (springed when `halflife` given), `use` with blend (pose lerp + quat
+- [x] C-6 Implement `setPose`, `setFov`, `setRoll` (springed when `halflife` given), `use` with blend (pose lerp + quat
   slerp + fov lerp over `blend` seconds with `ease`), `cut()` (reset springs, call `app.cutCamera()` → C-14
   `resetTemporalHistory("camera-cut")`). Unit tests: `use(rig, { blend: 0.5 })` at t = 0.25 s with `ease: "linear"` is
   the midpoint pose ± 1e-6; `cut()` calls `cutCamera` exactly once and a blend does not.
-- [ ] C-7 `controller.evidence()` returns `AuraCameraEvidence` built from the submitted VP; compute
+- [x] C-7 `controller.evidence()` returns `AuraCameraEvidence` built from the submitted VP; compute
   `subjectScreenHeightFraction` by projecting the 8 corners of the active rig subject's `handle.bounds()` through the
   presented VP and taking (max NDC y − min NDC y)/2. Unit test: a 1 u tall, 0.01 u deep box centred on the view axis at
   distance `d = 1/(2·tan(25°)·0.5)` with fov 50 reports 0.50 ± 0.01. Registered as C-31 section `camera`.
-- [ ] C-8 New `camera/Spring.ts`: `damp`, `springScalar`, `springVec3`, `springAngle`, `springQuat` per §6.3. Unit tests
+- [x] C-8 New `camera/Spring.ts`: `damp`, `springScalar`, `springVec3`, `springAngle`, `springQuat` per §6.3. Unit tests
   `tests/qr/prd08/unit/camera-spring.test.ts`: from rest, remaining gap at t = halflife is 0.500 ± 0.01 for `damp` and
   0.597 ± 0.01 for springs; frame-rate independence (60 vs 144 vs a seeded variable dt stream: positions at t = 1 s
   within 1e-3 of each other); no overshoot from rest for springs; `springAngle` from 350° to 10° moves through 0°.
-- [ ] C-9 New `camera/Probe.ts`: `sphereCast` via `sphereCastCollider` (`packages/physics/src/Raycast.ts:87`, lane 08)
+- [x] C-9 New `camera/Probe.ts`: `sphereCast` via `sphereCastCollider` (`packages/physics/src/Raycast.ts:87`, lane 08)
   over the bodies of `app.physics` when a world exists; else an AABB-list sphere sweep over runtime-handle `bounds()`
   (C18) and static scene node bounds; `occluders()` returns node ids whose AABB intersects the eye→subject segment. A
   BVH path is used only if Q-11-2 exports one (feature-detected). Unit tests: wall between subject and desired eye →
   `hit` with distance within 0.01 of analytic; no wall → `hit: false`.
-- [ ] C-10 Collision helper used by chase/shoulder/orbit/flight: asymmetric half-lives (pull-in 0.04, push-out 0.35),
+- [x] C-10 Collision helper used by chase/shoulder/orbit/flight: asymmetric half-lives (pull-in 0.04, push-out 0.35),
   radius 0.2; reuse `createCollisionAwareOrbit` math (GameCameraRigs.ts:190-279).
 - [ ] C-11 New `camera/OccluderFade.ts`: per-node fade spring to 0.3 for nodes in `probe.occluders()` that are not the
   subject and not tagged `cameraOpaque`; C-01 `collect` contributor `prd08.occluderFade` writes
   `RenderItem.cameraFade` and `cameraFadeOffset` (S-1). Unit test: contributor output for a 3-item list with one
   occluder sets `cameraFade` only on that item and returns the input array unchanged with the flag off.
-- [ ] C-12 Near-plane auto-adjust for chase/fighting/altitude rigs (`near = clamp(0.02·d, 0.05, 0.5)`, written through
+- [x] C-12 Near-plane auto-adjust for chase/fighting/altitude rigs (`near = clamp(0.02·d, 0.05, 0.5)`, written through
   `setPose` into the existing `AuraCameraSpec.near`), unless the route passes `near` explicitly.
 - [ ] C-13 Carved `nodes/game/racingCamera.ts` (from `index.ts:7641-7650`): delete the composition-report/verdict-string
   gate in `createGameRacingCameraRig` (extra arguments ignored, no throw). The turbo call-site cleanup
   (`apps/showcase-turbo-drift-circuit/src/main.ts:2789-2794`) is request Q-14-2.
-- [ ] C-14 Golden tests `tests/qr/prd08/unit/camera-controller.test.ts`: record 40 (spec, time, subject) tuples from the
+- [x] C-14 Golden tests `tests/qr/prd08/unit/camera-controller.test.ts`: record 40 (spec, time, subject) tuples from the
   unchanged legacy resolution — read through the C-22 **stub** `presented()` with `A3D_QR_CAMERA` off, which calls the
   existing `resolveCameraFrame` path — into `tests/qr/prd08/fixtures/legacy-frames.json` on day 0; assert `fromSpec`
   equality within 1e-6. Re-recording requires a written reason and the diff in `evidence/prd08/goldens.md`.
 
 ### Rigs (R)
 
-- [ ] R-1 `camera/rigs/chase.ts` per `ChaseRigOptions` (§7.1), arm-space damping (§6.3): yaw spring on subject heading,
+- [x] R-1 `camera/rigs/chase.ts` per `ChaseRigOptions` (§7.1), arm-space damping (§6.3): yaw spring on subject heading,
   distance/height springs, look-point spring, look-ahead from subject velocity (`clamp(v·seconds, max)` springed with
   `halflife` default 0.25), speed-aware distance and FOV, bank from lateral acceleration, framing solver, collision.
   Unit tests: constant 20 u/s straight line, look-ahead off → eye-to-subject distance within 2 % of `distance(v)` and
   projected subject centre within 3 % frame height of rest after 1 s; the legacy `smoothing 0.045` follow spec on the
   same path fails the distance assertion (proves the test discriminates); FOV at `v = maxSpeed` equals
   `base + perSpeed·v` clamped to `max`; 90° turn at 20 u/s → camera yaw lags subject yaw by 5°–25° at the turn midpoint.
-- [ ] R-2 `camera/rigs/flight.ts`: arm in subject local frame (pitch included), `horizonLock` blend of up vector
+- [x] R-2 `camera/rigs/flight.ts`: arm in subject local frame (pitch included), `horizonLock` blend of up vector
   between world-up and subject-up, bank gain default 0.6, max 25°. Tests: subject pitched 30° → camera pitch ≥ 20° with
   `horizonLock 0.3`; subject rolled 60° (steady state) → presented roll 36° ± 1° with `maxDeg 45`, and 25° ± 0.5° with the default `maxDeg 25`; projected
   ground plane occupies ≥ 15 % of the frame in all frames of a scripted 60° banked turn at 50 m altitude.
-- [ ] R-3 `camera/rigs/follow2d.ts`: dead zone (default 0.18 × 0.22 of frame), forward lead 1.2 u in facing direction
+- [x] R-3 `camera/rigs/follow2d.ts`: dead zone (default 0.18 × 0.22 of frame), forward lead 1.2 u in facing direction
   springed, platform snap on Y. Tests: jump inside dead zone causes no vertical camera motion until landing; landing on
   a platform 2 u higher moves the camera Y to the new rest within 0.4 s; reversing facing moves the lead to the other
   side within 0.5 s.
-- [ ] R-4 `camera/rigs/fighting.ts`: midpoint target, distance solved to keep both fighters' bounds inside 15 %–85 %
+- [x] R-4 `camera/rigs/fighting.ts`: midpoint target, distance solved to keep both fighters' bounds inside 15 %–85 %
   horizontal band and height fraction 0.5; zoom on distance only; camera stays on the fight plane's normal. Test:
   fighters 1 u vs 6 u apart both fit inside the band; FOV constant; camera yaw relative to the fight-plane normal stays
   0° ± 0.5° through a 10 s scripted fight (no mid-fight orbit).
-- [ ] R-5 `camera/rigs/shoulder.ts` wrapping `createShoulderCamera` (GameCameraRigs.ts:94-153) + C-10 collision. Test:
+- [x] R-5 `camera/rigs/shoulder.ts` wrapping `createShoulderCamera` (GameCameraRigs.ts:94-153) + C-10 collision. Test:
   output equals `createShoulderCamera` for the same inputs when no collider is present (1e-6).
-- [ ] R-6 `camera/rigs/orbit.ts` (yaw/pitch springs, pitch limits, optional collision) + `rigs.orbit.bindPointer(canvas,
+- [x] R-6 `camera/rigs/orbit.ts` (yaw/pitch springs, pitch limits, optional collision) + `rigs.orbit.bindPointer(canvas,
   rig, { sensitivity = 0.25°/px })` mapping pointer/touch drag to yaw/pitch targets. Tests: pitch clamps to limits;
   synthetic 100 px drag changes target yaw by 25° ± 0.1°.
-- [ ] R-7 `camera/rigs/topDown.ts` with centroid of one or many targets, dead zone, arena bounds clamp, up-vector
+- [x] R-7 `camera/rigs/topDown.ts` with centroid of one or many targets, dead zone, arena bounds clamp, up-vector
   handling (§6.4). Tests: target at arena corner → all four arena-edge points stay inside the frame; `pitchDeg 90`
   gives a finite matrix.
-- [ ] R-8 `camera/rigs/altitude.ts`: distance = f(altitude) so ground point and goal both inside frame; subject fraction
+- [x] R-8 `camera/rigs/altitude.ts`: distance = f(altitude) so ground point and goal both inside frame; subject fraction
   0.10; lead 30 % toward goal. Test with aurora-lander-like altitudes 2/20/80 u: ground point and goal project inside
   NDC [−0.9, 0.9] in all three; subject height fraction 0.08–0.12.
-- [ ] R-9 `camera/rigs/static.ts`: fixed pose from `Partial<AuraCameraPose>` (defaults from the current spec). Test:
+- [x] R-9 `camera/rigs/static.ts`: fixed pose from `Partial<AuraCameraPose>` (defaults from the current spec). Test:
   trauma/punch layers still change the presented pose on a static rig.
-- [ ] R-10 Framing solver `camera/framing.ts`: `distanceForFraction(h, fovDeg, p) = h / (2·tan(fov/2)·p)` and inverse
+- [x] R-10 Framing solver `camera/framing.ts`: `distanceForFraction(h, fovDeg, p) = h / (2·tan(fov/2)·p)` and inverse
   `fractionForDistance`; for portrait aspects solve on the narrower (horizontal) axis using `ctx.aspect`. Unit tests
   round-trip within 1e-9 and a 390×844 case.
 - [ ] R-11 `GameSceneGeometryBindings.ts` (`createGameRacingPresentationCamera` `:469-531`, `createGamePlatformerPresentationCamera`
@@ -1442,25 +1442,25 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Layers (Y)
 
-- [ ] Y-1 `feel/Noise.ts`: seeded 1D gradient noise `perlin1(x, seed)` normalised to [-1, 1] (raw gradient noise ×2,
+- [x] Y-1 `feel/Noise.ts`: seeded 1D gradient noise `perlin1(x, seed)` normalised to [-1, 1] (raw gradient noise ×2,
   clamped); tests: continuity (|Δ| < 0.1 for Δx = 0.01), determinism per seed, and max |value| over x ∈ [0, 100] ≥ 0.9
   (amplitude actually reaches the configured maxima).
-- [ ] Y-2 `camera/layers/trauma.ts`: 6-DoF per §6.5 using `createTraumaShake` envelope (GameCameraRigs.ts:306-347) with
+- [x] Y-2 `camera/layers/trauma.ts`: 6-DoF per §6.5 using `createTraumaShake` envelope (GameCameraRigs.ts:306-347) with
   noise from Y-1 and smooth terminal fade; translation scaled by `min(1, subjectDistance/6)`. Tests: S7
   (presented offset equals layer output; peak |yaw| ≥ 0.35·maxYaw in first 0.25 s, default seed); energy reaches 0
   within `1/decay` s + 0.05 s with no discontinuity > 5 % of `maxYaw` per frame in the terminal band; autocorrelation
   of the yaw channel shows no period between 0.05 s and 1 s (not a sine).
-- [ ] Y-3 `camera/layers/punch.ts`: wraps `createPunchIn` (GameCameraRigs.ts:390-415); applies `fovOffset` **and**
+- [x] Y-3 `camera/layers/punch.ts`: wraps `createPunchIn` (GameCameraRigs.ts:390-415); applies `fovOffset` **and**
   `distanceOffset` along view axis. Test: `trigger({ fov: -4, dolly: 0.35 })` → presented FOV dips by 4° ± 0.1° and eye
   moves 0.35 ± 0.01 u along the view axis at the envelope peak.
-- [ ] Y-4 `camera/layers/fovKick.ts`: named channels summed, each springed. Test: channels `boost +6` and `speed +4`
+- [x] Y-4 `camera/layers/fovKick.ts`: named channels summed, each springed. Test: channels `boost +6` and `speed +4`
   settle to +10° ± 0.05°; clearing one channel returns to +4° with the channel's half-life.
-- [ ] Y-5 `camera/layers/lookAt.ts`: weighted target override with spring weight. Test: weight 1 aims the view axis at
+- [x] Y-5 `camera/layers/lookAt.ts`: weighted target override with spring weight. Test: weight 1 aims the view axis at
   the override within 0.5° after 3 half-lives; weight 0 leaves the rig pose untouched (1e-6).
 - [ ] Y-6 `camera/layers/cinematicBars.ts`: target aspect, ease; draws a DOM overlay of two black bars (standalone) and
   publishes its rect on the C-01 blackboard as `prd08.letterbox` for any C-13 composite that wants it. Test: 16:9
   canvas, target 2.39:1 → bar height `(1 − (16/9)/2.39)/2` of canvas height each, ± 1 px.
-- [ ] Y-7 Reduced-motion policy in controller (§6.5 multipliers), sourced from `matchMedia('(prefers-reduced-motion:
+- [x] Y-7 Reduced-motion policy in controller (§6.5 multipliers), sourced from `matchMedia('(prefers-reduced-motion:
   reduce)')`, the app's `accessibility.reducedMotion` source (C-38 option; `createGameReducedMotionSource`,
   GameRuntime.ts:4218), or C-24 `GameSession.reducedMotion` when a game session is bound; unit test multipliers;
   browser test with Playwright `emulateMedia({ reducedMotion: "reduce" })` shows `diagnostics().camera.pose.roll = 0`
@@ -1485,16 +1485,16 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Sequences and rails (Q)
 
-- [ ] Q-1 `camera/Spline.ts`: centripetal Catmull-Rom (alpha 0.5), closed/open, arc-length LUT (256 samples),
+- [x] Q-1 `camera/Spline.ts`: centripetal Catmull-Rom (alpha 0.5), closed/open, arc-length LUT (256 samples),
   `pointAt(u)`, `tangentAt(u)`. Tests: passes through control points; C1 continuity at joints (tangent angle Δ < 1°);
   constant-speed parameterisation within 2 %.
-- [ ] Q-2 `camera/rigs/rail.ts` per `AuraCameraRailOptions`; look-at track as node, point, or second spline; FOV per point
+- [x] Q-2 `camera/rigs/rail.ts` per `AuraCameraRailOptions`; look-at track as node, point, or second spline; FOV per point
   interpolated with the same u.
 - [ ] Q-3 `camera/Sequence.ts`: `controller.play(sequence)` → shots with blend-in, bars, `skip()`; `onEnd: "return"` blends
   back to the previous rig.
 - [ ] Q-4 `CameraChoreographer.ts:234-238`: `"catmull-rom"` uses Q-1 across keyframes (not per-segment smoothstep); update
   `sampleCameraPath`; add test that velocity at interior keyframes is non-zero.
-- [ ] Q-5 `camera/rigs/fromSpec.ts`: with the flag on, the `path`/`flythrough`/`dolly` modes (legacy math at
+- [x] Q-5 `camera/rigs/fromSpec.ts`: with the flag on, the `path`/`flythrough`/`dolly` modes (legacy math at
   `index.ts:15670-15686`, PRD 15's, not edited) are presented via `rigs.rail` with 2 points; `loop` default
   `"pingpong"` for `dolly`, `"none"` for path (hold at end — no snap back). Flag off keeps the legacy snap. Test: a
   `path` spec at `t = seconds + 0.1` holds the end pose with the flag on and equals the golden with it off.
@@ -1548,7 +1548,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 
 ### Vehicle (V)
 
-- [ ] V-1 New `vehicle/BicycleModel.ts` per §6.9 with fixed-step integration at the loop's `fixedDt`; pure, deterministic.
+- [x] V-1 New `vehicle/BicycleModel.ts` per §6.9 with fixed-step integration at the loop's `fixedDt`; pure, deterministic.
 - [ ] V-2 `GameRuntime.ts:2007-2045` `createGameArcadeVehicle`: add `model` option; `"bicycle"` delegates to V-1; extend
   state with `lateralVelocity`, `yawRate`, `slipAngle`, `drifting`, `rpm`, `lateralG`.
 - [ ] V-3 Torque curve + quadratic drag + rolling resistance; default curve peaks at 0.6·maxSpeed.
@@ -1556,7 +1556,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [ ] V-5 `GameGenreKits.ts:1343-1580` `game.racing`: default `model: "bicycle"`; wire `createVehicleChassis`
   (VehicleChassis.ts:297) as default presentation for the player car (pitch/roll/suspension/wheels); emit F-6 events.
 - [ ] V-6 Chase rig integration: `bank` reads `lateralG`; FOV `perSpeed` reads `|vLong|`.
-- [ ] V-7 Tests `tests/qr/prd08/unit/bicycle-vehicle.test.ts`: straight-line top speed within 2 % of `maxSpeed`;
+- [x] V-7 Tests `tests/qr/prd08/unit/bicycle-vehicle.test.ts`: straight-line top speed within 2 % of `maxSpeed`;
   steady-state cornering yaw rate ≤ `μg/v`; handbrake drift (S12); determinism across identical input streams.
 
 ### Platformer (P)
@@ -1639,7 +1639,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
   (F-3), `app.time` usage, touch kit usage, screen-feel reference behaviour (§8.3) and the forbidden evidence-only
   pattern. Skill text itself is Q-13-2.
 - [ ] D-7 `tests/templates` assertions → request Q-13-3.
-- [ ] D-8 `tools/camera-cast-codemod/index.mjs` registered as C-39 codemod `camera-cast` + fixture tests for the five
+- [x] D-8 `tools/camera-cast-codemod/index.mjs` registered as C-39 codemod `camera-cast` + fixture tests for the five
   style-(a) cast sites and the cinematic-architecture cast (§2.2 G1, excerpts copied into `fixtures/`), plus
   "reported, not rewritten" fixtures for the two style-(b) sites. Report-mode run over `apps/` and
   `packages/create-aura3d/templates/` committed to `evidence/prd08/camera-cast-report.md`.
@@ -1652,7 +1652,7 @@ Every task edits only lane-08 paths (§Parallel execution) unless it says "reque
 - [ ] X-3 Lean delegation → request Q-15-4 (lane side: `camera/leanAdapters.ts` with tests).
 - [ ] X-4 Removal of `smoothedCameraFrames`/`resolveCameraFrame` (`index.ts:15696-15745`) → request Q-15-1 after C-14
   parity is green.
-- [ ] X-5 Dev-mode `Object.freeze` on camera specs in `camera/extension.ts`, behind the PR 0a option
+- [x] X-5 Dev-mode `Object.freeze` on camera specs in `camera/extension.ts`, behind the PR 0a option
   `createAuraApp({ camera: { freezeSpecs: true } })`; error text points to `app.camera`. Default-on in dev after flag
   `default-on` (§10 item 6).
 - [ ] X-6 `@aura3d/controls` README → request Q-15-5.

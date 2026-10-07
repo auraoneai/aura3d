@@ -1,0 +1,91 @@
+{
+  "root": "examples/neon-corridor-strike",
+  "files": 25,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 516,
+      "construct": "lights.point({ intensity: 1.5 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 19 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 516,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 517,
+      "construct": "lights.point({ intensity: 2.25 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 28 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 517,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 518,
+      "construct": "lights.point({ intensity: 4.3 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 54 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 518,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 519,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 520,
+      "construct": "lights.point({ intensity: 1.75 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 22 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 521,
+      "construct": "lights.spot({ intensity: 5 })",
+      "mapping": "approximate",
+      "target": "lights.spot({ power: 16 })",
+      "note": "physical units: cd=lm/π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 525,
+      "construct": "lights.point({ intensity: 5.5 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 69 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "examples/neon-corridor-strike/src/game/level.ts",
+      "line": 525,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}
