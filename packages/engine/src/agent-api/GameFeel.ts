@@ -22,6 +22,7 @@ import type {
   GameEffectsSnapshot,
   GameVec3
 } from "./GameRuntime.js";
+import type { AuraTimeController } from "../contracts/time.js";
 
 /** Combat-proven hit-stop defaults, generalized (fighting kit values). */
 export const GAME_FEEL_HIT_STOP_LIGHT_S = 0.045;
@@ -44,6 +45,13 @@ export interface GameFeelOptions {
   /** Per-update wall-clock budget in milliseconds. Default 2. */
   readonly budgetMs?: number;
   readonly enabled?: boolean;
+  /**
+   * T-7/T-8 (§6.6): when the app is attached, `hitStop(durationMs)` forwards
+   * to `app.time.hitStop(durationMs / 1000, { scope: "global" })` — this kit
+   * stays millisecond-based, the controller is seconds-based. `effectiveDt`
+   * is kept for detached use only.
+   */
+  readonly time?: Pick<AuraTimeController, "hitStop">;
 }
 
 export interface GameFeelReceipt {
@@ -197,6 +205,13 @@ export function createGameFeel(options: GameFeelOptions = {}): GameFeel {
       assertFinite(durationMs, api, "durationMs");
       if (durationMs <= 0) throw new RangeError(`${api} durationMs must be > 0.`);
       if (!enabled) return disabled("hitStop");
+      // T-7: attached → forward (seconds) to app.time; local ms freeze stays
+      // exclusively for detached use so the two don't double-freeze a sim
+      // that also consumes effectiveDt.
+      if (options.time) {
+        options.time.hitStop(durationMs / 1000, { scope: "global" });
+        return { accepted: true };
+      }
       // Generalized from the fighting kit: a full freeze for the window.
       hitStopRemainingMs = Math.max(hitStopRemainingMs, durationMs);
       return { accepted: true };
