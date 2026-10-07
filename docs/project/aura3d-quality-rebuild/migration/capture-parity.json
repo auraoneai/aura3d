@@ -1,0 +1,3666 @@
+{
+  "generatedAt": "2026-10-06T11:53:07.705Z",
+  "routes": [
+    {
+      "route": "showcase-pulse-tunnel",
+      "counts": {
+        "ART": 24,
+        "FRAMING": 4,
+        "TRANSIENT": 7,
+        "UNKNOWN": 49
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 57,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture ="
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 203,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : scale)"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 317,
+          "kind": "FRAMING",
+          "text": ".position(0, 1.0, -4.65).scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [2.8, 2.8, 0.22])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 326,
+          "kind": "FRAMING",
+          "text": ".position(visualReviewCapture ? 1.38 : 0, visualReviewCapture ? 0.22 : 0.08, visualReviewCapture ? -3.72 : -5.16)"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 328,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? 1.24 : 0.86)"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 346,
+          "kind": "UNKNOWN",
+          "text": "hiddenNodeNames: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 412,
+          "kind": "FRAMING",
+          "text": ".position(visualReviewCapture ? 1.42 + side * 1.2 : side * 1.12, upper ? 1.78 : 0.5, visualReviewCapture ? -4.78 : -4.58)"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 414,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.78, 0.12, 0.34] : [0.78, 0.13, 0.42])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 590,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [radius, radius, 0.028 + index * 0.008])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 602,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [2.75, 0.025, 0.055])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 786,
+          "kind": "UNKNOWN",
+          "text": "const reviewStructureBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 818,
+          "kind": "UNKNOWN",
+          "text": "const reviewArchitectureAccentBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 856,
+          "kind": "UNKNOWN",
+          "text": "const reviewAtmosphereBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 944,
+          "kind": "UNKNOWN",
+          "text": "const reviewTerrainBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1005,
+          "kind": "UNKNOWN",
+          "text": "const reviewEncounterIslandBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1041,
+          "kind": "UNKNOWN",
+          "text": "const reviewEncounterButtressBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1064,
+          "kind": "UNKNOWN",
+          "text": "const reviewExchangeCausalityBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1100,
+          "kind": "UNKNOWN",
+          "text": "const reviewCombatAccentBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1130,
+          "kind": "UNKNOWN",
+          "text": "const reviewSentryIdentityBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1158,
+          "kind": "UNKNOWN",
+          "text": "const reviewActorContourBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1198,
+          "kind": "UNKNOWN",
+          "text": "const reviewArenaWorldBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1264,
+          "kind": "UNKNOWN",
+          "text": "const reviewProjectileBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1285,
+          "kind": "UNKNOWN",
+          "text": "const reviewProjectileTrailBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1299,
+          "kind": "UNKNOWN",
+          "text": "const reviewImpactShardBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1314,
+          "kind": "UNKNOWN",
+          "text": "const reviewImpactBurstBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1330,
+          "kind": "UNKNOWN",
+          "text": "const reviewImpactRayBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1349,
+          "kind": "UNKNOWN",
+          "text": "const reviewImpactWaveBuilders = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1371,
+          "kind": "UNKNOWN",
+          "text": ".background(visualReviewCapture ? \"#171a38\" : \"#180b28\")"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1373,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : tunnelBackdrop),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1375,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : depthTrackBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1376,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : cavernRockBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1377,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : cavernSpireBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1378,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : lavaChannelBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1380,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : ledgeBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1381,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : finaleArenaBuilders),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1408,
+          "kind": "UNKNOWN",
+          "text": "...(visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1469,
+          "kind": "ART",
+          "text": "effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1472,
+          "kind": "ART",
+          "text": "effects.fog({ name: \"pulse downbeat fog pulse\", density: visualReviewCapture ? 0.009 : 0.065, color: visualReviewCapture ? \"#11192a\" : \"#241044\" })"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1478,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"corridor sun\", color: visualReviewCapture ? \"#c0e1f2\" : \"#38bdf8\", intensity: visualReviewCapture ? 0.88 : 1.6 }).position(-5, 10, 6),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1479,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"terminal warm edge\", color: \"#ffc08a\", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1480,
+          "kind": "ART",
+          "text": "lights.ambient({ name: \"corridor ambient\", color: visualReviewCapture ? \"#5a537b\" : \"#1e1b4b\", intensity: visualReviewCapture ? 0.72 : 1.2 }),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1485,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"review actor neutral fill\", color: \"#d9f4ff\", intensity: visualReviewCapture ? 1.18 : 0 }).position(-2.4, 6.8, 7.4),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1486,
+          "kind": "ART",
+          "text": "lights.point({ name: \"review runner cyan fill\", color: \"#48e5ff\", intensity: visualReviewCapture ? 1.45 : 1.15 }).position(-1.72, 1.72, 2.65),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1487,
+          "kind": "ART",
+          "text": "lights.point({ name: \"review sentry warm fill\", color: \"#ffc18f\", intensity: visualReviewCapture ? 1.72 : 0 }).position(1.48, 2.10, -1.25),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1488,
+          "kind": "ART",
+          "text": "lights.point({ name: \"runner silhouette front key\", color: \"#d6edff\", intensity: visualReviewCapture ? 0.84 : 0.7 }).position(-0.7, 1.72, 3.2),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1489,
+          "kind": "ART",
+          "text": "lights.point({ name: \"runner cyan underside bounce\", color: \"#48dfff\", intensity: visualReviewCapture ? 0.82 : 0.7 }).position(-1.5, 0.42, 1.25),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1490,
+          "kind": "ART",
+          "text": "lights.point({ name: \"terminal amber detail key\", color: \"#ffbd72\", intensity: visualReviewCapture ? 1.28 : 0 }).position(1.5, 2.0, -3.2),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1491,
+          "kind": "ART",
+          "text": "lights.point({ name: \"terminal magenta rim\", color: \"#ff72ac\", intensity: visualReviewCapture ? 0.94 : 0 }).position(-1.2, 1.62, -4.0),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1492,
+          "kind": "ART",
+          "text": "lights.point({ name: \"deck cyan depth practical\", color: \"#39d9f2\", intensity: visualReviewCapture ? 0.88 : 0 }).position(-2.85, 1.8, -1.85),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1493,
+          "kind": "ART",
+          "text": "lights.point({ name: \"exchange impact key\", color: \"#ffb46b\", intensity: visualReviewCapture ? 0.66 : 0 }).position(0.04, 1.1, -2.18),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1497,
+          "kind": "ART",
+          "text": "lights.point({ name: \"finale core rose key\", color: \"#fb7185\", intensity: visualReviewCapture ? 1.5 : 3.4 }).position(0, 2.4, -4.4),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1498,
+          "kind": "ART",
+          "text": "lights.point({ name: \"finale arena cyan rim\", color: \"#22d3ee\", intensity: visualReviewCapture ? 1.65 : 2.2 }).position(-3.2, 1.4, -2.8),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1499,
+          "kind": "ART",
+          "text": "lights.point({ name: \"finale arena warm edge\", color: \"#ff9b72\", intensity: visualReviewCapture ? 1.4 : 0 }).position(4.2, 2.2, -1.1),"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1521,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [3.6, 1, 28])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1530,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1539,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [0.04, 1, 28])"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1589,
+          "kind": "FRAMING",
+          "text": ".camera(camera.perspective(visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1629,
+          "kind": "UNKNOWN",
+          "text": "const finaleArenaDressing: RuntimeNodeHandleLike[] = !visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1645,
+          "kind": "TRANSIENT",
+          "text": "const reviewAttackOrigin = visualReviewCapture ? requireHandle(\"pulse-review-attack-origin\") : null;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1646,
+          "kind": "TRANSIENT",
+          "text": "const reviewImpactPlane = visualReviewCapture ? requireHandle(\"pulse-review-impact-plane\") : null;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1647,
+          "kind": "TRANSIENT",
+          "text": "const reviewImpactOuter = visualReviewCapture ? requireHandle(\"pulse-review-impact-outer\") : null;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1648,
+          "kind": "TRANSIENT",
+          "text": "const reviewImpactInner = visualReviewCapture ? requireHandle(\"pulse-review-impact-inner\") : null;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1649,
+          "kind": "TRANSIENT",
+          "text": "const reviewImpactCore = visualReviewCapture ? requireHandle(\"pulse-review-impact-core\") : null;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1682,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) (shipGlow as PulseNodeHandle).setMaterial(reviewRunnerGlowMaterial);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 1886,
+          "kind": "UNKNOWN",
+          "text": "const active = !visualReviewCapture && id === sectionId;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2115,
+          "kind": "UNKNOWN",
+          "text": "const craftScale = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2118,
+          "kind": "UNKNOWN",
+          "text": "const reviewPlayerX = visualReviewCapture ? playerState.x - 1.38 : playerState.x;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2119,
+          "kind": "UNKNOWN",
+          "text": "const reviewPlayerZ = visualReviewCapture ? 0.42 : PULSE_PLAYER_Z;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2127,
+          "kind": "UNKNOWN",
+          "text": "const craftCenterY = playerState.sliding && !visualReviewCapture ? 0.24 : 0.50;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2130,
+          "kind": "UNKNOWN",
+          "text": ".setRotation(0, visualReviewCapture ? 0.12 : 0, laneBank);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2132,
+          "kind": "UNKNOWN",
+          "text": ".setScale(visualReviewCapture ? [0.14, 0.14, 0.14] : [0.34, 0.34, 0.34]);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2135,
+          "kind": "UNKNOWN",
+          "text": "shipHoverLight.setPosition(reviewPlayerX, visualReviewCapture ? 0.0 : -0.03, reviewPlayerZ - 0.1);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2148,
+          "kind": "UNKNOWN",
+          "text": "finaleBeacon.setVisible(finaleActive && !visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2151,
+          "kind": "UNKNOWN",
+          "text": "for (const vane of finaleShieldVanes) vane.setVisible(finaleActive && !visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2172,
+          "kind": "UNKNOWN",
+          "text": "for (const projectile of finaleProjectiles) projectile.setVisible(finaleActive && !visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2173,
+          "kind": "UNKNOWN",
+          "text": "for (const rain of rainHandles) rain.setVisible(finaleActive && !visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2196,
+          "kind": "TRANSIENT",
+          "text": "const pulse = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2197,
+          "kind": "UNKNOWN",
+          "text": "const reviewAnchor = visualReviewCapture ? latestReviewEventAnchor(beatClock.time()) : undefined;"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2260,
+          "kind": "TRANSIENT",
+          "text": ".setPosition(visualReviewCapture ? 1.38 : 0, (visualReviewCapture ? 0.22 : 0.08) + Math.sin(pulse * 1.7) * 0.024, visualReviewCapture ? -3.72 : -5.16)"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2262,
+          "kind": "UNKNOWN",
+          "text": ".setScale(visualReviewCapture ? [1.58, 1.58, 1.58] : [0.86, 0.86, 0.86]);"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2263,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2280,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2319,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-pulse-tunnel/src/main.ts",
+          "line": 2435,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        }
+      ]
+    },
+    {
+      "route": "showcase-rooftop-buckets",
+      "counts": {
+        "ART": 21,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 76
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 18,
+          "kind": "UNKNOWN",
+          "text": "export function createRooftopDressing(options: { readonly reviewCapture?: boolean } = {}): AuraSceneNode[] {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 38,
+          "kind": "UNKNOWN",
+          "text": "if (!options.reviewCapture) nodes.push("
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 121,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#70444a\" : \"#30283b\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 122,
+          "kind": "ART",
+          "text": "roughness: options.reviewCapture ? 0.6 : 0.72,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 128,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#2a6070\" : \"#102d42\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 129,
+          "kind": "ART",
+          "text": "emissive: options.reviewCapture ? \"#1f8295\" : \"#1b7892\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 130,
+          "kind": "ART",
+          "text": "emissiveIntensity: options.reviewCapture ? 0.34 : 0.19,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 131,
+          "kind": "UNKNOWN",
+          "text": "opacity: options.reviewCapture ? 0.76 : 0.92"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 141,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#b9673b\" : \"#6f3928\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 143,
+          "kind": "ART",
+          "text": "emissiveIntensity: options.reviewCapture ? 0.58 : 0.36,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 172,
+          "kind": "UNKNOWN",
+          "text": "if (!options.reviewCapture) buildings.forEach((b, idx) => {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 224,
+          "kind": "UNKNOWN",
+          "text": "if (!options.reviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 245,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#54313b\" : \"#351d2a\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 246,
+          "kind": "ART",
+          "text": "roughness: options.reviewCapture ? 0.62 : 0.72,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 311,
+          "kind": "UNKNOWN",
+          "text": "const paintLineMat = options.reviewCapture"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 324,
+          "kind": "UNKNOWN",
+          "text": "const paintCyanMat = options.reviewCapture"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 337,
+          "kind": "UNKNOWN",
+          "text": "const keyWidth = options.reviewCapture ? 3.0 : 3.6;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 338,
+          "kind": "UNKNOWN",
+          "text": "const keyDepth = options.reviewCapture ? 4.15 : 4.8;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 339,
+          "kind": "UNKNOWN",
+          "text": "const keyCenterZ = options.reviewCapture ? 2.08 : 2.4;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 342,
+          "kind": "UNKNOWN",
+          "text": "const keyEdgeWidth = options.reviewCapture ? 0.055 : 0.08;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 344,
+          "kind": "UNKNOWN",
+          "text": "const freeThrowZ = options.reviewCapture ? 4.15 : 4.8;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 345,
+          "kind": "UNKNOWN",
+          "text": "const baselineZ = options.reviewCapture ? -0.72 : -0.2;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 370,
+          "kind": "FRAMING",
+          "text": "{ position: [0, lineY, freeThrowZ], scale: [keyWidth, 0.02, options.reviewCapture ? 0.065 : 0.1] },"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 371,
+          "kind": "FRAMING",
+          "text": "{ position: [0, lineY, baselineZ], scale: [options.reviewCapture ? 4.4 : 14.0, 0.02, options.reviewCapture ? 0.055 : 0.1] }"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 377,
+          "kind": "UNKNOWN",
+          "text": "...(!options.reviewCapture ? ["
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 396,
+          "kind": "UNKNOWN",
+          "text": ".scale(options.reviewCapture ? [4.85, 4.85, 0.032] : [6.75, 6.75, 0.05])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 419,
+          "kind": "UNKNOWN",
+          "text": "if (!options.reviewCapture) nodes.push("
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 464,
+          "kind": "UNKNOWN",
+          "text": ".scale(options.reviewCapture ? [0.44, 0.84, 0.58] : [0.58, 1.12, 0.72])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 557,
+          "kind": "UNKNOWN",
+          "text": "if (!options.reviewCapture) nodes.push("
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 644,
+          "kind": "UNKNOWN",
+          "text": "...(options.reviewCapture ? ["
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 657,
+          "kind": "UNKNOWN",
+          "text": "...(options.reviewCapture ? ["
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 698,
+          "kind": "UNKNOWN",
+          "text": "if (options.reviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 911,
+          "kind": "UNKNOWN",
+          "text": "name: options.reviewCapture ? \"review maple court finish\" : \"rooftop slate court finish\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 912,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#8b4e3c\" : \"#315271\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 918,
+          "kind": "UNKNOWN",
+          "text": "const courtFinishHalfWidth = options.reviewCapture ? 6.15 : 7.85;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 919,
+          "kind": "UNKNOWN",
+          "text": "const courtFinishRows = options.reviewCapture"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 947,
+          "kind": "UNKNOWN",
+          "text": "name: options.reviewCapture ? \"night league coral seat fabric\" : \"rooftop violet seat fabric\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 948,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#a4524d\" : \"#4e3b73\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 954,
+          "kind": "UNKNOWN",
+          "text": "name: options.reviewCapture ? \"night league teal seat fabric\" : \"rooftop blue seat fabric\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 955,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#236c78\" : \"#285b78\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 962,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#d7a15d\" : \"#6e8ca1\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1010,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#151f37\" : \"#10192e\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1019,
+          "kind": "ART",
+          "text": "emissiveIntensity: options.reviewCapture ? 0.9 : 0.62"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1025,
+          "kind": "ART",
+          "text": "emissiveIntensity: options.reviewCapture ? 1.35 : 0.92"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1074,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#1d3f50\" : \"#102b42\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1078,
+          "kind": "UNKNOWN",
+          "text": "opacity: options.reviewCapture ? 0.72 : 0.82"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1082,
+          "kind": "UNKNOWN",
+          "text": "color: options.reviewCapture ? \"#c58a54\" : \"#37657b\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/environment.ts",
+          "line": 1092,
+          "kind": "UNKNOWN",
+          "text": "const bayDepth = options.reviewCapture ? -1.72 : -1.18;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 48,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture ="
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 137,
+          "kind": "UNKNOWN",
+          "text": "const PRESENTATION_ATHLETE_SCALE = visualReviewCapture ? 1.4 : 1.34;"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 220,
+          "kind": "UNKNOWN",
+          "text": "let shooterAnimationState = visualReviewCapture ? \"Release\" : \"Ready\";"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 322,
+          "kind": "UNKNOWN",
+          "text": "color: visualReviewCapture ? \"#ffe0a3\" : \"#ffe08a\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 323,
+          "kind": "ART",
+          "text": "emissive: visualReviewCapture ? \"#f97316\" : \"#ff6a00\","
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 324,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 3.05 : 1.4"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 347,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 1.65 : 1.15,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 365,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 2.75 : 2.2,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 379,
+          "kind": "ART",
+          "text": "lights.ambient({ color: \"#8098c8\", intensity: visualReviewCapture ? 0.72 : 1.32 }),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 380,
+          "kind": "ART",
+          "text": "lights.directional({ color: \"#fff3d6\", intensity: visualReviewCapture ? 2.75 : 3.6 }).position(8, 20, 10),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 381,
+          "kind": "ART",
+          "text": "lights.point({ name: \"scorer warm key\", color: \"#ffd6a0\", intensity: visualReviewCapture ? 4.15 : 4.4 }).position(-4.0, 4.6, 5.4),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 382,
+          "kind": "ART",
+          "text": "lights.point({ name: \"defender cool rim\", color: \"#79dcff\", intensity: visualReviewCapture ? 3.45 : 3.4 }).position(1.5, 4.4, 3.3),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 383,
+          "kind": "ART",
+          "text": "lights.point({ name: \"hoop amber practical\", color: \"#ffad58\", intensity: visualReviewCapture ? 2.55 : 3.4 }).position(0.8, 4.8, -0.1),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 384,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pavilion warm bay practical\", color: \"#ffd39a\", intensity: visualReviewCapture ? 1.35 : 2.0 }).position(-4.4, 4.8, -4.8),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 385,
+          "kind": "ART",
+          "text": "lights.directional({ color: \"#4aa8d8\", intensity: visualReviewCapture ? 0.52 : 1.45 }).position(-12, 14, -8),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 386,
+          "kind": "ART",
+          "text": "lights.directional({ color: \"#f59e0b\", intensity: visualReviewCapture ? 1.05 : 1.2 }).position(0, 8, -20),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 391,
+          "kind": "ART",
+          "text": "lights.point({ name: \"review west crowd wash\", color: \"#ff805c\", intensity: visualReviewCapture ? 2.55 : 1.15 }).position(-6.4, 4.8, -1.8),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 392,
+          "kind": "ART",
+          "text": "lights.point({ name: \"review east crowd wash\", color: \"#47d8ff\", intensity: visualReviewCapture ? 2.8 : 1.2 }).position(6.6, 4.2, 0.4),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 402,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 2.25 : 0.72,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 409,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 1.25 : 0.42,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 415,
+          "kind": "UNKNOWN",
+          "text": "...createRooftopDressing({ reviewCapture: visualReviewCapture }),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 454,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.68, 0.68, 0.68] : [1, 1, 1])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 486,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.42, 0.42, 0.038] : [0.36, 0.36, 0.03])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 607,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.33, 0.33, 0.33] : [0.28, 0.28, 0.28])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 614,
+          "kind": "UNKNOWN",
+          "text": "...COURT_SPOTS.filter(() => !visualReviewCapture).map((s) =>"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 625,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.38, 0.018, 0.38] : [0.7, 0.02, 0.7])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 627,
+          "kind": "UNKNOWN",
+          "text": "...Array.from({ length: visualReviewCapture ? AIM_POINT_COUNT - 4 : AIM_POINT_COUNT }, (_, index) =>"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 630,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.145, 0.145, 0.145] : [0.095, 0.095, 0.095])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 647,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.22, 0.22, 0.03] : [0.28, 0.28, 0.035])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 653,
+          "kind": "UNKNOWN",
+          "text": "...(visualReviewCapture ? flightEchoHandles.map((handle, index) =>"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 715,
+          "kind": "FRAMING",
+          "text": "position: visualReviewCapture ? [4.35, 3.45, 7.2] : [1.6, 4.35, 10.25],"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 724,
+          "kind": "UNKNOWN",
+          "text": "target: visualReviewCapture ? [-0.86, 1.55, 1.18] : [-0.22, 1.9, 1.3],"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 725,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 46 : 48"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 738,
+          "kind": "UNKNOWN",
+          "text": "pixelRatio: visualReviewCapture ? Math.min(1, 640 / Math.max(1, window.innerWidth)) : Math.min(window.devicePixelRatio || 1, 1.75),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1088,
+          "kind": "UNKNOWN",
+          "text": "const shooterLift = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1098,
+          "kind": "UNKNOWN",
+          "text": "const releaseDrive = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1126,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1174,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1235,
+          "kind": "UNKNOWN",
+          "text": ".setScale(visualReviewCapture ? [0.42, 0.42, 0.038] : [0.36, 0.36, 0.03]);"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1257,
+          "kind": "UNKNOWN",
+          "text": "const ballReachActive = visualReviewCapture && ballState.inFlight && hoopState.defenderTelegraph === \"contest\";"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1277,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1326,
+          "kind": "UNKNOWN",
+          "text": "} else if (visualReviewCapture && defenderAnimationState !== \"hidden\") {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1342,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1386,
+          "kind": "UNKNOWN",
+          "text": "const ringScale = 0.24 + contactProgress * (visualReviewCapture ? 0.96 : 0.68);"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1414,
+          "kind": "UNKNOWN",
+          "text": "const length = 0.16 + (1 - contactProgress) * (visualReviewCapture ? 0.34 : 0.22);"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1422,
+          "kind": "UNKNOWN",
+          "text": ".setScale([length, visualReviewCapture ? 0.034 : 0.022, visualReviewCapture ? 0.034 : 0.022])"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1446,
+          "kind": "UNKNOWN",
+          "text": "0.18 + (1 - releaseProgress) * (visualReviewCapture ? 0.22 : 0.15),"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1447,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.032 : 0.02,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1448,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.032 : 0.02"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1463,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture &&"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1540,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.044 : 0.055,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1541,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.044 : 0.055,"
+        },
+        {
+          "file": "apps/showcase-rooftop-buckets/src/main.ts",
+          "line": 1542,
+          "kind": "UNKNOWN",
+          "text": "length * (visualReviewCapture ? 0.78 : 1.02)"
+        }
+      ]
+    },
+    {
+      "route": "showcase-bank-shot",
+      "counts": {
+        "ART": 13,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 6
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 49,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 180,
+          "kind": "ART",
+          "text": "const AIM_LINE_MATERIAL = material.emissive({ name: \"aim line\", color: \"#38bdf8\", emissive: \"#0ea5e9\", opacity: visualReviewCapture ? 0.62 : 0.9 });"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 273,
+          "kind": "ART",
+          "text": "for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 325,
+          "kind": "FRAMING",
+          "text": "position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 329,
+          "kind": "UNKNOWN",
+          "text": "target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 330,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 39 : 48"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 340,
+          "kind": "ART",
+          "text": "effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 344,
+          "kind": "UNKNOWN",
+          "text": "density: visualReviewCapture ? 0.0035 : 0.011,"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 346,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 0.07 : 0.16"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 351,
+          "kind": "ART",
+          "text": "lights.ambient({ name: \"slate ambient\", color: \"#35435a\", intensity: visualReviewCapture ? 0.1 : 0.24 }),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 355,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-mid\", color: \"#fff5d8\", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 356,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-head\", color: \"#ffe9bd\", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 357,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-foot\", color: \"#ffd99c\", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 358,
+          "kind": "ART",
+          "text": "lights.rect({ name: \"table overhead softbox\", color: \"#fff4dc\", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 361,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"cool rim key\", color: \"#83bdff\", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 362,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"warm room fill\", color: \"#f2a65e\", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 363,
+          "kind": "ART",
+          "text": "lights.point({ name: \"felt cyan bounce\", color: \"#55baff\", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 364,
+          "kind": "ART",
+          "text": "lights.point({ name: \"rack magenta rim\", color: \"#ff78ad\", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 365,
+          "kind": "ART",
+          "text": "lights.point({ name: \"cue teal rim\", color: \"#55e2d2\", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 827,
+          "kind": "UNKNOWN",
+          "text": "poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 833,
+          "kind": "UNKNOWN",
+          "text": "poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);"
+        }
+      ]
+    },
+    {
+      "route": "showcase-skyline-runner",
+      "counts": {
+        "ART": 11,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 41
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-skyline-runner/src/act-palette.ts",
+          "line": 201,
+          "kind": "UNKNOWN",
+          "text": "readonly reviewCapture?: boolean;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/act-palette.ts",
+          "line": 213,
+          "kind": "UNKNOWN",
+          "text": "bands: skyBandCountForRamp(...palette.skyRamp, options.reviewCapture ? 2 : 8),"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/act-palette.ts",
+          "line": 214,
+          "kind": "UNKNOWN",
+          "text": "belowHorizonHeight: options.reviewCapture ? 28 : 14,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/act-palette.ts",
+          "line": 215,
+          "kind": "UNKNOWN",
+          "text": "belowHorizonBands: skyBandCountForRamp(...palette.groundRamp, options.reviewCapture ? 2 : 8)"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 119,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = typeof window !== \"undefined\""
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 126,
+          "kind": "UNKNOWN",
+          "text": "&& !visualReviewCapture;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 273,
+          "kind": "UNKNOWN",
+          "text": "color: visualReviewCapture ? \"#253a57\" : \"#17364d\","
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 274,
+          "kind": "ART",
+          "text": "emissive: visualReviewCapture ? \"#75d9ee\" : \"#4cc9e8\","
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 275,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 0.88 : 0.42,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 361,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 1.42 : 1.72,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 377,
+          "kind": "UNKNOWN",
+          "text": "...relayPines.filter((_, index) => !visualReviewCapture || [0, 3].includes(index)).map(([xOffset, targetHeight, depth], index) =>"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 396,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 0.1 : 0.46"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 829,
+          "kind": "UNKNOWN",
+          "text": "const playerVisualYawForFacing = (facing: number) => visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 994,
+          "kind": "UNKNOWN",
+          "text": "const cameraTuning = visualReviewCapture && !compactViewport"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1165,
+          "kind": "UNKNOWN",
+          "text": ".slice(0, visualReviewCapture ? 0 : 4)"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1224,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 34 : 62,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1232,
+          "kind": "FRAMING",
+          "text": ".position(initialPlayerPose.position[0] - 1.5, visualReviewCapture ? horizonY - 13.55 : horizonY - 27, farBackgroundDepth + 0.42)"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1244,
+          "kind": "UNKNOWN",
+          "text": ".scale([1, visualReviewCapture ? 1 : 1.9, 1])"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1259,
+          "kind": "UNKNOWN",
+          "text": "const skylineStarTransforms = Array.from({ length: visualReviewCapture ? 72 : 44 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1262,
+          "kind": "UNKNOWN",
+          "text": "const size = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1321,
+          "kind": "UNKNOWN",
+          "text": "reviewCapture: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1323,
+          "kind": "UNKNOWN",
+          "text": "const reviewNocturne = visualReviewCapture && actIndex === 0;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1374,
+          "kind": "UNKNOWN",
+          "text": "const reviewNocturne = visualReviewCapture && actIndex === 0;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1394,
+          "kind": "UNKNOWN",
+          "text": "const reviewNocturne = visualReviewCapture && actIndex === 0;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1439,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture ? 0.0001 : 0.34,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1450,
+          "kind": "FRAMING",
+          "text": ".position(sceneX, surfaceSceneY + (visualReviewCapture ? 0.92 : 1.12), GAMEPLAY_ACTOR_DEPTH - 0.28)"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1541,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.032, 0.032, 0.014] : [0.13, 0.13, 0.035])"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1792,
+          "kind": "ART",
+          "text": "castShadow: !visualReviewCapture,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1793,
+          "kind": "ART",
+          "text": "receiveShadow: !visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1906,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : [skylineStarfieldNode, skylineMoonNode])"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1916,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : [primitives.torus({"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 1960,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : game.platformerPresentationSurfaces({"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2047,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 0.52 : 1.3,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2052,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.014, 0.014, 0.014] : [0.12, 0.12, 0.12])"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2093,
+          "kind": "ART",
+          "text": ".add(effects.neonBloom({ intensity: visualReviewCapture ? 0 : 0.1, quality: \"balanced\", softKnee: 0.5, shoulder: 0.6 }))"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2096,
+          "kind": "ART",
+          "text": ".add(effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.34 : 0.2 }))"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2098,
+          "kind": "ART",
+          "text": ".add(lights.studio({ intensity: visualReviewCapture ? 0.08 : 0.86 }))"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2133,
+          "kind": "UNKNOWN",
+          "text": "const skylineStarfieldHandle = visualReviewCapture ? undefined : app.nodes.require(\"steel-dawn-starfield\");"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2134,
+          "kind": "UNKNOWN",
+          "text": "const skylineMoonHandle = visualReviewCapture ? undefined : app.nodes.require(\"steel-dawn-moon\");"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2163,
+          "kind": "UNKNOWN",
+          "text": "const captureScale = visualReviewCapture ? 0.28 : 1;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2184,
+          "kind": "UNKNOWN",
+          "text": "const captureScale = visualReviewCapture ? 0.28 : 1;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2224,
+          "kind": "UNKNOWN",
+          "text": "reviewCapture: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2256,
+          "kind": "UNKNOWN",
+          "text": "node.setVisible(!visualReviewCapture && Number(key) === actIndex);"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2682,
+          "kind": "UNKNOWN",
+          "text": "const length = heroHeight * (visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2687,
+          "kind": "UNKNOWN",
+          "text": ".setScale([length, heroHeight * (visualReviewCapture ? 0.018 : 0.04), heroHeight * (visualReviewCapture ? 0.045 : 0.1)])"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2699,
+          "kind": "UNKNOWN",
+          "text": "const chainScale = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2717,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 2763,
+          "kind": "UNKNOWN",
+          "text": "node.setScale(visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3452,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? horizonY - 13.55 : horizonY - 27,"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3455,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3482,
+          "kind": "UNKNOWN",
+          "text": "const runLeanZ = runCycleActive && !visualReviewCapture ? -runLean * playerFacing : 0;"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3483,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3929,
+          "kind": "UNKNOWN",
+          "text": "panel.dataset.capture = visualReviewCapture ? \"review\" : \"default\";"
+        },
+        {
+          "file": "apps/showcase-skyline-runner/src/main.ts",
+          "line": 3933,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? \"review\" : \"default\""
+        }
+      ]
+    },
+    {
+      "route": "showcase-gravity-post",
+      "counts": {
+        "ART": 9,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 61
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 76,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 95,
+          "kind": "UNKNOWN",
+          "text": "const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 1.7;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 101,
+          "kind": "UNKNOWN",
+          "text": "const courierParcelLift = visualReviewCapture ? 0.24 : 0.61;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 102,
+          "kind": "UNKNOWN",
+          "text": "const courierParcelMaxDimensionBase = visualReviewCapture ? 0.25 : 0.42;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 108,
+          "kind": "UNKNOWN",
+          "text": "const courierOperatorTargetHeight = visualReviewCapture ? 0.68 : 0.54;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 112,
+          "kind": "UNKNOWN",
+          "text": "const courierOperatorSeatOffset = visualReviewCapture ? -0.08 : -0.06;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 116,
+          "kind": "UNKNOWN",
+          "text": "const courierOperatorSeatHeight = visualReviewCapture ? 0.12 : 0.34;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 122,
+          "kind": "UNKNOWN",
+          "text": "const courierHandoffParcelTargetDimension = visualReviewCapture ? 0.17 : 0.12;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 123,
+          "kind": "UNKNOWN",
+          "text": "const courierHandoffParcelLateralOffset = visualReviewCapture ? -0.2 : -0.16;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 124,
+          "kind": "UNKNOWN",
+          "text": "const courierHandoffParcelForwardOffset = visualReviewCapture ? 0.035 : 0.025;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 125,
+          "kind": "UNKNOWN",
+          "text": "const courierHandoffParcelHeight = visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 283,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) return false;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 303,
+          "kind": "UNKNOWN",
+          "text": ".background(visualReviewCapture ? \"#28546a\" : \"#0e3346\")"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 318,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? 0.001 : scale)"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 327,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) continue;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 343,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) continue;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 369,
+          "kind": "ART",
+          "text": "if (!visualReviewCapture) sceneBuilder = sceneBuilder.add("
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 373,
+          "kind": "FRAMING",
+          "text": "}).position(body.position[0], PLAY_PLANE_Y, body.position[1]).rotate(1.2, 0.35, 0).scale([body.visualRadius * (visualReviewCapture ? 1.8 : 5.05), body.visualRadius * (visualReviewCapture ? 1.8 : 5.05)"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 375,
+          "kind": "ART",
+          "text": "if (!visualReviewCapture) sceneBuilder = sceneBuilder.add("
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 379,
+          "kind": "FRAMING",
+          "text": "}).position(body.position[0], PLAY_PLANE_Y + 0.018, body.position[1]).rotate(0.72, -0.42, 0.18).scale([body.visualRadius * (visualReviewCapture ? 1.5 : 4.2), body.visualRadius * (visualReviewCapture ?"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 432,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) continue;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 455,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture || reviewStationRelevant) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 463,
+          "kind": "UNKNOWN",
+          "text": "station.x + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpX * 0.7 : 0),"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 465,
+          "kind": "UNKNOWN",
+          "text": "station.z + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpZ * 0.7 : 0)"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 476,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? 0.075 : 0.14)"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 480,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture || station.id === \"gale-terminal\") {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 491,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 0.82 : 0.98,"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 510,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture && !reviewStationRelevant"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 673,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 707,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 733,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 787,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 797,
+          "kind": "ART",
+          "text": "if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany(["
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 888,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 920,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 1.15 : 2.1"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 976,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [0.78, 0.018, 0.4] : [0.6, 0.014, 0.32])"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1163,
+          "kind": "FRAMING",
+          "text": "}).position(0, -4, 0).scale(visualReviewCapture ? 0.026 : 0.085).runtime(game.runtimeNode(\"actual-path-bead-\" + index))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1194,
+          "kind": "ART",
+          "text": ".add(lights.ambient({ intensity: visualReviewCapture ? 0.85 : 0.64, color: \"#e0f4ff\" }))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1195,
+          "kind": "ART",
+          "text": ".add(lights.directional({ position: [2.4, 6.2, 3.2], intensity: visualReviewCapture ? 3.0 : 1.48, color: \"#e9f7ff\" }))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1196,
+          "kind": "ART",
+          "text": ".add(lights.directional({ name: \"freight material warm rake\", position: [-4.2, 3.6, -3.8], intensity: visualReviewCapture ? 2.0 : 0.42, color: \"#ffc58d\" }))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1200,
+          "kind": "ART",
+          "text": ".add(lights.point({ name: \"hazard-mail courier key\", color: \"#e8f7ff\", intensity: visualReviewCapture ? 5.4 : 4 }).position(3.0, 2.2, -2.1))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1201,
+          "kind": "ART",
+          "text": ".add(lights.point({ name: \"hazard-mail engine rim\", color: \"#fb923c\", intensity: visualReviewCapture ? 3.6 : 2.2 }).position(1.8, 1.1, -2.15))"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1202,
+          "kind": "ART",
+          "text": ".add(effects.fog({ density: visualReviewCapture ? 0.0018 : 0.005, color: visualReviewCapture ? \"#28546a\" : \"#0a2038\" }));"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1204,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1217,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1251,
+          "kind": "FRAMING",
+          "text": "scene: sceneBuilder.camera(visualReviewCapture ? camera.perspective({"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1339,
+          "kind": "UNKNOWN",
+          "text": "element.dataset.capture = visualReviewCapture ? \"review\" : \"default\";"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1657,
+          "kind": "UNKNOWN",
+          "text": "if (!node || !point || (visualReviewCapture && index % 3 !== 0)) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1724,
+          "kind": "UNKNOWN",
+          "text": ".setScale(visualReviewCapture ? 0.028 : 0.052)"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1725,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture || index % 2 === 0);"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1760,
+          "kind": "UNKNOWN",
+          "text": "const settledReviewPose = visualReviewCapture && paused && pod.state === \"coasting\";"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1761,
+          "kind": "UNKNOWN",
+          "text": "const compositionReviewPose = visualReviewCapture && compositionPresentationOverride;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1857,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.82 + Math.min(0.12, speed * 0.04) : 0.6,"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1858,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.012 : 0.014,"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1859,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.4 : 0.32"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1908,
+          "kind": "UNKNOWN",
+          "text": "(visualReviewCapture || pod.state === \"ready\" || pod.state === \"docked\");"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1930,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1939,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1944,
+          "kind": "UNKNOWN",
+          "text": "const distance = (visualReviewCapture ? 0.48 : 0.34) + index * (visualReviewCapture ? 0.31 : 0.23);"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1945,
+          "kind": "UNKNOWN",
+          "text": "const width = visualReviewCapture ? Math.max(0.18, 0.54 - index * 0.09) : Math.max(0.28, 0.92 - index * 0.09);"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1948,
+          "kind": "UNKNOWN",
+          "text": ": visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1954,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(visibleMotes && (!visualReviewCapture || index < 5));"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 1983,
+          "kind": "UNKNOWN",
+          "text": ": visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2016,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2038,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2046,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture && station.id !== \"gale-terminal\") {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2050,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture && paused && station.id === \"gale-terminal\") {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2060,
+          "kind": "UNKNOWN",
+          "text": "const reviewScale = visualReviewCapture ? 1.35 : 2.2;"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2171,
+          "kind": "UNKNOWN",
+          "text": "metric(visualReviewCapture ? \"State\" : \"Speed\", visualReviewCapture ? pod.state.toUpperCase() : speed.toFixed(2)) +"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2176,
+          "kind": "UNKNOWN",
+          "text": "metric(visualReviewCapture ? \"Delivered\" : \"Score\", visualReviewCapture ? completedContracts + \"/\" + CONTRACTS.length : String(score)) +"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2178,
+          "kind": "UNKNOWN",
+          "text": "metric(visualReviewCapture ? \"Leg\" : \"Time\", visualReviewCapture ? contractIndex + 1 + \"/\" + CONTRACTS.length : Math.max(0, active.timeLimitSeconds - pod.flightSeconds).toFixed(0) + \"s\") +"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2310,
+          "kind": "UNKNOWN",
+          "text": "if (paused && visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2441,
+          "kind": "UNKNOWN",
+          "text": "const [displayX, displayZ] = visualReviewCapture && compositionPresentationOverride"
+        },
+        {
+          "file": "apps/showcase-gravity-post/src/main.ts",
+          "line": 2480,
+          "kind": "UNKNOWN",
+          "text": "compositionPresentationOverride = visualReviewCapture;"
+        }
+      ]
+    },
+    {
+      "route": "showcase-blockfall-reactor",
+      "counts": {
+        "ART": 8,
+        "FRAMING": 12,
+        "TRANSIENT": 0,
+        "UNKNOWN": 22
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+          "line": 350,
+          "kind": "UNKNOWN",
+          "text": "export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+          "line": 360,
+          "kind": "FRAMING",
+          "text": ").position(layout.score.centerX - scoreWord.width / 2, reviewCapture ? -50 : layout.score.wordY - layout.score.wordSize / 2, layout.z)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+          "line": 371,
+          "kind": "FRAMING",
+          "text": ").position(layout.level.centerX - levelWord.width / 2, reviewCapture ? -50 : layout.level.wordY - layout.level.wordSize / 2, layout.z)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+          "line": 382,
+          "kind": "FRAMING",
+          "text": ").position(layout.next.centerX - nextWord.width / 2, reviewCapture ? -50 : layout.next.wordY - layout.next.wordSize / 2, layout.z)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/board-view.ts",
+          "line": 387,
+          "kind": "FRAMING",
+          "text": "primitives.box({ name: \"wall scoreboard mount rail\", material: materials.label }).position(0, reviewCapture ? -50 : 4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 109,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URL(window.location.href).searchParams.get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 118,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) document.documentElement.dataset.reviewCapture = \"blockfall\";"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 450,
+          "kind": "UNKNOWN",
+          "text": "const scoreboardNodeGroup = createScoreboardNodes(visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 480,
+          "kind": "FRAMING",
+          "text": "position: [0, compactViewport ? 2.2 : visualReviewCapture ? 2.4 : 1.86, compactViewport ? 7.4 : 8.45],"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 481,
+          "kind": "UNKNOWN",
+          "text": "target: [0, compactViewport ? 2.16 : visualReviewCapture ? 2.36 : 1.82, 0.12],"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 482,
+          "kind": "FRAMING",
+          "text": "fov: compactViewport ? 54 : visualReviewCapture ? 33 : 32"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 487,
+          "kind": "UNKNOWN",
+          "text": "basePosition: compactViewport ? [0, 2.2, 7.4] : visualReviewCapture ? [0, 2.4, 8.45] : [0, 1.86, 8.45],"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 488,
+          "kind": "UNKNOWN",
+          "text": "baseTarget: compactViewport ? [0, 2.16, 0.12] : visualReviewCapture ? [0, 2.36, 0.12] : [0, 1.82, 0.12]"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 499,
+          "kind": "UNKNOWN",
+          "text": "const cabinetTargetSize = visualReviewCapture ? 3.85 : 4.2;"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 522,
+          "kind": "UNKNOWN",
+          "text": ".background(visualReviewCapture ? \"#07131d\" : \"#24103a\")"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 528,
+          "kind": "UNKNOWN",
+          "text": "targetHeight: visualReviewCapture ? 14.2 : 8.25"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 530,
+          "kind": "FRAMING",
+          "text": ".position(0, visualReviewCapture ? -0.38 : 1.82, -3.52)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 553,
+          "kind": "FRAMING",
+          "text": ".position(-2.8, visualReviewCapture ? 3.04 : 3.2, -0.98)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 554,
+          "kind": "UNKNOWN",
+          "text": ".scale([1.72, visualReviewCapture ? 1.38 : 1.56, 0.035])"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 558,
+          "kind": "FRAMING",
+          "text": ".position(-2.8, visualReviewCapture ? 3.54 : 3.7, -0.935)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 566,
+          "kind": "FRAMING",
+          "text": ".position(-2.8 - cabinetLiveWordGeometry.width / 2, visualReviewCapture ? 2.94 : 3.1, -0.93)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 577,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 1.8 : 2.46,"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 581,
+          "kind": "FRAMING",
+          "text": ".position(visualReviewCapture ? -4.1 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.96)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 592,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 1.5 : 2.2,"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 596,
+          "kind": "FRAMING",
+          "text": ".position(visualReviewCapture ? 4.6 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -2.4 : -1.98)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 628,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : createArcadeRoomNodes())"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 629,
+          "kind": "UNKNOWN",
+          "text": ".addMany(createBoardShell(visualReviewCapture))"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 651,
+          "kind": "ART",
+          "text": "lights.ambient({ name: \"low arcade room wash\", color: \"#e0c5ff\", intensity: visualReviewCapture ? 0.82 : 0.58 }),"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 654,
+          "kind": "ART",
+          "text": "lights.point({ name: \"magenta arcade rim\", color: \"#ff42c8\", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 655,
+          "kind": "ART",
+          "text": "lights.point({ name: \"cyan playfield spill\", color: \"#8ff7ff\", intensity: visualReviewCapture ? 1.82 : 1.42 }).position(0, 2.5, 1.55),"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 656,
+          "kind": "ART",
+          "text": "lights.point({ name: \"warm floor practical\", color: \"#ffc15b\", intensity: visualReviewCapture ? 0.76 : 0.42 }).position(0, -0.45, 0.9),"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 657,
+          "kind": "ART",
+          "text": "lights.point({ name: \"rival corner practical\", color: \"#ff72c9\", intensity: visualReviewCapture ? 1.34 : 0.68 }).position(3.35, 1.35, 1.15)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1594,
+          "kind": "UNKNOWN",
+          "text": "const visible = !visualReviewCapture && digit === shown;"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1605,
+          "kind": "UNKNOWN",
+          "text": "const visible = !visualReviewCapture && digit === shown;"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1819,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1824,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1848,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1854,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/main.ts",
+          "line": 1871,
+          "kind": "UNKNOWN",
+          "text": ".setPosition(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/reactor-scene.ts",
+          "line": 371,
+          "kind": "UNKNOWN",
+          "text": "export function createBoardShell(reviewCapture = false): AuraNodeInput[] {"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/reactor-scene.ts",
+          "line": 478,
+          "kind": "ART",
+          "text": "primitives.box({ name: \"left cyan arcade light column\", material: material.neon({ color: \"#39f6ff\", emissive: \"#39f6ff\", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale(review"
+        },
+        {
+          "file": "apps/showcase-blockfall-reactor/src/reactor-scene.ts",
+          "line": 479,
+          "kind": "ART",
+          "text": "primitives.box({ name: \"right magenta arcade light column\", material: material.neon({ color: \"#e279ff\", emissive: \"#e279ff\", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(re"
+        }
+      ]
+    },
+    {
+      "route": "showcase-deep-recovery",
+      "counts": {
+        "ART": 5,
+        "FRAMING": 7,
+        "TRANSIENT": 0,
+        "UNKNOWN": 10
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 144,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 295,
+          "kind": "FRAMING",
+          "text": "offset: visualReviewCapture ? [4.6, 21.8, 5.2] : [6.4, 9.2, -15.4],"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 301,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [4.5, -3.1, -5.2] : [-2.0, -3.0, -5.2],"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 306,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 47 : 62"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 312,
+          "kind": "UNKNOWN",
+          "text": "...createDeepOceanEnvironment({ review: visualReviewCapture }),"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 329,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 0.001 : 4.25"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 333,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : WRECK_OBSTACLES).map((obs) =>"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 347,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 5.0 : 8.4,"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 356,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 0.5 : 0.55,"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 371,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 5.45 : 7.2,"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 372,
+          "kind": "ART",
+          "text": "material: visualReviewCapture ? material.pbr({"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 387,
+          "kind": "UNKNOWN",
+          "text": "...(visualReviewCapture ? ["
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 415,
+          "kind": "FRAMING",
+          "text": "}).scale(visualReviewCapture ? [1.35, 0.55, 2.4] : [1.8, 0.9, 3.2]).position(0, -6, 4).runtime({ id: \"sub-lamp-volume\", tags: [\"lamp\", \"state-light\"] }),"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 419,
+          "kind": "FRAMING",
+          "text": "}).scale(visualReviewCapture ? [0.12, 1.45, 0.12] : [0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(-0.5, -6.2, 3).runtime({ id: \"sub-lamp-port\", tags: [\"lamp\", \"world-space-light-cue\"] }),"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 423,
+          "kind": "FRAMING",
+          "text": "}).scale(visualReviewCapture ? [0.12, 1.45, 0.12] : [0.16, 2.0, 0.16]).rotate(Math.PI / 2, 0, 0).position(0.5, -6.2, 3).runtime({ id: \"sub-lamp-starboard\", tags: [\"lamp\", \"world-space-light-cue\"] }),"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 459,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : crates).map((c) =>"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 470,
+          "kind": "ART",
+          "text": "...(visualReviewCapture ? [] : initialSonarTargets).map((target) =>"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 737,
+          "kind": "UNKNOWN",
+          "text": "lampNode?.setVisible?.(!visualReviewCapture && !compositionProbeActive && gameState !== \"blackout\");"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 748,
+          "kind": "UNKNOWN",
+          "text": "beam?.setVisible?.(!visualReviewCapture && !compositionProbeActive && gameState !== \"blackout\");"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 909,
+          "kind": "UNKNOWN",
+          "text": "status: (visualReviewCapture || frameCount >= 90) && Number(diagnostics.drawCalls ?? 0) > 0 ? \"ready\" : \"loading\","
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 1060,
+          "kind": "FRAMING",
+          "text": "subject: { position: visualReviewCapture ? [-11.5, -12, -7] : [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },"
+        },
+        {
+          "file": "apps/showcase-deep-recovery/src/main.ts",
+          "line": 1065,
+          "kind": "UNKNOWN",
+          "text": "subState = visualReviewCapture"
+        }
+      ]
+    },
+    {
+      "route": "showcase-gallery-shift",
+      "counts": {
+        "ART": 5,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 11
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 84,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 936,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) return [];"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 970,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 3.3 : 2.7"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1022,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 3.6 : 1.5"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1032,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 3.2 : 1.3"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1067,
+          "kind": "ART",
+          "text": "lights.ambient({ name: \"museum ambient fill\", color: \"#c4e7ee\", intensity: visualReviewCapture ? 0.06 : 0.38 }),"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1068,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"museum moon key\", position: [4.8, 8.6, 5.2], color: \"#fff2dc\", intensity: visualReviewCapture ? 0.4 : 1.05 }),"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1069,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"museum cyan rim\", position: [-5.5, 5.2, -4.6], color: \"#76dff1\", intensity: visualReviewCapture ? 1.04 : 0.58 }),"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1071,
+          "kind": "ART",
+          "text": "lights.point({ name: \"guard-1 flashlight\", color: \"#ffd58a\", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1072,
+          "kind": "ART",
+          "text": "lights.point({ name: \"guard-2 flashlight\", color: \"#ffd58a\", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1101,
+          "kind": "FRAMING",
+          "text": "position: visualReviewCapture ? [0, 26.0, 2.5] : [0, 16.8, 17.2],"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1109,
+          "kind": "UNKNOWN",
+          "text": "target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.6, -0.6],"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1110,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 38 : 43"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1342,
+          "kind": "UNKNOWN",
+          "text": "mine?.setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1382,
+          "kind": "UNKNOWN",
+          "text": "sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1432,
+          "kind": "UNKNOWN",
+          "text": "?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1591,
+          "kind": "UNKNOWN",
+          "text": "const routeReady = rendererDrawn && (visualReviewCapture || frameCount >= 90);"
+        },
+        {
+          "file": "apps/showcase-gallery-shift/src/main.ts",
+          "line": 1592,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture && rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {"
+        }
+      ]
+    },
+    {
+      "route": "showcase-neon-swarm",
+      "counts": {
+        "ART": 4,
+        "FRAMING": 5,
+        "TRANSIENT": 0,
+        "UNKNOWN": 50
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-neon-swarm/src/environment.ts",
+          "line": 12,
+          "kind": "UNKNOWN",
+          "text": "export function createNeonSwarmDistrictDressing(reviewCapture = false): AuraSceneNode[] {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/environment.ts",
+          "line": 19,
+          "kind": "UNKNOWN",
+          "text": "intensity: reviewCapture ? 0.82 : 1.05"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/environment.ts",
+          "line": 24,
+          "kind": "UNKNOWN",
+          "text": "intensity: reviewCapture ? 1.72 : 2.0"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/environment.ts",
+          "line": 29,
+          "kind": "UNKNOWN",
+          "text": "intensity: reviewCapture ? 1.08 : 0.72"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/environment.ts",
+          "line": 38,
+          "kind": "UNKNOWN",
+          "text": "if (reviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 176,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = typeof window !== \"undefined\""
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 189,
+          "kind": "UNKNOWN",
+          "text": "const compactDefaultComposition = !visualReviewCapture;"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 216,
+          "kind": "UNKNOWN",
+          "text": "const swarm = createSwarmSimulation({ reviewCapture: visualReviewCapture });"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 253,
+          "kind": "UNKNOWN",
+          "text": ".background(visualReviewCapture ? \"#0b1519\" : \"#081316\")"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 254,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : createNeonSwarmDistrictDressing(false))"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 260,
+          "kind": "FRAMING",
+          "text": "}).position(0, visualReviewCapture ? 0.025 : -8, 2.6).runtime(game.runtimeNode(\"neon-review-arena\", {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 265,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture ? [0.001, 0.001, 0.001] : [57, 0.5, 39],"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 279,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture ? [0.001, 0.001, 0.001] : [3.4, 0.06, 0.16]"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 291,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture ? 0.001 : 1"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 300,
+          "kind": "UNKNOWN",
+          "text": "const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 6 : 16 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 301,
+          "kind": "UNKNOWN",
+          "text": "const bladeCount = visualReviewCapture ? 1 : compactDefaultComposition ? 6 : 16;"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 302,
+          "kind": "UNKNOWN",
+          "text": "const angle = (index / bladeCount) * Math.PI * 2 + index * (visualReviewCapture ? 0.075 : 0.035);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 303,
+          "kind": "UNKNOWN",
+          "text": "const radius = (visualReviewCapture ? 2.55 : 3.55) + (index % 3) * (visualReviewCapture ? 0.48 : 0.22);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 321,
+          "kind": "UNKNOWN",
+          "text": "(visualReviewCapture ? 0.48 : 0.72) + (index % 3) * 0.1,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 323,
+          "kind": "UNKNOWN",
+          "text": "(visualReviewCapture ? 2.9 : 2.45) + (index % 4) * 0.28"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 339,
+          "kind": "UNKNOWN",
+          "text": "const districtFrameNodes = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 8 : 14 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 398,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture || compactDefaultComposition ? [0.001, 0.001, 0.001] : [0.12, 0.18, 0.42]"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 426,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture || compactDefaultComposition ? 0.001 : 1"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 434,
+          "kind": "UNKNOWN",
+          "text": "const gardenLightNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 12 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 593,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 610,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 640,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture && !compactDefaultComposition) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 688,
+          "kind": "UNKNOWN",
+          "text": "model(visualReviewCapture ? assets.neonRainCourierHero : assets.neonCourierAvatar, {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 696,
+          "kind": "UNKNOWN",
+          "text": "color: visualReviewCapture ? \"#f0d8c5\" : \"#214f68\","
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 697,
+          "kind": "ART",
+          "text": "roughness: visualReviewCapture ? 0.42 : 0.3,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 698,
+          "kind": "UNKNOWN",
+          "text": "metallic: visualReviewCapture ? 0.16 : 0.42,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 699,
+          "kind": "ART",
+          "text": "emissive: visualReviewCapture ? \"#e7a894\" : \"#2bd7e7\","
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 700,
+          "kind": "ART",
+          "text": "emissiveIntensity: visualReviewCapture ? 0.08 : 0.24"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 705,
+          "kind": "UNKNOWN",
+          "text": "targetHeight: visualReviewCapture ? undefined : 2.95,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 706,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 3.65 : undefined"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 708,
+          "kind": "FRAMING",
+          "text": ".position(0, visualReviewCapture ? 0.14 : 0, 3)"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 749,
+          "kind": "UNKNOWN",
+          "text": "size: [visualReviewCapture ? 0.035 : 0.075, 0.08, visualReviewCapture ? 2.3 : 3.0],"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 778,
+          "kind": "UNKNOWN",
+          "text": "if (!visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 878,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 906,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 0.52 : 0.34,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 907,
+          "kind": "UNKNOWN",
+          "text": "radius: visualReviewCapture ? 0.82 : 0.68"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 923,
+          "kind": "UNKNOWN",
+          "text": "distance: visualReviewCapture ? 12.4 : 13.8,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 924,
+          "kind": "FRAMING",
+          "text": "offset: (visualReviewCapture ? [0, 9.2, 3.6] : [0, 9.1, 4.8]) as [number, number, number],"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 925,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 47 : 53,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 926,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture || desktopComposition ? 0 : 0.14"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1189,
+          "kind": "UNKNOWN",
+          "text": "?.setPosition(player.x + aim.x * (visualReviewCapture ? 1.15 : 1.55), visualReviewCapture ? 0.72 : 0.34, player.z + aim.z * (visualReviewCapture ? 1.15 : 1.55))"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1193,
+          "kind": "UNKNOWN",
+          "text": "?.setPosition(player.x + aim.x * (visualReviewCapture ? 2.35 : 3.15), visualReviewCapture ? 0.7 : 0.12, player.z + aim.z * (visualReviewCapture ? 2.35 : 3.15))"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1204,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 1.58 : 1.48,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1211,
+          "kind": "UNKNOWN",
+          "text": "const hitDistance = visualReviewCapture ? 2.35 : 3.15;"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1215,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.76 : 0.18,"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1221,
+          "kind": "UNKNOWN",
+          "text": "pulseFxRemaining = visualReviewCapture ? 2 : 0.3;"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1519,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1523,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1527,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1531,
+          "kind": "UNKNOWN",
+          "text": ".setVisible(!visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 1599,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/main.ts",
+          "line": 2030,
+          "kind": "UNKNOWN",
+          "text": "const neutralScale = desktopComposition || visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/swarm.ts",
+          "line": 133,
+          "kind": "UNKNOWN",
+          "text": "readonly reviewCapture?: boolean;"
+        },
+        {
+          "file": "apps/showcase-neon-swarm/src/swarm.ts",
+          "line": 443,
+          "kind": "UNKNOWN",
+          "text": ": (options.reviewCapture ? 0.42 + (i % 5) * 0.02 : 0.32 + (i % 5) * 0.016);"
+        }
+      ]
+    },
+    {
+      "route": "showcase-patrol-wing",
+      "counts": {
+        "ART": 4,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 15
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 76,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 234,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 5.6 : 4.2"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 282,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 316,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? 0.24 : 0.38)"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 332,
+          "kind": "UNKNOWN",
+          "text": ".scale([0.045, 0.045, visualReviewCapture ? 0.72 : 0.7])"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 444,
+          "kind": "FRAMING",
+          "text": "offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 445,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 446,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 50 : 47,"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 450,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture || reducedMotion ? 0 : 0.06,"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 463,
+          "kind": "UNKNOWN",
+          "text": "const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 509,
+          "kind": "UNKNOWN",
+          "text": "const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 520,
+          "kind": "UNKNOWN",
+          "text": ".background(visualReviewCapture ? \"#16364e\" : \"#254760\")"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 521,
+          "kind": "UNKNOWN",
+          "text": ".addMany(arenaNodes({ reviewCapture: visualReviewCapture }))"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 524,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : skyBandNodes)"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 525,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : flightStreaks)"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 528,
+          "kind": "ART",
+          "text": "effects.fog({ name: \"coastal haze\", density: visualReviewCapture ? 0.0034 : 0.0042, color: \"#42647a\", intensity: visualReviewCapture ? 0.32 : 0.42 }),"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/main.ts",
+          "line": 529,
+          "kind": "ART",
+          "text": "effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true, quality: \"balanced\", softKnee: 0.5, shoulder: 0.6 }),"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 268,
+          "kind": "UNKNOWN",
+          "text": "export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): readonly AuraSceneNode[] {"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 270,
+          "kind": "UNKNOWN",
+          "text": "const reviewCapture = options.reviewCapture === true;"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 308,
+          "kind": "UNKNOWN",
+          "text": "for (const [index, cloud] of (reviewCapture ? ["
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 464,
+          "kind": "UNKNOWN",
+          "text": "if (!reviewCapture) nodes.push("
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 574,
+          "kind": "UNKNOWN",
+          "text": "const props = reviewCapture"
+        },
+        {
+          "file": "apps/showcase-patrol-wing/src/sky.ts",
+          "line": 587,
+          "kind": "UNKNOWN",
+          "text": "if (reviewCapture) {"
+        }
+      ]
+    },
+    {
+      "route": "showcase-courier-rush",
+      "counts": {
+        "ART": 2,
+        "FRAMING": 7,
+        "TRANSIENT": 4,
+        "UNKNOWN": 6
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 759,
+          "kind": "UNKNOWN",
+          "text": "export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false): CityZoneDressing {"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 762,
+          "kind": "UNKNOWN",
+          "text": "const staticNodes: AuraNodeInput[] = reviewCapture"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 778,
+          "kind": "UNKNOWN",
+          "text": "staticNodes.push(...pressureMomentNodes(assets, reviewCapture ? 15.3 : 0, 10.6));"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/city.ts",
+          "line": 781,
+          "kind": "ART",
+          "text": "for (const site of reviewCapture ? [] : ZONE_SITES) {"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 153,
+          "kind": "UNKNOWN",
+          "text": "const dressing = buildCityDressing(assets, visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 250,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [0, 1.16, -0.05] : [0, 1.22, -1.05],"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 252,
+          "kind": "FRAMING",
+          "text": "offset: visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 255,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 55 : 56,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 258,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 324,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 4.2 : VAN_TARGET_LENGTH,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 341,
+          "kind": "ART",
+          "text": ".addMany(visualReviewCapture ? [] : ["
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 367,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: visualReviewCapture ? 0.58 : 0.76,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1257,
+          "kind": "TRANSIENT",
+          "text": ".setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.7 : 1.56, vanAfter.z + fz * 0.08)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1261,
+          "kind": "TRANSIENT",
+          "text": ".setPosition(vanAfter.x + fx * 0.08, visualReviewCapture ? 1.92 : 1.82, vanAfter.z + fz * 0.08)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1301,
+          "kind": "TRANSIENT",
+          "text": "parcelNode.setPosition(vanAfter.x - fx * 0.08, visualReviewCapture ? 1.5 : 1.36, vanAfter.z - fz * 0.3)"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1365,
+          "kind": "TRANSIENT",
+          "text": ".setVisible(!reducedMotion && (visualReviewCapture || car.speed > 0.15));"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1393,
+          "kind": "FRAMING",
+          "text": "const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 11.4 : undefined);"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1396,
+          "kind": "FRAMING",
+          "text": "visualReviewCapture ? 0.66 + offset.offsetX * 0.12 : offset.offsetX,"
+        },
+        {
+          "file": "apps/showcase-courier-rush/src/main.ts",
+          "line": 1397,
+          "kind": "FRAMING",
+          "text": "visualReviewCapture ? 3.28 : offset.offsetY,"
+        }
+      ]
+    },
+    {
+      "route": "showcase-aurora-lander",
+      "counts": {
+        "ART": 1,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 26
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 111,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = routeParams.get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 647,
+          "kind": "UNKNOWN",
+          "text": "pad.radius * (visualReviewCapture ? 1.28 : 2.05),"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 648,
+          "kind": "UNKNOWN",
+          "text": "pad.radius * (visualReviewCapture ? 1.28 : 2.05),"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 649,
+          "kind": "UNKNOWN",
+          "text": "visualReviewCapture ? 0.16 : 0.3"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 753,
+          "kind": "ART",
+          "text": "visible: visualReviewCapture,"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 843,
+          "kind": "UNKNOWN",
+          "text": "text3D(visualReviewCapture ? \"EXTRACTION BAY\" : \"EXTRACTION READY\", {"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 844,
+          "kind": "UNKNOWN",
+          "text": "size: visualReviewCapture ? 0.58 : 2.1,"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 845,
+          "kind": "UNKNOWN",
+          "text": "depth: visualReviewCapture ? 0.16 : 0.35,"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 858,
+          "kind": "UNKNOWN",
+          "text": ".scale(visualReviewCapture ? [2.6, 2.6, 0.1] : [5.5, 5.5, 0.18])"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 925,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 9.2 : 2.2"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 930,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 5.6 : 1.8"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 934,
+          "kind": "UNKNOWN",
+          "text": "distance: visualReviewCapture ? 10.6 : 15,"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 946,
+          "kind": "FRAMING",
+          "text": "offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 5.8, 13.2],"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 947,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 948,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 46 : 58,"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 949,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture ? 0 : 0.05"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1172,
+          "kind": "UNKNOWN",
+          "text": "<button id=\"panel-reference-toggle\" class=\"panel-toggle\" type=\"button\" aria-expanded=\"${reviewCapture ? \"true\" : \"false\"}\" aria-controls=\"panel-reference\">Briefing &amp; grading</button>"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1173,
+          "kind": "UNKNOWN",
+          "text": "<div id=\"panel-reference\"${reviewCapture ? \"\" : \" hidden\"}>"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1199,
+          "kind": "UNKNOWN",
+          "text": "<div id=\"panel-reference-tail\"${reviewCapture ? \"\" : \" hidden\"}>"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1580,
+          "kind": "UNKNOWN",
+          "text": "const approachScaffoldVisible = !visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1588,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1600,
+          "kind": "UNKNOWN",
+          "text": "node.setVisible(extractionVisible && !visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1603,
+          "kind": "UNKNOWN",
+          "text": "extractionPad.x + (visualReviewCapture ? -2.4 : -5.8),"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1604,
+          "kind": "UNKNOWN",
+          "text": "extractionGround + (visualReviewCapture ? 5.0 : 5.2),"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1605,
+          "kind": "UNKNOWN",
+          "text": "extractionPad.z + (visualReviewCapture ? -1.45 : -1.5)"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1609,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture) node.setScale([0.45, 0.45, 0.04]);"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1614,
+          "kind": "UNKNOWN",
+          "text": "node.setVisible((extractionVisible && !visualReviewCapture) || approachScaffoldVisible);"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1615,
+          "kind": "UNKNOWN",
+          "text": "if (extractionVisible && !visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1633,
+          "kind": "UNKNOWN",
+          "text": "extractionBackdropNode.setVisible(extractionVisible && visualReviewCapture);"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1634,
+          "kind": "UNKNOWN",
+          "text": "if (extractionVisible && visualReviewCapture) {"
+        },
+        {
+          "file": "apps/showcase-aurora-lander/src/main.ts",
+          "line": 1669,
+          "kind": "UNKNOWN",
+          "text": "if (extractionVisible && visualReviewCapture) {"
+        }
+      ]
+    },
+    {
+      "route": "aura-clash-showcase",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 3
+      },
+      "findings": [
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 458,
+          "kind": "UNKNOWN",
+          "text": "const captureMode = new URLSearchParams(window.location.search).get(\"capture\");"
+        },
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 459,
+          "kind": "UNKNOWN",
+          "text": "const reviewCapture = captureMode === \"match-start\" || captureMode === \"combat-impact\";"
+        },
+        {
+          "file": "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+          "line": 500,
+          "kind": "UNKNOWN",
+          "text": "<main class=\"aca\" data-evidence-mode=\"${hudMode.evidence ? \"true\" : \"false\"}\" data-training=\"${hudMode.training ? \"true\" : \"false\"}\" data-review-capture=\"${reviewCapture ? \"true\" : \"false\"}\" tabindex="
+        }
+      ]
+    },
+    {
+      "route": "showcase-mech-hangar",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 3,
+        "TRANSIENT": 0,
+        "UNKNOWN": 2
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-mech-hangar/src/main.ts",
+          "line": 61,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = typeof window !== \"undefined\""
+        },
+        {
+          "file": "apps/showcase-mech-hangar/src/main.ts",
+          "line": 774,
+          "kind": "UNKNOWN",
+          "text": "distance: visualReviewCapture ? 5.55 : 6.55,"
+        },
+        {
+          "file": "apps/showcase-mech-hangar/src/main.ts",
+          "line": 782,
+          "kind": "FRAMING",
+          "text": "offset: visualReviewCapture ? [0, 1.82, 4.62] : [0, 1.66, 5.28],"
+        },
+        {
+          "file": "apps/showcase-mech-hangar/src/main.ts",
+          "line": 783,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 52 : (reducedMotion ? 53 : 54),"
+        },
+        {
+          "file": "apps/showcase-mech-hangar/src/main.ts",
+          "line": 786,
+          "kind": "FRAMING",
+          "text": "smoothing: visualReviewCapture ? 0 : 0.16"
+        }
+      ]
+    },
+    {
+      "route": "showcase-siege-golf",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 15
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 45,
+          "kind": "UNKNOWN",
+          "text": "const captureMode = new URLSearchParams(window.location.search).get(\"capture\");"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 46,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = captureMode === \"review\";"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 47,
+          "kind": "UNKNOWN",
+          "text": "const evidenceCapture = captureMode === \"evidence\";"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 169,
+          "kind": "UNKNOWN",
+          "text": "let cameraPhase: SiegeCameraPhase = visualReviewCapture ? \"aim\" : \"opening\";"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 326,
+          "kind": "UNKNOWN",
+          "text": "targetMaxDimension: v.name === \"golf-ball\" && visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 535,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture || evidenceCapture) {"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 691,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture && !compactViewport) {"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 724,
+          "kind": "UNKNOWN",
+          "text": ": visualReviewCapture"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 727,
+          "kind": "FRAMING",
+          "text": "targetOffset: visualReviewCapture ? [-0.2, 0.28, -1.7] : [0, 0.18, -2.6],"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 728,
+          "kind": "FRAMING",
+          "text": "fov: compactViewport ? 54 : visualReviewCapture ? 44 : 54,"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 956,
+          "kind": "UNKNOWN",
+          "text": "dynamicHandles.get(\"golf-ball\")?.setScale(visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 965,
+          "kind": "UNKNOWN",
+          "text": "ball?.setScale(suppressed ? 0.0001 : visualReviewCapture ? 1 : COMPOSITION_BALL_SCALE);"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 995,
+          "kind": "UNKNOWN",
+          "text": "panel.dataset.capture = visualReviewCapture ? \"review\" : \"default\";"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 1102,
+          "kind": "UNKNOWN",
+          "text": "cameraPhase = visualReviewCapture ? \"aim\" : \"opening\";"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 1423,
+          "kind": "UNKNOWN",
+          "text": "if (!aiming || (visualReviewCapture && i % 2 === 1)) {"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 1451,
+          "kind": "UNKNOWN",
+          "text": "const lifetime = visualReviewCapture ? 120 : kind === \"wood\" ? 24 : 16;"
+        },
+        {
+          "file": "apps/showcase-siege-golf/src/main.ts",
+          "line": 1458,
+          "kind": "UNKNOWN",
+          "text": "if (visualReviewCapture && !reviewImpactFrozen) {"
+        }
+      ]
+    },
+    {
+      "route": "showcase-turbo-drift-circuit",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 1
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-turbo-drift-circuit/src/main.ts",
+          "line": 2842,
+          "kind": "UNKNOWN",
+          "text": "const reviewCaptureScenePose = racingScene.toScenePose({"
+        }
+      ]
+    },
+    {
+      "route": "showcase-vault-breakers",
+      "counts": {
+        "ART": 0,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 2
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-vault-breakers/src/main.ts",
+          "line": 50,
+          "kind": "UNKNOWN",
+          "text": "const visualReviewCapture = new URLSearchParams(window.location.search).get(\"capture\") === \"review\";"
+        },
+        {
+          "file": "apps/showcase-vault-breakers/src/main.ts",
+          "line": 383,
+          "kind": "FRAMING",
+          "text": "position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 5.15, 7.35],"
+        },
+        {
+          "file": "apps/showcase-vault-breakers/src/main.ts",
+          "line": 384,
+          "kind": "UNKNOWN",
+          "text": "target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.05, -0.38],"
+        },
+        {
+          "file": "apps/showcase-vault-breakers/src/main.ts",
+          "line": 385,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 46 : 50"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "ART": 107,
+    "FRAMING": 64,
+    "TRANSIENT": 11,
+    "UNKNOWN": 396
+  }
+}

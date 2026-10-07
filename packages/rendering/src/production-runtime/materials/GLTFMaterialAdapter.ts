@@ -1,6 +1,12 @@
-import type { PBRMaterial } from './PBRMaterial';
-export interface GLTFMaterialLike { readonly name?: string; readonly alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND'; readonly doubleSided?: boolean; readonly extensions?: Record<string, unknown>; readonly pbrMetallicRoughness?: { readonly baseColorFactor?: readonly number[]; readonly metallicFactor?: number; readonly roughnessFactor?: number }; }
-export function adaptGLTFMaterial(material: GLTFMaterialLike, id = material.name ?? 'gltf-material'): PBRMaterial {
-  const factor = material.pbrMetallicRoughness?.baseColorFactor ?? [1, 1, 1, 1];
-  return { id, name: material.name ?? id, baseColorFactor: [Number(factor[0] ?? 1), Number(factor[1] ?? 1), Number(factor[2] ?? 1), Number(factor[3] ?? 1)], metallicFactor: material.pbrMetallicRoughness?.metallicFactor ?? 1, roughnessFactor: material.pbrMetallicRoughness?.roughnessFactor ?? 1, alphaMode: material.alphaMode ?? 'OPAQUE', doubleSided: material.doubleSided ?? false, textures: {}, extensions: Object.keys(material.extensions ?? {}) };
-}
+/**
+ * E34 removal (PRD-04 P6-3): the `adaptGLTFMaterial`/`GLTFMaterialLike` stub —
+ * a CPU single-sample adapter that pretended to lower glTF materials — was
+ * deleted. The module stays as a thin re-export of the real physical-material
+ * descriptor path so the owner-01 barrel (`production-runtime/index.ts`) and
+ * the production-runtime file manifest keep resolving until Q-15-4 removes
+ * this export line. The working glTF→material path is `GLTFRenderResources`
+ * + `materials/PhysicalFeatures`.
+ */
+export { legacyPhysicalDescriptor } from "../../materials/PhysicalFeatures";
+export type { LegacyPhysicalMaterialOptions } from "../../materials/PhysicalFeatures";
+export type { PhysicalMaterialDescriptor } from "../../materials/PhysicalMaterial";
