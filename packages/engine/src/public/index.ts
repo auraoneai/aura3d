@@ -93,6 +93,8 @@ export type { AuraAssetPreloadResult } from "../agent-api/index.js";
 export type { AuraColor } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraCreateAppOptions } from "../agent-api/index.js";
+/** @deprecated Deleted. Deleted from "." in 4.0.0. */
+export type { AuraCreateGameAppOptions } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export type { AuraDiagnosticsOverlay } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -113,6 +115,8 @@ export { AuraNodeBuilder } from "../agent-api/index.js";
 export type { AuraPerformancePanelSnapshot } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraPerformanceQuality } from "../agent-api/index.js";
+/** @deprecated Deleted. Deleted from "." in 4.0.0. */
+export type { AuraPrimitiveNode } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraRendererFallbackMode } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -265,6 +269,8 @@ export { meshVehicleSurface } from "../agent-api/index.js";
 export { mipChainBytesCoarseToFine } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { navigation } from "../agent-api/index.js";
+/** @deprecated Deleted. Deleted from "." in 4.0.0. */
+export { normalizeSceneSnapshot } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { normalizeTextureBudgetBytes } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
