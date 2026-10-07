@@ -174,16 +174,10 @@ const SCENARIOS: readonly Scenario[] = [
  */
 function auraSourceAlias(): Plugin {
   const aliases = new Map([
-    ["@aura3d/lean", "packages/lean/src/index.ts"],
-    ["@aura3d/lean/game", "packages/lean/src/game.ts"],
-    ["@aura3d/lean/product", "packages/lean/src/product.ts"],
     ["@aura3d/engine", "packages/engine/src/agent-api/index.ts"],
     ["@aura3d/rendering", "packages/rendering/src/index.ts"],
     ["@aura3d/rendering/lean-runtime", "packages/rendering/src/lean-runtime.ts"],
     ["@aura3d/rendering/lean-core-runtime", "packages/rendering/src/lean-core-runtime.ts"],
-    ["@aura3d/engine/lean", "packages/engine/src/agent-api/lean.ts"],
-    ["@aura3d/engine/lean-game", "packages/engine/src/agent-api/lean-game.ts"],
-    ["@aura3d/engine/lean-product", "packages/engine/src/agent-api/lean-product.ts"],
     ["@aura3d/assets", "packages/assets/src/browser-index.ts"],
     ["@aura3d/assets/gltf-runtime", "packages/assets/src/gltf-runtime.ts"],
     ["@aura3d/scene", "packages/scene/src/index.ts"],

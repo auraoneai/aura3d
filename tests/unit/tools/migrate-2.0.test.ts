@@ -7,7 +7,7 @@ describe("Aura3D 2.0 import codemod", () => {
       .map((specifier, index) => `export * from ${index % 2 === 0 ? `"${specifier}"` : `'${specifier}'`};`)
       .join("\n");
     const result = migrateAura3D2Source(source);
-    expect(result.replacements).toBe(5);
+    expect(result.replacements).toBe(Object.keys(AURA3D_2_SPECIFIER_MIGRATIONS).length);
     for (const replacement of Object.values(AURA3D_2_SPECIFIER_MIGRATIONS)) expect(result.source).toContain(replacement);
     for (const deprecated of Object.keys(AURA3D_2_SPECIFIER_MIGRATIONS)) expect(result.source).not.toContain(`${deprecated}"`);
   });

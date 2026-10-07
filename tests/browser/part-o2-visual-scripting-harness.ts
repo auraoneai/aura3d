@@ -6,9 +6,9 @@ import {
   material,
   primitives,
   scene,
-  visualScripting,
   type AuraApp
 } from "@aura3d/engine";
+import { visualScripting } from "../../packages/engine/src/agent-api/nodes/visualScripting.js";
 import {
   applyVisualGameplaySideEffects,
   createVisualGameplayState,

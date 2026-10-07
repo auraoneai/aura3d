@@ -80,12 +80,6 @@ export default [
     rules: { "aura3d-boundaries/no-upward-package-import": "off" }
   },
   {
-    // PRD-15 §7.5: @aura3d/lean is a deprecated re-export shim over @aura3d/engine —
-    // upward import is its entire (deprecated) purpose. Removed at 4.0.0.
-    files: ["packages/lean/src/**/*.ts"],
-    rules: { "aura3d-boundaries/no-upward-package-import": "off" }
-  },
-  {
     // PRD-15 T6.9: input/src/controls holds deprecated re-export shims over
     // @aura3d/controls — upward import is their entire (deprecated) purpose.
     // Removed at 4.0.0 (T8.1).

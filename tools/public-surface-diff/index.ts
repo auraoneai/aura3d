@@ -289,7 +289,7 @@ function generatedAssetShape(root: string): { manifestSchema: string | null; top
   const metadataFields = metadataBlock
     ? [...metadataBlock[1]!.matchAll(/^\s*([A-Za-z_$][\w$]*)\s*:/gm)].map((match) => match[1]!).sort()
     : [];
-  const importOwners = ["@aura3d/engine", "@aura3d/lean"].filter((owner) => source.includes(owner));
+  const importOwners = ["@aura3d/engine"].filter((owner) => source.includes(owner));
   return {
     manifestSchema: source.match(/schema:\s*["']([^"']+)["']/)?.[1] ?? null,
     topLevelFields: [...new Set(topLevelFields)].sort(),

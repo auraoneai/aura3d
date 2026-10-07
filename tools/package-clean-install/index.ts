@@ -42,13 +42,6 @@ mkdirSync(tarballDir, { recursive: true });
 
 const tarballs = {
   engine: pack(".", tarballDir),
-  lean: pack("packages/lean", tarballDir),
-  assets: pack("packages/assets", tarballDir),
-  animation: pack("packages/animation", tarballDir),
-  rendering: pack("packages/rendering", tarballDir),
-  scene: pack("packages/scene", tarballDir),
-  core: pack("packages/core", tarballDir),
-  math: pack("packages/math", tarballDir),
   react: pack("packages/react", tarballDir),
   assetIndex: pack("packages/asset-index", tarballDir),
   cli: pack("packages/aura3d-cli", tarballDir),
@@ -98,7 +91,7 @@ const checks: ReleaseCheck[] = [
   ]),
   ...templateResults
     .filter((result) => result.template === "product-viewer" || result.template === "mini-game")
-    .map((result) => leanTemplateIsolationCheck(result.template)),
+    .map((result) => engineTemplateIsolationCheck(result.template)),
   check(
     "starter-screenshot-files-distinct",
     new Set(templateResults.map((result) => result.screenshotSha256)).size === templates.length,
@@ -326,22 +319,16 @@ function patchScaffoldPackage(appDir: string): void {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
-  const usesLean = parsed.dependencies?.["@aura3d/lean"] !== undefined;
   // The engine's optional navigation peer must be resolvable for scaffold
   // builds (its lazy dynamic import is followed at build time); the packed
   // tarball stands in for the post-publish registry optional install.
-  // Lean-entry scaffolds stay peer-free: the lean dist carries no crowds
-  // code (verified: zero navigation-recast references in the packed lean
-  // tarball), and the isolation gate below forbids it there.
   const navigationPeer = { "@aura3d/navigation-recast": `file:${tarballs.navigationRecast}` };
-  parsed.dependencies = usesLean
-    ? { ...(parsed.dependencies ?? {}), ...leanClosureTarballDependencies() }
-    : {
-        ...(parsed.dependencies ?? {}),
-        "@aura3d/engine": `file:${tarballs.engine}`,
-        ...leanClosureTarballDependencies(),
-        ...navigationPeer
-      };
+  parsed.dependencies = {
+    ...(parsed.dependencies ?? {}),
+    "@aura3d/engine": `file:${tarballs.engine}`,
+    ...leanClosureTarballDependencies(),
+    ...navigationPeer
+  };
   parsed.devDependencies = {
     ...(parsed.devDependencies ?? {}),
     "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
@@ -352,15 +339,10 @@ function patchScaffoldPackage(appDir: string): void {
 }
 
 function leanClosureTarballDependencies(): Record<string, string> {
-  return {
-    "@aura3d/lean": `file:${tarballs.lean}`,
-    "@aura3d/assets": `file:${tarballs.assets}`,
-    "@aura3d/animation": `file:${tarballs.animation}`,
-    "@aura3d/rendering": `file:${tarballs.rendering}`,
-    "@aura3d/scene": `file:${tarballs.scene}`,
-    "@aura3d/core": `file:${tarballs.core}`,
-    "@aura3d/math": `file:${tarballs.math}`
-  };
+  // T8.1: the lean package and its satellite closure are gone — the engine
+  // tarball is self-contained, so clean-install consumers need no extra
+  // file: dependencies. Name kept so existing call sites read unchanged.
+  return {};
 }
 
 function patchScaffoldPlaywrightConfig(appDir: string, port: number): void {
@@ -386,8 +368,8 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
       return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
     }
     // J3 template shape: the player is already a certified-hero model
-    // (`model(assets.showcaseKenneyOobiPlatformerHero, ...)` via
-    // `@aura3d/lean/game`), so replacement swaps the hero for the newly
+    // (`model(assets.showcaseKenneyOobiPlatformerHero, ...)` via the engine
+    // `"."`), so replacement swaps the hero for the newly
     // added real asset instead of the retired primitive-player anchors.
     const next = source.replace("model(assets.showcaseKenneyOobiPlatformerHero", "model(assets.playerModel");
     if (next === source || !next.includes("model(assets.playerModel")) {
@@ -529,13 +511,13 @@ function screenshotProfileCheck(result: TemplateResult): ReleaseCheck {
   );
 }
 
-function leanTemplateIsolationCheck(template: string): ReleaseCheck {
+function engineTemplateIsolationCheck(template: string): ReleaseCheck {
   const appDir = resolve(workspace, "templates", template, "demo");
   const manifestPath = resolve(appDir, "package.json");
   const lockPath = resolve(appDir, "package-lock.json");
   if (!existsSync(manifestPath) || !existsSync(lockPath)) {
     return check(
-      `${template}-installed-lean-dependency-isolation`,
+      `${template}-installed-engine-dependency-isolation`,
       false,
       `clean install did not produce ${!existsSync(manifestPath) ? "package.json" : "package-lock.json"}`
     );
@@ -545,7 +527,6 @@ function leanTemplateIsolationCheck(template: string): ReleaseCheck {
   };
   const lockText = readFileSync(lockPath, "utf8");
   const forbidden = [
-    "@aura3d/engine",
     "@aura3d/physics",
     "@aura3d/physics-rapier",
     "@aura3d/navigation-recast",
@@ -553,14 +534,14 @@ function leanTemplateIsolationCheck(template: string): ReleaseCheck {
     "@aura3d/editor-runtime",
     "@dimforge/rapier3d-compat"
   ].filter((name) => lockText.includes(`\"${name}\"`) || lockText.includes(`node_modules/${name}`));
-  const hasLean = manifest.dependencies?.["@aura3d/lean"] !== undefined
-    && existsSync(resolve(appDir, "node_modules/@aura3d/lean/package.json"));
+  const hasEngine = manifest.dependencies?.["@aura3d/engine"] !== undefined
+    && existsSync(resolve(appDir, "node_modules/@aura3d/engine/package.json"));
   return check(
-    `${template}-installed-lean-dependency-isolation`,
-    hasLean && forbidden.length === 0,
-    hasLean
+    `${template}-installed-engine-dependency-isolation`,
+    hasEngine && forbidden.length === 0,
+    hasEngine
       ? `forbidden installed dependencies: ${forbidden.join(", ")}`
-      : "@aura3d/lean is not declared and installed"
+      : "@aura3d/engine is not declared and installed"
   );
 }
 

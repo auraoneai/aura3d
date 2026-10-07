@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createPhysicsRuntime,
-  validateJointSpec
-} from "@aura3d/engine";
+import { createPhysicsRuntime, validateJointSpec } from "../../../packages/engine/src/agent-api/PhysicsRuntime.js";
 import { PhysicsWorld } from "@aura3d/physics";
 
 /**

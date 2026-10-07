@@ -10,9 +10,9 @@
 import {
   characterAssembly,
   type AuraAssetRef,
-  type CharacterAssemblyPlan,
-  type CharacterAssemblyValidationReport
+  type CharacterAssemblyPlan
 } from "@aura3d/engine";
+import type { CharacterAssemblyValidationReport } from "@aura3d/engine/devtools";
 import { resolvePartAsset, selectedParts, type BuildSelection, type PartDef } from "./parts-catalog";
 
 /**

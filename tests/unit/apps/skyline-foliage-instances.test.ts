@@ -32,7 +32,8 @@ import {
   createSkylineLevel
 } from "../../../apps/showcase-skyline-runner/src/level";
 import { SKYLINE_SECTION_COUNT } from "../../../apps/showcase-skyline-runner/src/level-layout";
-import { selectAuraRootLodLevel } from "@aura3d/engine";
+
+import { selectAuraRootLodLevel } from "../../../packages/engine/src/agent-api/RootGeometry.js";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 

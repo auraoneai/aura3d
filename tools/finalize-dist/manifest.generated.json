@@ -2,36 +2,8 @@
   "package": "@aura3d/engine",
   "specifiers": [
     {
-      "name": "@aura3d/engine/assets/production-runtime",
-      "file": "packages/engine/src/deprecated/assets-production-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/assets/gltf-runtime",
-      "file": "packages/engine/src/deprecated/assets-gltf-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/animation/browser",
-      "file": "packages/engine/src/deprecated/animation-browser.ts"
-    },
-    {
-      "name": "@aura3d/engine/scene-kits/product-viewer",
-      "file": "packages/engine/src/deprecated/scene-kits-product-viewer.ts"
-    },
-    {
-      "name": "@aura3d/engine/scene-kits/humanoid-walk",
-      "file": "packages/engine/src/deprecated/scene-kits-humanoid-walk.ts"
-    },
-    {
-      "name": "@aura3d/engine/scene-kits/particle-fountain",
-      "file": "packages/engine/src/deprecated/scene-kits-particle-fountain.ts"
-    },
-    {
       "name": "@aura3d/engine/rendering/production-runtime",
       "file": "packages/engine/src/deprecated/rendering-production-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/rendering/advanced-runtime",
-      "file": "packages/engine/src/deprecated/rendering-advanced-runtime.ts"
     },
     {
       "name": "@aura3d/engine/assets/browser",
@@ -42,66 +14,9 @@
       "file": "packages/engine/src/deprecated/workflows-production.ts"
     },
     {
-      "name": "@aura3d/engine/assets/asset-corpus",
-      "file": "packages/engine/src/deprecated/assets-asset-corpus.ts"
-    },
-    {
-      "name": "@aura3d/engine/assets/advanced-gallery",
-      "file": "packages/engine/src/deprecated/assets-advanced-gallery.ts"
-    },
-    {
       "name": "@aura3d/engine/rendering/webgpu",
       "file": "packages/engine/src/deprecated/rendering-webgpu.ts",
       "devOnly": true
-    },
-    {
-      "name": "@aura3d/engine/workflows/production-runtime",
-      "file": "packages/engine/src/deprecated/workflows-production-runtime.ts",
-      "devOnly": true
-    },
-    {
-      "name": "@aura3d/engine/debug",
-      "file": "packages/engine/src/deprecated/debug.ts"
-    },
-    {
-      "name": "@aura3d/engine/editor",
-      "file": "packages/engine/src/deprecated/editor.ts"
-    },
-    {
-      "name": "@aura3d/engine/create-aura3d",
-      "file": "packages/engine/src/deprecated/create-aura3d.ts"
-    },
-    {
-      "name": "@aura3d/engine/engine-runtime",
-      "file": "packages/engine/src/deprecated/engine-runtime.ts"
-    },
-    {
-      "name": "@aura3d/engine/product-studio",
-      "file": "packages/engine/src/deprecated/product-studio.ts"
-    },
-    {
-      "name": "@aura3d/engine/materials",
-      "file": "packages/engine/src/deprecated/materials.ts"
-    },
-    {
-      "name": "@aura3d/engine/environments",
-      "file": "packages/engine/src/deprecated/environments.ts"
-    },
-    {
-      "name": "@aura3d/engine/core",
-      "file": "packages/engine/src/deprecated/core.ts"
-    },
-    {
-      "name": "@aura3d/engine/lean-product",
-      "file": "packages/engine/src/deprecated/lean-product.ts"
-    },
-    {
-      "name": "@aura3d/engine/lean-game",
-      "file": "packages/engine/src/deprecated/lean-game.ts"
-    },
-    {
-      "name": "@aura3d/engine/lean",
-      "file": "packages/engine/src/deprecated/lean.ts"
     },
     {
       "name": "@aura3d/engine/rendering",
@@ -110,10 +25,6 @@
     {
       "name": "@aura3d/engine/apps",
       "file": "packages/engine/src/deprecated/apps.ts"
-    },
-    {
-      "name": "@aura3d/engine/engine",
-      "file": "packages/engine/src/deprecated/engine.ts"
     },
     {
       "name": "@aura3d/engine/production-runtime",
@@ -152,14 +63,6 @@
       "name": "@aura3d/rendering/contracts/flags.state",
       "file": "packages/rendering/src/contracts/flags.state.ts",
       "browser301": false
-    },
-    {
-      "name": "@aura3d/lean/product",
-      "file": "packages/lean/src/product.ts"
-    },
-    {
-      "name": "@aura3d/lean/game",
-      "file": "packages/lean/src/game.ts"
     },
     {
       "name": "@aura3d/scene/math",
@@ -249,10 +152,6 @@
       "name": "/packages/*",
       "file": "packages/*",
       "devOnly": true
-    },
-    {
-      "name": "@aura3d/lean",
-      "file": "packages/lean/src/index.ts"
     },
     {
       "name": "@aura3d/cli",
@@ -557,94 +456,16 @@
   ],
   "deprecated": [
     {
-      "name": "./lean",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/lean.ts"
-    },
-    {
-      "name": "./lean-game",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/lean-game.ts"
-    },
-    {
-      "name": "./lean-product",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/lean-product.ts"
-    },
-    {
-      "name": "./scene-kits/particle-fountain",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/scene-kits-particle-fountain.ts"
-    },
-    {
-      "name": "./scene-kits/humanoid-walk",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/scene-kits-humanoid-walk.ts"
-    },
-    {
-      "name": "./scene-kits/product-viewer",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/scene-kits-product-viewer.ts"
-    },
-    {
-      "name": "./core",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/core.ts"
-    },
-    {
-      "name": "./environments",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/environments.ts"
-    },
-    {
-      "name": "./materials",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/materials.ts"
-    },
-    {
       "name": "./media-node",
       "target": ".",
       "removeIn": "4.0.0",
       "stub": "packages/engine/src/deprecated/media-node.ts"
     },
     {
-      "name": "./product-studio",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/product-studio.ts"
-    },
-    {
       "name": "./apps",
       "target": ".",
       "removeIn": "4.0.0",
       "stub": "packages/engine/src/deprecated/apps.ts"
-    },
-    {
-      "name": "./engine",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/engine.ts"
-    },
-    {
-      "name": "./engine-runtime",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/engine-runtime.ts"
-    },
-    {
-      "name": "./create-aura3d",
-      "target": ".",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/create-aura3d.ts"
     },
     {
       "name": "./contracts",
@@ -671,12 +492,6 @@
       "stub": "packages/engine/src/deprecated/rendering-webgpu.ts"
     },
     {
-      "name": "./rendering/advanced-runtime",
-      "target": "./renderer",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/rendering-advanced-runtime.ts"
-    },
-    {
       "name": "./production-runtime",
       "target": "./renderer",
       "removeIn": "4.0.0",
@@ -689,64 +504,16 @@
       "stub": "packages/engine/src/deprecated/advanced-runtime.ts"
     },
     {
-      "name": "./animation/browser",
-      "target": "./animation",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/animation-browser.ts"
-    },
-    {
       "name": "./assets/browser",
       "target": "./assets",
       "removeIn": "4.0.0",
       "stub": "packages/engine/src/deprecated/assets-browser.ts"
     },
     {
-      "name": "./assets/gltf-runtime",
-      "target": "./assets",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/assets-gltf-runtime.ts"
-    },
-    {
-      "name": "./assets/asset-corpus",
-      "target": "./assets",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/assets-asset-corpus.ts"
-    },
-    {
-      "name": "./assets/production-runtime",
-      "target": "./assets",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/assets-production-runtime.ts"
-    },
-    {
-      "name": "./assets/advanced-gallery",
-      "target": "./assets",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/assets-advanced-gallery.ts"
-    },
-    {
       "name": "./workflows/production",
       "target": "./workflows",
       "removeIn": "4.0.0",
       "stub": "packages/engine/src/deprecated/workflows-production.ts"
-    },
-    {
-      "name": "./workflows/production-runtime",
-      "target": "./workflows",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/workflows-production-runtime.ts"
-    },
-    {
-      "name": "./editor",
-      "target": "./editor-runtime",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/editor.ts"
-    },
-    {
-      "name": "./debug",
-      "target": "./devtools",
-      "removeIn": "4.0.0",
-      "stub": "packages/engine/src/deprecated/debug.ts"
     }
   ]
 }

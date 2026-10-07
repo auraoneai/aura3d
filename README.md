@@ -32,7 +32,7 @@ npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 Render it from normal TypeScript:
 
 ```ts
-import { createAuraApp, environments, model, scene } from "@aura3d/lean/product";
+import { createAuraApp, environments, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
@@ -72,10 +72,9 @@ developer can keep owning after the AI has written the first pass.
 
 ## Packages
 
-- `@aura3d/lean`: recommended browser runtime for lean core, typed-product,
-  and deterministic arcade workloads without physics, navigation, editor, or
-  Node-media dependencies.
-- `@aura3d/engine`: public TypeScript runtime for browser 3D scenes and apps.
+- `@aura3d/engine`: public TypeScript runtime for browser 3D scenes and apps
+  (4.0.0 removed the `@aura3d/lean` compatibility package; its `.` entry now
+  serves the same core path through code-split internals).
 - `create-aura3d`: one-command Vite scaffolds for Aura3D projects.
 - `@aura3d/cli`: typed GLB/glTF asset workflow, catalog search, look presets
   and the look-dev loop (`aura3d look capture`), validation, diagnostics, and
@@ -149,7 +148,7 @@ Earlier minor-release implementation notes have been consolidated into the 2.0 a
 
 #### Measured 3.0.1 outcomes
 
-Measured win: the `@aura3d/lean` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
+Measured win: the `@aura3d/engine` core primitive critical path compresses to `77458` gzip bytes against its 80,000-byte budget, from `tests/reports/bundle-size.json`.
 
 Measured loss: the compatibility-root observation bundle is over budget at `575343` gzip bytes against the same 80,000-byte budget, from `tests/reports/bundle-size.json`.
 
@@ -209,8 +208,9 @@ Stated because a release note that omits this is not useful:
   authored-unit arcade contract into physical tyre or vehicle-dynamics proof.
 - `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
   not cover it. It carries its own 23-spec suite.
-- `@aura3d/engine`'s `.` entry still re-exports 146 deprecated union names
-  (arch-gates `export-budget`, removed at 4.0.0); `unique-ownership` reports 0 exported
+- `@aura3d/engine`'s `.` entry re-exports the remaining 64 deprecated union names
+  that other lanes still consume (arch-gates `export-budget`; they leave "." in the
+  next minor per §6.6 step 3); `unique-ownership` reports 0 exported
   symbol names with more than one owning package.
 - The current public `examples/` inventory contains **13 retained routes** after
   duplicate, contract-only, or visually rejected hosts were internalized. The

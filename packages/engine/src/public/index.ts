@@ -16,51 +16,9 @@ export type { AnyNodeHandler, AppExtension, ArtDirectionViolation, AuraActorAnim
 
 // ── Deprecated union (removed from "." in 4.0.0; each names its destination) ──
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { A3D_APP_WORKFLOW_PRESETS } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DApp } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppDiagnostics } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { A3DAppLifecycle } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppLifecycleSnapshot } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppOptions } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppQualityPreset } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppQualitySettings } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAppWorkflowPreset } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DAssetDiagnostics } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DDiagnosticsPanel } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DDisposable } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { A3DEnvironment } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DEnvironmentOptions } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DMaterialVariantController } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DRenderDiagnostics } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
 export { A3DRenderer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export type { A3DRendererOptions } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export { A3DScene } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export type { A3DSceneMeshOptions } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export type { A3DSceneRenderSourceOptions } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DScreenshotCapture } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { A3DWorkflowApi } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/animation`. Deleted from "." in 4.0.0. */
 export { AnimationAction } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/animation`. Deleted from "." in 4.0.0. */
@@ -71,24 +29,6 @@ export { AnimationLayer } from "../agent-api/index.js";
 export { AnimationMixer } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/animation`. Deleted from "." in 4.0.0. */
 export { AnimationTrack } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { assertAuraRouteReady } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { assertAuraScreenshotNotBlank } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { assignActionToAnimationLayer } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { attachAnimationLayer } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { AURA_SPEC_CONSTRUCTIBLE_SHAPES } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { auraAppRegistry } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraAssetPanelRow } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraAssetPreloader } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraAssetPreloadResult } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraColor } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -100,43 +40,15 @@ export type { AuraDiagnosticsOverlay } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraEffectNode } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraFrameCallback } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraFrameInfo } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraJointKind } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraLightNode } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraModelOptions } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { AuraNodeBuilder } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraPerformancePanelSnapshot } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraPerformanceQuality } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { AuraPrimitiveNode } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraRendererFallbackMode } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraRendererMode } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceDescriptor } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceKind } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceManager } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceManagerEvidence } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceRecord } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraResourceStatus } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { AuraRouteHealth } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export type { AuraTimelineSpec } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { captureAuraAppScreenshot } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -144,11 +56,7 @@ export { captureScreenshot } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { character } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { CharacterAssemblyValidationReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { collectAuraSceneEvidence } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { collectDecalBudgetTelemetry } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { collectPromptAnimationEvidence } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -158,45 +66,13 @@ export { compositeMetallicRoughnessPixels } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createA3DApp } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationAction } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationClip } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createAnimationController } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationDebugOverlay } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationEventMarker } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationLabWorkflow } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationLayer } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationMixer } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createAnimationTrack } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { createAssetCompatibilityReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAssetPreloader } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createAssetViewerWorkflow } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAuraAssetPanelRows } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAuraDiagnosticsOverlay } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAuraPerformancePanelSnapshot } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createAuraRouteHealth } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { createCaptionTimingProof } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createComparisonWorkflow } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createCompatibilityReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export { createECSRenderSource } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createExternalParityEnvironmentPipeline } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -204,39 +80,15 @@ export { createGameAppRuntime } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createInteractiveSceneWorkflow } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createMaterialStudioWorkflow } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createMaterialVariantController } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createPhysicsRuntime } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createPostProcessComposerLazy } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createProductConfiguratorWorkflow } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { createProductionPrimitiveTextureIntent } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createRenderDiagnostics } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export { createResourceManager } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createSceneShowcaseWorkflow } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { createVisemeTimelineTrack } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { crossFadeAnimations } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { crowds } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { decals } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { describeProductionSpotShadow } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { describeTextureStreamingResidency } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export type { ECSRenderLibraries } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
-export type { ECSRenderSourceOptions } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { editor } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
@@ -247,8 +99,6 @@ export { gameAssetValidation } from "../agent-api/index.js";
 export type { GamePlatformerEvent } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
 export { GLTFLoader } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
-export type { HelperPlacementClaim } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { inspectAsset } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
@@ -257,10 +107,6 @@ export { inspectGLTFAsset } from "../agent-api/index.js";
 export { listExternalParityEnvironmentTargets } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { loadAsset } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
-export { loadProductAsset } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { loadProductAssetLazy } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
 export { loadRenderableAsset } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -278,23 +124,11 @@ export { quaterniusGameReadyFighterValidationContract } from "../agent-api/index
 /** @deprecated Use `@aura3d/engine/renderer`. Deleted from "." in 4.0.0. */
 export { Renderer } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { resolveA3DAppQualityPreset } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { resolveDecalFadeOpacity } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { resolveProductionRuntimeShadowTuning } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { resolveProductionShadowCasterIndex } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { sampleVisemeTimelineTrack } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { selectAuraRootLodLevel } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { setAnimationTimeScale } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { sky } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { subscribeAnimationEvents } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { summarizeExternalParityGLTFCorpus } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
@@ -302,13 +136,9 @@ export { unsafeModelUrl } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { upgradeProductionPrimitiveTextures } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { validateJointSpec } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { validatePlatformerMotion } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/devtools`. Deleted from "." in 4.0.0. */
 export { validateQuaterniusGameReadyFighterAsset } from "../agent-api/index.js";
-/** @deprecated Deleted. Deleted from "." in 4.0.0. */
-export { visualScripting } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export { water } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */

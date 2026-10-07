@@ -600,8 +600,8 @@ function referenceRecord(kind: ActiveReferenceRecord["kind"], source: string, re
 
 function contextualPackageExportTarget(key: string, value: string): string {
   const combined = `${key} ${value}`;
-  if (combined.includes("/rendering/threejs-parity")) return "@aura3d/engine/rendering/advanced-runtime";
-  if (combined.includes("/assets/threejs-parity")) return "@aura3d/engine/assets/advanced-gallery";
+  if (combined.includes("/rendering/threejs-parity")) return "@aura3d/rendering/advanced-runtime";
+  if (combined.includes("/assets/threejs-parity")) return "@aura3d/assets/advanced-gallery";
   if (combined.includes("/threejs-parity")) return "@aura3d/engine/advanced-runtime";
   return contextualizePath(value || key);
 }

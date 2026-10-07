@@ -9,13 +9,17 @@ const reportDir = resolve("tests/reports/external-parity-package-smoke");
 const reportPath = resolve("tests/reports/external-parity-package-smoke.json");
 mkdirSync(reportDir, { recursive: true });
 
-const tarballName = execFileSync("npm", ["pack", "--silent", "--pack-destination", reportDir], {
-  cwd: root,
-  encoding: "utf8",
-  stdio: ["ignore", "pipe", "pipe"]
-}).trim().split(/\r?\n/).at(-1);
-if (!tarballName) throw new Error("npm pack did not produce a tarball.");
-const tarballPath = join(reportDir, basename(tarballName));
+const packTarball = (cwd: string): string => {
+  const name = execFileSync("npm", ["pack", "--silent", "--pack-destination", reportDir], {
+    cwd,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"]
+  }).trim().split(/\r?\n/).at(-1);
+  if (!name) throw new Error(`npm pack did not produce a tarball in ${cwd}.`);
+  return join(reportDir, basename(name));
+};
+const tarballPath = packTarball(root);
+const createA3DTarballPath = packTarball(resolve("packages/create-aura3d"));
 const tempRoot = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
 const scaffoldRoot = join(tempRoot, "scaffolded");
 
@@ -26,7 +30,8 @@ try {
     private: true,
     type: "module",
     dependencies: {
-      "@aura3d/engine": `file:${tarballPath}`
+      "@aura3d/engine": `file:${tarballPath}`,
+      "@aura3d/create-aura3d": `file:${createA3DTarballPath}`
     }
   }, null, 2)}\n`);
   execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], {
@@ -37,11 +42,9 @@ try {
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { createDiagnosticsPanel, createEnvironment, createA3DApp, createMaterialVariantController, workflows } from "@aura3d/engine";
-import { createA3DApp as createA3DAppFromEngineSubpath } from "@aura3d/engine/engine";
-import { createA3DProject } from "@aura3d/engine/create-aura3d";
+import { createA3DProject } from "@aura3d/create-aura3d";
 
 assert.equal(typeof createA3DApp, "function");
-assert.equal(createA3DApp, createA3DAppFromEngineSubpath);
 assert.equal(typeof workflows.productConfigurator, "function");
 assert.equal(createEnvironment({ target: "gallery-neutral-hdr" }).target, "gallery-neutral-hdr");
 assert.equal(createMaterialVariantController(["asset", "contrast"], "asset").setVariant("contrast"), "contrast");
@@ -67,7 +70,7 @@ console.log(JSON.stringify({ ok: true, templates: results, publicRootImport: tru
     stdio: ["ignore", "pipe", "pipe"]
   });
   const manifest = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as {
-    exports: Record<string, string>;
+    exports: Record<string, string | Record<string, unknown>>;
     files: string[];
   };
   const tarballBytes = statSync(tarballPath).size;
@@ -75,8 +78,7 @@ console.log(JSON.stringify({ ok: true, templates: results, publicRootImport: tru
     schema: "a3d-external-parity-package-smoke",
     generatedAt: new Date().toISOString(),
     ok: stdout.includes("\"ok\":true") &&
-      manifest.exports["."] === "./dist/engine/index.js" &&
-      manifest.exports["./create-aura3d"] === "./dist/create-aura3d/index.js" &&
+      (manifest.exports["."] as Record<string, unknown>)?.import === "./dist/engine/public/index.js" &&
       ["templates/external-parity-product-viewer", "templates/external-parity-material-studio", "templates/external-parity-asset-gallery", "templates/external-parity-interactive-scene"].every((file) => manifest.files.includes(file)) &&
       tarballBytes > 10_000,
     tarballPath,

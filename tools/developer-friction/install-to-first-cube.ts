@@ -82,7 +82,7 @@ try {
       "Vite readiness, and a browser-verified non-blank rendered cube.",
     methodology: {
       releaseCandidate:
-        "actual pnpm-packed @aura3d/lean 2.0.0 tarball plus its complete local Aura dependency closure from the measured commit",
+        "actual pnpm-packed @aura3d/engine 4.0.0 tarball from the measured commit (self-contained; runtime deps resolve from npm)",
       comparison: `three@${threeVersion} from the public npm registry`,
       commonTooling: `vite@${viteVersion}`,
       samplesPerEnginePerState: sampleCount,
@@ -106,9 +106,9 @@ try {
     },
     artifacts: {
       aura3d: {
-        version: "2.0.0",
+        version: "4.0.0",
         source: "release-candidate-tarballs",
-        entry: "@aura3d/lean",
+        entry: "@aura3d/engine",
         packages: Object.entries(auraTarballs).map(([name, path]) => ({
           name,
           file: basename(path),
@@ -141,14 +141,10 @@ try {
 }
 
 function packReleaseCandidate(): Readonly<Record<string, string>> {
+  // T8.1: the published engine tarball is self-contained — no workspace
+  // dependency closure to pack alongside it (runtime deps come from npm).
   const packageDirectories: Readonly<Record<string, string>> = {
-    "@aura3d/lean": "packages/lean",
-    "@aura3d/assets": "packages/assets",
-    "@aura3d/animation": "packages/animation",
-    "@aura3d/rendering": "packages/rendering",
-    "@aura3d/scene": "packages/scene",
-    "@aura3d/core": "packages/core",
-    "@aura3d/math": "packages/math"
+    "@aura3d/engine": "."
   };
   return Object.fromEntries(
     Object.entries(packageDirectories).map(([name, directory]) => {
@@ -293,7 +289,7 @@ function writeProjectFiles(engine: Engine, directory: string): void {
 }
 
 function auraSource(): string {
-  return `import { camera, createAuraApp, material, primitives, scene } from "@aura3d/lean";
+  return `import { camera, createAuraApp, material, primitives, scene } from "@aura3d/engine";
 const canvas = document.querySelector("canvas");
 const app = createAuraApp(canvas, { autoStart: false, scene: scene().background("#0b0f16").camera(camera.perspective({ position: [2.4, 1.8, 3.2], target: [0, 0, 0], fov: 45 })).add(primitives.box({ material: material.pbr({ color: "#c8d3e0", roughness: 0.4 }) })) });
 await app.ready();

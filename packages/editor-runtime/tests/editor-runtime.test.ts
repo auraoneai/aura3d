@@ -41,10 +41,9 @@ import {
 } from "../src/index";
 import { createAudioWaveformReviewData, type AudioWaveformData } from "@aura3d/audio";
 import {
-  createAuraVoiceVisemeTrack,
-  createVisemeTimelineTrack,
-  sampleVisemeTimelineTrack
+  createAuraVoiceVisemeTrack
 } from "@aura3d/engine";
+import { createVisemeTimelineTrack, sampleVisemeTimelineTrack } from "../../engine/src/agent-api/VisemeTimelineTrack.js";
 
 test("CommandHistory executes undo and redo deterministically", async () => {
   const target = { position: { x: 0, y: 0, z: 0 } };

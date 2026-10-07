@@ -1,6 +1,16 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import { A3D_APP_WORKFLOW_PRESETS, captureScreenshot, createAssetDiagnostics, createDiagnosticsPanel, createEnvironment, createA3DApp, createMaterialVariantController, createRenderDiagnostics, loadAsset, resolveA3DAppQualityPreset, workflows } from "@aura3d/engine";
+import {
+  captureScreenshot,
+  createAssetDiagnostics,
+  createDiagnosticsPanel,
+  createEnvironment,
+  loadAsset,
+  workflows
+} from "@aura3d/engine";
+import { A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset } from "@aura3d/apps";
+import { createRenderDiagnostics } from "@aura3d/engine/devtools";
+import { createMaterialVariantController } from "../../../packages/engine/src/agent-api/engineSurface.js";
 import { createCompatibilityReport } from "@aura3d/engine/devtools";
 
 test("ExternalParity root package exposes the developer product API", () => {
@@ -79,17 +89,30 @@ test("ExternalParity package manifest exposes installable product paths", () => 
     files: string[];
     devDependencies: Record<string, string>;
   };
-  // PRD-15 §6.1: "." is the public surface entry; the collapsed subpaths stay
-  // installable through their deprecated stubs until removeIn 4.0.0.
+  // PRD-15 §6.1 + T8.1: "." is the public surface entry. Subpaths whose in-repo
+  // consumers were gone removed at 4.0.0; still-consumed ones stay deprecated.
   expect(manifest.exports).toMatchObject({
     ".": {
       browser: "./dist/engine/public/index.js",
       import: "./dist/engine/public/index.js"
     },
     "./apps": "./dist/engine/deprecated/apps.js",
-    "./engine": "./dist/engine/deprecated/engine.js",
-    "./create-aura3d": "./dist/engine/deprecated/create-aura3d.js"
+    "./media-node": "./dist/engine/deprecated/media-node.js",
+    "./production-runtime": "./dist/engine/deprecated/production-runtime.js"
   });
+  for (const removed of [
+    "./engine",
+    "./engine-runtime",
+    "./create-aura3d",
+    "./lean",
+    "./core",
+    "./rendering/advanced-runtime",
+    "./assets/advanced-gallery",
+    "./editor",
+    "./debug"
+  ]) {
+    expect(manifest.exports[removed]).toBeUndefined();
+  }
   expect(manifest.files).toEqual(expect.arrayContaining([
     "dist/apps",
     "dist/engine",

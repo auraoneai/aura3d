@@ -23,9 +23,6 @@ describe("public API docs", () => {
       "@aura3d/editor-runtime",
       "@aura3d/engine",
       "@aura3d/input",
-      "@aura3d/lean",
-      "@aura3d/lean/game",
-      "@aura3d/lean/product",
       "@aura3d/math",
       "@aura3d/navigation-recast",
       "@aura3d/physics",
@@ -86,7 +83,7 @@ describe("public API docs", () => {
     expect(docs).toContain("## @aura3d/physics/solverless");
     expect(docs).toContain("## @aura3d/physics/world");
     expect(docs).toContain("## @aura3d/assets");
-    expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from \"./GLTFLoader\";");
+    expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from \"./GLTFLoader\";");
     expect(docs).toContain("createGLTFRenderResources");
     expect(docs).toContain("from \"./GLTFRenderResources\";");
     expect(docs).toContain("## @aura3d/editor-runtime");

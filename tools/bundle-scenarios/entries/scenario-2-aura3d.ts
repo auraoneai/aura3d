@@ -4,7 +4,7 @@
  * glTF loading, PBR, orbit controls, lighting, environment. The most common real first project, and
  * the one where Aura3D's integrated environment presets and asset handling should start paying off.
  */
-import { createAuraApp, camera, defineAuraAssets, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/lean/product";
+import { createAuraApp, camera, defineAuraAssets, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/engine";
 
 const assets = defineAuraAssets({
   product: { type: "model", format: "glb", url: "/model.glb", hash: "sha256-bundle-scenario" }

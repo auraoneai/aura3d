@@ -1,17 +1,5 @@
-import {
-  assignActionToAnimationLayer,
-  attachAnimationLayer,
-  createAnimationAction,
-  createAnimationClip,
-  createAnimationDebugOverlay,
-  createAnimationEventMarker,
-  createAnimationLayer,
-  createAnimationMixer,
-  createAnimationTrack,
-  crossFadeAnimations,
-  setAnimationTimeScale,
-  subscribeAnimationEvents
-} from "@aura3d/engine";
+import { assignActionToAnimationLayer, attachAnimationLayer, createAnimationAction, createAnimationClip, createAnimationEventMarker, createAnimationLayer, createAnimationMixer, createAnimationTrack, crossFadeAnimations, setAnimationTimeScale, subscribeAnimationEvents } from "../../packages/engine/src/agent-api/AnimationMixerBuilders.js";
+import { createAnimationDebugOverlay } from "../../packages/engine/src/agent-api/AnimationDebugOverlay.js";
 
 interface MixerE3Evidence {
   readonly status: "ready" | "error";
