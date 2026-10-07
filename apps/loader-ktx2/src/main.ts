@@ -3,8 +3,11 @@ import {
   LoadContext,
   createGLTFRenderResources,
   evaluateGLTFExtensionSupport,
+  probeKTX2Header,
+  selectKTX2TargetFormat,
   type GLTFRenderResources
 } from "@aura3d/assets";
+import { probeCompressedTextureCapabilities } from "@aura3d/rendering/lanes";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
@@ -86,8 +89,22 @@ async function run(): Promise<void> {
     runtime = { ...runtime, ktx2SourceBytes: ktx2Bytes.byteLength, statusLabel: "Transcoding KTX2/Basis texture" };
     publish();
 
+    // C-16: pick the target from the live GPU's compressed-texture probe and
+    // transcode with the vendored same-origin transcoder at /aura-decoders/basis/.
+    const gl2 = canvas.getContext("webgl2");
+    const caps = gl2 ? probeCompressedTextureCapabilities(gl2) : { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
+    const header = probeKTX2Header(ktx2Bytes);
+    const targetFormat = selectKTX2TargetFormat(caps, header.source, header.hasAlpha, header.colorSpace);
+
     const asset = await new GLTFLoader().load({ url: createKtx2FixtureDataUrl(ktx2Bytes) }, new LoadContext());
-    const resources = await createGLTFRenderResources(asset, { ktx2BasisTargetFormat: "etc2-rgba8unorm" });
+    const resources = await createGLTFRenderResources(asset, {
+      ktx2BasisTargetFormat: targetFormat,
+      ktx2BasisTranscoderOptions: {
+        targetFormat,
+        colorSpace: header.colorSpace,
+        transcoderUrl: "/aura-decoders/basis/"
+      }
+    });
     const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
