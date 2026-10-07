@@ -9,86 +9,11 @@ import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 import { installedAuraPackageAliases } from "./tests/browser/installed-package-resolve";
+import { aliasEntries } from "./vite.aliases.generated";
 
 const repoRoot = fileURLToPath(new URL(".", import.meta.url));
 
-const aliasEntries = [
-  ["@aura3d/lean/product", "./packages/lean/src/product.ts"],
-  ["@aura3d/lean/game", "./packages/lean/src/game.ts"],
-  ["@aura3d/lean", "./packages/lean/src/index.ts"],
-  ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
-  ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
-  ["@aura3d/engine/lean", "./packages/engine/src/agent-api/lean.ts"],
-  ["@aura3d/engine/rendering/production-runtime", "./packages/rendering/src/production-runtime/index.ts"],
-  ["@aura3d/engine/rendering/advanced-runtime", "./packages/rendering/src/advanced-runtime/index.ts"],
-  ["@aura3d/engine/rendering", "./packages/rendering/src/index.ts"],
-  ["@aura3d/engine/assets/browser", "./packages/assets/src/browser-index.ts"],
-  ["@aura3d/engine/workflows/production", "./packages/workflows/src/production-runtime/index.ts"],
-  ["@aura3d/engine/assets/asset-corpus", "./packages/assets/src/asset-corpus/index.ts"],
-  ["@aura3d/engine/assets/advanced-gallery", "./packages/assets/src/advanced-gallery/index.ts"],
-  ["@aura3d/engine/apps", "./packages/apps/src/index.ts"],
-  ["@aura3d/engine/engine", "./packages/engine/src/index.ts"],
-  ["@aura3d/engine/production-runtime", "./packages/engine/src/production-runtime/index.ts"],
-  ["@aura3d/engine/advanced-runtime", "./packages/engine/src/advanced-runtime/index.ts"],
-  ["@aura3d/cli", "./packages/aura3d-cli/src/index.ts"],
-  ["@aura3d/react", "./packages/react/src/index.ts"],
-  ["@aura3d/math", "./packages/math/src/index.ts"],
-  ["@aura3d/core", "./packages/core/src/index.ts"],
-  ["@aura3d/scene/math", "./packages/scene/src/MathTypes.ts"],
-  ["@aura3d/scene", "./packages/scene/src/index.ts"],
-  ["@aura3d/ecs", "./packages/ecs/src/index.ts"],
-  ["@aura3d/rendering/contracts/flags.state", "./packages/rendering/src/contracts/flags.state.ts"],
-  ["@aura3d/rendering/contracts", "./packages/rendering/src/contracts/index.ts"],
-  ["@aura3d/rendering/lanes", "./packages/rendering/src/lanes/index.ts"],
-  ["@aura3d/rendering/lean-core-runtime", "./packages/rendering/src/lean-core-runtime.ts"],
-  ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
-  ["@aura3d/rendering/extension-scalar-atlas", "./packages/rendering/src/extension-scalar-atlas.ts"],
-  ["@aura3d/rendering/reflection-surfaces", "./packages/rendering/src/reflection-surfaces.ts"],
-  ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
-  ["@aura3d/controls", "./packages/controls/src/index.ts"],
-  ["@aura3d/environments", "./packages/environments/src/index.ts"],
-  ["@aura3d/materials", "./packages/materials/src/browser-index.ts"],
-  ["@aura3d/engine-runtime/contracts", "./packages/engine/src/contracts/index.ts"],
-  ["@aura3d/engine-runtime/lanes", "./packages/engine/src/lanes/index.ts"],
-  ["@aura3d/engine-runtime", "./packages/engine/src/index.ts"],
-  ["@aura3d/engine/contracts", "./packages/engine/src/contracts/index.ts"],
-  ["@aura3d/engine/lanes", "./packages/engine/src/lanes/index.ts"],
-  ["@aura3d/engine", "./packages/engine/src/index.ts"],
-  ["@aura3d/apps", "./packages/apps/src/index.ts"],
-  ["@aura3d/create-aura3d", "./packages/create-aura3d/src/index.ts"],
-  ["create-aura3d", "./packages/create-aura3d/src/index.ts"],
-  /*
-   * Subpath entries must precede the bare package, because a string `find` matches by PREFIX.
-   *
-   * Vite/rollup treat a string alias as "starts with", so `@aura3d/physics` alone rewrote
-   * `@aura3d/physics/solverless` to `packages/physics/src/index.ts/solverless` and the build died
-   * with `ENOTDIR: not a directory`. `tsconfig.base.json` already declares both subpaths, so
-   * typecheck passed and only a real bundle failed — which is why this surfaced from a showcase
-   * route build rather than from `pnpm typecheck`.
-   *
-   * These two subpaths exist precisely so a scene with no bodies does not download the solver
-   * (WS-2.2), so leaving them unresolvable would either break the build or, worse, silently fall
-   * back to the full barrel and undo the bundle work.
-   */
-  ["@aura3d/physics/solverless", "./packages/physics/src/solverless.ts"],
-  ["@aura3d/physics/world", "./packages/physics/src/world.ts"],
-  ["@aura3d/physics-rapier", "./packages/physics-rapier/src/index.ts"],
-  ["@aura3d/physics", "./packages/physics/src/index.ts"],
-  ["@aura3d/navigation-recast", "./packages/navigation-recast/src/index.ts"],
-  ["@aura3d/product-studio", "./packages/product-studio/src/index.ts"],
-  ["@aura3d/animation", "./packages/animation/src/browser-index.ts"],
-  ["@aura3d/assets/browser", "./packages/assets/src/browser-index.ts"],
-  ["@aura3d/assets/gltf-runtime", "./packages/assets/src/gltf-runtime.ts"],
-  ["@aura3d/assets", "./packages/assets/src/browser-index.ts"],
-  ["@aura3d/input", "./packages/input/src/index.ts"],
-  ["@aura3d/audio", "./packages/audio/src/index.ts"],
-  ["@aura3d/scripting", "./packages/scripting/src/index.ts"],
-  ["@aura3d/workflows", "./packages/workflows/src/index.ts"],
-  ["@aura3d/three-compat", "./packages/three-compat/src/index.ts"],
-  ["@aura3d/editor-runtime", "./packages/editor-runtime/src/index.ts"],
-  ["@aura3d/editor", "./packages/editor/src/index.ts"],
-  ["@aura3d/debug", "./packages/debug/src/index.ts"],
-] as const;
+
 
 const installedAliases = installedAuraPackageAliases();
 const alias = installedAliases.length > 0

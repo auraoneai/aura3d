@@ -20,6 +20,10 @@ const publicPackageNames = packageNames.filter((packageName) => {
 
 mkdirSync(rootDist, { recursive: true });
 
+// Q-12-5 bridge: `.github/workflows/build.yml` (lane-12-owned) still asserts
+// `dist/index.{js,d.ts}` exist. Keep emitting the root aggregate as a
+// build-only artifact — it is NOT listed in package.json#files (T1.7 removed
+// it), so nothing publishes it — until the workflow assertion is deleted.
 const rootIndexLines: string[] = [];
 const rootTypeLines: string[] = [];
 
