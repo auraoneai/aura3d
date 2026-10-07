@@ -29,6 +29,7 @@ describe("CurrentRoutes explicit interactive renderer API", () => {
     const devtools = readFileSync(resolve("packages/engine/src/agent-api/rendererReports.ts"), "utf8");
     const bridge = readFileSync(resolve("packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
 
+    // invariant: source must keep `export function rendererProofCapture` — publishes the one-renderer surface: Renderer render dispatch plus devtools proof helpers
     expect(proofs).toContain("export function rendererProofCapture");
     expect(proofs).toContain("export function rendererFeatureReport");
     expect(proofs).toContain("export function rendererInteractiveFeatureReport");

@@ -283,6 +283,7 @@ describe("WS-4.1 rule 1: no route-local physics numbers", () => {
     // fail on the explanation or force the explanation out.
     const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
     for (const banned of ["TRACK_SURFACE_Y", "CAR_GROUND_Y", "CAR_TYRE_CONTACT_Y", "VERGE_DROP", "SHOULDER_WIDTH"]) {
+      // invariant: source must keep `the asserted literal` — the committed geometry contract carries drivable triangles
       expect(code).not.toContain(banned);
     }
     expect(code).not.toMatch(/\bgravity:/);

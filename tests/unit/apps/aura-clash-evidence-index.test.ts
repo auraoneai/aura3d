@@ -11,6 +11,7 @@ describe("Aura Clash evidence route current proof wiring", () => {
   it("declares the current arena proof schema and 1.0.6 artifacts in evidence/index.html", () => {
     const source = readFileSync(resolve("apps/aura-clash-showcase/evidence/index.html"), "utf8");
 
+    // invariant: source must keep `name="aura-clash-proof-schema" content="aura-clash-arena-pro` — declares the current arena proof schema and 1.0.6 artifacts in evidence/index.html
     expect(source).toContain('name="aura-clash-proof-schema" content="aura-clash-arena-proof/v1"');
     expect(source).toContain("window.__AURA_CLASH_ARENA_PROOF__");
     expect(source).toContain("/launch-evidence/aura-clash-106-readiness.json");

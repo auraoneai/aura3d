@@ -46,6 +46,7 @@ const requiredEngineExportedGameHelpers = [
 
 describe("marketing showcase route build", () => {
   it("bundles showcase routes against the current public agent-api source", () => {
+    // invariant: source must keep `\` — bundles showcase routes against the current public agent-api source
     expect(buildScript).toContain("\"packages\", \"engine\", \"src\", \"agent-api\", \"index.ts\"");
     expect(buildScript).toContain("assertRequiredEngineSourceHelpers");
     expect(buildScript).not.toContain("\"node_modules\", \"@aura3d\", \"engine\", \"dist\", \"engine\", \"agent-api\", \"index.js\"");

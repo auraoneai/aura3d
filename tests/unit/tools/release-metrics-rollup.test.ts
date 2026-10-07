@@ -164,6 +164,7 @@ describe("R11 — architecture lock", () => {
       "tools/final-subsystem-ownership/adr-registry.json"
     );
     for (const [source, adr] of Object.entries({ ...phase2.addedPackages, ...phase2.addedPackageSource })) {
+      // invariant: source must keep `the asserted literal` — PASSES: every scenario is within its unchanged ratio to the Three.js equivalent
       expect(adrs, `${source} is mapped to missing ADR ${adr}`).toContain(adr);
     }
   });

@@ -37,7 +37,15 @@ switch (sub) {
     const metrics = new Map(metricsDoc.items.map((i) => [i.itemId, i.metrics] as const));
     const { itemVerdicts, exitCode } = evaluateGates({ items: items.map((item) => ({ item })), metrics, goldens });
     const verdicts = Object.fromEntries([...itemVerdicts].map(([id, v]) => [id, v]));
-    writeJson(arg("--out") ?? "verdicts.json", { itemVerdicts: verdicts, exitCode });
+    // T3.7 runner drift: when the hosted image differs from the manifest's, flag
+    // `runner-image-changed` in the report. It stays advisory — items only fail on
+    // thresholds re-calibrated for the new image (calibrate runs separately).
+    const runnerImage = arg("--runner-image") ?? items.find((i) => i.env?.runnerImage)?.env.runnerImage ?? process.env.RUNNER_IMAGE ?? "";
+    const flags: string[] = [];
+    if (goldens.runnerImage && runnerImage && goldens.runnerImage !== runnerImage) {
+      flags.push(`runner-image-changed: ${goldens.runnerImage} -> ${runnerImage}`);
+    }
+    writeJson(arg("--out") ?? "verdicts.json", { itemVerdicts: verdicts, exitCode, flags });
     process.exit(exitCode);
   }
   case "calibrate": {

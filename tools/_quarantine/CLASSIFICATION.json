@@ -1,0 +1,2881 @@
+{
+  "schema": "aura3d.quality-gate.classification/1",
+  "generatedAt": "2026-10-07T02:57:45.676Z",
+  "tools": [
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/advanced-gallery-assets",
+      "files": 5,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/advanced-gallery-evidence-paths",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/advanced-gallery-report-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/advanced-gallery-visual-review",
+      "files": 3,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-api-surface",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-deployment",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-devtools",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-docs",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-dogfood",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-eval",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-examples",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-skills",
+      "files": 4,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/agent-templates",
+      "files": 12,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-body-motion-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-clean-room",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-determinism-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-docs-claims",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-fidelity-report",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-gate-suite",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-lip-sync-timing-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-motion-quality-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-no-fake-proof-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-package-proof",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-performance-budget-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-prompt-specificity-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-scene-coherence-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-subtitle-timing-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-template-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/animation-studio-visual-quality-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/api-docs",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/arch-gates",
+      "files": 13,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/asset-geometry-audit",
+      "files": 3,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/asset-index-refresh",
+      "files": 8,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/asset-optimize",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/asset-screening",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/assets-provenance-evidence",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/aura-clash-flagship-readiness",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/aura3d105-release-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/aura3d11-release-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/blender-same-corpus-export",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/browser-entry-purity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/bundle-scenarios",
+      "files": 7,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/bundle-size",
+      "files": 4,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/camera-cast-codemod",
+      "files": 6,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/cc0-mirror",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/claim-lineage",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/claim-registry",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/clean-checkout-verification",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/codemods",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/compare-engines",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/current-routes-route-health",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/current-routes-threejs-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/current-threejs-baseline",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/deletion-safety",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/demo-validation",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/developer-friction",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/dist-freshness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/doc-contradiction-scan",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/docs-codeblocks",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/docs-site",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/docs-version-alignment",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/eslint-plugin-aura3d-boundaries",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/evidence",
+      "files": 5,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/evidence-freshness",
+      "files": 3,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/export-surface",
+      "files": 3,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-candidate-package-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-demo-export",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-demo-validation",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-api-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-app-suite-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-asset-corpus",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-asset-studio-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-assets",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-benchmarks",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-broad-parity-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-character-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-claim-gates",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-claim-registry",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-code",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-codebase-root-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-completion-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-current-capability",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-docs-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-ecosystem-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-editor",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-consumer",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-engine-baselines",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-evidence-handoff",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-evidence-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-host-doctor",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-host-runner",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-external-vite-build",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-fixture-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-github-external-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-gltf-corpus-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-gltf-loader-visual-parity",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-ibl-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-render-target-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-visual-parity",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-ibl-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-interactive-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-local-port-status",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-material-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-material-studio-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-package-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-parity-status",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-gltf-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-reference-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-visual-parity",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-performance-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-postprocess-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-postprocess-suite",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-product-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-product-visual-parity",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-production-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-progress",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-release-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-rendering",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-report-freshness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-reporting",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-roadmap-completion-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-runtime",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-scene-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-screenshot-gallery",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-shadow-map-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-shadow-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-shadow-visual-parity",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-static-preview-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-template-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-threejs-visual-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-truth",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-verify",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/external-parity-visual-quality",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/final-competitive-baseline",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/final-demo-validation",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/final-subsystem-ownership",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/finalize-dist",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-benchmarks",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-browser-matrix",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-claim-gates",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-code",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-current-capability",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-reporting",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-runtime",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/foundation-subsystem-report",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/game-runtime-docs-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/game-runtime-evidence",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/game-runtime-package-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/game-runtime-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/generate-resolution-maps",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-cinematic-architecture",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-current-aggregate",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-custom-material-shader",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-digital-twin-data",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-gltf-product-viewer",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-installed-reproduction",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-instancing-lod",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-material-laboratory",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-navigation-crowd",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-physical-character",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-physical-vehicle",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-postprocessed-scene",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-primitive",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-product-configurator",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-resource-lifecycle",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-scaffold-to-deploy",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-skinned-morph-animation",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-smart-city",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-webgpu-tsl",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/head-to-head-xr-interaction",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/impostor-bake",
+      "files": 3,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/lean-fixture-capture",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/locomotion-301",
+      "files": 4,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/material-structural-parity",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/meshy-secret-scan",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/migrate-2.0",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/muse3jsparity-docs-audit",
+      "files": 5,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/muse3jsparity-matrix",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/muse3jsparity-readiness",
+      "files": 28,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/naming-taxonomy",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/native-webgpu-probe",
+      "files": 4,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/navigation-backend-bakeoff",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/negative-complexity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-clean-install",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-graph",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-install-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-provenance",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-size",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/package-tarball-audit",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/packed-consumer-check",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/perf-gate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/physics-backend-bakeoff",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/premium-indie-reference",
+      "files": 5,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/product-remediation",
+      "files": 6,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-path-benchmark",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-external-consumer",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-external-vite-build",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-package-surface-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-report-bridge",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-template-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/production-runtime-visual-quality",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-auravoice-contract",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-auravoice-render",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-docs-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-dub-sync",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-evidence",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-package-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-animation-viseme-sync",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/prompt-parity-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/public-api-contract",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/public-demo-deployment-artifacts",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/public-demo-deployment-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/public-surface-diff",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/qr-ownership",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/quality-gate",
+      "files": 15,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/quality-rebuild",
+      "files": 2,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/quality-rebuild-capture",
+      "files": 7,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/quality-rebuild-codemods",
+      "files": 3,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/release",
+      "files": 44,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/release-verification",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/replicability-metrics",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/requirements-trace",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/root-path-integrity",
+      "files": 5,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/root-textured-fixtures",
+      "files": 2,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/route-tiers",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/script-prune",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/showcase-library",
+      "files": 31,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/sketchfab-asset-corpus",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": true,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/static-demo-server-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-animation-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-app-suite-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-asset-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-broad-replacement-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-claim-registry",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-completion-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-docs-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-environment-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-external-consumer",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-external-vite-build",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-legacy-prune-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-material-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-migrate-three",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-migration-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": true,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-package-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-package-surface-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-progress",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-release-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-static-preview-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-template-readiness",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-truth",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/three-compat-visual-quality",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-animation-keyframes-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-animation-multiple-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-animation-walk-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-api-surface-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-claim-registry",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-common",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-completion-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-decals-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-external-consumer",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-gltf-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-instancing-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-loader-material-extensions-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-material-grid-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-migration-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-morphtargets-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-package-smoke",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-parallax-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-performance",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-physical-lights-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-route-health",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-runtime-import-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-shadowmap-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-skinning-additive-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-skinning-blending-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-skinning-ik-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-stereo-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-unreal-bloom-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": true,
+      "classification": "pixel-tool"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/threejs-parity-visual-review",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-boundaries",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-exports",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-imports",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-shaders",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-source-cleanliness",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/verify-trace",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/versioned-release-verification",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/vfx-atlas-bake",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/visual-baseline",
+      "files": 1,
+      "browserLaunch": true,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "runner"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/webgpu-completion-audit",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/webgpu-feature-matrix",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/webgpu-hardware-matrix",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/webgpu-route-health",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/webgpu-visual-parity",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": true,
+      "importsThree": false,
+      "classification": "aggregator-only"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/wgsl-validate",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": false,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "library"
+    },
+    {
+      "dir": "/home/ubuntu/repos/aura3d/tools/world-content-bake",
+      "files": 1,
+      "browserLaunch": false,
+      "pixelDecode": true,
+      "readsReports": false,
+      "importsThree": false,
+      "classification": "pixel-tool"
+    }
+  ],
+  "aggregatorOnly": [
+    "/home/ubuntu/repos/aura3d/tools/agent-api-surface",
+    "/home/ubuntu/repos/aura3d/tools/agent-deployment",
+    "/home/ubuntu/repos/aura3d/tools/agent-devtools",
+    "/home/ubuntu/repos/aura3d/tools/agent-eval",
+    "/home/ubuntu/repos/aura3d/tools/agent-skills",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-body-motion-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-determinism-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-docs-claims",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-fidelity-report",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-gate-suite",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-lip-sync-timing-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-motion-quality-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-no-fake-proof-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-package-proof",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-performance-budget-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-prompt-specificity-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-readiness",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-subtitle-timing-gate",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-template-smoke",
+    "/home/ubuntu/repos/aura3d/tools/animation-studio-visual-quality-gate",
+    "/home/ubuntu/repos/aura3d/tools/api-docs",
+    "/home/ubuntu/repos/aura3d/tools/asset-screening",
+    "/home/ubuntu/repos/aura3d/tools/assets-provenance-evidence",
+    "/home/ubuntu/repos/aura3d/tools/aura3d105-release-readiness",
+    "/home/ubuntu/repos/aura3d/tools/aura3d11-release-readiness",
+    "/home/ubuntu/repos/aura3d/tools/blender-same-corpus-export",
+    "/home/ubuntu/repos/aura3d/tools/browser-entry-purity",
+    "/home/ubuntu/repos/aura3d/tools/bundle-scenarios",
+    "/home/ubuntu/repos/aura3d/tools/bundle-size",
+    "/home/ubuntu/repos/aura3d/tools/claim-registry",
+    "/home/ubuntu/repos/aura3d/tools/current-threejs-baseline",
+    "/home/ubuntu/repos/aura3d/tools/docs-codeblocks",
+    "/home/ubuntu/repos/aura3d/tools/docs-site",
+    "/home/ubuntu/repos/aura3d/tools/evidence",
+    "/home/ubuntu/repos/aura3d/tools/evidence-freshness",
+    "/home/ubuntu/repos/aura3d/tools/external-candidate-package-audit",
+    "/home/ubuntu/repos/aura3d/tools/external-demo-export",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-api-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-app-suite-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-asset-corpus",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-asset-studio-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-assets",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-benchmarks",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-character-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-claim-gates",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-claim-registry",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-code",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-completion-audit",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-current-capability",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-docs-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-ecosystem-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-editor",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-engine-baselines",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-evidence-handoff",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-evidence-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-host-doctor",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-host-runner",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-external-vite-build",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-fixture-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-github-external-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-gltf-corpus-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-ibl-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-hdr-render-target-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-ibl-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-interactive-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-local-port-status",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-material-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-material-studio-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-package-smoke",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-parity-status",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-gltf-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-pbr-reference-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-performance-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-postprocess-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-product-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-production-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-progress",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-release-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-rendering",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-report-freshness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-reporting",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-roadmap-completion-audit",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-runtime",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-scene-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-screenshot-gallery",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-shadow-map-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-shadow-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-static-preview-smoke",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-template-readiness",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-threejs-visual-parity",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-truth",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-verify",
+    "/home/ubuntu/repos/aura3d/tools/external-parity-visual-quality",
+    "/home/ubuntu/repos/aura3d/tools/final-competitive-baseline",
+    "/home/ubuntu/repos/aura3d/tools/final-demo-validation",
+    "/home/ubuntu/repos/aura3d/tools/final-subsystem-ownership",
+    "/home/ubuntu/repos/aura3d/tools/foundation-benchmarks",
+    "/home/ubuntu/repos/aura3d/tools/foundation-claim-gates",
+    "/home/ubuntu/repos/aura3d/tools/foundation-current-capability",
+    "/home/ubuntu/repos/aura3d/tools/foundation-runtime",
+    "/home/ubuntu/repos/aura3d/tools/game-runtime-evidence",
+    "/home/ubuntu/repos/aura3d/tools/game-runtime-package-smoke",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-cinematic-architecture",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-current-aggregate",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-custom-material-shader",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-digital-twin-data",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-gltf-product-viewer",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-instancing-lod",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-material-laboratory",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-navigation-crowd",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-physical-character",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-physical-vehicle",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-postprocessed-scene",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-primitive",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-product-configurator",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-resource-lifecycle",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-scaffold-to-deploy",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-skinned-morph-animation",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-smart-city",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-webgpu-tsl",
+    "/home/ubuntu/repos/aura3d/tools/head-to-head-xr-interaction",
+    "/home/ubuntu/repos/aura3d/tools/muse3jsparity-docs-audit",
+    "/home/ubuntu/repos/aura3d/tools/naming-taxonomy",
+    "/home/ubuntu/repos/aura3d/tools/navigation-backend-bakeoff",
+    "/home/ubuntu/repos/aura3d/tools/negative-complexity",
+    "/home/ubuntu/repos/aura3d/tools/package-graph",
+    "/home/ubuntu/repos/aura3d/tools/package-install-smoke",
+    "/home/ubuntu/repos/aura3d/tools/package-provenance",
+    "/home/ubuntu/repos/aura3d/tools/package-tarball-audit",
+    "/home/ubuntu/repos/aura3d/tools/physics-backend-bakeoff",
+    "/home/ubuntu/repos/aura3d/tools/premium-indie-reference",
+    "/home/ubuntu/repos/aura3d/tools/production-runtime-external-consumer",
+    "/home/ubuntu/repos/aura3d/tools/production-runtime-external-vite-build",
+    "/home/ubuntu/repos/aura3d/tools/production-runtime-package-surface-readiness",
+    "/home/ubuntu/repos/aura3d/tools/production-runtime-report-bridge",
+    "/home/ubuntu/repos/aura3d/tools/production-runtime-template-readiness",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-auravoice-contract",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-auravoice-render",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-dub-sync",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-evidence",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-package-smoke",
+    "/home/ubuntu/repos/aura3d/tools/prompt-animation-viseme-sync",
+    "/home/ubuntu/repos/aura3d/tools/prompt-parity-readiness",
+    "/home/ubuntu/repos/aura3d/tools/public-api-contract",
+    "/home/ubuntu/repos/aura3d/tools/public-demo-deployment-artifacts",
+    "/home/ubuntu/repos/aura3d/tools/public-demo-deployment-smoke",
+    "/home/ubuntu/repos/aura3d/tools/public-surface-diff",
+    "/home/ubuntu/repos/aura3d/tools/replicability-metrics",
+    "/home/ubuntu/repos/aura3d/tools/root-path-integrity",
+    "/home/ubuntu/repos/aura3d/tools/route-tiers",
+    "/home/ubuntu/repos/aura3d/tools/static-demo-server-smoke",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-animation-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-app-suite-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-asset-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-broad-replacement-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-claim-registry",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-completion-audit",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-docs-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-environment-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-external-consumer",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-external-vite-build",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-legacy-prune-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-material-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-migration-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-package-smoke",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-package-surface-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-progress",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-release-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-static-preview-smoke",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-template-readiness",
+    "/home/ubuntu/repos/aura3d/tools/three-compat-truth",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-api-surface-audit",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-claim-registry",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-common",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-completion-audit",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-external-consumer",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-instancing-parity",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-migration-audit",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-package-smoke",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-performance",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-route-health",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-runtime-import-audit",
+    "/home/ubuntu/repos/aura3d/tools/threejs-parity-visual-review",
+    "/home/ubuntu/repos/aura3d/tools/versioned-release-verification",
+    "/home/ubuntu/repos/aura3d/tools/webgpu-completion-audit",
+    "/home/ubuntu/repos/aura3d/tools/webgpu-feature-matrix",
+    "/home/ubuntu/repos/aura3d/tools/webgpu-hardware-matrix",
+    "/home/ubuntu/repos/aura3d/tools/webgpu-route-health",
+    "/home/ubuntu/repos/aura3d/tools/webgpu-visual-parity"
+  ]
+}

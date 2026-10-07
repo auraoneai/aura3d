@@ -131,6 +131,7 @@ const CERTIFIED_STEER_RATE = (() => {
   // The route derives its steer rate; recompute it the same way so this stays in step.
   const certified = gameGeometryContract.speedModel.gameUnitsPerSecond;
   const maxSpeed = certified * PACE_MULTIPLIER;
+  // invariant: source must keep `const certifiedSteerRate` — keeps the route wide enough that the car cannot cross it within one frame
   expect(source).toContain("const certifiedSteerRate");
   return Math.max(2.7, (maxSpeed / (tightestCornerRadius() * 1.28)) * 0.75);
 })();

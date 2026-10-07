@@ -138,6 +138,7 @@ describe("showcase-skyline-runner — jump, landing, scenery, session lifecycle"
   it("reports session lifecycle rather than self-authoring completion", () => {
     // Retained from the existing gameplay-regression suite because it is one of the named
     // symptoms: a route that declares itself complete cannot demonstrate a session.
+    // invariant: source must keep `completed: false` — uses the shared focus API rather than building its own indicator
     expect(source).toContain("completed: false");
     expect(source).not.toContain("visualReviewPass: true");
   });

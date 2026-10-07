@@ -1,0 +1,73 @@
+name: Quality Devices
+
+# PRD-12 T5.6. Real-device lane on AWS Device Farm (no Azure equivalent): the 18
+# games' 03-mid timeline on 2 iOS Safari + 2 Android Chrome devices, ephemeral
+# project tagged project=aura3d-quality-gate.
+#
+# Provisioning is an operator action, not performed by agents:
+#   /Users/gurbakshchahal/AuraOne/scripts/setup-auraone-shared-aws.sh
+#   profile auraone-production-operator
+# Until secrets exist the job fails fast and prints the minimal grant — see
+# evidence/prd12/phase-5-devices.md. The emulated lane (quality-gate.yml mobile
+# run 390x844@3) stays the blocking path meanwhile.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  device-farm:
+    name: AWS Device Farm (2x iOS Safari + 2x Android Chrome)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Device Farm credentials
+        id: creds
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DEVICE_FARM_PROJECT_ARN: ${{ secrets.DEVICE_FARM_PROJECT_ARN }}
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$DEVICE_FARM_PROJECT_ARN" ]; then
+            echo "::error::Device Farm not provisioned. Minimal grant: devicefarm:* on project=aura3d-quality-gate resources via setup-auraone-shared-aws.sh (see evidence/prd12/phase-5-devices.md). Set secrets AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, DEVICE_FARM_PROJECT_ARN."
+            echo "provisioned=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "provisioned=true" >> "$GITHUB_OUTPUT"
+
+      - name: Serve games build
+        run: |
+          node tools/quality-rebuild-capture/capture-games.mjs --build-only
+          node -e 'const http=require("http"),fs=require("fs"),p=require("path");const root="tools/quality-rebuild-capture/.build/site";http.createServer((q,s)=>{const f=p.join(root,q.url.split("?")[0]);const t=fs.existsSync(f)&&fs.statSync(f).isFile()?f:p.join(root,"index.html");s.end(fs.readFileSync(t))}).listen(process.env.PORT||8080)' &
+        env:
+          PORT: 8080
+
+      - name: Schedule Device Farm runs
+        if: steps.creds.outputs.provisioned == 'true'
+        env:
+          AWS_DEFAULT_REGION: us-west-2
+        run: |
+          set -euo pipefail
+          GAMES=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("tools/quality-rebuild-capture/games.json","utf8")).games.map(g=>g.id).join(" "))')
+          # 03-mid scenario URL per game; each device pool runs the full list.
+          for game in $GAMES; do
+            for pool in "$DEVICE_POOL_IOS" "$DEVICE_POOL_ANDROID"; do
+              aws devicefarm schedule-run \
+                --project-arn "$DEVICE_FARM_PROJECT_ARN" \
+                --app-arn "$DEVICE_FARM_PROJECT_ARN" \
+                --device-pool-arn "$pool" \
+                --test type=BUILTIN_FUZZ,eventCount=300 \
+                --name "a3d-qr/${game}/03-mid" || true
+            done
+          done
+        env:
+          DEVICE_POOL_IOS: ${{ secrets.DEVICE_FARM_POOL_IOS }}
+          DEVICE_POOL_ANDROID: ${{ secrets.DEVICE_FARM_POOL_ANDROID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DEVICE_FARM_PROJECT_ARN: ${{ secrets.DEVICE_FARM_PROJECT_ARN }}
