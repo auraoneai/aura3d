@@ -1,0 +1,72 @@
+name: QR PRD-05 assets browser
+
+# Lane 05 workflow (PRD-05 §13 P1): compressed-GLB browser gate — the shared
+# corpus loads through the vendored C-16 decoder registry (meshopt + draco +
+# KTX2) on macos-14 Chromium/ANGLE Metal, same-origin only. Integrated
+# typed-GLB spec stays skipped until Q-04-1/Q-15-1 land.
+# Artifacts: tests/reports/prd05-assets-compressed-glb.json.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/assets/src/{AssetDecoderRegistry,KTX2TargetSelection,KTX2BasisTextureTranscoder,KTX2TranscodeWorker,KTX2TranscodeDriver,GLTFCompressionDecoders,ImageDecode}.ts"
+      - "packages/assets/src/gltf/**"
+      - "packages/assets/src/contracts/decoders.ts"
+      - "packages/assets/src/lanes/prd05.ts"
+      - "packages/assets/vendor/**"
+      - "packages/rendering/src/webgl2/TextureFormats.ts"
+      - "packages/rendering/src/lanes/prd05.ts"
+      - "packages/engine/src/agent-api/AssetDecoders.ts"
+      - "packages/engine/src/lanes/prd05.ts"
+      - "public/aura-decoders/**"
+      - "apps/loader-ktx2/**"
+      - "tests/qr/prd05/**"
+      - ".github/workflows/qr-prd05-assets-browser.yml"
+  push:
+    branches: ['qr/**']
+    paths:
+      - "packages/assets/src/**"
+      - "packages/assets/vendor/**"
+      - "packages/rendering/src/webgl2/TextureFormats.ts"
+      - "packages/engine/src/agent-api/AssetDecoders.ts"
+      - "public/aura-decoders/**"
+      - "tests/qr/prd05/**"
+      - ".github/workflows/qr-prd05-assets-browser.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd05-assets-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRD05_CHROMIUM_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  browser:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Compressed GLB decoder gate (ANGLE Metal)
+        run: pnpm exec playwright test --config tests/qr/prd05/playwright.config.ts --grep "PRD-05 compressed GLB"
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd05-assets-browser
+          path: |
+            tests/reports/prd05-assets-compressed-glb.json
+            tests/reports/prd05-assets-compressed-typed-glb.json
+          if-no-files-found: warn

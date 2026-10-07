@@ -20,17 +20,37 @@ export async function decodeImageInBrowser(
     const bytes = await readImageBytes(asset, image);
     return transcodeKTX2BasisTexture(bytes, {
       ...options.ktx2BasisTranscoderOptions,
-      targetFormat: options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat
+      targetFormat: options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat,
+      // C-16: skip mip levels above the C-27 texture-size ceiling when present.
+      maxDimension: options.maxTextureSize ?? options.ktx2BasisTranscoderOptions?.maxDimension
     });
   }
   if (typeof createImageBitmap === "function") {
     const blob = image.data
       ? new Blob([image.data], { type: image.mimeType ?? "application/octet-stream" })
       : await fetchImageBlob(asset, image);
-    const bitmap = await createImageBitmap(blob, {
+    let bitmap = await createImageBitmap(blob, {
       colorSpaceConversion: "none",
       premultiplyAlpha: "none"
     });
+    // PRD-05 Phase 1 (A3D_QR_ASSETS): downscale oversized PNG/JPEG sources at
+    // decode time so they honour the C-27 maxTextureSize ceiling instead of
+    // uploading at full res. Flag-off passes no resize options.
+    if (options.qrAssets === true && options.maxTextureSize !== undefined) {
+      const largest = Math.max(bitmap.width, bitmap.height);
+      if (largest > options.maxTextureSize) {
+        const scale = options.maxTextureSize / largest;
+        const resized = await createImageBitmap(blob, {
+          colorSpaceConversion: "none",
+          premultiplyAlpha: "none",
+          resizeWidth: Math.max(1, Math.round(bitmap.width * scale)),
+          resizeHeight: Math.max(1, Math.round(bitmap.height * scale)),
+          resizeQuality: "high"
+        });
+        bitmap.close();
+        bitmap = resized;
+      }
+    }
     return { width: bitmap.width, height: bitmap.height, source: bitmap, colorSpace: "srgb" };
   }
   const ImageCtor = globalThis.Image;
@@ -46,7 +66,7 @@ export async function decodeImageInBrowser(
   });
 }
 
-async function readImageBytes(asset: GLTFAsset, image: GLTFImageAsset): Promise<ArrayBuffer> {
+export async function readImageBytes(asset: GLTFAsset, image: GLTFImageAsset): Promise<ArrayBuffer> {
   if (image.data) return image.data.slice(0);
   const blob = await fetchImageBlob(asset, image);
   return blob.arrayBuffer();
@@ -66,11 +86,11 @@ async function fetchImageBlob(asset: GLTFAsset, image: GLTFImageAsset): Promise<
   return response.blob();
 }
 
-function isKTX2BasisImage(image: GLTFImageAsset): boolean {
+export function isKTX2BasisImage(image: GLTFImageAsset): boolean {
   return image.mimeType === "image/ktx2" || /\.ktx2(?:[?#]|$)/i.test(image.uri ?? "");
 }
 
-function resolveImageUrl(assetUrl: string, imageUri: string): string {
+export function resolveImageUrl(assetUrl: string, imageUri: string): string {
   if (/^(?:data:|blob:|https?:|file:)/i.test(imageUri)) return imageUri;
   if (assetUrl.startsWith("data:")) {
     throw new Error(`Relative glTF image uri ${imageUri} cannot be resolved from a data URL asset`);
@@ -88,7 +108,7 @@ function resolveImageUrl(assetUrl: string, imageUri: string): string {
  * against the document/origin base when running in a browser, falling back to a
  * synthetic `file:///` origin so resolution never throws in non-browser contexts.
  */
-function resolveAbsoluteAssetBase(assetUrl: string): string {
+export function resolveAbsoluteAssetBase(assetUrl: string): string {
   if (/^[a-z][a-z0-9+.-]*:/i.test(assetUrl)) return assetUrl;
   const documentBase =
     (typeof document !== "undefined" && document.baseURI) ||

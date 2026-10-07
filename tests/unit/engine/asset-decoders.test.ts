@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { assets } from "../../../packages/engine/src/agent-api/AssetDecoders";
 
 describe("assets.ensureDecoders (M2)", () => {
-  it("leaves draco/meshopt unconfirmed without probes (ktx2 follows its module probe)", async () => {
+  it("confirms vendored/package decoders without injected probes (PRD-05 §7.3 defaults)", async () => {
+    // PRD-05 Phase 1 removed the fail-closed probe defaults: meshopt resolves
+    // the meshoptimizer package, ktx2/draco probe the vendored decoder files —
+    // all real in this environment. (Draco stays lazy: available ≠ loaded.)
     const diagnostics = await assets.ensureDecoders();
-    expect(diagnostics.draco.available).toBe(false);
-    expect(diagnostics.meshopt.available).toBe(false);
-    expect(typeof diagnostics.ktx2.available).toBe("boolean");
+    expect(diagnostics.draco.available).toBe(true);
+    expect(diagnostics.meshopt.available).toBe(true);
+    expect(diagnostics.ktx2.available).toBe(true);
   });
 
   it("honors injected probes and reports the GPU-aware KTX2 target", async () => {

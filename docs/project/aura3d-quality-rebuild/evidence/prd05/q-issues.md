@@ -173,3 +173,15 @@ Meanwhile: generator emits the shape in §6.9.
 Add optional `RenderItem.lodLevel?: number` and `lodLevels?: number` beside
 the pre-declared `lodFade?` (used only by the integrated shadow-LOD request
 Q-02-1).
+
+## Q-04-3 → lane 04 (C-16 seam, informational)
+
+`GLTFRenderResources.ts` is lane-04-owned but carries the PRD-05 C-16 decode
+channel: `GLTFRenderResourceOptions.qrAssets` (flag channel — assets has no
+flag resolver), `ktx2BasisTranscoderOptions.colorSpace` flattened to the §7.4
+contract shape (replacing the ad-hoc `loaderOptions.colorSpace` nest), and
+per-image `maxDimension` forwarding into the ktx2 decode. All additive;
+flag-off decode paths are byte-identical.
+
+Meanwhile: edits shipped in lane-05 Phase 1; lane 04 may reclaim the seam
+when their texture work moves in.

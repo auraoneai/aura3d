@@ -22,7 +22,9 @@
   "dependencies": {
     "@aura3d/animation": "workspace:*",
     "@aura3d/rendering": "workspace:*",
-    "@aura3d/scene": "workspace:*"
+    "@aura3d/scene": "workspace:*",
+    "ktx-parse": "1.0.1",
+    "meshoptimizer": "1.2.0"
   },
   "sideEffects": false,
   "description": "Asset identity, loading, caching, dependency tracking, import pipelines, worker job boundaries, and GLB/glTF runtime loaders for Aura3D.",
