@@ -81,3 +81,89 @@ export function describeProductionSpotShadow(input: {
       : "spot caster selected but the device shows no rendered+sampled shadow map yet"
   };
 }
+
+// ---------- PRD-02 §6.4 — flag-path shadow system config ----------
+
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+import { QUALITY_TIERS } from "@aura3d/rendering/contracts";
+
+/** Renderer-facing shadow config produced under A3D_QR_LIGHTING (PRD-02 §6.4). */
+export interface ShadowSystemConfig {
+  readonly enabled: boolean;
+  /** Per-cascade/local map size — the C-27 tier value (default) or a per-light override. */
+  readonly mapSize: 1024 | 2048 | 4096;
+  /** Cascade count: "auto" resolves to 1 when scene radius ≤ 15 m, else the tier value. */
+  readonly cascades: 1 | 2 | 3 | 4;
+  readonly maxDistance: number;              // min(camera.far, 150)
+  readonly splitLambda: number;              // 0.75 practical split
+  readonly blend: number;                    // 0.1 cascade blend band
+  readonly filter: "hard" | "pcf" | "pcss" | "castano" | "vogel";
+  /** Hard removal fraction in full shadow — 1.0 under the flag (E-category fix). */
+  readonly strength: number;
+  /** Normalized constant bias; 0 = auto. */
+  readonly bias: number;
+  /** World-space normal offset = 1.5 × texel world size. */
+  readonly normalBias: number;
+  readonly sceneRadius: number;
+}
+
+const FILTER_BY_TIER: Readonly<Record<"pcf2" | "pcf3" | "pcf5", ShadowSystemConfig["filter"]>> = {
+  pcf2: "hard",
+  pcf3: "castano",
+  pcf5: "vogel"
+};
+
+/**
+ * Scene-bounds radius for shadow sizing. Nodes parked at y ≤ -50 (the
+ * offstage convention) do not count — the map size must not grow because
+ * an agent parked something far below the stage (PRD-02 §6.4 test).
+ */
+export function sceneShadowRadius(snapshot: AuraSceneSnapshot): number {
+  const nodes = groups.flatten(snapshot.nodes);
+  return nodes.reduce((radius, node) => {
+    const position: AuraVec3 = "position" in node && Array.isArray(node.position) ? node.position : [0, 0, 0];
+    if (position[1] <= -50) return radius;
+    const nodeScale = "scale" in node ? node.scale : undefined;
+    const scale = typeof nodeScale === "number"
+      ? Math.abs(nodeScale)
+      : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
+    return Math.max(radius, Math.hypot(...position) + scale);
+  }, 1);
+}
+
+/**
+ * Flag-path shadow config (PRD-02 §6.4): strength 1.0 for every category,
+ * size from the C-27 tier (`QUALITY_TIERS[tier].shadow`), "auto" cascades
+ * (1 when scene radius ≤ 15 m), maxDistance = min(camera.far, 150),
+ * lambda 0.75, bias 0, normalBias = 1.5 × texelWorld.
+ */
+export function resolveShadowSystemConfig(
+  snapshot: AuraSceneSnapshot,
+  descriptors: readonly { readonly shadowRequested: boolean; readonly shadowDisabled?: boolean; readonly shadowOptions?: { readonly cascades?: number | "auto"; readonly maxDistance?: number; readonly splitLambda?: number; readonly blend?: number; readonly mapSize?: number; readonly filter?: "hard" | "pcf" | "pcss"; readonly bias?: number; readonly normalBias?: number } }[],
+  tier: AuraQualityTier,
+  options: { readonly cameraFar?: number } = {}
+): ShadowSystemConfig {
+  const settings = QUALITY_TIERS[tier];
+  const radius = sceneShadowRadius(snapshot);
+  const sunOptions = descriptors.find((d) => d.shadowRequested && !d.shadowDisabled)?.shadowOptions;
+  const cascadesOpt = sunOptions?.cascades;
+  const cascades = (cascadesOpt === undefined || cascadesOpt === "auto")
+    ? (radius <= 15 ? 1 : settings.shadow.cascades)
+    : (cascadesOpt as 1 | 2 | 3 | 4);
+  const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
+  const texelWorld = (radius * 2) / mapSize;
+  const enabled = descriptors.some((d) => d.shadowRequested && !d.shadowDisabled);
+  return {
+    enabled,
+    mapSize,
+    cascades,
+    maxDistance: Math.min(options.cameraFar ?? 150, sunOptions?.maxDistance ?? 150),
+    splitLambda: sunOptions?.splitLambda ?? 0.75,
+    blend: sunOptions?.blend ?? 0.1,
+    filter: sunOptions?.filter === "pcss" ? "pcss" : FILTER_BY_TIER[settings.shadow.filter],
+    strength: 1.0,
+    bias: sunOptions?.bias ?? 0,
+    normalBias: sunOptions?.normalBias ?? 1.5 * texelWorld,
+    sceneRadius: radius
+  };
+}
