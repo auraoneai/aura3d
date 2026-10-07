@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-siege-golf",
+  "entries": [
+    {
+      "file": "references/golden-valley.json",
+      "source": "shipped comparable: golden-hour open-valley boards",
+      "licence": "reference-only",
+      "why": "Warm low sun, valley haze and grass-rock terrain reads the K1 lighting targets"
+    },
+    {
+      "file": "references/siege-structures.json",
+      "source": "admitted siegeGolfCastle / miniGolfCastle* GLBs + K3 castle-piece kit",
+      "licence": "reference-only",
+      "why": "Castle keep, trebuchets and barbicans the one-scene-per-hole holes are built from"
+    },
+    {
+      "file": "references/siege-ammo.json",
+      "source": "admitted siegeGolfAmmo GLB (spinning ammo crate, 16k tris)",
+      "licence": "reference-only",
+      "why": "The crate/prop family the playing field scatters — restored maps needed"
+    }
+  ]
+}

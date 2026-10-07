@@ -1,5 +1,6 @@
 import type { AnimationViewport } from "./AnimationRenderQueue.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export type FrameEncoderCodec = "vp9" | "vp8" | "h264" | "av1" | "png-sequence";
 export type FrameEncoderContainer = "webm" | "mp4" | "png-sequence";

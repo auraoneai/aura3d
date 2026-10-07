@@ -9,7 +9,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import { bindStereoControls, DEFAULT_STEREO_CONTROLS, type StereoControlState } from "./stereoControls";
 
@@ -96,8 +96,8 @@ async function run(): Promise<void> {
 
   try {
     const [leftRenderer, rightRenderer] = await Promise.all([
-      A3DRenderer.create({ canvas: leftCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] }),
-      A3DRenderer.create({ canvas: rightCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] })
+      Renderer.create({ canvas: leftCanvas, width: SIZE, height: SIZE,  clearColor: [0.015, 0.018, 0.024, 1] }),
+      Renderer.create({ canvas: rightCanvas, width: SIZE, height: SIZE,  clearColor: [0.015, 0.018, 0.024, 1] })
     ]);
     update({ rendererStatus: "ready", statusLabel: "Renderer ready" });
     const leftResources = createResources();
@@ -165,12 +165,12 @@ async function run(): Promise<void> {
           layout: "side-by-side"
         });
         const [leftEye, rightEye] = stereoRig.views;
-        const leftResult = leftRenderer.renderFrame({
+        const leftResult = a3dRenderFrame(leftRenderer, {
           source: { ...createSource(leftResources), cameraPosition: leftEye.cameraPosition },
           camera: { viewProjectionMatrix: leftEye.viewProjectionMatrix, viewMatrix: leftEye.viewMatrix, projectionMatrix: leftEye.projectionMatrix },
           metadata
         });
-        const rightResult = rightRenderer.renderFrame({
+        const rightResult = a3dRenderFrame(rightRenderer, {
           source: { ...createSource(rightResources), cameraPosition: rightEye.cameraPosition },
           camera: { viewProjectionMatrix: rightEye.viewProjectionMatrix, viewMatrix: rightEye.viewMatrix, projectionMatrix: rightEye.projectionMatrix },
           metadata

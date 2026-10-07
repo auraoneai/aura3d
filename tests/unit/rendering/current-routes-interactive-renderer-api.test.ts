@@ -2,57 +2,72 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
-  ProductionWebGL2Renderer
+  Renderer
+} from "../../../packages/rendering/src/Renderer";
+import {
+  ProductionWebGL2Renderer,
+  ProductionRuntimeRenderer,
+  validateProductionRendererInput,
+  rendererFeatureReport,
+  rendererInteractiveFeatureReport,
+  rendererShadowReport,
+  rendererProofCapture
 } from "../../../packages/rendering/src/production-runtime";
 import type {
-  ProductionRendererInput,
-  RuntimeParityFrameRenderResult
+  ProductionRendererInput
 } from "../../../packages/rendering/src/production-runtime/ProductionRendererTypes";
 
+// Phase 2 collapsed the three Production renderer wrappers onto the single
+// C-29 `Renderer`. Frame submission goes through `renderer.render` /
+// `renderer.renderAsync`; pixel proof/feature/shadow evidence moved to the
+// free functions in `production-runtime/renderProofs.ts` (re-exported through
+// `packages/engine/src/agent-api/rendererReports.ts`).
 describe("CurrentRoutes explicit interactive renderer API", () => {
-  it("publishes renderInteractiveFrame and captureProof as the primary Production renderer names", () => {
-    const types = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRendererTypes.ts"), "utf8");
-    const rendererProduction = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8");
-    const sdk = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
+  it("publishes the one-renderer surface: Renderer render dispatch plus devtools proof helpers", () => {
+    const barrel = readFileSync(resolve("packages/rendering/src/production-runtime/index.ts"), "utf8");
+    const proofs = readFileSync(resolve("packages/rendering/src/production-runtime/renderProofs.ts"), "utf8");
+    const devtools = readFileSync(resolve("packages/engine/src/agent-api/rendererReports.ts"), "utf8");
+    const bridge = readFileSync(resolve("packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
 
-    expect(types).toContain("export interface CurrentRoutesProductionRenderer");
-    expect(types).toContain("renderInteractiveFrame(input: ProductionRendererInput)");
-    expect(types).toContain("captureProof(input: ProductionRendererInput)");
-    expect(rendererProduction).toContain("renderFrame(input: ProductionRendererInput)");
-    expect(rendererProduction).toContain("return this.renderInteractiveFrame(input);");
-    expect(rendererProduction).toContain("renderImportedAsset(input: ProductionRendererInput)");
-    expect(rendererProduction).toContain("return this.captureProof(input);");
-    expect(sdk).toContain("renderInteractiveFrame(input: A3DRenderOptions)");
-    expect(sdk).toContain("captureProof(input: A3DRenderOptions)");
-    expect(sdk).toContain("return this.renderInteractiveFrame(input);");
-    expect(sdk).toContain("return this.captureProof(input);");
+    // invariant: source must keep `export function rendererProofCapture` — publishes the one-renderer surface: Renderer render dispatch plus devtools proof helpers
+    expect(proofs).toContain("export function rendererProofCapture");
+    expect(proofs).toContain("export function rendererFeatureReport");
+    expect(proofs).toContain("export function rendererInteractiveFeatureReport");
+    expect(proofs).toContain("export function rendererShadowReport");
+    expect(proofs).toContain("export function validateProductionRendererInput");
+    expect(devtools).toContain("rendererProofCapture");
+    expect(devtools).toContain("rendererFeatureReport");
+    expect(devtools).toContain("rendererShadowReport");
+    expect(bridge).toContain("Renderer.create");
+    expect(bridge).toContain("productionRenderer.render(");
+    expect(bridge).toContain("productionRenderer.renderAsync(");
+    // Deprecated aliases survive this phase only (removed in Phase 8).
+    expect(barrel).toContain("Renderer as ProductionWebGL2Renderer");
+    expect(barrel).toContain("Renderer as ProductionRuntimeRenderer");
+    expect(ProductionWebGL2Renderer).toBe(Renderer);
+    expect(ProductionRuntimeRenderer).toBe(Renderer);
   });
 
   it("renders an interactive frame without pixel metrics or readback", () => {
     const { renderer, render, readPixels } = createRenderer();
+    const input = createInput();
+    validateProductionRendererInput(input);
 
-    const result = renderer.renderInteractiveFrame(createInput()) as RuntimeParityFrameRenderResult & {
-      readonly pixels?: unknown;
-    };
+    const diagnostics = renderer.render(input.source, input.camera);
+    const features = rendererInteractiveFeatureReport(renderer, diagnostics, input);
 
     expect(render).toHaveBeenCalledTimes(1);
     expect(readPixels).not.toHaveBeenCalled();
-    expect(result.backend).toBe("webgl2");
-    expect(result.diagnostics.drawCalls).toBe(1);
-    expect(result.pixels).toBeUndefined();
-    expect(result.features.map((feature) => feature.id)).not.toContain("pixel-readback");
-    expect(result.features.map((feature) => feature.id)).not.toContain("scene-color-transmission-capture");
-    expect(result.timing).toMatchObject({
-      renderMs: expect.any(Number),
-      totalMs: expect.any(Number)
-    });
-    expect(result.timing?.readbackMs).toBeUndefined();
+    expect(renderer.device.kind).toBe("webgl2");
+    expect(diagnostics.drawCalls).toBe(1);
+    expect(features.map((feature) => feature.id)).not.toContain("pixel-readback");
+    expect(features.map((feature) => feature.id)).not.toContain("scene-color-transmission-capture");
   });
 
   it("captures proof with explicit pixel metrics and readback diagnostics", () => {
     const { renderer, render, readPixels } = createRenderer();
 
-    const proof = renderer.captureProof(createInput());
+    const proof = rendererProofCapture(renderer, createInput());
 
     expect(render).toHaveBeenCalledTimes(1);
     expect(readPixels).toHaveBeenCalledTimes(1);
@@ -69,19 +84,11 @@ describe("CurrentRoutes explicit interactive renderer API", () => {
     });
   });
 
-  it("keeps renderFrame and renderImportedAsset as compatible aliases", () => {
-    const interactive = createRenderer();
-    const frame = interactive.renderer.renderFrame(createInput()) as RuntimeParityFrameRenderResult & {
-      readonly pixels?: unknown;
-    };
+  it("reports features and shadow evidence through the moved free functions", () => {
+    const { renderer } = createRenderer();
 
-    expect(interactive.render).toHaveBeenCalledTimes(1);
-    expect(interactive.readPixels).not.toHaveBeenCalled();
-    expect(frame.pixels).toBeUndefined();
-
-    const proof = createRenderer();
-    expect(proof.renderer.renderImportedAsset(createInput()).pixels.nonBlackPixels).toBeGreaterThan(0);
-    expect(proof.readPixels).toHaveBeenCalledTimes(1);
+    expect(rendererFeatureReport(renderer).map((feature) => feature.id)).toContain("pixel-readback");
+    expect(rendererShadowReport(renderer)).toBeNull();
   });
 });
 
@@ -111,11 +118,12 @@ function createRenderer() {
     },
     render,
     getDiagnostics: vi.fn(() => diagnostics),
+    getShadowEvidence: vi.fn(() => null),
     dispose: vi.fn()
   };
 
   return {
-    renderer: Reflect.construct(ProductionWebGL2Renderer, [fakeRenderer, 2, 2]) as ProductionWebGL2Renderer,
+    renderer: fakeRenderer as unknown as Renderer,
     render,
     readPixels
   };
@@ -124,6 +132,7 @@ function createRenderer() {
 function createInput(): ProductionRendererInput {
   return {
     source: { renderItems: [] },
+    viewport: { width: 2, height: 2 },
     metadata: {
       assetId: "current-routes-unit-asset",
       assetUri: "fixtures/threejs-parity/unit.glb",

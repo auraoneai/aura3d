@@ -1,20 +1,16 @@
-import { product as rootProduct, sceneKits as rootSceneKits } from "./index.js";
-import type {
-  AuraApp,
-  AuraAppTarget,
-  AuraAssetDefinition,
-  AuraAssetMap,
-  AuraAssetRef,
-  AuraCreateAppOptions,
-  AuraProductStageStyle,
-  AuraSceneBuilder,
-  AuraSceneKit
-} from "./index.js";
+import { sceneKits as rootSceneKits } from "./nodes/sceneKits.js";
+import { product as rootProduct } from "./nodes/product.js";
+import type { AuraSceneBuilder } from "./nodes/scene.js";
+import type { AuraApp, AuraAppTarget, AuraAssetDefinition, AuraAssetMap, AuraAssetRef, AuraCreateAppOptions, AuraProductStageStyle, AuraSceneKit } from "./nodes/types.js";
+import { lazyNamespace } from "./lazyNamespace.js";
+
 
 export {
-  createAuraApp,
+  createAuraApp
+} from "./app/createAuraApp.js";
+export {
   defineAuraAssets
-} from "./index.js";
+} from "./nodes/assets.js";
 
 export type {
   AuraApp,
@@ -34,7 +30,7 @@ export type ProductViewerScene = AuraSceneBuilder;
 export type ProductViewerSceneKit = AuraSceneKit;
 export type ProductViewerDiagnostics = ReturnType<AuraApp["diagnostics"]>;
 
-export const product = rootProduct;
+export const product = lazyNamespace(() => rootProduct);
 
 export const sceneKits = {
   productViewer(asset: AuraAssetRef<"model">, options: ProductViewerOptions = {}): ProductViewerSceneKit {

@@ -12,6 +12,7 @@ describe("optional physical simulation boundary", () => {
     ];
     for (const path of paths) {
       const source = readFileSync(path, "utf8");
+      // invariant: source must keep `@dimforge/rapier3d` — keeps Rapier out of core, product, arcade, and recommended lean entries
       expect(source, path).not.toContain("@dimforge/rapier3d");
       expect(source, path).not.toContain("@aura3d/physics-rapier");
     }

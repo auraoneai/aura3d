@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-pulse-tunnel",
+  "entries": [
+    {
+      "file": "references/synthwave-tunnel.json",
+      "source": "shipped comparable: synthwave tunnel runners (Audiosurf / Sayonara Wild Hearts)",
+      "licence": "reference-only",
+      "why": "Neon ribbon tunnel reads, gradient sky and beat-synced lighting the art targets"
+    },
+    {
+      "file": "references/beam-drone.json",
+      "source": "admitted pulseTunnelBeamDrone GLB (14.4k tris, 4.7M verts, 65 maps)",
+      "licence": "reference-only",
+      "why": "The rider drone — its map set and emissive masks define the hero material"
+    },
+    {
+      "file": "references/beam-karn.json",
+      "source": "admitted pulseTunnelBeamKarn GLB (28.5k tris, 34 joints, 2 clips)",
+      "licence": "reference-only",
+      "why": "Second admitted vessel — alternate hero/rider stand-in for gate sequences"
+    }
+  ]
+}

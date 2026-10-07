@@ -8,8 +8,9 @@ import {
   type PromptAnimationSeconds,
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
-import type { AuraColor, AuraVec3 } from "./index.js";
+import type { AuraColor, AuraVec3 } from "./nodes/types.js";
 import type { DialogueTrackArtifact } from "./DialoguePerformance.js";
+import { performance } from "./performanceEvidence.js";
 
 export type AnimationPerformanceAction =
   | "idle"

@@ -1,6 +1,9 @@
-import type { AuraVec3 } from "./index.js";
+import type { AuraVec3 } from "./nodes/types.js";
 import type { ShotCameraInstruction } from "./ShotTimeline.js";
 import type { PromptAnimationId } from "./PromptAnimationContract.js";
+import { camera } from "./nodes/camera.js";
+import { lazyNamespace } from "./lazyNamespace.js";
+
 
 export type CameraPresetId =
   | "establishing"
@@ -24,7 +27,7 @@ export interface CameraPreset {
   readonly composition: readonly string[];
 }
 
-export const cameraPresetLibrary: readonly CameraPreset[] = [
+export const cameraPresetLibrary: readonly CameraPreset[] = lazyNamespace(() => ([
   {
     id: "establishing",
     label: "Establishing",
@@ -106,7 +109,7 @@ export const cameraPresetLibrary: readonly CameraPreset[] = [
     fov: 44,
     composition: ["two-character-framing", "headroom", "safe-area"]
   }
-];
+]));
 
 export function getCameraPreset(id: CameraPresetId): CameraPreset | undefined {
   return cameraPresetLibrary.find((preset) => preset.id === id);

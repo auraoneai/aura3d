@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { Scene } from "@aura3d/scene";
-import { CameraRig, EditorFlyControls, FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, createSceneCameraControlAdapter } from "@aura3d/input";
+import { InputSnapshot, InputSystem } from "@aura3d/input";
+import {
+  CameraRig,
+  EditorFlyControls,
+  FirstPersonControlsEngine as FirstPersonControls,
+  OrbitControlsEngine as OrbitControls,
+  createSceneCameraControlAdapter
+} from "@aura3d/controls";
 import { Quaternion, Vector3 } from "@aura3d/math";
 
 function snapshot(options: ConstructorParameters<typeof InputSnapshot>[0] = {}): InputSnapshot {

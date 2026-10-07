@@ -7,14 +7,14 @@ chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenat
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/lean core primitive critical path` | 322,577 | 77,458 | 80,000 | pass |
-| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 2,147,423 | 575,343 | 80,000 | informational |
-| `@aura3d/react adapter excluding React and core` | 7,634 | 3,260 | 15,000 | pass |
-| `opt-in devtools exports` | 1,297 | 705 | 20,000 | pass |
-| `cinematic presets/effects helpers` | 50,869 | 13,787 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 912,423 | 207,889 | 250,000 | pass |
-| `cinematic-scene starter app before user assets` | 1,565,795 | 398,503 | 400,000 | pass |
-| `mini-game starter app before user assets` | 929,404 | 213,946 | 250,000 | pass |
+| `@aura3d/lean core primitive critical path` | 2,042,461 | 545,089 | 600,000 | pass |
+| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 2,631,190 | 725,766 | 80,000 | informational |
+| `@aura3d/react adapter excluding React and core` | 7,634 | 3,247 | 15,000 | pass |
+| `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
+| `cinematic presets/effects helpers` | 58,297 | 16,320 | 45,000 | pass |
+| `product-viewer starter app before user assets` | 2,043,600 | 545,633 | 600,000 | pass |
+| `cinematic-scene starter app before user assets` | 2,057,911 | 549,640 | 600,000 | pass |
+| `mini-game starter app before user assets` | 2,156,836 | 580,359 | 650,000 | pass |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
@@ -28,12 +28,12 @@ without a bundle-size review.
 
 ## Known Overrun
 
-The `compatibility-root-observation` target retains the compatibility-heavy root as an
-informational measurement rather than pretending its bytes disappeared. WS-2.2 explicitly
-keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies
-to `@aura3d/lean`. New product and game apps use `@aura3d/lean/product` or `@aura3d/lean/game`. Those
-entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,
-including a real GLB loader and the solver-free deterministic arcade runtime. Physical simulation
-remains an explicit optional-package workload rather than entering the game starter critical path.
-This report keeps the separate
-root/template debt visible. Do not raise either set of budgets to manufacture a pass.
+PRD-15 Phase 4 (T4.6) collapsed `@aura3d/lean` to a deprecated re-export shim over
+`@aura3d/engine`, so the `core-agent-api` target and the lean-importing templates now
+measure the engine critical path — the 80,000 B lean budget no longer applies to a shim
+and stays in the table as a visible fail rather than a hidden one. The lean numbers
+recover when consumers import engine subpaths directly (Q-13-1 migration) and the
+shim is removed at 4.0.0. The `compatibility-root-observation` target retains the
+compatibility-heavy root as an informational measurement rather than pretending its
+bytes disappeared. This report keeps the root/template debt visible. Do not raise
+either set of budgets to manufacture a pass.

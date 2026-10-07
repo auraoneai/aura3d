@@ -1,6 +1,6 @@
 import { AnimationToonMaterial, type AnimationToonMaterialOptions } from "./AnimationToonMaterial.js";
 import type { AnimationRenderPresetEvidence } from "./AnimationRenderPreset.js";
-import type { AnimationMaterialStyle } from "./AnimationMaterialStyle.js";
+import type { AnimationMaterialStyle } from "../MaterialPresets.js";
 import { colorGradePixels, outlinePixels, type ColorGradeResult, type OutlineResult } from "../PostProcessPass.js";
 
 /**

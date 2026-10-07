@@ -121,6 +121,7 @@ describe("search lines expose what an automated screening loop needs", () => {
      * loop rather than requiring a second resolve.
      */
     const source = readFileSync("packages/aura3d-cli/src/pull-bridge/search.ts", "utf8");
+    // invariant: source must keep `readonly downloadUrl?: string;` — reads the accepted hero vehicle as 5 parts with four visible wheel corners
     expect(source).toContain("readonly downloadUrl?: string;");
     expect(source).toContain("readonly author?: string;");
     expect(source).toContain("asset.downloadUrl ?? asset.url");

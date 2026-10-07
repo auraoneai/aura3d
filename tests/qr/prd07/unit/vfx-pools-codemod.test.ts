@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { vfxPoolsToEffectsCodemod, vfxPoolsToEffectsTransform, findPooledPrimitiveChains } from "../../../../packages/aura3d-cli/src/commands/prd07/codemods";
 
-const FIXTURE = fileURLToPath(new URL("../fixtures/clear-fx.ts", import.meta.url));
+const FIXTURE = fileURLToPath(new URL("../corpus/clear-fx.ts", import.meta.url));
 
 describe("P6-T5 vfx-pools-to-effects codemod", () => {
   it("reports the E25 pool sites in the clear-fx fixture", () => {

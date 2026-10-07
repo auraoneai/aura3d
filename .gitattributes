@@ -22,3 +22,8 @@ tests/fixtures/**/*.glb filter=lfs diff=lfs merge=lfs -text
 # real bytes: a missing file is fetched as an HTML 404 body and surfaces as
 # "Invalid GLB magic" rather than as a clear missing-asset error.
 fixtures/asset-corpus/*.glb filter=lfs diff=lfs merge=lfs -text
+
+# Quality-gate goldens + evidence PNGs are binary and change as goldens are
+# re-admitted; LFS keeps clone size stable (PRD-12 T3.2).
+benchmarks/quality-rebuild/goldens/**/*.png filter=lfs diff=lfs merge=lfs -text
+benchmarks/quality-rebuild/refs/**/*.png filter=lfs diff=lfs merge=lfs -text

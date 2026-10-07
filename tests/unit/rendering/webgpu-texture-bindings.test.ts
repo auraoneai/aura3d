@@ -6,6 +6,7 @@ describe("WebGPU texture binding diagnostics", () => {
   it("tracks native sampled texture binding capabilities and counters", () => {
     const source = readFileSync(resolve("packages/rendering/src/WebGPUDevice.ts"), "utf8");
 
+    // invariant: source must keep `native-sampled-textures` — tracks native sampled texture binding capabilities and counters
     expect(source).toContain("native-sampled-textures");
     expect(source).toContain("hasNativeSampledTextureBinding");
     expect(source).toContain("nativeTextureBindings");

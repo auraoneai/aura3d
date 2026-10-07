@@ -1,15 +1,25 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraEffectNode, AuraInteractionNode, AuraLabelNode, AuraLightNode, AuraSceneKit, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitId } from "../index.js";
-import { buildSceneKit, createSceneKitPerformanceDiagnostics, effects, interactions, scene, timeline, ui } from "../index.js";
+import type { AuraAssetRef, AuraEffectNode, AuraInteractionNode, AuraLabelNode, AuraLightNode, AuraSceneKit, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitId } from "./types.js";
+import { buildSceneKit, createSceneKitPerformanceDiagnostics } from "../sceneKitDiagnostics.js";
+import { effects } from "./effects.composite.js";
+import { interactions } from "./interactions.js";
+import { scene } from "./scene.js";
+import { timeline } from "./timeline.js";
+import { ui } from "./ui.js";
 import { camera } from "./camera.js";
 import { lights } from "./lights.js";
 import { prd02EnvironmentBuilders } from "./environments.js";
 import { cityBlock } from "./prefabs/cityBlock.js";
+import { humanoidWalk } from "../humanoid-walk-runtime.js";
+import { particleFountain } from "../particle-fountain-runtime.js";
+import { productViewer } from "../product-viewer-runtime.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
-import type { AuraEnvironmentNode, AuraSceneNode } from "../index.js";
+import type { AuraEnvironmentNode, AuraSceneNode } from "./types.js";
 
-export const sceneKits = {
+
+export const sceneKits = lazyNamespace(() => ({
   physicsPlayground: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("physicsPlayground", options),
   particleFountain: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("particleFountain", options),
   solarSystem: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("solarSystem", options),
@@ -20,7 +30,7 @@ export const sceneKits = {
   cityBlock: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("cityBlock", options),
   humanoidWalk: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("humanoidWalk", options),
   productViewer: (asset: AuraAssetRef<"model">, options: Omit<AuraSceneKitCustomizeOptions, "asset"> = {}): AuraSceneKit => makeSceneKit("productViewer", { ...options, asset })
-} as const;
+} as const));
 
 /** PRD-02 (R7): under `A3D_QR_LIGHTING`, kits switch from ambient + unshadowed
  *  directional to `environments.preset("studio")` + `lights.directional({ shadow: true })`.

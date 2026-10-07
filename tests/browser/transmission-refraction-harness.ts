@@ -1,11 +1,12 @@
 import {
   Geometry,
-  ProductionWebGL2Renderer,
+  Renderer,
   TexturedPBRMaterial,
   UnlitMaterial,
   type RenderItem,
   type RuntimeParityTransmissionBackdropCaptureProof
 } from "@aura3d/rendering";
+import { rendererProofCapture } from "/packages/rendering/src/production-runtime/index.js";
 
 interface TransmissionRefractionEvidence {
   readonly status: "ready" | "error";
@@ -93,7 +94,7 @@ async function run(): Promise<void> {
 }
 
 async function renderTexturedAnisotropy(canvas: HTMLCanvasElement, rotation: number): Promise<void> {
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -111,7 +112,7 @@ async function renderTexturedAnisotropy(canvas: HTMLCanvasElement, rotation: num
     environmentIntensity: 0.4,
     materialEnvironmentSpecularScale: 1
   });
-  renderer.captureProof({
+  rendererProofCapture(renderer, {
     source: {
       renderItems: [{
         geometry: Geometry.uvSphere(0.92, 64, 32, { textured: true }),
@@ -148,7 +149,7 @@ async function renderTransmission(
     readonly attenuationColor?: readonly [number, number, number];
   }
 ): Promise<{ readonly proof: RuntimeParityTransmissionBackdropCaptureProof }> {
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -157,7 +158,7 @@ async function renderTransmission(
     antialias: true
   });
   const source = createSource(options);
-  const result = renderer.captureProof({
+  const result = rendererProofCapture(renderer, {
     source,
     metadata: {
       assetId: `synthetic-transmission-${options.refractionScale}-${options.ior ?? 1.72}-${options.attenuationDistance ?? 5}`,

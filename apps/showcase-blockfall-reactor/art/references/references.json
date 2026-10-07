@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-blockfall-reactor",
+  "entries": [
+    {
+      "file": "references/arcade-cabinet.json",
+      "source": "shipped comparable: arcade cabinet presentation (Tetris Effect: Connected stage framing / Arcade Paradise cabinet close-ups)",
+      "licence": "reference-only",
+      "why": "The cabinet-as-hero framing with marquee, bezel and floor reflections the room rebuild targets"
+    },
+    {
+      "file": "references/jewel-tiles.json",
+      "source": "shipped comparable: emissive jewel-block language (Tetris Effect particle tiles / Columns remaster glow)",
+      "licence": "reference-only",
+      "why": "Bevelled emissive tiles that catch HDRI reflections without clipping to white under bloom"
+    },
+    {
+      "file": "references/clear-detonation.json",
+      "source": "shipped comparable: line-clear detonation staging (Tetris Effect Zone clears / Lumines block sweeps)",
+      "licence": "reference-only",
+      "why": "Per-cell lock flash, hard-drop trail and GPU clear bursts replacing the single orange ring"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import {
   type FrameEncoderFrame
 } from "./FrameEncoder.js";
 import { normalizePromptAnimationTime } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export interface MediaRecorderFrameEncoderCapability {
   readonly kind: "media-recorder-frame-encoder-capability";

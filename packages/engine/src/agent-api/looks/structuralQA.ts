@@ -7,8 +7,16 @@
 // `@deprecated` JSDoc on the namespace properties is requested (Q-04-1,
 // Q-15-2) since those properties live in other lanes' files.
 
-import type { AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraChartVisualQAResult, AuraCityStateChangeEvidence, AuraCityVisualQAResult, AuraEffectNode, AuraGroupNode, AuraLabelNode, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraModelNode, AuraNeonVisualQAResult, AuraPrimitiveNode, AuraProductDiagnostics, AuraProductVisualQAResult, AuraSceneNode, AuraSolarVisualQAResult, AuraVec3 } from "../index.js";
-import { animation, builtInCharacterAssets, character, collectCityInstancingPlan, createAssetProvenance, distance3, findGroupNode, groups, labels, minimumMaterialFeatureDistance, solarMaterialPresetsInNodes } from "../index.js";
+import type { AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraChartVisualQAResult, AuraCityStateChangeEvidence, AuraCityVisualQAResult, AuraEffectNode, AuraGroupNode, AuraLabelNode, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraModelNode, AuraNeonVisualQAResult, AuraPrimitiveNode, AuraProductDiagnostics, AuraProductVisualQAResult, AuraSceneNode, AuraSolarVisualQAResult, AuraVec3 } from "../nodes/types.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { animation } from "../nodes/animation.js";
+import { character, distance3 } from "../nodes/character.js";
+import { collectCityInstancingPlan } from "../nodes/city.js";
+import { findGroupNode, groups } from "../nodes/groups.js";
+import { labels } from "../nodes/labels.js";
+import { minimumMaterialFeatureDistance } from "../nodes/materialTools.js";
+import { builtInCharacterAssets } from "../nodes/model.js";
+import { solarMaterialPresetsInNodes } from "../nodes/solar.js";
 import { instances } from "../nodes/instances.js";
 import { material } from "../nodes/material.js";
 

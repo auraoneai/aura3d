@@ -28,6 +28,7 @@ describe("Skyline shape-plus-color language", () => {
   it("uses silhouette as well as color for every role", () => {
     const signatures = Object.values(SKYLINE_VISUAL_LANGUAGE).map((spec) => skylineVisualRoleSignature(spec.role));
     expect(new Set(signatures).size).toBe(signatures.length);
+    // invariant: source must keep `faceted-diamond` — defines a complete and distinct signature for every gameplay role
     expect(SKYLINE_VISUAL_LANGUAGE.collectible.shape).toContain("faceted-diamond");
     expect(SKYLINE_VISUAL_LANGUAGE.hazard.shape).toContain("crossed-warning-mark");
     expect(SKYLINE_VISUAL_LANGUAGE.relay.shape).toContain("ring-on-post");

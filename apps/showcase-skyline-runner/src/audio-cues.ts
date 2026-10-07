@@ -1,25 +1,3 @@
-/**
- * Audio cue wishlist — historical intent retained for compatibility.
- *
- * Shipped SFX now live in `skyline-audio-manifest.ts` (cue -> typed CLI-registered
- * asset) and playback in `skyline-audio.ts` (createGameAudio). This constant is kept
- * because evidence consumers already read `gameplay.audioCueWishlist`.
- */
-export const SKYLINE_AUDIO_CUE_WISHLIST = [
-  { id: "jump", trigger: "hero leaves ground", mood: "light spring pluck" },
-  { id: "land", trigger: "hero lands on certified surface", mood: "soft thud with leaf rustle" },
-  { id: "dash", trigger: "shift dash burst", mood: "whoosh with wind slice" },
-  { id: "coin", trigger: "sky-shard collect", mood: "bright chime stack" },
-  { id: "ember-pickup", trigger: "ember charge collect", mood: "warm crackle swell" },
-  { id: "ember-fire", trigger: "ember volley launch", mood: "short flare pop" },
-  { id: "ember-deny", trigger: "fire pressed with empty stock", mood: "muted fizzle" },
-  { id: "ember-impact", trigger: "volley hits sentry", mood: "ember burst sizzle" },
-  { id: "sentry-telegraph", trigger: "sentry 0.5s intercept warning", mood: "servo whine rise" },
-  { id: "sentry-defeat", trigger: "sentry defeated", mood: "metallic clatter + score ping" },
-  { id: "stomp", trigger: "hero stomps sentry", mood: "heavy stomp crunch" },
-  { id: "checkpoint", trigger: "relay checkpoint activated", mood: "relay chime + act sting" },
-  { id: "death", trigger: "fall or hazard respawn", mood: "quick sting, no long dirge" },
-  { id: "finish", trigger: "summit beacon reached", mood: "aurora swell + victory motif" },
-  { id: "pause", trigger: "P pause toggle", mood: "soft UI latch" },
-  { id: "reset", trigger: "R full reset", mood: "rewind whoosh" }
-] as const;
+// T1.10 path shim — module moved in PRD-14 §10; re-exported at the old path until
+// tests/unit/apps (lane 15) re-points its imports (qr-request tracked).
+export * from "./legacy/audio-cues";

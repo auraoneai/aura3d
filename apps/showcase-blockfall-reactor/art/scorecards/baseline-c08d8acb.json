@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-blockfall-reactor",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-blockfall-reactor",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 4.0,
+        "modeling_assets": 3.0,
+        "texture_quality": 5.0,
+        "material_quality": 5.0,
+        "pbr_credibility": 4.0,
+        "lighting": 4.0,
+        "shadows": 1.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 3.0,
+        "tone_mapping": 6.0,
+        "color_management": 6.0,
+        "anti_aliasing": 6.0,
+        "postprocessing": 5.0,
+        "vfx": 2.0,
+        "particles": 2.0,
+        "animation_quality": 2.0,
+        "character_presentation": 3.0,
+        "camera": 2.0,
+        "composition": 5.0,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 2.0,
+        "gameplay_readability": 6.0,
+        "ui_hud": 4.0,
+        "typography": 5.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 4.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Rich-looking arcade backdrop, but it appears to be flat plates with no parallax or integration; bottom third is a void."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Visible 3D geometry is rounded-rect blocks, line tubes, and a box pedestal; everything else reads as imagery."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Backdrop plates are detailed; the blocks are untextured, and the grid backplane is flat color."
+        },
+        {
+          "category": "material_quality",
+          "seen": "The jelly/candy block shader with specular and subsurface-ish glow is the strongest element; nothing else has material definition."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Blocks sell \"glossy plastic\" but don't pick up neighbor emissives; the frame and pedestal read as unlit flat."
+        },
+        {
+          "category": "lighting",
+          "seen": "Lighting is neon-flavored, but light doesn't visibly fall onto the well, floor or blocks from the tubes."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible cast or contact shadows anywhere; blocks float on the grid plane."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "No AO between blocks or at well edges; the ambient is flat navy."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "Block highlights suggest an env map, but there is no floor or frame reflection where neon begs for it."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Saturated without clipping mush; highlights roll off acceptably and nothing is washed out."
+        },
+        {
+          "category": "color_management",
+          "seen": "Coherent cyan/magenta/orange palette, though the block rainbow fights the cyan grid."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges look clean at capture scale; thin 1px grid and tube lines are likely to shimmer in motion."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Moderate bloom on tubes, tasteful rather than hazy; no DoF, chromatic or grade work selling depth."
+        },
+        {
+          "category": "vfx",
+          "seen": "One orange ring in one frame; no lock, drop or clear effects visible elsewhere."
+        },
+        {
+          "category": "particles",
+          "seen": "A handful of embers around the ring; otherwise none."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "The mascot pose and environment are identical across all three frames, with no visible secondary motion."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The mascot art is appealing, but it's an unlit sticker on a hard-edged rectangle, disconnected from the scene."
+        },
+        {
+          "category": "camera",
+          "seen": "Locked, dead-on, flat framing that throws away all depth; identical across states."
+        },
+        {
+          "category": "composition",
+          "seen": "Symmetric and centered with a clear focal point, but large dead zones low and the marquee clipped by the HUD."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No perspective cues, fog layering or parallax; the backdrop reads as a wall 1m behind the grid."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No haze, volumetric light or dust; the only atmosphere is the bloom halo."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Block colors are distinct, but the ghost piece is low-contrast dark gray, heavy gridlines compete with pieces, and the center hotspot sits behind play."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean dark cards, but tiny text at 1080p, the debug-looking button bar on desktop, and the mobile Next panel occluding the board."
+        },
+        {
+          "category": "typography",
+          "seen": "Legible sans with consistent weights, but undersized labels and generic system-UI feel with no arcade identity."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No visible feedback between frames: no shake, flash, squash or score pop."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "The board fills the width, but the HUD overlaps play, the world is cut away, and the button bar is oversized and generic."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Nice block shader and attractive backdrop art can't hide a static, flat, unshadowed 2D presentation."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

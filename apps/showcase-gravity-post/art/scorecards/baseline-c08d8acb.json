@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-gravity-post",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-gravity-post",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.5,
+        "modeling_assets": 3.0,
+        "texture_quality": 2.5,
+        "material_quality": 2.0,
+        "pbr_credibility": 1.5,
+        "lighting": 2.0,
+        "shadows": 0.5,
+        "ambient_lighting": 2.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 3.0,
+        "color_management": 4.0,
+        "anti_aliasing": 4.0,
+        "postprocessing": 1.0,
+        "vfx": 2.0,
+        "particles": 2.0,
+        "animation_quality": 2.0,
+        "character_presentation": 2.5,
+        "camera": 4.0,
+        "composition": 4.0,
+        "scale_depth_perception": 2.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 5.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 2.5,
+        "mobile_presentation": 2.5,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Flat solid-color void plus translucent rings; no skybox, nebula or star depth."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Voxel truck, primitive spheres, noisy spire stations; the three asset languages clash."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "A photo cardboard box and a photo Earth sit beside flat-shaded voxels; mixed sources and fidelity."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Everything is unlit, flat or translucent; black spheres have no response at all."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No visible roughness/metal variation, specular or Fresnel anywhere."
+        },
+        {
+          "category": "lighting",
+          "seen": "The sun emits no light onto planets; there is no terminator or day/night side."
+        },
+        {
+          "category": "shadows",
+          "seen": "None visible. Even planet self-shadowing from the central star is absent."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Uniform flat fill; the black planets prove there is no ambient or hemisphere term on them."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No environment reflections on the ship or planets."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "No blown highlights, but also no HDR; the sun is a flat LDR disc."
+        },
+        {
+          "category": "color_management",
+          "seen": "Coherent teal/cyan palette, but low contrast and the backdrop and rings blend into mud-teal."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges look acceptable at JPEG quality; the sparkly stations suggest shimmer in motion."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No bloom, vignette, grading or DOF."
+        },
+        {
+          "category": "vfx",
+          "seen": "A dotted trajectory and an orange thrust line; nothing for the sun, warp or delivery."
+        },
+        {
+          "category": "particles",
+          "seen": "Static white dots; no engine trail or ambient dust."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "A rigid voxel prop sliding; the detached box suggests broken parenting."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The hero ship is the largest object but reads as a toy truck, out of scale, and it occludes the gameplay."
+        },
+        {
+          "category": "camera",
+          "seen": "A fixed oblique overview is functional but has no framing beats, follow or zoom on delivery."
+        },
+        {
+          "category": "composition",
+          "seen": "The system is centered, but the rings overlap into visual soup and the right cluster is crowded."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "The ship is bigger than planets, there are no depth cues, and the stars are in the same plane as the orbits."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No corona, planet atmospheres or haze."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "The trajectory and targets are mostly legible, but labels overlap and the ship blocks targets."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean dark cards and clear stats; the most polished element."
+        },
+        {
+          "category": "typography",
+          "seen": "A sensible sans with good hierarchy; the in-world labels are too small and grey on desktop."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "Delivery produces zero in-world feedback; the box detaches."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Cropped canvas, label collisions, half-screen desktop HUD, keyboard hints on touch."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as an early prototype or debug view, not a shipped showcase."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

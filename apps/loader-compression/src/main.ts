@@ -13,7 +13,7 @@ import {
   type GLTFMeshoptDecoderModule,
   type GLTFRenderResources
 } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -113,12 +113,11 @@ async function run(): Promise<void> {
     }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
     const dracoResources = await createGLTFRenderResources(dracoAsset);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.006, 0.008, 0.012, 1]
+            clearColor: [0.006, 0.008, 0.012, 1]
     });
     const extensionSupport = evaluateGLTFExtensionSupport(asset.loaderDiagnostics.extensionsUsed, asset.loaderDiagnostics.extensionsRequired);
     runtime = createRuntime("ready", "Ready", startedAt, {
@@ -153,7 +152,7 @@ async function run(): Promise<void> {
         }
         const activeResources = Math.floor(now / 900) % 2 === 0 ? resources : dracoResources;
         const frame = createRendererInput(activeResources, now / 1000);
-        const result = renderer.renderFrame(frame);
+        const result = a3dRenderFrame(renderer, frame);
         const decoderSnapshot = decoder.snapshot();
         const dracoSnapshot = dracoDecoder.snapshot();
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
@@ -192,7 +191,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<typeof a3dRenderFrame>[1] {
   const viewport = { width: WIDTH, height: HEIGHT };
   const input = resources.toRendererInput(viewport, {
     qualityPreset: "studio-preview",
@@ -489,7 +488,7 @@ function metric(label: string, value: string | number): string {
 }
 
 function drawFallback(canvas: HTMLCanvasElement): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.006, 0.008, 0.012, 1);

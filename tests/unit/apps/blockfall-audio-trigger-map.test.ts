@@ -28,6 +28,7 @@ describe("Blockfall Reactor audio manifest is CLI-registered and CC0-synthesized
       "move", "rotate", "lock", "line-clear", "quad", "level-up",
       "hold-swap", "hard-drop", "game-over"
     ]);
+    // invariant: source must keep `action.type === "move" && accepted.has("move")) void reactor` — registers exactly the nine gameplay cues plus hum and four stems
     for (const cue of expected) expect(BLOCKFALL_GAMEPLAY_CUES).toContain(cue);
     expect(Object.keys(blockfallAudioManifest)).toHaveLength(14);
     for (const loop of ["ambient-hum", "music-stem-1", "music-stem-2", "music-stem-3", "music-stem-4"]) {

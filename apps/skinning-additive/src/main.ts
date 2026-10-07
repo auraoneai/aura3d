@@ -9,7 +9,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   createAdditiveLayerController,
@@ -107,12 +107,11 @@ async function run(): Promise<void> {
 
   try {
     publish({ status: "loading", loadingStep: `creating A3D renderer for ${ASSET_URL}` });
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.007, 0.009, 0.013, 1]
+            clearColor: [0.007, 0.009, 0.013, 1]
     });
     const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
@@ -186,7 +185,7 @@ async function run(): Promise<void> {
           frustumCulling: false,
           postprocess: false
         };
-        const result = renderer.renderFrame({
+        const result = a3dRenderFrame(renderer, {
           source,
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
@@ -422,7 +421,7 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function drawFallbackFrame(canvas: HTMLCanvasElement): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.007, 0.009, 0.013, 1);

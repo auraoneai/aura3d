@@ -29,6 +29,7 @@ describe("Aura Clash typed arena stays renderable", () => {
 
   it("bakes measured material factors when the arena build strips textures", () => {
     const build = readFileSync("apps/aura-clash-showcase/scripts/build-lightweight-arena-glb.mjs", "utf8");
+    // invariant: source must keep `MEASURED_MATERIAL_FACTORS` — keeps the side-view far plane deep enough for an unframed backdrop
     expect(build).toContain("MEASURED_MATERIAL_FACTORS");
     // Stripping a texture without replacing its factors is the defect; the build must refuse to.
     expect(build).toContain("unmappedTexturedMaterials");

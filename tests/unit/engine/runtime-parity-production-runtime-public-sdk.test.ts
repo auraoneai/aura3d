@@ -2,31 +2,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { legacyPathForContextualPath } from "../../../tools/naming-taxonomy/contextualAliases";
-import {
-  AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE,
-  A3D_THREEJS_EXAMPLE_PARITY_TARGETS,
-  A3DRenderer,
-  productionAssets,
-  createAnimationController,
-  createCameraFrame,
-  createDirectionalLight,
-  createFirstPersonControls,
-  createImportedAnimationRuntime,
-  createGroundedStage,
-  createMapControls,
-  createOrbitControls,
-  createPhysicsScene,
-  createPointerLockControls,
-  createProductionRenderOptions,
-  createProductViewer,
-  createStudioLighting,
-  createTrackballControls,
-  loadGltfScene,
-  loadHdrEnvironment,
-  type A3DGltfScene
-} from "@aura3d/engine/production-runtime";
+import { AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE, A3D_THREEJS_EXAMPLE_PARITY_TARGETS, productionAssets, createAnimationController, createCameraFrame, createDirectionalLight, createFirstPersonControls, createImportedAnimationRuntime, createGroundedStage, createMapControls, createOrbitControls, createPhysicsScene, createPointerLockControls, createProductionRenderOptions, createProductViewer, createStudioLighting, createTrackballControls, loadGltfScene, loadHdrEnvironment, type A3DGltfScene } from "@aura3d/engine/production-runtime";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 import { Renderable, Scene } from "@aura3d/scene";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 
 describe("RuntimeParity production public SDK", () => {
   it("exports the developer-facing renderer product API", () => {
@@ -173,6 +152,7 @@ describe("RuntimeParity production public SDK", () => {
       "packages/controls/src/index.ts"
     ].map((file) => readFileSync(resolve(file), "utf8")).join("\n");
 
+    // invariant: source must keep `@aura3d/three-compat` — exports the developer-facing renderer product API
     expect(controlsPackage).not.toContain("@aura3d/three-compat");
     expect(controlsSources).not.toMatch(/three-compat/);
     expect(controlsSources).not.toMatch(/Vector3Compat|Object3DCompat|RaycasterCompat/);
@@ -180,15 +160,16 @@ describe("RuntimeParity production public SDK", () => {
 
   it("exposes WebGPU as a public async production SDK backend instead of a report-only claim", () => {
     const source = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
-    const rendererSource = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8");
+    // T2.6/T2.9/T2.10: the wrapper classes were deleted. `A3DRenderer` re-exports
+    // the C-29 `Renderer`; backend routing is `resolveProductionRuntimeRendererBackend`
+    // + `Renderer.create({ backend: selection.selectedBackend })`; frame/proof
+    // submission is `a3dRenderResult` over `renderer.render`/`renderAsync`.
+    const rendererSource = readFileSync(resolve("packages/rendering/src/production-runtime/backendSelection.ts"), "utf8");
 
     expect(source).toContain("resolveProductionRuntimeRendererBackend(options)");
-    expect(source).toContain("readonly backendSelection");
-    expect(source).toContain("renderFrame(input: A3DRenderOptions)");
-    expect(source).toContain("renderFrameAsync(input: A3DRenderOptions)");
-    expect(source).toContain("async renderAsync(input: A3DRenderOptions)");
-    expect(source).toContain("renderFrame(");
-    expect(source).toContain("renderImportedAssetAsync");
+    expect(source).toContain("backendSelection.selectedBackend");
+    expect(source).toContain("a3dRenderResult");
+    expect(source).toContain("export { A3DRenderer }");
     expect(rendererSource).toContain("readBrowserWebGPU()");
     expect(rendererSource).toContain('options.backend ?? (hasWebGPU ? "auto" : "webgl2")');
     expect(rendererSource).toContain("backend='auto' selected WebGPU because a WebGPU runtime object was provided.");
@@ -580,10 +561,10 @@ describe("RuntimeParity production public SDK", () => {
       },
       {
         id: "public-sdk-frame-render-api",
-        pass: engineSource.includes("renderFrame(input: A3DRenderOptions)")
-          && engineSource.includes("renderFrameAsync(input: A3DRenderOptions)")
-          && readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8").includes("renderFrame(input: ProductionRendererInput)"),
-        evidence: "@aura3d/engine/production-runtime exposes frame rendering APIs for real apps instead of forcing every render through screenshot proof/readback."
+        pass: engineSource.includes("a3dRenderResult(renderer: Renderer, input: A3DRenderOptions")
+          && readFileSync(resolve("packages/rendering/src/Renderer.ts"), "utf8").includes("render(source: RenderSource")
+          && readFileSync(resolve("packages/rendering/src/Renderer.ts"), "utf8").includes("renderAsync(source: RenderSource"),
+        evidence: "A3DRenderOptions frames route through a3dRenderResult onto the single Renderer's render/renderAsync — no proof/readback is required for frame rendering."
       },
       {
         id: "public-sdk-scene-composition-helpers",

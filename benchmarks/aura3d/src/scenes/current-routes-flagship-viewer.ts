@@ -192,7 +192,7 @@ export async function renderA3DFlagshipViewer(
       scene,
       status: "ready",
       renderer: {
-        backend: viewer.renderer.backend,
+        backend: viewer.renderer.device.kind === "webgpu" ? "webgpu" : "webgl2",
         sdkSurface: "@aura3d/engine/production-runtime",
         drawCalls: result.proof.diagnostics.drawCalls,
         triangles: Math.max(0, Math.floor(asset.metadata.indexCount / 3)),

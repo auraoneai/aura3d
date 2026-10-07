@@ -1,4 +1,4 @@
-import type { AuraAssetRef } from "./index.js";
+import type { AuraAssetRef } from "./nodes/types.js";
 import {
   createGameAssetReadinessManifest,
   createGameAssetValidationIssue,

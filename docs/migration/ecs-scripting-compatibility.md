@@ -31,4 +31,4 @@ their manifest. Dedicated-package removal is not scheduled: it requires a
 separate external adapter, consumer migration, and deletion-safety proof.
 
 Run `pnpm migrate:2.0 ./src` from this repository checkout, or apply the five
-exact mappings documented in `MIGRATION-2.0.md`.
+the 3.x→4.0 removal surface is tracked in `docs/MIGRATION-4.0.md`; 2.0 mappings live in `docs/migration/2.0.md`.

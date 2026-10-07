@@ -65,6 +65,7 @@ describe("root manifest script paths (Q-15-1 pending until merged)", () => {
   it("reports the script count against the ≤80 target", () => {
     const count = Object.keys(pkg.scripts).length;
     console.log(`root script count: ${count} (Q-15-1 target ≤ 80)`);
-    expect(count).toBeGreaterThan(0);
+    // T4.11: the batch is merged — the count must hold at ≤ 80.
+    expect(count).toBeLessThanOrEqual(80);
   });
 });

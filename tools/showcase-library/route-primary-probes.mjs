@@ -391,6 +391,19 @@ export function validateRoutePrimaryProbeEvidenceRecord(route, evidence, options
 
   if (evidence.schema !== routePrimaryProbeSchema) failures.push(`schema:${String(evidence.schema)}`);
   if (evidence.routeId !== route.id) failures.push(`route-id:${String(evidence.routeId)}`);
+
+  /*
+   * PRD-09 Phase 6: producers on migrated routes attach the C-33 beacon and a
+   * `captureContractMigrated` marker to retained evidence; legacy evidence
+   * keeps its old shape and stays valid. A record claiming the channel must
+   * carry a beacon snapshot so the claim is checkable.
+   */
+  if (evidence.captureContractMigrated === true) {
+    const beacon = evidence.gameBeacon;
+    if (!beacon || typeof beacon !== "object" || Array.isArray(beacon) || typeof beacon.state !== "string") {
+      failures.push("game-beacon-missing-on-migrated-route");
+    }
+  }
   if (evidence.routePath !== route.path) failures.push(`route-path:${String(evidence.routePath)}`);
   if (evidence.appId !== route.id) failures.push(`app-id:${String(evidence.appId)}`);
   if (evidence.sourceHash !== context.sourceHash) failures.push(`source-hash:${String(evidence.sourceHash)}`);

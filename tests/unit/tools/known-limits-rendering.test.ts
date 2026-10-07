@@ -5,6 +5,7 @@ describe("renderer known limits", () => {
   it("keeps large-scene culling, PBR environment, material, and shadow caveats explicit", () => {
     const knownLimits = readFileSync("docs/project/status/known-limits.md", "utf8");
 
+    // invariant: source must keep `Renderer scene frustum culling is implemented` — keeps large-scene culling, PBR environment, material, and shadow caveats explicit
     expect(knownLimits).toContain("Renderer scene frustum culling is implemented");
     expect(knownLimits).toContain("not a broad large-scene performance claim");
     expect(knownLimits).toContain("GGX PMREM, RGBE HDR file loading");

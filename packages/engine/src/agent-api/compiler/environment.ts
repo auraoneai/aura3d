@@ -1,11 +1,13 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraEnvironmentNode, AuraLightNode, AuraSceneSnapshot } from "../index.js";
-import { colorToLinearRgb, groups, nonNegativeFinite, resolveRendererSceneCategory } from "../index.js";
-import { createExternalParityEnvironmentLighting, linearToSrgbChannel, type EnvironmentLightingOptions } from "@aura3d/rendering";
-import { registerEnvironmentSource, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
+import type { AuraAssetRef, AuraColor, AuraEnvironmentNode, AuraLightNode, AuraSceneSnapshot } from "../nodes/types.js";
 import type { AuraEnvironmentNodeV2, AuraEnvironmentPresetName } from "../nodes/environments.js";
-import type { AuraColor } from "../index.js";
+import { registerEnvironmentSource, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
+import { colorToLinearRgb } from "../colorUtils.js";
+import { nonNegativeFinite } from "../compiler/observations.js";
+import { groups } from "../nodes/groups.js";
+import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
+import { createExternalParityEnvironmentLighting, linearToSrgbChannel, type EnvironmentLightingOptions } from "@aura3d/rendering";
 
 export function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly preset: string;

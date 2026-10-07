@@ -5,9 +5,11 @@
 // byte-identical to the carve.
 
 import type { AnimationPose } from "@aura3d/animation";
-import type { AuraAnimationSpec, AuraModelNode, ProductionRuntimeActorEntry } from "../index.js";
-import { isModelTransformAnimationClip, productionRenderErrorMessage, resolveProductionActorAnimationSeconds } from "../index.js";
+import type { AuraAnimationSpec, AuraModelNode, ProductionRuntimeActorEntry } from "../nodes/types.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
+import { resolveProductionActorAnimationSeconds } from "../compiler/actors.js";
+import { productionRenderErrorMessage } from "../compiler/observations.js";
+import { isModelTransformAnimationClip } from "../sceneMath.js";
 import type { Mat4 } from "@aura3d/scene";
 import { ANIMATION_EMPTY_POSE, consumePendingEmptyPoseRejection, qrAnimationFlags, rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
 

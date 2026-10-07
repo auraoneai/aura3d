@@ -13,13 +13,13 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { ASSET_URL, type CurrentRoutesKeyframeControls } from "./state.js";
 
 type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type AnimationRuntime = ReturnType<typeof createGLTFSceneAnimationMixer>;
-type RouteA3DRenderer = Awaited<ReturnType<typeof A3DRenderer.create>>;
+type RouteA3DRenderer = Awaited<ReturnType<typeof Renderer.create>>;
 
 const FRAME_BOUNDS: CameraFrameBounds = { min: [-0.9, -0.12, -0.9], max: [0.9, 2.15, 0.9] };
 const WIDTH = 1280;
@@ -45,12 +45,11 @@ export async function createCurrentRoutesKeyframeScene(canvas: HTMLCanvasElement
   canvas.height = HEIGHT;
   drawFallbackFrame(canvas);
 
-  const renderer = await A3DRenderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: WIDTH,
     height: HEIGHT,
-    preserveDrawingBuffer: true,
-    clearColor: [0.005, 0.008, 0.013, 1]
+        clearColor: [0.005, 0.008, 0.013, 1]
   });
 
   const pipeline = await withTimeout(loadProductionGLTFRenderPipeline({
@@ -117,7 +116,7 @@ export async function createCurrentRoutesKeyframeScene(canvas: HTMLCanvasElement
         frustumCulling: false,
         postprocess: false
       };
-      const result = renderer.renderFrame({
+      const result = a3dRenderFrame(renderer, {
         source,
         camera: {
           viewProjectionMatrix: frame.viewProjectionMatrix,
@@ -211,7 +210,7 @@ function createLights(): readonly CollectedLight[] {
 }
 
 export function drawFallbackFrame(canvas: HTMLCanvasElement): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.006, 0.009, 0.015, 1);

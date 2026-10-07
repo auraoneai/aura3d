@@ -4,8 +4,10 @@
 // time, height mode mapped to legacy exp uniforms via packLegacy, and
 // `color: "sky"` resolved from the sky's horizon radiance at the view azimuth.
 
-import type { AuraEffectNode, AuraSceneSnapshot } from "../index.js";
-import { clampNumber, colorToLinearRgb, groups } from "../index.js";
+import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import { colorToLinearRgb } from "../colorUtils.js";
+import { groups } from "../nodes/groups.js";
+import { clampNumber } from "./observations.js";
 import { resolveVolumetricFog, type CollectedLight, type ForwardEnvironmentFogOptions } from "@aura3d/rendering";
 import { packLegacy, parseFogColor, resolvePrd07FogSpec, skyHorizonRadiance, type Prd07FogSpec } from "@aura3d/rendering";
 import type { QrFlags } from "@aura3d/rendering/contracts";

@@ -1,8 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const buildScript = readFileSync("marketing/scripts/build-showcase-routes.mjs", "utf8");
-const engineSource = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
+const engineSource = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
 // `showcase-public-racing-presentation-proof` and `showcase-public-platformer-presentation-proof` were
 // deleted in 1.5.0 as superseded by Turbo Drift Circuit and Skyline Runner, so the retained public game
 // routes are the two current ones.
@@ -42,6 +46,7 @@ const requiredEngineExportedGameHelpers = [
 
 describe("marketing showcase route build", () => {
   it("bundles showcase routes against the current public agent-api source", () => {
+    // invariant: source must keep `\` — bundles showcase routes against the current public agent-api source
     expect(buildScript).toContain("\"packages\", \"engine\", \"src\", \"agent-api\", \"index.ts\"");
     expect(buildScript).toContain("assertRequiredEngineSourceHelpers");
     expect(buildScript).not.toContain("\"node_modules\", \"@aura3d\", \"engine\", \"dist\", \"engine\", \"agent-api\", \"index.js\"");

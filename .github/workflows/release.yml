@@ -20,6 +20,22 @@ permissions:
   id-token: write
 
 jobs:
+  quality-gate:
+    # PRD-12 T5.7: the pixel gate runs on the release commit before anything ships.
+    name: Quality gate
+    uses: ./.github/workflows/quality-gate.yml
+
+  round-verdict:
+    # T5.7: require the latest round's bar items all "pass". Refuses otherwise
+    # (dry-run on 3.0.1 refuses: no admissible round exists for it).
+    name: Latest round verdicts
+    needs: [quality-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check latest round
+        run: node tools/quality-gate/bin/release-round-check.mjs
   validate:
     name: Validate Release
     runs-on: ubuntu-latest
@@ -73,7 +89,7 @@ jobs:
   build-release:
     name: Build Release Artifacts
     runs-on: ubuntu-latest
-    needs: [validate]
+    needs: [validate, quality-gate, round-verdict]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

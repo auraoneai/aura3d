@@ -7,6 +7,7 @@ import {
   type FrameEncoderOutputMode
 } from "./FrameEncoder.js";
 import { normalizePromptAnimationTime } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export interface WebCodecsFrameEncoderCapability {
   readonly kind: "webcodecs-frame-encoder-capability";

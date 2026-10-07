@@ -17,13 +17,13 @@
       "typedRef": "assets.blockfallReactorArenaBackdrop",
       "role": "primaryWorld",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.showcaseBlockfallCabinet",
       "role": "primaryWorld",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     }
   ],
   "primitiveStatus": {
@@ -172,5 +172,8 @@
   "physics": {
     "backend": "rapier",
     "scope": "route-selected showcase fidelity proof"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

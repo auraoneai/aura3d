@@ -77,3 +77,22 @@ export { ControlVector3 } from "./NativeControlTypes";
 export type { ControlObject3DLike, ControlPickMetadata, Vector3Like } from "./NativeControlTypes";
 export { createDefaultControlState } from "./ControlState";
 export type { ThreeCompatControlEvent, ThreeCompatControlState } from "./ControlState";
+
+// PRD-15 T6.9: the engine control implementations moved here from
+// packages/input/src/controls. Exported by name so @aura3d/input's deprecated
+// controls shim can re-export them identically for one minor.
+export { CameraRig } from "./engine/CameraRig";
+export type { CameraRigState } from "./engine/CameraRig";
+export { clamp } from "./engine/ControlTypes";
+export type { CameraTransformLike, EulerLike, Vec3Like } from "./engine/ControlTypes";
+export { EditorFlyControls } from "./engine/EditorFlyControls";
+export type { EditorFlyControlsOptions } from "./engine/EditorFlyControls";
+export { createSceneCameraControlAdapter } from "./engine/SceneCameraAdapter";
+export type { SceneCameraControlAdapter } from "./engine/SceneCameraAdapter";
+export { ThirdPersonFollowControls } from "./engine/ThirdPersonFollowControls";
+export type { ThirdPersonFollowControlsOptions } from "./engine/ThirdPersonFollowControls";
+export { DEFAULT_ORBIT_MAX_POLAR } from "./engine/OrbitControls";
+export { OrbitControls as OrbitControlsEngine } from "./engine/OrbitControls";
+export type { OrbitCameraTransformLike } from "./engine/OrbitControls";
+export { FirstPersonControls as FirstPersonControlsEngine } from "./engine/FirstPersonControls";
+export { PointerLockControls as PointerLockControlsEngine } from "./engine/PointerLockControls";

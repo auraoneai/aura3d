@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraSceneKitBudgetDefaults, AuraSceneKitId } from "../index.js";
+import type { AuraSceneKitBudgetDefaults, AuraSceneKitId } from "../nodes/types.js";
 import { cityBlock } from "../nodes/prefabs/cityBlock.js";
 
 export const sceneKitPerformanceBudgets: Record<AuraSceneKitId, AuraSceneKitBudgetDefaults> = {
