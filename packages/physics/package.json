@@ -6,8 +6,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@aura3d/physics-rapier": "workspace:*",
-    "@aura3d/scene": "workspace:*"
+    "@aura3d/physics-rapier": "workspace:*"
   },
   "exports": {
     ".": {

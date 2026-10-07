@@ -379,9 +379,6 @@ importers:
       '@aura3d/physics-rapier':
         specifier: workspace:*
         version: link:../physics-rapier
-      '@aura3d/scene':
-        specifier: workspace:*
-        version: link:../scene
 
   packages/physics-rapier:
     dependencies:
