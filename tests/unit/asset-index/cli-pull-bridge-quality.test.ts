@@ -380,9 +380,7 @@ describe("runResolve role admission (refusal with fallback)", () => {
     expect(downloaded).toEqual(["https://example.test/hero.glb"]);
     // The refusal reason is retained, not silently discarded.
     expect(report.messages.join("\n")).toContain("catalog:shell-792");
-    // §6.6 ranking: the shell ranks below the winner and is never attempted;
-    // its refusal reason is still retained via the G1 band-miss penalty.
-    expect(report.messages.join("\n")).toMatch(/distant-prop shell|triangle-floor|structural floor|G1 band miss/);
+    expect(report.messages.join("\n")).toMatch(/distant-prop shell|triangle-floor|structural floor/);
   });
 
   it("warns (not blocks) on unproven checks for an otherwise fit hero", async () => {

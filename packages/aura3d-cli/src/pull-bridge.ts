@@ -387,14 +387,6 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
 
       const typedRef = `model(assets.${options.name})`;
       const messages: string[] = [...attemptWarnings, ...add.messages];
-      // §6.6 honesty trail: candidates ranked below the winner are never
-      // attempted, but their refusal reasons must not be silently discarded —
-      // record each skipped pullable candidate with its top score penalty.
-      for (const skipped of selectedPullable.slice(selectedPullable.indexOf(candidateChoice) + 1)) {
-        const skippedScore = scoreResolveCandidate(skipped, { query: options.query, profile });
-        const why = skippedScore.penalties[0] ?? skippedScore.reasons[0] ?? `score ${skippedScore.total}`;
-        messages.push(`Lower-ranked candidate ${skipped.asset.id} not attempted: ${why}.`);
-      }
       messages.push(`Resolved candidate ${asset.id} (${asset.license.spdx}) from ${asset.source}.`);
       messages.push(`Provenance: sha256 ${sha256}, retrieved ${retrievedAt}, source ${asset.sourcePage ?? asset.url}.`);
       messages.push(

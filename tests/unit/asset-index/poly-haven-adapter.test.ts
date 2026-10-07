@@ -39,9 +39,6 @@ const POLY_HAVEN_ASSETS = {
 function fetchJsonFrom(payload: unknown): FetchJson {
   return async (url: string) => {
     if (url === "https://api.polyhaven.com/assets?t=models") return payload;
-    // §6.6: the catalog also federates hdris + textures; return an empty map
-    // for those kinds and let /files enrichment fail (deep-link fallback).
-    if (url === "https://api.polyhaven.com/assets?t=hdris" || url === "https://api.polyhaven.com/assets?t=textures") return {};
     throw new Error(`unexpected url ${url}`);
   };
 }
@@ -117,14 +114,13 @@ describe("createPolyHavenAdapter", () => {
         if (url === "https://api.polyhaven.com/assets?t=models") {
           return POLY_HAVEN_ASSETS;
         }
-        if (url === "https://api.polyhaven.com/assets?t=hdris" || url === "https://api.polyhaven.com/assets?t=textures") return {};
         throw new Error(`unexpected url ${url}`);
       },
     };
     const adapter = createPolyHavenAdapter();
     await adapter.search(query, countingCtx);
     await adapter.search(query, countingCtx);
-    expect(calls).toBe(3); // models+hdris+textures fetched once, then cached
+    expect(calls).toBe(1);
   });
 
   it("throws when the catalog is not an object map", async () => {
