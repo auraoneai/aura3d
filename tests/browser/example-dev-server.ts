@@ -161,10 +161,15 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
             return undefined;
           }
           const file = resolve(join(root, mapped));
-          return existsSync(file) ? { path: file } : { path: args.path, external: true };
+          // Hoist layout varies across environments (e.g. which ktx-parse
+          // version lands at .pnpm/node_modules); a missing mapped file must
+          // defer to esbuild's own node resolution — emitting the specifier
+          // external would deliver a bare import the browser cannot resolve.
+          if (!existsSync(file)) return undefined;
+          return { path: file };
         }
         const canonical = resolveModuleSpecifier(args.importer, root, args.path);
-        return canonical ? { path: resolve(join(root, canonical)) } : { path: args.path, external: true };
+        return canonical ? { path: resolve(join(root, canonical)) } : undefined;
       });
       build.onLoad({ filter: /\.css$/ }, (args) => ({
         loader: "js",
