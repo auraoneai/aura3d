@@ -241,3 +241,22 @@ module-resolution errors for its files on runners that skipped that step.
 
 Meanwhile: `asset-optimize.yml` runs `npm ci` first; tool unit tests skip when
 `tools/asset-optimize/node_modules` is absent so shared lanes stay green.
+
+## Q-15-7 → lane 15 (`arch:check` fails repo-wide on drifted sibling files)
+
+`tools/arch-gates/index.ts` (fail mode) reports 38 enforced findings on the
+merged tree — layering `compiler/ → app/` + SCC-153 in
+`packages/engine/src/agent-api/**`, `single-renderer` hits in prd01
+`outputSurface.ts` + `renderer/PixelRatio.ts`, `glsl-location` in
+`terrain/PlanetMaterial.ts`, `vfx/ribbon.glsl.ts` and ~5 more, six
+`unique-ownership` export collisions (`slerpQuat`, `AudioBus`, `createGame`,
+`captureFromUrl`, `GameFxKind`, `TouchPreset`), and `deps-truth` on root
+(missing `@aura3d/game`). Zero findings touch lane-05 paths
+(`tools/asset-optimize`, `benchmarks/**/prd05`, `commands/prd05`,
+`packages/assets`). Reproduced on `qr-prd15-arch-gates` run
+37569303330 on `qr/prd05-optimize-toolchain` — identical findings exist on
+main because the gate scans the whole tree regardless of the diff.
+
+Meanwhile: lane 05 adds no GLSL strings, no package exports, and no
+`packages/*/src` value-imports across the banned boundaries; the failure is
+informational for this lane.
