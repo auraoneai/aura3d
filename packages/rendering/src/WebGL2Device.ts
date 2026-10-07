@@ -69,6 +69,8 @@ export interface WebGL2DeviceOptions {
   readonly antialias?: boolean;
   readonly alpha?: boolean;
   readonly preserveDrawingBuffer?: boolean;
+  /** §6.9 (lane 01): forwarded to getContext when set; absent = browser default. */
+  readonly powerPreference?: WebGLPowerPreference;
   readonly errorCheckMode?: WebGL2ErrorCheckMode;
 }
 
@@ -327,7 +329,8 @@ export class WebGL2Device implements RenderDevice {
     const gl = options.canvas.getContext("webgl2", {
       antialias: options.antialias ?? true,
       alpha: options.alpha ?? false,
-      preserveDrawingBuffer: options.preserveDrawingBuffer ?? false
+      preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
+      ...(options.powerPreference !== undefined ? { powerPreference: options.powerPreference } : {})
     });
     if (!gl) {
       throw new RenderDeviceError("WebGL2 is not available for the provided canvas", "WEBGL2_UNAVAILABLE");

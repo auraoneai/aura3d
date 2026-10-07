@@ -49,21 +49,36 @@ export function createPrd01OutputSurface(
   let lastErrorCount = 0;
   void ctx.flags; // Phase 2/4: the real output path switches on A3D_QR_CORE; the stub is identical either way.
 
+  let lastDegradationCount = 0;
   const emitObservedErrors = (): void => {
     if (listeners.size === 0) return;
-    let errors: readonly string[] = [];
     try {
-      errors = app.diagnostics().errors;
+      const diagnostics = app.diagnostics() as {
+        readonly errors: readonly string[];
+        readonly degradations?: readonly { readonly code: string; readonly message: string; readonly cause?: unknown }[];
+      };
+      // C-36/C-05 real: forward degradations (renderer-mount-failed et al.)
+      // with their actual codes and causes before the plain errors.
+      const degradations = diagnostics.degradations ?? [];
+      if (degradations.length > lastDegradationCount) {
+        for (const degradation of degradations.slice(lastDegradationCount)) {
+          const entry = { code: degradation.code, message: degradation.message, cause: degradation.cause };
+          emitted.push(entry);
+          for (const listener of listeners) listener(entry);
+        }
+        lastDegradationCount = degradations.length;
+      }
+      const errors = diagnostics.errors;
+      if (errors.length <= lastErrorCount) return;
+      for (const message of errors.slice(lastErrorCount)) {
+        const entry = { code: "renderer-error", message: String(message) };
+        emitted.push(entry);
+        for (const listener of listeners) listener(entry);
+      }
+      lastErrorCount = errors.length;
     } catch {
       return;
     }
-    if (errors.length <= lastErrorCount) return;
-    for (const message of errors.slice(lastErrorCount)) {
-      const entry = { code: "renderer-error", message: String(message) };
-      emitted.push(entry);
-      for (const listener of listeners) listener(entry);
-    }
-    lastErrorCount = errors.length;
   };
   const errorWatch: ReturnType<typeof setInterval> | undefined =
     typeof setInterval === "function" ? setInterval(emitObservedErrors, 400) : undefined;
@@ -101,6 +116,41 @@ export function createPrd01OutputSurface(
       return { applied: true, reason: "dom-fallback" };
     },
     async capture(options?: { readonly type?: "image-bitmap" | "png-blob" }): Promise<ImageBitmap | Blob> {
+      // §6.9/C-05 real readback: render one frame synchronously (app.step) and
+      // readPixels the canvas framebuffer in the same task — before the browser
+      // composites — so preserveDrawingBuffer is never set. GL origin is
+      // bottom-left; rows are flipped for the image APIs.
+      const canvas = findAppCanvas(app);
+      const gl = canvas?.getContext("webgl2") as WebGL2RenderingContext | null;
+      if (canvas && gl && !disposed) {
+        try {
+          app.step();
+          const width = canvas.width;
+          const height = canvas.height;
+          if (width > 0 && height > 0) {
+            const pixels = new Uint8Array(width * height * 4);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            const flipped = new Uint8ClampedArray(width * height * 4);
+            const rowBytes = width * 4;
+            for (let y = 0; y < height; y++) {
+              flipped.set(pixels.subarray((height - 1 - y) * rowBytes, (height - y) * rowBytes), y * rowBytes);
+            }
+            const bitmap = await createImageBitmap(new ImageData(flipped, width, height));
+            if (options?.type === "image-bitmap") return bitmap;
+            const offscreen = new OffscreenCanvas(width, height);
+            const ctx2d = offscreen.getContext("2d");
+            if (ctx2d) {
+              ctx2d.drawImage(bitmap, 0, 0);
+              bitmap.close();
+              return offscreen.convertToBlob({ type: "image/png" });
+            }
+            return bitmap;
+          }
+        } catch {
+          // Non-webgl2 backends or a failed step() fall through to the PNG path.
+        }
+      }
       const shot = app.screenshot();
       const blob = await dataUrlToBlob(shot.dataUrl);
       if (options?.type === "image-bitmap" && typeof createImageBitmap === "function") {
