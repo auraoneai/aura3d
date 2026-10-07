@@ -84,61 +84,61 @@
       "source": "packages/engine/src/deprecated/media-node.ts",
       "of": "packages/engine/src/agent-api/media-node.ts",
       "target": ".",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./apps": {
       "source": "packages/engine/src/deprecated/apps.ts",
       "of": "packages/apps/src/index.ts",
       "target": ".",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./contracts": {
       "source": "packages/engine/src/deprecated/contracts.ts",
       "of": "packages/engine/src/contracts/index.ts",
       "target": ".",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./rendering": {
       "source": "packages/engine/src/deprecated/rendering.ts",
       "of": "packages/rendering/src/index.ts",
       "target": "./renderer",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./rendering/production-runtime": {
       "source": "packages/engine/src/deprecated/rendering-production-runtime.ts",
       "of": "packages/rendering/src/production-runtime/index.ts",
       "target": "./renderer",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./rendering/webgpu": {
       "source": "packages/engine/src/deprecated/rendering-webgpu.ts",
       "of": "packages/rendering/src/webgpu.ts",
       "target": "./renderer",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./production-runtime": {
       "source": "packages/engine/src/deprecated/production-runtime.ts",
       "of": "packages/engine/src/production-runtime/index.ts",
       "target": "./renderer",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./advanced-runtime": {
       "source": "packages/engine/src/deprecated/advanced-runtime.ts",
       "of": "packages/engine/src/advanced-runtime/index.ts",
       "target": "./renderer",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./assets/browser": {
       "source": "packages/engine/src/deprecated/assets-browser.ts",
       "of": "packages/assets/src/browser-index.ts",
       "target": "./assets",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     },
     "./workflows/production": {
       "source": "packages/engine/src/deprecated/workflows-production.ts",
       "of": "packages/workflows/src/production-runtime/index.ts",
       "target": "./workflows",
-      "removeIn": "4.0.0"
+      "removeIn": "4.1.0"
     }
   },
   "paths": [
