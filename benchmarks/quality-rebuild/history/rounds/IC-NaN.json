@@ -1,0 +1,29 @@
+{
+  "schema": "aura3d.quality-gate.panel/1",
+  "round": "IC-NaN",
+  "roundId": "IC-NaN",
+  "date": "2026-10-07",
+  "commit": "e7e215831918797d74d023931df66079842f5ad3",
+  "captureRunId": "37565849900",
+  "qrFlags": [
+    "none",
+    "all"
+  ],
+  "env": {
+    "commitSha": "e7e215831918797d74d023931df66079842f5ad3",
+    "githubRunId": "37565849900",
+    "runnerImage": "ubuntu24/20261004.327.1",
+    "gpuRenderer": "unknown",
+    "browserVersion": "unknown",
+    "launchArgs": []
+  },
+  "thresholdsFrozenAt": "unmeasured: PRD-12 R0 (no calibration run yet)",
+  "calibration": [],
+  "canaryPassed": false,
+  "judges": [],
+  "benchmark": [],
+  "games": [],
+  "aggregates": [],
+  "itemsScored": 0,
+  "itemsFailed": []
+}
