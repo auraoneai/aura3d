@@ -44,32 +44,9 @@ export interface RunOptions {
   readonly qrFlags?: readonly string[];
 }
 
-export class NotExpressibleVariantError extends Error {
-  readonly variant: string;
-  constructor(variant: string) {
-    super(`broken-control ${variant} not expressible via the Aura public API`);
-    this.name = "NotExpressibleVariantError";
-    this.variant = variant;
-  }
-}
-
-const AURA_EXPRESSIBLE_VARIANTS: ReadonlySet<string> = new Set(["no-shadows", "no-ibl", "dpr-half", "flat-sky"]);
-
-function applyVariantSpec(spec: SceneSpec, variant: string | undefined): SceneSpec {
-  if (!variant || variant === "default" || variant === "aura3d-tuned") return spec;
-  if (!AURA_EXPRESSIBLE_VARIANTS.has(variant)) throw new NotExpressibleVariantError(variant);
-  if (variant === "no-shadows") {
-    return { ...spec, lights: spec.lights.map((light) => ("castShadow" in light ? { ...light, castShadow: false } : light)) };
-  }
-  if (variant === "no-ibl") {
-    return { ...spec, environment: spec.environment ? { ...spec.environment, intensity: 0 } : spec.environment };
-  }
-  if (variant === "flat-sky") {
-    if (spec.background.kind !== "hdri") return spec;
-    return { ...spec, background: { kind: "color", color: spec.background.fallbackColor } };
-  }
-  return spec;
-}
+// Variant machinery lives in aura3d/lib/variants.ts (T2.4, §8.4).
+import { applyVariantSpec, NotExpressibleVariantError } from "./lib/variants";
+export { NotExpressibleVariantError } from "./lib/variants";
 
 declare const __AURA3D_VERSION__: string;
 
@@ -106,7 +83,9 @@ const auraModelAssets = defineAuraAssets({
   fox: modelDefinition("fox"),
   rockA: modelDefinition("rockA"),
   rockB: modelDefinition("rockB"),
-  crate: modelDefinition("crate")
+  crate: modelDefinition("crate"),
+  carConcept: modelDefinition("carConcept"),
+  littlestTokyo: modelDefinition("littlestTokyo")
 });
 
 const auraHdriAssets = defineAuraAssets({
