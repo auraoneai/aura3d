@@ -27,6 +27,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync
 } from "node:fs";
@@ -127,6 +128,13 @@ export function prepareConsumerCopy(templateDir: string, dest: string, tarball: 
     for (const [name, spec] of Object.entries(rewrites)) {
       if (section?.[name]) section[name] = spec;
     }
+  }
+  // Templates with playwright tests import node:fs/node:path but several
+  // don't declare @types/node (Q-13-7). The consumer is the gate's own
+  // harness — inject it so the check measures the packed surface, not a
+  // template manifest gap a real consumer would fill from its own deps.
+  if (!pkg.devDependencies?.["@types/node"]) {
+    pkg.devDependencies = { ...pkg.devDependencies, "@types/node": "^22.15.30" };
   }
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
   // Consumers stand alone — pnpm refuses install-time build scripts without
@@ -251,7 +259,12 @@ function main(): void {
 
   const results: TemplateCheckResult[] = [];
   for (const templateDir of templates) {
-    const dest = join(tmp, `consumer-${basename(templateDir)}`);
+    // Unique dest per template dir: templates/<name> and
+    // packages/create-aura3d/templates/<name> can share a basename — the
+    // second copy would inherit the first's generated pnpm-lock.yaml and
+    // fail frozen-lockfile on dep drift (observed on cinematic-scene).
+    const dest = join(tmp, `consumer-${templateDir.replaceAll("/", "_")}`);
+    rmSync(dest, { recursive: true, force: true });
     const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild, extraDeps });
     results.push(result);
     console.log(`${result.detail ? "FAIL" : "PASS"} ${result.template}${result.detail ? ` — ${result.detail}` : ""}`);
