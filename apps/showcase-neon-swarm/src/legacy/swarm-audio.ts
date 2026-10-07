@@ -7,7 +7,7 @@
  * autoplay unlock) and loops on its own bus.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type SwarmCue =
   | "pulse-fire"

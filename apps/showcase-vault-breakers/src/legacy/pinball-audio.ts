@@ -8,7 +8,7 @@
  * AudioContext. Buses split gameplay sfx and UI/event chimes.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "../../../../src/aura-assets";
 
 export type VaultAudioCue =
   | "flipper-snap"

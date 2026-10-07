@@ -18,31 +18,31 @@
     {
       "typedRef": "assets.vaultBreakersTable",
       "hash": "sha256-36cf709932ec1954984490af804587b5bfc5ecb51b4a26281581eb735517275f",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.vaultBreakersMechanisms",
       "hash": "sha256-274e6bf9d38b2a7a6b78c977d8e0dc726d9139ae479c6af4a5c29dd5c237dbd6",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.vaultBreakersBall",
       "hash": "sha256-49b8a09b2f9333b150eb24a9416073618c49bb11c7a48bc79174789791a17a31",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.vaultBreakersFlipper",
       "hash": "sha256-32e3cb7e0814fa98035ab789497c4254dcb057cf1d07184e55f5a3bdfff593e4",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.vaultBreakersVaultDoor",
       "hash": "sha256-af04f8d4b05a9bf42d11b9248d406d74040022f7fae88b228cf3e5f277d60467",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     }
   ],
@@ -214,31 +214,31 @@
           {
             "id": "vaultBreakersBall",
             "hash": "sha256-49b8a09b2f9333b150eb24a9416073618c49bb11c7a48bc79174789791a17a31",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "vaultBreakersFlipper",
             "hash": "sha256-32e3cb7e0814fa98035ab789497c4254dcb057cf1d07184e55f5a3bdfff593e4",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "vaultBreakersMechanisms",
             "hash": "sha256-274e6bf9d38b2a7a6b78c977d8e0dc726d9139ae479c6af4a5c29dd5c237dbd6",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "vaultBreakersTable",
             "hash": "sha256-36cf709932ec1954984490af804587b5bfc5ecb51b4a26281581eb735517275f",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "vaultBreakersVaultDoor",
             "hash": "sha256-af04f8d4b05a9bf42d11b9248d406d74040022f7fae88b228cf3e5f277d60467",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           }
         ],
@@ -403,5 +403,8 @@
       "vault-door swing",
       "lane assist"
     ]
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

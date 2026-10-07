@@ -114,26 +114,36 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
 
 export function updatePulseHud(elements: PulseHudElements | null, snapshot: PulseHudSnapshot): void {
   if (!elements) return;
-  elements.shields.textContent = "";
-  for (let index = 0; index < 3; index += 1) {
-    const pip = document.createElement("span");
-    pip.className = index < snapshot.shields ? "pulse-pip pulse-pip-live" : "pulse-pip pulse-pip-lost";
-    elements.shields.appendChild(pip);
+  // T1.12: rebuild shield pips only when the count changes; guard every
+  // DOM write on its last value so a constant frame mutates nothing.
+  if (elements.shields.childElementCount !== 3 || elements.shields.dataset.live !== String(snapshot.shields)) {
+    elements.shields.dataset.live = String(snapshot.shields);
+    elements.shields.textContent = "";
+    for (let index = 0; index < 3; index += 1) {
+      const pip = document.createElement("span");
+      pip.className = index < snapshot.shields ? "pulse-pip pulse-pip-live" : "pulse-pip pulse-pip-lost";
+      elements.shields.appendChild(pip);
+    }
   }
-  elements.combatState.textContent = snapshot.combatState;
-  elements.styleLabel.textContent = `x${snapshot.multiplier.toFixed(1)}`;
-  elements.styleBar.style.width = `${Math.round((snapshot.styleHeat / 3) * 100)}%`;
-  elements.distance.textContent = `${Math.round(snapshot.distanceMeters)} m`;
-  elements.score.textContent = Math.round(snapshot.score).toLocaleString("en-US");
-  elements.section.textContent = snapshot.sectionId;
-  elements.stateBanner.textContent = snapshot.message;
-  elements.stateBanner.dataset.state = snapshot.state;
-  elements.stateBanner.hidden = snapshot.state === "running";
+  const setText = (el: HTMLElement, value: string): void => {
+    if (el.textContent !== value) el.textContent = value;
+  };
+  setText(elements.combatState, snapshot.combatState);
+  setText(elements.styleLabel, `x${snapshot.multiplier.toFixed(1)}`);
+  const barWidth = `${Math.round((snapshot.styleHeat / 3) * 100)}%`;
+  if (elements.styleBar.style.width !== barWidth) elements.styleBar.style.width = barWidth;
+  setText(elements.distance, `${Math.round(snapshot.distanceMeters)} m`);
+  setText(elements.score, Math.round(snapshot.score).toLocaleString("en-US"));
+  setText(elements.section, snapshot.sectionId);
+  setText(elements.stateBanner, snapshot.message);
+  if (elements.stateBanner.dataset.state !== snapshot.state) elements.stateBanner.dataset.state = snapshot.state;
+  const bannerHidden = snapshot.state === "running";
+  if (elements.stateBanner.hidden !== bannerHidden) elements.stateBanner.hidden = bannerHidden;
   if (snapshot.debug) {
     elements.syncBadge.hidden = false;
-    elements.syncBadge.textContent =
-      `sync:${snapshot.syncMode} drift:${snapshot.driftMs >= 0 ? "+" : ""}${snapshot.driftMs.toFixed(0)}ms`;
-    elements.syncBadge.dataset.mode = snapshot.syncMode;
+    setText(elements.syncBadge,
+      `sync:${snapshot.syncMode} drift:${snapshot.driftMs >= 0 ? "+" : ""}${snapshot.driftMs.toFixed(0)}ms`);
+    if (elements.syncBadge.dataset.mode !== snapshot.syncMode) elements.syncBadge.dataset.mode = snapshot.syncMode;
   } else {
     elements.syncBadge.hidden = true;
   }

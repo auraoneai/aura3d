@@ -155,21 +155,27 @@ export function setupHud(
   renderDoors();
   burstButtonEl.addEventListener("click", onBurst);
 
+  // T1.12: textContent setter hits the DOM even on identical strings —
+  // write only when the rendered value differs.
+  function setTextIf(el: HTMLElement, value: string): void {
+    if (el.textContent !== value) el.textContent = value;
+  }
+
   return {
     update(snapshot) {
-      waveEl.textContent = snapshot.wave + "/5";
-      scoreEl.textContent = String(snapshot.score);
-      bestEl.textContent = String(snapshot.bestScore);
-      aliveEl.textContent = String(snapshot.alive);
-      shieldEl.textContent = String(snapshot.shieldCharges);
-      dashEl.textContent = snapshot.dashReadyFraction >= 1 ? "READY" : Math.round(snapshot.dashReadyFraction * 100) + "%";
-      burstReadoutEl.textContent = Math.round(snapshot.burstCharge) + "%";
+      setTextIf(waveEl, snapshot.wave + "/5");
+      setTextIf(scoreEl, String(snapshot.score));
+      setTextIf(bestEl, String(snapshot.bestScore));
+      setTextIf(aliveEl, String(snapshot.alive));
+      setTextIf(shieldEl, String(snapshot.shieldCharges));
+      setTextIf(dashEl, snapshot.dashReadyFraction >= 1 ? "READY" : Math.round(snapshot.dashReadyFraction * 100) + "%");
+      setTextIf(burstReadoutEl, Math.round(snapshot.burstCharge) + "%");
       burstButtonEl.toggleAttribute("data-ready", snapshot.burstCharge >= 100);
       comboBar.style.width = (Math.min(1, snapshot.comboFraction) * 100).toFixed(0) + "%";
       renderHpPips(snapshot.hp, snapshot.maxHp);
-      phaseLabelEl.textContent = snapshot.state === "intermission" ? "Intermission" : "Run status";
-      timerLabelEl.textContent = snapshot.state === "intermission" ? "Next wave in" : "Arena";
-      timerEl.textContent = snapshot.paused
+      setTextIf(phaseLabelEl, snapshot.state === "intermission" ? "Intermission" : "Run status");
+      setTextIf(timerLabelEl, snapshot.state === "intermission" ? "Next wave in" : "Arena");
+      setTextIf(timerEl, snapshot.paused
         ? "PAUSED"
         : snapshot.state === "complete"
           ? "COMPLETE"
@@ -177,7 +183,7 @@ export function setupHud(
             ? "RUN OVER"
             : snapshot.intermissionRemaining > 0
           ? Math.ceil(snapshot.intermissionRemaining) + "s"
-          : "LIVE";
+          : "LIVE");
       if (vignetteFrames > 0) {
         vignetteFrames -= 1;
         if (vignetteFrames <= 0) vignetteEl.setAttribute("data-active", "false");

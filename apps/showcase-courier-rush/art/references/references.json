@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-courier-rush",
+  "entries": [
+    {
+      "file": "references/dawn-rain-city.json",
+      "source": "shipped comparable: wet-dawn open-world city boards",
+      "licence": "reference-only",
+      "why": "Wet asphalt road reads, cool dawn palette and rain sheen the K2 city needs to hit"
+    },
+    {
+      "file": "references/k2-city-kit.json",
+      "source": "K2 modular city kit: roads, intersections, buildings, props (§14.3)",
+      "licence": "reference-only",
+      "why": "Real streets must come from the modular kit — defines block scale and draw budget"
+    },
+    {
+      "file": "references/delivery-van.json",
+      "source": "commercial van body under warm amber interior (shipped comparables)",
+      "licence": "reference-only",
+      "why": "Van silhouette, 4-wheel layout and interior-glow treatment the hero vehicle targets"
+    }
+  ]
+}

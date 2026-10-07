@@ -17,31 +17,31 @@
       "typedRef": "assets.siegeGolfCourseWorld",
       "role": "primaryWorld",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.siegeGolfBall",
       "role": "primaryCharacter",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.siegePlankSet",
       "role": "world",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.siegeWoodenCrate",
       "role": "world",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.siegeWoodenBarrel",
       "role": "world",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     }
   ],
   "audioAssets": [
@@ -197,5 +197,8 @@
     "unitPins": "tests/unit/apps/siege-golf-replay.test.ts",
     "publishedAs": "window.__SIEGE_GOLF_EVIDENCE__.sixtySecondReplayProof",
     "provesMountedKitPlayback": false
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

@@ -132,24 +132,31 @@ export function updateCourierHud(hud: CourierHudRefs, frame: CourierHudFrame): v
   }
   const timerText = (Math.max(0, frame.timerSeconds)).toFixed(1);
   if (hud.timerValue.textContent !== timerText) hud.timerValue.textContent = timerText;
+  // T1.12: attribute/style setters hit the DOM even when the string is
+  // unchanged — guard every write on the last value.
   const low = frame.timerFraction <= 0.25;
-  hud.timerValue.dataset.low = String(low);
-  hud.timerFill.dataset.low = String(low);
-  hud.timerFill.style.width = (Math.max(0, Math.min(1, frame.timerFraction)) * 100).toFixed(1) + "%";
+  const lowAttr = String(low);
+  if (hud.timerValue.dataset.low !== lowAttr) hud.timerValue.dataset.low = lowAttr;
+  if (hud.timerFill.dataset.low !== lowAttr) hud.timerFill.dataset.low = lowAttr;
+  const fillWidth = (Math.max(0, Math.min(1, frame.timerFraction)) * 100).toFixed(1) + "%";
+  if (hud.timerFill.style.width !== fillWidth) hud.timerFill.style.width = fillWidth;
   hud.strikePips.forEach((pip, index) => {
-    pip.dataset.used = String(index < frame.strikes);
+    const used = String(index < frame.strikes);
+    if (pip.dataset.used !== used) pip.dataset.used = used;
   });
   const comboText = "x" + frame.combo.toFixed(1);
   if (hud.comboChip.textContent !== comboText) hud.comboChip.textContent = comboText;
-  hud.comboChip.dataset.hot = String(frame.combo >= 1.6);
+  const hotAttr = String(frame.combo >= 1.6);
+  if (hud.comboChip.dataset.hot !== hotAttr) hud.comboChip.dataset.hot = hotAttr;
   const scoreText = String(Math.round(frame.score));
   if (hud.scoreValue.textContent !== scoreText) hud.scoreValue.textContent = scoreText;
   if (frame.arrowBearing === null) {
-    hud.navArrow.style.visibility = "hidden";
+    if (hud.navArrow.style.visibility !== "hidden") hud.navArrow.style.visibility = "hidden";
   } else {
-    hud.navArrow.style.visibility = "visible";
+    if (hud.navArrow.style.visibility !== "visible") hud.navArrow.style.visibility = "visible";
     // Screen-space rotation: positive bearing turns the arrow clockwise.
-    hud.navArrow.style.transform = "rotate(" + ((frame.arrowBearing * 180) / Math.PI).toFixed(1) + "deg)";
+    const deg = "rotate(" + ((frame.arrowBearing * 180) / Math.PI).toFixed(1) + "deg)";
+    if (hud.navArrow.style.transform !== deg) hud.navArrow.style.transform = deg;
   }
 }
 
