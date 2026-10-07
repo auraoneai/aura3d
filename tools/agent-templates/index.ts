@@ -118,8 +118,8 @@ const checks: ReleaseCheck[] = [
     fileIncludes(`templates/${template}/src/main.ts`, [templatePublicPackage(template)], `${template} packaged root Aura3D api`)
   ]),
   ...promptPlanTemplates.flatMap((template) => [
-    fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`)
+    fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "compilePromptPlanV2"], `${template} packaged root prompt-plan api`),
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "compilePromptPlanV2"], `${template} public prompt-plan api`)
   ]),
   fileIncludes("templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game packaged root game api"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game public game api"),

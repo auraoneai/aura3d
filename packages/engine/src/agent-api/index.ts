@@ -8193,6 +8193,18 @@ export function promptPlanToScene(plan: AuraPromptPlan): AuraSceneBuilder {
   return compilePromptPlan(plan).scene;
 }
 
+// PRD-13 T3.8 — public surface for prompt plan v2 (opt-in; the 1-arg
+// `promptPlanToScene`/`compilePromptPlan` keep their 1.0 shape). Also exported
+// through the lane barrel `src/lanes/prd13.ts`.
+export { compilePromptPlanV2, promptPlanToSceneV2, AuraPromptPlanError } from "./nodes/prompt/promptPlanV2.js";
+export type {
+  AuraCompilePromptPlanOptions,
+  AuraCompiledPromptPlanV2,
+  AuraPromptPlanErrorCode,
+  AuraPromptPlanReportV2,
+  AuraPromptPlanV2
+} from "./nodes/prompt/promptPlanV2.js";
+
 export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
 
 
