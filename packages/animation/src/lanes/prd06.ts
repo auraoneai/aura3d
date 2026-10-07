@@ -21,3 +21,12 @@ export type { PoseBlendAccumulatorLike, PoseBlendChannel } from "../pose/blendKe
 // T1.14 — §17.3 motion-quality metrics (E42: not built on MotionQuality.ts).
 export { isHumanoidMotionBone, motionFrame, motionSampleFromMatrix, quatAngleDegrees, boneAngularSpeeds, maxAngularSpeedInWindow, transitionContinuity, footSlide, locomotionPhaseError } from "../pose/MotionMetrics.js";
 export type { MotionBoneSample, MotionFrame, MotionQuat, MotionVec3, BoneAngularSpeed, ContinuityResult, FootContactPhase, FootSlideResult, LocomotionPhaseSample, LocomotionPhaseErrorResult } from "../pose/MotionMetrics.js";
+// T3.x — pose-space constraints (PRD-06 §7.1/7.2). Solve + spec types.
+export { solveTwoBoneIkRotations } from "../IK.js";
+export type { TwoBoneIkConstraintSpec } from "../IK.js";
+export { solveFootIkConstraint } from "../FootIk.js";
+export type { FootIkConstraintSpec } from "../FootIk.js";
+export { createLookAtConstraint } from "../pose/LookAtConstraint.js";
+export type { LookAtConstraintSpec, LookAtConstraint } from "../pose/LookAtConstraint.js";
+export { solveCcdIk } from "../pose/CcdIkConstraint.js";
+export type { CcdIkConstraintSpec, CcdIkResult } from "../pose/CcdIkConstraint.js";
