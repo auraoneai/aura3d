@@ -67,3 +67,30 @@ camera-fade patch (declined under §3.7).
   filled from the forward target's depth texture; set in both render paths.
   Unflagged, additive-only plumbing (nothing consumes it yet → flag-off
   pixel-identical).
+
+## PR C (Phase 2: blend modes + render targets) status notes — 2026-10-06
+
+- C-04 blend modes: `BlendModes.ts` (queue policy), §6.8 factor tables +
+  `renderStateKey` packing in `contracts/blend.ts`, `Material` C-04 fields
+  (`blendMode`, `depthCompareV2`, `alphaToCoverage`; non-opaque →
+  `depthWrite:false` default), `WebGL2StateCache` separate func/equation dedupe.
+- Legacy custom-blend reachability (lane 03 Q-01-1): `{srcRGB, dstRGB, srcAlpha:ZERO, dstAlpha:ONE}` preserved verbatim through `resolveBlendMode` → `blendFuncSeparate`; the lane-03 case is pinned in `prd01-blend.test.ts`.
+- ForwardPass: transparent bucket orders by `blendRank` (additive/multiply after the alpha group, order-independent), then back-to-front distance inside rank 0; `isTransparentRenderItem` consults `blendStateIsTransparent` (additive/multiply/custom are transparent even with `blend:false`); opaque items keep `blendRank` undefined → flag-off sort identical.
+- Non-01 file edits (QR-OWN gaps; per PRD §5.1 assignment + ledger convention):
+  - `webgl2/MultiDraw.ts` (owner 11): `blendMode`/`depthCompareV2`/`alphaToCoverage` application; legacy reset emitted only via `blendEquationDiffers` so flag-off never emits `blendEquationSeparate` on a fresh context; `uploadTextureUniform` now receives the declared uniform type for `GL_SAMPLER_2D_ARRAY` → `TEXTURE_2D_ARRAY` (lane 06 Q-01-3).
+  - `webgl2/Samplers.ts` (owner 02): declared-type → target map (`sampler2DShadow`→2d, `samplerCube*`→cube, `sampler2DArray*`→2d-array) with `texture.dimension` fallback.
+  - `webgl2/ContextLifecycle.ts` (owner 11): `clearRenderTarget(color, attachment?)` → `clearBufferfv` path.
+  - `webgl2/Probe.ts` (owner 11): `readPixels(..., attachment?)` → `readBuffer` select/restore.
+  - `RenderDevice.ts` (owner 11): descriptor +5 PR 0a fields, `RenderTarget` optional `dimension`/`layers`/`colorTextures`/`layerTargets`, `MockRenderDevice` builds feature targets incl. per-layer children + per-attachment pixel buffers.
+  - `Texture.ts` (owner 06): `layers` stored; face-less cube allowed for GPU-attachment textures (upload path still requires `cubeFaces` for CPU data).
+  - `WebGPUDevice.ts`/`LeanWebGL2Device.ts` (owner 15): `UNSUPPORTED_RENDER_TARGET_FEATURE` on the new fields.
+- `RENDER_TARGET_FEATURE_PENDING`: no throw sites existed in trunk creation
+  code (the PR 0a stub contract listed it as pending); `createRenderTarget`
+  now implements `dimension`/`layers`/`depthOnly`/`depthCompare`/`colorAttachments`
+  in `createFeatureRenderTarget` (per-layer child targets sharing parent GL
+  resources, MRT `drawBuffers`, `TEXTURE_COMPARE_MODE` compare, depth-only
+  `readBuffer(NONE)`).
+- Appendix B: F-01-02 (`material.blend`) published verified.
+- Browser spec `tests/qr/prd01/browser/render-targets.spec.ts` covers the §15:1096
+  acceptance (depth-only cube 6 faces, 2-attachment distinct clears, sampler2DArray
+  layer 3) via `?tools=render-targets` in the lane harness.

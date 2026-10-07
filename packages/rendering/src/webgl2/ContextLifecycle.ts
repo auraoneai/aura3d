@@ -110,8 +110,15 @@ export class WebGL2ContextLifecycle {
     if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
   }
 
-  clearRenderTarget(color: readonly [number, number, number, number]): void {
+  clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
     this.assertFrame();
+    if (attachment !== undefined) {
+      // MRT (lane 03 Q-01-2): clear a single draw buffer, leaving depth and the
+      // other attachments untouched. Normalized and float formats both take
+      // clearBufferfv (normalized formats are floating-point clears).
+      this.host.gl.clearBufferfv(this.host.gl.COLOR, attachment, new Float32Array(color));
+      return;
+    }
     this.host.gl.clearColor(color[0], color[1], color[2], color[3]);
     this.host.stateCache.depthMask(true, () => this.host.gl.depthMask(true));
     this.host.gl.clearDepth(1);

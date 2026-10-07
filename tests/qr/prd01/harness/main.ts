@@ -50,8 +50,19 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const engine = params.get("engine") ?? "aura3d";
   const sceneId = params.get("scene");
+  const tools = params.get("tools");
   const status = document.getElementById("status")!;
   const stage = document.getElementById("stage") as HTMLElement;
+
+  if (tools === "render-targets") {
+    status.textContent = "running render-target tools";
+    const { runRenderTargetTools } = await import("./renderTargets");
+    const report = await runRenderTargetTools(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: "render-targets", errors: report.errors };
+    status.textContent = "ready render-targets";
+    document.title = "ready render-targets";
+    return;
+  }
 
   const adapters = engine === "three" ? threeScenes : auraScenes;
   const adapter = adapters.find((entry) => entry.id === sceneId);

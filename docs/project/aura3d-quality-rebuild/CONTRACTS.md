@@ -2795,4 +2795,5 @@ column cites a passing test or a capture run id.
 | F-06-03 | 06 | `createAuraApp(..., { animation: { strict: true } })` throws on empty poses and unknown clips. | `AuraCreateAppAnimationOptions.strict` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
 | F-06-04 | 06 | `animationState().tracksApplied > 0` is a precondition, not proof of quality. | `animationState().tracksApplied` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
 | F-06-05 | 06 | No `poseBakedFallback` / `tracks: []` clips. | `AnimationClipDefinition` | 2026-10-06 (PRD-06 T0.16) | `tests/qr/prd06/unit/character-animation-skill-snippet.test.ts` | verified |
+| F-01-02 | 01 | `material.blend`: `alpha` and `premultiplied` sort back-to-front in the transparent queue; `additive` and `multiply` draw after the alpha group (order-independent); any non-`opaque` mode defaults `depthWrite: false`; `custom` requires `srcRGB`/`dstRGB` and blends alpha as (`zero`, `one`). | `material.blend` | 2026-10-06 (C-04) | `tests/unit/contracts/impl/prd01-blend.test.ts` | verified |
 
