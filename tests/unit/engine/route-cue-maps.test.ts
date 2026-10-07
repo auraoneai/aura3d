@@ -19,17 +19,17 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { landerAudioManifest } from "../../../apps/showcase-aurora-lander/src/lander-audio";
-import { billiardsAudioManifest } from "../../../apps/showcase-bank-shot/src/billiards-audio";
+import { billiardsAudioManifest } from "../../../apps/showcase-bank-shot/src/legacy/billiards-audio";
 import { blockfallAudioManifest } from "../../../apps/showcase-blockfall-reactor/src/blockfall-audio-manifest";
-import { courierAudioManifest } from "../../../apps/showcase-courier-rush/src/courier-audio";
+import { courierAudioManifest } from "../../../apps/showcase-courier-rush/src/legacy/courier-audio";
 import { heistAudioManifest } from "../../../apps/showcase-gallery-shift/src/heist-audio";
 import { GRAVITY_POST_AUDIO_MANIFEST } from "../../../apps/showcase-gravity-post/src/post-audio";
 import { hangarAudioManifest } from "../../../apps/showcase-mech-hangar/src/hangar-audio";
 import { wingAudioManifest } from "../../../apps/showcase-patrol-wing/src/wing-audio";
-import { golfAudioManifest } from "../../../apps/showcase-siege-golf/src/golf-audio";
+import { golfAudioManifest } from "../../../apps/showcase-siege-golf/src/legacy/golf-audio";
 import { skylineAudioManifest } from "../../../apps/showcase-skyline-runner/src/skyline-audio-manifest";
-import { turboAudioManifest } from "../../../apps/showcase-turbo-drift-circuit/src/turbo-audio";
-import { vaultAudioManifest } from "../../../apps/showcase-vault-breakers/src/pinball-audio";
+import { turboAudioManifest } from "../../../apps/showcase-turbo-drift-circuit/src/legacy/turbo-audio";
+import { vaultAudioManifest } from "../../../apps/showcase-vault-breakers/src/legacy/pinball-audio";
 import { auraClashAudioManifest } from "../../../apps/aura-clash-showcase/src/playable/audio/auraClashAudioManifest";
 
 const ROOT = join(__dirname, "../../..");
