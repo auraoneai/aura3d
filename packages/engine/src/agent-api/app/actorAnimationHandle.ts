@@ -398,6 +398,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     if (mixer === undefined) {
       // T0.18's pre-mixer snapshot: binding clipSamples + the actor's lastApply.
       if (this.nodeHandle.kind !== "model") return undefined;
+      if (typeof this.nodeHandle.snapshot !== "function") return super.animationState();
       const snapshot = this.nodeHandle.snapshot() as RuntimeNodeHandleAnimationSnapshot | undefined;
       const binding = snapshot?.animationBinding;
       const lastApply = actorAnimationApplySources.get(this.nodeId)?.() ?? null;
