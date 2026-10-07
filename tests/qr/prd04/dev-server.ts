@@ -17,8 +17,11 @@
  * proxies the real server and applies the missing specifier rewrites on JS
  * responses — the exact same replacement shapes `rewritePackageImports` uses.
  */
+import { createReadStream, existsSync, readFileSync } from "node:fs";
 import { createServer, request as httpRequest, type Server } from "node:http";
+import { join, resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "../../browser/example-dev-server";
+import { benchmarkAssetFiles } from "../../../benchmarks/quality-rebuild/shared/assets";
 
 export type { ExampleDevServer };
 
@@ -32,6 +35,16 @@ const ESCAPE = /[.*+?^${}()|[\]\\]/g;
  */
 const LANE_ENTRY_POINTS = new Map<string, string>([
   ["@aura3d/rendering/contracts", "/packages/rendering/src/contracts/index.ts"],
+]);
+
+/**
+ * Prefix aliases missing from the shared map. `three/examples/*` is what the
+ * legacy (non-prd04) scene adapters import directly — the shared map only
+ * covers `three`, `three/webgpu`, `three/tsl` and the `three/addons/*`
+ * spellings used by its own showcase pages.
+ */
+const LANE_PREFIXES = new Map<string, string>([
+  ["three/examples/", "/node_modules/three/examples/"],
 ]);
 
 function rewriteLaneImports(source: string): string {
@@ -51,12 +64,68 @@ function rewriteLaneImports(source: string): string {
     /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])@aura3d\/rendering\/contracts\/([^"']+)(["']\s*\))/g,
     "$1/packages/rendering/src/contracts/$2.ts$3",
   );
+  for (const [prefix, target] of LANE_PREFIXES) {
+    const esc = prefix.replace(ESCAPE, "\\$&");
+    output = output
+      .replace(new RegExp(`(\\bfrom\\s*["'])${esc}([^"']+)(["'])`, "g"), `$1${target}$2$3`)
+      .replace(new RegExp(`(\\bimport\\s*["'])${esc}([^"']+)(["'])`, "g"), `$1${target}$2$3`)
+      .replace(new RegExp(`(\\bimport\\s*\\(\\s*(?:/\\*[^]*?\\*/\\s*)?["'])${esc}([^"']+)(["']\\s*\\))`, "g"), `$1${target}$2$3`);
+  }
+  return output;
+}
+
+/**
+ * `__AURA3D_VERSION__` is a vite `define` (benchmarks/quality-rebuild/vite
+ * .config.ts reads the repo package.json); the shared dev-server transpiles
+ * without defines, so the identifier survives into served JS and throws a
+ * ReferenceError in any module that reports the engine version. Substitute it
+ * with the same literal the vite config would inject. `__THREE_VERSION__`
+ * comes from `node_modules/three/package.json` in the same config.
+ */
+function readRepoVersion(packageJsonPath: string): string {
+  try {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version?: string };
+    return pkg.version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
+function applyDefines(source: string, defines: ReadonlyMap<string, string>): string {
+  let output = source;
+  for (const [token, literal] of defines) {
+    output = output.replace(new RegExp(`\\b${token}\\b`, "g"), literal);
+  }
   return output;
 }
 
 export async function startPrd04DevServer(root = process.cwd()): Promise<ExampleDevServer> {
   const upstream = await startExampleDevServer(root);
+  const defines = new Map<string, string>([
+    ["__AURA3D_VERSION__", JSON.stringify(readRepoVersion(join(root, "package.json")))],
+    ["__THREE_VERSION__", JSON.stringify(readRepoVersion(join(root, "node_modules/three/package.json")))],
+  ]);
+  // `/qr-assets/*` is served by the `quality-rebuild-assets` vite plugin at
+  // benchmark time (vite.config.ts); the shared dev-server has no such route,
+  // so legacy scene adapters that fetch the canonical URLs get 404s. Serve
+  // the same url -> repoPath map here.
+  const qrAssets = new Map(benchmarkAssetFiles().map((file) => [file.url, file.repoPath]));
   const server: Server = createServer((req, res) => {
+    const requestPath = (req.url ?? "").split("?")[0] ?? "";
+    const qrAssetPath = qrAssets.get(requestPath);
+    if (qrAssetPath) {
+      const source = resolve(root, qrAssetPath);
+      if (!existsSync(source)) {
+        res.writeHead(404, { "content-type": "text/plain" });
+        res.end(`missing benchmark asset ${qrAssetPath}`);
+        return;
+      }
+      res.writeHead(200, {
+        "content-type": requestPath.endsWith(".hdr") ? "application/octet-stream" : "model/gltf-binary",
+      });
+      createReadStream(source).pipe(res);
+      return;
+    }
     const proxy = httpRequest(new URL(req.url ?? "/", upstream.origin), { method: req.method, headers: req.headers }, (up) => {
       const chunks: Buffer[] = [];
       up.on("data", (c: Buffer) => chunks.push(c));
@@ -64,7 +133,7 @@ export async function startPrd04DevServer(root = process.cwd()): Promise<Example
         const body = Buffer.concat(chunks);
         const type = String(up.headers["content-type"] ?? "");
         const payload = /javascript|text\/plain/.test(type)
-          ? rewriteLaneImports(body.toString("utf8"))
+          ? applyDefines(rewriteLaneImports(body.toString("utf8")), defines)
           : body;
         // `resolveDirectoryModuleRedirect` answers extension-less directory
         // specifiers with 302 + location; dropping the header leaves the
