@@ -14,7 +14,6 @@
   },
   "primaryAssets": [],
   "primitiveStatus": {
-    "sourceOccurrences": 11,
     "role": "planet, stations, player, enemies, projectiles, and shields",
     "status": "blocked-primitive-primary"
   },
@@ -37,5 +36,8 @@
     "mobileScreenshot": null,
     "sourceReview": "apps/showcase-orbital-defense/src/main.ts",
     "notes": "Route is not included in the showcase index or launch evidence slate."
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }
