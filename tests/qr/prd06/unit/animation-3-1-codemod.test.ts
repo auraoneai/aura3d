@@ -40,14 +40,14 @@ describe("animation-3.1 codemod (T1.13)", () => {
 
   it("flags non-exact clip names at play/animate/resolveGLTFClipName and every speed:", () => {
     const { rows } = transform(WORLD_WAR_X_SHAPE, APP_FILE);
-    const constructs = rows.map((r) => r.construct);
+    const constructs = rows.map((r: { construct: string }) => r.construct);
     expect(constructs).toContain('play clip "idle-ready"');
     expect(constructs).toContain('animate clip "sprint-fast"');
     expect(constructs).toContain('resolveGLTFClipName clip "walking"');
     expect(constructs).toContain("speed: 0.44");
     expect(constructs).toContain("bindRuntimeNode({ applyPose })");
     // "Walk" resolves exactly — no row.
-    expect(constructs.some((c) => c.includes('"Walk"'))).toBe(false);
+    expect(constructs.some((c: string) => c.includes('"Walk"'))).toBe(false);
     // every row carries file + line
     for (const row of rows) {
       expect(row.file).toBe(APP_FILE);
@@ -81,6 +81,6 @@ describe("animation-3.1 codemod (T1.13)", () => {
     const { code, rows } = transform(`app.play({ clip: "idle-ready" });`, "tmp/orphan/file.ts");
     expect(code).toContain('fallback: "first"');
     expect(code).toContain("TODO(animation-3.1)");
-    expect(rows.some((r) => r.construct === 'play clip "idle-ready"')).toBe(true);
+    expect(rows.some((r: { construct: string }) => r.construct === 'play clip "idle-ready"')).toBe(true);
   });
 });

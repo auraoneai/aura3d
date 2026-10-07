@@ -18,3 +18,6 @@ export { PoseInertializer, DEFAULT_POSE_TRANSITION_HALF_LIFE } from "../pose/Pos
 export { setPoseMixerBlendFlagProvider, poseMixerBlendEnabled } from "../pose/poseMixerFlags.js";
 export { blendBaseValue, additiveContributionValue, applyAdditiveValue, combineAdditiveValue } from "../pose/blendKernels.js";
 export type { PoseBlendAccumulatorLike, PoseBlendChannel } from "../pose/blendKernels.js";
+// T1.14 — §17.3 motion-quality metrics (E42: not built on MotionQuality.ts).
+export { isHumanoidMotionBone, motionFrame, motionSampleFromMatrix, quatAngleDegrees, boneAngularSpeeds, maxAngularSpeedInWindow, transitionContinuity, footSlide, locomotionPhaseError } from "../pose/MotionMetrics.js";
+export type { MotionBoneSample, MotionFrame, MotionQuat, MotionVec3, BoneAngularSpeed, ContinuityResult, FootContactPhase, FootSlideResult, LocomotionPhaseSample, LocomotionPhaseErrorResult } from "../pose/MotionMetrics.js";

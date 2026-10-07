@@ -26,6 +26,8 @@ import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerfo
 import { PhysicsWorld } from "@aura3d/physics/world";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import { setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
+import { setQrAnimationFlags } from "./actorAnimationHandle.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import { resolveTierSettings } from "@aura3d/rendering/contracts";
@@ -47,6 +49,13 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     resolveQrFlags({ options: options.qualityRebuild?.flags }),
     options.animation?.mixer
   );
+  // PRD-06 §10 app-side install (C-37): `qrAnimationFlags()` reads this first
+  // (then ?a3d-qr / env) and `typedGLBActorExtensions()` gates the actor
+  // extension onLoad publishes — without it the lane flag resolves false in an
+  // app context and `handle.animation` sources never attach. Same install-once
+  // pattern as setPrd01ModelMatrixCache below.
+  setQrAnimationFlags(qrFlags);
+  setTypedGLBActorQrFlags(qrFlags);
   // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
   // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
   setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache() : null);

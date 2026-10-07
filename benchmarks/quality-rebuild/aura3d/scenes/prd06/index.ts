@@ -4,10 +4,13 @@
  * lane 12 wires `aura3d/scenes/prdNN/` modules into the capture router.
  */
 import type { BenchSceneRegistration } from "../../../shared/registry";
-import { prd06SkinnedCharacterPosed } from "../../../scenes/prd06/skinnedCharacterPosed";
+import { prd06SkinnedCharacterPosed } from "../../../scenes/prd06/skinned-character-posed";
+import { prd06CrossfadeFilmstrip } from "../../../scenes/prd06/crossfade-filmstrip";
 
-export { default as prd06SkinnedCharacterPosed } from "./skinnedCharacterPosed";
+export { default as prd06SkinnedCharacterPosed } from "./skinned-character-posed";
+export { default as prd06CrossfadeFilmstrip } from "./crossfade-filmstrip";
 
 export const scenes: readonly BenchSceneRegistration[] = [
-  { id: "prd06-skinned-character-posed", spec: prd06SkinnedCharacterPosed }
+  { id: "prd06-skinned-character-posed", spec: prd06SkinnedCharacterPosed },
+  { id: "prd06-crossfade-filmstrip", spec: prd06CrossfadeFilmstrip }
 ];

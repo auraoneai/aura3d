@@ -13,7 +13,14 @@ const chromiumExecutablePath = process.env.A3D_WEBGPU_BROWSER_EXECUTABLE ||
   (process.env.A3D_DISABLE_SYSTEM_WEBGPU_BROWSER === "true" ? undefined : existsSync(defaultMacChromePath) ? defaultMacChromePath : undefined);
 const chromiumLaunchOptions = {
   ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
-  args: ["--use-angle=metal", "--enable-unsafe-webgpu", "--ignore-gpu-blocklist"],
+  // `--use-angle=metal` is a macOS-only switch (the lane workflow runs the
+  // browser matrix on macos-14); on Linux it leaves the GL context dead and
+  // every captured frame renders black. Keep the WebGPU flags on all hosts.
+  args: [
+    ...(process.platform === "darwin" ? ["--use-angle=metal"] : []),
+    "--enable-unsafe-webgpu",
+    "--ignore-gpu-blocklist",
+  ],
 };
 
 export default defineConfig({

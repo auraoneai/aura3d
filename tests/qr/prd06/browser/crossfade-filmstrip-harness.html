@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- PRD-06 T1.14 harness: runs the prd06-crossfade-filmstrip lane adapters
+     (?engine=aura3d|three). Metrics/state publish on
+     window.__PRD06_CROSSFADE_FILMSTRIP__ (aura) and
+     window.__PRD06_CROSSFADE_THREE__ (three). -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>prd06 crossfade filmstrip harness</title>
+    <style>html, body { margin: 0; background: #202329; } #stage { width: 800px; height: 450px; }</style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./crossfade-filmstrip-harness.ts"></script>
+  </body>
+</html>
