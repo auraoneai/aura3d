@@ -10,6 +10,7 @@ import {
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
 import type { RuntimeNodeHandleLike, RuntimeNodeMorphTargetWeights } from "./RuntimeNodeHandle.js";
+import { resolveQrFlags } from "../contracts/flags.js";
 
 export type AuraVoiceVisemeFormat = "auravoice-visemes-v2";
 
@@ -163,6 +164,23 @@ export const glbVisemeBlendshapeExample: GlbVisemeBlendshapeExample = {
 
 export function defineAuraVoiceVisemes<const TTrack extends AuraVoiceVisemeTrack>(track: TTrack): TTrack {
   return track;
+}
+
+/**
+ * T4.5 (PRD-06) — the default viseme example. Under `A3D_QR_ANIMATION` the
+ * default is morph visemes on a morph-capable hero (`glbVisemeBlendshapeExample`:
+ * named blendshape weights driven from AuraVoice visemes); flag-off keeps the
+ * primitive mouth-card example. `primitiveMouthVisemeExample` stays exported
+ * as the named fallback for assets without matching morphs.
+ */
+export type DefaultVisemeExample = GlbVisemeBlendshapeExample | PrimitiveMouthExample;
+
+export function defaultVisemeExample(): DefaultVisemeExample {
+  const flags = resolveQrFlags({
+    url: typeof location !== "undefined" ? location.href : undefined,
+    env: typeof process !== "undefined" ? process.env : undefined
+  });
+  return flags.on("A3D_QR_ANIMATION") ? glbVisemeBlendshapeExample : primitiveMouthVisemeExample;
 }
 
 export function createAuraVoiceVisemeTrack(input: {

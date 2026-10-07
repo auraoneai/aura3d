@@ -357,7 +357,8 @@ export { createVehicleChassis, flatVehicleSurface, groundedFittedModelPosition, 
 export type { VehicleChassis, VehicleChassisSpec, VehicleChassisTelemetry, VehiclePlanarState, VehiclePose, VehicleSurface, VehicleSurfaceSample, VehicleVec3, VehicleWheelId, VehicleWheelPose } from "./VehicleChassis.js";
 export { angleDelta, createVehicleDriverAi } from "./VehicleDriverAi.js";
 export type { DriverAggression, DriverConfig, DriverInput, DriverRoute, DriverRoutePoint, DriverTelemetry, DriverVehicleState, VehicleDriverAi } from "./VehicleDriverAi.js";
-export { applyVisemeMorphInfluences, createAuraVoiceVisemeTrack, createGlbBlendshapeVisemeCue, createPrimitiveMouthVisemeCues, createVisemeController, defineAuraVoiceVisemes, glbVisemeBlendshapeExample, primitiveMouthCardForViseme, primitiveMouthVisemeExample, sampleVisemeTrack, validateVisemeTrack, visemeSampleToMorphInfluences } from "./VisemeController.js";
+export { applyVisemeMorphInfluences, createAuraVoiceVisemeTrack, createGlbBlendshapeVisemeCue, createPrimitiveMouthVisemeCues, createVisemeController, defaultVisemeExample, defineAuraVoiceVisemes, glbVisemeBlendshapeExample, primitiveMouthCardForViseme, primitiveMouthVisemeExample, sampleVisemeTrack, validateVisemeTrack, visemeSampleToMorphInfluences } from "./VisemeController.js";
+export type { DefaultVisemeExample } from "./VisemeController.js";
 export type { AuraVoiceVisemeCue, AuraVoiceVisemeFormat, AuraVoiceVisemeId, AuraVoiceVisemeTrack, GlbVisemeBlendshapeExample, PrimitiveMouthCard, PrimitiveMouthExample, PrimitiveMouthVisemeCueInput, VisemeController, VisemeSample } from "./VisemeController.js";
 export { applyManualVisemeEdits, createVisemeTimelineTrack, sampleVisemeTimelineTrack } from "./VisemeTimelineTrack.js";
 export type { VisemeTimelineManualEdit, VisemeTimelineTrackArtifact } from "./VisemeTimelineTrack.js";
