@@ -84,6 +84,8 @@ export interface OptimizeStepContext {
   readonly workDir: string;
   /** Per-texture KTX2 flag record for the metrics/toolchain evidence. */
   readonly ktxFlags: { texture: string; codec: Ktx2Codec; srgb: boolean; args: readonly string[] }[];
+  /** Sidecar Document produced by `colliders`; serialized by the pipeline into `collisionGlb`. */
+  collisionDoc?: Document;
   readonly log: (line: string) => void;
 }
 

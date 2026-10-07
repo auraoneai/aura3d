@@ -25,7 +25,8 @@ export type Prd05AssetId =
   | "fox"
   | "rockA"
   | "rockB"
-  | "crate";
+  | "crate"
+  | "courierSedan";
 
 export interface Prd05AssetEntry {
   readonly id: Prd05AssetId;
@@ -138,5 +139,17 @@ export const prd05Assets: Readonly<Record<Prd05AssetId, Prd05AssetEntry>> = {
     "prop-small",
     12,
     "Aura3D interior-kit 1x1 crate, optimized via §6.3 prop-small"
-  )
+  ),
+  courierSedan: {
+    ...entry(
+      "courierSedan",
+      "courierTrafficSedan.c724602f.glb",
+      "public/aura-assets/courierTrafficSedan.69f41bfa.glb",
+      "c724602f2b0513ecc4a373f4a95ca58b2577c0ec3ed1639ba31a187a8204da1b",
+      "hero-vehicle",
+      46983,
+      "Aura3D courier traffic sedan catalog GLB, optimized via §6.3 hero-vehicle (4-level MSFT_lod)"
+    ),
+    gltfExtensions: [...OPT_EXTS, "MSFT_lod"],
+  }
 };

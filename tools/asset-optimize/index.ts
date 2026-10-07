@@ -131,6 +131,9 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
       if (!options.dryRun) {
         mkdirSync(outDir, { recursive: true });
         writeFileSync(join(outDir, `${slug}.${hash.slice(0, 8)}.glb`), Buffer.from(result.glb));
+        if (result.collisionGlb) {
+          writeFileSync(join(outDir, `${slug}.${hash.slice(0, 8)}.collision.glb`), Buffer.from(result.collisionGlb));
+        }
       }
       const checks = gateChecks(result.budget.triangles, profile, result.flags);
       rows.push({ id: slug, budget: result.budget, checks });
@@ -200,6 +203,11 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         writeFileSync(join(derivedDir, `${entry.id}.${mobileHash}.mobile.glb`), Buffer.from(result.mobile));
         mobileUrl = `/aura-assets/${entry.id}.${mobileHash}.mobile.glb`;
       }
+      let collisionUrl: string | undefined;
+      if (result.collisionGlb) {
+        writeFileSync(join(derivedDir, `${entry.id}.${hash8}.collision.glb`), Buffer.from(result.collisionGlb));
+        collisionUrl = `/aura-assets/${entry.id}.${hash8}.collision.glb`;
+      }
 
       if (options.writeManifest !== false) {
         const fresh = readAssetManifest(repoRoot);
@@ -209,6 +217,7 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
             url,
             hash: `sha256:${derivedHash}`,
             mobileUrl,
+            collisionUrl,
             profile: profile.id,
             steps: result.steps,
             sourceHash: `sha256:${sourceHash}`,

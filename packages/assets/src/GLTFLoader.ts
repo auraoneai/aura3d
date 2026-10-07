@@ -129,7 +129,21 @@ interface GLTFNode {
     readonly EXT_mesh_gpu_instancing?: {
       readonly attributes: Readonly<Record<string, number>>;
     };
+    readonly MSFT_lod?: {
+      readonly ids?: readonly number[];
+    };
   };
+  /**
+   * PRD-05 §6.3.6 — parsed LOD chain (derived during `GLTFLoader.load`, not a
+   * JSON field): `extensions.MSFT_lod.ids` zipped with
+   * `extras.MSFT_screencoverage`. `lods[0]` is LOD1 — the holder node is LOD0.
+   */
+  lods?: readonly {
+    readonly nodeIndex: number;
+    /** `nodes[nodeIndex].mesh`, resolved at parse time for runtime consumers. */
+    readonly meshIndex?: number;
+    readonly screenCoverage?: number;
+  }[];
 }
 
 interface GLTFMaterial {
@@ -807,6 +821,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     const prepared = await prepareBufferViews(json, rawBuffers, this.options.meshoptDecoder);
     const buffers = prepared.buffers;
     json = prepared.json;
+    resolveMsftLods(json);
     const accessorCache = createGLTFAccessorReadCache();
     const meshQuantizationEnabled = usesGLTFExtension(json, "KHR_mesh_quantization");
     const images = createImageAssets(json, buffers);
@@ -3880,6 +3895,39 @@ function createScene(
   return scene;
 }
 
+/**
+ * PRD-05 §6.3.6 — zip `node.extensions.MSFT_lod.ids` with
+ * `node.extras.MSFT_screencoverage` into `node.lods`. Ids must be valid node
+ * indices; a malformed extension is a load error only when it is required
+ * (MSFT_lod never is — readers that ignore it render LOD0, so malformed
+ * entries are dropped, mirroring three.js behaviour for unknown nodes).
+ */
+function resolveMsftLods(json: GLTFJson): void {
+  const nodes = json.nodes;
+  if (!nodes) return;
+  for (const [index, node] of nodes.entries()) {
+    const ext = node.extensions?.MSFT_lod;
+    if (!ext) continue;
+    const ids = ext.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error(`glTF node ${index} MSFT_lod must list at least one lod id`);
+    }
+    for (const id of ids) {
+      if (!Number.isInteger(id) || id < 0 || id >= nodes.length) {
+        throw new Error(`glTF node ${index} MSFT_lod id ${id} is not a node index`);
+      }
+    }
+    const coverage = Array.isArray(node.extras?.MSFT_screencoverage)
+      ? (node.extras.MSFT_screencoverage as readonly unknown[]).filter((v): v is number => typeof v === "number")
+      : undefined;
+    (node as { lods?: GLTFNode["lods"] }).lods = ids.map((nodeIndex, i) => ({
+      nodeIndex,
+      ...(nodes[nodeIndex]?.mesh !== undefined ? { meshIndex: nodes[nodeIndex].mesh as number } : {}),
+      ...(coverage?.[i + 1] !== undefined ? { screenCoverage: coverage[i + 1] as number } : {})
+    }));
+  }
+}
+
 function resolveSelectedSceneIndex(json: GLTFJson, options: GLTFSceneCreateOptions): number {
   if (options.sceneIndex !== undefined && options.sceneName !== undefined) {
     throw new Error("glTF scene selection cannot specify both sceneIndex and sceneName");
@@ -4188,6 +4236,7 @@ function createSceneNodeForGLTFNode(
 
 function applyGLTFNodeMetadata(node: SceneNode, source: GLTFNode, nodeIndex: number): void {
   node.userData.gltfNodeIndex = nodeIndex;
+  if (source.lods?.length) node.userData.gltfLods = source.lods;
   if (!source.extras) return;
   node.userData.gltfExtras = { ...source.extras };
   for (const [key, value] of Object.entries(source.extras)) {
