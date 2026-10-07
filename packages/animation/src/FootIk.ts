@@ -369,3 +369,231 @@ function round(value: number): number {
 function roundVec(value: Vec3): Vec3 {
   return [round(value[0]), round(value[1]), round(value[2])];
 }
+
+// ---------------------------------------------------------------------------
+// T3.2 — pose-space foot-IK constraint (`FootIkConstraintSpec`, PRD-06 §7.1):
+// consumes `solveTwoBoneIkRotations` directly on a PoseBuffer instead of the
+// legacy position-space leg input. Pelvis offset is the MINIMUM of the
+// per-foot ground deltas (each grounded foot's required vertical correction),
+// clamped to `maxPelvisDrop` — replaces the legacy fixed `hipDropFactor`
+// (0.72) on this path. Foot tilt aligns the foot bone's up axis to the ground
+// normal, capped at `maxFootTiltDeg` (default 35°).
+// ---------------------------------------------------------------------------
+
+import { solveTwoBoneIkRotations, type TwoBoneIkConstraintSpec } from "./IK.js";
+import type { PoseBuffer } from "./pose/PoseBuffer.js";
+import type { SkeletonBinding } from "./pose/SkeletonBinding.js";
+
+export interface FootIkConstraintSpec {
+  /** One two-bone leg spec per leg (root/mid/tip name the thigh/knee/ankle joints). */
+  readonly legs: readonly (TwoBoneIkConstraintSpec & {
+    /** Ankle joint height above the sole contact point (default 0.035 m). */
+    readonly ankleHeight?: number;
+  })[];
+  /** Scene-supplied ground query (C-26 interface). */
+  readonly ground: GroundRaycaster;
+  /** Optional pelvis bone — dropped by the deepest required correction. */
+  readonly pelvis?: string;
+  /** Maximum pelvis drop in metres (default 0.4). */
+  readonly maxPelvisDrop?: number;
+  /** Maximum sole-normal tilt toward the ground normal (default 35°). */
+  readonly maxFootTiltDeg?: number;
+  /** Feet already planted (within `plantThreshold`) keep their current pose when true. */
+  readonly lockOnContact?: boolean;
+  /** Foot is planted when its required vertical correction is ≤ this (default 0.02 m). */
+  readonly plantThreshold?: number;
+  /** Ray origin offset above the ankle and max ray distance (defaults 0.6 / 2). */
+  readonly rayStartHeight?: number;
+  readonly maxRayDistance?: number;
+}
+
+interface FootIkFrame {
+  readonly position: Vec3;
+  readonly rotation: readonly [number, number, number, number];
+  readonly scale: Vec3;
+}
+
+function fkFrame(pose: PoseBuffer, skeleton: SkeletonBinding, joint: number): FootIkFrame {
+  const rot = [pose.rotations[joint * 4]!, pose.rotations[joint * 4 + 1]!, pose.rotations[joint * 4 + 2]!, pose.rotations[joint * 4 + 3]!] as const;
+  const scl = [pose.scales[joint * 3]!, pose.scales[joint * 3 + 1]!, pose.scales[joint * 3 + 2]!] as const;
+  const pos = [pose.positions[joint * 3]!, pose.positions[joint * 3 + 1]!, pose.positions[joint * 3 + 2]!] as const;
+  const parent = skeleton.parentIndices[joint] ?? -1;
+  if (parent < 0 || parent >= skeleton.boneCount || parent === joint) {
+    return { position: pos, rotation: rot, scale: scl };
+  }
+  const pf = fkFrame(pose, skeleton, parent);
+  const scaled: Vec3 = [pos[0] * pf.scale[0], pos[1] * pf.scale[1], pos[2] * pf.scale[2]];
+  const rotated = rotateVec3(pf.rotation, scaled);
+  return {
+    position: [pf.position[0] + rotated[0], pf.position[1] + rotated[1], pf.position[2] + rotated[2]],
+    rotation: multiplyQuat(pf.rotation, rot),
+    scale: [pf.scale[0] * scl[0], pf.scale[1] * scl[1], pf.scale[2] * scl[2]]
+  };
+}
+
+function rotateVec3(q: readonly [number, number, number, number], v: Vec3): Vec3 {
+  const [x, y, z, w] = q;
+  const tx = 2 * (y * v[2] - z * v[1]);
+  const ty = 2 * (z * v[0] - x * v[2]);
+  const tz = 2 * (x * v[1] - y * v[0]);
+  return [v[0] + w * tx + (y * tz - z * ty), v[1] + w * ty + (z * tx - x * tz), v[2] + w * tz + (x * ty - y * tx)];
+}
+
+function multiplyQuat(a: readonly [number, number, number, number], b: readonly [number, number, number, number]): readonly [number, number, number, number] {
+  const [ax, ay, az, aw] = a;
+  const [bx, by, bz, bw] = b;
+  return [
+    ax * bw + aw * bx + ay * bz - az * by,
+    ay * bw + aw * by + az * bx - ax * bz,
+    az * bw + aw * bz + ax * by - ay * bx,
+    aw * bw - ax * bx - ay * by - az * bz
+  ] as const;
+}
+
+function quatFromUnitVectors(from: Vec3, to: Vec3): readonly [number, number, number, number] {
+  const d = Math.max(-1, Math.min(1, from[0] * to[0] + from[1] * to[1] + from[2] * to[2]));
+  if (d > 1 - 1e-9) return [0, 0, 0, 1];
+  if (d < -1 + 1e-9) {
+    const axis: Vec3 = Math.abs(from[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const c: Vec3 = [
+      from[1] * axis[2] - from[2] * axis[1],
+      from[2] * axis[0] - from[0] * axis[2],
+      from[0] * axis[1] - from[1] * axis[0]
+    ];
+    const l = Math.hypot(c[0], c[1], c[2]) || 1;
+    return [c[0] / l, c[1] / l, c[2] / l, 0];
+  }
+  const c: Vec3 = [
+    from[1] * to[2] - from[2] * to[1],
+    from[2] * to[0] - from[0] * to[2],
+    from[0] * to[1] - from[1] * to[0]
+  ];
+  const w = Math.sqrt((1 + d) / 2);
+  const s = 1 / (2 * w);
+  return [c[0] * s, c[1] * s, c[2] * s, w];
+}
+
+function axisAngle(axis: Vec3, radians: number): readonly [number, number, number, number] {
+  const half = radians / 2;
+  const s = Math.sin(half);
+  return [axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(half)];
+}
+
+function jointIndex(skeleton: SkeletonBinding, name: string): number {
+  const indices = skeleton.jointIndicesByName.get(name);
+  if (!indices || indices.length === 0) throw new Error(`FootIkConstraint: unknown bone "${name}".`);
+  return indices[0]!;
+}
+
+/**
+ * T3.2 — evaluate a foot-IK constraint on a pose: for each leg, raycast the
+ * ground under the ankle, drop the pelvis by the deepest required correction
+ * (min of per-foot deltas, clamped to `maxPelvisDrop`), solve each leg's
+ * rotations toward `ground.point + normal * ankleHeight`, then tilt each foot
+ * bone toward the ground normal capped at `maxFootTiltDeg`.
+ *
+ * Returns per-leg telemetry (grounded, correction applied, tilt degrees) for
+ * the §17.3 foot-surface diagnostic.
+ */
+export function solveFootIkConstraint(
+  pose: PoseBuffer,
+  skeleton: SkeletonBinding,
+  modelMatrix: Float32Array | readonly number[],
+  spec: FootIkConstraintSpec
+): readonly { readonly leg: number; readonly grounded: boolean; readonly verticalCorrection: number; readonly tiltDeg: number }[] {
+  const ankleHeightDefault = 0.035;
+  const rayStartHeight = spec.rayStartHeight ?? 0.6;
+  const maxRayDistance = spec.maxRayDistance ?? 2;
+  const plantThreshold = spec.plantThreshold ?? 0.02;
+  const maxPelvisDrop = spec.maxPelvisDrop ?? 0.4;
+  const maxFootTiltDeg = spec.maxFootTiltDeg ?? 35;
+
+  // Pass 1 — per-foot ground deltas (world Y corrections needed to plant).
+  interface LegPlan {
+    readonly spec: TwoBoneIkConstraintSpec & { readonly ankleHeight?: number };
+    readonly index: number;
+    readonly ankleIndex: number;
+    readonly target: Vec3;
+    readonly normal: Vec3;
+    readonly deltaY: number;
+    readonly grounded: boolean;
+  }
+  const plans: LegPlan[] = [];
+  for (const [index, leg] of spec.legs.entries()) {
+    const ankleIndex = jointIndex(skeleton, leg.tip);
+    const ankle = fkFrame(pose, skeleton, ankleIndex).position;
+    // Model matrix is applied inside the solver; raycast in MODEL space via
+    // world coords — the scene's GroundRaycaster is defined in world space and
+    // T3.9 supplies an analytic caster in world units, so keep model space for
+    // simple rigs (identity or translation-only model matrices).
+    const hit = spec.ground.raycastDown(
+      [ankle[0], ankle[1] + rayStartHeight, ankle[2]],
+      rayStartHeight + maxRayDistance
+    );
+    if (!hit) continue;
+    const ankleHeight = leg.ankleHeight ?? ankleHeightDefault;
+    const target: Vec3 = [
+      hit.point[0] + hit.normal[0] * 0,
+      hit.point[1] + hit.normal[1] * ankleHeight,
+      hit.point[2] + hit.normal[2] * 0
+      // Sole offsets along X/Z by the normal's horizontal part are
+      // intentionally ignored — the ankle sits directly over the contact.
+    ];
+    const deltaY = target[1] - ankle[1];
+    const grounded = Math.abs(deltaY) <= plantThreshold;
+    plans.push({ spec: leg, index, ankleIndex, target, normal: hit.normal, deltaY, grounded });
+  }
+  if (plans.length === 0) return [];
+
+  // Pelvis drop = MINIMUM per-foot delta (deepest needed correction), clamped.
+  if (spec.pelvis) {
+    const pelvisIndex = jointIndex(skeleton, spec.pelvis);
+    const minDelta = Math.min(0, ...plans.map((plan) => plan.deltaY));
+    const drop = Math.max(-maxPelvisDrop, minDelta);
+    pose.positions[pelvisIndex * 3 + 1] = pose.positions[pelvisIndex * 3 + 1]! + drop;
+  }
+
+  // Pass 2 — solve legs + tilt feet.
+  const results: { leg: number; grounded: boolean; verticalCorrection: number; tiltDeg: number }[] = [];
+  for (const plan of plans) {
+    if (spec.lockOnContact && plan.grounded) {
+      results.push({ leg: plan.index, grounded: true, verticalCorrection: 0, tiltDeg: 0 });
+      continue;
+    }
+    solveTwoBoneIkRotations(pose, skeleton, modelMatrix, plan.spec, plan.target);
+
+    // Foot tilt: rotate the tip bone so its local +Y (sole normal) matches the
+    // ground normal, capped at maxFootTiltDeg — applied in the tip's parent frame.
+    const frame = fkFrame(pose, skeleton, plan.ankleIndex);
+    const up = rotateVec3(frame.rotation, [0, 1, 0]);
+    const tiltQ = quatFromUnitVectors(up, plan.normal);
+    const tiltAngle = Math.acos(Math.max(-1, Math.min(1, tiltQ[3]))) * 2 * (180 / Math.PI);
+    const capped = Math.min(tiltAngle, maxFootTiltDeg);
+    if (capped > 1e-4 && tiltAngle > 1e-4) {
+      const axis = [
+        up[1] * plan.normal[2] - up[2] * plan.normal[1],
+        up[2] * plan.normal[0] - up[0] * plan.normal[2],
+        up[0] * plan.normal[1] - up[1] * plan.normal[0]
+      ] as Vec3;
+      const axisLen = Math.hypot(axis[0], axis[1], axis[2]);
+      if (axisLen > 1e-6) {
+        const nAxis: Vec3 = [axis[0] / axisLen, axis[1] / axisLen, axis[2] / axisLen];
+        const applied = axisAngle(nAxis, (capped * Math.PI) / 180);
+        const newWorld = multiplyQuat(applied, frame.rotation);
+        const parent = skeleton.parentIndices[plan.ankleIndex] ?? -1;
+        const parentRot: readonly [number, number, number, number] = parent >= 0
+          ? fkFrame(pose, skeleton, parent).rotation
+          : [0, 0, 0, 1];
+        const inv: readonly [number, number, number, number] = [-parentRot[0], -parentRot[1], -parentRot[2], parentRot[3]];
+        const local = multiplyQuat(inv, newWorld);
+        const l = Math.hypot(local[0], local[1], local[2], local[3]) || 1;
+        pose.rotations[plan.ankleIndex * 4] = local[0] / l;
+        pose.rotations[plan.ankleIndex * 4 + 1] = local[1] / l;
+        pose.rotations[plan.ankleIndex * 4 + 2] = local[2] / l;
+        pose.rotations[plan.ankleIndex * 4 + 3] = local[3] / l;
+      }
+    }
+    results.push({ leg: plan.index, grounded: false, verticalCorrection: plan.deltaY, tiltDeg: Math.min(tiltAngle, maxFootTiltDeg) });
+  }
+  return results;
+}
