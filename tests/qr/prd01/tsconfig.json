@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["vite/client", "node"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../../../benchmarks/quality-rebuild/scenes/prd01/**/*.ts",
+    "../../../benchmarks/quality-rebuild/aura3d/scenes/prd01/**/*.ts",
+    "../../../benchmarks/quality-rebuild/three/scenes/prd01/**/*.ts",
+    "../../../packages/engine/src/lanes/prd01.ts",
+    "../../../packages/engine/src/lanes/prd01/**/*.ts",
+    "../../../packages/engine/src/agent-api/compiler/diagnosticOnly.prd01.ts"
+  ],
+  "exclude": ["harness/dist", "out", "node_modules"]
+}

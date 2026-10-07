@@ -1,0 +1,141 @@
+{
+  "root": "apps/showcase-gravity-post",
+  "files": 21,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts",
+      "line": 66,
+      "construct": "lights.point({ intensity: 2.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 28 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts",
+      "line": 66,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts",
+      "line": 67,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/courier-skiff-preview/main.ts",
+      "line": 67,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/freight-district-preview/main.ts",
+      "line": 47,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/freight-district-preview/main.ts",
+      "line": 47,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1197,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1197,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1198,
+      "construct": "lights.point({ intensity: 1.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1198,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1199,
+      "construct": "lights.point({ intensity: 1.3 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 16 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1199,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1200,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1201,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1207,
+      "construct": "lights.point({ intensity: 3.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 40 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1207,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1209,
+      "construct": "lights.point({ intensity: 2.45 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 31 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/main.ts",
+      "line": 1209,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

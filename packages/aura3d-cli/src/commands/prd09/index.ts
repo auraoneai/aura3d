@@ -1,8 +1,11 @@
 /**
- * C-39 lane command registrations — prd09 (PRD-09 §10 tooling): the shared
- * `perf-report` command + the four migration codemods whose output
+ * C-39 lane command registrations — prd09 registers its `aura3d` commands
+ * here via registerCliCommand (CONTRACTS.md): the `sfx admit` command, the
+ * shared `perf-report` command and the four migration codemods whose output
  * regenerates the route patch sets when a route's HEAD moves.
  */
+import "./sfx-admit";
+
 import { registerCliCommand, registerCodemod } from "../../contracts/commands.js";
 import { perfReportCommand } from "./perf-report.js";
 import { captureBranchesCodemod } from "./codemods/capture-branches.js";

@@ -1,4 +1,7 @@
+import type { MaterialFeatureContext } from "./contracts/materialLobes";
 import { Material, type RenderState } from "./Material";
+import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
 
@@ -61,6 +64,8 @@ export interface PBRProceduralEnvironmentMapOptions {
 }
 
 export class PBRMaterial extends Material {
+  private readonly prd04Options: PBRMaterialOptions;
+
   constructor(options: PBRMaterialOptions = {}) {
     const baseColor = options.baseColor ?? [1, 1, 1, 1];
     const environmentColor = options.environmentColor ?? [1, 1, 1];
@@ -245,6 +250,7 @@ export class PBRMaterial extends Material {
         { name: "u_instanceAttributeMode", kind: "float" }
       ]
     });
+    this.prd04Options = options;
   }
 
   set baseColor(value: readonly [number, number, number, number]) {
@@ -367,6 +373,11 @@ export class PBRMaterial extends Material {
   get environmentBrdfLutTexture(): TextureBinding | null {
     const value = this.getParameter("u_environmentBrdfLutTexture");
     return isTextureBinding(value) && value.texture ? value : null;
+  }
+
+  /** C-03 `ProgramFeatureSource` (PRD-04 P3-1): generated-path features from this material's options. Pure — unread by the legacy path. */
+  programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
+    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx);
   }
 }
 
