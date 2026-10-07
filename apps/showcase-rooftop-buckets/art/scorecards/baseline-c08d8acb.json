@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-rooftop-buckets",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-rooftop-buckets",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 3.0,
+        "modeling_assets": 3.0,
+        "texture_quality": 2.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 5.0,
+        "shadows": 2.0,
+        "ambient_lighting": 4.0,
+        "ibl_reflections": 2.0,
+        "tone_mapping": 4.0,
+        "color_management": 5.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 4.0,
+        "vfx": 4.0,
+        "particles": 3.0,
+        "animation_quality": 3.0,
+        "character_presentation": 5.0,
+        "camera": 4.0,
+        "composition": 4.0,
+        "scale_depth_perception": 4.0,
+        "atmospheric_effects": 2.0,
+        "gameplay_readability": 6.0,
+        "ui_hud": 6.0,
+        "typography": 5.0,
+        "polish_juice": 3.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 4.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Enclosed box room of flat slabs; no rooftop, skyline, or dusk sky, so it contradicts its own premise."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "The player is passable. Everything else is cubes, slabs, and faceted spheres; the crowd is placeholder-grade."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Effectively untextured: flat albedo everywhere, no court wood, concrete, fabric, or decals beyond lines."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Matte flat plastic or pure emissive; no material differentiation between court, metal, glass, and cloth."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No roughness variation, metal response, or Fresnel; the backboard is emissive instead of glass."
+        },
+        {
+          "category": "lighting",
+          "seen": "The neon emissive palette gives real mood. It is the strongest element, but it is all emissive with little key or rim modeling of forms."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible player shadow, crowd shadows, or bleacher occlusion; objects float."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Even, flat fill; no AO grounding in corners or under seats."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No floor reflections of the neon, which is the single most obvious missing effect for a neon court."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Backboard and arc clip to white; highlights don't roll off. Mobile is washed out at the bottom."
+        },
+        {
+          "category": "color_management",
+          "seen": "Coherent purple, cyan, and orange palette; saturation is a bit candy-flat but intentional."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are acceptable at 1080p; thin rails shimmer-prone (inferred); some stair-stepping on bleacher lines."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom only, and over-tuned: streaky smears on mobile, haze over the arc. No AO, no DOF, no color grade."
+        },
+        {
+          "category": "vfx",
+          "seen": "Emissive arc and rim flare read, but the arc is a thick unlit tube. Spark dashes look like UI ticks, not energy."
+        },
+        {
+          "category": "particles",
+          "seen": "A few yellow dash sprites and one flare; no trail particles, net reaction, or ambient motes."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Identical pose across all three desktop frames; ghosted body on release; static crowd."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "A real rigged humanoid with decent proportions, but seen from behind at a low angle, ungrounded, and ghosted in the action frame."
+        },
+        {
+          "category": "camera",
+          "seen": "Low-angle, off-axis framing hides the player's face and the hoop relationship. Mobile drops the player entirely."
+        },
+        {
+          "category": "composition",
+          "seen": "The hoop is small and centered against a busy bleacher wall; strong elements (sign, screens) compete with the subject."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No fog, DOF, or reflections, and the uniform crowd makes distance hard to read; the hoop feels close and small."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No haze volume, dusk sky gradient, or light shafts. Bloom is standing in for atmosphere."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Trajectory, spot markers, and meter are clear. The ball off the arc in the action frame and the frozen shot clock hurt."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean glass panels and consistent styling, but the meter label wraps and mobile buttons dominate."
+        },
+        {
+          "category": "typography",
+          "seen": "Tidy sans and mono pairing; broken wrap (\"(2\u2013/pt)\") and the \"07DUSK\" collision are amateur tells."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No screen shake, crowd reaction, net physics read, or hit-stop visible; frames are interchangeable."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "No player on screen, bloom smear, cropped sign, and about 40% UI. It reads as a debug view."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Neon mood lifts it above programmer art, but the assets and world are placeholder-tier."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

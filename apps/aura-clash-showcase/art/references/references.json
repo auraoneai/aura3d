@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "aura-clash-showcase",
+  "entries": [
+    {
+      "file": "references/night-city-hdri.json",
+      "source": "K1 night-city street / dusk rooftop city HDRI",
+      "licence": "reference-only",
+      "why": "Wet-neon skyline key direction and city-light IBL"
+    },
+    {
+      "file": "street-fighter-comparables.json",
+      "source": "shipped comparable: 2.5D fighting-game framing board (Street Fighter-style)",
+      "licence": "reference-only",
+      "why": "Fight-plane composition; fighters 45-60% of frame height"
+    },
+    {
+      "file": "wet-neon-materials.json",
+      "source": "wet asphalt + neon signage reference set",
+      "licence": "reference-only",
+      "why": "Neon signs at HDR emissive 4-8 over dark wet ground; SSR wet floor"
+    }
+  ]
+}

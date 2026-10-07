@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  PRD-14 §7.3 human review form — fully static, no network calls.
+  Fill it after a ≥ 5 minute play session (desktop High tier AND a Medium-tier
+  phone round need separate exports; file one per device/tier). "Export JSON"
+  downloads exactly the human[] entry shape the scorecard builder consumes
+  (aura3d.human-review/1, validated by human-review.schema.json).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura3D quality rebuild — human review</title>
+<style>
+  :root { color-scheme: dark; --fg: #e8ecf1; --muted: #9aa7b4; --line: #2b3642; --bg: #12171e; --card: #1a222c; --accent: #5bc0eb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 96px; }
+  h1 { font-size: 20px; } h2 { font-size: 15px; margin: 28px 0 8px; color: var(--accent); }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; background: var(--card); }
+  legend { padding: 0 6px; color: var(--muted); }
+  label { display: block; margin: 8px 0 2px; color: var(--muted); }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+    background: #0e141b; color: var(--fg); font: inherit;
+  }
+  textarea { min-height: 120px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; }
+  .score-row { display: flex; align-items: center; gap: 8px; }
+  .score-row label { flex: 1; margin: 0; color: var(--fg); font-family: ui-monospace, monospace; font-size: 12px; }
+  .score-row input { width: 76px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 160px; }
+  .check { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .check input { width: auto; }
+  button { margin-top: 20px; padding: 10px 22px; font: inherit; font-weight: 600; border: 0; border-radius: 8px; background: var(--accent); color: #07131c; cursor: pointer; }
+  #status { margin-top: 10px; color: #ffb454; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Human review — Aura3D quality rebuild (PRD-14)</h1>
+  <p>One export per device/tier session. Play for at least 5 minutes, blind to the vision score, then score every category 0–10 (0.5 steps).</p>
+
+  <fieldset><legend>Session</legend>
+    <div class="row">
+      <div><label for="gameId">Game id (games.json)</label><input id="gameId" type="text" placeholder="showcase-bank-shot"></div>
+      <div><label for="round">Round</label><input id="round" type="text" placeholder="IC-4"></div>
+    </div>
+    <div class="row">
+      <div><label for="judgeId">Reviewer login</label><input id="judgeId" type="text" placeholder="github-login"></div>
+      <div><label for="device">Device</label><input id="device" type="text" placeholder="MacBook Air M2 / Safari 18"></div>
+    </div>
+    <div class="row">
+      <div><label for="tier">Quality tier</label>
+        <select id="tier"><option>low</option><option>medium</option><option selected>high</option><option>ultra</option></select></div>
+      <div><label for="playedMinutes">Minutes played</label><input id="playedMinutes" type="number" min="5" step="1" value="5"></div>
+      <div><label for="fpsP50">Measured FPS p50</label><input id="fpsP50" type="number" min="0" step="0.1"></div>
+      <div><label for="fpsP95">Measured FPS p95</label><input id="fpsP95" type="number" min="0" step="0.1"></div>
+    </div>
+    <div class="check"><input id="competitive" type="checkbox"><label for="competitive" style="color:var(--fg)">Competitive with a well-built modern three.js browser game</label></div>
+  </fieldset>
+
+  <h2>Visual categories (C-32)</h2>
+  <fieldset><legend>0–10, 0.5 steps</legend><div class="grid" id="visualGrid"></div></fieldset>
+
+  <h2>Non-visual categories (research/20 rubric)</h2>
+  <fieldset><legend>0–10, 0.5 steps</legend><div class="grid" id="nonVisualGrid"></div></fieldset>
+
+  <fieldset><legend>Findings / notes (≥ 200 chars — what looks poor, what to fix first)</legend>
+    <textarea id="notes" placeholder="Free-text findings. This is required — the rejection loop feeds on it."></textarea>
+  </fieldset>
+
+  <button id="export" type="button">Export JSON</button>
+  <div id="status" role="status"></div>
+</main>
+<script>
+"use strict";
+// Keep in lockstep with tools/quality-gate/src/contracts.ts GAME_VISUAL_CATEGORIES
+// and the nonVisual record of §7.3 (performance is captured via measuredFps).
+const VISUAL = [
+  "environment_world","modeling_assets","texture_quality","material_quality","pbr_credibility",
+  "lighting","shadows","ambient_lighting","ibl_reflections","tone_mapping","color_management",
+  "anti_aliasing","postprocessing","vfx","particles","animation_quality","character_presentation",
+  "camera","composition","scale_depth_perception","atmospheric_effects","gameplay_readability",
+  "ui_hud","typography","polish_juice","mobile_presentation","overall_visual_quality"
+];
+const NONVISUAL = ["sound_audio","controls","physics_feel","game_feel","loading_transitions"];
+
+function scoreInputs(grid, cats) {
+  for (const c of cats) {
+    const row = document.createElement("div");
+    row.className = "score-row";
+    const label = document.createElement("label");
+    label.htmlFor = "s_" + c; label.textContent = c;
+    const input = document.createElement("input");
+    input.id = "s_" + c; input.type = "number"; input.min = "0"; input.max = "10"; input.step = "0.5"; input.required = true;
+    row.append(label, input);
+    grid.append(row);
+  }
+}
+scoreInputs(document.getElementById("visualGrid"), VISUAL);
+scoreInputs(document.getElementById("nonVisualGrid"), NONVISUAL);
+
+function readScores(cats) {
+  const out = {};
+  for (const c of cats) {
+    const v = document.getElementById("s_" + c).value;
+    if (v === "") throw new Error("missing score: " + c);
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0 || n > 10) throw new Error("bad score: " + c);
+    out[c] = n;
+  }
+  return out;
+}
+
+document.getElementById("export").addEventListener("click", () => {
+  const status = document.getElementById("status");
+  try {
+    const human = {
+      judge: { kind: "human", id: document.getElementById("judgeId").value.trim() },
+      device: document.getElementById("device").value.trim(),
+      tier: document.getElementById("tier").value,
+      playedMinutes: Number(document.getElementById("playedMinutes").value),
+      visual: readScores(VISUAL),
+      nonVisual: readScores(NONVISUAL),
+      measuredFps: {
+        p50: Number(document.getElementById("fpsP50").value),
+        p95: Number(document.getElementById("fpsP95").value)
+      },
+      competitiveWithModernThree: document.getElementById("competitive").checked,
+      notes: document.getElementById("notes").value.trim()
+    };
+    if (!human.judge.id) throw new Error("reviewer login required");
+    if (!human.device) throw new Error("device required");
+    if (!(human.playedMinutes >= 5)) throw new Error("playedMinutes must be ≥ 5");
+    if (human.notes.length < 200) throw new Error("notes must be ≥ 200 chars");
+    const doc = {
+      schema: "aura3d.human-review/1",
+      gameId: document.getElementById("gameId").value.trim(),
+      round: document.getElementById("round").value.trim(),
+      human
+    };
+    if (!doc.gameId || !doc.round) throw new Error("gameId and round required");
+    const blob = new Blob([JSON.stringify(doc, null, 2) + "\n"], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `human-review_${doc.gameId}_${doc.round}_${human.judge.id}_${human.tier}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    status.textContent = "";
+  } catch (err) {
+    status.textContent = String(err && err.message || err);
+  }
+});
+</script>
+</body>
+</html>

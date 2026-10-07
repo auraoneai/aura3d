@@ -395,7 +395,7 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return {
     meanDelta: Number(meanDelta.toFixed(4)),
     maxDelta: Number(maxDelta.toFixed(4)),
-    changedPixels
+    changedPixels,
   };
 }
 

@@ -25,6 +25,14 @@
     "node_modules",
     "tests/**/fixtures/**",
     "tests/**/before/**",
-    "tests/**/after/**"
+    "tests/**/after/**",
+    // Lane test trees that do not typecheck under the check tsconfig yet
+    // (mirrors origin/main's tsconfig.build.json exclusions — each lane
+    // fixes its own drift and re-adds itself):
+    "tests/qr/prd04",
+    "tests/qr/prd07",
+    "tests/qr/prd08",
+    "tests/qr/prd11",
+    "tests/qr/prd14"
   ]
 }

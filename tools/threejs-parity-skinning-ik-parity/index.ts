@@ -529,7 +529,7 @@ function computeDiff(a, b) {
     if (delta > 20) changedPixels += 1;
   }
   const meanDelta = total / (a.width * a.height);
-  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels };
+  return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, };
 }
 
 async function drawSideBySide(canvas, a3dDataUrl, threeDataUrl, diff) {

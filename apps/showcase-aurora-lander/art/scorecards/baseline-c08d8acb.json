@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-aurora-lander",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-aurora-lander",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 1.5,
+        "modeling_assets": 4.0,
+        "texture_quality": 1.5,
+        "material_quality": 2.5,
+        "pbr_credibility": 2.0,
+        "lighting": 2.5,
+        "shadows": 1.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 3.5,
+        "color_management": 4.5,
+        "anti_aliasing": 5.0,
+        "postprocessing": 3.0,
+        "vfx": 2.5,
+        "particles": 1.0,
+        "animation_quality": 3.0,
+        "character_presentation": 3.5,
+        "camera": 2.0,
+        "composition": 1.5,
+        "scale_depth_perception": 1.5,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 4.0,
+        "ui_hud": 5.5,
+        "typography": 5.5,
+        "polish_juice": 2.0,
+        "mobile_presentation": 4.0,
+        "overall_visual_quality": 2.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "One untextured green blob that doesn't span the screen, and in 3 of 4 shots no world at all."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "The lander has reasonable silhouette detail (dome, legs, panels, antenna) but is chunky and low-poly. The terrain is a smooth noise mesh."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "No visible textures anywhere; everything is flat albedo."
+        },
+        {
+          "category": "material_quality",
+          "seen": "The lander reads as flat teal plastic with no metal/roughness variation. The terrain is matte flat green."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No specular response or Fresnel, and nothing reads as metal, regolith or glass."
+        },
+        {
+          "category": "lighting",
+          "seen": "There is no discernible key light direction. The flame casts no light onto the lander or ground, and the terrain is uniformly lit."
+        },
+        {
+          "category": "shadows",
+          "seen": "No shadows visible: none from the lander on the ground, and no self-shadowing on its legs. (Partly inferred: the ground is rarely on screen.)"
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Flat ambient fill keeps the lander visible but kills form. There is no AO in the panel crevices."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No environment reflections on any surface."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "The flame core and the lander underside clip to white, while the rest sits in murky mid-navy, so the frame has poor dynamic range use."
+        },
+        {
+          "category": "color_management",
+          "seen": "The palette is coherent (teal/navy/amber) but desaturated and muddy. The green terrain clashes with the teal and has no value separation."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are mostly clean. There is mild stair-stepping on the lander legs and antenna at this small size (JPEG makes this partly unclear)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Weak bloom halos on the flame and dots only. No grading, vignette, chromatic or lens treatment. The bloom on the stray dot looks like a bug."
+        },
+        {
+          "category": "vfx",
+          "seen": "The exhaust is a single static additive capsule mesh: no flicker shape, no taper to a nozzle, no shock diamonds, no heat."
+        },
+        {
+          "category": "particles",
+          "seen": "No exhaust particles, dust kick-up, RCS puffs or debris. The \"stars\" are a dozen dots."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Rigid-body tilt only. There is no visible leg suspension, RCS pulse or flame variance cue in the stills."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The lander is the hero but tiny (about 4% of the frame) and poorly lit. Its silhouette is the strongest thing on screen, which is a low bar."
+        },
+        {
+          "category": "camera",
+          "seen": "The camera frames empty sky and loses the ground entirely at altitude. There is no altitude-adaptive zoom and no lead toward the target pad."
+        },
+        {
+          "category": "composition",
+          "seen": "The subject floats in a void. The pad is cropped at the corner, and frames have no foreground, midground or background layering."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "There are no depth cues (parallax, haze, size reference) and the stars sit in the same visual plane as the lander. 60 m and 120 m look identical."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "The game is called *Aurora* Lander and has no aurora. There is no sky gradient, haze or horizon glow."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "The HUD numbers are legible, but the core gameplay information (where the ground and pad are, distance and slope) is often absent from the view."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean, consistent chip styling and a tidy sidebar. It reads as dev-tool or prototype (\"PROTOTYPE \u00b7 AUTHORED ARCADE DYNAMICS\"). The fuel bar is a sliver."
+        },
+        {
+          "category": "typography",
+          "seen": "The monospace HUD is legible and on-theme. The sidebar text is tiny at 1080p, and the title has no hierarchy or brand treatment."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No camera shake, flame flicker, screen-space feedback, landing guides or ground glow. The game is static and silent-looking."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "The controls are thumb-sized and well spaced. The HUD wraps into three rows, the subject hugs the edge, the panel eats a third of the screen, and the playfield is still mostly empty."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "It reads as a functional prototype: early-2000s Flash/tech-demo level art direction on a modern renderer."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

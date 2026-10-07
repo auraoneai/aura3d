@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-turbo-drift-circuit",
+  "entries": [
+    {
+      "file": "references/sunset-hdri.json",
+      "source": "K1 sunset alpine road HDRI",
+      "licence": "reference-only",
+      "why": "Golden-hour low sun; long shadow cascades down the valley"
+    },
+    {
+      "file": "trackmania-comparables.json",
+      "source": "shipped comparable: TrackMania alpine track board",
+      "licence": "reference-only",
+      "why": "Readable racing line at speed; contrast between road surface and terrain"
+    },
+    {
+      "file": "alpine-architecture.json",
+      "source": "swiss alpine chalet + modular circuit-props set",
+      "licence": "reference-only",
+      "why": "K4 modular roadside props and grandstand silhouettes at golden hour"
+    }
+  ]
+}

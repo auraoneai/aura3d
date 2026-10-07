@@ -146,7 +146,7 @@ export function createProductionComposedProductionStageScene(
     scene: undefined,
     collectRenderItems: undefined,
     renderItems: items,
-    ...(options.environmentLighting !== undefined ? { environmentLighting: options.environmentLighting } : {}),
+    ...(options.environmentLighting ? { environmentLighting: options.environmentLighting } : {}),
     ...(options.postprocess !== undefined ? { postprocess: options.postprocess } : {})
   }, frameBounds, viewport, options);
   return { ...staged, frameBounds };
@@ -319,7 +319,7 @@ function createProductionHdrSkyboxItem(
     material: new ProductionHdrSkyboxMaterial(options),
     label: "production-runtime-visible-hdr-skybox",
     includeInAutoFrame: false,
-    modelMatrix: composeMat4(cameraPosition, [0, 0, 0, 1], [radius, radius, radius])
+    modelMatrix: composeMat4([cameraPosition[0], cameraPosition[1], cameraPosition[2]], [0, 0, 0, 1], [radius, radius, radius])
   };
 }
 

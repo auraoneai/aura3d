@@ -207,7 +207,7 @@ export const prd02Specs = {
     ],
     objects: [
       ground(50, { color: "#2c3036", roughness: 0.9, metalness: 0 }),
-      { ...sceneSpecs["16-instancing"].objects[1]!, castShadow: true }
+      { ...sceneSpecs["16-instancing"].objects[1]!, castShadow: true } as ObjectSpec
     ],
     shadows: defaultShadows(25),
     masks: ["shadow-receiver"],

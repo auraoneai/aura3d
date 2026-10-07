@@ -92,7 +92,7 @@ describe('V01 visual matrix acceptance fails closed', () => {
      three: { [REQUIRED_VISUAL_QUALITY_METRIC[family]]: 0.3 },
      controls: { auraEnabledVsDisabled: 0.1, threeEnabledVsDisabled: 0.1, brokenRejected: true },
    })),
-   complete: true, qualityTargetsMet: true, superiorityTargetsMet: true,
+   complete: true, qualityTargetsMet: true,
    superiorityClaims: VISUAL_FAMILIES.map(family => ({ family, verdict: 'win', winningMetrics: [`${REQUIRED_VISUAL_QUALITY_METRIC[family]}: win`] })),
    featureQualityCoverage: Object.fromEntries(VISUAL_FAMILIES.map(family => [family, true])),
    failures: [], fidelitySSIM: Object.fromEntries(VISUAL_FAMILIES.map(family => [family, 0.9])), artifacts: artifacts.map(reference => ({ ...reference })),
