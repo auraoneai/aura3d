@@ -1,0 +1,2061 @@
+From 6efa7dd279627ae4bca3ef0fab819160150954bc Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 17:11:40 +0000
+Subject: [PATCH] migration(showcase-rooftop-buckets) step 5: sound.ts over
+ game-sfx-core
+
+buckets-audio.ts -> src/sound.ts cue map over createGameAudio (sports/net-swish, rim, ball-bounce, score-tick, stinger win/checkpoint/level-start/lose, ambience.wind-high bed); deletes build-sfx.mjs, generated WAVs, public copies and the rooftopBuckets*Sfx typed-asset registrations.
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ .../assets/sfx/ambientRooftop.wav             |   3 -
+ .../assets/sfx/boardThud.wav                  |   3 -
+ .../assets/sfx/brickMiss.wav                  |   3 -
+ .../assets/sfx/buzzerFail.wav                 |   3 -
+ .../assets/sfx/chargeTick.wav                 |   3 -
+ .../assets/sfx/fireIgnite.wav                 |   3 -
+ .../assets/sfx/goldBall.wav                   |   3 -
+ .../assets/sfx/heatAdvance.wav                |   3 -
+ .../assets/sfx/rimClank.wav                   |   3 -
+ .../assets/sfx/swish.wav                      |   3 -
+ apps/showcase-rooftop-buckets/package.json    |   1 -
+ .../scripts/build-sfx.mjs                     | 236 -----
+ .../src/buckets-audio.ts                      |  78 --
+ apps/showcase-rooftop-buckets/src/main.ts     |   4 +-
+ .../src/scenario-drive.ts                     |  43 +
+ .../src/scenarios/buzzer.ts                   |  13 +
+ .../src/scenarios/fire.ts                     |  15 +
+ .../src/scenarios/gold-miss.ts                |  13 +
+ .../src/scenarios/gold-win.ts                 |  13 +
+ .../src/scenarios/index.ts                    |  21 +
+ .../src/scenarios/miss.ts                     |  12 +
+ .../src/scenarios/open-clear.ts               |  13 +
+ .../src/scenarios/pressure-clear.ts           |  15 +
+ .../src/scenarios/pressure.ts                 |  15 +
+ .../src/scenarios/spot-clear.ts               |  14 +
+ apps/showcase-rooftop-buckets/src/sound.ts    |  83 ++
+ ...oftopBucketsAmbientRooftopSfx.1f654bd9.wav |   3 -
+ ...oftopBucketsAmbientRooftopSfx.6cdec882.wav |   3 -
+ .../rooftopBucketsAmbientRooftopSfx.thumb.svg |   1 -
+ .../rooftopBucketsBoardThudSfx.f8b85675.wav   |   3 -
+ .../rooftopBucketsBoardThudSfx.thumb.svg      |   1 -
+ .../rooftopBucketsBrickMissSfx.1d29f292.wav   |   3 -
+ .../rooftopBucketsBrickMissSfx.e3679e38.wav   |   3 -
+ .../rooftopBucketsBrickMissSfx.thumb.svg      |   1 -
+ .../rooftopBucketsBuzzerFailSfx.0ffe0863.wav  |   3 -
+ .../rooftopBucketsBuzzerFailSfx.f5d970be.wav  |   3 -
+ .../rooftopBucketsBuzzerFailSfx.thumb.svg     |   1 -
+ .../rooftopBucketsChargeTickSfx.c0fbfa2a.wav  |   3 -
+ .../rooftopBucketsChargeTickSfx.thumb.svg     |   1 -
+ .../rooftopBucketsFireIgniteSfx.1f4baf30.wav  |   3 -
+ .../rooftopBucketsFireIgniteSfx.dafa1ffa.wav  |   3 -
+ .../rooftopBucketsFireIgniteSfx.thumb.svg     |   1 -
+ .../rooftopBucketsGoldBallSfx.31841c8d.wav    |   3 -
+ .../rooftopBucketsGoldBallSfx.thumb.svg       |   1 -
+ .../rooftopBucketsHeatAdvanceSfx.2c514523.wav |   3 -
+ .../rooftopBucketsHeatAdvanceSfx.thumb.svg    |   1 -
+ .../rooftopBucketsRimClankSfx.6fee3520.wav    |   3 -
+ .../rooftopBucketsRimClankSfx.thumb.svg       |   1 -
+ .../rooftopBucketsSwishSfx.11609658.wav       |   3 -
+ .../rooftopBucketsSwishSfx.cc849aa5.wav       |   3 -
+ .../rooftopBucketsSwishSfx.thumb.svg          |   1 -
+ src/aura-assets.ts                            | 920 ------------------
+ 52 files changed, 272 insertions(+), 1322 deletions(-)
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/assets/sfx/swish.wav
+ delete mode 100644 apps/showcase-rooftop-buckets/scripts/build-sfx.mjs
+ delete mode 100644 apps/showcase-rooftop-buckets/src/buckets-audio.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenario-drive.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/buzzer.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/fire.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/gold-miss.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/gold-win.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/index.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/miss.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/open-clear.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/pressure-clear.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/pressure.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/scenarios/spot-clear.ts
+ create mode 100644 apps/showcase-rooftop-buckets/src/sound.ts
+ delete mode 100644 public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsAmbientRooftopSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsBoardThudSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsBrickMissSfx.e3679e38.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsBrickMissSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsBuzzerFailSfx.f5d970be.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsBuzzerFailSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsChargeTickSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsFireIgniteSfx.dafa1ffa.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsFireIgniteSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsGoldBallSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsHeatAdvanceSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsRimClankSfx.thumb.svg
+ delete mode 100644 public/aura-assets/rooftopBucketsSwishSfx.11609658.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav
+ delete mode 100644 public/aura-assets/rooftopBucketsSwishSfx.thumb.svg
+
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav b/apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav
+deleted file mode 100644
+index 2e17742c..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:6cdec8823512c0ce5a633e1fc6db7c1955d6416065fec5c047e710c30730b919
+-size 264644
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav b/apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav
+deleted file mode 100644
+index 4e8f7f4c..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:f8b856751031ec089ceec36847e04ba1d4c3b518db7062ff5f4127172620c223
+-size 13274
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav b/apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav
+deleted file mode 100644
+index 9ae09f20..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1d29f2928e1b503eb5b486682579c1f15dba02ef290d30b50430fb58a3ef9e57
+-size 17684
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav b/apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav
+deleted file mode 100644
+index 8290ec0d..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0ffe086399c8d73f433e3e4c328c7cb115228a40329e94d94d8cce09027e3a66
+-size 44144
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav b/apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav
+deleted file mode 100644
+index a354a52e..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:c0fbfa2ac2be59ec9e1dfa416ddc528f1605103b9dac637b5ecfaa5b2e98e19d
+-size 1808
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav b/apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav
+deleted file mode 100644
+index 3601bf38..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1f4baf30d7c9b7e5cf553e4f7c040e9b6af2eb3d46c5966000c4d40c4f9075a3
+-size 52964
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav b/apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav
+deleted file mode 100644
+index ae3c89b5..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:31841c8dca6487fae8e0ac212058c57fd5d735fae1022a2abb475f8e9c81d8f4
+-size 44144
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav b/apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav
+deleted file mode 100644
+index 03b73e6e..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:2c514523373ca36d3ca9472a7c273232abcb3a8d3f4dd6ad8d4bddf3c3538a60
+-size 61782
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav b/apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav
+deleted file mode 100644
+index 77f04587..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:6fee35201443c106394307fe5e5251d6c55b5f314dda6fbc0ce313dd3b23fc58
+-size 22094
+diff --git a/apps/showcase-rooftop-buckets/assets/sfx/swish.wav b/apps/showcase-rooftop-buckets/assets/sfx/swish.wav
+deleted file mode 100644
+index b3ebae00..00000000
+--- a/apps/showcase-rooftop-buckets/assets/sfx/swish.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:cc849aa5b7f54326f12e759378d5e83d433e07fc213c325ea835609852d7dfd5
+-size 17684
+diff --git a/apps/showcase-rooftop-buckets/package.json b/apps/showcase-rooftop-buckets/package.json
+index 7d0c4a0e..431b042c 100644
+--- a/apps/showcase-rooftop-buckets/package.json
++++ b/apps/showcase-rooftop-buckets/package.json
+@@ -8,7 +8,6 @@
+     "typecheck": "tsc -p tsconfig.json --noEmit",
+     "build": "vite build",
+     "preview": "vite preview --port 4189",
+-    "build:sfx": "node scripts/build-sfx.mjs",
+     "build:models": "node scripts/build-models.mjs",
+     "register:assets": "node scripts/register-assets.mjs",
+     "evidence:performance": "pnpm exec tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+diff --git a/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs b/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs
+deleted file mode 100644
+index c9651340..00000000
+--- a/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs
++++ /dev/null
+@@ -1,236 +0,0 @@
+-/**
+- * Synthesizes CC0 WAV audio cues for Rooftop Buckets showcase.
+- */
+-import { writeFileSync, mkdirSync } from "node:fs";
+-import { resolve, dirname } from "node:path";
+-import { fileURLToPath } from "node:url";
+-
+-const __dirname = dirname(fileURLToPath(import.meta.url));
+-const SFX_DIR = resolve(__dirname, "../assets/sfx");
+-mkdirSync(SFX_DIR, { recursive: true });
+-
+-const SAMPLE_RATE = 44100;
+-let noiseSeed = 0x524f4f46;
+-function deterministicNoise() {
+-  noiseSeed = (noiseSeed * 1664525 + 1013904223) >>> 0;
+-  return (noiseSeed / 0xffffffff) * 2 - 1;
+-}
+-
+-function createWavHeader(numSamples, sampleRate = SAMPLE_RATE, channels = 1) {
+-  const bytesPerSample = 2; // 16-bit PCM
+-  const blockAlign = channels * bytesPerSample;
+-  const byteRate = sampleRate * blockAlign;
+-  const dataSize = numSamples * blockAlign;
+-  const buffer = new ArrayBuffer(44);
+-  const view = new DataView(buffer);
+-
+-  // "RIFF" chunk descriptor
+-  view.setUint8(0, "R".charCodeAt(0));
+-  view.setUint8(1, "I".charCodeAt(0));
+-  view.setUint8(2, "F".charCodeAt(0));
+-  view.setUint8(3, "F".charCodeAt(0));
+-  view.setUint32(4, 36 + dataSize, true);
+-  view.setUint8(8, "W".charCodeAt(0));
+-  view.setUint8(9, "A".charCodeAt(0));
+-  view.setUint8(10, "V".charCodeAt(0));
+-  view.setUint8(11, "E".charCodeAt(0));
+-
+-  // "fmt " sub-chunk
+-  view.setUint8(12, "f".charCodeAt(0));
+-  view.setUint8(13, "m".charCodeAt(0));
+-  view.setUint8(14, "t".charCodeAt(0));
+-  view.setUint8(15, " ".charCodeAt(0));
+-  view.setUint32(16, 16, true); // SubChunk1Size (16 for PCM)
+-  view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
+-  view.setUint16(22, channels, true);
+-  view.setUint32(24, sampleRate, true);
+-  view.setUint32(28, byteRate, true);
+-  view.setUint16(32, blockAlign, true);
+-  view.setUint16(34, bytesPerSample * 8, true); // BitsPerSample
+-
+-  // "data" sub-chunk
+-  view.setUint8(36, "d".charCodeAt(0));
+-  view.setUint8(37, "a".charCodeAt(0));
+-  view.setUint8(38, "t".charCodeAt(0));
+-  view.setUint8(39, "a".charCodeAt(0));
+-  view.setUint32(40, dataSize, true);
+-
+-  return buffer;
+-}
+-
+-function writeWav(filename, samples) {
+-  const numSamples = samples.length;
+-  const header = createWavHeader(numSamples);
+-  const data = new Int16Array(numSamples);
+-  for (let i = 0; i < numSamples; i++) {
+-    const s = Math.max(-1, Math.min(1, samples[i]));
+-    data[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+-  }
+-  const fullBuffer = Buffer.concat([Buffer.from(header), Buffer.from(data.buffer)]);
+-  const outPath = resolve(SFX_DIR, filename);
+-  writeFileSync(outPath, fullBuffer);
+-  console.log(`Wrote ${filename} (${fullBuffer.length} bytes)`);
+-}
+-
+-// 1. chargeTick.wav - 20ms quick crisp click
+-{
+-  const duration = 0.02;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 250);
+-    samples[i] = Math.sin(2 * Math.PI * 880 * t) * env * 0.4;
+-  }
+-  writeWav("chargeTick.wav", samples);
+-}
+-
+-// 2. rimClank.wav - 250ms metallic rim resonance
+-{
+-  const duration = 0.25;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 18);
+-    const wave =
+-      0.5 * Math.sin(2 * Math.PI * 520 * t) +
+-      0.3 * Math.sin(2 * Math.PI * 1040 * t) +
+-      0.2 * Math.sin(2 * Math.PI * 1560 * t);
+-    samples[i] = wave * env * 0.8;
+-  }
+-  writeWav("rimClank.wav", samples);
+-}
+-
+-// 3. boardThud.wav - 150ms backboard thud
+-{
+-  const duration = 0.15;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 30);
+-    const wave = 0.7 * Math.sin(2 * Math.PI * 95 * t) + 0.3 * Math.sin(2 * Math.PI * 190 * t);
+-    samples[i] = wave * env * 0.9;
+-  }
+-  writeWav("boardThud.wav", samples);
+-}
+-
+-// 4. swish.wav - 200ms clean net swish noise
+-{
+-  const duration = 0.2;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.sin((t / duration) * Math.PI) * Math.exp(-t * 6);
+-    const noise = deterministicNoise();
+-    samples[i] = noise * env * 0.7;
+-  }
+-  writeWav("swish.wav", samples);
+-}
+-
+-// 5. brickMiss.wav - 200ms dull clunk miss
+-{
+-  const duration = 0.2;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 25);
+-    const wave = 0.6 * Math.sin(2 * Math.PI * 220 * t) + 0.4 * deterministicNoise();
+-    samples[i] = wave * env * 0.7;
+-  }
+-  writeWav("brickMiss.wav", samples);
+-}
+-
+-// 6. fireIgnite.wav - 600ms whoosh flare
+-{
+-  const duration = 0.6;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.sin((t / duration) * Math.PI);
+-    const freq = 120 + 380 * (t / duration);
+-    const synth = Math.sin(2 * Math.PI * freq * t);
+-    const noise = deterministicNoise();
+-    samples[i] = (synth * 0.5 + noise * 0.5) * env * 0.8;
+-  }
+-  writeWav("fireIgnite.wav", samples);
+-}
+-
+-// 7. goldBall.wav - 500ms sparkle chime
+-{
+-  const duration = 0.5;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.exp(-t * 8);
+-    const chimes =
+-      0.3 * Math.sin(2 * Math.PI * 1046.5 * t) + // C6
+-      0.3 * Math.sin(2 * Math.PI * 1318.5 * t) + // E6
+-      0.3 * Math.sin(2 * Math.PI * 1567.98 * t); // G6
+-    samples[i] = chimes * env * 0.75;
+-  }
+-  writeWav("goldBall.wav", samples);
+-}
+-
+-// 8. heatAdvance.wav - 700ms triumphant fanfare
+-{
+-  const duration = 0.7;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const step = Math.floor(t / 0.15);
+-    const freqs = [440, 554.37, 659.25, 880]; // A major
+-    const f = freqs[Math.min(step, freqs.length - 1)];
+-    const env = Math.exp(-((t % 0.15) * 12));
+-    samples[i] = Math.sin(2 * Math.PI * f * t) * env * 0.7;
+-  }
+-  writeWav("heatAdvance.wav", samples);
+-}
+-
+-// 9. buzzerFail.wav - 500ms retro buzzer
+-{
+-  const duration = 0.5;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    const env = Math.min(1, t / 0.02) * Math.max(0, 1 - t / duration);
+-    const s1 = Math.sin(2 * Math.PI * 164.81 * t);
+-    const s2 = Math.sin(2 * Math.PI * 174.61 * t);
+-    samples[i] = (s1 * 0.5 + s2 * 0.5) * env * 0.6;
+-  }
+-  writeWav("buzzerFail.wav", samples);
+-}
+-
+-// 10. ambientRooftop.wav - 3.0s seamless dusk city ambiance pad (D-minor warm chord)
+-{
+-  const duration = 3.0;
+-  const N = Math.floor(duration * SAMPLE_RATE);
+-  const samples = new Float32Array(N);
+-  const chord = [146.83, 220.0, 293.66, 349.23]; // D3, A3, D4, F4
+-  for (let i = 0; i < N; i++) {
+-    const t = i / SAMPLE_RATE;
+-    let wave = 0;
+-    for (let c = 0; c < chord.length; c++) {
+-      const f = chord[c];
+-      const lfo = 0.85 + 0.15 * Math.sin((2 * Math.PI * (t / duration) * 2) + c);
+-      wave += Math.sin(2 * Math.PI * f * t) * lfo * 0.22;
+-    }
+-    samples[i] = wave;
+-  }
+-  // Crossfade edges for click-free loop
+-  const fade = Math.floor(0.08 * SAMPLE_RATE);
+-  for (let i = 0; i < fade; i++) {
+-    const factor = i / fade;
+-    samples[i] *= factor;
+-    samples[N - 1 - i] *= factor;
+-  }
+-  writeWav("ambientRooftop.wav", samples);
+-}
+-console.log("Rooftop Buckets audio cues generated successfully.");
+diff --git a/apps/showcase-rooftop-buckets/src/buckets-audio.ts b/apps/showcase-rooftop-buckets/src/buckets-audio.ts
+deleted file mode 100644
+index 54172b4d..00000000
+--- a/apps/showcase-rooftop-buckets/src/buckets-audio.ts
++++ /dev/null
+@@ -1,78 +0,0 @@
+-/**
+- * Audio controller for Rooftop Buckets.
+- */
+-import { assets } from "../../../src/aura-assets";
+-
+-export type BucketsAudioCue =
+-  | "chargeTick"
+-  | "rimClank"
+-  | "boardThud"
+-  | "swish"
+-  | "brickMiss"
+-  | "fireIgnite"
+-  | "goldBall"
+-  | "heatAdvance"
+-  | "buzzerFail"
+-  | "ambientRooftop";
+-
+-export class BucketsAudioController {
+-  private readonly audioElements = new Map<BucketsAudioCue, HTMLAudioElement>();
+-  private ambienceElement: HTMLAudioElement | null = null;
+-  public readonly audioCuesHeard: string[] = [];
+-
+-  constructor() {
+-    if (typeof window !== "undefined") {
+-      this.initAudioBuffers();
+-    }
+-  }
+-
+-  private initAudioBuffers(): void {
+-    const cueMap: Record<BucketsAudioCue, string> = {
+-      chargeTick: assets.rooftopBucketsChargeTickSfx.url,
+-      rimClank: assets.rooftopBucketsRimClankSfx.url,
+-      boardThud: assets.rooftopBucketsBoardThudSfx.url,
+-      swish: assets.rooftopBucketsSwishSfx.url,
+-      brickMiss: assets.rooftopBucketsBrickMissSfx.url,
+-      fireIgnite: assets.rooftopBucketsFireIgniteSfx.url,
+-      goldBall: assets.rooftopBucketsGoldBallSfx.url,
+-      heatAdvance: assets.rooftopBucketsHeatAdvanceSfx.url,
+-      buzzerFail: assets.rooftopBucketsBuzzerFailSfx.url,
+-      ambientRooftop: assets.rooftopBucketsAmbientRooftopSfx.url
+-    };
+-
+-    for (const [cue, url] of Object.entries(cueMap) as [BucketsAudioCue, string][]) {
+-      const audio = new Audio(url);
+-      audio.preload = "auto";
+-      this.audioElements.set(cue, audio);
+-    }
+-  }
+-
+-  public playCue(cue: BucketsAudioCue, volume = 0.8): void {
+-    this.audioCuesHeard.push(cue);
+-    const audio = this.audioElements.get(cue);
+-    if (!audio) return;
+-
+-    try {
+-      audio.currentTime = 0;
+-      audio.volume = Math.max(0, Math.min(1, volume));
+-      audio.play().catch(() => {});
+-    } catch {
+-      // Audio autoplay policy fallback
+-    }
+-  }
+-
+-  public startAmbience(): void {
+-    const audio = this.audioElements.get("ambientRooftop");
+-    if (!audio) return;
+-    this.ambienceElement = audio;
+-    audio.loop = true;
+-    audio.volume = 0.35;
+-    audio.play().catch(() => {});
+-  }
+-
+-  public stopAmbience(): void {
+-    if (this.ambienceElement) {
+-      this.ambienceElement.pause();
+-    }
+-  }
+-}
+diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+index 2d06e68e..95b98ae6 100644
+--- a/apps/showcase-rooftop-buckets/src/main.ts
++++ b/apps/showcase-rooftop-buckets/src/main.ts
+@@ -45,7 +45,7 @@ import { createRooftopDressing } from "./environment";
+ import { createGame } from "@aura3d/game";
+ import { rooftopScenarios } from "./scenarios";
+ import { bindRooftopDrive } from "./scenario-drive";
+-import { BucketsAudioController } from "./buckets-audio";
++import { createRooftopSound } from "./sound";
+ 
+ 
+ export interface RooftopBucketsEvidence {
+@@ -182,7 +182,7 @@ const COURT_REVIEW_HIDDEN_NODES = [
+ ] as const;
+ 
+ // ---------------- Game State ----------------
+-const audio = new BucketsAudioController();
++const audio = createRooftopSound();
+ 
+ let scoreState: GameScoreState = initialScoreState(1);
+ let currentSpotIndex = 0;
+diff --git a/apps/showcase-rooftop-buckets/src/scenario-drive.ts b/apps/showcase-rooftop-buckets/src/scenario-drive.ts
+new file mode 100644
+index 00000000..27364356
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenario-drive.ts
+@@ -0,0 +1,43 @@
++/**
++ * scenario-drive.ts — gameplay-only surface the `src/scenarios/` modules use.
++ * Bound once from `main.ts` after the game exists; scenario files never reach
++ * for route internals directly.
++ */
++export interface RooftopDrive {
++  resetToHeat(heat: number): void;
++  applyOutcome(outcome: "swish" | "brick", spotIndex: number, gold?: boolean): void;
++  aimSpot(index: number): void;
++  stagePressureHoop(spotIndex: number): void;
++  stageFlight(power: number, pitch: number, frames: number): void;
++  holdPaused(): void;
++  cue(name: string, volume?: number): void;
++  expireClock(): void;
++  hideModal(): void;
++  sync(): void;
++}
++
++let active: RooftopDrive | undefined;
++
++export function bindRooftopDrive(impl: RooftopDrive): void {
++  active = impl;
++}
++
++function bound(): RooftopDrive {
++  if (active === undefined) {
++    throw new Error("Rooftop scenario drive is not bound yet — call createGame first.");
++  }
++  return active;
++}
++
++export const drive: RooftopDrive = {
++  resetToHeat: (heat) => bound().resetToHeat(heat),
++  applyOutcome: (outcome, spotIndex, gold) => bound().applyOutcome(outcome, spotIndex, gold),
++  aimSpot: (index) => bound().aimSpot(index),
++  stagePressureHoop: (spotIndex) => bound().stagePressureHoop(spotIndex),
++  stageFlight: (power, pitch, frames) => bound().stageFlight(power, pitch, frames),
++  holdPaused: () => bound().holdPaused(),
++  cue: (name, volume) => bound().cue(name, volume),
++  expireClock: () => bound().expireClock(),
++  hideModal: () => bound().hideModal(),
++  sync: () => bound().sync()
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/buzzer.ts b/apps/showcase-rooftop-buckets/src/scenarios/buzzer.ts
+new file mode 100644
+index 00000000..cb38318f
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/buzzer.ts
+@@ -0,0 +1,13 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const buzzer: GameScenario = {
++  description: "heat 5 clock expiry — game over",
++  setup() {
++    drive.resetToHeat(5);
++    drive.hideModal();
++    drive.expireClock();
++    drive.cue("buzzerFail", 0.9);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/fire.ts b/apps/showcase-rooftop-buckets/src/scenarios/fire.ts
+new file mode 100644
+index 00000000..7d27ffb4
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/fire.ts
+@@ -0,0 +1,15 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const fire: GameScenario = {
++  description: "heat 4 streak ignition",
++  setup() {
++    drive.resetToHeat(4);
++    drive.hideModal();
++    drive.applyOutcome("swish", 1);
++    drive.applyOutcome("swish", 1);
++    drive.applyOutcome("swish", 1);
++    drive.cue("fireIgnite", 0.9);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/gold-miss.ts b/apps/showcase-rooftop-buckets/src/scenarios/gold-miss.ts
+new file mode 100644
+index 00000000..2eef9864
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/gold-miss.ts
+@@ -0,0 +1,13 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const goldMiss: GameScenario = {
++  description: "gold ball missed on the final heat",
++  setup() {
++    drive.resetToHeat(5);
++    drive.hideModal();
++    drive.applyOutcome("brick", 1, true);
++    drive.cue("buzzerFail", 0.9);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/gold-win.ts b/apps/showcase-rooftop-buckets/src/scenarios/gold-win.ts
+new file mode 100644
+index 00000000..d401478c
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/gold-win.ts
+@@ -0,0 +1,13 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const goldWin: GameScenario = {
++  description: "gold ball swished on the final heat — victory",
++  setup() {
++    drive.resetToHeat(5);
++    drive.hideModal();
++    drive.applyOutcome("swish", 1, true);
++    drive.cue("goldBall", 0.9);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/index.ts b/apps/showcase-rooftop-buckets/src/scenarios/index.ts
+new file mode 100644
+index 00000000..e16af448
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/index.ts
+@@ -0,0 +1,21 @@
++import { openClear } from "./open-clear";
++import { spotClear } from "./spot-clear";
++import { pressure } from "./pressure";
++import { pressureClear } from "./pressure-clear";
++import { fire } from "./fire";
++import { miss } from "./miss";
++import { buzzer } from "./buzzer";
++import { goldMiss } from "./gold-miss";
++import { goldWin } from "./gold-win";
++
++export const rooftopScenarios = {
++  "open-clear": openClear,
++  "spot-clear": spotClear,
++  pressure,
++  "pressure-clear": pressureClear,
++  fire,
++  miss,
++  buzzer,
++  "gold-miss": goldMiss,
++  "gold-win": goldWin
++} as const;
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/miss.ts b/apps/showcase-rooftop-buckets/src/scenarios/miss.ts
+new file mode 100644
+index 00000000..b88314c6
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/miss.ts
+@@ -0,0 +1,12 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const miss: GameScenario = {
++  description: "heat 1 brick off the rim",
++  setup() {
++    drive.resetToHeat(1);
++    drive.hideModal();
++    drive.applyOutcome("brick", 1);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/open-clear.ts b/apps/showcase-rooftop-buckets/src/scenarios/open-clear.ts
+new file mode 100644
+index 00000000..bfb0b5d5
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/open-clear.ts
+@@ -0,0 +1,13 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const openClear: GameScenario = {
++  description: "heat 1 cleared with open shots",
++  setup() {
++    drive.resetToHeat(1);
++    drive.hideModal();
++    drive.applyOutcome("swish", 4);
++    drive.applyOutcome("swish", 4);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/pressure-clear.ts b/apps/showcase-rooftop-buckets/src/scenarios/pressure-clear.ts
+new file mode 100644
+index 00000000..0df83e36
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/pressure-clear.ts
+@@ -0,0 +1,15 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const pressureClear: GameScenario = {
++  description: "heat 3 cleared past the contest beat",
++  setup() {
++    drive.resetToHeat(3);
++    drive.hideModal();
++    drive.aimSpot(2);
++    drive.stagePressureHoop(2);
++    drive.applyOutcome("swish", 4);
++    drive.applyOutcome("swish", 4);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/pressure.ts b/apps/showcase-rooftop-buckets/src/scenarios/pressure.ts
+new file mode 100644
+index 00000000..39b8c821
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/pressure.ts
+@@ -0,0 +1,15 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const pressure: GameScenario = {
++  description: "live ball-to-hoop beat under the authored contest telegraph",
++  setup() {
++    drive.resetToHeat(3);
++    drive.hideModal();
++    drive.aimSpot(2);
++    drive.stagePressureHoop(2);
++    drive.stageFlight(0.72, 0.12, 8);
++    drive.holdPaused();
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/scenarios/spot-clear.ts b/apps/showcase-rooftop-buckets/src/scenarios/spot-clear.ts
+new file mode 100644
+index 00000000..a5f13561
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/scenarios/spot-clear.ts
+@@ -0,0 +1,14 @@
++import type { GameScenario } from "@aura3d/engine/contracts";
++import { drive } from "../scenario-drive";
++
++export const spotClear: GameScenario = {
++  description: "heat 2 cleared spot by spot",
++  setup() {
++    drive.resetToHeat(2);
++    drive.hideModal();
++    drive.applyOutcome("swish", 0);
++    drive.applyOutcome("swish", 1);
++    drive.applyOutcome("swish", 2);
++    drive.sync();
++  }
++};
+diff --git a/apps/showcase-rooftop-buckets/src/sound.ts b/apps/showcase-rooftop-buckets/src/sound.ts
+new file mode 100644
+index 00000000..2d2edacb
+--- /dev/null
++++ b/apps/showcase-rooftop-buckets/src/sound.ts
+@@ -0,0 +1,83 @@
++/**
++ * Rooftop Buckets sound — PRD-09 §10 step 5: a cues object over the shared
++ * game-sfx-core pack, replacing buckets-audio.ts and the generated-WAV
++ * pipeline (scripts/build-sfx.mjs). Every asset is a licensed pack id under
++ * /packs/game-sfx-core/; {format} resolves to the probed encoding in the
++ * C-25 engine path. Playback still unlocks on the first user gesture.
++ */
++import { createGameAudio, type GameAudio } from "@aura3d/engine";
++
++export type RooftopCue =
++  | "chargeTick"
++  | "rimClank"
++  | "boardThud"
++  | "swish"
++  | "brickMiss"
++  | "fireIgnite"
++  | "goldBall"
++  | "heatAdvance"
++  | "buzzerFail"
++  | "ambientRooftop";
++
++const pk = (id: string) => ({
++  url: `/packs/game-sfx-core/${id}.{format}`,
++  license: "CC0",
++});
++
++const ids = (...stems: string[]) => stems.map(pk);
++
++/** Route cue map → game-sfx-core ids (sports + shared UI/stingers/ambience). */
++export const rooftopCues: Record<RooftopCue, { readonly bus: "sfx" | "ui" | "ambience"; readonly volume: number; readonly loop?: boolean; readonly asset: ReturnType<typeof ids> }> = {
++  chargeTick: { bus: "ui", volume: 0.5, asset: ids("ui.score-tick.00", "ui.score-tick.01") },
++  rimClank: { bus: "sfx", volume: 0.7, asset: ids("sports.rim.00", "sports.rim.01", "sports.rim.02") },
++  boardThud: { bus: "sfx", volume: 0.65, asset: ids("sports.ball-bounce-hard.00", "sports.ball-bounce-hard.01", "sports.ball-bounce-hard.02") },
++  swish: { bus: "sfx", volume: 0.8, asset: ids("sports.net-swish.00", "sports.net-swish.01", "sports.net-swish.02") },
++  brickMiss: { bus: "sfx", volume: 0.7, asset: ids("sports.ball-bounce-court.00", "sports.ball-bounce-court.01", "sports.ball-bounce-court.02") },
++  fireIgnite: { bus: "ui", volume: 0.85, asset: ids("stinger.level-start.00", "stinger.level-start.01") },
++  goldBall: { bus: "ui", volume: 0.85, asset: ids("stinger.win.00", "stinger.win.01") },
++  heatAdvance: { bus: "ui", volume: 0.8, asset: ids("stinger.checkpoint.00", "stinger.checkpoint.01") },
++  buzzerFail: { bus: "ui", volume: 0.8, asset: ids("stinger.lose.00", "stinger.lose.01") },
++  ambientRooftop: { bus: "ambience", volume: 0.35, loop: true, asset: ids("ambience.wind-high") }
++};
++
++export interface RooftopSoundController {
++  readonly playCue: (name: RooftopCue, volume?: number) => void;
++  readonly startAmbience: () => void;
++  readonly stopAmbience: () => void;
++  readonly unlock: () => Promise<void>;
++  readonly audioCuesHeard: string[];
++}
++
++let cachedAudio: GameAudio<RooftopCue> | null = null;
++
++export function createRooftopSound(): RooftopSoundController {
++  if (!cachedAudio) {
++    cachedAudio = createGameAudio({
++      browserContext: true,
++      buses: [
++        { id: "sfx", volume: 0.85 },
++        { id: "ui", volume: 0.6 },
++        { id: "ambience", volume: 0.5 }
++      ],
++      cues: Object.fromEntries(
++        Object.entries(rooftopCues).map(([cue, def]) => [cue, { id: cue, ...def }])
++      ) as Parameters<typeof createGameAudio<RooftopCue>>[0]["cues"]
++    });
++  }
++  const audio = cachedAudio;
++  const heard: string[] = [];
++  return {
++    audioCuesHeard: heard,
++    playCue: (name) => {
++      heard.push(name);
++      void audio.cue(name);
++    },
++    startAmbience: () => {
++      void audio.unlock().then(() => audio.cue("ambientRooftop"));
++    },
++    stopAmbience: () => {
++      void audio.stop?.("ambientRooftop");
++    },
++    unlock: () => audio.unlock()
++  };
++}
+diff --git a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav b/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav
+deleted file mode 100644
+index c2aac59f..00000000
+--- a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.1f654bd9.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1f654bd997e4bece789e771775190017f3dc7da27fb72793009fad910764e614
+-size 176444
+diff --git a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav b/public/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav
+deleted file mode 100644
+index 2e17742c..00000000
+--- a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:6cdec8823512c0ce5a633e1fc6db7c1955d6416065fec5c047e710c30730b919
+-size 264644
+diff --git a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.thumb.svg b/public/aura-assets/rooftopBucketsAmbientRooftopSfx.thumb.svg
+deleted file mode 100644
+index 5826bcb7..00000000
+--- a/public/aura-assets/rooftopBucketsAmbientRooftopSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsAmbientRooftopSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav b/public/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav
+deleted file mode 100644
+index 4e8f7f4c..00000000
+--- a/public/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:f8b856751031ec089ceec36847e04ba1d4c3b518db7062ff5f4127172620c223
+-size 13274
+diff --git a/public/aura-assets/rooftopBucketsBoardThudSfx.thumb.svg b/public/aura-assets/rooftopBucketsBoardThudSfx.thumb.svg
+deleted file mode 100644
+index 7dfc1ebf..00000000
+--- a/public/aura-assets/rooftopBucketsBoardThudSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsBoardThudSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav b/public/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav
+deleted file mode 100644
+index 9ae09f20..00000000
+--- a/public/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1d29f2928e1b503eb5b486682579c1f15dba02ef290d30b50430fb58a3ef9e57
+-size 17684
+diff --git a/public/aura-assets/rooftopBucketsBrickMissSfx.e3679e38.wav b/public/aura-assets/rooftopBucketsBrickMissSfx.e3679e38.wav
+deleted file mode 100644
+index 90704dbe..00000000
+--- a/public/aura-assets/rooftopBucketsBrickMissSfx.e3679e38.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:e3679e3806cb721a7921ba38f962d5a721d3f2ad0534afee347e678766d63d41
+-size 17684
+diff --git a/public/aura-assets/rooftopBucketsBrickMissSfx.thumb.svg b/public/aura-assets/rooftopBucketsBrickMissSfx.thumb.svg
+deleted file mode 100644
+index 306b9690..00000000
+--- a/public/aura-assets/rooftopBucketsBrickMissSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsBrickMissSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav b/public/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav
+deleted file mode 100644
+index 8290ec0d..00000000
+--- a/public/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:0ffe086399c8d73f433e3e4c328c7cb115228a40329e94d94d8cce09027e3a66
+-size 44144
+diff --git a/public/aura-assets/rooftopBucketsBuzzerFailSfx.f5d970be.wav b/public/aura-assets/rooftopBucketsBuzzerFailSfx.f5d970be.wav
+deleted file mode 100644
+index adc54d11..00000000
+--- a/public/aura-assets/rooftopBucketsBuzzerFailSfx.f5d970be.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:f5d970be8b01afd80a0cd2bab5cfe248830294d3f569eaa1c08088c0e3b7a82b
+-size 52964
+diff --git a/public/aura-assets/rooftopBucketsBuzzerFailSfx.thumb.svg b/public/aura-assets/rooftopBucketsBuzzerFailSfx.thumb.svg
+deleted file mode 100644
+index d7b1ff2d..00000000
+--- a/public/aura-assets/rooftopBucketsBuzzerFailSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsBuzzerFailSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav b/public/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav
+deleted file mode 100644
+index a354a52e..00000000
+--- a/public/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:c0fbfa2ac2be59ec9e1dfa416ddc528f1605103b9dac637b5ecfaa5b2e98e19d
+-size 1808
+diff --git a/public/aura-assets/rooftopBucketsChargeTickSfx.thumb.svg b/public/aura-assets/rooftopBucketsChargeTickSfx.thumb.svg
+deleted file mode 100644
+index a95f3be5..00000000
+--- a/public/aura-assets/rooftopBucketsChargeTickSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsChargeTickSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav b/public/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav
+deleted file mode 100644
+index 3601bf38..00000000
+--- a/public/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1f4baf30d7c9b7e5cf553e4f7c040e9b6af2eb3d46c5966000c4d40c4f9075a3
+-size 52964
+diff --git a/public/aura-assets/rooftopBucketsFireIgniteSfx.dafa1ffa.wav b/public/aura-assets/rooftopBucketsFireIgniteSfx.dafa1ffa.wav
+deleted file mode 100644
+index 2ca4de8d..00000000
+--- a/public/aura-assets/rooftopBucketsFireIgniteSfx.dafa1ffa.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:dafa1ffac8998421c82ae0711edafba0707055be1b01e62a983c99f70d9f2604
+-size 52964
+diff --git a/public/aura-assets/rooftopBucketsFireIgniteSfx.thumb.svg b/public/aura-assets/rooftopBucketsFireIgniteSfx.thumb.svg
+deleted file mode 100644
+index b7d4e9ff..00000000
+--- a/public/aura-assets/rooftopBucketsFireIgniteSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsFireIgniteSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav b/public/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav
+deleted file mode 100644
+index ae3c89b5..00000000
+--- a/public/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:31841c8dca6487fae8e0ac212058c57fd5d735fae1022a2abb475f8e9c81d8f4
+-size 44144
+diff --git a/public/aura-assets/rooftopBucketsGoldBallSfx.thumb.svg b/public/aura-assets/rooftopBucketsGoldBallSfx.thumb.svg
+deleted file mode 100644
+index 6f4d7911..00000000
+--- a/public/aura-assets/rooftopBucketsGoldBallSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsGoldBallSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav b/public/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav
+deleted file mode 100644
+index 03b73e6e..00000000
+--- a/public/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:2c514523373ca36d3ca9472a7c273232abcb3a8d3f4dd6ad8d4bddf3c3538a60
+-size 61782
+diff --git a/public/aura-assets/rooftopBucketsHeatAdvanceSfx.thumb.svg b/public/aura-assets/rooftopBucketsHeatAdvanceSfx.thumb.svg
+deleted file mode 100644
+index 508122db..00000000
+--- a/public/aura-assets/rooftopBucketsHeatAdvanceSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsHeatAdvanceSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav b/public/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav
+deleted file mode 100644
+index 77f04587..00000000
+--- a/public/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:6fee35201443c106394307fe5e5251d6c55b5f314dda6fbc0ce313dd3b23fc58
+-size 22094
+diff --git a/public/aura-assets/rooftopBucketsRimClankSfx.thumb.svg b/public/aura-assets/rooftopBucketsRimClankSfx.thumb.svg
+deleted file mode 100644
+index 92efdea9..00000000
+--- a/public/aura-assets/rooftopBucketsRimClankSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsRimClankSfx</text></svg>
+\ No newline at end of file
+diff --git a/public/aura-assets/rooftopBucketsSwishSfx.11609658.wav b/public/aura-assets/rooftopBucketsSwishSfx.11609658.wav
+deleted file mode 100644
+index 59b3bf54..00000000
+--- a/public/aura-assets/rooftopBucketsSwishSfx.11609658.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:1160965866093fc870812d846b1549ae667053d1f25150f361c526278ffb3fa8
+-size 17684
+diff --git a/public/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav b/public/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav
+deleted file mode 100644
+index b3ebae00..00000000
+--- a/public/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav
++++ /dev/null
+@@ -1,3 +0,0 @@
+-version https://git-lfs.github.com/spec/v1
+-oid sha256:cc849aa5b7f54326f12e759378d5e83d433e07fc213c325ea835609852d7dfd5
+-size 17684
+diff --git a/public/aura-assets/rooftopBucketsSwishSfx.thumb.svg b/public/aura-assets/rooftopBucketsSwishSfx.thumb.svg
+deleted file mode 100644
+index e83eb7dc..00000000
+--- a/public/aura-assets/rooftopBucketsSwishSfx.thumb.svg
++++ /dev/null
+@@ -1 +0,0 @@
+-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">rooftopBucketsSwishSfx</text></svg>
+\ No newline at end of file
+diff --git a/src/aura-assets.ts b/src/aura-assets.ts
+index 0a78aace..2b3f4961 100644
+--- a/src/aura-assets.ts
++++ b/src/aura-assets.ts
+@@ -231,16 +231,6 @@ type AuraGeneratedAssetDefinitions = {
+   readonly "rooftopAthleteShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "rooftopBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "rooftopBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+-  readonly "rooftopBucketsAmbientRooftopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsBoardThudSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsBrickMissSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsBuzzerFailSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsChargeTickSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsFireIgniteSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsGoldBallSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsHeatAdvanceSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsRimClankSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+-  readonly "rooftopBucketsSwishSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+   readonly "rooftopCourt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "rooftopDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+   readonly "rooftopDefenderV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+@@ -41524,916 +41514,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
+       }
+     },
+   },
+-  "rooftopBucketsAmbientRooftopSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav",
+-    hash: "sha256-6cdec8823512c0ce5a633e1fc6db7c1955d6416065fec5c047e710c30730b919",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 264644,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/ambientRooftop.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsAmbientRooftopSfx.6cdec882.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsAmbientRooftopSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Looping dusk rooftop ambience started by the route audio controller."
+-    },
+-  },
+-  "rooftopBucketsBoardThudSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav",
+-    hash: "sha256-f8b856751031ec089ceec36847e04ba1d4c3b518db7062ff5f4127172620c223",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 13274,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/boardThud.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsBoardThudSfx.f8b85675.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsBoardThudSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Backboard thud driven only by the composed board contact event."
+-    },
+-  },
+-  "rooftopBucketsBrickMissSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav",
+-    hash: "sha256-1d29f2928e1b503eb5b486682579c1f15dba02ef290d30b50430fb58a3ef9e57",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 17684,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/brickMiss.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsBrickMissSfx.1d29f292.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsBrickMissSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Miss cue driven only by a settled non-scoring shot or gold failure."
+-    },
+-  },
+-  "rooftopBucketsBuzzerFailSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav",
+-    hash: "sha256-0ffe086399c8d73f433e3e4c328c7cb115228a40329e94d94d8cce09027e3a66",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 44144,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/buzzerFail.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsBuzzerFailSfx.0ffe0863.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsBuzzerFailSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Buzzer cue driven by clock violation or terminal timer failure."
+-    },
+-  },
+-  "rooftopBucketsChargeTickSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav",
+-    hash: "sha256-c0fbfa2ac2be59ec9e1dfa416ddc528f1605103b9dac637b5ecfaa5b2e98e19d",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 1808,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/chargeTick.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsChargeTickSfx.c0fbfa2a.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsChargeTickSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rate-limited charge tick driven by live keyboard or touch hold state."
+-    },
+-  },
+-  "rooftopBucketsFireIgniteSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav",
+-    hash: "sha256-1f4baf30d7c9b7e5cf553e4f7c040e9b6af2eb3d46c5966000c4d40c4f9075a3",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 52964,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/fireIgnite.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsFireIgniteSfx.1f4baf30.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsFireIgniteSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Fire ignition cue driven by the third consecutive make."
+-    },
+-  },
+-  "rooftopBucketsGoldBallSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav",
+-    hash: "sha256-31841c8dca6487fae8e0ac212058c57fd5d735fae1022a2abb475f8e9c81d8f4",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 44144,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/goldBall.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsGoldBallSfx.31841c8d.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsGoldBallSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Gold-ball cue driven by the single finale launch or verified gold outcome fixture."
+-    },
+-  },
+-  "rooftopBucketsHeatAdvanceSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav",
+-    hash: "sha256-2c514523373ca36d3ca9472a7c273232abcb3a8d3f4dd6ad8d4bddf3c3538a60",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 61782,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/heatAdvance.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsHeatAdvanceSfx.2c514523.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsHeatAdvanceSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Heat advance fanfare driven by the player accepting a cleared heat."
+-    },
+-  },
+-  "rooftopBucketsRimClankSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav",
+-    hash: "sha256-6fee35201443c106394307fe5e5251d6c55b5f314dda6fbc0ce313dd3b23fc58",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 22094,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/rimClank.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsRimClankSfx.6fee3520.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsRimClankSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Rim clank driven only by a composed rim contact event."
+-    },
+-  },
+-  "rooftopBucketsSwishSfx": {
+-    type: "audio",
+-    format: "wav",
+-    url: "/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav",
+-    hash: "sha256-cc849aa5b7f54326f12e759378d5e83d433e07fc213c325ea835609852d7dfd5",
+-    bounds: [
+-      0,
+-      0,
+-      0
+-    ],
+-    sizeBytes: 17684,
+-    metadata: {
+-      "materials": [],
+-      "animations": [],
+-      "animationClips": [],
+-      "animationMetadata": {
+-        "clipCount": 0,
+-        "clips": [],
+-        "messages": [
+-          "No embedded animation clips detected."
+-        ]
+-      },
+-      "humanoid": false,
+-      "humanoidStatus": "unknown",
+-      "humanoidConfidence": "low",
+-      "skeleton": {
+-        "skinCount": 0,
+-        "jointCount": 0,
+-        "skins": [],
+-        "messages": [
+-          "Skeleton detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "morphTargets": {
+-        "targetCount": 0,
+-        "targetNames": [],
+-        "meshes": [],
+-        "messages": [
+-          "Morph target detection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "hierarchy": {
+-        "nodeCount": 0,
+-        "meshCount": 0,
+-        "materialCount": 0,
+-        "textureCount": 0,
+-        "animationClipCount": 0,
+-        "skinCount": 0,
+-        "morphTargetCount": 0,
+-        "rootNodeNames": [],
+-        "maxDepth": 0,
+-        "messages": [
+-          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+-        ]
+-      },
+-      "provenance": {
+-        "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/swish.wav",
+-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-sfx.mjs",
+-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/sfx/swish.wav",
+-        "license": "CC0-1.0",
+-        "licenseName": "CC0 1.0 Universal",
+-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+-        "author": "Aura3D synthesis",
+-        "sourceFamily": "aura3d-original",
+-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets audio",
+-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+-        "evidence": [
+-          "Deterministically synthesized from the committed oscillator and seeded-noise generator; contains no sampled material."
+-        ],
+-        "checkedAt": "2026-08-24T00:00:00.000Z"
+-      },
+-      "sourcePath": "apps/showcase-rooftop-buckets/assets/sfx/swish.wav",
+-      "outputPath": "public/aura-assets/rooftopBucketsSwishSfx.cc849aa5.wav",
+-      "license": "CC0-1.0",
+-      "author": "Aura3D synthesis",
+-      "materialMetadata": [],
+-      "orientation": {
+-        "source": "unknown",
+-        "messages": [
+-          "No orientation metadata detected; facing direction cannot be proven."
+-        ]
+-      },
+-      "nodeNames": [],
+-      "textures": [],
+-      "dependencies": [],
+-      "thumbnailUrl": "/aura-assets/rooftopBucketsSwishSfx.thumb.svg",
+-      "quality": "candidate",
+-      "role": "unknown",
+-      "suitabilityReason": "Swish cue driven by an armed top-to-bottom rim sensor sequence."
+-    },
+-  },
+   "rooftopCourt": {
+     type: "model",
+     format: "glb",
+-- 
+2.34.1
+

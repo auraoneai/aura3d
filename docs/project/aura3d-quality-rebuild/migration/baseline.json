@@ -1,0 +1,652 @@
+{
+  "schema": "aura3d.quality-rebuild.route-composition/1",
+  "generatedAt": "2026-10-06T11:53:07.529Z",
+  "root": "/home/ubuntu/repos/aura3d",
+  "routes": {
+    "aura-clash-showcase": {
+      "route": "aura-clash-showcase",
+      "appDir": "apps/aura-clash-showcase",
+      "loc": {
+        "evidence": 16279,
+        "presentation": 3383,
+        "gameplay": 42941,
+        "generated": 3862,
+        "classified": 62603,
+        "evidencePct": 26
+      },
+      "globals": [
+        "__AURA3D_CLASH_CROWD_PROBE__",
+        "__AURA3D_CLASH_SPOTLIGHT_PROBE__",
+        "__AURA3D_GAME_EVIDENCE__",
+        "__AURA3D_GAME_RUNTIME__",
+        "__AURA_CLASH_ARENA_PROOF__",
+        "__AURA_CLASH_ARENA_TEST_DRIVER__",
+        "__AURA_CLASH_BLEND_PROOF__",
+        "__AURA_CLASH_EVENT_TRACKS_PROOF__",
+        "__AURA_CLASH_INERTIALIZATION_PROOF__",
+        "__AURA_CLASH_SECONDARY_MOTION_PROOF__",
+        "__AURA_CLASH_VISUAL_REVIEW__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 2
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 16,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-blockfall-reactor": {
+      "route": "showcase-blockfall-reactor",
+      "appDir": "apps/showcase-blockfall-reactor",
+      "loc": {
+        "evidence": 1727,
+        "presentation": 977,
+        "gameplay": 4423,
+        "generated": 0,
+        "classified": 7127,
+        "evidencePct": 24.2
+      },
+      "globals": [
+        "__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__",
+        "__AURA3D_BLOCKFALL_ATTRACT_PROBE__",
+        "__AURA3D_BLOCKFALL_BLOOM_PROBE__",
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
+      ],
+      "captureBranches": {
+        "ART": 8,
+        "FRAMING": 12,
+        "TRANSIENT": 0,
+        "UNKNOWN": 21
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 14,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-skyline-runner": {
+      "route": "showcase-skyline-runner",
+      "appDir": "apps/showcase-skyline-runner",
+      "loc": {
+        "evidence": 3369,
+        "presentation": 5598,
+        "gameplay": 3765,
+        "generated": 2570,
+        "classified": 12732,
+        "evidencePct": 26.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+        "__AURA3D_SKYLINE_DENSITY_CAPTURE__",
+        "__AURA3D_SKYLINE_GHOST_CAPTURE_STEP__",
+        "__AURA3D_SKYLINE_GHOST_SEED__",
+        "__AURA3D_SKYLINE_PUMP__"
+      ],
+      "captureBranches": {
+        "ART": 11,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 41
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 20,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-turbo-drift-circuit": {
+      "route": "showcase-turbo-drift-circuit",
+      "appDir": "apps/showcase-turbo-drift-circuit",
+      "loc": {
+        "evidence": 18744,
+        "presentation": 15970,
+        "gameplay": 17628,
+        "generated": 27869,
+        "classified": 52342,
+        "evidencePct": 35.8
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+        "__AURA3D_TURBO_ACCEPTANCE_CAPTURE__"
+      ],
+      "captureBranches": {
+        "ART": 7,
+        "FRAMING": 5,
+        "TRANSIENT": 0,
+        "UNKNOWN": 80
+      },
+      "captureFlag": [
+        "?capture=overview"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-siege-golf": {
+      "route": "showcase-siege-golf",
+      "appDir": "apps/showcase-siege-golf",
+      "loc": {
+        "evidence": 1474,
+        "presentation": 1190,
+        "gameplay": 2998,
+        "generated": 0,
+        "classified": 5662,
+        "evidencePct": 26
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_SIEGE_GOLF__",
+        "__SG_SHOT__",
+        "__SIEGE_GOLF_EVIDENCE__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 14
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 9,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-aurora-lander": {
+      "route": "showcase-aurora-lander",
+      "appDir": "apps/showcase-aurora-lander",
+      "loc": {
+        "evidence": 1595,
+        "presentation": 885,
+        "gameplay": 2581,
+        "generated": 0,
+        "classified": 5061,
+        "evidencePct": 31.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_AURORA_LANDER__",
+        "__AURORA_LANDER_EVIDENCE__"
+      ],
+      "captureBranches": {
+        "ART": 1,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 25
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-neon-swarm": {
+      "route": "showcase-neon-swarm",
+      "appDir": "apps/showcase-neon-swarm",
+      "loc": {
+        "evidence": 1663,
+        "presentation": 1366,
+        "gameplay": 2601,
+        "generated": 0,
+        "classified": 5630,
+        "evidencePct": 29.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_NEON_SWARM__",
+        "__NEON_SWARM_DEBUG__",
+        "__NEON_SWARM_EVIDENCE__"
+      ],
+      "captureBranches": {
+        "ART": 4,
+        "FRAMING": 5,
+        "TRANSIENT": 0,
+        "UNKNOWN": 50
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 12,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-gravity-post": {
+      "route": "showcase-gravity-post",
+      "appDir": "apps/showcase-gravity-post",
+      "loc": {
+        "evidence": 3510,
+        "presentation": 664,
+        "gameplay": 2755,
+        "generated": 0,
+        "classified": 6929,
+        "evidencePct": 50.7
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_GRAVITY_POST__",
+        "__GRAVITY_POST_CAPTURE__",
+        "__GRAVITY_POST_EVIDENCE_SNAPSHOT__",
+        "__GRAVITY_POST_EVIDENCE__",
+        "__GRAVITY_POST_PHYSICS__",
+        "__GRAVITY_POST_PLANET_PROBE__",
+        "__GRAVITY_POST_SIM_STEP__",
+        "__GRAVITY_POST_STEP__"
+      ],
+      "captureBranches": {
+        "ART": 9,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 60
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-courier-rush": {
+      "route": "showcase-courier-rush",
+      "appDir": "apps/showcase-courier-rush",
+      "loc": {
+        "evidence": 859,
+        "presentation": 1646,
+        "gameplay": 2494,
+        "generated": 0,
+        "classified": 4999,
+        "evidencePct": 17.2
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA3D_SHOWCASE_COURIER_RUSH__",
+        "__COURIER_RUSH_DEBUG__",
+        "__COURIER_RUSH_EVIDENCE__",
+        "__PW_PUMP__"
+      ],
+      "captureBranches": {
+        "ART": 2,
+        "FRAMING": 7,
+        "TRANSIENT": 4,
+        "UNKNOWN": 6
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-pulse-tunnel": {
+      "route": "showcase-pulse-tunnel",
+      "appDir": "apps/showcase-pulse-tunnel",
+      "loc": {
+        "evidence": 7189,
+        "presentation": 610,
+        "gameplay": 2228,
+        "generated": 0,
+        "classified": 10027,
+        "evidencePct": 71.7
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_PULSE_TUNNEL__",
+        "__PULSE_TUNNEL_EVIDENCE__",
+        "__PULSE_TUNNEL_TEST__"
+      ],
+      "captureBranches": {
+        "ART": 24,
+        "FRAMING": 4,
+        "TRANSIENT": 7,
+        "UNKNOWN": 49
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 3,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-mech-hangar": {
+      "route": "showcase-mech-hangar",
+      "appDir": "apps/showcase-mech-hangar",
+      "loc": {
+        "evidence": 2238,
+        "presentation": 1335,
+        "gameplay": 4101,
+        "generated": 0,
+        "classified": 7674,
+        "evidencePct": 29.2
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_MECH_HANGAR__",
+        "__MECH_HANGAR_EVIDENCE__",
+        "__MECH_HANGAR_SET_TIME_WARP__",
+        "__MECH_HANGAR_SIM_TICK__",
+        "__MECH_HANGAR_VALIDATION_PROBE__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 3,
+        "TRANSIENT": 0,
+        "UNKNOWN": 2
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-vault-breakers": {
+      "route": "showcase-vault-breakers",
+      "appDir": "apps/showcase-vault-breakers",
+      "loc": {
+        "evidence": 1523,
+        "presentation": 1289,
+        "gameplay": 2256,
+        "generated": 0,
+        "classified": 5068,
+        "evidencePct": 30.1
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
+        "__VAULT_BREAKERS_EVIDENCE__",
+        "__VB_PUMP__",
+        "__VB_SCENARIO__",
+        "__VB_SHOT__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 1
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-rooftop-buckets": {
+      "route": "showcase-rooftop-buckets",
+      "appDir": "apps/showcase-rooftop-buckets",
+      "loc": {
+        "evidence": 2967,
+        "presentation": 1447,
+        "gameplay": 2938,
+        "generated": 0,
+        "classified": 7352,
+        "evidencePct": 40.4
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
+        "__RB_ACTIVE_SHOT__",
+        "__RB_PUMP__",
+        "__RB_SCENARIO__",
+        "__RB_SET_SPOT__",
+        "__RB_SHOOT__",
+        "__ROOFTOP_BUCKETS_EVIDENCE__"
+      ],
+      "captureBranches": {
+        "ART": 21,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 76
+      },
+      "captureFlag": [
+        "?capture"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 1
+      },
+      "postPass": null
+    },
+    "showcase-gallery-shift": {
+      "route": "showcase-gallery-shift",
+      "appDir": "apps/showcase-gallery-shift",
+      "loc": {
+        "evidence": 1794,
+        "presentation": 2043,
+        "gameplay": 3886,
+        "generated": 0,
+        "classified": 7723,
+        "evidencePct": 23.2
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
+        "__GALLERY_SHIFT_EVIDENCE__",
+        "__GS_PUMP__",
+        "__GS_RESET_CAPTURE__",
+        "__GS_SHOT__",
+        "__GS_TELEPORT__"
+      ],
+      "captureBranches": {
+        "ART": 5,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 10
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-deep-recovery": {
+      "route": "showcase-deep-recovery",
+      "appDir": "apps/showcase-deep-recovery",
+      "loc": {
+        "evidence": 1684,
+        "presentation": 1186,
+        "gameplay": 2162,
+        "generated": 0,
+        "classified": 5032,
+        "evidencePct": 33.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
+        "__DEEP_RECOVERY_EVIDENCE__",
+        "__DR_CAPTURE_PAUSE__",
+        "__DR_CAPTURE_RESUME__",
+        "__DR_IMPACT__",
+        "__DR_PUMP__",
+        "__DR_REPAIR__",
+        "__DR_SET_OXYGEN__",
+        "__DR_TELEPORT_CRATE__",
+        "__DR_TELEPORT__"
+      ],
+      "captureBranches": {
+        "ART": 5,
+        "FRAMING": 7,
+        "TRANSIENT": 0,
+        "UNKNOWN": 9
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 11
+      },
+      "postPass": null
+    },
+    "showcase-patrol-wing": {
+      "route": "showcase-patrol-wing",
+      "appDir": "apps/showcase-patrol-wing",
+      "loc": {
+        "evidence": 1571,
+        "presentation": 1751,
+        "gameplay": 2166,
+        "generated": 0,
+        "classified": 5488,
+        "evidencePct": 28.6
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_PATROL_WING__",
+        "__PATROL_WING_EVIDENCE__",
+        "__PW_DAMAGE__",
+        "__PW_PUMP__",
+        "__PW_SCENARIO__",
+        "__PW_SHOT__"
+      ],
+      "captureBranches": {
+        "ART": 4,
+        "FRAMING": 4,
+        "TRANSIENT": 0,
+        "UNKNOWN": 14
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 11,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-bank-shot": {
+      "route": "showcase-bank-shot",
+      "appDir": "apps/showcase-bank-shot",
+      "loc": {
+        "evidence": 1879,
+        "presentation": 1591,
+        "gameplay": 2303,
+        "generated": 0,
+        "classified": 5773,
+        "evidencePct": 32.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_BANK_SHOT__",
+        "__BANK_SHOT_EVIDENCE__",
+        "__BS_PUMP__",
+        "__BS_SCENARIO__",
+        "__BS_SHOT__"
+      ],
+      "captureBranches": {
+        "ART": 13,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 5
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    },
+    "showcase-orbital-defense": {
+      "route": "showcase-orbital-defense",
+      "appDir": "apps/showcase-orbital-defense",
+      "loc": {
+        "evidence": 49,
+        "presentation": 98,
+        "gameplay": 545,
+        "generated": 0,
+        "classified": 692,
+        "evidencePct": 7.1
+      },
+      "globals": [
+        "__AURA3D_SHOWCASE_ORBITAL_DEFENSE__"
+      ],
+      "captureBranches": {
+        "ART": 0,
+        "FRAMING": 0,
+        "TRANSIENT": 0,
+        "UNKNOWN": 0
+      },
+      "captureFlag": [],
+      "cues": {
+        "sample": 0,
+        "synth": 0,
+        "html-audio": 0
+      },
+      "postPass": null
+    }
+  },
+  "totals": {
+    "loc": {
+      "evidence": 70114,
+      "presentation": 43029,
+      "gameplay": 104771,
+      "generated": 34301
+    },
+    "captureBranches": {
+      "ART": 114,
+      "FRAMING": 69,
+      "TRANSIENT": 11,
+      "UNKNOWN": 465
+    },
+    "cues": {
+      "sample": 16,
+      "synth": 142,
+      "html-audio": 12
+    }
+  }
+}

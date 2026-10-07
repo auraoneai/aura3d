@@ -1,0 +1,142 @@
+{
+  "generatedAt": "2026-10-06T12:34:02.942Z",
+  "routes": [
+    {
+      "route": "showcase-bank-shot",
+      "counts": {
+        "ART": 13,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 5
+      },
+      "findings": [
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 180,
+          "kind": "ART",
+          "text": "const AIM_LINE_MATERIAL = material.emissive({ name: \"aim line\", color: \"#38bdf8\", emissive: \"#0ea5e9\", opacity: visualReviewCapture ? 0.62 : 0.9 });"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 273,
+          "kind": "ART",
+          "text": "for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 325,
+          "kind": "FRAMING",
+          "text": "position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 329,
+          "kind": "UNKNOWN",
+          "text": "target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 330,
+          "kind": "FRAMING",
+          "text": "fov: visualReviewCapture ? 39 : 48"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 340,
+          "kind": "ART",
+          "text": "effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 344,
+          "kind": "UNKNOWN",
+          "text": "density: visualReviewCapture ? 0.0035 : 0.011,"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 346,
+          "kind": "UNKNOWN",
+          "text": "intensity: visualReviewCapture ? 0.07 : 0.16"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 351,
+          "kind": "ART",
+          "text": "lights.ambient({ name: \"slate ambient\", color: \"#35435a\", intensity: visualReviewCapture ? 0.1 : 0.24 }),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 355,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-mid\", color: \"#fff5d8\", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 356,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-head\", color: \"#ffe9bd\", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 357,
+          "kind": "ART",
+          "text": "lights.point({ name: \"pendant-light-foot\", color: \"#ffd99c\", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 358,
+          "kind": "ART",
+          "text": "lights.rect({ name: \"table overhead softbox\", color: \"#fff4dc\", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 361,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"cool rim key\", color: \"#83bdff\", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 362,
+          "kind": "ART",
+          "text": "lights.directional({ name: \"warm room fill\", color: \"#f2a65e\", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 363,
+          "kind": "ART",
+          "text": "lights.point({ name: \"felt cyan bounce\", color: \"#55baff\", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 364,
+          "kind": "ART",
+          "text": "lights.point({ name: \"rack magenta rim\", color: \"#ff78ad\", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 365,
+          "kind": "ART",
+          "text": "lights.point({ name: \"cue teal rim\", color: \"#55e2d2\", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 827,
+          "kind": "UNKNOWN",
+          "text": "poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);"
+        },
+        {
+          "file": "apps/showcase-bank-shot/src/main.ts",
+          "line": 833,
+          "kind": "UNKNOWN",
+          "text": "poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "ART": 13,
+    "FRAMING": 2,
+    "TRANSIENT": 0,
+    "UNKNOWN": 5
+  }
+}
