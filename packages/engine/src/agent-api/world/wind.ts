@@ -9,6 +9,8 @@ import type { AuraWorldNodeBase } from "./types.js";
 
 /** Authoring options; normalized to the frozen C-26 `AuraWindSpec`. */
 export interface AuraWindOptions extends AuraWorldNodeBase {
+  /** Stable node id (diagnostics + wind records); auto-assigned at build. */
+  readonly id?: string;
   readonly directionDeg?: number; // default 35   -> direction = [sin, 0, cos]
   readonly strength?: number; // 0..2, default 0.5 -> strength
   readonly gustStrength?: number; // 0..1, default 0.35 -> gust
@@ -18,6 +20,7 @@ export interface AuraWindOptions extends AuraWorldNodeBase {
 
 export interface AuraWindNode extends AuraWorldNodeBase {
   readonly kind: "wind";
+  readonly id: string;
   readonly wind: Required<AuraWindSpec>;
 }
 

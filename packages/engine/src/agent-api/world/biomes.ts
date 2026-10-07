@@ -71,12 +71,16 @@ export interface AuraBiomeOverrides {
 
 export interface AuraBiomeNode extends AuraWorldNodeBase {
   readonly kind: "biome";
+  /** Stable node id (diagnostics + biome records); auto-assigned at build. */
+  readonly id: string;
   readonly biome: AuraBiomeId;
   readonly scope?: "all" | "environment";
   readonly overrides?: AuraBiomeOverrides;
 }
 
 export interface AuraTimeOfDayOptions extends AuraWorldNodeBase {
+  /** Stable node id (diagnostics + frame records); auto-assigned at build. */
+  readonly id?: string;
   readonly hour: number; // 0..24
   readonly mode?: "solar" | "arc"; // default "solar"
   readonly latitudeDeg?: number;
@@ -98,6 +102,7 @@ export interface AuraTimeOfDayOptions extends AuraWorldNodeBase {
 
 export interface AuraTimeOfDayNode extends AuraWorldNodeBase {
   readonly kind: "time-of-day";
+  readonly id: string;
   readonly options: AuraTimeOfDayOptions;
 }
 
@@ -338,7 +343,45 @@ export function listBiomes(): readonly AuraBiomeId[] {
   return Object.keys(BIOME_RIGS) as AuraBiomeId[];
 }
 
-// `world.biome(id, overrides)` / `environments.outdoor|room|space|underwater`
-// return AuraNodeBuilder<AuraBiomeNode> — they land with the node handlers in
-// Phase 2, once PR 0b-1 carves the world node kinds into the AuraSceneNode
-// union (index.ts is a shared file; qr-request pending).
+/**
+ * Merge `AuraBiomeOverrides` onto a rig (§7.1.2). Per-group shallow merge; `fog: null`
+ * clears fog entirely (overrides switch off the fog field). Returns a fresh,
+ * deep-frozen rig — the base `BIOME_RIGS` entries are never mutated.
+ */
+export function applyBiomeOverrides(
+  rig: AuraBiomeRigDetail,
+  overrides: AuraBiomeOverrides | undefined
+): AuraBiomeRigDetail {
+  if (!overrides) return rig;
+  const sunDetail = overrides.sun
+    ? (rig.sunDetail ? { ...rig.sunDetail, ...overrides.sun } : null)
+    : rig.sunDetail;
+  // C-26 `sun` requires colorTemperatureK — assemble explicitly so a
+  // Partial override can't widen the strict field to `number | undefined`.
+  const sun = overrides.sun && rig.sun
+    ? {
+        elevationDeg: overrides.sun.elevationDeg ?? rig.sun.elevationDeg,
+        azimuthDeg: overrides.sun.azimuthDeg ?? rig.sun.azimuthDeg,
+        intensity: overrides.sun.intensity ?? rig.sun.intensity,
+        colorTemperatureK: overrides.sun.colorTemperatureK ?? rig.sun.colorTemperatureK
+      }
+    : rig.sun;
+  const environmentSpec = overrides.environment
+    ? ({ ...rig.environmentSpec, ...overrides.environment } as AuraBiomeEnvironmentSpec)
+    : rig.environmentSpec;
+  const fog = overrides.fog === null ? null : overrides.fog ? { ...rig.fog, ...overrides.fog } : rig.fog;
+  const post = overrides.post?.preset ?? rig.post;
+  const { preset: _preset, ...restPost } = overrides.post ?? {};
+  const postOverrides = { ...rig.postOverrides, ...restPost };
+  return deepFreeze({
+    ...rig,
+    sun,
+    sunDetail,
+    environmentSpec,
+    environment: environmentSpec.source,
+    fog,
+    post,
+    postOverrides,
+    practicalScale: overrides.practicalScale ?? rig.practicalScale
+  });
+}

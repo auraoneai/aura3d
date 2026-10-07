@@ -15,6 +15,7 @@ export class LiveAtmosphere {
   private fog: AuraHeightFogSpec | null = null;
   private wetness = 0;
   private readonly listeners = new Set<() => void>();
+  private readonly skyListeners = new Set<() => void>();
 
   setFog(spec: AuraHeightFogSpec | null, _o?: { transitionSeconds?: number }): void {
     this.fog = spec;
@@ -23,7 +24,14 @@ export class LiveAtmosphere {
 
   setSky(spec: Partial<AuraSkySpec>, _o?: { transitionSeconds?: number }): void {
     this.sky = spec as AuraSkySpec;
+    for (const listener of this.skyListeners) listener();
     this.emit();
+  }
+
+  /** P3-T6 — fires only when the sky spec changes (probe re-capture hook). */
+  onSkyChanged(listener: () => void): () => void {
+    this.skyListeners.add(listener);
+    return () => this.skyListeners.delete(listener);
   }
 
   setWetness(value: number, _o?: { transitionSeconds?: number }): void {

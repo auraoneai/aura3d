@@ -8,5 +8,8 @@ export const adapterSceneIds = [
   "prd07-particles-stress",
   // Aura-only lane scenes — no three.js adapter by design (admittedAsReference: false).
   "prd07-impact-library",
-  "prd07-trails-beams"
+  "prd07-trails-beams",
+  // P3-T7 sky scenes (three adapters exist).
+  "prd07-sky-timeofday",
+  "prd07-outdoor-sky"
 ] as const;

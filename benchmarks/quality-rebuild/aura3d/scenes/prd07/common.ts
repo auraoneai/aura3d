@@ -16,6 +16,7 @@ import {
   lights,
   primitives,
   scene,
+  sky,
   type AuraApp,
   type AuraMaterialSpec,
   type AuraNodeInput,
@@ -94,6 +95,23 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
   if (spec.background.kind === "color") {
     built.background(spec.background.color);
   }
+  // P3-T7 sky nodes — real `sky` builder output (ignored by the renderer
+  // unless A3D_QR_VFX_SKY is on; legacy prims still render flag-off).
+  let dayNightLight = false;
+  if (spec.dayNight) {
+    const dn = sky.dayNight({ hour: spec.dayNight.hour, seed: spec.dayNight.seed, starLimit: spec.dayNight.starLimit, cloudLimit: spec.dayNight.cloudLimit });
+    for (const node of dn.nodes) built.add(node);
+    built.background(dn.background);
+    log.add("dayNight", "supported", `sky.dayNight hour ${spec.dayNight.hour} — ${dn.visibleStarCount} stars, sky spec ${dn.sky.model}`);
+    dayNightLight = true; // dayNight emits its own key light
+  }
+  if (spec.skyPreetham) {
+    nodes.push(sky.preetham({ sun: { elevationDeg: spec.skyPreetham.elevationDeg, azimuthDeg: spec.skyPreetham.azimuthDeg }, turbidity: spec.skyPreetham.turbidity }));
+    log.add("sky-preetham", "supported", `sun ${spec.skyPreetham.elevationDeg}°/${spec.skyPreetham.azimuthDeg}°, turbidity ${spec.skyPreetham.turbidity ?? "default"}`);
+  }
+  if (spec.fog) {
+    log.add("fog-exp2", "partial", `${spec.fog.color} density ${spec.fog.density} — Aura fog lands in P4 (recorded; three applies FogExp2)`);
+  }
   built.camera(camera.perspective({
     position: spec.camera.position,
     target: spec.camera.target,
@@ -104,6 +122,7 @@ function buildPrd07AuraScene(spec: Prd07SceneSpec, log: CapabilityLog): AuraScen
   log.add("tone-mapping:aces-filmic", "supported", "Production bridge submits operator \"aces\".");
 
   for (const light of spec.lights) {
+    if (light.kind === "directional" && dayNightLight) continue; // avoid double key light
     if (light.kind === "ambient") {
       nodes.push(lights.ambient({ name: light.name, intensity: light.intensity, color: light.color }));
     } else if (light.kind === "directional") {

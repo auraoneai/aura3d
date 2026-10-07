@@ -133,10 +133,31 @@ export type Prd07ObjectSpec =
   | AuroraObjectSpec
   | MeshParticlesObjectSpec;
 
+/** S13/S14 — `sky.dayNight` parameters both adapters honour (hour 0..24). */
+export interface DayNightSpec {
+  readonly hour: number;
+  readonly seed?: number;
+  readonly starLimit?: number;
+  readonly cloudLimit?: number;
+}
+
+/** S14 — exponential fog; three gets FogExp2, Aura gets atmosphere.setFog (P4). */
+export interface FogSpec {
+  readonly mode: "exp2";
+  readonly color: string;
+  readonly density: number;
+}
+
 export interface Prd07SceneSpec extends Omit<SceneSpec, "objects"> {
   readonly objects: readonly Prd07ObjectSpec[];
   /** C-30: scene judged absolutely, never used for a parity claim (no three adapter). */
   readonly admittedAsReference?: boolean;
+  /** P3-T7 — day-night sky (Aura `sky.dayNight`; three `Sky.js` at the same sun). */
+  readonly dayNight?: DayNightSpec;
+  /** P3-T7 — direct preetham spec (Aura `sky.preetham`; three `Sky.js`). */
+  readonly skyPreetham?: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly turbidity?: number };
+  /** P3-T7/P4 — scene fog (Aura adapter: `app.atmosphere.setFog`, flag-gated). */
+  readonly fog?: FogSpec;
 }
 
 const RES = { width: 1280, height: 720, devicePixelRatio: 1 } as const;
@@ -446,12 +467,103 @@ export const trailsBeams: Prd07SceneSpec = {
   ]
 };
 
+/**
+ * S13 — `sky.dayNight` at dusk (hour 19): sun low, stars emerging, moon up,
+ * noise clouds over a dark ridge line. three adapter: `Sky.js` at the same
+ * sun position; background is the sky itself so `background` is informational.
+ */
+export const skyTimeOfDay: Prd07SceneSpec = {
+  ...base("prd07-sky-timeofday", 706, "Sky time of day", "dusk dayNight sky — sun/moon/stars/clouds at hour 19"),
+  qrFlags: ["vfx", "vfx.sky"] as const,
+  primaryCriterion: "atmosphere",
+  primaryRegion: "frame",
+  time: 0.2,
+  camera: { position: [0, 1.8, 9], target: [0, 4.5, -8], fov: 55, near: 0.05, far: 200 },
+  background: { kind: "color", color: "#1a1d2e" },
+  lights: [{ kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.15 }],
+  dayNight: { hour: 19, seed: 7 },
+  objects: [
+    {
+      kind: "primitive",
+      name: "ridge",
+      shape: "box",
+      size: [40, 2.5, 3],
+      position: [0, 0.9, -18],
+      material: { color: "#10131f", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    },
+    {
+      kind: "primitive",
+      name: "field",
+      shape: "plane",
+      size: [40, 1, 30],
+      position: [0, 0, -6],
+      material: { color: "#1c2418", roughness: 0.95, metalness: 0 },
+      castShadow: false,
+      receiveShadow: true
+    }
+  ]
+};
+
+/**
+ * S14 — noon preetham sky over terrain with exp2 fog tuned so both adapters
+ * lose the far ridge equally at 50 m (PRD §8.4 fog hook is P4; the Aura
+ * adapter records the capability until then).
+ */
+export const outdoorSky: Prd07SceneSpec = {
+  ...base("prd07-outdoor-sky", 707, "Outdoor sky + fog", "noon preetham sky, exp2 fog equal at 50 m"),
+  qrFlags: ["vfx", "vfx.sky"] as const,
+  primaryCriterion: "atmosphere",
+  primaryRegion: "frame",
+  time: 0.2,
+  camera: { position: [0, 2.2, 14], target: [0, 4.0, -20], fov: 55, near: 0.05, far: 300 },
+  background: { kind: "color", color: "#89b6d8" },
+  lights: [{ kind: "ambient", name: "ambient", color: "#ffffff", intensity: 0.2 }],
+  skyPreetham: { elevationDeg: 62, azimuthDeg: 195, turbidity: 5 },
+  fog: { mode: "exp2", color: "#a8c2d8", density: 0.012 },
+  objects: [
+    {
+      kind: "primitive",
+      name: "ground",
+      shape: "plane",
+      size: [80, 1, 80],
+      position: [0, 0, -10],
+      material: { color: "#4a5a38", roughness: 0.95, metalness: 0 },
+      castShadow: false,
+      receiveShadow: true
+    },
+    {
+      kind: "primitive",
+      name: "mid ridge",
+      shape: "box",
+      size: [60, 4, 4],
+      position: [0, 1.5, -45],
+      material: { color: "#3d4a52", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    },
+    {
+      kind: "primitive",
+      name: "far ridge",
+      shape: "box",
+      size: [80, 6, 4],
+      position: [0, 2.5, -95],
+      material: { color: "#4a5a68", roughness: 1, metalness: 0 },
+      castShadow: false,
+      receiveShadow: false
+    }
+  ]
+};
+
 export const prd07Specs = {
   "prd07-particles-fountain": particlesFountain,
   "prd07-flipbook": flipbook,
   "prd07-particles-stress": particlesStress,
   "prd07-impact-library": impactLibrary,
-  "prd07-trails-beams": trailsBeams
+  "prd07-trails-beams": trailsBeams,
+  "prd07-sky-timeofday": skyTimeOfDay,
+  "prd07-outdoor-sky": outdoorSky
 } as const;
 
 export type Prd07SceneId = keyof typeof prd07Specs;

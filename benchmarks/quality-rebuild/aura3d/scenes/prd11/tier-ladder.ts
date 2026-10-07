@@ -68,6 +68,7 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
   const started = performance.now();
   const auraQuality = new URLSearchParams(window.location.search).get("aura3d-quality");
   const loadMs = queryNumber("loadMs") ?? 0;
+  const lateNodes = queryNumber("lateNodes") ?? 0;
 
   const built = scene()
     .camera(camera.perspective({ position: [1.2, 2.4, 4.2], target: [0, 1.2, -3], fov: 55, near: 0.1, far: 200 }))
@@ -116,10 +117,26 @@ export default async function run(host: HTMLElement): Promise<ReadyPayload> {
   await app.ready();
 
   // Continuous rAF loop: optional simulated game-logic load, then a stepped frame.
+  // `window.__PRD11_LOAD_MS__` overrides `?loadMs=` live, so lane specs can
+  // start/stop the load mid-session (governor recovery needs this).
   let frames = 0;
   let lastDrawCalls = 0;
   const loop = (): void => {
-    if (loadMs > 0) busyLoop(loadMs);
+    const live = (window as unknown as { __PRD11_LOAD_MS__?: number }).__PRD11_LOAD_MS__;
+    const burn = live ?? loadMs;
+    if (burn > 0) busyLoop(burn);
+    // `?lateNodes=<n>`: mount n physical-material spheres at frame 120 — a new
+    // program key mid-run, exactly what C-02 `precompile` is meant to hide.
+    if (lateNodes > 0 && frames === 120) {
+      for (let i = 0; i < lateNodes; i += 1) {
+        built.add(primitives.sphere({
+          name: `late node ${i}`,
+          size: [0.3, 0.3, 0.3],
+          position: [i * 0.8 - 1.6, 1.4, -6 - i],
+          material: material.physical({ color: "#7a4de8", clearcoat: 1, roughness: 0.2 })
+        }));
+      }
+    }
     app.step(0);
     frames += 1;
     try {

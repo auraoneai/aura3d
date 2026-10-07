@@ -185,5 +185,15 @@ export function worldRoom(options: AuraRoomOptions): readonly AuraSceneNode[] {
   } catch {
     // custom kits without a ceiling-lamp piece skip practicals silently
   }
+  // §6.3 default rule: a world.room scene resolves to the interior-neutral
+  // biome. Emit an environment-scope `biome` node (T6.3 scope semantics) so the
+  // resolver sees the signal regardless of `options.name`.
+  nodes.push({
+    kind: "biome",
+    id: `${name}-environment`,
+    name: `${name}-environment`,
+    biome: options.biome ?? "interior-neutral",
+    scope: "environment"
+  } as unknown as AuraSceneNode);
   return nodes;
 }
