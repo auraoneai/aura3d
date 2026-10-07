@@ -5,6 +5,7 @@
 
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from "@gltf-transform/extensions";
+import { unpartition } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import { createDecoderModule, createEncoderModule } from "draco3d";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -93,6 +94,12 @@ async function runSteps(
     log: opts.log ?? (() => {})
   };
   for (const step of steps) await step(doc, ctx);
+  // gltf-transform writes each logical buffer's bytes into the shared GLB BIN
+  // chunk while keeping every entry in `buffers` — meshopt output in
+  // particular always carries a second `EXT_meshopt_compression.fallback`
+  // buffer. Aura's GLTFLoader accepts only buffer 0 without a uri, so merge
+  // buffers before serialization: one buffers[] entry, one BIN stream.
+  await doc.transform(unpartition());
   const glb = await io.writeBinary(doc);
   let collisionGlb: Uint8Array | undefined;
   if (ctx.collisionDoc) {
@@ -102,6 +109,7 @@ async function runSteps(
     // sidecar parser included) decodes exact vertices.
     await MeshoptEncoder.ready;
     ctx.collisionDoc.createExtension(EXTMeshoptCompression).setRequired(true);
+    await ctx.collisionDoc.transform(unpartition());
     collisionGlb = await io.writeBinary(ctx.collisionDoc);
   }
   return { glb, collisionGlb, ctx, budget: measureBudget(doc, ctx), budgetBefore };

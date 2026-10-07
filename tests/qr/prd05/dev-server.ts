@@ -36,8 +36,54 @@ const LANE_ENTRY_POINTS = new Map<string, string>([
   ["meshoptimizer", "/node_modules/meshoptimizer/index.js"],
 ]);
 
-function rewriteLaneImports(source: string): string {
+function rewriteLaneImports(source: string, servedPath: string, repoRoot: string): string {
   let output = source;
+  // Same-file URL dedup: `from "./x.js"` specifiers inside repo source mean
+  // `x.ts` on disk (TS/NodeNext resolution). The shared server answers them
+  // verbatim at the `.js` URL, while extension-less specifiers 302 to `.ts` —
+  // two URLs for one module → side-effect modules (e.g. lanes/prd02 feature
+  // registration) evaluate twice and REGISTRY_DUPLICATE throws. Rewrite the
+  // specifier to `.ts` when that file really exists (never for vendor .js
+  // like packages/assets/vendor/*).
+  if (/^\/(packages|tests|benchmarks|apps|tools)\//.test(servedPath)) {
+    const servedDir = join(repoRoot, servedPath.split("/").slice(0, -1).join("/"));
+    const maybeJsToTs = (match: string, pre: string, post: string): string => {
+      const rel = pre.slice(0, -3).match(/["']([^"']+)$/)?.[1]; // specifier sans ".js"
+      if (!rel) return match;
+      const target = rel.startsWith("/")
+        ? resolve(repoRoot, decodeURIComponent(rel.slice(1)) + ".ts")
+        : resolve(servedDir, decodeURIComponent(rel) + ".ts");
+      return target.startsWith(repoRoot) && existsSync(target) ? `${pre.slice(0, -3)}.ts${post}` : match;
+    };
+    output = output.replace(/(\bfrom\s*["'][./][^"']+\.js)(["'])/g, (m, a, b) => maybeJsToTs(m, a, b));
+    output = output.replace(/(\bimport\s*["'][./][^"']+\.js)(["'])/g, (m, a, b) => maybeJsToTs(m, a, b));
+    output = output.replace(/(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'][./][^"']+\.js)(["']\s*\))/g, (m, a, b) => maybeJsToTs(m, a, b));
+    // Extensionless repo specifiers resolve to `.ts` / `index.ts` on disk;
+    // normalize them onto the same URL so each module evaluates exactly once.
+    const resolveRel = (rel: string): string => (rel.startsWith("/")
+      ? resolve(repoRoot, decodeURIComponent(rel.slice(1)))
+      : resolve(servedDir, decodeURIComponent(rel)));
+    const maybeAddExt = (match: string, pre: string, rel: string, post: string): string => {
+      if (/\.(m?[tj]sx?|json|css|wasm|glsl|wgsl|png|jpg|svg|hdr|glb|bin|mp3|wav|ogg|ico|woff2?|map)$/.test(rel)) return match;
+      const base = resolveRel(rel);
+      if (!base.startsWith(repoRoot)) return match;
+      if (existsSync(`${base}.ts`)) return `${pre}${rel}.ts${post}`;
+      if (existsSync(join(base, "index.ts"))) return `${pre}${rel}/index.ts${post}`;
+      return match;
+    };
+    output = output.replace(/(\bfrom\s*["'])([./][^"']+?)(["'])/g, (m, a, rel, b) => maybeAddExt(m, a, rel, b));
+    output = output.replace(/(\bimport\s*["'])([./][^"']+?)(["'])/g, (m, a, rel, b) => maybeAddExt(m, a, rel, b));
+    output = output.replace(/(\bimport\s*\(\s*)(["'])([./][^"']+?)(["']\s*\))/g, (m, a, q, rel, b) => {
+      // b carries the closing quote + paren; reuse maybeAddExt's existsSync
+      // check but splice .ts in before the closing quote.
+      if (/\.(m?[tj]sx?|json|css|wasm|glsl|wgsl|png|jpg|svg|hdr|glb|bin|mp3|wav|ogg|ico|woff2?|map)$/.test(rel)) return m;
+      const base = resolveRel(rel);
+      if (!base.startsWith(repoRoot)) return m;
+      if (existsSync(`${base}.ts`)) return `${a}${q}${rel}.ts${b}`;
+      if (existsSync(join(base, "index.ts"))) return `${a}${q}${rel}/index.ts${b}`;
+      return m;
+    });
+  }
   for (const [specifier, target] of LANE_ENTRY_POINTS) {
     const esc = specifier.replace(ESCAPE, "\\$&");
     output = output
@@ -45,6 +91,11 @@ function rewriteLaneImports(source: string): string {
       .replace(new RegExp(`(\\bimport\\s*["'])${esc}(["'])`, "g"), `$1${target}$2`)
       .replace(new RegExp(`(\\bimport\\s*\\(\\s*(?:/\\*[^]*?\\*/\\s*)?["'])${esc}(["']\\s*\\))`, "g"), `$1${target}$2`);
   }
+  // `"x.glsl"`/`"x.wgsl"` specifiers resolve to `x.glsl.ts`/`x.wgsl.ts` on
+  // disk (TS resolution) — the upstream server only knows the raw path, so
+  // point the specifier at the real file and let it transpile it.
+  output = output.replace(/(\bfrom\s*["'][^"']+)\.(glsl|wgsl)(["'])/g, "$1.$2.ts$3");
+  output = output.replace(/(\bimport\s*\(\s*["'][^"']+)\.(glsl|wgsl)(["']\s*\))/g, "$1.$2.ts$3");
   // `@aura3d/rendering/contracts/*` -> `/packages/rendering/src/contracts/*.ts`
   const subpath = /(\bfrom\s*["'])@aura3d\/rendering\/contracts\/([^"']+)(["'])/g;
   output = output.replace(subpath, "$1/packages/rendering/src/contracts/$2.ts$3");
@@ -105,14 +156,22 @@ export async function startPrd05DevServer(root = process.cwd()): Promise<Example
       up.on("end", () => {
         const body = Buffer.concat(chunks);
         const type = String(up.headers["content-type"] ?? "");
-        const payload = /javascript|text\/plain/.test(type)
-          ? applyDefines(rewriteLaneImports(body.toString("utf8")), defines)
+        // Only module payloads get rewritten — upstream serves .hdr/.glsl/.wgsl
+        // and other binaries as text/plain, and decoding those as UTF-8 turns
+        // every byte >=0x80 into U+FFFD (observed: 1.5MB Radiance HDR -> 4MB
+        // garbage -> production HDR decode failure).
+        const payload = /javascript/.test(type)
+          ? applyDefines(rewriteLaneImports(body.toString("utf8"), requestPath, root), defines)
           : body;
         // `resolveDirectoryModuleRedirect` answers extension-less directory
         // specifiers with 302 + location; dropping the header leaves the
-        // browser's module fetch suspended forever.
-        res.writeHead(up.statusCode ?? 200, { ...up.headers, "content-length": payload.length });
-        res.end(payload);
+        // browser's module fetch suspended forever. Upstream may use chunked
+        // transfer-encoding — drop it plus its stale content-length so the
+        // rewritten payload's length is the only framing on the wire.
+        const { "transfer-encoding": _te, "content-length": _cl, ...headers } = up.headers;
+        const out = typeof payload === "string" ? Buffer.from(payload, "utf8") : payload;
+        res.writeHead(up.statusCode ?? 200, { ...headers, "content-length": out.length });
+        res.end(out);
       });
     });
     req.pipe(proxy);

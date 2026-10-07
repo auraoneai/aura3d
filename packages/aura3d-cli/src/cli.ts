@@ -28,6 +28,7 @@ import {
   profileUsage,
 } from "./cli-options.js";
 import { assetsAddHelp, mainHelp } from "./cli-help.js";
+import { writeRouteTypedAssets } from "./asset-route-typegen.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
 import "./commands/registry.js";
@@ -212,8 +213,21 @@ async function main(): Promise<void> {
     } else if (action === "list") {
       console.log(JSON.stringify(listAssets(), null, 2));
     } else if (action === "typegen") {
-      const path = writeTypedAssets(process.cwd(), readAssetManifest(process.cwd()));
-      console.log(`Wrote ${path}`);
+      const route = readOption("--route");
+      if (route) {
+        const variant = readOption("--variant") ?? "optimized";
+        if (variant !== "optimized" && variant !== "source" && variant !== "mobile") {
+          throw new Error(`Usage: aura3d assets typegen --route apps/<app> [--variant optimized|source|mobile]`);
+        }
+        const report = writeRouteTypedAssets({ route, variant });
+        console.log(`Wrote ${report.path} (${report.referencedIds.length} ids from ${report.scannedFiles} files).`);
+        console.log(`Wrote ${report.creditsPath}`);
+        for (const id of report.missingIds) console.error(`typegen --route: ${id} referenced by route but not in manifest.`);
+        if (!report.ok) process.exitCode = 1;
+      } else {
+        const path = writeTypedAssets(process.cwd(), readAssetManifest(process.cwd()));
+        console.log(`Wrote ${path}`);
+      }
     } else if (action === "thumbnail") {
       print(createAssetThumbnails());
     } else if (action === "serve") {

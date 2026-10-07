@@ -141,7 +141,7 @@ export const prd05SceneSpecs: Readonly<Record<string, Prd05SceneSpec>> = {
     index: 506,
     title: "LOD transition dolly (hero vehicle ×3)",
     purpose:
-      "Optimized courier sedan at 5/25/80 m over a 120-frame dolly — the MSFT_lod chain written by `assets optimize` must switch levels under Aura's `A3D_QR_ASSETS_LOD` selector and the lane's three-side loader plugin alike. Phase 5 re-points this scene at the library `vehicles/road` hero car.",
+      "Library vehicles/road hero car (quaternius-sports-car) at 5/25/80 m over a 120-frame dolly — the MSFT_lod chain written by `assets optimize` must switch levels under Aura's `A3D_QR_ASSETS_LOD` selector and the lane's three-side loader plugin alike. Phase 5 re-points this scene at the library `vehicles/road` hero car.",
     camera: { position: [0, 1.8, 0], target: [4, 0.4, -25], fov: 50, near: 0.05, far: 200 },
     strip: { frames: 120, intervalMs: 33, orbitDegrees: 8 },
     background: { kind: "hdri", hdri: "studioSmall08", fallbackColor: "#2b2e33", intensity: 0.9 },
@@ -152,9 +152,9 @@ export const prd05SceneSpecs: Readonly<Record<string, Prd05SceneSpec>> = {
     ],
     objects: [
       { kind: "primitive", name: "ground", shape: "plane", position: [4, -0.02, -40], size: [200, 1, 200], material: { color: "#2e3236", roughness: 0.95, metalness: 0 }, castShadow: false, receiveShadow: true },
-      { kind: "model", name: "sedan-near-5m", asset: "courierSedan", position: [0, 0, -5], rotation: [0, 0.55, 0], castShadow: false, receiveShadow: false },
-      { kind: "model", name: "sedan-mid-25m", asset: "courierSedan", position: [4, 0, -25], rotation: [0, 0.4, 0], castShadow: false, receiveShadow: false },
-      { kind: "model", name: "sedan-far-80m", asset: "courierSedan", position: [10, 0, -80], rotation: [0, 0.25, 0], castShadow: false, receiveShadow: false }
+      { kind: "model", name: "roadhero-near-5m", asset: "roadHeroCar", position: [0, 0, -5], rotation: [0, 0.55, 0], castShadow: false, receiveShadow: false },
+      { kind: "model", name: "roadhero-mid-25m", asset: "roadHeroCar", position: [4, 0, -25], rotation: [0, 0.4, 0], castShadow: false, receiveShadow: false },
+      { kind: "model", name: "roadhero-far-80m", asset: "roadHeroCar", position: [10, 0, -80], rotation: [0, 0.25, 0], castShadow: false, receiveShadow: false }
     ],
     qrFlags: ["assets", "assets.lod"],
     primaryCriterion: "msft-lod-transition"

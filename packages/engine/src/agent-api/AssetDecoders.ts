@@ -100,15 +100,24 @@ export async function sniffGLBRequiredDecoders(url: string, format?: string): Pr
   const isGlb = format === "glb" || /\.glb(?:[?#]|$)/i.test(url);
   if (!isGlb || typeof fetch !== "function" || url.startsWith("data:")) return [];
   try {
-    const head = await fetch(url, { headers: { Range: "bytes=0-19" } });
-    if (!head.ok) return [];
-    const header = new DataView(await head.arrayBuffer());
+    // Dev/static servers commonly ignore Range and answer 200 with the whole
+    // file — slice the requested window locally instead of assuming a 206.
+    const readRange = async (from: number, to: number): Promise<ArrayBuffer | null> => {
+      const response = await fetch(url, { headers: { Range: `bytes=${from}-${to}` } });
+      if (!response.ok) return null;
+      const body = await response.arrayBuffer();
+      if (response.status === 206) return body;
+      return body.byteLength > to ? body.slice(from, to + 1) : body;
+    };
+    const headBytes = await readRange(0, 19);
+    if (headBytes === null) return [];
+    const header = new DataView(headBytes);
     if (header.byteLength < 20 || header.getUint32(0, true) !== 0x46546c67) return [];
     const jsonLength = header.getUint32(12, true);
     if (header.getUint32(16, true) !== 0x4e4f534a || jsonLength <= 0 || jsonLength > 64 * 1024 * 1024) return [];
-    const jsonResponse = await fetch(url, { headers: { Range: `bytes=20-${20 + jsonLength - 1}` } });
-    if (!jsonResponse.ok) return [];
-    const json = JSON.parse(new TextDecoder().decode(await jsonResponse.arrayBuffer())) as {
+    const jsonBytes = await readRange(20, 20 + jsonLength - 1);
+    if (jsonBytes === null) return [];
+    const json = JSON.parse(new TextDecoder().decode(jsonBytes)) as {
       extensionsUsed?: string[];
       extensionsRequired?: string[];
     };

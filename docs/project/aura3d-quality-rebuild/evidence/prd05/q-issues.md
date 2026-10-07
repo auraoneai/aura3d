@@ -371,3 +371,31 @@ first import; the file should declare its dependency or guard the calls.
 `packages/assets/src/asset-corpus` barrel evaluates `node:crypto` at module
 scope → crash in the browser bundle; consumers must import
 `ProductionGLTFRenderPipeline.js` directly, bypassing the index.
+
+## Q-14-2 → lane 14 (rewrite `apps/showcase-*/src/main.ts` asset imports to route modules)
+
+`assets-route-modules` codemod (C-39, `commands/prd05/codemods/assetsRouteModules.ts`)
+reported `--report` over `apps/showcase-*/src/main.ts`: 27 files scanned, 9 carry a
+monolithic `src/aura-assets` import, all 9 rewrites `mapping: "exact"` →
+`./aura-assets.route`. Full report: `evidence/prd05/assets/codemod-report.json`.
+Lane 14 owns the pilot mains and applies `--write` after running
+`assets typegen --route apps/<app>` per route (route modules are generated, not
+committed).
+
+## Q-13-2 → lane 13 (template manifest entries for the §6.6 library)
+
+`evidence/prd05/assets/template-starters.json` maps each starter template's
+`aura.assets.json` ids onto admitted `aura.library.json` entries (with per-slot
+notes where the replacement is an approximation — e.g. no star/coin/key models
+exist in the kit yet). Lane 13 edits `templates/*/aura.assets.json` to point at
+library ids; proof + typegen output under `tests/qr/prd05/fixtures/template-starter/`.
+
+## Q-14-3 / Q-14-4 → lane 14 (pilot replacement lists + leave-one-out attribution)
+
+Phase-7 artifacts published in `evidence/prd05/assets/replacement-lists.json`
+(six pilots → admitted library ids + expected `qrFlags`) and
+`evidence/prd05/assets/pilot-review.json` (per-G-PANEL asset delta review seed).
+Q-14-3: route owners adopt the listed replacements and flip the listed flag
+bundles. Q-14-4: `qr-ic-regression` misses are attributed per game by
+leave-one-out against the lane-14 `tools/quality-rebuild-capture` default-URL
+captures (no `?capture=review`).

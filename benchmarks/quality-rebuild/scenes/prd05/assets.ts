@@ -26,7 +26,8 @@ export type Prd05AssetId =
   | "rockA"
   | "rockB"
   | "crate"
-  | "courierSedan";
+  | "courierSedan"
+  | "roadHeroCar";
 
 export interface Prd05AssetEntry {
   readonly id: Prd05AssetId;
@@ -70,74 +71,74 @@ const entry = (
 export const prd05Assets: Readonly<Record<Prd05AssetId, Prd05AssetEntry>> = {
   damagedHelmet: entry(
     "damagedHelmet",
-    "damaged-helmet.e562904d.glb",
+    "damaged-helmet.2f5f6eef.glb",
     "fixtures/asset-corpus/damaged-helmet.glb",
-    "e562904d62803ec6a7a1c00beaa24e172e21bec5f287d426c8efb8a3397e8667",
+    "2f5f6eef263fccd51618351bc1465770577af3c15988db7ca9f184379baa7678",
     "prop-large",
-    15452,
+    25856,
     "Khronos glTF-Sample-Assets DamagedHelmet (CC0), optimized via §6.3 prop-large"
   ),
   antiqueCamera: entry(
     "antiqueCamera",
-    "antique-camera.47ad03e6.glb",
+    "antique-camera.62e492c6.glb",
     "fixtures/asset-corpus/antique-camera.glb",
-    "47ad03e689df8436fe0acead471827e4e946fe502bd2555fdd338d7736120615",
+    "62e492c6c768e828ab1a029e8b01cad3f9ab8f185e633aadf8ce47d0e467a1cc",
     "prop-large",
-    20066,
+    33853,
     "Khronos glTF-Sample-Assets AntiqueCamera (CC0), optimized via §6.3 prop-large"
   ),
   soldier: entry(
     "soldier",
-    "soldier.4d0d1424.glb",
+    "soldier.3062baba.glb",
     "fixtures/threejs-parity/assets/character/soldier.glb",
-    "4d0d14246e327365e293fdd5d7fd04145e14d88d2bfb05e224142b1dab5c69dd",
+    "3062baba403281c26eb60d5db4b4c6bbe1b0eb0f79e2524f4593ce960e5df009",
     "hero-character",
-    11376,
+    17127,
     "three.js Soldier (MIT), optimized via §6.3 hero-character"
   ),
   cesiumMan: entry(
     "cesiumMan",
-    "cesium-man.10a1f637.glb",
+    "cesium-man.f330915f.glb",
     "fixtures/three-compat/assets/corpus/cesium-man.glb",
-    "10a1f6370adf634faf3b74b6874eabad1c36da879b45472deed974a6bef7116d",
+    "f330915f714cb6c45804d458669e5dd57641826adf37a5fe22641d91bf44fd8f",
     "hero-character",
-    4672,
+    7008,
     "Khronos CesiumMan (CC-BY 4.0), optimized via §6.3 hero-character"
   ),
   fox: entry(
     "fox",
-    "Fox.dfb28f27.glb",
+    "Fox.c1c4514e.glb",
     "tests/assets/corpus/khronos/Fox/Fox.glb",
-    "dfb28f27e21cf19861d4fdbbf0fdcf6bd18e37176df6078f881821b66a278aee",
+    "c1c4514e89156f644e080e65ac6e8af1b318675363a89fd6b8fe3db106063873",
     "hero-character",
-    576,
+    864,
     "Khronos glTF-Sample-Models Fox (CC-BY 4.0, PixelMannen/Łukasz), optimized via §6.3 hero-character"
   ),
   rockA: entry(
     "rockA",
-    "propRockA.fbecd1bb.glb",
+    "propRockA.78a8121c.glb",
     "public/aura-assets/propRockA.52dd1f0f.glb",
-    "fbecd1bbd637f2ff539154da2c18d695fecc30e2f3dff77d5f033cfdb9d72a76",
+    "78a8121cdbf27e67f4fd2ccf564f442f8c3e572b996c2980bf4dc4478dbca062",
     "prop-large",
-    30006,
+    48942,
     "Aura3D propRockA catalog GLB, optimized via §6.3 prop-large"
   ),
   rockB: entry(
     "rockB",
-    "propRockB.3f980139.glb",
+    "propRockB.4b4d2684.glb",
     "public/aura-assets/propRockB.c94b2733.glb",
-    "3f98013939a00c72afceb17d2de75e0eda967a9cf653e945960571da5f9f43e9",
+    "4b4d26845b441ed3d1f755aa55831fd9939b5e8d103784c31c5b952d936cc16c",
     "prop-large",
-    10596,
+    16104,
     "Aura3D propRockB catalog GLB, optimized via §6.3 prop-large"
   ),
   crate: entry(
     "crate",
-    "crate-1x1.900c373b.glb",
+    "crate-1x1.f94574e5.glb",
     "packages/engine/assets/world/kits/interior/crate-1x1.glb",
-    "900c373bcd0ed0678d0e788f4891bb3bb6c30f1289a47ef5bda4922b370ddc94",
+    "f94574e559537f7e93aeb62776e3e6c051b984d3a11c40ca4e2990da10a3f94f",
     "prop-small",
-    12,
+    24,
     "Aura3D interior-kit 1x1 crate, optimized via §6.3 prop-small"
   ),
   courierSedan: {
@@ -149,6 +150,18 @@ export const prd05Assets: Readonly<Record<Prd05AssetId, Prd05AssetEntry>> = {
       "hero-vehicle",
       46983,
       "Aura3D courier traffic sedan catalog GLB, optimized via §6.3 hero-vehicle (4-level MSFT_lod)"
+    ),
+    gltfExtensions: [...OPT_EXTS, "MSFT_lod"],
+  },
+  roadHeroCar: {
+    ...entry(
+      "roadHeroCar",
+      "quaternius-sports-car.0dbac342.glb",
+      "assets/library/vehicles/road/quaternius-sports-car.glb",
+      "0dbac342d94afabe49a7cade4100f180cbdb63d8dcbf8875d7372ec6d659cbc7",
+      "hero-vehicle",
+      12160,
+      "Quaternius sports car (CC0) — vehicles/road library hero car, optimized via §6.3 hero-vehicle (4-level MSFT_lod)"
     ),
     gltfExtensions: [...OPT_EXTS, "MSFT_lod"],
   }

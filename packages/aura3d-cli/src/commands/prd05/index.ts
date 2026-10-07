@@ -6,13 +6,15 @@
  * clear "lands in Phase N" until their phases land.
  */
 
-import { registerCliCommand } from "../../contracts/commands.js";
+import { registerCliCommand, registerCodemod } from "../../contracts/commands.js";
 import type { AuraCliAssetRole } from "../../asset-core-types.js";
 import { admitAsset, admitAssetMeasured } from "./admit.js";
 import { dispatchLookdevRun } from "./lookdev.js";
 import { optimizeAssetsVerb } from "./optimize.js";
 import { reviewAsset } from "./review.js";
 import { assetsLibraryVerb } from "./library.js";
+import { assetsPrune } from "./prune.js";
+import { assetsRouteModulesCodemod } from "./codemods/assetsRouteModules.js";
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -152,6 +154,18 @@ registerCliCommand({
   usage: "aura3d assets library list|add|sync",
   run: async (argv, io) => assetsLibraryVerb({ projectDir: io.cwd, argv, stdout: io.stdout, stderr: io.stderr }),
 });
-phaseStub("assets prune", "Phase 6 (manifest hygiene)", "Prune stale/orphaned manifest entries (lands in Phase 6).", "aura3d assets prune [--dry-run]");
+registerCliCommand({
+  name: "assets prune",
+  owner: "prd05",
+  summary: "Remove files under the manifest outputDir no entry references (§6.8).",
+  usage: "aura3d assets prune [--dry-run] [--apply] [--json]",
+  run: async (argv, io) => {
+    const apply = argv.includes("--apply");
+    const result = assetsPrune({ projectDir: io.cwd, apply, stdout: argv.includes("--json") ? undefined : io.stdout });
+    if (argv.includes("--json")) io.stdout(JSON.stringify(result, null, 2));
+    return result.ok ? 0 : 2;
+  },
+});
+registerCodemod(assetsRouteModulesCodemod);
 
 export {};
