@@ -23,7 +23,8 @@ describe("PRD-12 T1.2 registry (C-30)", () => {
     for (const entry of REGISTRY.filter((e) => e.status === "active")) {
       const spec = entry.spec as Record<string, unknown>;
       expect(spec.owner, entry.id).toBe("prd12");
-      expect(spec.referenceProfile, entry.id).toBe("contract");
+      // Base scenes run the contract profile; prd12-ref-* run showcase (§9.3).
+      expect(spec.referenceProfile, entry.id).toBe(entry.id.startsWith("prd12-ref-") ? "showcase" : "contract");
       expect(Array.isArray(spec.masks), entry.id).toBe(true);
       expect(Array.isArray(spec.brokenControls), entry.id).toBe(true);
       expect(typeof spec.primaryCriterion, entry.id).toBe("string");

@@ -1,6 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import { AuraRuntimeError } from "./errors.js";
 import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
@@ -8,7 +9,13 @@ import { groups } from "../nodes/groups.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
-import { authoredPostContextFor, recordSubmittedPostprocess } from "../postBridge.js";
+import {
+  authoredPostContextFor,
+  createRootPostPipeline,
+  recordSubmittedPostprocess,
+  validatePostEffectNode,
+  type PostFieldDiagnostic
+} from "../postBridge.js";
 
 export function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
@@ -106,7 +113,7 @@ export function createProductionRuntimePostprocess(
   if (!sceneKey) { sceneKey = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, sceneKey); }
   const fxaaRequested = resolvedAa ? resolvedAa.mode === "fxaa" : (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
   const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
-  const options: RendererPostProcessOptions = {
+  let options: RendererPostProcessOptions = {
     // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
     // colors and clipped highlights before ACES, which produced washed-out output.
     targetFormat: "rgba16f",
@@ -200,7 +207,9 @@ export function createProductionRuntimePostprocess(
         maxRadius: Math.max(0, Math.min(8, Math.round(authoredDof.maxBlur ?? 4)))
       }
     } : {}),
-    ...(volumetricPass ? { volumetricLight: volumetricPass } : {}),
+    // §6.9 (Phase 3): on the strict v2 route the volumetric-fog node maps to
+    // S4 god rays and the CPU `volumetric-light` pass is not emitted.
+    ...(volumetricPass && !(postFlagOn && !authoredPostContext?.compatPost3) ? { volumetricLight: volumetricPass } : {}),
     // PRD-03 §6.11 / CCR-03-1 (flag-on): forward the real camera clipping so
     // depth-gated passes linearize against the authored range instead of the
     // 0.1/1000 placeholder.
@@ -211,6 +220,40 @@ export function createProductionRuntimePostprocess(
       }
     } : {})
   };
+
+  // PRD-03 §7.1 / Phase 2 (flag-on): field allowlists + the v2 pipeline bag.
+  // An unknown effect-node field throws POST_FIELD_UNSUPPORTED inside the
+  // compile so `app.ready()` rejects before the first frame — the error never
+  // lands in `diagnostics.errors`. `compat.post === "3.0"` opts out of the v2
+  // chain entirely; flag-off warns (`option-ignored`) as before.
+  const fieldDiagnostics: PostFieldDiagnostic[] = [];
+  for (const node of nodes) {
+    if (node.kind !== "effect") continue;
+    const nodeDiagnostics = validatePostEffectNode(node);
+    if (nodeDiagnostics) fieldDiagnostics.push(...nodeDiagnostics);
+  }
+  const strictPostFields = postFlagOn && !authoredPostContext?.compatPost3;
+  if (strictPostFields) {
+    const unsupported = fieldDiagnostics.find((diagnostic) => diagnostic.code === "POST_FIELD_UNSUPPORTED");
+    if (unsupported) {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", unsupported.message);
+    }
+    const tierSettings = QUALITY_TIERS[resolvedTier];
+    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights);
+    fieldDiagnostics.push(...pipelineResult.diagnostics);
+    // The fields are readonly, so the v2 additions come in as a rebuilt
+    // object — flag-off keeps the legacy bag untouched (byte-equal).
+    options = {
+      ...options,
+      pipeline: {
+        ...pipelineResult.options,
+        // The tier resolution (Phase 1) supplies the AA mode — the bridge's
+        // "off" placeholder is never the answer under a strict field check.
+        antiAliasing: resolvedAa?.mode ?? authoredAntiAlias?.mode ?? "off"
+      },
+      v2: true
+    };
+  }
   // C-31 feed (lane 03): the post/exposure diagnostics sections report what was
   // actually submitted — including the pinned `toneMapping.exposure: 1` while
   // authored grade exposure stays diagnostic-only until Phase 1 wiring.
@@ -237,7 +280,9 @@ export function createProductionRuntimePostprocess(
         : null,
       depthRange: options.depthRange
         ? { near: options.depthRange.near, far: options.depthRange.far, projection: options.depthRange.projection ?? "perspective" }
-        : null
+        : null,
+      fieldDiagnostics,
+      v2: options.v2 === true
     }
   });
   return options;

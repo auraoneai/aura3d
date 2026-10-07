@@ -3,6 +3,7 @@ import { collectEnvironmentBackground, collectEnvironmentFog, collectEnvironment
 import { applyRendererOwnedStaticBatching, applyRendererOwnedStaticMeshConsolidation, cullExplicitRenderItems, explicitCullingFrustum } from "./renderer/CullingBatching";
 import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDeviceRestored } from "./renderer/DeviceLifecycle";
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
+import type { FrameCamera } from "./contracts/frameGraph";
 import { RendererPostprocessPipeline, collectPostprocess, createPostprocessDiagnostics, defaultPostprocessTargetFormat, postprocessRequiresDepthTexture } from "./renderer/PostprocessExecution";
 import type { RendererHost } from "./renderer/RendererHost";
 import { createRenderer } from "./renderer/RendererFactory";
@@ -299,6 +300,12 @@ export interface RendererPostProcessOptions extends RendererPostprocessPlanOptio
   readonly pipeline?: unknown;
   /** C-13 (PR 0a): post graph v2 opt-in. */
   readonly v2?: boolean;
+  /**
+   * PRD-03 Phase 3 (additive): the frame camera the v2 HDR stages need
+   * (projection + viewProjection + near/far). Bound by the Renderer at
+   * submit time; ignored flag-off.
+   */
+  readonly cameraFrame?: FrameCamera | null;
 }
 
 export type RenderResourceLookup<T> = ReadonlyMap<string, T> | Readonly<Record<string, T>>;
@@ -813,6 +820,7 @@ export class Renderer {
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
+        postprocess = { ...postprocess, cameraFrame: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition) };
         frameHooks.runPhase("post-hdr", items, postprocess !== undefined);
         this.executePostprocess(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();
@@ -1083,6 +1091,7 @@ export class Renderer {
       this.graph.execute({ device: this.device, width: this.width, height: this.height });
       if (postprocess) {
         postprocess = bindRendererSsrProjection(postprocess, cameraViewProjection ?? identityMat4());
+        postprocess = { ...postprocess, cameraFrame: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition) };
         await frameHooks.runPhaseAsync("post-hdr", items, postprocess !== undefined);
         await this.executePostprocessAsync(postprocess, ownedTargets, explicitRenderTarget);
         if (postprocess.temporal && (postprocess.motionBlur || postprocess.taa)) this.temporalHistory.commit();

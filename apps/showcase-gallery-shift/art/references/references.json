@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-gallery-shift",
+  "entries": [
+    {
+      "file": "references/museum-night.json",
+      "source": "shipped comparable: night museum interiors (The Dark Mod gallery missions / Hitman museum levels)",
+      "licence": "reference-only",
+      "why": "Pools of warm exhibit light over dark marble \u2014 the contrast structure the heist read depends on"
+    },
+    {
+      "file": "references/vision-cones.json",
+      "source": "shipped comparable: readable stealth vision cones (Monaco's FOV wedges / Metal Gear alert arcs)",
+      "licence": "reference-only",
+      "why": "Correctly parented, lit cone volumes that read as 'AVOID THE CONES' \u2014 today none render"
+    },
+    {
+      "file": "references/thief-figure.json",
+      "source": "shipped comparable: lit humanoid sneak silhouette (Sly Cooper / Mark of the Ninja read at height)",
+      "licence": "reference-only",
+      "why": "A rigged 5k-tri thief that faces its heading and reads against dark exhibits"
+    }
+  ]
+}

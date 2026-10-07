@@ -367,6 +367,7 @@ describe("agent API", () => {
     });
     expect(diagnostics.bloom).toMatchObject({ enabled: true, rendered: false });
     expect(diagnostics.runtime).toMatchObject({ mounted: false, backend: "scene-plan", postprocessVerified: false });
+    // invariant: source must keep `scene plan only` — agent API
     expect(diagnostics.warnings.join(" ")).toContain("scene plan only");
   });
 

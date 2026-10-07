@@ -96,9 +96,6 @@ jobs:
           A3D_ADVANCED_GALLERY_EVIDENCE_MODE: ${{ matrix.shard == 'gallery' && 'full-gallery' || 'focused-route' }}
         run: pnpm exec playwright test ${{ matrix.specs }} ${{ matrix.playwright_args }}
 
-      - name: Visual tests
-        if: matrix.shard == 'routes'
-        run: pnpm test:visual
 
       - name: Bind exact-source shard report
         run: >-

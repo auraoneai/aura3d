@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-deep-recovery",
+  "entries": [
+    {
+      "file": "references/underwater-depth.json",
+      "source": "shipped comparable: turquoise-to-abyss dives (ABZÛ basin runs / Subnautica depths)",
+      "licence": "reference-only",
+      "why": "Depth-keyed absorption from turquoise shallows to wreck-dark basin reads the §8.3 underwater stack"
+    },
+    {
+      "file": "references/wreck-basin.json",
+      "source": "shipped comparable: barnacled wreck sites (Soma wreck decks / dive-sim wrecks)",
+      "licence": "reference-only",
+      "why": "Rusted hull plates, barnacle decals and sand-claimed debris the salvage field is built from"
+    },
+    {
+      "file": "references/searchlight-sub.json",
+      "source": "admitted sub GLBs + the searchlight signature (spot attached to the hull)",
+      "licence": "reference-only",
+      "why": "A moving shadowed searchlight beam cutting suspended particulate is the signature look"
+    }
+  ]
+}

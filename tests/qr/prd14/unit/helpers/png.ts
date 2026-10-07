@@ -14,8 +14,12 @@ export interface DecodedPng {
 }
 
 export function readPngAsRgba(path: string): DecodedPng {
-  const buf = readFileSync(path);
-  if (buf.length < 8 || buf.readUInt32BE(0) !== 0x89504e47) throw new Error(`${path}: not a PNG`);
+  return decodePngAsRgba(readFileSync(path));
+}
+
+/** Same decoder over an in-memory PNG (e.g. a Playwright screenshot buffer). */
+export function decodePngAsRgba(buf: Buffer): DecodedPng {
+  if (buf.length < 8 || buf.readUInt32BE(0) !== 0x89504e47) throw new Error("not a PNG");
   let width = 0;
   let height = 0;
   let bitDepth = 0;

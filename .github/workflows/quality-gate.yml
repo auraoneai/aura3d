@@ -1,0 +1,166 @@
+name: Quality Gate
+
+# PRD-12 T3.3. The pixel gate: bench + game captures on macos-14 (ANGLE Metal),
+# analytic pixel specs under the GPU-string guard, then metrics and verdicts on
+# ubuntu-latest. No secrets — the gate measures and blocks; it never asserts
+# quality claims. Human review is a separate workflow (quality-review.yml).
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture-bench:
+    name: Capture benchmark (macos-14)
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-orbital-defense"
+      bench: true
+      qr_flags: "all"
+      artifact_suffix: "-gate-bench"
+
+  capture-games-1:
+    name: Capture games shard 1 (macos-14)
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "aura-clash-showcase,showcase-blockfall-reactor,showcase-skyline-runner,showcase-turbo-drift-circuit,showcase-siege-golf,showcase-aurora-lander"
+      bench: false
+      qr_flags: "all"
+      artifact_suffix: "-gate-g1"
+
+  capture-games-2:
+    name: Capture games shard 2 (macos-14)
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-neon-swarm,showcase-gravity-post,showcase-courier-rush,showcase-pulse-tunnel,showcase-mech-hangar,showcase-vault-breakers"
+      bench: false
+      qr_flags: "all"
+      artifact_suffix: "-gate-g2"
+
+  capture-games-3:
+    name: Capture games shard 3 (macos-14)
+    uses: ./.github/workflows/quality-rebuild-capture.yml
+    with:
+      games: "showcase-rooftop-buckets,showcase-gallery-shift,showcase-deep-recovery,showcase-patrol-wing,showcase-bank-shot,showcase-orbital-defense"
+      bench: false
+      qr_flags: "all"
+      artifact_suffix: "-gate-g3"
+
+  analytic-pixels:
+    name: Analytic pixel specs (macos-14, GPU-guarded)
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+      - name: Run pixel specs (GPU guard in global setup)
+        run: pnpm exec playwright test --config playwright.quality-gate.config.ts
+      - name: Upload pixel report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-pixels
+          path: tests/reports/quality-gate-pixels.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  metrics:
+    name: Metrics (ubuntu-latest)
+    runs-on: ubuntu-latest
+    needs: [capture-bench, capture-games-1, capture-games-2, capture-games-3]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install metric pins
+        run: pip install -r tools/quality-gate/metrics/requirements.lock
+      - name: Download capture artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect items + run metrics
+        run: |
+          node tools/quality-gate/bin/collect-checkpoint.mjs --artifacts artifacts --k 0 --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
+          mkdir -p gate
+          cp artifacts/checkpoint/metrics.json gate/metrics.json
+      - name: Upload metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-metrics
+          path: artifacts/checkpoint/
+          retention-days: 30
+          if-no-files-found: warn
+
+  gate:
+    name: Gate verdicts (ubuntu-latest)
+    runs-on: ubuntu-latest
+    needs: [metrics, analytic-pixels]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download metrics
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-gate-metrics
+          path: gate
+      - name: Evaluate gates
+        run: |
+          pnpm --dir tools/quality-gate gate -- \
+            --metrics gate/metrics.json \
+            --items gate/items.json \
+            --goldens benchmarks/quality-rebuild/goldens/manifest.json \
+            --out gate/verdicts.json
+      - name: Step summary
+        if: always()
+        run: |
+          pnpm --dir tools/quality-gate report -- \
+            --verdicts gate/verdicts.json \
+            --metrics gate/metrics.json \
+            --out "$GITHUB_STEP_SUMMARY"

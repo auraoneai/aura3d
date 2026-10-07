@@ -1,10 +1,3 @@
-/**
- * Generated-catalog binding for Gallery Shift's independently reviewed CC0
- * roofless museum world. FloorLayout remains the sole collision, LOS, patrol,
- * room-network, objective, and gameplay authority.
- */
-import { assets } from "../../../src/aura-assets";
-import type { AuraAssetRef } from "@aura3d/engine";
-
-export const galleryShiftCutawayMuseumWorld: AuraAssetRef<"model", "galleryShiftCutawayMuseumWorld"> =
-  assets.galleryShiftCutawayMuseumWorld;
+// T1.10 path shim — module moved in the wave-4 day-0 split; keep
+// tests/unit/apps (lane 15) compiling until lane 15 repoints imports (#161).
+export * from "./gameplay/gallery-world-candidate";

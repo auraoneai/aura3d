@@ -20,6 +20,8 @@ on:
       - "tests/unit/tools/no-route-capture-flags.test.ts"
       - "tests/unit/contracts/impl/prd09-game.test.ts"
       - "migration/**"
+      - "packages/create-aura3d/templates/**"
+      - "tools/showcase-library/template-creategame-audit.mjs"
       - ".github/workflows/qr-prd09-game.yml"
   push:
     branches: ["qr/prd09-*"]
@@ -102,3 +104,26 @@ jobs:
             /tmp/composition-after.json
           retention-days: 30
           if-no-files-found: warn
+
+  templates-creategame:
+    # PRD-09 §12 (Q-13-1): generate every game template into a scratch dir and
+    # assert the shared-runtime contract — createGame mount, game-sfx-core cues,
+    # juice event map, HUD theme + touch preset, 0 `?capture` branches, 0 synth
+    # cues. Generation is source-level (no install/build), so the audit runs on
+    # ubuntu and stays honest when @aura3d/game ships via the engine tarball.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate the five game templates into a scratch dir
+        run: |
+          for t in mini-game racing-starter falling-blocks-starter fighting-game character-controller; do
+            pnpm exec tsx --tsconfig tsconfig.base.json packages/create-aura3d/src/cli.ts "/tmp/tpl-$t" --template "$t" --no-agent
+          done
+      - name: Assert createGame + 0 capture branches + 0 synth cues
+        run: node tools/showcase-library/template-creategame-audit.mjs --root /tmp

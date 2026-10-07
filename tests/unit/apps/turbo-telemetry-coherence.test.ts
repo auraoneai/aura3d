@@ -82,6 +82,7 @@ describe("turbo drift telemetry is coherent with simulation", () => {
 
   it("the HUD does not label an untouched car as racing", () => {
     expect(resolveRaceHudStatus(createRaceSessionState(), false)).toBe("Lights");
+    // invariant: source must keep `resolveRaceHudStatus` — reproduces the reported condition: speed 0 while status is running
     expect(HUD_SOURCE).toContain("resolveRaceHudStatus");
     for (const label of ["Lights", "Racing", "Finished"]) {
       expect(HUD_SOURCE, `status label ${label} missing`).toContain(label);

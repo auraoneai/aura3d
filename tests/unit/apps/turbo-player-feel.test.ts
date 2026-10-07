@@ -55,6 +55,7 @@ describe("turbo player feel", () => {
   });
 
   it("shows a result card after finish with time, best lap, and position fields", () => {
+    // invariant: source must keep `id="result-card"` — countdown completes before simulation is allowed to move cars
     expect(HUD_SOURCE).toContain('id="result-card"');
     expect(HUD_SOURCE).toContain('id="result-time-value"');
     expect(HUD_SOURCE).toContain('id="result-best-value"');

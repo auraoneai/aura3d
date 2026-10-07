@@ -14,6 +14,7 @@ describe("wow neon city car material stability", () => {
     const materialSource = readFileSync("packages/rendering/src/TexturedPBRMaterial.ts", "utf8");
     const shaderSource = readFileSync("packages/rendering/src/ShaderLibrary.ts", "utf8");
 
+    // invariant: source must keep `clearcoatBoost: 0` — keeps the delayed HDR environment from reintroducing white car speckle
     expect(wowSource).toContain("clearcoatBoost: 0");
     expect(wowSource).not.toContain("clearcoatBoost: 0.28");
 

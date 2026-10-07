@@ -30,6 +30,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
     // the CLI codemod / deprecated stubs).
     expect(removed).toEqual(["editor", "environments", "materials", REMOVED_PRIVATE_PACKAGE, "three-compat"]);
     expect(JSON.parse(showAtBase(`packages/${REMOVED_PRIVATE_PACKAGE}/package.json`))).toMatchObject({ private: true });
+    // invariant: source must keep `\` — removes no released public package while adding explicit optional owners
     for (const selectedOwner of ["lean", "navigation-recast", "physics-rapier"]) expect(now).toContain(selectedOwner);
   });
 

@@ -33,6 +33,7 @@ describe("current showcase claims", () => {
       readFileSync("docs/project/showcase/apps-classification.md", "utf8"),
       readFileSync("docs/examples/aura-clash.md", "utf8")
     ].join("\n");
+    // invariant: source must keep `development showcase` — keeps all three rebuilding games out of public release promotion
     expect(sources).toContain("development showcase");
     expect(sources).not.toMatch(/Aura Clash (?:is|as) (?:a )?(?:flagship|launch-ready|visually approved)/i);
   });

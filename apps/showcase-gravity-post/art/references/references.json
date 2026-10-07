@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-gravity-post",
+  "entries": [
+    {
+      "file": "references/deep-space-system.json",
+      "source": "shipped comparable: lit-planet system boards (Outer Wilds solar system / FTL system map)",
+      "licence": "reference-only",
+      "why": "One sun disc lighting every planet with real terminators reads the K1 deep-space targets"
+    },
+    {
+      "file": "references/atmospheric-planets.json",
+      "source": "shipped comparable: atmosphere-shell planets (Elite-style planetary rims)",
+      "licence": "reference-only",
+      "why": "Albedo+normal planet spheres with a fresnel atmosphere shell — the §8.1 one-art-language target"
+    },
+    {
+      "file": "references/orbit-lines.json",
+      "source": "existing RING/orbit guides in src/wells.ts trajectories, restyled as thin additive lines",
+      "licence": "reference-only",
+      "why": "Hairline orbit ribbons + dock gate markers — the navigation language the board view depends on"
+    }
+  ]
+}

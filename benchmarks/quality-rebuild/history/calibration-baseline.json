@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d.quality-gate.calibration-baseline/1",
+  "frozenAt": "round-0",
+  "items": {
+    "orbital-defense-3.0.1": {
+      "expected": 1.5,
+      "band": [
+        1.0,
+        2.0
+      ],
+      "source": "docs/project/aura3d-quality-rebuild/research/14-evidence-fake-parity.md \u00a7known-bad"
+    },
+    "benchmark-14-aura": {
+      "expected": 1.0,
+      "band": [
+        0.5,
+        1.5
+      ],
+      "source": "research 14 aggregate"
+    },
+    "three-r185-contract": {
+      "expected": 5.5,
+      "band": [
+        4.0,
+        7.0
+      ],
+      "source": "contract-tier reference"
+    },
+    "ref-showcase-three": {
+      "expected": 7.5,
+      "band": [
+        7.0,
+        10.0
+      ],
+      "source": "\u00a79.3 admission floor 7"
+    }
+  }
+}

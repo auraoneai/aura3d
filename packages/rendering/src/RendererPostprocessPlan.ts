@@ -1,4 +1,10 @@
 import { invertSsrProjection } from "./ProjectionMath";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+
+/** §6.9 flag probe — `A3D_QR_POST` bound through `setRendererQrFlags`. */
+function postFlagOn(): boolean {
+  return rendererQrFlags()?.on("A3D_QR_POST") === true;
+}
 import type { TemporalFrameOptions, TemporalGpuBindings } from "./TemporalHistory";
 import type {
   BloomOptions,
@@ -44,6 +50,10 @@ export interface RendererPostprocessPlanOptions {
   readonly taa?: TAAOptions | RendererTaaOptions | false;
   readonly outline?: OutlineOptions | boolean;
   readonly fxaa?: FXAAOptions | boolean;
+  /** PRD-03 C-13: the assembled v2 pipeline bag (flag-on); also stamps `v2` on the transitional descriptors. */
+  readonly pipeline?: unknown;
+  /** PRD-03 C-13: true when the bridge selected the v2 post graph. */
+  readonly v2?: boolean;
 }
 
 export type RendererPostProcessPassName =
@@ -178,7 +188,11 @@ export interface RendererPostprocessPlanDiagnostics {
 export function createRendererPostprocessPasses(postprocess: RendererPostprocessPlanOptions): readonly RendererPostProcessPassPlan[] {
   const passes: RendererPostProcessPassPlan[] = [];
   if (postprocess.bloom) {
-    passes.push({ name: "bloom", options: postprocess.bloom === true ? {} : postprocess.bloom });
+    // §7.2 carve: flag-on stamp `v2` so normalizeNativeBloomOptions accepts
+    // the HDR field ranges ([0,64] threshold, knee [0,1]) while the
+    // transitional legacy chain still executes.
+    const options = postprocess.bloom === true ? {} : postprocess.bloom;
+    passes.push({ name: "bloom", options: postprocess.v2 ? { ...options, v2: true } : options });
   }
   if (postprocess.toneMapping !== false) {
     passes.push({ name: "tone-mapping", options: postprocess.toneMapping ?? {} });
@@ -201,7 +215,9 @@ export function createRendererPostprocessPasses(postprocess: RendererPostprocess
   if (postprocess.motionBlur) {
     passes.push({ name: "motion-blur", options: postprocess.motionBlur });
   }
-  if (postprocess.contactShadow) {
+  if (postprocess.contactShadow && !postFlagOn()) {
+    // §6.9: the `contact-shadow` post pass is deleted flag-on — screen-space
+    // contact shadows are lane 02's forward feature (C-11, shadow.contact).
     passes.push({ name: "contact-shadow", options: postprocess.contactShadow });
   }
   if (postprocess.ssao) {
@@ -451,6 +467,9 @@ function postprocessClarityWarnings(
   const filmGrain = typeof postprocess.filmGrain === "object" && postprocess.filmGrain !== null ? postprocess.filmGrain : undefined;
   if (filmGrain && (filmGrain.intensity ?? 0.08) >= 0.06) {
     warnings.push(`film-grain-noise-risk intensity=${round3(filmGrain.intensity ?? 0.08)}`);
+  }
+  if (postprocess.contactShadow && postFlagOn()) {
+    warnings.push("POST_PASS_DEPRECATED:contact-shadow");
   }
   if (executionMode === "renderer-owned-pass-chain-readback" && passes.length > 2) {
     warnings.push("multi-pass-readback-cost");

@@ -3,16 +3,18 @@ import {
   createAuraApp,
   effects,
   primitives,
-  scene,
-  createProductionRuntimePostprocess,
-  createPrd03PostSurface,
+  scene
+} from "@aura3d/engine";
+import { createProductionRuntimePostprocess } from "../../../../packages/engine/src/agent-api/compiler/postprocess";
+import { createPrd03PostSurface } from "../../../../packages/engine/src/lanes/prd03";
+import {
   collectPostSection,
   collectExposureSection,
   latestSubmittedPostprocess,
   recordAuthoredPostContext,
   resetAuthoredPostContext,
   resetSubmittedPostprocess
-} from "@aura3d/engine";
+} from "../../../../packages/engine/src/agent-api/postBridge";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 import type { AuraApp } from "@aura3d/engine";
 

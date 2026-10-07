@@ -54,6 +54,12 @@ const skinnedCharacterWalk: SceneSpec = {
   primaryRegion: "shadow-receiver"
 };
 
+import { REF_SCENES } from "./ref-scenes";
+
 export const scenes: readonly BenchSceneRegistration[] = [
-  { id: skinnedCharacterWalk.id, spec: skinnedCharacterWalk }
+  { id: skinnedCharacterWalk.id, spec: skinnedCharacterWalk },
+  // §9.3 showcase references. Routable so calibration can run; they hold no
+  // calibrated thresholds yet, so the gate reports them "non-discriminating"
+  // until their panel admission (§9.4).
+  ...REF_SCENES.map((spec) => ({ id: spec.id, spec }))
 ];

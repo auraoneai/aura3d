@@ -122,7 +122,7 @@ export type {
 export { ease } from "./util/ease.js";
 export type { EaseName } from "./util/ease.js";
 
-export { sfx, SFX_IDS } from "./sfx";
+export { sfx, SFX_IDS, sfxUrl } from "./sfx";
 export type { SfxId, SfxPack } from "./sfx";
 
 // PRD-09 Phase 4 — HUD surface (§7.7, §17).
