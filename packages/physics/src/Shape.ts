@@ -1,17 +1,33 @@
-import {
-  EPSILON,
-  addVec3,
-  lengthVec3,
-  normalizeVec3 as normalizeCanonicalVec3,
-  scaleVec3,
-  subVec3,
-  vec3
-} from "@aura3d/scene/math";
-import type { Vec3 as CanonicalVec3 } from "@aura3d/scene/math";
+export type Vec3 = readonly [number, number, number];
 
-export type Vec3 = Readonly<CanonicalVec3>;
+// physics is tier 0 — these tuple helpers are defined locally so the package
+// keeps zero Aura3D dependencies (scene/MathTypes lives at tier 1).
+export const EPSILON = 1e-8;
 
-export { EPSILON, addVec3, lengthVec3, scaleVec3, subVec3, vec3 };
+export function vec3(x = 0, y = 0, z = 0): Vec3 {
+  return [x, y, z];
+}
+
+export function addVec3(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+export function subVec3(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+export function scaleVec3(a: Readonly<Vec3>, scalar: number): Vec3 {
+  return [a[0] * scalar, a[1] * scalar, a[2] * scalar];
+}
+
+export function lengthVec3(a: Readonly<Vec3>): number {
+  return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+}
+
+function normalizeCanonicalVec3(a: Readonly<Vec3>): [number, number, number] {
+  const len = lengthVec3(a);
+  return [a[0] / len, a[1] / len, a[2] / len];
+}
 
 export type BoxShape = {
   readonly kind: "box";
