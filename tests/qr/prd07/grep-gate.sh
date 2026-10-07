@@ -11,7 +11,11 @@ cd "$(dirname "$0")/../../.."
 PATTERN='RootGpuParticleWorkload|prd07\.legacy|legacyPrimitiveNodes'
 ALLOWLIST="tests/qr/prd07/grep-gate-allowlist.txt"
 
-mapfile -t allow < <(grep -v '^#' "$ALLOWLIST" | grep -v '^\s*$' | sort -u)
+# bash 3.2 (macOS /bin/bash) has no `mapfile` — read into the array manually.
+allow=()
+while IFS= read -r line; do
+  allow+=("$line")
+done < <(grep -v '^#' "$ALLOWLIST" | grep -v '^[[:space:]]*$' | sort -u)
 hits=$(rg -lN "$PATTERN" packages apps templates examples 2>/dev/null | sort -u || true)
 
 fail=0
