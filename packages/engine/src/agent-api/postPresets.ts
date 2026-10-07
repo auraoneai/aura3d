@@ -34,7 +34,8 @@ function e(effect: string, fields: Record<string, unknown>): AuraNodeBuilder<Aur
  * `color-grade` fields. Notes columns (god rays, DOF, MB off, emissive range)
  * land in `effects`/`emissiveStrengthRange`.
  */
-export const prd03PostPresets: Readonly<Record<AuraPostPresetId, AuraPostPreset>> = {
+function buildPrd03PostPresets(): Readonly<Record<AuraPostPresetId, AuraPostPreset>> {
+  return {
   "product-studio": {
     id: "product-studio",
     output: { toneMapping: "neutral", exposure: 1.0 },
@@ -118,7 +119,32 @@ export const prd03PostPresets: Readonly<Record<AuraPostPresetId, AuraPostPreset>
     ],
     emissiveStrengthRange: [1, 6]
   }
-};
+  };
+}
+
+let prd03PostPresetsTable: Readonly<Record<AuraPostPresetId, AuraPostPreset>> | undefined;
+
+const resolvedPrd03PostPresets = () => (prd03PostPresetsTable ??= buildPrd03PostPresets());
+
+/**
+ * `effects` entries are `AuraNodeBuilder` instances, so the table cannot be
+ * built at module-eval time: an importer can reach this file while
+ * `nodes/builder.ts` is still mid-cycle in the leaf-graph SCC (the merge-order
+ * TDZ that failed `packages/editor-runtime` tests on PR #357 CI). Deferred
+ * construction keeps the same `Record`-shaped surface: `postPresets[id]` and
+ * `Object.keys(postPresets)` behave identically, just built on first access.
+ */
+export const prd03PostPresets: Readonly<Record<AuraPostPresetId, AuraPostPreset>> = new Proxy(
+  {} as Record<AuraPostPresetId, AuraPostPreset>,
+  {
+    get: (_target, prop) =>
+      (resolvedPrd03PostPresets() as Record<PropertyKey, unknown>)[prop],
+    has: (_target, prop) => prop in resolvedPrd03PostPresets(),
+    ownKeys: () => Reflect.ownKeys(resolvedPrd03PostPresets()),
+    getOwnPropertyDescriptor: (_target, prop) =>
+      Object.getOwnPropertyDescriptor(resolvedPrd03PostPresets(), prop)
+  }
+);
 
 
 export interface PostPresetExpansion {
