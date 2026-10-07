@@ -113,13 +113,33 @@ async function loadBasisModuleBrowser(base: string): Promise<BasisModuleLike> {
   return module;
 }
 
+interface NodeBuiltins {
+  readonly fs: typeof import("node:fs");
+  readonly module: typeof import("node:module");
+  readonly url: typeof import("node:url");
+  readonly path: typeof import("node:path");
+}
+
+// Computed specifiers: these loads are runtime-optional (Node fallback path)
+// and must stay unresolvable to consumer bundlers at build time — the engine
+// pack does not declare node builtins or `meshoptimizer` as dependencies.
+async function nodeBuiltins(): Promise<NodeBuiltins> {
+  const spec = (name: string) => `node:${name}`;
+  const [fs, mod, url, path] = await Promise.all([import(spec("fs")), import(spec("module")), import(spec("url")), import(spec("path"))]);
+  return {
+    fs: fs as NodeBuiltins["fs"],
+    module: mod as NodeBuiltins["module"],
+    url: url as NodeBuiltins["url"],
+    path: path as NodeBuiltins["path"]
+  };
+}
+
 async function loadBasisModuleNode(): Promise<BasisModuleLike> {
-  const [{ readFileSync, existsSync }, { createRequire }, { fileURLToPath }, { dirname }] = await Promise.all([
-    import("node:fs"),
-    import("node:module"),
-    import("node:url"),
-    import("node:path")
-  ]);
+  const { fs, module: nodeModule, url: nodeUrl, path: nodePath } = await nodeBuiltins();
+  const { readFileSync, existsSync } = fs;
+  const { createRequire } = nodeModule;
+  const { fileURLToPath } = nodeUrl;
+  const { dirname } = nodePath;
   const require2 = createRequire(import.meta.url);
   const candidates = [
     new URL("../vendor/basis/basis_transcoder.js", import.meta.url),
@@ -315,8 +335,12 @@ function capabilitiesFromTokens(tokens: readonly string[]): CompressedTextureCap
 }
 
 async function probeMeshoptPackage(): Promise<boolean> {
+  // Browsers resolve the same-origin vendored decoder; Node resolves the
+  // `meshoptimizer` package (non-static specifier — build-optional).
+  if (typeof document !== "undefined") return probeVendored("meshopt", "meshopt_decoder.mjs");
   try {
-    const mod = await import("meshoptimizer") as Record<string, unknown>;
+    const pkg = ["mesh", "optimizer"].join("");
+    const mod = await import(pkg) as Record<string, unknown>;
     const decoder = (mod.MeshoptDecoder ?? (mod.default as Record<string, unknown> | undefined)?.MeshoptDecoder) as { ready?: unknown } | undefined;
     return decoder !== undefined && typeof decoder === "object";
   } catch {
@@ -331,7 +355,7 @@ async function probeVendoredDraco(): Promise<boolean> {
   return probeVendored("draco", "draco_decoder.js");
 }
 
-async function probeVendored(dir: "basis" | "draco", file: string): Promise<boolean> {
+async function probeVendored(dir: "basis" | "draco" | "meshopt", file: string): Promise<boolean> {
   if (typeof fetch === "function" && typeof document !== "undefined") {
     try {
       const response = await fetch(`/aura-decoders/${dir}/${file}`, { method: "HEAD" });
@@ -339,7 +363,8 @@ async function probeVendored(dir: "basis" | "draco", file: string): Promise<bool
     } catch { /* fall through to node probe */ }
   }
   try {
-    const { existsSync } = await import("node:fs");
+    const { fs } = await nodeBuiltins();
+    const { existsSync } = fs;
     for (const base of ["../vendor", "../../vendor"]) {
       if (existsSync(new URL(`${base}/${dir}/${file}`, import.meta.url))) return true;
     }
