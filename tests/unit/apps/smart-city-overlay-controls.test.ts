@@ -29,6 +29,7 @@ function cameraInput(controls: Record<string, string | boolean>, cameraPreset = 
 describe("smart city overlay and control bindings", () => {
   it("bounds only the explicit composition-probe backing target", () => {
     const source = readFileSync("apps/showcase-smart-city-control/src/main.ts", "utf8");
+    // invariant: source must keep `has("compositionProbe") ? 0.25 : 1` — bounds only the explicit composition-probe backing target
     expect(source).toContain('has("compositionProbe") ? 0.25 : 1');
     expect(source).toContain("pixelRatio: compositionProbePixelRatio");
     expect(source).toContain("padding: compactViewport ? 0.8");

@@ -53,7 +53,7 @@ import {
   BIOME_HDRI_IDS,
   checkBiomeHdri,
   type BiomeHdriAssetFile
-} from "../../../../packages/environments/src/BiomeEnvironmentRegistry";
+} from "../../../../packages/engine/src/devtools/environments/BiomeEnvironmentRegistry.js";
 import {
   presetPackExposureFactor,
   presetPackSsimReference

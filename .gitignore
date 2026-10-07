@@ -276,6 +276,10 @@ release-artifacts/external-demos/
 # Generated files
 *.generated.ts
 *.generated.js
+# Resolution maps are generated but committed (PRD-15 T1.2): fresh checkouts
+# and CI must resolve them without running the generator first.
+!vite.aliases.generated.ts
+!tsconfig.paths.generated.ts
 
 # Shader compilation cache
 shader-cache/
@@ -317,6 +321,8 @@ test-data/
 !public/aura-assets/Textures/*.png
 
 fixtures/
+# PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
+!tests/qr/prd15/fixtures/
 # Lane-owned reference-game fixtures (PRD-09 §10) are tracked sources.
 !packages/game/fixtures/
 !packages/game/fixtures/**

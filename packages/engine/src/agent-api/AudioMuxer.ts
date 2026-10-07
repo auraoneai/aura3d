@@ -1,6 +1,7 @@
 import type { AudioStem, AudioStemManifestArtifact } from "./DialoguePerformance.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 import type { EncodedVideoArtifact } from "./FrameEncoder.js";
+import { round } from "./GameRuntime.js";
 
 export type AudioMuxerContainer = "webm" | "mp4";
 export type AudioMuxerCodec = "opus" | "aac" | "pcm";

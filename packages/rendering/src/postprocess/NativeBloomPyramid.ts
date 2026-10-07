@@ -107,3 +107,28 @@ export function resolveBloomPyramidResponseGain(plan: BloomPyramidPlan): number 
   if (plan.quality === "performance") return 1;
   return plan.quality === "balanced" ? 7 : 17;
 }
+
+/**
+ * PRD-03 §6.6 — v2 analytic bloom normalisation `k(N)`.
+ *
+ * The v2 pyramid is additive: `up_i = down_i + tent(up_{i+1})`, and both the
+ * 13-tap downsample and the 9-tap tent are energy-conserving (their kernels
+ * sum to 1). A constant above-threshold signal of excess `E` therefore
+ * contributes `E` once per mip level: `bloom = N · E`. Normalising by `1/N`
+ * makes the composite `hdr + bloom · intensity` produce exactly `E · intensity`
+ * for that input — there is no other gain.
+ *
+ * `scatter` is the tent radius in texels; it widens the halo but does not
+ * change the response to a constant signal, so it does not enter the factor.
+ * The flag-off `resolveBloomPyramidResponseGain` heuristic stays for the
+ * legacy path only and is deleted at flag removal (Phase 8).
+ */
+export function bloomNormalization(mips: number, scatter: number): number {
+  if (!Number.isInteger(mips) || mips < 1) {
+    throw new Error(`Bloom mip count must be a positive integer, received ${String(mips)}.`);
+  }
+  if (!(scatter >= 0) || scatter > 1) {
+    throw new Error(`Bloom scatter must be finite and in [0, 1], received ${String(scatter)}.`);
+  }
+  return 1 / mips;
+}

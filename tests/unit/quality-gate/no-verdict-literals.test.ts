@@ -29,8 +29,13 @@ const headToHeadFiles = readdirSync(toolsDir, { withFileTypes: true })
   .map((entry) => resolve(toolsDir, entry.name, "index.ts"));
 
 describe("head-to-head verdict literals (C-32)", () => {
-  it("covers every tools/head-to-head-* directory", () => {
-    expect(headToHeadFiles.length).toBeGreaterThanOrEqual(18);
+  it("no aggregator-only head-to-head tool remains outside quarantine", () => {
+    // T4.9 moved aggregator-only families to tools/_quarantine; what remains is
+    // runner/pixel-tool/library code that must still emit GateVerdict literals.
+    const quarantined = readdirSync(resolve(toolsDir, "_quarantine"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith("head-to-head-"));
+    expect(headToHeadFiles.length).toBeGreaterThanOrEqual(1);
+    expect(quarantined.length).toBeGreaterThanOrEqual(headToHeadFiles.length);
   });
 
   it("no file emits an observedLosses string list", () => {

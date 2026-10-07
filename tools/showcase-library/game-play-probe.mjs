@@ -12,6 +12,7 @@ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
+import { readGameChannel, channelReady, channelEvidenceClaims } from "./game-channel.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
 const PLAYBOOK_PATH = resolve(repoRoot, "tools/showcase-library/game-play-playbook.json");
@@ -108,6 +109,12 @@ async function readState(page) {
   }
 }
 
+/** Attach the C-33 beacon / C-24 channel view to a state read (legacy dbg kept). */
+async function readGameState(page) {
+  const [state, channel] = await Promise.all([readState(page), readGameChannel(page)]);
+  return { ...state, game: { beacon: channel.beacon, migrated: channel.migrated, evidence: channelEvidenceClaims(channel) } };
+}
+
 /** Poll until the route has booted: a canvas exists AND the HUD has published non-empty text. */
 async function waitForBoot(page, startedAt, ms) {
   const deadline = startedAt + ms;
@@ -118,6 +125,10 @@ async function waitForBoot(page, startedAt, ms) {
       return { hasCanvas: Boolean(c), hud: (document.body?.innerText ?? "").trim().length };
     }).catch(() => ({ hasCanvas: false, hud: 0 }));
     if (state.hasCanvas && firstCanvasAt === null) firstCanvasAt = Date.now();
+    // C-33 readiness wins when the route is migrated: the beacon reports the
+    // live session state directly, unmigrated routes keep the canvas+text poll.
+    const channel = await readGameChannel(page);
+    if (channelReady(channel)) return { canvasBootMs: firstCanvasAt - startedAt, ready: true, via: "beacon" };
     if (state.hasCanvas && state.hud > 12) return { canvasBootMs: firstCanvasAt - startedAt, ready: true };
     await page.waitForTimeout(250);
   }
@@ -188,7 +199,7 @@ async function probeRoute(route) {
   try {
     const p = resolve(dir, `${label}.png`);
     await page.screenshot({ path: p });
-    shots.push({ label, file: p.slice(resolve(repoRoot).length + 1), state: await readState(page) });
+    shots.push({ label, file: p.slice(resolve(repoRoot).length + 1), state: await readGameState(page) });
   } catch (e) { shots.push({ label, error: String(e).slice(0, 300) }); }
 
   if (!failFirstLoad) {
@@ -206,7 +217,7 @@ async function probeRoute(route) {
         await page.waitForTimeout(step.after ?? 700);
         const p = resolve(dir, `${l}.png`);
         await page.screenshot({ path: p });
-        shots.push({ label: l, file: p.slice(resolve(repoRoot).length + 1), state: await readState(page) });
+        shots.push({ label: l, file: p.slice(resolve(repoRoot).length + 1), state: await readGameState(page) });
       } catch (e) {
         shots.push({ label: l, error: String(e).slice(0, 300) });
       }

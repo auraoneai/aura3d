@@ -1,3 +1,6 @@
+import { assets } from "./AssetDecoders.js";
+import { animation } from "./nodes/animation.js";
+import { renderer } from "./rendererDiagnostics.js";
 export interface GameInspectorRuntimeInput {
   readonly runtime?: {
     readonly nodes?: readonly { readonly id: string; readonly kind?: string; readonly tags?: readonly string[] }[];

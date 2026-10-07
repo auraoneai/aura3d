@@ -28,6 +28,19 @@ export function validateReleaseGameAssetPairEvidence(input) {
     failures.push("release-game-template-evidence-missing");
   }
 
+  /*
+   * PRD-09 Phase 6: migrated routes read through the C-24 channel, so their
+   * route-health evidence may carry `gameBeacon`/`captureContractMigrated`.
+   * A migrated record asserting the marker must include the beacon snapshot;
+   * legacy evidence is unaffected.
+   */
+  if (status.captureContractMigrated === true || input.route.captureContractMigrated === true) {
+    const beacon = input.routeHealth.gameBeacon;
+    if (!beacon || typeof beacon !== "object" || typeof beacon.state !== "string") {
+      failures.push("release-game-beacon-missing-on-migrated-route");
+    }
+  }
+
   const evidence = input.routeHealth.gameAssetPairEvidence;
   if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
     failures.push(`release-game-asset-pair-evidence-missing:${status.category}`);

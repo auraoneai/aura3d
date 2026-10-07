@@ -10,7 +10,14 @@ const packageNames = readdirSync(packageRoot, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 const packageNameSet = new Set(packageNames);
-const rootPackageSurfacePackages = new Set(["engine"]);
+// `game` ships inside the root tarball: `@aura3d/game` stays private while the
+// published surface exposes the same runtime as `@aura3d/engine/game` (PRD-09
+// createGame is the route API the create-aura3d templates consume).
+const rootPackageSurfacePackages = new Set(["engine", "game"]);
+// Published names whose dist directory differs from the package dir name.
+// `@aura3d/engine-runtime` is the workspace name of packages/engine; imports
+// resolve through the workspace manifest while the dist tree keys on dirs.
+const packageNameAliases: Record<string, string> = { "engine-runtime": "engine" };
 const publicPackageNames = packageNames.filter((packageName) => {
   const manifestPath = join(packageRoot, packageName, "package.json");
   if (!existsSync(manifestPath)) return true;
@@ -20,6 +27,10 @@ const publicPackageNames = packageNames.filter((packageName) => {
 
 mkdirSync(rootDist, { recursive: true });
 
+// Q-12-5 bridge: `.github/workflows/build.yml` (lane-12-owned) still asserts
+// `dist/index.{js,d.ts}` exist. Keep emitting the root aggregate as a
+// build-only artifact — it is NOT listed in package.json#files (T1.7 removed
+// it), so nothing publishes it — until the workflow assertion is deleted.
 const rootIndexLines: string[] = [];
 const rootTypeLines: string[] = [];
 
@@ -88,7 +99,7 @@ function walkStaticRuntimeAssets(dir: string, out: string[] = []): string[] {
     const path = join(dir, entry);
     const stats = statSync(path);
     if (stats.isDirectory()) walkStaticRuntimeAssets(path, out);
-    else if (/\.(bin|glb|gltf|hdr|jpg|jpeg|ktx2|png|svg|webp)$/i.test(path)) out.push(path);
+    else if (/\.(bin|css|glb|gltf|hdr|jpg|jpeg|ktx2|png|svg|webp)$/i.test(path)) out.push(path);
   }
   return out;
 }
@@ -97,7 +108,7 @@ function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorks
   for (const file of walkFiles(dir)) {
     const source = readFileSync(file, "utf8");
     const rewritten = source.replace(
-      /\b(from\s*["']|import\s*\(\s*["'])([^"']+)(["'])/g,
+      /\b(from\s*["']|import\s*\(\s*["']|import\s*["'])([^"']+)(["'])/g,
       (full, prefix: string, specifier: string, suffix: string) => {
         const nextSpecifier = rewriteSpecifier(file, distRoot, specifier, rewriteWorkspacePackages);
         return nextSpecifier === specifier ? full : `${prefix}${nextSpecifier}${suffix}`;
@@ -131,6 +142,7 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
   }
 
   const subpathMatch = /^@aura3d\/([^/]+)\/(.+)$/.exec(specifier);
+  if (subpathMatch) subpathMatch[1] = packageNameAliases[subpathMatch[1]!] ?? subpathMatch[1]!;
   if (rewriteWorkspacePackages && subpathMatch && packageNameSet.has(subpathMatch[1]!)) {
     const packageName = subpathMatch[1]!;
     const subpath = subpathMatch[2]!;
@@ -144,6 +156,7 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
   }
 
   const match = /^@aura3d\/([^/]+)$/.exec(specifier);
+  if (match) match[1] = packageNameAliases[match[1]!] ?? match[1]!;
   if (!rewriteWorkspacePackages || !match || !packageNameSet.has(match[1]!)) return specifier;
   const target = match[1] === "animation" && file.includes(`${distRoot}/assets/`)
     ? join(distRoot, "animation", "browser-index.js")

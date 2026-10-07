@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-mech-hangar",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-mech-hangar",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.5,
+        "modeling_assets": 3.5,
+        "texture_quality": 2.5,
+        "material_quality": 3.5,
+        "pbr_credibility": 3.5,
+        "lighting": 3.5,
+        "shadows": 2.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 2.5,
+        "tone_mapping": 5.0,
+        "color_management": 5.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 4.0,
+        "vfx": 1.5,
+        "particles": 1.0,
+        "animation_quality": 3.0,
+        "character_presentation": 3.5,
+        "camera": 3.5,
+        "composition": 3.5,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 1.5,
+        "gameplay_readability": 5.0,
+        "ui_hud": 4.5,
+        "typography": 4.5,
+        "polish_juice": 2.0,
+        "mobile_presentation": 1.5,
+        "overall_visual_quality": 3.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Flat planes and black void in the hangar, a box-slab ceiling over a flat blue wall in the arena. No architecture, props, or set dressing."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "The base mech mesh is decent (~6), but it is buried in untextured cube clusters (~1.5) that read as placeholder."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Floor, walls, and boxes are flat colors with no albedo variation, wear, decals, or normal detail. Only the mech carries texture detail."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Mech metal has some spec response. Everything else is uniform dielectric with a single roughness value."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Metals have nothing meaningful to reflect, and the floor highlight reads as a generic Blinn hotspot rather than grounded PBR."
+        },
+        {
+          "category": "lighting",
+          "seen": "One big spot wash plus emissives. Fighters get no key/rim separation, and lighting is flat with no motivation."
+        },
+        {
+          "category": "shadows",
+          "seen": "Blob discs only. No visible mech cast shadows or contact shadows, so the fighters float."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Uniform blue ambient with no AO. Box clusters and creases have no occlusion."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No visible env-map reflections on mech metal and no floor reflections, despite a glossy-floor arena aesthetic that needs them."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Emissives roll off acceptably (ACES/AgX-like). The hangar floor gradient and mobile floor look washed."
+        },
+        {
+          "category": "color_management",
+          "seen": "sRGB output looks correct. The palette is coherent but monotone cyan-on-navy."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges look acceptably smooth at capture. Thin emissive lines show some shimmer risk (inferred)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom only. No SSAO, SSR, DOF, vignette, grading, or chromatic/film treatment."
+        },
+        {
+          "category": "vfx",
+          "seen": "Glowing rings and floating diamonds only. The action shot has zero combat VFX."
+        },
+        {
+          "category": "particles",
+          "seen": "None visible: no sparks, dust, embers, or thruster exhaust."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Stiff identical idle poses with negligible pose delta between \"mid\" and \"action\"."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The mech is small in frame, cluttered by boxes, and has no rim light. The hangar showcase undersells the hero asset."
+        },
+        {
+          "category": "camera",
+          "seen": "Static, high, distant, symmetric. No fighting-game dynamism (low angle, push-in, shake)."
+        },
+        {
+          "category": "composition",
+          "seen": "Hangar is about 60% dead space. Arena centers on empty floor rings instead of the fighters."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No reference props, haze, or falloff, so mechs could be 2 m or 20 m. The background wall is flat."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, volumetrics, dust motes, or light shafts."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Blue vs. pink team rings and clear bars help. Mechs blend into the dark backdrop."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean bars, but the hangar panel is a debug/provenance dump, and the HUD has no hierarchy or game feel."
+        },
+        {
+          "category": "typography",
+          "seen": "Monospace dev type throughout, small and low-contrast in the hangar. Functional, not designed."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No hit feedback, transitions, or motion cues. The action frame equals the idle frame."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Both fighters cropped off-screen, HUD eats 28%, keyboard hints on touch, clipped buttons."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "One decent mech mesh dropped into a primitive scene with placeholder parts and no combat feedback."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

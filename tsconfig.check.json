@@ -1,0 +1,38 @@
+// Phase-1 type-check config (PRD-15 §7, T1.0). noEmit over the same roots as
+// tsconfig.build.json plus tests/qr/** and the three root configs — every
+// later lane task checks with `tsc --noEmit -p tsconfig.check.json`.
+// tests/browser/** is deliberately out of scope: those specs were never
+// type-checked (other lanes own them) and carry ~1.8k pre-existing errors.
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "tests/unit/**/*.ts",
+    "tests/integration/**/*.ts",
+    "tests/performance/**/*.ts",
+    "tests/visual/**/*.ts",
+    "tests/qr/**/*.ts",
+    "tools/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tests/**/fixtures/**",
+    "tests/**/before/**",
+    "tests/**/after/**",
+    // Lane test trees that do not typecheck under the check tsconfig yet
+    // (mirrors origin/main's tsconfig.build.json exclusions — each lane
+    // fixes its own drift and re-adds itself):
+    "tests/qr/prd04",
+    "tests/qr/prd07",
+    "tests/qr/prd08",
+    "tests/qr/prd11",
+    "tests/qr/prd14"
+  ]
+}

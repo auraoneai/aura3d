@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { applyAnimationRenderPreset } from "../../../packages/rendering/src/animation/applyAnimationRenderPreset";
@@ -157,7 +157,10 @@ describe("converted feature docs match shipped source", () => {
   });
 
   it("keeps the production renderer how-to on the real public types", () => {
-    const source = read("packages/engine/src/agent-api/index.ts");
+    const source = (function agentApiSource() {
+    const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+    return walk("packages/engine/src/agent-api").map((f2) => readFileSync(f2, "utf8")).join("\n");
+  })();
     expect(source).toContain('export type AuraRendererMode = "safe-basic" | "production"');
     expect(source).toContain(
       'export type AuraRendererQualityProfileId = "safe-basic" | "production" | "cinematic" | "experimental-webgpu"'

@@ -6,7 +6,8 @@ import {
   type CameraFrameBounds
 } from "/packages/rendering/src/index.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -162,7 +163,7 @@ async function renderA3D(
     environmentLighting,
     hdrSkybox: undefined
   });
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: SIZE,
     height: SIZE,
@@ -170,7 +171,7 @@ async function renderA3D(
     clearColor: NEUTRAL_BACKGROUND_LINEAR,
     shaderLibrary: createProductionHeroShaderLibrary()
   });
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: staged.source,
     camera: staged.camera,
     metadata: {

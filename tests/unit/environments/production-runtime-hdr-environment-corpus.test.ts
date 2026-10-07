@@ -3,7 +3,7 @@ import {
   createProductionEnvironmentCorpusSummary,
   inspectProductionHDR,
   loadProductionEnvironmentManifest
-} from "../../../packages/environments/src/production-runtime";
+} from "../../../packages/engine/src/devtools/environments/production-runtime";
 
 describe("Production HDR environment corpus", () => {
   it("pins real HDRI files for IBL and PMREM work", () => {

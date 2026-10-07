@@ -7,7 +7,7 @@ import {
   pickSceneRenderableHits,
   pickSceneRenderables
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { Renderable, Scene, type SceneNode } from "@aura3d/scene";
 
 declare global {
@@ -90,7 +90,7 @@ async function run(): Promise<void> {
       "material:cyan": new UnlitMaterial({ color: [0.3, 0.82, 1, 1] }),
       "material:point": new UnlitMaterial({ color: [0.88, 0.96, 0.62, 1] })
     };
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,

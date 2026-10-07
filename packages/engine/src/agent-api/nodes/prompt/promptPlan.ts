@@ -1,7 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraCompiledPromptPlan, AuraInteractionNode, AuraPromptCameraPreset, AuraPromptEffectId, AuraPromptInteractionMode, AuraPromptLightingPreset, AuraPromptPlan, AuraPromptResolvedSubject, AuraPromptSceneType } from "../../index.js";
-import { AuraNodeBuilder, effects, interactions, promptSubjectIsResolved, scene } from "../../index.js";
+import type { AuraCompiledPromptPlan, AuraInteractionNode, AuraPromptCameraPreset, AuraPromptEffectId, AuraPromptInteractionMode, AuraPromptLightingPreset, AuraPromptPlan, AuraPromptResolvedSubject, AuraPromptSceneType } from "../../nodes/types.js";
+import { AuraNodeBuilder } from "../../nodes/builder.js";
+import { effects } from "../../nodes/effects.composite.js";
+import { interactions } from "../../nodes/interactions.js";
+import { promptSubjectIsResolved } from "../../nodes/promptPlans.js";
+import { AuraSceneBuilder, scene } from "../../nodes/scene.js";
 import { camera } from "../camera.js";
 import { resolveQrFlags } from "../../../contracts/flags.js";
 import { promptRecipes } from "./promptRecipes.js";
@@ -56,11 +60,7 @@ export function requireResolvedPromptSubject(plan: AuraPromptPlan): AuraPromptRe
   return plan.subject;
 }
 
-export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
-  if (mode === "keyboard") return interactions.keyboard({ target });
-  if (mode === "pointer") return interactions.pointer({ target });
-  return interactions.orbit({ target });
-}
+// APPLIED BY LANE 15 (T6.11 no-cycles): interactionNode moved to promptRecipes.ts.
 
 export function defaultCameraPreset(sceneType: AuraPromptSceneType): AuraPromptCameraPreset {
   if (sceneType === "cinematic-scene") return "cinematic-dolly";
@@ -167,4 +167,10 @@ export function promptPlanWarnings(plan: AuraPromptPlan): readonly string[] {
     warnings.push("PromptPlan negative criteria are missing; default anti-patterns were applied.");
   }
   return warnings;
+}
+
+// APPLIED BY LANE 15 (T6.11 no-cycles): moved from ../promptPlans.ts so that file
+// no longer imports this module (SCC-3 broke the layering gate).
+export function promptPlanToScene(plan: AuraPromptPlan): AuraSceneBuilder {
+  return compilePromptPlan(plan).scene;
 }

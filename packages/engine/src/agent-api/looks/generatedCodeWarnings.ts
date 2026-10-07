@@ -4,8 +4,9 @@
 // Flag on: `lookLint` output, so app.diagnostics().warnings carries the same
 // `look/*` strings app.diagnostics().look.lint reports (§7.2).
 
-import type { AuraSceneSnapshot } from "../index.js";
-import { createAssetProvenance, groups } from "../index.js";
+import type { AuraSceneSnapshot } from "../nodes/types.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { groups } from "../nodes/groups.js";
 import { createProductionPrimitiveTextureIntent } from "../compiler/textures.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraLookLintContext } from "../../contracts/looks.js";

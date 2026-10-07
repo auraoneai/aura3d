@@ -1,4 +1,5 @@
 import type { AnimationEmotionPose, AnimationPerformanceBodyState, AnimationPerformanceFacialState } from "./AnimationPerformance.js";
+import { round } from "./GameRuntime.js";
 
 export interface PerformanceBlendResult {
   readonly kind: "performance-blend";

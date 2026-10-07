@@ -1,8 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "../index.js";
-import type { AuraEnvironmentOptions } from "../index.js";
-import { AuraNodeBuilder, environmentMapPresets, environments } from "../index.js";
+import type { AuraAssetRef, AuraColor, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraVec3 } from "./types.js";
+import type { AuraEnvironmentOptions } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { environmentMapPresets, environments } from "./environments.composite.js";
 
 // ---------- PRD-02 §7 — environment sources (CCR-02-2 additions) ----------
 

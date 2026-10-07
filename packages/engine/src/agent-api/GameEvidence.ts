@@ -13,6 +13,12 @@ import type {
   GameKinematicBody,
   GameRuntimeSubsystemOwnership
 } from "./GameRuntime";
+import { assets } from "./AssetDecoders.js";
+import { animation } from "./nodes/animation.js";
+import { camera } from "./nodes/camera.js";
+import { effects } from "./nodes/effects.composite.js";
+import { physics } from "./nodes/physics.js";
+import { renderer } from "./rendererDiagnostics.js";
 
 export interface GameRuntimeEvidenceApp {
   readonly runtime?: {
@@ -617,6 +623,6 @@ function collectAccessibilityWarnings(sources: readonly GameAccessibilitySource[
     .map((feature) => `Missing accessibility ${feature} source evidence.`);
 }
 
-function unique<T extends string>(values: readonly T[]): readonly T[] {
+export function unique<T extends string>(values: readonly T[]): readonly T[] {
   return [...new Set(values)].sort();
 }

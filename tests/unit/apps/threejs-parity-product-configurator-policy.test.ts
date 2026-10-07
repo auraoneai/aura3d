@@ -30,6 +30,7 @@ describe("threejsParity product configurator policy", () => {
     const authoredLayerSource = readFileSync("apps/advanced-examples-gallery/src/authoredLayer.ts", "utf8");
     const authoredLayerPolicySource = readFileSync("apps/advanced-examples-gallery/src/authoredLayerPolicies.ts", "utf8");
 
+    // invariant: source must keep `isProductConfiguratorOriginalProductAssetId(assetId)` — keeps original Product GLB corrections texture-preserving and out of generated fixture pat
     expect(authoredLayerSource).not.toContain("isProductConfiguratorOriginalProductAssetId(assetId)");
     expect(authoredLayerSource).not.toContain("applyProductConfiguratorOriginalCarMaterialQualityCorrections");
     expect(authoredLayerPolicySource).toContain("isProductConfiguratorOriginalProductAssetId(assetId)");

@@ -1,17 +1,19 @@
 import { describe, expect, test, beforeEach } from "vitest";
 import {
-  createProductionRuntimePostprocess,
-  collectPostSection,
   effects,
-  latestSubmittedPostprocess,
-  recordAuthoredPostContext,
-  resetAuthoredPostContext,
-  resetSubmittedPostprocess,
   scene,
   camera,
   primitives,
   type AuraApp
 } from "@aura3d/engine";
+import { createProductionRuntimePostprocess } from "../../../../packages/engine/src/agent-api/compiler/postprocess";
+import {
+  collectPostSection,
+  latestSubmittedPostprocess,
+  recordAuthoredPostContext,
+  resetAuthoredPostContext,
+  resetSubmittedPostprocess
+} from "../../../../packages/engine/src/agent-api/postBridge";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { QUALITY_TIERS, Renderer, resolvePostAntiAlias } from "@aura3d/rendering";
 

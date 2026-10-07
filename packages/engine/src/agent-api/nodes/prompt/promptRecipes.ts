@@ -7,14 +7,29 @@
 // a textured material preset. Omitting `look` returns the legacy body
 // byte-identical (the flag-off path; §12 "flag-off census equals today's").
 
-import type { AuraAssetRef, AuraGroupNode, AuraPromptPlan, AuraSceneNode } from "../../index.js";
-import { AuraNodeBuilder, AuraSceneBuilder, effects, model, prefabs, primitives, scene, timeline } from "../../index.js";
+import type { AuraAssetRef, AuraGroupNode, AuraInteractionNode, AuraPromptInteractionMode, AuraPromptPlan, AuraSceneNode } from "../../nodes/types.js";
+import { prefabs } from "../prefabs/index.js";
+import { AuraNodeBuilder } from "../builder.js";
+import { interactions } from "../interactions.js";
+import { AuraSceneBuilder } from "../scene.js";
+import { effects } from "../effects.composite.js";
+import { model } from "../model.js";
+import { primitives } from "../primitives.js";
+import { scene } from "../scene.js";
+import { timeline } from "../timeline.js";
 import { camera } from "../camera.js";
 import { lights } from "../lights.js";
 import { material } from "../material.js";
 import type { AuraLookId, AuraLookNode } from "../../../contracts/looks.js";
 import { looks } from "../../looks/looks.js";
-import { interactionNode } from "./promptPlan.js";
+
+// APPLIED BY LANE 15 (T6.11 no-cycles): verbatim move from promptPlan.ts —
+// importing it back created the prompt SCC.
+export function interactionNode(mode: AuraPromptInteractionMode, target?: string): AuraNodeBuilder<AuraInteractionNode> {
+  if (mode === "keyboard") return interactions.keyboard({ target });
+  if (mode === "pointer") return interactions.pointer({ target });
+  return interactions.orbit({ target });
+}
 
 /** The look's nodes as one authored group (records `aura-look:<id>` so
  *  `looks.resolveDefault`/`authoredLookIds` and the C-36 handler see it). */

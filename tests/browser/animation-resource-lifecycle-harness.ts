@@ -1,5 +1,5 @@
 import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets/browser";
-import { ProductionWebGL2Renderer } from "@aura3d/rendering";
+import { Renderer } from "@aura3d/rendering";
 
 declare global { interface Window { __AURA3D_ANIMATION_LIFECYCLE__?: any } }
 
@@ -19,12 +19,12 @@ async function run(): Promise<void> {
       rendererInput: { qualityPreset: "studio-preview", cameraPolicy: "require", postprocess: false }
     });
     const mixer = createGLTFSceneAnimationMixer({ scene: pipeline.resources.scene, clips: pipeline.asset.animations, asset: pipeline.asset, autoPlay: false });
-    const renderer = await ProductionWebGL2Renderer.create({ canvas, width: canvas.width, height: canvas.height, preserveDrawingBuffer: true, clearColor: [0.01, 0.015, 0.025, 1] });
+    const renderer = await Renderer.create({ canvas, width: canvas.width, height: canvas.height, preserveDrawingBuffer: true, clearColor: [0.01, 0.015, 0.025, 1] });
     const clipName = mixer.listClips().find((name) => /walk|run/i.test(name)) ?? mixer.listClips()[0];
     if (!clipName) throw new Error("Lifecycle fixture has no animation clips.");
     mixer.playExclusive(clipName, { reset: true, weight: 1, loopMode: "repeat" });
     const update = mixer.update(0.35);
-    const rendered = renderer.renderFrame({ source: pipeline.source, camera: pipeline.camera, metadata: pipeline.metadata });
+    const rendered = renderer.render(pipeline.source, pipeline.camera);
     const beforeStop = mixer.snapshot();
     const beforeDispose = renderer.getDiagnostics();
     mixer.stop();
@@ -37,7 +37,7 @@ async function run(): Promise<void> {
       cycle,
       clipName,
       update: { tracksApplied: update.applyResult.tracksApplied, skinningPalettesUpdated: update.applyResult.skinningPalettesUpdated },
-      rendered: { drawCalls: rendered.diagnostics.drawCalls, backend: rendered.backend },
+      rendered: { drawCalls: rendered.drawCalls, backend: renderer.device.kind },
       beforeStop: { activeClipNames: beforeStop.activeClipNames, mixerActionCount: beforeStop.mixerActionCount },
       afterStop: { activeClipNames: afterStop.activeClipNames },
       bindingAfterDispose: { actionCount: mixer.actions.size, mixer: mixer.mixer.snapshot() },

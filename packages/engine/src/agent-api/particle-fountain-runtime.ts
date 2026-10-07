@@ -1,17 +1,13 @@
-import { sceneKits as rootSceneKits } from "./index.js";
-import type {
-  AuraApp,
-  AuraAppTarget,
-  AuraColor,
-  AuraCreateAppOptions,
-  AuraSceneBuilder,
-  AuraSceneKit
-} from "./index.js";
+import { sceneKits as rootSceneKits } from "./nodes/sceneKits.js";
+import type { AuraSceneBuilder } from "./nodes/scene.js";
+import type { AuraApp, AuraAppTarget, AuraColor, AuraCreateAppOptions, AuraSceneKit } from "./nodes/types.js";
 
 export {
-  createAuraApp,
+  createAuraApp
+} from "./app/createAuraApp.js";
+export {
   ui
-} from "./index.js";
+} from "./nodes/ui.js";
 
 export type {
   AuraApp,

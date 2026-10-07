@@ -1,3 +1,4 @@
+import { a3dRenderResult } from "/packages/engine/src/production-runtime/index.js";
 import {
   A3DRenderer,
   createCameraFrame,
@@ -616,16 +617,15 @@ async function renderMatrixVariant(
     const carRenderItems = clonedRenderableRenderItems(scene, config);
     const stageRenderItems = stage.renderItems({ shadows: false, backgroundVisible: true });
     const proofScene = explicitRenderItemScene(scene);
-    const proof = renderer.captureProof({
+    const proof = a3dRenderResult(renderer, {
       scene: proofScene,
       ...(config.lighting === "hdr" ? { environment, environmentLighting: activeEnvironmentLighting } : {}),
       renderItems: [...carRenderItems, ...stageRenderItems],
       collectedLights: collectedLightsForVariant(config),
       camera: camera.camera,
-      viewport: VIEWPORT,
       shadow: false,
       postprocess: postprocessForVariant(config)
-    }).proof;
+    }, VIEWPORT).proof;
     const metrics = analyzeMatrixPixels(canvas);
     const renderableMaterials = summarizeRenderableMaterials(
       scene.resources.renderableBindings,
@@ -661,7 +661,7 @@ async function renderMatrixVariant(
 
 function explicitRenderItemScene(
   scene: Awaited<ReturnType<typeof loadGltfScene>>
-): Parameters<A3DRenderer["captureProof"]>[0]["scene"] {
+): A3DGltfScene {
   return {
     metadata: scene.metadata,
     createRendererInput(options) {
@@ -683,7 +683,7 @@ function explicitRenderItemScene(
         bounds: scene.resources.bounds
       };
     }
-  } as Parameters<A3DRenderer["captureProof"]>[0]["scene"];
+  } as A3DGltfScene;
 }
 
 function clonedRenderableRenderItems(

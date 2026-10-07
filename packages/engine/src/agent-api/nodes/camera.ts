@@ -1,14 +1,18 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../index.js";
-import { charts, city, neon, physics, product, resolveFrameAssetRenderScale, solar } from "../index.js";
+import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
+import { charts } from "../nodes/charts.js";
+import { city } from "../nodes/city.js";
+import { neon } from "../nodes/neon.js";
+import { physics } from "../nodes/physics.js";
+import { product } from "../nodes/product.js";
+import { resolveFrameAssetRenderScale } from "../nodes/scene.js";
+import { solar } from "../nodes/solar.js";
 import { gameCameraRigs } from "../GameCameraRigs.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
-
-
-
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { smoothingToHalflife } from "../camera/Spring.js";
 
@@ -29,14 +33,7 @@ function warnSmoothingDeprecated(options: object | undefined): void {
 
 
 
-
-
-
-
-
-
-
-export const camera = {
+export const camera = lazyNamespace(() => ({
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
     ...resolveCameraClipping(options),
@@ -227,4 +224,4 @@ export const camera = {
    */
   rigs: stubCameraRigFactories,
   ...gameCameraRigs
-} as const;
+} as const));

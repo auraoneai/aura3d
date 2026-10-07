@@ -233,8 +233,8 @@ jobs:
             echo "Build failed: dist directory not found"
             exit 1
           fi
-          if [ ! -f "dist/index.js" ]; then
-            echo "Build failed: dist/index.js not found"
+          if [ ! -f "dist/engine/index.js" ]; then
+            echo "Build failed: dist/engine/index.js not found"
             exit 1
           fi
           echo "Build successful!"

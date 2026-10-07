@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { camera, createAuraApp, material, primitives, scene } from "@aura3d/engine";
 
@@ -14,7 +15,10 @@ import { camera, createAuraApp, material, primitives, scene } from "@aura3d/engi
  * declined, so a developer whose scene failed to qualify got a plausible-looking gradient frame with no
  * indication they were not looking at their renderer.
  */
-const source = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
+const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
 
 describe("Canvas 2D is diagnostic-only (WS-2.5)", () => {
   it("is named for what it is", () => {

@@ -6,6 +6,7 @@ describe("threejsParity advanced gallery route architecture containment", () => 
   it("keeps sceneBuilders as shared resource setup plus route dispatch", () => {
     const sceneBuilders = readFileSync("apps/advanced-examples-gallery/src/sceneBuilders.ts", "utf8");
 
+    // invariant: source must keep `export function createResources` — keeps sceneBuilders as shared resource setup plus route dispatch
     expect(sceneBuilders).toContain("export function createResources");
     expect(sceneBuilders).toContain("export function buildScene");
     expect(sceneBuilders).toContain('from "./proceduralRouteScenes"');

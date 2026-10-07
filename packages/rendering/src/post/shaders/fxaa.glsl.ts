@@ -17,14 +17,14 @@
 
 import { POST_COMMON_GLSL } from "./common.glsl.js";
 
-export const FXAA_185_FRAGMENT_GLSL = /* glsl */ `#version 300 es
-precision highp float;
-uniform sampler2D u_source;
-uniform vec2 u_texelSize;
-uniform vec2 u_outputTexel;
-out vec4 outColor;
-
-#define EDGE_STEP_COUNT 6
+/**
+ * The FXAA function set, shared by the standalone Phase-1 program and the v2
+ * fused finalize. `AURA_LUMA_ALPHA` selects the luminance source: `0`
+ * recomputes luma per tap from `.rgb` (legacy LDR path, where alpha is
+ * coverage), `1` reads the luma the S10b display-grade writes into `.a`
+ * (§8.12, so v2 FXAA never re-evaluates the grade).
+ */
+export const FXAA_185_FNS_GLSL = /* glsl */ `#define EDGE_STEP_COUNT 6
 #define EDGE_GUESS 8.0
 #define EDGE_STEPS 1.0, 1.5, 2.0, 2.0, 2.0, 4.0
 const float edgeSteps[EDGE_STEP_COUNT] = float[EDGE_STEP_COUNT]( EDGE_STEPS );
@@ -33,12 +33,20 @@ float _ContrastThreshold = 0.0312;
 float _RelativeThreshold = 0.063;
 float _SubpixelBlending = 1.0;
 
+#ifndef AURA_FXAA_SAMPLE
+#define AURA_FXAA_SAMPLE(tex, uv) texture(tex, uv)
+#endif
+
 vec4 Sample( sampler2D tex2D, vec2 uv ) {
-  return texture( tex2D, uv );
+  return AURA_FXAA_SAMPLE( tex2D, uv );
 }
 
 float SampleLuminance( sampler2D tex2D, vec2 uv ) {
+#if AURA_LUMA_ALPHA
+  return AURA_FXAA_SAMPLE( tex2D, uv ).a;
+#else
   return dot( Sample( tex2D, uv ).rgb, vec3( 0.3, 0.59, 0.11 ) );
+#endif
 }
 
 float SampleLuminance( sampler2D tex2D, vec2 texSize, vec2 uv, float uOffset, float vOffset ) {
@@ -211,6 +219,17 @@ vec4 ApplyFXAA( sampler2D tex2D, vec2 texSize, vec2 uv ) {
 
   return Sample( tex2D, uv );
 }
+`;
+
+export const FXAA_185_FRAGMENT_GLSL = /* glsl */ `#version 300 es
+precision highp float;
+#define AURA_LUMA_ALPHA 0
+uniform sampler2D u_source;
+uniform vec2 u_texelSize;
+uniform vec2 u_outputTexel;
+out vec4 outColor;
+
+${FXAA_185_FNS_GLSL}
 
 ${POST_COMMON_GLSL}
 

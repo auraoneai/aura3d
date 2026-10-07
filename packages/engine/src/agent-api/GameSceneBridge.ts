@@ -5,6 +5,7 @@ import type {
   AuraSceneSnapshot,
   AuraVec3
 } from "./index";
+import { scene } from "./nodes/scene.js";
 
 export interface GameSceneRuntimeNode {
   readonly id: string;

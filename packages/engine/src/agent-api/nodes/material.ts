@@ -1,10 +1,13 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 // PRD-04 P2-10 (R15): presets record their defaulted fields via AURA_PRESET_DEFAULTS.
 
-import type { AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../index.js";
-import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, neon, proceduralTexture } from "../index.js";
+import type { AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
+import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, proceduralTexture } from "../nodes/materialTools.js";
+import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec } from "../../material-physical/PhysicalMaterialSpec.js";
 import { validateMaterialVisualQA } from "../looks/structuralQA.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 /**
  * PRD-04 P2-10 (R15): enumerable symbol on preset-produced material specs. Its value is the set of
@@ -39,7 +42,7 @@ function presetFrom(defaults: AuraMaterialSpec, options: AuraMaterialSpec, base:
   return spec;
 }
 
-export const material = {
+export const material = lazyNamespace(() => ({
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: "#d7dee8",
     roughness: 0.55,
@@ -327,4 +330,4 @@ export const material = {
   visualQA: (nodes: readonly AuraSceneNode[]): AuraMaterialVisualQAResult => validateMaterialVisualQA(nodes),
   capabilityDiagnostics: (input?: AuraMaterialCapabilityInput): AuraMaterialCapabilityDiagnostics =>
     createMaterialCapabilityDiagnostics(input)
-} as const;
+} as const));

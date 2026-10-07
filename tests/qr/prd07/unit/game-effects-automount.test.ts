@@ -14,7 +14,7 @@ import { collectEffectsSection } from "../../../../packages/engine/src/agent-api
 import { gameEffectsUnbound, resetPrd07AppRegistry } from "../../../../packages/engine/src/agent-api/vfx/effects-api.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const fixture = JSON.parse(readFileSync(join(here, "../fixtures/game-effects-nodes-85aafcd0.json"), "utf8"));
+const fixture = JSON.parse(readFileSync(join(here, "../corpus/game-effects-nodes-85aafcd0.json"), "utf8"));
 
 beforeEach(() => resetPrd07AppRegistry());
 

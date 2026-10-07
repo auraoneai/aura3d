@@ -78,6 +78,7 @@ describe("Q1.1 exact sRGB OETF vs three r185", () => {
     const combined = `${library}\n${core}`;
     // Six encode sites (5 ShaderLibrary programs + ShaderLibraryCore).
     expect(combined.match(/a3d\w*PbrEncodeOutput\(vec3 linearColor\)/g)!.length).toBeGreaterThanOrEqual(6);
+    // invariant: source must keep `1.0 / 2.2` — matches the exact sRGB spec across a 0-255 sweep (three agrees to its own precision)
     expect(combined).not.toContain("1.0 / 2.2");
     expect(combined).not.toContain("1/2.2");
     expect(combined.match(/1\.055 \* pow\(clamped, vec3\(1\.0 \/ 2\.4\)\)/g)!.length).toBeGreaterThanOrEqual(6);

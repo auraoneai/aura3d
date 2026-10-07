@@ -177,6 +177,7 @@ describe("game visual QA", { timeout: 30_000 }, () => {
       writeFileSync(mainPath, `${readFileSync(mainPath, "utf8")}\n// stale mutation\n`);
       const result = (await modulePromise).validateGameVisualQa({ route, routeHealth, root });
       expect(result.pass).toBe(false);
+      // invariant: source must keep `route-primary-source-stale` — separates structural checks from image-derived composition checks
       expect(result.blockers).toContain("route-primary-source-stale");
     } finally { rmSync(root, { recursive: true, force: true }); }
   });

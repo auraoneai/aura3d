@@ -6,7 +6,7 @@ import {
   type GLTFRenderResources
 } from "@aura3d/assets";
 import { Material } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -79,12 +79,11 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createMaterialExtensionsFixtureDataUrl() }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.01, 0.012, 0.016, 1]
+            clearColor: [0.01, 0.012, 0.016, 1]
     });
     const extensionSupport = evaluateGLTFExtensionSupport(asset.loaderDiagnostics.extensionsUsed, asset.loaderDiagnostics.extensionsRequired);
     const materialEvidence = inspectMaterialExtensions(resources);
@@ -111,7 +110,7 @@ async function run(): Promise<void> {
           fpsFrom = now;
         }
         const frame = createRendererInput(resources, now / 1000);
-        const result = renderer.renderFrame(frame);
+        const result = a3dRenderFrame(renderer, frame);
         runtime = createRuntime(frameCount === 1 ? "ready" : "running", frameCount === 1 ? "Ready" : "Running", startedAt, {
           frameCount,
           drawCalls: result.diagnostics.drawCalls,
@@ -140,7 +139,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<typeof a3dRenderFrame>[1] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: {
@@ -384,7 +383,7 @@ function metric(label: string, value: string | number): string {
 }
 
 function drawFallback(canvas: HTMLCanvasElement): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.01, 0.012, 0.016, 1);

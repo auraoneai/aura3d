@@ -19,7 +19,7 @@ import {
 } from "./ModelMaterialOverrides";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
-import "./actor/TypedGLBActorLod";
+import "./actor/TypedGLBActorLod.js";
 
 export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
 

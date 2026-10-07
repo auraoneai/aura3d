@@ -1,5 +1,5 @@
 import type { RenderDeviceDiagnostics } from "@aura3d/rendering";
-import type { RenderableAsset } from "@aura3d/assets";
+import type { RenderableAsset } from "@aura3d/assets/browser";
 import type { ProductAsset } from "@aura3d/product-studio";
 import type { A3DWorkflowDiagnostics, A3DWorkflowKind } from "./WorkflowTypes";
 

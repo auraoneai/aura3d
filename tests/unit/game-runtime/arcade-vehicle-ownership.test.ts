@@ -42,6 +42,7 @@ describe("shared arcade vehicle ownership", () => {
     const end = source.indexOf("const FALLING_BLOCK_SHAPES", start);
     const racing = source.slice(start, end);
 
+    // invariant: source must keep `createGameArcadeVehicle` — is deterministic for identical state, timestep, and input
     expect(racing).toContain("createGameArcadeVehicle");
     expect(racing).toContain("motion.step(step");
     expect(racing).toContain("motion.constrain");

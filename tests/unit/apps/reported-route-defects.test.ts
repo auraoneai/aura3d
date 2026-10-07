@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { auraClashAttackFrames } from "../../../apps/aura-clash-showcase/src/playable/combat/auraClashMoveData";
 
@@ -137,6 +138,7 @@ describe("showcase-skyline-runner — jump, landing, scenery, session lifecycle"
   it("reports session lifecycle rather than self-authoring completion", () => {
     // Retained from the existing gameplay-regression suite because it is one of the named
     // symptoms: a route that declares itself complete cannot demonstrate a session.
+    // invariant: source must keep `completed: false` — uses the shared focus API rather than building its own indicator
     expect(source).toContain("completed: false");
     expect(source).not.toContain("visualReviewPass: true");
   });
@@ -195,7 +197,10 @@ describe("cross-cutting — labels must not be Canvas-2D-only", () => {
      * renderable scene, a label drawn only there cannot ship. Asserted on the engine source
      * because it is a property of the selection site, not of any one route.
      */
-    const source = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
+    const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
     expect(source).toMatch(/canvas2d/);
     // The refusal must be reachable: some diagnostic path names it as internal-only.
     expect(source).toMatch(/internal|diagnostic/i);

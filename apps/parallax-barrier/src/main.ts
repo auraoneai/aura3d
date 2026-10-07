@@ -11,7 +11,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import { type StereoControlState } from "../../stereo-effects/src/stereoControls.js";
 
@@ -122,8 +122,8 @@ async function run(): Promise<void> {
 
   try {
     const [leftRenderer, rightRenderer] = await Promise.all([
-      A3DRenderer.create({ canvas: leftCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
-      A3DRenderer.create({ canvas: rightCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
+      Renderer.create({ canvas: leftCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
+      Renderer.create({ canvas: rightCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
     ]);
     const leftResources = createResources("left");
     const rightResources = createResources("right");
@@ -383,7 +383,7 @@ function shouldEnableBarrierMask(): boolean {
 }
 
 function drawFallback(canvas: HTMLCanvasElement, color: readonly [number, number, number, number]): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(color[0], color[1], color[2], color[3]);

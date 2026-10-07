@@ -1,4 +1,5 @@
-import { InputSnapshot, OrbitControls as OrbitControlsEngine, type OrbitControlsOptions } from "@aura3d/input";
+import { InputSnapshot } from "@aura3d/input";
+import { OrbitControls as OrbitControlsEngine, type OrbitControlsOptions } from "./engine/OrbitControls.js";
 import { createDefaultControlState, type ThreeCompatControlState } from "./ControlState";
 import type { Vector3Like } from "./NativeControlTypes";
 

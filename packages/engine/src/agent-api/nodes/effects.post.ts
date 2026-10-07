@@ -1,7 +1,21 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode } from "../index.js";
-import { AuraNodeBuilder, effects } from "../index.js";
+import type { AuraEffectNode } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+
+/**
+ * Phase-3 v2 effect option fields (`vignette`, `film-grain`,
+ * `chromatic-aberration`) — `AuraEffectNode` field additions are a lane-15
+ * `nodes/types.ts` touch (qr-request filed); this local widening keeps the
+ * factories typed until the union lands.
+ */
+interface PostV3EffectOptions extends Omit<AuraEffectNode, "kind" | "effect"> {
+  readonly smoothness?: number;
+  readonly roundness?: number;
+  readonly size?: number;
+  readonly luminanceResponse?: number;
+}
+import { effects } from "../nodes/effects.composite.js";
 import { shadows } from "./shadows.js";
 
 export const postEffectBuilders = {
@@ -99,4 +113,41 @@ export const postEffectBuilders = {
       // `postAuthored` for "mode actually authored" (absent → `auto`).
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
+  /**
+   * PRD-03 §6.9/§8.12 (Phase 3): display vignette — S10b `DISPLAY_GRADE`.
+   * `color` accepts "#rrggbb" or [r,g,b]; the bridge maps to `vignette`.
+   * (AuraEffectType/AuraEffectNode field extension is lane-15-owned —
+   * qr-request pending; the literals cast until it lands.)
+   */
+  vignette: (options: PostV3EffectOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "vignette",
+      name: options.name ?? "vignette",
+      intensity: options.intensity ?? 0.3,
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
+      ...(options.smoothness !== undefined ? { smoothness: options.smoothness } : {}),
+      ...(options.roundness !== undefined ? { roundness: options.roundness } : {}),
+      ...(options.color !== undefined ? { color: options.color } : {})
+    } as unknown as AuraEffectNode),
+  /** Phase 3: S12 film grain (size in px, luminanceResponse modulates the lerp). */
+  filmGrain: (options: PostV3EffectOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "film-grain",
+      name: options.name ?? "film grain",
+      intensity: options.intensity ?? 0.05,
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
+      ...(options.size !== undefined ? { size: options.size } : {}),
+      ...(options.luminanceResponse !== undefined ? { luminanceResponse: options.luminanceResponse } : {})
+    } as unknown as AuraEffectNode),
+  /** Phase 3: §8.12 radial chromatic aberration on the HDR composite (S10). */
+  chromaticAberration: (options: PostV3EffectOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "chromatic-aberration",
+      name: options.name ?? "chromatic aberration",
+      intensity: options.intensity ?? 0.0015,
+      postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
+    } as unknown as AuraEffectNode),
 };

@@ -46,6 +46,7 @@ describe("Skyline's composition subject is measured in a deterministic pose", ()
      * The hook is optional in the contract, so a route that animates its subject and *omits* it silently
      * reintroduces the flakiness. Skyline animates its subject, so for this route it is required.
      */
+    // invariant: source must keep `settleSubjectPose:` — implements the settle hook the probe calls before capturing
     expect(source).toContain("settleSubjectPose:");
     // The old independent 14% scale cycle is intentionally gone. The hook must
     // still pin both unit scale and a deterministic imported-clip capture frame.

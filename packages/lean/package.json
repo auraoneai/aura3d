@@ -4,7 +4,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": true,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -20,11 +20,9 @@
     }
   },
   "dependencies": {
-    "@aura3d/assets": "workspace:*",
-    "@aura3d/rendering": "workspace:*",
-    "@aura3d/scene": "workspace:*"
+    "@aura3d/engine": "workspace:*"
   },
-  "description": "Lean Aura3D browser runtime for production rendering, typed glTF products, and deterministic arcade games without physics, navigation, editor, or Node media dependencies.",
+  "description": "Deprecated re-export shim of @aura3d/engine (PRD-15 §7.5). Removed in 4.0.0 — import @aura3d/engine instead.",
   "keywords": [
     "aura3d",
     "browser-3d",

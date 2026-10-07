@@ -1,11 +1,13 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraVec3 } from "../index.js";
-import { AuraNodeBuilder, effects } from "../index.js";
+import type { AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { effects } from "../nodes/effects.composite.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
 import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
 import { particles } from "./particles.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
 /**
  * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,
@@ -39,7 +41,7 @@ function withEmitterOptions<T extends AuraEffectNode>(value: T, options: Readonl
   return value;
 }
 
-export const vfxEffectBuilders = {
+export const vfxEffectBuilders = lazyNamespace(() => ({
   /**
    * §6.6/F-07-01 — the builder records ONLY authored fields; C-21 defaults are
    * applied at resolve time by compiler/fog.ts under A3D_QR_VFX_FOG (a bare
@@ -348,4 +350,4 @@ export const vfxEffectBuilders = {
       scatteringAnisotropy: options.scatteringAnisotropy ?? 0.3,
       heightFalloff: options.heightFalloff ?? 0.5
     }, options as unknown as Record<string, unknown>)),
-};
+}));

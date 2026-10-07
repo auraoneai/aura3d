@@ -11,7 +11,9 @@
     }
   },
   "dependencies": {
-    "@aura3d/input": "workspace:*"
+    "@aura3d/input": "workspace:*",
+    "@aura3d/math": "workspace:*",
+    "@aura3d/scene": "workspace:*"
   },
   "description": "Orbit, trackball, fly, first-person, map, pointer-lock, drag, transform, picking, hotspot, and selection controls for Aura3D.",
   "keywords": [

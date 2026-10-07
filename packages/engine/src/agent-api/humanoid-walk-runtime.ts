@@ -1,15 +1,18 @@
-import { character as rootCharacter, sceneKits as rootSceneKits } from "./index.js";
+import { character as rootCharacter } from "./nodes/character.js";
+import { sceneKits as rootSceneKits } from "./nodes/sceneKits.js";
+import type { AuraSceneBuilder } from "./nodes/scene.js";
 import type {
   AuraApp,
   AuraAppTarget,
   AuraCreateAppOptions,
-  AuraSceneBuilder,
   AuraSceneKit
-} from "./index.js";
+} from "./nodes/types.js";
+import { lazyNamespace } from "./lazyNamespace.js";
+
 
 export {
   createAuraApp
-} from "./index.js";
+} from "./app/createAuraApp.js";
 
 export type {
   AuraApp,
@@ -24,7 +27,7 @@ export interface HumanoidWalkOptions {
 export type HumanoidWalkScene = AuraSceneBuilder;
 export type HumanoidWalkSceneKit = AuraSceneKit;
 
-export const character = rootCharacter;
+export const character = lazyNamespace(() => rootCharacter);
 
 export const sceneKits = {
   humanoidWalk(options: HumanoidWalkOptions = {}): HumanoidWalkSceneKit {

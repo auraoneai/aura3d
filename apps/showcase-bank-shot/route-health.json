@@ -18,19 +18,19 @@
     {
       "typedRef": "assets.bankShotTable",
       "hash": "sha256-612bc413d945c69a70cb62da758216e3d739bc56a9508e955eba9f79a4e90fac",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotCue",
       "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall00",
       "hash": "sha256-9a46906bb31221e9c96fb38d4fb18ea2358301a5e5e8f316c36c5c01a855ac1d",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     }
   ],
@@ -38,109 +38,109 @@
     {
       "typedRef": "assets.bankShotTable",
       "hash": "sha256-612bc413d945c69a70cb62da758216e3d739bc56a9508e955eba9f79a4e90fac",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotCue",
       "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall00",
       "hash": "sha256-9a46906bb31221e9c96fb38d4fb18ea2358301a5e5e8f316c36c5c01a855ac1d",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall01",
       "hash": "sha256-21f59751f1e7643d3b1540ab2695097b1ac62fdabbc52208839102a83ee1a99e",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall02",
       "hash": "sha256-471d64b777369ec4f1a4d47752db822a23d80ac6e457cb2fc6ba42a324282223",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall03",
       "hash": "sha256-9deb5421595a277f087f7c3b41c1ef178aa69fd717f2600b4b205648086a4912",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall04",
       "hash": "sha256-be3bd19b43874e4d9c96339854947ae6c48af3ab3d573680dd1b744a5ba3d3ac",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall05",
       "hash": "sha256-335cad4e4b1a4ee73d83fa887bf38dabec8d1c578ce27d2e95372bbc75211720",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall06",
       "hash": "sha256-e83cd33ef6ae35a198caffd1dd07f9b33d52c4719585f375df6136fe99af8d6b",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall07",
       "hash": "sha256-8a69b5425dd5c60148589795f3e78f998bd7f0c59dea2e9d7da126c5416f02c4",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall08",
       "hash": "sha256-81dd55def7965490a9f6e057a81c854523691ae5527a995ab5acee1919bfd00e",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall09",
       "hash": "sha256-89d29f3399d0203bdbd09423db3813688874946d6be70ebeba132a602ce4f225",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall10",
       "hash": "sha256-9df3fdccd92f53085f389c3905abbfd49fb0893d35bd543f49839d1cc8172f3e",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall11",
       "hash": "sha256-40e8d323d78afbeab4ea970aa0489b879028ada2f0c82aa007f7e4b10189a558",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall12",
       "hash": "sha256-52670acc74bcd11082309e35ada0aed89a4e260576001295fa94bd5d43563286",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall13",
       "hash": "sha256-584ef9efa8f49f3903098bbb1ad6aceba153c723740fab897d9f92231895f1f3",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall14",
       "hash": "sha256-39a73a9f22cbf0d05d20d66a378f98133ddffde2ce2efff4b5599314f7cea304",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.bankShotBall15",
       "hash": "sha256-7258fd47ead8029c0e91824286a248cdaca6572865b4b220424d747a9bcfb191",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     }
   ],
@@ -217,7 +217,6 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 8,
     "primitiveBudget": 18,
     "role": "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only",
     "status": "no-primitive-primary-subjects"
@@ -310,109 +309,109 @@
           {
             "id": "bankShotBall00",
             "hash": "sha256-9a46906bb31221e9c96fb38d4fb18ea2358301a5e5e8f316c36c5c01a855ac1d",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall01",
             "hash": "sha256-21f59751f1e7643d3b1540ab2695097b1ac62fdabbc52208839102a83ee1a99e",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall02",
             "hash": "sha256-471d64b777369ec4f1a4d47752db822a23d80ac6e457cb2fc6ba42a324282223",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall03",
             "hash": "sha256-9deb5421595a277f087f7c3b41c1ef178aa69fd717f2600b4b205648086a4912",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall04",
             "hash": "sha256-be3bd19b43874e4d9c96339854947ae6c48af3ab3d573680dd1b744a5ba3d3ac",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall05",
             "hash": "sha256-335cad4e4b1a4ee73d83fa887bf38dabec8d1c578ce27d2e95372bbc75211720",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall06",
             "hash": "sha256-e83cd33ef6ae35a198caffd1dd07f9b33d52c4719585f375df6136fe99af8d6b",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall07",
             "hash": "sha256-8a69b5425dd5c60148589795f3e78f998bd7f0c59dea2e9d7da126c5416f02c4",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall08",
             "hash": "sha256-81dd55def7965490a9f6e057a81c854523691ae5527a995ab5acee1919bfd00e",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall09",
             "hash": "sha256-89d29f3399d0203bdbd09423db3813688874946d6be70ebeba132a602ce4f225",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall10",
             "hash": "sha256-9df3fdccd92f53085f389c3905abbfd49fb0893d35bd543f49839d1cc8172f3e",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall11",
             "hash": "sha256-40e8d323d78afbeab4ea970aa0489b879028ada2f0c82aa007f7e4b10189a558",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall12",
             "hash": "sha256-52670acc74bcd11082309e35ada0aed89a4e260576001295fa94bd5d43563286",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall13",
             "hash": "sha256-584ef9efa8f49f3903098bbb1ad6aceba153c723740fab897d9f92231895f1f3",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall14",
             "hash": "sha256-39a73a9f22cbf0d05d20d66a378f98133ddffde2ce2efff4b5599314f7cea304",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotBall15",
             "hash": "sha256-7258fd47ead8029c0e91824286a248cdaca6572865b4b220424d747a9bcfb191",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotCue",
             "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           },
           {
             "id": "bankShotTable",
             "hash": "sha256-612bc413d945c69a70cb62da758216e3d739bc56a9508e955eba9f79a4e90fac",
-            "quality": "release",
+            "quality": "candidate",
             "role": "prop"
           }
         ],
@@ -644,5 +643,8 @@
       "check-deploy --release --source apps/showcase-bank-shot/src --asset <18 model assets>",
       "check-deploy --release --source apps/showcase-bank-shot/src --no-assets"
     ]
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

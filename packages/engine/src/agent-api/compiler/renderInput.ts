@@ -1,7 +1,15 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraTransformSpec, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../index.js";
-import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createModelMatrix, createProductionRuntimeMetadata, createSceneLabelOcclusionTest, createViewProjection, geometry, groups, primitive, productionActorModelBounds, productionRenderErrorMessage, resolveCameraFrame, resolveProductionActorRuntimeState, shouldNormalizeModelNode } from "../index.js";
+import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraTransformSpec, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
+import type { AuraDegradation } from "../../contracts/compiler.js";
+import { geometry } from "../nodes/geometry.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
+import { createModelMatrix, createViewProjection, shouldNormalizeModelNode } from "../sceneMath.js";
+import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createProductionRuntimeMetadata, productionActorModelBounds, resolveProductionActorRuntimeState } from "./actors.js";
+import { resolveCameraFrame } from "./camera.js";
+import { createSceneLabelOcclusionTest } from "./labels.js";
+import { productionRenderErrorMessage } from "./observations.js";
 import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderSource, includeRootSourceMetadata } from "../RootRuntimeSupport.js";
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
 import { identityMat4 } from "@aura3d/scene/math";
@@ -110,7 +118,10 @@ export function createProductionRuntimeRendererInput(
   runtimeNodes: AuraRuntimeNodeRegistry | undefined,
   runtimeWarnings: Set<string>,
   environmentLighting: EnvironmentLightingOptions,
-  collectedLights: readonly CollectedLight[]
+  collectedLights: readonly CollectedLight[],
+  // T4.1 (PRD-15): C-36 degrade handler for the flag-on path. Undefined under
+  // flag-off keeps the legacy runtimeWarnings text byte-identical.
+  degrade?: (d: Omit<AuraDegradation, "frame">) => void
 ): ProductionRendererInput {
   const compatibility = getRootRenderSource(canvas);
   const attachedItems: readonly RenderItem[] = compatibility ? [...(compatibility.source.collectRenderItems?.() ?? compatibility.source.renderItems ?? [])] : [];
@@ -127,13 +138,14 @@ export function createProductionRuntimeRendererInput(
     let modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBounds, actorNormalize, time) ?? createModelMatrix(currentNode, actorBounds, actorNormalize, time))];
     // The foot-planting post-pass solves in the same world space this matrix draws into;
     // refresh its matrix before the clip plays so the solve uses this frame, not the last.
-    applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
+    applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
     if (currentState.animationPose) {
       try {
         entry.actor.applyRetargetedPose(currentState.animationPose, currentState.animationPoseTime ?? time);
         entry.rootMotionCursors = undefined;
       } catch (error) {
-        runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`);
+        if (degrade) degrade({ code: "pose-apply-failed", nodeId: entry.actor.id, message: `Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`, cause: error });
+        else runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply bound pose: ${productionRenderErrorMessage(error)}`);
       }
     } else applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings, modelMatrix, () => {
       currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
@@ -141,9 +153,9 @@ export function createProductionRuntimeRendererInput(
       const actorBoundsRefresh = productionActorModelBounds(currentNode.asset, entry.actor);
       const actorNormalizeRefresh = shouldNormalizeModelNode(currentNode);
       modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time) ?? createModelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time))];
-      applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
+      applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings, degrade);
     });
-    applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
+    applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings, degrade);
     // Wrinkle detail (E1 face-rig demo): resolve morph weights through the model's hook.
     // Absent hook (or empty weights) resolves to 0 = today's rendering exactly.
     const wrinkleStrength = currentNode.wrinkle

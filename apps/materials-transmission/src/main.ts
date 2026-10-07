@@ -5,7 +5,7 @@ import {
   UnlitMaterial,
   type CollectedLight
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   publish();
 
   try {
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,

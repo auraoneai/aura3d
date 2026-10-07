@@ -4,10 +4,21 @@ import { defineConfig } from "vite";
 import rootConfig from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(appDir, "..", "..");
+
+// @aura3d/game has no root vite alias yet (the package is C-24/PRD-14 era and
+// root vite.config is lane-15 owned). Subpath before the bare specifier —
+// vite string aliases match by prefix, so `@aura3d/game` would otherwise
+// rewrite `@aura3d/game/art` to `<pkg>/index.ts/art`.
+const gameAlias = [
+  { find: "@aura3d/game/art", replacement: path.join(repoRoot, "packages/game/src/art/index.ts") },
+  { find: "@aura3d/game", replacement: path.join(repoRoot, "packages/game/src/index.ts") }
+];
+const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 
 export default defineConfig({
   plugins: rootConfig.plugins ?? [],
-  resolve: rootConfig.resolve,
+  resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
   optimizeDeps: rootConfig.optimizeDeps,
   // Typed assets resolve as /aura-assets/<name>.<hash>.<ext>. Without the shared
   // public dir a production bundle emits no copy of them, the request falls through

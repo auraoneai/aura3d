@@ -2,7 +2,7 @@ import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline } fro
 import {
   Geometry,
   PBRMaterial,
-  ProductionWebGL2Renderer,
+  Renderer,
   computePerspectiveCameraFrame,
   type CameraFrameBounds,
   type CollectedLight,
@@ -129,7 +129,7 @@ async function run(): Promise<void> {
         "The route must not claim running until at least one real render frame completes."
       ]
     });
-    const renderer = await ProductionWebGL2Renderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -252,14 +252,10 @@ async function run(): Promise<void> {
         lastApply = animationRuntime.applyClip(clip, clipTime);
         const applyClipMs = performance.now() - applyStart;
         const renderStart = performance.now();
-        const result = renderer.renderFrame({
-          source,
-          camera: {
-            viewProjectionMatrix: frame.viewProjectionMatrix,
-            viewMatrix: frame.viewMatrix,
-            projectionMatrix: frame.projectionMatrix
-          },
-          metadata
+        const result = renderer.render(source, {
+          viewProjectionMatrix: frame.viewProjectionMatrix,
+          viewMatrix: frame.viewMatrix,
+          projectionMatrix: frame.projectionMatrix
         });
         const renderMs = performance.now() - renderStart;
         frameCount += 1;
@@ -286,7 +282,7 @@ async function run(): Promise<void> {
           clipCount: pipeline.asset.animations.length,
           animationTime: Number(clipTime.toFixed(3)),
           frameCount,
-          drawCalls: result.diagnostics.drawCalls,
+          drawCalls: result.drawCalls,
           triangles: Math.floor(pipeline.metadata.indexCount / 3),
           tracksApplied: lastApply.tracksApplied,
           skinningPalettesUpdated: lastApply.skinningPalettesUpdated,

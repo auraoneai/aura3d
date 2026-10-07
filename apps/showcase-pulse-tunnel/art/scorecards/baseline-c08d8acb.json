@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-pulse-tunnel",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-pulse-tunnel",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 3.0,
+        "modeling_assets": 3.0,
+        "texture_quality": 1.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.0,
+        "shadows": 1.0,
+        "ambient_lighting": 2.0,
+        "ibl_reflections": 3.0,
+        "tone_mapping": 4.0,
+        "color_management": 5.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 2.0,
+        "vfx": 1.0,
+        "particles": 2.0,
+        "animation_quality": 2.0,
+        "character_presentation": 2.0,
+        "camera": 2.0,
+        "composition": 2.0,
+        "scale_depth_perception": 4.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 2.0,
+        "ui_hud": 5.0,
+        "typography": 5.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 1.0,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "A single repeating corridor of flat boxes and planes in a void; no landmarks, no variation over 1.4 km."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Track is pure primitives. The vehicle is a kitbash of spheres and boxes with an odd \"minus-sign\" disc face that reads as a toy or robot face, not a craft."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "No textures visible anywhere; every surface is a flat color or a gradient."
+        },
+        {
+          "category": "material_quality",
+          "seen": "The vehicle has a glossy dark clearcoat with some specular highlights. Everything else is unlit emissive or basic transparent material."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Only the vehicle shows PBR response. The floor and walls show no roughness or metal variation, and the neon has no physically plausible energy."
+        },
+        {
+          "category": "lighting",
+          "seen": "No light from the neon falls on the floor, walls or vehicle. The vehicle is lit by a generic key and reads as a black hole."
+        },
+        {
+          "category": "shadows",
+          "seen": "No vehicle contact shadow and no obstacle shadows, so the vehicle floats with no ground anchoring."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Ambient is near zero; the vehicle's back faces crush to pure black."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "The vehicle shows faint env reflections. The floor has a slight sheen near the walls but no real reflection of the neon, a huge miss for this genre."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Not blown out, but the neon is clamped flat with no HDR rolloff. Whites on the vehicle discs clip hard."
+        },
+        {
+          "category": "color_management",
+          "seen": "The palette is coherent (cyan/magenta/yellow/purple) and sRGB output looks correct. Saturated but controlled."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges on the arches and floor lines look acceptable at 1080p. Thin vertical lines likely shimmer in motion (inferred)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No bloom on a neon game, no vignette, no chromatic or speed effects. It looks like a raw forward pass."
+        },
+        {
+          "category": "vfx",
+          "seen": "No thruster flames, trails, speed lines, impact or pickup effects visible in any frame."
+        },
+        {
+          "category": "particles",
+          "seen": "A few static dots in frame 2 only."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "The vehicle pose is identical across frames except for a vertical translation for the jump. No bank, tilt or squash is visible."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The hero craft is oversized, nearly black against a dark scene, and its design has no clear read (face? wheels? engines?)."
+        },
+        {
+          "category": "camera",
+          "seen": "The chase cam sits too low and too close, so the vehicle occludes the play lane. Static FOV, no speed response."
+        },
+        {
+          "category": "composition",
+          "seen": "Dead-center symmetric framing with the hero blocking the focal point; the vanishing point is hidden behind the vehicle."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Strong linear perspective from the arches and floor lines helps. No fog or atmospheric falloff, so depth reads as a flat diorama."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, haze, sky, stars, grid horizon or volumetrics. A flat void."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Obstacles ahead are hidden behind the vehicle (frame 4's obstacle is nearly invisible), and pickups are small and low-contrast at the sides."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "The desktop glass bar is clean and legible but generic web-dashboard styling. The Restart button in gameplay HUD and on-screen buttons on desktop feel like a debug layout."
+        },
+        {
+          "category": "typography",
+          "seen": "A clean sans with good hierarchy (small caps labels, bold values), but generic and with no genre personality."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback is visible: static style meter, \"intro\" section at 1.5 km, identical frames 1000 m apart."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "The canvas is collapsed to a quarter of the screen, the HUD covers it, and 75% of the screen is blank. Not shippable."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as an early prototype or programmer-art runner with a broken mobile layout."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

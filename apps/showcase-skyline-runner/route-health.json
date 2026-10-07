@@ -16,13 +16,13 @@
       "typedRef": "assets.skylineArcticRunnerHero",
       "role": "character",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
       "role": "world",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     }
   ],
   "primitiveStatus": {
@@ -432,5 +432,8 @@
       "requiresDurableProvenance": true,
       "requiresSuitabilityReason": true
     }
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

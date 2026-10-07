@@ -1,24 +1,44 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, WebGLSceneRenderer } from "../index.js";
-import { clamp01, colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba, createAssetProvenance, createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTextObservation, createProductionTexturesObservation, createRendererDiagnosticReport, createViewProjection, groups, isRenderableModelNode, primitive, resolveCameraFrame } from "../index.js";
+import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
+import { colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
+import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
+import { clamp01, createViewProjection } from "../sceneMath.js";
+import { resolveCameraFrame } from "./camera.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, isRenderableModelNode } from "./observations.js";
+import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
-import { ProductionRuntimeRenderer, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { Renderer, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
+import { webGL2MaxTextureSize } from "./webglRuntime.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
 import { camera } from "../nodes/camera.js";
+import { geometry } from "../nodes/geometry.js";
+import { material } from "../nodes/material.js";
+import { asRuntimeCompiled, compileScene, updateCompiledScene } from "../../contracts/compiler.js";
+import type { MountSceneCompileContext } from "./compileScene.js";
+import { createDegradationSink } from "./degradation.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
+import { resolveQrFlags } from "../../contracts/flags.js";
 
 export async function createProductionRuntimeSceneRenderer(
   canvas: HTMLCanvasElement,
   snapshot: AuraSceneSnapshot,
   rendererOptions?: AuraCreateAppRendererOptions,
-  runtimeNodes?: AuraRuntimeNodeRegistry
+  runtimeNodes?: AuraRuntimeNodeRegistry,
+  qrFlags?: QrFlags,
+  degradation?: import("../app/mountRenderer.js").AuraSceneDegradationOptions
 ): Promise<WebGLSceneRenderer> {
+  const flags = qrFlags ?? resolveQrFlags({});
   const flattened = groups.flatten(snapshot.nodes);
   const modelNodes = flattened.filter((node): node is AuraModelNode =>
     isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
@@ -27,7 +47,10 @@ export async function createProductionRuntimeSceneRenderer(
    * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
    * scene contains a typed GLB, so the glTF loader is downloaded exactly when it is needed.
    */
-  const actorEntries: ProductionRuntimeActorEntry[] = modelNodes.length > 0
+  const flagsOn = flags.on("A3D_QR_COMPILER");
+  let actorEntries: ProductionRuntimeActorEntry[] = flagsOn
+    ? [] // flag-on: the C-36 compile owns entry assembly (see below)
+    : modelNodes.length > 0
     ? await (async () => {
         const { createTypedGLBActor } = await import("../../production-runtime/TypedGLBActor.js");
         return await Promise.all(modelNodes.map(async (node, index) => ({
@@ -45,21 +68,25 @@ export async function createProductionRuntimeSceneRenderer(
         })));
       })()
     : [];
-  const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened);
-  const productionRenderer = await ProductionRuntimeRenderer.create({
+  let primitiveEntries: readonly ProductionRuntimePrimitiveEntry[] = flagsOn ? [] : createProductionRuntimePrimitiveEntries(flattened);
+  // T2.4 — C-29 `Renderer.create` replaces `ProductionRuntimeRenderer.create`.
+  // `preserveDrawingBuffer` is gone: frame capture flows through the C-05
+  // `captureFrame`/`toBlob` path after a synchronous render, not the raw
+  // WebGL drawing buffer.
+  const productionRenderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
-    backend: "webgl2",
+    backend: (rendererOptions?.backend as RenderBackendKind | undefined) ?? "webgl2",
     antialias: true,
+    requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets", "hdr-image-based-lighting"],
     ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
-    preserveDrawingBuffer: true,
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     clearColor: colorToAcesInputClearColor(snapshot.background)
   });
   let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
-  let latestFeatures: readonly ProductionRendererFeature[] = productionRenderer.getFeatures();
+  let latestFeatures: readonly ProductionRendererFeature[] = rendererFeatureReport(productionRenderer);
   // M2 streaming distances measure against the live camera eye; refreshed
   // every render so residency follows the camera instead of mount intent.
   let latestCameraEye: AuraVec3 = resolveCameraFrame(snapshot, snapshot.camera, 0, runtimeNodes).eye;
@@ -70,7 +97,7 @@ export async function createProductionRuntimeSceneRenderer(
   const textureUpgradeWarnings = new Set<string>();
   void upgradeProductionPrimitiveTextures(primitiveEntries, (message) => {
     textureUpgradeWarnings.add(message);
-  }, Number(canvas.getContext("webgl2")?.getParameter(WebGL2RenderingContext.MAX_TEXTURE_SIZE) ?? 4096)).catch((error) => {
+  }, webGL2MaxTextureSize(canvas)).catch((error) => {
     textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
   });
   const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
@@ -111,6 +138,39 @@ export async function createProductionRuntimeSceneRenderer(
       });
   }
   const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
+
+  // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
+  // stub returns `source: null` and every call below keeps the legacy path
+  // byte-identical; with the flag on, the real compile owns entry assembly and
+  // `updateCompiledScene` builds each frame's RenderSource.
+  const sceneCompileCtx: MountSceneCompileContext = {
+    renderer: productionRenderer,
+    assets: undefined,
+    quality: { tier: "high" } as MountSceneCompileContext["quality"],
+    strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
+    flags,
+    // T4.1: the C-36 degrade handler. Strict → AuraRuntimeError with code and
+    // cause; non-strict → C-38 onDegradation + warn-once per (code,nodeId).
+    degrade: createDegradationSink({
+      strict: degradation?.strict ?? flags.on("A3D_QR_STRICT"),
+      ...(degradation?.onDegradation ? { onDegradation: degradation.onDegradation } : {}),
+      warn: (message) => { runtimeWarnings.add(message); }
+    }),
+    canvas,
+    environmentLighting: () => currentEnvironmentLighting,
+    collectedLights: productionRuntimeLights,
+    runtimeWarnings,
+    ...(runtimeNodes ? { runtimeNodes } : {})
+  };
+  const compiledScene = await compileScene(snapshot, sceneCompileCtx);
+  const compiled = asRuntimeCompiled(compiledScene);
+  if (compiled) {
+    actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
+    primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
+    // C-37: bind the mounted compiled scene so registry add/remove can take the
+    // subtree-compile path (no remount) under A3D_QR_COMPILER.
+    (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
+  }
   const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
   const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
   const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
@@ -172,7 +232,7 @@ export async function createProductionRuntimeSceneRenderer(
         ...(productionEnvironment.hdriRotation === undefined ? {} : { hdriRotation: productionEnvironment.hdriRotation })
       },
       warnings: [
-        `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.backend}.`,
+        `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.device.kind as AuraBackend}.`,
         ...(authoredDirectLightNodes.length === 0
           ? ["Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."]
           : [`Production runtime derived ${productionRuntimeLights.length} collected direct light${productionRuntimeLights.length === 1 ? "" : "s"} from ${authoredDirectLightNodes.length} authored scene light${authoredDirectLightNodes.length === 1 ? "" : "s"}.`]),
@@ -185,7 +245,7 @@ export async function createProductionRuntimeSceneRenderer(
         ...(flattened.some((node) => node.kind === "effect")
           ? ["Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."]
           : []),
-        ...(productionRenderer.backendSelection.fallback ? [`Production runtime backend fallback: ${productionRenderer.backendSelection.reason}`] : []),
+
         ...latestFeatures
           .filter((feature) => feature.state !== "supported")
           .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
@@ -219,8 +279,13 @@ export async function createProductionRuntimeSceneRenderer(
 
   let preparedFrame: { readonly time: number; readonly input: ProductionRendererInput } | undefined;
   const buildFrame = (time: number): ProductionRendererInput => {
-    runtimeWarnings.clear();
     latestCameraEye = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
+    if (compiled) {
+      // C-36 real path: per-frame update on the mounted compiled scene.
+      updateCompiledScene(compiledScene, snapshot, runtimeNodes as AuraRuntimeNodeRegistry, time);
+      return compiled.lastInput! as ProductionRendererInput;
+    }
+    runtimeWarnings.clear();
     return createProductionRuntimeRendererInput(
       snapshot,
       canvas,
@@ -241,7 +306,7 @@ export async function createProductionRuntimeSceneRenderer(
 
   return {
     get backend() {
-      return productionRenderer.backend;
+      return productionRenderer.device.kind as AuraBackend;
     },
     get diagnostics() {
       return buildDiagnostics();
@@ -254,18 +319,18 @@ export async function createProductionRuntimeSceneRenderer(
     },
     render(time) {
       const input = takePreparedFrame(time);
-      const result = productionRenderer.renderInteractiveFrame(input);
-      latestDeviceDiagnostics = result.diagnostics;
+      validateProductionRendererInput(input);
+      latestDeviceDiagnostics = productionRenderer.render(input.source, input.camera);
       getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = result.features;
+      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
       return latestDeviceDiagnostics.drawCalls;
     },
     async renderAsync(time) {
       const input = takePreparedFrame(time);
-      const result = await productionRenderer.renderInteractiveFrameAsync(input);
-      latestDeviceDiagnostics = result.diagnostics;
+      validateProductionRendererInput(input);
+      latestDeviceDiagnostics = await productionRenderer.renderAsync(input.source, input.camera);
       getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
-      latestFeatures = result.features;
+      latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
       return latestDeviceDiagnostics.drawCalls;
     },
     viewProjection(time) {
@@ -273,7 +338,7 @@ export async function createProductionRuntimeSceneRenderer(
     },
     // PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2.
     get auraRenderer() {
-      return productionRenderer.auraRenderer;
+      return productionRenderer;
     },
     resetTemporalHistory(reason) {
       productionRenderer.resetTemporalHistory(reason);
@@ -288,11 +353,16 @@ export async function createProductionRuntimeSceneRenderer(
       return productionRenderer.onDeviceRestored(listener);
     },
     deviceLost() {
-      return productionRenderer.deviceLost();
+      return productionRenderer.isDeviceLost();
     },
     dispose() {
       disposeHdriEnvironment?.();
       productionRenderer.dispose();
+      if (compiled) {
+        (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);
+        compiled.dispose();
+        return;
+      }
       for (const { actor } of actorEntries) actor.dispose();
       for (const { resources } of primitiveEntries) {
         for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
