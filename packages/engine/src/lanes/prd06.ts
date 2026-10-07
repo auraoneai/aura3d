@@ -9,15 +9,26 @@
  * - TypedGLBActor extension `prd06.animation` (T0.6): publishes the loaded
  *   actor's clip-info source (`entry.actor.animation.resolvedClipInfos()`) into
  *   the handle-side registry so pending bindings can resolve.
+ * - T1.11: installs the `A3D_QR_ANIMATION_POSE_MIXER` provider for the
+ *   `@aura3d/animation` facade (AnimationMixer/AnimationController).
  */
 
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import { registerTypedGLBActorExtension } from "../production-runtime/actor/extensions.js";
+import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import {
   createPrd06ActorAnimationApi,
+  qrAnimationFlags,
   registerActorClipInfoSource,
   registerPrd06AnimationActor
 } from "../agent-api/app/actorAnimationHandle.js";
+
+// T1.11 (PRD-06 §10): `@aura3d/animation` cannot import the engine's flag
+// machinery, so the lane installs the `A3D_QR_ANIMATION_POSE_MIXER` read here
+// (sub-flag off = legacy blend math unchanged, even while `A3D_QR_ANIMATION`
+// is on). The `animation.mixer: "pose"` app option composes into the same
+// resolved flag upstream.
+setPoseMixerBlendFlagProvider(() => qrAnimationFlags().on("A3D_QR_ANIMATION_POSE_MIXER"));
 
 // T0.9a: `validateClipMap` ships for templates/games through the lane barrel
 // (exported from `@aura3d/engine` via `lanes/index.js`).

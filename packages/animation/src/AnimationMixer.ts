@@ -5,6 +5,8 @@ import type { AnimationLayer, AnimationLayerSnapshot } from "./AnimationLayer.js
 import { cloneAnimationValue, normalizeQuat, slerpQuat, type AnimationValue } from "./Keyframe.js";
 import { DEFAULT_INERTIALIZATION_HALF_LIFE, inertializedTransitionWeight } from "./Inertialization.js";
 import { applyRootMotion, extractRootMotion, type RootMotionSample, type RootMotionTarget } from "./RootMotion.js";
+import { additiveContributionValue, blendBaseValue } from "./pose/blendKernels.js";
+import { poseMixerBlendEnabled } from "./pose/poseMixerFlags.js";
 
 export type AnimationTarget = {
   setAnimationValue?: (target: string, value: AnimationValue) => void;
@@ -362,6 +364,12 @@ function blendInto(accumulators: Map<string, TargetAccumulator>, target: string,
 }
 
 function blendBase(current: WeightedAccumulator, type: string, value: AnimationValue, weight: number): void {
+  // T1.11 — facade routes through the pose-mixer's kernels under the sub-flag;
+  // the legacy body below survives only for flag removal.
+  if (poseMixerBlendEnabled()) {
+    blendBaseValue(current, type, value, weight);
+    return;
+  }
   const total = current.weight + weight;
   const t = weight / total;
   if (type === "scalar") {
@@ -408,6 +416,9 @@ function finalizeBaseBlend(accumulator: WeightedAccumulator): AnimationValue {
 }
 
 function additiveContribution(type: string, value: AnimationValue, weight: number): AnimationValue {
+  if (poseMixerBlendEnabled()) {
+    return additiveContributionValue(type, value, weight);
+  }
   if (type === "scalar") {
     return (value as number) * weight;
   }

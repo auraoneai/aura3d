@@ -12,6 +12,12 @@ import {
   type AnimationClipDefinition,
   type RegisteredAnimationClip
 } from "./AnimationClipRegistry.js";
+import type { AnimationClip } from "./AnimationClip.js";
+import { bindSkeleton } from "./pose/SkeletonBinding.js";
+import { compileClip } from "./pose/CompiledClip.js";
+import { createPoseBuffer } from "./pose/PoseBuffer.js";
+import { PoseMixer, type PoseSampleSpec } from "./pose/PoseMixer.js";
+import { poseMixerBlendEnabled } from "./pose/poseMixerFlags.js";
 
 export type AnimationLoopMode = "once" | "loop" | "pingpong";
 export type AnimationPlaybackStatus = "idle" | "playing" | "paused" | "stopped" | "completed";
@@ -666,6 +672,20 @@ export class AnimationController<
       return emptyPose();
     }
 
+    // T1.11 (E38) — under `A3D_QR_ANIMATION_POSE_MIXER` keyframe clips delegate
+    // to `PoseMixer.evaluateSamples`; sampler-function clips keep the legacy
+    // renormalising blend (with a one-time warning).
+    if (poseMixerBlendEnabled()) {
+      const delegated = this.blendStatesViaPoseMixer(weightedStates);
+      if (delegated !== undefined) {
+        return delegated;
+      }
+      if (!warnedBlendStatesRenormalise) {
+        warnedBlendStatesRenormalise = true;
+        console.warn("AnimationController.blendStates: sampler-function clips keep the legacy renormalising blend (E38); provide keyframe tracks to enable the PoseMixer path.");
+      }
+    }
+
     const accumulators = new Map<string, BoneAccumulator>();
     const morphTargets: Record<string, number> = {};
     let totalWeight = 0;
@@ -701,6 +721,86 @@ export class AnimationController<
       bones,
       morphTargets
     };
+  }
+
+  /**
+   * T1.11 (E38) — flag-on `blendStates` for clips carrying real keyframe
+   * `tracks`: the weighted-state blend runs through `PoseMixer.evaluateSamples`
+   * (r185 incremental weights with rest-fill / additive). Returns `undefined`
+   * when any weighted state lacks tracks so the caller keeps the legacy
+   * renormalising path with a one-time warning.
+   */
+  private blendStatesViaPoseMixer(weightedStates: readonly InternalPlaybackState<TClipId, TEvent>[]): AnimationPose | undefined {
+    if (!weightedStates.every((state) => (state.clip.tracks?.length ?? 0) > 0)) {
+      return undefined;
+    }
+
+    const jointNames: string[] = [];
+    const seen = new Set<string>();
+    for (const state of weightedStates) {
+      for (const track of state.clip.tracks!) {
+        const target = track.target;
+        const dot = target.lastIndexOf(".");
+        const bone = dot === -1 ? target : target.slice(0, dot);
+        if (!seen.has(bone)) {
+          seen.add(bone);
+          jointNames.push(bone);
+        }
+      }
+    }
+
+    const binding = bindSkeleton({
+      joints: jointNames.map((_, index) => index),
+      jointNames,
+      parentIndices: jointNames.map(() => -1),
+      resolveNode: (index) => ({
+        name: jointNames[index]!,
+        position: [0, 0, 0],
+        rotation: [0, 0, 0, 1],
+        scale: [1, 1, 1]
+      })
+    });
+    const mixer = new PoseMixer({ skeleton: binding });
+    const specs: PoseSampleSpec[] = [];
+    for (const state of weightedStates) {
+      const clipName = String(state.clipId);
+      const source = state.clip as unknown as AnimationClip;
+      mixer.addCompiledClip(clipName, compileClip(source), source);
+      specs.push({ clipName, time: state.localTime, weight: state.weight });
+    }
+    const out = createPoseBuffer(jointNames.length);
+    mixer.evaluateSamples(specs, out);
+
+    const bones: Record<string, AnimationPoseTransform> = {};
+    for (let index = 0; index < jointNames.length; index += 1) {
+      const name = jointNames[index]!;
+      const p3 = index * 3;
+      const q4 = index * 4;
+      bones[name] = {
+        position: { x: out.positions[p3]!, y: out.positions[p3 + 1]!, z: out.positions[p3 + 2]! },
+        rotation: { x: out.rotations[q4]!, y: out.rotations[q4 + 1]!, z: out.rotations[q4 + 2]!, w: out.rotations[q4 + 3]! },
+        scale: { x: out.scales[p3]!, y: out.scales[p3 + 1]!, z: out.scales[p3 + 2]! }
+      };
+    }
+
+    // Morph weights are not covered by the pose path; keep the legacy
+    // renormalised accumulation for both routes.
+    const morphTargets: Record<string, number> = {};
+    let totalWeight = 0;
+    for (const state of weightedStates) {
+      const pose = this.sampleSinglePose(state.clip, state.localTime, state);
+      totalWeight += state.weight;
+      for (const [name, value] of Object.entries(pose.morphTargets ?? {})) {
+        morphTargets[name] = (morphTargets[name] ?? 0) + value * state.weight;
+      }
+    }
+    if (totalWeight > 0) {
+      for (const name of Object.keys(morphTargets)) {
+        morphTargets[name]! /= totalWeight;
+      }
+    }
+
+    return { bones, morphTargets };
   }
 
   private sampleSinglePose(
@@ -865,6 +965,8 @@ function cloneState<TClipId extends string>(
       : undefined
   };
 }
+
+let warnedBlendStatesRenormalise = false;
 
 function emptyPose(): AnimationPose {
   return {

@@ -94,3 +94,35 @@ Masked-out bound tracks contribute weight 0 through the per-bone mask array (sam
   (crossFade/transition/warp/syncGroup) once T1.10 merges.
 - Tests: 3 new cases in `animation-controller.test.ts` (real PoseMixer — drive
   members + snapshot shape, additive layer, flag-off stub conformance).
+
+## T1.11 — AnimationMixer facade + blendStates delegation (A3D_QR_ANIMATION_POSE_MIXER)
+
+- New `pose/poseMixerFlags.ts`: `setPoseMixerBlendFlagProvider` /
+  `poseMixerBlendEnabled`. `@aura3d/animation` cannot import the engine flag
+  machinery (dependency direction is engine → animation), so the engine lane
+  barrel (`packages/engine/src/lanes/prd06.ts`) installs the provider reading
+  `qrAnimationFlags().on("A3D_QR_ANIMATION_POSE_MIXER")`; env fallback reads
+  `A3D_QR_ANIMATION_POSE_MIXER` directly (multi-word sub-flags cannot be
+  `A3D_QR=` list tokens — the resolver's short-name form is `lane.sub`).
+- New `pose/blendKernels.ts`: value-level r185 kernels (`blendBaseValue`,
+  `additiveContributionValue`, `applyAdditiveValue`, `combineAdditiveValue`),
+  the `AnimationValue` twins of `PoseMixer`'s flat-buffer math.
+- `AnimationMixer.blendBase`/`additiveContribution` route through the kernels
+  under the flag (identical math, single source; legacy bodies stay for flag
+  removal). Public API unchanged.
+- `AnimationController.blendStates` (`packages/animation`, :663): when every
+  weighted state's clip carries keyframe `tracks`, delegates to
+  `PoseMixer.evaluateSamples` over a skeleton synthesized from the track
+  targets — r185 incremental weights with rest-fill instead of renormalise.
+  Sampler-function clips keep the legacy path with a one-time E38 warning.
+  Morph weights keep the legacy renormalised accumulation on both routes.
+- `animation.mixer: "pose"` alias: `qrFlagsWithAnimationMixer` composes the
+  sub-flag onto resolved `QrFlags` at both app resolve sites
+  (`createAuraApp`, `frameLoop`); an explicit flags-input value for the
+  sub-flag wins.
+- Tests (`game-animation-runtime.test.ts`, each cites the r185 value):
+  weight 0.3 clip → x = 10·0.3 + 0·0.7 = 3 (rest-fill vs legacy renormalise);
+  flag-off tracks-only clip yields `emptyPose` (the E38 blind spot);
+  0.5/0.5 pair → x = 5 (incremental mix t = w/(Σ+w)); sampler clip → legacy +
+  warn-once; facade parity + slerp(identity, 90°Y, 0.5) = 45°Y.
+  `C-00-flags.test.ts` covers the `animation.mixer` alias.

@@ -25,7 +25,7 @@ import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { PhysicsWorld } from "@aura3d/physics/world";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
-import { resolveQrFlags } from "../../contracts/flags.js";
+import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import { resolveTierSettings } from "@aura3d/rendering/contracts";
@@ -43,7 +43,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
-  const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  const qrFlags = qrFlagsWithAnimationMixer(
+    resolveQrFlags({ options: options.qualityRebuild?.flags }),
+    options.animation?.mixer
+  );
   // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
   // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
   setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache() : null);

@@ -15,3 +15,6 @@ export type { CompiledClip, CompiledTrack, CompiledTrackCursor } from "../pose/C
 export { PoseMixer, PoseAction } from "../pose/PoseMixer.js";
 export type { PoseActionOptions, PoseBlendMode, PoseChannel, PoseCrossFadeOptions, PoseLayer, PoseLayerOptions, PoseLoopMode, PoseSampleSpec, PoseTransition } from "../pose/PoseMixer.js";
 export { PoseInertializer, DEFAULT_POSE_TRANSITION_HALF_LIFE } from "../pose/PoseInertializer.js";
+export { setPoseMixerBlendFlagProvider, poseMixerBlendEnabled } from "../pose/poseMixerFlags.js";
+export { blendBaseValue, additiveContributionValue, applyAdditiveValue, combineAdditiveValue } from "../pose/blendKernels.js";
+export type { PoseBlendAccumulatorLike, PoseBlendChannel } from "../pose/blendKernels.js";
