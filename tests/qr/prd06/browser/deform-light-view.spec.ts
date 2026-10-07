@@ -67,4 +67,27 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     // The pose at t=0.5s must actually move the silhouette vs bind pose.
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
   });
+
+  test("a 191-joint rig renders through the bone-texture chunk (T1.12)", async ({ page }) => {
+    await page.goto(`${server.origin}/tests/qr/prd06/browser/deform-light-view-harness.html?a3d-qr=animation&rig=synthetic-191`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(
+      () => window.__PRD06_DEFORM_LIGHT_VIEW__?.status === "ready" || window.__PRD06_DEFORM_LIGHT_VIEW__?.status === "error",
+      undefined,
+      { timeout: 60_000 }
+    );
+    const result = await page.evaluate(() => window.__PRD06_DEFORM_LIGHT_VIEW__);
+    expect(result?.status, result?.error).toBe("ready");
+    expect(result!.stats!.joints).toBe(191);
+
+    mkdirSync(ARTIFACT_DIR, { recursive: true });
+    for (const [name, dataUrl] of Object.entries(result!.masks ?? {})) {
+      writeFileSync(join(ARTIFACT_DIR, `synthetic-191-${name}.png`), Buffer.from(dataUrl.split(",")[1]!, "base64"));
+    }
+
+    const iou = result!.iou!;
+    expect(iou.deformVsCpu).toBeGreaterThanOrEqual(0.98);
+    expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
+    expect(iou.controlRawVsCpu).toBeLessThan(0.8);
+    expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
+  });
 });

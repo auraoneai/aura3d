@@ -126,3 +126,40 @@ Masked-out bound tracks contribute weight 0 through the per-bone mask array (sam
   0.5/0.5 pair → x = 5 (incremental mix t = w/(Σ+w)); sampler clip → legacy +
   warn-once; facade parity + slerp(identity, 90°Y, 0.5) = 45°Y.
   `C-00-flags.test.ts` covers the `animation.mixer` alias.
+
+## T1.12 — bone-texture-only skinning for `a3d_prd06_skinning_common`
+
+- `applySkinningUniformsCached` gains a chunk-program branch
+  (`SkinningUniforms.ts`): any program declaring `u_boneTexture` binds the
+  cached bone texture for EVERY joint count — no `u_jointMatrices`/
+  `u_jointPaletteMode` needed. `u_jointCount` is set only when declared (the
+  chunk doesn't), `u_prevBoneTexture` only when declared.
+- `u_jointMatrices` is uploaded on the chunk path ONLY when
+  `device.kind === "webgpu"` — WebGPU still consumes the uniform array until
+  Q-11-1. WebGL2 chunk programs never see it.
+- Shared binder: `bindBoneTextureForSkinning` (exported via `lanes/prd06`)
+  is the common cache-pair bind used by the depth feature's `bindBoneTexture`
+  and the new uniforms-map path — same dedupe-per-frame semantics.
+- `decideSkinningPalettePath` gains `shaderHasBoneTexture`: chunk programs
+  now record `data-texture`/`none-bone-texture` (was `cpu` for lacking all
+  legacy uniforms); over the cache ceiling it reports
+  `joint-count-exceeds-bone-texture-limit`. `recordDecision` in
+  `forward/Deform.ts` passes the new input and `bind` accepts the device so
+  the webgpu joint-array upload reaches the call site.
+- Unstamped palettes on chunk programs hit `applySkinningUniforms`'s contract
+  and throw (no `u_jointMatrices` to fall back to) — correct: chunk
+  consumption requires the stamped C-18 path.
+- Flag-off byte-identical: the new branch is behind `u_boneTexture`
+  reflection + the same stamped-key gate as before; legacy programs hit the
+  identical pre-existing codepath.
+- Unit (`skinning-palette-cache.test.ts`): 65- and 191-joint stamped palettes
+  bind `u_boneTexture`/`u_boneTextureWidth`/`u_prevBoneTexture`, never
+  `u_jointMatrices`/`u_jointPaletteMode`; webgpu backend still gets
+  `u_jointMatrices`; legacy program keeps `u_jointMatrices` ≤96; unstamped →
+  contract throw. `decideSkinningPalettePath` cases in
+  `skinning-fallback-and-bounds.test.ts` (65/191 GPU path, 2048 cpu).
+- Browser (`deform-light-view`): new `?rig=synthetic-191` mode — a procedural
+  191-joint ribbon rig (each vertex weighted to one joint, posed palette curls
+  ~0.9 rad) drawn through the real `a3d_prd06_skinning_common` chunk;
+  spec asserts joints=191 and the same IoU bars (deformVsCpu ≥0.98,
+  bindPoseGpuVsCpu ≥0.98, controls <0.8).

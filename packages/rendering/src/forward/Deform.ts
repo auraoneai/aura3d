@@ -9,7 +9,7 @@ import { MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS, MAX
 import { Geometry } from "../Geometry.js";
 import { Material } from "../Material.js";
 import { applyMorphTargets } from "../MorphTarget.js";
-import { RenderDeviceError, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
+import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { decideSkinningPalettePath } from "../WebGPUSkinningLimits.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import { applySkinningUniforms, applySkinningUniformsCached, paletteKeyOf } from "../SkinningUniforms.js";
@@ -99,14 +99,15 @@ export class SkinningPaletteUploadManager {
     skinning: SkinningPaletteBinding,
     material: Material,
     shader: RenderShaderProgram,
-    uniforms: Map<string, UniformValue>
+    uniforms: Map<string, UniformValue>,
+    device?: RenderDevice
   ): void {
     // Recorded before the upload so a contract throw still leaves its reason code behind.
     this.recordDecision(item, skinning, shader);
     // T0.10: flag-on + stamped paletteKey → cached C-18 path (texSubImage2D);
     // anything else keeps the verbatim pre-rebuild submission path.
     const path = prd06FlagsOn("A3D_QR_ANIMATION") && paletteKeyOf(skinning)
-      ? applySkinningUniformsCached(skinning, material, shader, uniforms, this.paletteCache)
+      ? applySkinningUniformsCached(skinning, material, shader, uniforms, this.paletteCache, device)
       : applySkinningUniforms(skinning, material, shader, uniforms);
     if (path === "data-texture") this.dataTextureSubmissions += 1;
     else this.uniformArraySubmissions += 1;
@@ -131,7 +132,8 @@ export class SkinningPaletteUploadManager {
       maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
       maxDataTextureJoints: MAX_SKINNING_JOINTS,
       shaderHasSkinningUniforms: reflection.has("u_jointMatrices") && reflection.has("u_jointCount"),
-      shaderHasDataTexturePalette: reflection.has("u_jointPaletteTexture") && reflection.has("u_jointPaletteMode")
+      shaderHasDataTexturePalette: reflection.has("u_jointPaletteTexture") && reflection.has("u_jointPaletteMode"),
+      shaderHasBoneTexture: reflection.has("u_boneTexture")
     });
     if (decision.cpuFallback) this.cpuFallbackCount += 1;
     if (this.decisions.length < SkinningPaletteUploadManager.maxRecordedDecisions) {

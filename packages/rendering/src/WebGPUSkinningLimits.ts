@@ -23,6 +23,10 @@ export type SkinningCpuFallbackReason =
   | "none-uniform-array"
   /** Joint count exceeds the uniform array but fits the data-texture palette path. */
   | "none-data-texture"
+  /** T1.12 — the program includes `a3d_prd06_skinning_common`; the bone texture carries the palette. */
+  | "none-bone-texture"
+  /** T1.12 — a bone-texture program whose joint count exceeds even the cache ceiling. */
+  | "joint-count-exceeds-bone-texture-limit"
   /** Joint count exceeds even the data-texture ceiling — CPU skinning is the only option. */
   | "joint-count-exceeds-data-texture-limit"
   /** The shader has no data-texture palette uniforms, so palettes above the uniform cap fall back. */
@@ -54,6 +58,8 @@ export function decideSkinningPalettePath(options: {
   readonly maxDataTextureJoints?: number;
   readonly shaderHasDataTexturePalette?: boolean;
   readonly shaderHasSkinningUniforms?: boolean;
+  /** T1.12 — program includes `a3d_prd06_skinning_common` (`u_boneTexture`). */
+  readonly shaderHasBoneTexture?: boolean;
 }): SkinningPaletteDecision {
   const jointCount = options.jointCount;
   if (!Number.isInteger(jointCount) || jointCount < 0) {
@@ -63,6 +69,15 @@ export function decideSkinningPalettePath(options: {
   const maxDataTextureJoints = options.maxDataTextureJoints ?? MAX_WEBGPU_SKINNING_JOINTS;
   const shaderHasSkinningUniforms = options.shaderHasSkinningUniforms ?? true;
   const shaderHasDataTexturePalette = options.shaderHasDataTexturePalette ?? true;
+  const shaderHasBoneTexture = options.shaderHasBoneTexture ?? false;
+  // T1.12: the `a3d_prd06_skinning_common` program has no u_jointMatrices/
+  // u_jointPaletteMode — the cached bone texture carries the palette for every
+  // joint count up to the data-texture limit.
+  if (shaderHasBoneTexture) {
+    return jointCount <= maxDataTextureJoints
+      ? { jointCount, path: "data-texture" as const, reason: "none-bone-texture" as const, cpuFallback: false }
+      : { jointCount, path: "cpu" as const, reason: "joint-count-exceeds-bone-texture-limit" as const, cpuFallback: true };
+  }
   if (jointCount <= maxUniformJoints && shaderHasSkinningUniforms) {
     return { jointCount, path: "uniform-array", reason: "none-uniform-array", cpuFallback: false };
   }

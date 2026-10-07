@@ -19,7 +19,7 @@ import { bindSkeleton, type SkeletonBinding } from "../../../packages/animation/
 import { createPoseBuffer, type PoseBuffer } from "../../../packages/animation/src/pose/PoseBuffer.js";
 import { PoseMixer } from "../../../packages/animation/src/pose/PoseMixer.js";
 import { makeClipAdditive } from "../../../packages/animation/src/pose/makeClipAdditive.js";
-import type { Keyframe } from "../../../packages/animation/src/Keyframe.js";
+import type { AnimationValue, Keyframe } from "../../../packages/animation/src/Keyframe.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -102,18 +102,18 @@ function toAuraClip(threeClip: THREE.AnimationClip): AnimationClip {
 
     // glTF CUBICSPLINE arrives via a flagged custom interpolant with
     // [inTangent, value, outTangent] per key; STEP is InterpolateDiscrete.
-    const cubic = (track.createInterpolant as unknown as { isInterpolantFactoryMethodGLTFCubicSpline?: boolean }).isInterpolantFactoryMethodGLTFCubicSpline === true;
-    const step = track.interpolation === THREE.InterpolateDiscrete;
+    const cubic = (track as unknown as { createInterpolant?: { isInterpolantFactoryMethodGLTFCubicSpline?: boolean } }).createInterpolant?.isInterpolantFactoryMethodGLTFCubicSpline === true;
+    const step = (track as unknown as { interpolation?: number }).interpolation === THREE.InterpolateDiscrete;
     const stride = mapping.valueType === "quaternion" ? 4 : mapping.valueType === "vector3" ? 3 : (track as unknown as { getValueSize?: () => number }).getValueSize?.() ?? 1;
     const times = track.times;
     const values = track.values;
-    const keyframes: Keyframe<never>[] = [];
+    const keyframes: Keyframe[] = [];
 
     for (let k = 0; k < times.length; k += 1) {
       const base = cubic ? k * 3 * stride : k * stride;
       const valueOffset = cubic ? base + stride : base;
-      const value = stride === 1 ? values[valueOffset]! as never : ([...values.slice(valueOffset, valueOffset + stride)] as never);
-      const keyframe: Record<string, unknown> = { time: times[k]!, value };
+      const value = stride === 1 ? values[valueOffset]! as AnimationValue : ([...values.slice(valueOffset, valueOffset + stride)] as AnimationValue);
+      const keyframe: { time: number; value: AnimationValue; interpolation?: "step" | "cubicspline"; inTangent?: AnimationValue; outTangent?: AnimationValue } = { time: times[k]!, value };
       if (cubic) {
         keyframe.interpolation = "cubicspline";
         keyframe.inTangent = stride === 1 ? values[base]! : [...values.slice(base, base + stride)];
@@ -121,7 +121,7 @@ function toAuraClip(threeClip: THREE.AnimationClip): AnimationClip {
       } else if (step) {
         keyframe.interpolation = "step";
       }
-      keyframes.push(keyframe as Keyframe<never>);
+      keyframes.push(keyframe);
     }
     return new AnimationTrack({ target: `${nodeName}.${mapping.leaf}`, valueType: mapping.valueType, keyframes });
   }).filter((track): track is AnimationTrack => track !== null);

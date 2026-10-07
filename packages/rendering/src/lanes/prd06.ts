@@ -205,7 +205,7 @@ export {
   type MorphTargetTextureResult,
   type MorphTextureLimits
 } from "../resources/MorphTargetTexture.js";
-export { applySkinningUniformsCached, bindBoneTexture, paletteKeyOf } from "../SkinningUniforms.js";
+export { applySkinningUniformsCached, bindBoneTexture, bindBoneTextureForSkinning, paletteKeyOf } from "../SkinningUniforms.js";
 
 /* --------------------------------------- T0.13 depth variant + bounds provider */
 

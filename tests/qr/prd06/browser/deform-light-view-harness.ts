@@ -248,6 +248,70 @@ function maskToPng(mask: Uint8Array): string {
   return canvas.toDataURL("image/png");
 }
 
+/** A mat4 that rotates about Z around the point (0, py, 0) — pivot at the joint's own height. */
+function rotZAboutY(theta: number, py: number): Mat4 {
+  const c = Math.cos(theta), s = Math.sin(theta);
+  // T(0,py,0) · R_z(θ) · T(0,-py,0): rows of Rz, translation column carries the pivot.
+  return new Float32Array([
+    c, s, 0, 0,
+    -s, c, 0, 0,
+    0, 0, 1, 0,
+    s * py, py - c * py, 0, 1
+  ]);
+}
+
+interface SyntheticRig {
+  jointCount: number;
+  positions: [number, number, number][];
+  joints: number[][];
+  weights: number[][];
+  indices: number[];
+  bindPalette: Float32Array;
+  posePalette: Float32Array;
+}
+
+/**
+ * T1.12 — a 191-joint skinned rig, procedurally generated: a 6-column vertical
+ * ribbon whose vertex rows weight 100% to the joint for that height. The posed
+ * palette curls the ribbon upward (progressively larger Z-rotations pivoting at
+ * each joint's height) so GPU-vs-CPU IoU exercises the bone-texture path well
+ * above the ≤96 uniform-array cap.
+ */
+function syntheticRig(jointCount: number): SyntheticRig {
+  const rows = 32;
+  const cols = 6;
+  const positions: [number, number, number][] = [];
+  const joints: number[][] = [];
+  const weights: number[][] = [];
+  const indices: number[] = [];
+  for (let r = 0; r <= rows; r += 1) {
+    const y = -0.8 + (r / rows) * 1.6;
+    const j = Math.min(jointCount - 1, Math.floor((r / rows) * jointCount));
+    for (let c = 0; c < cols; c += 1) {
+      const x = -0.24 + (c / (cols - 1)) * 0.48;
+      positions.push([x, y, 0]);
+      joints.push([j, 0, 0, 0]);
+      weights.push([1, 0, 0, 0]);
+    }
+  }
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols - 1; c += 1) {
+      const a = r * cols + c, b = a + 1, d = a + cols, e = d + 1;
+      indices.push(a, d, b, b, d, e);
+    }
+  }
+  const bindPalette = new Float32Array(jointCount * 16);
+  const posePalette = new Float32Array(jointCount * 16);
+  for (let j = 0; j < jointCount; j += 1) {
+    bindPalette[j * 16 + 0] = 1; bindPalette[j * 16 + 5] = 1; bindPalette[j * 16 + 10] = 1; bindPalette[j * 16 + 15] = 1;
+    const y = -0.8 + (j / (jointCount - 1)) * 1.6;
+    // ~0.9 rad of curl at the top joint — a large, unambiguous silhouette change.
+    const m = rotZAboutY((j / (jointCount - 1)) * 0.9, y);
+    posePalette.set(m, j * 16);
+  }
+  return { jointCount, positions, joints, weights, indices, bindPalette, posePalette };
+}
+
 async function main(): Promise<void> {
   const chunks = ["a3d_prd06_skinning_common", "a3d_prd06_morph_texture", "a3d_prd06_deform"].map((name) => {
     const chunk = shaderChunk(name);
@@ -255,36 +319,49 @@ async function main(): Promise<void> {
     return chunk.glsl;
   });
 
-  const asset: GLTFAsset = await new GLTFLoader().load(
-    { url: `${location.origin}/tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb` },
-    new LoadContext()
-  );
-  const clip = asset.animations[0];
-  if (!clip) throw new Error("CesiumMan has no clip 0");
-  const mesh: GLTFMeshAsset | undefined = asset.meshes.find((m) => m.skinIndex !== undefined);
-  const skin = mesh?.skinIndex !== undefined ? asset.skins[mesh.skinIndex] : undefined;
-  if (!mesh || !skin) throw new Error("CesiumMan skinned mesh missing");
-  const jointCount = skin.joints.length;
+  const rig = new URLSearchParams(location.search).get("rig") ?? "cesium-man";
+  let jointCount: number;
+  let positions: readonly (readonly [number, number, number])[];
+  let joints: readonly (readonly number[])[];
+  let weights: readonly (readonly number[])[];
+  let indices: readonly number[];
+  let bindPalette: Float32Array;
+  let posePalette: Float32Array;
+  if (rig.startsWith("synthetic-")) {
+    const synthetic = syntheticRig(Number(rig.slice("synthetic-".length)) || 191);
+    ({ jointCount, positions, joints, weights, indices, bindPalette, posePalette } = synthetic);
+  } else {
+    const asset: GLTFAsset = await new GLTFLoader().load(
+      { url: `${location.origin}/tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb` },
+      new LoadContext()
+    );
+    const clip = asset.animations[0];
+    if (!clip) throw new Error("CesiumMan has no clip 0");
+    const mesh: GLTFMeshAsset | undefined = asset.meshes.find((m) => m.skinIndex !== undefined);
+    const skin = mesh?.skinIndex !== undefined ? asset.skins[mesh.skinIndex] : undefined;
+    if (!mesh || !skin) throw new Error("CesiumMan skinned mesh missing");
+    jointCount = skin.joints.length;
 
-  const scene = asset.createScene();
-  const runtime = createGLTFSceneAnimationRuntime({ scene, clips: asset.animations, asset });
+    const scene = asset.createScene();
+    const runtime = createGLTFSceneAnimationRuntime({ scene, clips: asset.animations, asset });
 
-  // Bind pose: refresh before any clip sample so the palette is jointWorld_bind x IBM.
-  scene.updateWorldTransforms();
-  runtime.applyPose({ bones: {} });
-  const renderableEntry = scene.collectRenderables().find(({ renderable }) => renderable.skinning && renderable.skinning.jointCount === jointCount);
-  if (!renderableEntry) throw new Error("skinned renderable not bound");
-  const bindPalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
+    // Bind pose: refresh before any clip sample so the palette is jointWorld_bind x IBM.
+    scene.updateWorldTransforms();
+    runtime.applyPose({ bones: {} });
+    const renderableEntry = scene.collectRenderables().find(({ renderable }) => renderable.skinning && renderable.skinning.jointCount === jointCount);
+    if (!renderableEntry) throw new Error("skinned renderable not bound");
+    bindPalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
 
-  // Posed: clip 0 at t = 0.5 s.
-  runtime.applyClip(clip, 0.5);
-  const posePalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
+    // Posed: clip 0 at t = 0.5 s.
+    runtime.applyClip(clip, 0.5);
+    posePalette = new Float32Array(renderableEntry.renderable.skinning!.matrices);
 
-  const positions = mesh.positions as readonly (readonly [number, number, number])[];
-  const joints = mesh.joints;
-  const weights = mesh.weights;
-  const indices = mesh.indices;
-  if (!indices) throw new Error("CesiumMan mesh has no index buffer");
+    positions = mesh.positions as readonly (readonly [number, number, number])[];
+    joints = mesh.joints;
+    weights = mesh.weights;
+    if (!mesh.indices) throw new Error("CesiumMan mesh has no index buffer");
+    indices = mesh.indices;
+  }
 
   const cpuAnimated = cpuSkin(positions, joints, weights, posePalette);
   const cpuBind = cpuSkin(positions, joints, weights, bindPalette);

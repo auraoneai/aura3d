@@ -932,5 +932,13 @@
     "expires": "2026-11-15",
     "request": "Q-15-2",
     "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/animation.ts",
+    "to": "packages/engine/src/agent-api/app/actorAnimationHandle.ts",
+    "expires": "2026-10-20",
+    "reason": "T0.0 dispatch seam (de4c9ee6, on main): the render path has no AuraApp so empty-pose guard + qrAnimationFlags read live in app/; PRD-15's setQrAnimationFlags seam repoints it",
+    "request": "Q-06-5"
   }
 ]

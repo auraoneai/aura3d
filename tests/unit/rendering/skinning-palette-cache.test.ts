@@ -135,3 +135,71 @@ describe("applySkinningUniformsCached (T0.10)", () => {
     expect(paletteKeyOf({ jointCount: 4, matrices: identityPalette(4), paletteKey: "not-an-object" } as SkinningPaletteBinding)).toBeNull();
   });
 });
+
+describe("a3d_prd06_skinning_common programs bind the cached bone texture (T1.12)", () => {
+  const material = { name: "test-material" } as Material;
+  // Exactly what the C-18 chunk declares: no u_jointMatrices, no u_jointPaletteMode.
+  const CHUNK_UNIFORMS = ["u_boneTexture", "u_boneTextureWidth", "u_prevBoneTexture"];
+
+  function skinning(jointCount: number, paletteKey?: object): SkinningPaletteBinding {
+    const binding: SkinningPaletteBinding & { paletteKey?: object } = {
+      jointCount,
+      matrices: identityPalette(jointCount)
+    };
+    if (paletteKey) binding.paletteKey = paletteKey;
+    return binding;
+  }
+
+  it.each([65, 191])("a %i-joint palette binds via bone texture, never u_jointMatrices", (jointCount) => {
+    const cache = new SkinningPaletteTextureCache();
+    const uniforms = new Map<string, UniformValue>();
+    const path = applySkinningUniformsCached(
+      skinning(jointCount, { key: jointCount }),
+      material,
+      fakeShader(CHUNK_UNIFORMS),
+      uniforms,
+      cache,
+      { kind: "webgl2" } as unknown as RenderDevice
+    );
+    expect(path).toBe("data-texture");
+    expect(uniforms.get("u_boneTexture")).toBeDefined();
+    expect(uniforms.get("u_boneTextureWidth")).toBeGreaterThan(0);
+    expect(uniforms.get("u_prevBoneTexture")).toBeDefined();
+    expect(uniforms.has("u_jointMatrices")).toBe(false);
+    expect(uniforms.has("u_jointPaletteMode")).toBe(false);
+    expect(cache.diagnostics().textures).toBe(2);
+  });
+
+  it("still uploads u_jointMatrices when the device backend is webgpu", () => {
+    const cache = new SkinningPaletteTextureCache();
+    const uniforms = new Map<string, UniformValue>();
+    const skin = skinning(65, { key: 3 });
+    // WebGPU consumers keep declaring the array (Q-11-1 removes it there too).
+    applySkinningUniformsCached(
+      skin,
+      material,
+      fakeShader([...CHUNK_UNIFORMS, "u_jointMatrices"]),
+      uniforms,
+      cache,
+      { kind: "webgpu" } as unknown as RenderDevice
+    );
+    expect(uniforms.get("u_jointMatrices")).toBe(skin.matrices);
+    expect(uniforms.get("u_boneTexture")).toBeDefined();
+  });
+
+  it("the legacy program still receives u_jointMatrices for <=96 joints", () => {
+    const cache = new SkinningPaletteTextureCache();
+    const uniforms = new Map<string, UniformValue>();
+    const skin = skinning(96, { key: 4 });
+    const path = applySkinningUniformsCached(skin, material, fakeShader(SKINNING_UNIFORMS), uniforms, cache, { kind: "webgpu" } as unknown as RenderDevice);
+    expect(path).toBe("uniform-array");
+    expect(uniforms.get("u_jointMatrices")).toBe(skin.matrices);
+    expect(uniforms.get("u_jointCount")).toBe(96);
+  });
+
+  it("an unstamped palette on a chunk program is a contract error (no u_jointMatrices to fall back to)", () => {
+    const cache = new SkinningPaletteTextureCache();
+    const uniforms = new Map<string, UniformValue>();
+    expect(() => applySkinningUniformsCached(skinning(64), material, fakeShader(CHUNK_UNIFORMS), uniforms, cache)).toThrow(/joint palette uniforms/);
+  });
+});

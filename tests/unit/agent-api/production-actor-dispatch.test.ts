@@ -333,7 +333,7 @@ describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIM
   it("crossfades Idle→Walk over 0.2s yielding two-clip evaluation during the fade", () => {
     setQrAnimationFlags(qrFlags("animation"));
     const mixer = makeFakePoseMixer();
-    const calls = { applyPoseMixer: [] as unknown[], playClip: [] as unknown[] };
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
     const entry = fakeActorEntry({ ...calls, mixer });
     applyAt(entry, { clip: "idle" }, 0);
     applyAt(entry, { clip: "walk" }, 500);
@@ -349,7 +349,7 @@ describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIM
   it("honours speed: 0.5 by halving clip-time advance", () => {
     setQrAnimationFlags(qrFlags("animation"));
     const mixer = makeFakePoseMixer();
-    const calls = { applyPoseMixer: [] as unknown[], playClip: [] as unknown[] };
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
     const entry = fakeActorEntry({ ...calls, mixer });
     applyAt(entry, { clip: "walk", speed: 0.5 }, 1000);
     applyAt(entry, { clip: "walk", speed: 0.5 }, 2000);
@@ -363,7 +363,7 @@ describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIM
   it("freezes clip advance when handle.timeScale is 0 (C-23 hit-stop)", () => {
     setQrAnimationFlags(qrFlags("animation"));
     const mixer = makeFakePoseMixer();
-    const calls = { applyPoseMixer: [] as unknown[], playClip: [] as unknown[] };
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
     const entry = fakeActorEntry({ ...calls, mixer });
     const runtimeNodes = { get: () => ({ timeScale: 0 }) } as never;
     applyAt(entry, { clip: "walk" }, 1000, runtimeNodes);
@@ -376,7 +376,7 @@ describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIM
     setQrAnimationFlags(qrFlags("animation"));
     setActorAnimationAppTimeScale(() => 0.25);
     const mixer = makeFakePoseMixer();
-    const calls = { applyPoseMixer: [] as unknown[], playClip: [] as unknown[] };
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
     const entry = fakeActorEntry({ ...calls, mixer });
     applyAt(entry, { clip: "walk" }, 1000);
     applyAt(entry, { clip: "walk" }, 2000);
@@ -386,7 +386,7 @@ describe("applyProductionActorAnimation — T1.9 stateful PoseMixer (A3D_QR_ANIM
   it("flag-off reproduces today's playClip call sequence exactly (mixer never touched)", () => {
     setQrAnimationFlags(qrFlags());
     const mixer = makeFakePoseMixer();
-    const calls = { applyPoseMixer: [] as unknown[], playClip: [] as unknown[] };
+    const calls = { applyPoseMixer: [] as [number, unknown][], playClip: [] as unknown[] };
     const entry = fakeActorEntry({ ...calls, mixer });
     applyAt(entry, { clip: "walk" }, 2000);
     expect(calls.playClip).toEqual([["walk", 2]]);

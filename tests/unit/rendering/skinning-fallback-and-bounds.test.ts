@@ -72,6 +72,25 @@ describe("decideSkinningPalettePath — CPU-fallback reason codes", () => {
     expect(decision).toMatchObject({ path: "cpu", reason: "shader-lacks-skinning-uniforms", cpuFallback: true });
   });
 
+  it("routes a bone-texture (a3d_prd06_skinning_common) program through the data-texture path at any joint count (T1.12)", () => {
+    // The chunk declares no u_jointMatrices/u_jointPaletteMode, so without the
+    // new input it would fall to cpu — with it, 65- and 191-joint rigs both stay on GPU.
+    for (const jointCount of [65, 191]) {
+      const decision = decideSkinningPalettePath({ jointCount, maxUniformJoints: 96, maxDataTextureJoints: 1024, shaderHasBoneTexture: true });
+      expect(decision.path).toBe("data-texture");
+      expect(decision.cpuFallback).toBe(false);
+    }
+    const over = decideSkinningPalettePath({ jointCount: 2048, maxDataTextureJoints: 1024, shaderHasBoneTexture: true });
+    expect(over.cpuFallback).toBe(true);
+    expect(over.reason).toBe("joint-count-exceeds-bone-texture-limit");
+  });
+
+  it("decideSkinningPalettePath({ jointCount: 191 }) still lands a GPU path via the data-texture palette", () => {
+    const decision = decideSkinningPalettePath({ jointCount: 191, maxDataTextureJoints: 1024 });
+    expect(decision.cpuFallback).toBe(false);
+    expect(decision.path).toBe("data-texture");
+  });
+
   it("rejects non-integer joint counts instead of guessing", () => {
     expect(() => decideSkinningPalettePath({ jointCount: -1 })).toThrow(/non-negative integer/);
   });
