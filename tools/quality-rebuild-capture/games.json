@@ -2344,26 +2344,7 @@
         "A3D_QR_ROUTE_BANK_SHOT"
       ],
       "timeline": [
-<<<<<<< HEAD
-        { "fps": 5000 },
-        { "wait": 300 }, { "hold": "Space", "ms": 850 }, { "wait": 500 }, { "shot": "02-opening" },
-        { "wait": 4600 },
-        { "hold": "KeyD", "ms": 400 },
-        { "down": "Space" }, { "wait": 700 }, { "shot": "05-charge" }, { "up": "Space" },
-        { "wait": 400 }, { "shot": "03-mid" },
-        { "until": "(window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t", "capture": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0", "capture2": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0", "timeout": 4000, "loop": [{ "wait": 80 }] },
-        { "shot": "04-action" }
-||||||| 7a31f18a
-        { "fps": 5000 },
-        { "wait": 300 }, { "hold": "Space", "ms": 850 }, { "wait": 500 }, { "shot": "02-opening" },
-        { "wait": 4600 },
-        { "hold": "KeyD", "ms": 400 },
-        { "down": "Space" }, { "wait": 700 }, { "shot": "05-charge" }, { "up": "Space" },
-        { "wait": 400 }, { "shot": "03-mid" },
-        { "until": "(window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t", "capture": "window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0", "capture2": "window.__BANK_SHOT_EVIDENCE__?.score ?? 0", "timeout": 4000, "loop": [{ "wait": 80 }] },
-        { "shot": "04-action" }
-=======
-        {
+{
           "fps": 5000
         },
         {
@@ -2405,9 +2386,9 @@
           "shot": "03-mid"
         },
         {
-          "until": "(window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t",
-          "capture": "window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0",
-          "capture2": "window.__BANK_SHOT_EVIDENCE__?.score ?? 0",
+          "until": "(window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0) > s || (window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0) > t",
+          "capture": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.pottedThisShot ?? window.__BANK_SHOT_EVIDENCE__?.potted?.length ?? 0",
+          "capture2": "window.__AURA3D_GAME_EVIDENCE__?.['showcase-bank-shot']?.table?.score ?? window.__BANK_SHOT_EVIDENCE__?.score ?? 0",
           "timeout": 4000,
           "loop": [
             {
@@ -2428,7 +2409,6 @@
         "C-24",
         "C-25",
         "C-27"
->>>>>>> origin/main
       ]
     },
     {
