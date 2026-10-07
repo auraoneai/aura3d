@@ -111,15 +111,14 @@ describe("T1b assertNoMultiOwnerPixelExports", () => {
  *   (engine ./rendering + rendering .) vs production shape (engine
  *   ./rendering/production-runtime).
  * - createMorphTargetPlan: full-plan overload vs (targetCount, slots) shape.
- * - A3DRenderer: advanced-runtime wrapper vs production-runtime class
- *   (backend/captureProof shape).
  * - Camera: @aura3d/scene class (re-exported by engine ./scene, identical)
  *   vs @aura3d/react function component.
  * - Scene: @aura3d/scene class vs @aura3d/react function component.
  * - scene: @aura3d/engine AuraSceneBuilder vs @aura3d/lean AuraLeanSceneBuilder.
  */
+// T2.9/T2.10 (prd15): both engine subpaths now re-export the single C-29
+// `Renderer` as `A3DRenderer` — no longer a divergent multi-owner symbol.
 const KNOWN_DIVERGENT_PIXEL_SYMBOLS: readonly string[] = [
-  "A3DRenderer",
   "BloomPass",
   "Camera",
   "Scene",

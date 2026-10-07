@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraParticleMaterialMode, AuraSceneNode } from "../index.js";
-import { groups, prefabs } from "../index.js";
+import type { AuraColor, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraParticleMaterialMode, AuraSceneNode } from "./types.js";
+import { groups } from "./groups.js";
+import { prefabs } from "./prefabs/index.js";
+import { particleFountain } from "../particle-fountain-runtime.js";
 
 export const particles = {
   materialModes: (): readonly AuraParticleMaterialMode[] => ["additive-glow", "soft-alpha", "spark", "smoke", "splash", "dust", "star"],

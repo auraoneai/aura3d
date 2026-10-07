@@ -12,7 +12,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 declare global {
@@ -77,13 +77,12 @@ async function run(): Promise<void> {
   bindUi(root, state, () => publish(root, runtime, state));
 
   try {
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       backend: "webgl2",
       width: WIDTH,
       height: HEIGHT,
-      preserveDrawingBuffer: true,
-      clearColor: [0.006, 0.008, 0.012, 1]
+            clearColor: [0.006, 0.008, 0.012, 1]
     });
     const pipeline = await loadProductionGLTFRenderPipeline({
       url: SOLDIER_URL,
@@ -357,7 +356,7 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function drawFallbackFrame(canvas: HTMLCanvasElement): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.01, 0.012, 0.018, 1);

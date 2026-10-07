@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraSceneNode } from "../index.js";
-import { effects, primitives } from "../index.js";
+import type { AuraSceneNode } from "./types.js";
+import { effects } from "./effects.composite.js";
+import { primitives } from "./primitives.js";
 import { createWeatherState, describeWetMaterial, type WeatherType } from "@aura3d/rendering";
 import { lights } from "./lights.js";
 import { material } from "./material.js";

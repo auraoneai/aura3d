@@ -2,7 +2,8 @@ import { GLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -41,7 +42,7 @@ async function run(): Promise<void> {
     loadSceneAsset("sheen-test-grid", "/fixtures/asset-corpus/sheen-test-grid.glb", "Sheen Test Grid", canvas, lighting.lighting),
     loadSceneAsset("specular-glossiness-card", "/fixtures/external-parity-assets/materials/external-parity-specular-glossiness-card/external-parity-specular-glossiness-card.gltf", "Specular Glossiness Card", canvas, lighting.lighting)
   ]);
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -96,7 +97,7 @@ async function run(): Promise<void> {
     environmentId: "kloppenheim-puresky",
     hdrEnvironmentUri: hdrUri
   };
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: {
       ...staged.source,
       renderItems: [...(staged.source.renderItems ? [...staged.source.renderItems] : []), ...materialReferenceItems]

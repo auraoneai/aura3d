@@ -14,7 +14,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer, a3dRenderFrame } from "@aura3d/engine/renderer";
 import { multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
@@ -112,12 +112,11 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
 
   try {
     let phaseStarted = performance.now();
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: size.width,
       height: size.height,
-	      preserveDrawingBuffer: true,
-	      antialias: true,
+	      	      antialias: true,
 	      errorCheckMode: "frame",
 	      clearColor: config.clearColor ?? [0.86, 0.86, 0.84, 1]
 	    });
@@ -204,7 +203,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
           postprocess: false
         };
 	        const renderStarted = performance.now();
-	        const result = renderer.renderFrame({
+	        const result = a3dRenderFrame(renderer, {
           source,
           camera: {
             viewProjectionMatrix: frame.viewProjectionMatrix,
@@ -438,7 +437,7 @@ function publish(root: HTMLElement, runtime: Runtime, force: boolean): void {
 }
 
 function drawFallbackFrame(canvas: HTMLCanvasElement, clear: readonly [number, number, number, number]): void {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, preserveDrawingBuffer: true });
+  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, });
   if (!gl) return;
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(clear[0], clear[1], clear[2], clear[3]);

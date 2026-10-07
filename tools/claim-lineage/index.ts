@@ -26,8 +26,8 @@
  * executed the public path and observed the claimed behaviour. 42 rows sat at parity with
  * runtimeEvidence: [].
  */
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
@@ -321,6 +321,29 @@ function fileContains(path: string, needle: string): boolean {
   return text !== null && text.includes(needle);
 }
 
+/**
+ * `needle` anywhere under a source directory. agent-api was split from one
+ * index.ts into leaf modules (PRD-15 T3.1), so root-surface claims must scan
+ * the tree rather than a single barrel file.
+ */
+function treeContains(dir: string, needle: string): boolean {
+  const absolute = join(repoRoot, dir);
+  if (!existsSync(absolute)) return false;
+  const stack: string[] = [absolute];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts")) {
+        const text = readSource(relative(repoRoot, full).replaceAll("\\", "/"));
+        if (text !== null && text.includes(needle)) return true;
+      }
+    }
+  }
+  return false;
+}
+
 interface GeneratorFault {
   readonly capability: string;
   readonly symptom: string;
@@ -356,7 +379,7 @@ const GENERATOR_FAULTS: readonly GeneratorFault[] = [
     awaitingWorkstream: "WS-2.6 (surface onDeviceLost/onDeviceRestored through createAuraApp)",
     detect: () => {
       const listens = fileContains("packages/rendering/src/WebGL2Device.ts", "webglcontextlost");
-      const surfaced = fileContains("packages/engine/src/agent-api/index.ts", "onDeviceLost");
+      const surfaced = treeContains("packages/engine/src/agent-api", "onDeviceLost");
       return {
         stillPresent: listens && !surfaced,
         detail: listens && !surfaced

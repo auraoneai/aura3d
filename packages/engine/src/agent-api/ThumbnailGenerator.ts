@@ -1,5 +1,6 @@
 import type { AnimationRenderOutputPackageMetadata, AnimationThumbnailSceneStateCapture, AnimationViewport } from "./AnimationRenderQueue.js";
 import { normalizePromptAnimationTime, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export interface ThumbnailGenerationPlan {
   readonly kind: "thumbnail-generation-plan";

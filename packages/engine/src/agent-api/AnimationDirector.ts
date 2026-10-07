@@ -1,4 +1,4 @@
-import type { AuraAssetRef } from "./index.js";
+import type { AuraAssetRef } from "./nodes/types.js";
 import {
   createPromptAnimationEpisodePlan,
   createPromptAnimationStoryBible,
@@ -41,6 +41,8 @@ import {
   type AnimationViewport
 } from "./AnimationRenderQueue.js";
 import { createShotTimeline, type ShotTimelineArtifact, type ShotTimelineShot } from "./ShotTimeline.js";
+import { character } from "./humanoid-walk-runtime.js";
+import { camera } from "./nodes/camera.js";
 
 export interface AnimationDirectorCharacterInput {
   readonly id: PromptAnimationId;

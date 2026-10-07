@@ -30,8 +30,6 @@ export const aliasEntries = [
   ["@aura3d/rendering/contracts/flags.state", "./packages/rendering/src/contracts/flags.state.ts"],
   ["@aura3d/rendering/contracts", "./packages/rendering/src/contracts/index.ts"],
   ["@aura3d/rendering/lanes", "./packages/rendering/src/lanes/index.ts"],
-  ["@aura3d/rendering/lean-core-runtime", "./packages/rendering/src/lean-core-runtime.ts"],
-  ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
   ["@aura3d/rendering/extension-scalar-atlas", "./packages/rendering/src/extension-scalar-atlas.ts"],
   ["@aura3d/rendering/reflection-surfaces", "./packages/rendering/src/reflection-surfaces.ts"],
   ["@aura3d/rendering", "./packages/rendering/src/index.ts"],

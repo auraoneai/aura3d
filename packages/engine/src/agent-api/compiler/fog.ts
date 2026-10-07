@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraSceneSnapshot } from "../index.js";
-import { clampNumber, colorToLinearRgb, groups } from "../index.js";
+import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
+import { colorToLinearRgb } from "../colorUtils.js";
+import { groups } from "../nodes/groups.js";
+import { clampNumber } from "./observations.js";
 import { resolveVolumetricFog, type CollectedLight, type ForwardEnvironmentFogOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
 

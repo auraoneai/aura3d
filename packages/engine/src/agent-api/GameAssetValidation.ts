@@ -1,4 +1,7 @@
-import type { AuraAssetRef, AuraVec3 } from "./index.js";
+import type { AuraAssetRef, AuraVec3 } from "./nodes/types.js";
+import { animation } from "./nodes/animation.js";
+import { material } from "./nodes/material.js";
+import { boundsFromSize } from "./SceneGroundingUtils.js";
 
 export const gameAssetValidationContractVersion = "aura-game-asset-validation/1.0.5" as const;
 

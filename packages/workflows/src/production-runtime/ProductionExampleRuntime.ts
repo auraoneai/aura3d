@@ -1,6 +1,7 @@
 import { loadProductionGLTFRenderPipeline, type ProductionGLTFRenderMetadata as ProductionGLTFRenderMetadata } from "@aura3d/assets/browser";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources as createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance as createProductionPbrHdrPipelineFromRadiance,
   createProductionWebGPUReport,
@@ -119,7 +120,7 @@ export async function runProductionExample(definition: ProductionExampleDefiniti
       }
     });
     const secondaryMetadata = await loadSecondaryMetadata(definition, primary.id, canvas.width, canvas.height);
-    const renderer = await ProductionWebGL2Renderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: canvas.width,
       height: canvas.height,
@@ -127,7 +128,7 @@ export async function runProductionExample(definition: ProductionExampleDefiniti
       clearColor: [0.01, 0.012, 0.016, 1]
     });
     const frameStart = performance.now();
-    const proof = renderer.renderImportedAsset({
+    const proof = rendererProofCapture(renderer, {
       source: pipeline.source,
       camera: pipeline.camera,
       metadata: {

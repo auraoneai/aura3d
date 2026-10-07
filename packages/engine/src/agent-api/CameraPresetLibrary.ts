@@ -1,6 +1,7 @@
-import type { AuraVec3 } from "./index.js";
+import type { AuraVec3 } from "./nodes/types.js";
 import type { ShotCameraInstruction } from "./ShotTimeline.js";
 import type { PromptAnimationId } from "./PromptAnimationContract.js";
+import { camera } from "./nodes/camera.js";
 
 export type CameraPresetId =
   | "establishing"

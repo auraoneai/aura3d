@@ -6,6 +6,7 @@ import {
   type PromptAnimationSeconds,
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
+import { assets } from "./AssetDecoders.js";
 
 export const animationRouteProofSchemaVersion = "aura3d-animation-route-proof/v1" as const;
 

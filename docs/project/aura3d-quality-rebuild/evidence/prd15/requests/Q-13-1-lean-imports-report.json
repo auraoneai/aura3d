@@ -1,0 +1,272 @@
+[
+ {
+  "file": "templates/mini-game/src/aura-assets.ts",
+  "line": 1,
+  "construct": "import { defineAuraAssets } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 2,
+  "construct": "import { camera } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 3,
+  "construct": "import { createAuraApp } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 4,
+  "construct": "import { game } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 5,
+  "construct": "import { material } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 6,
+  "construct": "import { model } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 7,
+  "construct": "import { primitives } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 8,
+  "construct": "import { scene } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 9,
+  "construct": "import { type AuraLeanNodeBuilder } from \"@aura3d/lean/game\"",
+  "mapping": "approximate",
+  "target": "@aura3d/engine (AuraNodeBuilder)",
+  "note": "renamed binding applied as alias"
+ },
+ {
+  "file": "templates/mini-game/src/main.ts",
+  "line": 10,
+  "construct": "import { type LeanPlatformerEvent } from \"@aura3d/lean/game\"",
+  "mapping": "approximate",
+  "target": "@aura3d/engine (GamePlatformerEvent)",
+  "note": "renamed binding applied as alias"
+ },
+ {
+  "file": "templates/product-viewer/src/aura-assets.ts",
+  "line": 1,
+  "construct": "import { defineAuraAssets } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 2,
+  "construct": "import { camera } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 3,
+  "construct": "import { createAuraApp } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 4,
+  "construct": "import { environments } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 5,
+  "construct": "import { interactions } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 6,
+  "construct": "import { material } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 7,
+  "construct": "import { model } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 8,
+  "construct": "import { primitives } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "templates/product-viewer/src/main.ts",
+  "line": 9,
+  "construct": "import { scene } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts",
+  "line": 1,
+  "construct": "import { defineAuraAssets } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 2,
+  "construct": "import { camera } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 3,
+  "construct": "import { createAuraApp } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 4,
+  "construct": "import { game } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 5,
+  "construct": "import { material } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 6,
+  "construct": "import { model } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 7,
+  "construct": "import { primitives } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 8,
+  "construct": "import { scene } from \"@aura3d/lean/game\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 9,
+  "construct": "import { type AuraLeanNodeBuilder } from \"@aura3d/lean/game\"",
+  "mapping": "approximate",
+  "target": "@aura3d/engine (AuraNodeBuilder)",
+  "note": "renamed binding applied as alias"
+ },
+ {
+  "file": "packages/create-aura3d/templates/mini-game/src/main.ts",
+  "line": 10,
+  "construct": "import { type LeanPlatformerEvent } from \"@aura3d/lean/game\"",
+  "mapping": "approximate",
+  "target": "@aura3d/engine (GamePlatformerEvent)",
+  "note": "renamed binding applied as alias"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/aura-assets.ts",
+  "line": 1,
+  "construct": "import { defineAuraAssets } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 2,
+  "construct": "import { camera } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 3,
+  "construct": "import { createAuraApp } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 4,
+  "construct": "import { environments } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 5,
+  "construct": "import { interactions } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 6,
+  "construct": "import { material } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 7,
+  "construct": "import { model } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 8,
+  "construct": "import { primitives } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ },
+ {
+  "file": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+  "line": 9,
+  "construct": "import { scene } from \"@aura3d/lean/product\"",
+  "mapping": "exact",
+  "target": "@aura3d/engine"
+ }
+]

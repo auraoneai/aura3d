@@ -1,6 +1,6 @@
 import { TrackballControls } from "@aura3d/controls";
 import { Geometry, PBRMaterial } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -64,7 +64,7 @@ async function run(): Promise<void> {
     controls.pan(0.08, -0.04);
     controls.dolly(0.86);
     controls.roll(0.22);
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,

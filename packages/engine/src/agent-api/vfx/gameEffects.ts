@@ -2,6 +2,8 @@
 
 import type { GameEffectAttachment, GameEffectInstance, GameEffectOptions, GameEffectsController, GameEffectsOptions, GameEffectsSnapshot, GameVec3 } from "../GameRuntime.js";
 import { addVec3, round, vec3 } from "../GameRuntime.js";
+import { material } from "../nodes/material.js";
+import { primitive } from "../nodes/primitives.js";
 
 export type GameEffectKind =
   | "hit-spark"

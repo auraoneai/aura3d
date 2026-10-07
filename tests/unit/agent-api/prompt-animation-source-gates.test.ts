@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 type PackageJson = {
@@ -40,7 +40,7 @@ describe("prompt animation source gates", () => {
   it("keeps story bible, props, style guide, and shot list APIs in the public contract", () => {
     const contract = readSource("packages/engine/src/agent-api/PromptAnimationContract.ts");
     const director = readSource("packages/engine/src/agent-api/AnimationDirector.ts");
-    const agentApi = readSource("packages/engine/src/agent-api/index.ts");
+    const agentApi = readSourceDir("packages/engine/src/agent-api");
 
     expectIncludesAll(contract, [
       '"story-bible"',
@@ -62,7 +62,7 @@ describe("prompt animation source gates", () => {
 
   it("keeps public prompt-animation playback, caption, viseme, and bridge helpers exported", () => {
     const rootIndex = readSource("packages/engine/src/index.ts");
-    const agentApi = readSource("packages/engine/src/agent-api/index.ts");
+    const agentApi = readSourceDir("packages/engine/src/agent-api");
 
     expect(rootIndex).toContain('export * from "./agent-api/index.js";');
     expectIncludesAll(agentApi, [
@@ -271,6 +271,11 @@ describe("prompt animation source gates", () => {
 
 function readSource(file: string): string {
   return readFileSync(resolve(process.cwd(), file), "utf8");
+}
+function readSourceDir(dir: string): string {
+  return readdirSync(dir, { withFileTypes: true })
+    .flatMap((e) => (e.isDirectory() ? readSourceDir(join(dir, e.name)) : e.name.endsWith(".ts") ? [readSource(join(dir, e.name))] : []))
+    .join("\n");
 }
 
 function readPackageJson(): PackageJson {

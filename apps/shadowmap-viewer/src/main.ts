@@ -6,7 +6,7 @@ import {
   ShadowPass,
   UnlitMaterial
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -69,7 +69,7 @@ async function run(): Promise<void> {
   publish();
 
   try {
-    const renderer = await A3DRenderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2" });
+    const renderer = await Renderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2" });
     const device = renderer.device;
     const light = new DirectionalLight("shadowmap-viewer-light");
     light.castsShadow = true;

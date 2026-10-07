@@ -1,6 +1,7 @@
 import type { AnimationViewport } from "./AnimationRenderQueue.js";
 import type { FrameEncoderAdapter, FrameEncoderFrame } from "./FrameEncoder.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export interface PngSequenceFrameArtifact {
   readonly frame: number;

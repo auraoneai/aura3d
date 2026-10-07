@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraEnvironmentOptions } from "../index.js";
-import { AuraNodeBuilder, environmentMapPresets, environments } from "../index.js";
+import type { AuraAssetRef, AuraEnvironmentMapPreset, AuraEnvironmentNode, AuraEnvironmentOptions } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { environmentMapPresets, environments } from "./environments.composite.js";
 
 export const envSourceBuilders = {
   studio: (options: AuraEnvironmentOptions = {}): AuraNodeBuilder<AuraEnvironmentNode> => new AuraNodeBuilder({

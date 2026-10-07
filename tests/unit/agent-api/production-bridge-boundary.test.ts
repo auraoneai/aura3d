@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -21,14 +21,23 @@ function extractFunctionBody(source: string, name: string): string {
 }
 
 describe("createAuraApp production bridge boundary", () => {
-  it("keeps every eligible authored scene on the ProductionRuntimeRenderer bridge", () => {
-    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
+  it("keeps every eligible authored scene on the production Renderer bridge", () => {
+    const source = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(resolve(d, e.name)) : e.name.endsWith(".ts") ? [resolve(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
     const sceneRenderer = extractFunctionBody(source, "createProductionSceneRenderer");
-    const runtimeRenderer = extractFunctionBody(source, "createProductionRuntimeSceneRenderer");
-    const inputBuilder = extractFunctionBody(source, "createProductionRuntimeRendererInput");
+    // T2.4: the bridge lives in compiler/renderer.ts (15-owned carve-out); the
+    // input/postprocess/shadows builders moved to their own compiler modules.
+    const rendererSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
+    const runtimeRenderer = extractFunctionBody(rendererSource, "createProductionRuntimeSceneRenderer");
+    const renderInputSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/renderInput.ts"), "utf8");
+    const inputBuilder = extractFunctionBody(renderInputSource, "createProductionRuntimeRendererInput");
     const collectedLights = extractFunctionBody(source, "createProductionRuntimeCollectedLights");
-    const postprocess = extractFunctionBody(source, "createProductionRuntimePostprocess");
-    const shadows = extractFunctionBody(source, "createProductionRuntimeShadowOptions");
+    const postprocessSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/postprocess.ts"), "utf8");
+    const postprocess = extractFunctionBody(postprocessSource, "createProductionRuntimePostprocess");
+    const shadowsSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/shadows.ts"), "utf8");
+    const shadows = extractFunctionBody(shadowsSource, "createProductionRuntimeShadowOptions");
 
     expect(sceneRenderer).toContain("analyzeProductionBridgeEligibility");
     expect(sceneRenderer).toContain("createProductionRuntimeSceneRenderer");
@@ -39,8 +48,10 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain('node.role === "primaryWorld" ? { consolidateStaticMeshes: true }');
     expect(runtimeRenderer).toContain("actor.dispose()");
     expect(runtimeRenderer).toContain("modelNodes.length > 0");
-    expect(runtimeRenderer).toContain("ProductionRuntimeRenderer.create");
-    expect(runtimeRenderer).toContain("renderInteractiveFrame");
+    expect(runtimeRenderer).toContain("Renderer.create");
+    expect(runtimeRenderer).toContain("productionRenderer.render(");
+    expect(runtimeRenderer).toContain("productionRenderer.renderAsync(");
+    expect(runtimeRenderer).toContain("rendererInteractiveFeatureReport");
     expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot)");
     expect(runtimeRenderer).toContain("productionRuntimeLights");
     expect(runtimeRenderer).toContain("productionRenderer.resize");

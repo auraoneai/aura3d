@@ -1,0 +1,425 @@
+[
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/animation.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-06-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/environment.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-02-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/lights.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-02-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/modelMaterials.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-04-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/postprocess.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-03-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/shadows.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-02-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/compiler/textures.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-04-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/looks/generatedCodeWarnings.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-13-8"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/looks/structuralQA.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-13-8"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/camera.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-08-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/effects.post.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-03-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/effects.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-07-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/game/index.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-09-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/game/racingCamera.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-09-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/instances.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-10-1"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/material.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-04-2"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/prompt/promptPlan.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-13-8"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/prompt/promptRecipes.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-13-8"
+  },
+  {
+    "rule": "no-cycles",
+    "from": "packages/engine/src/agent-api/nodes/water.ts",
+    "to": "packages/engine/src/agent-api/index.ts",
+    "expires": "2026-10-20",
+    "reason": "foreign leaf still imports the barrel; owner repoints to leaf sources",
+    "request": "Q-10-1"
+  },
+  {
+    "rule": "no-cycles",
+    "scc": [
+      "packages/engine/src/agent-api/AnimationDirector.ts",
+      "packages/engine/src/agent-api/AnimationEpisodePackage.ts",
+      "packages/engine/src/agent-api/AnimationMotionQuality.ts",
+      "packages/engine/src/agent-api/AnimationPerformance.ts",
+      "packages/engine/src/agent-api/AnimationRenderQueue.ts",
+      "packages/engine/src/agent-api/AnimationRouteProof.ts",
+      "packages/engine/src/agent-api/AuraVoiceBridge.ts",
+      "packages/engine/src/agent-api/CameraPresetLibrary.ts",
+      "packages/engine/src/agent-api/DialoguePerformance.ts",
+      "packages/engine/src/agent-api/GameEvidence.ts",
+      "packages/engine/src/agent-api/GameGenreKits.ts",
+      "packages/engine/src/agent-api/GameInspector.ts",
+      "packages/engine/src/agent-api/GameRuntime.ts",
+      "packages/engine/src/agent-api/GameSceneBridge.ts",
+      "packages/engine/src/agent-api/GameSceneGeometryBindings.ts",
+      "packages/engine/src/agent-api/GameSceneGeometryMath.ts",
+      "packages/engine/src/agent-api/PromptAnimationContract.ts",
+      "packages/engine/src/agent-api/PromptAnimationEvidence.ts",
+      "packages/engine/src/agent-api/RootGeometry.ts",
+      "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+      "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
+      "packages/engine/src/agent-api/ShotTimeline.ts",
+      "packages/engine/src/agent-api/VisemeController.ts",
+      "packages/engine/src/agent-api/app/canvas.ts",
+      "packages/engine/src/agent-api/app/colorManagement.ts",
+      "packages/engine/src/agent-api/app/createAuraApp.ts",
+      "packages/engine/src/agent-api/app/frameLoop.ts",
+      "packages/engine/src/agent-api/app/mountRenderer.ts",
+      "packages/engine/src/agent-api/app/routeState.ts",
+      "packages/engine/src/agent-api/app/runtimeNodes.ts",
+      "packages/engine/src/agent-api/colorUtils.ts",
+      "packages/engine/src/agent-api/compiler/actors.ts",
+      "packages/engine/src/agent-api/compiler/camera.ts",
+      "packages/engine/src/agent-api/compiler/effects.ts",
+      "packages/engine/src/agent-api/compiler/fog.ts",
+      "packages/engine/src/agent-api/compiler/geometry.ts",
+      "packages/engine/src/agent-api/compiler/gltfRuntime.ts",
+      "packages/engine/src/agent-api/compiler/labels.ts",
+      "packages/engine/src/agent-api/compiler/observations.ts",
+      "packages/engine/src/agent-api/compiler/postprocess.ts",
+      "packages/engine/src/agent-api/compiler/primitives.ts",
+      "packages/engine/src/agent-api/compiler/renderInput.ts",
+      "packages/engine/src/agent-api/compiler/renderer.ts",
+      "packages/engine/src/agent-api/compiler/safeBasic.ts",
+      "packages/engine/src/agent-api/compiler/textures.ts",
+      "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+      "packages/engine/src/agent-api/devtools/diagnosticPreview.ts",
+      "packages/engine/src/agent-api/devtools/routeHealth.ts",
+      "packages/engine/src/agent-api/devtools/sceneKitBudgets.ts",
+      "packages/engine/src/agent-api/diagnostics.ts",
+      "packages/engine/src/agent-api/game-kits/fighting.ts",
+      "packages/engine/src/agent-api/gameRules.ts",
+      "packages/engine/src/agent-api/humanoid-walk-runtime.ts",
+      "packages/engine/src/agent-api/looks/generatedCodeWarnings.ts",
+      "packages/engine/src/agent-api/looks/structuralQA.ts",
+      "packages/engine/src/agent-api/nodes/animation.ts",
+      "packages/engine/src/agent-api/nodes/assets.ts",
+      "packages/engine/src/agent-api/nodes/builder.ts",
+      "packages/engine/src/agent-api/nodes/camera.ts",
+      "packages/engine/src/agent-api/nodes/character.ts",
+      "packages/engine/src/agent-api/nodes/charts.ts",
+      "packages/engine/src/agent-api/nodes/city.ts",
+      "packages/engine/src/agent-api/nodes/effects.composite.ts",
+      "packages/engine/src/agent-api/nodes/effects.post.ts",
+      "packages/engine/src/agent-api/nodes/effects.ts",
+      "packages/engine/src/agent-api/nodes/environments.composite.ts",
+      "packages/engine/src/agent-api/nodes/environments.ts",
+      "packages/engine/src/agent-api/nodes/game/index.ts",
+      "packages/engine/src/agent-api/nodes/game/racingCamera.ts",
+      "packages/engine/src/agent-api/nodes/games.ts",
+      "packages/engine/src/agent-api/nodes/geometry.ts",
+      "packages/engine/src/agent-api/nodes/groups.ts",
+      "packages/engine/src/agent-api/nodes/instances.ts",
+      "packages/engine/src/agent-api/nodes/interactions.ts",
+      "packages/engine/src/agent-api/nodes/labels.ts",
+      "packages/engine/src/agent-api/nodes/lights.ts",
+      "packages/engine/src/agent-api/nodes/material.ts",
+      "packages/engine/src/agent-api/nodes/materialTools.ts",
+      "packages/engine/src/agent-api/nodes/model.ts",
+      "packages/engine/src/agent-api/nodes/neon.ts",
+      "packages/engine/src/agent-api/nodes/particles.ts",
+      "packages/engine/src/agent-api/nodes/physics.ts",
+      "packages/engine/src/agent-api/nodes/prefabs/cityBlock.ts",
+      "packages/engine/src/agent-api/nodes/prefabs/index.ts",
+      "packages/engine/src/agent-api/nodes/primitives.ts",
+      "packages/engine/src/agent-api/nodes/product.ts",
+      "packages/engine/src/agent-api/nodes/scene.ts",
+      "packages/engine/src/agent-api/nodes/sceneKits.ts",
+      "packages/engine/src/agent-api/nodes/shadows.ts",
+      "packages/engine/src/agent-api/nodes/solar.ts",
+      "packages/engine/src/agent-api/nodes/text3d.ts",
+      "packages/engine/src/agent-api/nodes/water.ts",
+      "packages/engine/src/agent-api/particle-fountain-runtime.ts",
+      "packages/engine/src/agent-api/performanceEvidence.ts",
+      "packages/engine/src/agent-api/platform.ts",
+      "packages/engine/src/agent-api/product-viewer-runtime.ts",
+      "packages/engine/src/agent-api/public/devtools.ts",
+      "packages/engine/src/agent-api/rendererDiagnostics.ts",
+      "packages/engine/src/agent-api/rendererReports.ts",
+      "packages/engine/src/agent-api/runtimeEvidence.ts",
+      "packages/engine/src/agent-api/sceneEvidence.ts",
+      "packages/engine/src/agent-api/sceneKitDiagnostics.ts",
+      "packages/engine/src/agent-api/sceneMath.ts",
+      "packages/engine/src/agent-api/vfx/gameEffects.ts"
+    ],
+    "expires": "2026-10-20",
+    "reason": "104-member intra-leaf SCC: pre-existing mutual coupling surfaced by the T3.1 split (untangle is owner work; see requests)",
+    "request": "Q-*-leaf-imports / lane PRDs"
+  },
+  {
+    "rule": "no-cycles",
+    "scc": [
+      "packages/engine/src/agent-api/nodes/prompt/promptPlan.ts",
+      "packages/engine/src/agent-api/nodes/prompt/promptRecipes.ts"
+    ],
+    "expires": "2026-10-20",
+    "reason": "promptPlan\u2194promptRecipes: pre-existing mutual coupling surfaced by the T3.1 split (untangle is owner work; see requests)",
+    "request": "Q-*-leaf-imports / lane PRDs"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/effects.ts",
+    "to": "@aura3d/rendering",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 07",
+    "request": "Q-07-3"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/sky.ts",
+    "to": "@aura3d/rendering",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 15",
+    "request": "evidence/prd15/phase3-agent-api-split.md"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/text3d.ts",
+    "to": "@aura3d/rendering",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 15",
+    "request": "evidence/prd15/phase3-agent-api-split.md"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/water.ts",
+    "to": "@aura3d/rendering",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 10",
+    "request": "Q-10-2"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/weather.ts",
+    "to": "@aura3d/rendering",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 15",
+    "request": "evidence/prd15/phase3-agent-api-split.md"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/game/index.ts",
+    "to": "packages/engine/src/agent-api/app/frameLoopDefaults.ts",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 09",
+    "request": "Q-09-3"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/observations.ts",
+    "to": "packages/engine/src/agent-api/app/rendererOptions.ts",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 11",
+    "request": "Q-11-3"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/primitives.ts",
+    "to": "packages/engine/src/agent-api/app/rendererOptions.ts",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 11",
+    "request": "Q-11-3"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "to": "packages/engine/src/agent-api/app/rendererOptions.ts",
+    "expires": "2026-10-20",
+    "reason": "pre-existing coupling surfaced by T3.1; fix owned by lane 11",
+    "request": "Q-11-3"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+    "expires": "2026-11-30",
+    "reason": "safe-basic WebGL2 fallback; removed when T4.4 hard-cuts A3D_QR_STRICT default-on",
+    "request": "T4.4"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/rendering/src/effects/ResidentGPUParticleRenderer.ts",
+    "expires": "2026-11-30",
+    "reason": "resident GPU particle path creates its own webgpu context; owner migrates to RenderBackend",
+    "request": "Q-07-4"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/agent-api/compiler/webglRuntime.ts",
+    "expires": "2026-11-30",
+    "reason": "safe-basic fallback embeds its shaders; removed with T4.4",
+    "request": "T4.4"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/production-runtime/index.ts",
+    "expires": "2026-11-30",
+    "reason": "15 self-debt: embedded skybox shader registration moves to a chunk module in the 4.0 consolidation",
+    "request": "T7.x"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/ShaderLibrary.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/ShaderLibraryCore.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch \u2014 owner migrates",
+    "request": "Q-01-6"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/TemporalHistory.ts",
+    "expires": "2026-11-30",
+    "reason": "post-history shaders inline; owner migrates to chunks",
+    "request": "Q-03-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/LegacyPost.ts",
+    "expires": "2026-11-30",
+    "reason": "legacy post pipeline shaders inline; owner migrates to chunks",
+    "request": "Q-03-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/animation/AnimationToonMaterial.ts",
+    "expires": "2026-11-30",
+    "reason": "toon material shaders inline; owner migrates to chunks",
+    "request": "Q-06-2"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/Probe.ts",
+    "expires": "2026-11-30",
+    "reason": "device probe shaders inline; owner migrates to chunks",
+    "request": "Q-11-4"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts",
+    "expires": "2026-11-30",
+    "reason": "webgpu production renderer constructs itself; owner folds into WebGPUDevice/RenderBackend",
+    "request": "Q-11-4"
+  }
+]

@@ -149,7 +149,7 @@ export function createProductionRuntimeCollectedLight(
   }
   if (!(source instanceof PointLight)) {
     const rotation = quaternionFromForwardDirection(descriptor.direction);
-    source.transform.setRotation(...rotation);
+    source.transform.setRotation(rotation[0], rotation[1], rotation[2], rotation[3]);
   }
   source.updateWorldTransform(true);
   return {

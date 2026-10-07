@@ -2175,8 +2175,9 @@ Edits to a hot file's remaining core by a non-owner go through a request to the 
 
 ### 3.2 `packages/engine/src/agent-api/index.ts` (18,733 lines; owner after PR 0: PRD 15)
 
-The types section (`index.ts:1-2097`) stays in place, gains the PR 0a pre-declared fields, and is frozen except by
-CCR. The builder and runtime regions move as follows. Line ranges were checked at `85aafcd0`; "(map)" means the range
+The types section (was `index.ts:1-2097`) moved to `agent-api/nodes/types.ts` under CCR-15-2 — `index.ts`
+re-exports every name byte-identical, so no consumer changes. The section gains the PR 0a pre-declared fields and is
+frozen except by CCR. The builder and runtime regions move as follows. Line ranges were checked at `85aafcd0`; "(map)" means the range
 comes from the conflict map's verified list.
 
 | Range | Symbol(s) | Target module (`agent-api/…`) | Owner | Contract seam |

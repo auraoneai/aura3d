@@ -63,18 +63,19 @@ describe("WebGPU report", () => {
     expect(report.blockers).toEqual([]);
   });
 
-  it("routes backend='webgpu' to ProductionWebGPURenderer instead of silently falling back to WebGL2", () => {
-    const source = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8");
+  it("routes backend='webgpu' through the single Renderer dispatch instead of silently falling back to WebGL2", () => {
+    const backend = readFileSync(resolve("packages/rendering/src/RenderBackend.ts"), "utf8");
+    const selection = readFileSync(resolve("packages/rendering/src/production-runtime/backendSelection.ts"), "utf8");
 
-    expect(source).toContain("ProductionWebGPURenderer.create(options)");
+    expect(backend).toContain('backend === "webgpu"');
     expect(resolveProductionRuntimeRendererBackend({ backend: "webgpu" })).toMatchObject({
       requestedBackend: "webgpu",
       selectedBackend: "webgpu",
       asyncRequired: true,
       fallback: false
     });
-    expect(source).not.toContain("readiness/coverage data only");
-    expect(source).not.toContain("production imported-asset rendering currently requires backend='webgl2'");
+    expect(selection).not.toContain("readiness/coverage data only");
+    expect(selection).not.toContain("production imported-asset rendering currently requires backend='webgl2'");
   });
 
   it("makes backend selection WebGPU-first when the runtime is supplied and explicit when it falls back", () => {
@@ -140,7 +141,8 @@ describe("WebGPU report", () => {
 
   it("keeps scene-color transmission capture shared across WebGL2 and WebGPU production renderers", () => {
     const helper = readFileSync(resolve("packages/rendering/src/production-runtime/TransmissionBackdropCapture.ts"), "utf8");
-    const webgl2 = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionWebGL2Renderer.ts"), "utf8");
+    // T2.5: the WebGL2 production proof path moved verbatim into renderProofs.ts.
+    const webgl2 = readFileSync(resolve("packages/rendering/src/production-runtime/renderProofs.ts"), "utf8");
     const webgpu = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts"), "utf8");
     const types = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRendererTypes.ts"), "utf8");
 

@@ -53,3 +53,14 @@ jobs:
         run: pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts --baseline tools/packed-consumer-check/baseline.json
         env:
           CI: "true"
+      # PRD-15 T4.7 — the lean-template fixtures build from the packed engine +
+      # lean tarballs, proving the deprecated shims resolve end to end.
+      - name: Packed consumer check (lean fixtures)
+        run: >-
+          pnpm exec tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts
+          --only prd15-lean
+          --extra-dir tests/qr/prd15/fixtures/lean-templates/product
+          --extra-dir tests/qr/prd15/fixtures/lean-templates/minigame
+          --extra-pkg packages/lean:@aura3d/lean
+        env:
+          CI: "true"

@@ -34,12 +34,16 @@ import {
   applyCarConceptMaterialStability,
   carConceptMaterialRenderStateOverrides
 } from "../../../assets/src/CarConceptMaterialStability";
-import {
-  createCurrentRoutesInteractiveRenderer,
-  type CurrentRoutesInteractiveRenderer,
-  type CurrentRoutesRuntimeMetrics,
-  type CurrentRoutesScreenshot
-} from "../../../rendering/src/threejs-example-parity/index";
+import { Renderer, rendererInteractiveFeatureReport } from "../../../rendering/src/production-runtime/index";
+import type {
+  ProductionRendererInput,
+  ProductionRuntimeRendererBackendPreference,
+  ProductionRuntimeRendererBackendSelection,
+  RuntimeParityFrameRenderResult
+} from "../../../rendering/src/production-runtime/index";
+import { resolveProductionRuntimeRendererBackend } from "../../../rendering/src/production-runtime/index";
+import type { RenderDeviceDiagnostics } from "../../../rendering/src/RenderDevice";
+import type { RendererPostProcessOptions } from "../../../rendering/src/Renderer";
 import {
   currentRoutesAssetUrl,
   listCurrentRoutesFlagshipAssets,
@@ -66,9 +70,7 @@ export type {
   CurrentRoutesEnvironmentId,
   CurrentRoutesEnvironmentPreset,
   CurrentRoutesFlagshipAsset,
-  CurrentRoutesFlagshipAssetId,
-  CurrentRoutesRuntimeMetrics,
-  CurrentRoutesScreenshot
+  CurrentRoutesFlagshipAssetId
 };
 
 export type CurrentRoutesViewerStatus = "loading" | "ready" | "running" | "error";
@@ -157,6 +159,209 @@ type MaterialBaseline = ReadonlyMap<Material, {
   readonly metallic?: number;
   readonly clearcoat?: number;
 }>;
+
+
+export interface CurrentRoutesInteractiveRendererOptions {
+  readonly canvas: HTMLCanvasElement | OffscreenCanvas;
+  readonly width: number;
+  readonly height: number;
+  readonly backend?: ProductionRuntimeRendererBackendPreference;
+  readonly preserveDrawingBuffer?: boolean;
+  readonly errorCheckMode?: "strict" | "frame";
+  readonly clearColor?: readonly [number, number, number, number];
+}
+
+export interface CurrentRoutesRuntimeMetrics {
+  readonly frameCount: number;
+  readonly lastFrameMs: number;
+  readonly averageFrameMs: number;
+  readonly lastRenderMs: number;
+  readonly averageRenderMs: number;
+  readonly drawCalls: number;
+  readonly textures: number;
+  readonly buffers: number;
+  readonly shaders: number;
+  readonly backend: "webgl2" | "webgpu";
+  readonly stateCacheIssued?: number;
+  readonly stateCacheSkipped?: number;
+  readonly stateCacheProgramSwitches?: number;
+  readonly stateCacheTextureBinds?: number;
+  readonly stateCacheBufferBinds?: number;
+  readonly stateCacheVertexArrayBinds?: number;
+  readonly stateCacheSamplerBinds?: number;
+}
+
+export interface CurrentRoutesScreenshot {
+  readonly mimeType: "image/png";
+  readonly dataUrl: string;
+  readonly width: number;
+  readonly height: number;
+}
+
+// T2.8 (prd15): moved verbatim from rendering/src/threejs-example-parity/index.ts.
+// The class's `ProductionRuntimeRenderer` member is now the single C-29
+// `Renderer`; `renderInteractiveFrameAsync` became `renderAsync` +
+// `rendererInteractiveFeatureReport` (the deleted wrapper delegated verbatim).
+export class CurrentRoutesInteractiveRenderer {
+  readonly backend: "webgl2" | "webgpu";
+  readonly backendSelection: ProductionRuntimeRendererBackendSelection;
+
+  private readonly metrics = createCurrentRoutesRuntimeMetrics();
+
+  private constructor(
+    private readonly renderer: Renderer,
+    readonly canvas: HTMLCanvasElement | OffscreenCanvas,
+    selection: ProductionRuntimeRendererBackendSelection
+  ) {
+    this.backend = renderer.device.kind === "webgpu" ? "webgpu" : "webgl2";
+    this.backendSelection = selection;
+  }
+
+  static async create(options: CurrentRoutesInteractiveRendererOptions): Promise<CurrentRoutesInteractiveRenderer> {
+    const selection = resolveProductionRuntimeRendererBackend(options);
+    const renderer = await Renderer.create({
+      ...options,
+      backend: selection.selectedBackend
+    });
+    return new CurrentRoutesInteractiveRenderer(renderer, options.canvas, selection);
+  }
+
+  async renderFrame(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
+    const started = now();
+    const renderStart = now();
+    const diagnostics = await this.renderer.renderAsync(input.source, input.camera);
+    const renderMs = now() - renderStart;
+    const features = rendererInteractiveFeatureReport(this.renderer, diagnostics, input);
+    this.metrics.record({
+      frameMs: now() - started,
+      renderMs,
+      diagnostics,
+      backend: this.backend
+    });
+    return {
+      backend: this.backend,
+      diagnostics,
+      features,
+      timing: { source: "performance-now", totalMs: now() - started, renderMs }
+    };
+  }
+
+  resize(width: number, height: number): void {
+    this.renderer.resize(width, height);
+  }
+
+  getDiagnostics(): RenderDeviceDiagnostics {
+    return this.renderer.getDiagnostics();
+  }
+
+  getMetrics(): CurrentRoutesRuntimeMetrics {
+    return this.metrics.snapshot(this.backend);
+  }
+
+  screenshot(): CurrentRoutesScreenshot {
+    return captureCurrentRoutesCanvasScreenshot(this.canvas);
+  }
+
+  dispose(): void {
+    this.renderer.dispose();
+  }
+}
+
+export function createCurrentRoutesInteractiveRenderer(options: CurrentRoutesInteractiveRendererOptions): Promise<CurrentRoutesInteractiveRenderer> {
+  return CurrentRoutesInteractiveRenderer.create(options);
+}
+
+export function createCurrentRoutesPostprocess(exposure: number): RendererPostProcessOptions {
+  return {
+    targetFormat: "rgba16f",
+    toneMapping: {
+      operator: "filmic",
+      exposure: clamp(exposure, 0.1, 4),
+      whitePoint: 1.25,
+      inputColorSpace: "linear",
+      outputColorSpace: "srgb"
+    },
+    colorGrade: {
+      contrast: 1.08,
+      saturation: 1.05,
+      vibrance: 0.1,
+      vignette: 0.12,
+      sharpening: 0.22
+    },
+    bloom: {
+      threshold: 0.92,
+      intensity: 0.08,
+      radius: 1
+    },
+    fxaa: {
+      edgeThreshold: 0.08,
+      subpixelBlend: 0.55
+    }
+  };
+}
+
+export function captureCurrentRoutesCanvasScreenshot(canvas: HTMLCanvasElement | OffscreenCanvas): CurrentRoutesScreenshot {
+  if (!("toDataURL" in canvas) || typeof canvas.toDataURL !== "function") {
+    throw new Error("CurrentRoutes screenshot capture requires an HTMLCanvasElement with preserveDrawingBuffer enabled.");
+  }
+  return {
+    mimeType: "image/png",
+    dataUrl: canvas.toDataURL("image/png"),
+    width: canvas.width,
+    height: canvas.height
+  };
+}
+
+interface CurrentRoutesMetricsRecorder {
+  record(sample: {
+    readonly frameMs: number;
+    readonly renderMs: number;
+    readonly diagnostics: RenderDeviceDiagnostics;
+    readonly backend: "webgl2" | "webgpu";
+  }): void;
+  snapshot(backend: "webgl2" | "webgpu"): CurrentRoutesRuntimeMetrics;
+}
+
+function createCurrentRoutesRuntimeMetrics(): CurrentRoutesMetricsRecorder {
+  let frameCount = 0;
+  let lastFrameMs = 0;
+  let averageFrameMs = 0;
+  let lastRenderMs = 0;
+  let averageRenderMs = 0;
+  let diagnostics: RenderDeviceDiagnostics = { drawCalls: 0, buffers: 0, shaders: 0, lastError: null, contextLost: false };
+
+  return {
+    record(sample) {
+      frameCount += 1;
+      lastFrameMs = sample.frameMs;
+      lastRenderMs = sample.renderMs;
+      averageFrameMs += (sample.frameMs - averageFrameMs) / frameCount;
+      averageRenderMs += (sample.renderMs - averageRenderMs) / frameCount;
+      diagnostics = sample.diagnostics;
+    },
+    snapshot(backend) {
+      return {
+        frameCount,
+        lastFrameMs: round(lastFrameMs),
+        averageFrameMs: round(averageFrameMs),
+        lastRenderMs: round(lastRenderMs),
+        averageRenderMs: round(averageRenderMs),
+        drawCalls: diagnostics.drawCalls,
+        textures: diagnostics.textures ?? 0,
+        buffers: diagnostics.buffers,
+        shaders: diagnostics.shaders,
+        backend,
+        ...(diagnostics.stateCacheIssued !== undefined ? { stateCacheIssued: diagnostics.stateCacheIssued } : {}),
+        ...(diagnostics.stateCacheSkipped !== undefined ? { stateCacheSkipped: diagnostics.stateCacheSkipped } : {}),
+        ...(diagnostics.stateCacheProgramSwitches !== undefined ? { stateCacheProgramSwitches: diagnostics.stateCacheProgramSwitches } : {}),
+        ...(diagnostics.stateCacheTextureBinds !== undefined ? { stateCacheTextureBinds: diagnostics.stateCacheTextureBinds } : {}),
+        ...(diagnostics.stateCacheBufferBinds !== undefined ? { stateCacheBufferBinds: diagnostics.stateCacheBufferBinds } : {}),
+        ...(diagnostics.stateCacheVertexArrayBinds !== undefined ? { stateCacheVertexArrayBinds: diagnostics.stateCacheVertexArrayBinds } : {}),
+        ...(diagnostics.stateCacheSamplerBinds !== undefined ? { stateCacheSamplerBinds: diagnostics.stateCacheSamplerBinds } : {})
+      };
+    }
+  };
+}
 
 export class CurrentRoutesFlagshipViewer {
   private status: CurrentRoutesViewerStatus = "ready";

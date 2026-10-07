@@ -1,7 +1,6 @@
 export { createRootParticleWorkload, createRootGpuParticleWorkload, type RootGpuParticleWorkloadOptions } from "./RootGpuParticleWorkload.js";
 export { attachRootRenderSource, type RootRenderSourceBridge } from "./RootRenderSourceBridge.js";
 import {
-  ProductionRuntimeRenderer,
   createContactShadowPass,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
@@ -13,7 +12,6 @@ import {
   type ProductionRenderProof,
   type ContactShadowPassDiagnostics,
   type ProductionRuntimeRendererBackendPreference,
-  type ProductionRuntimeRendererBackendSelection,
   type ProductionRuntimeRendererOptions
 } from "@aura3d/rendering";
 import {
@@ -54,20 +52,25 @@ import type {
   CollectedLight,
   EnvironmentLightingOptions,
   PerspectiveCameraFrameOptions,
+  ProductionRendererFeature,
+  RenderDeviceDiagnostics,
   RenderItem,
   RenderSource,
   RendererPostProcessOptions,
-  RendererShadowOptions
+  RendererShadowOptions,
+  RuntimeParityFrameRenderResult
 } from "@aura3d/rendering";
 import {
   Geometry,
   Material,
   PBRMaterial,
+  Renderer,
   TextureBinding,
   computePerspectiveCameraFrame,
   createDefaultShaderLibrary
 } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4 } from "@aura3d/scene";
+import { rendererProofCapture } from "../agent-api/devtools/rendererReports.js";
 import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets/browser";
 
 export {
@@ -155,9 +158,9 @@ export interface A3DRenderResult {
 
 export interface A3DFrameRenderResult {
   readonly backend: "webgl2" | "webgpu";
-  readonly diagnostics: ReturnType<ProductionRuntimeRenderer["getDiagnostics"]>;
-  readonly features: ReturnType<ProductionRuntimeRenderer["getFeatures"]>;
-  readonly timing?: NonNullable<ReturnType<ProductionRuntimeRenderer["renderInteractiveFrame"]>["timing"]>;
+  readonly diagnostics: RenderDeviceDiagnostics;
+  readonly features: readonly ProductionRendererFeature[];
+  readonly timing?: NonNullable<RuntimeParityFrameRenderResult["timing"]>;
 }
 
 export interface A3DRenderOptions {
@@ -172,167 +175,62 @@ export interface A3DRenderOptions {
   readonly postprocess?: RendererPostProcessOptions | boolean;
 }
 
-export class A3DRenderer {
-  readonly backend: "webgl2" | "webgpu";
-  readonly backendSelection: ProductionRuntimeRendererBackendSelection;
+const A3DRenderer = Renderer;
+type A3DRenderer = Renderer;
+export { A3DRenderer };
 
-  private constructor(
-    private readonly renderer: ProductionRuntimeRenderer,
-    private readonly viewport: A3DViewport
-  ) {
-    this.backend = renderer.backend;
-    this.backendSelection = renderer.backendSelection;
-  }
+/**
+ * T2.9/T2.10 — the facade class was deleted; `A3DRenderer` now aliases the C-29
+ * `Renderer`. Proof/frame/metadata helpers moved to module scope below and the
+ * devtools rendererReports (`rendererProofCapture`, `rendererFeatureReport`,
+ * `rendererShadowReport`, `a3dRendererEvidence`).
+ */
+function a3dMetadataForRender(scene: A3DGltfScene, environment?: A3DHdrEnvironment) {
+  return {
+    assetId: scene.metadata.assetId,
+    assetName: scene.metadata.assetName,
+    assetUri: scene.metadata.assetUri,
+    meshCount: scene.metadata.meshCount,
+    primitiveCount: scene.metadata.primitiveCount,
+    materialCount: scene.metadata.materialCount,
+    textureCount: scene.metadata.textureCount,
+    imageCount: scene.metadata.imageCount,
+    animationCount: scene.metadata.animationCount,
+    skinCount: scene.metadata.skinCount,
+    morphTargetCount: scene.metadata.morphTargetCount,
+    extensionsUsed: scene.metadata.extensionsUsed,
+    ...(environment ? {
+      environmentId: environment.id,
+      hdrEnvironmentUri: environment.url
+    } : {})
+  };
+}
 
-  static async create(options: A3DRendererOptions): Promise<A3DRenderer> {
-    const backendSelection = resolveProductionRuntimeRendererBackend(options);
-    return new A3DRenderer(
-      await ProductionRuntimeRenderer.create({ ...options, backend: backendSelection.requestedBackend }),
-      { width: options.width, height: options.height }
-    );
+/**
+ * Scene-shaped render entry point shared by the viewer/stage builders: builds
+ * the `ProductionRendererInput` through the scene's `createRendererInput` and
+ * returns the moved proof + summary.
+ */
+export function a3dRenderResult(renderer: Renderer, input: A3DRenderOptions, viewport: A3DViewport): A3DRenderResult {
+  if (renderer.device.kind === "webgpu") {
+    throw new Error("A3DRenderer Production WebGPU proof capture uses the async render path so native texture-to-buffer readback can be awaited.");
   }
-
-  captureProof(input: A3DRenderOptions): A3DRenderResult {
-    if (this.backend === "webgpu") {
-      throw new Error("A3DRenderer Production WebGPU proof capture uses captureProofAsync() so native texture-to-buffer readback can be awaited.");
-    }
-    const viewport = input.viewport ?? this.defaultViewport();
-    const rendererInput = input.scene.createRendererInput({
-      viewport,
-      environment: input.environment,
-      environmentLighting: input.environmentLighting,
-      renderItems: input.renderItems,
-      collectedLights: input.collectedLights,
-      shadow: input.shadow,
-      postprocess: input.postprocess
-    });
-    const proof = this.renderer.captureProof({
-      source: rendererInput.source,
-      camera: input.camera ?? rendererInput.camera,
-      metadata: this.metadataForRender(input.scene, input.environment)
-    });
-    return { proof, summary: summarizeProductionProductionProof(proof) };
-  }
-
-  render(input: A3DRenderOptions): A3DRenderResult {
-    return this.captureProof(input);
-  }
-
-  renderInteractiveFrame(input: A3DRenderOptions): A3DFrameRenderResult {
-    if (this.backend === "webgpu") {
-      throw new Error("A3DRenderer Production WebGPU interactive rendering uses renderInteractiveFrameAsync() so native render submission can be awaited.");
-    }
-    const viewport = input.viewport ?? this.defaultViewport();
-    const rendererInput = input.scene.createRendererInput({
-      viewport,
-      environment: input.environment,
-      environmentLighting: input.environmentLighting,
-      renderItems: input.renderItems,
-      collectedLights: input.collectedLights,
-      shadow: input.shadow,
-      postprocess: input.postprocess
-    });
-    const result = this.renderer.renderInteractiveFrame({
-      source: rendererInput.source,
-      camera: input.camera ?? rendererInput.camera,
-      metadata: this.metadataForRender(input.scene, input.environment)
-    });
-    return {
-      backend: result.backend,
-      diagnostics: result.diagnostics,
-      features: result.features,
-      ...(result.timing ? { timing: result.timing } : {})
-    };
-  }
-
-  renderFrame(input: A3DRenderOptions): A3DFrameRenderResult {
-    return this.renderInteractiveFrame(input);
-  }
-
-  async captureProofAsync(input: A3DRenderOptions): Promise<A3DRenderResult> {
-    const viewport = input.viewport ?? this.defaultViewport();
-    const rendererInput = input.scene.createRendererInput({
-      viewport,
-      environment: input.environment,
-      environmentLighting: input.environmentLighting,
-      renderItems: input.renderItems,
-      collectedLights: input.collectedLights,
-      shadow: input.shadow,
-      postprocess: input.postprocess
-    });
-    const proof = await this.renderer.captureProofAsync({
-      source: rendererInput.source,
-      camera: input.camera ?? rendererInput.camera,
-      metadata: this.metadataForRender(input.scene, input.environment)
-    });
-    return { proof, summary: summarizeProductionProductionProof(proof) };
-  }
-
-  async renderAsync(input: A3DRenderOptions): Promise<A3DRenderResult> {
-    // ProductionRuntimeRenderer keeps renderImportedAssetAsync as a backwards-compatible alias for captureProofAsync.
-    return this.captureProofAsync(input);
-  }
-
-  async renderInteractiveFrameAsync(input: A3DRenderOptions): Promise<A3DFrameRenderResult> {
-    const viewport = input.viewport ?? this.defaultViewport();
-    const rendererInput = input.scene.createRendererInput({
-      viewport,
-      environment: input.environment,
-      environmentLighting: input.environmentLighting,
-      renderItems: input.renderItems,
-      collectedLights: input.collectedLights,
-      shadow: input.shadow,
-      postprocess: input.postprocess
-    });
-    const result = await this.renderer.renderInteractiveFrameAsync({
-      source: rendererInput.source,
-      camera: input.camera ?? rendererInput.camera,
-      metadata: this.metadataForRender(input.scene, input.environment)
-    });
-    return {
-      backend: result.backend,
-      diagnostics: result.diagnostics,
-      features: result.features,
-      ...(result.timing ? { timing: result.timing } : {})
-    };
-  }
-
-  async renderFrameAsync(input: A3DRenderOptions): Promise<A3DFrameRenderResult> {
-    return this.renderInteractiveFrameAsync(input);
-  }
-
-  getDiagnostics() {
-    return this.renderer.getDiagnostics();
-  }
-
-  dispose(): void {
-    this.renderer.dispose();
-  }
-
-  private defaultViewport(): A3DViewport {
-    return this.viewport;
-  }
-
-  private metadataForRender(scene: A3DGltfScene, environment?: A3DHdrEnvironment) {
-    return {
-      assetId: scene.metadata.assetId,
-      assetName: scene.metadata.assetName,
-      assetUri: scene.metadata.assetUri,
-      meshCount: scene.metadata.meshCount,
-      primitiveCount: scene.metadata.primitiveCount,
-      materialCount: scene.metadata.materialCount,
-      textureCount: scene.metadata.textureCount,
-      imageCount: scene.metadata.imageCount,
-      animationCount: scene.metadata.animationCount,
-      skinCount: scene.metadata.skinCount,
-      morphTargetCount: scene.metadata.morphTargetCount,
-      extensionsUsed: scene.metadata.extensionsUsed,
-      ...(environment ? {
-        environmentId: environment.id,
-        hdrEnvironmentUri: environment.url
-      } : {})
-    };
-  }
+  const rendererInput = input.scene.createRendererInput({
+    viewport: input.viewport ?? viewport,
+    environment: input.environment,
+    environmentLighting: input.environmentLighting,
+    renderItems: input.renderItems,
+    collectedLights: input.collectedLights,
+    shadow: input.shadow,
+    postprocess: input.postprocess
+  });
+  const proof = rendererProofCapture(renderer, {
+    source: rendererInput.source,
+    camera: input.camera ?? rendererInput.camera,
+    metadata: a3dMetadataForRender(input.scene, input.environment),
+    viewport: input.viewport ?? viewport
+  });
+  return { proof, summary: summarizeProductionProductionProof(proof) };
 }
 
 export interface A3DViewport {
@@ -1436,8 +1334,10 @@ export interface A3DProductViewer {
 export async function createProductViewer(options: A3DProductViewerOptions): Promise<A3DProductViewer> {
   const width = options.width ?? options.canvas.width;
   const height = options.height ?? options.canvas.height;
-  const renderer = await A3DRenderer.create({
-    backend: options.backend,
+  const backendSelection = resolveProductionRuntimeRendererBackend(options);
+  const renderer = await Renderer.create({
+    ...options,
+    backend: backendSelection.selectedBackend,
     canvas: options.canvas,
     width,
     height,
@@ -1504,7 +1404,7 @@ export async function createProductViewer(options: A3DProductViewerOptions): Pro
       const skyboxItems = settings.backgroundVisible
         ? [createProductViewerSkyboxItem(skyboxGeometry, skyboxMaterial, camera.diagnostics.cameraPosition, options.asset.resources.bounds, currentEnvironment, settings)]
         : [];
-      return renderer.render(createProductionRenderOptions({
+      return a3dRenderResult(renderer, createProductionRenderOptions({
         scene: options.asset,
         ...(options.lighting?.ibl === false ? {} : {
           environment: currentEnvironment,
@@ -1518,7 +1418,7 @@ export async function createProductViewer(options: A3DProductViewerOptions): Pro
         camera: camera.camera,
         viewport,
         postprocess: createProductViewerPostprocess(settings)
-      }));
+      }), viewport);
     },
     async renderAsync() {
       const controlsState = controls.snapshot();
@@ -1539,7 +1439,7 @@ export async function createProductViewer(options: A3DProductViewerOptions): Pro
       const skyboxItems = settings.backgroundVisible
         ? [createProductViewerSkyboxItem(skyboxGeometry, skyboxMaterial, camera.diagnostics.cameraPosition, options.asset.resources.bounds, currentEnvironment, settings)]
         : [];
-      return renderer.renderAsync(createProductionRenderOptions({
+      return a3dRenderResult(renderer, createProductionRenderOptions({
         scene: options.asset,
         ...(options.lighting?.ibl === false ? {} : {
           environment: currentEnvironment,
@@ -1553,7 +1453,7 @@ export async function createProductViewer(options: A3DProductViewerOptions): Pro
         camera: camera.camera,
         viewport,
         postprocess: createProductViewerPostprocess(settings)
-      }));
+      }), viewport);
     },
     setSettings(next) {
       settings = sanitizeProductViewerSettings({ ...settings, ...next });

@@ -1,8 +1,24 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import { computeRuntimeAlpha } from "./frameAlpha.js";
-import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../index.js";
-import { AuraRuntimeError, captureAuraScreenshot, collectAuraSceneEvidence, configureCanvas, createDiagnosticsOverlay, createInitialDiagnostics, createRuntimeScenePhysics, devicePixelRatioSafe, eulerToQuat, flattenSceneSnapshot, isWebGLRenderableNode, markRouteError, markRouteReady, normalizeSceneSnapshot, performanceNow, physics, productionRenderErrorMessage, registerAuraApp, renderDiagnosticPreviewToCanvas, renderer, resolveCanvas, resolveNodePhysicsShape, scene, shouldRenderOverlay, snapshotDiagnostics, startProductionRender, unregisterAuraApp, validateSceneAssets } from "../index.js";
+import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFrameCallback, AuraFrameInfo, AuraModelNode, AuraPrimitiveNode, AuraSceneSnapshot, WebGLRenderController } from "../nodes/types.js";
+import { isWebGLRenderableNode, productionRenderErrorMessage } from "../compiler/observations.js";
+import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
+import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
+import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { scene } from "../nodes/scene.js";
+import { devicePixelRatioSafe, performanceNow } from "../platform.js";
+import { renderer } from "../rendererDiagnostics.js";
+import { collectAuraSceneEvidence } from "../sceneEvidence.js";
+import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
+import { configureCanvas, resolveCanvas } from "./canvas.js";
+import { AuraRuntimeError } from "./errors.js";
+import { AuraMigrationError } from "../compiler/errors.js";
+import { startProductionRender } from "./frameLoop.js";
+import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
+import { markRouteError, markRouteReady } from "./routeState.js";
+import { captureAuraScreenshot } from "./screenshot.js";
+import { attachErrorOverlay } from "./errorOverlay.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105 } from "../GameEvidence.js";
 import { createGameInput } from "../GameRuntime.js";
 import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime.js";
@@ -16,6 +32,8 @@ import { resolveTierSettings } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
+import { assets } from "../AssetDecoders.js";
+import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
   let snapshot = normalizeSceneSnapshot(options.scene);
@@ -24,6 +42,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
   const qrFlags = resolveQrFlags({ options: options.qualityRebuild?.flags });
+  // T4.5 (PRD-15): under strict the removed renderer.mode/renderer.fallback
+  // surface is an AuraMigrationError, not a silent ignore. Flag-off callers
+  // keep today's normalization (the fields still work until 4.0.0).
+  if ((options.strict ?? qrFlags.on("A3D_QR_STRICT")) && options.renderer) {
+    const removed: string[] = [];
+    if (options.renderer.mode !== undefined) removed.push("renderer.mode");
+    if (options.renderer.fallback !== undefined) removed.push("renderer.fallback");
+    if (removed.length > 0) {
+      throw new AuraMigrationError({ removedApi: removed.join(" + "), replacement: "renderer.quality", prd: 15 });
+    }
+  }
   const qrQualityTier = resolveTierSettings("high");
   void qrQualityTier;
   const diagnosticsState = createInitialDiagnostics(renderSnapshot, options.renderer);
@@ -306,9 +335,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     productionMountPending = shouldUseProductionRenderer && Boolean(canvas);
     productionMountFailed = false;
     let settleMount: () => void = () => undefined;
+    let failMount: (error: unknown) => void = () => undefined;
     productionMountSettled = productionMountPending
-      ? new Promise<void>((resolveSettled) => { settleMount = resolveSettled; })
+      ? new Promise<void>((resolveSettled, rejectSettled) => {
+        settleMount = resolveSettled;
+        failMount = rejectSettled;
+      })
       : Promise.resolve();
+    // The rejection only carries meaning to an `app.ready()` awaiter; this
+    // no-op keeps an unawaited strict failure out of unhandledrejection.
+    void productionMountSettled.catch(() => undefined);
     settleMountForDispose = settleMount;
     if (shouldUseProductionRenderer && canvas) {
       productionMountTask = startProductionRender(
@@ -345,15 +381,26 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           markRouteReady(snapshot, diagnosticsState);
         })
         .catch((error: unknown) => {
-          settleMount();
-          if (disposed || revision !== mountRevision) return;
+          if (disposed || revision !== mountRevision) {
+            settleMount();
+            return;
+          }
           productionMountPending = false;
           productionMountFailed = true;
-          settleMount();
           diagnosticsState.backend = "webgl2";
           diagnosticsState.errors.push(productionRenderErrorMessage(error));
           overlay?.update();
           markRouteError(snapshot, diagnosticsState);
+          // T4.2 (PRD-15): under strict the mount failure is fatal — the
+          // overlay surfaces it on the canvas and `app.ready()` rejects with
+          // the AuraRuntimeError("renderer-mount-failed") mountRenderer threw.
+          const strict = options.strict ?? qrFlags.on("A3D_QR_STRICT");
+          if (strict) {
+            attachErrorOverlay(canvas, error);
+            failMount(error);
+          } else {
+            settleMount();
+          }
         });
       return;
     }
@@ -624,6 +671,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       unregisterAuraApp(app);
     }
   };
+  // C-37 (PRD 15 T3.12): the registry's add/remove path needs the live scene —
+  // flag-off appends to the snapshot and remounts via setScene (with the
+  // RUNTIME_ADD_REMOUNT diagnostic); flag-on with a mounted compiled scene takes
+  // the subtree-compile path bound by compiler/renderer.ts.
+  runtimeNodes.configure({
+    flags: qrFlags,
+    getScene: () => snapshot,
+    setScene: (next) => app.setScene(next),
+    diagnostic: (message) => { diagnosticsState.warnings = [...diagnosticsState.warnings, message]; }
+  });
   const extensionDisposers: Array<() => void> = [];
   for (const ext of appExtensionsAll()) {
     const value = ext.create(app, { flags: qrFlags, options });

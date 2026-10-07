@@ -32,6 +32,13 @@ export interface ProductionRendererInput {
   readonly camera?: CameraLike;
   readonly metadata: ProductionImportedAssetRenderMetadata;
   readonly transmissionBackdropCapture?: false | RuntimeParityTransmissionBackdropCaptureOptions;
+  /**
+   * T2.5 (declaration-only): framebuffer size for proof capture/readback when
+   * the device exposes no canvas surface (e.g. `MockRenderDevice` in unit
+   * tests). `rendererProofCapture` resolves `viewport ?? device.canvas`; a
+   * canvas-backed renderer needs nothing here.
+   */
+  readonly viewport?: { readonly width: number; readonly height: number };
 }
 
 export interface RuntimeParityTransmissionBackdropCaptureOptions {

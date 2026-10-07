@@ -23,7 +23,7 @@
  * reported as absent. See `unsupported` on each kit's capability report.
  */
 
-import type { AuraCameraSpec, AuraColor, AuraSceneNode, AuraVec3 } from "./index.js";
+import type { AuraCameraSpec, AuraColor, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
 import {
   clearFocus,
   focusCameraIntent,
@@ -42,6 +42,8 @@ import {
   type SemanticRegion,
   type SpatialInvariantReport
 } from "./SpatialAnchoring.js";
+import { round } from "./GameRuntime.js";
+import { timeline } from "./nodes/timeline.js";
 
 /** Capability report every kit publishes, so a claim can be checked against it. */
 export interface KitCapabilityReport {

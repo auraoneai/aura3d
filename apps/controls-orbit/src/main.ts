@@ -1,4 +1,4 @@
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { InputSnapshot, OrbitControls, createSceneCameraControlAdapter } from "@aura3d/input";
 import { Geometry, RenderDeviceError, UnlitMaterial } from "@aura3d/rendering";
 import { Renderable, Scene } from "@aura3d/scene";
@@ -72,7 +72,7 @@ async function run(): Promise<void> {
       "material:cyan": new UnlitMaterial({ color: [0.3, 0.82, 1, 1] }),
       "material:floor": new UnlitMaterial({ color: [0.18, 0.21, 0.25, 1] })
     };
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,

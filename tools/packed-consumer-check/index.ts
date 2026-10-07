@@ -100,14 +100,19 @@ function readTarballExports(tarball: string, extractDir: string): ReadonlySet<st
   return keys;
 }
 
-function packEngineTarball(tmp: string): string {
-  execFileSync("pnpm", ["pack", "--pack-destination", tmp], { cwd: REPO_ROOT, stdio: "pipe" });
-  const tarball = readdirSync(tmp).find((f) => f.endsWith(".tgz"));
-  if (!tarball) throw new Error("pnpm pack produced no tarball");
+export function packTarballAt(pkgDir: string, tmp: string): string {
+  const before = new Set(readdirSync(tmp).filter((f) => f.endsWith(".tgz")));
+  execFileSync("pnpm", ["pack", "--pack-destination", tmp], { cwd: pkgDir, stdio: "pipe" });
+  const tarball = readdirSync(tmp).find((f) => f.endsWith(".tgz") && !before.has(f));
+  if (!tarball) throw new Error(`pnpm pack produced no tarball for ${pkgDir}`);
   return join(tmp, tarball);
 }
 
-export function prepareConsumerCopy(templateDir: string, dest: string, tarball: string): void {
+function packEngineTarball(tmp: string): string {
+  return packTarballAt(REPO_ROOT, tmp);
+}
+
+export function prepareConsumerCopy(templateDir: string, dest: string, tarball: string, extraDeps?: Readonly<Record<string, string>>): void {
   cpSync(templateDir, dest, {
     recursive: true,
     filter: (src) => !SKIP_DIRS.has(basename(src))
@@ -117,14 +122,41 @@ export function prepareConsumerCopy(templateDir: string, dest: string, tarball: 
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
+  const rewrites: Record<string, string> = { [ENGINE_PACKAGE]: `file:${tarball}`, ...(extraDeps ?? {}) };
   for (const section of [pkg.dependencies, pkg.devDependencies]) {
-    if (section?.[ENGINE_PACKAGE]) section[ENGINE_PACKAGE] = `file:${tarball}`;
+    for (const [name, spec] of Object.entries(rewrites)) {
+      if (section?.[name]) section[name] = spec;
+    }
   }
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
   // Consumers stand alone — pnpm refuses install-time build scripts without
   // explicit approval (ERR_PNPM_IGNORED_BUILDS). Mirror the root workspace's
   // allowBuilds list so esbuild (vite's optimizer) can run its postinstall.
   writeFileSync(join(dest, "pnpm-workspace.yaml"), "allowBuilds:\n  esbuild: true\n  sharp: true\n");
+  // Optional peer imports that ship a runtime fallback (try/catch → CDN) must
+  // not be required in the consumer's dependency tree for the build to pass —
+  // that is what "optional" means. `@loaders.gl/*` is dynamically imported by
+  // @aura3d/assets' KTX2 transcoder with exactly that fallback; until owner 05
+  // declares it (Q-05-8), externalize it here so the gate measures the packed
+  // surface rather than an unrelated missing optional dep.
+  if (!existsSync(join(dest, "vite.config.ts"))) {
+    writeFileSync(
+      join(dest, "vite.config.ts"),
+      [
+        'import { defineConfig } from "vite";',
+        "",
+        "export default defineConfig({",
+        "  build: {",
+        "    rollupOptions: {",
+        "      // Optional peers with runtime CDN fallbacks — not required to build.",
+        "      external: [/^@loaders\\.gl\\//]",
+        "    }",
+        "  }",
+        "});",
+        ""
+      ].join("\n")
+    );
+  }
 }
 
 function step(label: string, cwd: string, command: string, args: readonly string[]): string | undefined {
@@ -143,7 +175,7 @@ export function checkTemplate(
   dest: string,
   tarball: string,
   exportsKeys: ReadonlySet<string>,
-  options: { readonly skipBuild?: boolean }
+  options: { readonly skipBuild?: boolean; readonly extraDeps?: Readonly<Record<string, string>> }
 ): TemplateCheckResult {
   // Label by repo-relative path: templates/ and create-aura3d/templates/ share
   // basenames (cinematic-scene, mini-game, product-viewer), and the gate
@@ -151,7 +183,7 @@ export function checkTemplate(
   const template = templateDir.startsWith(REPO_ROOT) ? relative(REPO_ROOT, templateDir) : basename(templateDir);
   const steps: TemplateCheckResult["steps"] = { specifiers: "skip", install: "skip", typecheck: "skip", build: "skip" };
 
-  prepareConsumerCopy(templateDir, dest, tarball);
+  prepareConsumerCopy(templateDir, dest, tarball, options.extraDeps);
 
   const badSpecifiers = [...collectEngineSpecifiers(dest)].filter((s) => !specifierAllowed(s, exportsKeys));
   steps.specifiers = badSpecifiers.length === 0 ? "pass" : "fail";
@@ -215,7 +247,14 @@ function main(): void {
   const baselinePath = args.includes("--baseline") ? args[args.indexOf("--baseline") + 1] : undefined;
   const baseline = baselinePath ? readBaseline(baselinePath) : new Map<string, string>();
 
-  const templates = collectTemplateDirs().filter((t) => !only || t.includes(only));
+  const extraDirs: string[] = [];
+  const extraPkgs: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--extra-dir") extraDirs.push(args[++i]!);
+    if (args[i] === "--extra-pkg") extraPkgs.push(args[++i]!);
+  }
+
+  const templates = [...collectTemplateDirs(), ...extraDirs].filter((t) => !only || t.includes(only));
   const tmp = mkdtempSync(join(tmpdir(), "a3d-pack-check-"));
   console.log(`packed-consumer-check: ${templates.length} templates, temp dir ${tmp}`);
 
@@ -223,12 +262,25 @@ function main(): void {
   const exportsKeys = readTarballExports(tarball, join(tmp, "tarball-meta"));
   console.log(`tarball ${basename(tarball)} with ${exportsKeys.size} export keys`);
 
+  // `--extra-pkg <dir>:<specifier>` packs additional workspace packages and
+  // rewrites that specifier to its tarball in consumer package.json files
+  // (PRD-15 T4.7: fixtures depend on both @aura3d/engine and @aura3d/lean).
+  const extraDeps: Record<string, string> = {};
+  for (const entry of extraPkgs) {
+    const sep = entry.lastIndexOf(":");
+    const dir = entry.slice(0, sep);
+    const specifier = entry.slice(sep + 1);
+    const packed = packTarballAt(join(REPO_ROOT, dir), tmp);
+    extraDeps[specifier] = `file:${packed}`;
+    console.log(`extra package ${specifier} → ${basename(packed)}`);
+  }
+
   const results: TemplateCheckResult[] = [];
   for (const templateDir of templates) {
     // basename collides for templates/ and create-aura3d/templates/ dirs that
     // share a name (e.g. cinematic-scene) — key the copy by relative path.
     const dest = join(tmp, `consumer-${templateDir.replace(/\//g, "-")}`);
-    const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild });
+    const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild, extraDeps });
     results.push(result);
     const stage = failureStage(result);
     const tolerated = stage !== undefined && baseline.get(result.template) === stage;

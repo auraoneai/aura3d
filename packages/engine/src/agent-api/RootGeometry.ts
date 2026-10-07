@@ -1,4 +1,5 @@
 import type { SdfTextStyle } from "@aura3d/rendering";
+import { geometry } from "./nodes/geometry.js";
 
 export type AuraRootVec3 = readonly [number, number, number];
 
