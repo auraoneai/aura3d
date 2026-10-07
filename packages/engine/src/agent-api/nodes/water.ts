@@ -8,7 +8,7 @@ import { primitives } from "../index.js";
 import { createWaterSurface, sampleOceanFixture, type WaterSurfaceBoat, type WaterSurfacePreset } from "@aura3d/rendering";
 import { material } from "./material.js";
 import { worldWater, type AuraWaterNode } from "../world/water.js";
-import { worldBuilderFlagOn } from "../world/flags.js";
+import { worldBuilderSubflagOn } from "../world/flags.js";
 
 /** §10.6 preset → waves mapping; the fixture's "storm" rides on "rough". */
 function gerstnerPresetFor(preset: WaterSurfacePreset | undefined): "calm" | "moderate" | "rough" {
@@ -30,7 +30,7 @@ export const water = {
     readonly wakeActive: boolean;
     readonly wakeSegmentCount: number;
   } => {
-    if (worldBuilderFlagOn("A3D_QR_WORLD")) {
+    if (worldBuilderSubflagOn("A3D_QR_WORLD_WATER")) {
       console.warn(
         "water.surface is deprecated (PRD-10 §7.3): emitting a world.water lake node — migrate to world.water() directly"
       );

@@ -50,8 +50,43 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const engine = params.get("engine") ?? "aura3d";
   const sceneId = params.get("scene");
+  const tools = params.get("tools");
   const status = document.getElementById("status")!;
   const stage = document.getElementById("stage") as HTMLElement;
+
+  if (tools === "render-targets") {
+    status.textContent = "running render-target tools";
+    const { runRenderTargetTools } = await import("./renderTargets");
+    const report = await runRenderTargetTools(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: "render-targets", errors: report.errors };
+    status.textContent = "ready render-targets";
+    document.title = "ready render-targets";
+    return;
+  }
+
+  if (tools === "program-compile") {
+    status.textContent = "running program-compile";
+    const { runProgramCompileTool } = await import("./programCompile");
+    const report = await runProgramCompileTool();
+    window.__QR_READY__ = { engine: "aura3d", scene: "program-compile", errors: report.errors };
+    (window as unknown as { __QR_PROGRAM_COMPILE__?: unknown }).__QR_PROGRAM_COMPILE__ = report;
+    status.textContent = "ready program-compile";
+    document.title = "ready program-compile";
+    return;
+  }
+
+  if (tools === "canvas-dpr" || tools === "app-capture" || tools === "renderer-mount-failure") {
+    status.textContent = `running ${tools}`;
+    const { runCanvasDprTool, runAppCaptureTool, runMountFailureTool } = await import("./appTools");
+    const report =
+      tools === "canvas-dpr" ? await runCanvasDprTool(stage)
+      : tools === "app-capture" ? await runAppCaptureTool(stage)
+      : await runMountFailureTool(stage);
+    window.__QR_READY__ = { engine: "aura3d", scene: tools, errors: report.errors };
+    status.textContent = `ready ${tools}`;
+    document.title = `ready ${tools}`;
+    return;
+  }
 
   const adapters = engine === "three" ? threeScenes : auraScenes;
   const adapter = adapters.find((entry) => entry.id === sceneId);

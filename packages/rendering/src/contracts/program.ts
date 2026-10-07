@@ -104,8 +104,17 @@ export function shaderFeaturesFor(flags: QrFlags): readonly ShaderFeature[] {
 }
 
 export interface GeneratedProgram { readonly key: string; readonly vertex: string; readonly fragment: string; readonly defines: Readonly<Record<string, string | number | true>>; }
+export type ProgramGeneratorImpl = (features: ProgramFeatures) => GeneratedProgram;
+let programGeneratorImpl: ProgramGeneratorImpl | undefined;
+/** PRD 01's program/ProgramGenerator.ts installs the real C-02 generator (lane 01). */
+export function installProgramGenerator(impl: ProgramGeneratorImpl): void {
+  programGeneratorImpl = impl;
+}
 export function generateProgram(features: ProgramFeatures): GeneratedProgram {
-  throw new Error(`PROGRAM_GENERATOR_PENDING:${computeProgramKey(features)}`);
+  if (programGeneratorImpl === undefined) {
+    throw new Error(`PROGRAM_GENERATOR_PENDING:${computeProgramKey(features)}`);
+  }
+  return programGeneratorImpl(features);
 }
 
 export interface ProgramHandle { readonly key: string; readonly status: "pending" | "ready" | "failed"; readonly program?: RenderShaderProgram; readonly error?: string; }

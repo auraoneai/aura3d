@@ -19,12 +19,15 @@ import {
   SCENE_GRAPH_SHEAR,
   composeWorldMatrix,
   composeWorldMatrixWithLookAt,
+  createModelMatrixCache,
   createWorldMatrixCache,
   decomposeMatrix,
   eulerToQuaternion,
   lookAtWorldQuaternion,
   multiplyMat4Into
 } from "../../../../packages/engine/src/agent-api/sceneGraph";
+import { createModelMatrix } from "../../../../packages/engine/src/agent-api/index";
+import type { AuraPrimitiveNode } from "../../../../packages/engine/src/agent-api/index";
 
 const I = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
@@ -169,6 +172,58 @@ describe("prd01 C-06 composeWorldMatrix", () => {
     for (const node of nodes) cache.world(node, parent, out);
     expect(cache.composed).toBe(1);
     expect([out[12], out[13], out[14]]).not.toEqual([1, 0, 0]);
+  });
+
+  describe("Phase-6 static model-matrix cache (compiler seam)", () => {
+    const unitBounds = { min: [-0.5, -0.5, -0.5] as const, max: [0.5, 0.5, 0.5] as const };
+
+    it("composes once per static node and returns the retained matrix", () => {
+      const cache = createModelMatrixCache();
+      const node: AuraPrimitiveNode = { kind: "primitive", primitive: "box", position: [1, 2, 3], scale: [0.5, 0.5, 0.5] };
+      cache.beginFrame();
+      const first = cache.modelMatrix(node, unitBounds, false, 0);
+      const second = cache.modelMatrix(node, unitBounds, false, 0);
+      expect(cache.composed).toBe(1);
+      expect(cache.hits).toBe(1);
+      expect(second).toBe(first); // retained array, not a copy
+      expectClose(Array.from(first), Array.from(createModelMatrix(node, unitBounds, false, 0)), 1e-6);
+    });
+
+    it("recomposes when a fingerprinted field mutates in place", () => {
+      const cache = createModelMatrixCache();
+      const node: AuraPrimitiveNode = { kind: "primitive", primitive: "box", position: [0, 0, 0] };
+      cache.modelMatrix(node, unitBounds, false, 0);
+      Object.assign(node, { position: [4, 0, 0] });
+      const moved = cache.modelMatrix(node, unitBounds, false, 0);
+      expect(cache.composed).toBe(2);
+      expectClose(Array.from(moved), Array.from(createModelMatrix(node, unitBounds, false, 0)), 1e-6);
+      // normalizeToUnit and bounds are fingerprint inputs too.
+      cache.modelMatrix(node, unitBounds, true, 0);
+      expect(cache.composed).toBe(3);
+    });
+
+    it("bypasses animated nodes entirely (time-varying TRS stays live)", () => {
+      const cache = createModelMatrixCache();
+      const node: AuraPrimitiveNode = { kind: "primitive", primitive: "box", position: [0, 0, 0], animation: { clip: "float" } };
+      cache.beginFrame();
+      const a = cache.modelMatrix(node, unitBounds, false, 0);
+      const b = cache.modelMatrix(node, unitBounds, false, 1);
+      expect(cache.composed).toBe(0);
+      expect(cache.hits).toBe(0);
+      expect(a).not.toBe(b); // fresh arrays — the animated path never retains
+      expectClose(Array.from(a), Array.from(createModelMatrix(node, unitBounds, false, 0)), 1e-6);
+    });
+
+    it("keeps distinct nodes isolated (WeakMap identity keying)", () => {
+      const cache = createModelMatrixCache();
+      const a: AuraPrimitiveNode = { kind: "primitive", primitive: "box", position: [0, 0, 0] };
+      const b: AuraPrimitiveNode = { kind: "primitive", primitive: "box", position: [0, 0, 0] };
+      cache.modelMatrix(a, unitBounds, false, 0);
+      cache.modelMatrix(b, unitBounds, false, 0);
+      cache.modelMatrix(a, unitBounds, false, 0);
+      expect(cache.composed).toBe(2);
+      expect(cache.hits).toBe(1);
+    });
   });
 
   it("lookAt orients -Z toward the target in world space", () => {

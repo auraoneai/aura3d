@@ -8,7 +8,7 @@ import type { RenderDevice } from "../RenderDevice";
 import type { BlendMode } from "./blend";
 import { defineContractSlot, type ContractSlot } from "./core";
 
-export interface ParticleBatchDescriptor { readonly key: string; readonly capacity: number; readonly source: "cpu" | "gpu" | "procedural" | "compute"; readonly atlas: Texture; readonly blend: BlendMode; readonly shading: "unlit" | "lit"; readonly softDepth: boolean; readonly stretch: boolean; readonly frameBlend: boolean; }
+export interface ParticleBatchDescriptor { readonly key: string; readonly capacity: number; readonly source: "cpu" | "gpu" | "procedural" | "compute"; readonly atlas: Texture; readonly blend: BlendMode; readonly shading: "unlit" | "lit"; readonly softDepth: boolean; readonly softDistance?: number; readonly nearFade?: number; readonly stretch: boolean; readonly frameBlend: boolean; }
 export interface ParticleBatchHandle { readonly key: string; readonly liveCount: number; }
 export interface ParticleRenderHook {
   upsertBatch(desc: ParticleBatchDescriptor): ParticleBatchHandle;

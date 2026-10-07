@@ -39,6 +39,7 @@ const ENGINES = arg("--engines", "aura3d,three").split(",");
 const FLAG_SETS = arg("--flags", "none").split(",");
 
 const TONEMAP_VARIANTS = [];
+const AB_OPERATORS = ["aces", "agx"];
 for (const operator of ["aces", "agx", "neutral"]) {
   for (const exposure of [0.5, 1, 2]) TONEMAP_VARIANTS.push({ tm: operator, exp: exposure });
 }
@@ -154,21 +155,30 @@ async function main() {
   try {
     for (const flags of FLAG_SETS) {
       for (const sceneId of SCENES) {
-        const variants = sceneId === "prd01-tonemap-exposure-ramp" ? TONEMAP_VARIANTS : [{}];
-        for (const variant of variants) {
-          const results = {};
-          for (const engine of ENGINES) {
+        // Phase 5 (§14): the tonemap ramp captures the full tm × exp matrix on
+        // both engines; every other scene under a core flag set captures the
+        // ACES-vs-AgX A/B on aura3d (three stays on its default variant).
+        const engineVariants = (engine) => sceneId === "prd01-tonemap-exposure-ramp"
+          ? TONEMAP_VARIANTS
+          : engine === "aura3d" && flags !== "none"
+            ? AB_OPERATORS.map((tm) => ({ tm }))
+            : [{}];
+        const variantKey = (variant) => (variant.tm ? (variant.exp !== undefined ? `${variant.tm}-x${variant.exp}` : variant.tm) : "");
+        const engineResults = { aura3d: new Map(), three: new Map() };
+        for (const engine of ENGINES) {
+          for (const variant of engineVariants(engine)) {
             const res = await captureOne(browser, url, { scene: sceneId, engine, flags, tm: variant.tm, exp: variant.exp });
             const dir = join(OUT_DIR, flags, sceneId);
             mkdirSync(dir, { recursive: true });
-            const suffix = variant.tm ? `.${variant.tm}-x${variant.exp}` : "";
+            const key = variantKey(variant);
+            const suffix = key ? `.${key}` : "";
             if (res.png) writeFileSync(join(dir, `${engine}${suffix}.png`), res.png);
             if (res.strip?.length) {
               const stripDir = join(dir, `${engine}${suffix}.strip`);
               mkdirSync(stripDir, { recursive: true });
               res.strip.forEach((frame, i) => writeFileSync(join(stripDir, `${String(i).padStart(2, "0")}.png`), frame));
             }
-            results[engine] = res;
+            engineResults[engine].set(key, { res, variant });
             report.captures.push({
               scene: sceneId,
               engine,
@@ -180,16 +190,21 @@ async function main() {
             });
             if (res.error) failures.push(`${sceneId}/${engine}: ${res.error}`);
           }
+        }
 
-          // cross-engine metric
-          if (results.aura3d?.png && results.three?.png) {
+        // cross-engine metric: each aura3d variant pairs with the matching
+        // three variant, else three's default capture.
+        for (const [key, a] of engineResults.aura3d) {
+          const t = engineResults.three.get(key) ?? engineResults.three.get("");
+          const variant = a.variant;
+          if (a.res.png && t?.res.png) {
             const metricName = sceneMetric[sceneId];
             const regions = specRegions[sceneId] ?? [undefined];
             for (const region of regions) {
               let metricArgs;
               if (metricName === "temporal-sigma") {
-                const auraFrames = [results.aura3d.png, ...results.aura3d.strip].map((b) => b.toString("base64"));
-                const threeFrames = [results.three.png, ...results.three.strip].map((b) => b.toString("base64"));
+                const auraFrames = [a.res.png, ...a.res.strip].map((b) => b.toString("base64"));
+                const threeFrames = [t.res.png, ...t.res.strip].map((b) => b.toString("base64"));
                 const aura = await evalMetric(metricPage, "temporal-sigma", { stripPngs: auraFrames, region: region?.rect });
                 const three = await evalMetric(metricPage, "temporal-sigma", { stripPngs: threeFrames, region: region?.rect });
                 report.metrics.push({
@@ -198,7 +213,7 @@ async function main() {
                 });
               } else {
                 metricArgs = {
-                  pngs: [results.aura3d.png.toString("base64"), results.three.png.toString("base64")],
+                  pngs: [a.res.png.toString("base64"), t.res.png.toString("base64")],
                   region: region?.rect
                 };
                 const value = await evalMetric(metricPage, metricName, metricArgs);
@@ -206,7 +221,7 @@ async function main() {
               }
             }
           }
-          console.log(`[prd01-capture] ${flags} ${sceneId} ${variant.tm ? `${variant.tm}@${variant.exp}` : ""} done`);
+          console.log(`[prd01-capture] ${flags} ${sceneId} ${variant.tm ? `${variant.tm}@${variant.exp ?? 1}` : ""} done`);
         }
       }
     }

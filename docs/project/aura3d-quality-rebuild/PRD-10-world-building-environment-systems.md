@@ -1642,6 +1642,8 @@ meantime and which criterion moves to the next checkpoint after it lands.
 | Q-12-1 | 12 | Add `packages/engine/assets/world/**` binary paths to LFS in `.gitattributes` and `benchmarks/quality-rebuild/ci.sh`; re-baseline scenes affected by T2 and V4 fixes; rubric lines for §16.2 | C-30, C-32 | lane workflow `qr-prd10-world.yml` pulls LFS itself |
 | Q-13-1 | 13 | Skills/templates from facts `F-10-01..08`; no template uses `water.surface`, `city.block` or primitive trees | C-40 | — |
 | Q-14-1 | 14 | Per-route adoption of `world.*` per §1 target table, using `prd10-world-migrate`; delete review-capture world forks (K7) | R21 | standalone acceptance uses lane scenes, not routes |
+| Q-15-6 | 15 | `contracts/flags.ts` `resolveQrFlags`: fill unset `A3D_QR_WORLD_{TERRAIN,WATER,BIOME}` from an enabled `A3D_QR_WORLD` after all flag sources run, so sub-flags are on-by-default per §13 while `-world.biome`/`A3D_QR_WORLD_BIOME=0` still disable | §13 | lane code reads sub-flags via `worldSubflagOn` (parent-default-on); the C-09 env sources keep the `A3D_QR_WORLD_BIOME` registry gate and activate on explicit `world.biome` until this lands |
+| Q-15-7 | 15 | `tests/unit/rendering/environment-preset-pack.test.ts` + `tests/fixtures/b3-preset-pack-rows.json` (both owner 15): adopt `presetPackExposureFactor`/`presetPackSsimReference` and per-preset SSIM references per T6.5 | T6.5 | selectors are exported from `EnvironmentPresetPack.ts` behind `A3D_QR_WORLD_BIOME`; legacy normalized path untouched flag-off |
 
 PRD 06 (C-26 ground for foot IK), PRD 07 (C-26 height for splashes and rain) and PRD 09 (game runtime hosting
 `app.world` handles) consume C-26 and need no request from PRD 10.

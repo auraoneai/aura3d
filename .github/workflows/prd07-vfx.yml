@@ -44,3 +44,134 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec tsc -p tsconfig.build.json --noEmit
+
+  bake:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Re-bake atlas and diff against committed output
+        run: |
+          node tools/vfx-atlas-bake/bake.mjs --seed 7 --size 2048 --out /tmp/vfx-baked
+          for f in manifest.json aura-vfx-1k.png aura-vfx-2k.png LICENSE.md; do
+            shasum -a 256 "packages/engine/assets/vfx/$f" "/tmp/vfx-baked/$f"
+            cmp "packages/engine/assets/vfx/$f" "/tmp/vfx-baked/$f" || { echo "::error::bake drift on $f — re-run bake.mjs and commit"; exit 1; }
+          done
+
+  browser:
+    runs-on: macos-14
+    timeout-minutes: 45
+    env:
+      QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Lane browser tests
+        run: pnpm exec playwright test --config tests/qr/prd07/playwright.config.ts
+      - name: Upload browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-browser-${{ github.run_id }}
+          path: tests/reports/prd07-browser.json
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Capability-degraded codes
+        if: always()
+        run: |
+          if [ -f tests/reports/prd07-browser.json ]; then
+            grep -o 'capability-degraded[^"]*' tests/reports/prd07-browser.json | sort -u || echo "none"
+          else
+            echo "no report"
+          fi
+
+  capture:
+    runs-on: macos-14
+    timeout-minutes: 90
+    env:
+      QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      SCENE_LIST: "14-particles,09-outdoor-environment,17-large-environment,18-game-scene,prd07-particles-fountain,prd07-flipbook,prd07-particles-stress,prd07-impact-library,prd07-trails-beams,prd07-sky-timeofday,prd07-outdoor-sky"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Fetch bench LFS blobs
+        run: |
+          git lfs pull --include="fixtures/asset-corpus/damaged-helmet.glb,fixtures/asset-corpus/antique-camera.glb,fixtures/asset-corpus/clear-coat-test.glb,fixtures/asset-corpus/sheen-test-grid.glb,public/aura-assets/propRockA.52dd1f0f.glb,public/aura-assets/propRockB.c94b2733.glb,public/aura-assets/deepRecoveryCrateStandard.02520123.glb" || echo "::warning::git lfs pull failed"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Build benchmark bundle
+        run: pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
+      - name: Capture (flags vfx)
+        continue-on-error: true
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "evidence/prd07/${{ github.run_id }}/capture-vfx"
+          --scenes "$SCENE_LIST"
+          --flags vfx
+      - name: Capture (flags none)
+        continue-on-error: true
+        run: >-
+          node benchmarks/quality-rebuild/capture.mjs
+          --dist benchmarks/quality-rebuild/dist
+          --out "evidence/prd07/${{ github.run_id }}/capture-none"
+          --scenes "$SCENE_LIST"
+          --flags none
+      - name: Upload capture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-capture-${{ github.run_id }}
+          path: evidence/prd07/${{ github.run_id }}/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Capability-degraded codes
+        if: always()
+        run: |
+          for f in evidence/prd07/${{ github.run_id }}/capture-*/report.json; do
+            [ -f "$f" ] && echo "== $f" && grep -o '"capability-degraded[^"]*"' "$f" | sort -u || true
+          done
+
+  games:
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      QRC_GPU_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+      GAME_LIST: "showcase-turbo-drift-circuit,showcase-skyline-runner,showcase-neon-swarm,showcase-deep-recovery,showcase-blockfall-reactor"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: Games (flags vfx)
+        continue-on-error: true
+        run: node tools/quality-rebuild-capture/capture-games.mjs --games "$GAME_LIST" --flags vfx --skip-build
+      - name: Games (flags none)
+        continue-on-error: true
+        run: node tools/quality-rebuild-capture/capture-games.mjs --games "$GAME_LIST" --flags none --skip-build
+      - name: Upload game evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd07-games-${{ github.run_id }}
+          path: tools/quality-rebuild-capture/out/
+          retention-days: 30
+          if-no-files-found: warn
