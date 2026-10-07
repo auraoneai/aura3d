@@ -55,6 +55,10 @@
       "devOnly": true
     },
     {
+      "name": "@aura3d/engine/scene/math",
+      "file": "packages/scene/src/MathTypes.ts"
+    },
+    {
       "name": "@aura3d/engine/scene",
       "file": "packages/scene/src/index.ts",
       "devOnly": true
@@ -220,6 +224,10 @@
       "file": "packages/rendering/src/advanced-runtime/index.ts"
     },
     {
+      "name": "@aura3d/rendering/world",
+      "file": "packages/rendering/src/world/index.ts"
+    },
+    {
       "name": "@aura3d/rendering",
       "file": "packages/rendering/src/index.ts"
     },
@@ -321,10 +329,6 @@
       "file": "packages/create-aura3d/src/index.ts"
     },
     {
-      "name": "@aura3d/engine/scene/math",
-      "file": "packages/scene/src/MathTypes.ts"
-    },
-    {
       "name": "@aura3d/engine/physics/solverless",
       "file": "packages/physics/src/solverless.ts"
     },
@@ -383,10 +387,6 @@
     {
       "name": "@aura3d/engine",
       "file": "packages/engine/src/public/index.ts"
-    },
-    {
-      "name": "@aura3d/rendering/world",
-      "file": "packages/rendering/src/world/index.ts"
     }
   ],
   "subpaths": [

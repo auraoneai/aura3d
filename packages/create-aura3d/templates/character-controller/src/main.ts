@@ -100,8 +100,7 @@ const controllerGame = createGame({
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
-    sections: { characterController: () => window.__AURA3D_CHARACTER_CONTROLLER_PROOF__ ?? { status: "unbound" } },
-    legacyGlobals: ["__AURA3D_CHARACTER_CONTROLLER_PROOF__"]
+    sections: { characterController: () => window.__AURA3D_CHARACTER_CONTROLLER_PROOF__ ?? { status: "unbound" } }
   },
   scene: () => scene()
     .add(looks.preset(LOOK_ID))

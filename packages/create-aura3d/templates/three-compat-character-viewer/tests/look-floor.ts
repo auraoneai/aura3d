@@ -61,7 +61,6 @@ export interface LookFloorReport {
   readonly devicePixelRatio: number;
 }
 
-const BRIGHT_LUMA = 48;
 const MIN_BRIGHT_FRACTION = 0.02;
 const MIN_UNIQUE_BUCKETS = 8;
 
@@ -69,24 +68,47 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
   const canvas = page.locator("canvas").first();
   await expect(canvas).toBeVisible();
 
-  const report = await canvas.evaluate((element): LookFloorReport => {
-    const target = element as HTMLCanvasElement;
-    const gl = (target.getContext("webgl2", { preserveDrawingBuffer: true }) ?? target.getContext("webgl", { preserveDrawingBuffer: true })) as WebGL2RenderingContext | WebGLRenderingContext | null;
-    const empty: LookFloorReport = {
-      sampledPixels: 0,
-      brightPixels: 0,
-      uniqueBuckets: 0,
-      subjectBounds: null,
-      appliedLook: null,
-      lookLintErrors: ["no-webgl-context"],
-      devicePixelRatio: globalThis.devicePixelRatio ?? 1
-    };
-    if (!gl) return empty;
+  // Deterministic frame before profiling: pause live apps and step a fixed
+  // number of frames (the registry's settle path exists exactly for this —
+  // profiling a free-running animation makes every bound drift run to run).
+  await page.evaluate(() =>
+    (globalThis as { __AURA3D_LIVE_APPS__?: { settle?: (steps?: number, dt?: number) => number } }).__AURA3D_LIVE_APPS__?.settle?.(45, 1 / 60)
+  );
 
-    const width = gl.drawingBufferWidth;
-    const height = gl.drawingBufferHeight;
-    const pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  // The element screenshot carries browser-composited pixels; the app's WebGL
+  // context is not preserveDrawingBuffer, so a post-composite gl.readPixels
+  // reads a cleared buffer. Profiling the composited frame keeps the same
+  // assertions without depending on context attributes.
+  const png = await canvas.screenshot();
+
+  const report = await page.evaluate(async (dataUrl): Promise<LookFloorReport> => {
+    const BRIGHT_LUMA = 48;
+    const img = new Image();
+    await new Promise<void>((resolvePromise, rejectPromise) => {
+      img.onload = () => resolvePromise();
+      img.onerror = () => rejectPromise(new Error("look-floor screenshot decode failed"));
+      img.src = dataUrl;
+    });
+    const decode = document.createElement("canvas");
+    decode.width = img.naturalWidth;
+    decode.height = img.naturalHeight;
+    const ctx = decode.getContext("2d");
+    if (!ctx) {
+      return {
+        sampledPixels: 0,
+        brightPixels: 0,
+        uniqueBuckets: 0,
+        subjectBounds: null,
+        appliedLook: null,
+        lookLintErrors: ["no-2d-context"],
+        devicePixelRatio: globalThis.devicePixelRatio ?? 1
+      };
+    }
+    ctx.drawImage(img, 0, 0);
+
+    const width = decode.width;
+    const height = decode.height;
+    const pixels = ctx.getImageData(0, 0, width, height).data;
 
     const stride = 4; // pixels — 16×16 sample grid
     let sampled = 0;
@@ -123,7 +145,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
       }
     }
     const subjectBounds = Number.isFinite(minX)
-      ? { x: minX / width, y: 1 - maxY / height, width: (maxX - minX) / width, height: (maxY - minY) / height }
+      ? { x: minX / width, y: minY / height, width: (maxX - minX) / width, height: (maxY - minY) / height }
       : null;
 
     const liveApps = (globalThis as { __AURA3D_LIVE_APPS__?: { all(): readonly { diagnostics?(): Record<string, unknown> }[] } }).__AURA3D_LIVE_APPS__;
@@ -151,7 +173,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
       lookLintErrors,
       devicePixelRatio: globalThis.devicePixelRatio ?? 1
     };
-  });
+  }, `data:image/png;base64,${png.toString("base64")}`);
 
   // 1. Non-blank.
   expect(report.brightPixels / Math.max(1, report.sampledPixels)).toBeGreaterThan(MIN_BRIGHT_FRACTION);
@@ -171,11 +193,12 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
   // 6. Subject bounds ±10%.
   if (options.subject) {
     const tolerance = options.tolerance ?? 0.1;
+    const measured = `measured ${JSON.stringify(report.subjectBounds)}`;
     expect(report.subjectBounds, "no lit subject mass in the central frame").not.toBeNull();
-    expect(Math.abs(report.subjectBounds!.x - options.subject.x)).toBeLessThanOrEqual(tolerance);
-    expect(Math.abs(report.subjectBounds!.y - options.subject.y)).toBeLessThanOrEqual(tolerance);
-    expect(Math.abs(report.subjectBounds!.width - options.subject.width)).toBeLessThanOrEqual(tolerance);
-    expect(Math.abs(report.subjectBounds!.height - options.subject.height)).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(report.subjectBounds!.x - options.subject.x), measured).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(report.subjectBounds!.y - options.subject.y), measured).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(report.subjectBounds!.width - options.subject.width), measured).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(report.subjectBounds!.height - options.subject.height), measured).toBeLessThanOrEqual(tolerance);
   }
 
   return report;

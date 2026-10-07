@@ -48,7 +48,11 @@ export const assets = defineAuraAssets({
     writeWorkspaceViteConfig(appDir);
     writeWorkspacePlaywrightConfig(appDir);
     run("pnpm", ["exec", "vite", "build", "--config", resolve(appDir, "vite.config.ts")], appDir);
-    run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], appDir);
+    // Only the generated screenshot spec runs here: the template's own
+    // route-health spec asserts template-main.ts globals
+    // (__AURA3D_PRODUCT_VIEWER__) that the hello-world main.ts never sets.
+    // check:templates runs it per-template against the real template main.ts.
+    run("pnpm", ["exec", "playwright", "test", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], appDir);
     const screenshotPath = resolve(appDir, "tests/reports/screenshot.png");
     const screenshotReport = JSON.parse(readFileSync(resolve(appDir, "tests/reports/screenshot.json"), "utf8")) as {
       readonly profile?: Record<string, unknown>;
@@ -86,12 +90,25 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
-  const profile = await canvas.evaluate((element) => {
-    const target = element as HTMLCanvasElement;
-    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) return { error: "missing-webgl2", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
-    const pixels = new Uint8Array(target.width * target.height * 4);
-    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  // The element screenshot carries browser-composited pixels, so profiling it
+  // does not depend on preserveDrawingBuffer (the app's context keeps the
+  // default framebuffer attribute; a post-composite gl.readPixels reads a
+  // cleared buffer).
+  const png = await canvas.screenshot();
+  const profile = await page.evaluate(async (dataUrl) => {
+    const img = new Image();
+    await new Promise<void>((resolvePromise, rejectPromise) => {
+      img.onload = () => resolvePromise();
+      img.onerror = () => rejectPromise(new Error("screenshot decode failed"));
+      img.src = dataUrl;
+    });
+    const target = document.createElement("canvas");
+    target.width = img.naturalWidth;
+    target.height = img.naturalHeight;
+    const ctx = target.getContext("2d");
+    if (!ctx) return { error: "missing-2d", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    ctx.drawImage(img, 0, 0);
+    const pixels = ctx.getImageData(0, 0, target.width, target.height).data;
     const buckets = new Set<string>();
     let centerObjectPixels = 0;
     for (let y = 0; y < target.height; y += 4) {
@@ -113,7 +130,7 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
       assetReady: route?.diagnostics?.assets?.some((asset) => asset.id === "robot" && asset.status === "ready") ?? false,
       uniqueBuckets: buckets.size
     };
-  });
+  }, \`data:image/png;base64,\${png.toString("base64")}\`);
   const screenshot = await canvas.screenshot();
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
@@ -154,9 +171,7 @@ function writeWorkspaceViteConfig(targetDir: string): void {
   // real browser consumers never reach.
   const aliasEntries = generatedAliasEntries
     .map(([specifier, path]) => {
-      const replacement = specifier === "@aura3d/engine"
-        ? resolve("packages/engine/src/agent-api/index.ts")
-        : resolve(path);
+      const replacement = resolve(path);
       return `      { find: ${JSON.stringify(specifier)}, replacement: ${JSON.stringify(replacement)} }`;
     })
     .join(",\n");

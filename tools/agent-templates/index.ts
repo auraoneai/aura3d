@@ -473,7 +473,7 @@ function writeWorkspaceViteConfig(targetDir: string, sourceAliases: boolean): vo
     .sort((a, b) => b[0].length - a[0].length)
     .map(([specifier, path]) => {
       const replacement = specifier === "@aura3d/engine"
-        ? resolve("packages/engine/src/agent-api/index.ts")
+        ? resolve("packages/engine/src/public/index.ts")
         : specifier === "@aura3d/animation"
           ? resolve("packages/animation/src/browser-index.ts")
           : specifier === "@aura3d/assets"

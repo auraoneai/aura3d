@@ -206,6 +206,10 @@
       }
     ],
     [
+      "@aura3d/engine/scene/math",
+      "packages/scene/src/MathTypes.ts"
+    ],
+    [
       "@aura3d/engine/scene",
       "packages/scene/src/index.ts",
       {
@@ -407,6 +411,10 @@
       "packages/rendering/src/advanced-runtime/index.ts"
     ],
     [
+      "@aura3d/rendering/world",
+      "packages/rendering/src/world/index.ts"
+    ],
+    [
       "@aura3d/rendering",
       "packages/rendering/src/index.ts"
     ],
@@ -516,10 +524,6 @@
       "packages/create-aura3d/src/index.ts"
     ],
     [
-      "@aura3d/engine/scene/math",
-      "packages/scene/src/MathTypes.ts"
-    ],
-    [
       "@aura3d/engine/physics/solverless",
       "packages/physics/src/solverless.ts"
     ],
@@ -578,10 +582,6 @@
     [
       "@aura3d/engine",
       "packages/engine/src/public/index.ts"
-    ],
-    [
-      "@aura3d/rendering/world",
-      "packages/rendering/src/world/index.ts"
     ]
   ]
 }
