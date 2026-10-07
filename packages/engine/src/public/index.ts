@@ -97,6 +97,8 @@ export { evaluatePromptAnimationPublishReadiness } from "../agent-api/index.js";
 export { gameAssetValidation } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */
 export type { GamePlatformerEvent } from "../agent-api/index.js";
+/** @deprecated Deleted. Deleted from "." in 4.0.0. */
+export type { CharacterAssemblyValidationReport } from "../agent-api/index.js";
 /** @deprecated Use `@aura3d/engine/assets`. Deleted from "." in 4.0.0. */
 export { GLTFLoader } from "../agent-api/index.js";
 /** @deprecated Deleted. Deleted from "." in 4.0.0. */

@@ -63,7 +63,9 @@ consumes via `@aura3d/input` (request **Q-13-10**).
 **`AuraRendererQualityProfile` deprecated fields** stay — 11-owned
 `rendererOptions.ts` populates them (request **Q-11-6**).
 
-**64 blocked `.` names**, per-name consumers:
+**65 blocked `.` names** (+`CharacterAssemblyValidationReport`, kept at
+merge-time when lane-14's new `apps/showcase-mech-hangar/src/gameplay/assembly.ts`
+began consuming it — request **Q-14-1**), per-name consumers:
 
 | Name | Blocking lanes | Sample consumers |
 |---|---|---|
