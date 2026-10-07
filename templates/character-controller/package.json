@@ -1,0 +1,24 @@
+{
+  "name": "aura3d-character-controller",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "enable:physics": "npm install @aura3d/physics@3.0.1 @aura3d/physics-rapier@3.0.1",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts tests/certified-rig.spec.ts --workers=1"
+  },
+  "dependencies": {
+    "@aura3d/animation": "3.0.1",
+    "@aura3d/engine": "3.0.1",
+    "@aura3d/navigation-recast": "3.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
+  }
+}

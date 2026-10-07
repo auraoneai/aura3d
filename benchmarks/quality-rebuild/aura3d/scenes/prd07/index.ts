@@ -11,5 +11,18 @@ export const adapterSceneIds = [
   "prd07-trails-beams",
   // P3-T7 sky scenes (three adapters exist).
   "prd07-sky-timeofday",
-  "prd07-outdoor-sky"
+  "prd07-outdoor-sky",
+  // P4-T8 fog scenes — fog-transition and underwater are Aura-only (C-30).
+  "prd07-fog-height",
+  "prd07-fog-transition",
+  "prd07-underwater",
+  // P5-T8 weather/volumetric/I2 scenes.
+  "prd07-rain-night",
+  "prd07-snow",
+  "prd07-volumetric-shafts",
+  "prd07-lit-smoke",
+  "prd07-soft-particles",
+  "prd07-water-interleave",
+  // P6-T7 §6.9 merged decals + surface trail.
+  "prd07-decals"
 ] as const;

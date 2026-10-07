@@ -35,6 +35,24 @@ describe("create-aura3d templates", () => {
     }
   });
 
+  // T2.15/T2.19 — scaffolded projects ship the canonical agent file (AGENTS.md
+  // and .claude/CLAUDE.md, byte-identical to skills/agent-files/AGENTS.md) and
+  // the aura3d-lookdev workflow. check:templates asserts this across the whole
+  // template tree; this test asserts it lands in generated projects.
+  test("scaffolded projects carry the canonical agent files and look-dev workflow", () => {
+    const canonical = readFileSync("packages/aura3d-cli/skills/agent-files/AGENTS.md", "utf8");
+    for (const template of CREATE_AURA3D_TEMPLATES) {
+      const targetDir = join(tmpdir(), `create-aura3d-agents-${template}-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      createA3DProject({ targetDir, template, rootDir: "packages/create-aura3d" });
+      expect(readFileSync(join(targetDir, "AGENTS.md"), "utf8")).toBe(canonical);
+      expect(readFileSync(join(targetDir, ".claude", "CLAUDE.md"), "utf8")).toBe(canonical);
+      const workflow = readFileSync(join(targetDir, ".github", "workflows", "aura3d-lookdev.yml"), "utf8");
+      expect(workflow).toContain("workflow_dispatch");
+      expect(workflow).toContain("macos-14");
+      expect(workflow).not.toContain("secrets:");
+    }
+  });
+
   test("fighting-game readiness distinguishes placeholders from typed asset proof", () => {
     const placeholder = createFightingRouteReadiness({ missingFighterAssets: [PLAYER_FIGHTER_ASSET, RIVAL_FIGHTER_ASSET] });
     const typedAssets = createFightingRouteReadiness({ missingFighterAssets: [] });

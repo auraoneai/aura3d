@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-rooftop-buckets",
+  "entries": [
+    {
+      "file": "references/dusk-rooftop-hdri.json",
+      "source": "K1 dusk city-rooftop HDRI set (CC0)",
+      "licence": "reference-only",
+      "why": "Dusk skyline plate the open wall composition and warm-cool rim lighting target"
+    },
+    {
+      "file": "references/streetball-court.json",
+      "source": "shipped comparable: NBA Street / playground-court boards",
+      "licence": "reference-only",
+      "why": "Painted-concrete court wear, chain-link + parapet reads, dusk floodlight pools"
+    },
+    {
+      "file": "references/skinned-athletes.json",
+      "source": "admitted rooftopLayupScorer / rooftopDefender GLBs (44.6k tris, 191 joints)",
+      "licence": "reference-only",
+      "why": "The in-play athletes — clip set and joint budget drive the animation plan"
+    }
+  ]
+}

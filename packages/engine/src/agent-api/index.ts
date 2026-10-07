@@ -3094,6 +3094,10 @@ export const environments = {
   ...worldEnvBuilders
 } as const;
 
+// T2.7: the documented look surface (v0 group expansion is ungated; the v1
+// AuraLookNode path stays behind the looks expansion rules in looks.ts).
+export { looks } from "./looks/looks.js";
+
 
 
 
@@ -8188,6 +8192,18 @@ export { compilePromptPlan } from "./nodes/prompt/promptPlan.js";
 export function promptPlanToScene(plan: AuraPromptPlan): AuraSceneBuilder {
   return compilePromptPlan(plan).scene;
 }
+
+// PRD-13 T3.8 — public surface for prompt plan v2 (opt-in; the 1-arg
+// `promptPlanToScene`/`compilePromptPlan` keep their 1.0 shape). Also exported
+// through the lane barrel `src/lanes/prd13.ts`.
+export { compilePromptPlanV2, promptPlanToSceneV2, AuraPromptPlanError } from "./nodes/prompt/promptPlanV2.js";
+export type {
+  AuraCompilePromptPlanOptions,
+  AuraCompiledPromptPlanV2,
+  AuraPromptPlanErrorCode,
+  AuraPromptPlanReportV2,
+  AuraPromptPlanV2
+} from "./nodes/prompt/promptPlanV2.js";
 
 export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
 

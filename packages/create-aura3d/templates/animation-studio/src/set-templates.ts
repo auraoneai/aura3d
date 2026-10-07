@@ -170,15 +170,18 @@ const MEADOW: SetSpec = {
 // themed keyword. This guarantees a non-matching prompt never silently inherits the
 // Moon Garden look; it gets a plain studio set instead.
 // ---------------------------------------------------------------------------
+// PRD-13 T3.10: the default stage adopts the `interior-warm` look's environment
+// and key (warm key light, warm softbox IBL, warm-grade background) instead of a
+// neutral grey rig. Episode tooling beyond this stage setup is out of scope.
 const STUDIO: SetSpec = {
-  clearColor: [0.06, 0.07, 0.09, 1],
+  clearColor: [0.11, 0.09, 0.07, 1], // interior-warm v0 background (#1c1712)
   studioLightingScale: 0.5,
   environment: {
-    color: [0.5, 0.52, 0.55],
-    intensity: 0.4,
-    proceduralMap: { skyColor: [0.18, 0.19, 0.21], horizonColor: [0.24, 0.25, 0.27], groundColor: [0.08, 0.08, 0.09], specularColor: [0.8, 0.82, 0.85], intensity: 0.4, specularIntensity: 0.5 },
-    // Neutral grey studio softbox IBL — even overhead key, no coloured cast (a clean cyc look).
-    hdri: { skyColor: [0.7, 0.71, 0.74], horizonColor: [0.34, 0.35, 0.38], groundColor: [0.12, 0.12, 0.14], sun: { color: [1, 1, 1], intensity: 1.4, azimuth: -0.3, elevation: 1.1, angularRadius: 0.22 }, intensity: 0.6, specularIntensity: 0.55 }
+    color: [0.55, 0.49, 0.42],
+    intensity: 0.45,
+    proceduralMap: { skyColor: [0.24, 0.2, 0.16], horizonColor: [0.3, 0.25, 0.2], groundColor: [0.1, 0.09, 0.08], specularColor: [0.9, 0.82, 0.72], intensity: 0.45, specularIntensity: 0.6 },
+    // Warm studio softbox IBL — interior-warm key (#ffe3c2) as the sun source.
+    hdri: { skyColor: [0.62, 0.55, 0.46], horizonColor: [0.38, 0.32, 0.26], groundColor: [0.14, 0.11, 0.09], sun: { color: [1, 0.89, 0.76], intensity: 1.9, azimuth: 0.87, elevation: 0.44, angularRadius: 0.22 }, intensity: 0.65, specularIntensity: 0.6 }
   },
   pieces: [
     // A FAR backdrop wall placed well behind the stage (not a giant enclosing dome): it reads as an
@@ -191,9 +194,10 @@ const STUDIO: SetSpec = {
     { id: "pillar-r", geometry: "cube", position: [3.4, 1.1, -2.6], scale: [0.42, 2.2, 0.42], baseColor: [0.16, 0.17, 0.2, 1], metallic: 0.3, roughness: 0.6, emissiveColor: [0.05, 0.05, 0.06], emissiveStrength: 0.12 }
   ],
   lights: [
-    { id: "key", kind: "point", color: [1, 0.97, 0.9], position: [-2.6, 3.8, 3.0], intensity: 4.4, range: 20 },
-    { id: "fill", kind: "point", color: [0.82, 0.84, 0.92], position: [2.8, 2.2, 1.6], intensity: 2.2, range: 14 },
-    { id: "rim", kind: "point", color: [0.9, 0.9, 1], position: [0.3, 2.2, -2.4], intensity: 2.4, range: 13 }
+    // interior-warm key/rim pair: warm key + warm accent rim (accent #e0a45c).
+    { id: "key", kind: "point", color: [1, 0.89, 0.76], position: [-2.6, 3.8, 3.0], intensity: 4.2, range: 20 },
+    { id: "fill", kind: "point", color: [0.85, 0.8, 0.72], position: [2.8, 2.2, 1.6], intensity: 2.0, range: 14 },
+    { id: "rim", kind: "point", color: [0.88, 0.64, 0.36], position: [0.3, 2.2, -2.4], intensity: 2.6, range: 13 }
   ]
 };
 

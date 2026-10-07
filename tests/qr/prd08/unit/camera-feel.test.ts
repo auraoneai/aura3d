@@ -7,7 +7,9 @@ import {
   createOccluderFade,
   createOccluderFadeContributor,
   createScreenOverlay,
-  FEEL_PRESETS
+  FEEL_PRESETS,
+  FEEL_PRESET_EVENTS,
+  feelPresets
 } from "@aura3d/engine/lanes";
 import type { AuraFeelEventSpec } from "@aura3d/engine/contracts";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
@@ -125,6 +127,37 @@ describe("FeelBus screen uniforms (S-3)", () => {
     expect(Number(els[0].style.opacity)).toBeCloseTo(0.4, 6);
     expect(overlay.apply({ flash: 0, chroma: 0, radialBlur: 0, vignette: 0, center: [0, 0] })).toBe(false);
     overlay.dispose();
+  });
+
+  it("F-3: every preset defines all ten canonical events; calm stays in budget", () => {
+    for (const name of Object.keys(FEEL_PRESETS) as (keyof typeof FEEL_PRESETS)[]) {
+      const table = FEEL_PRESETS[name];
+      for (const event of FEEL_PRESET_EVENTS) {
+        expect(table[event], `${name}.${event}`).toBeDefined();
+      }
+      for (const spec of Object.values(table)) {
+        expect(spec.shake ?? 0).toBeLessThanOrEqual(0.8);
+        expect(spec.hitStop?.seconds ?? 0).toBeLessThanOrEqual(0.1);
+        expect(spec.screen?.flash ?? 0).toBeLessThanOrEqual(0.4);
+        expect(spec.haptics?.strong ?? 0).toBeLessThanOrEqual(1);
+        // Reduced-motion multipliers (shake ×0.3, punch ×0.5) can only shrink values.
+        expect((spec.shake ?? 0) * 0.3).toBeLessThanOrEqual(spec.shake ?? 0);
+      }
+    }
+    const calm = FEEL_PRESETS.calm;
+    for (const spec of Object.values(calm)) {
+      expect(spec.shake ?? 0).toBeLessThanOrEqual(0.1);
+      expect(spec.haptics).toBeUndefined();
+      expect(spec.screen).toBeUndefined();
+    }
+    // The canonical table values (§14) for the specified rows.
+    expect(FEEL_PRESETS.fighting["hit-light"].shake).toBeCloseTo(0.25);
+    expect(FEEL_PRESETS.fighting["hit-light"].hitStop).toEqual({ seconds: 0.045, scope: "actors" });
+    expect(FEEL_PRESETS.fighting["ko"].shake).toBeCloseTo(0.8);
+    expect(FEEL_PRESETS.racing["boost"].punch?.fov).toBe(8);
+    expect(FEEL_PRESETS.arcade["explode"].shake).toBeCloseTo(0.7);
+    expect(FEEL_PRESETS.puzzle["score"].punch?.fov).toBe(-2);
+    expect(feelPresets).toBe(FEEL_PRESETS);
   });
 
   it("presets define real specs", () => {

@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-vault-breakers",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-vault-breakers",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.0,
+        "modeling_assets": 2.0,
+        "texture_quality": 1.0,
+        "material_quality": 2.0,
+        "pbr_credibility": 1.0,
+        "lighting": 2.0,
+        "shadows": 1.0,
+        "ambient_lighting": 2.0,
+        "ibl_reflections": 0.0,
+        "tone_mapping": 4.0,
+        "color_management": 4.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 1.0,
+        "vfx": 1.0,
+        "particles": 0.0,
+        "animation_quality": 3.0,
+        "character_presentation": 1.0,
+        "camera": 4.0,
+        "composition": 4.0,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 3.0,
+        "ui_hud": 5.0,
+        "typography": 5.0,
+        "polish_juice": 1.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 2.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Flat-colored box room with line decals; no arcade, no props, no depth."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Every element is a raw primitive (box, cylinder, prism, capsule); no bevels, caps, skirts, rubbers or wireforms."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "No textures at all; the playfield has no art, which is the single most important surface in pinball."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Everything is matte single-color plastic; no metal, rubber, glass or lacquer differentiation."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No roughness/metalness variation is readable; flippers and rails show no specular response."
+        },
+        {
+          "category": "lighting",
+          "seen": "One soft key plus ambient; no GI lights, lamp inserts or neon emission, despite the \"neon pinball\" pitch."
+        },
+        {
+          "category": "shadows",
+          "seen": "No cast shadows from posts, bumpers or flippers; objects float."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Uniform ambient fill with no AO in corners, under bumpers or at rail bases."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No environment reflections; a pinball table without a glossy playfield or chrome ball is missing its signature look."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "No clipping or crush, but low-contrast and flat, with no HDR highlights to map."
+        },
+        {
+          "category": "color_management",
+          "seen": "The palette is coherent (slate/cyan/magenta/tan) but desaturated and muddy; the tan/brown elements fight the neon theme."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are reasonably clean at 1080p; the thin rails and line decals show mild stair-stepping."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "No bloom, AO, vignette or color grade is evident; the magenta wall gradient is geometry or texture, not post."
+        },
+        {
+          "category": "vfx",
+          "seen": "The only candidate is a single thin gold ring in one frame."
+        },
+        {
+          "category": "particles",
+          "seen": "None visible."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Flipper pose changes are visible; there are no secondary motion cues (bumper pulses, target drops, lamp chases)."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The ball is the \"hero\" and is effectively invisible in every frame."
+        },
+        {
+          "category": "camera",
+          "seen": "Shows the whole table legibly but is fully static, too high and too far; the top third is wasted on backdrop."
+        },
+        {
+          "category": "composition",
+          "seen": "Symmetric and readable, but the subject is small, the empty grey side decks eat space and the backbox is a dead zone."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No shadows, AO or reflections, so object heights and contacts are hard to read; the table feels like a diorama."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No haze, glow, light shafts or dust; the room has no air."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Layout is readable, but you can't find the ball, and score changes have no in-world feedback."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean, consistent dark-card panel; the \"0 DOWN 5 TO GO\" copy is awkward and the panel is generic web-app UI."
+        },
+        {
+          "category": "typography",
+          "seen": "Tidy sans with a warm title accent; generic and with no pinball/DMD flavor."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "Three desktop frames are nearly identical despite score changes; zero feedback."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Table is cropped and small, keyboard prompts appear on touch, the button bar overlaps content, and nearly half the screen is stats."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as a programmer-art physics prototype, below the \"dated but competent\" bar."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

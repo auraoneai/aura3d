@@ -1,4 +1,15 @@
-import { camera, createAuraApp, game, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  game,
+  lights,
+  looks,
+  material,
+  model,
+  primitives,
+  scene,
+  type AuraApp
+} from "@aura3d/engine";
 import { AudioClip, AudioSource, AudioSystem, SpatialAudio, type AudioSourceState } from "@aura3d/audio";
 import { assets } from "../../src/aura-assets.js";
 
@@ -69,7 +80,7 @@ async function boot(): Promise<void> {
     scene: scene()
       .background("#05070b")
       .camera(camera.perspective({ position: [0, 3.1, 8.5], target: [0, 0.8, 0], fov: 39 }))
-      .add(lights.ambient({ intensity: 0.48, color: "#dbeafe" }))
+      .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
       .add(lights.directional({ name: "audio key", position: [6, 10, 7], intensity: 3, color: "#fff2da" }))
       .add(lights.directional({ name: "audio front fill", position: [0, 4, 8], intensity: 2.6, color: "#e0f2fe" }))
       .add(lights.directional({ name: "audio rim", position: [-6, 4, -2], intensity: 1.4, color: "#8b5cf6" }))

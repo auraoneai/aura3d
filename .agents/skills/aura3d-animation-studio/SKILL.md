@@ -11,14 +11,20 @@ validated scene tools and is rejected if it would break the scene. Shared rules
 (claim labels, forbidden patterns, typed assets, benchmark mode) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+An episode holds one look across shots: pick the look preset (usually
+`golden-hour` or `night-city` for drama) before storyboard, keep the grade and
+fog consistent between cuts, and light each shot's key to the same direction
+so intercut frames share a single palette and mood.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and confirm the `animation scene` line.
-   `aura3d animation scene <verb> ...` only forwards to the template's `scene`
-   npm script, so run it from the `animation-studio` project directory. Inside
-   the monorepo, `pnpm scene <verb>` in the template directory is equivalent.
-2. Run `npx @aura3d/cli@latest animation scene show --dry-run` to see the
-   delegated script, runner, and cwd before editing anything.
+   `aura3d animation scene <verb> ...` forwards to the template's `scene` npm
+   script (run from the `animation-studio` directory; `pnpm scene` is equivalent).
+2. Run `npx @aura3d/cli@latest animation scene show --dry-run` first: it prints
+   the delegated script, runner, and cwd before anything edits.
 3. Read `src/aura-assets.ts` and `aura.assets.json`. Cast and prop GLBs you
    bring yourself must be typed assets first (load `aura3d-assets`).
 4. Know where rendering works. The live renderer needs the Aura3D monorepo root
@@ -36,7 +42,6 @@ Previs (before any blocking):
 2. Write a one-line beat sheet: one beat per planned shot, each with who acts
    and what changes on screen.
 3. Lock the cast: a stable id per character (for example `worker-1`) that
-   every later command reuses. Do not rename ids after blocking starts.
 
 Author the document:
 
@@ -123,7 +128,7 @@ Render and hand off:
 
 - `validate` fails and a scene-tool edit cannot fix it: stop and report the
   errors verbatim. Do not hand-edit `working.document.json` to force a pass.
-- No A-grade or catalog rig binds for a cast slot: report the slot and the
+- No A-grade or catalog rig binds for a cast slot: stop and name the slot
   rejected candidates. Do not substitute the Moon Garden cast, a still image,
   or a primitive stand-in.
 - You are outside the monorepo, or no remote worker is available, so `render`
@@ -145,3 +150,4 @@ Render and hand off:
 - [AuraVoice bridge contract](https://github.com/auraoneai/aura3d/blob/main/docs/api/auravoice-bridge.md)
 - [Scene-Tool CLI source](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/animation-studio/scripts/animation-scene.ts)
 - Rig inspection, clip maps, visemes: load `aura3d-character-animation`.
+- [Episode look continuity](references/shot-looks.md)

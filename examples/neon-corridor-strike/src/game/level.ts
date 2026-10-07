@@ -6,6 +6,7 @@ import {
   groundedRenderedAssetPlacement,
   instances,
   lights,
+  looks,
   material,
   model,
   primitives,
@@ -510,7 +511,7 @@ export function buildScene() {
     .add(effects.bloom({ name: "containment power bloom", intensity: 0.16, color: "#79e4ec", threshold: 0.82, radius: 0.2, maxIntensity: 0.26, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }))
     .add(effects.colorGrade({ exposure: 1.04, contrast: 1.06, saturation: 1.1 }))
     .add(effects.antiAlias({ mode: "fxaa" }))
-    .add(lights.ambient({ name: "corridor exposure fill", intensity: 0.5, color: "#bdcfcc" }))
+    .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
     .add(lights.directional({ name: "steel architectural key", position: [-4, 7, 6], intensity: 1.02, color: "#dcefeb" }))
     .add(lights.directional({ name: "warm asset rim", position: [5, 5, -9], intensity: 1.32, color: "#f2b878" }))
     .add(lights.point({ name: "spawn practical", position: [0, 2.35, 7.2], color: "#77d8e5", intensity: 1.5 }))

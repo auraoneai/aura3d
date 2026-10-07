@@ -16,23 +16,22 @@
       "typedRef": "assets.showcaseCc0FormulaRaceCar",
       "role": "vehicle",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.showcaseCcByFormulaOpponent",
       "role": "vehicle",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     },
     {
       "typedRef": "assets.turboFormulaCircuit",
       "role": "track",
       "status": "typed-primary-asset",
-      "quality": "release"
+      "quality": "candidate"
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 0,
     "primitiveBudget": 0,
     "role": "none",
     "status": "no-primitive-primary-subjects-generated"
@@ -13968,5 +13967,8 @@
       "requiresDurableProvenance": true,
       "requiresSuitabilityReason": true
     }
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

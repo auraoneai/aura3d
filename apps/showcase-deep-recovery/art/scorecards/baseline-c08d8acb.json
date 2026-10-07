@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-deep-recovery",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-deep-recovery",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.5,
+        "modeling_assets": 2.5,
+        "texture_quality": 1.0,
+        "material_quality": 2.0,
+        "pbr_credibility": 1.5,
+        "lighting": 2.5,
+        "shadows": 1.0,
+        "ambient_lighting": 2.5,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 3.0,
+        "color_management": 4.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 3.0,
+        "vfx": 3.5,
+        "particles": 3.0,
+        "animation_quality": 2.0,
+        "character_presentation": 1.5,
+        "camera": 2.5,
+        "composition": 2.0,
+        "scale_depth_perception": 2.0,
+        "atmospheric_effects": 1.5,
+        "gameplay_readability": 3.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 3.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 2.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "No seabed, reef, terrain, or water volume; just floating translucent discs and cylinders in a black void."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Cylinders, boxes, tori, and kitbashed cube clusters; no authored silhouettes."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Effectively untextured; flat tint plus one dithered ring texture."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Everything is either flat translucent teal or additive emissive; no material differentiation."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No roughness or metal response anywhere; nothing reads as steel, rock, or coral."
+        },
+        {
+          "category": "lighting",
+          "seen": "Emissives are the only light read; no key light direction, no headlight, no falloff on surfaces."
+        },
+        {
+          "category": "shadows",
+          "seen": "None visible, so nothing grounds the objects."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Uniform flat teal ambient with no occlusion or depth gradient."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No environment reflections or specular at all."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Emissive caps clip to pure white and the rest crushes to black; no highlight rolloff."
+        },
+        {
+          "category": "color_management",
+          "seen": "Palette is coherent (cyan/teal plus orange accent) but monochrome and blacks are crushed."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges look acceptable at desktop res; translucent overlaps hide the worst of it (partly inferred)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom only, overdriven into haze blobs; no fog, DOF, grading, or underwater distortion."
+        },
+        {
+          "category": "vfx",
+          "seen": "Ring and streak effects exist but are generic, overbright, and semantically unclear."
+        },
+        {
+          "category": "particles",
+          "seen": "Comet streaks are large, uniform, and read as projectiles rather than marine snow or bubbles."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "No pose or motion cues; static props, no thrust wake or prop wash."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The player sub is either cropped offscreen or indistinguishable from wreck clutter."
+        },
+        {
+          "category": "camera",
+          "seen": "Steep top-down, the hero is not framed, and the near-plane foreground clutter is cropped."
+        },
+        {
+          "category": "composition",
+          "seen": "No focal point; the centre is empty and bright blobs sit at the frame edges."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "No ground, fog falloff, or known-size references, so distance is unreadable."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No underwater fog colour, god rays, caustics, or suspended particulate; the void is black."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "The HUD carries the game; in-world you can't tell sub vs wreck vs pickup vs hazard."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean, consistent sci-fi panels with good hierarchy, but too many panels and keyboard legends left on screen."
+        },
+        {
+          "category": "typography",
+          "seen": "Legible mono/sans pairing with sensible color coding; small sizes on desktop."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback moments visible; the bloom does all the work."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "UI eats over half the screen, a panel overlaps the reticle, and the world is a cropped sliver."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Programmer-art prototype with a decent HUD skin."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

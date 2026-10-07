@@ -20,6 +20,7 @@ import type { AuraFeelBusImpl } from "./FeelBus.js";
 import { createFeelBus } from "./FeelBus.js";
 import { createScreenOverlay, type AuraScreenOverlay } from "./ScreenOverlay.js";
 import { probeHaptics, playHaptic } from "@aura3d/input";
+import { bindFeelLintProbe } from "./lint/evidenceOnlyFeel.js";
 
 interface FrameInfo { readonly dt: number; }
 type OnFrameApp = { onFrame?(cb: (f: FrameInfo) => void): () => void };
@@ -43,6 +44,8 @@ export interface AuraFeelExtensionOptions {
   readonly sound?: SoundLike;
   /** Reduced-motion source; default `prefers-reduced-motion` media query. */
   readonly reducedMotion?: () => boolean;
+  /** I-6: `false` disables the haptics channel provider entirely. */
+  readonly haptics?: boolean;
 }
 
 export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOptions = {}): AuraFeelBusImpl {
@@ -74,7 +77,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
       : undefined,
     time: time?.hitStop ? { hitStop: (s, o) => time.hitStop!(s, o) } : undefined,
     haptics:
-      hapticCapability.vibrate || hapticCapability.gamepadRumble
+      options.haptics !== false && (hapticCapability.vibrate || hapticCapability.gamepadRumble)
         ? (o) => {
             const nav = typeof navigator !== "undefined" ? (navigator as { vibrate?: (p: number | readonly number[]) => boolean }) : undefined;
             const pads = typeof nav !== "undefined" && typeof (navigator as { getGamepads?: () => unknown[] }).getGamepads === "function"
@@ -153,10 +156,22 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
       if (!ctx.flags.on("A3D_QR_CAMERA")) return items;
       ctx.blackboard.set(SCREEN_FEEL_BLACKBOARD_KEY, latest.uniforms);
       blackboardConsumed.current = ctx.blackboard.get("prd08.screenFeel.consumed") === true;
+      lintFrames += 1;
       return items;
     }
   };
   const disposeContributor = registerFrameContributor(screenFeelContributor);
+
+  // F-7b: feed the runtime `look/evidence-only-feel` rule this bus's counters.
+  let lintFrames = 0;
+  bindFeelLintProbe(() => {
+    const e = bus.evidence() as { emitted: number | readonly unknown[]; executed: Record<string, number> };
+    return {
+      emitted: typeof e.emitted === "number" ? e.emitted : e.emitted.length,
+      executed: e.executed,
+      frames: lintFrames
+    };
+  });
 
   const impl = bus as AuraFeelBusImpl & {
     readonly latestScreenUniforms: () => AuraScreenFeelUniforms;
@@ -170,6 +185,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
       unframe?.();
       disposeContributor();
       overlay?.dispose();
+      bindFeelLintProbe(() => undefined);
     }
   });
   return impl;

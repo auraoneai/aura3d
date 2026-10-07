@@ -12,13 +12,13 @@ description: <one sentence of what it does>. Use when <triggers naming templates
 ---
 
 Body rules:
-- <= 150 lines. Sections in order: "Establish the contract" (run `npx @aura3d/cli@latest --help` / `<cmd> --help`, read `src/aura-assets.ts`), "Procedure" (ordered numbered steps), "Stop and report" (conditions to stop and label `blocked`/`prototype`), "References".
+- <= 150 lines. Required body sections in order (core, scene, game, materials, character and art-direction skills): "Look target", "Establish the contract" (run `npx @aura3d/cli@latest --help` / `<cmd> --help`, read `src/aura-assets.ts`), "Procedure" (ordered numbered steps), "Look-dev loop" (the §6.5 capture -> judge -> iterate loop), "Stop and report" (conditions to stop and label `blocked`/`prototype`), "References".
 - Shared rules: link `../aura3d-core/references/boundaries.md`; do not restate the boundary list beyond one line.
 - Every `aura3d ...` / `npx @aura3d/cli@latest ...` command and flag MUST exist in `packages/aura3d-cli/src/cli-help.ts`. `animation scene <verb>` verbs MUST exist in `packages/create-aura3d/templates/animation-studio/scripts/animation-scene.ts` (verbs: new show block camera gesture dress clear-props set cast scale shot prop dialogue retime undo validate render). `pnpm check:skills` enforces this.
 - Every engine API named in backticks as `name(` or `ns.member` must be an actual export (verify with rg in packages/engine/src/agent-api/index.ts or the named package's src/index.ts). Do not cite APIs you have not verified.
-- Links: no repo-relative `docs/...` links (downstream projects have no docs/). Use absolute GitHub URLs: `https://github.com/auraoneai/aura3d/blob/main/<path>` for files that exist in this repo, or `https://aura3d.auraone.ai/...` URLs present in sitemap.xml, or relative links to files inside the skills tree.
+- Links: no repo-relative `docs/...` links (downstream projects have no docs/). Use absolute GitHub URLs: `https://github.com/auraoneai/aura3d/blob/main/<path>` for files that exist in this repo, `https://threejs.org/examples/` example links (allowed external reference frames), or `https://aura3d.auraone.ai/...` URLs present in sitemap.xml, or relative links to files inside the skills tree.
 - Forbidden in skill text code blocks: `from "three"`, `import * as THREE`, `new GLTFLoader`, raw `.glb` http(s) URLs, `unsafeModelUrl(` (may be mentioned only as forbidden in prose), Scenario URLs, secrets/tokens.
-- Branch on benchmark mode where screenshots/dev servers are mentioned: benchmark = `npm install && npm run build` then stop.
+- Benchmark mode: if `aura3d look capture` is available, run the look-dev loop; otherwise build and stop and label the result `prototype`.
 - Heavy browser runs (Playwright suites) are remote/CI by default; mention `npm run test` as the template gate.
 
 Worked example log (PRD T6.2): `docs/agents/skills-examples/<skill-name>.md` containing: goal, commands actually run in this repo (lightweight only: --help, --dry-run, `assets inspect`/`validate` on existing fixtures or a template dir, `compilePromptPlan` via tsx one-liners, etc.), trimmed real output, and what evidence would be captured remotely. Never fabricate output; if a command could not run, say so.

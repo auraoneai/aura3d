@@ -92,7 +92,10 @@ export function subjectFromHandle(
     velocity,
     forward: subjectForward(handle.rotation),
     bounds: { min: bounds.min, max: bounds.max },
-    rotation: quatFromEulerXYZ(handle.rotation) // CCR-08-2
+    rotation: quatFromEulerXYZ(handle.rotation), // CCR-08-2
+    // V-6: model telemetry published on the handle (bicycle vehicle state
+    // {lateralG, vLong}) flows to rigs that prefer it over estimates.
+    telemetry: (handle as { telemetry?: AuraCameraSubject["telemetry"] }).telemetry
   };
   return subject;
 }

@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-turbo-drift-circuit",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-turbo-drift-circuit",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.5,
+        "modeling_assets": 3.5,
+        "texture_quality": 1.5,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.5,
+        "shadows": 2.5,
+        "ambient_lighting": 3.5,
+        "ibl_reflections": 2.5,
+        "tone_mapping": 4.0,
+        "color_management": 4.5,
+        "anti_aliasing": 5.0,
+        "postprocessing": 3.5,
+        "vfx": 2.0,
+        "particles": 1.5,
+        "animation_quality": 3.0,
+        "character_presentation": 4.0,
+        "camera": 3.5,
+        "composition": 2.5,
+        "scale_depth_perception": 2.5,
+        "atmospheric_effects": 3.0,
+        "gameplay_readability": 5.0,
+        "ui_hud": 6.5,
+        "typography": 7.0,
+        "polish_juice": 2.5,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 3.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Flat-shaded plane world, sparse primitive trees, two stands, empty sky."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "The car silhouette is decent but faceted. Environment pieces are boxes, slabs and spheres."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Effectively no textures: asphalt, grass, sand and seats are all flat color."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Car has some gloss. Everything else is matte flat albedo with no roughness variation."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Car spec is plausible but clips. Asphalt has no micro-roughness or wetness, so nothing reads as a real material."
+        },
+        {
+          "category": "lighting",
+          "seen": "Single soft key with no strong directional sun read and no light shaping. Scenes look flatly lit."
+        },
+        {
+          "category": "shadows",
+          "seen": "Faint car contact shadow. Stands, trees and gantry cast nothing visible onto the ground."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Ambient is uniform grey with no AO grounding in crevices, wheels or stand bases."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "Car shows weak env response. No sky reflection on car paint, no ground reflections."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Filmic-ish rolloff in the sky, but highlights clip (wing, gantry) and midtones are grey-washed."
+        },
+        {
+          "category": "color_management",
+          "seen": "Coherent pastel sunset palette but desaturated, with grey haze crushing contrast."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges are mostly clean at 1080p. Some stair-stepping on thin kerbs and distant poles."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom on lane strips and vignette only. The bloom is smeary and the haze lowers contrast."
+        },
+        {
+          "category": "vfx",
+          "seen": "One glow puff and placeholder drift ring. No smoke, sparks or speed effects."
+        },
+        {
+          "category": "particles",
+          "seen": "Effectively no particle tire smoke. Skid marks are disc or rectangle decals."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "No visible wheel steer angle, body roll or suspension cues in stills."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The car is the most authored asset and reads as an F1-ish racer, but it is low-poly and lacks livery detail."
+        },
+        {
+          "category": "camera",
+          "seen": "Desktop chase height is OK in the opening, but mid and action shots are too close and too tilted. Mobile is far too close."
+        },
+        {
+          "category": "composition",
+          "seen": "Lower half of the frame is empty grey asphalt, and the horizon is cluttered with tiny props."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Untextured ground gives no speed or scale cues. 177 km/h reads as stationary."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "Distance haze exists but behaves like a grey wash, not aerial perspective. No sky detail."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Track edges are readable via kerbs and lines, but overlapping slabs confuse the racing line."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean glassy panels with good hierarchy. The stats cluster is dense, and \"GGhost OFF\" is a label bug."
+        },
+        {
+          "category": "typography",
+          "seen": "Crisp sans-serif with good weight contrast. Micro-labels are too small on desktop."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No screen shake, FOV kick, motion blur, smoke or speed lines. Feels static."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Car is cropped, the forward view is minimal, HUD and controls eat about 25%, and debug-looking ellipse dominates."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as a programmer-art prototype with a nice HUD on top."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}
