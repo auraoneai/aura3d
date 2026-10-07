@@ -22,6 +22,7 @@ export type ModelAssetId =
   | "sheenTestGrid"
   | "soldier"
   | "cesiumMan"
+  | "robotExpressive"
   | "fox"
   | "rockA"
   | "rockB"
@@ -132,6 +133,17 @@ export const modelAssets: Readonly<Record<ModelAssetId, ModelAssetEntry>> = {
     animations: ["(unnamed clip 0)"],
     gltfExtensions: [],
     provenance: "Khronos glTF-Sample-Assets CesiumMan (CC BY 4.0)"
+  },
+  robotExpressive: {
+    id: "robotExpressive",
+    repoPath: "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+    url: `${base}robot-expressive.glb`,
+    sha256: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    lfs: false,
+    worldSize: [6.619, 4.599, 3.122],
+    animations: ["Dance", "Death", "Idle", "Jump", "No", "Punch", "Running", "Sitting", "Standing", "ThumbsUp", "Walking", "WalkJump", "Wave", "Yes"],
+    gltfExtensions: [],
+    provenance: "three.js examples RobotExpressive.glb (CC BY 3.0). PRD-06 T2.9 stand-in for an ARKit-52 morph head pending Q-05-2."
   },
   fox: {
     id: "fox",
