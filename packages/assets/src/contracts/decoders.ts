@@ -71,6 +71,46 @@ export function createAssetDecoderRegistry(options: { readonly basePath: string;
     }
   };
 
+  /**
+   * UMD decoder bundles (`draco_decoder.js`, `basis_transcoder.js`) export
+   * nothing under `import()` — they only bind a global (`DracoDecoderModule`,
+   * `BASIS`) when evaluated as a classic script. Loading them with a `<script>`
+   * element also sets `document.currentScript`, which the Emscripten
+   * `locateFile` chain needs to resolve the sibling `.wasm` next to the JS.
+   */
+  const loadGlobal = async (id: string, url: string, globalName: string): Promise<unknown> => {
+    if (disposed) throw new AssetDecoderUnavailable(id, url);
+    if (typeof document === "undefined") {
+      // Non-DOM (unit tests/node): fall back to import() + global check.
+      await import(/* @vite-ignore */ url).catch(() => undefined);
+      const bound = (globalThis as Record<string, unknown>)[globalName];
+      if (bound === undefined) {
+        failed.push({ id, url });
+        throw new AssetDecoderUnavailable(id, url);
+      }
+      if (!loaded.includes(id)) loaded.push(id);
+      return bound;
+    }
+    try {
+      const bound = await new Promise<unknown>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.onload = () => {
+          const g = (globalThis as Record<string, unknown>)[globalName];
+          if (g === undefined) reject(new Error(`${globalName} not bound by ${url}`));
+          else resolve(g);
+        };
+        script.onerror = () => reject(new Error(`script load failed: ${url}`));
+        document.head.appendChild(script);
+      });
+      if (!loaded.includes(id)) loaded.push(id);
+      return bound;
+    } catch {
+      failed.push({ id, url });
+      throw new AssetDecoderUnavailable(id, url);
+    }
+  };
+
   return {
     async require(decoders: readonly ("meshopt" | "draco" | "ktx2")[]): Promise<AuraAssetDecoderSet> {
       const set: { meshopt?: unknown; draco?: unknown; imageDecoder?: unknown } = {};
@@ -79,13 +119,15 @@ export function createAssetDecoderRegistry(options: { readonly basePath: string;
           const mod = (await loadModule("meshopt", `${basePath}meshopt_decoder.js`)) as { MeshoptDecoder?: GLTFMeshoptDecoderModule };
           if (mod.MeshoptDecoder) set.meshopt = createMeshoptDecoder(mod.MeshoptDecoder);
         } else if (decoder === "draco") {
-          const mod = (await loadModule("draco", `${basePath}draco_decoder.js`)) as { DracoDecoderModule?: (opts?: unknown) => Promise<GLTFDracoDecoderModule> | GLTFDracoDecoderModule };
-          if (mod.DracoDecoderModule) {
-            const instance = await mod.DracoDecoderModule();
+          const factory = (await loadGlobal("draco", `${basePath}draco_decoder.js`, "DracoDecoderModule")) as
+            | ((opts?: unknown) => Promise<GLTFDracoDecoderModule> | GLTFDracoDecoderModule)
+            | undefined;
+          if (factory) {
+            const instance = await factory();
             set.draco = createDracoDecoder(instance as GLTFDracoDecoderModule);
           }
         } else if (decoder === "ktx2") {
-          await loadModule("ktx2", `${basePath}basis_transcoder.js`);
+          await loadGlobal("ktx2", `${basePath}basis_transcoder.js`, "BASIS");
           set.imageDecoder = { targetFormat: selectKTX2TargetFormat(options.capabilities, "uastc", true, "srgb") };
         }
       }

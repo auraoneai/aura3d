@@ -13,6 +13,7 @@ import { TextureBinding } from "../TextureBinding";
 import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
 import type { RendererHost } from "./RendererHost";
+import { rendererQrFlags } from "./FrameGraph";
 import { Bounds3 as SceneBounds3, Camera, DirectionalLight, Light, type Mat4, PerspectiveCamera, PointLight, Scene, SpotLight, type Vec3, identityMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene";
 
 export function collectForwardShadowMap(source: RenderSource | Iterable<RenderItem> | Scene): ForwardShadowMapOptions | undefined {
@@ -289,6 +290,13 @@ export class RendererShadowOrchestrator {
     readonly camera?: Camera;
   }): ForwardShadowMapOptions | undefined {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
+      return undefined;
+    }
+    if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+      // C-11 flag path (PRD-02 Phase 4): the `prd02.shadows` frame contributor
+      // renders the shadow system in the graph's shadows phase and binds the
+      // ShadowFrameUniforms; the legacy map/cascade/point bodies below stay
+      // byte-identical for the flag-off path.
       return undefined;
     }
     if (!this.host.device.info.capabilities?.includes("render-targets")) {

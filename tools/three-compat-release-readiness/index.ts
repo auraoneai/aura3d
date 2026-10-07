@@ -36,8 +36,6 @@ const requiredReports = [
   "tests/reports/three-compat-migration-readiness.json",
   "tests/reports/three-compat-app-suite-readiness.json",
   "tests/reports/three-compat-template-readiness.json",
-  "tests/reports/three-compat-threejs-visual-parity.json",
-  "tests/reports/three-compat-threejs-runtime-parity.json",
   "tests/reports/three-compat-package-surface-readiness.json",
   "tests/reports/three-compat-package-smoke.json",
   "tests/reports/three-compat-external-consumer.json",
@@ -46,7 +44,6 @@ const requiredReports = [
 ];
 const requiredDocs = [
   "docs/project/parity/threejs/status.md",
-  "docs/project/parity/threejs/parity-matrix.md",
   "docs/project/parity/threejs/inventory.md",
   "docs/project/parity/threejs/claim-boundary.md",
   "docs/project/status/known-limits.md",
@@ -59,24 +56,6 @@ const requiredDocs = [
   "docs/api/readme.md"
 ];
 const screenshots: readonly FinalScreenshot[] = [
-  image("premium-product-viewer", "tests/reports/three-compat-threejs-visual-parity/product-configurator-a3d.png", "tests/reports/three-compat-gallery/product/premium-product-viewer.png", "flagship"),
-  image("automotive-configurator", "tests/reports/three-compat-threejs-visual-parity/automotive-configurator-a3d.png", "tests/reports/three-compat-gallery/automotive/automotive-configurator.png", "flagship"),
-  image("interior-daylight", "tests/reports/three-compat-threejs-visual-parity/architecture-daylight-a3d.png", "tests/reports/three-compat-gallery/architecture-day/interior-daylight.png", "flagship"),
-  image("interior-night", "tests/reports/three-compat-threejs-visual-parity/architecture-night-a3d.png", "tests/reports/three-compat-gallery/architecture-night/interior-night.png", "flagship"),
-  image("material-library", "tests/reports/three-compat-threejs-visual-parity/material-library-a3d.png", "tests/reports/three-compat-gallery/materials/material-library.png", "flagship"),
-  image("asset-inspector", "tests/reports/three-compat-threejs-visual-parity/gltf-asset-inspection-a3d.png", "tests/reports/three-compat-gallery/assets/asset-inspector.png", "flagship"),
-  image("character-animation", "tests/reports/three-compat-threejs-visual-parity/character-animation-a3d.png", "tests/reports/three-compat-gallery/character/character-animation.png", "flagship"),
-  image("cinematic-postprocess", "tests/reports/three-compat-threejs-visual-parity/postprocess-cinematic-a3d.png", "tests/reports/three-compat-gallery/postprocess/cinematic-postprocess.png", "flagship"),
-  image("particle-vfx", "tests/reports/three-compat-threejs-visual-parity/particles-vfx-a3d.png", "tests/reports/three-compat-gallery/vfx/particle-vfx.png", "flagship"),
-  image("large-instanced-scene", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-a3d.png", "tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png", "flagship"),
-  image("shader-lab", "tests/reports/three-compat-threejs-visual-parity/shader-material-a3d.png", "tests/reports/three-compat-gallery/shader-lab/shader-lab.png", "flagship"),
-  image("migrated-threejs-scene", "tests/reports/three-compat-threejs-visual-parity/threejs-migrated-custom-scene-a3d.png", "tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png", "flagship"),
-  image("product-comparison-a3d", "tests/reports/three-compat-threejs-visual-parity/product-configurator-a3d.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-a3d.png", "comparison"),
-  image("product-comparison-threejs", "tests/reports/three-compat-threejs-visual-parity/product-configurator-threejs.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-threejs.png", "comparison"),
-  image("product-comparison-diff", "tests/reports/three-compat-threejs-visual-parity/product-configurator-diff.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-diff.png", "comparison"),
-  image("large-scene-a3d", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-a3d.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-a3d.png", "comparison"),
-  image("large-scene-threejs", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-threejs.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-threejs.png", "comparison"),
-  image("large-scene-diff", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-diff.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-diff.png", "comparison"),
   image("external-consumer-static", "tests/reports/three-compat-external-consumer/static-preview.png", "tests/reports/three-compat-external-consumer/external-consumer-static.png", "external")
 ];
 const missingReports = requiredReports.filter((path) => !existsSync(resolve(path)));

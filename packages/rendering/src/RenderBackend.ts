@@ -10,6 +10,8 @@ export interface RenderBackendOptions {
   readonly antialias?: boolean;
   readonly alpha?: boolean;
   readonly preserveDrawingBuffer?: boolean;
+  /** §6.9 (lane 01): forwarded to getContext; absent = browser default. */
+  readonly powerPreference?: WebGLPowerPreference;
   readonly errorCheckMode?: WebGL2ErrorCheckMode;
   readonly webgpu?: WebGPULike;
 }
@@ -32,6 +34,9 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
     }
     if (options.preserveDrawingBuffer !== undefined) {
       Object.assign(webglOptions, { preserveDrawingBuffer: options.preserveDrawingBuffer });
+    }
+    if (options.powerPreference !== undefined) {
+      Object.assign(webglOptions, { powerPreference: options.powerPreference });
     }
     if (options.errorCheckMode !== undefined) {
       Object.assign(webglOptions, { errorCheckMode: options.errorCheckMode });

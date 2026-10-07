@@ -169,3 +169,31 @@ describe("solvePlatformerMotion", () => {
     expect(Math.abs(solved.terminalVelocity)).toBeCloseTo(solved.jumpVelocity * 2, 3);
   });
 });
+
+describe("PRD-08 platformer kit flag defaults (lane 08)", () => {
+  it("flag-off: no feel profile, no presentation, flat arc", async () => {
+    const { createGamePlatformerKit } = await import("../../../packages/engine/src/agent-api/GameGenreKits");
+    const { resolveQrFlags } = await import("../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: [] });
+    const kit = createGamePlatformerKit({ flags, lowerBound: -5 } as never);
+    const snap = kit.snapshot();
+    expect(snap.player.presentation).toBeUndefined();
+    // fallGravityMultiplier stays the legacy 1 — no feel profile applied.
+    kit.step(1 / 60, {}); // settle onto the ground first
+    kit.step(1 / 60, { jumpPressed: true });
+    const airborne = kit.snapshot();
+    expect(airborne.player.vy).toBeGreaterThan(0);
+  });
+
+  it("flag-on: presentation state appears with stretch on jump", async () => {
+    const { createGamePlatformerKit } = await import("../../../packages/engine/src/agent-api/GameGenreKits");
+    const { resolveQrFlags } = await import("../../../packages/engine/src/contracts/flags");
+    const flags = resolveQrFlags({ options: ["camera"] });
+    const kit = createGamePlatformerKit({ flags, lowerBound: -5 } as never);
+    expect(kit.snapshot().player.presentation).toBeDefined();
+    kit.step(1 / 60, {});
+    kit.step(1 / 60, { jumpPressed: true });
+    const p = kit.snapshot().player.presentation!;
+    expect(p.stretch).toBeGreaterThan(0);
+  });
+});

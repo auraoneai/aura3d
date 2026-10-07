@@ -3,10 +3,14 @@
 import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
 import type { DeviceProbe } from "../contracts/device";
 import { WebGL2RenderTarget } from "../WebGL2Device";
+import { probeWebGL2Device } from "../quality/DeviceProbe";
+import { registerWebGL2DeviceHost } from "./Counters";
 import type { WebGL2DeviceHost } from "./DeviceHost";
 
 export class WebGL2ReadbackProbe {
-  constructor(readonly host: WebGL2DeviceHost) {}
+  constructor(readonly host: WebGL2DeviceHost) {
+    registerWebGL2DeviceHost(host);
+  }
 
   depthReadbackProgram: WebGLProgram | null = null;
 
@@ -47,7 +51,7 @@ export class WebGL2ReadbackProbe {
     }
   }
 
-  readPixels(x: number, y: number, width: number, height: number): Uint8Array {
+  readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array {
     this.host.lifecycle.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
@@ -65,13 +69,23 @@ export class WebGL2ReadbackProbe {
       });
     }
     const readTarget = this.host.activeRenderTarget;
+    if (attachment !== undefined && !readTarget) {
+      throw new RenderDeviceError("Attachment readback requires an active render target", "READBACK_OUT_OF_BOUNDS", { attachment });
+    }
     if (readTarget) {
       this.host.resolveMultisampleTarget(readTarget);
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.framebuffer);
+      if (attachment !== undefined) {
+        // MRT (lane 03 Q-01-2): select the draw buffer readPixels reads from.
+        this.host.gl.readBuffer(this.host.gl.COLOR_ATTACHMENT0 + attachment);
+      }
     }
     const pixels = new Uint8Array(width * height * 4);
     this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.UNSIGNED_BYTE, pixels);
     this.host.counters.readbacks += 1;
+    if (attachment !== undefined && readTarget) {
+      this.host.gl.readBuffer(this.host.gl.COLOR_ATTACHMENT0);
+    }
     if (readTarget && readTarget.sampleCount > 1) {
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
       this.host.stateCache.invalidate();
@@ -277,36 +291,12 @@ void main() {
  * C-28 (CONTRACTS.md §3.4) — extension probe. Filled from
  * `WEBGL_debug_renderer_info` when available, else nulls. `multiDraw`,
  * `parallelShaderCompile` and `timerQuery` reflect their extension presence.
+ *
+ * Delegates to `probeWebGL2Device` (`quality/DeviceProbe.ts`), the
+ * env-injectable seam whose mobile detection follows PRD 11:
+ * `navigator.userAgentData?.mobile` → `matchMedia("(pointer: coarse)")` →
+ * user-agent regex → null.
  */
 export function createWebGL2DeviceProbe(gl: WebGL2RenderingContext): DeviceProbe {
-  const debugInfo = gl.getExtension("WEBGL_debug_renderer_info") as
-    | { readonly UNMASKED_RENDERER_WEBGL: GLenum; readonly UNMASKED_VENDOR_WEBGL: GLenum }
-    | null;
-  const multiDraw = gl.getExtension("WEBGL_multi_draw") != null;
-  const parallelShaderCompile = gl.getExtension("KHR_parallel_shader_compile") != null;
-  const timerQuery = gl.getExtension("EXT_disjoint_timer_query_webgl2") != null;
-  const floatColorBuffer = gl.getExtension("EXT_color_buffer_float") != null;
-  const halfFloatColorBuffer = gl.getExtension("EXT_color_buffer_half_float") != null;
-  const nav = typeof navigator !== "undefined" ? navigator : null;
-  const scr = typeof screen !== "undefined" ? screen : null;
-  const ua = nav?.userAgent ?? "";
-  const mobile = ua ? /Android|iPhone|iPad|iPod|Mobile/i.test(ua) : null;
-  return {
-    backend: "webgl2",
-    rendererString: (gl.getParameter(gl.RENDERER) as string) ?? "",
-    unmaskedRenderer: debugInfo ? (gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) as string) ?? null : null,
-    unmaskedVendor: debugInfo ? (gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) as string) ?? null : null,
-    maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE) as number,
-    maxSamples: gl.getParameter(gl.MAX_SAMPLES) as number,
-    floatColorBuffer,
-    halfFloatColorBuffer,
-    timerQuery,
-    parallelShaderCompile,
-    multiDraw,
-    devicePixelRatio: typeof globalThis !== "undefined" && "devicePixelRatio" in globalThis ? (globalThis.devicePixelRatio as number) : 1,
-    screen: scr ? [scr.width, scr.height] : [0, 0],
-    hardwareConcurrency: nav?.hardwareConcurrency ?? null,
-    deviceMemoryGB: nav && "deviceMemory" in nav ? (nav as { deviceMemory?: number }).deviceMemory ?? null : null,
-    mobile
-  };
+  return probeWebGL2Device(gl);
 }
