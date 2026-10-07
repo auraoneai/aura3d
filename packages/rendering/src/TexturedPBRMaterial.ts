@@ -2,6 +2,7 @@ import type { ExtensionScalarAtlas } from "./ExtensionScalarAtlas";
 import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { Sampler } from "./Sampler";
+import { createDefaultShaderLibrary } from "./ShaderLibrary";
 import {
   DEFAULT_TEXTURED_PBR_CLEARCOAT_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_IRIDESCENCE_TEXTURES_VARIANT,
@@ -44,6 +45,14 @@ export type ExtensionScalarAtlasBinding = ExtensionScalarAtlas;
 export interface TexturedPBRMaterialOptions {
   readonly extensionScalarAtlas?: ExtensionScalarAtlasBinding;
   readonly name?: string;
+  /**
+   * PRD-04 P2-8 (A3D_QR_MATERIALS, set by compiler/textures.ts): emit wrap code 3.0 for
+   * non-atlas texture slots so WebGL2 hardware samplers handle wrap natively. Honoured only
+   * when the registered legacy textured shader carries the Q-01-2 `mode > 2.5` passthrough
+   * (PRD 01's `a3dTexturedPbrWrapCoordinate` patch); otherwise it is ignored and
+   * `hardwareWrapPending` reports `hardware-wrap-pending` via `inspectMaterials().warnings`.
+   */
+  readonly hardwareWrap?: boolean;
   readonly baseColor?: readonly [number, number, number, number];
   readonly renderState?: Partial<RenderState>;
   readonly metallic?: number;
@@ -324,6 +333,9 @@ export function isTexturedPbrTextureSlotShaderActive(slot: TexturedPBRTextureSlo
 }
 
 export class TexturedPBRMaterial extends Material {
+  /** PRD-04 P2-8: `hardwareWrap` was requested but the legacy shader lacks the Q-01-2 passthrough. */
+  public readonly hardwareWrapPending: boolean;
+
   constructor(options: TexturedPBRMaterialOptions = {}) {
     const baseColor = options.baseColor ?? [1, 1, 1, 1];
     const environmentColor = options.environmentColor ?? [1, 1, 1];
@@ -337,6 +349,10 @@ export class TexturedPBRMaterial extends Material {
     const transmissionParallaxBoxMax = options.transmissionParallaxBoxMax ?? [1, 1, 1];
     const transmissionBackdropResolution = options.transmissionBackdropResolution ?? [1, 1];
     const shaderVariant = texturedPbrShaderVariant(options);
+    // P2-8: hardware wrap only when the registered legacy textured shader carries Q-01-2's
+    // `mode > 2.5` passthrough — without it codes above 1.5 fall into the mirror branch (E38).
+    const hardwareWrapActive = options.hardwareWrap === true && legacyTexturedShaderSupportsHardwareWrap();
+    const hardwareWrapPending = options.hardwareWrap === true && !hardwareWrapActive;
     const hasTransmissionBackdrop = Boolean(options.transmissionBackdropTexture);
     if (hasTransmissionBackdrop && shaderVariant) {
       throw new Error("TexturedPBRMaterial transmissionBackdropTexture currently requires the base textured PBR shader variant; combine advanced extension texture variants through a dedicated transmission pass.");
@@ -507,7 +523,7 @@ export class TexturedPBRMaterial extends Material {
         u_baseColorTextureScale: options.baseColorTextureTransform?.scale ?? [1, 1],
         u_baseColorTextureRotation: options.baseColorTextureTransform?.rotation ?? 0,
         u_baseColorTextureTexCoord: textureTexCoord(options.textureTexCoords, "baseColor"),
-        u_baseColorTextureWrap: samplerWrapMode(options.baseColorSampler),
+        u_baseColorTextureWrap: samplerWrapMode(options.baseColorSampler, hardwareWrapActive),
         u_normalTexture: new TextureBinding({
           name: "u_normalTexture",
           texture: options.normalTexture ?? defaultFlatNormalTexture(),
@@ -521,7 +537,7 @@ export class TexturedPBRMaterial extends Material {
         u_normalTextureScale: options.normalTextureTransform?.scale ?? [1, 1],
         u_normalTextureRotation: options.normalTextureTransform?.rotation ?? 0,
         u_normalTextureTexCoord: textureTexCoord(options.textureTexCoords, "normal"),
-        u_normalTextureWrap: samplerWrapMode(options.normalSampler),
+        u_normalTextureWrap: samplerWrapMode(options.normalSampler, hardwareWrapActive),
         u_normalScale: normalScale,
         u_metallicRoughnessTexture: new TextureBinding({
           name: "u_metallicRoughnessTexture",
@@ -536,7 +552,7 @@ export class TexturedPBRMaterial extends Material {
         u_metallicRoughnessTextureScale: options.metallicRoughnessTextureTransform?.scale ?? [1, 1],
         u_metallicRoughnessTextureRotation: options.metallicRoughnessTextureTransform?.rotation ?? 0,
         u_metallicRoughnessTextureTexCoord: textureTexCoord(options.textureTexCoords, "metallicRoughness"),
-        u_metallicRoughnessTextureWrap: samplerWrapMode(options.metallicRoughnessSampler),
+        u_metallicRoughnessTextureWrap: samplerWrapMode(options.metallicRoughnessSampler, hardwareWrapActive),
         u_occlusionTexture: new TextureBinding({
           name: "u_occlusionTexture",
           texture: options.occlusionTexture ?? defaultLinearWhiteTexture("default-occlusion"),
@@ -550,7 +566,7 @@ export class TexturedPBRMaterial extends Material {
         u_occlusionTextureScale: options.occlusionTextureTransform?.scale ?? [1, 1],
         u_occlusionTextureRotation: options.occlusionTextureTransform?.rotation ?? 0,
         u_occlusionTextureTexCoord: textureTexCoord(options.textureTexCoords, "occlusion"),
-        u_occlusionTextureWrap: samplerWrapMode(options.occlusionSampler),
+        u_occlusionTextureWrap: samplerWrapMode(options.occlusionSampler, hardwareWrapActive),
         u_occlusionStrength: occlusionStrength,
         u_emissiveTexture: new TextureBinding({
           name: "u_emissiveTexture",
@@ -565,7 +581,7 @@ export class TexturedPBRMaterial extends Material {
         u_emissiveTextureScale: options.emissiveTextureTransform?.scale ?? [1, 1],
         u_emissiveTextureRotation: options.emissiveTextureTransform?.rotation ?? 0,
         u_emissiveTextureTexCoord: textureTexCoord(options.textureTexCoords, "emissive"),
-        u_emissiveTextureWrap: samplerWrapMode(options.emissiveSampler),
+        u_emissiveTextureWrap: samplerWrapMode(options.emissiveSampler, hardwareWrapActive),
         u_clearcoatTexture: new TextureBinding({
           name: "u_clearcoatTexture",
           texture: options.clearcoatTexture ?? defaultLinearWhiteTexture("default-clearcoat"),
@@ -579,7 +595,7 @@ export class TexturedPBRMaterial extends Material {
         u_clearcoatTextureScale: options.clearcoatTextureTransform?.scale ?? [1, 1],
         u_clearcoatTextureRotation: options.clearcoatTextureTransform?.rotation ?? 0,
         u_clearcoatTextureTexCoord: textureTexCoord(options.textureTexCoords, "clearcoat"),
-        u_clearcoatTextureWrap: samplerWrapMode(options.clearcoatSampler),
+        u_clearcoatTextureWrap: samplerWrapMode(options.clearcoatSampler, hardwareWrapActive),
         u_clearcoatRoughnessTexture: new TextureBinding({
           name: "u_clearcoatRoughnessTexture",
           texture: options.clearcoatRoughnessTexture ?? defaultLinearWhiteTexture("default-clearcoat-roughness"),
@@ -593,7 +609,7 @@ export class TexturedPBRMaterial extends Material {
         u_clearcoatRoughnessTextureScale: options.clearcoatRoughnessTextureTransform?.scale ?? [1, 1],
         u_clearcoatRoughnessTextureRotation: options.clearcoatRoughnessTextureTransform?.rotation ?? 0,
         u_clearcoatRoughnessTextureTexCoord: textureTexCoord(options.textureTexCoords, "clearcoatRoughness"),
-        u_clearcoatRoughnessTextureWrap: samplerWrapMode(options.clearcoatRoughnessSampler),
+        u_clearcoatRoughnessTextureWrap: samplerWrapMode(options.clearcoatRoughnessSampler, hardwareWrapActive),
         u_clearcoatNormalTexture: new TextureBinding({
           name: "u_clearcoatNormalTexture",
           texture: options.clearcoatNormalTexture ?? defaultFlatNormalTexture(),
@@ -607,7 +623,7 @@ export class TexturedPBRMaterial extends Material {
         u_clearcoatNormalTextureScale: options.clearcoatNormalTextureTransform?.scale ?? [1, 1],
         u_clearcoatNormalTextureRotation: options.clearcoatNormalTextureTransform?.rotation ?? 0,
         u_clearcoatNormalTextureTexCoord: textureTexCoord(options.textureTexCoords, "clearcoatNormal"),
-        u_clearcoatNormalTextureWrap: samplerWrapMode(options.clearcoatNormalSampler),
+        u_clearcoatNormalTextureWrap: samplerWrapMode(options.clearcoatNormalSampler, hardwareWrapActive),
         u_clearcoatNormalScale: clearcoatNormalScale,
         u_transmissionTexture: new TextureBinding({
           name: "u_transmissionTexture",
@@ -622,7 +638,7 @@ export class TexturedPBRMaterial extends Material {
         u_transmissionTextureScale: options.transmissionTextureTransform?.scale ?? [1, 1],
         u_transmissionTextureRotation: options.transmissionTextureTransform?.rotation ?? 0,
         u_transmissionTextureTexCoord: textureTexCoord(options.textureTexCoords, "transmission"),
-        u_transmissionTextureWrap: samplerWrapMode(options.transmissionSampler),
+        u_transmissionTextureWrap: samplerWrapMode(options.transmissionSampler, hardwareWrapActive),
         u_diffuseTransmissionTexture: new TextureBinding({
           name: "u_diffuseTransmissionTexture",
           texture: options.diffuseTransmissionTexture ?? defaultLinearWhiteTexture("default-diffuse-transmission"),
@@ -636,7 +652,7 @@ export class TexturedPBRMaterial extends Material {
         u_diffuseTransmissionTextureScale: options.diffuseTransmissionTextureTransform?.scale ?? [1, 1],
         u_diffuseTransmissionTextureRotation: options.diffuseTransmissionTextureTransform?.rotation ?? 0,
         u_diffuseTransmissionTextureTexCoord: textureTexCoord(options.textureTexCoords, "diffuseTransmission"),
-        u_diffuseTransmissionTextureWrap: samplerWrapMode(options.diffuseTransmissionSampler),
+        u_diffuseTransmissionTextureWrap: samplerWrapMode(options.diffuseTransmissionSampler, hardwareWrapActive),
         u_diffuseTransmissionColorTexture: new TextureBinding({
           name: "u_diffuseTransmissionColorTexture",
           texture: options.diffuseTransmissionColorTexture ?? defaultWhiteTexture("default-diffuse-transmission-color"),
@@ -650,7 +666,7 @@ export class TexturedPBRMaterial extends Material {
         u_diffuseTransmissionColorTextureScale: options.diffuseTransmissionColorTextureTransform?.scale ?? [1, 1],
         u_diffuseTransmissionColorTextureRotation: options.diffuseTransmissionColorTextureTransform?.rotation ?? 0,
         u_diffuseTransmissionColorTextureTexCoord: textureTexCoord(options.textureTexCoords, "diffuseTransmissionColor"),
-        u_diffuseTransmissionColorTextureWrap: samplerWrapMode(options.diffuseTransmissionColorSampler),
+        u_diffuseTransmissionColorTextureWrap: samplerWrapMode(options.diffuseTransmissionColorSampler, hardwareWrapActive),
         u_volumeThicknessTexture: new TextureBinding({
           name: "u_volumeThicknessTexture",
           texture: options.volumeThicknessTexture ?? defaultLinearWhiteTexture("default-volume-thickness"),
@@ -664,7 +680,7 @@ export class TexturedPBRMaterial extends Material {
         u_volumeThicknessTextureScale: options.volumeThicknessTextureTransform?.scale ?? [1, 1],
         u_volumeThicknessTextureRotation: options.volumeThicknessTextureTransform?.rotation ?? 0,
         u_volumeThicknessTextureTexCoord: textureTexCoord(options.textureTexCoords, "volumeThickness"),
-        u_volumeThicknessTextureWrap: samplerWrapMode(options.volumeThicknessSampler),
+        u_volumeThicknessTextureWrap: samplerWrapMode(options.volumeThicknessSampler, hardwareWrapActive),
         u_specularTexture: new TextureBinding({
           name: "u_specularTexture",
           texture: options.specularTexture ?? defaultLinearWhiteTexture("default-specular"),
@@ -678,7 +694,7 @@ export class TexturedPBRMaterial extends Material {
         u_specularTextureScale: options.specularTextureTransform?.scale ?? [1, 1],
         u_specularTextureRotation: options.specularTextureTransform?.rotation ?? 0,
         u_specularTextureTexCoord: textureTexCoord(options.textureTexCoords, "specular"),
-        u_specularTextureWrap: samplerWrapMode(options.specularSampler),
+        u_specularTextureWrap: samplerWrapMode(options.specularSampler, hardwareWrapActive),
         u_specularColorTexture: new TextureBinding({
           name: "u_specularColorTexture",
           texture: options.specularColorTexture ?? defaultWhiteTexture("default-specular-color"),
@@ -692,7 +708,7 @@ export class TexturedPBRMaterial extends Material {
         u_specularColorTextureScale: options.specularColorTextureTransform?.scale ?? [1, 1],
         u_specularColorTextureRotation: options.specularColorTextureTransform?.rotation ?? 0,
         u_specularColorTextureTexCoord: textureTexCoord(options.textureTexCoords, "specularColor"),
-        u_specularColorTextureWrap: samplerWrapMode(options.specularColorSampler),
+        u_specularColorTextureWrap: samplerWrapMode(options.specularColorSampler, hardwareWrapActive),
         u_sheenColorTexture: new TextureBinding({
           name: "u_sheenColorTexture",
           texture: options.sheenColorTexture ?? defaultWhiteTexture("default-sheen-color"),
@@ -706,7 +722,7 @@ export class TexturedPBRMaterial extends Material {
         u_sheenColorTextureScale: options.sheenColorTextureTransform?.scale ?? [1, 1],
         u_sheenColorTextureRotation: options.sheenColorTextureTransform?.rotation ?? 0,
         u_sheenColorTextureTexCoord: textureTexCoord(options.textureTexCoords, "sheenColor"),
-        u_sheenColorTextureWrap: samplerWrapMode(options.sheenColorSampler),
+        u_sheenColorTextureWrap: samplerWrapMode(options.sheenColorSampler, hardwareWrapActive),
         u_sheenRoughnessTexture: new TextureBinding({
           name: "u_sheenRoughnessTexture",
           texture: options.sheenRoughnessTexture ?? defaultLinearWhiteTexture("default-sheen-roughness"),
@@ -720,7 +736,7 @@ export class TexturedPBRMaterial extends Material {
         u_sheenRoughnessTextureScale: options.sheenRoughnessTextureTransform?.scale ?? [1, 1],
         u_sheenRoughnessTextureRotation: options.sheenRoughnessTextureTransform?.rotation ?? 0,
         u_sheenRoughnessTextureTexCoord: textureTexCoord(options.textureTexCoords, "sheenRoughness"),
-        u_sheenRoughnessTextureWrap: samplerWrapMode(options.sheenRoughnessSampler),
+        u_sheenRoughnessTextureWrap: samplerWrapMode(options.sheenRoughnessSampler, hardwareWrapActive),
         u_anisotropyTexture: new TextureBinding({
           name: "u_anisotropyTexture",
           texture: options.anisotropyTexture ?? defaultLinearWhiteTexture("default-anisotropy"),
@@ -734,7 +750,7 @@ export class TexturedPBRMaterial extends Material {
         u_anisotropyTextureScale: options.anisotropyTextureTransform?.scale ?? [1, 1],
         u_anisotropyTextureRotation: options.anisotropyTextureTransform?.rotation ?? 0,
         u_anisotropyTextureTexCoord: textureTexCoord(options.textureTexCoords, "anisotropy"),
-        u_anisotropyTextureWrap: samplerWrapMode(options.anisotropySampler),
+        u_anisotropyTextureWrap: samplerWrapMode(options.anisotropySampler, hardwareWrapActive),
         u_iridescenceTexture: new TextureBinding({
           name: "u_iridescenceTexture",
           texture: options.iridescenceTexture ?? defaultLinearWhiteTexture("default-iridescence"),
@@ -748,7 +764,7 @@ export class TexturedPBRMaterial extends Material {
         u_iridescenceTextureScale: options.iridescenceTextureTransform?.scale ?? [1, 1],
         u_iridescenceTextureRotation: options.iridescenceTextureTransform?.rotation ?? 0,
         u_iridescenceTextureTexCoord: textureTexCoord(options.textureTexCoords, "iridescence"),
-        u_iridescenceTextureWrap: samplerWrapMode(options.iridescenceSampler),
+        u_iridescenceTextureWrap: samplerWrapMode(options.iridescenceSampler, hardwareWrapActive),
         u_iridescenceThicknessTexture: new TextureBinding({
           name: "u_iridescenceThicknessTexture",
           texture: options.iridescenceThicknessTexture ?? defaultLinearWhiteTexture("default-iridescence-thickness"),
@@ -762,7 +778,7 @@ export class TexturedPBRMaterial extends Material {
         u_iridescenceThicknessTextureScale: options.iridescenceThicknessTextureTransform?.scale ?? [1, 1],
         u_iridescenceThicknessTextureRotation: options.iridescenceThicknessTextureTransform?.rotation ?? 0,
         u_iridescenceThicknessTextureTexCoord: textureTexCoord(options.textureTexCoords, "iridescenceThickness"),
-        u_iridescenceThicknessTextureWrap: samplerWrapMode(options.iridescenceThicknessSampler),
+        u_iridescenceThicknessTextureWrap: samplerWrapMode(options.iridescenceThicknessSampler, hardwareWrapActive),
         u_modelViewProjection: identityMatrix(),
         u_normalMatrix: identityMatrix(),
         // P2 instanced-GLB path (muse3jsparity-PRD): zero instances by
@@ -994,6 +1010,7 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_instanceAttributeMode", kind: "float" }
       ]
     });
+    this.hardwareWrapPending = hardwareWrapPending;
   }
 }
 
@@ -1028,11 +1045,46 @@ function usesSecondaryTexCoord(texCoords: TexturedPBRMaterialOptions["textureTex
   return Object.values(texCoords ?? {}).some((value) => value === 1);
 }
 
-function samplerWrapMode(sampler: Sampler | undefined): readonly [number, number] {
+function samplerWrapMode(sampler: Sampler | undefined, hardwareWrapActive = false): readonly [number, number] {
+  // P2-8: 3.0 = "wrap natively in the hardware sampler" — the shader's `mode > 2.5`
+  // passthrough returns the coordinate unmodified.
+  if (hardwareWrapActive) return [3, 3];
   return [
     addressModeCode(sampler?.addressU ?? "clamp-to-edge"),
     addressModeCode(sampler?.addressV ?? "clamp-to-edge")
   ];
+}
+
+let hardwareWrapPassthroughSupported: boolean | undefined;
+
+const defaultShaderSourceProvider = (): string => {
+  try {
+    return createDefaultShaderLibrary().compileSource(DEFAULT_TEXTURED_PBR_SHADER_NAME).fragment;
+  } catch {
+    return "";
+  }
+};
+let shaderSourceProvider = defaultShaderSourceProvider;
+
+/**
+ * Test hook (PRD-04 P2-8): substitute the legacy-shader-source probe with a stub source
+ * (with or without the `mode > 2.5` passthrough line). `null` restores the real library.
+ */
+export function setTexturedPbrHardwareWrapProbeForTest(provider: (() => string) | null): void {
+  hardwareWrapPassthroughSupported = undefined;
+  shaderSourceProvider = provider ?? defaultShaderSourceProvider;
+}
+
+/**
+ * Q-01-2 probe (PRD-04 P2-8): compile the registered legacy textured-PBR shader once and
+ * check its fragment for the `mode > 2.5` wrap passthrough PRD 01 adds. Fail-closed: any
+ * library/compile error reports unsupported so hardware wrap stays inert.
+ */
+function legacyTexturedShaderSupportsHardwareWrap(): boolean {
+  if (hardwareWrapPassthroughSupported === undefined) {
+    hardwareWrapPassthroughSupported = shaderSourceProvider().includes("mode > 2.5");
+  }
+  return hardwareWrapPassthroughSupported;
 }
 
 function addressModeCode(mode: Sampler["addressU"]): number {
