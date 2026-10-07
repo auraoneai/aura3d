@@ -26,7 +26,7 @@ export const ref01AutomotiveStudio: SceneSpec = {
   purpose: "Car on turntable floor under studio HDRI — clearcoat/flake paint, glass transmission, grounded contact",
   camera: { position: [2.8, 1.1, 3.4], target: [0, 0.55, 0], fov: 38, near: 0.05, far: 80 },
   background: { kind: "hdri", hdri: "studioSmall08", intensity: 1, fallbackColor: "#101216" },
-  environment: { hdri: "studioSmall08", intensity: 1, rotation: 0 },
+  environment: { hdri: "studioSmall08", intensity: 0, rotation: 0 },
   toneMapping: "agx",
   exposure: 1,
   lights: [
@@ -207,7 +207,7 @@ export const ref06ProductTurntable: SceneSpec = {
   purpose: "DamagedHelmet + AntiqueCamera slow 8-frame orbit — temporal stability, specular aliasing in motion",
   camera: { position: [0, 1.15, 3.2], target: [0, 0.75, 0], fov: 36, near: 0.05, far: 60 },
   background: { kind: "hdri", hdri: "studioSmall08", intensity: 0.9, fallbackColor: "#0f1114" },
-  environment: { hdri: "studioSmall08", intensity: 1, rotation: 0 },
+  environment: { hdri: "studioSmall08", intensity: 0, rotation: 0 },
   toneMapping: "neutral",
   exposure: 1,
   lights: [
