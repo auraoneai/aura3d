@@ -22,16 +22,16 @@ import { selectKTX2TargetFormat } from "/packages/assets/src/KTX2TargetSelection
 import { probeCompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
-  ProductionWebGL2Renderer,
+  WebGL2RendererBackend,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance
 } from "/packages/rendering/src/production-runtime/index.js";
-import { createProductionProductionStageScene, type ProductionStagedScene } from "/tests/browser/production-runtime-production-scene-tools.js";
-import { canvasPixels, CLEAR, maskedDeltaE, subjectMask } from "/benchmarks/quality-rebuild/scenes/prd04/metrics.js";
+import { createProductionProductionStageScene, type ProductionStagedScene } from "../../../browser/production-runtime-production-scene-tools.js";
+import { canvasPixels, CLEAR, maskedDeltaE, subjectMask } from "../../../../benchmarks/quality-rebuild/scenes/prd04/metrics.js";
 import type { CompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 
 declare global {
-  interface Window { __QR_READY__?: unknown; __QR_ERROR__?: string }
+  interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown }
 }
 
 interface VariantResult {
@@ -93,7 +93,7 @@ async function run(): Promise<void> {
     toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
   });
   const lighting = createProductionEnvironmentLightingResources(hdr);
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await WebGL2RendererBackend.create({
     canvas, width: canvas.width, height: canvas.height,
     preserveDrawingBuffer: true, clearColor: [CLEAR[0]!, CLEAR[1]!, CLEAR[2]!, 1]
   });
@@ -177,6 +177,6 @@ async function run(): Promise<void> {
 }
 
 run().catch((error) => {
-  window.__QR_ERROR__ = error instanceof Error ? error.stack ?? error.message : String(error);
+  window.__QR_ERROR__ = (error instanceof Error ? error.stack ?? error.message : String(error)) as unknown;
   document.getElementById("status")!.textContent = "error";
 });
