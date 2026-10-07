@@ -17,6 +17,8 @@
 import { registerShaderChunk, registerShaderFeature } from "../../contracts/program";
 import { registerDepthVariantFeature } from "../../contracts/shadows";
 import { DRAW_DATA_TEXELS_PER_DRAW } from "../DrawDataTexture";
+import { registerWgslTwin } from "../../program/chunks/manifest";
+import { PRD11_DRAWID_WGSL } from "../../program/chunks/drawId.wgsl";
 import type { Texture } from "../../Texture";
 
 export const PRD11_DRAWID_CHUNK = "a3d_prd11_draw_id";
@@ -64,8 +66,10 @@ export function registerPrd11DrawIdShader(): void {
     name: PRD11_DRAWID_CHUNK,
     owner: "prd11",
     glsl: DRAWID_GLSL,
+    wgsl: PRD11_DRAWID_WGSL,
     stage: "both"
   });
+  registerWgslTwin({ chunkName: PRD11_DRAWID_CHUNK, owner: "prd11", wgsl: PRD11_DRAWID_WGSL });
   registerShaderFeature({
     id: PRD11_DRAWID_FEATURE,
     owner: "prd11",

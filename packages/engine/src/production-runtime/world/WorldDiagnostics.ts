@@ -8,6 +8,7 @@ import { registerDiagnosticsSection } from "../../contracts/diagnostics.js";
 import type { AuraApp } from "../../agent-api/index.js";
 import type { AuraWorldDiagnostics } from "../../agent-api/world/runtime.js";
 import { worldStateFor } from "../../agent-api/world/queries.js";
+import { takeWorldEnvDegradations } from "../../agent-api/nodes/environments.world.js";
 import { worldDrawPath } from "./WorldFramePasses.js";
 
 export function collectWorldDiagnostics(app: AuraApp): AuraWorldDiagnostics {
@@ -30,6 +31,10 @@ export function collectWorldDiagnostics(app: AuraApp): AuraWorldDiagnostics {
       iblCrossfade: "pending-CCR-10-1"
     },
     pending,
+    // Flag-off `environments.*` builders queue option-ignored degradations at
+    // scene-build time; the first diagnostics collect drains them here (the
+    // compile-time degrade() seam is not bound yet).
+    envDegradations: takeWorldEnvDegradations().map((d) => d.message),
     memoryMB: 0,
     gpuMs: null
   };

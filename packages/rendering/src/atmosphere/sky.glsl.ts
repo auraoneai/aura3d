@@ -4,6 +4,7 @@
 
 import { registerShaderChunk, type ShaderChunk } from "../contracts/program";
 import type { SkyProgramDefines } from "./SkyEval";
+import { PRD07_FOG_CHUNK_GLSL } from "./shaders/fog.glsl";
 
 export const SKY_SHADER_MARKER = "aura3d.prd07.sky";
 
@@ -41,6 +42,11 @@ uniform float u_cloudCoverage;
 uniform float u_cloudDensity;
 uniform float u_cloudElevation;
 uniform vec2 u_cloudScaleSpeed;
+uniform vec3 u_moonDirection;
+uniform vec3 u_moonColor;
+uniform float u_moonPhase;
+uniform float u_moonIntensity;
+uniform float u_moonAngularCos;  // cos(moon angular radius) for the disc
 
 in vec2 v_clip;
 layout(location=0) out vec4 o_color;
@@ -118,6 +124,14 @@ vec3 gradient(vec3 direction) {
   return mix(u_horizon, u_ground, t) * u_intensity;
 }
 
+vec3 moonDisc(vec3 direction) {
+  float c = dot(direction, u_moonDirection);
+  float disc = smoothstep(u_moonAngularCos, u_moonAngularCos + 0.00004, c);
+  // Phase: 0/1 = new (dark), 0.5 = full. Lit fraction is 1 - |2p - 1|.
+  float illumination = 1.0 - abs(2.0 * u_moonPhase - 1.0);
+  return u_moonColor * u_moonIntensity * illumination * 6.0 * disc;
+}
+
 float starfield(vec3 direction) {
   if (u_starDensity <= 0.0) return 0.0;
   // Equirect cell hash; a cell holds one star when hash < density*0.01.
@@ -133,6 +147,15 @@ float starfield(vec3 direction) {
   float mag = 0.25 + 0.75 * hash2(cell + 17.0);
   return star * mag * u_starIntensity;
 }
+
+#if SKY_FOG
+// P4-T7 — fog on the background: apply §8.4 a3dApplyFog at backgroundDistance.
+// A3D_PRD07_FOG_ENV_UNIFORMS is pre-defined so the chunk does not redeclare
+// u_sunDirection (bound by this program already); we provide camera/sunColor.
+uniform vec3 u_cameraPosition;
+uniform vec3 u_sunColor;
+uniform float u_fogBackgroundDistance;
+#endif
 
 void main() {
   vec4 world4 = u_invViewProj * vec4(v_clip, 1.0, 1.0);
@@ -151,6 +174,9 @@ void main() {
   // Stars shine where the sky is dark (sunfade low = night).
   color += vec3(starfield(direction)) * (1.0 - u_sunfade) * 2.0;
 #endif
+#if SKY_MOON
+  color += moonDisc(direction) * (1.0 - u_sunfade);
+#endif
 #if SKY_CLOUDS
   if (direction.y > 0.0 && u_cloudCoverage > 0.0) {
     float elevation = mix(1.0, 0.1, u_cloudElevation);
@@ -168,6 +194,9 @@ void main() {
     color = mix(color, cloudColor, cloudMask * u_cloudDensity);
   }
 #endif
+#if SKY_FOG
+  color = a3dApplyFog(color, u_cameraPosition + direction * u_fogBackgroundDistance);
+#endif
   o_color = vec4(color, 1.0);
 }
 `;
@@ -178,7 +207,9 @@ function defines(d: SkyProgramDefines): string {
     `${d.model === "GRADIENT" ? "#define MODEL_GRADIENT 1\n" : ""}` +
     `${d.model === "COLOR" ? "#define MODEL_COLOR 1\n" : ""}` +
     `${d.stars ? "#define SKY_STARS 1\n" : "#define SKY_STARS 0\n"}` +
-    `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}`
+    `${d.clouds ? "#define SKY_CLOUDS 1\n" : "#define SKY_CLOUDS 0\n"}` +
+    `${d.moon ? "#define SKY_MOON 1\n" : "#define SKY_MOON 0\n"}` +
+    `${d.fog ? "#define SKY_FOG 1\n#define A3D_PRD07_FOG_ENV_UNIFORMS 1\n" : "#define SKY_FOG 0\n"}`
   );
 }
 
@@ -187,7 +218,7 @@ export function skyVertexSource(): string {
 }
 
 export function skyFragmentSource(d: SkyProgramDefines): string {
-  return `#version 300 es\n${defines(d)}${FRAG}`;
+  return `#version 300 es\n${defines(d)}${d.fog ? `${PRD07_FOG_CHUNK_GLSL}\n` : ""}${FRAG}`;
 }
 
 export const SKY_CHUNKS: readonly ShaderChunk[] = [

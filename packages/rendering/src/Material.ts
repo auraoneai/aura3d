@@ -1,5 +1,7 @@
 import { type UniformValue } from "./RenderDevice";
+import type { BlendMode, DepthCompare as DepthCompareV2 } from "./contracts/blend";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
+import { defaultProgramFeatures } from "./program/MaterialFeatures";
 
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
@@ -35,6 +37,12 @@ export interface RenderState {
   readonly cullMode: CullMode;
   readonly blend: boolean;
   readonly depthCompare: DepthCompare;
+  /** C-04 (PR 0a/PRD-01): named blend state; wins over `blend` when set. */
+  readonly blendMode?: BlendMode;
+  /** C-04 (PR 0a/PRD-01): full depth-compare vocabulary; wins over `depthCompare` when set. */
+  readonly depthCompareV2?: DepthCompareV2;
+  /** PR 0a (PRD 04): MSAA alpha-to-coverage; copied into the command state. */
+  readonly alphaToCoverage?: boolean;
   readonly colorWrite: ColorWriteMask;
   readonly scissor?: ScissorRect | null;
   readonly polygonOffset?: PolygonOffsetState | null;
@@ -92,7 +100,12 @@ export class Material {
     this.name = descriptor.name ?? descriptor.shaderKey;
     this.shaderKey = descriptor.shaderKey;
     this.shaderVariant = validateShaderVariant(descriptor.shaderVariant);
-    this.renderState = validateRenderState({ ...DEFAULT_RENDER_STATE, ...(descriptor.renderState ?? {}) });
+    const renderState = { ...DEFAULT_RENDER_STATE, ...(descriptor.renderState ?? {}) };
+    // C-04 §6.8: non-opaque blend modes default depthWrite to false.
+    if (renderState.blendMode !== undefined && renderState.blendMode !== "opaque" && descriptor.renderState?.depthWrite === undefined) {
+      renderState.depthWrite = false;
+    }
+    this.renderState = validateRenderState(renderState);
     this.requiredAttributes = descriptor.requiredAttributes ?? [];
     this.uniformSchema = validateUniformSchema(descriptor.uniformSchema ?? deriveRequiredUniformSchema(descriptor.requiredUniforms ?? []));
     this.requiredUniforms = descriptor.requiredUniforms ?? this.uniformSchema.filter((uniform) => uniform.required !== false).map((uniform) => uniform.name);
@@ -130,6 +143,17 @@ export class Material {
     return this.dirty;
   }
 
+  /**
+   * C-02 (PRD-01): the feature record this material contributes to a program
+   * key. Default derives maps/lighting/alphaMode/skinning/instancing from
+   * parameters via `program/MaterialFeatures.defaultProgramFeatures`;
+   * subclasses may override for material-specific bits. Lights/shadows/
+   * environment/fog/pass/target/backgroundCoverage are supplied by the pass.
+   */
+  programFeatures(ctx: import("./contracts/materialLobes").MaterialFeatureContext): Omit<import("./contracts/program").ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage"> {
+    return defaultProgramFeatures(this, ctx);
+  }
+
   getRevision(): number {
     return this.revision;
   }
@@ -163,7 +187,8 @@ function validateShaderVariant(variant: string | undefined): string | undefined 
 }
 
 export function validateRenderState(state: RenderState): RenderState {
-  if (state.blend && state.depthWrite) {
+  const blends = state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque");
+  if (blends && state.depthWrite) {
     throw new Error("Transparent blended materials must disable depthWrite");
   }
   if (state.scissor) {

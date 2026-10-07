@@ -12,6 +12,16 @@ import { VertexFormat } from "../VertexFormat";
 import { invertMat4, identityMat4 } from "@aura3d/scene";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "./sky.glsl";
+import type { PackedFogUniforms } from "./HeightFog";
+
+/** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
+export interface SkyFogState {
+  readonly uniforms: PackedFogUniforms;
+  readonly volumes: Float32Array;
+  readonly sunColor: readonly [number, number, number];
+  readonly cameraPosition: readonly [number, number, number];
+  readonly backgroundDistance: number;
+}
 
 let fullscreen: Geometry | null = null;
 
@@ -30,6 +40,7 @@ export class SkyBackgroundPass {
   private frame: SkyFrame = skyFrame(null);
   private spec: AuraSkySpecLike | null = null;
   private time = 0;
+  private fog: SkyFogState | null = null;
   private readonly programs = new Map<string, RenderShaderProgram>();
 
   constructor(private readonly device: RenderDevice) {}
@@ -38,6 +49,11 @@ export class SkyBackgroundPass {
     this.spec = spec;
     this.time = time;
     this.frame = skyFrame(spec);
+  }
+
+  /** P4-T7 — affectsBackground fog, null clears (plain sky program variant). */
+  setFog(fog: SkyFogState | null): void {
+    this.fog = fog;
   }
 
   get skyFrame(): SkyFrame {
@@ -69,10 +85,25 @@ export class SkyBackgroundPass {
 
   /** Fullscreen draw into the current target with the given VP matrix. */
   drawSky(viewProjection: Float32Array): void {
-    const defines = skyProgramDefines(this.frame);
+    const defines = skyProgramDefines(this.frame, { fog: this.fog !== null });
     const program = this.program(defines);
     const geometry = fullscreenTriangle();
     const invVp = invert(viewProjection);
+    const uniforms = skyUniforms(this.frame, invVp, this.time);
+    if (this.fog) {
+      const f = this.fog.uniforms;
+      uniforms.set("u_fogA", f.fogA);
+      uniforms.set("u_fogB", f.fogB);
+      uniforms.set("u_fogColor", f.fogColor);
+      uniforms.set("u_fogAbsorption", f.fogAbsorption);
+      uniforms.set("u_fogMode", f.fogMode);
+      uniforms.set("u_fogNear", f.fogNear);
+      uniforms.set("u_fogFar", f.fogFar);
+      uniforms.set("u_fogVolumes", this.fog.volumes);
+      uniforms.set("u_cameraPosition", this.fog.cameraPosition);
+      uniforms.set("u_sunColor", this.fog.sunColor);
+      uniforms.set("u_fogBackgroundDistance", this.fog.backgroundDistance);
+    }
     this.device.draw({
       label: "prd07.sky",
       topology: "triangles",
@@ -80,7 +111,7 @@ export class SkyBackgroundPass {
       vertexFormat: geometry.vertexBuffer.format,
       vertexCount: 3,
       shader: program,
-      uniforms: skyUniforms(this.frame, invVp, this.time),
+      uniforms,
       renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
     });
   }
@@ -120,6 +151,11 @@ export class SkyDrawPass extends BaseRenderPass {
     this.spec = spec;
     this.time = time;
     skyPassFor(this.device).setSpec(spec, time);
+  }
+
+  /** P4-T7 — fog applied at backgroundDistance when the spec affects the background. */
+  setFog(fog: SkyFogState | null): void {
+    skyPassFor(this.device).setFog(fog);
   }
 
   setViewProjection(vp: Float32Array): void {
@@ -166,7 +202,7 @@ export function skyUniforms(
   frame: SkyFrame,
   invViewProj: Float32Array,
   time: number
-): ReadonlyMap<string, import("../RenderDevice").UniformValue> {
+): Map<string, import("../RenderDevice").UniformValue> {
   const pre = frame.preetham;
   const grad = frame.gradient;
   const uniforms = new Map<string, import("../RenderDevice").UniformValue>();
@@ -191,6 +227,12 @@ export function skyUniforms(
   uniforms.set("u_cloudDensity", frame.clouds.density);
   uniforms.set("u_cloudElevation", frame.clouds.elevation);
   uniforms.set("u_cloudScaleSpeed", [frame.clouds.scale, frame.clouds.speed]);
+  const moon = frame.moon;
+  uniforms.set("u_moonDirection", moon?.direction ?? [0, -1, 0]);
+  uniforms.set("u_moonColor", moon?.color ?? [0, 0, 0]);
+  uniforms.set("u_moonPhase", moon?.phase ?? 0);
+  uniforms.set("u_moonIntensity", moon?.intensity ?? 0);
+  uniforms.set("u_moonAngularCos", moon ? Math.cos(moon.size) : 1);
   return uniforms;
 }
 

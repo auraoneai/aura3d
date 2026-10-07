@@ -3,28 +3,28 @@
 **Date:** 2026-09-22
 **Integration branch:** aura3d-game-upgrade/integration (5 lane branches merged, no conflicts)
 **Main:** 5362b3d5
-**Visual QA:** 17/17 PASS on Mac GPU (2026-09-22, system Chrome + WebGL2, per-app
+**Liveness:** 17/17 on Mac GPU (2026-09-22, system Chrome + WebGL2, per-app
 vite dev servers). Every route: canvas renders non-blank (pixel-probed), zero
 page errors, zero failed required requests, evidence global populated, gameplay
 inputs change state, hero + mobile screenshots captured to `/tmp/qa-g*/`
 (local QA artifacts, intentionally NOT committed). Full detail in
-"Mac GPU Visual QA (2026-09-22)" section below. Prior VM status (SwiftShader
+"Mac GPU Liveness (2026-09-22)" section below. Prior VM status (SwiftShader
 black canvas) is superseded for these 17 routes.
 
 ## Lane G3 — Precision (VERIFIED COMPLETE)
 
-| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Visual QA |
+| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Liveness |
 |-------|-----------|------------|---------------|---------------|--------------|-----------|
 | Rooftop Buckets | PASS | 27/27 PASS | — | — | Current | PASS (0 page errors, drawCalls 190, gameplay state changes) |
 | Bank Shot | PASS | 27/27 PASS | — | — | Current | PASS (0 errors, drawCalls>0, full table rendered) |
 | Siege Golf | PASS | 33/33 PASS | — | — | Current | PASS (0 errors, drawCalls>0, full course rendered) |
 
 **Commits:** 549951de (Rooftop Buckets), 95183e3c (Bank Shot), 187a4811 (Siege Golf)
-**Status:** VERIFIED COMPLETE. No visual QA possible in VM.
+**Status:** VERIFIED COMPLETE. No liveness checks possible in VM.
 
 ## Lane G4 — Arcade (VERIFIED BY COORDINATOR)
 
-| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Visual QA |
+| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Liveness |
 |-------|-----------|------------|---------------|---------------|--------------|-----------|
 | Neon Swarm | PASS | 83/83* PASS | 4/4 PASS, 0 errors | NOT RUN† | STALE‡ | PASS (0 page errors, gameplay changes drawCalls) |
 | Blockfall Reactor | PASS | 83/83* PASS | 4/4 PASS, 0 errors | NOT RUN† | STALE‡ | PASS (0 errors, DOM score 0→104 on inputs; no evidence global — see note) |
@@ -43,7 +43,7 @@ black canvas) is superseded for these 17 routes.
 
 ## Lane G5 — Atmospheric (VERIFIED BY COORDINATOR)
 
-| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Visual QA |
+| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Liveness |
 |-------|-----------|------------|---------------|---------------|--------------|-----------|
 | Aurora Lander | PASS | 82/82* PASS | PASS, 0 errors | NOT RUN† | STALE‡ | PASS (0 errors, canvas renders; wide framing noted) |
 | Gravity Post | PASS | 82/82* PASS | PASS, 0 errors | NOT RUN† | STALE‡ | PASS (0 errors, full system map rendered) |
@@ -63,7 +63,7 @@ black canvas) is superseded for these 17 routes.
 
 ## Lane G1 — Combat (WORKER COMPLETE)
 
-| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Visual QA |
+| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Liveness |
 |-------|-----------|------------|---------------|---------------|--------------|-----------|
 | Aura Clash | PASS | 18/18 PASS | — | PASS (Mac GPU: 127 draw calls, both GLB fighters rendered, 0 errors) | STALE | PASS (0 errors, input changes render state) |
 | Mech Hangar | PASS | 25/25 PASS | 3/3 PASS† | NOT RUN‡ | STALE | PASS (0 errors, assembly + orbit verified) |
@@ -84,7 +84,7 @@ black canvas) is superseded for these 17 routes.
 
 ## Lane G2 — Racing (WORKER COMPLETE)
 
-| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Visual QA |
+| Route | Typecheck | Unit Tests | Browser Mount | Full Playable | Route Health | Liveness |
 |-------|-----------|------------|---------------|---------------|--------------|-----------|
 | Skyline Runner | PASS | 53/53* PASS | NOT RUN | NOT RUN | STALE | PASS (0 errors, full scene rendered, move+jump change state) |
 | Turbo Drift Circuit | PASS | 53/53* PASS | NOT RUN | NOT RUN | STALE | PASS (0 errors, track+car rendered; no evidence global — see note; washed-out framing noted) |
@@ -94,7 +94,7 @@ black canvas) is superseded for these 17 routes.
 * Worker final report: "Focused unit suite finished cleanly: 7 files, 53/53 tests pass."
   Per-app typecheck PASS for all 4 routes. Browser specs NOT RUN (worker decision:
   pixel/screenshot assertions environment-blocked). Route-health STALE (screenshot-hash
-  validation blocked). Visual QA NOT RUN (environment-blocked).
+  validation blocked). Liveness NOT RUN (environment-blocked).
 
 **Commits:** 8bcfdbd6, ab39dbd7, 98ee82f5, 5f03b03c, 6173fa23, 363d77f3
 **Status:** WORKER COMPLETE. All 4 routes verified (machine-verifiable).
@@ -105,7 +105,7 @@ black canvas) is superseded for these 17 routes.
 ## Summary
 
 - **Verified complete:** 17/17 routes (G1: 2, G2: 4, G3: 3, G4: 4, G5: 4)
-- **Visual QA:** 17/17 PASS on Mac GPU (2026-09-22; supersedes the VM SwiftShader block)
+- **Liveness:** 17/17 on Mac GPU (2026-09-22; supersedes the VM SwiftShader block)
 - **PR:** #19 OPEN (`aura3d-game-upgrade/integration` → `main`); merge + deploy pending.
 
 ## Test Totals (unit)
@@ -120,7 +120,7 @@ black canvas) is superseded for these 17 routes.
 | **Total** | **348** | **—** |
 
 All typechecks PASS. All browser mount smokes PASS (0 errors).
-Mac GPU visual QA: 17/17 PASS (detail below). Full-playable pixel assertions in
+Mac GPU liveness: 17/17 (detail below). Full-playable pixel assertions in
 VM specs remain NOT RUN there (environment-blocked); Mac GPU gameplay spot-checks
 (inputs change evidence/render state) PASS per route.
 
@@ -158,7 +158,11 @@ The "60 missing GLBs" premise was checked and found to be a non-job on this chec
 - `apps/showcase-pulse-tunnel/scripts/build-models.py` requires Blender (`import bpy`);
   not run (would only reproduce already-committed bytes; no diff outstanding).
 
-## Mac GPU Visual QA (2026-09-22) — 17/17 PASS
+## Mac GPU Liveness (2026-09-22) — 17/17
+
+Liveness means: route alive, canvas non-blank, input changes state. It is not a
+visual-quality or parity claim — pixel quality is judged only by the
+quality-rebuild gates (`tools/quality-gate`) and G-PANEL rounds, not here.
 
 **Method:** per-app vite dev server + system Chrome (WebGL2, `--enable-unsafe-webgpu`),
 viewport 1280×800 (+390×844 mobile). Per route: evidence global populated,
@@ -195,15 +199,11 @@ Black screenshots were a timing artifact, not broken routes.
 dev-only sourcemap/alias miss, present on known-good routes too, with zero impact
 on rendering or gameplay. Not counted as a route failure.
 
-**§41 quality floor (honest notes, no code changed this pass):**
-- Turbo Drift Circuit is the weakest frame: washed-out grey, low chase camera.
-  Functional, but below the set's bar — flagged for follow-up framing/lighting pass.
-- Courier Rush van is overexposed (bloom blowout) at spawn — playable, flagged.
-- Aurora Lander opening frame is mostly empty sky (lander high, terrain far below) —
-  framing note, not breakage.
-- Blockfall Reactor and Turbo Drift Circuit expose NO `window.__*_EVIDENCE__` global,
-  breaking the sibling-route evidence convention — flagged (QA used DOM/HUD fallback).
-- Courier/Patrol evidence lacks `drawCalls` — minor convention gap, flagged.
+The quality-floor notes from this pass (weak frames, missing evidence globals,
+missing `drawCalls` fields) moved to
+`benchmarks/quality-rebuild/history/rounds/round-0.json` as `admittedLosses`.
+`apps/threejs-parity-lab/` is liveness-only pending Q-15-3/Q-13-1; nothing in it
+is a three.js parity comparison.
 
 ## Final regression battery (2026-09-22, Mac, integration @ 3625540c)
 

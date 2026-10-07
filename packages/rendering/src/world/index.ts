@@ -27,3 +27,11 @@ export * from "./water/UnderwaterState.js";
 export * from "./water/shaders/gerstner.js";
 export * from "./water/shaders/water.js";
 export * from "./water/shaders/caustics.js";
+export * from "./space/SpaceSkyBake.js";
+export * from "./space/PlanetMaterial.js";
+export * from "./space/shaders/spaceBake.js";
+export * from "./space/shaders/planet.js";
+// T6.5 — the lane's flag-aware entry points to EnvironmentPresetPack
+// (rendering/index.ts is owner-01; the subpath is the lane's public seam).
+export { presetPackExposureFactor, presetPackSsimReference } from "../EnvironmentPresetPack.js";
+export type { PresetPackSsimReference } from "../EnvironmentPresetPack.js";

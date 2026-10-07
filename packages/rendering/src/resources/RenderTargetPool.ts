@@ -93,6 +93,23 @@ export class RenderTargetPool implements RenderTargetPoolLike {
     }
   }
 
+  /**
+   * PRD 11 Phase 5 (§6.9): after a context loss every pooled target's GL
+   * framebuffer is dead. Drop them all; `acquire` re-creates on next frame.
+   * Registered with the C-29 `ResourceRegistry` as kind `a3d-prd11-rt-pool`.
+   */
+  rebuildForRestore(): void {
+    for (const target of this.owned) {
+      try {
+        target.dispose();
+      } catch {
+        // Disposal failure on a dead context is non-fatal.
+      }
+    }
+    this.owned.clear();
+    this.idle.clear();
+  }
+
   /** Diagnostics for tests and the `renderer.batching`/`frame` counters. */
   poolStats(): { readonly idle: number; readonly inUse: number; readonly created: number } {
     let idle = 0;

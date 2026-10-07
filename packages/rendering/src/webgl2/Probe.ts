@@ -51,7 +51,7 @@ export class WebGL2ReadbackProbe {
     }
   }
 
-  readPixels(x: number, y: number, width: number, height: number): Uint8Array {
+  readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array {
     this.host.lifecycle.assertAlive();
     if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
       throw new RenderDeviceError("Readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
@@ -69,13 +69,23 @@ export class WebGL2ReadbackProbe {
       });
     }
     const readTarget = this.host.activeRenderTarget;
+    if (attachment !== undefined && !readTarget) {
+      throw new RenderDeviceError("Attachment readback requires an active render target", "READBACK_OUT_OF_BOUNDS", { attachment });
+    }
     if (readTarget) {
       this.host.resolveMultisampleTarget(readTarget);
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.framebuffer);
+      if (attachment !== undefined) {
+        // MRT (lane 03 Q-01-2): select the draw buffer readPixels reads from.
+        this.host.gl.readBuffer(this.host.gl.COLOR_ATTACHMENT0 + attachment);
+      }
     }
     const pixels = new Uint8Array(width * height * 4);
     this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.UNSIGNED_BYTE, pixels);
     this.host.counters.readbacks += 1;
+    if (attachment !== undefined && readTarget) {
+      this.host.gl.readBuffer(this.host.gl.COLOR_ATTACHMENT0);
+    }
     if (readTarget && readTarget.sampleCount > 1) {
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
       this.host.stateCache.invalidate();

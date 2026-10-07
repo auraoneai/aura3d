@@ -1,0 +1,151 @@
+{
+  "$comment": "PRD-12 (lane 12) overlay for games.json, merged UNDER it (C-33): games.json wins per field. Supplies lane-12 capture fields until lane 14 lands them in games.json (Q-14-1).",
+  "$doc": "titleDeterministic is MEASURED, never assumed: it stays null until the determinism run captures each game's 01-title 5x in one runner job and FLIP between repeats is <= floor (T1.13). scenarios/hudSelectors/keyboardHintSelectors are proposed in Phase 5 (T5.3) and stay empty until then.",
+  "schema": "aura3d.capture.games.prd12-overlay/1.0",
+  "games": [
+    {
+      "id": "aura-clash-showcase",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-siege-golf",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-aurora-lander",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-neon-swarm",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-gravity-post",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-courier-rush",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-pulse-tunnel",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-mech-hangar",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-vault-breakers",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-rooftop-buckets",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-gallery-shift",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-deep-recovery",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-patrol-wing",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-bank-shot",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    },
+    {
+      "id": "showcase-orbital-defense",
+      "titleDeterministic": null,
+      "scenarios": [],
+      "hudSelectors": [],
+      "keyboardHintSelectors": [],
+      "qrFlags": []
+    }
+  ]
+}

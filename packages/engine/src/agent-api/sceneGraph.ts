@@ -15,7 +15,8 @@
  * bridge selects these bodies behind `A3D_QR_CORE`.
  */
 
-import type { AuraVec3, AuraTransformSpec } from "./index";
+import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraVec3, AuraTransformSpec } from "./index";
+import { createModelMatrix } from "./index.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../contracts/sceneGraph";
 
 export type { AuraEulerOrder, AuraQuat, AuraWorldTransform };
@@ -382,6 +383,122 @@ function parentSignature(m: Float32Array | null): number {
   let h = 0;
   for (let i = 0; i < 16; i += 1) h += m[i] * (i + 1);
   return h;
+}
+
+/** `createModelMatrix`'s bounds parameter (the index.ts `GltfBounds` interface is not exported). */
+export interface AuraModelBounds {
+  readonly min: AuraVec3;
+  readonly max: AuraVec3;
+}
+
+/**
+ * PRD §15 Phase-6: retained-output memo over `createModelMatrix` for STATIC
+ * nodes (`node.animation === undefined`). Keyed on node object identity; the
+ * fingerprint covers position/rotation/scale, bounds, normalizeToUnit and the
+ * model fit targets, so field mutations recompose. Animated nodes bypass the
+ * cache — `createModelMatrix` already resolves their time-varying TRS.
+ *
+ * Fields not in the fingerprint (size spec, materials) are mount-frozen:
+ * `createProductionRuntimePrimitiveEntries` builds geometry/materials once at
+ * mount, so a size change would not re-render upstream either. The hot path
+ * allocates nothing — the fingerprint compares into a module scratch.
+ *
+ * `composed`/`hits` feed `prd01.frameAllocations` (C-31).
+ */
+export interface AuraStaticModelMatrixCache {
+  /** Same numbers as `createModelMatrix(...)`; the returned array is RETAINED — do not mutate. */
+  modelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: AuraModelBounds, normalizeToUnit: boolean, time?: number): Float32Array;
+  /** matrices composed since the last beginFrame(). */
+  readonly composed: number;
+  /** cache hits since the last beginFrame(). */
+  readonly hits: number;
+  beginFrame(): void;
+}
+
+type MatrixNode = AuraModelNode | AuraPrimitiveNode | AuraEffectNode;
+
+const MODEL_FP_LEN = 19;
+
+function fillModelFingerprint(out: Float64Array, node: MatrixNode, bounds: AuraModelBounds, normalizeToUnit: boolean): void {
+  const position = node.position ?? [0, 0, 0];
+  const rotation = node.rotation ?? [0, 0, 0];
+  const scale = node.scale === undefined ? [1, 1, 1] : typeof node.scale === "number" ? [node.scale, node.scale, node.scale] : node.scale;
+  out[0] = position[0];
+  out[1] = position[1];
+  out[2] = position[2];
+  out[3] = rotation[0];
+  out[4] = rotation[1];
+  out[5] = rotation[2];
+  out[6] = scale[0];
+  out[7] = scale[1];
+  out[8] = scale[2];
+  out[9] = bounds.min[0];
+  out[10] = bounds.min[1];
+  out[11] = bounds.min[2];
+  out[12] = bounds.max[0];
+  out[13] = bounds.max[1];
+  out[14] = bounds.max[2];
+  out[15] = normalizeToUnit ? 1 : 0;
+  const model = node.kind === "model" ? node : undefined;
+  out[16] = model?.targetHeight ?? 0;
+  out[17] = model?.targetLength ?? 0;
+  out[18] = model?.targetMaxDimension ?? 0;
+}
+
+interface ModelMatrixEntry {
+  readonly fp: Float64Array;
+  readonly refs: readonly unknown[];
+  readonly matrix: Float32Array;
+}
+
+export function createModelMatrixCache(): AuraStaticModelMatrixCache {
+  const entries = new WeakMap<MatrixNode, ModelMatrixEntry>();
+  const scratch = new Float64Array(MODEL_FP_LEN);
+  let composed = 0;
+  let hits = 0;
+  return {
+    get composed() {
+      return composed;
+    },
+    get hits() {
+      return hits;
+    },
+    beginFrame() {
+      composed = 0;
+      hits = 0;
+    },
+    modelMatrix(node, bounds, normalizeToUnit, time = 0) {
+      if (node === undefined || node.animation !== undefined) {
+        return createModelMatrix(node, bounds, normalizeToUnit, time);
+      }
+      fillModelFingerprint(scratch, node, bounds, normalizeToUnit);
+      const entry = entries.get(node);
+      if (entry !== undefined) {
+        let same = true;
+        for (let i = 0; i < MODEL_FP_LEN; i += 1) {
+          if (entry.fp[i] !== scratch[i]) {
+            same = false;
+            break;
+          }
+        }
+        if (same
+          && entry.refs[0] === node.kind
+          && entry.refs[1] === (node.kind === "primitive" ? node.primitive : undefined)
+          && entry.refs[2] === (node.kind === "model" ? node.scaleMode : undefined)) {
+          hits += 1;
+          return entry.matrix;
+        }
+      }
+      const matrix = createModelMatrix(node, bounds, normalizeToUnit, time);
+      entries.set(node, {
+        fp: Float64Array.from(scratch),
+        refs: [node.kind, node.kind === "primitive" ? node.primitive : undefined, node.kind === "model" ? node.scaleMode : undefined],
+        matrix
+      });
+      composed += 1;
+      return matrix;
+    }
+  };
 }
 
 export function createWorldMatrixCache(): AuraWorldMatrixCache {

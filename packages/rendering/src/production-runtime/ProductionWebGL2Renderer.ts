@@ -31,6 +31,11 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
 
   private constructor(private readonly renderer: Renderer, private width: number, private height: number) {}
 
+  /** PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` for `setOutput` / `appliedOutput` / `resolutionReport`. */
+  get auraRenderer(): Renderer {
+    return this.renderer;
+  }
+
   static async create(options: ProductionWebGL2RendererOptions): Promise<ProductionWebGL2Renderer> {
     const renderer = await Renderer.create({
       ...options,
