@@ -6,8 +6,10 @@
 import { registerAppExtension } from "../contracts/app.js";
 import { worldQueriesSlot } from "../contracts/world.js";
 import { createWorldQueries, setWorldFlags } from "../agent-api/world/queries.js";
+import { createWorldRuntime } from "../agent-api/world/runtime.js";
 import { registerWorldFramePasses } from "../production-runtime/world/WorldFramePasses.js";
 import { registerWorldDiagnosticsSection } from "../production-runtime/world/WorldDiagnostics.js";
+import { registerWorldNodeHandlers } from "../agent-api/compiler/world.js";
 import "../agent-api/compiler/diagnosticOnly.prd10.js";
 
 worldQueriesSlot.provide(createWorldQueries);
@@ -19,9 +21,17 @@ registerAppExtension({
   member: "world",
   create: (app, ctx) => {
     setWorldFlags(app, ctx.flags);
-    return worldQueriesSlot.get(ctx.flags)(app);
+    const impl = worldQueriesSlot.get(ctx.flags);
+    // Flag on → provided impl: bind the full runtime (⊃ AuraWorldQueries) and
+    // register providers for world nodes already declared on the scene.
+    if (worldQueriesSlot.provided && impl === createWorldQueries) {
+      const scene = (ctx.options as { scene?: unknown } | undefined)?.scene;
+      return createWorldRuntime(app, { scene });
+    }
+    return impl(app); // flag-off: frozen C-26 stub
   }
 });
 
 registerWorldFramePasses();
 registerWorldDiagnosticsSection();
+registerWorldNodeHandlers();
