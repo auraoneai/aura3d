@@ -1,7 +1,8 @@
-import { createServer, type Server } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
+import * as esbuild from "esbuild";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
@@ -133,7 +134,86 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
     transformCache.set(file, { mtimeMs, output });
     return output;
   };
+  // Harness entries pull ~1,300 modules through per-request transpile; bundling
+  // the entry once drops the whole graph to a single module (~1s esbuild vs
+  // minutes on contended CI). Falls back to per-module serving if bundling
+  // ever fails so the path is strictly non-worse.
+  const bundleCache = new Map<string, { mtimeMs: number; output: string }>();
+  const auraResolvePlugin: esbuild.Plugin = {
+    name: "aura3d-dev-server-resolve",
+    setup: (build) => {
+      build.onResolve({ filter: /.*/ }, (args) => {
+        // Entry points and already-absolute filesystem paths pass through.
+        if (resolve(args.path) === args.path && existsSync(args.path)) {
+          return { path: args.path };
+        }
+        if (args.path.startsWith("node:")) {
+          // Node builtins appear inside dormant dynamic imports in deps
+          // (e.g. @gltf-transform node helpers); keep them lazy like the
+          // per-module path does — they 404 only if ever executed.
+          return { path: args.path, external: true };
+        }
+        if (!args.path.startsWith(".") && !args.path.startsWith("/")) {
+          const mapped = packageEntryPoints.get(args.path);
+          if (mapped === undefined) {
+            // Unmapped bare specifier: package.json/node_modules resolution
+            // (deps like `three`), or a static-only miss — let esbuild decide.
+            return undefined;
+          }
+          const file = resolve(join(root, mapped));
+          return existsSync(file) ? { path: file } : { path: args.path, external: true };
+        }
+        const canonical = resolveModuleSpecifier(args.importer, root, args.path);
+        return canonical ? { path: resolve(join(root, canonical)) } : { path: args.path, external: true };
+      });
+      build.onLoad({ filter: /\.css$/ }, (args) => ({
+        loader: "js",
+        contents: `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(root, args.path))}); style.textContent = ${JSON.stringify(readFileSync(args.path, "utf8"))}; document.head.appendChild(style); })();`,
+      }));
+    },
+  };
+  const bundleForBrowser = async (file: string): Promise<string | undefined> => {
+    const mtimeMs = statSync(file).mtimeMs;
+    const hit = bundleCache.get(file);
+    if (hit && hit.mtimeMs === mtimeMs) return hit.output;
+    try {
+      const result = await esbuild.build({
+        entryPoints: [file],
+        bundle: true,
+        format: "esm",
+        platform: "browser",
+        write: false,
+        logLevel: "silent",
+        plugins: [auraResolvePlugin],
+        loader: {
+          ".glsl": "text",
+          ".glb": "dataurl",
+          ".png": "dataurl",
+          ".jpg": "dataurl",
+          ".jpeg": "dataurl",
+          ".webp": "dataurl",
+          ".hdr": "dataurl",
+          ".exr": "dataurl",
+          ".bin": "dataurl",
+          ".wasm": "dataurl",
+          ".mp3": "dataurl",
+          ".wav": "dataurl",
+          ".ogg": "dataurl",
+        },
+      });
+      const output = result.outputFiles[0]?.text;
+      if (!output) return undefined;
+      bundleCache.set(file, { mtimeMs, output });
+      return output;
+    } catch (error) {
+      console.log("[example-dev-server] esbuild bundle failed for", file, "- falling back to per-module transform:", String(error).slice(0, 300));
+      return undefined;
+    }
+  };
   const server = createServer((request, response) => {
+    void handleRequest(request, response);
+  });
+  const handleRequest = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
     try {
       const url = new URL(request.url ?? "/", "http://localhost");
       if (isBrowserIconProbe(url.pathname)) {
@@ -170,7 +250,13 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       }
 
       if (file.endsWith(".ts")) {
-        const output = transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
+        // Entries under tests/browser are page-level module scripts: serve them
+        // as a single esbuild bundle so the browser evaluates one module
+        // instead of ~1,300 individually transformed files.
+        const bundled = normalize(pathname).replace(/\\/g, "/").startsWith("/tests/browser/")
+          ? await bundleForBrowser(file)
+          : undefined;
+        const output = bundled ?? transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
         response.end(output);
         return;
@@ -185,7 +271,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       response.writeHead(500, { "content-type": "text/plain" });
       response.end(error instanceof Error ? error.stack : String(error));
     }
-  });
+  };
 
   await listen(server);
   const address = server.address();
