@@ -6,9 +6,16 @@ description: Turns a scene prompt into editable `@aura3d/engine` source by picki
 # Aura3D scene authoring
 
 You turn prompt intent into maintainable TypeScript that calls public Aura3D
-APIs. There is no hidden scene generator. Shared rules (claim labels, forbidden
-patterns, typed assets, benchmark mode) are in
+APIs. There is no hidden scene generator. Every scene gets a look — the preset
+that supplies environment light, key shadow, fog, background and grade. Shared
+rules (claim labels, forbidden patterns, typed assets, benchmark mode) are in
 [boundaries](../aura3d-core/references/boundaries.md).
+
+## Look target
+
+Read the genre recipe row in `../aura3d-art-direction/references/look-recipes.md`,
+pick the look id, and carry it through the plan and the code. A scene without a
+look renders flat on a void.
 
 ## Establish the contract
 
@@ -19,9 +26,10 @@ patterns, typed assets, benchmark mode) are in
 3. Read the installed `@aura3d/engine` type declarations before naming an
    export. The prompt-plan enums are narrow: `sceneType` is `product-viewer`,
    `cinematic-scene`, `mini-game`, or `material-studio`.
-4. Decide the mode. Benchmark mode: copy the smallest matching recipe, run
-   `npm install && npm run build`, return the runner-owned run command, and
-   stop. No dev server, preview, Playwright, or screenshots from the agent.
+4. Decide the mode. Benchmark mode: if `aura3d look capture` is available,
+   run the look-dev loop; otherwise copy the smallest matching recipe, run
+   `npm install && npm run build`, return the runner-owned run command, stop,
+   and label the result `prototype`.
 
 ## Procedure
 
@@ -75,12 +83,14 @@ patterns, typed assets, benchmark mode) are in
    console.log(compiled.report.visualSystems, compiled.report.repairHints);
    ```
 
-5. Read the compiled report before editing: `visualSystems` names what the
-   compiler added (it can add a system you did not request, such as bloom),
-   `negativeCriteria` lists what must not ship, and `repairHints` lists fixes.
-6. Add only prompt-required customization. Controls go through `ui.*` helpers
-   and must change rendered pixels; CSS and DOM are UI only and never stand in
-   for particles, bloom, trails, labels, or renderer output.
+5. Read the compiled report before editing: `visualSystems` lists what the
+   compiled scene actually contains; `rejected` lists what the engine could
+   not do (each with a code such as `unsupported-effect`); `repairHints`
+   carries the `lookLint` findings; `negativeCriteria` lists what must not
+   ship. Repair from `repairHints` plus `aura3d look lint` output.
+6. Controls go through `ui.*` helpers and must change rendered pixels; CSS and
+   DOM are UI only and never stand in for particles, bloom, trails, labels, or
+   renderer output.
 7. Mount one app per route. Never dispose and recreate the app inside a frame
    loop to animate values.
 8. Normal mode only: collect `collectAuraSceneEvidence(scene)` or the kit
@@ -90,6 +100,12 @@ patterns, typed assets, benchmark mode) are in
 9. Weak screenshot: apply the repair hints (tighter framing, foreground and
    background structure, key/fill/rim contrast, visible state) or switch back
    to the matching kit before changing any label or claim.
+
+## Look-dev loop
+
+`aura3d look capture` → judge against `quality-bar.md` → `aura3d look lint` →
+one change per round (lint first, then the weakest category). Full loop spec:
+`aura3d-art-direction`.
 
 ## Stop and report
 
@@ -112,3 +128,5 @@ patterns, typed assets, benchmark mode) are in
 - [Benchmark recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/benchmark-recipes.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Prompt recipes](https://aura3d.auraone.ai/docs/prompt-recipes.html)
+- [Look recipes](../aura3d-art-direction/references/look-recipes.md)
+- [Look by scene family](references/look-by-family.md)

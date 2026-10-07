@@ -3086,6 +3086,10 @@ export const environments = {
   ...worldEnvBuilders
 } as const;
 
+// T2.7: the documented look surface (v0 group expansion is ungated; the v1
+// AuraLookNode path stays behind the looks expansion rules in looks.ts).
+export { looks } from "./looks/looks.js";
+
 
 
 

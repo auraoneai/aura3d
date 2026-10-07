@@ -31,7 +31,13 @@ export const REQUIRED_SECTION_ORDER = [
 
 /** Skills whose SKILL.md must already carry the T2.1 section order. Each
  *  rewrite task (T2.7-T2.11) adds its skill here when it lands. */
-export const SECTION_ORDER_SKILLS: ReadonlySet<string> = new Set(["aura3d-art-direction"]);
+export const SECTION_ORDER_SKILLS: ReadonlySet<string> = new Set([
+  "aura3d-art-direction",   // T2.3
+  "aura3d-core",           // T2.7
+  "aura3d-browser-game",   // T2.8
+  "aura3d-scene-authoring", // T2.9
+  "aura3d-materials-environments" // T2.11
+]);
 
 /** Forbidden inside fenced code blocks (T2.2c). Prose mentions stay legal. */
 export const FORBIDDEN_FENCED_PATTERNS: readonly { readonly pattern: RegExp; readonly label: string }[] = [
@@ -53,10 +59,7 @@ export const VISUAL_QA_ALLOWED_SUFFIX = "aura3d-art-direction/references/failure
 /** Files whose existing visualQA mentions are removed by their own rewrite
  *  tasks (T2.10 evidence-review, T2.11 materials-environments). Entries leave
  *  the set as those rewrites land. */
-export const LEGACY_VISUAL_QA_FILES: ReadonlySet<string> = new Set([
-  "aura3d-evidence-review/SKILL.md",
-  "aura3d-materials-environments/SKILL.md"
-]);
+export const LEGACY_VISUAL_QA_FILES: ReadonlySet<string> = new Set([]);
 
 export const LOOK_RECIPES_FILE = "aura3d-art-direction/references/look-recipes.md";
 export const QUALITY_BAR_FILE = "aura3d-art-direction/references/quality-bar.md";
@@ -70,11 +73,8 @@ export const AGENT_LOOK_CATEGORIES = [
   "animation_quality", "ui_hud"
 ] as const;
 
-/** §6.5 craft targets (T2.2b). Disabled until the T2.7-T2.13 rewrites land —
- *  the corpus fails them today (58 craft vs 354 evidence). The fixtures in
- *  agent-skills-check.test.ts cover the rule; flipping this is part of the
- *  rewrite PR so the gate and the compliant corpus arrive together. */
-export const ENABLE_CRAFT_TARGETS = false;
+/** §6.5 craft targets (T2.2b) — enabled with the T2.7-T2.13 rewrites. */
+export const ENABLE_CRAFT_TARGETS = true;
 
 /** C-39 registry commands referenced by skills before their T2.16-T2.18 CLI
  *  implementations land (§7.6): `aura3d look capture|judge|rubric|lint`. */
@@ -182,6 +182,28 @@ export function checkCraftTargets(files: readonly CraftFileReport[]): string[] {
   if (gamePath.visual < 2 * gamePath.evidence) failures.push(`craft-ratio: game path craft ${gamePath.visual} < 2× evidence ${gamePath.evidence}`);
   if (artDir.visual < 3 * artDir.evidence) failures.push(`craft-ratio: aura3d-art-direction craft ${artDir.visual} < 3× evidence ${artDir.evidence}`);
   if (llms.visual < llms.evidence) failures.push(`craft-ratio: llms.txt craft ${llms.visual} < evidence ${llms.evidence}`);
+  return failures;
+}
+
+/** Parse `id -> status` from CONTRACTS.md Appendix B table text. */
+export function parseC40RowStatus(appendixB: string): ReadonlyMap<string, string> {
+  const rows = new Map<string, string>();
+  for (const m of appendixB.matchAll(/^\|\s*(F-\d{2}-\d{2})\s*\|[^\n]*\|\s*(\w+)\s*\|?\s*$/gm)) {
+    rows.set(m[1]!, m[2]!);
+  }
+  return rows;
+}
+
+/** T2.12: skill text may only cite `verified` C-40 rows. */
+export function checkFactRowCitations(rowStatus: ReadonlyMap<string, string>, rel: string, text: string): string[] {
+  const failures: string[] = [];
+  for (const m of text.matchAll(/F-\d{2}-\d{2}/g)) {
+    const id = m[0];
+    const status = rowStatus.get(id);
+    if (status !== "verified") {
+      failures.push(`${rel}: cites C-40 row ${id} which is ${status === undefined ? "not in Appendix B" : `status=${status}`} — skill text may only cite verified rows`);
+    }
+  }
   return failures;
 }
 
@@ -418,6 +440,20 @@ function main(): void {
     for (const f of checkCraftTargets(runCraftRatio(repoRoot).files)) fail(f);
   }
 
+  // T2.12: a skill may cite a C-40 fact row (`F-NN-MM`) only when Appendix B of
+  // CONTRACTS.md marks that row `verified`.
+  const contractsPath = resolve(repoRoot, "docs/project/aura3d-quality-rebuild/CONTRACTS.md");
+  const appendixB = existsSync(contractsPath)
+    ? readFileSync(contractsPath, "utf8").split("### Appendix B")[1] ?? ""
+    : "";
+  const rowStatus = parseC40RowStatus(appendixB);
+  for (const name of names) {
+    const dir = join(skillsRoot, name);
+    for (const file of listTree(dir).filter((f) => f.endsWith(".md"))) {
+      for (const f of checkFactRowCitations(rowStatus, `${name}/${file}`, readFileSync(join(dir, file), "utf8"))) fail(f);
+    }
+  }
+
   // Boundaries must carry every llms.txt release-integrity rule's key token.
   const boundariesPath = join(skillsRoot, "aura3d-core/references/boundaries.md");
   if (!existsSync(boundariesPath)) fail("aura3d-core/references/boundaries.md missing");
@@ -462,6 +498,9 @@ function main(): void {
     if (all.skills.length !== names.length) fail("init smoke: --skills all did not select every skill");
     const core = selectSkills(manifest, "core", "fighting-game");
     for (const expectedName of ["aura3d-core", "aura3d-browser-game", "aura3d-character-animation"]) if (!core.includes(expectedName)) fail(`init smoke: core+fighting-game missing ${expectedName}`);
+    // T2.11: art-direction in coreSet; materials-environments in every game template.
+    const mini = selectSkills(manifest, "core", "mini-game");
+    for (const expectedName of ["aura3d-art-direction", "aura3d-materials-environments"]) if (!mini.includes(expectedName)) fail(`init smoke: core+mini-game missing ${expectedName}`);
     const target = join(smoke, ".agents/skills/aura3d-core/SKILL.md");
     writeFileSync(target, "user edit\n");
     const again = writeAgentSkills({ projectDir: smoke, agent: "generic", skills: "all", skillsDir: skillsRoot });

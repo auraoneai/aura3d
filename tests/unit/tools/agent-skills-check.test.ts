@@ -7,8 +7,10 @@ import {
   checkFencedBlock,
   checkQualityBarCategories,
   checkRecipeDensity,
+  checkFactRowCitations,
   checkSectionOrder,
   checkVisualQAUsage,
+  parseC40RowStatus,
   REQUIRED_SECTION_ORDER
 } from "../../../tools/agent-skills/check";
 import type { CraftFileReport } from "../../../tools/agent-skills/craft-ratio";
@@ -64,8 +66,8 @@ describe("T2.2(d) visualQA( confinement", () => {
   it("passes in failure-gallery.md", () => {
     expect(checkVisualQAUsage("aura3d-art-direction/references/failure-gallery.md", "`product.visualQA(nodes)` is diagnostic-only\n")).toEqual([]);
   });
-  it("passes in the legacy files pending their rewrite tasks", () => {
-    expect(checkVisualQAUsage("aura3d-evidence-review/SKILL.md", "`material.visualQA(nodes)`\n")).toEqual([]);
+  it("fails in the former legacy files now that T2.10/T2.11 rewrites landed", () => {
+    expect(checkVisualQAUsage("aura3d-evidence-review/SKILL.md", "`material.visualQA(nodes)`\n").join()).toMatch(/visualQA\( outside failure-gallery\.md/);
   });
 });
 
@@ -111,5 +113,29 @@ describe("T2.2(b) craft-ratio targets", () => {
     const files = [row("llms.txt", 0, 50)];
     expect(checkCraftTargets(files).length).toBeGreaterThanOrEqual(1);
     expect(checkCraftTargets(files).join()).toMatch(/llms\.txt craft/);
+  });
+});
+
+describe("T2.12 C-40 row citations", () => {
+  const appendix = `| id | lane | statement | API | since | evidence | status |
+|---|---|---|---|---|---|---|
+| F-07-01 | 07 | fog defaults | effects.fog | 2026-10-05 | — | proposed |
+| F-02-01 | 02 | ambient additive | lights.ambient | 2026-10-05 | — | proposed |
+| F-01-01 | 01 | one tone map | output.toneMapping | 2026-10-05 | run-123 | verified |
+`;
+  it("parses Appendix B row status", () => {
+    const rows = parseC40RowStatus(appendix);
+    expect(rows.get("F-07-01")).toBe("proposed");
+    expect(rows.get("F-01-01")).toBe("verified");
+  });
+  it("passes text that cites only verified rows", () => {
+    const rows = parseC40RowStatus(appendix);
+    expect(checkFactRowCitations(rows, "skill/SKILL.md", "exactly one tone map per frame <!-- C-40:F-01-01 -->")).toEqual([]);
+  });
+  it("fails text citing proposed or unknown rows", () => {
+    const rows = parseC40RowStatus(appendix);
+    const out = checkFactRowCitations(rows, "skill/SKILL.md", "ambient is additive <!-- C-40:F-02-01 --> and F-99-99");
+    expect(out.join()).toMatch(/F-02-01.*status=proposed/s);
+    expect(out.join()).toMatch(/F-99-99.*not in Appendix B/);
   });
 });

@@ -9,6 +9,13 @@ The CLI is the only path from a file or catalog hit to a typed `assets.<key>`.
 Shared rules (catalog-first, typed assets, paid generation) are in
 [boundaries](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+Preview candidates under the target look, not a neutral stage: a GLB that
+reads clean under `product-studio` softboxes can disappear into `night-city`
+shadow pools or bloom out under `neon-arcade`. The route's recipe row sets the
+lighting you evaluate materials and silhouettes against.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and `npx @aura3d/cli@latest assets add
@@ -75,14 +82,15 @@ Shared rules (catalog-first, typed assets, paid generation) are in
 7. Use the key exactly as generated.
 
    ```ts
-   import { createAuraApp, groundedRenderedAssetPlacement, lights, model, scene } from "@aura3d/engine";
+   import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
    import { assets } from "./aura-assets";
 
    const place = groundedRenderedAssetPlacement(assets.helmet, { targetMaxDimension: 1.2, floorY: 0 });
    createAuraApp("#app", {
      scene: scene()
-       .add(model(assets.helmet).position(...place.position).scale(place.scale))
-       .add(lights.studio())
+       .add(looks.preset("product-studio"))
+       .add(model(assets.helmet).position(...place.position).scale(place.scale)),
+     ...looks.appOptions("product-studio")
    });
    ```
 
@@ -121,3 +129,4 @@ Shared rules (catalog-first, typed assets, paid generation) are in
 - [Asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Asset selection](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-selection.md)
 - [Assets docs](https://aura3d.auraone.ai/docs/assets.html)
+- [Previewing assets under a look](references/preview-under-look.md)

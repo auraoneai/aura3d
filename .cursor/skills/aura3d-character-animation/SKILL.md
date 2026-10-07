@@ -10,6 +10,13 @@ state is source evidence; a visible animation claim needs pixel deltas on the
 character. Shared rules (claim labels, forbidden patterns, typed assets,
 benchmark mode) are in [boundaries](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+A character reads through its silhouette and rim: `character-showcase` (or the
+genre recipe's look) supplies the 3/4-front key plus rim that makes locomotion,
+poses and morphs visible. Judge animation under that look — a clip that reads
+in flat light can vanish inside night-city shadow pools or golden-hour haze.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and use only the `assets inspect`,
@@ -110,7 +117,6 @@ benchmark mode) are in [boundaries](../aura3d-core/references/boundaries.md).
 - The claim is "visible skinning, morphs, or visemes" and you only have
   controller snapshots or clip lists: label it `prototype`.
 - Only the certified roster in the skinning doc may be called certified.
-- Benchmark mode: stop after the build and report the runner-owned command.
 
 ## References
 
@@ -120,3 +126,4 @@ benchmark mode) are in [boundaries](../aura3d-core/references/boundaries.md).
 - [Animation runtime events](https://github.com/auraoneai/aura3d/blob/main/docs/api/animation-runtime-events.md)
 - [Animation runtime support](https://github.com/auraoneai/aura3d/blob/main/docs/animation/runtime-support.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
+- [Character staging and lighting](references/stage-and-lighting.md)

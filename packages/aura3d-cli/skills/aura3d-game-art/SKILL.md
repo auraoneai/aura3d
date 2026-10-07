@@ -12,6 +12,16 @@ are out of scope: no 2D tile runtime consumes them, so 3D levels come from
 assets, CSS/DOM is UI only, benchmark mode) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
+## Look target
+
+Sprites live or die by the route's look: a flipbook explosion pops against a
+night-city grade and washes out under `product-studio` key light. Design the
+sheet against the genre recipe palette (see
+`aura3d-art-direction/references/look-recipes.md`) — emissive colors 3–5×
+background luminance read as glow through bloom; flat fills read as UI, not
+VFX. Keep alpha edges clean: the frame's fog and grade will expose halos the
+texture viewer hides.
+
 ## Establish the contract
 
 1. Run `npx @aura3d/cli@latest --help` and read the `assets add` line.
@@ -105,3 +115,4 @@ Style-consistent batches:
 - [Mini-game template HUD](https://github.com/auraoneai/aura3d/blob/main/packages/create-aura3d/templates/mini-game/src/main.ts)
 - [Build a browser game guide](https://github.com/auraoneai/aura3d/blob/main/docs/guides/build-a-browser-game.md)
 - [Sheet checker](references/sheet-check.mjs)
+- [Sprite and flipbook palettes](references/sprite-palettes.md)

@@ -320,36 +320,47 @@ export function expandLookChildren(
   return v0Children(describeOrThrow(id), clampLookOverrides(overrides));
 }
 
+function presetImpl(
+  id: AuraLookId,
+  overrides?: AuraLookOverrides,
+  options?: AuraLookBuildOptions
+): AuraNodeBuilder<AuraGroupNode> | AuraLookNode {
+  const preset = describeOrThrow(id);
+  const clamped = clampLookOverrides(overrides);
+  const expansion = resolveLookExpansion(options);
+  if (expansion.expansion === "v1-contracts") {
+    return { kind: "look", look: id, ...(clamped ? { overrides: clamped } : {}) };
+  }
+  return new AuraNodeBuilder<AuraGroupNode>({
+    kind: "group",
+    name: `aura-look:${id}`,
+    // The look's horizon-matched background rides on the group so consumers
+    // (the C-36 handler, diagnostics, lint, template authors via
+    // `looks.describe(id).v0.background`) read it without re-deriving.
+    background:
+      clamped?.background !== undefined && clamped.background !== "look"
+        ? clamped.background
+        : preset.v0.background,
+    children: v0Children(preset, clamped)
+  } as AuraGroupNode);
+}
+
 export const looks = {
   /**
-   * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children.
+   * v0 → AuraGroupNode "aura-look:<id>" with today's env/light/effect children
+   * (the documented, flag-off shape — `scene().add(looks.preset(id))`).
    * v1 → the AuraLookNode the C-36 NodeHandler compiles (T1.13). v1 needs every
    * required contract provided and its flag on; forced v1 emits the node even
    * when slots are stubbed (the handler then records `capability-degraded`).
+   * Callers that pass `options` get the union type (v1 emission is opt-in).
    */
-  preset(
-    id: AuraLookId,
-    overrides?: AuraLookOverrides,
-    options?: AuraLookBuildOptions
-  ): AuraNodeBuilder<AuraGroupNode> | AuraLookNode {
-    const preset = describeOrThrow(id);
-    const clamped = clampLookOverrides(overrides);
-    const expansion = resolveLookExpansion(options);
-    if (expansion.expansion === "v1-contracts") {
-      return { kind: "look", look: id, ...(clamped ? { overrides: clamped } : {}) };
-    }
-    return new AuraNodeBuilder<AuraGroupNode>({
-      kind: "group",
-      name: `aura-look:${id}`,
-      // The look's horizon-matched background rides on the group so consumers
-      // (the C-36 handler, diagnostics, lint, template authors via
-      // `looks.describe(id).v0.background`) read it without re-deriving.
-      background:
-        clamped?.background !== undefined && clamped.background !== "look"
-          ? clamped.background
-          : preset.v0.background,
-      children: v0Children(preset, clamped)
-    } as AuraGroupNode);
+  preset: presetImpl as {
+    (id: AuraLookId, overrides?: AuraLookOverrides): AuraNodeBuilder<AuraGroupNode>;
+    (
+      id: AuraLookId,
+      overrides: AuraLookOverrides | undefined,
+      options: AuraLookBuildOptions
+    ): AuraNodeBuilder<AuraGroupNode> | AuraLookNode;
   },
 
   /** Flat v0 children (same list the group carries). */

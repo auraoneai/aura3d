@@ -5,12 +5,19 @@ description: Chooses and verifies surface looks and lighting environments: built
 
 # Aura3D materials and environments
 
-Order is fixed: built-ins, then a licensed local file, then a generated plate
-as a candidate. There is no catalog search for textures or HDRIs today (the
-asset index has no texture or HDRI adapter), so `assets search` will not find
-them. Shared rules (claim labels, typed assets, catalog-first for models,
-benchmark mode) are in
+Order is fixed: looks/biomes/env presets first, then built-ins, then a
+licensed local file, then a generated plate as a candidate. There is no
+catalog search for textures or HDRIs today (the asset index has no texture or
+HDRI adapter), so `assets search` will not find them. Shared rules (claim
+labels, typed assets, catalog-first for models, benchmark mode) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
+
+## Look target
+
+Most scenes need no per-file HDRI at all: `looks.preset(<genre>)` already
+supplies environment light, sky/background, fog and grade — pick it from the
+recipe row in `../aura3d-art-direction/references/look-recipes.md` and only
+descend into manual environments when the look cannot express the mood.
 
 ## Establish the contract
 
@@ -26,8 +33,12 @@ benchmark mode) are in
 
 ## Procedure
 
-Step 1, built-ins (always try first):
+Step 1, presets (always try first):
 
+0. Looks and biomes: `looks.preset("outdoor-day" | "night-city" | "product-studio" ...)`
+   and `world.biome(<id>)` supply IBL + background + fog + key as one unit;
+   `environments.<named>`/`environments.hdri` cover the remaining cases before
+   any file admission.
 1. Materials: `material.pbr(...)`, `material.physical(...)`, `material.metal`,
    `material.glass`, `material.rubber`, `material.fabric`,
    `material.brushedMetal`, `material.ceramic`, `material.matteClay`,
@@ -89,14 +100,23 @@ Checks (all steps):
    judge only frames where diagnostics report `iblPixelBacked` true.
 10. Tiling: capture a surface at a texture scale that repeats the map at least
     3 times and confirm no visible seam or mirrored repeat.
-11. Run `material.visualQA(nodes)` on material showcase scenes; it reports
-    `passes`, `score`, and per-class checks.
+11. On material showcase scenes, `structuralQA.material(nodes)` reports
+    `ok` plus per-class structural-name checks (nodes named like
+    chrome/glass/rubber actually present). These are diagnostics only —
+    acceptance comes from the captured frames.
 12. KTX2: `.ktx2` files are accepted by `assets add --type texture`, and
     renderer coverage exists only for selected tested cases. Keep a
     PNG/JPG fallback, and make no compression or memory claim without a
     route-level capture.
 13. Screenshots (normal mode only) run through `npm run test` on CI or a remote
     worker. Hand the claim label to `aura3d-evidence-review`.
+
+## Look-dev loop
+
+`aura3d look capture` → judge against the quality-bar rubric → `aura3d look
+lint`. Judge only frames where the HDRI actually loaded (`iblPixelBacked`
+true); a seam visible in one capture re-checks at a different yaw. One change
+per round.
 
 ## Stop and report
 
