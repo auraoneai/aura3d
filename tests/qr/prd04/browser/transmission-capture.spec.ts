@@ -8,7 +8,7 @@
  * material) leaves it inactive. macos-14 CI only.
  */
 import { expect, test } from "@playwright/test";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 import { RESOLUTION } from "../../../../benchmarks/quality-rebuild/shared/types";
 
 const FLAGS = "materials,materials.transmission";
