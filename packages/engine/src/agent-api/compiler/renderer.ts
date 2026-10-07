@@ -271,6 +271,10 @@ export async function createProductionRuntimeSceneRenderer(
     viewProjection(time) {
       return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
     },
+    // PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2.
+    get auraRenderer() {
+      return productionRenderer.auraRenderer;
+    },
     resetTemporalHistory(reason) {
       productionRenderer.resetTemporalHistory(reason);
     },

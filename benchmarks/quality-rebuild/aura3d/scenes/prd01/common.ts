@@ -302,6 +302,20 @@ export async function mountAuraLaneScene(sceneId: string, spec: Prd01LaneSceneSp
   });
   await app.ready();
 
+  // Phase 5 (§14): tonemap A/B + exposure ramp. `tm`/`exp` go through the C-05
+  // surface (in-shader path under A3D_QR_CORE_OUTPUT; recorded intent otherwise).
+  const tmParams = new URLSearchParams(window.location.search);
+  const tmName = tmParams.get("tm") ?? tmParams.get("aura3d-tonemap");
+  const expParam = tmParams.get("exp") ?? tmParams.get("aura3d-exp");
+  const tmExposure = expParam === null ? NaN : Number(expParam);
+  if (tmName !== null || Number.isFinite(tmExposure)) {
+    app.setOutput?.({
+      ...(tmName !== null ? { toneMapping: tmName as "aces" | "agx" | "neutral" | "none" | "linear" | "reinhard" } : {}),
+      ...(Number.isFinite(tmExposure) ? { exposure: tmExposure } : {})
+    });
+    log.add("tone-mapping-variant", app.setOutput ? "supported" : "missing", `setOutput toneMapping=${tmName ?? "default"} exposure=${tmExposure}`);
+  }
+
   const drawDeadline = performance.now() + 60_000;
   while (performance.now() < drawDeadline) {
     if (!animated) app.step(0);

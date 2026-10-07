@@ -205,3 +205,25 @@ camera-fade patch (declined under §3.7).
   deform passthrough↔call, contract delegation). Browser spec
   `tests/qr/prd01/browser/program-generator-compile.spec.ts` compiles+links all
   13 cases on real WebGL2 via `?tools=program-compile`.
+
+## PR G (Phase 5: tonemap A/B prep) status notes — 2026-10-06
+
+- Q-15-1 seam landed lane-side: `ProductionWebGL2Renderer.auraRenderer` →
+  `ProductionRuntimeRenderer.auraRenderer` → controller `auraRenderer` →
+  `createAuraApp` attach at `Symbol.for("a3d.prd01.renderer")` (webgl2 only;
+  undefined for WebGPU/disposed mounts). DPR/`setRenderScaleCeiling` wiring
+  itself remains lane 15's.
+- C-05 surface real under `A3D_QR_CORE_OUTPUT`: `setOutput`/`setOutputOverlay`
+  forward through the seam once mount lands; earlier calls merge into
+  `pendingOutput` and flush on the error-watch interval or at `capture()`.
+  Flag-off keeps the DOM-overlay fallback and records requested-vs-applied.
+- C-05 URL reader (`readAura3dTonemapQuery`, re-exported via `lanes/prd01.ts`):
+  `?aura3d-tonemap=aces|agx` + `?aura3d-exp=<n>` (also `tm`/`exp` for the lane
+  capture) win over `options.output`.
+- A/B capture matrix: `tests/qr/prd01/capture.mjs` records `aces` + `agx` on
+  the aura3d engine for every lane scene under `core`; the ramp scene keeps
+  the full `aces|agx|neutral × 0.5|1|2` matrix on both engines. Aura harness
+  reads `tm`/`exp` into `app.setOutput`.
+- Q-12-1 filed in-repo: `evidence/prd01/decisions/tonemap-default.md` (gh is
+  unauthenticated — no GitHub issue). `DEFAULT_TONE_MAPPING` stays `"aces"`;
+  flipping it is a separate PR against the G-PANEL outcome.

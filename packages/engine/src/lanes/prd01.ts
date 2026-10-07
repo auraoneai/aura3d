@@ -13,6 +13,10 @@ import { PRD01_DIAGNOSTIC_ONLY_FIELDS } from "../agent-api/compiler/diagnosticOn
 import { collectFrameAllocations, collectOutput, collectPrograms, collectResolution } from "./prd01/diagnostics.js";
 import { createPrd01OutputSurface, disposePrd01OutputSurface } from "./prd01/outputSurface.js";
 
+// C-05 URL reader (Phase 5, §14): `?aura3d-tonemap=aces|agx` (+ `aura3d-exp=<n>`),
+// implemented beside the surface it feeds and re-exported here as spec'd.
+export { readAura3dTonemapQuery } from "./prd01/outputSurface.js";
+
 const diagnosticOnlyTarget = DIAGNOSTIC_ONLY_FIELDS as Record<string, { readonly reason: string; readonly ownerPrd: number }>;
 for (const [key, entry] of Object.entries(PRD01_DIAGNOSTIC_ONLY_FIELDS)) {
   diagnosticOnlyTarget[key] ??= entry;

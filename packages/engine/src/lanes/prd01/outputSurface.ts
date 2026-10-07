@@ -1,22 +1,79 @@
 /**
- * PRD-01 C-05 output surface (PR 0 stub). The C-38 extension factory mounts
- * this on `app.output` for every app; until Phase 2/4 land the OutputPass and
- * present path, the surface records requested intent honestly and delegates to
- * what exists today:
- *  - `capture()` delegates to `app.screenshot()` (canvas PNG).
- *  - `setOutputOverlay()` mounts a `.a3d-output-overlay` DOM element over the
- *    app's canvas (documented dom-fallback semantics).
- *  - `setOutput()` records intent; `diagnostics().output` reports requested vs
- *    applied so the divergence is visible instead of silent.
+ * PRD-01 C-05 output surface. The C-38 extension factory mounts this on
+ * `app.output` for every app:
+ *  - `setOutput()`/`setOutputOverlay()` forward to the live `Renderer` via the
+ *    Q-15-1 `PRD01_RENDERER` seam when `A3D_QR_CORE_OUTPUT` is on and the
+ *    mount has landed; calls before mount flush on the error-watch interval
+ *    or at `capture()`. Off the flag (or another backend) the surface records
+ *    intent and `setOutputOverlay` keeps the DOM fallback.
+ *  - `capture()` renders one frame synchronously and readPixels the canvas
+ *    framebuffer in the same task (`app.screenshot()` PNG fallback).
+ *  - `diagnostics().output` reports requested vs applied so divergence is
+ *    visible instead of silent.
  *  - `onRendererError()` fires for errors observed via `app.diagnostics()`.
  */
 
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index";
 import type { AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface } from "../../contracts/output";
 import type { QrFlags } from "@aura3d/rendering/contracts";
+import { qrCoreOutputOn } from "@aura3d/rendering";
+import type { AuraToneMappingOperator } from "../../contracts/output";
 import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "./diagnostics";
 
+/**
+ * C-05 URL reader (Phase 5, §14): games opt in to the tonemap A/B with
+ * `?aura3d-tonemap=aces|agx` (plus `&aura3d-exp=<n>` for the ramp). Wins over
+ * `options.output.toneMapping`; invalid values are ignored. Re-exported
+ * through `lanes/prd01.ts`.
+ */
+export function readAura3dTonemapQuery(search?: string): { readonly toneMapping?: AuraToneMappingOperator; readonly exposure?: number } {
+  if (typeof window === "undefined" && search === undefined) return {};
+  const params = new URLSearchParams(search ?? window.location.search);
+  const tm = params.get("aura3d-tonemap") ?? params.get("tm");
+  const operators: readonly AuraToneMappingOperator[] = ["none", "linear", "reinhard", "aces", "agx", "neutral"];
+  const expParam = params.get("aura3d-exp") ?? params.get("exp");
+  const exp = expParam === null ? NaN : Number(expParam);
+  return {
+    ...(tm !== null && (operators as readonly string[]).includes(tm) ? { toneMapping: tm as AuraToneMappingOperator } : {}),
+    ...(Number.isFinite(exp) ? { exposure: exp } : {})
+  };
+}
+
 export const PRD01_OUTPUT_DISPOSE = Symbol.for("a3d.prd01.output-dispose");
+
+/** Q-15-1 seam: the live `Renderer` hangs here once the production mount lands. */
+const PRD01_RENDERER = Symbol.for("a3d.prd01.renderer");
+
+interface Prd01OutputRenderer {
+  setOutput(options: {
+    readonly toneMapping?: AuraOutputOptions["toneMapping"];
+    readonly exposure?: number;
+    readonly dithering?: boolean;
+    readonly backgroundCoverage?: boolean;
+    readonly overlay?: AuraOutputOverlay;
+  }): void;
+  setOutputOverlay(overlay: AuraOutputOverlay | null): void;
+  readonly appliedOutput?: unknown;
+}
+
+function laneRenderer(app: AuraApp): Prd01OutputRenderer | undefined {
+  return (app as unknown as Record<symbol, Prd01OutputRenderer | undefined>)[PRD01_RENDERER];
+}
+
+/** AuraOutputOptions → Renderer output options (autoExposure/preset are lane-03's). */
+function toRendererOutput(output: Partial<AuraOutputOptions>): {
+  readonly toneMapping?: AuraOutputOptions["toneMapping"];
+  readonly exposure?: number;
+  readonly dithering?: boolean;
+  readonly backgroundCoverage?: boolean;
+} {
+  return {
+    ...(output.toneMapping !== undefined ? { toneMapping: output.toneMapping } : {}),
+    ...(output.exposure !== undefined ? { exposure: output.exposure } : {}),
+    ...(output.dither !== undefined ? { dithering: output.dither } : {}),
+    ...(output.backgroundPassthrough !== undefined ? { backgroundCoverage: output.backgroundPassthrough } : {})
+  };
+}
 
 type RendererErrorListener = (e: { readonly code: string; readonly message: string; readonly cause?: unknown }) => void;
 
@@ -40,14 +97,15 @@ export function createPrd01OutputSurface(
   app: AuraApp,
   ctx: { readonly flags: QrFlags; readonly options: AuraCreateAppOptions }
 ): AuraOutputSurface {
-  const requested: Record<string, unknown> = { ...(ctx.options.output ?? {}) };
+  const requested: Record<string, unknown> = { ...(ctx.options.output ?? {}), ...readAura3dTonemapQuery() };
   const applied: Record<string, unknown> = {};
+  const outputPath = qrCoreOutputOn(ctx.flags);
+  let pendingOutput: Partial<AuraOutputOptions> | null = outputPath ? { ...(requested as Partial<AuraOutputOptions>) } : null;
   const listeners = new Set<RendererErrorListener>();
   const emitted: { code: string; message: string }[] = [];
   let overlayEl: HTMLDivElement | null = null;
   let disposed = false;
   let lastErrorCount = 0;
-  void ctx.flags; // Phase 2/4: the real output path switches on A3D_QR_CORE; the stub is identical either way.
 
   let lastDegradationCount = 0;
   const emitObservedErrors = (): void => {
@@ -80,12 +138,28 @@ export function createPrd01OutputSurface(
       return;
     }
   };
+  /** Apply any requested-but-unmounted output once `PRD01_RENDERER` attaches. */
+  const flushPendingOutput = (): void => {
+    if (pendingOutput === null) return;
+    const renderer = outputPath ? laneRenderer(app) : undefined;
+    if (!renderer) return;
+    const pending = pendingOutput;
+    pendingOutput = null;
+    renderer.setOutput(toRendererOutput(pending));
+    Object.assign(applied, pending);
+  };
+
   const errorWatch: ReturnType<typeof setInterval> | undefined =
-    typeof setInterval === "function" ? setInterval(emitObservedErrors, 400) : undefined;
+    typeof setInterval === "function"
+      ? setInterval(() => {
+          emitObservedErrors();
+          flushPendingOutput();
+        }, 400)
+      : undefined;
 
   const state: Prd01OutputState = {
     snapshot: () => ({
-      implementation: "stub" as const,
+      implementation: outputPath && laneRenderer(app) ? ("real" as const) : ("stub" as const),
       requested: { ...requested },
       applied: { ...applied },
       overlay: { mounted: overlayEl !== null, via: overlayEl === null ? "none" : "dom" },
@@ -97,11 +171,30 @@ export function createPrd01OutputSurface(
     [PRD01_OUTPUT_STATE]: state,
     setOutput(output: Partial<AuraOutputOptions>): void {
       Object.assign(requested, output);
-      // Nothing consumes output options until the Phase-2/4 present path lands;
-      // the requested-vs-applied divergence is reported via diagnostics().output.
+      const renderer = outputPath ? laneRenderer(app) : undefined;
+      if (!renderer) {
+        // Mount pending: the watch interval flushes when PRD01_RENDERER attaches.
+        pendingOutput = { ...(pendingOutput ?? {}), ...output };
+        return;
+      }
+      renderer.setOutput(toRendererOutput(output));
+      Object.assign(applied, output);
     },
     setOutputOverlay(overlay: AuraOutputOverlay): { readonly applied: boolean; readonly reason?: "no-post-pass" | "disposed" | "dom-fallback" } {
       if (disposed) return { applied: false, reason: "disposed" };
+      // Phase 4 (C-05): the in-shader OutputPass overlay is the real path under
+      // A3D_QR_CORE_OUTPUT; DOM overlay remains the flag-off/other-backend fallback.
+      const renderer = outputPath ? laneRenderer(app) : undefined;
+      if (renderer) {
+        flushPendingOutput();
+        renderer.setOutputOverlay({
+          flash: overlay.flash ?? [0, 0, 0, 0],
+          vignette: overlay.vignette ?? [0, 0, 0, 0],
+          shape: overlay.shape ?? [0.7, 0.3],
+          fade: overlay.fade ?? [0, 0, 0, 0]
+        });
+        return { applied: true };
+      }
       const canvas = findAppCanvas(app);
       if (!canvas) return { applied: false, reason: "dom-fallback" };
       overlayEl ??= document.createElement("div");
@@ -120,6 +213,7 @@ export function createPrd01OutputSurface(
       // readPixels the canvas framebuffer in the same task — before the browser
       // composites — so preserveDrawingBuffer is never set. GL origin is
       // bottom-left; rows are flipped for the image APIs.
+      flushPendingOutput();
       const canvas = findAppCanvas(app);
       const gl = canvas?.getContext("webgl2") as WebGL2RenderingContext | null;
       if (canvas && gl && !disposed) {
