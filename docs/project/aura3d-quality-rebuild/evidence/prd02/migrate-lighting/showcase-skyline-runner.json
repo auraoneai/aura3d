@@ -1,0 +1,36 @@
+{
+  "root": "apps/showcase-skyline-runner",
+  "files": 25,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 393,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1398,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1927,
+      "construct": "lights.point({ intensity: 1.45 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1927,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

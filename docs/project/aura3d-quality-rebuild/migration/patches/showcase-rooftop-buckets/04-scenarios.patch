@@ -1,0 +1,166 @@
+From 8a5534da5d3156fe5c2bf75d21826ba2b26e705e Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 17:10:34 +0000
+Subject: [PATCH] migration(showcase-rooftop-buckets) step 4: scenario
+ globals -> src/scenarios
+
+__RB_SCENARIO__ + __RB_SET_SPOT__ become nine GameScenario modules bound through scenario-drive.ts and the createGame scenarios: option; __RB_PUMP__/__RB_SHOOT__ stay (pump-frame helpers, same as __BS_PUMP__).
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-rooftop-buckets/src/main.ts | 108 ++++++++--------------
+ 1 file changed, 41 insertions(+), 67 deletions(-)
+
+diff --git a/apps/showcase-rooftop-buckets/src/main.ts b/apps/showcase-rooftop-buckets/src/main.ts
+index 7e4072b5..2d06e68e 100644
+--- a/apps/showcase-rooftop-buckets/src/main.ts
++++ b/apps/showcase-rooftop-buckets/src/main.ts
+@@ -43,6 +43,8 @@ import {
+ } from "./scoring";
+ import { createRooftopDressing } from "./environment";
+ import { createGame } from "@aura3d/game";
++import { rooftopScenarios } from "./scenarios";
++import { bindRooftopDrive } from "./scenario-drive";
+ import { BucketsAudioController } from "./buckets-audio";
+ 
+ 
+@@ -702,6 +704,7 @@ const bucketsGame = createGame({
+     touch: true
+   },
+   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
++  scenarios: rooftopScenarios,
+   qualityRebuild: { flags: ["game"] }
+ });
+ bucketsGame.start();
+@@ -1462,7 +1465,6 @@ function publishEvidence(): RooftopBucketsEvidence {
+ (window as unknown as {
+   __RB_PUMP__?: (frames: number) => number;
+   __RB_SHOOT__?: (power: number, pitch?: number) => void;
+-  __RB_SET_SPOT__?: (index: number) => void;
+ }).__RB_PUMP__ = (frames: number) => {
+   for (let i = 0; i < frames; i++) {
+     stepGame(1 / 60);
+@@ -1485,10 +1487,11 @@ function publishEvidence(): RooftopBucketsEvidence {
+ // capture-only trajectory or scoring shortcut.
+ 
+ 
+-(window as unknown as {
+-  __RB_SCENARIO__?: (scenario: "open-clear" | "spot-clear" | "pressure" | "pressure-clear" | "fire" | "miss" | "buzzer" | "gold-miss" | "gold-win") => string;
+-}).__RB_SCENARIO__ = (scenario) => {
+-  const apply = (outcome: "swish" | "brick", spotIndex: number, gold = false) => {
++bindRooftopDrive({
++  resetToHeat: (heat) => {
++    scoreState = initialScoreState(heat);
++  },
++  applyOutcome: (outcome, spotIndex, gold = false) => {
+     const spot = COURT_SPOTS[spotIndex]!;
+     scoreState = recordShotOutcome(scoreState, outcome, spot.points, gold, spot.id).state;
+     if (outcome === "swish") {
+@@ -1502,71 +1505,42 @@ function publishEvidence(): RooftopBucketsEvidence {
+       audio.playCue("brickMiss", 0.7);
+       triggerContactFx("rim", { x: hoopState.x, y: hoopState.y, z: hoopState.z });
+     }
+-  };
+-  elModal.classList.add("hidden");
+-  if (scenario === "open-clear") {
+-    scoreState = initialScoreState(1);
+-    apply("swish", 4);
+-    apply("swish", 4);
+-  } else if (scenario === "spot-clear") {
+-    scoreState = initialScoreState(2);
+-    apply("swish", 0);
+-    apply("swish", 1);
+-    apply("swish", 2);
+-  } else if (scenario === "pressure" || scenario === "pressure-clear") {
+-    scoreState = initialScoreState(3);
+-    currentSpotIndex = 2;
+-    hoopState = updateHoop(initialHoopState(3), 3, 0.85, COURT_SPOTS[currentSpotIndex]!.x);
+-    if (scenario === "pressure-clear") {
+-      apply("swish", 4);
+-      apply("swish", 4);
+-    } else {
+-      // Freeze the authored contest beat after advancing the real integrator a
+-      // few fixed steps, so the review artifact is a live ball-to-hoop moment
+-      // rather than a static charge pose. Gameplay remains paused for capture.
+-      resetBallToSpot();
+-      releaseShot(0.72, 0.12);
+-      for (let frame = 0; frame < 8; frame += 1) {
+-        ballState = stepBall(ballState, hoopState, 1 / 60).ball;
+-      }
+-      scoreState = { ...scoreState, state: "paused" };
++  },
++  aimSpot: (index) => {
++    currentSpotIndex = Math.max(0, Math.min(COURT_SPOTS.length - 1, index));
++  },
++  stagePressureHoop: (spotIndex) => {
++    hoopState = updateHoop(initialHoopState(3), 3, 0.85, COURT_SPOTS[spotIndex]!.x);
++  },
++  stageFlight: (power, pitch, frames) => {
++    resetBallToSpot();
++    releaseShot(power, pitch);
++    for (let frame = 0; frame < frames; frame += 1) {
++      ballState = stepBall(ballState, hoopState, 1 / 60).ball;
+     }
+-  } else if (scenario === "fire") {
+-    scoreState = initialScoreState(4);
+-    apply("swish", 1);
+-    apply("swish", 1);
+-    apply("swish", 1);
+-    audio.playCue("fireIgnite", 0.9);
+-  } else if (scenario === "miss") {
+-    scoreState = initialScoreState(1);
+-    apply("brick", 1);
+-  } else if (scenario === "buzzer") {
+-    scoreState = updateClocks(initialScoreState(5), 13, false).state;
+-    audio.playCue("buzzerFail", 0.9);
+-  } else if (scenario === "gold-miss") {
+-    scoreState = initialScoreState(5);
+-    apply("brick", 1, true);
+-    audio.playCue("buzzerFail", 0.9);
+-  } else {
+-    scoreState = initialScoreState(5);
+-    apply("swish", 1, true);
+-    audio.playCue("goldBall", 0.9);
++  },
++  holdPaused: () => {
++    scoreState = { ...scoreState, state: "paused" };
++  },
++  expireClock: () => {
++    scoreState = updateClocks(scoreState, 13, false).state;
++  },
++  cue: (name, volume) => {
++    audio.playCue(name, volume ?? 0.8);
++  },
++  hideModal: () => {
++    elModal.classList.add("hidden");
++  },
++  sync: () => {
++    if (scoreState.state !== "paused") hoopState = initialHoopState(scoreState.heat);
++    resetBallToSpot();
++    syncTransforms();
++    updateHUD();
++    publishEvidence();
+   }
+-  if (scenario !== "pressure" && scenario !== "pressure-clear") hoopState = initialHoopState(scoreState.heat);
+-  resetBallToSpot();
+-  syncTransforms();
+-  updateHUD();
+-  publishEvidence();
+-  return `${scoreState.heat}:${scoreState.state}:${scoreState.lastShotResult ?? "none"}`;
+-};
++});
++
+ 
+-(window as unknown as {
+-  __RB_SET_SPOT__?: (index: number) => void;
+-}).__RB_SET_SPOT__ = (index: number) => {
+-  currentSpotIndex = Math.max(0, Math.min(COURT_SPOTS.length - 1, index));
+-  resetBallToSpot();
+-  updateHUD();
+-};
+ 
+ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+   configurable: true,
+-- 
+2.34.1
+

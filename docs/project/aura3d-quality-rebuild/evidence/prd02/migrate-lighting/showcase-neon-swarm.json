@@ -1,0 +1,112 @@
+{
+  "root": "apps/showcase-neon-swarm",
+  "files": 18,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-neon-swarm/src/environment.ts",
+      "line": 31,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/environment.ts",
+      "line": 31,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 620,
+      "construct": "lights.point({ intensity: 16 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 201 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 620,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 631,
+      "construct": "lights.point({ intensity: 9 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 113 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 631,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 632,
+      "construct": "lights.point({ intensity: 9 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 113 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 632,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 633,
+      "construct": "lights.point({ intensity: 11 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 138 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 633,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 634,
+      "construct": "lights.point({ intensity: 13 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 163 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 634,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 635,
+      "construct": "lights.point({ intensity: 15 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 188 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "line": 635,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}
