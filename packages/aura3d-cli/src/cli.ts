@@ -39,6 +39,7 @@ const {
   readAssetRole,
   readAssetType,
   readAssetValidationOptions,
+  readAudioMetadata,
   readCliAssetProfile,
   readEvidenceOutput,
   readInspectFile,
@@ -63,6 +64,17 @@ async function main(): Promise<void> {
       const file = args[2];
       const name = readOption("--name");
       if (!file || !name) throw new Error("Usage: aura3d assets add ./model.glb --name robot");
+      // PRD-05 §6.4/§12.3 Q-14-1: `release` is admitted through `assets admit`
+      // after optimize + look-dev — `assets add` can no longer mint it. The
+      // legacy flag stays accepted-with-warning only until register scripts
+      // migrate; the qr-prd05-gates workflow greps for any in-repo use.
+      const requestedQuality = readAssetQuality();
+      if (requestedQuality === "release" && !hasFlag("--legacy-release-gates")) {
+        throw new Error("`assets add --quality release` is retired: use `assets admit <id> --quality release` after optimize + look-dev (PRD-05 §6.4).");
+      }
+      if (hasFlag("--legacy-release-gates")) {
+        console.warn("warning: --legacy-release-gates is deprecated and will be removed; register `prototype`/`candidate` and admit through `assets admit`.");
+      }
       print(addAsset({
         file,
         name,
@@ -81,11 +93,13 @@ async function main(): Promise<void> {
         attribution: readOption("--attribution"),
         provenanceEvidence: readProvenanceEvidence(),
         retrievedAt: readOption("--retrieved-at"),
-        quality: readAssetQuality(),
+        quality: requestedQuality,
         role: readAssetRole(),
         suitabilityReason: readOption("--suitability"),
         renderedProbe: readRenderedProbe(),
-        orientation: readOrientation()
+        orientation: readOrientation(),
+        artDirection: readOption("--art-direction"),
+        audio: readAudioMetadata()
       }));
     } else if (action === "import-meshy") {
       const input = args[2];
@@ -226,12 +240,25 @@ async function main(): Promise<void> {
       }
       if (!report.ok) process.exitCode = 1;
     } else {
+      // C-39 fallthrough inside `assets`: lane-registered verbs
+      // (`assets admit`, `assets review`, …) resolve before the unknown error.
+      for (let words = Math.min(args.length, 4); words >= 2; words--) {
+        const registered = cliCommandFor(args.slice(0, words).join(" "));
+        if (registered) {
+          process.exitCode = await registered.run(args.slice(words), {
+            cwd: process.cwd(),
+            stdout: (line) => console.log(line),
+            stderr: (line) => console.error(line)
+          });
+          return;
+        }
+      }
       throw new Error(`Unknown assets command: ${String(action)}`);
     }
   } else if (command === "doctor") {
     print(doctor());
   } else if (command === "animation") {
-    runAnimationCommand(args[1]);
+    await runAnimationCommand(args[1]);
   } else if (command === "check-deploy") {
     print(checkDeploy({ distDir: readOption("--dist"), ...readAssetValidationOptions() }));
   } else if (command === "init") {
@@ -259,7 +286,7 @@ async function main(): Promise<void> {
   }
 }
 
-function runAnimationCommand(action: string | undefined): void {
+async function runAnimationCommand(action: string | undefined): Promise<void> {
   const scriptByAction: Record<string, string> = {
     plan: "episode:plan",
     preview: "episode:preview",
@@ -273,6 +300,20 @@ function runAnimationCommand(action: string | undefined): void {
   };
   const script = action ? scriptByAction[action] : undefined;
   if (!script) {
+    // C-39: lane-registered `aura3d animation <sub>` commands (prd06's
+    // `animation inspect-clips`, T0.7) resolve through the registry before the
+    // delegated-script usage error fires.
+    if (action) {
+      const registered = cliCommandFor(`animation ${action}`);
+      if (registered) {
+        process.exitCode = await registered.run(args.slice(2), {
+          cwd: process.cwd(),
+          stdout: (line) => console.log(line),
+          stderr: (line) => console.error(line)
+        });
+        return;
+      }
+    }
     throw new Error("Usage: aura3d animation plan|preview|render|package|review|verify|scene [--dry-run]");
   }
   const command = process.env.npm_execpath && process.env.npm_execpath.includes("pnpm")

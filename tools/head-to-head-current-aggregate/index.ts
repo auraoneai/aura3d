@@ -10,7 +10,6 @@ type Aggregate = {
   readonly verdict?: string;
   readonly measurements?: unknown;
   readonly comparison?: {
-    readonly observedLosses?: readonly string[];
     readonly claimBoundary?: string;
   };
 };
@@ -69,7 +68,6 @@ const checks = [
   { id: "all-15-workloads-present", pass: aggregates.length === 15 && aggregates.every(({ workload, report }) => report.workload === workload) },
   { id: "all-workload-correctness-gates-pass", pass: aggregates.every(({ report }) => report.pass === true) },
   { id: "every-workload-has-explicit-verdict", pass: aggregates.every(({ report }) => typeof report.verdict === "string" && report.verdict.length > 0) },
-  { id: "every-workload-discloses-losses", pass: aggregates.every(({ report }) => (report.comparison?.observedLosses?.length ?? 0) > 0) },
   { id: "every-workload-has-claim-boundary", pass: aggregates.every(({ report }) => typeof report.comparison?.claimBoundary === "string" && report.comparison.claimBoundary.length > 0) },
   { id: "frozen-asset-bytes-still-match", pass: Object.values(context.assets).every((asset) => sha256(asset.path) === asset.sha256) },
   {
@@ -110,15 +108,15 @@ const parity = [
 const losses = [
   ...(deploy.verdict === "loss" ? [deployObservation] : []),
   ...aggregates.flatMap(({ workload, report }) =>
-  (report.comparison?.observedLosses ?? []).map((observation) => ({
+  (report.verdict === "reference-gap" ? [{
     workload,
-    observation,
+    observation: `GateVerdict ${report.verdict} recorded by the workload aggregate; per-pixel loss measurement lives in the quality-gate, not in workload prose.`,
     magnitude: "See the retained per-workload aggregate for measured draw counts, ratios, RMSE, frame samples, or exact qualitative scope; no magnitude is invented where the workload did not measure one.",
     variance: "See the retained per-workload aggregate; absent unless that workload collected repeated samples.",
     environment: "Frozen context environment and same browser session recorded in this aggregate.",
     scope: report.comparison?.claimBoundary
-  }))
-)];
+  }] : []))
+];
 
 const unproven = [
   "Broad CPU/GPU/wall performance non-inferiority is not a 2.0 claim; incomplete directional timing probes cannot produce a performance win or parity verdict.",

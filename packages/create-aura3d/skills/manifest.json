@@ -103,6 +103,11 @@
       "aura3d-materials-environments",
       "aura3d-game-art"
     ],
+
+
+
+
+
     "character-controller": [
       "aura3d-browser-game",
       "aura3d-materials-environments",

@@ -1,14 +1,17 @@
 import {
-  AudioBus,
+  AudioClip,
   AudioContextManager,
-  AudioFileManager,
-  AudioSource,
   FootstepPlayer,
+  createGameSoundEngine,
   computeDistanceAttenuation,
   computeDopplerShift,
-  type AudioDecodeContextLike,
-  type AudioFileInput
+  type AudioFileAssetLike,
+  type AudioFileInput,
+  type GameBusId,
+  type SoundCueSpec,
+  type SoundGraphContext
 } from "@aura3d/audio";
+import { resolveQrFlags, type QrFlagInput } from "../contracts/flags";
 
 export type GameAudioBusId = "master" | string;
 
@@ -133,6 +136,8 @@ export interface GameAudioOptions<TCue extends string = string> {
   readonly cues: Readonly<Record<TCue, GameAudioCueDefinition<TCue>>>;
   readonly ducking?: GameAudioDuckingOptions;
   readonly footsteps?: GameAudioFootstepOptions<TCue>;
+  /** Flag input for `A3D_QR_GAME` (C-25 throw-on-invalid-cue); env/URL apply when absent. */
+  readonly qualityRebuild?: { readonly flags?: QrFlagInput };
 }
 
 export interface GameAudio<TCue extends string = string> {
@@ -155,23 +160,60 @@ export interface GameAudio<TCue extends string = string> {
 }
 
 /**
- * WS-3.2 — a bus is now an `AudioBus` from `@aura3d/audio`, not a hand-rolled `GainNode` pair.
- *
- * `GameAudio` used to call `context.createGain()` itself and track `volume`/`muted` in plain fields, which
- * is why the R12 audit listed audio as duplicate ownership. Measurement showed the two layers are not
- * duplicates — `packages/audio` owns the graph, `GameAudio` owns cues and evidence — so the fix is
- * delegation rather than deleting either. After this change there is exactly one implementation of
- * bus routing, gain ramping, mute-restores-previous-volume and disposal in the repository, and
- * `GameAudio` keeps its public cue/evidence surface unchanged.
- *
- * `node` is optional because `GameAudio` is required to stay usable with no audio context at all
- * (headless route-health runs), where every cue is counted as suppressed instead of throwing.
+ * A route-facing bus record: `GameAudio` no longer builds per-bus `GainNode`s
+ * itself — the `GameSoundEngine` master chain owns the graph — but the adapter
+ * still tracks route bus ids (and their target volumes) so the evidence shape
+ * is unchanged and headless routes stay usable with no audio context at all.
  */
 interface GameAudioBusState {
   readonly id: GameAudioBusId;
-  readonly node?: AudioBus;
+  /** Engine bus this route bus resolves to (route ids fold onto the §6.8 bus set). */
+  readonly engineBus: GameBusId;
 }
 
+/** §6.8 engine buses; route-local ids fold onto `sfx` ("ambient" → `ambience`, "master" → `sfx`). */
+const ENGINE_BUS_IDS: readonly string[] = ["music", "sfx", "ui", "ambience", "voice"];
+const ENGINE_BUS_ALIASES: Readonly<Record<string, GameBusId>> = { ambient: "ambience", master: "sfx" };
+const engineBusOf = (id: GameAudioBusId): GameBusId =>
+  ENGINE_BUS_IDS.includes(id) ? (id as GameBusId) : ENGINE_BUS_ALIASES[id] ?? "sfx";
+
+const gainToDb = (volume: number): number => 20 * Math.log10(Math.max(volume, 1e-4));
+
+const missingCueMessage = (id: string): string =>
+  `Game audio cue "${id}" has no asset or play(); synthesized default cues were removed (PRD 09).`;
+
+const assetRefOf = (
+  input: AudioFileInput
+): { readonly url: string; readonly hash?: string; readonly license?: string; readonly buffer?: AudioBuffer } => {
+  if (typeof input === "string") return { url: input };
+  if (input instanceof URL) return { url: input.href };
+  if (input instanceof AudioClip) {
+    return { url: `clip:${input.name ?? "unnamed"}`, buffer: input.buffer };
+  }
+  const like = input as AudioFileAssetLike;
+  return { url: like.url, hash: like.hash, license: like.license };
+};
+
+interface LiveVoiceHandle {
+  readonly id: number;
+  stop(fadeMs?: number): void;
+  setPosition(p: GameAudioVec3): void;
+  setOcclusion(amount: number): void;
+}
+
+/**
+ * WS-3.2 + PRD-09 §7.5 — `GameAudio` is now an adapter over `createGameSoundEngine`:
+ * the engine owns the whole graph (buses → master chain), voice pool, variant
+ * selection and doppler; this adapter keeps the route-facing cue/evidence
+ * surface (`cue`, `playPositional`, footsteps, dialogue ducking, occlusion
+ * overrides) byte-for-byte unchanged.
+ *
+ * Cues without `asset`/`play` have nothing to sound — `playDefaultCue` is
+ * deleted. With `A3D_QR_GAME` on, `createGameAudio` throws the PRD message;
+ * off, it warns once per cue and those cues count as suppressed when played.
+ * `tests/unit/engine/route-cue-maps.test.ts` proves every shipped cue map
+ * already satisfies the rule.
+ */
 export function createGameAudio<TCue extends string>(options: GameAudioOptions<TCue>): GameAudio<TCue> {
   const cueDefinitions = options.cues;
   const cueIds = Object.keys(cueDefinitions) as TCue[];
@@ -189,15 +231,41 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   const errors: string[] = [];
   const listeners = new Set<(event: GameAudioCueEvent<TCue>) => void>();
   const buses = new Map<GameAudioBusId, GameAudioBusState>();
-  /*
-   * Volume for buses created while no audio context exists. `AudioBus` needs a real `createGain`, so
-   * headless route-health runs have no `node` to hold the value — but `setBusVolume` must still be
-   * observable in evidence there, which is what the harnesses assert on. One map, only ever read when
-   * `node` is absent, so there is no second source of truth for a live bus.
-   */
-  const contextlessBusVolumes = new Map<GameAudioBusId, number>();
-  let fileManager: AudioFileManager | undefined;
-  const activeSources = new Set<AudioSource>();
+
+  // ---- C-25 cue validation (PRD-09 1734) -----------------------------------
+  const qrGameOn = resolveQrFlags({
+    options: options.qualityRebuild?.flags,
+    env: typeof process !== "undefined" ? process.env : undefined
+  }).on("A3D_QR_GAME");
+  const engineCues: Record<string, SoundCueSpec> = {};
+  for (const id of cueIds) {
+    const def = cueDefinitions[id];
+    if (def.asset === undefined && def.play === undefined) {
+      if (qrGameOn) throw new Error(missingCueMessage(String(id)));
+      if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
+      continue; // flag off: cue exists in evidence but plays as suppressed
+    }
+    engineCues[id] = {
+      bus: engineBusOf(def.bus ?? "master"),
+      asset: def.asset === undefined ? undefined : assetRefOf(def.asset),
+      play:
+        def.play === undefined
+          ? undefined
+          : (ctx, destination) => void def.play!(ctx as unknown as GameAudioContextLike, destination, def),
+      loop: def.loop,
+      volumeDb: def.volume === undefined ? undefined : gainToDb(def.volume),
+      spatial: def.position !== undefined,
+      // The legacy surface plays on every `cue()` call — no anti-hammer cooldown.
+      cooldownMs: 0
+    };
+  }
+
+  // Volumes for route buses double as evidence truth (target gain — the doc on
+  // GameAudioBusLevel says "not metered loudness") and feed the engine at build.
+  const busVolumes = new Map<GameAudioBusId, number>();
+  const mutedBuses = new Set<GameAudioBusId>();
+  const liveVoices = new Map<TCue, Set<LiveVoiceHandle>>();
+  let engine: ReturnType<typeof createGameSoundEngine> | undefined;
 
   // I1 positional state: listener pose, recently played nodes, ducking, footsteps.
   let listenerPosition: GameAudioVec3 = { x: 0, y: 0, z: 0 };
@@ -228,48 +296,50 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   }
 
   const getContext = (): GameAudioContextLike | null => {
-    if (context === undefined) context = contextManager ? contextManager.context as unknown as GameAudioContextLike : options.createContext?.() ?? null;
+    if (context === undefined) context = contextManager ? (contextManager.context as unknown as GameAudioContextLike) : options.createContext?.() ?? null;
     return context ?? null;
+  };
+
+  const getEngine = (): ReturnType<typeof createGameSoundEngine> | null => {
+    if (disposed) return null;
+    const audioContext = getContext();
+    if (!audioContext) return null;
+    if (!engine) {
+      const initialVolumes: Partial<Record<GameBusId, number>> = {};
+      for (const [busId, volume] of busVolumes) initialVolumes[engineBusOf(busId)] = volume;
+      engine = createGameSoundEngine({
+        context: audioContext as unknown as SoundGraphContext,
+        cues: engineCues,
+        buses: initialVolumes
+      });
+      if (muted) engine.setMuted(true);
+    }
+    return engine;
   };
 
   const getBus = (id: GameAudioBusId): GameAudioBusState => {
     const existing = buses.get(id);
     if (existing) return existing;
-    const audioContext = getContext();
-    // `GameAudioContextLike` structurally satisfies `AudioBusContextLike` (destination + createGain).
-    const node = audioContext ? new AudioBus(String(id), audioContext) : undefined;
-    const bus: GameAudioBusState = { id, node };
+    const bus: GameAudioBusState = { id, engineBus: engineBusOf(id) };
     buses.set(id, bus);
     return bus;
-  };
-
-  const playAssetCue = async (audioContext: GameAudioContextLike, destination: AudioNode, definition: GameAudioCueDefinition<TCue>): Promise<void> => {
-    if (!definition.asset) return;
-    if (!("decodeAudioData" in audioContext) || !("createBufferSource" in audioContext)) {
-      throw new Error(`Game audio cue "${definition.id}" uses an asset but its context cannot decode or play audio buffers.`);
-    }
-    const decodeContext = audioContext as unknown as AudioDecodeContextLike;
-    fileManager ??= new AudioFileManager({ context: decodeContext });
-    const clip = await fileManager.load(definition.asset);
-    const source = new AudioSource({ context: decodeContext, destination, clip, loop: definition.loop, volume: definition.volume });
-    activeSources.add(source);
-    source.play();
   };
 
   getBus("master");
   for (const bus of options.buses ?? []) {
     const state = getBus(bus.id);
     if (bus.volume === undefined) continue;
-    if (state.node) state.node.setVolume(bus.volume);
-    else contextlessBusVolumes.set(bus.id, bus.volume);
+    busVolumes.set(state.id, bus.volume);
+    // A live engine gets the level immediately; otherwise it seeds construction.
+    getEngine()?.setBusVolume(state.engineBus, bus.volume);
   }
 
-  const busVolumeOf = (bus: GameAudioBusState): number => bus.node?.volume ?? contextlessBusVolumes.get(bus.id) ?? 1;
-  const busMutedOf = (bus: GameAudioBusState): boolean => bus.node?.isMuted ?? false;
+  const busVolumeOf = (bus: GameAudioBusState): number => busVolumes.get(bus.id) ?? 1;
+  const busMutedOf = (bus: GameAudioBusState): boolean => mutedBuses.has(bus.id);
 
   const writeBusVolume = (bus: GameAudioBusState, volume: number): void => {
-    if (bus.node) bus.node.setVolume(volume);
-    else contextlessBusVolumes.set(bus.id, volume);
+    busVolumes.set(bus.id, volume);
+    getEngine()?.setBusVolume(bus.engineBus, volume);
   };
 
   const snapshot = (): GameAudioEvidence<TCue> => {
@@ -360,24 +430,35 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       time: audioContext?.currentTime ?? 0
     };
     for (const listener of [...listeners]) listener(event);
-    if (!audioContext || disposed || muted || busMuted) {
+    if (!audioContext || disposed || muted || busMuted || engineCues[cue] === undefined) {
       suppressedCueCount += 1;
       return event;
     }
     try {
       if (!unlocked) await audio.unlock();
-      if (definition.play) {
-        await definition.play(audioContext, bus.node?.input ?? audioContext.destination, definition);
-      } else if (definition.asset) {
-        await playAssetCue(audioContext, bus.node?.input ?? audioContext.destination, definition);
-      } else {
-        playDefaultCue(audioContext, bus.node?.input ?? audioContext.destination, definition);
+      const sound = getEngine();
+      const handle = sound?.play(cue, {
+        position: spatial?.position ?? definition.position,
+        velocity: spatial?.velocity,
+        volumeDb: 0
+      });
+      if (!handle) {
+        suppressedCueCount += 1;
+        return event;
       }
+      let voices = liveVoices.get(cue);
+      if (!voices) {
+        voices = new Set();
+        liveVoices.set(cue, voices);
+      }
+      voices.add(handle);
       playedCueCount += 1;
       // Only actually-played cues become playing nodes — suppressed cues stay out (no silent-play claim).
       const position = spatial?.position ?? definition.position ?? listenerPosition;
       const occlusion = spatial?.occlusion ?? definition.occlusion ?? 0;
-      recordPlayingNode(cue, bus.id, position, spatial?.velocity, validateOcclusion(occlusion, "cue occlusion"), event.time);
+      const resolvedOcclusion = validateOcclusion(occlusion, "cue occlusion");
+      handle.setOcclusion(resolvedOcclusion);
+      recordPlayingNode(cue, bus.id, position, spatial?.velocity, resolvedOcclusion, event.time);
     } catch (error) {
       errors.push(error instanceof Error ? error.message : String(error));
       suppressedCueCount += 1;
@@ -395,6 +476,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       if (contextManager) await contextManager.unlock();
       else await audioContext.resume();
       unlocked = true;
+      await getEngine()?.unlock();
       return snapshot();
     },
     async cue(cue) {
@@ -410,12 +492,20 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     },
     setListenerPosition(position) {
       listenerPosition = validateVec3(position, "listener position");
+      getEngine()?.setListener({
+        position: [position.x, position.y, position.z],
+        forward: [0, 0, -1],
+        up: [0, 1, 0]
+      });
       return snapshot();
     },
     setOcclusion(cue, amount) {
       const resolved = validateOcclusion(amount, "occlusion amount");
       for (const node of playingNodes) {
         if (node.cue === cue) node.occlusion = resolved;
+      }
+      for (const voice of liveVoices.get(cue) ?? []) {
+        voice.setOcclusion(resolved);
       }
       return snapshot();
     },
@@ -446,13 +536,12 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     },
     setMuted(value) {
       muted = value;
+      engine?.setMuted(value);
       return snapshot();
     },
     setBusVolume(busId, volume) {
       if (!Number.isFinite(volume) || volume < 0) throw new Error("Game audio bus volume must be a non-negative finite number.");
       const bus = getBus(busId);
-      // Validated again inside AudioBus.setVolume; the local check is kept so the error message stays
-      // the game-facing one that existing routes and tests assert on.
       if (duckingActive && busId === duckingMusicBus && duckingBaseVolume !== undefined) {
         // A live mix change while ducked re-bases the duck instead of fighting it.
         duckingBaseVolume = volume;
@@ -468,11 +557,9 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     },
     async dispose() {
       disposed = true;
-      for (const bus of buses.values()) bus.node?.dispose();
-      for (const source of activeSources) source.dispose();
-      activeSources.clear();
+      engine?.dispose();
+      liveVoices.clear();
       playingNodes.length = 0;
-      fileManager?.clear();
       if (contextManager) await contextManager.dispose();
       else if (context?.close) await context.close();
       return snapshot();
@@ -480,24 +567,4 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   };
 
   return audio;
-}
-
-function playDefaultCue<TCue extends string>(
-  context: GameAudioContextLike,
-  destination: AudioNode,
-  cue: GameAudioCueDefinition<TCue>
-): void {
-  const oscillator = context.createOscillator?.();
-  if (!oscillator) return;
-  const gain = context.createGain();
-  const now = context.currentTime;
-  const duration = cue.duration ?? 0.12;
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(cue.frequency ?? 176, now);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(cue.volume ?? 0.025, now + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-  oscillator.connect(gain).connect(destination);
-  oscillator.start(now);
-  oscillator.stop(now + duration + 0.02);
 }

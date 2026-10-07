@@ -1,4 +1,5 @@
 import type { AuraVec3 } from "./index.js";
+import { catmullRom } from "./camera/Spline.js";
 import { normalizePromptAnimationTime, promptAnimationContractVersion, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 import { applyCameraPreset, type CameraPresetId } from "./CameraPresetLibrary.js";
 import type { ShotCameraInstruction } from "./ShotTimeline.js";
@@ -166,11 +167,28 @@ export function sampleCameraPath(path: CameraPath, time: PromptAnimationSeconds)
   const next = keyframes.find((keyframe) => keyframe.time >= normalized) ?? keyframes[keyframes.length - 1] ?? first;
   const span = Math.max(0.0001, next.time - previous.time);
   const t = previous === next ? 0 : easing((normalized - previous.time) / span, path.interpolation);
+  let position: AuraVec3;
+  let target: AuraVec3;
+  if (path.interpolation === "catmull-rom" && keyframes.length >= 2) {
+    // Q-4: real centripetal Catmull-Rom (alpha 0.5) ACROSS keyframes — the
+    // segment's four surrounding control points, clamped at the ends — so
+    // velocity through interior keyframes is non-zero (not per-segment
+    // smoothstep, which forces a full stop at every keyframe).
+    const rawT = previous === next ? 0 : Math.max(0, Math.min(1, (normalized - previous.time) / span));
+    const i = keyframes.indexOf(previous);
+    const p0 = keyframes[i - 1] ?? previous;
+    const p3 = keyframes[i + 2] ?? next;
+    position = catmullRom(p0.position, previous.position, next.position, p3.position, rawT);
+    target = catmullRom(p0.target, previous.target, next.target, p3.target, rawT);
+  } else {
+    position = lerpVec3(previous.position, next.position, t);
+    target = lerpVec3(previous.target, next.target, t);
+  }
   return {
     time: normalized,
     pathId: path.id,
-    position: lerpVec3(previous.position, next.position, t),
-    target: lerpVec3(previous.target, next.target, t),
+    position,
+    target,
     fov: lerp(previous.fov, next.fov, t),
     ...(previous.focusDistance !== undefined || next.focusDistance !== undefined
       ? { focusDistance: lerp(previous.focusDistance ?? next.focusDistance ?? 0, next.focusDistance ?? previous.focusDistance ?? 0, t) }

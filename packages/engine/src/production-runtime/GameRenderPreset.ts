@@ -5,6 +5,8 @@ import type {
   RendererPostProcessOptions,
   RendererShadowOptions
 } from "@aura3d/rendering";
+import { QUALITY_TIERS } from "@aura3d/rendering/contracts";
+import type { AuraQualityController, AuraQualityTierSettings } from "@aura3d/rendering/contracts";
 
 export interface SideViewGameRenderPreset {
   readonly kind: "aura-side-view-game-render-preset";
@@ -136,6 +138,8 @@ export interface GamePerformanceGovernor {
   readonly mode: GamePerformanceGovernorMode;
   readonly settings: GamePerformanceGovernorSettings;
   readonly degraded: readonly string[];
+  /** True when non-resolution knobs are forwarded to `app.quality` (PRD 11 §6.5). */
+  readonly delegated: boolean;
   step(telemetry: GamePerFramePerfTelemetry, budget: SideViewGamePerformanceBudget): GamePerformanceGovernor;
 }
 
@@ -157,11 +161,83 @@ function stepIndex<T>(steps: readonly T[], current: T, direction: -1 | 1): T {
  */
 export function createPerformanceGovernor(
   mode: GamePerformanceGovernorMode = "conservative",
-  initial: GamePerformanceGovernorSettings = DEFAULT_GAME_GOVERNOR_SETTINGS
+  initial: GamePerformanceGovernorSettings = DEFAULT_GAME_GOVERNOR_SETTINGS,
+  quality?: AuraQualityController
 ): GamePerformanceGovernor {
   const degraded: string[] = [];
+
+  // PRD 11 §6.5 single-authority delegation: when a C-27 quality controller
+  // is attached, particleScale/lodBias/shadowSize are not stepped locally —
+  // each step forwards a tier-relative override through `quality.set` and the
+  // snapshot reports `delegated: true`. The closure state survives `make`
+  // snapshots because the delegation lives on the controller, not in
+  // `settings`.
+  const delegation = {
+    particleIndex: 0,
+    lodIndex: 0,
+    shadowSteps: 0,
+    history: [] as ("particle" | "lod" | "shadow")[]
+  };
+
+  const shadowLadder = [4096, 2048, 1024] as const;
+  const canShadowDown = (): boolean =>
+    !!quality && QUALITY_TIERS[quality.tier].shadow.mapSize > 1024 && delegation.shadowSteps < shadowLadder.length - 1;
+
+  const pushQualityOverrides = (): void => {
+    if (!quality) return;
+    const tier = QUALITY_TIERS[quality.tier];
+    const overrides: { -readonly [K in keyof AuraQualityTierSettings]?: AuraQualityTierSettings[K] } = {};
+    if (delegation.particleIndex > 0) {
+      overrides.particleBudget = Math.round(tier.particleBudget * (PARTICLE_STEPS[delegation.particleIndex] ?? 1));
+    }
+    if (delegation.lodIndex > 0) {
+      overrides.lodBias = LOD_STEPS[delegation.lodIndex] ?? tier.lodBias;
+    }
+    if (delegation.shadowSteps > 0) {
+      const baseIndex = shadowLadder.indexOf(tier.shadow.mapSize as 1024 | 2048 | 4096);
+      const target = shadowLadder[Math.min((baseIndex < 0 ? 0 : baseIndex) + delegation.shadowSteps, shadowLadder.length - 1)] ?? 1024;
+      overrides.shadow = { ...quality.settings.shadow, mapSize: target };
+    }
+    void quality.set(quality.tier, overrides);
+  };
+
+  const delegateStep = (): string | null => {
+    if (!quality) return null;
+    if (delegation.particleIndex < PARTICLE_STEPS.length - 1) {
+      delegation.particleIndex += 1;
+      delegation.history.push("particle");
+      pushQualityOverrides();
+      return "particleScale";
+    }
+    if (delegation.lodIndex < LOD_STEPS.length - 1) {
+      delegation.lodIndex += 1;
+      delegation.history.push("lod");
+      pushQualityOverrides();
+      return "lodBias";
+    }
+    if (canShadowDown()) {
+      delegation.shadowSteps += 1;
+      delegation.history.push("shadow");
+      pushQualityOverrides();
+      return "shadowSize";
+    }
+    return null;
+  };
+
+  const recoverDelegated = (): string | null => {
+    if (!quality) return null;
+    const knob = delegation.history.pop();
+    if (!knob) return null;
+    if (knob === "particle") delegation.particleIndex = Math.max(0, delegation.particleIndex - 1);
+    else if (knob === "lod") delegation.lodIndex = Math.max(0, delegation.lodIndex - 1);
+    else delegation.shadowSteps = Math.max(0, delegation.shadowSteps - 1);
+    pushQualityOverrides();
+    return knob === "particle" ? "particleScale" : knob === "lod" ? "lodBias" : "shadowSize";
+  };
+
   const make = (next: GovernorState, changed: readonly string[]): GamePerformanceGovernor => ({
     mode,
+    delegated: quality !== undefined,
     settings: {
       resolutionScale: next.resolutionScale,
       lodBias: next.lodBias,
@@ -181,6 +257,10 @@ export function createPerformanceGovernor(
           if (working.resolutionScale !== RESOLUTION_STEPS[RESOLUTION_STEPS.length - 1]) {
             working = { ...working, resolutionScale: stepIndex(RESOLUTION_STEPS, working.resolutionScale, 1) };
             applied.push("resolutionScale");
+          } else if (quality) {
+            const forwarded = delegateStep();
+            if (forwarded === null) break;
+            applied.push(`delegated:${forwarded}`);
           } else if (working.particleScale !== PARTICLE_STEPS[PARTICLE_STEPS.length - 1]) {
             working = { ...working, particleScale: stepIndex(PARTICLE_STEPS, working.particleScale, 1) };
             applied.push("particleScale");
@@ -191,7 +271,7 @@ export function createPerformanceGovernor(
             working = { ...working, shadowSize: stepIndex(SHADOW_STEPS, working.shadowSize, 1) };
             applied.push("shadowSize");
           }
-          if (working === before) break;
+          if (working === before && !quality) break;
         }
         degraded.push(...applied);
         return make(working, []);
@@ -204,6 +284,16 @@ export function createPerformanceGovernor(
       // Recover one rung, in reverse degrade order: shadow size, LOD bias, particles, resolution.
       let working = { ...next, headroomFrames: 0 };
       const recovered: string[] = [];
+      if (quality) {
+        const restored = recoverDelegated();
+        if (restored !== null) {
+          recovered.push(`delegated:${restored}`);
+        } else if (working.resolutionScale !== RESOLUTION_STEPS[0]) {
+          working = { ...working, resolutionScale: stepIndex(RESOLUTION_STEPS, working.resolutionScale, -1) };
+          recovered.push("resolutionScale");
+        }
+        return make(working, recovered.map((name) => `recovered:${name}`));
+      }
       if (working.shadowSize !== SHADOW_STEPS[0]) {
         working = { ...working, shadowSize: stepIndex(SHADOW_STEPS, working.shadowSize, -1) };
         recovered.push("shadowSize");

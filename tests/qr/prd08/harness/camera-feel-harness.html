@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PRD-08 camera/feel frame-pacing harness</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #020617;
+        color: #e2e8f0;
+        font: 13px system-ui, sans-serif;
+      }
+      canvas {
+        width: 640px;
+        height: 360px;
+      }
+      #hud {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        z-index: 2;
+        background: #0f172a;
+        border: 1px solid #334155;
+        padding: 8px 10px;
+        white-space: pre;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">prd08 harness</div>
+    <div id="mount"></div>
+    <script type="module" src="/tests/qr/prd08/harness/camera-feel-harness.js"></script>
+  </body>
+</html>

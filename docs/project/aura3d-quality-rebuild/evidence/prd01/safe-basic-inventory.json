@@ -1,0 +1,853 @@
+{
+  "generatedBy": "tools/quality-rebuild-codemods/run.ts evidence",
+  "auditBasis": "git grep -l \"safe-basic\" over apps tools tests templates packages (json/lock excluded)",
+  "files": 94,
+  "entries": 140,
+  "byClassification": {
+    "selects the mode": 102,
+    "documentation": 33,
+    "asserts the fallback warning string": 5
+  },
+  "rows": [
+    {
+      "file": "apps/showcase-aurora-lander/scripts/write-route-health.mjs",
+      "line": 118,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-bank-shot/scripts/write-route-health.mjs",
+      "line": 106,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/scripts/write-route-health.mjs",
+      "line": 63,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-courier-rush/scripts/write-route-health.mjs",
+      "line": 75,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/scripts/write-route-health.mjs",
+      "line": 94,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 54,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/scripts/write-route-health.mjs",
+      "line": 89,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-gravity-post/scripts/write-route-health.mjs",
+      "line": 117,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/scripts/write-route-health.mjs",
+      "line": 134,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 705,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/scripts/write-route-health.mjs",
+      "line": 170,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/scripts/write-route-health.mjs",
+      "line": 40,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 268,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/combat-finish-v7-PROVENANCE.md",
+      "line": 49,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 50,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 50,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 112,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 112,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 18,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 18,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 61,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 61,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 55,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 55,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 120,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 120,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 13,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 13,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 18,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 18,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 10,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 10,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 155,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 155,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 108,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 108,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md",
+      "line": 52,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/quaternius-source-v9-PROVENANCE.md",
+      "line": 79,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/texture-identity-v6-PROVENANCE.md",
+      "line": 54,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/scripts/write-route-health.mjs",
+      "line": 96,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1195,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1260,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/preview/main.ts",
+      "line": 163,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/scripts/write-route-health.mjs",
+      "line": 121,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/main.ts",
+      "line": 743,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-siege-golf/README.md",
+      "line": 85,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-siege-golf/scripts/write-route-health.mjs",
+      "line": 72,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1866,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1875,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 1875,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/main.ts",
+      "line": 2937,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "apps/showcase-smart-city-control/src/main.ts",
+      "line": 393,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/scripts/write-route-health.mjs",
+      "line": 85,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/main.ts",
+      "line": 392,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "packages/aura3d-cli/src/commands/prd01/index.ts",
+      "line": 17,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/create-aura3d/src/showcase-spec-artifacts.ts",
+      "line": 48,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 29,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 31,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 42,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 92,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 92,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/app/rendererOptions.ts",
+      "line": 102,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 1865,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 1866,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 1867,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 2851,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 9614,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 11399,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/agent-api/index.ts",
+      "line": 11410,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "packages/engine/src/contracts/diagnostics.ts",
+      "line": 11,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/browser/animation-pointer-material-harness.ts",
+      "line": 85,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/animation-pointer-material-harness.ts",
+      "line": 129,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/anisotropic-rotation-q1-harness.ts",
+      "line": 75,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/certified-hero-rigs-harness.ts",
+      "line": 137,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/certified-hero-rigs-harness.ts",
+      "line": 183,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/clustered-lighting-b5-harness.ts",
+      "line": 114,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 108,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 161,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-asset-probe-harness.ts",
+      "line": 64,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-camera-frame-asset-harness.ts",
+      "line": 98,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-material-pbr-contract-harness.ts",
+      "line": 274,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-model-sizing-harness.ts",
+      "line": 128,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-morph-targets-harness.ts",
+      "line": 51,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-morph-targets-harness.ts",
+      "line": 77,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+      "line": 158,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+      "line": 158,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+      "line": 158,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract-harness.ts",
+      "line": 159,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract.spec.ts",
+      "line": 173,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/browser/createAuraApp-postprocess-contract.spec.ts",
+      "line": 256,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/browser/createAuraApp-production-bridge-contract.spec.ts",
+      "line": 69,
+      "construct": "safe-basic",
+      "classification": "asserts the fallback warning string"
+    },
+    {
+      "file": "tests/browser/createAuraApp-production-bridge-harness.ts",
+      "line": 95,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-production-bridge-harness.ts",
+      "line": 116,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-production-bridge-harness.ts",
+      "line": 143,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-production-bridge-harness.ts",
+      "line": 143,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/createAuraApp-shadow-contract-harness.ts",
+      "line": 178,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/d4-flipbook-beam-harness.ts",
+      "line": 331,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/foot-planting-harness.ts",
+      "line": 91,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/game-visual-superiority-harness.ts",
+      "line": 245,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/instanced-model-p2-harness.ts",
+      "line": 242,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/muse3jsparity-301-engine-perf-harness.ts",
+      "line": 66,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/muse3jsparity-301-root-governor-harness.ts",
+      "line": 20,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/native-bloom-pyramid-harness.ts",
+      "line": 103,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/native-bloom-pyramid-harness.ts",
+      "line": 189,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/neon-corridor-release-asset-probe-harness.ts",
+      "line": 28,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/part-o1-navigation-crowd-harness.ts",
+      "line": 165,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/part-o2-visual-scripting-harness.ts",
+      "line": 88,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/part-o3-editor-surface-harness.ts",
+      "line": 99,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/rig-pair-rendered-301-harness.ts",
+      "line": 30,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/rooftop-animation-debug.ts",
+      "line": 10,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/rooftop-camera-debug.ts",
+      "line": 11,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/rooftop-dressing-debug.ts",
+      "line": 11,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-effects-a3-harness.ts",
+      "line": 91,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-extension-instancing-301-harness.ts",
+      "line": 35,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-ibl-b3-harness.ts",
+      "line": 80,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-motion-locomotion-301-harness.ts",
+      "line": 18,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-sdf-text-g1-harness.ts",
+      "line": 134,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-spot-hdri-n1m3-harness.ts",
+      "line": 115,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-spot-shadow-n1-harness.ts",
+      "line": 153,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-texture-streaming-m2-harness.ts",
+      "line": 135,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/root-textured-c1-harness.ts",
+      "line": 96,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/showcase-release-asset-probe-harness.ts",
+      "line": 77,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/texture-pipeline-c3-harness.ts",
+      "line": 83,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/vehicle-wheel-visibility-harness.ts",
+      "line": 118,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/browser/wrinkle-hook-harness.ts",
+      "line": 66,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/unit/agent-api/agent-api.test.ts",
+      "line": 375,
+      "construct": "safe-basic",
+      "classification": "asserts the fallback warning string"
+    },
+    {
+      "file": "tests/unit/agent-api/agent-api.test.ts",
+      "line": 381,
+      "construct": "safe-basic",
+      "classification": "asserts the fallback warning string"
+    },
+    {
+      "file": "tests/unit/agent-api/agent-api.test.ts",
+      "line": 382,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/unit/agent-api/agent-api.test.ts",
+      "line": 388,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/unit/agent-api/agent-api.test.ts",
+      "line": 395,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/unit/agent-api/production-bridge-boundary.test.ts",
+      "line": 36,
+      "construct": "safe-basic",
+      "classification": "asserts the fallback warning string"
+    },
+    {
+      "file": "tests/unit/create-aura3d/showcase-spec-compiler.test.ts",
+      "line": 61,
+      "construct": "safe-basic",
+      "classification": "selects the mode"
+    },
+    {
+      "file": "tests/unit/docs/converted-feature-docs.test.ts",
+      "line": 161,
+      "construct": "safe-basic",
+      "classification": "asserts the fallback warning string"
+    },
+    {
+      "file": "tests/unit/docs/converted-feature-docs.test.ts",
+      "line": 163,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/unit/tools/material-structural-parity.test.ts",
+      "line": 61,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tests/unit/tools/material-structural-parity.test.ts",
+      "line": 62,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tools/material-structural-parity/index.ts",
+      "line": 307,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tools/material-structural-parity/index.ts",
+      "line": 880,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tools/material-structural-parity/index.ts",
+      "line": 880,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    },
+    {
+      "file": "tools/public-renderer-normal-path/index.ts",
+      "line": 49,
+      "construct": "safe-basic",
+      "classification": "documentation"
+    }
+  ]
+}
