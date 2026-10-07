@@ -4,11 +4,15 @@ import { Material } from "./Material";
 import { MaterialInstance } from "./MaterialInstance";
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "./RenderDevice";
 import { ShaderLibrary } from "./ShaderLibraryCore";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+import { velocityHistorySlot } from "./forward/Velocity";
 
 export interface TemporalFrameOptions {
   readonly sceneKey?: string;
   readonly reset?: boolean;
   readonly jitter?: boolean;
+  /** §8.8: measured frame delta in seconds; scales the S7 shutter (C-23). */
+  readonly frameTime?: number;
 }
 
 /** GPU-only bindings. RG velocity is current UV minus previous UV; BA are current/previous depth. */
@@ -18,11 +22,33 @@ export interface TemporalGpuBindings {
   readonly historyOutput: RenderTarget;
   readonly historyValid: boolean;
   readonly historyFrames?: number;
+  /** PRD-03 Phase 4 (flag `A3D_QR_POST`): the C-14 camera history + the
+   * linear-depth ping-pong the S5 disocclusion test and S1 camera-velocity
+   * pass consume. Absent on the legacy re-draw path. */
+  readonly v2?: TemporalV2Frame;
+}
+
+export interface TemporalV2Frame {
+  /** Jittered view-projection used for rasterization this frame. */
+  readonly jittered: Float32Array;
+  /** Jitter-free view-projection — the velocity/reprojection reference. */
+  readonly unjittered: Float32Array;
+  /** Last frame's unjittered view-projection. */
+  readonly previous: Float32Array;
+  /** Previous frame's linear-depth target (valid only when historyValid). */
+  readonly linZ: RenderTarget;
+  /** S1-A writes this frame's linear depth here; swaps on commit(). */
+  readonly linZOutput: RenderTarget;
+  /** Jitter in full-pixel units (u_jitterClip = jitter / {w, h}). */
+  readonly jitterClip: readonly [number, number];
+  /** Measured frame delta in seconds (S7 shutter scale; 1/60 when unknown). */
+  readonly frameTime: number;
 }
 
 /** Renderer-lifetime owner; histories only advance after successful presentation. */
 export class TemporalHistory {
   private targets: [RenderTarget, RenderTarget, RenderTarget] | undefined;
+  private linZTargets: [RenderTarget, RenderTarget] | undefined;
   private previous = new Map<string, Float32Array>();
   private pending = new Map<string, Float32Array>();
   private valid = false;
@@ -35,13 +61,23 @@ export class TemporalHistory {
   private materials: Material[] = [];
   constructor() { this.library.register(velocityShader); }
 
-  reset(): void { this.valid = false; this.previous.clear(); this.pending.clear(); this.frame = 0; }
+  reset(): void {
+    this.valid = false;
+    this.previous.clear();
+    this.pending.clear();
+    this.frame = 0;
+    // C-14: the camera-level history (velocity MRT binder + S1 pass C) shares
+    // the same invalidation — a cut/resize/scene-swap discards both.
+    velocityHistorySlot.get(rendererQrFlags()).history.reset("camera-cut");
+  }
   dispose(): void {
     this.pass = undefined;
     for (const material of this.materials) material.dispose();
     this.materials = [];
     for (const target of this.targets ?? []) target.dispose();
     this.targets = undefined;
+    for (const target of this.linZTargets ?? []) target.dispose();
+    this.linZTargets = undefined;
     this.reset();
   }
 
@@ -57,6 +93,9 @@ export class TemporalHistory {
   prepare(device: RenderDevice, width: number, height: number, items: readonly RenderItem[], viewProjection: Float32Array | readonly number[] | undefined, options: TemporalFrameOptions): TemporalGpuBindings {
     if (Boolean(options.jitter) !== this.jitterEnabled) { this.reset(); this.jitterEnabled = Boolean(options.jitter); }
     if (options.reset || options.sceneKey !== this.sceneKey) { this.reset(); this.sceneKey = options.sceneKey; }
+    if (rendererQrFlags().on("A3D_QR_POST")) {
+      return this.prepareV2(device, width, height, items, viewProjection, options);
+    }
     if (!this.targets || this.targets.some(target => target.disposed || target.width !== width || target.height !== height)) {
       this.dispose();
       const made: RenderTarget[] = [];
@@ -93,9 +132,68 @@ export class TemporalHistory {
     return { velocity: this.targets[0], history: this.targets[1], historyOutput: this.targets[2], historyValid: this.valid, historyFrames: this.valid ? this.frame : 0 };
   }
 
+  /**
+   * PRD-03 Phase 4 (flag `A3D_QR_POST`): the per-item velocity re-draw and
+   * the rigid-only geometry gate are superseded — S1 pass C derives camera
+   * velocity from depth reprojection, per-object MRT velocity lands with
+   * Q-01-2, and TAA/motion-blur run as v2 post stages. prepare() here only
+   * owns GPU surfaces (velocity, history ping-pong, linear-depth ping-pong),
+   * the C-14 camera matrices, and the per-item jittered MVP the forward
+   * raster needs for TAA convergence. No ForwardPass is constructed.
+   */
+  private prepareV2(device: RenderDevice, width: number, height: number, items: readonly RenderItem[], viewProjection: Float32Array | readonly number[] | undefined, options: TemporalFrameOptions): TemporalGpuBindings {
+    if (!this.targets || this.targets.some(target => target.disposed || target.width !== width || target.height !== height)
+      || !this.linZTargets || this.linZTargets.some(target => target.disposed || target.width !== width || target.height !== height)) {
+      this.dispose();
+      const made: RenderTarget[] = [];
+      try {
+        for (const label of ["velocity", "history-a", "history-b"]) made.push(device.createRenderTarget({ width, height, format: "rgba16f", depth: false, sampleCount: 1, label: `renderer-temporal-${label}` }));
+        for (const label of ["linz-a", "linz-b"]) made.push(device.createRenderTarget({ width, height, format: "rgba32f", depth: false, sampleCount: 1, label: `renderer-temporal-${label}` }));
+        this.targets = made.slice(0, 3) as [RenderTarget, RenderTarget, RenderTarget];
+        this.linZTargets = made.slice(3) as [RenderTarget, RenderTarget];
+      } catch (error) { for (const target of made) target.dispose(); throw error; }
+    }
+    const vp = Float32Array.from(viewProjection ?? identityMat4());
+    const jitter = options.jitter ? this.jitter(width, height) : ([0, 0] as const);
+    // C-14: the registered camera history produces {jittered, unjittered,
+    // previous} and arms the velocity-MRT binder for this frame's draws. The
+    // jitter it reprojects by must match what the raster below applies.
+    const cam = velocityHistorySlot.get(rendererQrFlags()).history.prepare(vp, jitter);
+    this.renderItems = items.map((item) => {
+      const unjittered = Float32Array.from(item.modelViewProjectionMatrix
+        ?? multiplyMat4(Array.from(vp) as Mat4, Array.from(item.modelMatrix ?? identityMat4()) as Mat4));
+      const current = new Float32Array(unjittered);
+      if (jitter[0] !== 0 || jitter[1] !== 0) {
+        for (let col = 0; col < 4; col += 1) {
+          current[col * 4] = current[col * 4]! + jitter[0] * current[col * 4 + 3]!;
+          current[col * 4 + 1] = current[col * 4 + 1]! + jitter[1] * current[col * 4 + 3]!;
+        }
+      }
+      return { ...item, modelViewProjectionMatrix: current };
+    });
+    const linZTargets = this.linZTargets;
+    return {
+      velocity: this.targets[0],
+      history: this.targets[1],
+      historyOutput: this.targets[2],
+      historyValid: this.valid,
+      historyFrames: this.valid ? this.frame : 0,
+      v2: {
+        jittered: cam.jittered,
+        unjittered: cam.unjittered,
+        previous: cam.previous,
+        linZ: linZTargets[0],
+        linZOutput: linZTargets[1],
+        jitterClip: jitter,
+        frameTime: options.frameTime ?? 1 / 60
+      }
+    };
+  }
+
   commit(): void {
     if (!this.targets) return;
     [this.targets[1], this.targets[2]] = [this.targets[2], this.targets[1]];
+    if (this.linZTargets) [this.linZTargets[0], this.linZTargets[1]] = [this.linZTargets[1], this.linZTargets[0]];
     this.previous = new Map(this.pending); this.valid = true; this.frame++;
   }
 }

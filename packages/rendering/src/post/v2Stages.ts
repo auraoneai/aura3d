@@ -9,6 +9,10 @@
  *                          upsample + §6.3 multi-bounce apply onto HDR)
  *   S4  god rays          (half-res radial march → additive onto HDR)
  *   CA  chromatic aberration (the §8.12 S10 tap as a standalone pre-pass)
+ *   S1-C camera velocity  (§8.6/§8.8: depth-reprojected UV deltas → velocity target)
+ *   S5  TAA / TAAU        (§8.6 resolve against the C-14 history ping-pong)
+ *   S6  depth of field    (§8.7 half-res prefilter → near-tile → Vogel gather → composite)
+ *   S7  motion blur       (§8.8 McGuire tile-max → neighbor-max → reconstruction)
  *
  * `runV2LdrTail` runs the post-`presentLdrPostprocess` display stages:
  *   S10b display grade (LUT + vignette, luma into .a for FXAA),
@@ -28,9 +32,11 @@ import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
 import { invertMat4, type Mat4 } from "@aura3d/scene";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { FrameCamera } from "../contracts/frameGraph";
+import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
 import { PostResources } from "./PostResources";
 import {
+  CAMERA_VELOCITY_GLSL,
   DEPTH_LINEARIZE_GLSL,
   DEPTH_MINMAX_HALF_GLSL
 } from "./shaders/depthDownsample.glsl.js";
@@ -40,7 +46,11 @@ import { GODRAYS_GLSL } from "./shaders/godrays.glsl.js";
 import { CA_PASS_GLSL } from "./shaders/composite.glsl.js";
 import { DISPLAY_GRADE_GLSL } from "./shaders/displayGrade.glsl.js";
 import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_GLSL } from "./shaders/finalize.glsl.js";
-import type { GtaoOptions, GodRayOptions } from "./PostGraph";
+import { VELOCITY_DILATE_GLSL } from "./shaders/velocityDilate.glsl.js";
+import { TAA_RESOLVE_GLSL, TAA_UPSCALE_GLSL } from "./shaders/taa.glsl.js";
+import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_GLSL } from "./shaders/dof.glsl.js";
+import { MB_NEIGHBOR_GLSL, MB_RECONSTRUCT_GLSL, MB_TILE_MAX_GLSL } from "./shaders/motionBlur.glsl.js";
+import type { DofOptions, GtaoOptions, GodRayOptions, MotionBlurOptions, TaaOptions } from "./PostGraph";
 
 const VERTEX = `#version 300 es
 out vec2 v_uv;
@@ -72,6 +82,9 @@ interface PostV2State {
   readonly vao: WebGLVertexArrayObject;
   readonly pool: PostResources;
   readonly identityLut: WebGLTexture;
+  /** 1×1 black RGBA8 — bound for `u_reactive` while Q-01-2 (the C-14
+   * reactive attachment) is pending. */
+  readonly blankTex: WebGLTexture;
   frameIndex: number;
 }
 
@@ -103,11 +116,20 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
     gl.bindTexture(gl.TEXTURE_3D, null);
+    const blankTex = gl.createTexture();
+    if (blankTex) {
+      gl.bindTexture(gl.TEXTURE_2D, blankTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
     state = {
       programs: new Map(),
       vao,
       pool: new PostResources(host.device, rendererQrFlags()),
       identityLut,
+      blankTex: blankTex ?? identityLut,
       frameIndex: 0
     };
     states.set(gl, state);
@@ -180,24 +202,41 @@ export function runV2HdrStages(
   host: WebGL2DeviceHost,
   source: RenderTarget,
   pipeline: PostPipelineOptions,
-  camera: FrameCamera | null | undefined
-): { readonly target: RenderTarget; readonly aoPending: boolean } {
+  camera: FrameCamera | null | undefined,
+  /** PRD-03 Phase 4: the flag-on TemporalHistory bindings (C-14 camera
+   * matrices + velocity/history/linZ surfaces). Absent when temporal
+   * wasn't requested or the route's geometry is unsupported. */
+  temporal?: TemporalGpuBindings
+): { readonly target: RenderTarget; readonly aoPending: boolean; readonly skipped: readonly string[] } {
   const wantsAo = Boolean(pipeline.ao);
   const wantsGodRays = Boolean(pipeline.godRays);
   const wantsCa = Boolean(pipeline.chromaticAberration && (pipeline.chromaticAberration as { intensity?: number }).intensity);
-  if (!wantsAo && !wantsGodRays && !wantsCa) return { target: source, aoPending: false };
+  const wantsTaa = pipeline.antiAliasing === "taa" || Boolean(pipeline.taa);
+  const wantsDof = Boolean(pipeline.dof);
+  const wantsMb = Boolean(pipeline.motionBlur);
+  // TAA and motion blur silently degrade without temporal surfaces; the
+  // engine-side AA resolve already reported the coverage fallback.
+  const skipped: string[] = [];
+  const temporalOk = Boolean(temporal?.v2);
+  const taaActive = wantsTaa && temporalOk;
+  const mbActive = wantsMb && temporalOk;
+  if (wantsTaa && !temporalOk) skipped.push("TAA_VELOCITY_COVERAGE");
+  if (wantsMb && !temporalOk) skipped.push("S7_VELOCITY_UNAVAILABLE");
+  const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive;
+  const needsVelocity = (taaActive || mbActive) && temporalOk;
+  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive) return { target: source, aoPending: false, skipped };
 
   const src = asGlTarget(source);
-  if ((wantsAo || wantsGodRays) && !src.depthTextureHandle) {
+  if ((needsLinZ || needsVelocity) && !src.depthTextureHandle) {
     throw new RenderDeviceError(
-      "v2 S1/S2/S4 need a sampleable depth texture on the HDR target.",
+      "v2 S1/S2/S4/S5/S6/S7 need a sampleable depth texture on the HDR target.",
       "WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED",
       { targetId: source.id }
     );
   }
-  if ((wantsAo || wantsGodRays) && !camera) {
+  if ((wantsAo || wantsGodRays || needsVelocity) && !camera) {
     throw new RenderDeviceError(
-      "v2 S2 GTAO / S4 god rays need the frame camera (projection + viewProjection).",
+      "v2 S2 GTAO / S4 god rays / S1-C camera velocity need the frame camera.",
       "POST_GRAPH_V2_CAMERA_REQUIRED"
     );
   }
@@ -213,8 +252,13 @@ export function runV2HdrStages(
   // ── S1-A: linearized depth (RGBA32F .r = viewZ) ──────────────────────────
   let linZFull: RenderTarget | null = null;
   let minmaxHalf: RenderTarget | null = null;
-  if (wantsAo || wantsGodRays) {
-    linZFull = state.pool.acquire({ width: w, height: h, format: "rgba32f", samples: 1, depth: false });
+  let linZOwnedByPool = false;
+  if (needsLinZ) {
+    // Temporal frames write this frame's linear Z into the history ping-pong's
+    // `linZOutput` slot so commit() promotes it for next frame's disocclusion.
+    linZFull = temporal?.v2?.linZOutput
+      ?? state.pool.acquire({ width: w, height: h, format: "rgba32f", samples: 1, depth: false });
+    linZOwnedByPool = !temporal?.v2;
     const linProg = program(state, gl, "depth-linearize", DEPTH_LINEARIZE_GLSL);
     draw(host, state, linProg, asGlTarget(linZFull), [src.depthTextureHandle!], (g) => {
       g.uniform1i(g.getUniformLocation(linProg, "u_depth"), 0);
@@ -226,6 +270,30 @@ export function runV2HdrStages(
     const mmProg = program(state, gl, "depth-minmax", DEPTH_MINMAX_HALF_GLSL);
     draw(host, state, mmProg, asGlTarget(minmaxHalf), [asGlTarget(linZFull).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(mmProg, "u_linearDepth"), 0);
+    });
+  }
+
+  // ── S1-C: camera velocity (RG16F in .rg of rgba16f) — depth reprojection
+  // through prevVP·invUnjitteredVP. Per-object velocity lands with Q-01-2;
+  // this is the camera-only fallback the PRD ships first.
+  let dilatedVelocity: RenderTarget | null = null;
+  if (needsVelocity && temporal?.v2) {
+    const camVelProg = program(state, gl, "camera-velocity", CAMERA_VELOCITY_GLSL);
+    const invUnjittered = invertMat4(Array.from(temporal.v2.unjittered) as unknown as Mat4);
+    draw(host, state, camVelProg, asGlTarget(temporal.velocity), [src.depthTextureHandle!], (g) => {
+      g.uniform1i(g.getUniformLocation(camVelProg, "u_depth"), 0);
+      g.uniform1f(g.getUniformLocation(camVelProg, "u_near"), near);
+      g.uniform1f(g.getUniformLocation(camVelProg, "u_far"), far);
+      g.uniform1i(g.getUniformLocation(camVelProg, "u_ortho"), ortho ? 1 : 0);
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_prevViewProjection"), false, temporal.v2!.previous);
+      g.uniformMatrix4fv(g.getUniformLocation(camVelProg, "u_invUnjitteredViewProjection"), false, Float32Array.from(invUnjittered));
+    });
+    // §8.6: closest-depth 3×3 velocity for the silhouette-correct reprojection.
+    dilatedVelocity = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const dilateProg = program(state, gl, "velocity-dilate", VELOCITY_DILATE_GLSL);
+    draw(host, state, dilateProg, asGlTarget(dilatedVelocity), [asGlTarget(temporal.velocity).colorHandle, asGlTarget(linZFull!).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(dilateProg, "u_velocity"), 0);
+      g.uniform1i(g.getUniformLocation(dilateProg, "u_linearDepth"), 1);
     });
   }
 
@@ -368,13 +436,142 @@ export function runV2HdrStages(
     hdr = caTarget;
   }
 
-  if (linZFull) state.pool.release(linZFull);
+  // ── S5: §8.6 TAA resolve into the history ping-pong ──────────────────────
+  if (taaActive && temporal?.v2 && dilatedVelocity) {
+    const taa = (pipeline.taa ?? {}) as Partial<TaaOptions>;
+    const taaProg = program(state, gl, "taa-resolve", TAA_RESOLVE_GLSL);
+    const resolved = temporal.historyOutput;
+    draw(host, state, taaProg, asGlTarget(resolved), [
+      asGlTarget(hdr).colorHandle,
+      asGlTarget(temporal.history).colorHandle,
+      asGlTarget(dilatedVelocity).colorHandle,
+      asGlTarget(temporal.v2.linZ).colorHandle,
+      state.blankTex
+    ], (g) => {
+      g.uniform1i(g.getUniformLocation(taaProg, "u_current"), 0);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_history"), 1);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_velocityDilate"), 2);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_linZPrev"), 3);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_reactive"), 4);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_hasReactive"), 0);
+      g.uniform1i(g.getUniformLocation(taaProg, "u_hasHistory"), temporal.historyValid ? 1 : 0);
+      g.uniform1f(g.getUniformLocation(taaProg, "u_feedbackMin"), taa.feedbackMin ?? 0.88);
+      g.uniform1f(g.getUniformLocation(taaProg, "u_feedbackMax"), taa.feedbackMax ?? 0.97);
+      g.uniform1f(g.getUniformLocation(taaProg, "u_varianceGamma"), taa.varianceGamma ?? 1.0);
+    });
+    if (hdr !== source) state.pool.release(hdr);
+    // §8.6 TAAU: renderScale < 1 reconstructs at display resolution with the
+    // 9-tap Blackman-Harris kernel. History stays render-res (self-consistent
+    // reprojection); only the presented output upsamples.
+    const renderScale = pipeline.renderScale ?? 1;
+    if (renderScale < 1) {
+      const outW = Math.max(1, Math.round(w / renderScale));
+      const outH = Math.max(1, Math.round(h / renderScale));
+      const display = state.pool.acquire({ width: outW, height: outH, format: "rgba16f", samples: 1, depth: false });
+      const upProg = program(state, gl, "taa-upscale", TAA_UPSCALE_GLSL);
+      draw(host, state, upProg, asGlTarget(display), [asGlTarget(resolved).colorHandle], (g) => {
+        g.uniform1i(g.getUniformLocation(upProg, "u_resolved"), 0);
+        g.uniform2f(g.getUniformLocation(upProg, "u_renderSize"), w, h);
+        g.uniform2f(g.getUniformLocation(upProg, "u_outputSize"), outW, outH);
+      });
+      hdr = display;
+      // Note: downstream stages (S6/S7) then run at display res; linZ/velocity
+      // stays render-res — sampling is texelFetch-indexed so the sizes differ
+      // intentionally and DOF/MB reads scale via textureSize().
+    } else {
+      hdr = resolved;
+    }
+  }
+
+  // ── S6: §8.7 depth of field ───────────────────────────────────────────────
+  if (wantsDof && linZFull) {
+    const dof = (pipeline.dof ?? {}) as Partial<DofOptions>;
+    const maxBlur = dof.maxBlurPx ?? 16;
+    const rings = 3; // High preset; tier table routes Medium → 2 via §6.5
+    const dw = Math.max(1, Math.round(w / 2)), dh = Math.max(1, Math.round(h / 2));
+    const prefilter = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
+    const prefilterProg = program(state, gl, "dof-prefilter", DOF_PREFILTER_GLSL);
+    draw(host, state, prefilterProg, asGlTarget(prefilter), [asGlTarget(hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(prefilterProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(prefilterProg, "u_linearDepth"), 1);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_focusDistance"), dof.focusDistance ?? 3);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_focalLengthMm"), dof.focalLengthMm ?? 50);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_fStop"), dof.fStop ?? 2.8);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_sensorHeightMm"), dof.sensorHeightMm ?? 24);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_frameHeightPx"), h);
+      g.uniform1f(g.getUniformLocation(prefilterProg, "u_maxBlurPx"), maxBlur);
+    });
+    const tileW = Math.max(1, Math.ceil(dw / 8)), tileH = Math.max(1, Math.ceil(dh / 8));
+    const nearTile = state.pool.acquire({ width: tileW, height: tileH, format: "rgba16f", samples: 1, depth: false });
+    const tileProg = program(state, gl, "dof-near-tile", DOF_NEAR_TILE_GLSL);
+    draw(host, state, tileProg, asGlTarget(nearTile), [asGlTarget(prefilter).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(tileProg, "u_prefilter"), 0);
+    });
+    const gather = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
+    const gatherSrc = `#define DOF_RINGS ${rings}\n` + DOF_GATHER_GLSL;
+    const gatherProg = program(state, gl, `dof-gather-${rings}`, gatherSrc);
+    draw(host, state, gatherProg, asGlTarget(gather), [asGlTarget(prefilter).colorHandle, asGlTarget(nearTile).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(gatherProg, "u_prefilter"), 0);
+      g.uniform1i(g.getUniformLocation(gatherProg, "u_nearTile"), 1);
+      g.uniform1f(g.getUniformLocation(gatherProg, "u_maxBlurPx"), maxBlur);
+    });
+    const comp = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const compProg = program(state, gl, "dof-composite", DOF_COMPOSITE_GLSL);
+    draw(host, state, compProg, asGlTarget(comp), [asGlTarget(hdr).colorHandle, asGlTarget(gather).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(compProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(compProg, "u_blurred"), 1);
+    });
+    state.pool.release(prefilter); state.pool.release(nearTile); state.pool.release(gather);
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = comp;
+  }
+
+  // ── S7: §8.8 motion blur (McGuire tile reconstruction) ────────────────────
+  if (mbActive && temporal?.v2 && dilatedVelocity && linZFull) {
+    const mb = (pipeline.motionBlur ?? {}) as Partial<MotionBlurOptions>;
+    const tile = mb.tileSize ?? 16;
+    const samples = mb.samples ?? 12;
+    const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
+    const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
+    const tileProg = program(state, gl, `mb-tile-${tile}`, `#define MB_TILE_SIZE ${tile}\n` + MB_TILE_MAX_GLSL);
+    draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(tileProg, "u_velocity"), 0);
+    });
+    const neighbor = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
+    const neighborProg = program(state, gl, "mb-neighbor", MB_NEIGHBOR_GLSL);
+    draw(host, state, neighborProg, asGlTarget(neighbor), [asGlTarget(tileMax).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(neighborProg, "u_tileMax"), 0);
+    });
+    const blurred = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const reconProg = program(state, gl, `mb-recon-${samples}-${tile}`, MB_RECONSTRUCT_GLSL);
+    // §8.8: shutter · (targetFrameTime / actualFrameTime). The target is the
+    // nominal 60 Hz frame; the actual comes from the temporal stamp (C-23
+    // timeScale already folded into the authored shutter by the bridge).
+    const frameScale = (mb.shutter ?? 0.5) * ((1 / 60) / Math.max(temporal.v2.frameTime, 1e-4));
+    draw(host, state, reconProg, asGlTarget(blurred), [asGlTarget(hdr).colorHandle, asGlTarget(dilatedVelocity).colorHandle, asGlTarget(neighbor).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(reconProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_velocity"), 1);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_neighbor"), 2);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_linearDepth"), 3);
+      g.uniform1f(g.getUniformLocation(reconProg, "u_shutter"), frameScale);
+      g.uniform1f(g.getUniformLocation(reconProg, "u_maxBlurPx"), mb.maxBlurPx ?? 32);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_samples"), samples);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_tileSize"), tile);
+      g.uniform1i(g.getUniformLocation(reconProg, "u_frameIndex"), state.frameIndex);
+    });
+    state.pool.release(tileMax); state.pool.release(neighbor);
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = blurred;
+  }
+
+  if (dilatedVelocity) state.pool.release(dilatedVelocity);
+  if (linZFull && linZOwnedByPool) state.pool.release(linZFull);
   if (minmaxHalf) state.pool.release(minmaxHalf);
   state.frameIndex += 1;
   // AO_INDIRECT_FRACTION_PENDING: the C-02 `prd03.indirectFraction` feature
   // is registered but generateProgram (lane 01) is still pending, so the
   // apply ran the §6.3 `u_aoFallbackStrength` path.
-  return { target: hdr, aoPending: wantsAo };
+  return { target: hdr, aoPending: wantsAo, skipped };
 }
 
 /** True when S10b/S11/S12 need a real LDR tail after the fused present. */

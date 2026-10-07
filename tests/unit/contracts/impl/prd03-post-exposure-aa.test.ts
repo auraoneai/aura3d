@@ -54,7 +54,7 @@ describe("resolvePostAntiAlias (§7.2)", () => {
     const resolved = resolvePostAntiAlias(input);
     expect(resolved.mode).toBe("msaa");
     expect(resolved.sampleCount).toBe(4);
-    expect(resolved.reason).toBe("taa-blocked-velocity-coverage");
+    expect(resolved.reason).toBe("TAA_VELOCITY_COVERAGE");
   });
 
   test("pixel guard downgrades msaa to smaa above 2.4 Mpx", () => {
@@ -71,7 +71,7 @@ describe("resolvePostAntiAlias (§7.2)", () => {
     // Ultra velocity-coverage failure → MSAA fallback (the C-27 "none" + msaaSamples 4 row).
     const failed = resolvePostAntiAlias({ settings: QUALITY_TIERS.ultra, tier: "ultra", authored: "auto", renderPixels: 1_000_000, velocity: { moving: 2, movingWithHistory: 0 } });
     expect(failed.mode).toBe("msaa");
-    expect(failed.reason).toBe("taa-blocked-velocity-coverage");
+    expect(failed.reason).toBe("TAA_VELOCITY_COVERAGE");
   });
 
   test("auto never selects taa for a postAntiAlias:none tier (CCR-03-4 pending), even with full coverage", () => {

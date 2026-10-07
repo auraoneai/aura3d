@@ -7,7 +7,7 @@ import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
-import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
 import {
   authoredPostContextFor,
@@ -23,7 +23,7 @@ export function createProductionRuntimePostprocess(
   renderWidth = 1280,
   renderHeight = 720,
   temporalSupported = true,
-  attach?: { readonly canvas?: HTMLCanvasElement }
+  attach?: { readonly canvas?: HTMLCanvasElement; readonly frameTime?: number }
 ): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
@@ -105,7 +105,17 @@ export function createProductionRuntimePostprocess(
       // Compile-time facts: a static frame qualifies (moving 0/0). When the
       // route's geometry cannot support temporal inputs, mark one mover
       // without history so TAA resolves to its coverage fallback.
-      velocity: { moving: temporalSupported ? 0 : 1, movingWithHistory: 0 }
+      // PRD-03 Phase 4: prefer the live C-14 coverage (movers vs movers with
+      // history); before the first prepared frame it reads {0,0} = static.
+      velocity: (() => {
+        if (!temporalSupported) return { moving: 1, movingWithHistory: 0 };
+        try {
+          const c = postVelocityCoverage();
+          return { moving: c.moving, movingWithHistory: c.movingWithHistory };
+        } catch {
+          return { moving: 0, movingWithHistory: 0 };
+        }
+      })()
     })
     : null;
   const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa");
@@ -118,7 +128,7 @@ export function createProductionRuntimePostprocess(
     // colors and clipped highlights before ACES, which produced washed-out output.
     targetFormat: "rgba16f",
     ...(temporalRequested ? {
-      temporal: { sceneKey },
+      temporal: { sceneKey, ...(attach?.frameTime !== undefined ? { frameTime: attach.frameTime } : {}) },
       ...(authoredMotionBlur ? { motionBlur: { samples: 8, scale: clampNumber(authoredMotionBlur.intensity ?? .5, 0, 2) } } : {}),
       ...(authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa" ? { taa: { blend: .9 } } : {})
     } : {}),
@@ -249,7 +259,19 @@ export function createProductionRuntimePostprocess(
         ...pipelineResult.options,
         // The tier resolution (Phase 1) supplies the AA mode — the bridge's
         // "off" placeholder is never the answer under a strict field check.
-        antiAliasing: resolvedAa?.mode ?? authoredAntiAlias?.mode ?? "off"
+        antiAliasing: resolvedAa?.mode ?? authoredAntiAlias?.mode ?? "off",
+        // Phase 4: stamp the §8.6 TAA bag only when TAA actually runs — a
+        // coverage fallback (msaa/smaa + TAA_VELOCITY_COVERAGE) must not
+        // re-arm it through the `pipeline.taa` presence check in v2Stages.
+        ...((resolvedAa ? resolvedAa.mode === "taa" : authoredAntiAlias?.mode === "taa") ? {
+          taa: {
+            feedbackMin: 0.88,
+            feedbackMax: 0.97,
+            varianceGamma: 1.0,
+            upscale: Boolean((pipelineResult.options.renderScale ?? 1) < 1),
+            sharpness: typeof authoredAntiAlias?.sharpness === "number" ? authoredAntiAlias.sharpness : 0.2
+          }
+        } : {})
       },
       v2: true
     };

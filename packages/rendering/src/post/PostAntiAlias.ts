@@ -58,8 +58,8 @@ export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasRe
   if (authored === "taa") {
     if (taaAllowed) return { mode: "taa", sampleCount: 1 };
     return msaaCapable
-      ? { mode: "msaa", sampleCount: 4, reason: "taa-blocked-velocity-coverage" }
-      : { mode: "smaa", sampleCount: 1, reason: "taa-blocked-velocity-coverage" };
+      ? { mode: "msaa", sampleCount: 4, reason: "TAA_VELOCITY_COVERAGE" }
+      : { mode: "smaa", sampleCount: 1, reason: "TAA_VELOCITY_COVERAGE" };
   }
   if (authored === "msaa") {
     return msaaCapable
@@ -73,8 +73,8 @@ export function resolvePostAntiAlias(input: PostAntiAliasInput): PostAntiAliasRe
   if (tierMode === "taa") {
     if (taaAllowed) return { mode: "taa", sampleCount: 1 };
     return msaaCapable
-      ? { mode: "msaa", sampleCount: 4, reason: "taa-blocked-velocity-coverage" }
-      : { mode: "smaa", sampleCount: 1, reason: "taa-blocked-velocity-coverage" };
+      ? { mode: "msaa", sampleCount: 4, reason: "TAA_VELOCITY_COVERAGE" }
+      : { mode: "smaa", sampleCount: 1, reason: "TAA_VELOCITY_COVERAGE" };
   }
   // tierMode === "none": the tier's AA lives in the multisampled forward target.
   if (msaaCapable) return { mode: "msaa", sampleCount: 4 };

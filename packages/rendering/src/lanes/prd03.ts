@@ -11,6 +11,7 @@ import { postPipelineSlot, PostGraph } from "../post/PostGraph.js";
 import { provideVelocityHistory } from "../forward/Velocity.js";
 import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
 import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
+import { registerVelocityShader } from "../post/chunks/velocity.glsl.js";
 
 // C-13: v2 post graph (thin real — plans stages, execute() throws
 // POST_GRAPH_V2_PENDING until Phase 2 wires the GPU chain).
@@ -26,8 +27,13 @@ provideVelocityHistory();
 // Registered unconditionally; selection is flag-gated (`A3D_QR_POST_AO`).
 registerIndirectFractionShader(registerShaderChunk, registerShaderFeature);
 
+// Phase 4 (§8.6): the `prd03.velocity` C-14 MRT feature — per-object motion
+// vectors on the location-1/2 attachments. Selection is opt-in
+// (`A3D_QR_POST_VELOCITY_MRT`) until Q-01-2 wires the MRT target.
+registerVelocityShader(registerShaderChunk, registerShaderFeature);
+
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
-export { velocityHistorySlot, VelocityHistory, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
+export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
 export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneMapping, neutralToneMapping, reinhardToneMapping, linearToneMapping, cineonToneMapping, type AuraToneOperator, type Vec3 } from "../post/ToneOperators.js";
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";

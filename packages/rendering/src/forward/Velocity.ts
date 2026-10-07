@@ -69,6 +69,11 @@ export class VelocityHistory implements TemporalHistoryLike {
     const previous = this.previousViewProjection ?? unjittered;
     this.previousViewProjection = unjittered;
     this.frame += 1;
+    // Frame boundary for the rigid item cache: what the binder collects
+    // during this frame's draws becomes "previous" at the next prepare.
+    previousModels = pendingModels;
+    pendingModels = new Map();
+    coverage = { items: 0, withVelocity: 0, moving: 0, movingWithHistory: 0 };
     cameraMatrices = { jittered, unjittered, previous };
     return cameraMatrices;
   }
@@ -80,8 +85,38 @@ export class VelocityHistory implements TemporalHistoryLike {
   reset(_reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void {
     this.previousViewProjection = undefined;
     this.frame = 0;
+    previousModels = new Map();
+    pendingModels = new Map();
+    coverage = { items: 0, withVelocity: 0, moving: 0, movingWithHistory: 0 };
     cameraMatrices = undefined;
   }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Rigid previous-model cache + coverage accounting (PRD-03 Phase 4).        */
+/* ---------------------------------------------------------------------- */
+
+/** Label → last frame's model matrix, committed at each VelocityHistory.prepare. */
+let previousModels = new Map<string, Float32Array>();
+let pendingModels = new Map<string, Float32Array>();
+
+/**
+ * C-14 → `post.velocityCoverage`: items tracked this frame, how many carry a
+ * previous matrix, and of the movers how many have history. `moving < 0`
+ * never happens: an item with no stored baseline counts as uncovered motion
+ * (conservative — its velocity would be wrong).
+ */
+let coverage = { items: 0, withVelocity: 0, moving: 0, movingWithHistory: 0 };
+
+/** Live read for `diagnostics().post.velocityCoverage` + the AA resolve. */
+export function postVelocityCoverage(): { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } {
+  return coverage;
+}
+
+function matEqual(a: Float32Array, b: Float32Array | readonly number[]): boolean {
+  if (b.length !== 16 || a.length !== 16) return false;
+  for (let i = 0; i < 16; i += 1) if (a[i] !== b[i]) return false;
+  return true;
 }
 
 /**
@@ -93,8 +128,23 @@ const velocityMrtBinder: VelocityUniformBinder = (item, uniforms) => {
   if (!cameraMatrices) return;
   uniforms.set("u_previousViewProjection", cameraMatrices.previous);
   uniforms.set("u_unjitteredViewProjection", cameraMatrices.unjittered);
-  const previousModel = item.previousModelMatrix ?? item.modelMatrix;
+  const label = item.label;
+  const model = item.modelMatrix ? Float32Array.from(item.modelMatrix) : undefined;
+  const previousModel = item.previousModelMatrix
+    ? Float32Array.from(item.previousModelMatrix)
+    : (label ? previousModels.get(label) : undefined) ?? model;
   if (previousModel) uniforms.set("u_previousModel", previousModel);
+  if (label && model) {
+    pendingModels.set(label, model);
+    const baseline = previousModels.get(label);
+    coverage = { ...coverage, items: coverage.items + 1 };
+    if (baseline !== undefined) coverage = { ...coverage, withVelocity: coverage.withVelocity + 1 };
+    const moved = baseline === undefined || !matEqual(baseline, model);
+    if (moved) {
+      coverage = { ...coverage, moving: coverage.moving + 1 };
+      if (baseline !== undefined) coverage = { ...coverage, movingWithHistory: coverage.movingWithHistory + 1 };
+    }
+  }
 };
 
 /**

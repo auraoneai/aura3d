@@ -12,7 +12,26 @@
 export const VELOCITY_MRT: { readonly velocityLocation: 1; readonly velocityFormat: "rg16f"; readonly reactiveLocation: 2; readonly reactiveFormat: "r8"; readonly define: "AURA_VELOCITY" } =
   { velocityLocation: 1, velocityFormat: "rg16f", reactiveLocation: 2, reactiveFormat: "r8", define: "AURA_VELOCITY" };
 
-export interface TemporalHistoryLike { prepare(viewProjection: Float32Array, jitter: readonly [number, number]): { readonly jittered: Float32Array; readonly unjittered: Float32Array; readonly previous: Float32Array }; reset(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void; }
+import type { RenderTarget } from "../RenderDevice";
+
+export interface TemporalCameraMatrices {
+  /** Jittered clip-space view-projection for the current frame (raster VP). */
+  readonly jittered: Float32Array;
+  /** Physical (unjittered) clip-space view-projection — velocity reprojection input. */
+  readonly unjittered: Float32Array;
+  /** Previous frame's jittered clip-space view-projection. */
+  readonly previous: Float32Array;
+  /** Linear-Z source written by the forward depth pass this frame. */
+  readonly linZ?: RenderTarget;
+  /** Linear-Z ping-pong partner — last frame's Z after commit. */
+  readonly linZOutput?: RenderTarget;
+  /** Jitter in full-pixel units (u_jitterClip = jitter / {w, h}). */
+  readonly jitterClip?: readonly [number, number];
+  /** §8.8: measured frame delta in seconds; scales the S7 shutter (C-23). */
+  readonly frameTime?: number;
+}
+
+export interface TemporalHistoryLike { prepare(viewProjection: Float32Array, jitter: readonly [number, number]): TemporalCameraMatrices; reset(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void; }
 
 let temporalHistoryImpl: TemporalHistoryLike | null = null;
 

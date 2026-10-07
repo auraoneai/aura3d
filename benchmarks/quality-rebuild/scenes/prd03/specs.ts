@@ -266,6 +266,106 @@ const scene18Bloom: SceneSpec = {
   fog: { color: "#8fa3b8", density: 0.03 }
 };
 
+/* ------------------------------------------------------------------------ */
+/* Phase-4 post extras (lane-local extension — shared/types.ts is lane-12).  */
+/* The aura adapter (`aura3d/common.ts`, lane-03-allowed) reads these fields */
+/* via a structural cast and pushes the matching effects.* nodes / camera    */
+/* moves. The three adapter cannot express them (three/common.ts is lane-12) */
+/* and renders the base spec; comparisons stay router-driven (§16.1).        */
+/* ------------------------------------------------------------------------ */
+
+export interface Prd03PostExtras {
+  /** Authored antiAlias node mode; absent → spec has no AA node. */
+  readonly antiAlias?: "fxaa" | "smaa" | "msaa" | "taa" | "off";
+  readonly motionBlur?: {
+    readonly intensity?: number;
+    readonly shutter?: number;
+    readonly maxBlur?: number;
+    readonly samples?: number;
+    readonly tileSize?: number;
+    readonly timeScale?: number;
+  };
+  readonly depthOfField?: {
+    readonly focusDistance?: number;
+    readonly fStop?: number;
+    readonly focalLength?: number;
+  };
+  /** Camera pan: pose lerp across spec.time driven at 60 fps via app.camera.setPose. */
+  readonly cameraPan?: {
+    readonly from: { readonly position: Vec3; readonly target: Vec3 };
+    readonly to: { readonly position: Vec3; readonly target: Vec3 };
+  };
+  /** One jump cut at `at` seconds: setPose({cut:true}) + app.cutCamera() (temporal reset). */
+  readonly cameraCut?: { readonly at: number; readonly position: Vec3; readonly target: Vec3 };
+}
+
+export type Prd03SceneSpec = SceneSpec & { readonly postExtras?: Prd03PostExtras };
+
+/* ------------------------------------------------------------------------ */
+/* prd03-taa — Phase 4 (static-camera case a: 1-px line stddev ≤ 0.01)       */
+/* ------------------------------------------------------------------------ */
+
+const taaStatic: Prd03SceneSpec = {
+  ...base("prd03-taa", 27, "TAA static stability", "Static camera, single 1-px line; temporal luma stddev of the line ≤ 0.01 over 32 frames", "taa-static-stddev"),
+  camera: { position: [0, 1.5, 5], target: [0, 1.2, -1], fov: 40, near: 0.1, far: 80 },
+  background: { kind: "color", color: "#10141a" },
+  lights: [sun(2, [3, 6, 4], false, "#f4f6ff"), { kind: "ambient", name: "ambient", color: "#4a5568", intensity: 0.5 }],
+  objects: [
+    primitive("ground", "plane", [20, 1, 20], [0, 0, 0], { color: "#20262e", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+    primitive("1px line", "box", [6, 0.012, 0.012], [0, 1.2, -1], { color: "#e8e8e8", roughness: 0.6, metalness: 0.4 })
+  ],
+  postExtras: { antiAlias: "taa" }
+};
+
+/* ------------------------------------------------------------------------ */
+/* prd03-motion-blur — Phase 4 (§8.8: camera pan at driven fps)               */
+/* ------------------------------------------------------------------------ */
+
+const motionBlurScene: Prd03SceneSpec = {
+  ...base("prd03-motion-blur", 28, "Motion blur", "Camera pan over static columns with a motionBlur node; blur length scales with shutter×timeScale (C-23)", "motion-blur-length"),
+  camera: { position: [-4, 1.8, 5], target: [0, 1, -2], fov: 50, near: 0.1, far: 80 },
+  background: { kind: "color", color: "#14181f" },
+  lights: [sun(1.6, [4, 8, 4], true, "#eef2ff"), { kind: "ambient", name: "ambient", color: "#4a5568", intensity: 0.4 }],
+  objects: [
+    primitive("ground", "plane", [30, 1, 30], [0, 0, 0], { color: "#2a3038", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+    ...Array.from({ length: 9 }, (_, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      return primitive(`column ${i}`, "box", [0.4, 1.6 + (i % 4) * 0.4, 0.4], [col * 1.6 - 1.6, 0.8 + (i % 4) * 0.2, row * 1.8 - 4], { color: i % 2 ? "#7a8494" : "#5f6875", roughness: 0.7, metalness: 0.15 });
+    })
+  ],
+  shadows: defaultShadows(18),
+  postExtras: {
+    motionBlur: { shutter: 0.8, samples: 12, maxBlur: 32 },
+    cameraPan: { from: { position: [-4, 1.8, 5], target: [0, 1, -2] }, to: { position: [4, 1.8, 5], target: [0, 1, -2] } }
+  }
+};
+
+/* ------------------------------------------------------------------------ */
+/* prd03-cut-velocity — Phase 4 (jump cut → temporal reseed, no smear)        */
+/* ------------------------------------------------------------------------ */
+
+const cutVelocity: Prd03SceneSpec = {
+  ...base("prd03-cut-velocity", 29, "Camera cut velocity", "Camera pans, then jump-cuts mid-flight; the post-cut frame must equal a no-history frame within 2 LSB (no velocity smear)", "cut-velocity"),
+  camera: { position: [-4, 1.8, 5], target: [0, 1, -2], fov: 50, near: 0.1, far: 80 },
+  background: { kind: "color", color: "#14181f" },
+  lights: [sun(1.6, [4, 8, 4], true, "#eef2ff"), { kind: "ambient", name: "ambient", color: "#4a5568", intensity: 0.4 }],
+  objects: [
+    primitive("ground", "plane", [30, 1, 30], [0, 0, 0], { color: "#2a3038", roughness: 0.9, metalness: 0 }, { castShadow: false }),
+    ...Array.from({ length: 9 }, (_, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      return primitive(`column ${i}`, "box", [0.4, 1.6 + (i % 4) * 0.4, 0.4], [col * 1.6 - 1.6, 0.8 + (i % 4) * 0.2, row * 1.8 - 4], { color: i % 2 ? "#7a8494" : "#5f6875", roughness: 0.7, metalness: 0.15 });
+    })
+  ],
+  shadows: defaultShadows(18),
+  postExtras: {
+    antiAlias: "taa",
+    cameraPan: { from: { position: [-4, 1.8, 5], target: [0, 1, -2] }, to: { position: [4, 1.8, 5], target: [0, 1, -2] } },
+    cameraCut: { at: 0.75, position: [3, 2.4, 6], target: [0, 1, -4] }
+  }
+};
+
 export const PRD03_SCENE_SPECS = {
   "prd03-hdr-bloom": hdrBloom,
   "prd03-thin-aa": thinAa,
@@ -274,7 +374,10 @@ export const PRD03_SCENE_SPECS = {
   "prd03-dof-bokeh": dofBokeh,
   "prd03-taa-motion": taaMotion,
   "prd03-night-fog-banding": nightFog,
-  "prd03-scene18-bloom": scene18Bloom
+  "prd03-scene18-bloom": scene18Bloom,
+  "prd03-taa": taaStatic,
+  "prd03-motion-blur": motionBlurScene,
+  "prd03-cut-velocity": cutVelocity
 } as const;
 
 export type Prd03SceneId = keyof typeof PRD03_SCENE_SPECS;

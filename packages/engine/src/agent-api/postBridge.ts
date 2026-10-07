@@ -15,6 +15,7 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
   type RendererPostProcessOptions
@@ -218,6 +219,10 @@ export interface PostSectionReport {
   readonly temporalRequested: boolean;
   /** Phase 1 (flag-on): the tier-AA resolution that produced the submit, with its reason. */
   readonly antiAlias: { readonly mode: string; readonly sampleCount: number; readonly reason?: string; readonly tier: string } | null;
+  /** Phase 4 (C-14): items tracked by the velocity binder and how many carry
+   * previous-frame data. `moving/movingWithHistory` drive the TAA coverage
+   * gate; `items/withVelocity` is the §7.2 contract shape. `null` pre-frame. */
+  readonly velocityCoverage: { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } | null;
   /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes). */
   readonly skipped: readonly string[];
   readonly customPasses: readonly { readonly id: string; readonly status: string }[];
@@ -281,6 +286,7 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     fusedLdr: false,
     targetFormat: null,
     temporalRequested: false,
+    velocityCoverage: null,
     skipped: [] as readonly string[],
     warnings: [] as readonly string[]
   };
@@ -313,6 +319,7 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     fusedLdr: plan.canFuseLdr,
     targetFormat: plan.targetFormat,
     temporalRequested: submitted.temporalRequested,
+    velocityCoverage: authoredContext?.flags.post ? postVelocityCoverage() : null,
     antiAlias,
     skipped: [
       ...(antiAlias?.reason ? [`aa:${antiAlias.reason}`] : []),
@@ -466,7 +473,7 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // Lane-07 factories route through this bridge on the v2 chain (§6.9).
   "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference"],
   "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur"],
-  "motion-blur": ["shutter", "maxBlur"],
+  "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   "screen-space-reflections": ["maxDistance", "intensity"],
   outline: ["color", "width", "threshold"]
 };
@@ -686,7 +693,7 @@ export function createRootPostPipeline(
         steps: 4 as const,
         halfRes: true,
         temporal: true,
-        multiBounce: true,
+        multiBounce: aoNode.multiBounce !== false,
         fallbackStrength: 0.6
       }
     } : {}),
@@ -718,8 +725,13 @@ export function createRootPostPipeline(
     } : {}),
     ...(mbNode ? {
       motionBlur: {
-        shutter: numberField(mbNode, "shutter", numberField(mbNode, "intensity", 0.5)),
-        maxBlurPx: numberField(mbNode, "maxBlur", 32)
+        // §8.8: authored shutter × node timeScale (C-23's per-node scale;
+        // session-level timeScale lands via QR-03-12).
+        shutter: numberField(mbNode, "shutter", numberField(mbNode, "intensity", 0.5)) * numberField(mbNode, "timeScale", 1),
+        maxBlurPx: numberField(mbNode, "maxBlur", 32),
+        // §8.8: legal sets — samples 8|12|16, tile 16|20.
+        samples: (() => { const s = numberField(mbNode, "samples", 12); return s <= 8 ? 8 : s <= 12 ? 12 : 16; })(),
+        tileSize: numberField(mbNode, "tileSize", 16) <= 16 ? 16 : 20
       }
     } : {}),
     ...(ssrNode ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
