@@ -5,6 +5,13 @@
  * Publishes window.__QR_READY__ (ReadyPayload) or __QR_ERROR__.
  * `flags` is recorded on the payload's `qrFlags`; flag plumbing itself is the
  * C-01 provider's — at `none` no A3D_QR_* flag is applied.
+ *
+ * P7 probe params forwarded to both adapters:
+ *   quality=<tier>     C-27 tier (aura3d only; three ignores it)
+ *   strip=1            spec.strip camera orbit + per-frame luma captures (S6)
+ *   tint=<#hex|none>   tint override/suppression (S3)
+ *   lightsOff=<name>   drop a named light (light-count isolation probe)
+ *   pixels=1           decoded frame pixels on extra.frame (per-spec opt-in)
  */
 import { adapters as auraAdapters } from "/benchmarks/quality-rebuild/aura3d/scenes/prd04/index.js";
 import { adapters as threeAdapters } from "/benchmarks/quality-rebuild/three/scenes/prd04/index.js";
@@ -31,6 +38,11 @@ async function main(): Promise<void> {
   type AdapterLoader = (host: HTMLElement, options?: {
     readonly qrFlags?: readonly string[];
     readonly transmission?: "auto" | "env" | "off";
+    readonly quality?: "low" | "medium" | "high" | "ultra";
+    readonly strip?: boolean;
+    readonly tint?: string;
+    readonly lightsOff?: string;
+    readonly pixels?: boolean;
   }) => Promise<unknown>;
   let loader = (engine === "aura3d" ? auraAdapters : threeAdapters)[sceneId] as AdapterLoader | undefined;
   if (!loader) {
@@ -48,9 +60,15 @@ async function main(): Promise<void> {
   // it — it is the flag-free reference).
   const requestedFlags = flags === "none" ? [] : flags.split(",").filter(Boolean);
   const transmission = params.get("transmission") as "auto" | "env" | "off" | null;
+  const quality = params.get("quality") as "low" | "medium" | "high" | "ultra" | null;
   const payload = (await loader(host, {
     qrFlags: requestedFlags,
-    ...(transmission !== null ? { transmission } : {})
+    ...(transmission !== null ? { transmission } : {}),
+    ...(quality !== null ? { quality } : {}),
+    ...(params.get("strip") === "1" ? { strip: true } : {}),
+    ...(params.get("tint") !== null ? { tint: params.get("tint")! } : {}),
+    ...(params.get("lightsOff") !== null ? { lightsOff: params.get("lightsOff")! } : {}),
+    ...(params.get("pixels") === "1" ? { pixels: true } : {})
   })) as Record<string, unknown>;
   payload.qrFlags = requestedFlags;
   document.body.dataset.qrReady = "true";
