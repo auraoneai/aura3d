@@ -12,7 +12,7 @@ import {
   clearPrd06ActorConstraints,
   type Prd06ConstraintSpec
 } from "../../production-runtime/actor/TypedGLBActorAnimation.js";
-import { createBoneMask } from "@aura3d/animation/lanes";
+import { createBoneMask, type AuraHumanoidBoneMap } from "@aura3d/animation/lanes";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
@@ -466,6 +466,28 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       clearPrd06ActorConstraints(actor);
     }
   };
+
+  /**
+   * T3.8 (PRD-06 §7.2) — `node.animation.addClipsFrom(source)`: retarget-bake a
+   * source skeleton's compiled clips onto this actor's skeleton (worker +
+   * IndexedDB cache inside the runtime) and register them by clip name.
+   * Resolves `[]` while the flag is off or the actor/runtime is not loaded.
+   */
+  override addClipsFrom(
+    source: unknown,
+    options?: { map?: unknown; hipsScale?: "leg-length" | number; fingers?: boolean }
+  ): Promise<readonly string[]> {
+    const actor = this.actor;
+    const runtime = actor?.animation;
+    if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || runtime === undefined || typeof runtime.addClipsFrom !== "function") {
+      return Promise.resolve([]);
+    }
+    return runtime.addClipsFrom(source as Parameters<typeof runtime.addClipsFrom>[0], {
+      ...(options?.map !== undefined ? { map: options.map as AuraHumanoidBoneMap } : {}),
+      ...(options?.hipsScale !== undefined ? { hipsScale: options.hipsScale } : {}),
+      ...(options?.fingers !== undefined ? { fingers: options.fingers } : {})
+    });
+  }
 
   override socket(bone: string): AuraBoneSocket {
     // T0.18 — live `transform.worldMatrix` reads through the actor extension's

@@ -30,3 +30,9 @@ export { createLookAtConstraint } from "../pose/LookAtConstraint.js";
 export type { LookAtConstraintSpec, LookAtConstraint } from "../pose/LookAtConstraint.js";
 export { solveCcdIk } from "../pose/CcdIkConstraint.js";
 export type { CcdIkConstraintSpec, CcdIkResult } from "../pose/CcdIkConstraint.js";
+
+// T3.8 (PRD-06 §7.2) — clip retarget baking + limb-flip detector + IDB cache.
+export { bakeRetargetedClips, bakeRetargetedClipMap, decompileCompiledClip, detectLimbFlips, humanoidRigForSkeleton, rigWithRestPose } from "../pose/Retarget.js";
+export type { AuraHumanoidBoneMap, BakeRetargetedClipsOptions, LimbFlip, RetargetSource } from "../pose/Retarget.js";
+export { AURA3D_RETARGET_ENGINE_VERSION, retargetCacheKey, retargetClipsHash, retargetSkeletonHash, readRetargetCache, writeRetargetCache } from "../pose/RetargetCache.js";
+export { createRetargetWorker, bakeClipsInWorker } from "../pose/RetargetWorker.js";

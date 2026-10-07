@@ -1,5 +1,6 @@
 import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
 import { bindSkeleton, compileClip, createPoseBuffer, makeClipAdditive, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
+import { AURA3D_RETARGET_ENGINE_VERSION, bakeClipsInWorker, bakeRetargetedClipMap, createRetargetWorker, decompileCompiledClip, readRetargetCache, retargetCacheKey, retargetClipsHash, retargetSkeletonHash, writeRetargetCache, type BakeRetargetedClipsOptions } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
@@ -8,6 +9,17 @@ import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
  * structural (instead of importing the rendering `Material`) so the animation runtime stays
  * decoupled from the renderer; the production bridge adapts the live material library.
  */
+/**
+ * T3.8 (PRD-06 §7.2) — options for `addClipsFrom`: the bake options plus the
+ * cache/worker plumbing (`cache`/`worker` default on, `engineVersion` defaults
+ * to the lane's retarget version key).
+ */
+export interface AddClipsFromRuntimeOptions extends BakeRetargetedClipsOptions {
+  readonly engineVersion?: string;
+  readonly cache?: boolean;
+  readonly worker?: boolean;
+}
+
 export interface GLTFSceneAnimationMaterialSink {
   readonly name: string;
   setAnimationParameter(parameter: string, value: number | readonly number[]): void;
@@ -1051,6 +1063,61 @@ export class GLTFSceneAnimationRuntime {
   /** §10 (PRD-06) — the per-runtime PoseMixer `applyClips` evaluates on. */
   mixer(): PoseMixer {
     return this.poseRuntime().mixer;
+  }
+
+  /**
+   * T3.8 (PRD-06 §7.2, C-19) — `actor.animation.addClipsFrom(source)` retarget-
+   * bakes another skeleton's compiled clips onto this runtime's skeleton and
+   * registers them by name (raw + compiled + mixer) so `play`/`playLayer`
+   * resolve them like loaded clips. The bake runs in `pose/retarget.worker.ts`
+   * when the platform has workers, otherwise in-process, and its output is
+   * cached in IndexedDB under `(engineVersion, sourceHash, targetHash)` so a
+   * rollback ignores newer caches. Returns the registered clip names.
+   */
+  async addClipsFrom(
+    source:
+      | { readonly skeleton: SkeletonBinding; readonly clips: ReadonlyMap<string, CompiledClip> }
+      | Pick<GLTFSceneAnimationRuntime, "skeletons" | "compiledClips">,
+    options: AddClipsFromRuntimeOptions = {}
+  ): Promise<readonly string[]> {
+    const pose = this.poseRuntime();
+    const sourceSkeleton = "skeletons" in source ? source.skeletons()[0] : source.skeleton;
+    const sourceClips = "compiledClips" in source ? source.compiledClips() : source.clips;
+    if (sourceSkeleton === undefined) {
+      throw new Error("addClipsFrom: source has no skeleton to retarget from.");
+    }
+    const engineVersion = options.engineVersion ?? AURA3D_RETARGET_ENGINE_VERSION;
+    const sourceHash = `${retargetSkeletonHash(sourceSkeleton)}:${retargetClipsHash(sourceClips)}`;
+    const targetHash = retargetSkeletonHash(pose.binding);
+    const key = retargetCacheKey(engineVersion, sourceHash, targetHash);
+    let baked = options.cache === false ? undefined : await readRetargetCache(key);
+    if (baked === undefined) {
+      const bakeOptions: BakeRetargetedClipsOptions = {
+        ...(options.map !== undefined ? { map: options.map } : {}),
+        hipsScale: options.hipsScale ?? "leg-length",
+        ...(options.fingers !== undefined ? { fingers: options.fingers } : {}),
+        ...(options.retarget !== undefined ? { retarget: options.retarget } : {})
+      };
+      const worker = options.worker === false ? undefined : createRetargetWorker();
+      baked = worker !== undefined
+        ? await bakeClipsInWorker(worker, {
+            sourceSkeleton,
+            targetSkeleton: pose.binding,
+            clips: sourceClips,
+            options: bakeOptions
+          })
+        : bakeRetargetedClipMap({ skeleton: sourceSkeleton, clips: sourceClips }, pose.binding, bakeOptions);
+      if (options.cache !== false) void writeRetargetCache(key, baked);
+    }
+    const names: string[] = [];
+    for (const [name, compiled] of baked) {
+      const raw = decompileCompiledClip(name, compiled);
+      this.clipsByName.set(name, raw);
+      pose.compiled.set(name, compiled);
+      pose.mixer.addCompiledClip(name, compiled, raw);
+      names.push(name);
+    }
+    return names;
   }
 
   /**
