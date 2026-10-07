@@ -1,0 +1,655 @@
+{
+  "root": "apps/showcase-pulse-tunnel",
+  "files": 26,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 62,
+      "construct": "lights.point({ intensity: 1.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 62,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 63,
+      "construct": "lights.point({ intensity: 1.55 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 19 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4-probe.ts",
+      "line": 63,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 142,
+      "construct": "lights.point({ intensity: 1.9 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 24 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 142,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 143,
+      "construct": "lights.point({ intensity: 2.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 143,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 144,
+      "construct": "lights.point({ intensity: 1.25 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 16 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 144,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 145,
+      "construct": "lights.point({ intensity: 0.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v4.ts",
+      "line": 145,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 27,
+      "construct": "lights.point({ intensity: 2.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 35 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 27,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 28,
+      "construct": "lights.point({ intensity: 3.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 48 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 28,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 28,
+      "construct": "lights.point({ intensity: 1.25 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 16 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-finish-v7.ts",
+      "line": 28,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 89,
+      "construct": "lights.point({ intensity: 4.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 53 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 89,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 90,
+      "construct": "lights.point({ intensity: 5.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 65 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 90,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 91,
+      "construct": "lights.point({ intensity: 3 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 38 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-combat-kit-v2.ts",
+      "line": 91,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 68,
+      "construct": "lights.point({ intensity: 1.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 68,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 69,
+      "construct": "lights.point({ intensity: 1.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5-probe.ts",
+      "line": 69,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 164,
+      "construct": "lights.point({ intensity: 1.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 164,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 165,
+      "construct": "lights.point({ intensity: 2.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 33 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 165,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 166,
+      "construct": "lights.point({ intensity: 1.05 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 13 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 166,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 167,
+      "construct": "lights.point({ intensity: 0.76 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-high-fidelity-v5.ts",
+      "line": 167,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point({ intensity: 5.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 64 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point({ intensity: 6.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 78 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point({ intensity: 2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 25 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-presentation-v10.ts",
+      "line": 16,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 27,
+      "construct": "lights.point({ intensity: 3.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 43 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 27,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 28,
+      "construct": "lights.point({ intensity: 4.6 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 58 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 28,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 28,
+      "construct": "lights.point({ intensity: 1.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-quaternius-source-v9.ts",
+      "line": 28,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 15,
+      "construct": "lights.point({ intensity: 3.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 39 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 15,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 15,
+      "construct": "lights.point({ intensity: 4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 50 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-source-character-v8.ts",
+      "line": 15,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 190,
+      "construct": "lights.point({ intensity: 2.15 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 27 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 190,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 191,
+      "construct": "lights.point({ intensity: 2.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 33 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 191,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 192,
+      "construct": "lights.point({ intensity: 1.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 192,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 193,
+      "construct": "lights.point({ intensity: 1.05 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 13 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-structural-encounter-v3.ts",
+      "line": 193,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 133,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 133,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 134,
+      "construct": "lights.point({ intensity: 3.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 40 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 134,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 135,
+      "construct": "lights.point({ intensity: 1.05 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 13 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/art-review/pulse-texture-identity-v6.ts",
+      "line": 135,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1486,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1487,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1488,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1489,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1490,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1491,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1492,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1492,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1493,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1493,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1494,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1494,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1495,
+      "construct": "lights.point({ intensity: 1.25 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 16 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1495,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1496,
+      "construct": "lights.point({ intensity: 1.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 14 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1496,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1497,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1498,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/main.ts",
+      "line": 1499,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

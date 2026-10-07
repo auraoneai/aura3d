@@ -1,0 +1,37 @@
+{
+  "root": "packages/create-aura3d/templates/animation-channel",
+  "files": 22,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/main.ts",
+      "line": 276,
+      "construct": "lights.point({ intensity: 2.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 35 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/main.ts",
+      "line": 276,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/main.ts",
+      "line": 277,
+      "construct": "lights.point({ intensity: 2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 25 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "packages/create-aura3d/templates/animation-channel/src/main.ts",
+      "line": 277,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

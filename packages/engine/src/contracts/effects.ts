@@ -4,6 +4,7 @@
 
 import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle } from "../agent-api/index";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 
 export type AuraVfxKind = "spark" | "dust" | "debris" | "ring" | "streak" | "pickup" | "explosion-small" | "muzzle" | "splash" | "bubble" | "impact-flash" | "super-flash" | "impact-decal" | "aura-burst";
 export interface AuraVfxEffectSpec { readonly name: string; readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[]; }
@@ -20,7 +21,7 @@ export interface AuraAppEffects {
   clear(): void;
 }
 // AuraApp.effects: AuraAppEffects (via C-38)
-export interface AuraEffectsDiagnostics { readonly nodes: readonly { readonly id: string; readonly effect: string; readonly consumer: string; readonly live: number; readonly drawCalls: number; readonly instancesDrawn: number; readonly sim: string; readonly softDepth: boolean; readonly zeroPixelFrames: number }[]; readonly batches: number; readonly liveParticles: number; readonly budget: { readonly tier: AuraQualityTier; readonly cap: number; readonly culled: number }; readonly gpuMs?: number; readonly errors: readonly { readonly code: string; readonly nodeId: string; readonly message: string }[]; readonly pixelBacked: readonly string[]; }
+export interface AuraEffectsDiagnostics { readonly nodes: readonly { readonly id: string; readonly effect: string; readonly consumer: string; readonly live: number; readonly drawCalls: number; readonly instancesDrawn: number; readonly sim: string; readonly softDepth: boolean; readonly zeroPixelFrames: number }[]; readonly batches: number; readonly liveParticles: number; readonly budget: { readonly tier: AuraQualityTier; readonly cap: number; readonly culled: number; readonly declared: number; readonly observedLive: number; readonly observedDraws: number }; readonly gpuMs?: number; readonly errors: readonly { readonly code: string; readonly nodeId: string; readonly message: string }[]; readonly pixelBacked: readonly string[]; readonly deviceReadbacks?: number; }
 
 /**
  * PR 0a honest stub: `burst` and `spawn` create pooled primitive nodes through
@@ -99,4 +100,82 @@ export class StubAppEffects implements AuraAppEffects {
       setPosition: (_p: AuraVec3) => { /* pooled nodes are not individually addressable on the stub */ }
     };
   }
+}
+
+/**
+ * PRD-07 §6.2 — new particle emitter surface for `effects.particles`.
+ * Implemented fields flow through the effect node into lowering
+ * (`EffectNodeLowering`); fields not yet consumed by the runtime are carried
+ * on the node and must not be relied on until their phase lands.
+ */
+export type AuraRange = number | readonly [min: number, max: number];
+export type AuraCurve = readonly number[];
+export interface AuraColorRamp { readonly stops: readonly { readonly t: number; readonly color: AuraColor }[]; }
+export type AuraVfxSpriteSource = string | { readonly atlas: string; readonly frame?: number };
+export type AuraVfxShading = "unlit" | "lit" | "emissive";
+
+export interface AuraParticleEmitterOptions {
+  readonly name?: string;
+  readonly position?: AuraVec3;
+  readonly attachTo?: string | { readonly node: string; readonly socket?: string };
+  readonly shape?: "point" | "sphere" | "hemisphere" | "cone" | "box" | "disc" | "ring" | "edge" | "mesh-surface";
+  readonly shapeSize?: AuraVec3 | number;
+  readonly coneAngleDeg?: number;
+  /** Particles per second (continuous). */
+  readonly rate?: number;
+  readonly bursts?: readonly { readonly time: number; readonly count: AuraRange; readonly repeat?: number; readonly interval?: number }[];
+  /** Clamped to the tier budget; clamping is reported in diagnostics. */
+  readonly maxParticles?: number;
+  readonly duration?: number;
+  readonly loop?: boolean;
+  readonly prewarm?: number;
+  /** Deterministic (benchmark seed 1414). */
+  readonly seed?: number;
+  readonly lifetime?: AuraRange;
+  readonly speed?: AuraRange;
+  readonly size?: AuraRange;
+  readonly rotation?: AuraRange;
+  readonly angularVelocity?: AuraRange;
+  readonly gravity?: number | AuraVec3;
+  readonly drag?: number;
+  readonly wind?: AuraVec3 | "weather";
+  readonly noise?: { readonly strength: number; readonly frequency: number; readonly scroll?: number } | number;
+  readonly collision?: { readonly plane?: number; readonly heightfield?: "world"; readonly bounce?: number; readonly lifeLoss?: number };
+  readonly sizeOverLife?: AuraCurve;
+  readonly alphaOverLife?: AuraCurve;
+  readonly speedOverLife?: AuraCurve;
+  readonly color?: AuraColor;
+  readonly colorOverLife?: AuraColorRamp;
+  /** HDR multiplier. */
+  readonly intensity?: number;
+  readonly sprite?: AuraVfxSpriteSource;
+  readonly blend?: AuraBlendMode;
+  readonly shading?: AuraVfxShading;
+  readonly stretch?: { readonly mode: "velocity" | "none"; readonly factor?: number };
+  readonly softDistance?: number;
+  readonly nearFade?: number;
+  /** auto: by count and tier. */
+  readonly simulation?: "auto" | "cpu" | "gpu";
+  readonly space?: "world" | "local";
+  readonly subEmitters?: readonly { readonly on: "death" | "collision"; readonly effect: AuraVfxEffectSpec | AuraVfxKind }[];
+  /** Sprites never cast. */
+  readonly castShadow?: false;
+}
+
+/** Legacy `AuraEffectNode` particle fields kept and mapped by lowering (PRD-07 §11). */
+export interface AuraLegacyParticleFields {
+  readonly materialMode?: string;
+  readonly texturedBillboard?: boolean;
+  readonly emitter?: "fountain" | "swirl" | "ambient";
+  readonly radius?: number;
+  readonly height?: number;
+  readonly particleCount?: number;
+  readonly emissionRate?: number;
+  readonly groundCollision?: boolean;
+  readonly lifetimeColorRamp?: readonly AuraColor[];
+  readonly velocityOverLife?: readonly number[];
+  readonly turbulence?: number;
+  readonly density?: number;
+  readonly splashes?: boolean;
+  readonly mist?: boolean;
 }

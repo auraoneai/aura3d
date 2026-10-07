@@ -229,3 +229,31 @@ describe("gameplay outcomes across frame rates", () => {
     expect(after - before).toBeLessThan(level.moveSpeed * 6 * (1 / 60));
   });
 });
+
+// ── X-7 presented gates (C21 replacement) ────────────────────────────────────
+// The retired "determinism" gate asserted step() counts only. These read the
+// presented frame channel (`onTick` — one emit per real frame) and its alpha,
+// which is the accumulator fraction a renderer interpolates with — i.e. what
+// the submitted frame actually carries, not the input dt modulo.
+describe("X-7 presented gates (replaces fired/adopted)", () => {
+  it("presents one tick per real frame with substeps + accumulator alpha", () => {
+    const loop = createFrameLoop({ fixedDt: 1 / 60, maxSubSteps: 5, useRaf: false });
+    const ticks: { substeps: number; alpha: number; realDt: number }[] = [];
+    loop.onTick((t) => ticks.push({ substeps: t.substeps, alpha: t.alpha, realDt: t.realDt }));
+    loop.step(1 / 30);   // 2 substeps consumed
+    loop.step(1 / 120);  // 0 substeps; half a step banked
+    loop.step(1 / 120);  // banked half + new half → 1 substep
+    expect(ticks).toHaveLength(3);
+    expect(ticks[0]!.substeps).toBe(2);
+    expect(ticks[1]!.substeps).toBe(0);
+    expect(ticks[1]!.alpha).toBeCloseTo(0.5, 3); // leftover/fixedDt, not dt%fixedDt
+    expect(ticks[2]!.substeps).toBe(1);
+    expect(ticks[2]!.alpha).toBeCloseTo(0, 1);
+    // Pre-change payloads dropped `alpha` entirely (T3); these exist on the emit.
+    for (const t of ticks) {
+      expect(Number.isFinite(t.alpha)).toBe(true);
+      expect(t.alpha).toBeGreaterThanOrEqual(0);
+      expect(t.alpha).toBeLessThan(1);
+    }
+  });
+});

@@ -18,6 +18,8 @@ export interface RenderItem {
   readonly drawRange?: RenderItemDrawRange;
   readonly includeInAutoFrame?: boolean;
   readonly modelMatrix?: Float32Array | readonly number[];
+  /** C-08 (PRD 01 §8.5): innermost `size ⊙ fit` transform; identity when unset. */
+  readonly geometryMatrix?: Float32Array | readonly number[];
   readonly normalMatrix?: Float32Array | readonly number[];
   readonly modelViewProjectionMatrix?: Float32Array | readonly number[];
   readonly skinning?: SkinningPaletteBinding;

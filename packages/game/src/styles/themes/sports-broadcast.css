@@ -1,0 +1,14 @@
+/* §7.7 theme "sports-broadcast" — mirror of HUD_THEMES["sports-broadcast"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-sports-broadcast {
+  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-fg: #ffffff;
+  --a3g-fg-dim: #cfd8e3;
+  --a3g-accent: #00e06d;
+  --a3g-accent2: #2b7fff;
+  --a3g-warn: #ffc93c;
+  --a3g-danger: #ff3b30;
+  --a3g-bg: rgba(8,14,26,0.85);
+  --a3g-edge: rgba(255,255,255,0.28);
+  --a3g-glow: none;
+  --a3g-radius: 6px;
+}

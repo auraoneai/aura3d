@@ -34,6 +34,31 @@ export interface RendererGpuTimingResult {
   readonly durationMs: number;
 }
 
+/**
+ * C-28 (PRD 11 Phase 0) — scoped GPU timing. A scoped backend brackets
+ * arbitrary work with GPU timestamp queries (`queryCounter`), so several
+ * scopes may overlap a frame (`TIME_ELAPSED_EXT` queries cannot nest). Results
+ * land 2-3 frames later and are attributed back to their token by `poll()`.
+ */
+export interface RendererGpuScopedTimingBackend extends RendererGpuTimingBackend {
+  beginScope(name: string): RendererGpuTimingToken;
+  endScope(token: RendererGpuTimingToken): void;
+  /** Drains settled scope/frame tokens. `durationMs: null` = settled but discarded (disjoint). */
+  poll(): readonly RendererGpuScopedResult[];
+}
+
+export interface RendererGpuScopedResult {
+  readonly token: RendererGpuTimingToken;
+  readonly label: string;
+  readonly durationMs: number | null;
+}
+
+export function isScopedGpuTimingBackend(backend: RendererGpuTimingBackend | undefined | null): backend is RendererGpuScopedTimingBackend {
+  return Boolean(backend && typeof (backend as RendererGpuScopedTimingBackend).beginScope === "function"
+    && typeof (backend as RendererGpuScopedTimingBackend).endScope === "function"
+    && typeof (backend as RendererGpuScopedTimingBackend).poll === "function");
+}
+
 export interface RendererTimingCollectorOptions {
   readonly gpuBackend?: RendererGpuTimingBackend;
   readonly now?: () => number;
@@ -178,14 +203,26 @@ interface WebGL2GpuTimingToken extends RendererGpuTimingToken {
   readonly query: WebGLQuery | null;
 }
 
-class WebGL2GpuTimingBackend implements RendererGpuTimingBackend {
+interface EXTDisjointTimerQueryWebGL2Full extends EXTDisjointTimerQueryWebGL2 {
+  readonly TIMESTAMP_EXT?: number;
+  /** Extension-object method: stamps `query` with the current GPU timestamp. */
+  queryCounterEXT?(query: WebGLQuery, target: number): void;
+}
+
+interface WebGL2GpuScopeToken extends RendererGpuTimingToken {
+  readonly queryStart: WebGLQuery | null;
+  readonly queryEnd: WebGLQuery | null;
+}
+
+class WebGL2GpuTimingBackend implements RendererGpuScopedTimingBackend {
   public readonly supported = true;
   public readonly unavailableReason = "GPU timer query result pending or disjoint; using CPU timing fallback for this sample.";
   private readonly pending: WebGL2GpuTimingToken[] = [];
+  private readonly pendingScopes: WebGL2GpuScopeToken[] = [];
 
   constructor(
     private readonly gl: WebGL2RenderingContext,
-    private readonly extension: EXTDisjointTimerQueryWebGL2
+    private readonly extension: EXTDisjointTimerQueryWebGL2Full
   ) {}
 
   begin(label: string): WebGL2GpuTimingToken {
@@ -239,6 +276,70 @@ class WebGL2GpuTimingBackend implements RendererGpuTimingBackend {
     const elapsedNanoseconds = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT) as number;
     this.gl.deleteQuery(query);
     return { done: true, durationMs: elapsedNanoseconds / 1_000_000 };
+  }
+
+  /**
+   * C-28 scope timing: a TIMESTAMP_EXT query pair (`queryCounterEXT` is a
+   * method on the extension object). `beginScope` stamps the start; `endScope`
+   * stamps the end and queues the token for `poll()`. When `queryCounterEXT`
+   * is unavailable the token carries no queries and `poll` settles it with
+   * `durationMs: null`.
+   */
+  beginScope(name: string): WebGL2GpuScopeToken {
+    const queryCounter = this.extension.queryCounterEXT?.bind(this.extension);
+    const timestampExt = this.extension.TIMESTAMP_EXT;
+    const queryStart = typeof queryCounter === "function" && timestampExt !== undefined ? this.gl.createQuery() : null;
+    if (queryStart && queryCounter && timestampExt !== undefined) {
+      queryCounter(queryStart, timestampExt);
+    }
+    return { label: requireTimingLabel(name), queryStart, queryEnd: null };
+  }
+
+  endScope(token: RendererGpuTimingToken): void {
+    const scope = token as WebGL2GpuScopeToken;
+    if (scope.queryStart) {
+      const queryEnd = this.gl.createQuery();
+      (scope as { queryEnd: WebGLQuery | null }).queryEnd = queryEnd;
+      if (queryEnd) {
+        this.extension.queryCounterEXT?.(queryEnd, this.extension.TIMESTAMP_EXT as number);
+      }
+    }
+    this.pendingScopes.push(scope);
+  }
+
+  poll(): readonly RendererGpuScopedResult[] {
+    const results: RendererGpuScopedResult[] = [];
+    for (let index = this.pendingScopes.length - 1; index >= 0; index -= 1) {
+      const token = this.pendingScopes[index]!;
+      const settled = this.readScopeIfAvailable(token);
+      if (!settled.done) {
+        continue;
+      }
+      this.pendingScopes.splice(index, 1);
+      results.push({ token, label: token.label, durationMs: settled.durationMs ?? null });
+    }
+    return results.reverse();
+  }
+
+  private readScopeIfAvailable(token: WebGL2GpuScopeToken): { readonly done: boolean; readonly durationMs?: number } {
+    const { queryStart, queryEnd } = token;
+    if (!queryStart || !queryEnd) {
+      return { done: true };
+    }
+    const startAvailable = this.gl.getQueryParameter(queryStart, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
+    const endAvailable = this.gl.getQueryParameter(queryEnd, this.gl.QUERY_RESULT_AVAILABLE) as boolean;
+    if (!startAvailable || !endAvailable) {
+      return { done: false };
+    }
+    const startNs = this.gl.getQueryParameter(queryStart, this.gl.QUERY_RESULT) as number;
+    const endNs = this.gl.getQueryParameter(queryEnd, this.gl.QUERY_RESULT) as number;
+    const disjoint = Boolean(this.gl.getParameter(this.extension.GPU_DISJOINT_EXT));
+    this.gl.deleteQuery(queryStart);
+    this.gl.deleteQuery(queryEnd);
+    if (disjoint) {
+      return { done: true };
+    }
+    return { done: true, durationMs: Math.max(0, (endNs - startNs) / 1_000_000) };
   }
 }
 

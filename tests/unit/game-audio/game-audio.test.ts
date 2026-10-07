@@ -82,6 +82,13 @@ class FakeAudioContext implements GameAudioContextLike {
   }
 }
 
+/** C-25: cues need `asset` or `play` — `frequency`/`duration` alone no longer synthesize a default bleep. */
+const oscPlay = (context: GameAudioContextLike, destination: AudioNode): void => {
+  const oscillator = context.createOscillator!();
+  oscillator.connect(destination);
+  oscillator.start();
+};
+
 describe("createGameAudio", () => {
   it("dispatches cue events, unlocks audio, and records evidence", async () => {
     const context = new FakeAudioContext();
@@ -90,8 +97,8 @@ describe("createGameAudio", () => {
       context,
       buses: [{ id: "combat", volume: 0.8 }],
       cues: {
-        hit: { id: "hit", bus: "combat", frequency: 220 },
-        ko: { id: "ko", bus: "combat", frequency: 90 }
+        hit: { id: "hit", bus: "combat", play: oscPlay },
+        ko: { id: "ko", bus: "combat", play: oscPlay }
       }
     });
     audio.onCue((event) => events.push(`${event.cue}:${event.bus}:${event.muted}`));
@@ -118,7 +125,7 @@ describe("createGameAudio", () => {
     const audio = createGameAudio({
       context,
       cues: {
-        jump: { id: "jump" }
+        jump: { id: "jump", play: oscPlay }
       }
     });
 
@@ -148,5 +155,44 @@ describe("createGameAudio", () => {
     expect(audio.evidence.playedCueCount).toBe(2);
     await audio.dispose();
     expect(context.state).toBe("closed");
+  });
+
+  it("C-25: throws on a cue without asset or play when A3D_QR_GAME is on", () => {
+    const context = new FakeAudioContext();
+    expect(() =>
+      createGameAudio({
+        context,
+        qualityRebuild: { flags: ["game"] },
+        cues: { silent: { id: "silent" } }
+      })
+    ).toThrow(
+      'Game audio cue "silent" has no asset or play(); synthesized default cues were removed (PRD 09).'
+    );
+  });
+
+  it("C-25: warns and counts the cue as suppressed when A3D_QR_GAME is off", async () => {
+    const context = new FakeAudioContext();
+    const warned: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (message?: unknown) => warned.push(String(message));
+    try {
+      const audio = createGameAudio({
+        context,
+        cues: {
+          silent: { id: "silent" },
+          hit: { id: "hit", play: oscPlay }
+        }
+      });
+      await audio.cue("silent");
+      await audio.cue("hit");
+      expect(warned).toEqual([
+        'Game audio cue "silent" has no asset or play(); synthesized default cues were removed (PRD 09).'
+      ]);
+      expect(audio.evidence.playedCueCount).toBe(1);
+      expect(audio.evidence.suppressedCueCount).toBe(1);
+      expect(audio.evidence.playingNodes).toHaveLength(1);
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 });

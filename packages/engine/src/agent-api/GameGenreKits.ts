@@ -1,9 +1,25 @@
 
 import {
+  platformerFeelProfile,
+  type PlatformerFeel,
   validatePlatformerMotion,
   type PlatformerMotionReport
 } from "./PlatformerMotion.js";
-import { createGameArcadeVehicle, createGameKinematicBody, type GameKinematicBody } from "./GameRuntime.js";
+import { resolveQrFlags } from "../contracts/flags.js";
+import type { QrFlags } from "@aura3d/rendering/contracts";
+import {
+  createVehicleChassis,
+  flatVehicleSurface,
+  type VehicleChassis,
+  type VehicleChassisSpec,
+  type VehiclePose
+} from "./VehicleChassis.js";
+
+/** F-6 feel event port (e.g. `app.feel`). Kits only emit real edges. */
+export interface GameKitFeelPort {
+  emit(name: string, options?: { readonly strength?: number }): unknown;
+}
+import { createGameArcadeVehicle, createGameKinematicBody, type GameArcadeVehicleOptions, type GameKinematicBody } from "./GameRuntime.js";
 export interface GameKitVec2 {
   readonly x: number;
   readonly y: number;
@@ -64,6 +80,20 @@ export interface GamePlatformerLevel {
   readonly lives?: number;
   readonly fallGravityMultiplier?: number;
   readonly jumpReleaseScale?: number;
+  /**
+   * P-2 (§6.9): jump feel profile. Default `"responsive"` under
+   * `A3D_QR_CAMERA`; `false` restores `fallGravityMultiplier: 1` and no apex
+   * hang. An explicit `fallGravityMultiplier` always wins.
+   */
+  readonly feel?: PlatformerFeel | false;
+  /** Gravity scale inside the apex band (default 0.5 when `feel` set). */
+  readonly apexHangGravityScale?: number;
+  /** Resolved QR flag set; unset = flag off. */
+  readonly flags?: QrFlags;
+  /** P-4/F-6: feel bus; `land`/`jump`/`dash`/`collect`/`checkpoint` edges emit. */
+  readonly feelBus?: GameKitFeelPort;
+  /** P-3: player presentation state; `false` removes it from snapshots. */
+  readonly presentation?: boolean;
 }
 
 export interface GamePlatformerInput {
@@ -118,6 +148,23 @@ export interface GamePlatformerPlayerState extends GameKitVec2 {
   readonly facing: 1 | -1;
   readonly grounded: boolean;
   readonly ridingPlatformId?: string;
+  /**
+   * P-3 (§6.9): presentation state for the player runtime node. Present
+   * unless `level.presentation === false`; drives squash/stretch/lean and
+   * carries the last land impact speed.
+   */
+  readonly presentation?: GamePlatformerPlayerPresentation;
+}
+
+export interface GamePlatformerPlayerPresentation {
+  /** 0..1 squash pulse, spiked on land by impact, decaying ~5/s. */
+  readonly squash: number;
+  /** 0..1 vertical stretch from |vy|/jumpVelocity (air only). */
+  readonly stretch: number;
+  /** -1..1 lateral lean from vx/moveSpeed. */
+  readonly lean: number;
+  /** Impact speed of the most recent landing, decaying to 0 over ~0.3 s. */
+  readonly landImpact: number;
 }
 
 export interface GamePlatformerSnapshot {
@@ -533,6 +580,36 @@ export interface GameRacingOptions {
   readonly checkpointRadius?: number;
   readonly startProgress?: number;
   readonly lapsToWin?: number;
+  /** V-5 (§6.9): default `"bicycle"` under `A3D_QR_CAMERA`, else "unicycle". */
+  readonly model?: "unicycle" | "bicycle";
+  /** V-2..V-4 pass-through vehicle model options (bicycle model). */
+  readonly vehicle?: Omit<GameArcadeVehicleOptions, "maxSpeed" | "model">;
+  /** Resolved QR flag set; unset = flag off. */
+  readonly flags?: QrFlags;
+  /** F-6: feel bus; `boost`/`drift`/`collision`/`lap`/`spinout` edges emit. */
+  readonly feelBus?: GameKitFeelPort;
+  /**
+   * V-5: chassis presentation. Under `A3D_QR_CAMERA` a chassis is created by
+   * default (`true`/absent) over a flat surface; pass a spec to override the
+   * silhouette, `false` to disable. Its pose lands on
+   * `snapshot().vehiclePose`.
+   */
+  readonly chassis?: boolean | Partial<VehicleChassisSpec>;
+  /**
+   * A-5: C-25 `GameSound` slot. When `engine()` is present the kit creates
+   * one engine voice and calls `setRpm`/`setLoad` each fixed step (rpm from
+   * the vehicle model; `|speed|/maxSpeed` under the unicycle).
+   */
+  readonly sound?: {
+    engine?(o: {
+      readonly cue?: string;
+      readonly rpmRange?: readonly [number, number];
+      readonly pitchRange?: readonly [number, number];
+    }): {
+      setRpm?(rpm: number): void;
+      setLoad?(load: number): void;
+    } | null;
+  };
 }
 
 export interface GamePlatformerWorldAssetBinding {
@@ -662,6 +739,12 @@ export interface GameRacingSnapshot {
   readonly heading: number;
   readonly status: "running" | "finished";
   readonly events: readonly GameRacingEvent[];
+  /** V-5: chassis presentation pose when `options.chassis` is enabled. */
+  readonly vehiclePose?: VehiclePose;
+  /** V-2: extended bicycle-model state when `model: "bicycle"`. */
+  readonly rpm?: number;
+  readonly lateralG?: number;
+  readonly slipAngle?: number;
 }
 
 export interface GameRacingCameraSnapshot {
@@ -848,7 +931,10 @@ export interface GameFallingBlocksKit {
   consumeEvents(): readonly GameFallingBlocksEvent[];
 }
 
-const DEFAULT_PLATFORMER_LEVEL: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string } = {
+/** Level fields the runtime resolves itself (flags/feel/feelBus/presentation) — everything else is defaulted. */
+type ResolvedPlatformerLevel = Required<Omit<GamePlatformerLevel, "id" | "flags" | "feelBus" | "feel" | "apexHangGravityScale" | "presentation">>;
+
+const DEFAULT_PLATFORMER_LEVEL: ResolvedPlatformerLevel & { readonly id: string } = {
   id: "starter-platformer",
   gravity: -22,
   lowerBound: -3,
@@ -893,7 +979,14 @@ export function createGamePlatformerSurfaceQuery(level: GamePlatformerLevel = {}
 }
 
 export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePlatformerKit {
-  const config = { ...DEFAULT_PLATFORMER_LEVEL, ...level };
+  const qrOn = (level.flags ?? resolveQrFlags({})).on("A3D_QR_CAMERA");
+  // P-2: resolve the feel profile. `feel: false` pins the flat legacy arc.
+  const feelRequested = level.feel !== undefined ? level.feel : qrOn ? "responsive" : false;
+  const feelProfile = feelRequested === false ? undefined : platformerFeelProfile(feelRequested);
+  const resolvedFallMultiplier = level.fallGravityMultiplier ?? feelProfile?.fallMultiplier ?? 1;
+  const apexHangGravityScale = feelProfile ? level.apexHangGravityScale ?? 0.5 : 1;
+  const apexHangBand = feelProfile ? feelProfile.apexHangFraction * (level.jumpVelocity ?? DEFAULT_PLATFORMER_LEVEL.jumpVelocity) : 0;
+  const config = { ...DEFAULT_PLATFORMER_LEVEL, ...level, fallGravityMultiplier: resolvedFallMultiplier };
   const playerWidth = config.playerSize[0];
   const playerHeight = config.playerSize[1];
   const surfaceQuery = createGamePlatformerSurfaceQuery(level);
@@ -909,7 +1002,8 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     maxSpeed: Math.max(config.moveSpeed, config.dashSpeed),
     jumpVelocity: config.jumpVelocity,
     coyoteMs: config.coyoteMs,
-    jumpBufferMs: config.jumpBufferMs
+    jumpBufferMs: config.jumpBufferMs,
+    flags: level.flags
   });
   let body = createBody();
   let events: GamePlatformerEvent[] = [];
@@ -933,6 +1027,16 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     frame: state.frame,
     time: state.time,
     player: {
+      ...(presentationOn
+        ? {
+            presentation: {
+              squash: squashPulse,
+              stretch: state.player.grounded ? 0 : Math.min(1, Math.abs(state.player.vy) / Math.max(1e-6, config.jumpVelocity)),
+              lean: clampNumber(-state.player.vx / Math.max(1e-6, config.moveSpeed), -1, 1),
+              landImpact: landImpactLevel
+            }
+          }
+        : {}),
       x: state.player.x,
       y: state.player.y,
       vx: state.player.vx,
@@ -951,8 +1055,25 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     events: [...events]
   });
 
+  // P-3: squash/stretch/lean presentation state (§6.9, opt-out via
+  // `level.presentation: false`); defaults on under A3D_QR_CAMERA.
+  const presentationOn = level.presentation ?? qrOn;
+  let squashPulse = 0;
+  let landImpactLevel = 0;
+  // P-4/F-6: impact speed captured just before the land edge fires.
+  let pendingImpactSpeed = 0;
   const emit = (type: GamePlatformerEventType, id?: string) => {
     events.push({ type, id, frame: state.frame, time: state.time, x: state.player.x, y: state.player.y });
+    const feelBus = level.feelBus;
+    if (!feelBus) return;
+    if (type === "jump") feelBus.emit("jump");
+    else if (type === "land") {
+      feelBus.emit("land", { strength: Math.min(1, pendingImpactSpeed / (config.jumpVelocity * 1.4)) });
+      pendingImpactSpeed = 0;
+    } else if (type === "dash") feelBus.emit("dash");
+    else if (type === "collect") feelBus.emit("collect");
+    else if (type === "checkpoint") feelBus.emit("checkpoint");
+    else if (type === "hazard" || type === "defeat" || type === "fall") feelBus.emit("hurt");
   };
 
   const respawn = (reason: "hazard" | "fall", id?: string) => {
@@ -1058,6 +1179,16 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
           body.velocity[2]
         ];
       }
+      // P-2 apex hang: inside |vy| < apexHangFraction·jumpVelocity, gravity
+      // scales to `apexHangGravityScale` (gravity is negative; the delta
+      // pushes vy up so the rise hangs instead of arcing).
+      if (apexHangBand > 0 && !body.grounded && Math.abs(body.velocity[1]) < apexHangBand) {
+        body.velocity = [
+          body.velocity[0],
+          body.velocity[1] + config.gravity * (apexHangGravityScale - 1) * step,
+          body.velocity[2]
+        ];
+      }
       if (input.fastFall && body.velocity[1] < 0) {
         body.velocity = [body.velocity[0], body.velocity[1] + config.gravity * 0.6 * step, body.velocity[2]];
       }
@@ -1071,7 +1202,12 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         body.snapToGround(groundContact.surfaceTop);
         syncPlayerFromBody();
         state.player.ridingPlatformId = moving.some((candidate) => candidate.id === groundContact.surfaceId) ? groundContact.surfaceId : undefined;
-        if (!previousPlayer.grounded) emit("land", groundContact.surfaceId);
+        if (!previousPlayer.grounded) {
+          pendingImpactSpeed = Math.abs(previousPlayer.vy);
+          squashPulse = Math.min(1, pendingImpactSpeed / (config.jumpVelocity * 1.4));
+          landImpactLevel = pendingImpactSpeed;
+          emit("land", groundContact.surfaceId);
+        }
       }
 
       for (const coin of config.collectibles) {
@@ -1116,6 +1252,9 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         state.status = "completed";
         emit("complete");
       }
+      // P-3: squash pulse decays over ~0.12 s, landImpact over ~0.3 s.
+      squashPulse = Math.max(0, squashPulse - step / 0.12);
+      landImpactLevel = landImpactLevel * Math.max(0, 1 - step / 0.3);
       return snapshot();
     },
     reset(checkpointId) {
@@ -1123,6 +1262,8 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       defeatedHazards.clear();
       state = createPlatformerState(config, checkpointId);
       body = createBody();
+      squashPulse = 0;
+      landImpactLevel = 0;
       return snapshot();
     },
     snapshot,
@@ -1370,15 +1511,45 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
     : clampNumber(options.recoveryHeadingLimit, 0.01, Math.PI);
   const checkpointRadius = options.checkpointRadius ?? 0.07;
   const lapsToWin = Math.max(1, options.lapsToWin ?? 1);
+  const qrOn = (options.flags ?? resolveQrFlags({})).on("A3D_QR_CAMERA");
   const motion = createGameArcadeVehicle({
+    ...options.vehicle,
     maxSpeed,
     acceleration,
     brakeStrength,
     reverseSpeed,
     drag,
     steerRate,
-    boostAcceleration
+    boostAcceleration,
+    model: options.model ?? (qrOn ? "bicycle" : "unicycle")
   });
+  // V-5: chassis presentation under the flag (default silhouette unless a
+  // spec is given); `false` disables it outright.
+  const chassis: VehicleChassis | undefined =
+    options.chassis === false
+      ? undefined
+      : qrOn || options.chassis
+        ? createVehicleChassis(
+            {
+              wheelbase: 1.6,
+              trackWidth: 1.0,
+              wheelRadius: 0.3,
+              rideHeight: 0.32,
+              ...(typeof options.chassis === "object" ? options.chassis : {})
+            } as VehicleChassisSpec,
+            flatVehicleSurface(0, 1)
+          )
+        : undefined;
+  // A-5: engine voice over the bound C-25 sound slot (one per kit).
+  const engineVoice = options.sound?.engine?.({
+    rpmRange: [0, maxSpeed],
+    pitchRange: [0.8, 1.6]
+  }) ?? null;
+  let vehiclePose: VehiclePose | undefined;
+  // F-6 edges + V-2 extended telemetry (closures, not snapshot state).
+  let wasBoosting = false;
+  let wasDrifting = false;
+  let vehicleExt: { readonly rpm?: number; readonly lateralG?: number; readonly slipAngle?: number } = {};
   let events: GameRacingEvent[] = [];
   let state = createRaceState(options.startProgress ?? 0);
 
@@ -1414,6 +1585,8 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
     checkpointCount: checkpoints.length,
     lapsToWin,
     events: [...events],
+    ...(vehiclePose !== undefined ? { vehiclePose } : {}),
+    ...vehicleExt,
     ...state
   });
   const placeAtProgress = (progress: number, offset = 0) => {
@@ -1513,8 +1686,21 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
         brake,
         steer,
         drifting: input.drift,
-        boost: input.boost
+        boost: input.boost,
+        handbrake: input.drift
       });
+      // F-6: feel edges — real transitions only.
+      if (options.feelBus) {
+        if (input.boost === true && throttle > 0 && !wasBoosting) options.feelBus.emit("boost");
+        if ((vehicle.drifting === true || vehicle.drift > 0.3) && !wasDrifting) options.feelBus.emit("drift");
+      }
+      wasBoosting = input.boost === true && throttle > 0;
+      wasDrifting = vehicle.drifting === true || vehicle.drift > 0.3;
+      vehicleExt = { rpm: vehicle.rpm, lateralG: vehicle.lateralG, slipAngle: vehicle.slipAngle };
+      // A-5: engine voice follows the model's own rpm; load = throttle.
+      engineVoice?.setRpm?.(vehicle.rpm ?? Math.abs(vehicle.speed));
+      engineVoice?.setLoad?.(throttle);
+      const speedBeforeContact = vehicle.speed;
       let position = {
         x: vehicle.x,
         y: vehicle.z
@@ -1556,6 +1742,25 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
           driftMultiplier: recoveryHeadingLimit === undefined ? 1 : Math.max(0, 1 - step * 2.5)
         });
       }
+      const collisionSpeedDrop = speedBeforeContact - vehicle.speed;
+      if (options.feelBus && collisionSpeedDrop > Math.max(0.8, maxSpeed * 0.15)) {
+        options.feelBus.emit("collision", { strength: Math.min(1, collisionSpeedDrop / maxSpeed) });
+        if (Math.abs(normalizeRacingAngle(vehicle.heading - contact.tangentHeading)) > 1.2) {
+          options.feelBus.emit("spinout", { strength: Math.min(1, collisionSpeedDrop / maxSpeed) });
+        }
+      }
+      if (chassis) {
+        vehiclePose = chassis.step(step, {
+          x: vehicle.x,
+          z: vehicle.z,
+          heading: vehicle.heading,
+          speed: vehicle.speed,
+          steer,
+          throttle,
+          brake,
+          slip: Math.min(1, vehicle.drift)
+        });
+      }
       state = {
         ...state,
         speed: vehicle.speed,
@@ -1581,6 +1786,7 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       if (state.checkpoint >= checkpoints.length && previousProgress > 0.72 && state.progress < 0.18 && !offTrack) {
         const bestTime = state.bestTime === undefined ? state.lapTime : Math.min(state.bestTime, state.lapTime);
         emit("lap", `lap-${state.lap}`);
+        options.feelBus?.emit("lap");
         state = {
           ...state,
           lap: state.lap + 1,
@@ -1922,7 +2128,7 @@ export function createGameFallingBlocksKit(options: GameFallingBlocksOptions = {
   return kit;
 }
 
-function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }, checkpointId = "start"): MutablePlatformerState {
+function createPlatformerState(config: ResolvedPlatformerLevel & { readonly id: string }, checkpointId = "start"): MutablePlatformerState {
   const spawn = platformerSpawn(config, checkpointId);
   return {
     status: "playing",
@@ -1948,7 +2154,7 @@ function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">>
   };
 }
 
-function platformerSpawn(config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }, checkpointId: string): GameKitVec2 {
+function platformerSpawn(config: ResolvedPlatformerLevel & { readonly id: string }, checkpointId: string): GameKitVec2 {
   if (checkpointId !== "start") {
     const checkpoint = config.checkpoints.find((candidate) => candidate.id === checkpointId);
     if (checkpoint) {
@@ -1979,7 +2185,7 @@ function platformerSpawnSurface(platforms: readonly GameKitRect[], checkpointX: 
   })[0];
 }
 
-function platformerHazardRectsAt(time: number, config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }): readonly GamePlatformerHazard[] {
+function platformerHazardRectsAt(time: number, config: ResolvedPlatformerLevel & { readonly id: string }): readonly GamePlatformerHazard[] {
   return config.hazards.map((hazard) => {
     if (!hazard.axis || !hazard.amplitude || !hazard.period) return hazard;
     const phase = ((time / Math.max(0.001, hazard.period)) + (hazard.phase ?? 0)) * Math.PI * 2;
@@ -1992,7 +2198,7 @@ function platformerHazardRectsAt(time: number, config: Required<Omit<GamePlatfor
   });
 }
 
-function platformerMovingRectsAt(time: number, config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }): readonly GameKitRect[] {
+function platformerMovingRectsAt(time: number, config: ResolvedPlatformerLevel & { readonly id: string }): readonly GameKitRect[] {
   return config.movingPlatforms.map((platform) => {
     const phase = ((time / Math.max(0.001, platform.period)) + (platform.phase ?? 0)) * Math.PI * 2;
     const offset = Math.sin(phase) * platform.amplitude;
