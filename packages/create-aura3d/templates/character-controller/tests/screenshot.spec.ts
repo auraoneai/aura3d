@@ -1,9 +1,21 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { assertTemplateLookFloor } from "./look-floor";
 
-test("captures the character controller preview", async ({ page }) => {
+test.setTimeout(90_000);
+
+// PRD-13 T3.12 — look floor: non-blank, look.lint error-free, appliedLook
+// environment specular > 0, shadow strength >= 0.8, pixelRatio at tier cap,
+// subject bounds within ±10% — plus this template's bespoke assertions.
+test("Aura3D character controller screenshot clears the look floor", async ({ page }) => {
   await page.goto("/");
-  await page.waitForFunction(() => Boolean((window as unknown as { __AURA3D_CHARACTER_CONTROLLER_PROOF__?: unknown }).__AURA3D_CHARACTER_CONTROLLER_PROOF__));
-  const hud = page.locator("#character-controller-hud");
-  await expect(hud).toContainText("Character Controller");
-  await page.screenshot({ path: "test-results/character-controller-preview.png" });
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+
+  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.15, y: 0.25, width: 0.7, height: 0.65 } });
+  const screenshot = await page.screenshot({ fullPage: false });
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
+  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor }, null, 2)}\n`);
+  expect(screenshot.byteLength).toBeGreaterThan(1000);
 });

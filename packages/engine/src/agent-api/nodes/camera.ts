@@ -34,6 +34,7 @@ function warnSmoothingDeprecated(options: object | undefined): void {
 
 
 
+
 export const camera = {
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
