@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GAME_NONVISUAL_CATEGORIES, GAME_VISUAL_CATEGORIES, RUBRIC_PROMPT_VERSION } from "../../../../tools/quality-gate/src/contracts";
-import { G_REF_BAR_R3, evaluateGates, type GoldenManifest, type ItemVerdictInput, type MetricValue } from "../../../../tools/quality-gate/src/verdict";
-import type { CapturedItem } from "../../../../tools/quality-gate/src/types";
+import { G_REF_BAR_R3, evaluateGates, type ItemVerdictInput } from "../../../../tools/quality-gate/src/verdict";
+import type { CalibratedThreshold, CapturedItem, GoldenManifest, MetricValue } from "../../../../tools/quality-gate/src/types";
 
 const CAPTURE = { path: "frame.png", sha256: "0".repeat(64), width: 1280, height: 720, dpr: 1 } as const;
 const ENV = { commitSha: "abc", githubRunId: "1", runnerImage: "macos-14/1", gpuRenderer: "ANGLE Metal", browserVersion: "139", launchArgs: [] };
@@ -10,15 +10,26 @@ function item(id: string, gpuRenderer = ENV.gpuRenderer): CapturedItem {
   return { itemId: id, kind: "benchmark-scene", aura: CAPTURE, reference: CAPTURE, masks: {}, variants: {}, repeats: [], env: { ...ENV, gpuRenderer } };
 }
 
+function threshold(metric: MetricValue["metric"], region: MetricValue["region"], value: number): CalibratedThreshold {
+  return {
+    itemId: "bench:01", metric, region, noiseMax: value / 3, brokenControls: {},
+    threshold: value, rejects: ["no-shadows"], active: true,
+    calibratedAt: { commitSha: "abc", runnerImage: "macos-14/1" }
+  };
+}
+
 const GOLDENS: GoldenManifest = {
-  schema: "aura3d-quality-gate-goldens/1",
-  entries: {
-    "bench:01": { itemId: "bench:01", approvedRound: "round-0", ref: CAPTURE, thresholds: { "flip@frame": 0.05, "1-ssim@frame": 0.01 } }
-  }
+  schema: "aura3d.quality-gate.goldens/1",
+  runnerImage: "macos-14/1",
+  gpuRenderer: "ANGLE Metal",
+  entries: [{
+    itemId: "bench:01", image: CAPTURE, masks: {}, approvedBy: "round-0", supersedes: null,
+    thresholds: [threshold("flip", "frame", 0.05), threshold("ssim", "frame", 0.01)]
+  }]
 };
 
-function metric(metric: MetricValue["metric"], value: number, region: MetricValue["region"] = "frame"): MetricValue {
-  return { metric, region, value, status: "ok" };
+function metric(metric: MetricValue["metric"], distance: number, region: MetricValue["region"] = "frame"): MetricValue {
+  return { metric, region, aura: distance, reference: null, pairwise: distance, status: "ok" };
 }
 
 function verdictsFor(input: ItemVerdictInput, metrics: MetricValue[] = [], goldens = GOLDENS) {
@@ -34,7 +45,7 @@ describe("PRD-12 rubric surface (C-32) and evaluateGates", () => {
   });
 
   it("passes a clean item inside calibrated thresholds", () => {
-    const result = verdictsFor({ item: item("bench:01") }, [metric("flip", 0.01), metric("ssim", 0.99)]);
+    const result = verdictsFor({ item: item("bench:01") }, [metric("flip", 0.01), metric("ssim", 0.001)]);
     expect(result.itemVerdicts.get("bench:01")).toEqual(["pass"]);
     expect(result.exitCode).toBe(0);
   });
@@ -67,7 +78,7 @@ describe("PRD-12 rubric surface (C-32) and evaluateGates", () => {
   });
 
   it("never fabricates a pass from unavailable metrics", () => {
-    const result = verdictsFor({ item: item("bench:01") }, [{ metric: "flip", region: "frame", value: NaN, status: "unavailable" }]);
+    const result = verdictsFor({ item: item("bench:01") }, [{ metric: "flip", region: "frame", aura: NaN, reference: null, pairwise: null, status: "unavailable" }]);
     expect(result.itemVerdicts.get("bench:01")).toEqual(["pass"]);
   });
 });
