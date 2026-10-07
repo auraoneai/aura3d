@@ -9,7 +9,7 @@
  */
 import "@aura3d/engine";
 import { describe, expect, it, vi } from "vitest";
-import { auraAssetRefBrand } from "@aura3d/engine/contracts";
+import { auraAssetRefBrand } from "../../../../packages/engine/src/agent-api/nodes/assets";
 import { createDegradationSink } from "../../../../packages/engine/src/agent-api/app/degradation";
 import { AuraRuntimeError } from "../../../../packages/engine/src/agent-api/app/errors";
 import { applyProductionActorFootPlanting, applyProductionActorMorphTargets } from "../../../../packages/engine/src/agent-api/compiler/actors";
@@ -153,7 +153,7 @@ describe("T4.1 catch sites route through degrade", () => {
 
   it("pose-apply-failed: strict throws from the frame build", () => {
     const entry = makeActorEntry();
-    const snapshot: AuraSceneSnapshot = { nodes: [entry.node], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } };
+    const snapshot: AuraSceneSnapshot = { schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [entry.node], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } };
     const runtimeNodes = createAuraRuntimeNodeRegistry(snapshot);
     runtimeNodes.get("actor-1")?.setAnimationPose({ bones: {} } as never);
     const canvas = { width: 800, height: 600 } as HTMLCanvasElement;
@@ -167,7 +167,7 @@ describe("T4.1 catch sites route through degrade", () => {
         0,
         runtimeNodes,
         warnings,
-        {},
+        { color: [0, 0, 0], intensity: 0 },
         [],
         strictSink()
       )
@@ -176,12 +176,12 @@ describe("T4.1 catch sites route through degrade", () => {
 
   it("pose-apply-failed: flag-off keeps the legacy warning text", () => {
     const entry = makeActorEntry();
-    const snapshot: AuraSceneSnapshot = { nodes: [entry.node], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } };
+    const snapshot: AuraSceneSnapshot = { schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [entry.node], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } };
     const runtimeNodes = createAuraRuntimeNodeRegistry(snapshot);
     runtimeNodes.get("actor-1")?.setAnimationPose({ bones: {} } as never);
     const canvas = { width: 800, height: 600 } as HTMLCanvasElement;
     const warnings = new Set<string>();
-    createProductionRuntimeRendererInput(snapshot, canvas, [entry], [], 0, runtimeNodes, warnings, {}, []);
+    createProductionRuntimeRendererInput(snapshot, canvas, [entry], [], 0, runtimeNodes, warnings, { color: [0, 0, 0], intensity: 0 }, []);
     expect([...warnings]).toContain('Typed GLB actor "actor-1" failed to apply bound pose: Error: probe failure');
   });
 });

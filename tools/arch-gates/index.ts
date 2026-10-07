@@ -83,7 +83,8 @@ export function checkSrcClean(root: string): GateFinding[] {
         }
         if (!EMITTED_ARTIFACT_RE.test(entry.name)) continue;
         // A .js sitting next to its .ts source is still an emitted artifact.
-        findings.push({ rule: "src-clean", file: relative(root, path), detail: `emitted artifact ${entry.name} inside src/` });
+        // T7.2: fail mode — the orphan-map debris can never come back.
+        findings.push({ rule: "src-clean", file: relative(root, path), detail: `emitted artifact ${entry.name} inside src/`, enforced: true });
       }
     }
   }

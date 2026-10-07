@@ -6,7 +6,7 @@ export interface SourceCleanlinessViolation {
   readonly file: string;
   readonly line?: number;
   readonly column?: number;
-  readonly kind: "backup-file" | "source-copy-file" | "marker";
+  readonly kind: "backup-file" | "source-copy-file" | "emitted-artifact" | "marker";
   readonly marker?: string;
   readonly message: string;
 }
@@ -61,6 +61,11 @@ const textExtensions = new Set([
 
 const backupFilePattern = /(?:~$|\.bak$|\.backup$|\.old$|\.orig$|\.tmp$|\.swp$|\.swo$|\.save$|\.rej$)/i;
 const sourceCopyFilePattern = /(?:^|[._ -])(?:copy|copied|backup)(?:[._ -]|\d|$)/i;
+// T7.2 (PRD-15): emitted artifacts must never sit inside packages/*/src —
+// the 1,194 orphan maps came from tsc writing next to sources; tsconfig now
+// forbids that (noEmit in base, src-only include in build) and this rule is
+// the durable backstop.
+const emittedArtifactPattern = /\.(js|js\.map|d\.ts|d\.ts\.map)$/;
 
 const markerPatterns: readonly (readonly [string, RegExp])[] = [
   ["TODO", /\bTODO\b/i],
@@ -155,6 +160,16 @@ export function verifySourceCleanliness(root = process.cwd(), options: SourceCle
         file,
         kind: "source-copy-file",
         message: "Copied source files are forbidden in active source trees."
+      });
+      continue;
+    }
+
+    const rel = relative(root, file).split(sep).join("/");
+    if (/^packages\/[^/]+\/src\//.test(rel) && emittedArtifactPattern.test(fileName)) {
+      violations.push({
+        file,
+        kind: "emitted-artifact",
+        message: "Emitted artifacts (*.js, *.js.map, *.d.ts, *.d.ts.map) are forbidden inside packages/*/src."
       });
       continue;
     }
