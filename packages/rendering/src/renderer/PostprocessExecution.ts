@@ -8,11 +8,27 @@ import type { RendererPostProcessOptions, RendererPostprocessDiagnostics } from 
 import { type RendererPostProcessPassName, type RendererPostProcessPassPlan, type RendererPostprocessTargetFormat, createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "../RendererPostprocessPlan";
 import type { RenderSource } from "../contracts/renderSource";
 import { isIterable } from "./RenderShared";
+import { rendererQrFlags } from "./FrameGraph";
 import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 import type { PostPipelineOptions } from "../contracts/post";
 import { webgl2DeviceHost } from "../webgl2/Counters";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
+
+/* v2 module warm cache — the sync `render()` route cannot `import()`; the
+ * first flag-on frame fires it, later frames run the real S1–S12 stages. */
+let postV2Modules: typeof import("../post/v2Entry") | undefined;
+let postV2WarmStarted = false;
+
+export function warmPostV2Modules(): void {
+  if (postV2WarmStarted) return;
+  postV2WarmStarted = true;
+  void import("../post/v2Entry").then((modules) => {
+    postV2Modules = modules;
+  }).catch(() => {
+    postV2WarmStarted = false;
+  });
+}
 
 export function collectPostprocess(source: RenderSource | Iterable<RenderItem> | Scene): RendererPostProcessOptions | undefined {
   if (source instanceof Scene || isIterable(source)) return undefined;
@@ -68,8 +84,18 @@ export function postprocessRequiresDepthTexture(postprocess: RendererPostProcess
     (postprocess.depthOfField && !postprocess.depthOfField.depth) ||
     (postprocess.contactShadow && !postprocess.contactShadow.depth) ||
     (postprocess.ssao && !postprocess.ssao.depth) ||
-    (postprocess.ssr && !postprocess.ssr.depth)
+    (postprocess.ssr && !postprocess.ssr.depth) ||
+    // PRD-03 §6.9: on the v2 route the legacy fields are not populated — the
+    // depth-needing stages (S1 depth-prep feeding S2 GTAO / S4 god rays /
+    // Phase-4 DOF+motion blur+SSR) live on the pipeline bag instead.
+    (postprocess.v2 === true && v2PipelineNeedsDepth(postprocess.pipeline))
   );
+}
+
+function v2PipelineNeedsDepth(pipeline: unknown): boolean {
+  if (pipeline === null || typeof pipeline !== "object") return false;
+  const bag = pipeline as { ao?: unknown; godRays?: unknown; dof?: unknown; motionBlur?: unknown; ssr?: unknown };
+  return Boolean(bag.ao ?? bag.godRays ?? bag.dof ?? bag.motionBlur ?? bag.ssr);
 }
 
 export function defaultPostprocessTargetFormat(
@@ -136,9 +162,12 @@ export class RendererPostprocessPipeline {
     // which only covers the fused pass names. Scenes authoring anything
     // outside that set (film-grain, chromatic-aberration, volumetric-light,
     // contact-shadow) — or requesting cpu-deterministic — keep the legacy
-    // route so nothing authored is silently dropped.
+    // route so nothing authored is silently dropped. An empty pass list is
+    // fine: pipeline-only effects (vignette/film-grain/CA) emit no plan pass.
     if (postprocess.execution === "cpu-deterministic") return false;
-    if (!canFuseLdrPostprocess(current, passes)) return false;
+    if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) return false;
+    warmPostV2Modules();
+    v2Modules = v2Modules ?? postV2Modules;
     const descriptors = passes.map((pass) => ({
       name: pass.name,
       options: pass.options as Readonly<Record<string, unknown>>
@@ -147,6 +176,7 @@ export class RendererPostprocessPipeline {
       pipeline: pipeline as PostPipelineOptions,
       passes: descriptors,
       ...(v2Modules ? { v2: v2Modules } : {}),
+      ...(postprocess.cameraFrame ? { cameraFrame: postprocess.cameraFrame } : {}),
       ...(outputTarget ? { outputTarget } : {}),
       ...(postprocess.depthRange ? { depthRange: postprocess.depthRange } : {})
     });
@@ -161,6 +191,9 @@ export class RendererPostprocessPipeline {
     }
     const passes = createRendererPostprocessPasses(postprocess);
     if (passes.length === 0) {
+      // §6.9: a pipeline-only frame (e.g. vignette + toneMapping:"none")
+      // emits no plan passes — the v2 route still applies its stages.
+      if (postprocess.v2 === true && this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget)) return;
       if (outputTarget) {
         this.host.device.setRenderTarget(current);
         writePostProcessPixels(this.host.device, current, outputTarget, this.host.device.readPixels(0, 0, current.width, current.height));
@@ -239,7 +272,7 @@ export class RendererPostprocessPipeline {
           ...(pass.options as FXAAOptions)
         }).execute({ device: this.host.device, width: this.host.width, height: this.host.height });
       } else {
-        this.executePixelPostprocessPass(pass, current, target, forwardTarget);
+        this.executePixelPostprocessPass(pass, current, target, forwardTarget, postprocess.execution === "cpu-deterministic");
       }
       if (target) current = target;
     }
@@ -301,6 +334,10 @@ export class RendererPostprocessPipeline {
     }
     const passes = createRendererPostprocessPasses(postprocess);
     if (passes.length === 0) {
+      const v2ModulesEmpty = postprocess.v2 === true && this.host.device.kind === "webgl2"
+        ? await import("../post/v2Entry")
+        : undefined;
+      if (v2ModulesEmpty && this.tryExecutePostGraphV2(postprocess, current, passes, outputTarget, v2ModulesEmpty)) return;
       if (outputTarget) {
         this.host.device.setRenderTarget(current);
         writePostProcessPixels(this.host.device, current, outputTarget, await this.readRenderTargetPixelsAsync(current));
@@ -383,7 +420,7 @@ export class RendererPostprocessPipeline {
         const smoothed = fxaaPixels(await this.readRenderTargetPixelsAsync(current), current.width, current.height, pass.options as FXAAOptions);
         writePostProcessPixels(this.host.device, current, target, smoothed.pixels);
       } else {
-        await this.executePixelPostprocessPassAsync(pass, current, target, forwardTarget);
+        await this.executePixelPostprocessPassAsync(pass, current, target, forwardTarget, postprocess.execution === "cpu-deterministic");
       }
       if (target) current = target;
     }
@@ -436,7 +473,8 @@ export class RendererPostprocessPipeline {
     return true;
   }
 
-  private executePixelPostprocessPass(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget): void {
+  private executePixelPostprocessPass(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget, cpuDeterministic = false): void {
+    this.assertPostPassOnGpu(pass.name, cpuDeterministic);
     this.host.device.setRenderTarget(source);
     const input = this.host.device.readPixels(0, 0, source.width, source.height);
     const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
@@ -473,7 +511,8 @@ export class RendererPostprocessPipeline {
     writePostProcessPixels(this.host.device, source, target, result);
   }
 
-  private async executePixelPostprocessPassAsync(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget): Promise<void> {
+  private async executePixelPostprocessPassAsync(pass: RendererPostProcessPassPlan, source: RenderTarget, target: RenderTarget | undefined, forwardTarget: RenderTarget, cpuDeterministic = false): Promise<void> {
+    this.assertPostPassOnGpu(pass.name, cpuDeterministic);
     const input = await this.readRenderTargetPixelsAsync(source);
     const rendererDepth = isDepthPostprocessPass(pass.name) && !postprocessPassHasDepth(pass.options)
       ? this.readRendererOwnedDepthTexture(forwardTarget)
@@ -507,6 +546,26 @@ export class RendererPostprocessPipeline {
       });
     }
     writePostProcessPixels(this.host.device, source, target, result);
+  }
+
+  /**
+   * §6.9: with `A3D_QR_POST` on, a non-GPU post pass is a violation unless
+   * `execution === "cpu-deterministic"`. Dev builds throw
+   * `POSTPROCESS_PASS_NOT_GPU`; production builds skip the pass and record it
+   * (`postSkippedReasons` surfaces it into `diagnostics().post.skipped`).
+   */
+  private assertPostPassOnGpu(passName: string, cpuDeterministic: boolean): void {
+    const flags = rendererQrFlags();
+    if (!flags?.on("A3D_QR_POST") || cpuDeterministic) return;
+    if (postProductionBuild()) {
+      recordPostSkipped(`POSTPROCESS_PASS_NOT_GPU:${passName}`);
+      return;
+    }
+    throw new RenderDeviceError(
+      `Post pass "${passName}" has no GPU implementation on the v2 chain; set postprocess.execution = "cpu-deterministic" for the reference path.`,
+      "POSTPROCESS_PASS_NOT_GPU",
+      { pass: passName }
+    );
   }
 
   private async readRenderTargetPixelsAsync(target: RenderTarget): Promise<Uint8Array> {
@@ -544,4 +603,25 @@ export class RendererPostprocessPipeline {
       data: this.host.device.readDepthPixels(0, 0, forwardTarget.width, forwardTarget.height)
     });
   }
+}
+
+/* §6.9 prod-skip registry — the record a production build leaves in place of
+ * the dev `POSTPROCESS_PASS_NOT_GPU` throw. `postSections` folds these into
+ * `diagnostics().post.skipped`. */
+const postSkippedReasonsSet = new Set<string>();
+
+export function recordPostSkipped(reason: string): void {
+  postSkippedReasonsSet.add(reason);
+}
+
+export function postSkippedReasons(): readonly string[] {
+  return [...postSkippedReasonsSet];
+}
+
+/** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */
+export function postProductionBuild(): boolean {
+  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
+  if (meta.env?.PROD) return true;
+  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
+    .process?.env?.NODE_ENV === "production";
 }

@@ -66,3 +66,32 @@ void main() {
   outColor = vec4(c, texture(u_hdr, v_uv).a);
 }
 `;
+
+/**
+ * Transitional standalone CA pass (Phase 3): the §8.12 radial 3-tap,
+ * `uv ± dir·intensity` with `dir = centre·|centre|²·u_caIntensity`, executed
+ * on the HDR target while S10 composite keeps its own copy for the final
+ * chain. Same formula — when S10 runs real, this program goes away and the
+ * composite's `u_caIntensity` carries it.
+ */
+export const CA_PASS_GLSL = /* glsl */ `#version 300 es
+precision highp float;
+uniform sampler2D u_hdr;
+uniform float u_caIntensity;
+in vec2 v_uv;
+out vec4 outColor;
+
+void main() {
+  vec2 centre = v_uv - 0.5;
+  vec2 dir = centre * dot(centre, centre) * u_caIntensity;
+  if (u_caIntensity != 0.0) {
+    outColor = vec4(
+      texture(u_hdr, v_uv - dir).r,
+      texture(u_hdr, v_uv).g,
+      texture(u_hdr, v_uv + dir).b,
+      texture(u_hdr, v_uv).a);
+  } else {
+    outColor = texture(u_hdr, v_uv);
+  }
+}
+`;

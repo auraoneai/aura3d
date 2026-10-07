@@ -15,6 +15,8 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  volumetricLightDirection,
+  type CollectedLight,
   type RendererPostProcessOptions
 } from "@aura3d/rendering";
 import {
@@ -68,6 +70,14 @@ export interface SubmittedPostprocessRecord {
   readonly temporalRequested: boolean;
   readonly options: RendererPostProcessOptions;
   readonly authored: AuthoredPostSummary;
+}
+
+/** Mirrors `postProductionBuild` in the renderer (§6.9 prod-skip rule). */
+function postProductionBuildBridge(): boolean {
+  const meta = import.meta as unknown as { readonly env?: { readonly PROD?: boolean } };
+  if (meta.env?.PROD) return true;
+  return (globalThis as { readonly process?: { readonly env?: { readonly NODE_ENV?: string } } })
+    .process?.env?.NODE_ENV === "production";
 }
 
 let latest: SubmittedPostprocessRecord | null = null;
@@ -306,7 +316,18 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     antiAlias,
     skipped: [
       ...(antiAlias?.reason ? [`aa:${antiAlias.reason}`] : []),
-      ...plan.plannedVsActual.dropped
+      ...plan.plannedVsActual.dropped,
+      // §6.3: the indirect-fraction feature is registered but the lane-01
+      // program generator is still the PR 0a stub — AO applies the
+      // `u_aoFallbackStrength` path until C-02 lands real.
+      ...(authoredContext?.flags.post && (submitted.authored.ambientOcclusion || submitted.authored.contactOcclusion)
+        ? ["AO_INDIRECT_FRACTION_PENDING"]
+        : []),
+      // §6.9: in production builds the non-GPU passes are skipped instead of
+      // throwing POSTPROCESS_PASS_NOT_GPU — record them here.
+      ...(postProductionBuildBridge() && authoredContext?.flags.post
+        ? plan.pixelBackedPassNames.map((name) => `POSTPROCESS_PASS_NOT_GPU:${name}`)
+        : [])
     ],
     customPasses: custom,
     warnings: [
@@ -589,7 +610,8 @@ export function createRootPostPipeline(
   snapshot: AuraSceneSnapshot,
   camera: { readonly near?: number; readonly far?: number; readonly mode?: string } | undefined,
   output: AuraOutputOptions | undefined,
-  tierSettings: AuraQualityTierSettings
+  tierSettings: AuraQualityTierSettings,
+  lights: readonly CollectedLight[] = []
 ): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
   const nodes = groups.flatten(snapshot.nodes);
   const diagnostics: PostFieldDiagnostic[] = [];
@@ -614,6 +636,26 @@ export function createRootPostPipeline(
   const mbNode = effect("motion-blur");
   const ssrNode = effect("screen-space-reflections");
 
+  // §6.9/§8.4 (Phase 3): ambient-occlusion and contact-occlusion both target
+  // S2 GTAO — two AO nodes are a pipeline error (`POST_DUPLICATE_STAGE`;
+  // a lane-15 `AuraRuntimeError` union entry is qr-requested). `radius` is
+  // interpreted in metres flag-on; contactOcclusion is ambientOcclusion with
+  // a 0.2 m default radius.
+  const aoNodes = nodes.filter((node): node is AuraEffectNode =>
+    node.kind === "effect" && (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"));
+  if (aoNodes.length > 1) {
+    throw new Error(
+      `POST_DUPLICATE_STAGE: two AO effect nodes (${aoNodes.map((node) => node.effect).join(" + ")}) target stage S2-gtao.`
+    );
+  }
+  const aoNode = aoNodes[0];
+
+  // §6.9: the god-ray light is the strongest DIRECTIONAL light in the
+  // compiled RenderSource — direction TOWARD the light for the S4 project.
+  const strongestDirectional = lights.reduce<CollectedLight | null>((best, light) =>
+    light.kind === "directional" && light.intensity > 0 && (!best || light.intensity > best.intensity) ? light : best, null);
+  const godRayLightDirection = strongestDirectional ? volumetricLightDirection(strongestDirectional) : null;
+
   const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
   if (bloom) diagnostics.push(...bloom.diagnostics);
 
@@ -633,12 +675,31 @@ export function createRootPostPipeline(
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
     dither: output?.dither !== false,
     backgroundPassthrough: output?.backgroundPassthrough === true,
+    ...(aoNode ? {
+      ao: {
+        radius: aoNode.effect === "contact-occlusion"
+          ? numberField(aoNode, "radius", 0.2)
+          : numberField(aoNode, "radius", 0.35),
+        intensity: numberField(aoNode, "intensity", 1),
+        falloff: numberField(aoNode, "falloff", 1),
+        directions: 4 as const,
+        steps: 4 as const,
+        halfRes: true,
+        temporal: true,
+        multiBounce: true,
+        fallbackStrength: 0.6
+      }
+    } : {}),
     ...(volumetricNode ? {
       godRays: {
+        samples: 32 as const,
+        decay: 0.94,
+        weight: numberField(volumetricNode, "intensity", 0.7),
         density: numberField(volumetricNode, "density", 0.18),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
-        lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined
+        lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
+        ...(godRayLightDirection ? { lightDirection: godRayLightDirection } : {})
       }
     } : {}),
     ...(dofNode ? {

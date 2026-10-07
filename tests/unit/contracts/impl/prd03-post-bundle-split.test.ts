@@ -26,7 +26,13 @@ const DEFERRED_ONLY_INPUTS = [
   "packages/rendering/src/post/shaders/bloom.glsl.ts",
   "packages/rendering/src/post/shaders/composite.glsl.ts",
   "packages/rendering/src/post/shaders/displayGrade.glsl.ts",
-  "packages/rendering/src/post/shaders/finalize.glsl.ts"
+  "packages/rendering/src/post/shaders/finalize.glsl.ts",
+  // Phase 3: S1/S2/S4 GLSL + the stage driver.
+  "packages/rendering/src/post/v2Stages.ts",
+  "packages/rendering/src/post/shaders/depthDownsample.glsl.ts",
+  "packages/rendering/src/post/shaders/gtao.glsl.ts",
+  "packages/rendering/src/post/shaders/gtaoDenoise.glsl.ts",
+  "packages/rendering/src/post/shaders/godrays.glsl.ts"
 ];
 
 function workspaceAliasPlugin(): Plugin {
@@ -134,5 +140,37 @@ describe("post v2 bundle split (§9 gate)", () => {
     // webgl2/LegacyPost.ts, a pre-existing static device module).
     // PostGraph.ts stays eager too: the contract real is provide()d at
     // module eval, by contract.
+  }, 60_000);
+
+  it("§6.9: the v2 chunk never imports the reference/ CPU kernels", async () => {
+    const result = await build({
+      absWorkingDir: root,
+      bundle: true,
+      minify: false,
+      format: "esm",
+      platform: "browser",
+      target: "es2022",
+      write: false,
+      metafile: true,
+      splitting: true,
+      outdir: "out",
+      entryPoints: ["packages/rendering/src/index.ts"],
+      plugins: [workspaceAliasPlugin()],
+      external: ["@aura3d/*"],
+      logLevel: "silent"
+    });
+    const metafile = result.metafile!;
+    // Every chunk that carries a phase-3 v2 input must have zero reference/
+    // inputs in it (transitively bundled inputs appear under output.inputs).
+    const v2ChunkKeys = Object.keys(metafile.outputs).filter((key) =>
+      Object.keys(metafile.outputs[key]!.inputs).some((input) => input.startsWith("packages/rendering/src/post/v2"))
+    );
+    expect(v2ChunkKeys.length).toBeGreaterThan(0);
+    for (const key of v2ChunkKeys) {
+      const referenceInputs = Object.keys(metafile.outputs[key]!.inputs).filter((input) =>
+        input.startsWith("packages/rendering/src/reference/")
+      );
+      expect(referenceInputs, `v2 chunk ${key} bundles reference kernels`).toEqual([]);
+    }
   }, 60_000);
 });

@@ -14,6 +14,7 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
 import type { PostPipelineOptions } from "../contracts/post";
+import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
 
 export interface NativeBloomOptions {
@@ -2768,6 +2769,8 @@ export function executePostGraphWebGL2(
      * path; the transitional fused mapping does not need it.
      */
     readonly v2?: typeof import("../post/v2Entry");
+    /** C-38 frame camera for the v2 HDR stages (S1/S2/S4) — Phase 3. */
+    readonly cameraFrame?: FrameCamera;
     readonly outputTarget?: RenderTarget;
     readonly depthRange?: { readonly near: number; readonly far: number };
   }
@@ -2775,22 +2778,48 @@ export function executePostGraphWebGL2(
   if (!host) {
     throw new RenderDeviceError("PostGraph v2 requires a WebGL2 device host.", "POST_GRAPH_V2_UNSUPPORTED");
   }
-  const passes = request.passes.map((pass) => {
+  const v2 = request.v2;
+  const pipeline = request.pipeline;
+  // Phase 3: real S1/S2/S4 + CA run on the HDR target before the fused
+  // present; S10b/S11/S12 run as the LDR tail after it.
+  let workSource = source;
+  if (v2) {
+    workSource = v2.runV2HdrStages(host, source, pipeline, request.cameraFrame).target;
+  }
+  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(pipeline));
+  const ldrTailTarget = needsTail && v2
+    ? v2.acquireV2Target(host, { width: source.width, height: source.height, format: "rgba8" })
+    : undefined;
+  // With a real S12 the fused OUT must not emit the legacy dither — the
+  // finalize pass owns the single triangular dither for the frame.
+  const pipelineForOut = needsTail && pipeline.dither !== false
+    ? { ...pipeline, dither: false as const }
+    : pipeline;
+  const passes = request.passes
+    // §6.9: on the v2 chain S2 GTAO owns occlusion — the legacy SSAO pass is
+    // not scheduled (it would double-darken against the §6.3 apply).
+    .filter((pass) => !(v2 && pipeline.ao && pass.name === ("ssao" as LdrPostprocessPassName)))
+    .map((pass) => {
     if (pass.name === ("tone-mapping" as LdrPostprocessPassName)) {
-      return createLegacyOutputPass(request.pipeline, pass.options);
+      return createLegacyOutputPass(pipelineForOut, pass.options);
     }
     if (pass.name === ("bloom" as LdrPostprocessPassName)) {
       return { name: pass.name, options: { ...pass.options, v2: true } } as LdrPostprocessPassDescriptor;
     }
     return pass;
   });
-  host.post.presentLdrPostprocess(source, {
+  host.post.presentLdrPostprocess(workSource, {
     passes,
-    ...(request.outputTarget ? { outputTarget: request.outputTarget } : {}),
+    ...(ldrTailTarget ?? request.outputTarget ? { outputTarget: ldrTailTarget ?? request.outputTarget } : {}),
     toneMappingDefaults: { outputColorSpace: "srgb" },
     depthRange: {
       near: request.depthRange?.near ?? request.pipeline.depthRange.near,
       far: request.depthRange?.far ?? request.pipeline.depthRange.far
     }
   });
+  if (workSource !== source && v2) v2.releaseV2Target(host, workSource);
+  if (ldrTailTarget && v2) {
+    v2.runV2LdrTail(host, ldrTailTarget, pipeline, request.outputTarget);
+    v2.releaseV2Target(host, ldrTailTarget);
+  }
 }

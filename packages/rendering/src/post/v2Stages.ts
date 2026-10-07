@@ -1,0 +1,511 @@
+/**
+ * PRD-03 Phase 3 — the transitional v2 GPU stage driver (deferred chunk:
+ * imported only through `post/v2Entry` from `PostprocessExecution`).
+ *
+ * `runV2HdrStages` runs the implemented §6.1 HDR stages that no longer have a
+ * CPU/home on the legacy chain:
+ *   S1  depth prep        (linearize → RGBA32F, half-res min/max)
+ *   S2  GTAO              (half-res → bilateral denoise H/V → joint-bilateral
+ *                          upsample + §6.3 multi-bounce apply onto HDR)
+ *   S4  god rays          (half-res radial march → additive onto HDR)
+ *   CA  chromatic aberration (the §8.12 S10 tap as a standalone pre-pass)
+ *
+ * `runV2LdrTail` runs the post-`presentLdrPostprocess` display stages:
+ *   S10b display grade (LUT + vignette, luma into .a for FXAA),
+ *   S11 r185 FXAA (or fused inside S12), S12 finalize (grain + RCAS + the
+ *   single triangular dither). When FXAA is selected and any S10b/S12 stage
+ *   is active, `FINALIZE_FXAA_FUSED_GLSL` collapses all three into one draw.
+ *
+ * Format note: the contract pool only has rgba8/rgba16f/rgba32f renderable
+ * formats, so the spec's R32F/RG32F/R8 surfaces land as rgba32f (≥ spec
+ * precision, .r/.rg channels) and rgba8 (R8-equivalent quantization).
+ * True single/double-channel formats are qr-request Q-11-2 (lane 11
+ * RenderDevice::resolveRenderTargetFormat).
+ */
+
+import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
+import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
+import { invertMat4, type Mat4 } from "@aura3d/scene";
+import type { PostPipelineOptions } from "../contracts/post";
+import type { FrameCamera } from "../contracts/frameGraph";
+import { rendererQrFlags } from "../renderer/FrameGraph";
+import { PostResources } from "./PostResources";
+import {
+  DEPTH_LINEARIZE_GLSL,
+  DEPTH_MINMAX_HALF_GLSL
+} from "./shaders/depthDownsample.glsl.js";
+import { GTAO_GLSL } from "./shaders/gtao.glsl.js";
+import { GTAO_APPLY_GLSL, GTAO_DENOISE_GLSL } from "./shaders/gtaoDenoise.glsl.js";
+import { GODRAYS_GLSL } from "./shaders/godrays.glsl.js";
+import { CA_PASS_GLSL } from "./shaders/composite.glsl.js";
+import { DISPLAY_GRADE_GLSL } from "./shaders/displayGrade.glsl.js";
+import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_GLSL } from "./shaders/finalize.glsl.js";
+import type { GtaoOptions, GodRayOptions } from "./PostGraph";
+
+const VERTEX = `#version 300 es
+out vec2 v_uv;
+void main() {
+  vec2 p = vec2(gl_VertexID == 1 ? 3.0 : -1.0, gl_VertexID == 2 ? 3.0 : -1.0);
+  v_uv = p * 0.5 + 0.5;
+  gl_Position = vec4(p, 0.0, 1.0);
+}
+`;
+
+interface GlTarget {
+  readonly framebuffer: WebGLFramebuffer;
+  readonly colorHandle: WebGLTexture;
+  readonly depthTextureHandle: WebGLTexture | null;
+  readonly width: number;
+  readonly height: number;
+}
+
+function asGlTarget(target: RenderTarget): GlTarget {
+  const t = target as unknown as GlTarget;
+  if (!t.framebuffer || !t.colorHandle) {
+    throw new RenderDeviceError("v2 post stages require WebGL2 render targets.", "POST_GRAPH_V2_UNSUPPORTED");
+  }
+  return t;
+}
+
+interface PostV2State {
+  readonly programs: Map<string, WebGLProgram>;
+  readonly vao: WebGLVertexArrayObject;
+  readonly pool: PostResources;
+  readonly identityLut: WebGLTexture;
+  frameIndex: number;
+}
+
+const states = new WeakMap<WebGL2RenderingContext, PostV2State>();
+
+function v2State(host: WebGL2DeviceHost): PostV2State {
+  const gl = host.gl;
+  let state = states.get(gl);
+  if (!state) {
+    const vao = gl.createVertexArray();
+    const identityLut = gl.createTexture();
+    if (!vao || !identityLut) {
+      throw new RenderDeviceError("v2 post stage GL object allocation failed.", "POST_GRAPH_V2_UNSUPPORTED");
+    }
+    gl.bindTexture(gl.TEXTURE_3D, identityLut);
+    const size = 4;
+    const identity = new Uint8Array(size * size * size * 4);
+    for (let b = 0; b < size; b++) for (let g = 0; g < size; g++) for (let r = 0; r < size; r++) {
+      const i = ((b * size + g) * size + r) * 4;
+      identity[i] = Math.round((r / (size - 1)) * 255);
+      identity[i + 1] = Math.round((g / (size - 1)) * 255);
+      identity[i + 2] = Math.round((b / (size - 1)) * 255);
+      identity[i + 3] = 255;
+    }
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, size, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, identity);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_3D, null);
+    state = {
+      programs: new Map(),
+      vao,
+      pool: new PostResources(host.device, rendererQrFlags()),
+      identityLut,
+      frameIndex: 0
+    };
+    states.set(gl, state);
+  }
+  return state;
+}
+
+function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fragment: string): WebGLProgram {
+  const cached = state.programs.get(key);
+  if (cached) return cached;
+  const compile = (type: number, source: string): WebGLShader => {
+    const shader = gl.createShader(type)!;
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      const log = gl.getShaderInfoLog(shader);
+      gl.deleteShader(shader);
+      throw new RenderDeviceError(`v2 post shader compile failed: ${log}`, "POST_GRAPH_V2_UNSUPPORTED", { key });
+    }
+    return shader;
+  };
+  const vs = compile(gl.VERTEX_SHADER, VERTEX);
+  const fs = compile(gl.FRAGMENT_SHADER, fragment);
+  const prog = gl.createProgram()!;
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    const log = gl.getProgramInfoLog(prog);
+    gl.deleteProgram(prog);
+    throw new RenderDeviceError(`v2 post program link failed: ${log}`, "POST_GRAPH_V2_UNSUPPORTED", { key });
+  }
+  state.programs.set(key, prog);
+  return prog;
+}
+
+function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, target: GlTarget, textures: readonly WebGLTexture[], uniforms: (gl: WebGL2RenderingContext) => void): void {
+  const gl = host.gl;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+  gl.viewport(0, 0, target.width, target.height);
+  gl.useProgram(prog);
+  gl.bindVertexArray(state.vao);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  for (let i = 0; i < textures.length; i++) {
+    gl.activeTexture(gl.TEXTURE0 + i);
+    gl.bindTexture(gl.TEXTURE_2D, textures[i]!);
+    gl.bindSampler(i, null);
+  }
+  uniforms(gl);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  for (let i = 0; i < textures.length; i++) {
+    gl.activeTexture(gl.TEXTURE0 + i);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  gl.bindVertexArray(null);
+}
+
+/** §6.3 multi-bounce ρ and AO metadata shared by the apply draw. */
+const AO_RHO = 0.5;
+
+/**
+ * Runs S1 → S2 → S4 → CA on the HDR frame. Returns the (possibly pooled)
+ * HDR target the fused present should consume. When no HDR stage is enabled
+ * the source passes through untouched.
+ */
+export function runV2HdrStages(
+  host: WebGL2DeviceHost,
+  source: RenderTarget,
+  pipeline: PostPipelineOptions,
+  camera: FrameCamera | null | undefined
+): { readonly target: RenderTarget; readonly aoPending: boolean } {
+  const wantsAo = Boolean(pipeline.ao);
+  const wantsGodRays = Boolean(pipeline.godRays);
+  const wantsCa = Boolean(pipeline.chromaticAberration && (pipeline.chromaticAberration as { intensity?: number }).intensity);
+  if (!wantsAo && !wantsGodRays && !wantsCa) return { target: source, aoPending: false };
+
+  const src = asGlTarget(source);
+  if ((wantsAo || wantsGodRays) && !src.depthTextureHandle) {
+    throw new RenderDeviceError(
+      "v2 S1/S2/S4 need a sampleable depth texture on the HDR target.",
+      "WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED",
+      { targetId: source.id }
+    );
+  }
+  if ((wantsAo || wantsGodRays) && !camera) {
+    throw new RenderDeviceError(
+      "v2 S2 GTAO / S4 god rays need the frame camera (projection + viewProjection).",
+      "POST_GRAPH_V2_CAMERA_REQUIRED"
+    );
+  }
+
+  const gl = host.gl;
+  const state = v2State(host);
+  const w = source.width, h = source.height;
+  const hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
+  const near = camera?.near ?? pipeline.depthRange?.near ?? 0.1;
+  const far = camera?.far ?? pipeline.depthRange?.far ?? 1000;
+  const ortho = camera?.projection === "orthographic" || pipeline.depthRange?.projection === "orthographic";
+
+  // ── S1-A: linearized depth (RGBA32F .r = viewZ) ──────────────────────────
+  let linZFull: RenderTarget | null = null;
+  let minmaxHalf: RenderTarget | null = null;
+  if (wantsAo || wantsGodRays) {
+    linZFull = state.pool.acquire({ width: w, height: h, format: "rgba32f", samples: 1, depth: false });
+    const linProg = program(state, gl, "depth-linearize", DEPTH_LINEARIZE_GLSL);
+    draw(host, state, linProg, asGlTarget(linZFull), [src.depthTextureHandle!], (g) => {
+      g.uniform1i(g.getUniformLocation(linProg, "u_depth"), 0);
+      g.uniform1f(g.getUniformLocation(linProg, "u_near"), near);
+      g.uniform1f(g.getUniformLocation(linProg, "u_far"), far);
+      g.uniform1i(g.getUniformLocation(linProg, "u_ortho"), ortho ? 1 : 0);
+    });
+    minmaxHalf = state.pool.acquire({ width: hw, height: hh, format: "rgba32f", samples: 1, depth: false });
+    const mmProg = program(state, gl, "depth-minmax", DEPTH_MINMAX_HALF_GLSL);
+    draw(host, state, mmProg, asGlTarget(minmaxHalf), [asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(mmProg, "u_linearDepth"), 0);
+    });
+  }
+
+  let hdr = source;
+  // ── S2: GTAO → denoise ×2 → joint-bilateral apply onto HDR ───────────────
+  if (wantsAo && camera && linZFull && minmaxHalf) {
+    const ao = pipeline.ao as GtaoOptions;
+    const directions = ao.directions ?? 4;
+    const steps = ao.steps ?? 4;
+    const aoRaw = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
+    const gtaoSrc = `#define AURA_GTAO_DIRECTIONS ${directions}\n#define AURA_GTAO_STEPS ${steps}\n` + GTAO_GLSL;
+    const gtaoProg = program(state, gl, `gtao-${directions}x${steps}`, gtaoSrc);
+    const invProj = Float32Array.from(invertMat4(camera.projectionMatrix as unknown as Mat4));
+    draw(host, state, gtaoProg, asGlTarget(aoRaw), [asGlTarget(minmaxHalf).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(gtaoProg, "u_linearDepthHalf"), 0);
+      g.uniformMatrix4fv(g.getUniformLocation(gtaoProg, "u_projMatrix"), false, camera.projectionMatrix);
+      g.uniformMatrix4fv(g.getUniformLocation(gtaoProg, "u_invProjMatrix"), false, invProj);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_near"), near);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_far"), far);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_radius"), ao.radius ?? 0.35);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_intensity"), ao.intensity ?? 1);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_falloff"), ao.falloff ?? 1);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_distanceExponent"), 1);
+      g.uniform1f(g.getUniformLocation(gtaoProg, "u_thickness"), 1);
+      g.uniform1i(g.getUniformLocation(gtaoProg, "u_frameIndex"), state.frameIndex);
+    });
+    // Bilateral denoise: H then V (5-tap, exp depth weight).
+    const denoiseProg = program(state, gl, "gtao-denoise", GTAO_DENOISE_GLSL);
+    const aoHalf = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
+    const texel = [1 / hw, 1 / hh];
+    draw(host, state, denoiseProg, asGlTarget(aoHalf), [asGlTarget(aoRaw).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(denoiseProg, "u_ao"), 0);
+      g.uniform1i(g.getUniformLocation(denoiseProg, "u_depthHalf"), 1);
+      g.uniform2f(g.getUniformLocation(denoiseProg, "u_dir"), texel[0]!, 0);
+    });
+    draw(host, state, denoiseProg, asGlTarget(aoRaw), [asGlTarget(aoHalf).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(denoiseProg, "u_ao"), 0);
+      g.uniform1i(g.getUniformLocation(denoiseProg, "u_depthHalf"), 1);
+      g.uniform2f(g.getUniformLocation(denoiseProg, "u_dir"), 0, texel[1]!);
+    });
+    // Apply: joint-bilateral upsample + §6.3 multi-bounce onto a pooled HDR.
+    const applied = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const applyProg = program(state, gl, "gtao-apply", GTAO_APPLY_GLSL);
+    draw(host, state, applyProg, asGlTarget(applied), [
+      asGlTarget(hdr).colorHandle,
+      asGlTarget(aoRaw).colorHandle,
+      asGlTarget(linZFull).colorHandle,
+      asGlTarget(minmaxHalf).colorHandle
+    ], (g) => {
+      g.uniform1i(g.getUniformLocation(applyProg, "u_hdr"), 0);
+      g.uniform1i(g.getUniformLocation(applyProg, "u_ao"), 1);
+      g.uniform1i(g.getUniformLocation(applyProg, "u_depthFull"), 2);
+      g.uniform1i(g.getUniformLocation(applyProg, "u_depthHalf"), 3);
+      g.uniform1f(g.getUniformLocation(applyProg, "u_far"), far);
+      g.uniform1f(g.getUniformLocation(applyProg, "u_aoFallbackStrength"), ao.fallbackStrength ?? 0.6);
+      g.uniform1i(g.getUniformLocation(applyProg, "u_aoMultiBounce"), ao.multiBounce === false ? 0 : 1);
+    });
+    hdr = applied;
+    state.pool.release(aoRaw);
+    state.pool.release(aoHalf);
+    void AO_RHO;
+  }
+
+  // ── S4: god rays, half-res radial march → additive onto HDR ─────────────
+  if (wantsGodRays && camera && minmaxHalf) {
+    const god = pipeline.godRays as GodRayOptions;
+    const samples = god.samples ?? 32;
+    const godTarget = state.pool.acquire({ width: hw, height: hh, format: "rgba16f", samples: 1, depth: false });
+    // Light point: authored lightWorld, else a point far along the direction
+    // toward the strongest directional light (bridge supplies lightDirection).
+    let lightWorld: readonly [number, number, number] | undefined = god.lightWorld;
+    if (!lightWorld && god.lightDirection) {
+      const d = god.lightDirection;
+      const p = camera.position;
+      lightWorld = [p[0] + d[0] * far * 2, p[1] + d[1] * far * 2, p[2] + d[2] * far * 2];
+    }
+    if (!lightWorld) lightWorld = [camera.position[0], camera.position[1] + far, camera.position[2]];
+    const vp = camera.viewProjectionMatrix;
+    const clip = [
+      vp[0]! * lightWorld[0] + vp[4]! * lightWorld[1] + vp[8]! * lightWorld[2] + vp[12]!,
+      vp[1]! * lightWorld[0] + vp[5]! * lightWorld[1] + vp[9]! * lightWorld[2] + vp[13]!,
+      vp[3]! * lightWorld[0] + vp[7]! * lightWorld[1] + vp[11]! * lightWorld[2] + vp[15]!
+    ];
+    const lightUv: [number, number] = clip[2] !== 0
+      ? [(clip[0]! / clip[2]) * 0.5 + 0.5, (clip[1]! / clip[2]) * 0.5 + 0.5]
+      : [0.5, 0.5];
+    const godSrc = `#define AURA_GODRAY_SAMPLES ${samples}\n` + GODRAYS_GLSL;
+    const godProg = program(state, gl, `godrays-${samples}`, godSrc);
+    draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
+      g.uniform1i(g.getUniformLocation(godProg, "u_depthHalf"), 1);
+      g.uniform1f(g.getUniformLocation(godProg, "u_far"), far);
+      g.uniform2f(g.getUniformLocation(godProg, "u_lightUv"), lightUv[0], lightUv[1]);
+      g.uniform1f(g.getUniformLocation(godProg, "u_lightClipW"), clip[2]!);
+      const c = god.color ?? [1, 0.96, 0.9];
+      g.uniform3f(g.getUniformLocation(godProg, "u_color"), c[0]!, c[1]!, c[2]!);
+      g.uniform1f(g.getUniformLocation(godProg, "u_intensity"), god.intensity ?? 0.7);
+      g.uniform1f(g.getUniformLocation(godProg, "u_decay"), god.decay ?? 0.94);
+      g.uniform1f(g.getUniformLocation(godProg, "u_weight"), god.weight ?? god.intensity ?? 0.7);
+      g.uniform1f(g.getUniformLocation(godProg, "u_diskOuter"), 0.08);
+      g.uniform1f(g.getUniformLocation(godProg, "u_diskInner"), 0.02);
+    });
+    // Additive blend onto the working HDR target.
+    const blended = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const copyProg = program(state, gl, "v2-add", V2_ADD_GLSL);
+    const blendTarget = asGlTarget(blended);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, blendTarget.framebuffer);
+    gl.viewport(0, 0, w, h);
+    gl.useProgram(copyProg);
+    gl.bindVertexArray(state.vao);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, asGlTarget(hdr).colorHandle);
+    gl.uniform1i(gl.getUniformLocation(copyProg, "u_source"), 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, asGlTarget(godTarget).colorHandle);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.disable(gl.BLEND);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindVertexArray(null);
+    if (hdr !== source) state.pool.release(hdr);
+    state.pool.release(godTarget);
+    hdr = blended;
+  }
+
+  // ── CA: §8.12 radial 3-tap on the working HDR ────────────────────────────
+  if (wantsCa) {
+    const ca = pipeline.chromaticAberration as { intensity?: number };
+    const caTarget = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const caProg = program(state, gl, "ca-pass", CA_PASS_GLSL);
+    draw(host, state, caProg, asGlTarget(caTarget), [asGlTarget(hdr).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(caProg, "u_hdr"), 0);
+      g.uniform1f(g.getUniformLocation(caProg, "u_caIntensity"), ca.intensity ?? 0.0015);
+    });
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = caTarget;
+  }
+
+  if (linZFull) state.pool.release(linZFull);
+  if (minmaxHalf) state.pool.release(minmaxHalf);
+  state.frameIndex += 1;
+  // AO_INDIRECT_FRACTION_PENDING: the C-02 `prd03.indirectFraction` feature
+  // is registered but generateProgram (lane 01) is still pending, so the
+  // apply ran the §6.3 `u_aoFallbackStrength` path.
+  return { target: hdr, aoPending: wantsAo };
+}
+
+/** True when S10b/S11/S12 need a real LDR tail after the fused present. */
+export function v2NeedsLdrTail(pipeline: PostPipelineOptions): boolean {
+  return Boolean(pipeline.vignette || pipeline.filmGrain || pipeline.lut);
+}
+
+/**
+ * Runs S10b/S11/S12 on the fused LDR output and writes `outTarget` (or the
+ * default framebuffer when undefined). `ldr` must be an rgba8 target the
+ * fused present just wrote.
+ */
+export function runV2LdrTail(
+  host: WebGL2DeviceHost,
+  ldr: RenderTarget,
+  pipeline: PostPipelineOptions,
+  outTarget: RenderTarget | undefined
+): void {
+  const gl = host.gl;
+  const state = v2State(host);
+  const ldrGl = asGlTarget(ldr);
+  const w = ldr.width, h = ldr.height;
+  const vignette = pipeline.vignette as { intensity?: number; smoothness?: number; roundness?: number; color?: readonly [number, number, number] } | undefined;
+  const grain = pipeline.filmGrain as { intensity?: number; size?: number; luminanceResponse?: number } | undefined;
+  const aaFxaa = pipeline.antiAliasing === "fxaa";
+  const rcas = (pipeline.renderScale ?? 1) < 1 ? 0.2 : 0;
+
+  // §6.1 fuse: FXAA + S10b + S12 in a single draw.
+  if (aaFxaa) {
+    const prog = program(state, gl, "finalize-fxaa-fused", FINALIZE_FXAA_FUSED_GLSL);
+    bindOut(gl, outTarget, w, h);
+    gl.useProgram(prog);
+    gl.bindVertexArray(state.vao);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, ldrGl.colorHandle);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
+    gl.uniform1i(gl.getUniformLocation(prog, "u_source"), 0);
+    gl.uniform1i(gl.getUniformLocation(prog, "u_lut3d"), 1);
+    gl.uniform1i(gl.getUniformLocation(prog, "u_hasLut"), 0);
+    gl.uniform2f(gl.getUniformLocation(prog, "u_texelSize"), 1 / w, 1 / h);
+    gl.uniform2f(gl.getUniformLocation(prog, "u_outputTexel"), 1 / w, 1 / h);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_frame"), state.frameIndex);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_grainIntensity"), grain?.intensity ?? 0);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_grainSize"), grain?.size ?? 1);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_grainLuminanceResponse"), grain?.luminanceResponse ?? 1);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
+    gl.uniform1f(gl.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
+    const vc = vignette?.color ?? [0, 0, 0];
+    gl.uniform3f(gl.getUniformLocation(prog, "u_vignetteColor"), vc[0]!, vc[1]!, vc[2]!);
+    gl.uniform2f(gl.getUniformLocation(prog, "u_resolution"), w, h);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
+    return;
+  }
+
+  let current = ldr;
+  // S10b — display grade (vignette; the .cube LUT bakes in with S10b's real
+  // bake pass — until then u_hasLut stays 0 and the identity 3D tex binds).
+  if (vignette || pipeline.lut) {
+    const graded = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
+    const prog = program(state, gl, "display-grade", DISPLAY_GRADE_GLSL);
+    draw(host, state, prog, asGlTarget(graded), [ldrGl.colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(prog, "u_source"), 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
+      g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
+      g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), 0);
+      g.uniform1f(g.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
+      g.uniform1f(g.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
+      g.uniform1f(g.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
+      const vc = vignette?.color ?? [0, 0, 0];
+      g.uniform3f(g.getUniformLocation(prog, "u_vignetteColor"), vc[0]!, vc[1]!, vc[2]!);
+      g.uniform2f(g.getUniformLocation(prog, "u_resolution"), w, h);
+    });
+    current = graded;
+  }
+
+  // S12 — finalize: grain + RCAS + the single triangular dither.
+  const prog = program(state, gl, "finalize", FINALIZE_GLSL);
+  bindOut(gl, outTarget, w, h);
+  gl.useProgram(prog);
+  gl.bindVertexArray(state.vao);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, asGlTarget(current).colorHandle);
+  gl.uniform1i(gl.getUniformLocation(prog, "u_source"), 0);
+  gl.uniform2f(gl.getUniformLocation(prog, "u_texelSize"), 1 / w, 1 / h);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_frame"), state.frameIndex);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_grainIntensity"), grain?.intensity ?? 0);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_grainSize"), grain?.size ?? 1);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_grainLuminanceResponse"), grain?.luminanceResponse ?? 1);
+  gl.uniform1f(gl.getUniformLocation(prog, "u_rcasSharpness"), rcas);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.bindVertexArray(null);
+  if (current !== ldr) state.pool.release(current);
+}
+
+function bindOut(gl: WebGL2RenderingContext, outTarget: RenderTarget | undefined, w: number, h: number): void {
+  if (outTarget) {
+    const t = asGlTarget(outTarget);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, t.framebuffer);
+    gl.viewport(0, 0, t.width, t.height);
+  } else {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, w, h);
+  }
+}
+
+const V2_ADD_GLSL = /* glsl */ `#version 300 es
+precision highp float;
+uniform sampler2D u_source;
+in vec2 v_uv;
+out vec4 outColor;
+void main() { outColor = texture(u_source, v_uv); }
+`;
+
+/**
+ * Releases a pooled target a stage call returned. The caller owns the
+ * returned HDR/LDR target: `runV2HdrStages`'s output feeds the fused
+ * present, then comes back here (or to `pool.releaseAll` at frame end).
+ */
+export function releaseV2Target(host: WebGL2DeviceHost, target: RenderTarget): void {
+  v2State(host).pool.release(target);
+}
+
+/** Acquire a pooled target from the v2 stage pool (LDR tail scratch). */
+export function acquireV2Target(host: WebGL2DeviceHost, key: { readonly width: number; readonly height: number; readonly format: string }): RenderTarget {
+  return v2State(host).pool.acquire({ ...key, samples: 1, depth: false });
+}

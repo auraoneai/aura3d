@@ -113,6 +113,8 @@ export interface GodRayOptions {
   readonly color: readonly [number, number, number];
   readonly intensity: number;
   readonly lightWorld?: readonly [number, number, number];
+  /** World-space direction TOWARD the strongest directional light (bridge). */
+  readonly lightDirection?: readonly [number, number, number];
 }
 
 /** §6.7 composite (linear) grade options. */
@@ -189,12 +191,14 @@ export const POST_STAGE_DESCRIPTORS: readonly PostStageDescriptor[] = [
   {
     id: "S1-depth-prep", space: "linear-hdr", inputs: ["depth"],
     output: { format: "r32f", scale: 1 },
-    enabled: depthPrepEnabled, phase: 3
+    enabled: depthPrepEnabled,
+    implemented: () => true, phase: 3
   },
   {
     id: "S2-gtao", space: "linear-hdr", inputs: ["depth"],
     output: { format: "r8", scale: 0.5 },
-    enabled: (o) => Boolean(o.ao), phase: 3
+    enabled: (o) => Boolean(o.ao),
+    implemented: () => true, phase: 3
   },
   {
     id: "S3-ssr", space: "linear-hdr", inputs: ["color", "depth"],
@@ -204,7 +208,8 @@ export const POST_STAGE_DESCRIPTORS: readonly PostStageDescriptor[] = [
   {
     id: "S4-god-rays", space: "linear-hdr", inputs: ["color", "depth"],
     output: { format: "rgba16f", scale: 0.5 },
-    enabled: (o) => Boolean(o.godRays), phase: 3
+    enabled: (o) => Boolean(o.godRays),
+    implemented: () => true, phase: 3
   },
   {
     id: "S5-taa", space: "linear-hdr", inputs: ["color", "velocity", "depth"],

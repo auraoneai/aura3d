@@ -1921,32 +1921,32 @@ Phase 2
   so the shared `aura3d/common.ts:254-256` adopts it.
 
 Phase 3
-- [ ] `post/shaders/depthDownsample.glsl.ts`, `gtao.glsl.ts`, `gtaoDenoise.glsl.ts` per 8.3–8.4,
+- [x] `post/shaders/depthDownsample.glsl.ts`, `gtao.glsl.ts`, `gtaoDenoise.glsl.ts` per 8.3–8.4,
   with the 6.3 fallback when `prd03.indirectFraction` is inactive. On v2, legacy SSAO
   (`webgl2/LegacyPost.ts`, from `WebGL2Device.ts:3091-3129`) is not scheduled. Test: a browser test
   on `prd03-ao-grounding` with a 1 m cube on a plane, camera at 8 m, near 0.05/far 100: the AO
   texture mean in a 10 cm band at the contact edge is ≤ 0.75, and ≥ 0.97 on open floor 1 m away.
   The old shader gives ~1.0 everywhere at this distance (19 §C14). `post.skipped` contains
   `AO_INDIRECT_FRACTION_PENDING` while C-02 is a stub.
-- [ ] `post/chunks/indirectFraction.glsl.ts`: register feature `prd03.indirectFraction`. Test:
+- [x] `post/chunks/indirectFraction.glsl.ts`: register feature `prd03.indirectFraction`. Test:
   `ChunkHarness` compiles it with a mock `a3dIndirectRadiance` input, and a unit test checks `a ≈ 0`
   for emissive-only and `a ≈ 1` for ambient-only inputs in the harness. The forward-pixel version of
   this test is integrated (needs C-02 real, Q-02-1, Q-01-1).
-- [ ] `nodes/effects.post.ts` `ambientOcclusion` (`index.ts:3518`) and `contactOcclusion` (`:3528`):
+- [x] `nodes/effects.post.ts` `ambientOcclusion` (`index.ts:3518`) and `contactOcclusion` (`:3528`):
   no factory change. The bridge interprets `radius` in metres with the flag on, and
   `contactOcclusion` as `ambientOcclusion({radius: 0.2, ...authored})`. Two AO nodes produce
   `POST_DUPLICATE_STAGE`. Test: bridge unit test.
-- [ ] `post/shaders/godrays.glsl.ts` per 8.5. `compiler/postprocess.ts` maps `effects.volumetricFog`
+- [x] `post/shaders/godrays.glsl.ts` per 8.5. `compiler/postprocess.ts` maps `effects.volumetricFog`
   nodes (factory `index.ts:3499`, lane 07 file) to S4, with `color` honoured (bridge code from
   `index.ts:12810-12822`) and `lightUv` projected from the strongest directional light. With the
   flag on it no longer emits `volumetric-light`. Test: a browser spec on `prd03-night-fog-banding` 25b
   (sun behind pillars) asserts mean added luma in the shaft mask ≥ 3%, ≤ 0.5% in the occluded
   pillar mask, and a `readPixels` count of 0.
-- [ ] `nodes/effects.post.ts`: new factories `vignette`, `filmGrain`, `chromaticAberration` (new
+- [x] `nodes/effects.post.ts`: new factories `vignette`, `filmGrain`, `chromaticAberration` (new
   keys, so no collision with lane 07's `effects.ts`; the C-36 duplicate-key test passes). Bridge
   mapping. GPU work in S10/S10b/S12. Test: bridge unit test plus a browser spec where vignette 0.5
   gives corner luma ≤ 0.6 × centre on a flat field.
-- [ ] `renderer/PostprocessExecution.ts` (pixel-pass block from `Renderer.ts:1245-1280` and its async
+- [x] `renderer/PostprocessExecution.ts` (pixel-pass block from `Renderer.ts:1245-1280` and its async
   twin): with the flag on, throw `POSTPROCESS_PASS_NOT_GPU` unless
   `execution === "cpu-deterministic"`. In production builds (`import.meta.env.PROD` /
   `process.env.NODE_ENV === "production"`) skip the pass and record it instead. Test: a unit test
@@ -1954,13 +1954,13 @@ Phase 3
   `WebGL2RenderingContext.prototype.readPixels`, reads C-28 `counters().readbacks`, and asserts 0
   across 300 frames for each of the 18 games loaded with `?a3d-qr=post` (local-build mode of the
   capture tool).
-- [ ] Move the CPU kernels: `PostProcessPass.ts` kernels, `postprocess/EffectComposer.ts`,
+- [x] Move the CPU kernels: `PostProcessPass.ts` kernels, `postprocess/EffectComposer.ts`,
   `postprocess/SSAOPass.ts` and `cinematic/{BloomPass,VignettePass,FilmGrainPass,DepthHazePass}.ts`
   go to `packages/rendering/src/reference/`, with the old paths kept as `@deprecated` re-export
   shims (lane 03 files). The `./reference` export is reserved in PR 0a; dropping the root barrel
   re-exports is Q-15-4. Test: an esbuild metafile assertion that the post v2 chunk does not import
   `reference/`.
-- [ ] `RendererPostprocessPlan.ts:204-206`: with the flag on, drop the `contact-shadow` pass and emit a
+- [x] `RendererPostprocessPlan.ts:204-206`: with the flag on, drop the `contact-shadow` pass and emit a
   deprecation diagnostic. Its `Renderer.ts` dispatch lives in the carved `PostprocessExecution.ts`.
   Test: plan unit test with the flag on and off.
 

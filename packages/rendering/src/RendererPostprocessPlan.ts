@@ -1,4 +1,10 @@
 import { invertSsrProjection } from "./ProjectionMath";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+
+/** §6.9 flag probe — `A3D_QR_POST` bound through `setRendererQrFlags`. */
+function postFlagOn(): boolean {
+  return rendererQrFlags()?.on("A3D_QR_POST") === true;
+}
 import type { TemporalFrameOptions, TemporalGpuBindings } from "./TemporalHistory";
 import type {
   BloomOptions,
@@ -209,7 +215,9 @@ export function createRendererPostprocessPasses(postprocess: RendererPostprocess
   if (postprocess.motionBlur) {
     passes.push({ name: "motion-blur", options: postprocess.motionBlur });
   }
-  if (postprocess.contactShadow) {
+  if (postprocess.contactShadow && !postFlagOn()) {
+    // §6.9: the `contact-shadow` post pass is deleted flag-on — screen-space
+    // contact shadows are lane 02's forward feature (C-11, shadow.contact).
     passes.push({ name: "contact-shadow", options: postprocess.contactShadow });
   }
   if (postprocess.ssao) {
@@ -459,6 +467,9 @@ function postprocessClarityWarnings(
   const filmGrain = typeof postprocess.filmGrain === "object" && postprocess.filmGrain !== null ? postprocess.filmGrain : undefined;
   if (filmGrain && (filmGrain.intensity ?? 0.08) >= 0.06) {
     warnings.push(`film-grain-noise-risk intensity=${round3(filmGrain.intensity ?? 0.08)}`);
+  }
+  if (postprocess.contactShadow && postFlagOn()) {
+    warnings.push("POST_PASS_DEPRECATED:contact-shadow");
   }
   if (executionMode === "renderer-owned-pass-chain-readback" && passes.length > 2) {
     warnings.push("multi-pass-readback-cost");

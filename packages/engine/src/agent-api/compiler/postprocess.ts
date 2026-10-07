@@ -207,7 +207,9 @@ export function createProductionRuntimePostprocess(
         maxRadius: Math.max(0, Math.min(8, Math.round(authoredDof.maxBlur ?? 4)))
       }
     } : {}),
-    ...(volumetricPass ? { volumetricLight: volumetricPass } : {}),
+    // §6.9 (Phase 3): on the strict v2 route the volumetric-fog node maps to
+    // S4 god rays and the CPU `volumetric-light` pass is not emitted.
+    ...(volumetricPass && !(postFlagOn && !authoredPostContext?.compatPost3) ? { volumetricLight: volumetricPass } : {}),
     // PRD-03 §6.11 / CCR-03-1 (flag-on): forward the real camera clipping so
     // depth-gated passes linearize against the authored range instead of the
     // 0.1/1000 placeholder.
@@ -237,7 +239,7 @@ export function createProductionRuntimePostprocess(
       throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", unsupported.message);
     }
     const tierSettings = QUALITY_TIERS[resolvedTier];
-    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings);
+    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights);
     fieldDiagnostics.push(...pipelineResult.diagnostics);
     // The fields are readonly, so the v2 additions come in as a rebuilt
     // object — flag-off keeps the legacy bag untouched (byte-equal).

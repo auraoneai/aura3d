@@ -9,6 +9,8 @@
 
 import { postPipelineSlot, PostGraph } from "../post/PostGraph.js";
 import { provideVelocityHistory } from "../forward/Velocity.js";
+import { registerShaderChunk, registerShaderFeature } from "../contracts/program.js";
+import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
 
 // C-13: v2 post graph (thin real — plans stages, execute() throws
 // POST_GRAPH_V2_PENDING until Phase 2 wires the GPU chain).
@@ -18,6 +20,11 @@ postPipelineSlot.provide(new PostGraph());
 // (`bindVelocityUniforms` seam in ForwardPass; armed no-op until a velocity
 // frame is prepared).
 provideVelocityHistory();
+
+// Phase 3 (§6.3): the `prd03.indirectFraction` C-02 feature — writes f_ind
+// into color0.a on forward HDR draws when the lane-01 generator is real.
+// Registered unconditionally; selection is flag-gated (`A3D_QR_POST_AO`).
+registerIndirectFractionShader(registerShaderChunk, registerShaderFeature);
 
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
 export { velocityHistorySlot, VelocityHistory, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
