@@ -23,13 +23,19 @@
 // or source file still references it (T7.5). A tool dir is deletable when
 // nothing outside itself references it.
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, type Dirent } from "node:fs";
+import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = process.cwd();
 const PACKAGE_JSON = join(root, "package.json");
-const REPORT_PATH = join(root, "tools/script-prune/report.json");
+const REPORT_PATH = join(root, "docs/architecture/script-prune-report.json");
+// Any previously generated report copy would otherwise look like a live
+// reference to every tools/<dir> it lists.
+const REPORT_PATHS = new Set([
+  REPORT_PATH,
+  join(root, "tools/script-prune/report.json"),
+]);
 
 // §6.11 canonical names (fixed so CI and skills can rely on them).
 const CANONICAL_EXACT = new Set([
@@ -75,9 +81,9 @@ interface ToolDirRow {
 /* ----------------------------- corpus loading ---------------------------- */
 
 function* walk(dir: string): Generator<string> {
-  let entries: ReturnType<typeof readdirSync>;
+  let entries: Dirent[];
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    entries = readdirSync(dir, { withFileTypes: true, encoding: "utf8" });
   } catch {
     return;
   }
@@ -93,6 +99,7 @@ function* walk(dir: string): Generator<string> {
 }
 
 const TEXT_RE = /\.(ya?ml|json|md|ts|mts|cts|js|mjs|cjs|tsx)$/i;
+const HTML_RE = /\.(html?|css)$/i;
 
 function corpusFiles(): string[] {
   const files: string[] = [];
@@ -104,13 +111,36 @@ function corpusFiles(): string[] {
   for (const dir of ["skills", "docs", "tools"]) {
     for (const entry of walk(join(root, dir))) {
       if (entry.includes(`${join("docs", "project")}`)) continue;
-      if (entry === REPORT_PATH) continue;
+      if (REPORT_PATHS.has(entry)) continue;
       if (TEXT_RE.test(entry)) files.push(entry);
     }
   }
   push(join(root, "README.md"));
   push(join(root, "AGENTS.md"));
   push(join(root, "CLAUDE.md"));
+  return files;
+}
+
+/**
+ * T7.5 dir analysis needs the *source-file* corpus the spec names — a tool
+ * dir is deletable only when no kept script, workflow, or source file
+ * references it. tests/, src/, apps/, root configs and marketing all count.
+ * (tools/script-prune tests missed this the first pass; the sweep had to be
+ * re-verified by full-repo rg and several dirs restored.)
+ */
+function dirCorpusFiles(): string[] {
+  const files: string[] = [];
+  // walk() prunes dot-directories, so .github/ never surfaces — scan it explicitly.
+  const roots = [root, join(root, ".github")];
+  for (const entry of roots.flatMap((r) => [...walk(r)])) {
+    const rel = relative(root, entry);
+    if (rel.startsWith(`docs${sep}project`)) continue;
+    const seg0 = rel.split(sep)[0]!;
+    if (seg0 === "node_modules" || seg0 === "dist" || seg0 === ".git") continue;
+    if (REPORT_PATHS.has(entry)) continue;
+    if (rel.startsWith(`tools${sep}script-prune`)) continue;
+    if (TEXT_RE.test(entry) || HTML_RE.test(entry)) files.push(entry);
+  }
   return files;
 }
 
@@ -240,7 +270,8 @@ function main(): void {
   const pkg = JSON.parse(readFileSync(PACKAGE_JSON, "utf8")) as { scripts: Record<string, string> };
   const corpus = new Map(corpusFiles().map((f) => [f, readFileSync(f, "utf8")] as const));
   const rows = analyze(pkg.scripts, corpus);
-  const toolDirs = analyzeToolDirs(corpus, rows);
+  const dirCorpus = new Map(dirCorpusFiles().map((f) => [f, readFileSync(f, "utf8")] as const));
+  const toolDirs = analyzeToolDirs(dirCorpus, rows);
 
   const report = {
     generatedAt: new Date().toISOString(),

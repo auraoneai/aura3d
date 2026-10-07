@@ -55,3 +55,91 @@ per PRD line 1448, lane 12 decides whether the frozen r185 `head-to-head` inputs
 
 The package they measured no longer exists; a "compat readiness" gate for deleted
 code is exactly the dishonest surface PRD-15 removes.
+
+---
+
+## Addendum (Phase 7 T7.5 sweep, `qr/prd15-process-pruning`)
+
+The full unreferenced sweep found **79 additional lane-12-owned dirs** with zero
+in-repo references beyond the three-compat set above. Same mechanism: owner
+deletes or declares the live reference.
+
+- `tools/three-compat-claim-registry`
+- `tools/head-to-head-skinned-morph-animation`
+- `tools/external-parity-app-suite-readiness`
+- `tools/external-parity-external-vite-build`
+- `tools/superiority-developer-workflow`
+- `tools/three-compat-app-suite-readiness`
+- `tools/external-parity-api-readiness`
+- `tools/threejs-parity-visual-review`
+- `tools/three-compat-package-surface-readiness`
+- `tools/threejs-parity-claim-registry`
+- `tools/three-compat-completion-audit`
+- `tools/threejs-parity-package-smoke`
+- `tools/three-compat-threejs-runtime-parity`
+- `tools/threejs-parity-api-surface-audit`
+- `tools/superiority-physics-fidelity`
+- `tools/superiority-performance`
+- `tools/external-parity-static-preview-smoke`
+- `tools/head-to-head-digital-twin-data`
+- `tools/head-to-head-primitive`
+- `tools/head-to-head-smart-city`
+- `tools/three-compat-broad-replacement-readiness`
+- `tools/three-compat-truth`
+- `tools/three-compat-package-smoke`
+- `tools/external-parity-fixture-readiness`
+- `tools/threejs-parity-external-consumer`
+- `tools/head-to-head-resource-lifecycle`
+- `tools/three-compat-release-readiness`
+- `tools/three-compat-environment-readiness`
+- `tools/external-parity-scene-readiness`
+- `tools/head-to-head-navigation-crowd`
+- `tools/superiority-resource-lifecycle`
+- `tools/threejs-parity-same-scene-render`
+- `tools/three-compat-migration-readiness`
+- `tools/head-to-head-physical-character`
+- `tools/superiority-memory-lifecycle`
+- `tools/threejs-parity-route-health`
+- `tools/threejs-parity-completion-audit`
+- `tools/three-compat-progress`
+- `tools/head-to-head-gltf-product-viewer`
+- `tools/superiority-common`
+- `tools/three-compat-asset-readiness`
+- `tools/external-parity-template-readiness`
+- `tools/three-compat-threejs-visual-parity`
+- `tools/external-parity-progress`
+- `tools/head-to-head-physical-vehicle`
+- `tools/head-to-head-cinematic-architecture`
+- `tools/three-compat-template-readiness`
+- `tools/superiority-visual-quality`
+- `tools/external-parity-truth`
+- `tools/three-compat-material-readiness`
+- `tools/external-parity-asset-studio-readiness`
+- `tools/external-parity-postprocess-readiness`
+- `tools/superiority-feature-parity`
+- `tools/head-to-head-scaffold-to-deploy`
+- `tools/three-compat-visual-quality`
+- `tools/head-to-head-instancing-lod`
+- `tools/threejs-parity-runtime-import-audit`
+- `tools/head-to-head-xr-interaction`
+- `tools/external-parity-interactive-readiness`
+- `tools/superiority-audit`
+- `tools/head-to-head-postprocessed-scene`
+- `tools/superiority-animation-fidelity`
+- `tools/three-compat-external-vite-build`
+- `tools/external-parity-shadow-readiness`
+- `tools/threejs-parity-performance`
+- `tools/external-parity-character-readiness`
+- `tools/three-compat-animation-readiness`
+- `tools/head-to-head-webgpu-tsl`
+- `tools/head-to-head-custom-material-shader`
+- `tools/external-parity-material-studio-readiness`
+- `tools/external-parity-material-readiness`
+- `tools/head-to-head-product-configurator`
+- `tools/external-parity-product-readiness`
+- `tools/superiority-claim-defense`
+- `tools/external-parity-gltf-corpus-readiness`
+- `tools/three-compat-legacy-prune-readiness`
+- `tools/external-parity-roadmap-visual-quality`
+- `tools/three-compat-docs-readiness`
+- `tools/head-to-head-material-laboratory`

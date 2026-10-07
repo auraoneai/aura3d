@@ -1,10 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { AURA3D_2_SPECIFIER_MIGRATIONS } from "../../../tools/migrate-2.0/index";
 
 const BASE_TAG = "v1.5.2";
-const MIGRATION = readFileSync("MIGRATION-2.0.md", "utf8");
+const MIGRATION = readFileSync("docs/migration/2.0.md", "utf8");
 const MIGRATION_FLAT = MIGRATION.replace(/\s+/g, " ");
 const REMOVED_PRIVATE_PACKAGE = ["test", "utils"].join("-");
 
@@ -19,7 +19,11 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .filter((line) => line.startsWith("packages/"))
       .map((line) => line.split("/")[1]!)
       .filter((name) => !name.endsWith(".md"));
-    const now = readdirSync("packages", { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+    // Count only real packages (a directory with a manifest) — stale
+    // packages/*/node_modules husks from earlier installs must not register.
+    const now = readdirSync("packages", { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && existsSync(`packages/${entry.name}/package.json`))
+      .map((entry) => entry.name);
     const removed = atBase.filter((name) => !now.includes(name));
     // PRD-15 T6.2/T6.5/T6.6 + earlier phases: editor, environments, materials and
     // three-compat are intentionally deleted (surfaces moved into engine devtools /
@@ -32,7 +36,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
   it("sets every released package to the coordinated major version", () => {
     const coordinatedVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
     const manifests = ["package.json", ...readdirSync("packages", { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
+      .filter((entry) => entry.isDirectory() && existsSync(`packages/${entry.name}/package.json`))
       .map((entry) => `packages/${entry.name}/package.json`)];
     const released = manifests
       .map((path) => ({ path, manifest: JSON.parse(readFileSync(path, "utf8")) as { private?: boolean; name?: string; version?: string } }))
