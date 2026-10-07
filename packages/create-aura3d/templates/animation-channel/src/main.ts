@@ -7,7 +7,7 @@ import {
   game,
   installShotPlayback,
   labels,
-  lights,
+  looks,
   material,
   model,
   primitives,
@@ -132,9 +132,12 @@ installSampleEpisodeVisual({
   usesTypedAssets: missingAnimationCharacterAssets.length === 0
 });
 
+const LOOK_ID = "character-showcase" as const;
+
 const app = createAuraApp("#app", {
   scene: scene()
-    .background("#081b2a")
+    .background(looks.describe(LOOK_ID).v0.background)
+    .add(looks.preset(LOOK_ID))
     .addMany(createAuraRenderedAnimationScene())
     .add(createCharacterBody("miko", "Miko", "miko", [-0.72, 0.08, -0.34], [0.32, 0.42, 0.32], 0.9, "#7de2ff"))
     .add(createMouthCard("miko:mouth", "Miko", [-3.2, -3.2, -3.2], "#f8fff2"))
@@ -159,7 +162,6 @@ const app = createAuraApp("#app", {
         .scale([0.12, 0.24, 0.04])
     )
     .add(labels.hud(firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D animation channel"))
-    .add(lights.studio({ intensity: 1.2 }))
     .add(effects.bloom({ intensity: 0.18, color: "#7de2ff" }))
     .camera(camera.perspective({ position: [0, 1.18, 4.4], target: [0, 0.82, -0.45], fov: 38 })),
   diagnostics: true
@@ -272,9 +274,6 @@ function createAuraRenderedAnimationScene() {
     primitives.box({ name: "Aura3D broom bristles", material: bloomGold }).position(-0.55, 0.14, -0.18).rotate(0, 0, -0.25).scale([0.18, 0.1, 0.04]),
     ...createGlowStones(),
     ...createMoonLilies(),
-    lights.ambient({ intensity: 0.2, color: "#b9f2ff" }),
-    lights.point({ name: "Aura3D moon garden cyan key", position: [-1.8, 2.4, 1.2], color: "#7de2ff", intensity: 2.8 }),
-    lights.point({ name: "Aura3D moon garden warm robot rim", position: [1.8, 1.7, 0.8], color: "#ffe18e", intensity: 2.0 })
   ];
 }
 

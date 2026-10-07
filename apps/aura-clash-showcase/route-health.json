@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "aura-clash-showcase",
+  "publicShowcase": false,
+  "qualityGate": {
+    "status": "in-rebuild"
+  },
+  "routeGate": {
+    "claim": "arena showcase under PRD-14 rebuild; route evidence pending v2 acceptance"
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-skyline-runner",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-skyline-runner",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 5.0,
+        "modeling_assets": 4.0,
+        "texture_quality": 4.0,
+        "material_quality": 4.0,
+        "pbr_credibility": 3.0,
+        "lighting": 4.0,
+        "shadows": 2.0,
+        "ambient_lighting": 4.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 4.0,
+        "color_management": 5.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 4.0,
+        "vfx": 4.0,
+        "particles": 1.0,
+        "animation_quality": 3.0,
+        "character_presentation": 5.0,
+        "camera": 4.0,
+        "composition": 4.0,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 3.0,
+        "gameplay_readability": 4.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 2.0,
+        "overall_visual_quality": 4.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "The backdrop is gorgeous (8+ in isolation), but it's a static plate. The authored 3D world is six platforms, one flat slab, and a white plane."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Ice platforms are decent stylized low-poly. The tree slab is primitive cones on a box, the coins are bare ellipsoids, the grey bars look like debug geometry, and the octahedron is a stock primitive."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Platforms have some painted color variation. The slab, coins, bars, and ground are flat colors with no texture."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Emissive rim on platforms works. Everything else reads as unlit flat or basic Lambert with no roughness or spec variation."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No visible specular response, fresnel, or roughness differentiation anywhere in the 3D layer. Ice and snow should sell this and don't."
+        },
+        {
+          "category": "lighting",
+          "seen": "Lighting is baked into the backdrop. The 3D layer gets flat ambient-plus-emissive with no key-light direction matching the painting's moonlight or lantern warmth."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible cast shadows from the character, platforms, or slab, and no contact shadows. Objects float with no grounding."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "The blue ambient matches the palette, but it's uniform with no AO or occlusion in crevices or under platforms."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No visible reflections or environment response on ice, snow, or crystal."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "The octahedron and dash slash clip to pure white. The ground is blown out. Midtones are fine because the backdrop is pre-graded."
+        },
+        {
+          "category": "color_management",
+          "seen": "The palette is cohesive (blue plus warm accents). The pink octahedron and olive coins clash, and the 3D layer is slightly desaturated against the plate."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Desktop edges are acceptable. Mobile is visibly soft or blurry, consistent with a low render scale."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom is the only visible pass, and it's overdriven: haze around pickups and on mobile. No DOF, color grade, or vignette tied to gameplay."
+        },
+        {
+          "category": "vfx",
+          "seen": "The dash slash and relay ring exist but are a single flat card and a ring. No trails, sparks, snow kick-up, or layered effects."
+        },
+        {
+          "category": "particles",
+          "seen": "No falling snow, breath, sparkle on pickups, or dash particles. In a snow level that is a glaring omission."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Identical pose across three frames suggests a sprite or single pose. No squash, lean, or secondary motion on the scarf is visible."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The design is appealing and on-style. It's small, has no rim light against the busy backdrop, and gets occluded by the pickup."
+        },
+        {
+          "category": "camera",
+          "seen": "Static side-on framing with almost no movement between frames. The 3D projection doesn't match the backdrop's implied perspective (the slab is viewed from above)."
+        },
+        {
+          "category": "composition",
+          "seen": "The play path sits in a narrow mid band. The top-center is dominated by an ugly slab, and the bottom 15% is empty white."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "3D and 2D layers don't share a horizon or scale. Platforms float with no depth cues, shadows, or parallax."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "All atmosphere is painted. No real-time fog, snowfall, or light shafts bridge the 3D and 2D layers."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "The platform path is readable. Coins are near-invisible dark blobs, the grey bars are ambiguous, the pickup hides the player, and Lives 0 during play is confusing."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "The HUD is clean, consistent, and glassy. The keybind legend is microscopic, and the HUD is generic web-dashboard rather than game-styled."
+        },
+        {
+          "category": "typography",
+          "seen": "The type is legible, the hierarchy is OK, and it's on-palette. The legend text is unreadable and there is truncation on mobile."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No feedback is visible: no hit-stop, screen shake, particles, coin pop, or trail. Frames 03 and 04 are nearly identical."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "The play band is tiny, about 50% of the screen is HUD and controls, the image is blurry, the character is lost, and data is truncated or missing."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "One excellent painted plate masks a prototype-grade 3D layer. Strip the backdrop and this is a 2\u20133."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

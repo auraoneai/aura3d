@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-courier-rush",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-courier-rush",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.0,
+        "modeling_assets": 4.0,
+        "texture_quality": 3.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 2.0,
+        "lighting": 3.0,
+        "shadows": 1.0,
+        "ambient_lighting": 3.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 2.0,
+        "color_management": 4.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 2.0,
+        "vfx": 3.0,
+        "particles": 1.0,
+        "animation_quality": 3.0,
+        "character_presentation": 2.0,
+        "camera": 3.0,
+        "composition": 3.0,
+        "scale_depth_perception": 3.0,
+        "atmospheric_effects": 1.0,
+        "gameplay_readability": 2.0,
+        "ui_hud": 6.0,
+        "typography": 6.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 2.0
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Untextured box buildings and a flat road. No street furniture density, signage, or skyline silhouette. Black in 2/3 desktop frames."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Van and jersey barriers are credible authored assets. Everything else is primitives or extrusions."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Barriers are textured. Buildings and road read as flat color with no detail maps."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Everything is matte or emissive. No car paint, glass, wet asphalt, or metal response."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "No roughness variation, no specular highlights, no energy-plausible response. Emissive values are wildly over-driven."
+        },
+        {
+          "category": "lighting",
+          "seen": "Pure emissive-driven night with no motivated key light. The van is lit by its own bloom rather than the scene."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible cast shadows from van, barriers, or buildings. Objects float."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "Flat navy ambient. No AO or contact darkening, and edges crush to black."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No env map and no road or vehicle reflections, which is the single biggest miss for a neon-night driving game."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "Hard white clipping on the van and road lines while the rest is crushed. Exposure is mismanaged."
+        },
+        {
+          "category": "color_management",
+          "seen": "The palette (navy/teal/orange/cyan) is coherent in intent. Saturation dies in the clipped highlights."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges look acceptable at 1080p through JPEG. Bloom hides most aliasing."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom threshold is far too low, so bloom swallows the hero object. No vignette, grading, or motion blur visible."
+        },
+        {
+          "category": "vfx",
+          "seen": "The pickup ring is clean but basic. Cyan side bars and the nav arrow are flat. No exhaust, sparks, or speed lines."
+        },
+        {
+          "category": "particles",
+          "seen": "None visible in any frame."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "No visible suspension, body roll, wheel steer, or lean cues. Desktop frames show no evidence of motion at all."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "The player vehicle, the de facto character, is a white blob on desktop and a half-blown-out shape on mobile."
+        },
+        {
+          "category": "camera",
+          "seen": "Desktop is too steep and high, which flattens the scene. Mobile is too close, so you cannot see the road ahead. Desktop camera likely the source of the black frames."
+        },
+        {
+          "category": "composition",
+          "seen": "The road reads as a lane, but the blown centerline cuts the frame in half. Edges are dead black and there is no focal hierarchy."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Without fog, shadows, or texture detail, buildings have no readable scale. The distant bloom wall flattens depth."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "No fog, haze, rain, volumetric light cones, or sky."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Pickup ring and parcel read on the one working desktop frame. Black frames score 0, and on mobile the HUD covers the road ahead."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean, consistent glass panels with good hierarchy on desktop. Mobile placement is poor."
+        },
+        {
+          "category": "typography",
+          "seen": "Legible modern sans with good weight contrast. Desktop control hints are too small."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No screen shake, speed FX, or impact feedback visible. The delivery toast is the only feedback."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Renders, unlike desktop, but the camera is too tight and the HUD occludes key playfield areas."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "One mediocre frame plus two black frames on the primary platform. Even the working frame is roughly a 3.5."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

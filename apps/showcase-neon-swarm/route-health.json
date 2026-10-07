@@ -17,7 +17,7 @@
     {
       "typedRef": "assets.neonCourierAvatar",
       "role": "primaryCharacter",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-6ac2371a41d80273ef0c6467e1f50f8eb3f6b6d639e1000768a78f83c4cdf1e7",
       "license": "CC-BY-4.0",
       "author": "Daniel Darko",
@@ -26,7 +26,7 @@
     {
       "typedRef": "assets.neonBarricadeProp",
       "role": "primaryWorld",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-81e5f972fb3d6b6a0c33f30e1eb57f22bd3bcdd4f77f696ccd7b96b24cfa846b",
       "license": "CC-BY-4.0",
       "author": "Kyle Burton",
@@ -35,7 +35,7 @@
     {
       "typedRef": "assets.neonStreetLampProp",
       "role": "primaryWorld",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-1c0ed5ac46e535406f00a485c38d9fdbf1618a29b0a84647120cb76c6f8c4d8c",
       "license": "CC-BY-4.0",
       "author": "Humphrorange",
@@ -290,5 +290,8 @@
     "notes": "Machine evidence is current and passing. Automated and agent visual inspection are not independent approval; publicShowcase remains false.",
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-neon-swarm/dist --release --source apps/showcase-neon-swarm/src --asset neonCourierAvatar --asset neonBarricadeProp --asset neonStreetLampProp"
   },
-  "steeringDisclaimer": "Steering is route-local deterministic math; no Recast navigation or crowd-simulation capability is used or claimed."
+  "steeringDisclaimer": "Steering is route-local deterministic math; no Recast navigation or crowd-simulation capability is used or claimed.",
+  "qualityGate": {
+    "status": "in-rebuild"
+  }
 }

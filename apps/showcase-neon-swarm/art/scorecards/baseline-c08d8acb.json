@@ -1,0 +1,172 @@
+{
+  "schema": "aura3d.game-scorecard/1",
+  "gameId": "showcase-neon-swarm",
+  "commit": "c08d8acbd7e3150774f213c45f825ebbae0489cb",
+  "round": "baseline-c08d8acb",
+  "countedRound": 0,
+  "qrFlags": [],
+  "enginePending": [],
+  "captureRunId": "37289688772",
+  "env": {
+    "runner": "macos-14",
+    "gpu": "apple-silicon",
+    "browser": "chromium"
+  },
+  "vision": [
+    {
+      "gameId": "showcase-neon-swarm",
+      "round": "baseline-c08d8acb",
+      "judge": {
+        "kind": "vision-model",
+        "id": "research/21-game-vision-judgment"
+      },
+      "scores": {
+        "environment_world": 2.0,
+        "modeling_assets": 3.0,
+        "texture_quality": 3.0,
+        "material_quality": 3.0,
+        "pbr_credibility": 3.0,
+        "lighting": 3.0,
+        "shadows": 2.0,
+        "ambient_lighting": 2.0,
+        "ibl_reflections": 1.0,
+        "tone_mapping": 4.0,
+        "color_management": 4.0,
+        "anti_aliasing": 5.0,
+        "postprocessing": 4.0,
+        "vfx": 2.0,
+        "particles": 1.0,
+        "animation_quality": 2.0,
+        "character_presentation": 3.0,
+        "camera": 4.0,
+        "composition": 3.0,
+        "scale_depth_perception": 2.0,
+        "atmospheric_effects": 2.0,
+        "gameplay_readability": 2.0,
+        "ui_hud": 5.0,
+        "typography": 5.0,
+        "polish_juice": 2.0,
+        "mobile_presentation": 3.0,
+        "overall_visual_quality": 2.5
+      },
+      "observations": [
+        {
+          "category": "environment_world",
+          "seen": "Flat untextured planes, one decal, no set dressing, sky, walls, or architecture. Reads as a greybox."
+        },
+        {
+          "category": "modeling_assets",
+          "seen": "Barricade is a decent stock scan. Everything else is quads, hexagons, and ellipses."
+        },
+        {
+          "category": "texture_quality",
+          "seen": "Only the barricade has textures (good, but off-theme). The floor and all other surfaces have none."
+        },
+        {
+          "category": "material_quality",
+          "seen": "Floor is matte flat color, enemies are flat-shaded, and black blobs look like missing materials."
+        },
+        {
+          "category": "pbr_credibility",
+          "seen": "Barricade responds plausibly. Nothing else shows roughness or metal variation, and there is no specular on the floor."
+        },
+        {
+          "category": "lighting",
+          "seen": "Dim ambient plus a couple of colored point pools. No key/rim and no light shaping the player."
+        },
+        {
+          "category": "shadows",
+          "seen": "No visible cast/contact shadows on barricades or player. Black ellipses may be blob shadows, but they are opaque and unreadable."
+        },
+        {
+          "category": "ambient_lighting",
+          "seen": "No AO at plane seams or under props. Objects float."
+        },
+        {
+          "category": "ibl_reflections",
+          "seen": "No reflections on what should be a glossy neon floor, and no visible environment map contribution."
+        },
+        {
+          "category": "tone_mapping",
+          "seen": "No clipping except bloom cores, but blacks are crushed and the midrange is murky."
+        },
+        {
+          "category": "color_management",
+          "seen": "Palette intent (cyan/magenta) is there. Teal planes look washed and the barricade orange fights the palette."
+        },
+        {
+          "category": "anti_aliasing",
+          "seen": "Edges acceptably clean at 1080p. Thin barricade legs show mild stepping (inferred, JPEG)."
+        },
+        {
+          "category": "postprocessing",
+          "seen": "Bloom on emissives is tasteful but the only effect visible. No vignette, grading, chromatic aberration, or scanline treatment for a neon theme."
+        },
+        {
+          "category": "vfx",
+          "seen": "Ring glow and arrow only. No combat VFX despite score changes."
+        },
+        {
+          "category": "particles",
+          "seen": "None visible in any frame (inferred absent)."
+        },
+        {
+          "category": "animation_quality",
+          "seen": "Identical static T-ish pose across three gameplay captures (inferred no locomotion/idle)."
+        },
+        {
+          "category": "character_presentation",
+          "seen": "Silhouette shape is OK, but it is dark-on-dark, unlit, and has no rim, trail, or personality."
+        },
+        {
+          "category": "camera",
+          "seen": "Readable top-down angle for a twin-stick game, but too close/tight, and props get cropped awkwardly at frame edges."
+        },
+        {
+          "category": "composition",
+          "seen": "Large dead black regions, random prop placement, no framing of the play space or arena boundaries."
+        },
+        {
+          "category": "scale_depth_perception",
+          "seen": "Only the barricade conveys scale. Floor height steps are ambiguous and there are no depth cues."
+        },
+        {
+          "category": "atmospheric_effects",
+          "seen": "Faint colored floor pools. No fog, haze, volumetrics, or dust."
+        },
+        {
+          "category": "gameplay_readability",
+          "seen": "Enemies, hazards, and pickups are not distinguishable. \"36 drones\" with nothing clearly hostile on screen."
+        },
+        {
+          "category": "ui_hud",
+          "seen": "Clean, consistent glass panels and legible, but generic dev-dashboard styling and text-heavy."
+        },
+        {
+          "category": "typography",
+          "seen": "Neat system sans with a good hierarchy. No display face or theme identity."
+        },
+        {
+          "category": "polish_juice",
+          "seen": "No hit feedback, trails, screen shake cues, or reactive lighting visible."
+        },
+        {
+          "category": "mobile_presentation",
+          "seen": "Functional joysticks, but the HUD eats the top quarter and the 3D view is cramped and dark."
+        },
+        {
+          "category": "overall_visual_quality",
+          "seen": "Reads as an early prototype/greybox with one marketplace prop dropped in."
+        }
+      ],
+      "captureRunId": "37289688772",
+      "rubricPromptVersion": "rubric-v1-qr0"
+    }
+  ],
+  "human": [],
+  "perf": [],
+  "verdict": "rejected",
+  "findings": [
+    "baseline audit (research/20+21, run 37289688772): rebuild in progress under A3D_QR_ROUTE_* flag"
+  ]
+}

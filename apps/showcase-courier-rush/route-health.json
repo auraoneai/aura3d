@@ -18,7 +18,7 @@
       "typedRef": "assets.courierVan",
       "role": "primary-vehicle",
       "status": "release-validated-typed-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-1984ad81b67bd760732f82fa39d4a5086a655c728b2729e3d630ccafd2b87991",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
@@ -28,7 +28,7 @@
       "typedRef": "assets.courierParcel",
       "role": "visible-cargo",
       "status": "release-validated-typed-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "macriciox (https://sketchfab.com/macriciox)",
@@ -40,7 +40,7 @@
       "typedRef": "assets.courierTrafficSedan",
       "role": "authored-lane-loop-traffic",
       "status": "release-validated-typed-supporting-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-69f41bfaa087f0caf7eeb4609309728f7cb26f461d048fc24ff6479c64b7e3c7",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
@@ -50,7 +50,7 @@
       "typedRef": "assets.courierTrafficHatch",
       "role": "authored-lane-loop-traffic",
       "status": "release-validated-typed-supporting-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-ee239312a0f7f51f6a78c5fa09f60188347e85bcafc2f1f3177a8422467ba48f",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
@@ -60,7 +60,7 @@
       "typedRef": "assets.courierZoneAwning",
       "role": "zone-landmark-prop",
       "status": "release-validated-typed-supporting-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-97e715389628c95fcb33ae6d4776481a3efc46072723b6bc1e04dd5dc87141bf",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "Pixel_Monster (https://sketchfab.com/ar.jethin)",
@@ -70,7 +70,7 @@
       "typedRef": "assets.courierZoneBollard",
       "role": "zone-landmark-prop",
       "status": "release-validated-typed-supporting-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-a696b2f70a052d887b4560138a6f6d80258d8c5cdfa520a6abccb4a5b0d6e412",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "chriskujath2 (https://sketchfab.com/chriskujath2)",
@@ -274,5 +274,8 @@
       "tests/unit/apps/courier-rush-traffic.test.ts"
     ],
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-courier-rush/dist --release --source apps/showcase-courier-rush/src --asset courierVan --asset courierParcel --asset courierTrafficSedan --asset courierTrafficHatch --asset courierZoneAwning --asset courierZoneBollard"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

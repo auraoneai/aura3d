@@ -4,6 +4,7 @@ import {
   effects,
   labels,
   lights,
+  looks,
   material,
   primitives,
   scene,
@@ -101,7 +102,7 @@ function buildScene(view: TextLabView): AuraSceneBuilder {
     .camera(views[view])
     .add(effects.fog({ name: "typography gallery depth haze", color: "#0b1120", density: 0.012, intensity: 0.18 }))
     .add(effects.bloom({ name: "typography edge bloom", intensity: 0.18, threshold: 0.86, radius: 0.24 }))
-    .add(lights.ambient({ name: "gallery ambient", color: "#b8d4f0", intensity: 0.5 }))
+    .add(looks.preset("outdoor-day") /* TODO: pick the scene's genre look — see aura3d look rubric */)
     .add(lights.directional({ name: "warm type key", position: [-4, 7, 6], color: "#ffe0ad", intensity: 4.8 }))
     .add(lights.directional({ name: "cool extrusion rim", position: [6, 4, 2], color: "#8fc8ff", intensity: 2.25 }))
     .add(primitives.box({

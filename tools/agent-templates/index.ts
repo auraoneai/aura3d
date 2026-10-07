@@ -6,6 +6,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { basename, resolve } from "node:path";
 import { checkDeploy } from "../../packages/aura3d-cli/src/index";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
+import { lookFloorStaticFindings, TEMPLATE_LOOK_FLOOR } from "./look-floor.mjs";
+import { drift as rootTemplateDrift, mirroredTemplateNames } from "./sync-root-templates.mjs";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
 const exactReleasePlan = loadValidatedReleasePlan();
@@ -118,19 +120,45 @@ const checks: ReleaseCheck[] = [
     fileIncludes(`templates/${template}/src/main.ts`, [templatePublicPackage(template)], `${template} packaged root Aura3D api`)
   ]),
   ...promptPlanTemplates.flatMap((template) => [
-    fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`)
+    fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "compilePromptPlanV2"], `${template} packaged root prompt-plan api`),
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "compilePromptPlanV2"], `${template} public prompt-plan api`)
   ]),
   fileIncludes("templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game packaged root game api"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createGame", "game.platformer"], "mini-game public game api"),
-  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer packaged root lean-product entry"),
-  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer public lean-product entry"),
+  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/engine"], "product-viewer packaged root engine entry"),
+  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/engine"], "product-viewer public engine entry"),
   fileIncludes("templates/mini-game/src/main.ts", ["@aura3d/engine"], "mini-game packaged root engine entry"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["@aura3d/engine"], "mini-game public engine entry"),
   ...rootPackagedTemplates.flatMap((template) => [
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`)
   ]),
+  // PRD-13 T3.13 — the static look floor: every create-aura3d template declares
+  // its §6.4 look and ships the shared screenshot floor probe. The runtime half
+  // of this gate runs on macos-14 in template-lookdev.yml.
+  ...templates.map((template) => {
+    const findings = lookFloorStaticFindings(template);
+    return {
+      id: `${template}-look-floor`,
+      pass: findings.length === 0,
+      detail: findings.length === 0 ? `${template} declares its §6.4 look and ships the floor probe` : findings.join("; ")
+    };
+  }),
+  {
+    id: "look-floor-table-coverage",
+    pass: templates.every((template) => template in TEMPLATE_LOOK_FLOOR),
+    detail: `look floor covers ${Object.keys(TEMPLATE_LOOK_FLOOR).length} templates`
+  },
+  // PRD-13 T3.14 — root `templates/` dirs sharing a name with a create-aura3d
+  // template are a generated mirror (tools/agent-templates/sync-root-templates.mjs).
+  ...mirroredTemplateNames().map((template) => {
+    const findings = rootTemplateDrift(template);
+    return {
+      id: `root-template-mirror-${template}`,
+      pass: findings.length === 0,
+      detail: findings.length === 0 ? `templates/${template} mirrors packaged source` : findings.join("; ")
+    };
+  }),
   fileIncludes("packages/create-aura3d/src/index.ts", templates, "create command templates"),
   {
     id: "root-package-template-scope",
@@ -404,7 +432,7 @@ function templateApiFile(template: string): string {
 }
 
 function templatePublicPackage(template: string): string {
-  if (template === "product-viewer") return "@aura3d/lean/product";
+  if (template === "product-viewer") return "@aura3d/engine";
   return "@aura3d/engine";
 }
 
