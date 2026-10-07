@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraApp, AuraAppTarget, AuraCreateGameAppOptions } from "../index.js";
+import type { AuraApp, AuraAppTarget, AuraCreateGameAppOptions } from "../nodes/types.js";
 import { createGameAppRuntime, type GameAppRuntime } from "../GameAppRuntime.js";
 import { createAuraApp } from "./createAuraApp.js";
 

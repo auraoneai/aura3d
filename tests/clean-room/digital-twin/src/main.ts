@@ -4,26 +4,9 @@
  * Public surface only. Measures what a developer must author for equipment selection,
  * asset-relative status markers, alarm state and camera focus.
  */
-import {
-  camera,
-  checkSpatialInvariants,
-  createAuraApp,
-  distributeInRegion,
-  focusCameraIntent,
-  focusSemanticRegion,
-  interactions,
-  lights,
-  material,
-  model,
-  placedBoundsFromAsset,
-  primitives,
-  resolveBoundsAnchor,
-  resolveSemanticRegion,
-  scene,
-  type HelperPlacementClaim,
-  type SemanticRegion
-} from "@aura3d/engine";
+import { camera, checkSpatialInvariants, createAuraApp, distributeInRegion, focusCameraIntent, focusSemanticRegion, interactions, lights, material, model, placedBoundsFromAsset, primitives, resolveBoundsAnchor, resolveSemanticRegion, scene, type SemanticRegion } from "@aura3d/engine";
 import { assets } from "./assets";
+import { type HelperPlacementClaim } from "@aura3d/engine/devtools";
 
 type ZoneId = "assembly" | "packaging" | "energy";
 

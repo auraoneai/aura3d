@@ -1,0 +1,271 @@
+{
+  "files": 27,
+  "rows": [
+    {
+      "file": "tools/threejs-parity-shadowmap-parity/index.ts",
+      "line": 8,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-shadowmap-parity/index.ts",
+      "line": 8,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-gltf-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-gltf-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-loader-material-extensions-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-loader-material-extensions-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-animation-multiple-parity/index.ts",
+      "line": 7,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-animation-multiple-parity/index.ts",
+      "line": 7,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-ik-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-ik-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-animation-walk-parity/index.ts",
+      "line": 7,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-animation-walk-parity/index.ts",
+      "line": 7,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-additive-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-additive-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-stereo-parity/index.ts",
+      "line": 13,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-stereo-parity/index.ts",
+      "line": 13,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-blending-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-skinning-blending-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-unreal-bloom-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-unreal-bloom-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-parallax-parity/index.ts",
+      "line": 14,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-parallax-parity/index.ts",
+      "line": 14,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-physical-lights-parity/index.ts",
+      "line": 11,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-physical-lights-parity/index.ts",
+      "line": 11,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-morphtargets-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-morphtargets-parity/index.ts",
+      "line": 3,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-decals-parity/index.ts",
+      "line": 13,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-decals-parity/index.ts",
+      "line": 13,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "tools/threejs-parity-material-grid-parity/index.ts",
+      "line": 12,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "tools/threejs-parity-material-grid-parity/index.ts",
+      "line": 12,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 2,
+      "construct": "import { createProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 3,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 4,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 5,
+      "construct": "import { A3DProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 2,
+      "construct": "import { createProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 3,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 4,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts",
+      "line": 5,
+      "construct": "import { A3DProductViewer } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    }
+  ]
+}

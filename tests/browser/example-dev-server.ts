@@ -19,8 +19,6 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/scene/math", "/packages/scene/src/MathTypes.ts"],
   ["@aura3d/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/ecs", "/packages/ecs/src/index.ts"],
-  ["@aura3d/rendering/lean-runtime", "/packages/rendering/src/lean-runtime.ts"],
-  ["@aura3d/rendering/lean-core-runtime", "/packages/rendering/src/lean-core-runtime.ts"],
   ["@aura3d/rendering/reflection-surfaces", "/packages/rendering/src/reflection-surfaces.ts"],
   // Every published `@aura3d/rendering` subpath must be aliased here, and each must
   // precede the bare specifier because the first prefix match wins. Omitting one does not

@@ -1,5 +1,7 @@
 import { multiplyMat4, orthographicMat4, perspectiveMat4, type Mat4 } from "@aura3d/scene/math";
 import type { RenderDeviceDiagnostics, RenderItem, RenderSource } from "@aura3d/rendering";
+import { geometry } from "./nodes/geometry.js";
+import { instances } from "./nodes/instances.js";
 
 export function composeModelInstanceMatrices(instances: Float32Array, meshLocal: ArrayLike<number>): Float32Array {
   if (instances.length % 16 !== 0 || meshLocal.length !== 16) throw new Error("Model instance matrices must contain complete 4x4 matrices");

@@ -1,7 +1,7 @@
 import {
   FirstPersonControls as InputFirstPersonControls,
   type FirstPersonControlsOptions
-} from "@aura3d/input";
+} from "./engine/FirstPersonControls.js";
 import { FlyControls, type FlyCameraLike } from "./FlyControls";
 
 export type { FirstPersonControlsOptions };

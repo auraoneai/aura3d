@@ -5,7 +5,6 @@ import { AnimationClip, AnimationMixer, AnimationTrack } from "@aura3d/animation
 import { AssetManager, type AssetLoader } from "@aura3d/assets";
 import { AudioSystem } from "@aura3d/audio";
 import { Engine, SystemPhase } from "@aura3d/core";
-import { EditorRuntime as PublicEditorRuntime } from "@aura3d/editor";
 import { EditorRuntime } from "@aura3d/editor-runtime";
 import { World, TransformComponent } from "@aura3d/ecs";
 import { ActionMap, InputSnapshot } from "@aura3d/input";
@@ -22,7 +21,6 @@ describe("public package API contracts", () => {
     "core",
     "debug",
     "ecs",
-    "editor",
     "editor-runtime",
     "input",
     "math",
@@ -247,16 +245,6 @@ describe("public package API contracts", () => {
     expect(() => editor.setMode("edit")).toThrow(/disposed/);
   });
 
-  it("supports the canonical editor package as the public editor runtime surface", () => {
-    const editor = new PublicEditorRuntime();
-    editor.selection.set(["editor-package-node"]);
-    editor.registerMaterialVariants("hero.gltf", ["clean", "damaged"], "clean");
-    editor.setMaterialVariant("hero.gltf", "damaged");
-
-    expect(editor.mode).toBe("edit");
-    expect(editor.selection.current()).toEqual(["editor-package-node"]);
-    expect(editor.materialVariants.renderOptions("hero.gltf")).toEqual({ materialVariant: "damaged" });
-  });
 });
 
 function publicWorkspacePackageSpecifiers(): string[] {

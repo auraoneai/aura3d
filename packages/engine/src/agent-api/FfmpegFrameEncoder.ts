@@ -9,6 +9,7 @@ import {
   type FrameEncoderFrame
 } from "./FrameEncoder.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 /**
  * FfmpegFrameEncoder

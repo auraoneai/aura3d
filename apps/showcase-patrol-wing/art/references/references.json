@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-patrol-wing",
+  "entries": [
+    {
+      "file": "references/sunset-ocean.json",
+      "source": "shipped comparable: sunset coastal flight scenes (Microsoft Flight Simulator golden-hour coastline / Ace Combat dusk missions)",
+      "licence": "reference-only",
+      "why": "Low warm sun over open water with island silhouettes reads the K1 sunset-ocean lighting targets"
+    },
+    {
+      "file": "references/patrol-aircraft.json",
+      "source": "admitted patrolAircraftMeshy GLB (60k tris, BC+N+MR) + K7 drone/vehicle kit",
+      "licence": "reference-only",
+      "why": "The Meshy hero aircraft silhouette and the PBR drone family the intercept wave is built from"
+    },
+    {
+      "file": "references/ring-gates.json",
+      "source": "existing ring/sensor layer in src/sky.ts (RING_GATES) + racing-style slalom gate language",
+      "licence": "reference-only",
+      "why": "Emissive-gradient torus gates the patrol route threads — objective ring treatment across the sortie"
+    }
+  ]
+}

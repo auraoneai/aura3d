@@ -1,10 +1,12 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraLightNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../index.js";
-import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
-import { clampNumber, colorToLinearRgb, groups, multiplyRgb, normalize3, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../index.js";
+import type { AuraColor, AuraLightNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import type { AuraDirectionalShadowOptions, AuraLightingModel, AuraLocalShadowOptions } from "../../contracts/lighting.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
-import type { AuraLightingModel } from "../../contracts/lighting.js";
+import { colorToLinearRgb, multiplyRgb } from "../colorUtils.js";
+import { clampNumber, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../compiler/observations.js";
+import { normalize3 } from "../sceneMath.js";
+import { groups } from "../nodes/groups.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
@@ -159,7 +161,7 @@ export function createProductionRuntimeCollectedLight(
   }
   if (!(source instanceof PointLight)) {
     const rotation = quaternionFromForwardDirection(descriptor.direction);
-    source.transform.setRotation(...rotation);
+    source.transform.setRotation(rotation[0], rotation[1], rotation[2], rotation[3]);
   }
   source.updateWorldTransform(true);
   return {

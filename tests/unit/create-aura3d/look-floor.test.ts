@@ -1,7 +1,6 @@
 // PRD-13 T3.13 — static look-floor gate coverage.
 import { describe, expect, it } from "vitest";
 import { CREATE_AURA3D_TEMPLATES } from "../../../packages/create-aura3d/src/index";
-// @ts-expect-error — the tool is authored as .mjs (node-run), imported for tests.
 import { lookFloorStaticFindings, lookFloorStaticScan, TEMPLATE_LOOK_FLOOR } from "../../../tools/agent-templates/look-floor.mjs";
 
 describe("tools/agent-templates/look-floor", () => {

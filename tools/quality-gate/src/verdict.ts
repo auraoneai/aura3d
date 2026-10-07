@@ -7,28 +7,7 @@
  * code signal but the run still fails, so it is never adjudicated as a pass.
  */
 import type { GateVerdict } from "./contracts";
-import type { CapturedItem, MetricId, RegionId } from "./types";
-
-export interface MetricValue {
-  readonly metric: MetricId;
-  readonly region: RegionId;
-  /** Distance already (1 - ssim, FLIP, ΔE, detector deltas/ratios). */
-  readonly value: number;
-  readonly status?: "ok" | "unavailable" | "error";
-}
-
-export interface GoldenEntry {
-  readonly itemId: string;
-  readonly approvedRound: string;
-  readonly ref: import("./types").CaptureRef;
-  /** (metric, region) thresholds from calibration; absent = not yet calibrated. */
-  readonly thresholds: Readonly<Record<string, number>>;
-}
-
-export interface GoldenManifest {
-  readonly schema: "aura3d-quality-gate-goldens/1";
-  readonly entries: Readonly<Record<string, GoldenEntry>>;
-}
+import type { CapturedItem, GoldenEntry, GoldenManifest, MetricValue } from "./types";
 
 /** G-REF bar R3: the reference-gap limits that admit a scene to the bar. */
 export interface QualityBar {
@@ -49,7 +28,7 @@ export const G_REF_BAR_R3: QualityBar = {
   maxHighlightEnergyDelta: 0.2
 };
 
-const SOFTWARE_RASTERIZER = /swiftshader|llvmpipe/i;
+const SOFTWARE_RASTERIZER = /swiftshader|llvmpipe|software/i;
 
 export interface ItemVerdictInput {
   readonly item: CapturedItem;
@@ -59,6 +38,26 @@ export interface ItemVerdictInput {
   readonly nonDiscriminating?: boolean;
   readonly captureFailed?: boolean;
   readonly forbiddenFlags?: readonly string[];
+}
+
+export interface GoldenIndex {
+  readonly manifest: GoldenManifest;
+  readonly byItemId: ReadonlyMap<string, GoldenEntry>;
+}
+
+export function indexGoldens(manifest: GoldenManifest): GoldenIndex {
+  const byItemId = new Map<string, GoldenEntry>();
+  for (const entry of manifest.entries) byItemId.set(entry.itemId, entry);
+  return { manifest, byItemId };
+}
+
+function thresholdFor(entry: GoldenEntry, value: MetricValue): number | undefined {
+  return entry.thresholds.find((t) => t.metric === value.metric && t.region === value.region)?.threshold;
+}
+
+/** Distance used for verdict checks: pairwise when present (detectors gate on |pairwise|), else aura. */
+function distanceOf(value: MetricValue): number | null {
+  return value.pairwise ?? null;
 }
 
 /**
@@ -74,6 +73,7 @@ export function evaluateGates(input: {
   bar?: QualityBar;
 }): { itemVerdicts: Map<string, GateVerdict[]>; exitCode: 0 | 1 } {
   const bar = input.bar ?? G_REF_BAR_R3;
+  const goldens = indexGoldens(input.goldens);
   const itemVerdicts = new Map<string, GateVerdict[]>();
   let exitCode: 0 | 1 = 0;
   for (const { item, ...flags } of input.items) {
@@ -86,7 +86,7 @@ export function evaluateGates(input: {
     if (flags.calibrationBroken) verdicts.push("calibration-broken");
     if (flags.nonDiscriminating) verdicts.push("non-discriminating");
 
-    const golden = input.goldens.entries[item.itemId];
+    const golden = goldens.byItemId.get(item.itemId);
     const values = input.metrics.get(item.itemId) ?? [];
     if (verdicts.length === 0) {
       if (!golden) {
@@ -94,20 +94,22 @@ export function evaluateGates(input: {
         verdicts.push("non-discriminating");
       } else {
         const failures = values.filter((value) => {
-          const key = `${value.metric}@${value.region}`;
-          const threshold = golden.thresholds[key];
-          return value.status === "ok" && threshold !== undefined && value.value > threshold;
+          const threshold = thresholdFor(golden, value);
+          const distance = distanceOf(value);
+          return value.status !== "unavailable" && threshold !== undefined && distance !== null && distance > threshold;
         });
         if (failures.length > 0) verdicts.push("regression");
       }
       // G-REF distance bar (independent of golden regression): a frame that
       // misses the reference limits is a reference-gap, not a pass.
       for (const value of values) {
-        if (value.status !== "ok") continue;
-        if (value.metric === "flip" && value.value > bar.maxFlip) push(verdicts, "reference-gap");
-        if (value.metric === "deltaE2000" && value.value > bar.maxDeltaE2000) push(verdicts, "reference-gap");
-        if (value.metric === "shadowContrast" && Math.abs(value.value) > bar.maxShadowContrastDelta) push(verdicts, "reference-gap");
-        if (value.metric === "highlightEnergy" && Math.abs(value.value) > bar.maxHighlightEnergyDelta) push(verdicts, "reference-gap");
+        if (value.status === "unavailable") continue;
+        const distance = distanceOf(value);
+        if (distance === null) continue;
+        if (value.metric === "flip" && distance > bar.maxFlip) push(verdicts, "reference-gap");
+        if (value.metric === "deltaE2000" && distance > bar.maxDeltaE2000) push(verdicts, "reference-gap");
+        if (value.metric === "shadowContrast" && Math.abs(distance) > bar.maxShadowContrastDelta) push(verdicts, "reference-gap");
+        if (value.metric === "highlightEnergy" && Math.abs(distance) > bar.maxHighlightEnergyDelta) push(verdicts, "reference-gap");
       }
       if (verdicts.length === 0) verdicts.push("pass");
     }

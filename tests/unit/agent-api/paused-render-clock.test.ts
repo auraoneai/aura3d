@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { resolveRootRenderTime } from "../../../packages/engine/src/agent-api/RootFrameClock";
 
 /**
@@ -18,7 +19,10 @@ import { resolveRootRenderTime } from "../../../packages/engine/src/agent-api/Ro
  * cannot drive; the browser proof is `showcase-library.spec.ts`, which now produces 27 of 30
  * byte-identical screenshots across runs (was 15 of 30).
  */
-const SOURCE = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
+const SOURCE = (function agentApiSource() {
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
+  return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
+})();
 
 describe("paused apps hold their render clock", () => {
   it("the production render loop renders at a paused clock, not wall-clock time", () => {

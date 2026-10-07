@@ -2,7 +2,8 @@ import { GLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionPbrHdrPipelineFromRadiance,
   summarizeProductionWebGL2Proof
@@ -70,7 +71,7 @@ async function run(): Promise<void> {
       }
     }
   });
-  const renderer = await ProductionWebGL2Renderer.create({
+  const renderer = await Renderer.create({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -104,7 +105,7 @@ async function run(): Promise<void> {
     }
   });
   const heroReferenceItems = createProductionPbrReferenceItems(staged.frameBounds, lighting.lighting);
-  const proof = renderer.renderImportedAsset({
+  const proof = rendererProofCapture(renderer, {
     source: {
       ...staged.source,
       renderItems: [...(staged.source.renderItems ? [...staged.source.renderItems] : []), ...heroReferenceItems]

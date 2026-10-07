@@ -18,31 +18,31 @@
     {
       "typedRef": "assets.deepRecoverySub",
       "hash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle"
     },
     {
       "typedRef": "assets.deepRecoveryWreckHull",
       "hash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.deepRecoveryCrateStandard",
       "hash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.deepRecoveryCrateHeavy",
       "hash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     },
     {
       "typedRef": "assets.deepRecoveryBuoyBeacon",
       "hash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     }
   ],
@@ -398,5 +398,8 @@
     "sonar": "live target coordinates, spherical range, authored wreck-sphere occlusion",
     "tether": "mass-derived drag and deterministic spring",
     "mission": "explicit ordered standard/breach/repair/heavy/surface state"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

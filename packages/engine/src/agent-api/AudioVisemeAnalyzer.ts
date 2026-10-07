@@ -7,6 +7,7 @@ import {
   type AuraVoiceVisemeTrack
 } from "./VisemeController.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate, type PromptAnimationId, type PromptAnimationLanguageCode, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export interface AudioVisemeAnalysisFrame {
   readonly index: number;

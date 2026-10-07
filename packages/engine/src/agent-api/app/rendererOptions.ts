@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraCreateAppRendererOptions, AuraRendererQualityPreset, AuraRendererQualityProfile, AuraRendererQualityProfileId } from "../index.js";
+import type { AuraCreateAppRendererOptions, AuraRendererQualityPreset, AuraRendererQualityProfile, AuraRendererQualityProfileId } from "../nodes/types.js";
 
 /**
  * PRD 11 Phase 1 freeze (§6.2): thrown when a caller requests the frozen

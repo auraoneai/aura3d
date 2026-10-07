@@ -32,7 +32,7 @@
  * is unit-testable without a renderer and reusable by any route or kit.
  */
 
-import type { AuraColor, AuraLabelNode, AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./index.js";
+import type { AuraColor, AuraLabelNode, AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
 import {
   containsPoint,
   distanceOutsideBounds,
@@ -41,6 +41,7 @@ import {
   type PlacedBounds,
   type SemanticRegion
 } from "./SpatialAnchoring.js";
+import { primitive } from "./nodes/primitives.js";
 
 /**
  * Local-axis conventions for Aura3D primitives.

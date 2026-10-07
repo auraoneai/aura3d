@@ -22,7 +22,8 @@ function extractFunctionBody(source: string, name: string): string {
 
 describe("P2 instances.model mount proof", () => {
   it("model instances attach exactly like primitive nodes (no silent N-draw, no dropped copies)", () => {
-    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
+    // T2.4: the input builder moved to compiler/renderInput.ts.
+    const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/renderInput.ts"), "utf8");
     const inputBuilder = extractFunctionBody(source, "createProductionRuntimeRendererInput");
 
     // Mount builds one Float32Array of model matrices for every instance.

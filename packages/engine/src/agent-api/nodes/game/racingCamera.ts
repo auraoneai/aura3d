@@ -2,7 +2,7 @@
 // PRD-08 C-13: the composition path/verdict-string gate is removed (extra
 // arguments accepted and ignored, no throw).
 
-import { createGameRacingTopDownCamera } from "../../index.js";
+import { createGameRacingTopDownCamera } from "../../nodes/prefabs/gamePresentation.js";
 import { createGameRacingPresentationCamera, type GameRacingCameraRigOptions, type GameScenePresentationCameraSpec } from "../../GameSceneGeometryBindings.js";
 import { createTopDownRig } from "../../camera/rigs/topDown.js";
 

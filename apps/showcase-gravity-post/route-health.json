@@ -18,7 +18,7 @@
       "typedRef": "assets.gravityPostCourierSkiff",
       "role": "primary-vehicle",
       "status": "release-validated-typed-primary-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis"
@@ -27,7 +27,7 @@
       "typedRef": "assets.gravityPostDockBeacon",
       "role": "dock-landmark-prop",
       "status": "release-validated-typed-primary-asset",
-      "quality": "release",
+      "quality": "candidate",
       "hash": "sha256-171e21cba4f1cca3abeaaa58ec54c3e672274d719bd1e5a7318e3ef681c72a14",
       "license": "CC-BY-4.0",
       "author": "DjalalxJay"
@@ -52,7 +52,7 @@
       "quality": "release",
       "hash": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
       "license": "CC-BY-4.0",
-      "author": "박용진",
+      "author": "\ubc15\uc6a9\uc9c4",
       "renderedProbe": "tests/reports/showcase-release-asset-probes/gravityPostMailPod.json",
       "orientation": "tests/reports/showcase-release-asset-probes/gravityPostMailPod.orientation.json"
     }
@@ -307,5 +307,8 @@
     ],
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod",
     "releaseDeployCommandAfterPromotion": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

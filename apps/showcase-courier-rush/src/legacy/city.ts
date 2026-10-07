@@ -756,8 +756,12 @@ export interface CityZoneDressing {
  * Every model comes from the generated typed map, so a catalog swap needs no
  * edit in this file.
  */
-export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false): CityZoneDressing {
-  const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20 }));
+export function buildCityDressing(
+  assets: CityAssetRefs,
+  reviewCapture = false,
+  timeOfDay: "day" | "night" = "night"
+): CityZoneDressing {
+  const kitNodes = stripKitParkedCars(city.block({ timeOfDay, blocks: 20 }));
   const guidanceNodes = roadGuidanceNodes();
   const staticNodes: AuraNodeInput[] = reviewCapture
     // The cinematic capture is an east-avenue slice, not a separate stage:
@@ -766,7 +770,7 @@ export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false):
     // so van, traffic, wet road, and canyon share world coordinates.
     ? [group("courier review east-avenue canyon", reviewCorridorNodes(), {}).position(15.3, 0, 0)]
     : [
-        group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
+        group(`courier city block ${timeOfDay} kit`, kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
         ...guidanceNodes,
         ...skylineDressingNodes(),
         ...courierStreetSignatureNodes()

@@ -1,8 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraLightNode, AuraVec3 } from "../index.js";
-import { AuraNodeBuilder } from "../index.js";
+import type { AuraColor, AuraLightNode, AuraVec3 } from "./types.js";
 import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { distance } from "../SpatialAnchoring.js";
 
 export const lights = {
   ambient: (options: { readonly name?: string; readonly intensity?: number; readonly color?: AuraColor } = {}) =>

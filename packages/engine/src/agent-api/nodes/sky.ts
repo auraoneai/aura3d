@@ -9,8 +9,9 @@
 // `AuraSkyNode` isn't yet in the `AuraSceneNode` union (prd15-owned
 // index.ts — CCR-07-2); builders cast like the §6.2.9–11 effect builders.
 
-import type { AuraSceneNode } from "../index.js";
-import { AuraNodeBuilder, primitives } from "../index.js";
+import type { AuraSceneNode } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
+import { primitives } from "./primitives.js";
 import { createDayNightSky, type DayNightSkyOptions } from "@aura3d/rendering";
 import type { AuraSkyNode, AuraSkySpec, AuraSkySunSpec } from "../../contracts/atmosphere";
 import { lights } from "./lights.js";

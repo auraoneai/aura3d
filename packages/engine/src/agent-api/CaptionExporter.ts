@@ -1,5 +1,6 @@
 import type { CaptionCue, CaptionTrackArtifact } from "./DialoguePerformance.js";
 import { normalizePromptAnimationTime, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
+import { round } from "./GameRuntime.js";
 
 export type CaptionExportFormat = "vtt" | "srt";
 

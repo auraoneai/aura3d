@@ -1,3 +1,4 @@
+import { a3dRenderResult } from "/packages/engine/src/production-runtime/index.js";
 import {
   A3DRenderer,
   createCameraFrame,
@@ -462,17 +463,16 @@ async function renderReferenceAsset(
       preset: "product-hero",
       paddingRatio: assetRef.id === "car-concept" ? 0.12 : 0.08
     });
-    const proof = renderer.captureProof({
+    const proof = a3dRenderResult(renderer, {
       scene,
       environment,
       environmentLighting: environment.lighting.lighting,
       renderItems: stage.renderItems({ shadows: false, backgroundVisible: true }),
       collectedLights: createStudioLighting({ preset: "product", shadows: false, intensityScale: 1 }),
       camera: camera.camera,
-      viewport: VIEWPORT,
       shadow: false,
       postprocess: false
-    }).proof;
+    }, VIEWPORT).proof;
 
     const preview = document.createElement("canvas");
     preview.id = `product-reference-${assetRef.id}`;
@@ -586,17 +586,16 @@ function collectCarRegionAcceptanceProofs(
       ...(region.pitchRadians !== undefined ? { pitchRadians: region.pitchRadians } : {}),
       ...(region.zoom !== undefined ? { zoom: region.zoom } : {})
     });
-    const proof = renderer.captureProof({
+    const proof = a3dRenderResult(renderer, {
       scene,
       environment,
       environmentLighting: environment.lighting.lighting,
       renderItems: stage.renderItems({ shadows: region.kind === "grounding", backgroundVisible: true }),
       collectedLights: createStudioLighting({ preset: region.kind === "grounding" ? "softbox" : "product", shadows: false, intensityScale: 1 }),
       camera: camera.camera,
-      viewport: VIEWPORT,
       shadow: false,
       postprocess: false
-    }).proof;
+    }, VIEWPORT).proof;
     productReferenceProgress(`region:${region.id}:captured`);
     const pixels = readCanvasPixels(canvas);
     const stats = pixels

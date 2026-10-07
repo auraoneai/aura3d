@@ -430,7 +430,8 @@ export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransfo
  * constants: a test that could not fail. Ten 4-line facade apps existed to give it a consumer, which is how
  * it satisfied the "parity requires a consumer" rule.
  *
- * `packages/three-compat/` is a DIFFERENT thing and is real — it is the migration on-ramp and stays.
+ * `packages/three-compat/` was a DIFFERENT thing and is now deleted (PRD-15 T6.2); its migration
+ * surface lives in `aura3d migrate three` (packages/aura3d-cli/src/migrate-three/).
  * `packages/animation/src/threejs-compatibility/` is also different and also real: it holds
  * `AnimationMixerThreeCompat`, `SkeletonThreeCompat` and `MorphTargetMixerThreeCompat`, the symbols WS-1.6
  * found the parity generator was failing to grep. Only the rendering one was fabricated.
@@ -449,7 +450,6 @@ export {
   createProductionOrbitControlPreset,
   createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
-  createProductionEffectsRenderSource,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
   createProductionWebGPUReport,
@@ -461,14 +461,16 @@ export {
   loadProductionHdrEnvironment,
   normalizeTransmissionBackdropCapture,
   parseProductionRadianceHDR,
+  rendererFeatureReport,
+  rendererInteractiveFeatureReport,
+  rendererProofCapture,
+  rendererShadowReport,
+  validateProductionRendererInput,
   summarizeProductionAnimationWorkflow,
-  summarizeProductionEffectsProof,
   summarizeProductionProductionProof,
   summarizeProductionWebGL2Proof
 } from "./production-runtime";
 export type {
-  ProductionEffectsOptions,
-  ProductionEffectsSummary,
   ProductionAnimationMetadataInput,
   ProductionAnimationWorkflowSummary,
   DualProbeEnvironmentLightingOptions,
@@ -489,7 +491,7 @@ export type {
   ProductionRendererFeature,
   ProductionRendererFeatureState,
   ProductionRendererInput,
-  RuntimeParityFrameRenderResult,
+  RendererTimingDiagnostics,
   ProductionToneMappingOperator,
   ProductionToneMappingPolicy,
   ProductionWebGPUAdapterLike,
@@ -803,7 +805,8 @@ export type {
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
-export * from "./cinematic/index";
+export { createCinematicDepthCompositionPlan, createCinematicLightingRig, createCinematicMaterialPreset, createCinematicPBRMaterial, createCinematicPostProcessStack, createDomOverlayEvidenceFlag, createEmissivePracticalLightSystem, createFogVolumeSystem, createGlowCardSystem, createRainParticleSystem, createRendererOwnedEvidenceFlag, createWetReflectionApproximation, listCinematicLightingRigs, listCinematicMaterialPresets, resolveCinematicMaterialPresetId, selectCinematicLightingRig, validateRendererOwnedCinematicEvidence } from "./cinematic/index";
+export type { CinematicEvidenceFeature, CinematicRendererEvidenceFlag, CinematicRendererEvidenceValidation, CinematicRuntimeLight } from "./cinematic/index";
 export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
 export { analyzeRgbaFrameMotionRegions, analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type {
@@ -924,12 +927,12 @@ export {
   architecturalMaterialDescriptor,
   createArchitecturalMaterial,
   createArchitecturalMaterialCatalog
-} from "./ArchitecturalMaterialCatalog";
+} from "./MaterialPresets";
 export type {
   ArchitecturalMaterialCatalogSummary,
   ArchitecturalMaterialCategory,
   ArchitecturalMaterialDescriptor
-} from "./ArchitecturalMaterialCatalog";
+} from "./MaterialPresets";
 export { createArchitecturalLightingState } from "./ArchitecturalLighting";
 export type {
   ArchitectureInteriorLight,
@@ -1172,51 +1175,122 @@ export type {
   PbrTransmissionVolumeResponse,
   Vec3
 } from "./PbrReference";
-export * from "./production-runtime/geometry/ProjectedDecalGeometry";
-export * from "./DecalGeometry.js";
-export * from "./GeometryPrimitives.js";
-export * from "./Instancing.js";
-export * from "./LineGeometry.js";
-export * from "./SpriteGeometry.js";
-export * from "./Raycaster.js";
-export * from "./ReflectionProbe.js";
-export * from "./ReflectionSurfaces.js";
-export * from "./RenderQueue.js";
-export * from "./RenderState.js";
-export * from "./ResourceLifecycle.js";
-export * from "./UniformBinder.js";
-export * from "./performance/FrustumCuller.js";
-export * from "./performance/BVH.js";
-export * from "./performance/Octree.js";
-export * from "./performance/Batcher.js";
-export * from "./webgpu/WebGPUBuffer.js";
-export * from "./webgpu/WebGPUPipelineCache.js";
-export * from "./webgpu/WebGPUPostProcess.js";
-export * from "./webgpu/WebGPUTexture.js";
-export * from "./effects/Particle.js";
-export * from "./effects/ParticleEmitter.js";
-export * from "./effects/ParticleModule.js";
-export * from "./effects/VelocityModule.js";
-export * from "./effects/ColorModule.js";
-export * from "./effects/SizeModule.js";
-export * from "./effects/ForceModule.js";
-export * from "./effects/CollisionModule.js";
-export * from "./effects/TrailModule.js";
-export * from "./effects/TurbulenceModule.js";
-export * from "./effects/HeightfieldModule.js";
-export * from "./effects/LightingModule.js";
-export * from "./effects/SubEmitterModule.js";
-export * from "./effects/ParticleRenderer.js";
-export * from "./effects/ParticleRenderPass.js";
-export * from "./effects/GPUParticleBackend.js";
-export * from "./effects/ParticleSystem.js";
-export * from "./effects/ParticleEffectPresets.js";
-export * from "./effects/ParticleDiagnostics.js";
-export * from "./animation/index.js";
+export { createProjectedDecalGeometry, createRaycastProjectedDecalGeometry } from "./production-runtime/geometry/ProjectedDecalGeometry";
+export type { ProjectedDecalBox, ProjectedDecalRaycastOptions, ProjectedDecalTriangleMesh } from "./production-runtime/geometry/ProjectedDecalGeometry";
+// T5.3: "./DecalGeometry.js" names had no importers — removed from the barrel.
+// T5.3: "./GeometryPrimitives.js" names had no importers — removed from the barrel.
+// T5.3: "./Instancing.js" names had no importers — removed from the barrel.
+// T5.3: "./LineGeometry.js" names had no importers — removed from the barrel.
+// T5.3: "./SpriteGeometry.js" names had no importers — removed from the barrel.
+// T5.3: "./Raycaster.js" names had no importers — removed from the barrel.
+export { CubeCameraReflectionCapture } from "./ReflectionProbe.js";
+export { createReflectionSurface } from "./ReflectionSurfaces.js";
+// T5.3: "./RenderQueue.js" names had no importers — removed from the barrel.
+// T5.3: "./RenderState.js" names had no importers — removed from the barrel.
+// T5.3: "./ResourceLifecycle.js" names had no importers — removed from the barrel.
+// T5.3: "./UniformBinder.js" names had no importers — removed from the barrel.
+// T5.3: "./performance/FrustumCuller.js" names had no importers — removed from the barrel.
+// T5.3: "./performance/BVH.js" names had no importers — removed from the barrel.
+// T5.3: "./performance/Octree.js" names had no importers — removed from the barrel.
+// T5.3: "./performance/Batcher.js" names had no importers — removed from the barrel.
+// T5.3: "./webgpu/WebGPUBuffer.js" names had no importers — removed from the barrel.
+// T5.3: "./webgpu/WebGPUPipelineCache.js" names had no importers — removed from the barrel.
+// T5.3: "./webgpu/WebGPUPostProcess.js" names had no importers — removed from the barrel.
+// T5.3: "./webgpu/WebGPUTexture.js" names had no importers — removed from the barrel.
+export { createParticle } from "./effects/Particle.js";
+export type { Particle } from "./effects/Particle.js";
+export { ParticleEmitter } from "./effects/ParticleEmitter.js";
+export type { ParticleModule, ParticleUpdateContext } from "./effects/ParticleModule.js";
+export { VelocityModule } from "./effects/VelocityModule.js";
+export { ColorModule } from "./effects/ColorModule.js";
+export { SizeModule } from "./effects/SizeModule.js";
+export { ForceModule, WindModule } from "./effects/ForceModule.js";
+export { CollisionModule } from "./effects/CollisionModule.js";
+export { TrailModule, buildTrailRibbon, decodeTrailRingBuffer, encodeTrailCaptureDepth } from "./effects/TrailModule.js";
+export type { TrailPoint } from "./effects/TrailModule.js";
+export { TurbulenceModule, createCurlNoiseLUT, sampleCurlNoiseLUT } from "./effects/TurbulenceModule.js";
+export { HeightfieldModule, HeightfieldSampler, createSineHeightfield, resolveHeightfieldContact } from "./effects/HeightfieldModule.js";
+export { LightingModule, computeLitParticleColor } from "./effects/LightingModule.js";
+export { SubEmitterModule } from "./effects/SubEmitterModule.js";
+export { ParticleRenderer, SOFT_PARTICLE_WGSL, computeSoftParticleFade } from "./effects/ParticleRenderer.js";
+export type { ParticleRenderBatch, ParticleSortMode } from "./effects/ParticleRenderer.js";
+export { ParticleRenderPass } from "./effects/ParticleRenderPass.js";
+export { GPU_PARTICLE_EFFECT_HEIGHTFIELD, GPU_PARTICLE_EFFECT_LIFE_CURVES, GPU_PARTICLE_EFFECT_LIGHTING, GPU_PARTICLE_EFFECT_PLANES, GPU_PARTICLE_EFFECT_SIZE_CURVES, GPU_PARTICLE_EFFECT_SUB_EMITTERS, GPU_PARTICLE_EFFECT_TRAILS, GPU_PARTICLE_EFFECT_TURBULENCE, GPU_PARTICLE_EFFECT_WIND, GPU_PARTICLE_UNIFORM_BYTE_LENGTH, UnsupportedGPUParticleBackend, WebGPUParticleBackend, createBaseAttributeSnapshot, createEffectsParticleComputeShader, createTrailRingInit, encodeGPUParticleEffects, queryGPUParticleBackendCapabilities } from "./effects/GPUParticleBackend.js";
+export type { GPUParticleBackend, GPUParticleEffectsInput, GPUParticleSpawnInput, GPUParticleUpdateInput } from "./effects/GPUParticleBackend.js";
+export { ParticleSystem, collectGPUParticleEffects } from "./effects/ParticleSystem.js";
+export { createParticleEffectPreset } from "./effects/ParticleEffectPresets.js";
+export { createLayeredParticleBudgetPlan, createParticleBatchDiagnostics, summarizeParticleBatchDiagnostics } from "./effects/ParticleDiagnostics.js";
+export { ANIMATION_TOON_SHADER_MARKER, ANIMATION_TOON_SHADER_NAME, AnimationToonMaterial, applyAnimationRenderPreset, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport, quantizeToonBand, toonDiffuseRamp, toonRimTerm, toonShadeColor } from "./animation/index.js";
+export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "./animation/index.js";
 
 
-export * from "./effects/ResidentGPUParticleRenderer.js";
+// T5.3: "./effects/ResidentGPUParticleRenderer.js" names had no importers — removed from the barrel.
 
 // Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+
+// PRD-15 T5.4 restore — names dropped by the §6.1 curation that the
+// deprecated-subpath contract (pre-collapse surface until 4.0.0) requires.
+export { createDecalGeometry } from "./DecalGeometry.js";
+export type { DecalBasis, DecalBox, DecalGeometryResult, DecalRay, DecalRaycastHit, DecalRaycastOptions, DecalRaycastResult, DecalShape, DecalTriangleMesh } from "./DecalGeometry.js";
+export { createMatrixInstanceAttribute } from "./Instancing.js";
+export { Raycaster } from "./Raycaster.js";
+export { createReflectionProbe } from "./ReflectionProbe.js";
+export { createReflectiveFloorSurface, listReflectionSurfaceKinds } from "./ReflectionSurfaces.js";
+export { ResourceLifecycle } from "./ResourceLifecycle.js";
+export { createSpriteQuadGeometry } from "./SpriteGeometry.js";
+export { UniformBinder } from "./UniformBinder.js";
+export { ANIMATION_TOON_FRAGMENT_SOURCE, ANIMATION_TOON_MAX_BANDS, ANIMATION_TOON_MIN_BANDS, ANIMATION_TOON_VERTEX_SOURCE, registerAnimationToonShader } from "./animation/AnimationToonMaterial.js";
+export { defaultAnimationVisualQualityThresholds } from "./animation/AnimationVisualQuality.js";
+export { createCinematicBloomPass } from "./cinematic/BloomPass.js";
+export { createCinematicDepthHazePass } from "./cinematic/DepthHazePass.js";
+export { createCinematicFilmGrainPass } from "./cinematic/FilmGrainPass.js";
+export { createCinematicVignettePass } from "./cinematic/VignettePass.js";
+export { gravityForce } from "./effects/ForceModule.js";
+export { createGPUParticleBackend, detectGPUParticleBackend } from "./effects/GPUParticleBackend.js";
+export { addScaledVector3, cloneColor, cloneVector3, createColor, createVector3, normalizedParticleAge, setVector3 } from "./effects/Particle.js";
+export { applyParticleModules } from "./effects/ParticleModule.js";
+export { constantVelocity } from "./effects/VelocityModule.js";
+export { cullStaticItems } from "./performance/FrustumCuller.js";
+export { createFlatOctree } from "./performance/Octree.js";
+export { raycastProjectedDecalMesh } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
+export type { WebGPUParticleBackendOptions } from "./webgpu/WebGPUCompute.js";
+export type { WideLineSegment } from "./Geometry.js";
+export type { InstanceAttributePlan } from "./Instancing.js";
+export type { ColorWriteMask, PolygonOffsetState, ScissorRect, StencilCompare, StencilOperation, StencilState } from "./Material.js";
+export type { RaycastHit, RaycastTarget } from "./Raycaster.js";
+export type { CubeCameraReflectionCaptureOptions, CubeCameraReflectionCaptureResult, CubeCameraReflectionFace, CubeCameraReflectionFaceRenderer, ReflectionProbe } from "./ReflectionProbe.js";
+export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions, ReflectionSurfaceReport, ReflectionSurfaceSupportStatus } from "./ReflectionSurfaces.js";
+export type { AnimationMaterialTreatment } from "./MaterialPresets.js";
+export type { AnimationToonMaterialOptions, AnimationToonShaderRegistrar, ToonShadeInputs } from "./animation/AnimationToonMaterial.js";
+export type { AnimationRenderPresetLightingDescriptor, ApplyAnimationRenderPresetFrame, ApplyAnimationRenderPresetOptions, ApplyAnimationRenderPresetResult } from "./animation/applyAnimationRenderPreset.js";
+export type { CinematicBloomPass } from "./cinematic/BloomPass.js";
+export type { CinematicDepthCompositionPlan } from "./cinematic/CinematicDepthComposition.js";
+export type { CinematicDomOverlayRejection } from "./cinematic/CinematicEvidence.js";
+export type { CinematicLightRole, CinematicLightType, CinematicLightingRig, CinematicLightingRigId } from "./cinematic/CinematicLightingRig.js";
+export type { CinematicMaterialPreset, CinematicMaterialPresetId } from "./MaterialPresets.js";
+export type { CinematicColorGradePreset, CinematicPostProcessStack } from "./cinematic/CinematicPostProcess.js";
+export type { CinematicDepthHazePass } from "./cinematic/DepthHazePass.js";
+export type { CinematicEmissivePractical, CinematicEmissivePracticalLightSystem } from "./cinematic/EmissivePracticalLightSystem.js";
+export type { CinematicFilmGrainPass } from "./cinematic/FilmGrainPass.js";
+export type { CinematicFogVolumeSystem } from "./cinematic/FogVolumeSystem.js";
+export type { CinematicGlowCard, CinematicGlowCardSystem } from "./cinematic/GlowCardSystem.js";
+export type { CinematicRainParticleSystem } from "./cinematic/RainParticleSystem.js";
+export type { CinematicVignettePass } from "./cinematic/VignettePass.js";
+export type { CinematicWetReflectionApproximation } from "./cinematic/WetReflectionApproximation.js";
+export type { CollisionPlane } from "./effects/CollisionModule.js";
+export type { ColorKeyframe } from "./effects/ColorModule.js";
+export type { GPUParticleBackendCapabilities, GPUParticleSpawnResult, GPUParticleUpdateResult } from "./effects/GPUParticleBackend.js";
+export type { ColorLike, ParticleInitialState, Vector3Like } from "./effects/Particle.js";
+export type { LayeredParticleBudgetOptions, LayeredParticleBudgetPlan, ParticleBatchDiagnostics, ParticleBatchDiagnosticsInput, ParticleBatchDiagnosticsOptions, ParticleDensityTier, ParticleLayerBudget, ParticleLayerBudgetInput } from "./effects/ParticleDiagnostics.js";
+export type { ParticleEffectPresetName, ParticleEffectPresetOptions } from "./effects/ParticleEffectPresets.js";
+export type { EmissionResult, ParticleBurst, ParticleEmitterOptions, ParticleEmitterShape } from "./effects/ParticleEmitter.js";
+export type { ParticleRenderPassOptions, ParticleRenderPassUpdateMode, ParticleRenderPassUpdateOptions } from "./effects/ParticleRenderPass.js";
+export type { ParticleBatchBounds, ParticleDrawTarget, ParticleRenderOptions, ParticleSprite } from "./effects/ParticleRenderer.js";
+export type { ParticleSystemOptions, ParticleSystemStats } from "./effects/ParticleSystem.js";
+export type { SizeKeyframe } from "./effects/SizeModule.js";
+export type { TrailModuleOptions } from "./effects/TrailModule.js";
+export type { VectorKeyframe } from "./effects/VelocityModule.js";
+export type { OctreeNode } from "./performance/Octree.js";
+export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";

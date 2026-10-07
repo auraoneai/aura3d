@@ -9,7 +9,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 import { DirectionalLight, composeMat4, type Vec3 } from "@aura3d/scene";
 import { placeDecalFromPointer, seededDecals, type DecalPlacement } from "./decalPlacement";
 
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
   };
 
   try {
-    const renderer = await A3DRenderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,

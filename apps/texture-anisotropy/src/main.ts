@@ -8,7 +8,7 @@ import {
   VertexBuffer,
   VertexFormat
 } from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderer } from "@aura3d/engine/renderer";
 
 declare global {
   interface Window {
@@ -56,7 +56,7 @@ async function run(): Promise<void> {
   publish();
 
   try {
-    const renderer = await A3DRenderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2", antialias: true, preserveDrawingBuffer: true });
+    const renderer = await Renderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2", antialias: true, });
     const device = renderer.device;
     const shader = device.createShaderProgram({
       label: "texture-anisotropy-shader",

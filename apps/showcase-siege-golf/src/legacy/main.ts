@@ -1220,7 +1220,7 @@ function togglePause(): void {
 }
 
 // Map semantic game events onto audio cues and HUD beats.
-function consumeEvents(events: readonly import("./hole-flow").SiegeGameEvent[]): void {
+function consumeEvents(events: readonly import("../gameplay/hole-flow").SiegeGameEvent[]): void {
   for (const event of events) {
     recentEventLog.push(event.type + ":" + frameCount);
     if (recentEventLog.length > 60) recentEventLog.shift();

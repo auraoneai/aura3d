@@ -1,0 +1,131 @@
+{
+  "files": 7,
+  "rows": [
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 2,
+      "construct": "import { ProductionRuntimeRenderer } from \"@aura3d/engine/rendering/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 5,
+      "construct": "import { createCameraFrame } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 6,
+      "construct": "import { createGroundedStage } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 7,
+      "construct": "import { createStudioLighting } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 8,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 9,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 2,
+      "construct": "import { ProductionRuntimeRenderer } from \"@aura3d/engine/rendering/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/rendering/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 5,
+      "construct": "import { createCameraFrame } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 6,
+      "construct": "import { createGroundedStage } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 7,
+      "construct": "import { createStudioLighting } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 8,
+      "construct": "import { loadGltfScene } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/wow-webgpu-product-viewer/src/main.ts",
+      "line": 9,
+      "construct": "import { loadHdrEnvironment } from \"@aura3d/engine/production-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/production-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/postprocessing-depth-outline/src/main.ts",
+      "line": 6,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/postprocessing-depth-outline/src/main.ts",
+      "line": 6,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "apps/postprocessing-bloom/src/main.ts",
+      "line": 6,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/postprocessing-bloom/src/main.ts",
+      "line": 6,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    },
+    {
+      "file": "apps/loader-ktx2/src/main.ts",
+      "line": 8,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "none",
+      "note": "name has no §6.6 destination — kept on deprecated \"@aura3d/engine/advanced-runtime\" stub until 4.0.0"
+    },
+    {
+      "file": "apps/loader-ktx2/src/main.ts",
+      "line": 8,
+      "construct": "import { A3DRenderer } from \"@aura3d/engine/advanced-runtime\"",
+      "mapping": "exact",
+      "target": "@aura3d/engine/renderer"
+    }
+  ]
+}

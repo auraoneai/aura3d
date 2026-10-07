@@ -1,4 +1,4 @@
-import type { AuraLabelNode } from "./index.js";
+import type { AuraLabelNode } from "./nodes/types.js";
 import type { ProjectedLabel } from "./WorldLabelRenderer.js";
 
 /**

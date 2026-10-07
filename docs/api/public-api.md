@@ -19,40 +19,32 @@ pnpm verify:api-docs
 | `@aura3d/assets` | `3.0.1` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `3.0.1` | `packages/assets/src/gltf-runtime.ts` | 4 |
 | `@aura3d/audio` | `3.0.1` | `packages/audio/src/index.ts` | 31 |
-| `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 36 |
-| `@aura3d/controls` | `3.0.1` | `packages/controls/src/index.ts` | 31 |
+| `@aura3d/cli` | `3.0.1` | `packages/aura3d-cli/src/index.ts` | 37 |
+| `@aura3d/controls` | `3.0.1` | `packages/controls/src/index.ts` | 46 |
 | `@aura3d/core` | `3.0.1` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `3.0.1` | `packages/create-aura3d/src/index.ts` | 10 |
+| `create-aura3d` | `3.0.1` | `packages/create-aura3d/src/index.ts` | 11 |
 | `@aura3d/debug` | `3.0.1` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `3.0.1` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor` | `3.0.1` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `3.0.1` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 39 |
-| `@aura3d/environments` | `3.0.1` | `packages/environments/src/index.ts` | 5 |
-| `@aura3d/environments/node` | `3.0.1` | `packages/environments/src/node.ts` | 6 |
+| `@aura3d/engine` | `3.0.1` | `packages/engine/src/index.ts` | 21 |
 | `@aura3d/input` | `3.0.1` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/lean` | `3.0.1` | `packages/lean/src/index.ts` | 2 |
-| `@aura3d/lean/game` | `3.0.1` | `packages/lean/src/game.ts` | 20 |
-| `@aura3d/lean/product` | `3.0.1` | `packages/lean/src/product.ts` | 2 |
-| `@aura3d/materials` | `3.0.1` | `packages/materials/src/index.ts` | 1 |
-| `@aura3d/materials/node` | `3.0.1` | `packages/materials/src/node.ts` | 3 |
+| `@aura3d/lean` | `3.0.1` | `packages/lean/src/index.ts` | 1 |
+| `@aura3d/lean/game` | `3.0.1` | `packages/lean/src/game.ts` | 3 |
+| `@aura3d/lean/product` | `3.0.1` | `packages/lean/src/product.ts` | 1 |
 | `@aura3d/math` | `3.0.1` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/navigation-recast` | `3.0.1` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 22 |
-| `@aura3d/physics-rapier` | `3.0.1` | `packages/physics-rapier/src/index.ts` | 18 |
+| `@aura3d/physics` | `3.0.1` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `3.0.1` | `packages/physics-rapier/src/index.ts` | 22 |
 | `@aura3d/physics/solverless` | `3.0.1` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `3.0.1` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `3.0.1` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `3.0.1` | `packages/react/src/index.ts` | 37 |
-| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 305 |
+| `@aura3d/rendering` | `3.0.1` | `packages/rendering/src/index.ts` | 357 |
 | `@aura3d/rendering/extension-scalar-atlas` | `3.0.1` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
-| `@aura3d/rendering/lean-core-runtime` | `3.0.1` | `packages/rendering/src/lean-core-runtime.ts` | 6 |
-| `@aura3d/rendering/lean-runtime` | `3.0.1` | `packages/rendering/src/lean-runtime.ts` | 10 |
 | `@aura3d/rendering/reflection-surfaces` | `3.0.1` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
 | `@aura3d/rendering/webgpu` | `3.0.1` | `packages/rendering/src/webgpu.ts` | 8 |
 | `@aura3d/scene` | `3.0.1` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `3.0.1` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/three-compat` | `3.0.1` | `packages/three-compat/src/index.ts` | 33 |
 | `@aura3d/workflows` | `3.0.1` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
@@ -366,7 +358,8 @@ export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationRe
 export function validateGameAssets(options: AssetReadinessOptions = {}): AssetReadinessReport { return validateAssetReadiness("game", options);
 export function validateAnimationStudioAssets(options: AssetReadinessOptions = {}): AssetReadinessReport { return validateAssetReadiness("animation", options);
 export function createCharacterAssemblyPlan(options: CharacterAssemblyPlanOptions): CharacterAssemblyPlanResult { const projectDir = resolve(options.projectDir ?? process.cwd());
-export function initAgentFiles(options: { readonly projectDir?: string; readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all" }): readonly string[] { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function initAgentFiles(options: { readonly projectDir?: string;
+export function initAgentSetup(options: { readonly projectDir?: string;
 ```
 
 ## @aura3d/controls
@@ -409,6 +402,21 @@ export { ControlVector3 } from "./NativeControlTypes";
 export type { ControlObject3DLike, ControlPickMetadata, Vector3Like } from "./NativeControlTypes";
 export { createDefaultControlState } from "./ControlState";
 export type { ThreeCompatControlEvent, ThreeCompatControlState } from "./ControlState";
+export { CameraRig } from "./engine/CameraRig";
+export type { CameraRigState } from "./engine/CameraRig";
+export { clamp } from "./engine/ControlTypes";
+export type { CameraTransformLike, EulerLike, Vec3Like } from "./engine/ControlTypes";
+export { EditorFlyControls } from "./engine/EditorFlyControls";
+export type { EditorFlyControlsOptions } from "./engine/EditorFlyControls";
+export { createSceneCameraControlAdapter } from "./engine/SceneCameraAdapter";
+export type { SceneCameraControlAdapter } from "./engine/SceneCameraAdapter";
+export { ThirdPersonFollowControls } from "./engine/ThirdPersonFollowControls";
+export type { ThirdPersonFollowControlsOptions } from "./engine/ThirdPersonFollowControls";
+export { DEFAULT_ORBIT_MAX_POLAR } from "./engine/OrbitControls";
+export { OrbitControls as OrbitControlsEngine } from "./engine/OrbitControls";
+export type { OrbitCameraTransformLike } from "./engine/OrbitControls";
+export { FirstPersonControls as FirstPersonControlsEngine } from "./engine/FirstPersonControls";
+export { PointerLockControls as PointerLockControlsEngine } from "./engine/PointerLockControls";
 ```
 
 ## @aura3d/core
@@ -455,6 +463,7 @@ export { probeShowcaseGameGeometry, type ShowcaseGameGeometryCategory, type Show
 export type { ExtractOptions as ShowcaseGameGeometryExtractOptions, GeometryExtractionFailure as ShowcaseGameGeometryExtractionFailure, GeometryExtractionResult as ShowcaseGameGeometryExtractionResult, GeometryExtractionSuccess as ShowcaseGameGeometryExtractionSuccess } from "./showcase-spec-game-geometry-extractor.js";
 export type { ShowcasePlatformerPlayableSurfaceMap, ShowcaseRacingTrackTopology } from "./showcase-spec-types.js";
 export { SHOWCASE_ASSET_PAIR_COMPOSITION_THRESHOLDS, validateShowcaseAssetPairComposition, validateShowcaseAssetPairCompositionFromDisk, type ShowcaseAssetPairCompositionCategory, type ShowcaseAssetPairCompositionCheck, type ShowcaseAssetPairCompositionInput, type ShowcaseAssetPairCompositionReport, type ValidateShowcaseAssetPairCompositionFromDiskOptions } from "./showcase-spec-asset-pair-composition.js";
+export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkillsManifest, selectSkills, writeAgentSkills, type AuraAgentClient, type AuraAgentTarget, type AuraSkillMode, type AuraSkillsManifest, type WriteAgentSkillsOptions, type WriteAgentSkillsResult } from "./agent-skills.js";
 ```
 
 ## @aura3d/debug
@@ -532,18 +541,6 @@ export * from "./components/TagComponent.js";
 export * from "./components/ActiveComponent.js";
 export * from "./components/HierarchyComponent.js";
 export * from "./systems/index.js";
-```
-
-## @aura3d/editor
-
-- Version: `3.0.1`
-- Package manifest: `packages/editor/package.json`
-- Public entrypoint: `packages/editor/src/index.ts`
-
-### Export Declarations
-
-```ts
-export * from "@aura3d/editor-runtime";
 ```
 
 ## @aura3d/editor-runtime
@@ -653,7 +650,7 @@ export type { A3DApp, A3DAppDiagnostics, A3DAppOptions, A3DAppQualityPreset, A3D
 export { Engine } from "@aura3d/core";
 export { Renderer, analyzeRgbaFrameMotionRegions, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport, createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "@aura3d/rendering";
 export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, FrameMotionRegion, FrameMotionRegionMetrics, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "@aura3d/rendering";
-export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeExternalParityGLTFCorpus } from "@aura3d/assets";
+export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeExternalParityGLTFCorpus } from "@aura3d/assets/browser";
 export { loadProductAsset } from "@aura3d/product-studio";
 export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@aura3d/workflows";
 export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index.js";
@@ -667,59 +664,8 @@ export * from "./devtools/AuraPerformancePanel.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
-export const workflows = { assetViewer: createAssetViewerWorkflow, productConfigurator: createProductConfiguratorWorkflow, materialStudio: createMaterialStudioWorkflow, sceneShowcase: createSceneShowcaseWorkflow, interactiveScene: createInteractiveSceneWorkflow, animationLab: createAnimationLabWorkflow, comparison: createComparisonWorkflow } as const;
-export type A3DWorkflowApi = typeof workflows;
-export type A3DEnvironmentOptions = ExternalParityEnvironmentPipelineOptions;
-export type A3DEnvironment = ExternalParityEnvironmentPipeline;
-export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment { return createExternalParityEnvironmentPipeline(options);
-export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> { return await loadRenderableAsset(urlOrAsset, options);
-export async function loadProductAssetLazy(options: ProductAssetLoadOptions): Promise<ProductAsset> { markAuraLazySystemRequested("product-gltf-loader", "loadProductAssetLazy");
-export async function createPostProcessComposerLazy(options: PostProcessComposerOptions): Promise<PostProcessComposer> { markAuraLazySystemRequested("postprocess", "createPostProcessComposerLazy");
-export interface A3DMaterialVariantController<TVariantId extends string = string> { readonly current: TVariantId;
-export function createMaterialVariantController<TVariantId extends string>(
-export interface A3DScreenshotCapture { readonly mimeType: "image/png";
-export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | A3DApp): A3DScreenshotCapture { const canvas = isA3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
-export function inspectAsset(asset: GLTFAsset, resources?: GLTFRenderResources): GLTFAssetInspectionReport { return inspectGLTFAsset(asset, resources);
-export function createCompatibilityReport(manifest: GLTFCorpusManifest): AssetCompatibilityReport { return createAssetCompatibilityReport(manifest);
-export interface A3DAssetDiagnostics { readonly kind: RenderableAsset["kind"];
-export function createAssetDiagnostics(asset: RenderableAsset): A3DAssetDiagnostics { const gltf = asset.gltf;
-export interface A3DRenderDiagnostics { readonly drawCalls: number;
-export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): A3DRenderDiagnostics { return { drawCalls: diagnostics?.drawCalls ?? 0, buffers: diagnostics?.buffers ?? 0, shaders: diagnostics?.shaders ?? 0, textureCount: diagnostics?.textures, warnings: diagnostics ? [] : ["No render diagnostics have been recorded yet."] };
-export interface A3DDiagnosticsPanel { readonly kind: "a3d-diagnostics-panel";
-export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: A3DAssetDiagnostics } = {}): A3DDiagnosticsPanel { let render = createRenderDiagnostics(initial.render);
-```
-
-## @aura3d/environments
-
-- Version: `3.0.1`
-- Package manifest: `packages/environments/package.json`
-- Public entrypoint: `packages/environments/src/index.ts`
-
-### Export Declarations
-
-```ts
-export { createThreeCompatPMREMDiagnostics } from "./PMREMPreset.js";
-export type { ThreeCompatPMREMDiagnostics, ThreeCompatPMREMPreset } from "./PMREMPreset.js";
-export { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview.js";
-export type { ThreeCompatEnvironmentProbePreview } from "./EnvironmentPreview.js";
-export type { ThreeCompatEnvironmentDiagnostics, ThreeCompatEnvironmentKind, ThreeCompatEnvironmentProbeType, ThreeCompatHDRIEnvironmentPreset } from "./HDRIEnvironment.js";
-```
-
-## @aura3d/environments/node
-
-- Version: `3.0.1`
-- Package manifest: `packages/environments/package.json`
-- Public entrypoint: `packages/environments/src/node.ts`
-
-### Export Declarations
-
-```ts
-export * from "./index.js";
-export { findThreeCompatEnvironmentPreset, listThreeCompatEnvironmentPresets, loadThreeCompatEnvironmentManifest, createThreeCompatEnvironmentGalleryModel, summarizeThreeCompatEnvironmentLibrary } from "./EnvironmentRegistry.js";
-export type { ThreeCompatEnvironmentLibrarySummary, ThreeCompatEnvironmentManifest } from "./EnvironmentRegistry.js";
-export { createThreeCompatEnvironmentDiagnostics, verifyThreeCompatHdriFile } from "./HDRIEnvironment.js";
-export { createProductionEnvironmentCorpusSummary, inspectProductionHDR, loadProductionEnvironmentManifest } from "./production-runtime/ProductionEnvironmentCorpus.js";
-export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvironmentCorpusSummary, ProductionEnvironmentManifest, ProductionEnvironmentProbeType, ProductionEnvironmentReadinessEntry, ProductionEnvironmentRequirements, ProductionPMREMPreset } from "./production-runtime/ProductionEnvironmentCorpus.js";
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";
 ```
 
 ## @aura3d/input
@@ -790,8 +736,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 ### Export Declarations
 
 ```ts
-export * from "./base.js";
-export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanApp { return createAuraAppWithRenderer(target, { ...options, rendererFactory: LeanProductionRenderer });
+export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets } from "@aura3d/engine";
 ```
 
 ## @aura3d/lean/game
@@ -803,26 +748,9 @@ export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreate
 ### Export Declarations
 
 ```ts
-export * from "./product.js";
-export type * from "./ArcadeRuntime.js";
-export interface AuraLeanGameApp extends AuraLeanApp { input(options: LeanGameInputOptions): LeanGameInputController;
-export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanGameApp { const base = createProductApp(target, options);
-export type LeanCameraRigKind = "side-view-follow" | "top-down-follow";
-export interface LeanCameraRigOptions { readonly kind?: LeanCameraRigKind;
-export interface LeanCameraRig { readonly kind: LeanCameraRigKind;
-export function createLeanCameraRig(options: LeanCameraRigOptions = {}): LeanCameraRig { const kind = options.kind ?? "side-view-follow";
-export interface LeanGameFeelOptions { /** Trauma decay per second (default 1.6). */ readonly traumaDecay?: number;
-export interface LeanGameFeel { addTrauma(amount: number): number;
-export function createLeanGameFeel(options: LeanGameFeelOptions = {}): LeanGameFeel { const traumaDecay = Math.max(0.1, options.traumaDecay ?? 1.6);
-export interface LeanDebugDraw { readonly enabled: boolean;
-export function createLeanDebugDraw(initial = false): LeanDebugDraw { let enabled = initial;
-export type LeanPerformanceGovernorMode = "off" | "conservative" | "aggressive";
-export interface LeanPerformanceGovernorSettings { readonly resolutionScale: number;
-export function createLeanPerformanceGovernor(mode: LeanPerformanceGovernorMode = "conservative") { const resolutions = [1, 0.85, 0.7, 0.5];
-export interface LeanTextOptions { readonly atlas?: SdfFontAtlasOptions;
-export interface LeanText { readonly atlas: SdfFontAtlas;
-export function createLeanText(options: LeanTextOptions = {}): LeanText { const atlas = createSdfFontAtlas(options.atlas);
-export const game = { input: createLeanGameInput, platformer: createLeanPlatformer, cameraRig: createLeanCameraRig, gameFeel: createLeanGameFeel, debugDraw: createLeanDebugDraw, performanceGovernor: createLeanPerformanceGovernor, text: createLeanText, runtime: "lean-deterministic-arcade" } as const;
+export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets, game } from "@aura3d/engine";
+export type { AuraNodeBuilder as AuraLeanNodeBuilder } from "@aura3d/engine";
+export type { GamePlatformerEvent as LeanPlatformerEvent } from "@aura3d/engine";
 ```
 
 ## @aura3d/lean/product
@@ -834,34 +762,7 @@ export const game = { input: createLeanGameInput, platformer: createLeanPlatform
 ### Export Declarations
 
 ```ts
-export * from "./base.js";
-export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanApp { const pipelines: Array<{ readonly node: AuraLeanModelSpec; readonly pipeline: ProductionGLTFRenderPipeline }> = [];
-```
-
-## @aura3d/materials
-
-- Version: `3.0.1`
-- Package manifest: `packages/materials/package.json`
-- Public entrypoint: `packages/materials/src/index.ts`
-
-### Export Declarations
-
-```ts
-export * from "./browser-index.js";
-```
-
-## @aura3d/materials/node
-
-- Version: `3.0.1`
-- Package manifest: `packages/materials/package.json`
-- Public entrypoint: `packages/materials/src/node.ts`
-
-### Export Declarations
-
-```ts
-export * from "./browser-index.js";
-export { summarizeThreeCompatMaterialLibrary, validateGameReadyMaterialLibrary, validateGameReadyMaterialPreset } from "./MaterialValidation.js";
-export type { GameReadyMaterialLibraryValidation, GameReadyMaterialValidationResult, ThreeCompatMaterialLibrarySummary } from "./MaterialValidation.js";
+export { createAuraApp, scene, model, primitives, material, lights, camera, environments, interactions, defineAuraAssets } from "@aura3d/engine";
 ```
 
 ## @aura3d/math
@@ -940,11 +841,13 @@ export * from "./Raycast.js";
 export * from "./TimeOfImpact.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
+export * from "./PhysicalCharacterController.js";
 export * from "./ArcadeCharacterController.js";
 export * from "./FightingCharacterController.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
+export * from "./PhysicalVehicleController.js";
 export * from "./ArcadeVehicleTelemetry.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
@@ -976,6 +879,10 @@ export class RapierJointHandle { readonly #joint: Rapier.ImpulseJoint;
 export interface RapierRayHit { readonly body: RapierBodyHandle;
 export interface RapierCharacterMovement { readonly requested: PhysicsVec3;
 export class RapierCharacterControllerHandle { readonly #world: RapierPhysicsWorld;
+export interface RapierWheelTuning { readonly suspensionStiffness?: number;
+export interface RapierWheelSpec extends RapierWheelTuning { readonly connection: PhysicsVec3;
+export interface RapierWheelCommand { readonly engineForce?: number;
+export interface RapierWheelState { readonly index: number;
 export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld;
 export class RapierPhysicsWorld { readonly #module: RapierModule;
 export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
@@ -1200,8 +1107,8 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { isTextureBinding, TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, describeWebGPULostDevice, resolveProductionRuntimeRendererBackend, screenWebGPURenderBundlePrototype, WEBGPU_PARITY_PLAN, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
-export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, DualProbeEnvironmentLightingOptions, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, WebGPULostDeviceReport, WebGPUParityFeatureId, WebGPUParityFeatureRow, WebGPUParityFeatureStatus, WebGPURenderBundlePrototype, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
+export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, describeWebGPULostDevice, resolveProductionRuntimeRendererBackend, screenWebGPURenderBundlePrototype, WEBGPU_PARITY_PLAN, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, rendererFeatureReport, rendererInteractiveFeatureReport, rendererProofCapture, rendererShadowReport, validateProductionRendererInput, summarizeProductionAnimationWorkflow, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
+export type { ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, DualProbeEnvironmentLightingOptions, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RendererTimingDiagnostics, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, WebGPULostDeviceReport, WebGPUParityFeatureId, WebGPUParityFeatureRow, WebGPUParityFeatureStatus, WebGPURenderBundlePrototype, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
 export type { PortableShaderCompilationResult, PortableShaderMaterialOptions, PortableShaderSources, PortableShaderStagePair, PortableShaderUniform } from "./PortableShaderMaterial";
@@ -1288,7 +1195,8 @@ export type { SdfFontAtlas, SdfFontAtlasOptions, SdfGlyphMetrics, SdfPixelBackin
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
-export * from "./cinematic/index";
+export { createCinematicDepthCompositionPlan, createCinematicLightingRig, createCinematicMaterialPreset, createCinematicPBRMaterial, createCinematicPostProcessStack, createDomOverlayEvidenceFlag, createEmissivePracticalLightSystem, createFogVolumeSystem, createGlowCardSystem, createRainParticleSystem, createRendererOwnedEvidenceFlag, createWetReflectionApproximation, listCinematicLightingRigs, listCinematicMaterialPresets, resolveCinematicMaterialPresetId, selectCinematicLightingRig, validateRendererOwnedCinematicEvidence } from "./cinematic/index";
+export type { CinematicEvidenceFeature, CinematicRendererEvidenceFlag, CinematicRendererEvidenceValidation, CinematicRuntimeLight } from "./cinematic/index";
 export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
 export { analyzeRgbaFrameMotionRegions, analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type { FrameVisualBounds, FrameVisualMetrics, FrameVisualMetricsOptions, FrameMotionRegion, FrameMotionRegionMetrics, FrameVisualQualityResult, FrameVisualQualityThresholds } from "./FrameVisualMetrics";
@@ -1308,8 +1216,8 @@ export { ShadowProjectionBuilder } from "./ShadowProjection";
 export type { ShadowProjection, ShadowProjectionOptions, Vec3Tuple } from "./ShadowProjection";
 export { BloomPass, DepthVisualizationPass, FXAAPass, ToneMappingPass, applyToneMappingPreset, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, computeAutoExposureFromHistogram, computeExposureHistogramFromPixels, createDepthTextureBinding, createToneMappingCalibration, depthTextureStats, depthOfFieldPixels, filmGrainPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, toneMappingPresets, volumetricLightPixels, resolveToneMappingPreset, visualizeDepthTexture } from "./PostProcessPass";
 export type { AutoExposureOptions, AutoExposureResult, BloomOptions, BloomPassOptions, BloomResult, ChromaticAberrationOptions, ChromaticAberrationResult, ColorGradeOptions, ColorGradeResult, ContactShadowPostProcessOptions, ContactShadowPostProcessResult, DepthTextureBinding, DepthTextureFormat, DepthTextureStats, DepthVisualizationPassOptions, DepthVisualizationResult, DepthOfFieldOptions, DepthOfFieldResult, FilmGrainOptions, FilmGrainResult, FXAAOptions, FXAAPassOptions, FXAAResult, HdrToneMappingResult, ExposureHistogram, ExposureHistogramOptions, MotionBlurOptions, MotionBlurResult, OutlineOptions, OutlineResult, PostProcessColorSpace, SSAOOptions, SSAOResult, SSROptions, SSRResult, TAAOptions, TAAResult, ToneMappingCalibration, ToneMappingCalibrationSample, ToneMappingOperator, ToneMappingOptions, ToneMappingPassOptions, ToneMappingPreset, ToneMappingPresetName, ToneMappingPresetResult, ToneMappingResult, VolumetricLightOptions, VolumetricLightResult } from "./PostProcessPass";
-export { architecturalMaterialCatalogSummary, architecturalMaterialDescriptor, createArchitecturalMaterial, createArchitecturalMaterialCatalog } from "./ArchitecturalMaterialCatalog";
-export type { ArchitecturalMaterialCatalogSummary, ArchitecturalMaterialCategory, ArchitecturalMaterialDescriptor } from "./ArchitecturalMaterialCatalog";
+export { architecturalMaterialCatalogSummary, architecturalMaterialDescriptor, createArchitecturalMaterial, createArchitecturalMaterialCatalog } from "./MaterialPresets";
+export type { ArchitecturalMaterialCatalogSummary, ArchitecturalMaterialCategory, ArchitecturalMaterialDescriptor } from "./MaterialPresets";
 export { createArchitecturalLightingState } from "./ArchitecturalLighting";
 export type { ArchitectureInteriorLight, ArchitecturalLightingState, ArchitecturalLightingOptions, ArchitectureLightingPreset, ArchitectureLightKind, ArchitectureRgb, ArchitectureVector3 } from "./ArchitecturalLighting";
 export { createArchitecturalMeasurementSet } from "./ArchitecturalMeasurement";
@@ -1362,48 +1270,99 @@ export type { EnvironmentPresetPack, EnvironmentPresetPackEntry, EnvironmentPres
 export type { ExternalParityEnvironmentLightingBundle, ExternalParityEnvironmentPreset, ExternalParityDirectionalShadowEvidence, ExternalParityLdrPostprocessSummary, ExternalParityReadbackDevice, ExternalParityRenderPresetEvidence, ExternalParityRenderPresetEvidenceOptions, ExternalParityRenderPresetFeature, ExternalParityRenderPresetFeatureStatus } from "./ExternalParityRenderPreset";
 export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrAnisotropicDistribution, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrCharlieSheen, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEncodeOutput, pbrEnvironmentFogFactor, pbrEnvironmentLight, pbrEnvironmentLightSplitSum, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrIridescenceColor, pbrLinearToSrgbChannel, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
 export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrFogFactorInput, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrSplitSumEnvironmentInput, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
-export * from "./production-runtime/geometry/ProjectedDecalGeometry";
-export * from "./DecalGeometry.js";
-export * from "./GeometryPrimitives.js";
-export * from "./Instancing.js";
-export * from "./LineGeometry.js";
-export * from "./SpriteGeometry.js";
-export * from "./Raycaster.js";
-export * from "./ReflectionProbe.js";
-export * from "./ReflectionSurfaces.js";
-export * from "./RenderQueue.js";
-export * from "./RenderState.js";
-export * from "./ResourceLifecycle.js";
-export * from "./UniformBinder.js";
-export * from "./performance/FrustumCuller.js";
-export * from "./performance/BVH.js";
-export * from "./performance/Octree.js";
-export * from "./performance/Batcher.js";
-export * from "./webgpu/WebGPUBuffer.js";
-export * from "./webgpu/WebGPUPipelineCache.js";
-export * from "./webgpu/WebGPUPostProcess.js";
-export * from "./webgpu/WebGPUTexture.js";
-export * from "./effects/Particle.js";
-export * from "./effects/ParticleEmitter.js";
-export * from "./effects/ParticleModule.js";
-export * from "./effects/VelocityModule.js";
-export * from "./effects/ColorModule.js";
-export * from "./effects/SizeModule.js";
-export * from "./effects/ForceModule.js";
-export * from "./effects/CollisionModule.js";
-export * from "./effects/TrailModule.js";
-export * from "./effects/TurbulenceModule.js";
-export * from "./effects/HeightfieldModule.js";
-export * from "./effects/LightingModule.js";
-export * from "./effects/SubEmitterModule.js";
-export * from "./effects/ParticleRenderer.js";
-export * from "./effects/ParticleRenderPass.js";
-export * from "./effects/GPUParticleBackend.js";
-export * from "./effects/ParticleSystem.js";
-export * from "./effects/ParticleEffectPresets.js";
-export * from "./effects/ParticleDiagnostics.js";
-export * from "./animation/index.js";
-export * from "./effects/ResidentGPUParticleRenderer.js";
+export { createProjectedDecalGeometry, createRaycastProjectedDecalGeometry } from "./production-runtime/geometry/ProjectedDecalGeometry";
+export type { ProjectedDecalBox, ProjectedDecalRaycastOptions, ProjectedDecalTriangleMesh } from "./production-runtime/geometry/ProjectedDecalGeometry";
+export { CubeCameraReflectionCapture } from "./ReflectionProbe.js";
+export { createReflectionSurface } from "./ReflectionSurfaces.js";
+export { createParticle } from "./effects/Particle.js";
+export type { Particle } from "./effects/Particle.js";
+export { ParticleEmitter } from "./effects/ParticleEmitter.js";
+export type { ParticleModule, ParticleUpdateContext } from "./effects/ParticleModule.js";
+export { VelocityModule } from "./effects/VelocityModule.js";
+export { ColorModule } from "./effects/ColorModule.js";
+export { SizeModule } from "./effects/SizeModule.js";
+export { ForceModule, WindModule } from "./effects/ForceModule.js";
+export { CollisionModule } from "./effects/CollisionModule.js";
+export { TrailModule, buildTrailRibbon, decodeTrailRingBuffer, encodeTrailCaptureDepth } from "./effects/TrailModule.js";
+export type { TrailPoint } from "./effects/TrailModule.js";
+export { TurbulenceModule, createCurlNoiseLUT, sampleCurlNoiseLUT } from "./effects/TurbulenceModule.js";
+export { HeightfieldModule, HeightfieldSampler, createSineHeightfield, resolveHeightfieldContact } from "./effects/HeightfieldModule.js";
+export { LightingModule, computeLitParticleColor } from "./effects/LightingModule.js";
+export { SubEmitterModule } from "./effects/SubEmitterModule.js";
+export { ParticleRenderer, SOFT_PARTICLE_WGSL, computeSoftParticleFade } from "./effects/ParticleRenderer.js";
+export type { ParticleRenderBatch, ParticleSortMode } from "./effects/ParticleRenderer.js";
+export { ParticleRenderPass } from "./effects/ParticleRenderPass.js";
+export { GPU_PARTICLE_EFFECT_HEIGHTFIELD, GPU_PARTICLE_EFFECT_LIFE_CURVES, GPU_PARTICLE_EFFECT_LIGHTING, GPU_PARTICLE_EFFECT_PLANES, GPU_PARTICLE_EFFECT_SIZE_CURVES, GPU_PARTICLE_EFFECT_SUB_EMITTERS, GPU_PARTICLE_EFFECT_TRAILS, GPU_PARTICLE_EFFECT_TURBULENCE, GPU_PARTICLE_EFFECT_WIND, GPU_PARTICLE_UNIFORM_BYTE_LENGTH, UnsupportedGPUParticleBackend, WebGPUParticleBackend, createBaseAttributeSnapshot, createEffectsParticleComputeShader, createTrailRingInit, encodeGPUParticleEffects, queryGPUParticleBackendCapabilities } from "./effects/GPUParticleBackend.js";
+export type { GPUParticleBackend, GPUParticleEffectsInput, GPUParticleSpawnInput, GPUParticleUpdateInput } from "./effects/GPUParticleBackend.js";
+export { ParticleSystem, collectGPUParticleEffects } from "./effects/ParticleSystem.js";
+export { createParticleEffectPreset } from "./effects/ParticleEffectPresets.js";
+export { createLayeredParticleBudgetPlan, createParticleBatchDiagnostics, summarizeParticleBatchDiagnostics } from "./effects/ParticleDiagnostics.js";
+export { ANIMATION_TOON_SHADER_MARKER, ANIMATION_TOON_SHADER_NAME, AnimationToonMaterial, applyAnimationRenderPreset, createAnimationMaterialStyle, createAnimationRenderPreset, createAnimationVisualQualityReport, quantizeToonBand, toonDiffuseRamp, toonRimTerm, toonShadeColor } from "./animation/index.js";
+export type { AnimationFrameVisualInput, AnimationFrameVisualQuality, AnimationMaterialStyle, AnimationMaterialStyleOptions, AnimationRenderPresetEvidence, AnimationRenderPresetOptions, AnimationVisualQualityOptions, AnimationVisualQualityReport } from "./animation/index.js";
+export * from "./contracts/index.js";
+export * from "./lanes/index.js";
+export { createDecalGeometry } from "./DecalGeometry.js";
+export type { DecalBasis, DecalBox, DecalGeometryResult, DecalRay, DecalRaycastHit, DecalRaycastOptions, DecalRaycastResult, DecalShape, DecalTriangleMesh } from "./DecalGeometry.js";
+export { createMatrixInstanceAttribute } from "./Instancing.js";
+export { Raycaster } from "./Raycaster.js";
+export { createReflectionProbe } from "./ReflectionProbe.js";
+export { createReflectiveFloorSurface, listReflectionSurfaceKinds } from "./ReflectionSurfaces.js";
+export { ResourceLifecycle } from "./ResourceLifecycle.js";
+export { createSpriteQuadGeometry } from "./SpriteGeometry.js";
+export { UniformBinder } from "./UniformBinder.js";
+export { ANIMATION_TOON_FRAGMENT_SOURCE, ANIMATION_TOON_MAX_BANDS, ANIMATION_TOON_MIN_BANDS, ANIMATION_TOON_VERTEX_SOURCE, registerAnimationToonShader } from "./animation/AnimationToonMaterial.js";
+export { defaultAnimationVisualQualityThresholds } from "./animation/AnimationVisualQuality.js";
+export { createCinematicBloomPass } from "./cinematic/BloomPass.js";
+export { createCinematicDepthHazePass } from "./cinematic/DepthHazePass.js";
+export { createCinematicFilmGrainPass } from "./cinematic/FilmGrainPass.js";
+export { createCinematicVignettePass } from "./cinematic/VignettePass.js";
+export { gravityForce } from "./effects/ForceModule.js";
+export { createGPUParticleBackend, detectGPUParticleBackend } from "./effects/GPUParticleBackend.js";
+export { addScaledVector3, cloneColor, cloneVector3, createColor, createVector3, normalizedParticleAge, setVector3 } from "./effects/Particle.js";
+export { applyParticleModules } from "./effects/ParticleModule.js";
+export { constantVelocity } from "./effects/VelocityModule.js";
+export { cullStaticItems } from "./performance/FrustumCuller.js";
+export { createFlatOctree } from "./performance/Octree.js";
+export { raycastProjectedDecalMesh } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
+export type { WebGPUParticleBackendOptions } from "./webgpu/WebGPUCompute.js";
+export type { WideLineSegment } from "./Geometry.js";
+export type { InstanceAttributePlan } from "./Instancing.js";
+export type { ColorWriteMask, PolygonOffsetState, ScissorRect, StencilCompare, StencilOperation, StencilState } from "./Material.js";
+export type { RaycastHit, RaycastTarget } from "./Raycaster.js";
+export type { CubeCameraReflectionCaptureOptions, CubeCameraReflectionCaptureResult, CubeCameraReflectionFace, CubeCameraReflectionFaceRenderer, ReflectionProbe } from "./ReflectionProbe.js";
+export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions, ReflectionSurfaceReport, ReflectionSurfaceSupportStatus } from "./ReflectionSurfaces.js";
+export type { AnimationMaterialTreatment } from "./MaterialPresets.js";
+export type { AnimationToonMaterialOptions, AnimationToonShaderRegistrar, ToonShadeInputs } from "./animation/AnimationToonMaterial.js";
+export type { AnimationRenderPresetLightingDescriptor, ApplyAnimationRenderPresetFrame, ApplyAnimationRenderPresetOptions, ApplyAnimationRenderPresetResult } from "./animation/applyAnimationRenderPreset.js";
+export type { CinematicBloomPass } from "./cinematic/BloomPass.js";
+export type { CinematicDepthCompositionPlan } from "./cinematic/CinematicDepthComposition.js";
+export type { CinematicDomOverlayRejection } from "./cinematic/CinematicEvidence.js";
+export type { CinematicLightRole, CinematicLightType, CinematicLightingRig, CinematicLightingRigId } from "./cinematic/CinematicLightingRig.js";
+export type { CinematicMaterialPreset, CinematicMaterialPresetId } from "./MaterialPresets.js";
+export type { CinematicColorGradePreset, CinematicPostProcessStack } from "./cinematic/CinematicPostProcess.js";
+export type { CinematicDepthHazePass } from "./cinematic/DepthHazePass.js";
+export type { CinematicEmissivePractical, CinematicEmissivePracticalLightSystem } from "./cinematic/EmissivePracticalLightSystem.js";
+export type { CinematicFilmGrainPass } from "./cinematic/FilmGrainPass.js";
+export type { CinematicFogVolumeSystem } from "./cinematic/FogVolumeSystem.js";
+export type { CinematicGlowCard, CinematicGlowCardSystem } from "./cinematic/GlowCardSystem.js";
+export type { CinematicRainParticleSystem } from "./cinematic/RainParticleSystem.js";
+export type { CinematicVignettePass } from "./cinematic/VignettePass.js";
+export type { CinematicWetReflectionApproximation } from "./cinematic/WetReflectionApproximation.js";
+export type { CollisionPlane } from "./effects/CollisionModule.js";
+export type { ColorKeyframe } from "./effects/ColorModule.js";
+export type { GPUParticleBackendCapabilities, GPUParticleSpawnResult, GPUParticleUpdateResult } from "./effects/GPUParticleBackend.js";
+export type { ColorLike, ParticleInitialState, Vector3Like } from "./effects/Particle.js";
+export type { LayeredParticleBudgetOptions, LayeredParticleBudgetPlan, ParticleBatchDiagnostics, ParticleBatchDiagnosticsInput, ParticleBatchDiagnosticsOptions, ParticleDensityTier, ParticleLayerBudget, ParticleLayerBudgetInput } from "./effects/ParticleDiagnostics.js";
+export type { ParticleEffectPresetName, ParticleEffectPresetOptions } from "./effects/ParticleEffectPresets.js";
+export type { EmissionResult, ParticleBurst, ParticleEmitterOptions, ParticleEmitterShape } from "./effects/ParticleEmitter.js";
+export type { ParticleRenderPassOptions, ParticleRenderPassUpdateMode, ParticleRenderPassUpdateOptions } from "./effects/ParticleRenderPass.js";
+export type { ParticleBatchBounds, ParticleDrawTarget, ParticleRenderOptions, ParticleSprite } from "./effects/ParticleRenderer.js";
+export type { ParticleSystemOptions, ParticleSystemStats } from "./effects/ParticleSystem.js";
+export type { SizeKeyframe } from "./effects/SizeModule.js";
+export type { TrailModuleOptions } from "./effects/TrailModule.js";
+export type { VectorKeyframe } from "./effects/VelocityModule.js";
+export type { OctreeNode } from "./performance/Octree.js";
+export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
 ```
 
 ## @aura3d/rendering/extension-scalar-atlas
@@ -1417,44 +1376,6 @@ export * from "./effects/ResidentGPUParticleRenderer.js";
 ```ts
 export { EXTENSION_SCALAR_ATLAS_SLOTS, createExtensionScalarAtlas } from "./ExtensionScalarAtlas";
 export type { ExtensionScalarAtlas, ExtensionScalarAtlasSlot, ExtensionScalarPixels } from "./ExtensionScalarAtlas";
-```
-
-## @aura3d/rendering/lean-core-runtime
-
-- Version: `3.0.1`
-- Package manifest: `packages/rendering/package.json`
-- Public entrypoint: `packages/rendering/src/lean-core-runtime.ts`
-
-### Export Declarations
-
-```ts
-export { Geometry } from "./Geometry.js";
-export { PBRMaterial } from "./PBRMaterial.js";
-export { LeanProductionRenderer } from "./lean/LeanProductionRenderer.js";
-export type { LeanProductionRendererOptions } from "./lean/LeanProductionRenderer.js";
-export type { CameraLike, RenderSource } from "./Renderer.js";
-export type { RenderItem } from "./ForwardPass.js";
-```
-
-## @aura3d/rendering/lean-runtime
-
-- Version: `3.0.1`
-- Package manifest: `packages/rendering/package.json`
-- Public entrypoint: `packages/rendering/src/lean-runtime.ts`
-
-### Export Declarations
-
-```ts
-export { Geometry } from "./Geometry.js";
-export { PBRMaterial } from "./PBRMaterial.js";
-export { LeanProductionRenderer } from "./lean/LeanProductionRenderer.js";
-export type { LeanProductionRendererOptions } from "./lean/LeanProductionRenderer.js";
-export { LeanProductRenderer } from "./lean/LeanProductRenderer.js";
-export type { LeanProductRendererOptions } from "./lean/LeanProductRenderer.js";
-export { collectRenderItems } from "./Renderer.js";
-export type { CameraLike, RenderSource } from "./Renderer.js";
-export type { RenderItem } from "./ForwardPass.js";
-export type { ProductionImportedAssetRenderMetadata, ProductionRendererInput } from "./production-runtime/ProductionRendererTypes.js";
 ```
 
 ## @aura3d/rendering/reflection-surfaces
@@ -1571,50 +1492,6 @@ export type { AnimationNodeCategory } from "./AnimationNodeCategories";
 export { animationVisualNodeDefinitions } from "./AnimationVisualNodes";
 export { validateNode } from "./VisualNode";
 export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from "./VisualNode";
-```
-
-## @aura3d/three-compat
-
-- Version: `3.0.1`
-- Package manifest: `packages/three-compat/package.json`
-- Public entrypoint: `packages/three-compat/src/index.ts`
-
-### Export Declarations
-
-```ts
-export { REQUIRED_THREE_API_CATEGORIES, THREE_EXAMPLES_INVENTORY, buildThreeApiInventory, categorizeThreeExport } from "./ThreeApiInventory";
-export { GroupCompat, LineSegmentsCompat, MeshCompat, Object3DCompat, PointsCompat, SpriteBatchCompat, SpriteCompat } from "./core/Object3DCompat";
-export type { SpriteBatchInstanceCompat } from "./core/Object3DCompat";
-export { SceneCompat } from "./core/SceneCompat";
-export { RaycasterCompat } from "./core/RaycasterCompat";
-export type { RaycasterCompatIntersection } from "./core/RaycasterCompat";
-export { ColorCompat, Matrix4Compat, QuaternionCompat, Vector3Compat } from "./math";
-export { CameraCompat, OrthographicCameraCompat, PerspectiveCameraCompat } from "./cameras";
-export { BoxGeometryCompat, BufferGeometryCompat, CircleGeometryCompat, ConeGeometryCompat, CylinderGeometryCompat, InstancedBufferGeometryCompat, PlaneGeometryCompat, SphereGeometryCompat, TorusGeometryCompat, THREE_COMPAT_COMPAT_GEOMETRY_TYPES } from "./geometries";
-export type { BufferAttributeCompat } from "./geometries";
-export { LineBasicMaterialCompat, MaterialCompat, MeshBasicMaterialCompat, MeshLambertMaterialCompat, MeshPhongMaterialCompat, MeshPhysicalMaterialCompat, MeshStandardMaterialCompat, PointsMaterialCompat, ShaderMaterialCompat, SpriteMaterialCompat, THREE_COMPAT_COMPAT_MATERIAL_TYPES } from "./materials";
-export type { MaterialCompatParameters } from "./materials";
-export { TextureCompat, TextureLoaderCompat, THREE_COMPAT_COMPAT_TEXTURE_SETTINGS } from "./textures";
-export type { TextureFilterCompat, TextureWrapCompat } from "./textures";
-export { WebGLMultipleRenderTargetsCompat, WebGLRenderTargetCompat } from "./render-targets";
-export { CubeTextureLoaderCompat, EXRLoaderCompat, GLTFLoaderCompat, HDRLoaderCompat, KTX2LoaderCompat, MTLLoaderCompat, OBJLoaderCompat, ThreeCompatTextureLoader } from "./loaders";
-export { ArcballControls, DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
-export type { ArcballCameraLike, ArcballControlsOptions, TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
-export { APPROXIMATION_LEDGER, assertLedgerCovers, getApproximationLedgerRow, listApproximationShims } from "./ApproximationLedger";
-export type { ApproximationLedgerFidelity, ApproximationLedgerRow } from "./ApproximationLedger";
-export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "./animation";
-export { THREE_COMPAT_THREE_IMPORT_MAP, THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS } from "./migration/ImportMap";
-export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
-export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
-export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
-export type { ThreeCompatCompatibilityWarning } from "./migration/CompatibilityWarnings";
-export { CSS2D_CSS3D_MANUAL_MAP, R3F_MIGRATION_TABLE_POINTER, createR3fMigrationWarnings } from "./migration/R3fMigration";
-export type { Css2DCss3DManualMapping } from "./migration/R3fMigration";
-export { AmbientLightCompat, DirectionalLightCompat, HemisphereLightCompat, LightCompat, PointLightCompat, RectAreaLightCompat, SpotLightCompat } from "./lights";
-export { AxesHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, GridHelperCompat, HelperLineSegmentsCompat, SkeletonHelperCompat } from "./helpers";
-export { THREE_COMPAT_COMPATIBILITY_THRESHOLDS, buildInitialCompatibilityMatrix, supportedOrPartial } from "./ThreeCompatibilityMatrix";
-export type { ThreeApiCategory, ThreeApiInventory, ThreeApiInventoryEntry } from "./ThreeApiInventory";
-export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibilityStatus, ThreeCompatibilityThreshold } from "./ThreeCompatibilityMatrix";
 ```
 
 ## @aura3d/workflows

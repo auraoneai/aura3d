@@ -1,10 +1,12 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraSceneSnapshot } from "../index.js";
-import { clampNumber, colorToRgba, groups, resolveNativeBloomRadius } from "../index.js";
-import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import type { AuraEffectNode, AuraSceneSnapshot } from "../nodes/types.js";
 import type { AuraAntiAliasMode } from "../../contracts/post.js";
+import { colorToRgba } from "../colorUtils.js";
+import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
+import { groups } from "../nodes/groups.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
+import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
 import { authoredPostContextFor, recordSubmittedPostprocess } from "../postBridge.js";
 

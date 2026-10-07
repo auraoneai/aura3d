@@ -1,6 +1,6 @@
 import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
-import { A3DRenderer, DirectionalLight } from "@aura3d/engine/advanced-runtime";
-import { loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { A3DRenderer, DirectionalLight } from "@aura3d/engine/renderer";
+import { loadHdrEnvironment } from "@aura3d/engine/renderer";
 import { computePerspectiveCameraFrame, type CollectedLight } from "@aura3d/rendering";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";

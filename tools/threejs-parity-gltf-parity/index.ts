@@ -466,7 +466,7 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return {
     meanDelta: round(meanDelta),
     maxDelta: round(maxDelta),
-    changedPixels, 1 - meanDelta / 255))
+    changedPixels,
   };
 }
 

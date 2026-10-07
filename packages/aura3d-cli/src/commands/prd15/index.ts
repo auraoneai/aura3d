@@ -1,5 +1,92 @@
 /**
- * C-39 lane command registrations — prd15 registers its `aura3d` commands
- * here via registerCliCommand (CONTRACTS.md). Empty in PR 0a.
+ * C-39 lane command registrations — PRD 15.
+ *
+ * Registers the `aura3d codemod <name> <glob> [--write|--dry-run|--report]`
+ * dispatcher and this lane's codemods (`renderer-imports`, T2.11).
  */
-export {};
+
+import { globSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { registerCliCommand, registerCodemod, codemodFor } from "../../contracts/commands.js";
+import { createRendererImportsCodemod } from "../../codemods/renderer-imports.js";
+import { createRendererModeCodemod } from "../../codemods/renderer-mode.js";
+import { createLeanImportsCodemod } from "../../codemods/lean-imports.js";
+import { createDevtoolsImportsCodemod, createEngineEntryImportsCodemod } from "../../codemods/engine-entry-imports.js";
+
+registerCodemod(createRendererImportsCodemod());
+registerCodemod(createRendererModeCodemod());
+registerCodemod(createLeanImportsCodemod());
+registerCodemod(createDevtoolsImportsCodemod());
+registerCodemod(createEngineEntryImportsCodemod());
+
+registerCliCommand({
+  name: "codemod",
+  owner: "prd15",
+  summary: "Run a registered codemod over a file glob (renderer-imports, …).",
+  usage: "aura3d codemod <name> <glob> [--write] [--dry-run] [--report]",
+  async run(argv, io) {
+    const name = argv[0];
+    const glob = argv[1];
+    if (!name || !glob) {
+      io.stderr("usage: aura3d codemod <name> <glob> [--write] [--dry-run] [--report]");
+      return 2;
+    }
+    const mod = codemodFor(name);
+    if (!mod) {
+      io.stderr(`unknown codemod: ${name}`);
+      return 2;
+    }
+    const write = argv.includes("--write");
+    const report = argv.includes("--report");
+    const files = globSync(glob, { cwd: io.cwd, exclude: (p) => p.includes("node_modules") }).filter((f) => f.endsWith(".ts") || f.endsWith(".tsx") || f.endsWith(".html"));
+    const allRows: unknown[] = [];
+    let changed = 0;
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      const { code, rows } = mod.transform(source, file);
+      allRows.push(...rows);
+      if (code !== source) {
+        changed++;
+        if (write) writeFileSync(file, code);
+      }
+    }
+    io.stdout(JSON.stringify({ codemod: name, files: files.length, changed, written: write ? changed : 0, rows: report ? allRows : allRows.filter((r) => (r as { mapping?: string }).mapping !== "exact") }, null, 2));
+    return 0;
+  }
+});
+
+import { globSync as globSyncMigrate } from "node:fs";
+import { readFileSync as readMigrateFile, writeFileSync as writeMigrateFile } from "node:fs";
+import { emitMigratedSource } from "../../migrate-three/emit.js";
+import { buildMigrateReport, formatMigrateReport } from "../../migrate-three/report.js";
+
+registerCliCommand({
+  name: "migrate three",
+  owner: "prd15",
+  summary: "Rewrite Three.js source to @aura3d/engine constructs via the T6.1 mapping table.",
+  usage: "aura3d migrate three <glob> [--write] [--report]",
+  async run(argv, io) {
+    const glob = argv[0];
+    if (!glob) {
+      io.stderr("usage: aura3d migrate three <glob> [--write] [--report]");
+      return 2;
+    }
+    const write = argv.includes("--write");
+    const files = globSyncMigrate(glob, { cwd: io.cwd, exclude: (p) => p.includes("node_modules") }).filter((f) => f.endsWith(".ts") || f.endsWith(".js") || f.endsWith(".tsx") || f.endsWith(".jsx"));
+    const allRows: import("../../migrate-three/emit.js").MigrateRow[] = [];
+    let changed = 0;
+    for (const file of files) {
+      const source = readMigrateFile(file, "utf8");
+      const { code, rows } = emitMigratedSource(source);
+      allRows.push(...rows.map((r) => ({ ...r })));
+      if (code !== source) {
+        changed++;
+        if (write) writeMigrateFile(file, code);
+      }
+    }
+    const report = buildMigrateReport(allRows);
+    io.stdout(formatMigrateReport(report));
+    io.stderr(`migrate-three: ${files.length} files, ${changed} changed, ${report.counts.approximate} approximate, ${report.counts.none} unmapped`);
+    return 0;
+  }
+});

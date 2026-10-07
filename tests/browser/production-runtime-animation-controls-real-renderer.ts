@@ -1,6 +1,7 @@
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
-  ProductionWebGL2Renderer,
+  Renderer,
+  rendererProofCapture,
   createProductionEnvironmentLightingResources,
   createProductionOrbitControlPreset,
   createProductionPbrHdrPipelineFromRadiance,
@@ -77,7 +78,7 @@ async function run(): Promise<void> {
       primitiveCount: pipeline.metadata.primitiveCount,
       materialCount: pipeline.metadata.materialCount
     });
-    const renderer = await ProductionWebGL2Renderer.create({
+    const renderer = await Renderer.create({
       canvas,
       width: canvas.width,
       height: canvas.height,
@@ -126,13 +127,13 @@ async function run(): Promise<void> {
 }
 
 function renderWithAssetContext(
-  renderer: ProductionWebGL2Renderer,
+  renderer: Renderer,
   pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>,
   staged: ReturnType<typeof createProductionProductionStageScene>,
   hdrEnvironmentUri: string
 ) {
   try {
-    return renderer.renderImportedAsset({
+    return rendererProofCapture(renderer, {
       source: staged.source,
       camera: staged.camera,
       metadata: {

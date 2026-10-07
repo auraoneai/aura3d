@@ -1,4 +1,4 @@
-import { createAnimationMaterialStyle, type AnimationMaterialStyle, type AnimationMaterialStyleOptions } from "./AnimationMaterialStyle.js";
+import { createAnimationMaterialStyle, type AnimationMaterialStyle, type AnimationMaterialStyleOptions } from "../MaterialPresets.js";
 
 export interface AnimationRenderPresetOptions {
   readonly name?: string | undefined;

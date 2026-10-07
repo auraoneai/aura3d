@@ -24,19 +24,19 @@
     {
       "typedRef": "assets.patrolWingDroneA",
       "hash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle"
     },
     {
       "typedRef": "assets.patrolWingDroneB",
       "hash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
-      "quality": "release",
+      "quality": "candidate",
       "role": "vehicle"
     },
     {
       "typedRef": "assets.patrolWingPadBeacon",
       "hash": "sha256-e91f821164182982b3223a1ba7055c74c76cf80ffc081140269aea7dcf3de0e4",
-      "quality": "release",
+      "quality": "candidate",
       "role": "prop"
     }
   ],
@@ -363,5 +363,8 @@
     "sensors": "once-per-entry Rapier-backed proxies",
     "drones": "seeded LCG chase-orbit pursuit",
     "landing": "visible pad radius plus speed/bank/descent/alignment bounds"
+  },
+  "qualityGate": {
+    "status": "in-rebuild"
   }
 }

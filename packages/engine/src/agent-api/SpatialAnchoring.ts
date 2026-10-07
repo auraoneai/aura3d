@@ -619,7 +619,7 @@ export function distanceOutsideBounds(bounds: PlacedBounds, point: Vec3): number
   return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-function distance(a: Vec3, b: Vec3): number {
+export function distance(a: Vec3, b: Vec3): number {
   const dx = a[0] - b[0];
   const dy = a[1] - b[1];
   const dz = a[2] - b[2];

@@ -17,7 +17,9 @@
  * unit tested in isolation and reused by any template or runtime.
  */
 
-export type Vec3 = readonly [number, number, number];
+import type { Vec3 as CanonicalVec3 } from "@aura3d/scene/math";
+
+export type Vec3 = Readonly<CanonicalVec3>;
 
 /** Axis-aligned bounding box, matching `boundsMetadata` min/max corners. */
 export interface SceneBounds {

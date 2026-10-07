@@ -3,7 +3,7 @@ import {
   createThreeCompatEnvironmentGalleryModel,
   loadThreeCompatEnvironmentManifest,
   summarizeThreeCompatEnvironmentLibrary
-} from "../../../packages/environments/src/node";
+} from "../../../packages/engine/src/devtools/environments/node";
 
 describe("ThreeCompat environment library", () => {
   it("provides real HDRI sources, procedural HDR presets, PMREM diagnostics, and probe previews", () => {

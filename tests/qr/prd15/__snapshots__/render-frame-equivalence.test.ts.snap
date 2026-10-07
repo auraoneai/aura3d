@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`C-29 render-frame equivalence (PRD-15 T2.2) > lit cube: rendererProofCapture and Renderer.render produce identical evidence 1`] = `
+{
+  "drawCalls": 1,
+  "programKeys": [
+    "aura3d/pbr-direct",
+  ],
+}
+`;
