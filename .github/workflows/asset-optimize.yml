@@ -42,7 +42,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: install tool dependencies
-        run: npm ci --prefix tools/asset-optimize
+        # root .gitignore forbids committed package-lock.json (pnpm repo);
+        # package.json carries exact pins so `npm install` is deterministic.
+        run: npm install --no-audit --no-fund --prefix tools/asset-optimize
 
       - name: install ktx from tool-versions.json
         id: ktx
@@ -87,9 +89,9 @@ jobs:
           set -euo pipefail
           ktx="$(pwd)/${{ steps.ktx.outputs.ktx_bin }}"
           ids="${{ github.event.inputs.ids }}"
-          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json)
+          args=(--ktx "$ktx" --report evidence/prd05/assets/optimize-ci.json --out-dir .optimize-out)
           if [ -n "$ids" ]; then
-            args+=(--ids "$ids" --allow-local-small)
+            args+=(--ids "$ids" --allow-local-small --no-manifest)
           else
             args+=(--dry-run)
           fi
@@ -101,5 +103,5 @@ jobs:
           name: asset-optimize-${{ github.sha }}
           path: |
             evidence/prd05/assets/optimize-ci.json
-            public/aura-assets/
+            .optimize-out/
           retention-days: 14

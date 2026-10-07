@@ -189,14 +189,15 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
     const url = `/aura-assets/${entry.id}.${hash8}.glb`;
     const outputPath = `public/aura-assets/${entry.id}.${hash8}.glb`;
     const checks = gateChecks(result.budget.triangles, profile, result.flags);
+    const derivedDir = options.outDir ? join(repoRoot, options.outDir) : DERIVED_DIR;
 
     if (!options.dryRun) {
-      mkdirSync(DERIVED_DIR, { recursive: true });
-      writeFileSync(join(DERIVED_DIR, `${entry.id}.${hash8}.glb`), Buffer.from(result.glb));
+      mkdirSync(derivedDir, { recursive: true });
+      writeFileSync(join(derivedDir, `${entry.id}.${hash8}.glb`), Buffer.from(result.glb));
       let mobileUrl: string | undefined;
       if (result.mobile) {
         const mobileHash = createHash("sha256").update(result.mobile).digest("hex").slice(0, 8);
-        writeFileSync(join(DERIVED_DIR, `${entry.id}.${mobileHash}.mobile.glb`), Buffer.from(result.mobile));
+        writeFileSync(join(derivedDir, `${entry.id}.${mobileHash}.mobile.glb`), Buffer.from(result.mobile));
         mobileUrl = `/aura-assets/${entry.id}.${mobileHash}.mobile.glb`;
       }
 
@@ -252,6 +253,7 @@ async function main(): Promise<number> {
     profile: readFlag(argv, "--profile"),
     geometry: readFlag(argv, "--geometry") as "meshopt" | "draco" | "none" | undefined,
     allowLocalSmall: argv.includes("--allow-local-small"),
+    writeManifest: !argv.includes("--no-manifest"),
     ktxBinary: readFlag(argv, "--ktx"),
     log: (line) => console.log(line)
   });
