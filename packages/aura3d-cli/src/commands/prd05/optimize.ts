@@ -33,7 +33,7 @@ export function optimizeAssetsVerb(opts: OptimizeVerbOptions): number {
     return 1;
   }
 
-  const positional = argv.filter((a) => !a.startsWith("--") && argv[argv.indexOf(a) - 1] !== "--profile" && argv[argv.indexOf(a) - 1] !== "--geometry" && argv[argv.indexOf(a) - 1] !== "--ktx" && argv[argv.indexOf(a) - 1] !== "--report");
+  const positional = argv.filter((a) => !a.startsWith("--") && !["--profile", "--geometry", "--ktx", "--report", "--remote", "--blender"].includes(argv[argv.indexOf(a) - 1] ?? ""));
   const ids = readFlag(argv, "--ids")?.split(",").filter(Boolean) ?? positional;
   const dryRun = argv.includes("--dry-run");
   const args = [
@@ -42,7 +42,8 @@ export function optimizeAssetsVerb(opts: OptimizeVerbOptions): number {
     ...(ids.length ? ["--ids", ids.join(",")] : []),
     ...(dryRun ? ["--dry-run"] : []),
     ...(argv.includes("--allow-local-small") ? ["--allow-local-small"] : []),
-    ...["--profile", "--geometry", "--ktx", "--report"].flatMap((f) => {
+    ...(argv.includes("--from-generated") ? ["--from-generated"] : []),
+    ...["--profile", "--geometry", "--ktx", "--report", "--remote", "--blender"].flatMap((f) => {
       const v = readFlag(argv, f);
       return v ? [f, v] : [];
     })

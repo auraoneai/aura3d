@@ -1,0 +1,20 @@
+{
+  "id": "planets-space",
+  "shading": "pbr",
+  "genre": "space",
+  "fantasy": "Painterly-leaning celestial bodies \u2014 saturated bands, clean terminator.",
+  "palette": {
+    "primary": [
+      "#2e3440",
+      "#5e81ac",
+      "#b48ead"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 128,
+  "referenceImages": [],
+  "mix": [
+    "vehicles-air-space-sea"
+  ],
+  "notes": "Skybox/set-piece scale; equirect textures acceptable."
+}

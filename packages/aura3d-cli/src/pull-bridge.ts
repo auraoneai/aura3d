@@ -17,7 +17,7 @@
  * deliberately pure so it can be unit-tested without a network or the CLI.
  */
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as assetIndex from "@aura3d/asset-index";
@@ -49,6 +49,7 @@ import {
 import { selectPullable } from "./pull-bridge/pullable.js";
 import {
   inferQueryRole,
+  partitionResolveCandidates,
   rankResolveCandidates,
   scoreResolveCandidate,
 } from "./pull-bridge/scoring.js";
@@ -66,6 +67,7 @@ import type {
 export {
   defaultDownloadFile,
   inferQueryRole,
+  partitionResolveCandidates,
   rankForProfile,
   rankResolveCandidates,
   runSearch,
@@ -272,13 +274,28 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
       }
 
       const dir = mkdtempSync(join(tmpRoot, "aura3d-resolve-"));
-      const ext = asset.format === "gltf" ? "gltf" : "glb";
+      const ext = asset.format === "gltf" ? "gltf" : asset.format === "hdr" ? "hdr" : "glb";
       const tempFile = join(dir, `${options.name}.${ext}`);
 
-      // The downloader may unpack a ZIP and hand back the assembled .glb/.gltf
-      // path; fall back to the requested temp path when it returns void.
-      const downloadResult = await download(asset.url, tempFile);
-      const resolvedFile = downloadResult?.path ?? tempFile;
+      /*
+       * §6.6 library members resolve by LOCAL COPY — `library.path` is the
+       * admitted file under assets/library/ — not by HTTP. Everything else
+       * goes through the downloader, which may unpack a ZIP and hand back the
+       * assembled .glb/.gltf path; fall back to the requested temp path when
+       * it returns void.
+       */
+      const libraryPath = asset.library?.path;
+      let resolvedFile = tempFile;
+      if (libraryPath !== undefined) {
+        const source = join(options.projectDir ?? process.cwd(), libraryPath);
+        if (!existsSync(source)) {
+          throw new Error(`library entry ${asset.library!.entryId} file missing: ${libraryPath} (run assets library sync)`);
+        }
+        copyFileSync(source, tempFile);
+      } else {
+        const downloadResult = await download(asset.url, tempFile);
+        resolvedFile = downloadResult?.path ?? tempFile;
+      }
 
       // Capture the sha256 of the bytes we actually pulled plus a retrieval
       // timestamp (injectable for determinism) so provenance records exactly what

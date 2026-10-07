@@ -1,0 +1,271 @@
+{
+  "schema": "aura3d.tier-measurements/1.0",
+  "generatedAt": "2026-10-07T11:51:04.915Z",
+  "baseUrl": "https://aura3d.auraone.ai",
+  "sampleMs": 4000,
+  "runner": {
+    "browser": "147.0.7727.15",
+    "note": "forced via aura3d.quality.v1 seed + ?a3d-qr=tiers"
+  },
+  "rows": [
+    {
+      "game": "showcase-skyline-runner",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-skyline-runner/",
+      "forced": false,
+      "readyMs": 63939,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 172067732,
+        "uploadCount": 83,
+        "uploadsByFormat": {
+          "6408": 54,
+          "33190": 2,
+          "34842": 11,
+          "35907": 16
+        },
+        "frameCount": 80,
+        "drawCallsPerFrame": 24.9,
+        "trianglesPerFrame": 20538,
+        "resourceBytes": 34336700,
+        "longTasks": {
+          "count": 10,
+          "totalMs": 58817,
+          "maxMs": 14083
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 67968
+    },
+    {
+      "game": "showcase-mech-hangar",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-mech-hangar/",
+      "forced": false,
+      "readyMs": 64531,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 278184768,
+        "uploadCount": 27,
+        "uploadsByFormat": {
+          "6408": 12,
+          "33190": 2,
+          "34842": 11,
+          "35907": 2
+        },
+        "frameCount": 102,
+        "drawCallsPerFrame": 11.4,
+        "trianglesPerFrame": 13017,
+        "resourceBytes": 29188028,
+        "longTasks": {
+          "count": 8,
+          "totalMs": 57044,
+          "maxMs": 19598
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 68550
+    },
+    {
+      "game": "showcase-courier-rush",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-courier-rush/",
+      "forced": false,
+      "readyMs": 73919,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 205262484,
+        "uploadCount": 250,
+        "uploadsByFormat": {
+          "6408": 147,
+          "33190": 1,
+          "34836": 8,
+          "34842": 11,
+          "35907": 83
+        },
+        "frameCount": 45,
+        "drawCallsPerFrame": 111,
+        "trianglesPerFrame": 33782,
+        "resourceBytes": 31016624,
+        "longTasks": {
+          "count": 3,
+          "totalMs": 58504,
+          "maxMs": 36311
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 77939
+    },
+    {
+      "game": "showcase-vault-breakers",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-vault-breakers/",
+      "forced": false,
+      "readyMs": 61635,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 0,
+        "uploadCount": 0,
+        "uploadsByFormat": {},
+        "frameCount": 158,
+        "drawCallsPerFrame": 248.7,
+        "trianglesPerFrame": 19690,
+        "resourceBytes": 1882460,
+        "longTasks": {
+          "count": 133,
+          "totalMs": 64247,
+          "maxMs": 619
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 65654
+    },
+    {
+      "game": "showcase-gravity-post",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-gravity-post/",
+      "forced": false,
+      "readyMs": 65686,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 56017492,
+        "uploadCount": 226,
+        "uploadsByFormat": {
+          "6408": 137,
+          "33190": 1,
+          "34842": 3,
+          "35907": 85
+        },
+        "frameCount": 71,
+        "drawCallsPerFrame": 160.9,
+        "trianglesPerFrame": 94296,
+        "resourceBytes": 47919814,
+        "longTasks": {
+          "count": 9,
+          "totalMs": 61418,
+          "maxMs": 13888
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 69709
+    },
+    {
+      "game": "showcase-bank-shot",
+      "tierRequested": "low",
+      "tierObserved": "auto",
+      "url": "https://aura3d.auraone.ai/apps/showcase-bank-shot/",
+      "forced": false,
+      "readyMs": 75532,
+      "note": "tier cache never written (stub controller — flag-off); run measured on app-decided tier",
+      "metrics": {
+        "vramBytes": 281413996,
+        "uploadCount": 33,
+        "uploadsByFormat": {
+          "6408": 8,
+          "33190": 3,
+          "34842": 22
+        },
+        "frameCount": 32,
+        "drawCallsPerFrame": 59.3,
+        "trianglesPerFrame": 19826,
+        "resourceBytes": 2379933,
+        "longTasks": {
+          "count": 5,
+          "totalMs": 64616,
+          "maxMs": 22085
+        },
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+          "platform": "Linux x86_64",
+          "screen": [
+            1920,
+            1080
+          ],
+          "dpr": 1
+        },
+        "gpu": {
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": "Google Inc. (Google)",
+          "maxTextureSize": 8192
+        },
+        "ready": true
+      },
+      "elapsedMs": 79552
+    }
+  ]
+}

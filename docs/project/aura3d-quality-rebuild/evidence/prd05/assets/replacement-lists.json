@@ -1,0 +1,94 @@
+{
+  "schema": "aura3d.replacement-lists/1.0",
+  "generatedAt": "2026-10-07T11:20:00.000Z",
+  "phase": "PRD-05 Phase 7",
+  "notes": [
+    "Phase-7 pilot replacement lists (Q-14-3): every `assets.<id>` referenced by the pilot route, mapped to an admitted aura.library.json entry or an explicit gap.",
+    "expectedQrFlags is the resolveQrFlags options-object form — underscore route flags cannot be expressed in the ?a3d-qr list grammar (split on ._ only), so pilots adopt them via qualityRebuild.flags or VITE_A3D_QR, not URL.",
+    "Every replacement is the library entry's own file under assets/library/ until lane 14 reruns `assets optimize` for the target profile; ids marked gap are PRD-05 kit-add requests."
+  ],
+  "pilots": [
+    {
+      "game": "showcase-skyline-runner",
+      "title": "Skyline Runner",
+      "route": "/apps/showcase-skyline-runner/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_SKYLINE_RUNNER": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["skylineArcticRunnerHero", "skylineHeroRunner"], "type": "model", "role": "hero", "libraryId": "kaykit-barbarian", "notes": "Rigged hero with 76 clips (idle/walk/run/jump/fall/land present); stylized-flat artDirection matches the runner read. Artic runner look approximated via material tint until a winter kit entry exists." },
+        { "current": ["showcaseKenneyVerdantPlatformerWorld"], "type": "model", "role": "world", "libraryId": "kaykit-modular-walls", "notes": "Modular wall kit assembles platform ledges/runs; pair with acg-grass005 tiling set for the verdant read." },
+        { "current": ["propPineTree"], "type": "model", "role": "prop", "gap": true, "notes": "GAP: no foliage/tree model exists in the kit. Closest dressing is acg-bark014 (texture only). File kit-add." },
+        { "current": ["propRockB"], "type": "model", "role": "prop", "gap": true, "notes": "GAP: no rock prop; acg-rock064 covers texture only. File kit-add." },
+        { "current": ["skylineWinterParallaxBackdrop"], "type": "environment", "role": "environment", "libraryId": "night-2k", "notes": "2D winter parallax approximated by a cold HDRI env (night-2k or outdoor-midday-2k); a true layered-parallax sprite kit is a gap." },
+        { "current": ["showcaseExpressiveRobot"], "type": "model", "role": "character", "libraryId": "quaternius-robot-enemy", "notes": "Robot NPC/companion." },
+        { "current": ["skylineIceLedgeMedium", "skylineIceLedgeLong", "skylineIceLedgeCompact"], "type": "model", "role": "prop", "libraryId": "quaternius-cube-crate", "notes": "Uniform block reads as a platform ledge at any tint; ice material approximated with acg-paintedplaster017." }
+      ]
+    },
+    {
+      "game": "showcase-mech-hangar",
+      "title": "Mech Hangar",
+      "route": "/apps/showcase-mech-hangar/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_MECH_HANGAR": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["mechHeroDecimated"], "type": "model", "role": "hero", "libraryId": "quaternius-mech", "notes": "Kit mech with hard-surface silhouette; 28 MB source decimates within hero-character band after optimize." },
+        { "current": ["mechChassisA", "mechLegsA", "mechArmsA", "mechLegsB", "mechLegsC", "mechLegsD"], "type": "model", "role": "prop", "libraryId": "quaternius-robot-enemy-large", "notes": "GAP-ish: the kit has no modular mech-part GLBs; builder slots adopt robot/mech whole-body variants (enemy, enemy-large, mech) as chassis archetypes — the slot loop becomes archetype selection rather than part swap until a parts kit is admitted." },
+        { "current": ["mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"], "type": "model", "role": "prop", "libraryId": "quaternius-robot-enemy-large-gun", "notes": "Weapon slots adopt the gun-equipped robot variant + quaternius-flying-gun-drone (compact weapon pod); four distinct slots collapse to two archetypes — gap noted." }
+      ]
+    },
+    {
+      "game": "showcase-courier-rush",
+      "title": "Courier Rush",
+      "route": "/apps/showcase-courier-rush/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_COURIER_RUSH": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["courierVanMeshyV2Decimated", "courierVan"], "type": "model", "role": "vehicle", "libraryId": "quaternius-sushi-truck", "notes": "Box-truck silhouette is the delivery-van read; quaternius-car is the smaller alternative." },
+        { "current": ["courierTrafficSedan"], "type": "model", "role": "vehicle", "libraryId": "quaternius-car", "notes": "Generic sedan." },
+        { "current": ["courierTrafficHatch"], "type": "model", "role": "vehicle", "libraryId": "quaternius-taxi", "notes": "Boxy cab silhouette approximates a hatchback; police-car adds a second traffic variant if wanted." },
+        { "current": ["courierParcel"], "type": "model", "role": "prop", "libraryId": "quaternius-crate", "notes": "Crate/parcel pickup." },
+        { "current": ["courierZoneBollard"], "type": "model", "role": "prop", "libraryId": "quaternius-barrel", "notes": "Rounded street post approximation; true bollard shape is a gap." },
+        { "current": ["courierZoneAwning"], "type": "model", "role": "prop", "libraryId": "quaternius-wall-modular", "notes": "Wall segment stands in for an awning/overhang." }
+      ]
+    },
+    {
+      "game": "showcase-vault-breakers",
+      "title": "Vault Breakers",
+      "route": "/apps/showcase-vault-breakers/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_VAULT_BREAKERS": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["vaultBreakersVaultDoor"], "type": "model", "role": "prop", "libraryId": "quaternius-wall-modular", "notes": "Heavy wall panel reads as a vault face; real circular door is a gap." },
+        { "current": ["vaultBreakersMechanisms"], "type": "model", "role": "prop", "libraryId": "quaternius-mech", "notes": "Mech internals/mechanism dressing approximation." },
+        { "current": ["vaultBreakersTable"], "type": "model", "role": "prop", "libraryId": "quaternius-barracks", "notes": "GAP-lean approximation: barracks block as the play surface until a table prop is admitted." },
+        { "current": ["vaultBreakersFlipperReal", "vaultBreakersFlipper"], "type": "model", "role": "prop", "libraryId": "baseball-bat", "notes": "Tapered cylinder is the pinball-flipper shape at small scale." },
+        { "current": ["vaultBreakersCabinet"], "type": "model", "role": "prop", "libraryId": "quaternius-wall-modular", "notes": "Wall segment as cabinet shell approximation." },
+        { "current": ["vaultBreakersBall"], "type": "model", "role": "prop", "libraryId": "quaternius-planet-a", "notes": "Smooth sphere (planet mesh, detextured) approximates the pinball; a true ball primitive is a gap." }
+      ]
+    },
+    {
+      "game": "showcase-gravity-post",
+      "title": "Gravity Post",
+      "route": "/apps/showcase-gravity-post/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_GRAVITY_POST": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["courierParcel"], "type": "model", "role": "prop", "libraryId": "quaternius-crate", "notes": "Mail crate." },
+        { "current": ["gravityPostCourierSkiff"], "type": "model", "role": "vehicle", "libraryId": "kaykit-lander-b", "notes": "Small orbital skiff; quaternius-spaceship and quaternius-ship are the larger variants." },
+        { "current": ["neonCourierAvatar"], "type": "model", "role": "character", "libraryId": "quaternius-robot-enemy", "notes": "Courier drone/avatar read." },
+        { "current": ["gravityPostStationRing"], "type": "model", "role": "prop", "gap": true, "notes": "GAP: no station-ring module; closest is assembling a ring from kaykit-modular-walls segments — file kit-add for a station set." },
+        { "current": ["gravityPostMailPod"], "type": "model", "role": "vehicle", "libraryId": "quaternius-flying-gun-drone", "notes": "Compact pod vehicle." },
+        { "current": ["gravityPostDockGate"], "type": "model", "role": "prop", "libraryId": "quaternius-wall-modular", "notes": "Dock gate frame." },
+        { "current": ["gravityPostDockBeacon"], "type": "model", "role": "prop", "libraryId": "quaternius-barrel", "notes": "Beacon post approximation." },
+        { "current": ["gravityPlanetNeptune", "gravityPlanetMercury", "gravityPlanetMars", "gravityPlanetJupiter"], "type": "model", "role": "prop", "libraryId": "quaternius-planet-a", "variants": ["quaternius-planet-a", "quaternius-planet-b", "quaternius-planet-c"], "notes": "Three kit planet variants cover four planet ids — reuse a variant with distinct material tint for the fourth." },
+        { "current": ["gravityPostFreightDistrict"], "type": "model", "role": "world", "libraryId": "kenney-small-building", "notes": "District assembled from small-building + kenney-modular-road-kit street pieces." }
+      ]
+    },
+    {
+      "game": "showcase-bank-shot",
+      "title": "Bank Shot",
+      "route": "/apps/showcase-bank-shot/",
+      "expectedQrFlags": { "A3D_QR_ROUTE_BANK_SHOT": true, "A3D_QR_ASSETS": true },
+      "replacements": [
+        { "current": ["bankShotBall00"], "type": "model", "role": "prop", "libraryId": "quaternius-planet-b", "notes": "Smooth sphere stands in for the billiard ball (detextured planet mesh); numbered-ball set is a gap." },
+        { "current": ["bankShotTable"], "type": "model", "role": "prop", "libraryId": "quaternius-wall-modular", "notes": "GAP-lean approximation: wall segment laid flat as the play surface until a table prop lands." },
+        { "current": ["bankShotCue"], "type": "model", "role": "prop", "libraryId": "baseball-bat", "notes": "Tapered cylinder ≈ cue." }
+      ]
+    }
+  ]
+}

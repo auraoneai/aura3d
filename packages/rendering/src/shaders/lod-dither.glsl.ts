@@ -66,8 +66,17 @@ export const lodDitherDiscardChunk: ShaderChunk = {
   name: "a3d_prd05_lod_ditherDiscard",
   owner: "prd05",
   stage: "fragment",
-  requires: ["a3d_prd05_lod_dither"],
-  glsl: `a3dLodDitherDiscard();`,
+  // No `requires` on the pars chunk: hookSplice appends required chunks
+  // AFTER the requiring one at the SAME hook, so the pars chunk's
+  // uniform/function declarations would land inside main() (Q-05-8).
+  // The feature's chunks+hooks already splice the pars chunk at fragment:pars.
+  requires: [],
+  // Guarded by the feature's own define: the ChunkHarness splices chunk GLSL
+  // at pars position (outside main), where a bare statement cannot compile;
+  // real programs define A3D_LOD_DITHER via the feature's defines().
+  glsl: `#ifdef A3D_LOD_DITHER
+a3dLodDitherDiscard();
+#endif`,
   wgsl: `a3dLodDitherDiscard(a3dFragCoord, a3dLodFade);`
 };
 

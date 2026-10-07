@@ -22,13 +22,18 @@ const item = (materialParams: Record<string, unknown>, lodLevel?: number): Rende
 
 describe("PRD-05 §6.7 debugView feature", () => {
   test("channel table + define names", () => {
-    expect(PRD05_DEBUG_VIEW_CHANNELS).toEqual(["TEXEL_DENSITY", "MIP_LEVEL", "FACET", "LOD_LEVEL"]);
+    expect(PRD05_DEBUG_VIEW_CHANNELS).toEqual([
+      "TEXEL_DENSITY", "MIP_LEVEL", "FACET", "LOD_LEVEL",
+      "BASE_COLOR", "WORLD_NORMAL", "ROUGHNESS", "METALLIC", "OCCLUSION", "UV_LAYOUT",
+    ]);
     expect(prd05DebugViewValue("texelDensity")).toBe(1);
     expect(prd05DebugViewValue("lodLevel")).toBe(4);
+    expect(prd05DebugViewValue("occlusion")).toBe(9);
     expect(prd05DebugViewDefineName(1)).toBe("A3D_PRD05_DEBUG_VIEW_TEXEL_DENSITY");
     expect(prd05DebugViewDefineName(4)).toBe("A3D_PRD05_DEBUG_VIEW_LOD_LEVEL");
+    expect(prd05DebugViewDefineName(10)).toBe("A3D_PRD05_DEBUG_VIEW_UV_LAYOUT");
     expect(prd05DebugViewDefineName(0)).toBeUndefined();
-    expect(prd05DebugViewDefineName(5)).toBeUndefined();
+    expect(prd05DebugViewDefineName(11)).toBeUndefined();
   });
 
   test("select activates only on forward pass with a valid u_prd05DebugView", () => {
@@ -45,7 +50,8 @@ describe("PRD-05 §6.7 debugView feature", () => {
   test("defines emit exactly one channel define", () => {
     expect(debugViewFeature.defines(1)).toEqual({ A3D_PRD05_DEBUG_VIEW_TEXEL_DENSITY: true });
     expect(debugViewFeature.defines(2)).toEqual({ A3D_PRD05_DEBUG_VIEW_MIP_LEVEL: true });
-    expect(debugViewFeature.defines(9)).toEqual({});
+    expect(debugViewFeature.defines(9)).toEqual({ A3D_PRD05_DEBUG_VIEW_OCCLUSION: true });
+    expect(debugViewFeature.defines(11)).toEqual({});
   });
 
   test("bindUniforms mirrors baseColour texture + stamps lodLevel + texel band", () => {
@@ -63,7 +69,9 @@ describe("PRD-05 §6.7 debugView feature", () => {
   test("chunks are hook-aligned: pars chunk at fragment:pars, end chunk at fragment:end", () => {
     expect(debugViewFeature.chunks).toEqual([debugViewParsChunk.name, debugViewEndChunk.name]);
     expect(debugViewFeature.hooks).toEqual(["fragment:pars", "fragment:end"]);
-    expect(debugViewEndChunk.requires).toContain(debugViewParsChunk.name);
+    // hookSplice appends the pars chunk for hook-aligned end chunks, so the
+    // end chunk declares no explicit `requires` (see debug-view.glsl.ts).
+    expect(debugViewEndChunk.requires).toEqual([]);
     expect(debugViewFeature.flag).toBe("A3D_QR_ASSETS_LOOKDEV");
   });
 });

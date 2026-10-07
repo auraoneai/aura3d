@@ -142,10 +142,11 @@ export function createResolveCandidateProvenance(
     scoreBreakdown: {
       semantic: score.semantic,
       sourceQuality: score.sourceQuality,
-      license: score.license,
-      inspection: score.inspection,
+      fit: score.fit,
+      approval: score.approval,
       roleFit: score.roleFit,
     },
+    ...(score.exclusions.length > 0 ? { scoreExclusions: score.exclusions } : {}),
     reasons: score.reasons,
     penalties: score.penalties,
     ...(asset.sourcePage ? { sourcePage: asset.sourcePage } : {}),

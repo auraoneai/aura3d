@@ -3104,6 +3104,17 @@ async function loadBuffer(
         ? document.binaryChunk
         : document.binaryChunk.slice(0, buffer.byteLength);
     }
+    // gltf-transform writes EXT_meshopt_compression payloads with a second
+    // `fallback`-marked buffer whose uncompressed bytes are declared but not
+    // shipped — the required-extension contract means every accessor reaches
+    // its data through the compressed views in buffer 0. Decoders-capable
+    // readers (prepareBufferViews rewires them) never dereference the stub.
+    const meshoptFallback = (buffer as GLTFBuffer & {
+      extensions?: Record<string, { fallback?: boolean } | undefined>;
+    }).extensions?.EXT_meshopt_compression?.fallback === true;
+    if (index > 0 && document.binaryChunk && meshoptFallback) {
+      return new ArrayBuffer(buffer.byteLength);
+    }
     throw new Error(`glTF buffer ${index} is missing a uri and no GLB BIN chunk is available`);
   }
 

@@ -4,21 +4,21 @@
   "hdris": [
     {
       "id": "studio-soft",
-      "path": "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "path": "/assets/library/hdri/studio-soft-2k.hdr",
       "intensity": 1.0,
-      "note": "1k corpus fixture — §6.7's studio-soft-2k lands with the Phase 5 HDRI library (Q-05-3)."
+      "note": "§6.7 staged 2k HDRI (Poly Haven studio_small_08, CC0) served from assets/library via the look-dev vite middleware; 4k sibling staged for offline."
     },
     {
       "id": "outdoor-midday",
-      "path": "/fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "path": "/assets/library/hdri/outdoor-midday-2k.hdr",
       "intensity": 1.0,
-      "note": "1k corpus fixture — outdoor-midday-2k lands Phase 5."
+      "note": "§6.7 staged 2k HDRI (Poly Haven autumn_field_puresky, CC0); 4k sibling staged for offline."
     },
     {
       "id": "night-city",
-      "path": "/fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "path": "/assets/library/hdri/night-2k.hdr",
       "intensity": 0.85,
-      "note": "1k corpus fixture — night-city-2k lands Phase 5."
+      "note": "§6.7 staged 2k HDRI (Poly Haven kloppenheim_06_puresky, CC0)."
     }
   ],
   "ground": {

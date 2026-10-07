@@ -62,7 +62,7 @@ async function main(): Promise<number> {
   // surface judge-unavailable rather than inventing a score.
   let judgeWithPrism: (packet: { itemId: string; images: readonly string[]; prompt: string; blindKey?: "A-is-aura" | "B-is-aura"; kind: "benchmark" | "game" }, opts: { baseUrl: string; apiKeyEnv: "PRISM_API_KEY"; model: "claude-opus-5.5" }) => Promise<unknown>;
   try {
-    const mod = await import("../quality-gate/src/judge-prism.js").catch(() => import("../quality-gate/src/judge-prism.ts")) as { judgeWithPrism?: typeof judgeWithPrism };
+    const mod = await import("../quality-gate/src/judge-prism.js").catch(() => import("../quality-gate/src/judge-prism" + ".ts")) as { judgeWithPrism?: typeof judgeWithPrism };
     if (typeof mod.judgeWithPrism !== "function") throw new Error("no export");
     judgeWithPrism = mod.judgeWithPrism;
   } catch {

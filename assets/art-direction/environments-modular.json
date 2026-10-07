@@ -1,0 +1,20 @@
+{
+  "id": "environments-modular",
+  "shading": "pbr",
+  "genre": "urban",
+  "fantasy": "Snappable architectural modules \u2014 flat-shaded-to-PBR middle ground.",
+  "palette": {
+    "primary": [
+      "#3b4252",
+      "#81a1c1",
+      "#e5e9f0"
+    ],
+    "accent": "#b48ead"
+  },
+  "texelDensity": 256,
+  "referenceImages": [],
+  "mix": [
+    "props-industrial-urban"
+  ],
+  "notes": "Grid-consistent pivots; wall modules 2 m nominal."
+}

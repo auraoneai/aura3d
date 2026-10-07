@@ -15,7 +15,7 @@ import {
   rankForProfile,
   toResolveConstraints,
 } from "./profiles.js";
-import { rankResolveCandidates } from "./scoring.js";
+import { partitionResolveCandidates } from "./scoring.js";
 import type {
   CliAssetSearchProfile,
   CliResolveConstraints,
@@ -50,6 +50,8 @@ export interface SearchCandidateLine {
     readonly warnings: readonly string[];
     readonly validationHooks: readonly string[];
   };
+  /** Licence/provenance/texture hard-filter hits (§6.6); present only on rejected lines. */
+  readonly exclusionReasons?: readonly string[];
 }
 
 export interface SearchReport {
@@ -140,17 +142,24 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
     constraints,
   });
 
-  const rankedCandidates = rankResolveCandidates(rankForProfile(result.candidates, profile, options.query), {
-    query: options.query,
-    profile,
-  });
+  const { ranked: rankedCandidates, excluded } = partitionResolveCandidates(
+    rankForProfile(result.candidates, profile, options.query),
+    { query: options.query, profile },
+  );
   const candidateLines = rankedCandidates.map((candidate) => toLine(candidate, profile));
+  const excludedLines = excluded.map(({ candidate, exclusions }) => ({
+    ...toLine(candidate, profile),
+    exclusionReasons: exclusions,
+  }));
   const candidates = profile !== "general"
     ? candidateLines.filter((candidate) => candidate.profile?.suitable === true)
     : candidateLines;
-  const rejectedCandidates = profile !== "general"
-    ? candidateLines.filter((candidate) => candidate.profile?.suitable !== true)
-    : [];
+  const rejectedCandidates = [
+    ...(profile !== "general"
+      ? candidateLines.filter((candidate) => candidate.profile?.suitable !== true)
+      : []),
+    ...excludedLines,
+  ];
   const anyPullable = candidates.some((c) => c.autoPullable);
   const anyProfileSuitable = profile === "general" || candidates.some((c) => c.profile?.suitable);
   const anyProfilePullable = profile === "general" || candidates.some((c) => c.autoPullable && c.profile?.suitable);
@@ -180,12 +189,16 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
   }
 
   const messages: string[] = [];
-  if (candidateLines.length === 0) {
+  if (candidateLines.length === 0 && excludedLines.length > 0) {
+    messages.push(
+      `${excludedLines.length} candidate(s) excluded by licence/provenance filters — see exclusionReasons (each needs a manual license check before use).`,
+    );
+  } else if (candidateLines.length === 0) {
     messages.push(`No candidates found for "${options.query}".`);
   } else {
     messages.push(`${candidates.length} candidate(s) for "${options.query}" using ${profile} profile.`);
     if (rejectedCandidates.length > 0) {
-      messages.push(`${rejectedCandidates.length} rejected candidate(s) moved to rejectedCandidates by the ${profile} profile.`);
+      messages.push(`${rejectedCandidates.length} rejected/excluded candidate(s) — see rejectionReasons/exclusionReasons.`);
     }
     if (!anyPullable) {
       messages.push(

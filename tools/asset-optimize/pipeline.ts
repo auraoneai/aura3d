@@ -5,6 +5,7 @@
 
 import { NodeIO } from "@gltf-transform/core";
 import { ALL_EXTENSIONS, EXTMeshoptCompression } from "@gltf-transform/extensions";
+import { unpartition } from "@gltf-transform/functions";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import { createDecoderModule, createEncoderModule } from "draco3d";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -22,6 +23,7 @@ import { stepColliders } from "./steps/colliders.js";
 import { stepQuantize } from "./steps/quantize.js";
 import { stepCompress } from "./steps/compress.js";
 import { stepKtx2 } from "./steps/ktx2.js";
+import { generatedPreStage, stepSingleSided, stepSliverCheck } from "./steps/remesh.js";
 import { measureBudget, type AssetBudgetMeasurement } from "./measure.js";
 import type { AssetOptimizeProfile, OptimizeStepContext, OptimizeStepRecord } from "./types.js";
 
@@ -32,6 +34,12 @@ export interface OptimizeGlbOptions {
   readonly requireKtx2?: boolean;
   /** Mobile texture cap — emit a second `.mobile` GLB when > 0. */
   readonly mobileCap?: number;
+  /** §6.5: run the generated-asset pre-stage (sliver check + remesh/bake) before §6.3 steps. */
+  readonly fromGenerated?: boolean;
+  /** True on the remote worker — §6.5 Blender steps only run there. */
+  readonly remote?: boolean;
+  /** Explicit blender binary override (else A3D_BLENDER_BINARY / PATH). */
+  readonly blenderBinary?: string;
   readonly log?: (line: string) => void;
 }
 
@@ -71,6 +79,9 @@ async function runSteps(
 ): Promise<{ glb: Uint8Array; collisionGlb?: Uint8Array; ctx: OptimizeStepContext; budget: AssetBudgetMeasurement; budgetBefore: AssetBudgetMeasurement }> {
   const doc = await io.readBinary(source);
   const budgetBefore = measureBudget(doc);
+  const steps = opts.fromGenerated
+    ? [stepSliverCheck, stepSingleSided, ...STEP_ORDER]
+    : [...STEP_ORDER];
   const ctx: OptimizeStepContext = {
     profile,
     steps: [],
@@ -82,7 +93,13 @@ async function runSteps(
     ktxFlags: [],
     log: opts.log ?? (() => {})
   };
-  for (const step of STEP_ORDER) await step(doc, ctx);
+  for (const step of steps) await step(doc, ctx);
+  // gltf-transform writes each logical buffer's bytes into the shared GLB BIN
+  // chunk while keeping every entry in `buffers` — meshopt output in
+  // particular always carries a second `EXT_meshopt_compression.fallback`
+  // buffer. Aura's GLTFLoader accepts only buffer 0 without a uri, so merge
+  // buffers before serialization: one buffers[] entry, one BIN stream.
+  await doc.transform(unpartition());
   const glb = await io.writeBinary(doc);
   let collisionGlb: Uint8Array | undefined;
   if (ctx.collisionDoc) {
@@ -92,6 +109,7 @@ async function runSteps(
     // sidecar parser included) decodes exact vertices.
     await MeshoptEncoder.ready;
     ctx.collisionDoc.createExtension(EXTMeshoptCompression).setRequired(true);
+    await ctx.collisionDoc.transform(unpartition());
     collisionGlb = await io.writeBinary(ctx.collisionDoc);
   }
   return { glb, collisionGlb, ctx, budget: measureBudget(doc, ctx), budgetBefore };
@@ -101,12 +119,32 @@ export async function optimizeGLB(source: Uint8Array, opts: OptimizeGlbOptions):
   const io = await makeOptimizeIo();
   const workDir = mkdtempSync(join(tmpdir(), "asset-optimize-"));
   try {
-    const main = await runSteps(source, opts.profile, opts, io, workDir);
+    // §6.5 pre-stage (remesh/bake) runs at byte level before §6.3 steps so the
+    // remeshed document — not the raw generated soup — flows through the
+    // pipeline. Its step records are prepended to `derived.steps`.
+    let pipelineInput = source;
+    const preSteps: OptimizeStepRecord[] = [];
+    const preFlags: string[] = [];
+    if (opts.fromGenerated) {
+      const pre = await generatedPreStage(source, io, workDir, {
+        remote: opts.remote,
+        blenderBinary: opts.blenderBinary,
+        profileTargetTriangles: opts.profile.triangles.target,
+        log: opts.log,
+      });
+      pipelineInput = pre.bytes;
+      preSteps.push(...pre.steps);
+      preFlags.push(...pre.flags);
+    }
+    const main = await runSteps(pipelineInput, opts.profile, opts, io, workDir);
+    main.ctx.steps.unshift(...preSteps);
+    main.ctx.flags.unshift(...preFlags);
     const collisionGlb = main.collisionGlb;
     let mobile: Uint8Array | undefined;
     if (opts.mobileCap && opts.profile.textures.maxSize > opts.mobileCap) {
       const mobileProfile = { ...opts.profile, textures: { ...opts.profile.textures, maxSize: opts.mobileCap } };
-      mobile = (await runSteps(source, mobileProfile, opts, io, workDir)).glb;
+      // The mobile variant optimizes the SAME (post-pre-stage) geometry.
+      mobile = (await runSteps(pipelineInput, mobileProfile, { ...opts, fromGenerated: false }, io, workDir)).glb;
     }
     const extensionsUsed = (await io.readBinary(main.glb)).getRoot().listExtensionsUsed().map((e) => e.extensionName);
     const hasKtx2 = (await io.readBinary(main.glb)).getRoot().listTextures().some((t) => t.getMimeType() === "image/ktx2");

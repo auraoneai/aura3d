@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { shaderChunk } from "@aura3d/rendering/contracts";
+import { shaderChunk } from "../../../../packages/rendering/src/contracts/program";
+import "../../../../packages/rendering/src/lanes/prd05";
 import { buildChunkHarnessProgram } from "../../../../packages/rendering/src/contracts/testing/ChunkHarness";
 import { debugViewParsChunk, debugViewEndChunk, PRD05_DEBUG_VIEW_CHANNELS } from "../../../../packages/rendering/src/shaders/debug-view.glsl";
 

@@ -116,7 +116,7 @@ async function run(): Promise<void> {
     });
     const staged: ProductionStagedScene = createProductionProductionStageScene(
       pipeline.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
-    renderer.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never });
+    renderer.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never, viewport: { width: canvas.width, height: canvas.height } });
     const px = await canvasPixels(canvas);
     if (variant === "plain") {
       baselinePx = px;

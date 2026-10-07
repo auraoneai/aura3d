@@ -22,7 +22,6 @@
 import { resolveQrFlags } from "/packages/engine/src/contracts/flags.js";
 import { setTypedGLBActorQrFlags } from "/packages/engine/src/production-runtime/actor/extensions.js";
 import {
-  registerTypedGLBActorLodExtension,
   getTypedGLBActorLod
 } from "/packages/engine/src/production-runtime/actor/TypedGLBActorLod.js";
 import { createTypedGLBActor } from "/packages/engine/src/production-runtime/TypedGLBActor.js";
@@ -34,7 +33,7 @@ declare global {
   interface Window { __QR_READY__?: unknown; __QR_ERROR__?: unknown }
 }
 
-const SEDAN_URL = "/benchmarks/quality-rebuild/scenes/prd05/derived/courierTrafficSedan.c724602f.glb";
+const SEDAN_URL = "/benchmarks/quality-rebuild/scenes/prd05/derived/quaternius-sports-car.0dbac342.glb"; // vehicles/road library hero car (Phase-5 re-point)
 const FRAMES = 120;
 const FOV = (50 * Math.PI) / 180;
 const ASPECT = 16 / 9;
@@ -99,7 +98,7 @@ async function run() {
   const flags = resolveQrFlags({ options: ["assets", "assets.lod"] });
   setTypedGLBActorQrFlags(flags);
   const lodFlagOn = flags.on("A3D_QR_ASSETS_LOD");
-  registerTypedGLBActorLodExtension();
+  // TypedGLBActorLod self-registers its extension at module import.
 
   const gl = canvas.getContext("webgl2");
   const caps = gl ? probeCompressedTextureCapabilities(gl) : { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
