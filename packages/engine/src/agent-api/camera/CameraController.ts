@@ -67,6 +67,11 @@ export interface AuraCameraControllerDeps {
   readonly initial?: { readonly pose?: Partial<AuraCameraPose>; readonly spec?: LegacyCameraSpec };
   /** LegacySpecRig deps used when `initial.spec` is set (and by `spec()`). */
   readonly specDeps?: LegacySpecRigDeps;
+  /**
+   * Q-3: factory for the bars layer attached while a `bars: true` shot plays
+   * (extension injects `createCinematicBarsLayer`; absent → `bars` ignored).
+   */
+  readonly barsLayer?: () => AuraCameraLayer;
 }
 
 interface RampState {
@@ -90,6 +95,12 @@ interface SequenceState {
   skipped: boolean;
   resolve: () => void;
   done: Promise<void>;
+}
+
+interface BarsEntry {
+  layer: AuraCameraLayer;
+  dispose: () => void;
+  released: boolean;
 }
 
 const NO_HIT_PROBE: AuraCameraProbe = {
@@ -167,6 +178,20 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
   const ramps = new Map<"fov" | "roll", RampState & { value: number }>();
   let blend: BlendState | undefined;
   let sequence: SequenceState | undefined;
+  let barsEntry: BarsEntry | undefined;
+
+  /** Q-3 bars honoring: attach while a `bars: true` shot plays; release eases
+   * out and the entry is disposed once the bars fully close (see update()). */
+  function setShotBars(on: boolean): void {
+    if (!deps.barsLayer) return;
+    if (on && !barsEntry) {
+      const layer = deps.barsLayer();
+      barsEntry = { layer, dispose: controller.addLayer(layer), released: false };
+    } else if (!on && barsEntry && !barsEntry.released) {
+      (barsEntry.layer as { release?: () => void }).release?.();
+      barsEntry.released = true;
+    }
+  }
   let cutThisFrame = false;
   let timeMs = 0;
   let frameDt = 1 / 60;
@@ -280,6 +305,7 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       if (seq.sequence.onEnd === "return") {
         switchRig(seq.returnRig);
       }
+      setShotBars(false);
       seq.resolve();
       sequence = undefined;
       return;
@@ -288,6 +314,7 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       seq.shotIndex = idx;
       const shot = seq.sequence.shots[idx];
       switchRig(shot.rig, { blend: shot.blendIn ?? 0 });
+      setShotBars(shot.bars === true);
     }
   }
 
@@ -353,6 +380,10 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
       const reducedMotion = deps.reducedMotion?.() ?? false;
       for (const entry of [...stack].sort((a, b) => a.order - b.order)) {
         pose = entry.layer.apply(pose, { dt: realDt, reducedMotion });
+      }
+      if (barsEntry?.released && ((barsEntry.layer as { barFraction?: number }).barFraction ?? 0) <= 0) {
+        barsEntry.dispose();
+        barsEntry = undefined;
       }
       previous = presented;
       presented = pose;
@@ -420,6 +451,7 @@ export function createCameraController(deps: AuraCameraControllerDeps = {}): Aur
         skip() {
           state.skipped = true;
           if (seq.onEnd === "return") switchRig(state.returnRig);
+          setShotBars(false);
           resolve();
           sequence = undefined;
         },

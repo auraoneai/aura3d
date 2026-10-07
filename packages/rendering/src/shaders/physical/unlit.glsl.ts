@@ -13,6 +13,7 @@
  * lobe, PRD-04 §11).
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_UNLIT_WGSL from "../physical-wgsl/unlit.wgsl.js";
 
 const glsl = /* glsl */ `
 // Unlit output: baseColor straight through (r185 unlit arm).
@@ -28,6 +29,7 @@ export const A3D_PRD04_UNLIT: ShaderChunk = {
 	name: "a3d_prd04_unlit",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_UNLIT_WGSL,
 	stage: "fragment",
 	requires: []
 };

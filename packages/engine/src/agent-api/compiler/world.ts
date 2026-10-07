@@ -24,6 +24,19 @@ import {
   type AuraTerrainOptions,
   type TerrainRecord
 } from "../world/terrain.js";
+import {
+  planScatterInstances,
+  scatterChecksum,
+  type AuraGrassNode,
+  type AuraScatterNode,
+  type ScatterInstance
+} from "../world/scatter.js";
+import {
+  waterRecordFor,
+  worldWater,
+  type AuraWaterNode,
+  type AuraWaterOptions
+} from "../world/water.js";
 
 const LAYER_COLORS: Readonly<Record<string, readonly [number, number, number]>> = {
   "grass-meadow": [0.29, 0.42, 0.18],
@@ -110,9 +123,9 @@ export function terrainSafeBasicGeometry(record: TerrainRecord, divisions = 32):
   return new Geometry(vb, new IndexBuffer(indices, verts));
 }
 
-/** C-36 handler for `kind: "terrain"` (flag `A3D_QR_WORLD_TERRAIN`). */
+/** C-36 handlers for `terrain` (A3D_QR_WORLD_TERRAIN), `scatter` and `grass` (A3D_QR_WORLD). */
 export function registerWorldNodeHandlers(): () => void {
-  return registerNodeHandler({
+  const unregisterTerrain = registerNodeHandler({
     kind: "terrain",
     owner: "prd10",
     flag: "A3D_QR_WORLD_TERRAIN",
@@ -168,6 +181,112 @@ export function registerWorldNodeHandlers(): () => void {
       void node; // records stay live — terrain handles outlive scene recompiles
     }
   });
+
+  // T3.2/T3.8 — `kind: "scatter"` (flag A3D_QR_WORLD). Carries rule-driven
+  // `options` (re-planned identically at compile via planScatterInstances) or
+  // explicit `placements` from kits/place*/instances.model world options.
+  const unregisterScatter = registerNodeHandler({
+    kind: "scatter",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD",
+    compile(node, _ctx, out) {
+      const scatterNode = node as unknown as AuraScatterNode;
+      const instances = scatterNode.options ? planScatterInstances(scatterNode.options) : null;
+      const count = instances?.length ?? (scatterNode.placements ? scatterNode.placements.matrices.length / 12 : 0);
+      out.set("prd10.scatters", {
+        id: scatterNode.id,
+        count,
+        placements: scatterNode.placements ?? null,
+        checksum: instances ? scatterChecksum(packScatterMatrices(instances)) : null
+      });
+      out.feature("world.scatter");
+      if (scatterNode.options) {
+        scatterRecords.set(scatterNode.id, { node: scatterNode, planned: instances! });
+      }
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      void node; // placements are static; budget re-slices are compile-time
+    },
+    dispose(node) {
+      scatterRecords.delete((node as unknown as AuraScatterNode).id);
+    }
+  });
+
+  // T3.7 — `kind: "grass"` (flag A3D_QR_WORLD_TERRAIN — blades sit on a terrain).
+  const unregisterGrass = registerNodeHandler({
+    kind: "grass",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD_TERRAIN",
+    compile(node, _ctx, out) {
+      const grassNode = node as unknown as AuraGrassNode;
+      out.set("prd10.grassNodes", { id: grassNode.id, terrainId: grassNode.options.terrain.id });
+      out.feature("world.grass");
+      grassRecords.set(grassNode.id, grassNode);
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      void node;
+    },
+    dispose(node) {
+      grassRecords.delete((node as unknown as AuraGrassNode).id);
+    }
+  });
+
+  // T4.6 — `kind: "water"` (flag A3D_QR_WORLD_WATER). Resolves a WaterRecord
+  // (creating it for builderless JSON nodes), marks `world.water`, and lists
+  // the node on `prd10.waters` for the frame contributor.
+  const unregisterWater = registerNodeHandler({
+    kind: "water",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD_WATER",
+    compile(node, _ctx, out) {
+      const waterNode = node as unknown as AuraWaterNode;
+      let record = waterRecordFor(waterNode.id);
+      if (!record) {
+        const options: AuraWaterOptions = { ...waterNode.options, id: waterNode.id, name: waterNode.name };
+        worldWater(options);
+        record = waterRecordFor(waterNode.id)!;
+      }
+      waterRecords.set(waterNode.id, record);
+      out.set("prd10.waters", [waterNode.id]);
+      out.feature("world.water");
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      void node; // water params are static; wave time comes from frame time
+    },
+    dispose(node) {
+      waterRecords.delete((node as unknown as AuraWaterNode).id);
+    }
+  });
+
+  return () => {
+    unregisterTerrain();
+    unregisterScatter();
+    unregisterGrass();
+    unregisterWater();
+  };
+}
+
+/** Compile-time scatter record for a rule-driven scatter node. */
+export interface ScatterCompileRecord {
+  readonly node: AuraScatterNode;
+  readonly planned: readonly ScatterInstance[];
+}
+export const scatterRecords = new Map<string, ScatterCompileRecord>();
+export const grassRecords = new Map<string, AuraGrassNode>();
+export const waterRecords = new Map<string, import("../world/water.js").WaterRecord>();
+
+/** Pack planned instances → row-major mat3x4 (same layout as placements). */
+function packScatterMatrices(instances: readonly ScatterInstance[]): Float32Array {
+  const out = new Float32Array(instances.length * 12);
+  instances.forEach((inst, i) => {
+    const o = i * 12;
+    const r = (inst.yawDeg * Math.PI) / 180;
+    const c = Math.cos(r), s = Math.sin(r);
+    out[o] = c * inst.scale; out[o + 1] = 0; out[o + 2] = s * inst.scale; out[o + 3] = inst.x;
+    out[o + 4] = 0; out[o + 5] = inst.scale; out[o + 6] = 0; out[o + 7] = inst.y;
+    out[o + 8] = -s * inst.scale; out[o + 9] = 0; out[o + 10] = c * inst.scale; out[o + 11] = inst.z;
+  });
+  return out;
 }
 
 /** Listeners (e.g. providers) notified when an asset-sourced grid resolves. */

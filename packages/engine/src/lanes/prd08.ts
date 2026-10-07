@@ -4,8 +4,10 @@
  * Registrations:
  * - `time` (C-23 / C-38): real `TimeController` under `A3D_QR_CAMERA`, the
  *   PR 0a `StubTimeController` when the flag is off.
- * - `feel` (C-23 / C-38): `StubFeelBus` placeholder until the real FeelBus
- *   lands (phase 2); kept registered so `app.feel` is never undefined.
+ * - `feel` (C-23 / C-38): the real FeelBus under `A3D_QR_CAMERA` — channels
+ *   dispatch to camera layers, `app.time`, haptics, C-25 audio, C-20 effects
+ *   and the `prd08.screenFeel` blackboard key; `StubFeelBus` with the flag off.
+ * - `prd08.letterbox`: publishes the active cinematicBars layer's rect.
  *
  * The barrel is imported by `packages/engine/src/index.ts` — registrations
  * run once at module load, like every other lane.
@@ -13,7 +15,10 @@
 
 import { registerAppExtension } from "../contracts/app.js";
 import { StubFeelBus, StubTimeController } from "../contracts/time.js";
+import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import { createTimeController } from "../agent-api/time/TimeController.js";
+import { createAuraFeelBus } from "../agent-api/feel/extension.js";
+import { createLetterboxContributor } from "../agent-api/camera/layers/cinematicBars.js";
 import {
   createAuraCameraController,
   createStubCameraController
@@ -118,6 +123,32 @@ export {
   type CollisionDamperOptions
 } from "../agent-api/camera/collision.js";
 export {
+  createOccluderFade,
+  createOccluderFadeContributor,
+  type AuraOccluderFade,
+  type AuraOccluderFadeOptions
+} from "../agent-api/camera/OccluderFade.js";
+export {
+  createCinematicBarsLayer,
+  createLetterboxContributor,
+  LETTERBOX_BLACKBOARD_KEY,
+  type AuraCinematicBarsLayer,
+  type AuraCinematicBarsOptions
+} from "../agent-api/camera/layers/cinematicBars.js";
+export {
+  createFeelBus,
+  type AuraFeelBusDeps,
+  type AuraFeelBusImpl,
+  type FeelChannel
+} from "../agent-api/feel/FeelBus.js";
+export { FEEL_PRESETS, type AuraFeelPresetName } from "../agent-api/feel/presets.js";
+export { createScreenOverlay, type AuraScreenOverlay } from "../agent-api/feel/ScreenOverlay.js";
+export {
+  createAuraFeelBus,
+  SCREEN_FEEL_KEY,
+  type AuraFeelExtensionOptions
+} from "../agent-api/feel/extension.js";
+export {
   createFovKickLayer,
   createLookAtLayer,
   createPunchLayer,
@@ -153,8 +184,17 @@ registerAppExtension({
   owner: "prd08",
   flag: "A3D_QR_CAMERA",
   member: "feel",
-  create: () => new StubFeelBus()
+  create: (app, ctx) => {
+    if (!ctx.flags.on("A3D_QR_CAMERA")) return new StubFeelBus();
+    const feelOpts = (ctx.options as { feel?: { screenFallback?: "dom" } } | undefined)?.feel ?? {};
+    return createAuraFeelBus(app, { screenFallback: feelOpts.screenFallback });
+  },
+  dispose: (value) => {
+    (value as { dispose?: () => void }).dispose?.();
+  }
 });
+
+registerFrameContributor(createLetterboxContributor());
 
 registerAppExtension({
   id: "prd08.camera",

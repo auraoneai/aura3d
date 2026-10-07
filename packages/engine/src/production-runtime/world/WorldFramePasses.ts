@@ -15,6 +15,7 @@ import { registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
 import { terrainBackgroundPass } from "./TerrainRuntime.js";
+import { waterAfterOpaquePasses, waterBackgroundPasses, waterTransparentPass } from "./WaterRuntime.js";
 
 export function worldDrawPath(flags: QrFlags): "S" | "G" {
   return programCacheSlot.provided && flags.values["A3D_QR_CORE"] === "v2" ? "G" : "S";
@@ -34,10 +35,17 @@ export function registerWorldFramePasses(): () => void {
     passes(phase, ctx) {
       // §9.1: world opaque draws land in `background` (after the environment
       // background pass) on Path S; Path G emits them as opaque RenderItems.
-      // `after-opaque` carries the SceneCopyFallback and `transparent` the
-      // water surface once Phases 4+ land.
+      // §9.1 order: planar reflections (waterBackgroundPasses, step 2) run
+      // before the world opaque draw; `after-opaque` carries the scene copy
+      // (step 5) and `transparent` the water surface (step 6).
       if (phase === "background" && worldDrawPath(ctx.flags) === "S") {
-        return [terrainBackgroundPass(ctx)];
+        return [...waterBackgroundPasses(ctx), terrainBackgroundPass(ctx)];
+      }
+      if (phase === "after-opaque" && worldDrawPath(ctx.flags) === "S") {
+        return waterAfterOpaquePasses(ctx);
+      }
+      if (phase === "transparent" && worldDrawPath(ctx.flags) === "S") {
+        return [waterTransparentPass(ctx)];
       }
       return [];
     },

@@ -15,6 +15,7 @@
  * Self-contained (no requires). Stage fragment.
  */
 import type { ShaderChunk } from "../../contracts/program";
+import A3D_PRD04_ALPHA_A2C_WGSL from "../physical-wgsl/alpha_a2c.wgsl.js";
 
 const glsl = /* glsl */ `
 // MASK without coverage: hard cutoff discard (r185 USE_ALPHATEST arm,
@@ -40,6 +41,7 @@ export const A3D_PRD04_ALPHA_A2C: ShaderChunk = {
 	name: "a3d_prd04_alpha_a2c",
 	owner: "prd04",
 	glsl,
+	wgsl: A3D_PRD04_ALPHA_A2C_WGSL,
 	stage: "fragment",
 	requires: []
 };

@@ -104,3 +104,21 @@ registerCodemod({
     return { code, rows };
   }
 });
+
+/**
+ * T3.6 §9.6 — `aura3d assets bake-impostor` (C-39). Plan + manifest modes are
+ * pure; `--execute` renders the atlas in a WebGL2 bake page on the remote
+ * macos-14 runner (Playwright + ANGLE Metal, tools/impostor-bake/bake-page.mjs).
+ */
+import { registerCliCommand } from "../../contracts/commands";
+
+registerCliCommand({
+  name: "assets bake-impostor",
+  owner: "prd10",
+  summary: "Bake octahedral impostor atlases (albedo+alpha, normal+depth) for a model asset",
+  usage: "aura3d assets bake-impostor --asset <id> [--views 8] [--size 256] [--out <dir>] [--execute]",
+  async run(argv, io) {
+    const { runImpostorBake } = await import("../../../../../tools/impostor-bake/index.js");
+    return runImpostorBake(argv, io);
+  }
+});

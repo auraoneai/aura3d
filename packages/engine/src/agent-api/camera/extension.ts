@@ -34,6 +34,7 @@ import type {
 import { stubCameraRigFactories } from "../../contracts/camera.js";
 import type { AuraApp } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
+import { createCinematicBarsLayer } from "./layers/cinematicBars.js";
 import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/fromSpec.js";
 import {
   findRuntimeTarget,
@@ -234,6 +235,13 @@ export function createAuraCameraController(app: AuraApp, options: AuraCameraExte
         return false;
       }
     },
+    barsLayer: () =>
+      createCinematicBarsLayer({
+        canvasAspect: (() => {
+          const canvas = (app as { canvas?: { width: number; height: number } }).canvas;
+          return canvas && canvas.height > 0 ? canvas.width / canvas.height : 16 / 9;
+        })()
+      }),
     initial: { spec: currentSpec() }
   });
 

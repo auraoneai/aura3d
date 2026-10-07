@@ -1,4 +1,7 @@
-import { createExternalParityToneMappingPolicy, toneMapExternalParityHdrPixels } from "../ToneMapping";
+// PRD-04 P4-5: moved out of `materials/TransmissionPass.ts` — this is a
+// bounded CPU approximation used only as an oracle by tests; it is not a
+// render input and no longer ships in the package index.
+import { createExternalParityToneMappingPolicy, toneMapExternalParityHdrPixels } from "../../../../packages/rendering/src/ToneMapping";
 
 export interface ExternalParityTransmissionSample {
   readonly baseColor: readonly [number, number, number];
