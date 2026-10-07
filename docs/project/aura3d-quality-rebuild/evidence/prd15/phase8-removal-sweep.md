@@ -384,3 +384,28 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
   `package:raw` script absent on main and branch (gate expectation
   fails identically); bank-shot `main.ts` is 27 lines while the gate
   lints line 49; all failing gate/test files byte-identical to main.
+
+## Wave 5 — `Lane 03 browser specs` executes; residual reds are lane-03 debt
+
+- esbuild bundling root cause fixed (`faa2531d2`): `auraResolvePlugin`
+  returned `{external: true}` for mapped-miss bare specifiers, which emitted a
+  literal `import "ktx-parse"` into the bundle → pageerror at instantiation,
+  global never landed → 240 s beforeAll timeout. Both miss branches now return
+  `undefined` (defer to esbuild's own resolution). CI job 112813386842 then ran
+  all 3 phase-6 tests to completion — the latent assertions now execute.
+- The 3 surviving failures are **lane-03-owned engine gaps on merged main**,
+  not T8.1 regressions: `smaa.ratio === none.ratio` (post plan reports
+  `antiAlias: null`, only `tone-mapping` submitted), `autoExposure` never
+  adapts (settleSeconds = 0), `addPostPass` descriptors stay
+  `post-graph-v2-pending`. Harness/spec byte-identical to main (`d4f65a884`,
+  landed 2026-10-07); the post pipeline files are untouched by this branch.
+  Filed `requests/Q-03-12-phase6-post-probes.md`.
+- Harness bug fixed here (15-owned file): `mount({antiAlias:"smaa"})` now
+  attaches `effects.antiAlias({mode:"smaa"})` — the previous
+  `...(opts.antiAlias ? {} : {})` dead spread made smaa/none mounts identical.
+  SMAA still fails post-fix because the stage never enters the post plan —
+  the request covers that engine-side gap.
+- `Analytic pixel specs` flipped green this run → confirmed flaky class.
+- Pending at push time: `browser`, `Lane captures (flags=none)`,
+  `Skills gate + agent docs` (the agent-docs sim diagnostics landed in wave 4;
+  this run's output will surface the sim's post-swiftshader failure).
