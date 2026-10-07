@@ -19,7 +19,14 @@ test("character controller route exposes a live locomotion proof", async ({ page
   // holding a movement key accelerates into walk/run and moves the hero
   const before = await page.evaluate(() => (window as unknown as { __AURA3D_CHARACTER_CONTROLLER_PROOF__?: { position: readonly number[] } }).__AURA3D_CHARACTER_CONTROLLER_PROOF__?.position ?? [0, 0, 0]);
   await page.keyboard.down("KeyD");
-  await page.waitForTimeout(600);
+  // Hold KeyD until the hero actually crosses the threshold rather than a
+  // wall-clock 600ms: sim time advances at most 0.25s per presented frame
+  // (dt clamp), so a fixed hold is meaningless on slow software-GL runners.
+  await page.waitForFunction(
+    (startX) => ((window as unknown as { __AURA3D_CHARACTER_CONTROLLER_PROOF__?: { position?: readonly number[] } }).__AURA3D_CHARACTER_CONTROLLER_PROOF__?.position?.[0] ?? 0) > startX + 0.05,
+    before[0] ?? 0,
+    { timeout: 180_000 }
+  );
   const moving = await page.evaluate(() => (window as unknown as { __AURA3D_CHARACTER_CONTROLLER_PROOF__?: { state: string; speed: number; position: readonly number[]; clipWeights: { weight: number }[] } }).__AURA3D_CHARACTER_CONTROLLER_PROOF__);
   await page.keyboard.up("KeyD");
 

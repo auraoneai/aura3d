@@ -356,7 +356,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   ${template === "fighting-game" ? `await page.addInitScript(() => {
@@ -368,7 +368,7 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   });` : ""}
   await page.goto("/");
   const canvas = page.locator("canvas").first();
-  await expect(canvas).toBeVisible({ timeout: 45_000 });
+  await expect(canvas).toBeVisible({ timeout: 120_000 });
   await page.waitForTimeout(750);
   const box = await canvas.boundingBox();
   expect(box?.width ?? 0).toBeGreaterThan(100);
@@ -396,6 +396,16 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
     interactionEvents.push("pointer-drag", "wheel", "keyboard-input");
   }
   expect(pageErrors).toEqual([]);
+  // Pause the live render loop and step one deterministic frame before the
+  // protocol capture. A continuously-rendering scene on a software-GL runner
+  // saturates the compositor — presents take seconds each — and
+  // Page.captureScreenshot can starve past the test timeout while the page
+  // looks healthy. Paused, the compositor settles and returns the last frame.
+  await page.evaluate(() => {
+    const registry = (globalThis as { __AURA3D_LIVE_APPS__?: { pauseAll?: () => number; all?: () => readonly { step?: (dt?: number) => void }[] } }).__AURA3D_LIVE_APPS__;
+    registry?.pauseAll?.();
+    for (const app of registry?.all?.() ?? []) app.step?.(1 / 60);
+  });
   const capture = await cdp.send("Page.captureScreenshot", {
     format: "png",
     fromSurface: true,

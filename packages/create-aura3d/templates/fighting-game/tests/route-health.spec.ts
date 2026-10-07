@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
 test("fighting-game route loads", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   await page.goto("/");
   await expect(page.locator("#app")).toBeVisible();
   await page.waitForFunction(() =>

@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(240_000);
 
 // The animation-studio route is the generic scene player (render-live-route.ts ->
 // scene-player.ts). Its readiness contract is window.__AURA_LIVE_ROUTE_READY__ /
@@ -20,7 +20,7 @@ test("Aura3D animation studio live route reaches ready state", async ({ page }) 
           if (w.__AURA_LIVE_ROUTE_ERROR__) return `error: ${w.__AURA_LIVE_ROUTE_ERROR__}`;
           return w.__AURA_LIVE_ROUTE_READY__?.ready === true ? "ready" : "pending";
         }),
-      { timeout: 45_000 }
+      { timeout: 150_000 }
     )
     .toBe("ready");
   const proof = await page.evaluate(

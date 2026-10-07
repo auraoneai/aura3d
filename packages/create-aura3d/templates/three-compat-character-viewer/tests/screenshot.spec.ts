@@ -10,7 +10,7 @@ test.setTimeout(300_000);
 // subject bounds within ±10% — plus this template's bespoke assertions.
 test("Aura3D three compat character viewer screenshot clears the look floor", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
   const floor = await assertTemplateLookFloor(page, { subject: { x: 0.37, y: 0.36, width: 0.26, height: 0.51 } });
   const screenshot = await page.screenshot({ fullPage: false });

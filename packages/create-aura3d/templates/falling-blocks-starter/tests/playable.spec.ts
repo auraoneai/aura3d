@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("falling-blocks starter responds to keyboard input and clears a line", async ({ page }) => {
   test.setTimeout(420_000);
   await page.goto("/");
-  await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 45_000 });
+  await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 150_000 });
   await page.waitForFunction(() => Boolean((window as unknown as { __AURA3D_FALLING_BLOCKS_STARTER__?: unknown }).__AURA3D_FALLING_BLOCKS_STARTER__));
 
   const initial = await fallingState(page);

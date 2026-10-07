@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(90_000);
+test.setTimeout(240_000);
 
 test("animation channel storyboard caption renders", async ({ page }) => {
   await page.goto("/");

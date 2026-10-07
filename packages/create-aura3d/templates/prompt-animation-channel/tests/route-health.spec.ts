@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(90_000);
+test.setTimeout(240_000);
 
 test("animation channel route loads", async ({ page }) => {
   await page.goto("/");

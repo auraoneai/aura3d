@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(240_000);
 
 type RacingEvidence = {
   readonly status: string;
@@ -28,7 +28,7 @@ function readRacingState(): RacingEvidence | undefined {
 
 test("racing starter responds to keyboard input, reports real geometry certification, and resets", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
   const initial = await page.evaluate(readRacingState);
   expect(initial?.status).toBe("running");

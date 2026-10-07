@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(240_000);
 
 type MiniGameState = {
   readonly score: number;
@@ -19,7 +19,7 @@ function readMiniGameState(): MiniGameState | undefined {
 
 test("Aura3D mini game responds to keyboard input, scoring, and reset", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
   const initial = await page.evaluate(readMiniGameState);
   expect(initial?.player.x).toBeLessThan(0.2);

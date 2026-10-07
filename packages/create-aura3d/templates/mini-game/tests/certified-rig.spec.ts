@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(60_000);
+test.setTimeout(240_000);
 
 /**
  * E1 certified-rig mount proof for the mini-game template.
@@ -31,7 +31,7 @@ const CERTIFIED_HERO = certifiedHeroFromTypedAssets();
 
 test("mini-game hero mounts the certified vehicle-driver rig", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
   const hero = await page.evaluate(
     () => (window as unknown as { readonly __AURA3D_MINI_GAME__?: { readonly hero?: { readonly assetId?: string; readonly url?: string } } }).__AURA3D_MINI_GAME__?.hero
   );

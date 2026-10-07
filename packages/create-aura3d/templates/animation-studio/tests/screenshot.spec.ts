@@ -18,7 +18,7 @@ test("Aura3D animation studio screenshot clears the look floor", async ({ page }
           if (w.__AURA_LIVE_ROUTE_ERROR__) return `error: ${w.__AURA_LIVE_ROUTE_ERROR__}`;
           return w.__AURA_LIVE_ROUTE_READY__?.ready === true ? "ready" : "pending";
         }),
-      { timeout: 45_000 }
+      { timeout: 150_000 }
     )
     .toBe("ready");
 
