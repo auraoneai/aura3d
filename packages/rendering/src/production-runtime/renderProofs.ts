@@ -23,7 +23,7 @@ import {
   type ProductionRendererBackend,
   type ProductionRendererFeature,
   type ProductionRendererInput,
-  type CurrentRoutesRendererTimingDiagnostics,
+  type RendererTimingDiagnostics,
   type RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
 
@@ -115,7 +115,7 @@ interface CurrentRoutesTimingAccumulator {
   addReadback(start: number): void;
   addPixelAnalysis(start: number): void;
   addTransmissionBackdropCapture(start: number): void;
-  snapshot(): CurrentRoutesRendererTimingDiagnostics;
+  snapshot(): RendererTimingDiagnostics;
 }
 
 function createCurrentRoutesTimingAccumulator(): CurrentRoutesTimingAccumulator {
@@ -163,7 +163,7 @@ function hasPerformanceNow(): boolean {
   return typeof globalThis.performance?.now === "function";
 }
 
-function readCurrentRoutesNow(source: CurrentRoutesRendererTimingDiagnostics["source"]): number {
+function readCurrentRoutesNow(source: RendererTimingDiagnostics["source"]): number {
   return source === "performance-now" ? globalThis.performance.now() : Date.now();
 }
 

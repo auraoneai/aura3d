@@ -1,19 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import {
-  A3D_APP_WORKFLOW_PRESETS,
-  captureScreenshot,
-  createAssetDiagnostics,
-  createCompatibilityReport,
-  createDiagnosticsPanel,
-  createEnvironment,
-  createA3DApp,
-  createMaterialVariantController,
-  createRenderDiagnostics,
-  loadAsset,
-  resolveA3DAppQualityPreset,
-  workflows
-} from "@aura3d/engine";
+import { A3D_APP_WORKFLOW_PRESETS, captureScreenshot, createAssetDiagnostics, createDiagnosticsPanel, createEnvironment, createA3DApp, createMaterialVariantController, createRenderDiagnostics, loadAsset, resolveA3DAppQualityPreset, workflows } from "@aura3d/engine";
+import { createCompatibilityReport } from "@aura3d/engine/devtools";
 
 test("ExternalParity root package exposes the developer product API", () => {
   expect(typeof createA3DApp).toBe("function");
@@ -91,14 +79,16 @@ test("ExternalParity package manifest exposes installable product paths", () => 
     files: string[];
     devDependencies: Record<string, string>;
   };
+  // PRD-15 §6.1: "." is the public surface entry; the collapsed subpaths stay
+  // installable through their deprecated stubs until removeIn 4.0.0.
   expect(manifest.exports).toMatchObject({
     ".": {
-      browser: "./dist/engine/agent-api/index.js",
-      import: "./dist/engine/agent-api/index.js"
+      browser: "./dist/engine/public/index.js",
+      import: "./dist/engine/public/index.js"
     },
-    "./apps": "./dist/apps/index.js",
-    "./engine": "./dist/engine/index.js",
-    "./create-aura3d": "./dist/create-aura3d/index.js"
+    "./apps": "./dist/engine/deprecated/apps.js",
+    "./engine": "./dist/engine/deprecated/engine.js",
+    "./create-aura3d": "./dist/engine/deprecated/create-aura3d.js"
   });
   expect(manifest.files).toEqual(expect.arrayContaining([
     "dist/apps",

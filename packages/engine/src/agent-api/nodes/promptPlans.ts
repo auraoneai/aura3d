@@ -2,7 +2,6 @@
 
 import type { AuraPromptResolvedSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan } from "./types.js";
 import { AuraSceneBuilder, scene } from "./scene.js";
-import { compilePromptPlan } from "./prompt/promptPlan.js";
 
 export function promptSubjectIsResolved(s: AuraPromptPlanSubject): s is AuraPromptResolvedSubject {
   return "asset" in s;
@@ -31,6 +30,4 @@ export async function resolvePromptPlanSubject(
   return { ...plan, subject: resolvedSubject };
 }
 
-export function promptPlanToScene(plan: AuraPromptPlan): AuraSceneBuilder {
-  return compilePromptPlan(plan).scene;
-}
+// APPLIED BY LANE 15 (T6.11 no-cycles): promptPlanToScene moved to prompt/promptPlan.ts.

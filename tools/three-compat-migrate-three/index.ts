@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { migrateThreeToA3D } from "../../packages/three-compat/src";
+import { migrateThreeToA3D } from "../../packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter";
 
 const [input, output] = process.argv.slice(2);
 if (!input) {

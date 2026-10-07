@@ -1,12 +1,20 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../index.js";
-import { charts, city, neon, physics, product, resolveFrameAssetRenderScale, solar } from "../index.js";
+import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
+import { charts } from "../nodes/charts.js";
+import { city } from "../nodes/city.js";
+import { neon } from "../nodes/neon.js";
+import { physics } from "../nodes/physics.js";
+import { product } from "../nodes/product.js";
+import { resolveFrameAssetRenderScale } from "../nodes/scene.js";
+import { solar } from "../nodes/solar.js";
 import { gameCameraRigs } from "../GameCameraRigs.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const camera = {
+
+export const camera = lazyNamespace(() => ({
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
     ...resolveCameraClipping(options),
@@ -186,4 +194,4 @@ export const camera = {
   miniGolf: (): AuraCameraSpec => camera.follow({ targetNode: "white physics golf ball", distance: 4.2, fov: 48 }),
   neon: (): AuraCameraSpec => camera.flythrough({ from: [0, 0.36, 1.6], to: [0, 0.36, -5.8], target: [0, 0.26, -6.8], fov: 54, captureTime: 0.16 }),
   ...gameCameraRigs
-} as const;
+} as const));

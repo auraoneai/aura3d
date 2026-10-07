@@ -1,7 +1,5 @@
-import {
-  PointerLockControls as InputPointerLockControls,
-  type FirstPersonControlsOptions
-} from "@aura3d/input";
+import { PointerLockControls as InputPointerLockControls } from "./engine/PointerLockControls.js";
+import type { FirstPersonControlsOptions } from "./engine/FirstPersonControls.js";
 import { FirstPersonControls } from "./FirstPersonControls";
 import type { FlyCameraLike } from "./FlyControls";
 

@@ -12,6 +12,8 @@ import { timeline } from "./timeline.js";
 import { validateSolarVisualQA } from "../looks/structuralQA.js";
 import { cameraPreset } from "../CameraPresetLibrary.js";
 import { distance } from "../SpatialAnchoring.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 export function solarPlanetMaterial(preset: AuraSolarPlanetMaterialPreset): AuraMaterialSpec {
   if (preset === "gas-giant") return material.clearcoat({ color: "#f5d0a9", roughness: 0.2, clearcoat: 0.8, envMapIntensity: 0.88 });
@@ -48,11 +50,11 @@ export function solarMaterialPresetsInNodes(nodes: readonly AuraSceneNode[]): re
   return presets.filter((preset) => found.has(preset));
 }
 
-export const solar = {
+export const solar = lazyNamespace(() => ({
   system: (options: AuraSolarSystemPrefabOptions = {}): readonly AuraSceneNode[] => prefabs.solarSystem(options),
   scene: solarScene,
   cameraPreset: solarCameraPreset,
   materialPresets: (): readonly AuraSolarPlanetMaterialPreset[] => ["rocky", "gas-giant", "ice", "moon", "ringed", "lava-venus"],
   planetMaterial: solarPlanetMaterial,
   visualQA: validateSolarVisualQA
-} as const;
+} as const));

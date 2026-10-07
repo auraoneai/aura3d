@@ -3040,6 +3040,8 @@ interface GLTFDocument {
   readonly url: string;
   readonly byteLength: number;
   readonly binaryChunk?: ArrayBuffer;
+  readonly version: number;
+  readonly jsonChunkBytes: number;
 }
 
 async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
@@ -3051,7 +3053,7 @@ async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
       return parseGLB(data, request.url);
     }
     const text = new TextDecoder().decode(data);
-    return { json: JSON.parse(text) as GLTFJson, url: request.url, byteLength: data.byteLength };
+    return { json: JSON.parse(text) as GLTFJson, url: request.url, byteLength: data.byteLength, version: 0, jsonChunkBytes: 0 };
   }
 
   if (typeof fetch !== "function") {
@@ -3068,7 +3070,7 @@ async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
   }
 
   const bytes = await readResponseBytes(response, request.url, "document", request);
-  return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength };
+  return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength, version: 0, jsonChunkBytes: 0 };
 }
 
 async function loadBuffer(
@@ -3397,6 +3399,7 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
   let offset = 12;
   let json: GLTFJson | undefined;
   let binaryChunk: ArrayBuffer | undefined;
+  let jsonChunkBytes = 0;
 
   while (offset < data.byteLength) {
     if (offset + 8 > data.byteLength) {
@@ -3414,6 +3417,7 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
     if (chunkType === GLB_CHUNK_JSON) {
       const text = new TextDecoder().decode(chunk).replace(/[\u0000\s]+$/u, "");
       json = JSON.parse(text) as GLTFJson;
+      jsonChunkBytes = chunkLength;
     } else if (chunkType === GLB_CHUNK_BIN) {
       binaryChunk = chunk;
     }
@@ -3425,7 +3429,7 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
     throw new Error("GLB is missing a JSON chunk");
   }
 
-  return { json, binaryChunk, url, byteLength: data.byteLength };
+  return { json, binaryChunk, url, byteLength: data.byteLength, version, jsonChunkBytes };
 }
 
 function readAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorIndex: number, accessorCache?: GLTFAccessorReadCache): number[][] {
@@ -4043,6 +4047,23 @@ function invertLoaderMat4(matrix: Mat4): Mat4 {
 export function gltfRuntimeMaterialKey(material: string, contract: GLTFRuntimeMaterialContract): string {
   const signature = runtimeMaterialSignature(contract);
   return signature === "base" ? material : `${material}${RUNTIME_MATERIAL_KEY_MARKER}${signature}`;
+}
+
+/**
+ * PRD-15 T6.10 (APPLIED BY LANE 15, owner 05): document-level GLB inspection shared by the
+ * asset-corpus readiness tools so the GLB header/chunk walk lives in exactly one place.
+ * Returns the parsed glTF JSON document plus the header fields the corpus reports.
+ */
+export interface GLBDocumentInspection {
+  readonly json: GLTFJson;
+  readonly version: number;
+  readonly jsonChunkBytes: number;
+  readonly byteLength: number;
+}
+
+export function parseGlbDocument(data: ArrayBuffer, url = "memory://glb"): GLBDocumentInspection {
+  const document = parseGLB(data, url);
+  return { json: document.json, version: document.version, jsonChunkBytes: document.jsonChunkBytes, byteLength: document.byteLength };
 }
 
 export function parseGLTFRuntimeMaterialKey(key: string): GLTFRuntimeMaterialKey {

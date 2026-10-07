@@ -1,0 +1,803 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`material preset merge snapshots > animation material style treatments > cel 1`] = `
+{
+  "assetOverrideMetadata": [
+    "animationMaterialTreatment",
+    "toonRampSteps",
+    "outlineEligible",
+    "preserveSkinning",
+  ],
+  "kind": "animation-material-style",
+  "outline": true,
+  "rampSteps": 4,
+  "roughnessFloor": 0.48,
+  "saturationBoost": 0.08,
+  "treatment": "cel",
+}
+`;
+
+exports[`material preset merge snapshots > animation material style treatments > flat-readable 1`] = `
+{
+  "assetOverrideMetadata": [
+    "animationMaterialTreatment",
+    "toonRampSteps",
+    "outlineEligible",
+    "preserveSkinning",
+  ],
+  "kind": "animation-material-style",
+  "outline": false,
+  "rampSteps": 7,
+  "roughnessFloor": 0.48,
+  "saturationBoost": 0.08,
+  "treatment": "flat-readable",
+}
+`;
+
+exports[`material preset merge snapshots > animation material style treatments > preserve-pbr 1`] = `
+{
+  "assetOverrideMetadata": [
+    "animationMaterialTreatment",
+    "toonRampSteps",
+    "outlineEligible",
+    "preserveSkinning",
+  ],
+  "kind": "animation-material-style",
+  "outline": false,
+  "rampSteps": 7,
+  "roughnessFloor": 0.48,
+  "saturationBoost": 0.08,
+  "treatment": "preserve-pbr",
+}
+`;
+
+exports[`material preset merge snapshots > animation material style treatments > soft-toon 1`] = `
+{
+  "assetOverrideMetadata": [
+    "animationMaterialTreatment",
+    "toonRampSteps",
+    "outlineEligible",
+    "preserveSkinning",
+  ],
+  "kind": "animation-material-style",
+  "outline": false,
+  "rampSteps": 7,
+  "roughnessFloor": 0.48,
+  "saturationBoost": 0.08,
+  "treatment": "soft-toon",
+}
+`;
+
+exports[`material preset merge snapshots > architectural catalog 1`] = `
+[
+  {
+    "baseColor": [
+      0.545,
+      0.396,
+      0.259,
+      1,
+    ],
+    "category": "wood",
+    "id": "oak",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Oak Wood",
+    "metallic": 0,
+    "roughness": 0.65,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.361,
+      0.239,
+      0.176,
+      1,
+    ],
+    "category": "wood",
+    "id": "walnut",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Walnut Wood",
+    "metallic": 0,
+    "roughness": 0.6,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.816,
+      0.694,
+      0.502,
+      1,
+    ],
+    "category": "wood",
+    "id": "pine",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Pine Wood",
+    "metallic": 0,
+    "roughness": 0.7,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.502,
+      0.227,
+      0.145,
+      1,
+    ],
+    "category": "wood",
+    "id": "mahogany",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Mahogany Wood",
+    "metallic": 0,
+    "roughness": 0.55,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.937,
+      0.878,
+      0.737,
+      1,
+    ],
+    "category": "wood",
+    "id": "birch",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Birch Wood",
+    "metallic": 0,
+    "roughness": 0.68,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.682,
+      0.478,
+      0.278,
+      1,
+    ],
+    "category": "wood",
+    "id": "teak",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Teak Wood",
+    "metallic": 0,
+    "roughness": 0.5,
+    "textureFixture": "wood-plank",
+  },
+  {
+    "baseColor": [
+      0.94,
+      0.93,
+      0.91,
+      1,
+    ],
+    "category": "stone",
+    "id": "marble-carrara",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Carrara Marble",
+    "metallic": 0,
+    "roughness": 0.25,
+    "textureFixture": "marble",
+  },
+  {
+    "baseColor": [
+      0.12,
+      0.12,
+      0.13,
+      1,
+    ],
+    "category": "stone",
+    "id": "granite-black",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Black Granite",
+    "metallic": 0,
+    "roughness": 0.15,
+    "textureFixture": "marble",
+  },
+  {
+    "baseColor": [
+      0.847,
+      0.812,
+      0.729,
+      1,
+    ],
+    "category": "stone",
+    "id": "limestone",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Limestone",
+    "metallic": 0,
+    "roughness": 0.75,
+    "textureFixture": "concrete-asphalt",
+  },
+  {
+    "baseColor": [
+      0.502,
+      0.502,
+      0.502,
+      1,
+    ],
+    "category": "stone",
+    "id": "concrete",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Polished Concrete",
+    "metallic": 0,
+    "roughness": 0.6,
+    "textureFixture": "concrete-asphalt",
+  },
+  {
+    "baseColor": [
+      0.259,
+      0.275,
+      0.29,
+      1,
+    ],
+    "category": "stone",
+    "id": "slate",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Slate Stone",
+    "metallic": 0,
+    "roughness": 0.7,
+    "textureFixture": "concrete-asphalt",
+  },
+  {
+    "baseColor": [
+      0.761,
+      0.643,
+      0.467,
+      1,
+    ],
+    "category": "stone",
+    "id": "sandstone",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Sandstone",
+    "metallic": 0,
+    "roughness": 0.8,
+    "textureFixture": "concrete-asphalt",
+  },
+  {
+    "baseColor": [
+      0.549,
+      0.556,
+      0.554,
+      1,
+    ],
+    "category": "metal",
+    "id": "chrome",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Polished Chrome",
+    "metallic": 1,
+    "roughness": 0.05,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.651,
+      0.651,
+      0.651,
+      1,
+    ],
+    "category": "metal",
+    "id": "steel-brushed",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Brushed Steel",
+    "metallic": 1,
+    "roughness": 0.3,
+    "textureFixture": "sci-fi-panel",
+  },
+  {
+    "baseColor": [
+      0.955,
+      0.637,
+      0.538,
+      1,
+    ],
+    "category": "metal",
+    "id": "copper",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Polished Copper",
+    "metallic": 1,
+    "roughness": 0.2,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.875,
+      0.78,
+      0.455,
+      1,
+    ],
+    "category": "metal",
+    "id": "brass",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Polished Brass",
+    "metallic": 1,
+    "roughness": 0.25,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.913,
+      0.921,
+      0.925,
+      1,
+    ],
+    "category": "metal",
+    "id": "aluminum",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Brushed Aluminum",
+    "metallic": 1,
+    "roughness": 0.35,
+    "textureFixture": "sci-fi-panel",
+  },
+  {
+    "baseColor": [
+      0.02,
+      0.02,
+      0.02,
+      1,
+    ],
+    "category": "metal",
+    "id": "metal-black",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Matte Black Metal",
+    "metallic": 1,
+    "roughness": 0.6,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.863,
+      0.859,
+      0.847,
+      1,
+    ],
+    "category": "fabric",
+    "id": "cotton",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Cotton Fabric",
+    "metallic": 0,
+    "roughness": 0.85,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.122,
+      0.161,
+      0.267,
+      1,
+    ],
+    "category": "fabric",
+    "id": "velvet",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Velvet Fabric",
+    "metallic": 0,
+    "roughness": 0.9,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.435,
+      0.286,
+      0.184,
+      1,
+    ],
+    "category": "fabric",
+    "id": "leather",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Leather",
+    "metallic": 0,
+    "roughness": 0.55,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.906,
+      0.878,
+      0.831,
+      1,
+    ],
+    "category": "fabric",
+    "id": "linen",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Linen Fabric",
+    "metallic": 0,
+    "roughness": 0.88,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.584,
+      0.541,
+      0.494,
+      1,
+    ],
+    "category": "fabric",
+    "id": "wool",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Wool Fabric",
+    "metallic": 0,
+    "roughness": 0.92,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.95,
+      0.95,
+      0.95,
+      0.38,
+    ],
+    "category": "glass",
+    "id": "glass-clear",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Clear Glass",
+    "metallic": 0,
+    "roughness": 0.05,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.9,
+      0.9,
+      0.9,
+      0.62,
+    ],
+    "category": "glass",
+    "id": "glass-frosted",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Frosted Glass",
+    "metallic": 0,
+    "roughness": 0.4,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.651,
+      0.753,
+      0.769,
+      0.58,
+    ],
+    "category": "glass",
+    "id": "glass-tinted",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Tinted Glass",
+    "metallic": 0,
+    "roughness": 0.08,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.275,
+      0.275,
+      0.275,
+      0.52,
+    ],
+    "category": "glass",
+    "id": "glass-smoked",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Smoked Glass",
+    "metallic": 0,
+    "roughness": 0.1,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.961,
+      0.961,
+      0.961,
+      1,
+    ],
+    "category": "ceramic",
+    "id": "ceramic-white",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "White Ceramic",
+    "metallic": 0,
+    "roughness": 0.15,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.729,
+      0.376,
+      0.278,
+      1,
+    ],
+    "category": "ceramic",
+    "id": "terracotta",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Terracotta",
+    "metallic": 0,
+    "roughness": 0.7,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.847,
+      0.831,
+      0.804,
+      1,
+    ],
+    "category": "ceramic",
+    "id": "tile-glazed",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Glazed Tile",
+    "metallic": 0,
+    "roughness": 0.12,
+    "textureFixture": undefined,
+  },
+  {
+    "baseColor": [
+      0.941,
+      0.933,
+      0.922,
+      1,
+    ],
+    "category": "ceramic",
+    "id": "porcelain",
+    "knownLimits": [
+      "Adapted from the old arch-viz material library as deterministic current-engine PBR presets.",
+      "These are procedural/local material presets, not scanned production material assets or Unity/Unreal physical material parity evidence.",
+    ],
+    "label": "Porcelain",
+    "metallic": 0,
+    "roughness": 0.18,
+    "textureFixture": undefined,
+  },
+]
+`;
+
+exports[`material preset merge snapshots > cinematic presets 1`] = `
+[
+  {
+    "approximatedFeatures": [
+      "screen-space puddle breakup is represented by glossy PBR response until a normal-map texture is bound",
+    ],
+    "diagnostics": [
+      "Wet pavement is renderer-owned PBR material data, not a CSS shine overlay.",
+    ],
+    "id": "wet-pavement",
+    "label": "Wet pavement",
+    "pbr": {
+      "baseColor": [
+        0.035,
+        0.04,
+        0.045,
+        1,
+      ],
+      "clearcoatFactor": 0.72,
+      "clearcoatRoughnessFactor": 0.08,
+      "environmentMapIntensity": 0.65,
+      "environmentMapSpecularIntensity": 0.9,
+      "metallic": 0,
+      "name": "cinematic/wet-pavement",
+      "roughness": 0.18,
+    },
+  },
+  {
+    "approximatedFeatures": [],
+    "diagnostics": [
+      "Neon proof is an emissive renderer material and can drive bloom/practical light evidence.",
+    ],
+    "id": "neon-emissive",
+    "label": "Neon emissive",
+    "pbr": {
+      "baseColor": [
+        0.05,
+        0.78,
+        1,
+        1,
+      ],
+      "emissiveColor": [
+        0.05,
+        0.78,
+        1,
+      ],
+      "emissiveStrength": 4.8,
+      "metallic": 0,
+      "name": "cinematic/neon-emissive",
+      "roughness": 0.22,
+    },
+  },
+  {
+    "approximatedFeatures": [
+      "subsurface scattering is approximated with emissive PBR color",
+    ],
+    "diagnostics": [
+      "Hero prop glow is real material data and must not be replaced by a DOM halo.",
+    ],
+    "id": "hero-prop-glow",
+    "label": "Hero prop glow",
+    "pbr": {
+      "baseColor": [
+        0.42,
+        0.95,
+        1,
+        1,
+      ],
+      "clearcoatFactor": 0.25,
+      "emissiveColor": [
+        0.18,
+        0.82,
+        1,
+      ],
+      "emissiveStrength": 2.6,
+      "metallic": 0,
+      "name": "cinematic/hero-prop-glow",
+      "roughness": 0.28,
+    },
+  },
+  {
+    "approximatedFeatures": [
+      "water beads require texture/normal detail from the route asset to be fully represented",
+    ],
+    "diagnostics": [
+      "Metal wetness is encoded as PBR parameters.",
+    ],
+    "id": "rain-dark-metal",
+    "label": "Rain dark metal",
+    "pbr": {
+      "baseColor": [
+        0.32,
+        0.34,
+        0.36,
+        1,
+      ],
+      "clearcoatFactor": 0.48,
+      "clearcoatRoughnessFactor": 0.12,
+      "metallic": 0.82,
+      "name": "cinematic/rain-dark-metal",
+      "roughness": 0.24,
+    },
+  },
+  {
+    "approximatedFeatures": [],
+    "diagnostics": [
+      "Set material is renderer-owned PBR scene content.",
+    ],
+    "id": "cinematic-set-concrete",
+    "label": "Cinematic set concrete",
+    "pbr": {
+      "baseColor": [
+        0.23,
+        0.24,
+        0.25,
+        1,
+      ],
+      "environmentMapIntensity": 0.22,
+      "environmentMapSpecularIntensity": 0.32,
+      "metallic": 0,
+      "name": "cinematic/set-concrete",
+      "roughness": 0.62,
+    },
+  },
+]
+`;
+
+exports[`material preset merge snapshots > cinematic presets 2`] = `
+{
+  "diagnostics": [
+    "Wet pavement is renderer-owned PBR material data, not a CSS shine overlay.",
+  ],
+  "domOverlay": false,
+  "feature": "material",
+  "id": "material:wet-pavement",
+  "label": "Wet pavement",
+  "rendererOwned": true,
+  "satisfiesPublicCinematicGate": true,
+  "sceneContent": true,
+  "source": "renderer-material",
+}
+`;
+
+exports[`material preset merge snapshots > the shared registry still instantiates default presets 1`] = `
+[
+  "unlit",
+  "pbr",
+  "physical:gold",
+  "physical:silver",
+  "physical:copper",
+  "physical:iron",
+  "physical:aluminum",
+  "physical:plastic",
+  "physical:rubber",
+  "physical:wood",
+  "physical:concrete",
+  "physical:fabric",
+  "physical:glass",
+  "physical:water",
+  "physical:skin",
+  "physical:eye",
+  "physical:hair",
+  "physical:terrain",
+  "physical:toon",
+]
+`;
+
+exports[`material preset merge snapshots > the shared registry still instantiates default presets 2`] = `"unlit"`;
+
+exports[`material preset merge snapshots > the shared registry still instantiates default presets 3`] = `"pbr"`;

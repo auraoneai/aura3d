@@ -13,8 +13,10 @@ import { cityBlock } from "./prefabs/cityBlock.js";
 import { humanoidWalk } from "../humanoid-walk-runtime.js";
 import { particleFountain } from "../particle-fountain-runtime.js";
 import { productViewer } from "../product-viewer-runtime.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const sceneKits = {
+
+export const sceneKits = lazyNamespace(() => ({
   physicsPlayground: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("physicsPlayground", options),
   particleFountain: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("particleFountain", options),
   solarSystem: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("solarSystem", options),
@@ -25,7 +27,7 @@ export const sceneKits = {
   cityBlock: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("cityBlock", options),
   humanoidWalk: (options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit => makeSceneKit("humanoidWalk", options),
   productViewer: (asset: AuraAssetRef<"model">, options: Omit<AuraSceneKitCustomizeOptions, "asset"> = {}): AuraSceneKit => makeSceneKit("productViewer", { ...options, asset })
-} as const;
+} as const));
 
 export function makeSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomizeOptions = {}): AuraSceneKit {
   const built = buildSceneKit(id, options);

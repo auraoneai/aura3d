@@ -303,7 +303,7 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
   },
   "browser-entry-purity": {
     writes: PRODUCER_OWNERSHIP["browser-entry-purity"],
-    hashes: ["packages/engine/src/agent-api/media-node.ts", "packages/materials/src/node.ts", "packages/environments/src/node.ts"]
+    hashes: ["packages/engine/src/agent-api/media-node.ts", "packages/engine/src/devtools/materials/node.ts", "packages/engine/src/devtools/environments/node.ts"]
   },
   "public-runtime-descriptor-inventory": {
     writes: PRODUCER_OWNERSHIP["public-runtime-descriptor-inventory"],

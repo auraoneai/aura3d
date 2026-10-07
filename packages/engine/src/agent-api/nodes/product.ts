@@ -12,6 +12,8 @@ import { prefabs } from "./prefabs/index.js";
 import { timeline } from "./timeline.js";
 import { validateProductVisualQA } from "../looks/structuralQA.js";
 import { productViewer } from "../product-viewer-runtime.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 export function productPlacement(asset: AuraAssetRef<"model">): AuraProductPlacement {
   const bounds = asset.bounds ?? [1, 1, 1] as const;
@@ -64,11 +66,11 @@ function productDiagnostics(asset: AuraAssetRef<"model">, nodes: readonly AuraSc
   };
 }
 
-export const product = {
+export const product = lazyNamespace(() => ({
   placement: productPlacement,
   stage: (options: { readonly style?: AuraProductStageStyle } = {}): readonly AuraSceneNode[] => prefabs.productStage(options),
   viewer: (asset: AuraAssetRef<"model">, options: AuraProductViewerOptions = {}): readonly AuraSceneNode[] => prefabs.productViewer(asset, options),
   scene: productScene,
   diagnostics: productDiagnostics,
   visualQA: validateProductVisualQA
-} as const;
+} as const));

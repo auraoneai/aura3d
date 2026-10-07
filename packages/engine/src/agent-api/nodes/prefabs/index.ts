@@ -23,6 +23,8 @@ import { water } from "../water.js";
 import { round } from "../../GameRuntime.js";
 import { particleFountain } from "../../particle-fountain-runtime.js";
 import { productViewer } from "../../product-viewer-runtime.js";
+import { lazyNamespace } from "../../lazyNamespace.js";
+
 
 export const MINI_GOLF_LAYOUT = {
   ballStart: [-1.42, 0.16, 0.58] as AuraVec3,
@@ -41,7 +43,7 @@ interface AuraMiniGolfPrefabOptions {
   readonly aimVector?: AuraVec3;
 }
 
-export const prefabs = {
+export const prefabs = lazyNamespace(() => ({
   particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => {
     // Cap at 2400 (the advertised fountain maximum); the WebGL and 2D fallback renderers clamp fountain layers to the same 2400 so the scene JSON never claims more particles than render.
     const count = Math.min(2400, Math.max(320, options.count ?? 420));
@@ -689,4 +691,4 @@ export const prefabs = {
   lowPolyHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => {
     return createLowPolyHumanoid(options);
   }
-} as const;
+} as const));

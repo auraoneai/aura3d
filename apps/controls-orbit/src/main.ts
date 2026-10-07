@@ -1,5 +1,6 @@
 import { Renderer } from "@aura3d/engine/renderer";
-import { InputSnapshot, OrbitControls, createSceneCameraControlAdapter } from "@aura3d/input";
+import { InputSnapshot } from "@aura3d/input";
+import { OrbitControlsEngine as OrbitControls, createSceneCameraControlAdapter } from "@aura3d/controls";
 import { Geometry, RenderDeviceError, UnlitMaterial } from "@aura3d/rendering";
 import { Renderable, Scene } from "@aura3d/scene";
 

@@ -208,8 +208,9 @@ Stated because a release note that omits this is not useful:
   authored-unit arcade contract into physical tyre or vehicle-dynamics proof.
 - `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
   not cover it. It carries its own 23-spec suite.
-- `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
-  exported symbol names have more than one owning package.
+- `@aura3d/engine`'s `.` entry still re-exports 146 deprecated union names
+  (arch-gates `export-budget`, removed at 4.0.0); `unique-ownership` reports 0 exported
+  symbol names with more than one owning package.
 - The current public `examples/` inventory contains **13 retained routes** after
   duplicate, contract-only, or visually rejected hosts were internalized. The
   clean 2026-08-09 source/canvas/full-page audit passed all 13 with no filtered
@@ -245,7 +246,7 @@ npx create-aura3d@3.0.1 my-product --template product-viewer
 
 The 3.0.1 release is available from
 [GitHub Releases](https://github.com/auraoneai/aura3d/releases/tag/v3.0.1),
-with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
+with the removal surface in [`docs/MIGRATION-4.0.md`](docs/MIGRATION-4.0.md) and the archived 2.0 guide in [`docs/migration/2.0.md`](docs/migration/2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 2.0 asset catalog
@@ -681,7 +682,6 @@ Maintained scene-kit families include physics playgrounds, particle fountains, s
 - `@aura3d/cli`: typed GLB/glTF asset workflow, diagnostics, and deploy checks.
 - `@aura3d/react`: optional thin React adapter.
 - `create-aura3d`: Vite templates for product viewers, cinematic scenes, and mini-games.
-- `@aura3d/three-compat`: optional migration compatibility package, installed separately when a Three.js migration workflow needs it.
 
 ## Production browser 3D workflow
 

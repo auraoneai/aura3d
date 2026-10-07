@@ -5,8 +5,8 @@ import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
-import { A3DRenderer, DirectionalLight } from "@aura3d/engine/advanced-runtime";
-import { loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { A3DRenderer, DirectionalLight } from "@aura3d/engine/renderer";
+import { loadHdrEnvironment } from "@aura3d/engine/renderer";
 import { PBRMaterial, computePerspectiveCameraFrame, type CollectedLight, type RenderSource } from "@aura3d/rendering";
 import {
   camera,

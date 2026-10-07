@@ -177,7 +177,7 @@ describe("T3.9 live assertion", () => {
     expect(effective).toBeLessThanOrEqual(300);
   });
 
-  it("the real repo has zero enforced arch-gate findings", async () => {
+  it("the real repo has zero enforced arch-gate findings", { timeout: 120_000 }, async () => {
     const { runGates } = await import("../../../tools/arch-gates/index");
     const report = runGates(REPO);
     const enforced = Object.values(report.rules)

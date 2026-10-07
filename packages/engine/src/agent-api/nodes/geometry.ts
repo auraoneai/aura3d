@@ -4,8 +4,10 @@ import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraPrimitiveOptions } from "./types.js";
 import { defineAuraCustomGeometry } from "../RootGeometry.js";
 import { primitive } from "./primitives.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const geometry = {
+
+export const geometry = lazyNamespace(() => ({
   define: defineAuraCustomGeometry,
   custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) })
-} as const;
+} as const));

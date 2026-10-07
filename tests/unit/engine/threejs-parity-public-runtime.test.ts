@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { A3DAppLifecycle, A3DRenderer, A3DScene, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
+import { A3DAppLifecycle, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
 import { a3dRendererEvidence } from "../../../packages/engine/src/agent-api/devtools/rendererReports.js";
 import { MockRenderDevice } from "@aura3d/rendering";
 import { AdvancedRenderer } from "@aura3d/engine/rendering/advanced-runtime";
-import { GLTFLoader, createRenderableScene } from "@aura3d/engine/assets/advanced-gallery";
+import { createRenderableScene } from "@aura3d/engine/assets/advanced-gallery";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/renderer";
+import { GLTFLoader } from "@aura3d/engine/assets";
 
 describe("ThreejsParity threejsParity public runtime", () => {
   afterEach(() => {

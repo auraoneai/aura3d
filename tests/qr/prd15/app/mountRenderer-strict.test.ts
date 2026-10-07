@@ -38,7 +38,7 @@ vi.mock("../../../../packages/engine/src/agent-api/compiler/webglRuntime", () =>
 }));
 
 const eligibleSnapshot = (): AuraSceneSnapshot =>
-  ({ nodes: [primitives.box({ size: 1 }).toJSON()], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } });
+  ({ schema: "aura3d-scene-snapshot/1.0", background: "#000000", diagnostics: { enabled: false }, nodes: [primitives.box({ size: 1 }).toJSON()], camera: { mode: "orbit", position: [0, 0, 5], target: [0, 0, 0] } });
 const canvas = () => ({ width: 800, height: 600, getContext: () => null }) as unknown as HTMLCanvasElement;
 
 describe("T4.2 strict renderer mount", () => {

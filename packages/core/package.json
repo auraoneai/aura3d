@@ -10,9 +10,7 @@
       "import": "./dist/index.js"
     }
   },
-  "dependencies": {
-    "@aura3d/math": "workspace:*"
-  },
+  "dependencies": {},
   "description": "Engine lifecycle, scheduling, deterministic time stepping, diagnostics, events, logging, task queues, and disposable resource scopes for Aura3D.",
   "keywords": [
     "aura3d",

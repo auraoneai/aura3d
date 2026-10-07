@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
-
-const GLB_MAGIC = 0x46546c67;
-const JSON_CHUNK_TYPE = 0x4e4f534a;
+// PRD-15 T6.10 (APPLIED BY LANE 15, owner 05): GLB header/chunk walk delegated to the
+// shared document parse in ../GLTFLoader — this file keeps only the corpus counting logic.
+import { parseGlbDocument } from "../GLTFLoader.js";
 
 export type ProductionAssetClass = "product" | "automotive" | "character" | "materials" | "animation" | "asset";
 
@@ -103,17 +103,10 @@ export function loadProductionAssetManifest(path = "fixtures/asset-corpus/manife
 
 export function inspectProductionGlb(path: string): ProductionGlbInspection {
   const data = readFileSync(resolve(path));
-  if (data.byteLength < 20 || data.readUInt32LE(0) !== GLB_MAGIC) {
-    throw new Error(`Not a GLB file: ${path}`);
-  }
-  const version = data.readUInt32LE(4);
-  const firstChunkLength = data.readUInt32LE(12);
-  const firstChunkType = data.readUInt32LE(16);
-  if (firstChunkType !== JSON_CHUNK_TYPE) {
-    throw new Error(`GLB missing JSON chunk: ${path}`);
-  }
-  const jsonText = data.toString("utf8", 20, 20 + firstChunkLength).trim();
-  const gltf = JSON.parse(jsonText) as {
+  const document = parseGlbDocument(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer, path);
+  const version = document.version;
+  const firstChunkLength = document.jsonChunkBytes;
+  const gltf = document.json as {
     scenes?: readonly unknown[];
     nodes?: readonly unknown[];
     meshes?: readonly { primitives?: readonly { targets?: readonly unknown[] }[] }[];

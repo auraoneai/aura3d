@@ -1,8 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraApp, AuraGameLoopPlan, AuraGameRuntimeEvidence } from "../../index.js";
-import { DEFAULT_MAX_SUBSTEPS } from "../../app/frameLoopDefaults.js";
-import { certifyPublicPlatformerPresentation, certifyPublicRacingPresentation, createAuraGameRuntime, createGamePlatformerCameraRig, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerPresentationSurfaceNodes, createGamePublicPlatformerPresentationNodes, createGamePublicRacingPresentationNodes, createGameRacingCheckpointGateNodes, createGameRacingPresentationTrackNodes, createGameRacingRoadMeshNodes, createGameRacingStartFinishNodes } from "../../index.js";
+import type { AuraApp, AuraGameLoopPlan, AuraGameRuntimeEvidence } from "../../nodes/types.js";
+import { DEFAULT_MAX_SUBSTEPS } from "./frameLoopDefaults.js";
+import { createAuraGameRuntime } from "./runtime.js";
+import { certifyPublicPlatformerPresentation, certifyPublicRacingPresentation, createGamePlatformerCameraRig, createGamePlatformerCheckpointNodes, createGamePlatformerFinishNodes, createGamePlatformerGroundMeshNodes, createGamePlatformerHazardNodes, createGamePlatformerPlatformMeshNodes, createGamePlatformerPresentationSurfaceNodes, createGamePublicPlatformerPresentationNodes, createGamePublicRacingPresentationNodes, createGameRacingCheckpointGateNodes, createGameRacingPresentationTrackNodes, createGameRacingRoadMeshNodes, createGameRacingStartFinishNodes } from "../../nodes/prefabs/gamePresentation.js";
 import { gameRules } from "../../gameRules.js";
 import { createFrameLoop } from "../../FrameLoop.js";
 import { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105, type GameRuntimeEvidenceOptions } from "../../GameEvidence.js";
@@ -14,8 +15,10 @@ import { createGamePlatformerPresentationCamera, createGamePlatformerSceneBindin
 import { certifyPublicPlatformerGeometry, certifyPublicRacingGeometry } from "../../PublicGameGeometry.js";
 import { createFightingGameKit, fighting } from "../../game-kits/fighting.js";
 import { createGameRacingCameraRig } from "./racingCamera.js";
+import { lazyNamespace } from "../../lazyNamespace.js";
 
-export const game = {
+
+export const game = lazyNamespace(() => ({
   createRuntime: createAuraGameRuntime,
   rules: gameRules,
   loop: (options: Partial<Omit<AuraGameLoopPlan, "kind">> = {}): AuraGameLoopPlan => ({
@@ -124,7 +127,7 @@ export const game = {
   },
   fighting: createFightingGameKit,
   evidence: collectGameRuntimeEvidence
-} as const;
+} as const));
 
 export function collectGameRuntimeEvidence(
   app: Pick<AuraApp, "runtime" | "nodes">,

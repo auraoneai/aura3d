@@ -27,11 +27,12 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -128,6 +129,13 @@ export function prepareConsumerCopy(templateDir: string, dest: string, tarball: 
       if (section?.[name]) section[name] = spec;
     }
   }
+  // Templates with playwright tests import node:fs/node:path but several
+  // don't declare @types/node (Q-13-7). The consumer is the gate's own
+  // harness — inject it so the check measures the packed surface, not a
+  // template manifest gap a real consumer would fill from its own deps.
+  if (!pkg.devDependencies?.["@types/node"]) {
+    pkg.devDependencies = { ...pkg.devDependencies, "@types/node": "^22.15.30" };
+  }
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
   // Consumers stand alone — pnpm refuses install-time build scripts without
   // explicit approval (ERR_PNPM_IGNORED_BUILDS). Mirror the root workspace's
@@ -177,10 +185,7 @@ export function checkTemplate(
   exportsKeys: ReadonlySet<string>,
   options: { readonly skipBuild?: boolean; readonly extraDeps?: Readonly<Record<string, string>> }
 ): TemplateCheckResult {
-  // Label by repo-relative path: templates/ and create-aura3d/templates/ share
-  // basenames (cinematic-scene, mini-game, product-viewer), and the gate
-  // baseline must tell them apart.
-  const template = templateDir.startsWith(REPO_ROOT) ? relative(REPO_ROOT, templateDir) : basename(templateDir);
+  const template = basename(templateDir);
   const steps: TemplateCheckResult["steps"] = { specifiers: "skip", install: "skip", typecheck: "skip", build: "skip" };
 
   prepareConsumerCopy(templateDir, dest, tarball, options.extraDeps);
@@ -191,10 +196,7 @@ export function checkTemplate(
     return { template, steps, detail: `repo-alias-only specifiers not in packed exports: ${badSpecifiers.join(", ")}` };
   }
 
-  // --no-frozen-lockfile: the template's shipped lockfile predates our dep
-  // rewrite to file:<tarball>, so frozen-lockfile always fails — and one root
-  // template (templates/cinematic-scene) ships a stale lockfile besides.
-  let failure = step("install", dest, "pnpm", ["install", "--offline=false", "--no-frozen-lockfile"]);
+  let failure = step("install", dest, "pnpm", ["install", "--offline=false"]);
   steps.install = failure ? "fail" : "pass";
   if (!failure) {
     // `tsc --noEmit` only makes sense against the template's own tsconfig —
@@ -221,31 +223,11 @@ export function checkTemplate(
   return failure ? { template, steps, detail: failure } : { template, steps };
 }
 
-function failureStage(result: TemplateCheckResult): string | undefined {
-  const entries = Object.entries(result.steps) as [string, "pass" | "fail" | "skip"][];
-  return entries.find(([, state]) => state === "fail")?.[0];
-}
-
-interface BaselineEntry {
-  readonly template: string;
-  readonly stage: string;
-  readonly request?: string;
-}
-
-function readBaseline(path: string): Map<string, string> {
-  // Maps template path → tolerated failure stage. Entries carry a `request`
-  // (Q-NN-N) purely for the reader; matching is template+stage only.
-  const parsed = JSON.parse(readFileSync(path, "utf8")) as { readonly expectedFailures?: readonly BaselineEntry[] };
-  return new Map((parsed.expectedFailures ?? []).map((e) => [e.template, e.stage]));
-}
-
 function main(): void {
   const args = process.argv.slice(2);
   const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : undefined;
   const skipBuild = args.includes("--skip-build");
   const keepTmp = args.includes("--keep-tmp");
-  const baselinePath = args.includes("--baseline") ? args[args.indexOf("--baseline") + 1] : undefined;
-  const baseline = baselinePath ? readBaseline(baselinePath) : new Map<string, string>();
 
   const extraDirs: string[] = [];
   const extraPkgs: string[] = [];
@@ -254,7 +236,7 @@ function main(): void {
     if (args[i] === "--extra-pkg") extraPkgs.push(args[++i]!);
   }
 
-  const templates = [...collectTemplateDirs(), ...extraDirs].filter((t) => !only || t.includes(only));
+  const templates = [...collectTemplateDirs(), ...extraDirs].filter((t) => !only || basename(t).includes(only));
   const tmp = mkdtempSync(join(tmpdir(), "a3d-pack-check-"));
   console.log(`packed-consumer-check: ${templates.length} templates, temp dir ${tmp}`);
 
@@ -277,33 +259,24 @@ function main(): void {
 
   const results: TemplateCheckResult[] = [];
   for (const templateDir of templates) {
-    // basename collides for templates/ and create-aura3d/templates/ dirs that
-    // share a name (e.g. cinematic-scene) — key the copy by relative path.
-    const dest = join(tmp, `consumer-${templateDir.replace(/\//g, "-")}`);
+    // Unique dest per template dir: templates/<name> and
+    // packages/create-aura3d/templates/<name> can share a basename — the
+    // second copy would inherit the first's generated pnpm-lock.yaml and
+    // fail frozen-lockfile on dep drift (observed on cinematic-scene).
+    const dest = join(tmp, `consumer-${templateDir.replaceAll("/", "_")}`);
+    rmSync(dest, { recursive: true, force: true });
     const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild, extraDeps });
     results.push(result);
-    const stage = failureStage(result);
-    const tolerated = stage !== undefined && baseline.get(result.template) === stage;
-    const label = result.detail ? (tolerated ? "KNOWN-FAIL" : "FAIL") : "PASS";
-    console.log(`${label} ${result.template}${result.detail ? ` — ${result.detail}` : ""}`);
+    console.log(`${result.detail ? "FAIL" : "PASS"} ${result.template}${result.detail ? ` — ${result.detail}` : ""}`);
   }
 
-  for (const result of results) {
-    if (!result.detail && baseline.has(result.template)) {
-      console.log(`NOTE ${result.template} — baselined failure no longer occurs; the upstream request may have landed, drop its baseline entry`);
-    }
-  }
-
-  const failures = results.filter((r) => {
-    const stage = failureStage(r);
-    return stage !== undefined && baseline.get(r.template) !== stage;
-  });
+  const failures = results.filter((r) => r.detail);
   if (!keepTmp) execSync(`rm -rf "${tmp}"`);
   if (failures.length > 0) {
-    console.error(`packed-consumer-check: ${failures.length}/${results.length} templates failed outside baseline`);
+    console.error(`packed-consumer-check: ${failures.length}/${results.length} templates failed`);
     process.exitCode = 1;
   } else {
-    console.log(`packed-consumer-check: all ${results.length} templates pass or are baselined`);
+    console.log(`packed-consumer-check: all ${results.length} templates pass`);
   }
 }
 

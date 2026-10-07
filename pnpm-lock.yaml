@@ -27,6 +27,9 @@ importers:
       '@aura3d/apps':
         specifier: workspace:*
         version: link:packages/apps
+      '@aura3d/asset-index':
+        specifier: workspace:*
+        version: link:packages/asset-index
       '@aura3d/assets':
         specifier: workspace:*
         version: link:packages/assets
@@ -36,6 +39,9 @@ importers:
       '@aura3d/cli':
         specifier: workspace:*
         version: link:packages/aura3d-cli
+      '@aura3d/controls':
+        specifier: workspace:*
+        version: link:packages/controls
       '@aura3d/core':
         specifier: workspace:*
         version: link:packages/core
@@ -45,9 +51,6 @@ importers:
       '@aura3d/ecs':
         specifier: workspace:*
         version: link:packages/ecs
-      '@aura3d/editor':
-        specifier: workspace:*
-        version: link:packages/editor
       '@aura3d/editor-runtime':
         specifier: workspace:*
         version: link:packages/editor-runtime
@@ -57,12 +60,21 @@ importers:
       '@aura3d/input':
         specifier: workspace:*
         version: link:packages/input
+      '@aura3d/lean':
+        specifier: workspace:*
+        version: link:packages/lean
       '@aura3d/math':
         specifier: workspace:*
         version: link:packages/math
+      '@aura3d/navigation-recast':
+        specifier: workspace:*
+        version: link:packages/navigation-recast
       '@aura3d/physics':
         specifier: workspace:*
         version: link:packages/physics
+      '@aura3d/physics-rapier':
+        specifier: workspace:*
+        version: link:packages/physics-rapier
       '@aura3d/product-studio':
         specifier: workspace:*
         version: link:packages/product-studio
@@ -222,12 +234,14 @@ importers:
       '@aura3d/input':
         specifier: workspace:*
         version: link:../input
-
-  packages/core:
-    dependencies:
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
+      '@aura3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/core: {}
 
   packages/create-aura3d:
     dependencies:
@@ -256,12 +270,6 @@ importers:
         specifier: workspace:*
         version: link:../math
 
-  packages/editor:
-    dependencies:
-      '@aura3d/editor-runtime':
-        specifier: workspace:*
-        version: link:../editor-runtime
-
   packages/editor-runtime:
     dependencies:
       '@aura3d/animation':
@@ -273,10 +281,6 @@ importers:
       '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
-    devDependencies:
-      '@aura3d/engine':
-        specifier: workspace:*
-        version: link:../..
 
   packages/engine:
     dependencies:
@@ -295,6 +299,9 @@ importers:
       '@aura3d/core':
         specifier: workspace:*
         version: link:../core
+      '@aura3d/debug':
+        specifier: workspace:*
+        version: link:../debug
       '@aura3d/ecs':
         specifier: workspace:*
         version: link:../ecs
@@ -328,12 +335,9 @@ importers:
       '@aura3d/workflows':
         specifier: workspace:*
         version: link:../workflows
-
-  packages/environments:
-    dependencies:
-      '@aura3d/rendering':
+      create-aura3d:
         specifier: workspace:*
-        version: link:../rendering
+        version: link:../create-aura3d
 
   packages/game:
     dependencies:
@@ -358,6 +362,9 @@ importers:
 
   packages/input:
     dependencies:
+      '@aura3d/controls':
+        specifier: workspace:*
+        version: link:../controls
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
@@ -370,15 +377,6 @@ importers:
       '@aura3d/engine':
         specifier: workspace:*
         version: link:../..
-
-  packages/materials:
-    dependencies:
-      '@aura3d/assets':
-        specifier: workspace:*
-        version: link:../assets
-      '@aura3d/rendering':
-        specifier: workspace:*
-        version: link:../rendering
 
   packages/math: {}
 
@@ -441,21 +439,6 @@ importers:
         version: link:../math
 
   packages/scripting: {}
-
-  packages/three-compat:
-    dependencies:
-      '@aura3d/animation':
-        specifier: workspace:*
-        version: link:../animation
-      '@aura3d/controls':
-        specifier: workspace:*
-        version: link:../controls
-      '@aura3d/debug':
-        specifier: workspace:*
-        version: link:../debug
-      '@aura3d/rendering':
-        specifier: workspace:*
-        version: link:../rendering
 
   packages/workflows:
     dependencies:

@@ -101,7 +101,7 @@ function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorks
   for (const file of walkFiles(dir)) {
     const source = readFileSync(file, "utf8");
     const rewritten = source.replace(
-      /\b(from\s*["']|import\s*\(\s*["'])([^"']+)(["'])/g,
+      /\b(from\s*["']|import\s*\(\s*["']|import\s*["'])([^"']+)(["'])/g,
       (full, prefix: string, specifier: string, suffix: string) => {
         const nextSpecifier = rewriteSpecifier(file, distRoot, specifier, rewriteWorkspacePackages);
         return nextSpecifier === specifier ? full : `${prefix}${nextSpecifier}${suffix}`;

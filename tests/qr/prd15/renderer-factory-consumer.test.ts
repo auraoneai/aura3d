@@ -62,7 +62,7 @@ describe("C-29 renderer factory consumer (PRD-15 T2.1)", () => {
   it.fails("stub: Renderer.create({ backend: 'mock' }) returns a renderer whose backend is 'mock'", async () => {
     const renderer = await Renderer.create({ backend: "mock" });
     try {
-      expect(renderer.backend).toBe("mock");
+      expect((renderer as unknown as { backend: string }).backend).toBe("mock");
       // Lifecycle delegates exist and are callable on a lifecycle-free device:
       // subscribing returns an unsubscribe function and never throws.
       const unsubscribe = renderer.onDeviceLost(() => {});

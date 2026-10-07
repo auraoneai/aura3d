@@ -1,7 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraSceneSnapshot } from "../index.js";
-import { createAssetProvenance, groups, primitive } from "../index.js";
+import type { AuraSceneSnapshot } from "../nodes/types.js";
+import { createAssetProvenance } from "../diagnostics.js";
+import { groups } from "../nodes/groups.js";
+import { primitive } from "../nodes/primitives.js";
 import { createProductionPrimitiveTextureIntent } from "../compiler/textures.js";
 import { material } from "../nodes/material.js";
 

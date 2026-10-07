@@ -1,16 +1,19 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { migrateThreeToA3D } from "../../packages/three-compat/src";
+import { migrateThreeToA3D } from "../../packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter";
 
 const requiredFiles = [
-  "packages/three-compat/src/index.ts",
-  "packages/three-compat/src/migration/ImportMap.ts",
-  "packages/three-compat/src/migration/ThreeToA3DAdapter.ts",
-  "packages/three-compat/src/migration/CompatibilityWarnings.ts",
+  // PRD-15 T6.2: migration surface moved from the deleted @aura3d/three-compat package
+  // into `aura3d migrate three` (packages/aura3d-cli).
+  "packages/aura3d-cli/src/migrate-three/parse.ts",
+  "packages/aura3d-cli/src/migrate-three/mappings.ts",
+  "packages/aura3d-cli/src/migrate-three/emit.ts",
+  "packages/aura3d-cli/src/migrate-three/report.ts",
+  "packages/aura3d-cli/src/migrate-three/ImportMap.ts",
+  "packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter.ts",
+  "packages/aura3d-cli/src/migrate-three/CompatibilityWarnings.ts",
   "tools/three-compat-migrate-three/index.ts",
-  "tests/unit/three-compat/three-compat-migration.test.ts",
-  "tests/integration/three-compat-threejs-migration.test.ts",
-  "tests/browser/three-compat-threejs-migration.spec.ts"
+  "tests/unit/aura3d-cli/migrate-three.test.ts"
 ] as const;
 const source = 'import * as THREE from "three"; import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"; import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; const renderer = new THREE.WebGLRenderer(); renderer.setSize(800,600); new GLTFLoader(); new OrbitControls();';
 const result = migrateThreeToA3D(source);

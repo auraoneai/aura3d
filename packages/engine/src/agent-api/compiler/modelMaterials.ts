@@ -2,9 +2,10 @@
 // TypedGLBActor options inside createProductionRuntimeSceneRenderer; 0 changed logic lines.
 // PRD-04 P2-3: `A3D_QR_MATERIALS` on lowers `node.material`/`node.materialOverrides` to C-15
 // overrides instead of the legacy `tint` object; flag off is byte-identical.
-import type { AuraModelNode } from "../index.js";
+import type { AuraModelNode } from "../nodes/types.js";
 import type { AuraModelMaterialOverride } from "../../contracts/materials.js";
-import { clamp01, colorToLinearRgb, colorToLinearRgba } from "../index.js";
+import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { clamp01 } from "../sceneMath.js";
 import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { lowerModelMaterialOverrides } from "../../production-runtime/ModelMaterialOverrides.js";
 

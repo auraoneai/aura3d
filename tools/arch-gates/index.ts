@@ -19,6 +19,9 @@ import { checkNoCycles } from "./rules/noCycles";
 import { optionCoverageRule, scaffoldOptionCoverage } from "./rules/option-coverage";
 import { checkGlslLocation } from "./rules/glslLocation";
 import { checkSingleRenderer } from "./rules/singleRenderer";
+import { checkExportBudget, checkNoEvidenceInRuntime } from "./rules/exportBudget";
+import { checkUniqueOwnership } from "./rules/uniqueOwnership";
+import { checkDepsTruth } from "./rules/depsTruth";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -80,7 +83,8 @@ export function checkSrcClean(root: string): GateFinding[] {
         }
         if (!EMITTED_ARTIFACT_RE.test(entry.name)) continue;
         // A .js sitting next to its .ts source is still an emitted artifact.
-        findings.push({ rule: "src-clean", file: relative(root, path), detail: `emitted artifact ${entry.name} inside src/` });
+        // T7.2: fail mode — the orphan-map debris can never come back.
+        findings.push({ rule: "src-clean", file: relative(root, path), detail: `emitted artifact ${entry.name} inside src/`, enforced: true });
       }
     }
   }
@@ -147,10 +151,16 @@ export function runGates(root: string): GateReport {
     "max-file-lines": { findings: checkMaxFileLines(root) },
     "option-coverage": { findings: optionCoverageRule([], root) },
     "single-renderer": { findings: checkSingleRenderer(root) },
-    "glsl-location": { findings: checkGlslLocation(root) }
+    "glsl-location": { findings: checkGlslLocation(root) },
+    "export-budget": { findings: checkExportBudget(root) },
+    "no-evidence-in-runtime": { findings: checkNoEvidenceInRuntime(root) },
+    "unique-ownership": { findings: checkUniqueOwnership(root) },
+    // T6.11: per-manifest severity — 15-owned manifests enforce, the rest warn
+    // and are forwarded to Q-ALL-1.
+    "deps-truth": { findings: checkDepsTruth(root) }
   };
   const findings = Object.values(rules).reduce((sum, r) => sum + r.findings.length, 0);
-  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: 9, findings } };
+  return { generatedAt: new Date().toISOString(), mode: "warn", rules, totals: { rules: Object.keys(rules).length, findings } };
 }
 
 function main(): void {

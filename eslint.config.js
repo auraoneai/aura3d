@@ -85,6 +85,13 @@ export default [
     files: ["packages/lean/src/**/*.ts"],
     rules: { "aura3d-boundaries/no-upward-package-import": "off" }
   },
+  {
+    // PRD-15 T6.9: input/src/controls holds deprecated re-export shims over
+    // @aura3d/controls — upward import is their entire (deprecated) purpose.
+    // Removed at 4.0.0 (T8.1).
+    files: ["packages/input/src/controls/**/*.ts"],
+    rules: { "aura3d-boundaries/no-upward-package-import": "off" }
+  },
   // Aura3D Quality Rebuild lane rules (CONTRACTS.md §3.8). Every eslint/qr/*.js
   // file exports an array of flat-config blocks; PR 0a ships them empty plus the
   // WARN-mode qr-no-cross-lane-import rule.

@@ -7,6 +7,8 @@ import type {
   AuraCreateAppOptions,
   AuraSceneKit
 } from "./nodes/types.js";
+import { lazyNamespace } from "./lazyNamespace.js";
+
 
 export {
   createAuraApp
@@ -25,7 +27,7 @@ export interface HumanoidWalkOptions {
 export type HumanoidWalkScene = AuraSceneBuilder;
 export type HumanoidWalkSceneKit = AuraSceneKit;
 
-export const character = rootCharacter;
+export const character = lazyNamespace(() => rootCharacter);
 
 export const sceneKits = {
   humanoidWalk(options: HumanoidWalkOptions = {}): HumanoidWalkSceneKit {

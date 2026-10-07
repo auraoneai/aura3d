@@ -12,6 +12,8 @@ import { lights } from "./lights.js";
 import { material } from "./material.js";
 import { timeline } from "./timeline.js";
 import { fighting } from "../game-kits/fighting.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 function createMiniGolfStateController(): AuraMiniGolfStateController {
   const start: AuraVec3 = MINI_GOLF_LAYOUT.ballStart;
@@ -187,7 +189,7 @@ function miniGolfPointerShotFromDrag(start: AuraMiniGolfPointerPoint, end: AuraM
   };
 }
 
-export const games = {
+export const games = lazyNamespace(() => ({
   miniGolf: (): readonly AuraSceneNode[] => prefabs.miniGolfHole(),
   miniGolfHole: (): readonly AuraSceneNode[] => prefabs.miniGolfHole(),
   miniGolfCourse: (): readonly AuraSceneNode[] => prefabs.miniGolfCourse(),
@@ -202,4 +204,4 @@ export const games = {
       .add(lights.studio({ intensity: 1.15 }))
       .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }))
       .timeline(timeline.loop({ seconds: 8 }))
-} as const;
+} as const));

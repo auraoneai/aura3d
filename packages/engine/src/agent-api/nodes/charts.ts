@@ -5,6 +5,8 @@ import { camera } from "./camera.js";
 import { prefabs } from "./prefabs/index.js";
 import { validateChartVisualQA } from "../looks/structuralQA.js";
 import { cameraPreset } from "../CameraPresetLibrary.js";
+import { lazyNamespace } from "../lazyNamespace.js";
+
 
 export function chartThemePalette(theme: AuraChartTheme): { readonly floor: AuraColor; readonly wall: AuraColor; readonly side: AuraColor } {
   if (theme === "light-analytics") return { floor: "#dbeafe", wall: "#eff6ff", side: "#bfdbfe" };
@@ -23,7 +25,7 @@ export function dataBarColor(value: number, colorScale?: readonly AuraColor[]): 
   return "#ef476f";
 }
 
-export const charts = {
+export const charts = lazyNamespace(() => ({
   barGrid3D: (options: AuraDataBars3DPrefabOptions = {}): readonly AuraSceneNode[] => prefabs.dataBars3D(options),
   dataBars3D: (options: AuraDataBars3DPrefabOptions = {}): readonly AuraSceneNode[] => prefabs.dataBars3D(options),
   configure: (options: AuraDataBars3DPrefabOptions = {}): AuraDataBars3DPrefabOptions => ({ ...options }),
@@ -36,4 +38,4 @@ export const charts = {
         ? camera.perspective({ position: [3.9, 3.1, 4.8], target: [0, 0.86, 0], fov: 42 })
         : camera.perspective({ position: [5.6, 4.4, 7.4], target: [0, 1.15, 0], fov: 36 }),
   visualQA: (nodes: readonly AuraSceneNode[]): AuraChartVisualQAResult => validateChartVisualQA(nodes)
-} as const;
+} as const));

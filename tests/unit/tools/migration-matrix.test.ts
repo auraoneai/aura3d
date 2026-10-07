@@ -1,10 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { AURA3D_2_SPECIFIER_MIGRATIONS } from "../../../tools/migrate-2.0/index";
 
 const BASE_TAG = "v1.5.2";
-const MIGRATION = readFileSync("MIGRATION-2.0.md", "utf8");
+const MIGRATION = readFileSync("docs/migration/2.0.md", "utf8");
 const MIGRATION_FLAT = MIGRATION.replace(/\s+/g, " ");
 const REMOVED_PRIVATE_PACKAGE = ["test", "utils"].join("-");
 
@@ -19,9 +19,16 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .filter((line) => line.startsWith("packages/"))
       .map((line) => line.split("/")[1]!)
       .filter((name) => !name.endsWith(".md"));
-    const now = readdirSync("packages", { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+    // Count only real packages (a directory with a manifest) — stale
+    // packages/*/node_modules husks from earlier installs must not register.
+    const now = readdirSync("packages", { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && existsSync(`packages/${entry.name}/package.json`))
+      .map((entry) => entry.name);
     const removed = atBase.filter((name) => !now.includes(name));
-    expect(removed).toEqual([REMOVED_PRIVATE_PACKAGE]);
+    // PRD-15 T6.2/T6.5/T6.6 + earlier phases: editor, environments, materials and
+    // three-compat are intentionally deleted (surfaces moved into engine devtools /
+    // the CLI codemod / deprecated stubs).
+    expect(removed).toEqual(["editor", "environments", "materials", REMOVED_PRIVATE_PACKAGE, "three-compat"]);
     expect(JSON.parse(showAtBase(`packages/${REMOVED_PRIVATE_PACKAGE}/package.json`))).toMatchObject({ private: true });
     for (const selectedOwner of ["lean", "navigation-recast", "physics-rapier"]) expect(now).toContain(selectedOwner);
   });
@@ -29,12 +36,12 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
   it("sets every released package to the coordinated major version", () => {
     const coordinatedVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
     const manifests = ["package.json", ...readdirSync("packages", { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
+      .filter((entry) => entry.isDirectory() && existsSync(`packages/${entry.name}/package.json`))
       .map((entry) => `packages/${entry.name}/package.json`)];
     const released = manifests
       .map((path) => ({ path, manifest: JSON.parse(readFileSync(path, "utf8")) as { private?: boolean; name?: string; version?: string } }))
       .filter(({ manifest }) => manifest.private !== true);
-    expect(released.length).toBe(29);
+    expect(released.length).toBe(25);
     // 3.0.0 train (muse3jsparity L1 retarget): the coordinated major moved 2.0 -> 3.0.
     expect(coordinatedVersion).toMatch(/^3\.0\.\d+$/);
     expect(released.every(({ manifest }) => manifest.version === coordinatedVersion)).toBe(true);
@@ -47,10 +54,9 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
     const removed = Object.keys(before.exports ?? {}).filter((key) => !(key in (after.exports ?? {})));
     expect(removed).toEqual(["./three-compat"]);
     expect((before.files ?? []).some((entry) => entry.includes("three-compat"))).toBe(false);
-    expect(JSON.parse(readFileSync("packages/three-compat/package.json", "utf8"))).toMatchObject({
-      name: "@aura3d/three-compat",
-      version: coordinatedVersion
-    });
+    // PRD-15 T6.2: the compatibility package was deleted; its migration surface moved to
+    // `aura3d migrate three` in packages/aura3d-cli (mapping engine constructs, not a runtime shim).
+    expect(() => readFileSync("packages/three-compat/package.json", "utf8")).toThrow();
   });
 
   it("documents every intentional physical/navigation removal and its semantic replacement", () => {

@@ -3,11 +3,13 @@
 import type { AuraEnvironmentMapPreset } from "./types.js";
 import { envSourceBuilders } from "./environments.js";
 import { worldEnvBuilders } from "./environments.world.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const environments = {
+
+export const environments = lazyNamespace(() => ({
   ...envSourceBuilders,
   ...worldEnvBuilders
-} as const;
+} as const));
 
 export const environmentMapPresets: readonly AuraEnvironmentMapPreset[] = [
   { id: "studio", label: "Studio softbox IBL", purpose: ["studio", "rubber", "fabric"], intensity: 1.15, color: "#f8fbff", evidence: "neutral broad highlights for product and material staging" },

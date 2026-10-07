@@ -61,7 +61,7 @@ function exportTarget(value: unknown): string | null {
   return null;
 }
 
-function sourceForTarget(root: string, manifestPath: string, target: string): string | null {
+function sourceForTarget(root: string, manifestPath: string, target: string): string[] {
   const packageDir = dirname(manifestPath);
   const withoutPrefix = target.replace(/^\.\//, "").replace(/\.d\.(?:m|c)?ts$/, "").replace(/\.(?:m|c)?js$/, "");
   const candidates: string[] = [];
@@ -75,12 +75,27 @@ function sourceForTarget(root: string, manifestPath: string, target: string): st
     }
   }
   candidates.push(join(packageDir, withoutPrefix));
+  const found: string[] = [];
   for (const candidate of candidates) {
-    for (const path of [`${candidate}.ts`, `${candidate}.tsx`, join(candidate, "index.ts")]) {
-      if (existsSync(path)) return path;
+    if (candidate.includes("*")) {
+      // Wildcard subpath (e.g. `./contracts/*` -> `dist/contracts/*.js`):
+      // collect every matching source file; the subpath's surface is their union.
+      const prefix = candidate.slice(0, candidate.indexOf("*"));
+      const dir = prefix.endsWith("/") ? prefix.slice(0, -1) : dirname(prefix + "_");
+      const stem = prefix.slice(dir.length + 1);
+      if (existsSync(dir)) {
+        for (const file of readdirSync(dir)) {
+          if (/\.tsx?$/.test(file) && file.replace(/\.tsx?$/, "").startsWith(stem)) found.push(join(dir, file));
+        }
+      }
+      continue;
     }
+    for (const path of [`${candidate}.ts`, `${candidate}.tsx`, join(candidate, "index.ts")]) {
+      if (existsSync(path)) { found.push(path); break; }
+    }
+    if (found.length) break;
   }
-  return null;
+  return found;
 }
 
 function declarationKind(node: ts.Node): SymbolKind {
@@ -113,8 +128,41 @@ function declarationSignature(node: ts.Node, source: ts.SourceFile): string {
   return normalize(node.getText(source));
 }
 
+// Specifier -> source entry file, from aura.exports.json (the single
+// resolution truth produced by tools/generate-resolution-maps). Deprecated
+// stubs re-export package specifiers like `export * from "@aura3d/rendering"`;
+// without this map they would resolve to an empty surface.
+const AURA_PATHS: Map<string, string> = (() => {
+  const map = new Map<string, string>();
+  try {
+    const data = JSON.parse(readFileSync(join(process.cwd(), "aura.exports.json"), "utf8")) as {
+      paths?: Array<[string, string]>;
+    };
+    for (const pair of data.paths ?? []) {
+      if (Array.isArray(pair) && typeof pair[0] === "string" && typeof pair[1] === "string") {
+        map.set(pair[0], pair[1]);
+      }
+    }
+  } catch {
+    // No aura.exports.json (e.g. scanning the baseline archive): bare
+    // specifiers simply stay unresolved, matching pre-PRD-15 behavior.
+  }
+  return map;
+})();
+
 function localModule(from: string, specifier: string): string | null {
-  if (!specifier.startsWith(".")) return null;
+  if (!specifier.startsWith(".")) {
+    // Package-name re-export (e.g. `export * from "@aura3d/rendering"` inside a
+    // deprecated stub): resolve it through aura.exports.json, but only for the
+    // current checkout — the baseline archive predates the paths map, and
+    // resolving its specifiers against current sources would corrupt the diff.
+    const mapped = AURA_PATHS.get(specifier);
+    if (mapped && from.startsWith(process.cwd())) {
+      const candidate = join(process.cwd(), mapped);
+      if (existsSync(candidate)) return candidate;
+    }
+    return null;
+  }
   const base = resolve(dirname(from), specifier).replace(/\.(?:m|c)?js$/, "");
   for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, "index.ts")]) {
     if (existsSync(candidate)) return candidate;
@@ -134,12 +182,20 @@ function collectSymbols(entry: string): SurfaceSymbol[] {
     const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest, true, path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const result = new Map<string, SymbolContract>();
     const locals = new Map<string, SymbolContract>();
+    // A name declared as both a value and a type (e.g. `const A3DRenderer =
+    // Renderer; type A3DRenderer = Renderer;`) exports both meanings; record
+    // the runtime kind so `export { name }` isn't misread as type-only.
+    const setLocal = (name: string, contract: SymbolContract): void => {
+      const previous = locals.get(name);
+      if (previous?.kind === "runtime" && contract.kind === "type") return;
+      locals.set(name, contract);
+    };
     for (const statement of source.statements) {
       if ((ts.isClassDeclaration(statement) || ts.isFunctionDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement) || ts.isEnumDeclaration(statement)) && statement.name) {
-        locals.set(statement.name.text, { kind: declarationKind(statement), signature: declarationSignature(statement, source) });
+        setLocal(statement.name.text, { kind: declarationKind(statement), signature: declarationSignature(statement, source) });
       }
       if (ts.isVariableStatement(statement)) {
-        for (const declaration of statement.declarationList.declarations) if (ts.isIdentifier(declaration.name)) locals.set(declaration.name.text, { kind: "runtime", signature: declarationSignature(statement, source) });
+        for (const declaration of statement.declarationList.declarations) if (ts.isIdentifier(declaration.name)) setLocal(declaration.name.text, { kind: "runtime", signature: declarationSignature(statement, source) });
       }
       const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined;
       if (modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) {
@@ -188,8 +244,12 @@ function collect(root: string): PackageSurface[] {
       .filter(([key]) => key.startsWith("."))
       .map(([subpath, value]) => {
         const target = exportTarget(value);
-        const source = target ? sourceForTarget(root, manifestPath, target) : null;
-        return { subpath, source: source ? relative(root, source) : null, symbols: source ? collectSymbols(source) : [] };
+        const sources = target ? sourceForTarget(root, manifestPath, target) : [];
+        const seen = new Set<string>();
+        const symbols = sources
+          .flatMap((source) => collectSymbols(source))
+          .filter((symbol) => { const key = `${symbol.kind}:${symbol.name}`; if (seen.has(key)) return false; seen.add(key); return true; });
+        return { subpath, source: sources[0] ? relative(root, sources[0]) : null, symbols };
       })
       .sort((a, b) => a.subpath.localeCompare(b.subpath));
     const bins = typeof manifest.bin === "string" ? [manifest.name.split("/").pop()!] : Object.keys(manifest.bin ?? {}).sort();
@@ -250,7 +310,17 @@ function classifyRemoval(scope: string, name: string): string {
   if (name === "AnimationTrack" && ["@aura3d/engine", "@aura3d/engine/engine", "@aura3d/engine/engine-runtime"].includes(scope)) return "documented-2.0-animation-track-relocated-to-@aura3d/animation";
   if (name === "WebGPUPipelineCache" && ["@aura3d/rendering", "@aura3d/engine/rendering"].includes(scope)) return "documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath";
   if (scope === "@aura3d/engine" && name === "./three-compat") return "broken-1.5.2-root-alias-replaced-by-@aura3d/three-compat";
+  // PRD-15 T2.2/T4 deleted ProductionEffectsPipeline and the runtime-parity
+  // proof contract outright (descriptor facades, no runtime ownership).
+  if (/^(ProductionEffectsOptions|ProductionEffectsSummary|RuntimeParityFrameRenderResult|createProductionEffectsRenderSource|createProductionRuntimeRenderer|summarizeProductionEffectsProof)$/.test(name)) {
+    return "documented-prd15-t2-t4-production-effects-and-parity-contracts-deleted";
+  }
   if (scope === "@aura3d/three-compat" && name === "./postprocessing") return "non-rendering-compat-fabrication-removed-with-actionable-warning";
+  // PRD-15 §6 (T6.2/T6.5/T6.6): the three packages are deleted outright — their
+  // real surfaces moved into engine devtools barrels and the aura3d CLI codemod.
+  if (["@aura3d/editor", "@aura3d/environments", "@aura3d/materials"].includes(scope)) {
+    return "documented-prd15-6-honest-packages-deleted";
+  }
   // WS-2.3/2.6 deliberately removed the public data generators and descriptor
   // facades that claimed runtime behavior without owning it. Keep this pattern
   // explicit: a new unrelated removal must remain unclassified and fail.
@@ -276,9 +346,17 @@ try {
   const afterMap = new Map(after.map((pkg) => [pkg.name, pkg]));
   const mediaNodeSymbols = new Set(afterMap.get("@aura3d/engine")?.exports
     .find((entry) => entry.subpath === "./media-node")?.symbols.map((symbol) => symbol.name) ?? []);
+  // PRD-15 §6.1: "." is the curated surface; names removed from it must remain
+  // importable on the deprecated `engine` / `engine-runtime` subpath stubs
+  // until 4.0.0. A "." removal that still resolves there is the documented
+  // collapse; anything else stays unclassified and fails.
+  const engineDeprecatedSymbols = new Set((afterMap.get("@aura3d/engine")?.exports ?? [])
+    .filter((entry) => entry.subpath === "./engine" || entry.subpath === "./engine-runtime")
+    .flatMap((entry) => entry.symbols.map((symbol) => symbol.name)));
   const classify = (scope: string, name: string): string => {
     if (PATCH) return "unclassified";
     if (mediaNodeSymbols.has(name)) return "relocated-to-@aura3d/engine/media-node";
+    if (scope === "@aura3d/engine" && engineDeprecatedSymbols.has(name)) return "documented-prd15-6.1-root-collapse-remains-on-deprecated-subpath";
     if (scope === "@aura3d/physics" || scope === "@aura3d/engine/physics") return "documented-2.0-physics-navigation-owner-removal";
     return classifyRemoval(scope, name);
   };

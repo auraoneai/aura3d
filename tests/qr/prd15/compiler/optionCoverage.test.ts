@@ -20,8 +20,8 @@ import { OPTION_COVERAGE_ROWS } from "../../../../packages/engine/src/agent-api/
 import { PRD15_DIAGNOSTIC_ONLY_FIELDS } from "../../../../packages/engine/src/agent-api/compiler/diagnosticOnly.prd15";
 import type { MountSceneCompileContext } from "../../../../packages/engine/src/agent-api/compiler/compileScene";
 import { scene } from "../../../../packages/engine/src/agent-api/nodes/scene";
-import type { AuraSceneNode, AuraSceneSnapshot, AuraAssetRef, CollectedLight } from "../../../../packages/engine/src/agent-api/nodes/types";
-import type { EnvironmentLightingOptions } from "@aura3d/rendering";
+import type { AuraSceneNode, AuraSceneSnapshot, AuraAssetRef } from "../../../../packages/engine/src/agent-api/nodes/types";
+import type { CollectedLight, EnvironmentLightingOptions } from "@aura3d/rendering";
 import { lights } from "../../../../packages/engine/src/agent-api/nodes/lights";
 import { primitives, primitive } from "../../../../packages/engine/src/agent-api/nodes/primitives";
 import { instances, instancedPrimitive } from "../../../../packages/engine/src/agent-api/nodes/instances";
@@ -76,7 +76,7 @@ function deepDiff(a: unknown, b: unknown, path = "$"): Diff[] {
 
 /* --------------------------- builder resolution -------------------------- */
 
-type AnyBuilder = (...args: readonly unknown[]) => unknown;
+type AnyBuilder = (...args: any[]) => any;
 
 const NAMESPACES: Record<string, Record<string, unknown>> = {
   lights, primitives, instances, labels, shadows, geometry, neon, interactions,

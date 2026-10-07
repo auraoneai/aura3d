@@ -1,11 +1,14 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraVec3 } from "../index.js";
-import { AuraNodeBuilder, effects } from "../index.js";
+import type { AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { effects } from "../nodes/effects.composite.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
 import { particles } from "./particles.js";
+import { lazyNamespace } from "../lazyNamespace.js";
 
-export const vfxEffectBuilders = {
+
+export const vfxEffectBuilders = lazyNamespace(() => ({
   fog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
@@ -196,4 +199,4 @@ export const vfxEffectBuilders = {
 	      turbulence: options.turbulence ?? 0.16,
 	      noise: options.noise ?? 0.22
 	    }),
-};
+}));

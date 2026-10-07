@@ -17,7 +17,7 @@ export {
   rendererInteractiveFeatureReport,
   rendererShadowReport,
   rendererProofCapture
-} from "../../../rendering/src/production-runtime/index.js";
+} from "@aura3d/rendering/production-runtime";
 
 /**
  * PRD-15 T2.9 — moved verbatim from `advanced-runtime/A3DRenderer.evidence()`:

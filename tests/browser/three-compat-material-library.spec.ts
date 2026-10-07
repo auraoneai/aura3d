@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { createThreeCompatMaterialPreviewScene, listThreeCompatPbrMaterials } from "../../packages/materials/src";
+import { createThreeCompatMaterialPreviewScene, listThreeCompatPbrMaterials } from "../../packages/engine/src/devtools/materialDiagnostics";
 
 test("ThreeCompat material browser renders the PBR library matrix", async ({ page }) => {
   const materials = listThreeCompatPbrMaterials();

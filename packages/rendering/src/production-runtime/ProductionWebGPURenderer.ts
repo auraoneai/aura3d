@@ -9,7 +9,7 @@ import type {
   ProductionRenderProof,
   ProductionRendererFeature,
   ProductionRendererInput,
-  RuntimeParityFrameRenderResult,
+  RendererFrameResult,
   RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
 import {
@@ -68,7 +68,7 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     return this.renderer.getDiagnostics().contextLost;
   }
 
-  renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
+  renderFrame(input: ProductionRendererInput): RendererFrameResult {
     this.validateImportedAsset(input);
     const diagnostics = this.renderer.render(input.source, input.camera);
     return {
@@ -78,7 +78,7 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     };
   }
 
-  async renderFrameAsync(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
+  async renderFrameAsync(input: ProductionRendererInput): Promise<RendererFrameResult> {
     this.validateImportedAsset(input);
     const diagnostics = await this.renderer.renderAsync(input.source, input.camera);
     return {

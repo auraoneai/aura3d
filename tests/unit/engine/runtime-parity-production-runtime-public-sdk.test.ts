@@ -2,31 +2,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { legacyPathForContextualPath } from "../../../tools/naming-taxonomy/contextualAliases";
-import {
-  AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE,
-  A3D_THREEJS_EXAMPLE_PARITY_TARGETS,
-  A3DRenderer,
-  productionAssets,
-  createAnimationController,
-  createCameraFrame,
-  createDirectionalLight,
-  createFirstPersonControls,
-  createImportedAnimationRuntime,
-  createGroundedStage,
-  createMapControls,
-  createOrbitControls,
-  createPhysicsScene,
-  createPointerLockControls,
-  createProductionRenderOptions,
-  createProductViewer,
-  createStudioLighting,
-  createTrackballControls,
-  loadGltfScene,
-  loadHdrEnvironment,
-  type A3DGltfScene
-} from "@aura3d/engine/production-runtime";
+import { AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE, A3D_THREEJS_EXAMPLE_PARITY_TARGETS, productionAssets, createAnimationController, createCameraFrame, createDirectionalLight, createFirstPersonControls, createImportedAnimationRuntime, createGroundedStage, createMapControls, createOrbitControls, createPhysicsScene, createPointerLockControls, createProductionRenderOptions, createProductViewer, createStudioLighting, createTrackballControls, loadGltfScene, loadHdrEnvironment, type A3DGltfScene } from "@aura3d/engine/production-runtime";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 import { Renderable, Scene } from "@aura3d/scene";
+import { A3DRenderer } from "@aura3d/engine/renderer";
 
 describe("RuntimeParity production public SDK", () => {
   it("exports the developer-facing renderer product API", () => {

@@ -20,5 +20,11 @@
     "vitest.config.ts",
     "playwright.config.ts"
   ],
-  "exclude": ["dist", "node_modules"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tests/**/fixtures/**",
+    "tests/**/before/**",
+    "tests/**/after/**"
+  ]
 }
