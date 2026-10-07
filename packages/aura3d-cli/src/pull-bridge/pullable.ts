@@ -1,7 +1,7 @@
 import * as assetIndex from "@aura3d/asset-index";
 import type { AuraCanonicalAsset, ResolveCandidate } from "@aura3d/asset-index";
 import { evaluateAssetProfile } from "./profiles.js";
-import { rankResolveCandidates } from "./scoring.js";
+import { partitionResolveCandidates } from "./scoring.js";
 import type { CliAssetSearchProfile } from "./types.js";
 
 const { isAutoPullable } = assetIndex;
@@ -21,7 +21,7 @@ export function selectPullable(
   options: { readonly profile?: CliAssetSearchProfile } = {},
 ): PullableSelection | PullableRefusal {
   const profile = options.profile ?? "general";
-  const ranked = rankResolveCandidates(candidates, { profile });
+  const { ranked, excluded } = partitionResolveCandidates(candidates, { profile });
   const pullable = ranked.find((c) => {
     if (!isAutoPullable(c.asset)) return false;
     if (profile === "general") return true;
@@ -29,6 +29,18 @@ export function selectPullable(
   });
   if (pullable) return { ok: true, candidate: pullable };
 
+  if (ranked.length === 0 && excluded.length > 0) {
+    // Every row failed a §6.6 licence/provenance/texture filter — quote the
+    // top exclusion so the refusal explains itself like the old license text.
+    const top = excluded[0]!;
+    return {
+      ok: false,
+      reason:
+        `No auto-pullable candidate found. All ${excluded.length} candidate(s) were excluded by the licence/provenance filter: ` +
+        `"${top.candidate.asset.title}" (${top.candidate.asset.id}): ${top.exclusions.join("; ")}. ` +
+        `Aura will not auto-pull an asset whose license is unverified or that is marketplace deep-link only.`,
+    };
+  }
   if (candidates.length === 0) {
     return {
       ok: false,
@@ -53,7 +65,7 @@ export function selectPullable(
       };
     }
   }
-  const top = ranked[0]!.asset;
+  const top = (ranked[0] ?? excluded[0]!.candidate).asset;
   return {
     ok: false,
     reason:

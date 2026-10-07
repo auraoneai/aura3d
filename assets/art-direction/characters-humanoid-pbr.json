@@ -1,0 +1,20 @@
+{
+  "id": "characters-humanoid-pbr",
+  "shading": "pbr",
+  "genre": "fighting",
+  "fantasy": "Arena combatants in grounded stylized-realistic PBR \u2014 readable silhouette over decoration.",
+  "palette": {
+    "primary": [
+      "#2e3440",
+      "#4c566a",
+      "#d8dee9"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 512,
+  "referenceImages": [],
+  "mix": [
+    "characters-robots-mechs"
+  ],
+  "notes": "Skin/cloth/leather surfaces; MikkTSpace normals; 2048 UASTC max per PRD-05 \u00a76.6."
+}

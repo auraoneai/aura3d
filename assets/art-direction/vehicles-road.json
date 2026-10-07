@@ -1,0 +1,20 @@
+{
+  "id": "vehicles-road",
+  "shading": "pbr",
+  "genre": "racing",
+  "fantasy": "Road cars with believable paint, glass and tyre rubber \u2014 hero car reads at 15 m.",
+  "palette": {
+    "primary": [
+      "#bf616a",
+      "#2e3440",
+      "#eceff4"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 384,
+  "referenceImages": [],
+  "mix": [
+    "props-industrial-urban"
+  ],
+  "notes": "Wheels separate nodes; traffic variants \u2264 20k tris."
+}

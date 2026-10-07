@@ -5,25 +5,94 @@ import type {
 } from "@aura3d/asset-index";
 import type { CliAssetSearchProfile } from "./types.js";
 import { isPositiveVector3 } from "./vector3.js";
+import { profileForRole, type AdmissionProfile } from "../admission/profiles.js";
+
+/**
+ * PRD-05 §6.6 ranking rewrite.
+ *
+ * Licence and provenance are FILTERS, not score: a failure lands in
+ * `exclusions` and the candidate drops out of the ranked pull pool entirely
+ * (search keeps the row under rejectedCandidates so a human still sees why).
+ * Score terms, in order of weight:
+ *
+ *   semantic        — source-side relevance (unchanged)
+ *   sourceQuality   — durable provenance evidence (page, URL, author, family)
+ *   fit             — G1 triangle-band fit + G3 PBR pre-check + G2 estimate
+ *   approval        — §6.6 library membership, approved look-dev record (G9),
+ *                     art-direction match with the route (G10)
+ *   roleFit         — intended-role agreement with the query
+ */
 
 export interface AssetResolveCandidateScore {
   readonly total: number;
   readonly semantic: number;
   readonly sourceQuality: number;
-  readonly license: number;
-  readonly inspection: number;
+  readonly fit: number;
+  readonly approval: number;
   readonly roleFit: number;
+  /** Non-empty = excluded from the ranked pool regardless of score. */
+  readonly exclusions: readonly string[];
   readonly penalties: readonly string[];
   readonly reasons: readonly string[];
 }
 
+export interface ResolveScoreOptions {
+  readonly query?: string;
+  readonly profile?: CliAssetSearchProfile;
+  /** Route's `assets/art-direction/<id>.json` id for the G10 match term. */
+  readonly artDirection?: string;
+}
+
+/** Texture-bearing roles where missing texture evidence excludes the candidate (§6.6). */
+const TEXTURE_REQUIRED_ROLES = new Set<AuraAssetIntendedRole>([
+  "character", "vehicle", "track", "world", "environment", "product", "weapon",
+]);
+
+/** Licence + provenance hard filters (§6.6). Exported for search's exclusion listing. */
+export function candidateExclusions(
+  candidate: ResolveCandidate,
+  options: ResolveScoreOptions = {},
+): readonly string[] {
+  const asset = candidate.asset;
+  const exclusions: string[] = [];
+  const query = options.query ?? "";
+
+  if (!asset.license.verified || !asset.license.redistributable) {
+    exclusions.push(`license ${asset.license.spdx} is not verified redistributable (filter, not score)`);
+  } else if (asset.license.attributionRequired && !(asset.author ?? asset.attribution)) {
+    exclusions.push("attribution-bearing license but no author/attribution recorded");
+  }
+  // Provenance filter: excluded only when there is NO traceable origin —
+  // no source page, no fetchable URL. A fetchable URL alone still leaves a
+  // (weaker) provenance chain the penalty path already prices.
+  const anyUrl = asset.downloadUrl ?? asset.url;
+  if (!asset.sourcePage && (anyUrl === undefined || !/^https?:\/\//i.test(anyUrl))) {
+    exclusions.push("no source page or fetchable URL — provenance cannot be traced");
+  }
+
+  const role = asset.intendedRole ?? inferQueryRole(query, options.profile);
+  if (role !== undefined && TEXTURE_REQUIRED_ROLES.has(role) && isModelFormat(asset.format)) {
+    // Exclusion fires only on positive "no textures" evidence: a catalog row
+    // that never inspected textures keeps unknown-evidence candidates.
+    if (asset.textureCount === 0 || asset.materialCount === 0) {
+      exclusions.push(`texture-required role "${role}" has no texture/material evidence (replaces the old -6 penalty)`);
+    }
+  }
+  return exclusions;
+}
+
+function isModelFormat(format: string): boolean {
+  return format === "glb" || format === "gltf";
+}
+
 export function scoreResolveCandidate(
   candidate: ResolveCandidate,
-  options: { readonly query?: string; readonly profile?: CliAssetSearchProfile } = {},
+  options: ResolveScoreOptions = {},
 ): AssetResolveCandidateScore {
   const asset = candidate.asset;
   const reasons: string[] = [];
   const penalties: string[] = [];
+  const exclusions = [...candidateExclusions(candidate, options)];
   const query = options.query ?? "";
 
   const semantic =
@@ -55,37 +124,75 @@ export function scoreResolveCandidate(
   if (asset.sourceFamily ?? asset.source) sourceQuality += 3;
   if (asset.retrievedAt) sourceQuality += 2;
   if (asset.rawCatalogMetadata) sourceQuality += 2;
+  // Licence no longer scores here: it is an admission filter (exclusions above).
 
-  let license = 0;
-  if (asset.license.verified && asset.license.redistributable) {
-    license += 10;
-    reasons.push(`verified ${asset.license.spdx} license`);
-  } else {
-    penalties.push("license is not verified redistributable");
-  }
-  if (asset.licenseName ?? asset.license.raw) license += 3;
-  if (asset.licenseUrl ?? asset.license.sourcePage) license += 4;
-  else penalties.push("missing license URL/source evidence");
-
-  let inspection = 0;
+  // --- fit: G1 band + G3 pre-check + G2 estimate -----------------------------
+  let fit = 0;
+  const role = asset.intendedRole ?? inferQueryRole(query, options.profile);
   const boundsSize = asset.bounds?.size ?? asset.dimensions;
+  const profile = role !== undefined ? profileForRole(role, isPositiveVector3(boundsSize) ? boundsSize : undefined) : undefined;
+
+  const triangles = asset.triangleCount ?? asset.triangles;
+  if (typeof triangles === "number" && Number.isFinite(triangles) && triangles > 0) {
+    fit += g1BandFit(triangles, profile, reasons, penalties);
+  } else {
+    penalties.push("missing triangle metadata for G1 fit");
+  }
+
+  // G3 pre-check: PBR completeness evidence in the catalog record.
+  if (isModelFormat(asset.format)) {
+    if (typeof asset.materialCount === "number" && asset.materialCount > 0) {
+      fit += 4;
+    } else if (expectsVisualMaterials(asset, query)) {
+      penalties.push("missing material metadata for visual model role");
+    }
+    if (typeof asset.textureCount === "number" && asset.textureCount > 0) fit += 4;
+    const clipCount = asset.animationClipCount ?? asset.animationClips?.length;
+    if (typeof clipCount === "number" && clipCount > 0) fit += 2;
+    if (typeof asset.skinCount === "number" && asset.skinCount > 0) fit += 2;
+    if (typeof asset.morphTargetCount === "number" && asset.morphTargetCount > 0) fit += 1;
+  }
+
+  // G2 estimate at the profile's default camera: file-size-per-area as a crude
+  // texel-density stand-in until measured texel density exists on the record.
+  if (profile?.gameplayCamera !== undefined && isPositiveVector3(boundsSize)) {
+    const area = boundsSize![0]! * boundsSize![1]! + boundsSize![1]! * boundsSize![2]! + boundsSize![0]! * boundsSize![2]!;
+    if (typeof asset.fileSizeBytes === "number" && asset.fileSizeBytes > 0 && area > 0) {
+      const bytesPerSqm = asset.fileSizeBytes / area;
+      if (profile.fileBytesHigh !== undefined && asset.fileSizeBytes <= profile.fileBytesHigh) fit += 4;
+      if (bytesPerSqm >= 200_000) {
+        fit += 4;
+        reasons.push(`G2 estimate ${Math.round(bytesPerSqm / 1000)}kB/m² texture budget headroom`);
+      } else {
+        penalties.push("G2 estimate below texture-budget headroom at default camera");
+      }
+    }
+  }
   if (isPositiveVector3(boundsSize)) {
-    inspection += 6;
+    fit += 3;
     reasons.push("bounds/dimensions metadata preserved");
   } else {
     penalties.push("missing bounds/dimensions metadata");
   }
-  const triangles = asset.triangleCount ?? asset.triangles;
-  if (typeof triangles === "number" && Number.isFinite(triangles) && triangles > 0) inspection += 3;
-  if (typeof asset.meshCount === "number" && asset.meshCount > 0) inspection += 3;
-  if (typeof asset.materialCount === "number" && asset.materialCount > 0) inspection += 4;
-  else if (expectsVisualMaterials(asset, query)) penalties.push("missing material metadata for visual model role");
-  if (typeof asset.textureCount === "number" && asset.textureCount > 0) inspection += 4;
-  else if (expectsTextureEvidence(asset, query)) penalties.push("missing texture metadata for visual model role");
-  const clipCount = asset.animationClipCount ?? asset.animationClips?.length;
-  if (typeof clipCount === "number" && clipCount > 0) inspection += 2;
-  if (typeof asset.skinCount === "number" && asset.skinCount > 0) inspection += 2;
-  if (typeof asset.morphTargetCount === "number" && asset.morphTargetCount > 0) inspection += 1;
+
+  // --- approval: library membership + look-dev + art direction --------------
+  let approval = 0;
+  if (asset.library) {
+    approval += 10;
+    reasons.push(`§6.6 library member (${asset.library.kitId})`);
+  }
+  if (asset.lookDevApproved) {
+    approval += 8;
+    reasons.push("approved look-dev record (G9)");
+  }
+  if (options.artDirection) {
+    if (asset.artDirection === options.artDirection) {
+      approval += 6;
+      reasons.push(`art-direction match (${options.artDirection})`);
+    } else if (asset.artDirection) {
+      penalties.push(`art-direction mismatch: wanted ${options.artDirection}, entry has ${asset.artDirection}`);
+    }
+  }
 
   let roleFit = 0;
   if (asset.intendedRole && asset.intendedRole !== "unknown") {
@@ -109,35 +216,79 @@ export function scoreResolveCandidate(
 
   const penaltyCost = penalties.reduce((total, penalty) => {
     if (penalty.includes("duplicate hash")) return total + 40;
-    if (penalty.includes("license")) return total + 20;
     if (penalty.includes("missing source page")) return total + 8;
-    if (penalty.includes("missing material") || penalty.includes("missing texture")) return total + 6;
+    if (penalty.includes("missing material") || penalty.includes("texture")) return total + 6;
     if (penalty.includes("role mismatch")) return total + 6;
+    if (penalty.includes("art-direction mismatch")) return total + 6;
     return total + 3;
   }, 0);
 
-  const total = Math.max(0, semantic + sourceQuality + license + inspection + roleFit - penaltyCost);
+  const total = exclusions.length > 0
+    ? 0
+    : Math.max(0, semantic + sourceQuality + fit + approval + roleFit - penaltyCost);
   return {
     total: roundScore(total),
     semantic: roundScore(semantic),
     sourceQuality: roundScore(sourceQuality),
-    license: roundScore(license),
-    inspection: roundScore(inspection),
+    fit: roundScore(fit),
+    approval: roundScore(approval),
     roleFit: roundScore(roleFit),
+    exclusions,
     penalties,
     reasons,
   };
 }
 
-export function rankResolveCandidates(
+function g1BandFit(
+  triangles: number,
+  profile: AdmissionProfile | undefined,
+  reasons: string[],
+  penalties: string[],
+): number {
+  if (!profile) return 3; // role without a geometry profile: no band to fit
+  const floor = profile.trianglesFloor ?? 0;
+  const ceiling = profile.trianglesCeiling ?? Number.POSITIVE_INFINITY;
+  if (triangles >= floor && triangles <= ceiling) {
+    reasons.push(`G1 triangle band fit (${triangles} in [${floor}, ${ceiling}])`);
+    return 10;
+  }
+  if (triangles >= floor * 0.5 && triangles <= ceiling * 1.5) {
+    return 4;
+  }
+  penalties.push(`G1 band miss (${triangles} outside [${floor}, ${ceiling}])`);
+  return 0;
+}
+
+export interface PartitionedCandidates {
+  readonly ranked: readonly ResolveCandidate[];
+  readonly excluded: readonly { readonly candidate: ResolveCandidate; readonly exclusions: readonly string[] }[];
+}
+
+/** Split the pool into ranked candidates and excluded candidates (fail-closed filters). */
+export function partitionResolveCandidates(
   candidates: readonly ResolveCandidate[],
-  options: { readonly query?: string; readonly profile?: CliAssetSearchProfile } = {},
-): readonly ResolveCandidate[] {
-  return [...candidates].sort((a, b) => {
+  options: ResolveScoreOptions = {},
+): PartitionedCandidates {
+  const ranked: ResolveCandidate[] = [];
+  const excluded: PartitionedCandidates["excluded"][number][] = [];
+  for (const candidate of candidates) {
+    const exclusions = candidateExclusions(candidate, options);
+    if (exclusions.length > 0) excluded.push({ candidate, exclusions });
+    else ranked.push(candidate);
+  }
+  ranked.sort((a, b) => {
     const aScore = scoreResolveCandidate(a, options);
     const bScore = scoreResolveCandidate(b, options);
     return bScore.total - aScore.total || b.score - a.score || a.asset.id.localeCompare(b.asset.id);
   });
+  return { ranked, excluded };
+}
+
+export function rankResolveCandidates(
+  candidates: readonly ResolveCandidate[],
+  options: ResolveScoreOptions = {},
+): readonly ResolveCandidate[] {
+  return partitionResolveCandidates(candidates, options).ranked;
 }
 
 function scoreSignal(value: number | undefined, scale: number): number {
@@ -154,11 +305,6 @@ function roundScore(value: number): number {
 function expectsVisualMaterials(asset: AuraCanonicalAsset, query: string): boolean {
   const role = asset.intendedRole ?? inferQueryRole(query);
   return role !== "abstract" && role !== "debug";
-}
-
-function expectsTextureEvidence(asset: AuraCanonicalAsset, query: string): boolean {
-  const role = asset.intendedRole ?? inferQueryRole(query);
-  return role === "character" || role === "vehicle" || role === "track" || role === "world" || role === "environment" || role === "product" || role === "weapon";
 }
 
 /**

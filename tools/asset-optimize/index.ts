@@ -50,6 +50,11 @@ export interface OptimizeAssetsOptions {
   readonly geometry?: "meshopt" | "draco" | "none";
   readonly allowLocalSmall?: boolean;
   readonly ktxBinary?: string;
+  /** §6.5: run the remesh/bake generated-asset pre-stage before §6.3 steps. */
+  readonly fromGenerated?: boolean;
+  /** Runs the pre-stage Blender steps — true only on the remote worker. */
+  readonly remote?: boolean;
+  readonly blenderBinary?: string;
   readonly reportPath?: string;
   readonly writeManifest?: boolean;
   readonly log?: (line: string) => void;
@@ -123,6 +128,9 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         ktxBinary,
         requireKtx2: inCi,
         mobileCap: 0,
+        fromGenerated: options.fromGenerated,
+        remote: options.remote,
+        blenderBinary: options.blenderBinary,
         log
       });
       const hash = createHash("sha256").update(result.glb).digest("hex");
@@ -178,6 +186,9 @@ export async function optimizeAssets(options: OptimizeAssetsOptions): Promise<{ 
         ktxBinary,
         requireKtx2: inCi && heavy,
         mobileCap,
+        fromGenerated: options.fromGenerated,
+        remote: options.remote ?? inCi,
+        blenderBinary: options.blenderBinary,
         log
       });
     } catch (err) {
@@ -262,6 +273,9 @@ async function main(): Promise<number> {
     profile: readFlag(argv, "--profile"),
     geometry: readFlag(argv, "--geometry") as "meshopt" | "draco" | "none" | undefined,
     allowLocalSmall: argv.includes("--allow-local-small"),
+    fromGenerated: argv.includes("--from-generated"),
+    remote: argv.includes("--remote") ? (readFlag(argv, "--remote") !== "false") : undefined,
+    blenderBinary: readFlag(argv, "--blender"),
     writeManifest: !argv.includes("--no-manifest"),
     ktxBinary: readFlag(argv, "--ktx"),
     log: (line) => console.log(line)

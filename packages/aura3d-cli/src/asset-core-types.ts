@@ -148,10 +148,14 @@ export interface AuraCliResolveCandidateProvenance {
   readonly scoreBreakdown: {
     readonly semantic: number;
     readonly sourceQuality: number;
-    readonly license: number;
-    readonly inspection: number;
+    /** §6.6 fit term: G1 band, G3 completeness, G2 estimate, bounds. */
+    readonly fit: number;
+    /** §6.6 approval term: library membership, look-dev, art-direction. */
+    readonly approval: number;
     readonly roleFit: number;
   };
+  /** §6.6 licence/provenance filter reasons (empty = passed). */
+  readonly scoreExclusions?: readonly string[];
   readonly reasons: readonly string[];
   readonly penalties: readonly string[];
   readonly sourcePage?: string;

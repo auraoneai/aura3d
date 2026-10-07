@@ -1,0 +1,80 @@
+{
+  "kit": "characters/humanoid-pbr",
+  "generatedAt": "2026-10-07T00:00:00.000Z",
+  "requiredClipSet": ["idle", "walk", "run", "jump", "fall", "land", "punch-1", "punch-2", "kick", "hit", "block", "KO"],
+  "entries": [
+    {
+      "id": "auraclash-player-rig",
+      "role": "hero",
+      "source": "Quaternius Modular Character Outfits - Fantasy (CC0)",
+      "triangles": 35508,
+      "joints": 65,
+      "skins": 1,
+      "clipCount": 12,
+      "clips": {
+        "idle": "Idle_Loop",
+        "walk": "Walk_Loop",
+        "run": "Sprint_Loop",
+        "jump": "Jump_Loop",
+        "fall": null,
+        "land": null,
+        "punch-1": "Punch_Jab",
+        "punch-2": "Punch_Cross",
+        "kick": null,
+        "hit": "Hit_Chest / Hit_Head",
+        "block": "Sword_Block",
+        "KO": "Death01"
+      },
+      "lods": {
+        "levels": 2,
+        "skinned": true,
+        "derived": "assets/library/characters/humanoid-pbr/auraclash-player-rig-lod.e74924cf.glb",
+        "hash": "sha256:e74924cff09cb411fe734e6249e1a4b8411924de4714d0ad7de9614d333f47bc",
+        "profile": "hero-character",
+        "requiredDecoders": ["meshopt"],
+        "lodExtension": "MSFT_lod",
+        "collisionSidecar": "assets/library/characters/humanoid-pbr/auraclash-player-rig-lod.e74924cf.collision.glb"
+      },
+      "gaps": [
+        "no dedicated kick clip in source pack — nearest coverage: Punch_Jab/Punch_Cross + Sword_Attack combos; KayKit barbarian carries Unarmed_Melee_Attack_Kick as reference",
+        "no dedicated fall/land clips — Jump_Loop covers airborne pose; Jump_Start/Jump_Land exist on the barbarian reference rig"
+      ]
+    },
+    {
+      "id": "auraclash-rival-rig",
+      "role": "enemy",
+      "source": "Quaternius Modular Character Outfits - Fantasy (CC0)",
+      "triangles": 26982,
+      "joints": 65,
+      "clipCount": 10,
+      "clips": {
+        "idle": "Idle_FoldArms_Loop",
+        "walk": "Zombie_Walk_Fwd_Loop",
+        "hit": "Hit_Knockback",
+        "block": "Sword_Block",
+        "attack": "Sword_Regular_A / Sword_Regular_Combo / Melee_Hook",
+        "KO-adjacent": "LayToIdle (knockdown-to-idle transition)"
+      },
+      "notes": "combat fighter pair with auraclash-player-rig — same Quaternius pack, matching rig height/proportions and texture style"
+    },
+    {
+      "id": "kaykit-barbarian",
+      "role": "enemy",
+      "source": "KayKit Character Pack Adventures 1.0 (CC0)",
+      "triangles": 6543,
+      "joints": 41,
+      "clipCount": 76,
+      "clips": {
+        "kick": "Unarmed_Melee_Attack_Kick",
+        "fall": "Jump_Idle (airborne loop)",
+        "land": "Jump_Land",
+        "punch": "Unarmed_Melee_Attack_Punch_A / _B",
+        "block": "Block / Block_Attack / Block_Hit",
+        "KO": "Death_A / Death_B"
+      },
+      "notes": "second body type at lower density (41 joints) — full required clip categories present; hero-band G1 check intentionally fails it out of hero roles"
+    }
+  ],
+  "animationClipFormat": "C-17",
+  "coverageNote": "Hero rig meets §6.6 density (>=15k tris, >=50 joints, 12+ clips) and ships a 2-level skinned LOD via assets optimize --profile hero-character. The kick/fall/land categories are absent from the only CC0 hero-density rigged pack found (Quaternius); they are covered on the KayKit reference rig and the gap is recorded here rather than faked with a non-matching clip."
+}

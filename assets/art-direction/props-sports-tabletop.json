@@ -1,0 +1,18 @@
+{
+  "id": "props-sports-tabletop",
+  "shading": "pbr",
+  "genre": "sports",
+  "fantasy": "Handheld-scale sports and tabletop props \u2014 crisp decals, honest plastics.",
+  "palette": {
+    "primary": [
+      "#eceff4",
+      "#bf616a",
+      "#2e3440"
+    ],
+    "accent": "#a3be8c"
+  },
+  "texelDensity": 512,
+  "referenceImages": [],
+  "mix": [],
+  "notes": "Small-scale props; texel density highest in the library."
+}

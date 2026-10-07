@@ -12,6 +12,7 @@ import { admitAsset, admitAssetMeasured } from "./admit.js";
 import { dispatchLookdevRun } from "./lookdev.js";
 import { optimizeAssetsVerb } from "./optimize.js";
 import { reviewAsset } from "./review.js";
+import { assetsLibraryVerb } from "./library.js";
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -144,7 +145,13 @@ registerCliCommand({
   },
 });
 phaseStub("assets budget", "Phase 2 (budget measurement)", "Report per-tier asset budgets (lands in Phase 2).", "aura3d assets budget [--route apps/<app>] [--tier low|medium|high|ultra] [--json]");
-phaseStub("assets library", "Phase 5 (curated library)", "List/add/sync the curated asset library (lands in Phase 5).", "aura3d assets library list|add|sync");
+registerCliCommand({
+  name: "assets library",
+  owner: "prd05",
+  summary: "List/add/sync the §6.6 curated asset library (aura.library.json).",
+  usage: "aura3d assets library list|add|sync",
+  run: async (argv, io) => assetsLibraryVerb({ projectDir: io.cwd, argv, stdout: io.stdout, stderr: io.stderr }),
+});
 phaseStub("assets prune", "Phase 6 (manifest hygiene)", "Prune stale/orphaned manifest entries (lands in Phase 6).", "aura3d assets prune [--dry-run]");
 
 export {};

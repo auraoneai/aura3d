@@ -1,0 +1,18 @@
+{
+  "id": "hdri-environments",
+  "shading": "env",
+  "genre": "generic",
+  "fantasy": "Neutral-light reference environments \u2014 studio soft, outdoor midday, golden hour, overcast, night, indoor.",
+  "palette": {
+    "primary": [
+      "#eceff4",
+      "#88c0d0",
+      "#4c566a"
+    ],
+    "accent": "#ebcb8b"
+  },
+  "texelDensity": 0,
+  "referenceImages": [],
+  "mix": [],
+  "notes": "2k baseline, 4k for studio-soft + outdoor-midday; Poly Haven CC0."
+}

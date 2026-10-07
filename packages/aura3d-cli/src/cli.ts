@@ -119,6 +119,7 @@ async function main(): Promise<void> {
         file: readOption("--file"),
         thumbnail: readOption("--thumbnail"),
         allowedRoot: readOption("--allowed-root"),
+        sourceEntry: readOption("--source-entry"),
         quality: readAssetQuality(),
         role: readAssetRole(),
         profile: meshyProfile as "prop" | "environment" | "vehicle" | "humanoid" | undefined

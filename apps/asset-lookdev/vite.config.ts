@@ -9,8 +9,9 @@
 // fixes this and any sibling deep specifier for this app's dev server only;
 // other apps/workflows stay on the generated list untouched.
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import rootConfig from "../../vite.config";
 
 const appDir = path.dirname(fileURLToPath(import.meta.url));
@@ -24,8 +25,30 @@ const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.
 const alias = [...baseAlias.map((a) => ({ find: a.find ?? a[0], replacement: a.replacement ?? a[1] })), worldAlias]
   .sort((a, b) => String(b.find).length - String(a.find).length);
 
+// §6.7: the look-dev stage's HDRIs live in the curated library at
+// assets/library/hdri/ (the canonical §6.6 store), not public/. Serve
+// /assets/** from the repo root so stage.json paths resolve in dev and in the
+// capture driver without duplicating multi-MB .hdr files into public/.
+const serveAssets: Plugin = {
+  name: "aura3d-serve-assets-root",
+  configureServer(server) {
+    server.middlewares.use("/assets", (req, res) => {
+      const rel = decodeURIComponent((req.url ?? "").split("?")[0]).replace(/^\/+/, "");
+      const abs = path.resolve(repoRoot, "assets", rel);
+      if (!abs.startsWith(path.join(repoRoot, "assets") + path.sep) || !fs.existsSync(abs) || !fs.statSync(abs).isFile()) {
+        res.statusCode = 404;
+        res.end("not found");
+        return;
+      }
+      res.setHeader("content-type", "application/octet-stream");
+      res.setHeader("content-length", String(fs.statSync(abs).size));
+      fs.createReadStream(abs).pipe(res);
+    });
+  }
+};
+
 export default defineConfig({
-  plugins: rootConfig.plugins ?? [],
+  plugins: [...(rootConfig.plugins ?? []), serveAssets],
   resolve: { ...rootConfig.resolve, alias },
   optimizeDeps: rootConfig.optimizeDeps,
   publicDir: path.resolve(appDir, "../../public"),
