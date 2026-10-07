@@ -474,3 +474,164 @@ export function clearPrd06ActorConstraints(actor: TypedGLBActor): void {
   if (runtime === undefined || typeof runtime.clearPoseConstraints !== "function") return;
   runtime.clearPoseConstraints();
 }
+
+/* -------------------------------------------------------------- T4.1 §7.1 */
+
+import {
+  bindSpringChainToSkeleton,
+  createSpringChain,
+  createSpringChainFromPreset
+} from "@aura3d/animation/lanes";
+import type {
+  BoundSpringChain,
+  SpringBonePreset,
+  SpringCollider
+} from "@aura3d/animation/lanes";
+
+/**
+ * T4.1 — lane shape for `springBones.add(spec)` (CCR-06-4 pending, so the C-19
+ * handle carries `unknown`). One spec = one or more named chains; each chain
+ * is root-first bone names plus dynamics tuning (preset or explicit fields).
+ */
+export interface Prd06SpringChainSpec {
+  readonly name?: string;
+  /** Chain bones, kinematic anchor (root) first, simulated bones after. */
+  readonly bones: readonly string[];
+  /** Named dynamics preset — explicit fields below win over it. */
+  readonly preset?: SpringBonePreset["name"];
+  readonly stiffness?: number;
+  readonly damping?: number;
+  /** Gravity scale on the default [0,-9.81,0] — ignored when `gravity` is set. */
+  readonly gravityScale?: number;
+  readonly gravity?: Vec3;
+  /** Integration substeps per `integrate` call (stiffness stability). */
+  readonly substeps?: number;
+  /** Fixed-step accumulator rate in Hz (default 60). */
+  readonly substepHz?: number;
+  /**
+   * Velocity damping toward the parent particle (lane default 12). Without it
+   * a 2+ particle chain can sustain a limit cycle the absolute damping never
+   * kills — the §7.1 settle bar (<1° oscillation in 0.6 s) is unreachable.
+   */
+  readonly relativeDamping?: number;
+  readonly colliders?: readonly SpringCollider[];
+}
+
+export interface Prd06SpringBonesSpec {
+  readonly chains: readonly Prd06SpringChainSpec[];
+}
+
+/** Active spring registrations per actor so `springBones.clear()` only removes springs. */
+const springChainDisposers = new WeakMap<TypedGLBActor, (() => void)[]>();
+
+/**
+ * T4.1 — compile a spring spec into a pose constraint: each chain seeds its
+ * particles from rest-pose world bone positions, binds to the skeleton, and
+ * steps on the constraint's `dt`. Chains register AFTER previously added
+ * constraints (foot-ik / two-bone / look-at), so springs see the post-IK pose
+ * and their rotations ride the same write-back into the palette build.
+ */
+export function createPrd06SpringConstraint(
+  spec: Prd06SpringBonesSpec,
+  context: { readonly binding: SkeletonBinding }
+): GLTFPoseConstraint {
+  const binding = context.binding;
+  const bounds: BoundSpringChain[] = [];
+  const bones = new Set<number>();
+  for (const chainSpec of spec.chains) {
+    if (chainSpec.bones.length < 2) {
+      throw new Error("PRD06_SPRING_CHAIN_TOO_SHORT");
+    }
+    const indices = chainSpec.bones.map((name) => resolveJointIndex(binding, name));
+    const restWorld = indices.map((joint) => fkWorldPosition(binding.restPose, binding, joint));
+    const options = {
+      bones: restWorld,
+      ...(chainSpec.name !== undefined ? { name: chainSpec.name } : {}),
+      ...(chainSpec.stiffness !== undefined ? { stiffness: chainSpec.stiffness } : {}),
+      ...(chainSpec.damping !== undefined ? { damping: chainSpec.damping } : {}),
+      ...(chainSpec.gravity !== undefined ? { gravity: chainSpec.gravity } : {}),
+      ...(chainSpec.colliders !== undefined ? { colliders: chainSpec.colliders } : {}),
+      ...(chainSpec.substeps !== undefined ? { substeps: chainSpec.substeps } : {}),
+      relativeDamping: chainSpec.relativeDamping ?? 12
+    };
+    const chain = chainSpec.preset !== undefined
+      ? createSpringChainFromPreset(chainSpec.preset, {
+          ...options,
+          ...(chainSpec.gravityScale !== undefined ? { gravityScale: chainSpec.gravityScale } : {})
+        })
+      : createSpringChain(options);
+    bounds.push(
+      bindSpringChainToSkeleton(chain, binding, chainSpec.bones, {
+        ...(chainSpec.substepHz !== undefined ? { substepHz: chainSpec.substepHz } : {})
+      })
+    );
+    for (const index of indices) bones.add(index);
+  }
+  return {
+    bones: [...bones],
+    evaluate: (pose, _bound, _modelMatrix, ctx) => {
+      for (const bound of bounds) bound.step(pose, ctx.dt);
+    }
+  };
+}
+
+/** FK world position of a joint in a pose buffer (position + scale composed). */
+function fkWorldPosition(pose: { readonly positions: Float32Array; readonly rotations: Float32Array; readonly scales: Float32Array }, binding: SkeletonBinding, joint: number): Vec3 {
+  const pos: Vec3 = [pose.positions[joint * 3]!, pose.positions[joint * 3 + 1]!, pose.positions[joint * 3 + 2]!];
+  const rot = [pose.rotations[joint * 4]!, pose.rotations[joint * 4 + 1]!, pose.rotations[joint * 4 + 2]!, pose.rotations[joint * 4 + 3]!] as const;
+  const scl = [pose.scales[joint * 3]!, pose.scales[joint * 3 + 1]!, pose.scales[joint * 3 + 2]!] as const;
+  const parent = binding.parentIndices[joint] ?? -1;
+  if (parent < 0 || parent >= binding.boneCount || parent === joint) return pos;
+  const pp = fkWorldPosition(pose, binding, parent);
+  const pr = [
+    pose.rotations[parent * 4]!,
+    pose.rotations[parent * 4 + 1]!,
+    pose.rotations[parent * 4 + 2]!,
+    pose.rotations[parent * 4 + 3]!
+  ] as const;
+  const ps = [
+    pose.scales[parent * 3]!,
+    pose.scales[parent * 3 + 1]!,
+    pose.scales[parent * 3 + 2]!
+  ] as const;
+  const scaled: Vec3 = [pos[0] * ps[0], pos[1] * ps[1], pos[2] * ps[2]];
+  const rotated = rotateVec3Engine(pr, scaled);
+  return [pp[0] + rotated[0], pp[1] + rotated[1], pp[2] + rotated[2]];
+}
+
+function rotateVec3Engine(q: readonly [number, number, number, number], v: Vec3): Vec3 {
+  const [x, y, z, w] = q;
+  const tx = 2 * (y * v[2] - z * v[1]);
+  const ty = 2 * (z * v[0] - x * v[2]);
+  const tz = 2 * (x * v[1] - y * v[0]);
+  return [v[0] + w * tx + (y * tz - z * ty), v[1] + w * ty + (z * tx - x * tz), v[2] + w * tz + (x * ty - y * tx)];
+}
+
+/**
+ * T4.1 — `springBones.add(spec)` on the node handle resolves through this.
+ * Returns a disposer removing exactly this spec's chains.
+ */
+export function addPrd06ActorSpringBones(actor: TypedGLBActor, spec: Prd06SpringBonesSpec): () => void {
+  const runtime = actor.animation;
+  if (runtime === undefined || typeof runtime.skeletons !== "function") {
+    throw new Error("PRD06_SPRING_RUNTIME_UNAVAILABLE");
+  }
+  const binding = runtime.skeletons()[0];
+  if (binding === undefined) {
+    throw new Error("PRD06_SPRING_NO_SKELETON");
+  }
+  const constraint = createPrd06SpringConstraint(spec, { binding });
+  const dispose = runtime.addPoseConstraint(constraint);
+  const list = springChainDisposers.get(actor) ?? [];
+  list.push(dispose);
+  springChainDisposers.set(actor, list);
+  return dispose;
+}
+
+/** T4.1 — `springBones.clear()` removes only this actor's spring registrations. */
+export function clearPrd06ActorSpringBones(actor: TypedGLBActor): void {
+  const list = springChainDisposers.get(actor);
+  if (list === undefined) return;
+  for (const dispose of list) dispose();
+  springChainDisposers.delete(actor);
+}

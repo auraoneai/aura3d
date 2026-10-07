@@ -30,6 +30,8 @@ export { createLookAtConstraint } from "../pose/LookAtConstraint.js";
 export type { LookAtConstraintSpec, LookAtConstraint } from "../pose/LookAtConstraint.js";
 export { solveCcdIk } from "../pose/CcdIkConstraint.js";
 export type { CcdIkConstraintSpec, CcdIkResult } from "../pose/CcdIkConstraint.js";
+export { createSpringChain, createSpringChainFromPreset, bindSpringChainToSkeleton, SPRING_BONE_PRESETS } from "../SpringBones.js";
+export type { BoundSpringChain, SpringBindOptions, SpringBonePreset, SpringChain, SpringChainOptions, SpringCollider } from "../SpringBones.js";
 
 // T3.8 (PRD-06 §7.2) — clip retarget baking + limb-flip detector + IDB cache.
 export { bakeRetargetedClips, bakeRetargetedClipMap, decompileCompiledClip, detectLimbFlips, humanoidRigForSkeleton, rigWithRestPose } from "../pose/Retarget.js";

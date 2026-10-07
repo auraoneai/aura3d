@@ -9,8 +9,11 @@
 import type { AnimationPose } from "@aura3d/animation";
 import {
   addPrd06ActorConstraint,
+  addPrd06ActorSpringBones,
   clearPrd06ActorConstraints,
-  type Prd06ConstraintSpec
+  clearPrd06ActorSpringBones,
+  type Prd06ConstraintSpec,
+  type Prd06SpringBonesSpec
 } from "../../production-runtime/actor/TypedGLBActorAnimation.js";
 import { createBoneMask, type AuraHumanoidBoneMap } from "@aura3d/animation/lanes";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
@@ -464,6 +467,28 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       const actor = this.actor;
       if (actor === undefined) return;
       clearPrd06ActorConstraints(actor);
+    }
+  };
+
+  /**
+   * T4.1 (PRD-06 §7.1, C-19) — `node.animation.springBones`. `add` compiles a
+   * chain spec into a pose constraint that integrates at a fixed substep rate
+   * after the mixer/IK constraints and aims each bone at its simulated child;
+   * `clear()` removes this actor's spring registrations only. Degrades to the
+   * no-op stub while the flag is off or the actor is not loaded.
+   */
+  override readonly springBones = {
+    add: (spec: unknown): (() => void) => {
+      const actor = this.actor;
+      if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
+        return () => { /* stub no-op */ };
+      }
+      return addPrd06ActorSpringBones(actor, spec as Prd06SpringBonesSpec);
+    },
+    clear: (): void => {
+      const actor = this.actor;
+      if (actor === undefined) return;
+      clearPrd06ActorSpringBones(actor);
     }
   };
 
