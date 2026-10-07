@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.quality-rebuild.route-composition/1",
+  "generatedAt": "2026-10-06T12:34:14.686Z",
+  "root": "/home/ubuntu/repos/aura3d",
+  "routes": {
+    "showcase-bank-shot": {
+      "route": "showcase-bank-shot",
+      "appDir": "apps/showcase-bank-shot",
+      "loc": {
+        "evidence": 1879,
+        "presentation": 1591,
+        "gameplay": 2303,
+        "generated": 0,
+        "classified": 5773,
+        "evidencePct": 32.5
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_SHOWCASE_BANK_SHOT__",
+        "__BANK_SHOT_EVIDENCE__",
+        "__BS_PUMP__",
+        "__BS_SCENARIO__",
+        "__BS_SHOT__"
+      ],
+      "captureBranches": {
+        "ART": 13,
+        "FRAMING": 2,
+        "TRANSIENT": 0,
+        "UNKNOWN": 5
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    }
+  },
+  "totals": {
+    "loc": {
+      "evidence": 1879,
+      "presentation": 1591,
+      "gameplay": 2303,
+      "generated": 0
+    },
+    "captureBranches": {
+      "ART": 13,
+      "FRAMING": 2,
+      "TRANSIENT": 0,
+      "UNKNOWN": 5
+    },
+    "cues": {
+      "sample": 0,
+      "synth": 10,
+      "html-audio": 0
+    }
+  }
+}

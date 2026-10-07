@@ -1,0 +1,103 @@
+From 905094377d39fc53fd5792ac626fe76b2c5e6000 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:01:14 +0000
+Subject: [PATCH] [QR-09] gravity-post: juice events + @aura3d/game dep
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-gravity-post/package.json |  3 ++-
+ apps/showcase-gravity-post/src/main.ts  | 36 +++++++++++++++++++++----
+ 2 files changed, 33 insertions(+), 6 deletions(-)
+
+diff --git a/apps/showcase-gravity-post/package.json b/apps/showcase-gravity-post/package.json
+index 86d75b2c..0705740e 100644
+--- a/apps/showcase-gravity-post/package.json
++++ b/apps/showcase-gravity-post/package.json
+@@ -16,7 +16,8 @@
+     "evidence:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-gravity-post/src/main.ts b/apps/showcase-gravity-post/src/main.ts
+index c4173a79..17c19a7a 100644
+--- a/apps/showcase-gravity-post/src/main.ts
++++ b/apps/showcase-gravity-post/src/main.ts
+@@ -1156,6 +1156,28 @@ physics.onTriggerEnter((event) => {
+ });
+ 
+ const audio: GravityPostAudio = createGravityPostAudio();
++const gravityTween = createTweenEngine();
++const gravityFx = createFxParticlePass(app.effects);
++const gravityJuice = createJuice<
++  "launch" | "assist" | "correction" | "dock" | "contract-clear" | "pod-lost" | "bounce-off" | "flyby"
++>({
++  events: {
++    launch: { fx: { kind: "streak", count: 10, color: "#ffc46b" }, shake: 0.08, punch: { fovDeg: 2.4, ms: 180 } },
++    assist: { fx: { kind: "spark", count: 6, color: "#7ef4ff" } },
++    correction: { fx: { kind: "muzzle", count: 4, color: "#9fd8ff" }, shake: 0.03 },
++    dock: { fx: { kind: "ring", count: 16, color: "#a3ff9e" }, punch: { fovDeg: 2.8, ms: 200 } },
++    "contract-clear": { fx: { kind: "pickup", count: 16, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.14, ms: 220 } },
++    "pod-lost": { flash: { color: "#ff4d4d", peak: 0.22, ms: 300 }, vignette: { amount: 0.38, ms: 520, color: "#1c0508" }, hitStop: 0.06, shake: 0.24 },
++    "bounce-off": { fx: { kind: "debris", count: 8, color: "#ffb46b" }, shake: 0.14 },
++    flyby: { fx: { kind: "spark", count: 8, color: "#c7f7ff" } }
++  },
++  camera: app.camera,
++  session: gravityGame.session,
++  fx: gravityFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: gravityTween,
++  rumble: createRumbleDriver()
++});
+ bindGravityEvidence(() => collectRouteEvidence());
+ bindGravityDrive({
+   stepSim(dt: number): void {
+@@ -1379,11 +1401,11 @@ window.addEventListener("keydown", () => {
+ // ---------------------------------------------------------------------------
+ function emitPodEvents(events: readonly PodEvent[]): void {
+   for (const event of events) {
+-    if (event.type === "launch") audio.play("launch-whoosh");
+-    else if (event.type === "assist") audio.play("assist-chime");
+-    else if (event.type === "correction") audio.play("burn-loop");
+-    else if (event.type === "planet-strike" || event.type === "solar-escape" || event.type === "stranded" || event.type === "timeout") audio.play("pod-lost");
+-    else if (event.type === "too-fast") audio.play("bounce-off");
++    if (event.type === "launch") { audio.play("launch-whoosh"); gravityJuice.fire("launch", { position: [pod.kinematic.position[0], PLAY_PLANE_Y + 0.4, pod.kinematic.position[1]] }); }
++    else if (event.type === "assist") { audio.play("assist-chime"); gravityJuice.fire("assist"); }
++    else if (event.type === "correction") { audio.play("burn-loop"); gravityJuice.fire("correction"); }
++    else if (event.type === "planet-strike" || event.type === "solar-escape" || event.type === "stranded" || event.type === "timeout") { audio.play("pod-lost"); gravityJuice.fire("pod-lost"); }
++    else if (event.type === "too-fast") { audio.play("bounce-off"); gravityJuice.fire("bounce-off"); }
+   }
+ }
+ 
+@@ -1405,6 +1427,8 @@ function handleDock(stationId: string): void {
+     dockEventLog.push({ stationId, kind: "capture" });
+     audio.play("dock-lock");
+     audio.play("contract-clear");
++    gravityJuice.fire("dock");
++    gravityJuice.fire("contract-clear");
+     const core = stationWorld(contract().destinationStationId);
+     lastDockHash = dockPointHash([core.x, core.z]);
+     lastScoreCard = scoreContract({
+@@ -2107,6 +2131,7 @@ let lastTime = 0;
+ function updateGameplay(dt: number): void {
+   frame += 1;
+   audio.tick(dt);
++  gravityTween.tick(dt);
+ 
+   input.update(dt);
+   if (input.pressed("pause")) {
+@@ -2153,6 +2178,7 @@ function updateGameplay(dt: number): void {
+     for (const flybyId of pod.flybys) {
+       if (requestFlyby(flyby, flybyId, { reducedMotion })) {
+         audio.play("ui-confirm");
++        gravityJuice.fire("flyby");
+         break;
+       }
+     }
+-- 
+2.34.1
+

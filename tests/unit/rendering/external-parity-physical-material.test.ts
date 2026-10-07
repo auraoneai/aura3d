@@ -4,9 +4,9 @@ import {
   analyzeExternalParityMaterialMatrix,
   createExternalParityMaterialExtensionDiagnostics,
   createExternalParityPhysicalMaterial,
-  evaluateExternalParityTransmission,
   sortExternalParityAlphaItems
 } from "../../../packages/rendering/src";
+import { evaluateExternalParityTransmission } from "../../qr/prd04/oracles/external-parity-transmission";
 
 describe("ExternalParity physical material matrix", () => {
   it("defines the required twelve material targets", () => {

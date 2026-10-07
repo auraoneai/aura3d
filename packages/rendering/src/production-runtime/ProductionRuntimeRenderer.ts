@@ -34,6 +34,7 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
 
   private constructor(
     private readonly renderer: ProductionWebGL2Renderer | ProductionWebGPURenderer,
+    private readonly webgl2Renderer: ProductionWebGL2Renderer | undefined,
     backend: ProductionRendererBackend,
     backendSelection: ProductionRuntimeRendererBackendSelection
   ) {
@@ -69,7 +70,7 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
       // class at runtime, which defeated the split unconditionally.
       try {
         const { ProductionWebGPURenderer } = await import("./ProductionWebGPURenderer.js");
-        return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), "webgpu", selection);
+        return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), undefined, "webgpu", selection);
       } catch (error) {
         if (selection.requestedBackend !== "auto") {
           throw new Error(
@@ -89,19 +90,21 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
     return ProductionRuntimeRenderer.createWebGL2(options, selection);
   }
 
+  /** PRD-01 C-05 seam (Q-15-1): the lane's `Renderer` when the backend is WebGL2; undefined on WebGPU. */
+  get auraRenderer() {
+    return this.webgl2Renderer?.auraRenderer;
+  }
+
   private static async createWebGL2(
     options: ProductionRuntimeRendererOptions,
     selection: ProductionRuntimeRendererBackendSelection
   ): Promise<ProductionRuntimeRenderer> {
     const { backend: _backend, ...webgl2Options } = options;
-    return new ProductionRuntimeRenderer(
-      await ProductionWebGL2Renderer.create({
+    const webgl2 = await ProductionWebGL2Renderer.create({
         ...webgl2Options,
         shaderLibrary: webgl2Options.shaderLibrary ?? createDefaultShaderLibrary()
-      }),
-      "webgl2",
-      selection
-    );
+      });
+    return new ProductionRuntimeRenderer(webgl2, webgl2, "webgl2", selection);
   }
 
   renderInteractiveFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {

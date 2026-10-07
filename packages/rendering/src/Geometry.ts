@@ -9,10 +9,16 @@ export interface Bounds3 {
 }
 
 export interface CylinderGeometryOptions {
+  /** Legacy shorthand: sets both radii. `radiusTop`/`radiusBottom` win when set. */
   readonly radius?: number;
+  readonly radiusTop?: number;
+  readonly radiusBottom?: number;
   readonly height?: number;
   readonly segments?: number;
+  readonly heightSegments?: number;
   readonly capped?: boolean;
+  /** C-07 (PRD-01): `openEnded` is the inverse of `capped`; wins when both are set. */
+  readonly openEnded?: boolean;
   readonly textured?: boolean;
 }
 
@@ -21,6 +27,34 @@ export interface CapsuleGeometryOptions {
   readonly height?: number;
   readonly segments?: number;
   readonly rings?: number;
+  /** C-07 (PRD-01 §6.3): x/z radius ratio; 1 = circular cross-section. */
+  readonly ellipticity?: number;
+  readonly textured?: boolean;
+}
+
+/** Torus in the XY plane (axis +Z), engine proportions radius 0.43 / tube 0.045. */
+export interface TorusGeometryOptions {
+  readonly radius?: number;
+  readonly tube?: number;
+  /** Divisions around the main ring (legacy `radialSegments`, default 64). */
+  readonly radialSegments?: number;
+  /** Divisions around the tube cross-section (legacy `tubeSegments`, default 16). */
+  readonly tubularSegments?: number;
+  readonly textured?: boolean;
+}
+
+export interface PlaneGeometryOptions {
+  readonly widthSegments?: number;
+  readonly heightSegments?: number;
+  /** C-07: emit P3N3T4T2 (uv + tangent) instead of P3N3. Default false = legacy. */
+  readonly textured?: boolean;
+}
+
+export interface BoxGeometryOptions {
+  readonly widthSegments?: number;
+  readonly heightSegments?: number;
+  readonly depthSegments?: number;
+  /** Default true for the C-07 path (emits P3N3T4T2). */
   readonly textured?: boolean;
 }
 
@@ -184,19 +218,36 @@ export class Geometry {
   }
 
   /** Unit XZ floor plane with upward-facing normals. */
-  static litPlane(): Geometry {
-    const vertices = new VertexBuffer(VertexFormat.P3N3, 4);
-    const corners: readonly (readonly [number, number, number])[] = [
-      [-0.5, 0, -0.5],
-      [0.5, 0, -0.5],
-      [0.5, 0, 0.5],
-      [-0.5, 0, 0.5]
-    ];
-    corners.forEach((position, index) => {
-      vertices.setAttribute(index, "position", position);
-      vertices.setAttribute(index, "normal", [0, 1, 0]);
-    });
-    return new Geometry(vertices, new IndexBuffer([0, 2, 1, 0, 3, 2], 4));
+  static litPlane(options: PlaneGeometryOptions = {}): Geometry {
+    const widthSegments = Math.max(1, Math.floor(options.widthSegments ?? 1));
+    const heightSegments = Math.max(1, Math.floor(options.heightSegments ?? 1));
+    const textured = options.textured === true;
+    const vertexCount = (widthSegments + 1) * (heightSegments + 1);
+    const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2 : VertexFormat.P3N3, vertexCount);
+    for (let j = 0; j <= heightSegments; j += 1) {
+      for (let i = 0; i <= widthSegments; i += 1) {
+        const index = j * (widthSegments + 1) + i;
+        vertices.setAttribute(index, "position", [i / widthSegments - 0.5, 0, j / heightSegments - 0.5]);
+        vertices.setAttribute(index, "normal", [0, 1, 0]);
+        if (textured) {
+          vertices.setAttribute(index, "tangent", [1, 0, 0, 1]);
+          vertices.setAttribute(index, "uv", [i / widthSegments, j / heightSegments]);
+        }
+      }
+    }
+    const indices: number[] = [];
+    const stride = widthSegments + 1;
+    for (let j = 0; j < heightSegments; j += 1) {
+      for (let i = 0; i < widthSegments; i += 1) {
+        const a = j * stride + i;
+        const b = a + 1;
+        const c = a + stride;
+        const d = c + 1;
+        // CCW from +Y (legacy litPlane winding 0,2,1 / 0,3,2).
+        indices.push(a, d, b, a, c, d);
+      }
+    }
+    return new Geometry(vertices, new IndexBuffer(indices, vertexCount));
   }
 
   static litCube(size = 1): Geometry {
@@ -306,31 +357,46 @@ export class Geometry {
 
   static cylinder(options: CylinderGeometryOptions = {}): Geometry {
     const radius = options.radius ?? 0.5;
+    const radiusTop = options.radiusTop ?? radius;
+    const radiusBottom = options.radiusBottom ?? radius;
     const height = options.height ?? 1;
     const segments = options.segments ?? 48;
-    const capped = options.capped ?? true;
-    validatePositiveFinite(radius, "Cylinder radius");
+    const heightSegments = Math.max(1, Math.floor(options.heightSegments ?? 1));
+    const capped = options.openEnded !== undefined ? !options.openEnded : (options.capped ?? true);
+    validatePositiveFinite(radiusTop, "Cylinder radiusTop");
+    validatePositiveFinite(radiusBottom, "Cylinder radiusBottom");
     validatePositiveFinite(height, "Cylinder height");
     validateSegments(segments, "Cylinder segments", 3);
     const half = height / 2;
     const textured = options.textured === true;
+    // Side normals tilt by the frustum slope (rB - rT)/height.
+    const slope = (radiusBottom - radiusTop) / height;
+    const slopeLen = Math.hypot(1, slope);
     const vertices: GeneratedVertex[] = [];
     const indices: number[] = [];
+    const rows = heightSegments + 1;
 
     for (let segment = 0; segment <= segments; segment += 1) {
       const u = segment / segments;
       const angle = u * Math.PI * 2;
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
-      const normal: Vec3 = [cos, 0, sin];
+      const normal: Vec3 = [cos / slopeLen, slope / slopeLen, sin / slopeLen];
       const tangent: Vec4 = [-sin, 0, cos, 1];
-      vertices.push(makeGeneratedVertex([cos * radius, -half, sin * radius], normal, [u, 0], tangent, textured));
-      vertices.push(makeGeneratedVertex([cos * radius, half, sin * radius], normal, [u, 1], tangent, textured));
+      for (let row = 0; row < rows; row += 1) {
+        const v = row / heightSegments;
+        const r = radiusBottom + (radiusTop - radiusBottom) * v;
+        vertices.push(makeGeneratedVertex([cos * r, -half + v * height, sin * r], normal, [u, v], tangent, textured));
+      }
     }
 
     for (let segment = 0; segment < segments; segment += 1) {
-      const base = segment * 2;
-      indices.push(base, base + 3, base + 2, base, base + 1, base + 3);
+      const base = segment * rows;
+      for (let row = 0; row < heightSegments; row += 1) {
+        const a = base + row;
+        const b = a + rows;
+        indices.push(a, a + 1, b + 1, a, b + 1, b);
+      }
     }
 
     if (capped) {
@@ -342,7 +408,7 @@ export class Geometry {
         const angle = u * Math.PI * 2;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        vertices.push(makeGeneratedVertex([cos * radius, -half, sin * radius], [0, -1, 0], [0.5 + cos * 0.5, 0.5 + sin * 0.5], [1, 0, 0, 1], textured));
+        vertices.push(makeGeneratedVertex([cos * radiusBottom, -half, sin * radiusBottom], [0, -1, 0], [0.5 + cos * 0.5, 0.5 + sin * 0.5], [1, 0, 0, 1], textured));
       }
       for (let segment = 0; segment < segments; segment += 1) {
         indices.push(bottomCenter, bottomStart + segment, bottomStart + segment + 1);
@@ -356,7 +422,7 @@ export class Geometry {
         const angle = u * Math.PI * 2;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        vertices.push(makeGeneratedVertex([cos * radius, half, sin * radius], [0, 1, 0], [0.5 + cos * 0.5, 0.5 + sin * 0.5], [1, 0, 0, 1], textured));
+        vertices.push(makeGeneratedVertex([cos * radiusTop, half, sin * radiusTop], [0, 1, 0], [0.5 + cos * 0.5, 0.5 + sin * 0.5], [1, 0, 0, 1], textured));
       }
       for (let segment = 0; segment < segments; segment += 1) {
         indices.push(topCenter, topStart + segment + 1, topStart + segment);
@@ -378,6 +444,8 @@ export class Geometry {
     }
     validateSegments(segments, "Capsule segments", 3);
     validateSegments(rings, "Capsule rings", 2);
+    const ellipticity = options.ellipticity ?? 1;
+    validatePositiveFinite(ellipticity, "Capsule ellipticity");
     const cylinderHalf = height / 2 - radius;
     const textured = options.textured === true;
     const vertices: GeneratedVertex[] = [];
@@ -401,9 +469,12 @@ export class Geometry {
         const angle = u * Math.PI * 2;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        const normal: Vec3 = normalize3([cos * radial, yNormal, sin * radial]);
+        // Ellipticity scales x only; normals use the inverse-transpose rule.
+        const normal: Vec3 = ellipticity === 1
+          ? normalize3([cos * radial, yNormal, sin * radial])
+          : normalize3([(cos * radial) / ellipticity, yNormal, sin * radial]);
         const tangent: Vec4 = [-sin, 0, cos, 1];
-        vertices.push(makeGeneratedVertex([cos * radial * radius, y, sin * radial * radius], normal, [u, v], tangent, textured));
+        vertices.push(makeGeneratedVertex([cos * radial * radius * ellipticity, y, sin * radial * radius], normal, [u, v], tangent, textured));
       }
     });
 
@@ -417,6 +488,133 @@ export class Geometry {
     }
 
     return generatedGeometry(vertices, indices, textured);
+  }
+
+  /**
+   * Torus in the XY plane (axis +Z) — same orientation and proportions as the
+   * legacy engine generator (`index.ts` createTorusGeometry), with UVs and
+   * tangents for the C-07 textured path.
+   */
+  static torus(options: TorusGeometryOptions = {}): Geometry {
+    const radius = options.radius ?? 0.43;
+    const tube = options.tube ?? 0.045;
+    const radialSegments = options.radialSegments ?? 64;
+    const tubularSegments = options.tubularSegments ?? 16;
+    validatePositiveFinite(radius, "Torus radius");
+    validatePositiveFinite(tube, "Torus tube");
+    validateSegments(radialSegments, "Torus radialSegments", 3);
+    validateSegments(tubularSegments, "Torus tubularSegments", 3);
+    const textured = options.textured !== false;
+    const vertexCount = (radialSegments + 1) * (tubularSegments + 1);
+    const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2 : VertexFormat.P3N3, vertexCount);
+    let vertex = 0;
+    for (let radial = 0; radial <= radialSegments; radial += 1) {
+      const u = radial / radialSegments;
+      const phi = u * Math.PI * 2;
+      const cosPhi = Math.cos(phi);
+      const sinPhi = Math.sin(phi);
+      for (let tubeIndex = 0; tubeIndex <= tubularSegments; tubeIndex += 1) {
+        const v = tubeIndex / tubularSegments;
+        const theta = v * Math.PI * 2;
+        const cosTheta = Math.cos(theta);
+        const sinTheta = Math.sin(theta);
+        const nx = cosTheta * cosPhi;
+        const ny = cosTheta * sinPhi;
+        const nz = sinTheta;
+        vertices.setAttribute(vertex, "position", [
+          cosPhi * (radius + tube * cosTheta),
+          sinPhi * (radius + tube * cosTheta),
+          tube * sinTheta
+        ]);
+        vertices.setAttribute(vertex, "normal", [nx, ny, nz]);
+        if (textured) {
+          vertices.setAttribute(vertex, "tangent", [-sinPhi, cosPhi, 0, 1]);
+          vertices.setAttribute(vertex, "uv", [u, v]);
+        }
+        vertex += 1;
+      }
+    }
+    const indices: number[] = [];
+    const stride = tubularSegments + 1;
+    for (let radial = 0; radial < radialSegments; radial += 1) {
+      for (let tubeIndex = 0; tubeIndex < tubularSegments; tubeIndex += 1) {
+        const a = radial * stride + tubeIndex;
+        const b = a + stride;
+        indices.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+    }
+    return new Geometry(vertices, new IndexBuffer(indices, vertexCount));
+  }
+
+  /**
+   * Unit box (−0.5..0.5) with per-face segment subdivision, UVs and tangents
+   * (C-07). Segment counts map per face: ±z use width×height, ±x use
+   * depth×height, ±y use width×depth.
+   */
+  static box(options: BoxGeometryOptions = {}): Geometry {
+    const widthSegments = Math.max(1, Math.floor(options.widthSegments ?? 1));
+    const heightSegments = Math.max(1, Math.floor(options.heightSegments ?? 1));
+    const depthSegments = Math.max(1, Math.floor(options.depthSegments ?? 1));
+    const textured = options.textured !== false;
+    const half = 0.5;
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    const tangents: number[] = [];
+    const indices: number[] = [];
+    const emitFace = (
+      normal: readonly [number, number, number],
+      tangent: readonly [number, number, number, number],
+      origin: readonly [number, number, number],
+      uAxis: readonly [number, number, number],
+      vAxis: readonly [number, number, number],
+      uSegs: number,
+      vSegs: number
+    ): void => {
+      const base = positions.length / 3;
+      for (let j = 0; j <= vSegs; j += 1) {
+        for (let i = 0; i <= uSegs; i += 1) {
+          const u = i / uSegs;
+          const v = j / vSegs;
+          positions.push(
+            origin[0] + uAxis[0] * u + vAxis[0] * v,
+            origin[1] + uAxis[1] * u + vAxis[1] * v,
+            origin[2] + uAxis[2] * u + vAxis[2] * v
+          );
+          normals.push(normal[0], normal[1], normal[2]);
+          uvs.push(u, v);
+          tangents.push(tangent[0], tangent[1], tangent[2], tangent[3]);
+        }
+      }
+      const stride = uSegs + 1;
+      for (let j = 0; j < vSegs; j += 1) {
+        for (let i = 0; i < uSegs; i += 1) {
+          const a = base + j * stride + i;
+          const b = a + 1;
+          const c = a + stride;
+          const d = c + 1;
+          indices.push(a, b, d, a, d, c);
+        }
+      }
+    };
+    // Corners/tangents mirror texturedCube so a 1×1×1 box renders identically.
+    emitFace([0, 0, 1], [1, 0, 0, 1], [-half, -half, half], [1, 0, 0], [0, 1, 0], widthSegments, heightSegments);
+    emitFace([0, 0, -1], [-1, 0, 0, 1], [half, -half, -half], [-1, 0, 0], [0, 1, 0], widthSegments, heightSegments);
+    emitFace([1, 0, 0], [0, 0, -1, 1], [half, -half, half], [0, 0, -1], [0, 1, 0], depthSegments, heightSegments);
+    emitFace([-1, 0, 0], [0, 0, 1, 1], [-half, -half, -half], [0, 0, 1], [0, 1, 0], depthSegments, heightSegments);
+    emitFace([0, 1, 0], [1, 0, 0, 1], [-half, half, half], [1, 0, 0], [0, 0, -1], widthSegments, depthSegments);
+    emitFace([0, -1, 0], [1, 0, 0, 1], [-half, -half, -half], [1, 0, 0], [0, 0, 1], widthSegments, depthSegments);
+    const count = positions.length / 3;
+    const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2 : VertexFormat.P3N3, count);
+    for (let i = 0; i < count; i += 1) {
+      vertices.setAttribute(i, "position", [positions[i * 3]!, positions[i * 3 + 1]!, positions[i * 3 + 2]!]);
+      vertices.setAttribute(i, "normal", [normals[i * 3]!, normals[i * 3 + 1]!, normals[i * 3 + 2]!]);
+      if (textured) {
+        vertices.setAttribute(i, "uv", [uvs[i * 2]!, uvs[i * 2 + 1]!]);
+        vertices.setAttribute(i, "tangent", [tangents[i * 4]!, tangents[i * 4 + 1]!, tangents[i * 4 + 2]!, tangents[i * 4 + 3]!]);
+      }
+    }
+    return new Geometry(vertices, new IndexBuffer(indices, count));
   }
 
   static cube(size = 1): Geometry {

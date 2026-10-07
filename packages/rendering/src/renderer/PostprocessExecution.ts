@@ -129,7 +129,7 @@ export class RendererPostprocessPipeline {
       }
       return;
     }
-    if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
+    if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -208,7 +208,8 @@ export class RendererPostprocessPipeline {
     current: RenderTarget,
     passes: readonly RendererPostProcessPassPlan[],
     outputTarget?: RenderTarget,
-    forceCpuDeterministic = false
+    forceCpuDeterministic = false,
+    depthRange?: RendererPostProcessOptions["depthRange"]
   ): boolean {
     const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
     if (nativeHdrBloom && (forceCpuDeterministic || !this.host.device.presentLdrPostprocess)) return false;
@@ -229,7 +230,9 @@ export class RendererPostprocessPipeline {
           options: pass.options as Readonly<Record<string, unknown>>
         })) as readonly LdrPostprocessPassDescriptor[],
         ...(outputTarget ? { outputTarget } : {}),
-        toneMappingDefaults: { outputColorSpace: "srgb" }
+        toneMappingDefaults: { outputColorSpace: "srgb" },
+        // CCR-03-1: real camera range for depth-gated native passes.
+        ...(depthRange ? { depthRange: { near: depthRange.near, far: depthRange.far } } : {})
       });
       return true;
     }
@@ -265,7 +268,7 @@ export class RendererPostprocessPipeline {
       }
       return;
     }
-    if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
+    if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic", postprocess.depthRange)) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -341,7 +344,8 @@ export class RendererPostprocessPipeline {
     current: RenderTarget,
     passes: readonly RendererPostProcessPassPlan[],
     outputTarget?: RenderTarget,
-    forceCpuDeterministic = false
+    forceCpuDeterministic = false,
+    depthRange?: RendererPostProcessOptions["depthRange"]
   ): Promise<boolean> {
     const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
     if (nativeHdrBloom && (forceCpuDeterministic || !this.host.device.presentLdrPostprocess)) return false;
@@ -362,7 +366,9 @@ export class RendererPostprocessPipeline {
           options: pass.options as Readonly<Record<string, unknown>>
         })) as readonly LdrPostprocessPassDescriptor[],
         ...(outputTarget ? { outputTarget } : {}),
-        toneMappingDefaults: { outputColorSpace: "srgb" }
+        toneMappingDefaults: { outputColorSpace: "srgb" },
+        // CCR-03-1: real camera range for depth-gated native passes.
+        ...(depthRange ? { depthRange: { near: depthRange.near, far: depthRange.far } } : {})
       });
       return true;
     }

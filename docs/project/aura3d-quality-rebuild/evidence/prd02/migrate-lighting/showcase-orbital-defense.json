@@ -1,0 +1,37 @@
+{
+  "root": "apps/showcase-orbital-defense",
+  "files": 1,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "line": 93,
+      "construct": "lights.point({ intensity: 2.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 34 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "line": 93,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "line": 94,
+      "construct": "lights.point({ intensity: 1.6 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 20 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/main.ts",
+      "line": 94,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

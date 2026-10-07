@@ -1,0 +1,27 @@
+From d8538b35455feb749eab9b50dff00796d9132e0f Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:44:51 +0000
+Subject: [PATCH] [QR-09] turbo-drift: rename leftover reviewCapture
+ scene-pose
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-turbo-drift-circuit/src/main.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/apps/showcase-turbo-drift-circuit/src/main.ts b/apps/showcase-turbo-drift-circuit/src/main.ts
+index 02ef5792..f330b364 100644
+--- a/apps/showcase-turbo-drift-circuit/src/main.ts
++++ b/apps/showcase-turbo-drift-circuit/src/main.ts
+@@ -2448,7 +2448,7 @@ setupRacingPanel();
+ // contributed no pixels despite loading successfully.
+ const reviewBackdropSample = sampleCentreline(0.29);
+ const reviewCameraSample = sampleCentreline(0.247);
+-const reviewCaptureScenePose = racingScene.toScenePose({
++const acceptanceScenePose = racingScene.toScenePose({
+   position: { x: reviewCameraSample.x, y: reviewCameraSample.y },
+   heading: reviewCameraSample.heading
+ });
+-- 
+2.34.1
+

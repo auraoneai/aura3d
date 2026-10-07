@@ -1,0 +1,14 @@
+/* §7.7 theme "tabletop" — mirror of HUD_THEMES["tabletop"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-tabletop {
+  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-fg: #f2ead9;
+  --a3g-fg-dim: #b9ab8d;
+  --a3g-accent: #7ce8ff;
+  --a3g-accent2: #d4a94f;
+  --a3g-warn: #e0a63f;
+  --a3g-danger: #e0523f;
+  --a3g-bg: rgba(24,18,10,0.8);
+  --a3g-edge: rgba(212,169,79,0.45);
+  --a3g-glow: none;
+  --a3g-radius: 8px;
+}

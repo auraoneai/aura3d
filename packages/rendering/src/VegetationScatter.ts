@@ -131,7 +131,7 @@ export function sampleVegetationFixture(options: VegetationFixtureOptions): Vege
     instances,
     lsystem,
     hash: hashVegetation(instances, lsystem.hash),
-    claimBoundary: "Deterministic biome-aware vegetation placement, LOD selection, culling, wind-displacement telemetry, and bounded L-system branch/tip telemetry adapted from the old vegetation and L-system systems; this is bounded fixture evidence, not instanced vegetation rendering, billboards, collision, seasonal growth, procedural mesh generation, or production terrain vegetation parity."
+    claimBoundary: "Deterministic biome-aware vegetation placement, LOD selection, culling, wind-displacement telemetry, and bounded L-system branch/tip telemetry adapted from the old vegetation and L-system systems. `world.scatter` (PRD-10, behind `A3D_QR_WORLD`) is the runtime scatter system; this module is the offline placement helper it and the fixtures sample — bounded fixture evidence, not instanced vegetation rendering, billboards, collision, seasonal growth, procedural mesh generation, or production terrain vegetation parity."
   };
 }
 

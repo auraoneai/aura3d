@@ -514,7 +514,7 @@ export function buildSceneFromChildren(children: ReactNode): AuraSceneBuilder {
     }
     if (child.type === Effect) {
       const props = child.props as EffectProps;
-      if (props.type === "fog") builder.add(effects.fog(props));
+      if (props.type === "fog") builder.add(effects.fog({ ...props }));
       if (props.type === "bloom") builder.add(effects.bloom(props));
       if (props.type === "rain") builder.add(effects.rain(props));
     }

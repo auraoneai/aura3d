@@ -131,13 +131,44 @@ export function createTerrainHeightfieldFixture(options: TerrainHeightfieldFixtu
 }
 
 export function sampleTerrainHeightfield(fixture: TerrainHeightfieldFixture, u: number, v: number): TerrainHeightfieldSample {
-  const x = Math.max(0, Math.min(fixture.width - 1, Math.round(clamp(u, 0, 1) * (fixture.width - 1))));
-  const y = Math.max(0, Math.min(fixture.height - 1, Math.round(clamp(v, 0, 1) * (fixture.height - 1))));
-  const height = fixture.data[y * fixture.width + x] ?? 0;
+  // Bilinear height sample (PRD-10 T2 correctness fix, unflagged): the previous
+  // nearest-texel `Math.round` pick could jump ~0.5 m between adjacent texels,
+  // which broke every raycast/collision/vegetation/placement caller that treats
+  // the heightfield as continuous. The four surrounding texels are blended here
+  // so `queryTerrainHeight` and the C-26 `AuraHeightQuery` see a continuous field.
+  const px = clamp(u, 0, 1) * (fixture.width - 1);
+  const py = clamp(v, 0, 1) * (fixture.height - 1);
+  const x0 = Math.floor(px);
+  const y0 = Math.floor(py);
+  const x1 = Math.min(x0 + 1, fixture.width - 1);
+  const y1 = Math.min(y0 + 1, fixture.height - 1);
+  const fx = px - x0;
+  const fy = py - y0;
+  const h00 = fixture.data[y0 * fixture.width + x0] ?? 0;
+  const h10 = fixture.data[y0 * fixture.width + x1] ?? 0;
+  const h01 = fixture.data[y1 * fixture.width + x0] ?? 0;
+  const h11 = fixture.data[y1 * fixture.width + x1] ?? 0;
+  const height = lerp(lerp(h00, h10, fx), lerp(h01, h11, fx), fy);
   const normalized = (height - fixture.minHeight) / Math.max(0.0001, fixture.maxHeight - fixture.minHeight);
-  const moisture = clamp(fractalNoise((x / fixture.width) * 2.4 + 7.2, (y / fixture.height) * 2.4 - 1.8, fixture.seed ^ 0x9ab1, 4), 0, 1);
-  const temperature = clamp((1 - y / fixture.height) * 0.78 + fractalNoise((x / fixture.width) * 1.8 - 3.2, (y / fixture.height) * 1.8 + 5.8, fixture.seed ^ 0x1c0d, 3) * 0.22 - normalized * 0.38, 0, 1);
-  return { x, y, height: Number(height.toFixed(4)), moisture: Number(moisture.toFixed(4)), temperature: Number(temperature.toFixed(4)), biome: biomeFor(normalized, moisture, temperature, 0) };
+  const moisture = clamp(fractalNoise((px / fixture.width) * 2.4 + 7.2, (py / fixture.height) * 2.4 - 1.8, fixture.seed ^ 0x9ab1, 4), 0, 1);
+  const temperature = clamp((1 - py / fixture.height) * 0.78 + fractalNoise((px / fixture.width) * 1.8 - 3.2, (py / fixture.height) * 1.8 + 5.8, fixture.seed ^ 0x1c0d, 3) * 0.22 - normalized * 0.38, 0, 1);
+  return { x: px, y: py, height: Number(height.toFixed(4)), moisture: Number(moisture.toFixed(4)), temperature: Number(temperature.toFixed(4)), biome: biomeFor(normalized, moisture, temperature, 0) };
+}
+
+export interface TerrainHeightTexture {
+  /** R32F height payload, row-major, `width * height` entries. A copy of the fixture data. */
+  readonly data: Float32Array;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * Returns the R32F height texture payload that the terrain material samples in
+ * the vertex stage (PRD-10 §7.2: displacement must come from the same field the
+ * CPU-side queries read, or colliders and pixels disagree).
+ */
+export function toHeightTexture(fixture: TerrainHeightfieldFixture): TerrainHeightTexture {
+  return { data: new Float32Array(fixture.data), width: fixture.width, height: fixture.height };
 }
 
 export function createTerrainHeightfieldGeometry(

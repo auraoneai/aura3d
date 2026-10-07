@@ -28,6 +28,13 @@ export interface BloomOptions {
 export interface FXAAOptions {
   readonly edgeThreshold?: number;
   readonly subpixelBlend?: number;
+  /**
+   * CCR-03-1 (additive, PRD-03 Phase 1): `"r185"` presents via the dedicated
+   * three-r185 FXAA port plus triangular dither as a separate finalize draw
+   * (the FXAA taps leave the present uber-shader). `"legacy"` / omitted keeps
+   * the in-shader `u_hasFxaa` taps — the flag-off path.
+   */
+  readonly variant?: "legacy" | "r185";
 }
 
 export interface ToneMappingOptions {
@@ -2107,7 +2114,8 @@ function normalizeColorGradeOptions(options: ColorGradeOptions): Required<ColorG
 function normalizeFXAAOptions(options: FXAAOptions): Required<FXAAOptions> {
   const settings = {
     edgeThreshold: options.edgeThreshold ?? 0.125,
-    subpixelBlend: options.subpixelBlend ?? 0.75
+    subpixelBlend: options.subpixelBlend ?? 0.75,
+    variant: options.variant ?? "legacy" as const
   };
   validateFXAAOptions(settings.edgeThreshold, settings.subpixelBlend);
   return settings;

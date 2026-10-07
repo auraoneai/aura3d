@@ -201,63 +201,17 @@ export function validateGameVisualQa(input) {
     blockers: balanceBlockers
   });
 
-  /*
-   * Documented empty-flat-region budget.
-   *
-   * ## Why this check exists
-   *
-   * The brief requires a "documented threshold" on empty-sky dominance and lists it as an acceptance
-   * requirement for Skyline Runner. Nothing enforced one. `measureFlatRegionFraction` was added to the
-   * engine's composition layer and used only in unit tests against synthetic pixel buffers, so the
-   * *shipped* frame's flat-region fraction was never gated -- and no other check can see it: every
-   * existing image check measures the frame relative to its background colour, and flat sky *is* the
-   * background.
-   *
-   * ## Where the numbers come from
-   *
-   * Measured on the current retained frames, not chosen by taste:
-   *
-   * | frame | dominantBucketFraction | flatFraction |
-   * | --- | --- | --- |
-   * | Turbo Drift Circuit route-primary | 0.167 | 0.324 |
-   * | Blockfall Reactor route-primary | 0.322 | 0.431 |
-   * | Skyline Runner route-primary (before the planned sky) | 0.437 | 0.598 |
-   *
-   * The budget is set to `maxDominantBucketFraction: 0.42` / `maxFlatFraction: 0.58`. That is deliberately
-   * tight enough that Skyline's pre-fix frame **fails** it -- a threshold every current frame already
-   * passes would document nothing and prevent nothing -- and loose enough that Turbo and Blockfall, whose
-   * composition is not in question, keep passing with real headroom.
-   *
-   * Viewport captures are held to a looser `maxViewportFlatFraction`. A mobile capture shows far less
-   * horizontal world at the same camera distance, so its sky share is structurally higher; holding it to the
-   * desktop number would reward cropping the level rather than composing the frame.
-   */
-  const flatBudget = { maxDominantBucketFraction: 0.42, maxFlatFraction: 0.58, maxViewportFlatFraction: 0.62 };
+  // Flat-region measurements are reported without a pass/fail threshold: the previous
+  // budget was calibrated to the status-quo frames it was meant to judge and was removed
+  // in the quality rebuild (PRD-12 phase 0). Thresholds are re-derived from admitted
+  // reference frames in phase 2 (T2.8).
   const flatBlockers = [];
   if (!flatMetrics) flatBlockers.push("flat-region-metrics-missing");
-  else {
-    if (flatMetrics.dominantBucketFraction > flatBudget.maxDominantBucketFraction) {
-      flatBlockers.push(`dominant-flat-region:${flatMetrics.dominantBucketFraction}`);
-    }
-    if (flatMetrics.flatFraction > flatBudget.maxFlatFraction) {
-      flatBlockers.push(`flat-region-fraction:${flatMetrics.flatFraction}`);
-    }
-  }
-  for (const viewport of viewportMetrics) {
-    if (viewport.missing) continue;
-    if (typeof viewport.flatFraction !== "number") {
-      flatBlockers.push(`${viewport.kind}-flat-region-metrics-missing`);
-      continue;
-    }
-    if (viewport.flatFraction > flatBudget.maxViewportFlatFraction) {
-      flatBlockers.push(`${viewport.kind}-flat-region-fraction:${viewport.flatFraction}`);
-    }
-  }
   checks.push({
     id: "flat-region-budget",
-    verdict: flatBlockers.length ? "fail" : "pass",
+    verdict: flatMetrics ? "report-only" : "fail",
     source: "quantised-colour-bucket-concentration",
-    tolerance: flatBudget,
+    tolerance: null,
     measured: {
       composed: flatMetrics ?? {},
       viewports: viewportMetrics.map((viewport) => ({

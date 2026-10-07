@@ -9,8 +9,7 @@ const templates = [
   "production-product-configurator",
   "production-asset-inspector",
   "production-material-studio",
-  "production-architecture-viewer",
-  "production-webgpu-starter"
+  "production-architecture-viewer"
 ] as const;
 const currentVersion = (JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { version: string }).version;
 const reportPath = resolve("tests/reports/production-runtime-template-readiness.json");

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   AnimationController,
   type AnimationPose,
@@ -12,6 +12,16 @@ import type {
   RuntimeNodeMorphTargetWeights,
   RuntimeNodeVec3
 } from "../../../packages/engine/src/agent-api/RuntimeNodeHandle";
+import type { AuraRuntimeNodeHandle } from "../../../packages/engine/src/agent-api/index";
+import type { AuraResolvedClipInfo } from "../../../packages/engine/src/contracts/animation";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import {
+  createPrd06ActorAnimationApi,
+  registerActorClipInfoSource,
+  resetActorClipInfoSources,
+  resetQrAnimationFlags,
+  setQrAnimationFlags
+} from "../../../packages/engine/src/agent-api/app/actorAnimationHandle";
 
 type ClipId = "idle" | "walk" | "jab" | "attack" | "ghost";
 
@@ -285,7 +295,12 @@ describe("AnimationController", () => {
   });
 });
 
-function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
+function createRuntimeNodeStub(
+  id: string,
+  options: { resolveAnimationClips?: () => Promise<readonly AuraResolvedClipInfo[]> } = {}
+): RuntimeNodeHandleLike & {
+  latestAnimation?: unknown;
+  poseCalls: number;
   latestAnimationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
   latestAnimationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;
   latestPose?: AnimationPose;
@@ -293,6 +308,7 @@ function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
 } {
   let node: RuntimeNodeHandleLike & {
     latestAnimation?: unknown;
+    poseCalls: number;
     latestAnimationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
     latestAnimationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;
     latestPose?: AnimationPose;
@@ -307,6 +323,8 @@ function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
     scale: 1,
     visible: true,
     latestMorphTargets: {},
+    poseCalls: 0,
+    ...(options.resolveAnimationClips ? { resolveAnimationClips: options.resolveAnimationClips } : {}),
     setPosition(x, y, z) {
       node.position = [x, y, z];
       return node;
@@ -340,6 +358,7 @@ function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
       return node;
     },
     setAnimationPose(pose, metadata) {
+      node.poseCalls += 1;
       node.latestPose = pose;
       node.latestAnimationPoseBinding = metadata;
       return node;
@@ -367,6 +386,7 @@ function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
     }
   } as RuntimeNodeHandleLike & {
     latestAnimation?: unknown;
+    poseCalls: number;
     latestAnimationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
     latestAnimationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;
     latestPose?: AnimationPose;
@@ -374,3 +394,123 @@ function createRuntimeNodeStub(id: string): RuntimeNodeHandleLike & {
   };
   return node;
 }
+
+const qrAnimationOn = () => resolveQrFlags({ options: ["animation"], env: {} });
+
+afterEach(() => {
+  resetQrAnimationFlags();
+  resetActorClipInfoSources();
+});
+
+describe("PRD-06 clip drive + resolveAnimationClips (T0.4–T0.6, T0.8)", () => {
+  it("flag-on embedded-name registry makes no setAnimationPose call (T0.4)", () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const controller = new AnimationController<string>();
+    controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Idle"] });
+    const node = createRuntimeNodeStub("actor-embedded");
+    controller.bindRuntimeNode(node, { defaultClipId: "Idle" });
+    controller.update(0.5);
+    expect(node.poseCalls).toBe(0);
+    expect(node.latestAnimation).toMatchObject({ clip: "Idle" });
+  });
+
+  it("flag-off embedded-name registry keeps legacy pose application verbatim (T0.4)", () => {
+    const controller = new AnimationController<string>();
+    controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Idle"] });
+    const node = createRuntimeNodeStub("actor-embedded-off");
+    controller.bindRuntimeNode(node, { defaultClipId: "Idle" });
+    expect(node.poseCalls).toBe(1);
+    expect(node.latestAnimation).toMatchObject({ clip: "Idle" });
+  });
+
+  it("flag-on pose-producing clips still apply poses under clip drive (T0.4)", () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const controller = new AnimationController<string>();
+    controller.registerClip({ id: "idle", duration: 1, loop: true, sample: () => poseAt(1) });
+    const node = createRuntimeNodeStub("actor-posed");
+    controller.play("idle");
+    controller.bindRuntimeNode(node, {});
+    controller.update(0.25);
+    expect(node.poseCalls).toBeGreaterThan(0);
+  });
+
+  it("flag-on skeleton registry emits no identity bind poses (T0.5)", () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const controller = new AnimationController<string>({ skeleton: { bones: ["Hips", "Spine"] } });
+    controller.registerClip({ id: "walk", duration: 1 });
+    controller.play("walk");
+    controller.update(0.1);
+    const snapshot = controller.capturePose();
+    expect(snapshot.pose.metadata?.poseBakedFallback).toBeTruthy();
+    expect(Object.keys(snapshot.pose.bones)).toHaveLength(0);
+  });
+
+  it("flag-off skeleton registry still emits the identity bind pose (T0.5)", () => {
+    const controller = new AnimationController<string>({ skeleton: { bones: ["Hips", "Spine"] } });
+    controller.registerClip({ id: "walk", duration: 1 });
+    controller.play("walk");
+    controller.update(0.1);
+    const snapshot = controller.capturePose();
+    expect(Object.keys(snapshot.pose.bones).sort()).toEqual(["Hips", "Spine"]);
+  });
+
+  it("waits for resolveAnimationClips, then applies real clip durations (T0.6)", async () => {
+    setQrAnimationFlags(qrAnimationOn());
+    const controller = new AnimationController<string>();
+    controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Walk"] });
+    let release!: (infos: readonly AuraResolvedClipInfo[]) => void;
+    const pending = new Promise<readonly AuraResolvedClipInfo[]>((resolve) => {
+      release = resolve;
+    });
+    const resolver = vi.fn(() => pending);
+    const node = createRuntimeNodeStub("actor-1", { resolveAnimationClips: resolver });
+    controller.play("Walk", { loop: "loop" });
+    controller.bindRuntimeNode(node, { defaultClipId: "Walk" });
+    controller.update(0.5);
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(node.latestAnimation).toBeUndefined();
+    expect(node.poseCalls).toBe(0);
+
+    release([{ name: "Walk", duration: 2.367, channelCount: 6, hasRootMotionCandidate: false }]);
+    await vi.waitFor(() => {
+      expect(node.latestAnimation).toMatchObject({ clip: "Walk" });
+    });
+    expect(controller.getClip("Walk")?.duration).toBeCloseTo(2.367);
+
+    controller.update(3.0);
+    expect(controller.state("Walk")?.localTime).toBeCloseTo(3.5 - 2.367);
+  });
+
+  it("flag-off never calls resolveAnimationClips (T0.6)", () => {
+    const controller = new AnimationController<string>();
+    controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: ["Walk"] });
+    const resolver = vi.fn(() => new Promise<readonly AuraResolvedClipInfo[]>(() => {}));
+    const node = createRuntimeNodeStub("actor-off", { resolveAnimationClips: resolver });
+    controller.bindRuntimeNode(node, { defaultClipId: "Walk" });
+    controller.update(0.5);
+    expect(resolver).not.toHaveBeenCalled();
+    expect(node.poseCalls).toBeGreaterThanOrEqual(1);
+  });
+
+  it("resolveAnimationClips resolves through the actor clip-info registry (T0.6)", async () => {
+    const handle = { id: "actor-9", kind: "model" } as AuraRuntimeNodeHandle;
+    const api = createPrd06ActorAnimationApi(handle);
+    const pending = api.resolveAnimationClips();
+    const infos = [{ name: "Run", duration: 1.2, channelCount: 3, hasRootMotionCandidate: false }];
+    registerActorClipInfoSource("actor-9", () => infos);
+    await expect(pending).resolves.toEqual(infos);
+    await expect(api.resolveAnimationClips()).resolves.toEqual(infos);
+
+    const light = createPrd06ActorAnimationApi({ id: "light-1", kind: "light" } as AuraRuntimeNodeHandle);
+    await expect(light.resolveAnimationClips()).resolves.toEqual([]);
+  });
+
+  it("object-form animationClips carry real durations, never defaulted (T0.8)", () => {
+    const controller = new AnimationController<string>();
+    controller.registerEmbeddedGLBClips({ assetId: "glb-1", clips: [{ name: "Walk", duration: 2.5 }] });
+    const clip = controller.getClip("Walk");
+    expect(clip?.duration).toBe(2.5);
+    expect(clip?.metadata?.durationSource).toBe("metadata");
+    expect(clip?.metadata?.source).toBe("embedded-glb-clip-registry");
+  });
+});

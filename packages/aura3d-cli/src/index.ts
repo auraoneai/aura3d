@@ -1,9 +1,13 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { admitAssetForRole } from "./asset-role-admission.js";
+import { hasStylizedFlatApproval } from "./admission/artDirection.js";
+import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
+import { profileForRole, requiresPbrTextures } from "./admission/profiles.js";
 import {
   DEFAULT_AURA_ASSET_MANIFEST,
   DEFAULT_AURA_ASSET_OUTPUT_DIR,
@@ -391,6 +395,14 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     ...(options.suitabilityReason ?? existing?.suitabilityReason ? { suitabilityReason: options.suitabilityReason ?? existing?.suitabilityReason } : {}),
     ...(options.renderedProbe ?? existing?.renderedProbe ? { renderedProbe: options.renderedProbe ?? existing?.renderedProbe } : {}),
     ...(options.gameGeometry ?? existing?.gameGeometry ? { gameGeometry: options.gameGeometry ?? existing?.gameGeometry } : {}),
+    ...(options.artDirection ?? existing?.artDirection ? { artDirection: options.artDirection ?? existing?.artDirection } : {}),
+    ...(options.audio ?? existing?.audio ? { audio: options.audio ?? existing?.audio } : {}),
+    // C-17 clip objects: written only when the inspection produced real
+    // durations (the lane-06 inspector hook, Q-05-1); a prior richer record is
+    // preserved on re-add.
+    ...(c17AnimationClips(inspection.animation) ?? existing?.animationClips
+      ? { animationClips: c17AnimationClips(inspection.animation) ?? existing?.animationClips }
+      : {}),
     warnings: createAssetWarnings(sourcePath, inspection)
   };
   if (options.orientation) {
@@ -403,7 +415,9 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     }
   }
   const manifest = sortManifest({
-    schema: "aura3d.assets/1.0",
+    // C-17 stub rule: the stored schema is preserved/1.0 until the writer
+    // upgrades under A3D_QR_ASSETS (`writeAssetManifest` decides).
+    schema: current.schema ?? "aura3d.assets/1.0",
     assetBasePath: publicPath,
     outputDir,
     typegen,
@@ -908,16 +922,21 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
       failures.push(`Missing license/provenance evidence for "${asset.id}". Add it with assets add --license ... --source-url ... or pass --provenance <evidence.json>.`);
     }
     if (release) warnings.push(...createDurableReleaseProvenanceWarnings(asset, provenance));
+    // R-09-1 (lane 09): synthesized audio may not hold `release` unless the id
+    // is on the admission allowlist.
+    if (release && asset.type === "audio" && isSynthesizedAudioProvenance(provenance) && !AUDIO_SYNTH_RELEASE_ALLOWLIST.includes(asset.id)) {
+      warnings.push(`${asset.id}: release audio asset has synthesized provenance without an admission allowlist entry.`);
+    }
     warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
-    if (release) warnings.push(...createReleaseStructuredQualityWarnings(asset));
-    if (release) warnings.push(...createReleaseAssetQualityWarnings(asset));
+    if (release) warnings.push(...createReleaseStructuredQualityWarnings(projectDir, asset));
+    if (release) warnings.push(...createReleaseAssetQualityWarnings(projectDir, asset));
     if (release) warnings.push(...createReleaseRenderedProbeWarnings(projectDir, manifest, asset));
     if (release) warnings.push(...createManifestOrientationOverrideWarnings(asset));
     if (release) warnings.push(...createRoleAwareReleaseQualityWarnings(projectDir, manifest, asset));
     if (release) warnings.push(...createReleaseThumbnailWarnings(projectDir, manifest, asset));
     const tempProvenance = createTempProvenanceWarning(asset, provenance);
     if (tempProvenance) warnings.push(tempProvenance);
-    const storedWarnings = release ? releaseStoredAssetWarnings(asset) : asset.warnings ?? [];
+    const storedWarnings = release ? releaseStoredAssetWarnings(projectDir, asset) : asset.warnings ?? [];
     warnings.push(...storedWarnings.map((warning) => `${asset.id}: ${warning}`));
     if (asset.format === "gltf") {
       for (const dependency of asset.dependencies ?? asset.textures) {
@@ -2067,10 +2086,22 @@ function inspectGlb(buffer: Buffer, baseDir?: string): AssetInspection {
   const chunkType = buffer.toString("utf8", 16, 20);
   if (chunkType !== "JSON") throw new Error("Invalid GLB JSON chunk. Suggested fix: re-export the GLB.");
   const json = JSON.parse(buffer.toString("utf8", 20, 20 + chunkLength).trim()) as GltfJson;
-  return inspectGltf(json, baseDir);
+  // Q-05-1 (lane 06): carry the BIN chunk through so the enriched clip
+  // inspector can read sampler input times (duration/frameRate).
+  let offset = 20 + chunkLength;
+  let bin: Buffer | undefined;
+  while (offset + 8 <= buffer.length && offset + 8 <= length) {
+    const chunkLen = buffer.readUInt32LE(offset);
+    if (buffer.readUInt32LE(offset + 4) === 0x004e4942) {
+      bin = buffer.subarray(offset + 8, offset + 8 + chunkLen);
+      break;
+    }
+    offset += 8 + chunkLen;
+  }
+  return inspectGltf(json, baseDir, bin);
 }
 
-function inspectGltf(json: GltfJson, baseDir?: string): AssetInspection {
+function inspectGltf(json: GltfJson, baseDir?: string, bin?: Buffer): AssetInspection {
   const dependencies = [
     ...(json.images ?? []).map((image) => image.uri).filter(isExternalUri),
     ...(json.buffers ?? []).map((buffer) => buffer.uri).filter(isExternalUri)
@@ -2088,7 +2119,7 @@ function inspectGltf(json: GltfJson, baseDir?: string): AssetInspection {
     materials: (json.materials ?? []).map((material, index) => material.name ?? `material-${index}`),
     materialMetadata: inspectGltfMaterials(json),
     animations: (json.animations ?? []).map((animation, index) => animation.name ?? `clip-${index}`),
-    animation: inspectGltfAnimations(json),
+    animation: inspectGltfAnimations(json, bin),
     humanoid: inspectGltfHumanoid(json),
     skeleton: inspectGltfSkeleton(json),
     morphTargets: inspectGltfMorphTargets(json),
@@ -2109,7 +2140,47 @@ function emptyAnimationInspection(): AuraCliAnimationInspection {
   };
 }
 
-function inspectGltfAnimations(json: GltfJson): AuraCliAnimationInspection {
+/**
+ * Q-05-1 (request from lane 06): when `commands/prd06/inspectAnimationClips.ts`
+ * exports `inspectAnimationClips(json, bin)`, each clip additionally gains
+ * `duration`, `hasRootMotionCandidate` and `frameRate?`. The lane-06 module is
+ * resolved lazily and probed once — absent (Phase 0) or unloadable, the
+ * names-only inspection below stands unchanged.
+ */
+interface Lane06ClipDetail {
+  readonly index?: number;
+  readonly name?: string;
+  readonly duration?: number;
+  readonly hasRootMotionCandidate?: boolean;
+  readonly frameRate?: number;
+}
+
+let lane06ClipInspector: ((json: unknown, bin?: Buffer) => unknown) | null | undefined;
+
+function inspectLane06AnimationClips(json: GltfJson, bin?: Buffer): readonly Lane06ClipDetail[] | undefined {
+  if (lane06ClipInspector === undefined) {
+    lane06ClipInspector = null;
+    try {
+      const require = createRequire(import.meta.url);
+      const mod = require("./commands/prd06/inspectAnimationClips.js") as { inspectAnimationClips?: unknown };
+      if (typeof mod?.inspectAnimationClips === "function") {
+        lane06ClipInspector = mod.inspectAnimationClips as (json: unknown, bin?: Buffer) => unknown;
+      }
+    } catch {
+      lane06ClipInspector = null;
+    }
+  }
+  if (!lane06ClipInspector) return undefined;
+  try {
+    const result = lane06ClipInspector(json, bin);
+    return Array.isArray(result) ? result as readonly Lane06ClipDetail[] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function inspectGltfAnimations(json: GltfJson, bin?: Buffer): AuraCliAnimationInspection {
+  const lane06Clips = inspectLane06AnimationClips(json, bin);
   const clips = (json.animations ?? []).map((animation, index): AuraCliAnimationClipInspection => {
     const channels = animation.channels ?? [];
     const targetPaths = uniqueStrings(channels.map((channel) => channel.target?.path).filter(isString));
@@ -2117,13 +2188,18 @@ function inspectGltfAnimations(json: GltfJson): AuraCliAnimationInspection {
       const nodeIndex = channel.target?.node;
       return typeof nodeIndex === "number" ? json.nodes?.[nodeIndex]?.name ?? `node-${nodeIndex}` : undefined;
     }).filter(isString));
+    const name = animation.name ?? `clip-${index}`;
+    const enriched = lane06Clips?.find((clip) => clip.index === index || clip.name === name);
     return {
       index,
-      name: animation.name ?? `clip-${index}`,
+      name,
       channelCount: channels.length,
       samplerCount: animation.samplers?.length ?? 0,
       targetPaths,
-      targetNodes
+      targetNodes,
+      ...(typeof enriched?.duration === "number" ? { duration: enriched.duration } : {}),
+      ...(typeof enriched?.hasRootMotionCandidate === "boolean" ? { hasRootMotionCandidate: enriched.hasRootMotionCandidate } : {}),
+      ...(typeof enriched?.frameRate === "number" ? { frameRate: enriched.frameRate } : {})
     };
   });
   return {
@@ -2133,6 +2209,17 @@ function inspectGltfAnimations(json: GltfJson): AuraCliAnimationInspection {
       ? ["No embedded animation clips detected."]
       : [`Detected ${clips.length} embedded animation clip${clips.length === 1 ? "" : "s"}.`]
   };
+}
+
+/**
+ * C-17 `animationClips` manifest objects (Q-05-1). Emitted only when every
+ * clip carries a real duration from the lane-06 inspector — the names-only
+ * Phase-0 inspection does not fabricate `duration: 0`.
+ */
+function c17AnimationClips(inspection: AuraCliAnimationInspection): readonly { readonly name: string; readonly duration: number; readonly channelCount: number }[] | undefined {
+  if (inspection.clipCount === 0) return undefined;
+  if (!inspection.clips.every((clip) => typeof clip.duration === "number" && Number.isFinite(clip.duration))) return undefined;
+  return inspection.clips.map((clip) => ({ name: clip.name, duration: clip.duration ?? 0, channelCount: clip.channelCount }));
 }
 
 function inspectGltfHumanoid(json: GltfJson): AuraCliHumanoidInspection {
@@ -2962,7 +3049,7 @@ function createDerivedMetadataDriftWarnings(outputPath: string, asset: AuraCliAs
   return warnings;
 }
 
-function createReleaseStructuredQualityWarnings(asset: AuraCliAssetEntry): readonly string[] {
+function createReleaseStructuredQualityWarnings(projectDir: string, asset: AuraCliAssetEntry): readonly string[] {
   if (asset.type !== "model") return [];
   const warnings: string[] = [];
   const quality = asset.quality ?? "ungraded";
@@ -2981,7 +3068,7 @@ function createReleaseStructuredQualityWarnings(asset: AuraCliAssetEntry): reado
   return warnings;
 }
 
-function createReleaseAssetQualityWarnings(asset: AuraCliAssetEntry): readonly string[] {
+function createReleaseAssetQualityWarnings(projectDir: string, asset: AuraCliAssetEntry): readonly string[] {
   if (asset.type !== "model") return [];
   const warnings: string[] = [];
   const size = asset.boundsMetadata?.size ?? asset.bounds;
@@ -3002,8 +3089,17 @@ function createReleaseAssetQualityWarnings(asset: AuraCliAssetEntry): readonly s
   if (asset.materialMetadata?.some((material) => !material.visible || !material.readable)) {
     warnings.push(`${asset.id}: release primary model has invisible or unreadable material metadata.`);
   }
-  if (["glb", "gltf"].includes(asset.format) && asset.textures.length === 0 && !hasHashBoundFlatColorMaterialEvidence(asset)) {
-    warnings.push(`${asset.id}: release primary model has no texture references; use only with explicit material/readability evidence.`);
+  if (["glb", "gltf"].includes(asset.format) && asset.textures.length === 0) {
+    // PRD-05 Phase 0: the hash-bound flat-color evidence waiver is deleted.
+    // The check fails unless the role's profile does not require PBR coverage
+    // (G3 waived-by-role) or `artDirection` resolves to a `stylized-flat`
+    // document with an approved look-dev record (G10).
+    const role = asset.role ?? "unknown";
+    const size = asset.boundsMetadata?.size ?? asset.bounds;
+    const profile = profileForRole(role, size);
+    if (requiresPbrTextures(role, profile) && !hasStylizedFlatApproval(projectDir, asset)) {
+      warnings.push(`${asset.id}: release primary model has no texture references; admit through assets admit (G3) or declare a stylized-flat artDirection with an approved look-dev record.`);
+    }
   }
   return warnings;
 }
@@ -3150,31 +3246,17 @@ function hasValidManifestOrientationOverride(asset: AuraCliAssetEntry): boolean 
     asset.orientation?.source === "manifest-override";
 }
 
-function releaseStoredAssetWarnings(asset: AuraCliAssetEntry): readonly string[] {
+function releaseStoredAssetWarnings(projectDir: string, asset: AuraCliAssetEntry): readonly string[] {
   let warnings = asset.warnings ?? [];
   if (hasValidManifestOrientationOverride(asset)) {
     warnings = warnings.filter((warning) => !/orientation metadata missing; facing direction cannot be validated/i.test(warning));
   }
-  if (hasHashBoundFlatColorMaterialEvidence(asset)) {
+  // G10: an approved stylized-flat artDirection + look-dev record sanctions
+  // the absence of textures — the stored no-texture warning stops blocking.
+  if (hasStylizedFlatApproval(projectDir, asset)) {
     warnings = warnings.filter((warning) => !/^no texture references detected$/i.test(warning.trim()));
   }
   return warnings;
-}
-
-function hasHashBoundFlatColorMaterialEvidence(asset: AuraCliAssetEntry): boolean {
-  if (asset.materials.length === 0) return false;
-  const materialMetadata = asset.materialMetadata ?? [];
-  if (materialMetadata.length < asset.materials.length) return false;
-  if (materialMetadata.some((material) =>
-    !nonEmpty(material.name) || material.visible !== true || material.readable !== true ||
-    typeof material.opacity !== "number" || material.opacity <= 0
-  )) return false;
-  const probe = asset.renderedProbe;
-  return nonEmpty(probe?.url) &&
-    nonEmpty(probe?.sha256) &&
-    nonEmpty(probe?.assetHash) &&
-    probe?.assetHash === asset.hash &&
-    ["browser-screenshot", "aura-probe-render"].includes(String(probe?.kind));
 }
 
 function createRenderedProbeForegroundWarnings(
@@ -3208,7 +3290,6 @@ function createRenderedProbeForegroundWarnings(
 }
 
 function createRoleAwareReleaseQualityWarnings(projectDir: string, manifest: AuraCliAssetManifest, asset: AuraCliAssetEntry): readonly string[] {
-  void projectDir;
   void manifest;
   if (asset.type !== "model" || asset.quality !== "release") return [];
   const role = asset.role ?? "unknown";
@@ -3216,6 +3297,7 @@ function createRoleAwareReleaseQualityWarnings(projectDir: string, manifest: Aur
   const suitabilityReason = asset.suitabilityReason?.trim() ?? "";
   const size = asset.boundsMetadata?.size ?? asset.bounds;
   const dimensions = createRoleAwareDimensions(size);
+  const profile = profileForRole(role, dimensions);
   const hasMaterialEvidence = asset.materials.length > 0 && !(asset.materialMetadata?.every((material) => !material.visible || !material.readable) ?? false);
   const hasTextureEvidence = asset.textures.length > 0 || (asset.hierarchy?.textureCount ?? 0) > 0;
 
@@ -3249,8 +3331,13 @@ function createRoleAwareReleaseQualityWarnings(projectDir: string, manifest: Aur
   if (requiresMaterialEvidence(role) && !hasMaterialEvidence) {
     warnings.push(`${asset.id}: role-aware release ${role} validation requires readable material evidence.`);
   }
-  if (requiresTextureEvidence(role, suitabilityReason) && !hasTextureEvidence) {
-    warnings.push(`${asset.id}: role-aware release ${role} validation requires texture evidence or explicit stylized-material rationale.`);
+  // PRD-05 Phase 0: `requiresTextureEvidence` (the stylized-suitabilityReason
+  // regex waiver) is deleted — texture requirements now come from the §6.2
+  // role profile, matching G3. An approved stylized-flat artDirection + look-dev
+  // record is the only remaining exemption (G10).
+  const stylizedFlatApproved = hasStylizedFlatApproval(projectDir, asset);
+  if (requiresPbrTextures(role, profile) && !hasTextureEvidence && !stylizedFlatApproved) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires texture evidence.`);
   }
   if (requiresForwardOrientation(role) && !hasForwardOrientationEvidence(asset, suitabilityReason)) {
     warnings.push(`${asset.id}: role-aware release ${role} validation requires orientation/forward-axis evidence.`);
@@ -3371,14 +3458,6 @@ function hasRoleAwareSuitabilityReason(role: AuraCliAssetRole, suitabilityReason
 
 function requiresMaterialEvidence(role: AuraCliAssetRole): boolean {
   return role !== "debug" && role !== "abstract";
-}
-
-function requiresTextureEvidence(role: AuraCliAssetRole, suitabilityReason: string): boolean {
-  if (role === "debug" || role === "abstract") return false;
-  if (/\b(stylized|stylised|flat[-\s]?color|flat[-\s]?colour|untextured|procedural material|clay render|solid material)\b/i.test(suitabilityReason)) {
-    return false;
-  }
-  return role === "character" || role === "vehicle" || role === "product" || role === "track" || role === "world" || role === "environment" || role === "weapon";
 }
 
 function requiresForwardOrientation(role: AuraCliAssetRole): boolean {

@@ -1,0 +1,277 @@
+{
+  "root": "apps/showcase-gallery-shift",
+  "files": 21,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 67,
+      "construct": "lights.point({ intensity: 4.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 60 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 67,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 68,
+      "construct": "lights.point({ intensity: 3.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 40 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 68,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 69,
+      "construct": "lights.point({ intensity: 3.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 40 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/main.js",
+      "line": 69,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 408,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 633,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 633,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 639,
+      "construct": "lights.point({ intensity: 1.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 21 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 639,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 644,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 644,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 649,
+      "construct": "lights.point({ intensity: 1.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 649,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 654,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 654,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 659,
+      "construct": "lights.point({ intensity: 1.35 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 17 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 659,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 664,
+      "construct": "lights.point({ intensity: 1.55 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 19 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 664,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 669,
+      "construct": "lights.point({ intensity: 1.18 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 15 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "line": 669,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 861,
+      "construct": "lights.point({ intensity: 2.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 35 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 861,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1019,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1029,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1070,
+      "construct": "lights.spot({ intensity: 2.2 })",
+      "mapping": "approximate",
+      "target": "lights.spot({ power: 7 })",
+      "note": "physical units: cd=lm/π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1071,
+      "construct": "lights.point({ intensity: 0.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1071,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1072,
+      "construct": "lights.point({ intensity: 0.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1072,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1073,
+      "construct": "lights.point({ intensity: 0.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1073,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 543,
+      "construct": "shadows.contact(…)",
+      "mapping": "exact",
+      "target": "shadows.blobShadow(…)",
+      "note": "deprecated alias (C-10); rename applied by PRD 14/13"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "line": 1008,
+      "construct": "shadows.contact(…)",
+      "mapping": "exact",
+      "target": "shadows.blobShadow(…)",
+      "note": "deprecated alias (C-10); rename applied by PRD 14/13"
+    }
+  ]
+}

@@ -1,7 +1,14 @@
 /**
- * Lane prd02 scene index (CONTRACTS.md §3.8). Scene ids are `<owner>-<slug>`.
- * Empty array until lane 02 lands its scenes.
+ * Lane prd02 three-side adapters (PRD-02 §16.1). Same spec, translated by the
+ * shared `three/common.ts` — the reference arm of every prd02 comparison.
  */
-import type { BenchSceneRegistration } from "../../../shared/registry";
+import { runThreeScene } from "../../common";
+import type { ReadyPayload, SceneSpec } from "../../../shared/types";
+import { getPrd02Spec } from "../../../scenes/prd02/specs";
 
-export const scenes: readonly BenchSceneRegistration[] = [];
+export type Prd02Adapter = (host: HTMLElement) => Promise<ReadyPayload>;
+
+export function threeAdapterFor(sceneId: string): Prd02Adapter {
+  const spec: SceneSpec = getPrd02Spec(sceneId);
+  return (host) => runThreeScene(spec, host);
+}
