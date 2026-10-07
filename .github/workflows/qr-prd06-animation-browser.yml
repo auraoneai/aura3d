@@ -1,0 +1,100 @@
+name: QR prd06 animation browser
+
+# Lane 06 (PRD-06 T0.0) — the lane animation-matrix: lane unit impl tests on
+# ubuntu and the tests/qr/prd06 browser specs plus the animated-character
+# baseline on macos-14 across chromium/webkit/firefox. Public-repo-safe steps
+# only; no cloud credentials.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/animation/**"
+      - "packages/engine/src/agent-api/AnimationController.ts"
+      - "packages/engine/src/agent-api/GameCharacterAnimation.ts"
+      - "packages/engine/src/agent-api/VisemeController.ts"
+      - "packages/engine/src/agent-api/FootPlanting.ts"
+      - "packages/engine/src/agent-api/humanoid-walk-runtime.ts"
+      - "packages/engine/src/agent-api/app/actorAnimationHandle.ts"
+      - "packages/engine/src/agent-api/compiler/animation.ts"
+      - "packages/engine/src/production-runtime/actor/TypedGLBActorAnimation.ts"
+      - "packages/assets/src/GLTFAnimationRuntime.ts"
+      - "packages/rendering/src/Skinning*"
+      - "packages/rendering/src/WebGPUSkinningLimits.ts"
+      - "packages/rendering/src/MorphTargetPlan.ts"
+      - "packages/rendering/src/Texture.ts"
+      - "packages/rendering/src/resources/MorphTargetTexture.ts"
+      - "packages/rendering/src/shaders/deform/**"
+      - "packages/rendering/src/forward/Deform.ts"
+      - "packages/rendering/src/webgl2/TextureUpload.ts"
+      - "packages/rendering/src/renderer/SkinnedBounds.ts"
+      - "tests/qr/prd06/**"
+      - "tests/unit/contracts/impl/prd06-*"
+      - "tests/unit/agent-api/production-actor-dispatch.test.ts"
+      - "tests/unit/agent-api/runtime-node-empty-pose.test.ts"
+      - "playwright.animation-matrix.config.ts"
+      - ".github/workflows/qr-prd06-animation-browser.yml"
+  push:
+    branches: ["qr/prd06-**"]
+  workflow_dispatch:
+
+concurrency:
+  group: qr-prd06-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lane impl unit tests
+        run: pnpm exec vitest run "tests/unit/contracts/impl/prd06-" "tests/unit/agent-api/production-actor-dispatch" "tests/unit/agent-api/runtime-node-empty-pose" --reporter=dot
+
+  browser:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, webkit, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Specs import @aura3d/engine, which resolves workspace deps (e.g.
+      # @aura3d/apps) through their built dist/ — browser-matrix.yml builds
+      # before playwright for the same reason.
+      - name: Build workspace packages
+        run: pnpm build:raw
+      - name: Install ${{ matrix.project }} browser
+        run: pnpm exec playwright install ${{ matrix.project }}
+      - name: Configure native Metal browser (chromium)
+        if: matrix.project == 'chromium'
+        run: |
+          cat > "$RUNNER_TEMP/chrome-metal" <<'SH'
+          #!/bin/sh
+          exec "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --use-angle=metal "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/chrome-metal"
+      - name: Animation-matrix specs (${{ matrix.project }})
+        env:
+          A3D_WEBGPU_BROWSER_EXECUTABLE: ${{ matrix.project == 'chromium' && format('{0}/chrome-metal', runner.temp) || '' }}
+          PLAYWRIGHT_JSON_OUTPUT_NAME: "tests/reports/prd06-animation-matrix-${{ matrix.project }}.json"
+        run: pnpm exec playwright test --config playwright.animation-matrix.config.ts --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd06-animation-matrix-${{ matrix.project }}
+          path: |
+            tests/reports/
+            test-results/
+          if-no-files-found: ignore

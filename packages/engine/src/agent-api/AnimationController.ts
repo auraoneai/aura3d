@@ -25,6 +25,8 @@ import {
   type AuraFootPlantingOptions,
   type AuraResolvedFootPlanting
 } from "./FootPlanting.js";
+import type { AuraBoneMaskSpec } from "../contracts/animation.js";
+import { qrAnimationFlags } from "./app/actorAnimationHandle.js";
 
 export type {
   AnimationClipEvent,
@@ -469,6 +471,11 @@ export interface AuraAnimationRuntimeClipSample<TClipId extends string = string>
   readonly weight: number;
   readonly layer?: string;
   readonly additive?: boolean;
+  /** T0.3 — the layer's body mask, when the state resolves to layer metadata
+   * that carries one (`bodyMask` preset or explicit `bones`/`excludedBones`).
+   * C-19 AuraBoneMaskSpec; `humanoid` carries the preset name until CCR-06-2
+   * expands presets to bone sets. */
+  readonly mask?: AuraBoneMaskSpec;
 }
 
 export interface AuraAnimationImportedRuntimeClipSample {
@@ -2336,6 +2343,21 @@ function createRuntimeNodeAnimationBindingMetadata<TClipId extends string>(
     sourceAssetName: snapshot.sourceAssetName,
     ...(snapshot.footPlanting ? { footPlanting: snapshot.footPlanting } : {}),
     ...(snapshot.rootMotion ? { rootMotion: snapshot.rootMotion, rootMotionTime: snapshot.rootMotionTime, rootMotionSamples: snapshot.rootMotionSamples } : {}),
+    // T0.3 (PRD-06): publish the weighted clip samples so consumers can drive the
+    // actor's GLB blend directly (applyClips) instead of re-sampling a pose. Written
+    // only while A3D_QR_ANIMATION is on so flag-off metadata stays byte-identical;
+    // lands on AuraRuntimeNodeAnimationBindingMetadata via CCR-06-5.
+    ...(qrAnimationFlags().on("A3D_QR_ANIMATION") && snapshot.clipSamples.length > 0
+      ? { clipSamples: snapshot.clipSamples.map((sample) => compactObject({
+          clipId: String(sample.clipId),
+          clipName: sample.clipName,
+          localTime: sample.localTime,
+          weight: sample.weight,
+          layer: sample.layer,
+          additive: sample.additive,
+          mask: sample.mask
+        })) }
+      : {}),
     metadata: snapshot.metadata
   }) as AuraRuntimeNodeAnimationBindingMetadata;
 }
@@ -2371,14 +2393,28 @@ function createRuntimeNodeClipSamples<TClipId extends string, TEvent extends Ani
   states: readonly InternalPlaybackState<TClipId, TEvent>[]
 ): readonly AuraAnimationRuntimeClipSample<TClipId>[] {
   return states.map((state) => {
-    const additive = Boolean(state.layerMetadata?.additive ?? state.clip.layerMetadata?.additive);
+    const layerMetadata = state.layerMetadata ?? state.clip.layerMetadata;
+    const additive = Boolean(layerMetadata?.additive);
+    const bodyMask = layerMetadata?.bodyMask;
+    const humanoid: AuraBoneMaskSpec["humanoid"] = bodyMask === "upper-body" || bodyMask === "lower-body"
+        || bodyMask === "head" || bodyMask === "arms"
+      ? bodyMask
+      : undefined;
+    const mask: AuraBoneMaskSpec | undefined = layerMetadata
+      ? compactObject({
+          include: layerMetadata.bones?.length ? [...layerMetadata.bones] : undefined,
+          exclude: layerMetadata.excludedBones?.length ? [...layerMetadata.excludedBones] : undefined,
+          humanoid
+        })
+      : undefined;
     return compactObject({
       clipId: state.clipId,
       clipName: runtimeClipNameForState(state),
       localTime: state.localTime,
       weight: effectiveWeight(state),
       layer: state.layer,
-      additive: additive ? true : undefined
+      additive: additive ? true : undefined,
+      mask: mask && Object.keys(mask).length > 0 ? mask : undefined
     });
   });
 }
