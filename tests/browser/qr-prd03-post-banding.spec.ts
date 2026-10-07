@@ -31,6 +31,9 @@ interface HarnessResult {
 }
 
 test.describe("PRD-03 Phase 1 — dither banding + depthRange DOF", () => {
+  // Cold dev-server transform of the engine module graph can exceed the
+  // global 60s budget on CI runners before the harness global registers.
+  test.describe.configure({ timeout: 240_000 });
   let server: ExampleDevServer;
   let harness: HarnessResult;
 

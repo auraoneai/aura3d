@@ -150,7 +150,13 @@ function writeWorkspacePlaywrightConfig(targetDir: string): void {
 export default defineConfig({
   testDir: "./tests",
   use: {
-    baseURL: "http://127.0.0.1:48273"
+    baseURL: "http://127.0.0.1:48273",
+    // Force software WebGL so the sim is deterministic on GPU-less CI
+    // runners (ubuntu-latest): without these flags WebGL2 availability is a
+    // dice roll and data-aura3d-ready can stall until the 90s poll times out.
+    launchOptions: {
+      args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
+    }
   },
   webServer: {
     command: "pnpm exec vite --host 127.0.0.1 --port 48273 --strictPort",

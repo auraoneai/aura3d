@@ -18,6 +18,9 @@ interface ToneResult {
 }
 
 test.describe("PRD-03 Phase 2 — v2 single tone-operator eval", () => {
+  // Cold dev-server transform of the engine module graph can exceed the
+  // global 60s budget on CI runners before the harness global registers.
+  test.describe.configure({ timeout: 240_000 });
   let server: ExampleDevServer;
   let tone: ToneResult;
 
