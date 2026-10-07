@@ -279,3 +279,18 @@ consumer + unit lanes surfaced three real breaks, all fixed on this branch:
   template look-floor assertions (subject-bounds tolerances, lit-subject
   mass) under the software-GL environment — the Q-13-15 class, not
   structural breaks.
+- Lane 03 browser specs `run is not a function` (qr-prd03-phase6 and
+  siblings): NOT a module-graph break — reproduced locally, root-caused
+  as a spec-side race. `page.goto` resolves on `load`, but the deferred
+  module script's fetch+eval chain finishes later, so evaluating the
+  `window.runQrPrd03*` harness global immediately raced it (immediate
+  evaluate → `undefined`; after 5 s → `function`). Fixed in `1ad2a1995`:
+  all 8 `qr-prd03-*.spec.ts` files now `page.waitForFunction` on their
+  harness global before `page.evaluate` — the race class is closed
+  deterministically instead of relying on runner timing. (Spec files
+  were byte-identical to main, so the flake was main's — but
+  `tests/browser/**` is 15-owned and the fix is cheap and honest.)
+  Local post-fix run: harness loads and executes; the 3 phase6
+  assertions fail only under software-GL (SMAA coverage ratio,
+  auto-exposure settle timing, invert LSB) — real-GPU assertions the
+  macos-14 lane exercises, not module-load failures.
