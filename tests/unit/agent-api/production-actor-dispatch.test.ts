@@ -20,7 +20,8 @@ import {
 } from "../../../packages/engine/src/agent-api/app/actorAnimationHandle";
 import {
   applyProductionActorAnimation,
-  dispatchActorAnimation
+  dispatchActorAnimation,
+  takeClipApplyDegradations
 } from "../../../packages/engine/src/agent-api/compiler/animation";
 
 const BONE_POSE: AnimationPose = {
@@ -45,7 +46,11 @@ function fakeActorEntry(calls: { applyClips?: unknown[]; playClip?: unknown[]; a
   const actor = {
     id: "actor-1",
     animation: {
-      resolveClipName: (name: string) => (name === "walk" || name === "idle" || name === "run" ? name : undefined),
+      resolveClipName: (name: string, options?: { readonly fallback?: "error" | "first" }) =>
+        name === "walk" || name === "idle" || name === "run"
+          ? name
+          : options?.fallback === "error" ? undefined : "walk",
+      clipNames: () => ["walk", "idle", "run"],
       applyClips: (samples: unknown) => {
         calls.applyClips?.push(samples);
         return {};
@@ -175,6 +180,35 @@ describe("clipSamples dispatch (T0.3, flag-gated)", () => {
     applyProductionActorAnimation(entry, FAKE_NODE, bindingWithSamples, 2000, new Set(), IDENTITY_MAT4, () => undefined);
     expect(calls.applyClips).toHaveLength(0);
     expect(calls.playClip).toEqual([["walk", 2]]);
+  });
+
+  it("records a clip-apply-failed degradation + ANIMATION_CLIP_NOT_FOUND on a top-level miss (T1.8)", () => {
+    setQrAnimationFlags(qrFlags("animation"));
+    takeClipApplyDegradations();
+    const calls = { applyClips: [] as unknown[], playClip: [] as unknown[] };
+    const entry = fakeActorEntry(calls);
+    const warnings = new Set<string>();
+    const node = { ...FAKE_NODE, animation: { clip: "missing" } } as never;
+    applyProductionActorAnimation(entry, node, bindingWithSamples, 2000, warnings, IDENTITY_MAT4, () => undefined);
+    expect(calls.playClip).toHaveLength(0);
+    expect(calls.applyClips).toHaveLength(0);
+    expect([...warnings].some((w) => w.startsWith("ANIMATION_CLIP_NOT_FOUND") && w.includes('"missing"') && w.includes("walk"))).toBe(true);
+    const degradations = takeClipApplyDegradations();
+    expect(degradations.some((d) => d.code === "clip-apply-failed" && d.message.includes('"missing"'))).toBe(true);
+  });
+
+  it("keeps the first-clip fallback for a top-level miss when the flag is off (T1.8)", () => {
+    setQrAnimationFlags(qrFlags());
+    takeClipApplyDegradations();
+    const calls = { applyClips: [] as unknown[], playClip: [] as unknown[] };
+    const entry = fakeActorEntry(calls);
+    const node = { ...FAKE_NODE, animation: { clip: "missing" } } as never;
+    applyProductionActorAnimation(entry, node, bindingWithSamples, 2000, new Set(), IDENTITY_MAT4, () => undefined);
+    // Flag off: the miss fuzzy-resolves to the first clip ("walk" in the stub)
+    // and plays — no warning, no clip-apply-failed degradation.
+    expect(calls.applyClips).toHaveLength(0);
+    expect(calls.playClip).toEqual([["walk", 2]]);
+    expect(takeClipApplyDegradations().some((d) => d.code === "clip-apply-failed")).toBe(false);
   });
 
   it("drives a real controller crossfade into applyClips with ~0.5/0.5 weights (T0.3 spec)", () => {

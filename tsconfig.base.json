@@ -200,6 +200,9 @@
       "@aura3d/animation": [
         "packages/animation/src/index.ts"
       ],
+      "@aura3d/animation/lanes": [
+        "packages/animation/src/lanes/index.ts"
+      ],
       "@aura3d/assets": [
         "packages/assets/src/index.ts"
       ],

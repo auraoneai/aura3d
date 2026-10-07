@@ -14,6 +14,10 @@
       "types": "./dist/contracts/pose.d.ts",
       "import": "./dist/contracts/pose.js"
     },
+    "./lanes": {
+      "types": "./dist/lanes/index.d.ts",
+      "import": "./dist/lanes/index.js"
+    },
     "./contracts": {
       "types": "./dist/contracts/index.d.ts",
       "import": "./dist/contracts/index.js"

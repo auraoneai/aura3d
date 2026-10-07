@@ -9,9 +9,30 @@ import type { AuraAnimationSpec, AuraModelNode, ProductionRuntimeActorEntry } fr
 import { isModelTransformAnimationClip, productionRenderErrorMessage, resolveProductionActorAnimationSeconds } from "../index.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
 import type { Mat4 } from "@aura3d/scene";
+import type { AuraDegradation } from "../../contracts/compiler.js";
 import { ANIMATION_EMPTY_POSE, consumePendingEmptyPoseRejection, qrAnimationFlags, rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
 
 export { rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
+
+/**
+ * T1.8 (PRD-06 §10) — C-36 `clip-apply-failed` degradations recorded when a
+ * clip cannot resolve or fails to apply. Queued here because the runtime
+ * render path has no `SceneCompileContext`; PRD-15 drains this list through
+ * `ctx.degrade` (same seam as `takeWorldEnvDegradations`).
+ */
+const pendingClipApplyDegradations: Omit<AuraDegradation, "frame">[] = [];
+export function takeClipApplyDegradations(): Omit<AuraDegradation, "frame">[] {
+  return pendingClipApplyDegradations.splice(0, pendingClipApplyDegradations.length);
+}
+
+/** Under 3.1 defaults (flag on) a fuzzy-resolution miss is an error; under 3.0 it keeps the legacy first-clip fallback. */
+const clipNameResolveOptions = (): { readonly fallback: "error" | "first" } => ({
+  fallback: qrAnimationFlags().on("A3D_QR_ANIMATION") ? "error" : "first"
+});
+
+const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {
+  pendingClipApplyDegradations.push({ code: "clip-apply-failed", nodeId, message, cause });
+};
 
 /**
  * T0.1 — the actor-animation dispatch that `compiler/renderInput.ts` routes
@@ -65,9 +86,12 @@ export function applyProductionActorAnimation(
 ): void {
   const animation = node.animation;
   if (!animation?.clip || isModelTransformAnimationClip(animation.clip)) return;
-  const clipName = entry.actor.animation.resolveClipName(animation.clip);
+  const clipName = entry.actor.animation.resolveClipName(animation.clip, clipNameResolveOptions());
   if (!clipName) {
-    runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" has no clips for requested animation "${animation.clip}".`);
+    const available = entry.actor.animation.clipNames();
+    const message = `ANIMATION_CLIP_NOT_FOUND: typed GLB actor "${entry.actor.id}" has no clip named "${animation.clip}". Available clips: ${available.length > 0 ? available.join(", ") : "(none)"}.`;
+    runtimeWarnings.add(message);
+    recordClipApplyFailure((node.runtime as { readonly id?: string } | undefined)?.id, `clip "${animation.clip}" did not resolve on actor "${entry.actor.id}" (available: ${available.length > 0 ? available.join(", ") : "none"})`);
     return;
   }
   try {
@@ -118,6 +142,7 @@ export function applyProductionActorAnimation(
     }
   } catch (error) {
     runtimeWarnings.add(`Typed GLB actor "${entry.actor.id}" failed to apply clip "${clipName}": ${productionRenderErrorMessage(error)}`);
+    recordClipApplyFailure((node.runtime as { readonly id?: string } | undefined)?.id, `clip "${clipName}" failed to apply on actor "${entry.actor.id}"`, error);
   }
 }
 
@@ -143,9 +168,11 @@ function resolveRuntimeBindingClipSamples(
   if (!samples || samples.length === 0) return undefined;
   const mapped: { clipName: string; time: number; weight?: number; additive?: boolean; mask?: { include?: readonly string[]; exclude?: readonly string[] } }[] = [];
   for (const sample of samples) {
-    const resolvedName = entry.actor.animation.resolveClipName(sample.clipName);
+    const resolvedName = entry.actor.animation.resolveClipName(sample.clipName, clipNameResolveOptions());
     if (!resolvedName) {
-      runtimeWarnings.add(`ANIMATION_CLIP_NOT_FOUND: typed GLB actor "${entry.actor.id}" has no clips for bound clip sample "${sample.clipName}".`);
+      const available = entry.actor.animation.clipNames();
+      runtimeWarnings.add(`ANIMATION_CLIP_NOT_FOUND: typed GLB actor "${entry.actor.id}" has no clip named "${sample.clipName}" for bound clip sample. Available clips: ${available.length > 0 ? available.join(", ") : "(none)"}.`);
+      recordClipApplyFailure(undefined, `bound clip sample "${sample.clipName}" did not resolve on actor "${entry.actor.id}" (available: ${available.length > 0 ? available.join(", ") : "none"})`);
       continue;
     }
     const mask = sample.mask && ((sample.mask.include?.length ?? 0) > 0 || (sample.mask.exclude?.length ?? 0) > 0)

@@ -243,7 +243,11 @@ describe("GLTFSceneAnimationRuntime", () => {
     ]);
 
     expect(result.blendedClipCount).toBe(3);
-    expect(result.transformTracksApplied).toBe(1);
+    // T1.7 rest-reset semantics (PRD-06 §10): the pose path writes every
+    // channel of every covered bone (rest-filled), so one bone counts 3
+    // transform writes — translation + rotation + scale — vs the old
+    // accumulator's 1 (only channels present in the source clips).
+    expect(result.transformTracksApplied).toBe(3);
     expect(result.morphWeightTracksApplied).toBe(1);
     expect(result.missingTargets).toEqual([]);
     expect(node.transform.position[0]).toBeCloseTo(5);

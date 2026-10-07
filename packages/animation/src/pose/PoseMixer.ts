@@ -336,6 +336,21 @@ export type PoseLayer = {
   readonly actions: PoseAction[];
 };
 
+/**
+ * Stateless blend spec for `evaluateSamples`: a clip sampled at an explicit
+ * time with a weight, optional additive flag and optional per-bone weight
+ * mask (aligned with `skeleton.jointNames`). No PoseAction is created or
+ * mutated — this is the per-runtime "one-shot blend" mode T1.7 builds
+ * `applyClips` on.
+ */
+export type PoseSampleSpec = {
+  readonly clipName: string;
+  readonly time: number;
+  readonly weight?: number;
+  readonly additive?: boolean;
+  readonly mask?: Float32Array | null;
+};
+
 export class PoseMixer {
   readonly skeleton: SkeletonBinding;
   readonly inertializer: PoseInertializer | null;
@@ -491,6 +506,27 @@ export class PoseMixer {
     return bindings;
   }
 
+  private readonly statelessBindings = new Map<CompiledClip, TrackBinding[]>();
+  private readonly statelessCursors = new Map<CompiledClip, CompiledTrackCursor>();
+
+  private statelessBindingsFor(clip: CompiledClip): TrackBinding[] {
+    let bindings = this.statelessBindings.get(clip);
+    if (bindings === undefined) {
+      bindings = this.resolveBindings(clip);
+      this.statelessBindings.set(clip, bindings);
+    }
+    return bindings;
+  }
+
+  private statelessCursorsFor(clip: CompiledClip): CompiledTrackCursor {
+    let cursors = this.statelessCursors.get(clip);
+    if (cursors === undefined) {
+      cursors = createTrackCursors(clip);
+      this.statelessCursors.set(clip, cursors);
+    }
+    return cursors;
+  }
+
   private lastDt = 0;
 
   /**
@@ -600,6 +636,46 @@ export class PoseMixer {
       this.inertializer.apply(out, out, this.inertializerElapsed);
     }
     this.latestPose = clonePoseInto(out, this.latestPose, n);
+  }
+
+  /**
+   * Stateless one-shot blend (T1.7): evaluate the given clips at explicit
+   * times with explicit weights and write the result into `out`. No
+   * PoseAction is created or mutated; action/layer/inertializer state is
+   * untouched. Same accumulate + rest-fill + additive pipeline as
+   * `evaluate`, so the two paths stay within the 1e-4 parity bar.
+   */
+  evaluateSamples(samples: readonly PoseSampleSpec[], out: PoseBuffer): void {
+    const rest = this.skeleton.restPose;
+    out.positions.set(rest.positions);
+    out.rotations.set(rest.rotations);
+    out.scales.set(rest.scales);
+    this.accWeight.clear();
+    this.addWeight.clear();
+    const scratch = this.scratchClip;
+    for (const sample of samples) {
+      const entry = this.clips.get(sample.clipName);
+      if (entry === undefined) {
+        throw new Error(`ANIMATION_CLIP_NOT_FOUND: clip "${sample.clipName}" is not registered. Available: ${[...this.clips.keys()].join(", ")}`);
+      }
+      const clip = entry.compiled;
+      const weight = sample.weight ?? 1;
+      if (weight <= 0) continue;
+      const additive = sample.additive ?? isClipAdditive(entry.source);
+      const bindings = this.statelessBindingsFor(clip);
+      const cursors = this.statelessCursorsFor(clip);
+      for (const binding of bindings) {
+        const boneWeight = sample.mask == null ? weight : weight * sample.mask[binding.boneIndex]!;
+        if (boneWeight <= 0) continue;
+        const track = clip.tracks[binding.trackIndex]!;
+        sampleTrackInto(track, sample.time, cursors, binding.trackIndex, scratch, 0);
+        this.accumulate(out, binding, track, scratch, boneWeight, additive);
+      }
+    }
+    this.applyRestFill(out);
+    this.applyAdditiveAccumulators(out);
+    this.accWeight.clear();
+    this.addWeight.clear();
   }
 
   private applyBase(out: PoseBuffer): void {

@@ -102,6 +102,7 @@ export default defineConfig({
       "@aura3d/physics-rapier": new URL("./packages/physics-rapier/src/index.ts", import.meta.url).pathname,
       "@aura3d/navigation-recast": new URL("./packages/navigation-recast/src/index.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
+      "@aura3d/animation/lanes": new URL("./packages/animation/src/lanes/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
       "@aura3d/assets/gltf-runtime": new URL("./packages/assets/src/gltf-runtime.ts", import.meta.url).pathname,
       "@aura3d/assets/browser": new URL("./packages/assets/src/browser-index.ts", import.meta.url).pathname,

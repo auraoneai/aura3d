@@ -1,4 +1,5 @@
 import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { bindSkeleton, compileClip, createPoseBuffer, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
@@ -107,9 +108,47 @@ function normalizeClipToken(name: string): string {
  *
  * Returns `undefined` only when there are no available clips.
  */
+export type ResolveGLTFClipNameFallback = "error" | "first";
+
+export interface ResolveGLTFClipNameOptions {
+  /**
+   * What to return when levels 1-3 (exact/synonym/substring) all miss.
+   * `"first"` keeps the legacy pick-the-first-clip behavior; `"error"`
+   * returns `undefined` so the caller can warn and degrade. When omitted,
+   * the default follows the QR defaults resolution (§5.2 env/URL sources):
+   * `"error"` under 3.1 (`A3D_QR_ANIMATION`/`A3D_QR`/`?a3d-qr=` flag on),
+   * `"first"` otherwise. Callers that know the resolved flags (the
+   * compiler) should pass it explicitly.
+   */
+  readonly fallback?: ResolveGLTFClipNameFallback;
+}
+
+const animationClipDefaultsAre31 = (): boolean => {
+  const parseList = (value: string | undefined): string[] =>
+    value === undefined ? [] : value.split(/[\s,]+/).map((entry) => entry.trim().toLowerCase()).filter((entry) => entry !== "");
+  const env = typeof process !== "undefined" ? process.env : undefined;
+  if (env !== undefined) {
+    const scoped = env["A3D_QR_ANIMATION"];
+    if (scoped !== undefined && scoped !== "0" && scoped.toLowerCase() !== "false" && scoped.toLowerCase() !== "off") return true;
+    const root = parseList(env["A3D_QR"] ?? env["A3D_QR_FLAGS"]);
+    if (root.includes("animation") || root.includes("all") || root.includes("true")) return true;
+  }
+  if (typeof location !== "undefined" && typeof location.search === "string") {
+    try {
+      const params = new URLSearchParams(location.search);
+      const urlFlags = parseList(params.get("a3d-qr") ?? undefined);
+      if (urlFlags.includes("animation") || urlFlags.includes("all") || urlFlags.includes("true")) return true;
+    } catch {
+      // malformed URLSearchParams input — ignore URL source
+    }
+  }
+  return false;
+};
+
 export function resolveGLTFClipName(
   requested: string,
-  available: readonly string[]
+  available: readonly string[],
+  options?: ResolveGLTFClipNameOptions
 ): string | undefined {
   if (available.length === 0) return undefined;
   const requestedToken = normalizeClipToken(requested);
@@ -132,7 +171,8 @@ export function resolveGLTFClipName(
     }
   }
 
-  return available[0];
+  const fallback = options?.fallback ?? (animationClipDefaultsAre31() ? "error" : "first");
+  return fallback === "first" ? available[0] : undefined;
 }
 
 export interface GLTFSceneAnimationClipBoneMask {
@@ -595,6 +635,18 @@ export class GLTFSceneAnimationRuntime {
   private lastApply?: GLTFSceneAnimationApplyResult;
   /** T0.11 scratch for the per-joint palette multiply (inverseMeshWorld * jointWorld). */
   private readonly paletteScratch = new Float32Array(16);
+  /**
+   * T1.7 (PRD-06) — the per-runtime pose pipeline backing `applyClips`: a
+   * scene-wide SkeletonBinding (every traversed node in order, rest pose = the
+   * node's local TRS at bind time), one PoseMixer, and the compiled clips.
+   * Rebuilt whenever `reindexScene` re-reads the node set.
+   */
+  private poseState?: {
+    readonly binding: SkeletonBinding;
+    readonly mixer: PoseMixer;
+    readonly compiled: Map<string, CompiledClip>;
+    readonly pose: PoseBuffer;
+  };
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
     for (const clip of options.clips) {
@@ -730,8 +782,8 @@ export class GLTFSceneAnimationRuntime {
    * using fuzzy matching (exact -> synonym group -> substring -> first clip).
    * Returns `undefined` when the runtime has no clips.
    */
-  resolveClipName(name: string): string | undefined {
-    return resolveGLTFClipName(name, this.clipNames());
+  resolveClipName(name: string, options?: ResolveGLTFClipNameOptions): string | undefined {
+    return resolveGLTFClipName(name, this.clipNames(), options);
   }
 
   /**
@@ -756,6 +808,19 @@ export class GLTFSceneAnimationRuntime {
     return this.lastApply;
   }
 
+  /**
+   * T1.7 (PRD-06 §10) — re-implemented on the per-runtime `PoseMixer` in
+   * stateless mode (`evaluateSamples` with explicit per-sample times). Node
+   * translation/rotation/scale tracks bound to a scene node go through the
+   * pose pipeline (incremental-weight accumulate + rest fill + additive
+   * accumulators, three r185 `AnimationMixer` order); morph-weight, material
+   * and light pointer tracks keep the existing accumulator path, and so do
+   * node tracks aimed at nodes the binding does not cover (they keep their
+   * `missingTargets` reporting). Two documented semantic changes vs the old
+   * accumulator blend: partial-weight mixes fill the remainder from the rest
+   * pose instead of renormalising (rest blend), and a bone covered by the
+   * blend but not by a given channel resets that channel to rest (rest reset).
+   */
   applyClips(samples: readonly GLTFSceneAnimationClipSample[]): GLTFSceneAnimationApplyResult {
     if (samples.length === 0) {
       throw new Error("glTF animation runtime blend requires at least one clip sample.");
@@ -764,6 +829,11 @@ export class GLTFSceneAnimationRuntime {
     const unsupportedTracks: string[] = [];
     let maxTime = 0;
     const names: string[] = [];
+
+    const pose = this.poseRuntime();
+    const poseSpecs: PoseSampleSpec[] = [];
+    const touchedBones = new Set<number>();
+    const maskWeights = new Map<GLTFSceneAnimationClipBoneMask, Float32Array>();
 
     for (const sample of samples) {
       const clip = this.clipsByName.get(sample.clipName);
@@ -781,19 +851,58 @@ export class GLTFSceneAnimationRuntime {
       const wrappedTime = clip.duration > 0 && sample.time > clip.duration ? sample.time % clip.duration : Math.min(sample.time, clip.duration);
       maxTime = Math.max(maxTime, wrappedTime);
       names.push(`${clip.name}@${Number(wrappedTime.toFixed(4))}x${Number(weight.toFixed(4))}${sample.additive ? "+add" : ""}`);
+
+      let bindsNodes = false;
       for (const track of clip.tracks) {
         const target = parseAnimationTarget(track.target);
         if (!target) {
           unsupportedTracks.push(track.target);
           continue;
         }
-        // Bone masks filter node tracks only; material/light property tracks always apply.
-        if (target.kind === "node" && !clipMaskAllowsNode(sample.mask, target.nodeName)) continue;
+        if (target.kind === "node" && target.path !== "weights") {
+          // Node TRS: pose path when the name binds and the mask allows it.
+          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
+          if (boneIndices !== undefined && boneIndices.length > 0 && clipMaskAllowsNode(sample.mask, target.nodeName)) {
+            bindsNodes = true;
+            touchedBones.add(boneIndices[0]!);
+          } else if (boneIndices === undefined) {
+            // Track points at a node absent from the scene — legacy path so
+            // `missingTargets` reporting is unchanged.
+            blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+          }
+          continue;
+        }
         blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+      }
+      if (bindsNodes) {
+        let mask: Float32Array | null = null;
+        if (sample.mask !== undefined) {
+          let cached = maskWeights.get(sample.mask);
+          if (cached === undefined) {
+            cached = new Float32Array(pose.binding.boneCount);
+            for (let i = 0; i < pose.binding.boneCount; i += 1) {
+              cached[i] = clipMaskAllowsNode(sample.mask, pose.binding.jointNames[i]!) ? 1 : 0;
+            }
+            maskWeights.set(sample.mask, cached);
+          }
+          mask = cached;
+        }
+        poseSpecs.push({ clipName: clip.name, time: wrappedTime, weight, additive: sample.additive === true, mask });
       }
     }
 
     const sampledTargets = new Map<string, AnimationValue>();
+    if (poseSpecs.length > 0) {
+      pose.mixer.evaluateSamples(poseSpecs, pose.pose);
+      for (const boneIndex of touchedBones) {
+        const name = pose.binding.jointNames[boneIndex]!;
+        const p = boneIndex * 3;
+        const q = boneIndex * 4;
+        sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
+        sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
+        sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
+      }
+    }
     for (const [target, accumulator] of accumulators) {
       sampledTargets.set(target, finalizeTargetBlend(accumulator));
     }
@@ -805,6 +914,53 @@ export class GLTFSceneAnimationRuntime {
       samples.length
     );
     return this.lastApply;
+  }
+
+  /**
+   * §10 (PRD-06) — the scene-wide pose binding the pose path evaluates on.
+   * Joints are every scene node in `traverse` order, resolved by node index
+   * (duplicate names bind all slots); the rest pose is each node's local TRS
+   * captured at bind time.
+   */
+  skeletons(): readonly SkeletonBinding[] {
+    return [this.poseRuntime().binding];
+  }
+
+  /** §10 (PRD-06) — the per-clip compiled tracks used by the pose path. */
+  compiledClips(): ReadonlyMap<string, CompiledClip> {
+    return this.poseRuntime().compiled;
+  }
+
+  /** §10 (PRD-06) — the per-runtime PoseMixer `applyClips` evaluates on. */
+  mixer(): PoseMixer {
+    return this.poseRuntime().mixer;
+  }
+
+  private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer } {
+    if (this.poseState === undefined) {
+      const nodes: SceneNode[] = [];
+      this.options.scene.traverse((node) => nodes.push(node));
+      const indexByNode = new Map<SceneNode, number>(nodes.map((node, index) => [node, index]));
+      const binding = bindSkeleton({
+        joints: nodes.map((_, index) => index),
+        resolveNode: (index) => {
+          const node = nodes[index];
+          if (node === undefined) return undefined;
+          return { name: node.name, position: node.transform.position, rotation: node.transform.rotation, scale: node.transform.scale };
+        },
+        jointNames: nodes.map((node) => node.name),
+        parentIndices: nodes.map((node) => (node.parent === null ? -1 : indexByNode.get(node.parent) ?? -1))
+      });
+      const mixer = new PoseMixer({ skeleton: binding });
+      const compiled = new Map<string, CompiledClip>();
+      for (const [name, clip] of this.clipsByName) {
+        const compiledClip = compileClip(clip);
+        compiled.set(name, compiledClip);
+        mixer.addCompiledClip(name, compiledClip, clip);
+      }
+      this.poseState = { binding, mixer, compiled, pose: createPoseBuffer(binding.boneCount) };
+    }
+    return this.poseState;
   }
 
   applyAnimationValues(
@@ -976,6 +1132,7 @@ export class GLTFSceneAnimationRuntime {
   }
 
   reindexScene(): void {
+    this.poseState = undefined;
     this.options.scene.updateWorldTransforms();
     this.footBindMatrices.clear();
     this.footOrientationLocks.clear();

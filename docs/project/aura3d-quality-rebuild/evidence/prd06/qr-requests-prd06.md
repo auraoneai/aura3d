@@ -66,3 +66,14 @@ warnings (`FIGHTER_CLIP_STAND_IN`) and missing-clip errors
 subpaths (`@aura3d/rendering/contracts/deform`, `.../deform-shapes`) miss and
 throw. Lane harnesses work around it with strict-JSON importmaps inside the
 harness HTML (`tests/qr/prd06/browser/*-harness.html`). Owner: 15.
+
+## Q-06-1 (inbound → lane 15) — drain takeClipApplyDegradations through ctx.degrade
+
+PRD-15's Q-06-1 asks lane 06 to route `applyProductionActorAnimation` clip
+failures through `ctx.degrade`. `SceneCompileContext` does not reach the
+runtime render path, so T1.8 records them into a pending queue instead —
+`takeClipApplyDegradations()` in `compiler/animation.ts` (same seam pattern as
+`takeWorldEnvDegradations`). Request lane 15 drain it into `ctx.degrade` /
+`CompiledScene.degradations` when the compile→runtime degrade plumbing lands.
+Entries carry `{ code: "clip-apply-failed", nodeId?, message, cause? }`
+(AuraDegradation minus `frame`).
