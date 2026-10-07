@@ -80,14 +80,29 @@ function writeAgentSimulationScreenshotSpec(targetDir: string): void {
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(120_000);
+test.setTimeout(180_000);
 
 test("agent docs hello-world scene renders the typed robot asset", async ({ page }) => {
+  // Surface page-side errors in CI logs: the sim otherwise dies with only
+  // vite stdout, which makes GPU/app failures invisible.
+  page.on("console", (msg) => {
+    const text = msg.text();
+    if (msg.type() === "error" || msg.type() === "warning") console.log("[sim-console]", msg.type(), text.slice(0, 300));
+  });
+  page.on("pageerror", (err) => console.log("[sim-pageerror]", String(err).slice(0, 400)));
   await page.goto("/");
   // Match the scaffold's cold-start route-health budget. The agent-doc gate compiles every
   // TypeScript snippet immediately before this browser run, so WebGL startup can exceed the
   // warm, isolated runtime without indicating a broken generated application.
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
+  try {
+    await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
+  } catch (err) {
+    const attrs = await page.locator("body").evaluate((el) =>
+      Array.from(el.attributes).map((a) => a.name + "=" + a.value).join(" ")).catch(() => "<no-body>");
+    console.log("[sim-ready-timeout] body attrs:", attrs);
+    console.log("[sim-ready-timeout] html:", (await page.content().catch(() => "")).slice(0, 1500));
+    throw err;
+  }
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   // The element screenshot carries browser-composited pixels, so profiling it
