@@ -79,21 +79,26 @@ async function mount(opts: {
       .position(0, 1.7, -5))
     .add(primitives.box({ name: "wire2", size: [0.012, 2.4, 0.012], material: material.pbr({ color: "#d8d8d8", roughness: 0.6 }) })
       .position(0.8, 1.2, -5));
+  // §8.14: AA is authored as a scene effect node — `mount({antiAlias:"smaa"})`
+  // must attach it or the smaa/none mounts are identical. "none" leaves the
+  // default (off) pipeline.
+  const withEffects = opts.antiAlias === "smaa"
+    ? built.add(effects.antiAlias({ mode: "smaa" }))
+    : built;
 
   const app = createAuraApp(host, {
-    scene: built,
+    scene: withEffects,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     pixelRatio: 1,
     resize: false,
     autoStart: false,
-    ...(opts.antiAlias || opts.autoExposure
+    ...(opts.autoExposure
       ? {
         output: {
-          ...(opts.autoExposure ? { autoExposure: opts.autoExposure } : {})
+          autoExposure: opts.autoExposure
         }
       }
       : {}),
-    ...(opts.antiAlias ? {} : {}),
     qualityRebuild: { flags: ["A3D_QR_POST"] }
   });
   await app.ready();
