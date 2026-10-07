@@ -1,0 +1,107 @@
+name: QR-09 route divergence
+
+# PRD-09 Phase 0: serves each capture-flag-bearing route built from source and
+# records the default view vs the ?capture=review/overview view, plus
+# postprocess.actualPasses. Record-only — uploads PNG pairs and an updated
+# baseline.json (postPass filled) as artifacts.
+
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Comma-separated game ids (empty = all affected routes)"
+        required: false
+        default: ""
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/game/**"
+      - "packages/audio/**"
+      - "packages/engine/src/game/**"
+      - "packages/engine/src/agent-api/GameAppRuntime.ts"
+      - "packages/engine/src/agent-api/app/createGameApp.ts"
+      - "packages/engine/src/agent-api/nodes/game/**"
+      - "packages/engine/src/contracts/game.ts"
+      - "packages/engine/src/contracts/stubs/game.ts"
+      - "apps/common/**"
+      - "apps/showcase-*/**"
+      - "apps/aura-clash-showcase/**"
+      - "tools/quality-rebuild-capture/route-composition.mjs"
+      - "tools/quality-rebuild-capture/games.json"
+      - "tools/showcase-library/game-capture-parity.mjs"
+      - "tests/qr/prd09/**"
+      - "docs/project/aura3d-quality-rebuild/migration/**"
+      - "docs/project/aura3d-quality-rebuild/PRD-09-shared-game-runtime-route-extraction.md"
+      - "eslint/qr/no-route-capture-flags.js"
+      - "eslint/qr/prd09.js"
+      - ".github/workflows/qr-prd09-routes.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-prd09-routes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture_review_divergence:
+    name: Capture-review divergence (macos-14, record-only)
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      QRC_GAMES: ${{ github.event_name == 'workflow_dispatch' && inputs.games || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Regenerate route-composition baseline
+        run: node tools/quality-rebuild-capture/route-composition.mjs --json docs/project/aura3d-quality-rebuild/migration/baseline.json
+
+      - name: Build affected routes from source
+        id: build
+        continue-on-error: true
+        run: node tools/quality-rebuild-capture/capture-games.mjs --build-only
+
+      - name: Record default vs capture=review views
+        id: divergence
+        continue-on-error: true
+        env:
+          A3D_DIVERGENCE_DIR: tests/qr/prd09/.out
+        run: pnpm exec playwright test --config tests/qr/prd09/playwright.config.ts
+
+      - name: Upload divergence evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd09-capture-divergence
+          path: |
+            tests/qr/prd09/.out/
+            docs/project/aura3d-quality-rebuild/migration/baseline.json
+            docs/project/aura3d-quality-rebuild/migration/baseline.md
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Report step outcomes
+        if: always()
+        run: |
+          echo "build=${{ steps.build.outcome }} divergence=${{ steps.divergence.outcome }}"
+          test "${{ steps.divergence.outcome }}" = "success"

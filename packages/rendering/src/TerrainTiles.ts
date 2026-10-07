@@ -1,23 +1,35 @@
 import { sampleTerrainHeightfield, type TerrainHeightfieldFixture } from "./TerrainHeightfield";
 
 /**
- * D2 dense open worlds (muse3jsparity-PRD).
+ * Terrain budget and query utilities only (PRD-10 R9 honesty).
  *
- * Builds the missing RENDERED systems on top of the deterministic fixture
- * math: LOD-morphed heightfield tiles with holes + slope-based material
- * blend, a collision height query shared with physics (`SurfaceQuery`
- * shape matches the heightfield collider descriptor), GPU-instanced scatter
- * planning with density/wind/cull parameters, voxel meshing-budget
- * telemetry, frame-budget LOD enforcement, and a render-order + layers
- * audit against r185 semantics. Fixture files stay as deterministic oracles.
+ * This module previously claimed to build "the missing RENDERED systems"
+ * (LOD-morphed heightfield tiles with holes). It produced plan records only —
+ * no geometry, no draw calls, no GPU resources ever existed — so the claim is
+ * removed. What remains is the real, bounded surface: a bilinear collision
+ * height query shared with physics (`SurfaceQuery` shape matches the
+ * heightfield collider descriptor), GPU-instanced scatter planning with
+ * density/wind/cull parameters, frame-budget LOD enforcement, and a
+ * render-order + layers audit against r185 semantics. The world lane's real
+ * terrain system lands behind `A3D_QR_WORLD` (PRD-10).
  */
 
+/**
+ * @deprecated removed-world-planner (PRD-10): type kept only so the package
+ * root re-export stays compilable during the deprecation window; scheduled for
+ * removal with the `TerrainTilePlan` export in `@aura3d/rendering` index.
+ */
 export interface TerrainTileKey {
   readonly tileX: number;
   readonly tileZ: number;
   readonly lod: number;
 }
 
+/**
+ * @deprecated removed-world-planner (PRD-10): the tile planner produced plan
+ * records only and never rendered; type kept only so the package root
+ * re-export stays compilable during the deprecation window.
+ */
 export interface TerrainTilePlan {
   readonly key: TerrainTileKey;
   readonly worldMinX: number;
@@ -31,6 +43,10 @@ export interface TerrainTilePlan {
   readonly diagnostic: string;
 }
 
+/**
+ * @deprecated removed-world-planner (PRD-10): type kept only so the package
+ * root re-export stays compilable during the deprecation window.
+ */
 export interface TerrainTileGridOptions {
   readonly tileCountX?: number;
   readonly tileCountZ?: number;
@@ -44,55 +60,18 @@ export interface TerrainTileGridOptions {
   readonly holeMask?: (tileX: number, tileZ: number, cellX: number, cellZ: number) => boolean;
 }
 
-export function createTerrainTileGrid(options: TerrainTileGridOptions = {}): readonly TerrainTilePlan[] {
-  const tileCountX = options.tileCountX ?? 4;
-  const tileCountZ = options.tileCountZ ?? 4;
-  const tileWorldSize = options.tileWorldSize ?? 32;
-  const baseResolution = options.baseResolution ?? 17;
-  const lodLevels = options.lodLevels ?? 3;
-  const lodDistance = options.lodDistance ?? 60;
-  if (!Number.isInteger(tileCountX) || tileCountX <= 0) throw new RangeError("Terrain tileCountX must be a positive integer.");
-  if (!Number.isInteger(tileCountZ) || tileCountZ <= 0) throw new RangeError("Terrain tileCountZ must be a positive integer.");
-  if (!Number.isFinite(tileWorldSize) || tileWorldSize <= 0) throw new RangeError("Terrain tileWorldSize must be finite and positive.");
-  if (!Number.isInteger(baseResolution) || baseResolution < 5) throw new RangeError("Terrain baseResolution must be an integer >= 5.");
-  if (!Number.isInteger(lodLevels) || lodLevels <= 0 || lodLevels > 6) throw new RangeError("Terrain lodLevels must be an integer in [1, 6].");
-  if (!Number.isFinite(lodDistance) || lodDistance <= 0) throw new RangeError("Terrain lodDistance must be finite and positive.");
-  const cameraX = options.cameraX ?? 0;
-  const cameraZ = options.cameraZ ?? 0;
-  const plans: TerrainTilePlan[] = [];
-  for (let tileX = 0; tileX < tileCountX; tileX += 1) {
-    for (let tileZ = 0; tileZ < tileCountZ; tileZ += 1) {
-      const worldMinX = tileX * tileWorldSize;
-      const worldMinZ = tileZ * tileWorldSize;
-      const centerX = worldMinX + tileWorldSize / 2;
-      const centerZ = worldMinZ + tileWorldSize / 2;
-      const distance = Math.hypot(centerX - cameraX, centerZ - cameraZ);
-      const lod = Math.min(lodLevels - 1, Math.floor(distance / lodDistance));
-      const lodSpan = lodDistance;
-      const morphFactor = Number(Math.min(1, Math.max(0, (distance - lod * lodSpan) / lodSpan)).toFixed(4));
-      const resolution = Math.max(5, Math.ceil(baseResolution / Math.pow(2, lod)));
-      let holeCellCount = 0;
-      if (options.holeMask) {
-        for (let cellX = 0; cellX < resolution - 1; cellX += 1) {
-          for (let cellZ = 0; cellZ < resolution - 1; cellZ += 1) {
-            if (options.holeMask(tileX, tileZ, cellX, cellZ)) holeCellCount += 1;
-          }
-        }
-      }
-      plans.push({
-        key: { tileX, tileZ, lod },
-        worldMinX,
-        worldMinZ,
-        worldSize: tileWorldSize,
-        resolution,
-        morphFactor,
-        hasHoles: holeCellCount > 0,
-        holeCellCount,
-        diagnostic: `Tile (${tileX},${tileZ}) LOD${lod} ${resolution}x${resolution}, morph ${morphFactor}, holes ${holeCellCount}.`,
-      });
-    }
-  }
-  return plans;
+/**
+ * @deprecated removed-world-planner (PRD-10): the tile-LOD planner was a plan
+ * record generator that claimed to render heightfield tiles; it never produced
+ * geometry. Kept as a throwing stub for one minor version. Real world terrain
+ * lands behind `A3D_QR_WORLD`; height queries go through C-26
+ * (`AuraHeightQuery`) instead of `queryTerrainHeight` on new code.
+ */
+export function createTerrainTileGrid(_options: TerrainTileGridOptions = {}): readonly TerrainTilePlan[] {
+  void _options;
+  throw new Error(
+    "removed-world-planner: createTerrainTileGrid was removed by PRD-10 — it emitted plan records only, never rendered tiles. Use the A3D_QR_WORLD terrain pass and C-26 world queries instead."
+  );
 }
 
 export type TerrainBlendLayer = "rock" | "grass" | "sand" | "snow";

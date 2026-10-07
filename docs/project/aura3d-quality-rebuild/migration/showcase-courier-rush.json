@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d.quality-rebuild.route-composition/1",
+  "generatedAt": "2026-10-06T14:34:50.481Z",
+  "root": "/home/ubuntu/bs-seam",
+  "routes": {
+    "showcase-courier-rush": {
+      "route": "showcase-courier-rush",
+      "appDir": "apps/showcase-courier-rush",
+      "loc": {
+        "evidence": 859,
+        "presentation": 1646,
+        "gameplay": 2494,
+        "generated": 0,
+        "classified": 4999,
+        "evidencePct": 17.2
+      },
+      "globals": [
+        "__AURA3D_COMPOSITION_PROBE__",
+        "__AURA3D_ROUTE_READY__",
+        "__AURA3D_SHOWCASE_COURIER_RUSH__",
+        "__COURIER_RUSH_DEBUG__",
+        "__COURIER_RUSH_EVIDENCE__",
+        "__PW_PUMP__"
+      ],
+      "captureBranches": {
+        "ART": 2,
+        "FRAMING": 7,
+        "TRANSIENT": 4,
+        "UNKNOWN": 6
+      },
+      "captureFlag": [
+        "?capture=review"
+      ],
+      "cues": {
+        "sample": 0,
+        "synth": 10,
+        "html-audio": 0
+      },
+      "postPass": null
+    }
+  },
+  "totals": {
+    "loc": {
+      "evidence": 859,
+      "presentation": 1646,
+      "gameplay": 2494,
+      "generated": 0
+    },
+    "captureBranches": {
+      "ART": 2,
+      "FRAMING": 7,
+      "TRANSIENT": 4,
+      "UNKNOWN": 6
+    },
+    "cues": {
+      "sample": 0,
+      "synth": 10,
+      "html-audio": 0
+    }
+  }
+}
