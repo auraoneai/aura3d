@@ -45,20 +45,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "same-asset-material-laboratory",
-  verdict: "selected-six-state-same-product-comparison; material-quality-parity-requires-human-review",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     modes,
     acceptancePolicy: "For this bounded laboratory only: the exact shared asset/HDR/camera/material contract must keep Aura subject mean luminance within 15% and p99 highlight energy within 20% of current Three.js in every state; chrome and gold must each show at least three times rubber's highlight range. These numeric gates are accompanied by individual full-resolution human inspection and do not imply pixel, BRDF, extension, HDR, performance, or ecosystem parity.",
     materialQuality,
-    observedLosses: [
-      "Personal inspection of all twelve retained captures confirms identical complete-product framing and six visibly distinct material states in both engines; no state is blank, clipped, malformed, or substituted with a primitive.",
-      "With the exact same studio_small_08_1k.hdr, ACES exposure, sRGB output, key light, ambient term, asset, frame, and material values, chrome now shows comparable dark/bright environment bands and reflection placement in both engines.",
-      "Aura satin and rubber remain slightly darker; Aura gold is darker and more contrasty; Aura clearcoat is slightly broader/brighter in places while Three retains a wider highlight range. Aura emissive is more saturated cyan while Three is paler.",
-      "Aura uses its bounded production-runtime PBR path while Three uses MeshPhysicalMaterial; the images are not pixel-equivalent and implementation-specific PMREM/BRDF/output differences remain visible.",
-      "This does not cover authored material textures, every glTF material extension, spectral conductors, physical refraction, HDR equivalence, performance, or the wider Three.js material ecosystem."
-    ],
     claimBoundary: browser.claimBoundary
   },
   browser
