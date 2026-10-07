@@ -240,18 +240,21 @@ export interface ReadyPayload {
   readonly errors: readonly string[];
   readonly loadMs: number;
   readonly extra?: Readonly<Record<string, unknown>>;
-  // C-30 ReadyPayloadV2 (PRD-12 §7.1). Variants public API cannot express are
-  // never captured; they appear in capabilityLog as broken-control:<id> missing.
-  readonly variant: "default" | "aura3d-tuned" | import("./contracts").BrokenControlId;
-  readonly dpr: 1 | 2;
-  readonly appliedExposure: number | null;
-  readonly appliedToneMapping: string | null;
-  readonly lightUnits: "three-physical" | "aura-internal" | "unknown";
-  readonly shadows: import("./contracts").ShadowReport | null;
-  readonly fallbackLightsActive: boolean | null;
+  // C-30 ReadyPayloadV2 (PRD-12 §7.1). Optional at the type level so lane-owned
+  // adapters that still emit a V1 payload stay source-compatible; capture's
+  // --strict mode fails any payload missing these fields at runtime. Variants
+  // the public API cannot express are never captured — they appear in
+  // capabilityLog as broken-control:<id> missing.
+  readonly variant?: "default" | "aura3d-tuned" | import("./contracts").BrokenControlId;
+  readonly dpr?: 1 | 2;
+  readonly appliedExposure?: number | null;
+  readonly appliedToneMapping?: string | null;
+  readonly lightUnits?: "three-physical" | "aura-internal" | "unknown";
+  readonly shadows?: import("./contracts").ShadowReport | null;
+  readonly fallbackLightsActive?: boolean | null;
   readonly frameTiming?: import("./contracts").FrameTimingSample;
-  readonly assetHashes: Readonly<Record<string, string>>;
-  readonly qrFlags: readonly string[];
+  readonly assetHashes?: Readonly<Record<string, string>>;
+  readonly qrFlags?: readonly string[];
 }
 
 export * from "./contracts";
