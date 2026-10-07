@@ -8,7 +8,10 @@
  * T1.6 (generatedCodeWarnings) and T1.13 (the C-36 NodeHandler).
  * T1.2/T1.3: the `looks` authoring surface (looks.ts) + override clamps.
  * T1.4/T1.5: lookLint default rules + the fake-effect name list.
- * T1.8: prompt-plan v2 mapping tables (nodes/prompt/promptPlanMappings.ts).
+ * T1.8/T1.10: prompt-plan v2 mapping tables + `compilePromptPlanV2`.
+ * T1.11: `structuralQA` namespace + deprecated keys on visualQA results.
+ * T1.13: `provide()` for C-34 — registers the C-31 `"look"` diagnostics
+ *   section and the C-36 `"look"` NodeHandler. Runs once at barrel load.
  */
 export { lookPresets, lookPresetIds } from "../agent-api/looks/lookPresets.js";
 export type { AuraLookPreset, AuraLookV0Expansion } from "../agent-api/looks/lookPresets.js";
@@ -58,3 +61,49 @@ export type {
   PromptPlanStyleGrade,
   PromptPlanStyleRow
 } from "../agent-api/nodes/prompt/promptPlanMappings.js";
+
+export {
+  compilePromptPlanV2,
+  promptPlanToSceneV2,
+  AuraPromptPlanError
+} from "../agent-api/nodes/prompt/promptPlanV2.js";
+export type {
+  AuraCompilePromptPlanOptions,
+  AuraCompiledPromptPlanV2,
+  AuraPromptPlanErrorCode,
+  AuraPromptPlanReportV2,
+  AuraPromptPlanV2
+} from "../agent-api/nodes/prompt/promptPlanV2.js";
+
+export { structuralQA } from "../agent-api/looks/structuralQA.js";
+export type {
+  AuraDeprecatedVisualQA,
+  AuraStructuralQAResult
+} from "../agent-api/looks/structuralQA.js";
+
+export { lookNodeHandler } from "../agent-api/looks/lookNodeHandler.js";
+export { lookDiagnosticsSection } from "../agent-api/looks/lookDiagnostics.js";
+
+// ---------------------------------------------------------------------------
+// T1.13 — provide() for C-34 (CONTRACTS §13.1): the C-31 `"look"` diagnostics
+// section and the C-36 `"look"` NodeHandler are registered once, from this
+// lane barrel. Guarded so a double import never throws REGISTRY_DUPLICATE /
+// NODE_HANDLER_DUPLICATE on an already-provided surface.
+// ---------------------------------------------------------------------------
+import { registerDiagnosticsSection, diagnosticsSectionsAll } from "../contracts/diagnostics.js";
+import { registerNodeHandler, nodeHandlerFor } from "../contracts/compiler.js";
+import { lookDiagnosticsSection as prd13LookDiagnosticsSection } from "../agent-api/looks/lookDiagnostics.js";
+import { lookNodeHandler as prd13LookNodeHandler } from "../agent-api/looks/lookNodeHandler.js";
+
+let prd13Provided = false;
+export function providePrd13Contracts(): void {
+  if (prd13Provided) return;
+  prd13Provided = true;
+  if (!diagnosticsSectionsAll().some((section) => section.key === "look")) {
+    registerDiagnosticsSection(prd13LookDiagnosticsSection);
+  }
+  if (nodeHandlerFor("look") === undefined) {
+    registerNodeHandler(prd13LookNodeHandler);
+  }
+}
+providePrd13Contracts();

@@ -31,8 +31,10 @@ export interface PromptPlanEnvironmentKeywordRow {
   readonly look: AuraLookId;
 }
 export const PROMPT_PLAN_ENVIRONMENT_KEYWORDS: readonly PromptPlanEnvironmentKeywordRow[] = Object.freeze([
-  Object.freeze({ keywords: Object.freeze(["forest", "meadow", "park"]), look: "outdoor-day" }),
+  // Specific light/atmosphere cues outrank generic biomes: "misty forest at
+  // dusk" resolves golden-hour (§6.3 fixture), not outdoor-day.
   Object.freeze({ keywords: Object.freeze(["sunset", "dusk", "golden"]), look: "golden-hour" }),
+  Object.freeze({ keywords: Object.freeze(["forest", "meadow", "park"]), look: "outdoor-day" }),
   Object.freeze({ keywords: Object.freeze(["night", "neon", "city"]), look: "night-city" }),
   Object.freeze({ keywords: Object.freeze(["space", "orbit", "planet"]), look: "space" }),
   Object.freeze({ keywords: Object.freeze(["underwater", "ocean floor"]), look: "underwater" }),

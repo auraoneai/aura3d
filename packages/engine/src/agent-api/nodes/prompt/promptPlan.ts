@@ -3,13 +3,24 @@
 import type { AuraCompiledPromptPlan, AuraInteractionNode, AuraPromptCameraPreset, AuraPromptEffectId, AuraPromptInteractionMode, AuraPromptLightingPreset, AuraPromptPlan, AuraPromptResolvedSubject, AuraPromptSceneType } from "../../index.js";
 import { AuraNodeBuilder, effects, interactions, promptSubjectIsResolved, scene } from "../../index.js";
 import { camera } from "../camera.js";
+import { resolveQrFlags } from "../../../contracts/flags.js";
 import { promptRecipes } from "./promptRecipes.js";
+import type { AuraCompilePromptPlanOptions } from "./promptPlanV2.js";
+import { compilePromptPlanAsV1 } from "./promptPlanV2.js";
 
 export function definePromptPlan<const TPlan extends AuraPromptPlan>(plan: TPlan): TPlan {
   return plan;
 }
 
-export function compilePromptPlan(plan: AuraPromptPlan): AuraCompiledPromptPlan {
+/** PRD-13 T1.10: signature unchanged for 1-arg callers. `A3D_QR_LOOKS` off →
+ *  byte-identical 1.0 pipeline; on → the v2 pipeline narrowed to the 1.0
+ *  report shape (honest visualSystems/effects/repairHints). */
+export function compilePromptPlan(plan: AuraPromptPlan, options?: AuraCompilePromptPlanOptions): AuraCompiledPromptPlan {
+  const env = typeof process !== "undefined" && process.env ? process.env : {};
+  const url = typeof location !== "undefined" ? location.href : undefined;
+  if (resolveQrFlags({ url, env }).on("A3D_QR_LOOKS")) {
+    return compilePromptPlanAsV1(plan, options);
+  }
   const subject = requireResolvedPromptSubject(plan);
   const sceneBuilder = promptRecipes[plan.sceneType](subject.asset, plan);
   return {

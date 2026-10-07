@@ -98,3 +98,78 @@ describe("C-34 lookLint registry (T1.5)", () => {
     expect(hit?.message).toBe("lane-owned ambient rule");
   });
 });
+
+// T1.13 — C-31 "look" diagnostics section + C-36 "look" NodeHandler
+// (registered by the prd13 lane barrel's provide() at import).
+
+describe("C-31 look diagnostics section (T1.13)", () => {
+  it("is registered by the lane barrel and returns the flag-off empty value", async () => {
+    const prev = process.env.A3D_QR_LOOKS;
+    delete process.env.A3D_QR_LOOKS;
+    try {
+      const lane = await import("../../../../packages/engine/src/lanes/prd13.js");
+      lane.providePrd13Contracts(); // idempotent
+      const { diagnosticsSectionsAll } = await import("../../../../packages/engine/src/contracts/diagnostics.js");
+      const section = diagnosticsSectionsAll().find((entry) => entry.key === "look");
+      expect(section).toBeDefined();
+      const { createAuraApp, scene } = await import("../../../../packages/engine/src");
+      const app = createAuraApp(null, { scene: scene().add(lights.ambient({ intensity: 0.4 })) });
+      try {
+        const result = section!.collect(app);
+        expect(result).toEqual({ id: null, expansion: "none", missingContracts: [], lint: [] });
+      } finally {
+        app.dispose?.();
+      }
+    } finally {
+      if (prev === undefined) delete process.env.A3D_QR_LOOKS;
+      else process.env.A3D_QR_LOOKS = prev;
+    }
+  });
+});
+
+describe("C-36 look NodeHandler (T1.13)", () => {
+  it("compiles a look node: feature tag + v0 children dispatch + degrade on stubs", async () => {
+    const prev = process.env.A3D_QR_LOOKS;
+    process.env.A3D_QR_LOOKS = "1";
+    try {
+      const { lookNodeHandler } = await import("../../../../packages/engine/src/agent-api/looks/lookNodeHandler.js");
+      const { resolveQrFlags } = await import("../../../../packages/engine/src/contracts/flags.js");
+      const flags = resolveQrFlags({ env: { A3D_QR_LOOKS: "1" } });
+      const degradations: { code: string; message: string }[] = [];
+      const features: string[] = [];
+      const sets: [string, unknown][] = [];
+      const ctx = {
+        renderer: null,
+        assets: null,
+        quality: { tier: "high" },
+        strict: false,
+        flags,
+        degrade: (d: { code: string; message: string }) => degradations.push(d)
+      } as never;
+      const out = {
+        addItems: () => undefined,
+        addLights: () => undefined,
+        set: (field: string, value: unknown) => sets.push([field, value]),
+        feature: (f: string) => features.push(f)
+      } as never;
+      const node = { kind: "look", look: "product-studio" } as const;
+      await lookNodeHandler.compile(node as never, ctx, out);
+      expect(features).toContain("look.product-studio");
+      // every required v1 contract is stubbed in this process → capability-degraded
+      expect(degradations.some((d) => d.code === "capability-degraded")).toBe(true);
+      expect(sets.some(([field]) => field === "look")).toBe(true);
+    } finally {
+      if (prev === undefined) delete process.env.A3D_QR_LOOKS;
+      else process.env.A3D_QR_LOOKS = prev;
+    }
+  });
+
+  it("the lane barrel registers the look handler once", async () => {
+    const lane = await import("../../../../packages/engine/src/lanes/prd13.js");
+    lane.providePrd13Contracts();
+    const { nodeHandlerFor } = await import("../../../../packages/engine/src/contracts/compiler.js");
+    expect(nodeHandlerFor("look")?.owner).toBe("prd13");
+    // second provide is a no-op, not a NODE_HANDLER_DUPLICATE
+    expect(() => lane.providePrd13Contracts()).not.toThrow();
+  });
+});
