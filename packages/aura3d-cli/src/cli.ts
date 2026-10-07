@@ -167,7 +167,21 @@ async function main(): Promise<void> {
         license: hasFlag("--license")
       }));
     } else if (action === "validate") {
-      print(validateAssets(readAssetValidationOptions()));
+      // PRD-05 §6.4: `--route apps/<app>` runs the full G1–G11 admission
+      // table per referenced asset (async — G6 decodes textures).
+      const route = readOption("--route");
+      if (route) {
+        const { validateRouteAssets } = await import("./admission/routeGates.js");
+        const report = await validateRouteAssets({
+          projectDir: process.cwd(),
+          route,
+          release: hasFlag("--release"),
+        });
+        print(report);
+        if (!report.ok) process.exitCode = 1;
+      } else {
+        print(validateAssets(readAssetValidationOptions()));
+      }
     } else if (action === "validate-game") {
       const profile = readCliAssetProfile();
       print(validateGameAssets({

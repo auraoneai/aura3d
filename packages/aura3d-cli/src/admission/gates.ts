@@ -4,7 +4,9 @@
  * Pure functions over parsed glTF JSON + accessor counts. Implemented here:
  * G1 (triangle band), G3 (PBR slot coverage), G4 (card ban), G5
  * (programmer-art ban), G8 (tangents when normal-mapped), G11 (derived
- * present). G2, G6, G7, G9, G10 land in Phase 4 (`assets admit`).
+ * present). G2, G6, G7, G9, G10 landed in Phase 4 (`assets admit`) —
+ * measured-input gates, pure over the reports produced by admission/texel.ts
+ * and admission/textureStats.ts.
  *
  * "Rendered surface area" is approximated by primitive triangle counts —
  * these functions intentionally take accessor counts, not vertex buffers, so
@@ -12,7 +14,10 @@
  */
 
 import type { AssetQualityCheck } from "../contracts/assetManifest.js";
-import type { AuraCliAssetRole } from "../asset-core-types.js";
+import type { AuraCliAssetRole, AuraCliLookDevReview } from "../asset-core-types.js";
+import type { ArtDirectionDocument } from "./artDirection.js";
+import type { TexelDensityReport } from "./texel.js";
+import type { TextureSanityReport } from "./textureStats.js";
 import { isBuilderGenerator, isBuilderScriptPath } from "./builder-patterns.js";
 import { profileForRole, requiresPbrTextures, type AdmissionProfile } from "./profiles.js";
 
@@ -64,6 +69,8 @@ export interface AdmissionEntryContext {
   readonly derivedPresent?: boolean;
   /** `artDirection` resolved to a `stylized-flat` doc with an approved look-dev record. */
   readonly stylizedFlatApproved?: boolean;
+  /** Manifest `artDirection` id (G10: resolves to assets/art-direction/<id>.json). */
+  readonly artDirection?: string;
 }
 
 function check(gate: AdmissionGateId, verdict: AssetQualityCheck["verdict"], measured: unknown, message: string): AssetQualityCheck {
@@ -219,15 +226,208 @@ export function gateG11Derived(entry: AdmissionEntryContext): AssetQualityCheck 
     : check("G11", "fail", { derived: false }, "G11: no derived record — run `assets optimize` before release.");
 }
 
-/** Runs the Phase-0 implemented gates for one entry + parsed model. */
-export function runAdmissionGates(model: AdmissionModel, entry: AdmissionEntryContext): readonly AssetQualityCheck[] {
+// ---------------------------------------------------------------------------
+// Phase 4 — measured gates. Each takes its pre-computed report (never decodes
+// or reads files itself) and fails when the required measurement is absent:
+// release admission cannot be granted on an unmeasured surface.
+// ---------------------------------------------------------------------------
+
+/** Measured inputs for the Phase-4 gates; callers build these per entry. */
+export interface AdmissionMeasured {
+  /** G2: texel-density report (admission/texel.ts) at the resolved camera, 1920×1080. */
+  readonly texelDensity?: TexelDensityReport;
+  /** G2: same report at the §6.4 mobile viewport 390×844. */
+  readonly texelDensityMobile?: TexelDensityReport;
+  /** G6: per-slot texture sanity (admission/textureStats.ts). */
+  readonly textureSanity?: TextureSanityReport;
+  /** G7: derived file bytes + GPU bytes + draw calls (High tier). */
+  readonly derivedFileBytes?: number;
+  readonly gpuBytesHigh?: number;
+  readonly drawCalls?: number;
+  /** G9: the entry's look-dev record (manifest `lookDev`) bound to current hash. */
+  readonly lookDev?: {
+    readonly derivedHash?: string;
+    readonly stageVersion?: string;
+    readonly reviews: readonly AuraCliLookDevReview[];
+  };
+  /** G9: Aura-adapter look-dev score (three-minus-Aura gap > 1.5 → renderer issue). */
+  readonly auraScore?: number;
+  /** G10: resolved `assets/art-direction/<id>.json` (undefined = file missing). */
+  readonly artDirectionDoc?: ArtDirectionDocument;
+}
+
+const TEXEL_BAND: readonly [number, number] = [0.5, 4];
+
+/** G2 — median-area-triangle texels/screen-pixel within [0.5, 4] at the role camera. */
+export function gateG2TexelDensity(model: AdmissionModel, profile: AdmissionProfile | undefined, measured: AdmissionMeasured): AssetQualityCheck {
+  void model;
+  if (profile === undefined || profile.gameplayCamera === undefined) {
+    return check("G2", "waived-by-role", { role: profile?.id }, "G2: no gameplay camera for this role.");
+  }
+  const report = measured.texelDensity;
+  if (!report || report.trianglesMeasured === 0 || report.p50 === undefined) {
+    return check("G2", "fail", { measured: report?.trianglesMeasured ?? 0 }, "G2: texel density not measurable — no UV+texture triangle coverage.");
+  }
+  const { p10, p50, p90 } = report;
+  const [lo, hi] = TEXEL_BAND;
+  const inBand = p50 >= lo && p50 <= hi;
+  const mobile = measured.texelDensityMobile;
+  const mobileOk = mobile === undefined || mobile.trianglesMeasured === 0 || (mobile.p50 !== undefined && mobile.p50 >= lo && mobile.p50 <= hi);
+  const floorOk = profile.texelFloorPxPerMeter === undefined || (report.texelsPerMeterP50 ?? 0) >= profile.texelFloorPxPerMeter;
+  const measuredRow = { p10, p50, p90, band: TEXEL_BAND, texelsPerMeterP50: report.texelsPerMeterP50, floor: profile.texelFloorPxPerMeter, camera: report.camera, textureSize: report.textureSize, mobile: mobile ? { p50: mobile.p50, viewport: `${mobile.camera.viewportWidth}×${mobile.camera.viewportHeight}` } : undefined };
+  return inBand && floorOk && mobileOk
+    ? check("G2", "pass", measuredRow, `G2: median ${p50.toFixed(2)} texels/px in band [${lo}, ${hi}].`)
+    : check("G2", "fail", measuredRow, `G2: ${!inBand ? `median ${p50.toFixed(2)} texels/px outside [${lo}, ${hi}]` : !mobileOk ? `mobile median ${mobile?.p50?.toFixed(2)} outside band` : `below ${profile.texelFloorPxPerMeter ?? "—"} px/m floor`}.`);
+}
+
+/** G6 — texture sanity on 256² decoded proxies. */
+export function gateG6TextureSanity(profile: AdmissionProfile | undefined, measured: AdmissionMeasured): AssetQualityCheck {
+  const report = measured.textureSanity;
+  if (!report) {
+    return check("G6", "fail", {}, "G6: texture sanity not measured — run via `assets admit` (needs tools/asset-optimize deps).");
+  }
+  if (!report.available) {
+    return check("G6", "fail", { reason: report.unavailableReason }, `G6: texture decode unavailable — ${report.unavailableReason ?? "sharp missing"}.`);
+  }
+  if (report.textures.length === 0) {
+    // No textures at all: factor-only assets live or die by G5/G10, not G6.
+    return check("G6", "pass", { textures: 0 }, "G6: no textures to sanity-check.");
+  }
+  const failures: string[] = [];
+  const flags: string[] = [];
+  for (const tex of report.textures) {
+    const label = `${tex.slot}#${tex.materialIndex}${tex.materialName ? `(${tex.materialName})` : ""}`;
+    if (tex.error?.startsWith("undecodable")) {
+      // basisu/ktx2 in the measured file: the source proxy ran pre-encode.
+      continue;
+    }
+    if (tex.width > 0 && !tex.powerOfTwo) failures.push(`${label}: non-power-of-two ${tex.width}×${tex.height}`);
+    if (tex.slot === "normal" && tex.normalLength) {
+      if (tex.normalLength.inUnitRange < 0.95) failures.push(`${label}: normal length outside [0.9,1.1] on ${((1 - tex.normalLength.inUnitRange) * 100).toFixed(1)}% of texels (> 5%)`);
+      if (tex.normalLength.meanBlue < 0.7) failures.push(`${label}: mean B ${tex.normalLength.meanBlue.toFixed(2)} < 0.7 (not a valid tangent-space normal map)`);
+    }
+    if (tex.slot === "metallicRoughness" && tex.constantChannels && tex.constantChannels.length >= 3) {
+      flags.push(`${label}: all ORM channels constant — replace texture with factor`);
+    } else if (tex.constantChannels) {
+      for (const c of tex.constantChannels) flags.push(`${label}: channel ${c} constant (σ<0.004) — replace texture with factor`);
+    }
+    if (tex.slot === "baseColor" && tex.luminance) {
+      const metal = materialsAreMetal(measured, tex.materialIndex);
+      const floor = metal ? 140 : 30;
+      if (tex.luminance.inRange30to240 < 0.95 && !metal) {
+        failures.push(`${label}: sRGB luminance outside [30,240] on ${((1 - tex.luminance.inRange30to240) * 100).toFixed(1)}% of texels`);
+      } else if (metal && tex.luminance.mean < floor) {
+        failures.push(`${label}: metal base colour mean luminance ${tex.luminance.mean.toFixed(0)} < 140`);
+      }
+    }
+  }
+  void profile;
+  const measuredRow = { failures, flags, textures: report.textures.length };
+  return failures.length === 0
+    ? check("G6", "pass", measuredRow, `G6: ${report.textures.length} texture slot(s) sane${flags.length ? ` (${flags.length} constant-channel flags)` : ""}.`)
+    : check("G6", "fail", measuredRow, `G6: ${failures.join("; ")}`);
+}
+
+/** Metal determination for a material: ORM median metallic ≥ 0.9 or factor ≥ 0.9. */
+function materialsAreMetal(measured: AdmissionMeasured, materialIndex: number): boolean {
+  const orm = measured.textureSanity?.textures.find((t) => t.slot === "metallicRoughness" && t.materialIndex === materialIndex);
+  const bMedian = orm?.channels?.[2]?.mean;
+  return bMedian !== undefined && bMedian / 255 >= 0.9;
+}
+
+/** G7 — derived file bytes + GPU bytes + draw calls within the §17.2 role budget. */
+export function gateG7Budget(profile: AdmissionProfile | undefined, measured: AdmissionMeasured): AssetQualityCheck {
+  if (profile === undefined || profile.fileBytesHigh === undefined) {
+    return check("G7", "waived-by-role", { profile: profile?.id }, "G7: no budget for this role.");
+  }
+  const fileBytes = measured.derivedFileBytes;
+  if (fileBytes === undefined) {
+    return check("G7", "fail", {}, "G7: no derived measurement — run `assets optimize` first.");
+  }
+  const over: string[] = [];
+  if (fileBytes > profile.fileBytesHigh) over.push(`file ${Math.round(fileBytes / 1e6 * 10) / 10} MB > ${Math.round(profile.fileBytesHigh / 1e6)} MB`);
+  if (measured.gpuBytesHigh !== undefined && profile.gpuBytesHigh !== undefined && measured.gpuBytesHigh > profile.gpuBytesHigh) {
+    over.push(`gpu ${Math.round(measured.gpuBytesHigh / 1e6 * 10) / 10} MB > ${Math.round(profile.gpuBytesHigh / 1e6)} MB`);
+  }
+  const measuredRow = { fileBytes, fileBytesHigh: profile.fileBytesHigh, gpuBytesHigh: measured.gpuBytesHigh, gpuBudget: profile.gpuBytesHigh, drawCalls: measured.drawCalls };
+  return over.length === 0
+    ? check("G7", "pass", measuredRow, `G7: file ${Math.round(fileBytes / 1e3)} KB within ${profile.id} budget.`)
+    : check("G7", "fail", measuredRow, `G7: over ${profile.id} budget — ${over.join(", ")}.`);
+}
+
+/** G9 — look-dev record: three-adapter score ≥ 6.5, no axis < 4, hero needs a named human; Aura gap > 1.5 is a renderer issue, not an asset failure. */
+export interface GateG9Result extends AssetQualityCheck {
+  /** Set when Aura-minus-three gap > 1.5 — file a renderer issue (qr-ic-regression), not an asset failure. */
+  readonly rendererIssue?: boolean;
+}
+
+const G9_AXES = ["silhouette", "surfaceDetail", "materialBelievability", "texelSharpness", "lodTransitions", "artefacts"] as const;
+
+export function gateG9LookDev(entry: AdmissionEntryContext, profile: AdmissionProfile | undefined, measured: AdmissionMeasured): GateG9Result {
+  const record = measured.lookDev;
+  if (!record || record.reviews.length === 0) {
+    return check("G9", "fail", { reviews: 0 }, "G9: no look-dev record — run `assets lookdev` + `assets review`.");
+  }
+  const boundHash = record.derivedHash;
+  // Reviews bound to the current derived hash only.
+  const threeReviews = record.reviews.filter((r) => r.judge?.kind === "vision-model");
+  const humanReviews = record.reviews.filter((r) => r.judge?.kind === "human" && r.verdict === "accept");
+  const scored = threeReviews.filter((r) => r.score !== undefined);
+  if (scored.length === 0) {
+    return check("G9", "fail", { reviews: record.reviews.length, boundHash }, "G9: no vision-model score on record.");
+  }
+  const meanScore = scored.reduce((s, r) => s + (r.score ?? 0), 0) / scored.length;
+  const minAxis = Math.min(...scored.flatMap((r) => G9_AXES.map((a) => r.axes?.[a] ?? 10)));
+  const hero = profile !== undefined && (profile.id === "hero-character" || profile.id === "hero-vehicle" || entry.role === "hero");
+  const humanRequired = hero;
+  const fails: string[] = [];
+  if (meanScore < 6.5) fails.push(`three-adapter score ${meanScore.toFixed(2)} < 6.5`);
+  if (minAxis < 4) fails.push(`axis ${minAxis.toFixed(1)} < 4`);
+  if (humanRequired && humanReviews.length === 0) fails.push("hero role requires a named human review");
+  if (scored.some((r) => r.verdict !== "accept")) fails.push("latest reviews include a reject verdict");
+  const gap = measured.auraScore !== undefined ? meanScore - measured.auraScore : undefined;
+  const rendererIssue = gap !== undefined && gap > 1.5;
+  const measuredRow = { meanScore, minAxis, reviews: scored.length, humanReviews: humanReviews.length, boundHash, auraScore: measured.auraScore, auraMinusThreeGap: gap, rendererIssue };
+  const result: GateG9Result = fails.length === 0
+    ? check("G9", "pass", measuredRow, `G9: look-dev score ${meanScore.toFixed(2)} (axes ≥ ${minAxis.toFixed(1)}${humanReviews.length ? ", human-reviewed" : ""}).`)
+    : check("G9", "fail", measuredRow, `G9: ${fails.join("; ")}.`);
+  return rendererIssue ? { ...result, rendererIssue: true } : result;
+}
+
+/** G10 — art-direction document exists; `stylized-flat` additionally needs UVs + human review. */
+export function gateG10ArtDirection(model: AdmissionModel, entry: AdmissionEntryContext, measured: AdmissionMeasured): AssetQualityCheck {
+  if (entry.artDirection === undefined) {
+    return check("G10", "fail", {}, "G10: release assets require an `artDirection` id (assets/art-direction/<id>.json).");
+  }
+  const doc = measured.artDirectionDoc;
+  if (!doc) {
+    return check("G10", "fail", { artDirection: entry.artDirection }, `G10: no assets/art-direction/${entry.artDirection}.json file.`);
+  }
+  const measuredRow = { artDirection: entry.artDirection, shading: doc.shading, palette: doc.palette?.length ?? 0, texelDensity: doc.texelDensity };
+  if (doc.shading === "stylized-flat") {
+    if (!entry.stylizedFlatApproved) {
+      return check("G10", "fail", measuredRow, "G10: stylized-flat requires the approved look-dev record on the current hash.");
+    }
+    const noUv = model.primitives.some((p) => p.triangleCount > 0 && !p.hasTexcoord0);
+    if (noUv) return check("G10", "fail", measuredRow, "G10: stylized-flat still requires TEXCOORD_0 on every rendered primitive.");
+  }
+  return check("G10", "pass", measuredRow, `G10: art direction "${entry.artDirection}" (${doc.shading ?? "unspecified shading"}) on file.`);
+}
+
+/** Runs all admission gates; measured gates need `measured` inputs (Phase 4). */
+export function runAdmissionGates(model: AdmissionModel, entry: AdmissionEntryContext, measured: AdmissionMeasured = {}): readonly AssetQualityCheck[] {
   const profile = profileForRole(entry.role, model.boundsSize);
   return [
     gateG1TriangleBand(model, profile),
+    gateG2TexelDensity(model, profile, measured),
     gateG3PbrCompleteness(model, entry.role, profile, entry.stylizedFlatApproved),
     gateG4CardBan(model, entry.role),
     gateG5ProgrammerArt(model, entry),
+    gateG6TextureSanity(profile, measured),
+    gateG7Budget(profile, measured),
     gateG8Tangents(model),
+    gateG9LookDev(entry, profile, measured),
+    gateG10ArtDirection(model, entry, measured),
     gateG11Derived(entry),
   ];
 }

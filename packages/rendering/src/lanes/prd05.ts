@@ -16,6 +16,11 @@ import {
   lodDitherFeature,
   lodDitherDepthFeature
 } from "../shaders/lod-dither.glsl.js";
+import {
+  debugViewParsChunk,
+  debugViewEndChunk,
+  debugViewFeature
+} from "../shaders/debug-view.glsl.js";
 
 resolveCompressedTextureFormatSlot().provide(resolveCompressedTextureFormatReal);
 
@@ -26,6 +31,13 @@ registerShaderChunk(lodDitherParsChunk);
 registerShaderChunk(lodDitherDiscardChunk);
 registerShaderFeature(lodDitherFeature);
 registerDepthVariantFeature(lodDitherDepthFeature);
+
+// PRD-05 §6.7/§8 item 4 — look-dev debug views (texel density, mip level,
+// facet, LOD level). Inert while `A3D_QR_ASSETS_LOOKDEV` is off; the feature
+// only selects draws whose material carries `u_prd05DebugView`.
+registerShaderChunk(debugViewParsChunk);
+registerShaderChunk(debugViewEndChunk);
+registerShaderFeature(debugViewFeature);
 
 export { probeCompressedTextureCapabilities, resolveCompressedTextureFormatReal } from "../webgl2/TextureFormats.js";
 export { resolveCompressedTextureFormatSlot } from "../contracts/textureFormats.js";

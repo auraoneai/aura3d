@@ -297,10 +297,12 @@ export function registerTypedGLBActorLodExtension(): () => void {
         const inFade = state.fade !== undefined && now < state.fade.until;
         const t = state.fade ? Math.min(1, Math.max(0, (now - state.fade.start) / Math.max(state.fade.until - state.fade.start, 1e-6))) : 0;
         const active = collectChainItems(chain, baseItems, level);
-        emitted.push(...(inFade && t > 0 ? active.map((item) => withFade(item, t)) : active));
+        const atLevel = (item: RenderItem, lodFade?: number): RenderItem =>
+          lodFade === undefined ? { ...item, lodLevel: level } : { ...item, lodLevel: level, lodFade };
+        emitted.push(...(inFade && t > 0 ? active.map((item) => atLevel(item, t)) : active.map((item) => atLevel(item))));
         if (inFade && state.fade!.outgoingLevel !== level) {
           // Sign convention (lod-dither.glsl.ts): outgoing = -t, exact pixel complement.
-          emitted.push(...collectChainItems(chain, baseItems, state.fade!.outgoingLevel).map((item) => withFade(item, -t)));
+          emitted.push(...collectChainItems(chain, baseItems, state.fade!.outgoingLevel).map((item) => ({ ...item, lodLevel: state.fade!.outgoingLevel, lodFade: -t })));
         }
       }
       return emitted;
