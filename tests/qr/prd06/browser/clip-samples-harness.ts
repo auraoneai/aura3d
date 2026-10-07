@@ -2,18 +2,27 @@
 // real createAuraApp and reports what reached the runtime-node animation
 // binding. Flags come from `?a3d-qr=<list>` exactly like the capture tooling.
 
-import { createAnimationController, createAuraApp, lights, model, scene } from "@aura3d/engine";
+import { createAnimationController, createAuraApp, defineAuraAssets, lights, model, scene } from "@aura3d/engine";
 
 declare global {
   interface Window {
     __PRD06_CLIP_SAMPLES__?: {
       readonly status: "ready" | "error";
-      readonly clipSamples?: readonly unknown[];
+      readonly clipSamples?: readonly { clipName?: string; weight?: number }[];
       readonly bindingKind?: string;
       readonly error?: string;
     };
   }
 }
+
+const harnessAssets = defineAuraAssets({
+  soldier: {
+    type: "model",
+    format: "glb",
+    url: "/fixtures/threejs-parity/assets/character/soldier.glb",
+    metadata: { animations: ["Idle", "Walk", "Run", "TPose"] }
+  }
+} as const);
 
 try {
   const flags = (new URL(location.href).searchParams.get("a3d-qr") ?? "")
@@ -23,12 +32,7 @@ try {
 
   const app = createAuraApp("#app", {
     scene: scene()
-      .add(model({
-        type: "model",
-        format: "glb",
-        url: "/fixtures/threejs-parity/assets/character/soldier.glb",
-        metadata: { animations: ["Idle", "Walk", "Run", "TPose"] }
-      }).runtime({ id: "hero" }))
+      .add(model(harnessAssets.soldier).runtime({ id: "hero" }))
       .add(lights.studio()),
     qualityRebuild: { flags }
   });
@@ -51,7 +55,7 @@ try {
   window.__PRD06_CLIP_SAMPLES__ = {
     status: "ready",
     bindingKind: binding?.kind,
-    clipSamples: binding?.clipSamples
+    clipSamples: binding?.clipSamples as readonly { clipName?: string; weight?: number }[] | undefined
   };
 } catch (error) {
   window.__PRD06_CLIP_SAMPLES__ = {
