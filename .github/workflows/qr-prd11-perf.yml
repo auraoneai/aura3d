@@ -1,0 +1,154 @@
+name: QR PRD-11 Perf
+
+# Lane 11 (GPU architecture / performance tiers) standalone gate (PRD-11 §15, §18).
+# Runs on PRs carrying the `lane:prd11` label and nightly; also dispatchable.
+# Every job that renders logs the WebGL2/WebGPU probe into the prd11-probe artifact.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - "packages/rendering/src/**"
+      - "packages/engine/src/lanes/prd11.ts"
+      - "packages/engine/src/production-runtime/**"
+      - "packages/engine/src/agent-api/**"
+      - "benchmarks/quality-rebuild/scenes/prd11/**"
+      - "benchmarks/quality-rebuild/aura3d/scenes/prd11/**"
+      - "benchmarks/quality-rebuild/three/scenes/prd11/**"
+      - "tools/perf-gate/**"
+      - "tools/bundle-size/**"
+      - "tests/qr/prd11/**"
+      - ".github/workflows/qr-prd11-perf.yml"
+  schedule:
+    - cron: "35 5 * * *"
+  workflow_dispatch:
+    inputs:
+      flags:
+        description: "QrFlag list for lane captures (none|tiers|comma list)"
+        required: false
+        default: "tiers,none"
+      scenes:
+        description: "Lane scene ids (comma-separated; default all prd11 scenes)"
+        required: false
+        default: "prd11-tier-ladder"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qr-prd11-perf-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QR_BENCH_CHROME_ARGS: "--use-angle=metal --enable-gpu --ignore-gpu-blocklist"
+
+jobs:
+  lane-unit:
+    name: Lane unit tests (vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Lane unit tests
+        run: pnpm exec vitest run -c tests/qr/prd11/vitest.config.ts
+
+  lane-browser:
+    name: Lane browser specs (macos-14, ANGLE Metal)
+    runs-on: macos-14
+    timeout-minutes: 40
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GPU probe log
+        run: node tools/quality-rebuild-capture/gpu-probe.mjs --out tests/qr/prd11/out/gpu-probe.json
+      - name: Lane browser specs
+        run: pnpm exec playwright test -c tests/qr/prd11/playwright.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd11-probe-browser
+          path: tests/qr/prd11/out/
+          if-no-files-found: warn
+          retention-days: 30
+
+  lane-captures:
+    name: Lane scene captures + perf-gate (macos-14)
+    runs-on: macos-14
+    timeout-minutes: 60
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    env:
+      PRD11_FLAGS: ${{ github.event_name == 'workflow_dispatch' && inputs.flags || 'tiers,none' }}
+      PRD11_SCENES: ${{ github.event_name == 'workflow_dispatch' && inputs.scenes || 'prd11-tier-ladder' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: GPU probe log
+        run: node tools/quality-rebuild-capture/gpu-probe.mjs --out benchmarks/quality-rebuild/scenes/prd11/out/gpu-probe.json
+      - name: Lane captures (flags + none) with WebGPU smoke probe
+        run: node benchmarks/quality-rebuild/scenes/prd11/capture.mjs --flags "$PRD11_FLAGS" --scenes "$PRD11_SCENES" --engines aura3d,three --webgpu-probe --out benchmarks/quality-rebuild/scenes/prd11/out
+      - name: perf-gate over lane report
+        run: node tools/perf-gate/index.mjs --report benchmarks/quality-rebuild/scenes/prd11/out/report.json --out benchmarks/quality-rebuild/scenes/prd11/out/perf-gate.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd11-lane-captures
+          path: benchmarks/quality-rebuild/scenes/prd11/out/
+          if-no-files-found: warn
+          retention-days: 30
+
+  webgpu-smoke:
+    name: WebGPU smoke (non-gating)
+    runs-on: macos-14
+    timeout-minutes: 20
+    continue-on-error: true
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'lane:prd11')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - name: WebGPU adapter probe
+        run: node benchmarks/quality-rebuild/scenes/prd11/capture.mjs --flags none --scenes prd11-tier-ladder --engines "" --webgpu-probe --out benchmarks/quality-rebuild/scenes/prd11/out-webgpu-smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prd11-webgpu-smoke
+          path: benchmarks/quality-rebuild/scenes/prd11/out-webgpu-smoke/
+          if-no-files-found: warn
+          retention-days: 30

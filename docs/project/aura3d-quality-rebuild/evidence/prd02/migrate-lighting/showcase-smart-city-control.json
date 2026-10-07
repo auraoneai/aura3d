@@ -1,0 +1,29 @@
+{
+  "root": "apps/showcase-smart-city-control",
+  "files": 1,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-smart-city-control/src/main.ts",
+      "line": 528,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-smart-city-control/src/main.ts",
+      "line": 534,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-smart-city-control/src/main.ts",
+      "line": 1003,
+      "construct": "shadows.contact(…)",
+      "mapping": "exact",
+      "target": "shadows.blobShadow(…)",
+      "note": "deprecated alias (C-10); rename applied by PRD 14/13"
+    }
+  ]
+}
