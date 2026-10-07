@@ -1,7 +1,4 @@
 /**
- * Lane prd07 scene index (CONTRACTS.md §3.8). Scene ids are `<owner>-<slug>`.
- * Empty array until lane 07 lands its scenes.
+ * Lane prd07 three.js adapters index — named scene modules keyed by scene id.
  */
-import type { BenchSceneRegistration } from "../../../shared/registry";
-
-export const scenes: readonly BenchSceneRegistration[] = [];
+export const adapterSceneIds = ["prd07-particles-fountain", "prd07-flipbook", "prd07-particles-stress"] as const;

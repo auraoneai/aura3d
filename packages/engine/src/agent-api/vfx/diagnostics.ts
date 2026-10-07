@@ -2,16 +2,18 @@
 // Collectors read the app's live ProductionEffectSystem — observed values only.
 
 import type { AuraApp } from "../index";
+import { collectParticleBudgetDiagnostics } from "../nodes/particles";
 import { prd07SystemFor } from "./effects-api";
 
 export function collectEffectsSection(app: AuraApp): import("../../contracts/effects").AuraEffectsDiagnostics {
+  const declared = collectParticleBudgetDiagnostics(app.scene.nodes).declared;
   const system = prd07SystemFor(app);
   if (!system) {
     return {
       nodes: [],
       batches: 0,
       liveParticles: 0,
-      budget: { tier: "medium", cap: 0, culled: 0 },
+      budget: { tier: "medium", cap: 0, culled: 0, declared, observedLive: 0, observedDraws: 0 },
       errors: [],
       pixelBacked: []
     };
@@ -31,10 +33,18 @@ export function collectEffectsSection(app: AuraApp): import("../../contracts/eff
     })),
     batches: report.batches,
     liveParticles: report.liveParticles,
-    budget: { tier: "medium", cap: 10000, culled: 0 },
+    budget: {
+      tier: system.tier,
+      cap: report.budget?.cap ?? 0,
+      culled: report.budget?.culled ?? 0,
+      declared,
+      observedLive: report.liveParticles,
+      observedDraws: report.nodes.reduce((sum, n) => sum + n.drawCalls, 0)
+    },
     ...(report.gpuMs !== undefined ? { gpuMs: report.gpuMs } : {}),
     errors: report.errors,
-    pixelBacked: report.pixelBacked
+    pixelBacked: report.pixelBacked,
+    ...(report.deviceReadbacks !== undefined ? { deviceReadbacks: report.deviceReadbacks } : {})
   };
 }
 

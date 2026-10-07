@@ -1725,7 +1725,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     - flags `none` + `effects.particles()` → the error appears after 30 `app.step(1/60)`;
     - flags `vfx` → no error, and `pixelBacked` includes `"particles"`;
     - a fog node never reports.
-- [ ] **P1-T3** Carved `agent-api/nodes/particles.ts`. `collectParticleBudgetDiagnostics` returns the existing fields plus
+- [x] **P1-T3** Carved `agent-api/nodes/particles.ts`. `collectParticleBudgetDiagnostics` returns the existing fields plus
   `{ declared, observedLive: null, observedDraws: null }`. The observed values are filled by the effects section; the
   function itself is static. `gpuReady` stays as a deprecated alias computed exactly as today, so the flag-off
   output is identical. Update `tests/unit/` snapshot expectations only by adding fields.
@@ -1749,19 +1749,19 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P1-T8** `effects/ParticleSystem.ts`. `writeInstances(out: Float32Array, camera): number` writes the §6.2.1 layout
   directly, evaluating sizes, colours and frames over life. `buildBatch` is kept untouched. Test: `seed` 1414 with 2,000
   particles produces byte-identical buffers across two runs.
-- [ ] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
+- [x] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
   §6.2.7 (HDR target vs legacy `outputColorSpace`). Tests:
   - unit, `ChunkHarness` text: every chunk wraps;
   - browser, `particle-shader-compile.spec.ts`: all define combinations compile on WebGL2.
-- [ ] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
+- [x] **P1-T10** `vfx/SceneDepthAdapter.ts`. `resolveSceneDepth(ctx)` returns `ctx.sceneDepth` when available. Otherwise it
   returns the R-01-1 blackboard target copy, or `{ available: false }` with `SOFT_DEPTH_PENDING`. The soft and near
   fade math is checked in `soft-depth.spec.ts` (browser): a PRD 07-created depth `RenderTarget` (`depth: "texture"`)
   holds a plane at 2 m, a particle at 1.9 m has `alpha × 0.2857` (±1/255), and particle depth beyond 2 m gives alpha 0.
-- [ ] **P1-T11** `vfx/VfxAtlas.ts`. Loads `manifest.json` and pages through C-16 `createAssetDecoderRegistry` (KTX2). On
+- [x] **P1-T11** `vfx/VfxAtlas.ts`. Loads `manifest.json` and pages through C-16 `createAssetDecoderRegistry` (KTX2). On
   `AssetDecoderUnavailable` it falls back to PNG with `VFX_ATLAS_PNG_FALLBACK`. `sequence(name)` returns the sequence. The
   page is chosen by C-27 tier (1k Low/Medium, 2k High/Ultra). Test: every `AuraVfxBuiltinSequence` resolves, rects lie
   inside the page, and the gutter is ≥ 1 px per cell at mip 0.
-- [ ] **P1-T12** `tools/vfx-atlas-bake/`.
+- [x] **P1-T12** `tools/vfx-atlas-bake/`.
   - `bake.mjs --seed 7 --size 2048` writes `packages/engine/assets/vfx/*` (PNG always; KTX2 when `toktx`/basis encoder is
     present on the runner, else only PNG with a logged skip).
   - Test `tests/qr/prd07/unit/vfx-atlas-bake.test.ts` at 256 px: two runs give an identical sha256.
@@ -1782,12 +1782,12 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - The real factory is used only when `A3D_QR_VFX` is on; otherwise the PR 0a stub factory is used.
   - Test `effect-system-binding.test.ts`: single app → bound on the first contributor call; two apps →
     `VFX_APP_BINDING_AMBIGUOUS`.
-- [ ] **P1-T15** Lane scenes, each with both adapters (Aura and three r185):
+- [x] **P1-T15** Lane scenes, each with both adapters (Aura and three r185):
   - `benchmarks/quality-rebuild/scenes/prd07/index.ts` with `prd07-particles-fountain` (copy of `shared/scenes.ts:280-288`
     plus `blend: "additive"`, `size`), `prd07-flipbook` and `prd07-particles-stress`;
   - `aura3d/scenes/prd07/*.ts` and `three/scenes/prd07/*.ts`.
   Test: the C-30 conformance suite passes with the lane entries (unique ids, owner prefix, both adapters).
-- [ ] **P1-T16** `.github/workflows/prd07-vfx.yml`.
+- [x] **P1-T16** `.github/workflows/prd07-vfx.yml`.
   - `runs-on: macos-14`. Triggers: PRs touching §13.2 paths, plus `workflow_dispatch`.
   - Jobs:
     - `unit`: `pnpm exec vitest run tests/qr/prd07/unit tests/unit/contracts`;
@@ -1804,7 +1804,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 - [x] **P1-T18** `agent-api/vfx/lookLint.ts`. Rule `look/fake-effect-names` flags scene nodes named like VFX (`/spark|smoke|
   fire|rain|snow|explosion|trail|fog|sky/i`) whose kind is `primitive`, and effect nodes not in
   `capabilities.effectsPixelBacked`. Test: fixture scenes with 3 hits and 0 false positives on `prd07-*` scenes.
-- [ ] **P1-T19** Browser test `particles-production.spec.ts` (remote macos-14, flags `vfx`). `effects.particles({ seed: 1414,
+- [x] **P1-T19** Browser test `particles-production.spec.ts` (remote macos-14, flags `vfx`). `effects.particles({ seed: 1414,
   maxParticles: 2000, blend: "additive", color: "#ff9a3c", size: 0.06 })` on production gives:
   - ≥ 1.5% of pixels with `R - B > 15` in the fountain region;
   - `diagnostics().effects.nodes[0].drawCalls ≥ 1`;
@@ -1813,7 +1813,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 2: runtime VFX, juice, trails, beams, mesh particles
 
-- [ ] **P2-T1** `agent-api/vfx/effects-api.ts`. Implements the C-20 `AuraAppEffects`: pooled `EffectInstance`s per spec,
+- [x] **P2-T1** `agent-api/vfx/effects-api.ts`. Implements the C-20 `AuraAppEffects`: pooled `EffectInstance`s per spec,
   `liveCount`, `clear()`, `registerPreset`. `camera` layers call C-22 and `super-flash` calls C-05 `setOutputOverlay`.
   Tests:
   - `effects-api.test.ts`: 1,000 `burst("spark")` calls over 10 s keep the pool ≤ the tier cap and live particles ≤
@@ -1821,7 +1821,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - impl suite `prd07-C-20.test.ts`.
 - [x] **P2-T2** `agent-api/vfx/presets.ts`. The 14 kinds of §6.4 as data. Test `presets.test.ts`: every `AuraVfxKind` and
   every PRD 09 `GameFxKind` (imported from `contracts/game.ts`, C-24) resolves to a preset with ≥ 1 emitter layer.
-- [ ] **P2-T3** Carved `agent-api/vfx/gameEffects.ts`.
+- [x] **P2-T3** Carved `agent-api/vfx/gameEffects.ts`.
   - `createGameEffects({ poolSize?, app?, autoMount?, legacyPrimitiveNodes? })`. With the flag on and the controller
     bound, spawns forward to `app.effects.spawn` using the §7.8 mapping. The realm pending list is adopted by the
     `effects` extension. `GAME_EFFECTS_UNBOUND` is raised when 0 or ≥ 2 apps are live. `effectToSceneNode` is used only
@@ -1830,25 +1830,25 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     - flag off → `nodes()` output is deep-equal to the `85aafcd0` fixture;
     - flag on, no `nodes()` call → `diagnostics().effects.liveParticles > 0` after `hitSpark`;
     - `gameFeel.create()` controllers are adopted.
-- [ ] **P2-T4** `vfx/RibbonBatch.ts` + `vfx/RibbonPass.ts` + `vfx/shaders/ribbon.glsl.ts`. Point rings, camera/surface
+- [x] **P2-T4** `vfx/RibbonBatch.ts` + `vfx/RibbonPass.ts` + `vfx/shaders/ribbon.glsl.ts`. Point rings, camera/surface
   orientation, width and alpha curves. The default alpha curve is ported from `ResidentGPUParticleRenderer.ts:512`
   (`0.45·(1 - segment/depth)`). Test: a 48-point trail draws 94 triangles, and `surface` orientation normals equal the
   given surface normal.
-- [ ] **P2-T5** Carved `agent-api/nodes/effects.ts`.
+- [x] **P2-T5** Carved `agent-api/nodes/effects.ts`.
   - Rewire `beam` (today `index.ts:3671-3689`).
   - Add `trail`, `lightCone`, `auroraRibbon` (geometry/fragment per PRD 14 §8.2), `meshParticles`, `fogVolume`.
   - The builders' output is identical whether the flag is on or off. Lowering in `EffectNodeLowering.ts` decides.
   - Test: option-coverage rows for every new field.
-- [ ] **P2-T6** `vfx/MeshParticleBatch.ts` + `vfx/shaders/mesh-particle.glsl.ts`. CPU sim (gravity, drag, spin, ground
+- [x] **P2-T6** `vfx/MeshParticleBatch.ts` + `vfx/shaders/mesh-particle.glsl.ts`. CPU sim (gravity, drag, spin, ground
   bounce, sleep) and an instanced draw through `instanceAttributes`. It never calls `createProductionInstanceTransforms`.
   Test: per-instance scale is honoured (regression guard for E17, `index.ts:14747-14754`).
-- [ ] **P2-T7** `production-runtime/effects/TransientLightPool.ts`. Lights are pre-allocated per tier (Low 0, Medium 2,
+- [x] **P2-T7** `production-runtime/effects/TransientLightPool.ts`. Lights are pre-allocated per tier (Low 0, Medium 2,
   High 4, Ultra 8). They are submitted as `CollectedLight`s through the C-01 `collect` phase (`prd07.lights`), with
   intensity 0 when idle. Test: 10 simultaneous explosions use ≤ the cap, and the oldest is recycled.
-- [ ] **P2-T8** Browser test `juice-automount.spec.ts`. A Neon-style scene calls `game.effects()` with no `nodes()` call.
+- [x] **P2-T8** Browser test `juice-automount.spec.ts`. A Neon-style scene calls `game.effects()` with no `nodes()` call.
   `hitSpark` at a known position must change ≥ 0.15% of the canvas pixels in a 64×64 region within frames N+1..N+3
   (flags `vfx`), and change 0 pixels with flags `none`.
-- [ ] **P2-T9** Lane scenes `prd07-impact-library` (§17.1 S3 contact sheet; Aura only, `admittedAsReference: false`) and
+- [x] **P2-T9** Lane scenes `prd07-impact-library` (§17.1 S3 contact sheet; Aura only, `admittedAsReference: false`) and
   `prd07-trails-beams` (S11).
 
 ### Phase 3: sky (day 0)
