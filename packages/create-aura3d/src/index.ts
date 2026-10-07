@@ -10,6 +10,7 @@ export const CREATE_AURA3D_TEMPLATES = [
   "racing-starter",
   "falling-blocks-starter",
   "fighting-game",
+  "arena-shooter",
   "animation-channel",
   "prompt-animation-channel",
   "animation-studio",
