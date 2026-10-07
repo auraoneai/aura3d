@@ -18,6 +18,8 @@
 
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import { registerTypedGLBActorExtension } from "../production-runtime/actor/extensions.js";
+import { skinningPaletteCache, paletteKeyOf } from "@aura3d/rendering";
+import type { RenderItem } from "@aura3d/rendering";
 import { setPoseMixerBlendFlagProvider } from "@aura3d/animation/lanes";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
@@ -112,5 +114,54 @@ registerTypedGLBActorExtension({
     }
     for (const disposeSource of actorAnimationStateDisposers.get(actor.id) ?? []) disposeSource();
     actorAnimationStateDisposers.delete(actor.id);
+  }
+});
+
+/* ------------------------------------------------------------ T2.5 §8.5 */
+
+/**
+ * C-14 velocity inputs (PRD-06 §8.5). `collectRenderItems` runs at the head of
+ * each actor's render-item collection — after the previously presented
+ * frame's passes — so the actor extension is where the palette cache's
+ * once-per-presented-frame rotation belongs (`beginFrame`: every key touched
+ * since the last call moves `current`→`previous`, exactly the §8.5 `swap()`
+ * cadence; it is a no-op when nothing bound since the last collect).
+ *
+ * Items then carry the optional C-14 fields — inert until the post lane's
+ * velocity pass is real:
+ *   - `previousJointTexture` = the palette pair's `previous` texture (skinned
+ *     items with a stamped `paletteKey` only)
+ *   - `previousMorphWeights` = the item's weights as of the prior collect,
+ *     snapshotted per-geometry (renderables reassign `morphWeights` each apply,
+ *     so a Float32Array copy is the only stable previous-frame record)
+ */
+const previousMorphWeightsByGeometry = new WeakMap<RenderItem["geometry"], Float32Array>();
+
+registerTypedGLBActorExtension({
+  id: "prd06.velocity-inputs",
+  owner: "prd06",
+  flag: "A3D_QR_ANIMATION",
+  collectRenderItems: (_actor, items) => {
+    skinningPaletteCache.beginFrame();
+    let stampedAll = items as RenderItem[];
+    for (let i = 0; i < items.length; i += 1) {
+      const item = items[i]!;
+      let stamped = item;
+      const paletteKey = item.skinning ? paletteKeyOf(item.skinning) : null;
+      if (item.skinning && paletteKey) {
+        const palette = skinningPaletteCache.paletteUniformSet(paletteKey, item.skinning.jointCount);
+        stamped = { ...stamped, previousJointTexture: palette.previous };
+      }
+      if (item.morphWeights && item.morphWeights.length > 0) {
+        const previous = previousMorphWeightsByGeometry.get(item.geometry);
+        if (previous) stamped = { ...stamped, previousMorphWeights: previous };
+        previousMorphWeightsByGeometry.set(item.geometry, Float32Array.from(item.morphWeights));
+      }
+      if (stamped !== item) {
+        if (stampedAll === items) stampedAll = items.slice();
+        stampedAll[i] = stamped;
+      }
+    }
+    return stampedAll;
   }
 });

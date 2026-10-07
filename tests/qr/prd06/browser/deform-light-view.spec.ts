@@ -23,6 +23,8 @@ declare global {
       };
       readonly stats?: { readonly joints: number; readonly vertices: number; readonly pixels: number };
       readonly masks?: Record<"deform" | "cpu" | "bindGpu" | "bindCpu" | "control", string>;
+      readonly previousDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
+      readonly selftestDelta?: { readonly maxDelta: number; readonly vertexCount: number };
     };
   }
 }
@@ -55,7 +57,7 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     for (const [name, dataUrl] of Object.entries(result!.masks ?? {})) {
       writeFileSync(join(ARTIFACT_DIR, `${name}.png`), Buffer.from(dataUrl.split(",")[1]!, "base64"));
     }
-    writeFileSync(join(ARTIFACT_DIR, "iou.json"), JSON.stringify({ iou, stats: result!.stats }, null, 2));
+    writeFileSync(join(ARTIFACT_DIR, "iou.json"), JSON.stringify({ iou, stats: result!.stats, previousDelta: result!.previousDelta, selftestDelta: result!.selftestDelta }, null, 2));
 
     // The deformed path must land on the CPU-skinned silhouette.
     expect(iou.deformVsCpu).toBeGreaterThanOrEqual(0.98);
@@ -66,6 +68,9 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     // The pose at t=0.5s must actually move the silhouette vs bind pose.
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
+    // T2.5 §8.5 — `a3dDeformPrevious` transform-feedback numerics vs the CPU
+    // previous-frame deform (bind pose standing in for frame N-1): ≤ 1e-3.
+    expect(result!.previousDelta!.maxDelta).toBeLessThanOrEqual(1e-3);
   });
 
   test("a 191-joint rig renders through the bone-texture chunk (T1.12)", async ({ page }) => {
@@ -89,5 +94,6 @@ test.describe("PRD-06 deform light view (T0.14)", () => {
     expect(iou.bindPoseGpuVsCpu).toBeGreaterThanOrEqual(0.98);
     expect(iou.controlRawVsCpu).toBeLessThan(0.8);
     expect(iou.animatedVsBindCpu).toBeLessThan(0.8);
+    expect(result!.previousDelta!.maxDelta).toBeLessThanOrEqual(1e-3);
   });
 });

@@ -35,6 +35,8 @@ declare global {
       };
       readonly stats?: { readonly joints: number; readonly vertices: number; readonly pixels: number };
       readonly masks?: Record<"deform" | "cpu" | "bindGpu" | "bindCpu" | "control", string>;
+      readonly previousDelta?: { readonly maxDelta: number; readonly vertexCount: number; readonly exceeding?: number; readonly firstBad?: number };
+      readonly selftestDelta?: { readonly maxDelta: number; readonly vertexCount: number };
     };
   }
 }
@@ -141,7 +143,7 @@ function lightViewProjection(center: number[], radius: number): Mat4 {
 }
 
 // --- GL plumbing ---
-function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string): WebGLProgram {
+function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string, tfVaryings?: readonly string[]): WebGLProgram {
   const make = (type: number, src: string) => {
     const shader = gl.createShader(type)!;
     gl.shaderSource(shader, src);
@@ -155,6 +157,7 @@ function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: string): Web
   gl.attachShader(program, make(gl.VERTEX_SHADER, vs));
   gl.attachShader(program, make(gl.FRAGMENT_SHADER, fs));
   gl.bindAttribLocation(program, 0, "a_position");
+  if (tfVaryings) gl.transformFeedbackVaryings(program, [...tfVaryings], gl.SEPARATE_ATTRIBS);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     throw new Error(`program link failed: ${gl.getProgramInfoLog(program)}`);
@@ -408,13 +411,14 @@ async function main(): Promise<void> {
 
   // Bone palette texture, identical texel layout to the §8.1 chunk contract.
   const paletteTex = gl.createTexture()!;
-  const uploadPalette = (palette: Float32Array) => {
+  const uploadPalette = (palette: Float32Array, tex = paletteTex) => {
     const texels = jointCount * 4;
     const width = Math.min(1024, Math.ceil(Math.ceil(Math.sqrt(texels)) / 4) * 4);
     const height = Math.ceil(texels / width);
     const data = new Float32Array(width * height * 4);
     data.set(palette);
-    gl.bindTexture(gl.TEXTURE_2D, paletteTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -429,6 +433,82 @@ async function main(): Promise<void> {
   const deformProgram = compileProgram(gl, deformVs, DEPTH_FS);
   const passVs = `${PREAMBLE}\nvoid main() { gl_Position = u_lightViewProjection * vec4(a_position, 1.0); }`;
   const passProgram = compileProgram(gl, passVs, DEPTH_FS);
+
+  // T2.5 §8.5 — `a3dDeformPrevious` numerics: rasterize each vertex's
+  // previous-frame local position into an RGBA32F point-grid target
+  // (gl_VertexID → grid cell), readPixels it back, and compare component-wise
+  // against the CPU previous-frame deform (bind pose standing in for frame
+  // N-1). The spec asserts max |component| ≤ 1e-3.
+  const vertexCount = positions.length;
+  const GRID_W = Math.ceil(Math.sqrt(vertexCount));
+  const GRID_H = Math.ceil(vertexCount / GRID_W);
+  const gridFs = `#version 300 es\nprecision highp float;\nin vec3 a3dPosOut;\nlayout(location = 0) out vec4 fragColor;\nvoid main() { fragColor = vec4(a3dPosOut, 1.0); }`;
+  const makeGridVs = (defines: string, call: string) =>
+    `${PREAMBLE}\n#define A3D_SKINNING 4\n${defines}\nout vec3 a3dPosOut;\n${chunks.join("\n")}\n` +
+    `void main() { vec4 p; ${call} a3dPosOut = p.xyz;\n` +
+    `  const int GW = ${GRID_W};\n` +
+    `  float x = float(gl_VertexID % GW); float y = float(gl_VertexID / GW);\n` +
+    `  gl_Position = vec4((x + 0.5) / float(GW) * 2.0 - 1.0, (y + 0.5) / float(${GRID_H}) * 2.0 - 1.0, 0.0, 1.0);\n` +
+    `  gl_PointSize = 1.0; }`;
+  const prevProgram = compileProgram(gl, makeGridVs("#define A3D_VELOCITY", "a3dDeformPrevious(p);"), gridFs);
+  // Self-test capture: same grid readback on the *current* deform path —
+  // isolates capture machinery vs the A3D_VELOCITY branch.
+  const selftestProgram = compileProgram(gl, makeGridVs("", "vec3 n; vec4 t; a3dDeform(p, n, t);"), gridFs);
+
+  const readPreviousDeform = (prevPalette: Float32Array, cpuPrev: Float32Array, program = prevProgram, prevUniform = "u_prevBoneTexture"): { maxDelta: number; vertexCount: number; exceeding: number; firstBad: number } => {
+    const posTex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, posTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, GRID_W, GRID_H, 0, gl.RGBA, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    const posFb = gl.createFramebuffer()!;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, posFb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, posTex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      throw new Error("position-grid framebuffer incomplete");
+    }
+    gl.viewport(0, 0, GRID_W, GRID_H);
+    const prevTex = gl.createTexture()!;
+    const prevWidth = uploadPalette(prevPalette, prevTex);
+    gl.useProgram(program);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, prevTex);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(gl.getUniformLocation(program, prevUniform), 1);
+    // `u_boneTextureWidth` is `float` (no integer uploads yet) — uniform1f, not uniform1i.
+    gl.uniform1f(gl.getUniformLocation(program, "u_boneTextureWidth"), prevWidth);
+    // `draw()` is the only place that binds attribute 0 — replicate it here so
+    // a_position reads the raw positions instead of the disabled default.
+    const positionBuffer = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rawPositions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.POINTS, 0, vertexCount);
+    const out = new Float32Array(GRID_W * GRID_H * 4);
+    gl.readPixels(0, 0, GRID_W, GRID_H, gl.RGBA, gl.FLOAT, out);
+    // Back to the light-view target for the mask draws.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.viewport(0, 0, SIZE, SIZE);
+    gl.deleteFramebuffer(posFb);
+    gl.deleteTexture(posTex);
+    let maxDelta = 0;
+    let exceeding = 0;
+    let firstBad = -1;
+    for (let v = 0; v < vertexCount; v += 1) {
+      for (let c = 0; c < 3; c += 1) {
+        const d = Math.abs(out[v * 4 + c]! - cpuPrev[v * 3 + c]!);
+        maxDelta = Math.max(maxDelta, d);
+        if (d > 1e-3) {
+          exceeding += 1;
+          if (firstBad < 0) firstBad = v * 3 + c;
+        }
+      }
+    }
+    return { maxDelta, vertexCount, exceeding, firstBad };
+  };
+  const previousDelta = readPreviousDeform(bindPalette, cpuBind);
+  const selftestDelta = readPreviousDeform(bindPalette, cpuBind, selftestProgram, "u_boneTexture");
 
   const draw = (program: WebGLProgram, positionData: Float32Array, palette?: Float32Array): Uint8Array => {
     gl.clearColor(1, 1, 1, 1);
@@ -477,7 +557,9 @@ async function main(): Promise<void> {
       bindGpu: maskToPng(maskBindGpu),
       bindCpu: maskToPng(maskBindCpu),
       control: maskToPng(maskControl)
-    }
+    },
+    previousDelta,
+    selftestDelta
   };
   window.__PRD06_DEFORM_LIGHT_VIEW__ = result;
 }

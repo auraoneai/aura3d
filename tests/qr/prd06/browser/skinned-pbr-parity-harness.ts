@@ -211,7 +211,7 @@ function baseUniforms(): Map<string, UniformValue> {
 
 // `uniformDetails` flattens UBO block members as plain uniforms — those are fed
 // by `bindUniformBuffer`, not the per-draw uniform map.
-const UBO_MEMBER_NAMES = new Set(AURA_FRAME_BLOCK.map(([name]) => name));
+const UBO_MEMBER_NAMES = new Set<string>(AURA_FRAME_BLOCK.map(([name]) => name));
 
 function missingUniforms(program: RenderShaderProgram, uniforms: ReadonlyMap<string, UniformValue>): string[] {
   const missing: string[] = [];
