@@ -68,7 +68,10 @@ export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttribut
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
-export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
+export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
+export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
+export type { AuraPrimitiveKind } from "./geometry/Primitives";
+export { InstanceBuffer } from "./resources/InstanceBuffer";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
@@ -298,13 +301,6 @@ export {
   sortExternalParityAlphaItems
 } from "./materials/AlphaSorting";
 export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
-export {
-  evaluateExternalParityTransmission
-} from "./materials/TransmissionPass";
-export type {
-  ExternalParityTransmissionResult,
-  ExternalParityTransmissionSample
-} from "./materials/TransmissionPass";
 export { createExternalParityContactShadow } from "./shadows/ContactShadows";
 export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
 export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";

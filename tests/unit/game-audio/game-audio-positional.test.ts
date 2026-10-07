@@ -54,11 +54,18 @@ class FakeAudioContext implements GameAudioContextLike {
   }
 }
 
+/** C-25: cues need `asset` or `play` — `frequency`/`duration` alone no longer synthesize a default bleep. */
+const oscPlay = (context: GameAudioContextLike, destination: AudioNode): void => {
+  const oscillator = context.createOscillator!();
+  oscillator.connect(destination);
+  oscillator.start();
+};
+
 function createCues() {
   return {
-    blip: { id: "blip" as const, frequency: 220 },
-    stepGrass: { id: "stepGrass" as const, frequency: 140 },
-    stepStone: { id: "stepStone" as const, frequency: 180 }
+    blip: { id: "blip" as const, play: oscPlay },
+    stepGrass: { id: "stepGrass" as const, play: oscPlay },
+    stepStone: { id: "stepStone" as const, play: oscPlay }
   };
 }
 

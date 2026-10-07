@@ -1,0 +1,60 @@
+{
+  "root": "apps/showcase-patrol-wing",
+  "files": 15,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 532,
+      "construct": "lights.spot({ intensity: 3.2 })",
+      "mapping": "approximate",
+      "target": "lights.spot({ power: 10 })",
+      "note": "physical units: cd=lm/π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 533,
+      "construct": "lights.point({ intensity: 2.2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 28 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 533,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 534,
+      "construct": "lights.point({ intensity: 2.3 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 29 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 534,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 535,
+      "construct": "lights.point({ intensity: 1.55 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 19 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/main.ts",
+      "line": 535,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

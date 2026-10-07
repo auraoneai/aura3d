@@ -1,0 +1,97 @@
+{
+  "root": "apps/showcase-mech-hangar",
+  "files": 24,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 719,
+      "construct": "lights.point({ intensity: 3.65 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 46 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 719,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 720,
+      "construct": "lights.point({ intensity: 3.05 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 38 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 720,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 721,
+      "construct": "lights.point({ intensity: 3.75 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 47 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 721,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 730,
+      "construct": "lights.point({ intensity: 2.1 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 26 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 730,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 731,
+      "construct": "lights.point({ intensity: 2.4 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 30 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 731,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 732,
+      "construct": "lights.point({ intensity: 2 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 25 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/main.ts",
+      "line": 732,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}
