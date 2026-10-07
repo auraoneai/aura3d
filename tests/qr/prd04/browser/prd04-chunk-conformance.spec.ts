@@ -6,7 +6,7 @@
 import { expect, test } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 
 /**
  * §15.3 extension→probe map: which a3d_prd04_* chunk compiles constitute an
