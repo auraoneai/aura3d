@@ -8,7 +8,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { startExampleDevServer, type ExampleDevServer } from "../../../browser/example-dev-server";
+import { startPrd04DevServer as startExampleDevServer, type ExampleDevServer } from "../dev-server";
 import { prd04SceneSpecs } from "../../../../benchmarks/quality-rebuild/scenes/prd04/index";
 
 const FLAGS = process.env.PRD04_FLAGS ?? "none";
@@ -51,7 +51,10 @@ test.describe(`prd04 lane captures (flags=${FLAGS})`, () => {
         if (!ready) {
           results.push({ scene: sceneId, engine, status: "timeout" });
           test.fail(true, "harness did not publish ready/error within 120s");
-          return;
+          // Failing the assertion below makes the test "fail as expected" (the
+          // timeout is tolerated evidence in report.json). `return`ing clean
+          // here reports "expected to fail, but passed" — a real job failure.
+          expect(ready, `${sceneId}/${engine} published ready/error`).toBe(true);
         }
         const error = await page.evaluate(() => (window as any).__QR_ERROR__ ?? null);
         const payload = await page.evaluate(() => (window as any).__QR_READY__ ?? null);
