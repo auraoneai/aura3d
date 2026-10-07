@@ -1,0 +1,985 @@
+{
+  "codemod": "post-v2",
+  "files": 25,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/boot.ts",
+      "line": 140,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "space",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 10,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 13,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.41 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 22,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.10 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 25,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.87 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 28,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 40,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.63 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "line": 46,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 151,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.22 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 152,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.60 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 153,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.60 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 157,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 158,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 161,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 162,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 163,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 164,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 166,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 167,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 296,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.39 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "line": 311,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 291,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.22 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 292,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.60 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 293,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.60 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 296,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 297,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.19 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 301,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 302,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 305,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 306,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 311,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 312,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 321,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 322,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 323,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 324,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.42 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 325,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 326,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 498,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.39 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 512,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 641,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 683,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 778,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 809,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.93 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 819,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 833,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.70 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 853,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.79 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 911,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 911,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.72)"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 912,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 913,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 913,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 913,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "line": 954,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "space",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-aurora-lander/src/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/lander.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/prediction.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/sites.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/terrain.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/touchdown.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 10,
+            "emissive": "#2dd4bf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.711
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 13,
+            "emissive": "#34d399",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 0.414
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 16,
+            "emissive": "#99f6e4",
+            "emissiveIntensity": 2.6,
+            "lumaXstrength": 1.635
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 19,
+            "emissive": "#5eead4",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.128
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 22,
+            "emissive": "#134e4a",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.097
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 25,
+            "emissive": "#fbbf24",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.869
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 28,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 2,
+            "lumaXstrength": 0.989
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 37,
+            "emissive": "#ef4444",
+            "emissiveIntensity": 1.3,
+            "lumaXstrength": 1.213
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 40,
+            "emissive": "#bae6fd",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.63
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/materials.ts",
+            "line": 46,
+            "emissive": "#fbbf24",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 0.948
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 151,
+            "emissive": "#241c1a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.224
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 152,
+            "emissive": "#1c2028",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.596
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 153,
+            "emissive": "#1c2028",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.596
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 157,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 158,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 161,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.425
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 162,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.425
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 163,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 164,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 166,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 167,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 296,
+            "emissive": "#0ea5e9",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.394
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/v2/scene/world.ts",
+            "line": 311,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 0.791
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/lander-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 291,
+            "emissive": "#241c1a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.224
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 292,
+            "emissive": "#1c2028",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.596
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 293,
+            "emissive": "#1c2028",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.596
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 296,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 297,
+            "emissive": "#22d3ee",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.186
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 301,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 302,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 305,
+            "emissive": "#2dd4bf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.711
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 306,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 311,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 312,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 321,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.425
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 322,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 323,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.425
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 324,
+            "emissive": "#0891b2",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.425
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 325,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 326,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 498,
+            "emissive": "#0ea5e9",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.394
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 512,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 0.791
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 641,
+            "emissive": "#2dd4bf",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.711
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 683,
+            "emissive": "#34d399",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.296
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 778,
+            "emissive": "#f59e0b",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.494
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 809,
+            "emissive": "#ef4444",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.933
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 819,
+            "emissive": "#fbbf24",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.79
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 833,
+            "emissive": "#bae6fd",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.7
+          },
+          {
+            "file": "apps/showcase-aurora-lander/src/legacy/main.ts",
+            "line": 853,
+            "emissive": "#fbbf24",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.79
+          }
+        ],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/ghost.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/lander.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/prediction.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/sites.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/terrain.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/gameplay/touchdown.ts",
+      "report": {
+        "emissive": [],
+        "preset": "space",
+        "notMigrated": false
+      }
+    }
+  ]
+}

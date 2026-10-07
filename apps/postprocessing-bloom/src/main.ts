@@ -1,9 +1,4 @@
-import {
-  Geometry,
-  RenderDeviceError,
-  UnlitMaterial
-} from "@aura3d/rendering";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
 
 declare global {
   interface Window {
@@ -19,17 +14,26 @@ interface CurrentRoutesPostprocessingBloomRuntime {
   readonly fps: number;
   readonly postprocessChain: readonly string[];
   readonly bloomEnabled: boolean;
+  readonly preset: "neon-night";
   readonly outputNonDarkPixels: number;
   readonly outputBrightPixels: number;
-  readonly renderer: "a3d-webgl2";
+  readonly renderer: string;
   readonly elapsedMs: number;
   readonly error?: string;
 }
 
 const APP_ID = "postprocessing-bloom" as const;
-const WIDTH = 1280;
-const HEIGHT = 720;
-const POSTPROCESS_CHAIN = ["bloom", "tone-mapping", "fxaa"] as const;
+// §6.8 neon-night preset chain (emissiveStrengthRange [3,8] drives bloom v2).
+const POSTPROCESS_CHAIN = [
+  "ambient-occlusion",
+  "bloom-v2",
+  "color-grade",
+  "vignette",
+  "film-grain",
+  "chromatic-aberration",
+  "aces",
+  "fxaa"
+] as const;
 
 void run();
 
@@ -39,8 +43,8 @@ async function run(): Promise<void> {
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     throw new Error(`${APP_ID} requires #app and canvas#viewport.`);
   }
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
+  canvas.width = 1280;
+  canvas.height = 720;
 
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
@@ -51,95 +55,117 @@ async function run(): Promise<void> {
   publish();
 
   try {
-    const renderer = await A3DRenderer.create({
-      backend: "webgl2",
-      canvas,
-      width: WIDTH,
-      height: HEIGHT,
-      clearColor: [0.006, 0.008, 0.012, 1]
+    const app = createAuraApp(canvas, {
+      diagnostics: { overlay: false, performancePanel: false },
+      output: { preset: "neon-night" },
+      scene: scene()
+        .background("#04060c")
+        .add(primitives.plane({
+          name: "dark studio floor",
+          material: material.pbr({ color: "#0b0e14", roughness: 0.9, metallic: 0.05 })
+        }).position(0, -0.02, 0).rotate(-Math.PI / 2, 0, 0).scale([7, 7, 1]))
+        .add(primitives.box({
+          name: "back wall panel",
+          material: material.pbr({ color: "#0a0d16", roughness: 0.85, metallic: 0.1 })
+        }).position(0, 1.35, -1.65).scale([7, 2.9, 0.12]))
+        // HDR emissive neon fixtures — intensities inside neon-night's [3,8].
+        .add(primitives.torus({
+          name: "magenta neon ring",
+          material: material.emissive({ color: "#1a0412", emissive: "#ff2ea6", emissiveIntensity: 6.5 })
+        }).position(-1.55, 1.6, -1.5).scale(0.62))
+        .add(primitives.torus({
+          name: "cyan neon ring",
+          material: material.emissive({ color: "#021014", emissive: "#22d3ee", emissiveIntensity: 5.2 })
+        }).position(0, 1.62, -1.5).scale(0.62))
+        .add(primitives.torus({
+          name: "amber neon ring",
+          material: material.emissive({ color: "#170e02", emissive: "#f59e0b", emissiveIntensity: 4.1 })
+        }).position(1.55, 1.6, -1.5).scale(0.62))
+        .add(primitives.box({
+          name: "violet neon bar left",
+          material: material.emissive({ color: "#12041c", emissive: "#a855f7", emissiveIntensity: 7.4 })
+        }).position(-2.6, 0.9, -1.45).scale([0.05, 1.6, 0.05]))
+        .add(primitives.box({
+          name: "teal neon bar right",
+          material: material.emissive({ color: "#041414", emissive: "#2dd4bf", emissiveIntensity: 3.4 })
+        }).position(2.6, 0.9, -1.45).scale([0.05, 1.6, 0.05]))
+        .add(primitives.sphere({
+          name: "dim steel sphere",
+          material: material.pbr({ color: "#2a3140", roughness: 0.32, metallic: 0.85 })
+        }).position(0, 0.42, 0.4).scale(0.42))
+        .add(lights.ambient({ intensity: 0.06, color: "#334155" }))
+        .add(lights.directional({ position: [-2, 4, 3], intensity: 0.35, color: "#94a3b8" }))
+        .add(lights.point({ position: [-1.55, 1.7, -0.9], intensity: 1.4, color: "#ff2ea6" }))
+        .add(lights.point({ position: [1.55, 1.7, -0.9], intensity: 1.2, color: "#f59e0b" }))
+        .camera(camera.perspective({ position: [0, 1.35, 4.6], target: [0, 1.15, -1.2], fov: 46 }))
     });
+
     let frameCount = 0;
     let fps = 0;
     let fpsFrames = 0;
-    let fpsFrom = 0;
+    let fpsFrom = performance.now();
     let lastUi = 0;
     let lastMetricSample = 0;
     let metrics = { nonDark: 0, bright: 0 };
-    const triangle = Geometry.triangle();
-    const gold = new UnlitMaterial({ color: [1, 0.82, 0.18, 1], renderState: { cullMode: "none" } });
-    const blue = new UnlitMaterial({ color: [0.1, 0.52, 1, 1], renderState: { cullMode: "none" } });
-    const render = (now: number): void => {
-      try {
-        frameCount += 1;
-        fpsFrames += 1;
-        if (fpsFrom === 0) fpsFrom = now;
-        if (now - fpsFrom >= 500) {
-          fps = fpsFrames * 1000 / (now - fpsFrom);
-          fpsFrames = 0;
-          fpsFrom = now;
+    let sampling = false;
+
+    app.onFrame(async ({ dt }) => {
+      frameCount += 1;
+      fpsFrames += 1;
+      const now = performance.now();
+      if (now - fpsFrom >= 500) {
+        fps = fpsFrames * 1000 / (now - fpsFrom);
+        fpsFrames = 0;
+        fpsFrom = now;
+      }
+      if (!sampling && now - lastMetricSample > 500) {
+        sampling = true;
+        lastMetricSample = now;
+        try {
+          metrics = await samplePixels(app);
+        } catch {
+          // capture is best-effort evidence — never fail the frame on it.
+        } finally {
+          sampling = false;
         }
-        const diagnostics = renderer.render({
-          cameraPolicy: "auto-frame",
-          cameraPosition: [0, 0, 3.6],
-          cameraFrameBounds: { min: [-1.4, -0.9, -0.8], max: [1.4, 0.9, 0.8] },
-          cameraFrameOptions: { yawRadians: -0.2 + Math.sin(now / 1500) * 0.18, pitchRadians: -0.08, paddingRatio: 0.08 },
-          renderItems: [
-            {
-              geometry: triangle,
-              material: gold,
-              modelMatrix: multiply(translation(Math.sin(now / 900) * 0.16 - 0.36, 0.12, 0), scale(1.05, 1.05, 1)),
-              label: "bloom-hot-triangle"
-            },
-            {
-              geometry: triangle,
-              material: blue,
-              modelMatrix: multiply(translation(0.42, -0.18, 0.08), scale(0.92, 0.92, 1)),
-              label: "bloom-blue-triangle"
-            }
-          ],
-          postprocess: {
-            bloom: { threshold: 0.08, intensity: 0.36, radius: 2 },
-            toneMapping: { exposure: 1.15, gamma: 1, operator: "reinhard", inputColorSpace: "linear", outputColorSpace: "srgb" },
-            fxaa: true
-          }
-        });
-        if (frameCount <= 2 || now - lastMetricSample > 500) {
-          metrics = pixelMetrics(renderer.device.readPixels(0, 0, WIDTH, HEIGHT));
-          lastMetricSample = now;
-        }
-        runtime = createRuntime(startedAt, frameCount === 1 ? "ready" : "running", {
+      }
+      if (now - lastUi > 220) {
+        const diagnostics = app.diagnostics();
+        runtime = createRuntime(startedAt, frameCount <= 2 ? "ready" : "running", {
           frameCount,
           drawCalls: diagnostics.drawCalls,
           fps,
           outputNonDarkPixels: metrics.nonDark,
-          outputBrightPixels: metrics.bright
+          outputBrightPixels: metrics.bright,
+          renderer: diagnostics.renderer?.runtime.backend ?? "a3d-webgl2"
         });
-        window.__a3dCurrentRoutesPostprocessingBloom = runtime;
-        if (frameCount === 1 || now - lastUi > 220) {
-          publish();
-          lastUi = now;
-        }
-        requestAnimationFrame(render);
-      } catch (error) {
-        runtime = createRuntime(startedAt, "error", { error: formatError(error) });
         publish();
+        lastUi = now;
       }
-    };
-    requestAnimationFrame(render);
+      void dt;
+    });
   } catch (error) {
     runtime = createRuntime(startedAt, "error", { error: formatError(error) });
     publish();
   }
 }
 
-function pixelMetrics(pixels: Uint8Array): { readonly nonDark: number; readonly bright: number } {
+type BloomApp = ReturnType<typeof createAuraApp>;
+
+async function samplePixels(app: BloomApp): Promise<{ readonly nonDark: number; readonly bright: number }> {
+  const bitmap = await app.output.capture({ type: "image-bitmap" });
+  if (!(bitmap instanceof ImageBitmap)) return { nonDark: 0, bright: 0 };
+  const probe = document.createElement("canvas");
+  probe.width = bitmap.width;
+  probe.height = bitmap.height;
+  const ctx = probe.getContext("2d");
+  if (!ctx) return { nonDark: 0, bright: 0 };
+  ctx.drawImage(bitmap, 0, 0);
+  const pixels = ctx.getImageData(0, 0, probe.width, probe.height).data;
   let nonDark = 0;
   let bright = 0;
   for (let index = 0; index < pixels.length; index += 4) {
-    const r = pixels[index] ?? 0;
-    const g = pixels[index + 1] ?? 0;
-    const b = pixels[index + 2] ?? 0;
-    const luma = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    const luma = (pixels[index] ?? 0) * 0.2126 + (pixels[index + 1] ?? 0) * 0.7152 + (pixels[index + 2] ?? 0) * 0.0722;
     if (luma > 18) nonDark += 1;
     if (luma > 120) bright += 1;
   }
@@ -149,7 +175,7 @@ function pixelMetrics(pixels: Uint8Array): { readonly nonDark: number; readonly 
 function createRuntime(
   startedAt: number,
   status: CurrentRoutesPostprocessingBloomRuntime["status"],
-  patch: Partial<Omit<CurrentRoutesPostprocessingBloomRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "postprocessChain" | "bloomEnabled">> = {}
+  patch: Partial<Omit<CurrentRoutesPostprocessingBloomRuntime, "appId" | "status" | "postprocessChain" | "bloomEnabled" | "preset" | "elapsedMs">> = {}
 ): CurrentRoutesPostprocessingBloomRuntime {
   return {
     appId: APP_ID,
@@ -159,34 +185,13 @@ function createRuntime(
     fps: patch.fps ?? 0,
     postprocessChain: POSTPROCESS_CHAIN,
     bloomEnabled: true,
+    preset: "neon-night",
     outputNonDarkPixels: patch.outputNonDarkPixels ?? 0,
     outputBrightPixels: patch.outputBrightPixels ?? 0,
-    renderer: "a3d-webgl2",
+    renderer: patch.renderer ?? "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };
-}
-
-function translation(x: number, y: number, z: number): Float32Array {
-  return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]);
-}
-
-function scale(x: number, y: number, z: number): Float32Array {
-  return new Float32Array([x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1]);
-}
-
-function multiply(left: Float32Array, right: Float32Array): Float32Array {
-  const output = new Float32Array(16);
-  for (let column = 0; column < 4; column += 1) {
-    for (let row = 0; row < 4; row += 1) {
-      output[column * 4 + row] =
-        left[row] * right[column * 4] +
-        left[4 + row] * right[column * 4 + 1] +
-        left[8 + row] * right[column * 4 + 2] +
-        left[12 + row] * right[column * 4 + 3];
-    }
-  }
-  return output;
 }
 
 function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingBloomRuntime): void {
@@ -194,7 +199,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingBloomRu
     <section class="panel">
       <div>
         <h1>CurrentRoutes Postprocessing Bloom</h1>
-        <p>Renderer-owned bloom, tone mapping, and FXAA over real scene pixels.</p>
+        <p>HDR emissive neon scene on the <code>neon-night</code> preset — bloom v2, ACES, FXAA.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>
@@ -202,6 +207,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingBloomRu
       ${metric("Frames", runtime.frameCount)}
       ${metric("Draw calls", runtime.drawCalls)}
       ${metric("FPS", runtime.fps.toFixed(1))}
+      ${metric("Preset", runtime.preset)}
       ${metric("Bloom", runtime.bloomEnabled ? "enabled" : "off")}
       ${metric("Non-dark pixels", runtime.outputNonDarkPixels)}
       ${metric("Bright pixels", runtime.outputBrightPixels)}
@@ -226,8 +232,5 @@ function escapeHtml(value: string): string {
 }
 
 function formatError(error: unknown): string {
-  if (error instanceof RenderDeviceError) {
-    return `${error.name}: ${error.message} (${error.code})`;
-  }
   return error instanceof Error ? error.stack ?? error.message : String(error);
 }

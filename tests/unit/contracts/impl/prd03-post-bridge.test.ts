@@ -20,6 +20,7 @@ import {
   createRootPostPipeline
 } from "../../../../packages/engine/src/agent-api/postBridge";
 import { QUALITY_TIERS } from "@aura3d/rendering/contracts";
+import { resolvePostTier } from "../../../../packages/rendering/src/post/PostQualityTiers";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 
 /**
@@ -196,6 +197,35 @@ describe("postBridge §7.1 — v2 option assembly (createRootPostPipeline)", () 
     expect(bloom.scatter).toBe(0.6);
     expect(bloom.clampLuminance).toBe(24);
     expect(diagnostics.filter((d) => d.code === "post-field-deprecated").length).toBe(2);
+  });
+
+  test("autoExposure (CCR-03-2): authored output.autoExposure lands as the S8 bag with authored + default fields", () => {
+    const options = createRootPostPipeline(
+      snapshotWith({}),
+      { near: 0.1, far: 100 },
+      { autoExposure: { minEv: -2, maxEv: 2, speedUp: 6, compensationEv: 0.5 } },
+      tier
+    ).options;
+    const ae = options.autoExposure as { minEv: number; maxEv: number; speedUp: number; speedDown: number; meteringMask: string; compensationEv: number };
+    expect(ae.minEv).toBe(-2);
+    expect(ae.maxEv).toBe(2);
+    expect(ae.speedUp).toBe(6);
+    expect(ae.speedDown).toBe(1);
+    expect(ae.meteringMask).toBe("center-weighted");
+    expect(ae.compensationEv).toBe(0.5);
+  });
+
+  test("autoExposure: absent by default; authored `false` stays off; Low tier gates it off", () => {
+    expect(assemble({}).autoExposure).toBeUndefined();
+    const off = createRootPostPipeline(
+      snapshotWith({}), { near: 0.1, far: 100 }, { autoExposure: false }, tier
+    ).options;
+    expect(off.autoExposure).toBeUndefined();
+    const lowResolution = { ...resolvePostTier(QUALITY_TIERS.low, "low", { autoExposureAuthored: true }), autoExposure: false };
+    const gated = createRootPostPipeline(
+      snapshotWith({}), { near: 0.1, far: 100 }, { autoExposure: {} }, QUALITY_TIERS.low, [], lowResolution
+    ).options;
+    expect(gated.autoExposure).toBeUndefined();
   });
 
   test("createProductionRuntimePostprocess flag-on attaches the v2 pipeline bag", () => {

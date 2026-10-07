@@ -20,10 +20,23 @@ export interface PostPassDescriptor extends RegistryEntry {
   readonly gpuOnly: true;                      // CPU passes are rejected: POSTPROCESS_PASS_NOT_GPU:<id>
 }
 
+/**
+ * §6.1 space rule: every insertion anchor before `after-tonemap` is
+ * `linear-hdr`; only `after-tonemap` passes may declare `display`. Violations
+ * throw `POSTPROCESS_SPACE_INVALID:<id>`.
+ */
+export function validatePostPassSpace(pass: Pick<PostPassDescriptor, "id" | "insertAt" | "space">): void {
+  const required = pass.insertAt === "after-tonemap" ? "display" : "linear-hdr";
+  if (pass.space !== required) {
+    throw new Error(`POSTPROCESS_SPACE_INVALID:${pass.id}`);
+  }
+}
+
 const postPasses = createRegistry<PostPassDescriptor>("postPasses");
 
 export function registerPostPass(pass: PostPassDescriptor): () => void {
   if (pass.gpuOnly !== true) throw new Error(`POSTPROCESS_PASS_NOT_GPU:${pass.id}`);
+  validatePostPassSpace(pass);
   return postPasses.register(pass);
 }
 
@@ -39,6 +52,8 @@ export interface PostPipelineOptions {
   readonly exposure: number; readonly bloom?: unknown; readonly toneMapping: AuraToneMappingOperatorLike;
   readonly grade?: unknown; readonly lut?: unknown; readonly vignette?: unknown; readonly filmGrain?: unknown; readonly chromaticAberration?: unknown;
   readonly dither: boolean; readonly backgroundPassthrough?: boolean; readonly customPasses?: readonly PostPassDescriptor[];
-} // `unknown` members are typed by PRD 03 in post/PostGraph.ts (GtaoOptions, BloomOptionsV2, TaaOptions, DofOptions, MotionBlurOptions, ColorGradeOptionsV2, LutTexture3D) — adding the concrete types is an allowed additive CCR.
+  /** CCR-03-2: `output.autoExposure` typed in post/PostGraph.ts (AutoExposureOptionsV2 | false). */
+  readonly autoExposure?: unknown;
+} // `unknown` members are typed by PRD 03 in post/PostGraph.ts (GtaoOptions, BloomOptionsV2, TaaOptions, DofOptions, MotionBlurOptions, ColorGradeOptionsV2, LutTexture3D, AutoExposureOptionsV2) — adding the concrete types is an allowed additive CCR.
 // RendererPostProcessOptions (Renderer.ts:378) additions (PR 0a): pipeline?: "v2" | "legacy"; v2?: PostPipelineOptions
 // RenderDevice.executePostGraph?(source: SceneTargets, options: PostPipelineOptions, output: RenderTarget | null): PostGraphReport  (optional member, PR 0a)

@@ -10,23 +10,16 @@ import type { AuraOutputOptions } from "./output";
 
 export type AuraAntiAliasMode = "auto" | "msaa" | "taa" | "smaa" | "fxaa" | "off";
 export type AuraPostPresetId = "product-studio" | "daylight-outdoor" | "neon-night" | "space" | "underwater" | "arena-fight" | "cinematic-film";
-export interface AuraAutoExposureOptions { readonly minEv?: number; readonly maxEv?: number; readonly speedUp?: number; readonly speedDown?: number; readonly meteringMask?: "center-weighted" | "average"; }
+export interface AuraAutoExposureOptions { readonly minEv?: number; readonly maxEv?: number; readonly speedUp?: number; readonly speedDown?: number; readonly meteringMask?: "center-weighted" | "average"; readonly compensationEv?: number; }
 export interface AuraPostPreset { readonly id: AuraPostPresetId; readonly output: AuraOutputOptions; readonly effects: readonly AuraNodeBuilder<AuraEffectNode>[]; readonly emissiveStrengthRange: readonly [number, number]; }
 
 /**
- * PR 0a: the seven ids exist. Each `output` is `{}` and each `effects` is `[]`,
- * with a PRESET_PENDING degradation. PRD 03 fills the values in
- * `agent-api/postPresets.ts`, and this file re-exports from there once it exists.
+ * The §6.8 cinematic presets — real data lives in `agent-api/postPresets.ts`
+ * (`prd03PostPresets`); this re-export is the C-13 stable name. The named
+ * re-export resolves after `postPresets.ts` finishes evaluating (ESM live
+ * binding), which is safe because `postPresets` is only read at call time.
  */
-export const postPresets: Readonly<Record<AuraPostPresetId, AuraPostPreset>> = {
-  "product-studio": { id: "product-studio", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  "daylight-outdoor": { id: "daylight-outdoor", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  "neon-night": { id: "neon-night", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  space: { id: "space", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  underwater: { id: "underwater", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  "arena-fight": { id: "arena-fight", output: {}, effects: [], emissiveStrengthRange: [0, 0] },
-  "cinematic-film": { id: "cinematic-film", output: {}, effects: [], emissiveStrengthRange: [0, 0] }
-};
+export { prd03PostPresets as postPresets } from "../agent-api/postPresets.js";
 
 export interface AuraCustomPostPass { readonly name: string; readonly insertAt: PostInsertAt; readonly fragment: { readonly glsl: string; readonly wgsl?: string }; readonly uniforms?: Readonly<Record<string, number | readonly number[]>>; readonly inputs?: readonly ("color" | "depth" | "velocity")[]; }
 export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => void; setQualityTier(t: AuraQualityTier | "auto"): void; }

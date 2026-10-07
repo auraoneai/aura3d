@@ -15,6 +15,7 @@
 
 import {
   createRendererPostprocessPlanDiagnostics,
+  postVelocityCoverage,
   volumetricLightDirection,
   type CollectedLight,
   type RendererPostProcessOptions
@@ -30,10 +31,11 @@ import {
   type AuraQualityTierSettings,
   type QrFlags
 } from "@aura3d/rendering/contracts";
-import type { BloomOptionsV2 } from "@aura3d/rendering";
+import type { BloomOptionsV2, PostTierResolution } from "@aura3d/rendering";
 import type { AuraCustomPostPass, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneSnapshot } from "./index.js";
+import { expandPostPreset, presetCapabilityDegraded } from "./postPresets.js";
 
 /* ------------------------------------------------------------------------- */
 /* Submitted postprocess telemetry                                           */
@@ -218,6 +220,10 @@ export interface PostSectionReport {
   readonly temporalRequested: boolean;
   /** Phase 1 (flag-on): the tier-AA resolution that produced the submit, with its reason. */
   readonly antiAlias: { readonly mode: string; readonly sampleCount: number; readonly reason?: string; readonly tier: string } | null;
+  /** Phase 4 (C-14): items tracked by the velocity binder and how many carry
+   * previous-frame data. `moving/movingWithHistory` drive the TAA coverage
+   * gate; `items/withVelocity` is the §7.2 contract shape. `null` pre-frame. */
+  readonly velocityCoverage: { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } | null;
   /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes). */
   readonly skipped: readonly string[];
   readonly customPasses: readonly { readonly id: string; readonly status: string }[];
@@ -281,6 +287,7 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     fusedLdr: false,
     targetFormat: null,
     temporalRequested: false,
+    velocityCoverage: null,
     skipped: [] as readonly string[],
     warnings: [] as readonly string[]
   };
@@ -313,6 +320,7 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     fusedLdr: plan.canFuseLdr,
     targetFormat: plan.targetFormat,
     temporalRequested: submitted.temporalRequested,
+    velocityCoverage: authoredContext?.flags.post ? postVelocityCoverage() : null,
     antiAlias,
     skipped: [
       ...(antiAlias?.reason ? [`aa:${antiAlias.reason}`] : []),
@@ -405,7 +413,11 @@ function customPassToDescriptor(pass: AuraCustomPostPass): PostPassDescriptor {
 export class Prd03PostSurface implements AuraPostSurface {
   private requestedTier: AuraQualityTier | "auto" | null = null;
 
-  constructor(private readonly flags: QrFlags, private readonly canvas?: HTMLCanvasElement) { }
+  constructor(
+    private readonly flags: QrFlags,
+    private readonly canvas?: HTMLCanvasElement,
+    private readonly app?: AuraApp
+  ) { }
 
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
@@ -416,6 +428,13 @@ export class Prd03PostSurface implements AuraPostSurface {
     this.requestedTier = tier;
     // The compiler reads the shared context store when resolving tier AA (Phase 1).
     recordPostQualityTier(tier, this.canvas);
+    // §6.8: delegate to the C-27 controller when lane 11 exposes `app.quality`;
+    // `quality.onChange` re-records below so the next compile/frame re-resolves
+    // the post tier. On this build's surface the recorded tier is the channel.
+    if (tier !== "auto") {
+      const quality = qualityControllerOf(this.app);
+      void quality?.set(tier);
+    }
   }
 
   /** Test/diagnostic accessor for the recorded tier. */
@@ -424,13 +443,22 @@ export class Prd03PostSurface implements AuraPostSurface {
   }
 }
 
+/** C-27 duck-type: `app.quality` is lane 11's surface — read it if present. */
+function qualityControllerOf(app: AuraApp | undefined): { set(tier: AuraQualityTier, overrides?: unknown): Promise<void>; onChange(l: (e: { readonly to: AuraQualityTier }) => void): () => void } | undefined {
+  const quality = (app as unknown as { quality?: { set(tier: AuraQualityTier, overrides?: unknown): Promise<void>; onChange(l: (e: { readonly to: AuraQualityTier }) => void): () => void } } | undefined)?.quality;
+  return quality && typeof quality.set === "function" && typeof quality.onChange === "function" ? quality : undefined;
+}
+
 /** C-38 factory: mounts `app.post` for prd03 with the app's resolved flags. */
 export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFlags; readonly options: unknown }): AuraPostSurface {
   // Record the C-38 `output` options so `compiler/postprocess.ts` can wire
   // Phase-1 behaviour (exposure product, operator, tier AA) without reaching
   // back into `createAuraApp` scope.
   recordAuthoredPostContext(ctx, app);
-  return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined);
+  // §6.8 re-resolution: a C-27 tier change re-records the authored tier so the
+  // next postpipeline resolve reads the new `QUALITY_TIERS` row.
+  qualityControllerOf(app)?.onChange((event) => recordPostQualityTier(event.to, app.canvas ?? undefined));
+  return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined, app);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -466,7 +494,7 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // Lane-07 factories route through this bridge on the v2 chain (§6.9).
   "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference"],
   "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur"],
-  "motion-blur": ["shutter", "maxBlur"],
+  "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   "screen-space-reflections": ["maxDistance", "intensity"],
   outline: ["color", "width", "threshold"]
 };
@@ -485,7 +513,7 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 };
 
 export interface PostFieldDiagnostic {
-  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE";
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;
@@ -611,7 +639,8 @@ export function createRootPostPipeline(
   camera: { readonly near?: number; readonly far?: number; readonly mode?: string } | undefined,
   output: AuraOutputOptions | undefined,
   tierSettings: AuraQualityTierSettings,
-  lights: readonly CollectedLight[] = []
+  lights: readonly CollectedLight[] = [],
+  tierResolution?: PostTierResolution
 ): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
   const nodes = groups.flatten(snapshot.nodes);
   const diagnostics: PostFieldDiagnostic[] = [];
@@ -625,7 +654,32 @@ export function createRootPostPipeline(
     }
   }
 
-  const effect = (kind: string) => nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === kind);
+  // §6.8 (Phase 5): `output.preset` expands into `output` + effect nodes.
+  // Authored `output` fields win over the preset's; an authored effect node
+  // overrides the preset's same-effect node field by field. Presets naming
+  // agx/neutral render aces while C-05's operator selection is a stub.
+  const authoredEffectNodes = nodes.filter((node): node is AuraEffectNode => node.kind === "effect");
+  const expansion = expandPostPreset(output, authoredEffectNodes);
+  const effectiveOutput = expansion.output;
+  const effectNodes = expansion.nodes;
+  if (expansion.preset && presetCapabilityDegraded(expansion.preset, output?.toneMapping)) {
+    diagnostics.push({
+      code: "preset-capability-degraded",
+      effect: "output",
+      field: "preset",
+      message: `preset "${expansion.preset.id}" declares ${expansion.preset.output.toneMapping}; renders as "aces" until C-05's operator selection is real.`
+    });
+  }
+
+  const tierDisabled = (stage: string, reason: string): void => {
+    diagnostics.push({
+      code: "post-tier-disabled",
+      effect: stage,
+      message: `${stage} is off on the ${tierResolution?.tier ?? "resolved"} post tier (${reason}).`
+    });
+  };
+
+  const effect = (kind: string) => effectNodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === kind);
   const bloomNode = effect("bloom");
   const gradeNode = effect("color-grade");
   const vignetteNode = effect("vignette");
@@ -641,7 +695,7 @@ export function createRootPostPipeline(
   // a lane-15 `AuraRuntimeError` union entry is qr-requested). `radius` is
   // interpreted in metres flag-on; contactOcclusion is ambientOcclusion with
   // a 0.2 m default radius.
-  const aoNodes = nodes.filter((node): node is AuraEffectNode =>
+  const aoNodes = effectNodes.filter((node): node is AuraEffectNode =>
     node.kind === "effect" && (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"));
   if (aoNodes.length > 1) {
     throw new Error(
@@ -659,8 +713,33 @@ export function createRootPostPipeline(
   const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
   if (bloom) diagnostics.push(...bloom.diagnostics);
 
-  const exposure = (output?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
-  const toneMapping = output?.toneMapping ?? "aces";
+  const exposure = (effectiveOutput?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
+  const toneMapping = effectiveOutput?.toneMapping ?? "aces";
+
+  // §6.8 tier gates (Phase 5): `resolvePostTier` decides which authored or
+  // preset-contributed stages the resolved tier can afford. Disabled stages
+  // drop their option bag and report `post-tier-disabled` so `post.skipped`
+  // shows the tier, not a missing node.
+  const aoEnabled = tierResolution === undefined || tierResolution.gtao.enabled;
+  if (aoNode && !aoEnabled) tierDisabled("S2-gtao", "ambientOcclusion off in C-27");
+  const godRaysEnabled = tierResolution === undefined || tierResolution.godRays.enabled;
+  if (volumetricNode && !godRaysEnabled) tierDisabled("S4-god-rays", "god rays off below Medium");
+  const dofEnabled = tierResolution === undefined || tierResolution.dof.enabled;
+  if (dofNode && !dofEnabled) tierDisabled("S6-dof", "DOF off below High");
+  const mbEnabled = tierResolution === undefined || tierResolution.motionBlur.enabled;
+  if (mbNode && !mbEnabled) tierDisabled("S7-motion-blur", "motion blur off below High");
+  const ssrEnabled = tierResolution === undefined || tierResolution.ssr.enabled;
+  if (ssrNode && !ssrEnabled) tierDisabled("S3-ssr", "SSR off below High");
+  const grainEnabled = tierResolution === undefined || tierResolution.allowsFilmGrain;
+  if (grainNode && !grainEnabled) tierDisabled("S12-film-grain", "grain off on Low");
+  const caEnabled = tierResolution === undefined || tierResolution.allowsChromaticAberration;
+  if (caNode && !caEnabled) tierDisabled("S10-chromatic-aberration", "CA off on Low");
+  // S8 auto-exposure: authored `output.autoExposure` (CCR-03-2) gated by the
+  // C-27 tier row (off on Low; "if preset" otherwise).
+  const authoredAe = effectiveOutput?.autoExposure;
+  const aeRequested = authoredAe !== undefined && authoredAe !== false;
+  const aeEnabled = tierResolution === undefined || tierResolution.autoExposure;
+  if (aeRequested && !aeEnabled) tierDisabled("S8-auto-exposure", "auto-exposure off on Low");
 
   const options: PostPipelineOptions = {
     antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
@@ -673,26 +752,26 @@ export function createRootPostPipeline(
     ...(bloom ? { bloom: bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
-    dither: output?.dither !== false,
-    backgroundPassthrough: output?.backgroundPassthrough === true,
-    ...(aoNode ? {
+    dither: effectiveOutput?.dither !== false,
+    backgroundPassthrough: effectiveOutput?.backgroundPassthrough === true,
+    ...(aoNode && aoEnabled ? {
       ao: {
         radius: aoNode.effect === "contact-occlusion"
           ? numberField(aoNode, "radius", 0.2)
           : numberField(aoNode, "radius", 0.35),
         intensity: numberField(aoNode, "intensity", 1),
         falloff: numberField(aoNode, "falloff", 1),
-        directions: 4 as const,
-        steps: 4 as const,
-        halfRes: true,
-        temporal: true,
-        multiBounce: true,
+        directions: (tierResolution?.gtao.enabled === true ? tierResolution.gtao.directions : 4) as 2 | 4,
+        steps: (tierResolution?.gtao.enabled === true ? tierResolution.gtao.steps : 4) as 4 | 6,
+        halfRes: tierResolution?.gtao.enabled === true ? tierResolution.gtao.halfRes : true,
+        temporal: tierResolution?.gtao.enabled === true ? tierResolution.gtao.temporal : true,
+        multiBounce: aoNode.multiBounce !== false,
         fallbackStrength: 0.6
       }
     } : {}),
-    ...(volumetricNode ? {
+    ...(volumetricNode && godRaysEnabled ? {
       godRays: {
-        samples: 32 as const,
+        samples: (tierResolution?.godRays.enabled === true ? tierResolution.godRays.samples : 32) as 32 | 48 | 64,
         decay: 0.94,
         weight: numberField(volumetricNode, "intensity", 0.7),
         density: numberField(volumetricNode, "density", 0.18),
@@ -702,7 +781,7 @@ export function createRootPostPipeline(
         ...(godRayLightDirection ? { lightDirection: godRayLightDirection } : {})
       }
     } : {}),
-    ...(dofNode ? {
+    ...(dofNode && dofEnabled ? {
       dof: {
         // §7.1: legacy `focus` fraction converts with real near/far; the new
         // `focusDistance` field (metres) wins when authored.
@@ -712,17 +791,26 @@ export function createRootPostPipeline(
         fStop: numberField(dofNode, "fStop", 2.8),
         focalLengthMm: numberField(dofNode, "focalLength", 50),
         maxBlurPx: numberField(dofNode, "maxBlur", 12),
-        halfRes: true,
+        halfRes: tierResolution?.dof.enabled === true ? tierResolution.dof.halfRes : true,
         sensorHeightMm: 24
       }
     } : {}),
-    ...(mbNode ? {
+    ...(mbNode && mbEnabled ? {
       motionBlur: {
-        shutter: numberField(mbNode, "shutter", numberField(mbNode, "intensity", 0.5)),
-        maxBlurPx: numberField(mbNode, "maxBlur", 32)
+        // §8.8: authored shutter × node timeScale (C-23's per-node scale;
+        // session-level timeScale lands via QR-03-12).
+        shutter: numberField(mbNode, "shutter", numberField(mbNode, "intensity", 0.5)) * numberField(mbNode, "timeScale", 1),
+        maxBlurPx: numberField(mbNode, "maxBlur", 32),
+        // §8.8: legal sets — samples 8|12|16; the tier sets the default taps.
+        samples: (() => {
+          const tierDefault = tierResolution?.motionBlur.enabled === true ? tierResolution.motionBlur.samples : 12;
+          const s = numberField(mbNode, "samples", tierDefault);
+          return (s <= 8 ? 8 : s <= 12 ? 12 : 16) as 8 | 12 | 16;
+        })(),
+        tileSize: numberField(mbNode, "tileSize", 16) <= 16 ? 16 : 20
       }
     } : {}),
-    ...(ssrNode ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
+    ...(ssrNode && ssrEnabled ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
     ...(gradeNode ? {
       grade: {
         temperature: authoredNumber(gradeNode, "temperature", 0),
@@ -748,14 +836,24 @@ export function createRootPostPipeline(
         color: rgbField(vignetteNode, "color", { r: 0, g: 0, b: 0 })
       }
     } : {}),
-    ...(grainNode ? {
+    ...(grainNode && grainEnabled ? {
       filmGrain: {
         intensity: numberField(grainNode, "intensity", 0.05),
         size: numberField(grainNode, "size", 1),
         luminanceResponse: numberField(grainNode, "luminanceResponse", 1)
       }
     } : {}),
-    ...(caNode ? { chromaticAberration: { intensity: numberField(caNode, "intensity", 0.0015) } } : {})
+    ...(caNode && caEnabled ? { chromaticAberration: { intensity: numberField(caNode, "intensity", 0.0015) } } : {}),
+    ...(aeRequested && aeEnabled ? {
+      autoExposure: {
+        minEv: (authoredAe as { readonly minEv?: number })?.minEv ?? -4,
+        maxEv: (authoredAe as { readonly maxEv?: number })?.maxEv ?? 4,
+        speedUp: (authoredAe as { readonly speedUp?: number })?.speedUp ?? 3,
+        speedDown: (authoredAe as { readonly speedDown?: number })?.speedDown ?? 1,
+        meteringMask: (authoredAe as { readonly meteringMask?: "center-weighted" | "average" })?.meteringMask ?? "center-weighted",
+        compensationEv: (authoredAe as { readonly compensationEv?: number })?.compensationEv ?? 0
+      }
+    } : {})
   };
   return { options, diagnostics };
 }

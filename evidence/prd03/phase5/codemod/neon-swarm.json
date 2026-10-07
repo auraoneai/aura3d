@@ -1,0 +1,946 @@
+{
+  "codemod": "post-v2",
+  "files": 27,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/boot.ts",
+      "line": 109,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 9,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.49 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 16,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.66 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 48,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.54 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 56,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 80,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.11 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "line": 87,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+      "line": 293,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.15 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+      "line": 299,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+      "line": 305,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 80,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.11 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 84,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 101,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.12 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 105,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.28 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 109,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.08 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "line": 113,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.23 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 272,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.05 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 278,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.35 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 397,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.12 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 455,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.54 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 472,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 490,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 506,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.75 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 535,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.40 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 581,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.78 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 650,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.35 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 654,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 667,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 668,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 679,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 718,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.94 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 728,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 739,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.73 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 750,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.73 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 782,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.10 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 809,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 861,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.15 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 870,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 898,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 904,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 909,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 909,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 911,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 911,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 913,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 914,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 914,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 914,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "line": 934,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-neon-swarm/src/arena.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/pickups.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/player.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/run.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/swarm.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/waves.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 9,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 0.488
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 16,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 0.662
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 24,
+            "emissive": "#7de8ff",
+            "emissiveIntensity": 1.7,
+            "lumaXstrength": 1.337
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 32,
+            "emissive": "#aef3ff",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 1.851
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 40,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.873
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 48,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.542
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 56,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.279
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 64,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 1.577
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 72,
+            "emissive": "#ff8ae0",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 1.111
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 80,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.32,
+            "lumaXstrength": 0.111
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/materials.ts",
+            "line": 87,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 0.3,
+            "lumaXstrength": 0.284
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+            "line": 293,
+            "emissive": "#73b99d",
+            "emissiveIntensity": 0.5,
+            "lumaXstrength": 0.148
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+            "line": 299,
+            "emissive": "#ff4d7e",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.521
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/v2/scene/world.ts",
+            "line": 305,
+            "emissive": "#ffd166",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.99
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/combat-feel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 80,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.32,
+            "lumaXstrength": 0.111
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 84,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 0.3,
+            "lumaXstrength": 0.284
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 101,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.34,
+            "lumaXstrength": 0.118
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 105,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 0.3,
+            "lumaXstrength": 0.284
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 109,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.24,
+            "lumaXstrength": 0.084
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/environment.ts",
+            "line": 113,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 0.24,
+            "lumaXstrength": 0.227
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/hud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 272,
+            "emissive": "#123845",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.052
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 278,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.348
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 397,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.34,
+            "lumaXstrength": 0.118
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 455,
+            "emissive": "#7cf8ff",
+            "emissiveIntensity": 0.72,
+            "lumaXstrength": 0.535
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 472,
+            "emissive": "#ff9bdb",
+            "emissiveIntensity": 0.64,
+            "lumaXstrength": 0.622
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 490,
+            "emissive": "#2bd7e7",
+            "emissiveIntensity": 0.56,
+            "lumaXstrength": 0.345
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 506,
+            "emissive": "#ff8fdf",
+            "emissiveIntensity": 0.78,
+            "lumaXstrength": 0.754
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 535,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 1.15,
+            "lumaXstrength": 0.401
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 546,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1.4,
+            "lumaXstrength": 1.38
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 558,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 2.168
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 581,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.777
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 650,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.348
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 654,
+            "emissive": "#ff4fd8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.947
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 667,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.986
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 668,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.986
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 679,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.986
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 718,
+            "emissive": "#bffcff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.943
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 728,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.986
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 739,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 0.731
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 750,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 0.731
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 754,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 2.07
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 782,
+            "emissive": "#35e6ff",
+            "emissiveIntensity": 0.28,
+            "lumaXstrength": 0.098
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 797,
+            "emissive": "#ffc857",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.873
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 809,
+            "emissive": "#ff5a36",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.952
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 861,
+            "emissive": "#73b99d",
+            "emissiveIntensity": 0.5,
+            "lumaXstrength": 0.148
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 870,
+            "emissive": "#ff4d7e",
+            "emissiveIntensity": 0.55,
+            "lumaXstrength": 0.521
+          },
+          {
+            "file": "apps/showcase-neon-swarm/src/legacy/main.ts",
+            "line": 898,
+            "emissive": "#ffd166",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.99
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/legacy/swarm-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/arena.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/pickups.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/player.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/run.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/swarm.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/waves.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

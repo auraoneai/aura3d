@@ -1,0 +1,826 @@
+{
+  "codemod": "post-v2",
+  "files": 27,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/boot.ts",
+      "line": 64,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/boot.ts",
+      "line": 301,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 17,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 28,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.67 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 29,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 30,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 31,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.05 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 32,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.74 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "line": 33,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.50 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "line": 33,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.22 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "line": 37,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.92 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "line": 41,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.34 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "line": 45,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.35 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "line": 57,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.69 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 134,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.22 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 144,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.77 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 152,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.84 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 157,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.03 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 163,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.67 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 164,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 165,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 166,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.05 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 167,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.74 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 168,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.50 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 356,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 356,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality; threshold <1 → 1.0 (was 0.62)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 357,
+      "construct": "effects.ambientOcclusion",
+      "mapping": "approximate",
+      "target": "v2 S2-gtao",
+      "note": "radius/density re-derived from GTAO world-space params"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 358,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "target": "v2 ambientOcclusion (one AO stage)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 358,
+      "construct": "effects.contactOcclusion",
+      "mapping": "approximate",
+      "note": "merged into ambientOcclusion; kept AO call (one S2-gtao stage)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 360,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 361,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 361,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 361,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "line": 389,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+      "line": 27,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.05 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+      "line": 28,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.97 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+      "line": 29,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.06 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+      "line": 365,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.96 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+      "line": 381,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+      "line": 438,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.96 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-vault-breakers/src/ball-flow.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/flippers.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/missions.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/plunger.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/scoreboard.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/table.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/boot.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/boot.ts",
+            "line": 300,
+            "emissive": "#28f5cc",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 1.06
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/boot.ts",
+            "line": 301,
+            "emissive": "#805030",
+            "emissiveIntensity": 0.22,
+            "lumaXstrength": 0.03
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 17,
+            "emissive": "#805030",
+            "emissiveIntensity": 0.22,
+            "lumaXstrength": 0.03
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 18,
+            "emissive": "#28f5cc",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 1.06
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 20,
+            "emissive": "#ff4bd8",
+            "emissiveIntensity": 1.6,
+            "lumaXstrength": 1.515
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 22,
+            "emissive": "#ff9f43",
+            "emissiveIntensity": 3.4,
+            "lumaXstrength": 3.302
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 23,
+            "emissive": "#55f4ff",
+            "emissiveIntensity": 3.4,
+            "lumaXstrength": 1.297
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 24,
+            "emissive": "#ff4bd8",
+            "emissiveIntensity": 3.6,
+            "lumaXstrength": 3.409
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 28,
+            "emissive": "#8b6914",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.667
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 29,
+            "emissive": "#00cc66",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.058
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 30,
+            "emissive": "#ff4500",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.947
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 31,
+            "emissive": "#00b8d4",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.053
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 32,
+            "emissive": "#cc0033",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.742
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/v2/scene/materials.ts",
+            "line": 33,
+            "emissive": "#1a1a1a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.496
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 33,
+            "emissive": "#0e1b42",
+            "emissiveIntensity": 0.32,
+            "lumaXstrength": 0.215
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 37,
+            "emissive": "#39e7ff",
+            "emissiveIntensity": 1.7,
+            "lumaXstrength": 0.916
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 41,
+            "emissive": "#f04ed8",
+            "emissiveIntensity": 1.45,
+            "lumaXstrength": 0.336
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 45,
+            "emissive": "#37358f",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.352
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 49,
+            "emissive": "#5ff7ff",
+            "emissiveIntensity": 2.3,
+            "lumaXstrength": 1.974
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/environment.ts",
+            "line": 57,
+            "emissive": "#37e8ef",
+            "emissiveIntensity": 1.55,
+            "lumaXstrength": 0.688
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 134,
+            "emissive": "#39dfff",
+            "emissiveIntensity": 0.42,
+            "lumaXstrength": 0.224
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 144,
+            "emissive": "#ff7a22",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.769
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 152,
+            "emissive": "#36f1ff",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 0.842
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 157,
+            "emissive": "#805030",
+            "emissiveIntensity": 0.22,
+            "lumaXstrength": 0.03
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 158,
+            "emissive": "#28f5cc",
+            "emissiveIntensity": 2.2,
+            "lumaXstrength": 1.06
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 159,
+            "emissive": "#ff9f43",
+            "emissiveIntensity": 3.4,
+            "lumaXstrength": 3.302
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 160,
+            "emissive": "#55f4ff",
+            "emissiveIntensity": 3.4,
+            "lumaXstrength": 1.297
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 161,
+            "emissive": "#ff4bd8",
+            "emissiveIntensity": 3.6,
+            "lumaXstrength": 3.409
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 163,
+            "emissive": "#8b6914",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.667
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 164,
+            "emissive": "#00cc66",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.058
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 165,
+            "emissive": "#ff4500",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.947
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 166,
+            "emissive": "#00b8d4",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.053
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 167,
+            "emissive": "#cc0033",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.742
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/main.ts",
+            "line": 168,
+            "emissive": "#1a1a1a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.496
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/pinball-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+            "line": 27,
+            "emissive": "#00b8d4",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.053
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+            "line": 28,
+            "emissive": "#ff8800",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.966
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/legacy/scoreboard.ts",
+            "line": 29,
+            "emissive": "#00cc99",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.058
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/ball-flow.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/flippers.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/missions.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/plunger.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/scoring.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+            "line": 365,
+            "emissive": "#ff6a00",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.957
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+            "line": 381,
+            "emissive": "#ff4500",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.947
+          },
+          {
+            "file": "apps/showcase-vault-breakers/src/gameplay/table.ts",
+            "line": 438,
+            "emissive": "#ff6a00",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.957
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

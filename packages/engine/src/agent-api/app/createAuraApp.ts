@@ -28,7 +28,7 @@ import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
-import { resolveTierSettings } from "@aura3d/rendering/contracts";
+import { resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
@@ -702,6 +702,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     (app as unknown as Record<string, unknown>)[ext.member] = value;
     if (ext.dispose) { const disposeExt = ext.dispose; extensionDisposers.push(() => disposeExt(value)); }
   }
+  // PRD-03 Phase 4 (C-13/C-14): flattened app-level members. `app.post` was
+  // assigned by the extension loop; cutCamera binds the controller's C-14
+  // reset so the camera extension's onCut hook invalidates temporal history.
+  const postSurface = (app as { post?: { addPostPass?: (p: import("../../contracts/post.js").AuraCustomPostPass) => () => void; setQualityTier?: (t: AuraQualityTier | "auto") => void } }).post;
+  (app as { addPostPass?: (p: import("../../contracts/post.js").AuraCustomPostPass) => () => void }).addPostPass =
+    (p) => postSurface?.addPostPass?.(p) ?? (() => { /* stub */ });
+  (app as { setQualityTier?: (t: AuraQualityTier | "auto") => void }).setQualityTier =
+    (t) => { postSurface?.setQualityTier?.(t); };
+  (app as { cutCamera?: () => void }).cutCamera = () => {
+    productionController?.resetTemporalHistory?.("camera-cut");
+  };
   const baseDispose = app.dispose;
   app.dispose = () => {
     for (const disposeExt of extensionDisposers.splice(0)) disposeExt();

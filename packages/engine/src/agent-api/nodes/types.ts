@@ -791,6 +791,25 @@ export interface AuraEffectNode extends AuraTransformSpec {
    * `mode` counts as `auto`).
    */
   readonly postAuthored?: readonly string[];
+  /**
+   * CCR-03-11 (additive, PRD-03 §8.8): motion-blur v2 fields. `shutter` is the
+   * exposure fraction override (falls back to `intensity`); `samples` is the
+   * 8|12|16 set, `tileSize` 16|20, `timeScale` the C-23 per-node scale. The
+   * factory in `nodes/effects.ts` (lane-07 file) passes them through.
+   */
+  readonly shutter?: number;
+  readonly samples?: number;
+  readonly tileSize?: number;
+  readonly timeScale?: number;
+  /** CCR-03-11 §8.3: AO/CO falloff exponent + multi-bounce flag for the v2 GTAO bag. */
+  readonly falloff?: number;
+  readonly multiBounce?: boolean;
+  /** CCR-03-11 §8.9: metric DoF controls — metres, f-stop, focal length (mm). */
+  readonly focusDistance?: number;
+  readonly fStop?: number;
+  readonly focalLength?: number;
+  /** CCR-03-11 §8.6: authored TAA sharpening override (defaults 0.2 at Ultra). */
+  readonly sharpness?: number;
   /** Outline width in pixels, 1-6 (muse3jsparity-PRD A3). */
   readonly width?: number;
   /** Depth-of-field focus as a linear-distance fraction, 0 = near, 1 = far (muse3jsparity-PRD A3). */

@@ -13,10 +13,31 @@ export interface PostV2CodemodRow {
   note?: string;
 }
 
+export interface PostV2EmissiveRow {
+  readonly file: string;
+  readonly line: number;
+  readonly emissive: string;
+  readonly emissiveIntensity: number;
+  readonly lumaXstrength: number;
+}
+
+export interface PostV2CodemodReport {
+  readonly emissive: readonly PostV2EmissiveRow[];
+  readonly preset?: string;
+  readonly notMigrated: boolean;
+}
+
 export interface PostV2CodemodResult {
   readonly code: string;
   readonly rows: readonly PostV2CodemodRow[];
+  readonly report: PostV2CodemodReport;
 }
+
+export const POST_V2_GAME_IDS: readonly string[];
+export const POST_V2_DEFAULT_FILES: readonly string[];
+export const POST_V2_NOT_MIGRATED: readonly string[];
+export const POST_V2_PRESET_BY_GAME: Readonly<Record<string, string>>;
+export function postV2GameIdFor(fileName: string): string | null;
 
 export function transformPostV2(source: string, fileName: string): PostV2CodemodResult;
 

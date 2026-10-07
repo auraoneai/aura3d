@@ -1,0 +1,498 @@
+{
+  "codemod": "post-v2",
+  "files": 27,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-siege-golf/src/v2/boot.ts",
+      "line": 76,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "daylight-outdoor",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+      "line": 9,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.62 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+      "line": 18,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.87 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 343,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 417,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.31 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 433,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.30 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 461,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.25 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 643,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.98 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 651,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.69 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 843,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 843,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 845,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 846,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 846,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 846,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "line": 863,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "daylight-outdoor",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "line": 530,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.50 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "line": 536,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.97 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "line": 605,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.71 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "line": 641,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.98 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "line": 670,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.97 < 1.0 — invisible under bloom threshold 1.0"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-siege-golf/src/course.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/hole-flow.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/replay-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/score.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/shot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/solutions.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/structures.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+            "line": 9,
+            "emissive": "#59d7ff",
+            "emissiveIntensity": 1.1,
+            "lumaXstrength": 0.619
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+            "line": 12,
+            "emissive": "#ffcf5c",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.183
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+            "line": 15,
+            "emissive": "#ffd166",
+            "emissiveIntensity": 1.5,
+            "lumaXstrength": 1.486
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/v2/scene/materials.ts",
+            "line": 18,
+            "emissive": "#ff9d3c",
+            "emissiveIntensity": 0.9,
+            "lumaXstrength": 0.874
+          }
+        ],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/course-world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/golf-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 343,
+            "emissive": "#ffca7a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.986
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 417,
+            "emissive": "#cf3e39",
+            "emissiveIntensity": 0.34,
+            "lumaXstrength": 0.306
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 433,
+            "emissive": "#73d9d0",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.305
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 461,
+            "emissive": "#ee4035",
+            "emissiveIntensity": 0.28,
+            "lumaXstrength": 0.248
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 643,
+            "emissive": "#ffb646",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.981
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/legacy/main.ts",
+            "line": 651,
+            "emissive": "#d9fff1",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.686
+          }
+        ],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/course.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/hole-flow.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/replay-proof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/score.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/shot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/solutions.ts",
+      "report": {
+        "emissive": [],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+            "line": 530,
+            "emissive": "#3967ad",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.501
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+            "line": 536,
+            "emissive": "#ff9d3c",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.971
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+            "line": 605,
+            "emissive": "#4d7ba6",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.71
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+            "line": 641,
+            "emissive": "#ffb14d",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.981
+          },
+          {
+            "file": "apps/showcase-siege-golf/src/gameplay/structures.ts",
+            "line": 670,
+            "emissive": "#ff9d3c",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.971
+          }
+        ],
+        "preset": "daylight-outdoor",
+        "notMigrated": false
+      }
+    }
+  ]
+}

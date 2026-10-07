@@ -284,8 +284,53 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
     log.add("bloom", "partial", "effects.bloom() radius/threshold units are engine-specific; antiBlowout clamps intensity to <= 0.92 by default.");
   }
 
+  // Lane-prd03 `postExtras` (Phase 4, lane-local — shared/types.ts is lane-12):
+  // the authored post nodes the shared SceneSpec cannot carry.
+  const postExtras = (spec as { postExtras?: Prd03PostExtrasLike }).postExtras;
+  if (postExtras?.antiAlias) nodes.push(effects.antiAlias({ mode: postExtras.antiAlias }));
+  if (postExtras?.motionBlur) {
+    nodes.push(effects.motionBlur({
+      ...(postExtras.motionBlur.intensity !== undefined ? { intensity: postExtras.motionBlur.intensity } : {}),
+      ...(postExtras.motionBlur.shutter !== undefined ? { shutter: postExtras.motionBlur.shutter } : {}),
+      ...(postExtras.motionBlur.maxBlur !== undefined ? { maxBlur: postExtras.motionBlur.maxBlur } : {}),
+      ...(postExtras.motionBlur.samples !== undefined ? { samples: postExtras.motionBlur.samples } : {}),
+      ...(postExtras.motionBlur.tileSize !== undefined ? { tileSize: postExtras.motionBlur.tileSize } : {}),
+      ...(postExtras.motionBlur.timeScale !== undefined ? { timeScale: postExtras.motionBlur.timeScale } : {})
+    }));
+  }
+  if (postExtras?.depthOfField) {
+    nodes.push(effects.depthOfField({
+      ...(postExtras.depthOfField.focusDistance !== undefined ? { focusDistance: postExtras.depthOfField.focusDistance } : {}),
+      ...(postExtras.depthOfField.fStop !== undefined ? { fStop: postExtras.depthOfField.fStop } : {}),
+      ...(postExtras.depthOfField.focalLength !== undefined ? { focalLength: postExtras.depthOfField.focalLength } : {})
+    }));
+  }
+
   for (const node of nodes) built.add(node);
   return built;
+}
+
+/** Structural mirror of `Prd03PostExtras` in `scenes/prd03/specs.ts` (kept inline so common.ts does not import lane spec files). */
+interface Prd03PostExtrasLike {
+  readonly antiAlias?: "fxaa" | "smaa" | "msaa" | "taa" | "off";
+  readonly motionBlur?: {
+    readonly intensity?: number;
+    readonly shutter?: number;
+    readonly maxBlur?: number;
+    readonly samples?: number;
+    readonly tileSize?: number;
+    readonly timeScale?: number;
+  };
+  readonly depthOfField?: {
+    readonly focusDistance?: number;
+    readonly fStop?: number;
+    readonly focalLength?: number;
+  };
+  readonly cameraPan?: {
+    readonly from: { readonly position: readonly number[]; readonly target: readonly number[] };
+    readonly to: { readonly position: readonly number[]; readonly target: readonly number[] };
+  };
+  readonly cameraCut?: { readonly at: number; readonly position: readonly number[]; readonly target: readonly number[] };
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -367,7 +412,59 @@ export async function runAuraScene(rawSpec: SceneSpec, host: HTMLElement, opts: 
   }
 
   // Advance simulated time to the capture time, then settle.
-  app.step(spec.time);
+  // Lane-prd03 `postExtras` camera moves (Phase 4): a `cameraPan` lerps the
+  // presented pose at 60 fps across spec.time; a `cameraCut` fires one
+  // `setPose({cut:true})` + `app.cutCamera()` (C-14 temporal reset) at `at`
+  // seconds. Specs without extras keep the single-step behavior.
+  const postExtras = (spec as { postExtras?: Prd03PostExtrasLike }).postExtras;
+  const cameraCtl = (app as { camera?: { setPose?: (p: { position: readonly number[]; target: readonly number[] }, o?: { cut?: boolean }) => void } }).camera;
+  const cameraNode = (app as { nodes?: { all(): readonly { kind: string; setPosition(x: number, y: number, z: number): unknown }[] } })
+    .nodes?.all().find((node) => node.kind === "camera");
+  const lerp3 = (a: readonly number[], b: readonly number[], t: number): readonly number[] =>
+    [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  // Position-pan fallback for the pre-C-22 surface: setPosition on the runtime
+  // camera node (the target stays fixed → the pan is a yaw — what the velocity
+  // probes measure). When `app.camera.setPose` lands it takes over for
+  // position+target pans.
+  const moveCamera = (position: readonly number[], target: readonly number[], cut: boolean) => {
+    if (cameraCtl?.setPose) {
+      cameraCtl.setPose({ position, target }, { cut });
+    } else if (cameraNode?.setPosition) {
+      cameraNode.setPosition(position[0], position[1], position[2]);
+      if (cut) (app as { cutCamera?: () => void }).cutCamera?.();
+    }
+    return cameraCtl?.setPose !== undefined || cameraNode?.setPosition !== undefined;
+  };
+  if (postExtras?.cameraPan || postExtras?.cameraCut) {
+    if (cameraCtl?.setPose === undefined && cameraNode?.setPosition === undefined) {
+      log.add("camera-pan", "missing", "postExtras cameraPan/cameraCut has no runtime camera surface (C-22 app.camera and app.nodes camera node both absent) — camera stays at spec pose");
+    }
+    const dt = 1 / 60;
+    let cutDone = false;
+    for (let t = 0; t < spec.time - 1e-9; t += dt) {
+      const advance = Math.min(dt, spec.time - t);
+      const at = Math.min(1, (t + advance) / spec.time);
+      if (postExtras.cameraPan) {
+        moveCamera(
+          lerp3(postExtras.cameraPan.from.position, postExtras.cameraPan.to.position, at),
+          lerp3(postExtras.cameraPan.from.target, postExtras.cameraPan.to.target, at),
+          false
+        );
+      }
+      if (!cutDone && postExtras.cameraCut && t + advance >= postExtras.cameraCut.at) {
+        moveCamera(postExtras.cameraCut.position, postExtras.cameraCut.target, true);
+        (app as { cutCamera?: () => void }).cutCamera?.();
+        cutDone = true;
+      }
+      app.step(advance);
+      await nextFrame();
+    }
+    if (postExtras.cameraCut && !cutDone) {
+      log.add("camera-cut", "missing", `cameraCut.at ${postExtras.cameraCut.at} exceeds spec.time ${spec.time}; cut never fired`);
+    }
+  } else {
+    app.step(spec.time);
+  }
   for (let frame = 0; frame < spec.settleFrames; frame += 1) {
     await nextFrame();
     app.step(0);

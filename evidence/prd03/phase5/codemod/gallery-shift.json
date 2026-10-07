@@ -1,0 +1,746 @@
+{
+  "codemod": "post-v2",
+  "files": 25,
+  "changed": 2,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/boot.ts",
+      "line": 81,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 24,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.94 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 28,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.87 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 29,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.99 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 32,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.45 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 33,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.15 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 34,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 37,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.55 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "line": 51,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.67 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "line": 486,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.56 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "line": 493,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 1.00 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "line": 500,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.85 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "line": 553,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.26 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "line": 582,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.23 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 89,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.45 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 96,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.46 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 120,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.15 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 128,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.55 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 136,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.52 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 723,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.94 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 781,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.73 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 895,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.98 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 896,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.95 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 915,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.84 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 922,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.53 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1053,
+      "construct": "material.emissive",
+      "mapping": "approximate",
+      "target": "emissive retune (lane 14, §10)",
+      "note": "emissive luma×strength 0.94 < 1.0 — invisible under bloom threshold 1.0"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1067,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom preset"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1067,
+      "construct": "effects.neonBloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1069,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1070,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1070,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1070,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "line": 1118,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "neon-night",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/showcase-gallery-shift/src/environment.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/floor.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gallery-world-candidate.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/guard.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/heist-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/thief.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/vision.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 24,
+            "emissive": "#ff3b4e",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.942
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 25,
+            "emissive": "#ff334d",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 1.112
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 28,
+            "emissive": "#3dfc9a",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.867
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 29,
+            "emissive": "#7ef8ff",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.99
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 32,
+            "emissive": "#55f3d1",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.45
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 33,
+            "emissive": "#52f6dc",
+            "emissiveIntensity": 0.62,
+            "lumaXstrength": 0.148
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 34,
+            "emissive": "#73fff0",
+            "emissiveIntensity": 1.65,
+            "lumaXstrength": 0.519
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 37,
+            "emissive": "#ff5b87",
+            "emissiveIntensity": 0.58,
+            "lumaXstrength": 0.552
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 38,
+            "emissive": "#ff3e72",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.131
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 41,
+            "emissive": "#ffd05a",
+            "emissiveIntensity": 1.48,
+            "lumaXstrength": 1.466
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 45,
+            "emissive": "#ff477b",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.799
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 46,
+            "emissive": "#ffd0dc",
+            "emissiveIntensity": 2.35,
+            "lumaXstrength": 2.327
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 47,
+            "emissive": "#ff5e8e",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 1.999
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 48,
+            "emissive": "#ff78a4",
+            "emissiveIntensity": 2.05,
+            "lumaXstrength": 1.971
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/v2/scene/materials.ts",
+            "line": 51,
+            "emissive": "#4fd0e8",
+            "emissiveIntensity": 0.8,
+            "lumaXstrength": 0.668
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+            "line": 486,
+            "emissive": "#77e6e5",
+            "emissiveIntensity": 1.12,
+            "lumaXstrength": 0.56
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+            "line": 493,
+            "emissive": "#ff5f99",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 0.999
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+            "line": 500,
+            "emissive": "#5ee7ff",
+            "emissiveIntensity": 1.05,
+            "lumaXstrength": 0.846
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+            "line": 553,
+            "emissive": "#73f2e2",
+            "emissiveIntensity": 0.82,
+            "lumaXstrength": 0.258
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/environment.ts",
+            "line": 582,
+            "emissive": "#54d8ff",
+            "emissiveIntensity": 0.7,
+            "lumaXstrength": 0.227
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/heist-audio.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 89,
+            "emissive": "#55f3d1",
+            "emissiveIntensity": 1.18,
+            "lumaXstrength": 0.45
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 96,
+            "emissive": "#45ffd7",
+            "emissiveIntensity": 1.25,
+            "lumaXstrength": 0.459
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 103,
+            "emissive": "#ff3e72",
+            "emissiveIntensity": 1.2,
+            "lumaXstrength": 1.131
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 110,
+            "emissive": "#ffd05a",
+            "emissiveIntensity": 1.48,
+            "lumaXstrength": 1.466
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 120,
+            "emissive": "#52f6dc",
+            "emissiveIntensity": 0.62,
+            "lumaXstrength": 0.148
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 128,
+            "emissive": "#ff5b87",
+            "emissiveIntensity": 0.58,
+            "lumaXstrength": 0.552
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 136,
+            "emissive": "#73fff0",
+            "emissiveIntensity": 1.65,
+            "lumaXstrength": 0.519
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 723,
+            "emissive": "#ff3b4e",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.942
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 781,
+            "emissive": "#3dfc9a",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.735
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 789,
+            "emissive": "#7ef8ff",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.594
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 798,
+            "emissive": "#ff477b",
+            "emissiveIntensity": 1.9,
+            "lumaXstrength": 1.799
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 799,
+            "emissive": "#ffd0dc",
+            "emissiveIntensity": 2.35,
+            "lumaXstrength": 2.327
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 800,
+            "emissive": "#ff5e8e",
+            "emissiveIntensity": 2.1,
+            "lumaXstrength": 1.999
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 801,
+            "emissive": "#ff78a4",
+            "emissiveIntensity": 2.05,
+            "lumaXstrength": 1.971
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 895,
+            "emissive": "#ffb14d",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.981
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 896,
+            "emissive": "#ff5d4d",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.952
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 915,
+            "emissive": "#7ef8ff",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.839
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 922,
+            "emissive": "#39d7e8",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.534
+          },
+          {
+            "file": "apps/showcase-gallery-shift/src/legacy/main.ts",
+            "line": 1053,
+            "emissive": "#ff334d",
+            "emissiveIntensity": 1,
+            "lumaXstrength": 0.942
+          }
+        ],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gameplay/floor.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gameplay/gallery-world-candidate.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gameplay/guard.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gameplay/thief.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/gameplay/vision.ts",
+      "report": {
+        "emissive": [],
+        "preset": "neon-night",
+        "notMigrated": false
+      }
+    }
+  ]
+}

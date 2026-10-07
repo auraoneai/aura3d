@@ -1,6 +1,9 @@
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { temporalAccumulationWeight } from "../../../packages/rendering/src/webgpu/WebGPUTemporal";
 import { describe, expect, it, vi } from "vitest";
+import "../../../packages/rendering/src/lanes/prd03";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 import { identityMat4 } from "@aura3d/scene";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
@@ -112,6 +115,36 @@ describe("renderer temporal ownership", () => {
     expect(()=>owner.prepare(device,16,16,[item,item],identityMat4(),{})).toThrow(/stable unique labels/);
     expect(()=>owner.prepare(device,16,16,[{...item, morphTargets:[{} as never]}],identityMat4(),{})).toThrow(/stable unique labels/);
     owner.dispose(); device.dispose();
+  });
+
+  it("flag on (A3D_QR_POST): no velocity re-draw, deformed items accepted, C-14 matrices returned", () => {
+    setRendererQrFlags(resolveQrFlags({ options: { A3D_QR_POST: true } }));
+    try {
+      const { device, owner, prepare } = fixture();
+      const drawsBefore = device.drawCommands.length;
+      const bindings = prepare({ sceneKey: "s", jitter: true, frameTime: 1 / 60 });
+      expect(device.drawCommands.length).toBe(drawsBefore); // no velocity re-render pass
+      expect(bindings.v2).toBeDefined();
+      expect(bindings.v2!.jitterClip).toHaveLength(2);
+      // Jitter is zero on the seed frame by design; the committed second
+      // frame carries it, and it must equal what raster applied.
+      owner.commit();
+      const second = prepare({ sceneKey: "s", jitter: true, frameTime: 1 / 60 });
+      expect(second.v2!.jittered).not.toEqual(second.v2!.unjittered);
+      expect(device.drawCommands.length).toBe(drawsBefore);
+      // Deformed (morph) items throw only on the flag-off re-draw path.
+      const morphed = { geometry: Geometry.triangle(), label: "morphed", modelMatrix: identityMat4(), morphTargets: [{} as never] };
+      device.beginFrame(16, 16);
+      try {
+        expect(() => owner.prepare(device, 16, 16, [morphed], identityMat4(), {})).not.toThrow();
+      } finally {
+        device.endFrame();
+      }
+      owner.dispose();
+      device.dispose();
+    } finally {
+      setRendererQrFlags(resolveQrFlags({}));
+    }
   });
 
   it("requires three distinct live GPU targets and rejects disposed temporal inputs", () => {
