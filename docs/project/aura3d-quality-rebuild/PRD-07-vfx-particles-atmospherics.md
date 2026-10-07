@@ -1707,7 +1707,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
 
 ### Phase 1: particle core + honesty (day 0)
 
-- [ ] **P1-T1** Lane barrels.
+- [x] **P1-T1** Lane barrels.
   - Rendering `lanes/prd07.ts` calls `particleRenderHookSlot.provide(...)` and `skyBackgroundSlot.provide(...)`, and runs
     `registerFrameContributor` for `prd07.sky`, `prd07.particles`, `prd07.decals` and `prd07.volumetric` (each with
     `flag` = its sub-flag) plus `registerShaderChunk` for every PRD 07 chunk.
@@ -1716,7 +1716,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
     `registerLookLintRule("look/fake-effect-names")`, `registerCliCommand` and `registerCodemod`.
   - Test `tests/unit/contracts/impl/prd07-registration.test.ts`: every registration id is unique and
     `owner === "prd07"`. With `resolveQrFlags({ options: [] })`, `frameContributors(flags)` contains no `prd07.*` entry.
-- [ ] **P1-T2** `agent-api/vfx/diagnostics.ts` + `production-runtime/effects/EffectDiagnostics.ts`.
+- [x] **P1-T2** `agent-api/vfx/diagnostics.ts` + `production-runtime/effects/EffectDiagnostics.ts`.
   - API: `trackDraw(nodeId, drawCalls, instances)` and `endFrame(visibleInFrustum: Set<string>)`.
   - Behaviour: `zeroPixelFrames` increments for visible, in-frustum effect nodes that drew 0. At 30 frames it pushes
     `{ code: "EFFECT_ZERO_PIXELS", nodeId }`, logging `console.error` once per node in dev builds. `pixelBacked` lists the
@@ -1729,24 +1729,24 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   `{ declared, observedLive: null, observedDraws: null }`. The observed values are filled by the effects section; the
   function itself is static. `gpuReady` stays as a deprecated alias computed exactly as today, so the flag-off
   output is identical. Update `tests/unit/` snapshot expectations only by adding fields.
-- [ ] **P1-T4** `vfx/ParticleInstanceLayout.ts`. Constants (16 floats/particle, attribute offsets), a cached quad
+- [x] **P1-T4** `vfx/ParticleInstanceLayout.ts`. Constants (16 floats/particle, attribute offsets), a cached quad
   `Geometry`, and `ParticleInstanceRing` (3 `RenderBuffer`s via `device.createBuffer`; `write(data, live)` via
   `device.updateBuffer`; grows by power of two). Test `instance-layout.test.ts`: after warm-up, 1,000 writes create 0
   buffers (MockRenderDevice `bufferCreates`) and allocate no `Float32Array`.
-- [ ] **P1-T5** `vfx/ParticleBatch.ts` + `vfx/ParticleBatchPass.ts`. Implements C-20 `ParticleRenderHook`. Batch keying
+- [x] **P1-T5** `vfx/ParticleBatch.ts` + `vfx/ParticleBatchPass.ts`. Implements C-20 `ParticleRenderHook`. Batch keying
   follows §6.2.2. `transparentItems(ctx)` emits one `TransparentQueueItem` per batch, with `sortDepth` = bounds-centre
   view depth. Draws use `instanceAttributes` (divisor 1). Test `batch-keying.test.ts` (Mock):
   - two additive emitters with the same atlas → 1 draw;
   - additive + premultiplied → 2 draws;
   - two premultiplied emitters 20 m apart → 2 items in back-to-front order.
-- [ ] **P1-T6** `vfx/BlendFallback.ts`. `resolveVfxBlend(desc, flags, deviceHonoursBlendMode)` returns `{ renderState,
+- [x] **P1-T6** `vfx/BlendFallback.ts`. `resolveVfxBlend(desc, flags, deviceHonoursBlendMode)` returns `{ renderState,
   shaderDefines, degraded }`. With the C-04 stub: alpha-over with the `UNPREMULTIPLY_OUTPUT` define; additive →
   premultiplied variant ×1.6 core; multiply → skipped. With C-04 real: `blendMode` is set directly. Test: the table of
   4 modes × {stub, real} → expected state and defines, and `VFX_BLEND_FALLBACK` is emitted once per key.
-- [ ] **P1-T7** `vfx/ParticleSort.ts`. LSD radix sort on 16-bit depth keys into a `Uint32Array` permutation. It is
+- [x] **P1-T7** `vfx/ParticleSort.ts`. LSD radix sort on 16-bit depth keys into a `Uint32Array` permutation. It is
   skipped when the camera moved < 1 cm and rotated < 0.5° and no particle changed. Test `particle-sort.test.ts`: order
   matches `Array.prototype.sort` for 10,000 random particles, with 0 allocations after warm-up.
-- [ ] **P1-T8** `effects/ParticleSystem.ts`. `writeInstances(out: Float32Array, camera): number` writes the §6.2.1 layout
+- [x] **P1-T8** `effects/ParticleSystem.ts`. `writeInstances(out: Float32Array, camera): number` writes the §6.2.1 layout
   directly, evaluating sizes, colours and frames over life. `buildBatch` is kept untouched. Test: `seed` 1414 with 2,000
   particles produces byte-identical buffers across two runs.
 - [ ] **P1-T9** `vfx/shaders/particle.glsl.ts`. Shader per §8.1, registered as C-02 chunks. It encodes output per
@@ -1768,13 +1768,13 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - The full-size bake runs in `prd07-vfx.yml` and its outputs are committed.
   - `aura3d vfx validate-atlas` (`packages/aura3d-cli/src/commands/prd07/validate-atlas.ts`) checks that pages are
     premultiplied, the gutter is ≥ 1 px and pages are power-of-two.
-- [ ] **P1-T13** `production-runtime/effects/EffectNodeLowering.ts`.
+- [x] **P1-T13** `production-runtime/effects/EffectNodeLowering.ts`.
   - `lowerEffectNode(node, ctx): LoweredEffect | null` handles `particles`, `flipbook-sprite`, `rain` and `snow` (CPU
     source in P1), applying the §11 legacy-field mapping.
   - Test `legacy-particle-mapping.test.ts`: each legacy field changes the lowered emitter options.
   - `compiler/effects.ts` registers matching C-36 option-coverage rows and removes them from
     `diagnosticOnly.prd07.ts`.
-- [ ] **P1-T14** `production-runtime/effects/ProductionEffectSystem.ts` + `vfx/EffectSystemRegistry.ts` +
+- [x] **P1-T14** `production-runtime/effects/ProductionEffectSystem.ts` + `vfx/EffectSystemRegistry.ts` +
   `agent-api/vfx/effects-api.ts`.
   - The C-38 `effects` factory creates one system per app. On `onFrame` it reads `app.scene` effect nodes and handle
     visibility, steps the fixed step on `app.time.scale`, and writes batches.
@@ -1798,10 +1798,10 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
       and the same with `--flags none`.
   - Each job uploads artefacts to `evidence/prd07/<run-id>/` and prints the remaining `capability-degraded` codes as an
     informational step.
-- [ ] **P1-T17** C-40 rows. Append `F-07-02…` to CONTRACTS Appendix B: builders that draw per tier, the blend fallback
+- [x] **P1-T17** C-40 rows. Append `F-07-02…` to CONTRACTS Appendix B: builders that draw per tier, the blend fallback
   limits, and the impact kinds. Each row starts `proposed` and cites the run id once green. Appending rows is the one
   permitted shared edit (§6.4).
-- [ ] **P1-T18** `agent-api/vfx/lookLint.ts`. Rule `look/fake-effect-names` flags scene nodes named like VFX (`/spark|smoke|
+- [x] **P1-T18** `agent-api/vfx/lookLint.ts`. Rule `look/fake-effect-names` flags scene nodes named like VFX (`/spark|smoke|
   fire|rain|snow|explosion|trail|fog|sky/i`) whose kind is `primitive`, and effect nodes not in
   `capabilities.effectsPixelBacked`. Test: fixture scenes with 3 hits and 0 false positives on `prd07-*` scenes.
 - [ ] **P1-T19** Browser test `particles-production.spec.ts` (remote macos-14, flags `vfx`). `effects.particles({ seed: 1414,
@@ -1819,7 +1819,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - `effects-api.test.ts`: 1,000 `burst("spark")` calls over 10 s keep the pool ≤ the tier cap and live particles ≤
     C-27 `particleBudget`;
   - impl suite `prd07-C-20.test.ts`.
-- [ ] **P2-T2** `agent-api/vfx/presets.ts`. The 14 kinds of §6.4 as data. Test `presets.test.ts`: every `AuraVfxKind` and
+- [x] **P2-T2** `agent-api/vfx/presets.ts`. The 14 kinds of §6.4 as data. Test `presets.test.ts`: every `AuraVfxKind` and
   every PRD 09 `GameFxKind` (imported from `contracts/game.ts`, C-24) resolves to a preset with ≥ 1 emitter layer.
 - [ ] **P2-T3** Carved `agent-api/vfx/gameEffects.ts`.
   - `createGameEffects({ poolSize?, app?, autoMount?, legacyPrimitiveNodes? })`. With the flag on and the controller
@@ -1873,7 +1873,7 @@ remotely on macos-14, using the lane config `tests/qr/prd07/playwright.prd07.con
   - flag off → pixels identical to `85aafcd0` (`tests/qr/prd07/browser/sky-daynight-identity.spec.ts`);
   - flag on → the frame's draw list contains no legacy sky primitive (`diagnostics().atmosphere.background ===
     "sky-preetham"`).
-- [ ] **P3-T5** `agent-api/compiler/sky.ts`. C-36 `NodeHandler<{ kind: "sky" }>` that validates the `AuraSkySpec` union,
+- [x] **P3-T5** `agent-api/compiler/sky.ts`. C-36 `NodeHandler<{ kind: "sky" }>` that validates the `AuraSkySpec` union,
   records `feature("vfx.sky")` and degrades invalid specs with `option-ignored`. Test: under `A3D_QR_STRICT` a sky node
   raises no `unknown-node-kind`.
 - [ ] **P3-T6** `atmosphere/SkyCaptureAdapter.ts`. When a visible sky node exists and no explicit environment does, and

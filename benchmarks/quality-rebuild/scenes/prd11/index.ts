@@ -1,7 +1,6 @@
-/**
- * Lane prd11 scene index (CONTRACTS.md §3.8). Scene ids are `<owner>-<slug>`.
- * Empty array until lane 11 lands its scenes.
- */
 import type { BenchSceneRegistration } from "../../shared/registry";
+import { tierLadderSpec } from "./tier-ladder";
 
-export const scenes: readonly BenchSceneRegistration[] = [];
+export const scenes: readonly BenchSceneRegistration[] = [
+  { id: "prd11-tier-ladder", spec: tierLadderSpec }
+];

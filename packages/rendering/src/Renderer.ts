@@ -237,6 +237,12 @@ export interface RendererShadowOptions extends ShadowMapOptions {
 export interface RendererPostProcessOptions extends RendererPostprocessPlanOptions {
   readonly targetFormat?: RendererPostprocessTargetFormat;
   readonly sampleCount?: number;
+  /**
+   * CCR-03-1 (additive): real camera depth range for the legacy chain's
+   * depth-gated passes. Forwarded into `presentLdrPostprocess`; when C-08 is
+   * real the frame camera's near/far takes precedence.
+   */
+  readonly depthRange?: { readonly near: number; readonly far: number; readonly projection?: "perspective" | "orthographic" };
   /** C-13 (PR 0a): post pipeline descriptor for the graph path. */
   readonly pipeline?: unknown;
   /** C-13 (PR 0a): post graph v2 opt-in. */
@@ -494,6 +500,7 @@ export class Renderer {
       const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
+      frameHooks.setForwardTarget(forwardTarget);
     }
     this.device.beginFrame(this.width, this.height);
     try {
@@ -678,6 +685,7 @@ export class Renderer {
       const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
+      frameHooks.setForwardTarget(forwardTarget);
     }
     this.device.beginFrame(this.width, this.height);
     try {

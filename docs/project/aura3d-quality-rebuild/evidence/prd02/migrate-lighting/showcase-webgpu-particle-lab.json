@@ -1,0 +1,45 @@
+{
+  "root": "apps/showcase-webgpu-particle-lab",
+  "files": 2,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 243,
+      "construct": "lights.point({ intensity: 1.84 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 23 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 243,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 244,
+      "construct": "lights.point({ intensity: 1.45 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 18 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 244,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 241,
+      "construct": "shadows.contact(…)",
+      "mapping": "exact",
+      "target": "shadows.blobShadow(…)",
+      "note": "deprecated alias (C-10); rename applied by PRD 14/13"
+    }
+  ]
+}

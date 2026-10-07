@@ -1,0 +1,10 @@
+{
+  "probe": "s7-procedural",
+  "spec": "tests/qr/prd04/browser/procedural-material-detail.spec.ts",
+  "control": {
+    "description": "flag-off presets drop the procedural micro-structure input — masked Laplacian variance collapses to the smooth-material value, failing the >= 3x gate",
+    "expected": "fail",
+    "asserts": ["lapOn >= 3 * lapOff must not hold with the flag off (lapOff records the failing control value)"]
+  },
+  "status": "awaiting first flagged CI capture — values land here from tests/reports/prd04/probes/s7-procedural-control.json"
+}

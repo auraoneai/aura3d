@@ -1,0 +1,46 @@
+name: qr-prd07-vfx
+# PRD-07 P1-T16 — lane-owned CI subset (CONTRACTS §4.1 lane row:
+# `.github/workflows/qr-prd07-*.yml`). Runs the lane's unit tests on macOS
+# (the browser/capture fleet is darwin-only in this org) plus the tsc gate.
+
+on:
+  pull_request:
+    paths:
+      - "packages/rendering/src/{vfx,atmosphere}/**"
+      - "packages/rendering/src/lanes/prd07.ts"
+      - "packages/engine/src/{agent-api/vfx,production-runtime/effects}/**"
+      - "packages/engine/src/agent-api/{compiler/{fog,effects,sky}.ts,nodes/{effects,sky,weather,particles}.ts,compiler/diagnosticOnly.prd07.ts}"
+      - "packages/engine/src/lanes/prd07.ts"
+      - "packages/aura3d-cli/src/commands/prd07/**"
+      - "tests/qr/prd07/**"
+      - "tests/unit/contracts/impl/prd07-*"
+      - ".github/workflows/qr-prd07-*.yml"
+  workflow_dispatch: {}
+
+jobs:
+  unit:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lane unit tests
+        run: |
+          pnpm exec vitest run --config tests/qr/prd07/vitest.config.ts
+          pnpm exec vitest run tests/unit/contracts/impl/prd07-registration.test.ts
+
+  typecheck:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc -p tsconfig.build.json --noEmit

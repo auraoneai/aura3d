@@ -975,7 +975,7 @@ describe("@aura3d/cli assets", () => {
     expect(report.messages).toEqual(["Asset manifest is release-valid."]);
   });
 
-  test("release validation accepts untextured flat-color assets only with complete hash-bound material and pixel evidence", () => {
+  test("release validation rejects untextured flat-color products unless stylized-flat art direction with approved look-dev exists", () => {
     const projectDir = createProject();
     addReleaseFixtureAsset(projectDir, {
       name: "flatColorProduct",
@@ -995,16 +995,38 @@ describe("@aura3d/cli assets", () => {
     asset.orientation = createProductViewOrientationOverride(asset.renderedProbe);
     writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
+    // PRD-05 Phase 0: the hash-bound flat-color evidence waiver is deleted —
+    // without a stylized-flat artDirection + approved look-dev record the
+    // untextured product fails release even with complete probe evidence.
+    const blocked = validateAssets({ projectDir, release: true });
+    expect(blocked.ok, JSON.stringify(blocked, null, 2)).toBe(false);
+    expect(blocked.warnings.join("\n")).toContain("release primary model has no texture references");
+
+    // G10 path: declare stylized-flat art direction + approved look-dev bound
+    // to the asset hash → the no-texture check passes again.
+    mkdirSync(join(projectDir, "assets", "art-direction"), { recursive: true });
+    writeFileSync(join(projectDir, "assets", "art-direction", "flat-pack.json"), JSON.stringify({
+      id: "flat-pack",
+      name: "Flat color pack",
+      shading: "stylized-flat"
+    }));
+    asset.artDirection = "flat-pack";
+    asset.lookDev = {
+      runUrl: "",
+      reviews: [{ reviewer: "art-director", verdict: "accept", notes: "Stylized flat approved.", at: "2026-06-18T00:00:00.000Z" }],
+      derivedHash: asset.hash
+    };
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
     const passing = validateAssets({ projectDir, release: true });
     expect(passing.ok, JSON.stringify(passing, null, 2)).toBe(true);
     expect(passing.warnings).toEqual([]);
 
-    asset.materialMetadata[0].readable = false;
+    // A look-dev record bound to a stale hash no longer approves.
+    asset.lookDev.derivedHash = `sha256-${"0".repeat(64)}`;
     writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-    const blocked = validateAssets({ projectDir, release: true });
-    expect(blocked.ok).toBe(false);
-    expect(blocked.warnings.join("\n")).toContain("release primary model has no texture references");
-    expect(blocked.warnings.join("\n")).toContain("invisible or unreadable material metadata");
+    const stale = validateAssets({ projectDir, release: true });
+    expect(stale.ok).toBe(false);
+    expect(stale.warnings.join("\n")).toContain("release primary model has no texture references");
   });
 
   test("role-aware release validation rejects vehicle assets missing orientation evidence", () => {
