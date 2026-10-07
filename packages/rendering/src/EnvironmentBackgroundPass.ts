@@ -8,6 +8,9 @@ import { createLeanCoreShaderLibrary, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME
 import { TextureBinding } from "./TextureBinding";
 import { VertexBuffer } from "./VertexBuffer";
 import { VertexFormat } from "./VertexFormat";
+import { roughnessToLod } from "./environment/workers/cpuPrefilter";
+import { rendererQrFlags } from "./renderer/FrameGraph";
+import { createPrd02EnvironmentBackgroundShaderLibrary } from "./environment/Prd02BackgroundShaderLibrary";
 
 export type EnvironmentBackgroundProjection = "equirect" | "cubemap";
 export type EnvironmentBackgroundEncoding = "linear" | "srgb" | "rgbe";
@@ -21,6 +24,12 @@ export interface EnvironmentBackgroundOptions {
   readonly outputColorSpace?: "linear" | "srgb";
   readonly inverseViewProjectionMatrix?: Float32Array | readonly number[];
   readonly shaderLibrary?: ShaderLibrary;
+  /**
+   * PRD-02 §8.7: blur amount 0..1 mapped to the specular cube's mip chain via
+   * `roughnessToLod` (cubemap projection only). Requires `mipCount`.
+   */
+  readonly blurriness?: number;
+  readonly mipCount?: number;
 }
 
 export const ENVIRONMENT_BACKGROUND_COLOR_RESOURCE = "environment-background-color";
@@ -35,17 +44,25 @@ const BACKGROUND_RENDER_STATE = {
 export class EnvironmentBackgroundPass extends BaseRenderPass {
   private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, ShaderModule>>();
   private readonly shaderLibrary: ShaderLibrary;
+  private cachedDraw?: { readonly device: RenderDevice; readonly shader: RenderShaderProgram; readonly geometry: Geometry; readonly pipeline: RenderPipeline };
 
   constructor(private readonly options: EnvironmentBackgroundOptions) {
     super("environment-background", [], [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
-    this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
+    this.shaderLibrary = options.shaderLibrary
+      ?? (rendererQrFlags().on("A3D_QR_LIGHTING")
+        ? createPrd02EnvironmentBackgroundShaderLibrary()
+        : createLeanCoreShaderLibrary());
   }
 
   execute(context: RenderPassContext): void {
     validateEnvironmentBackgroundOptions(this.options);
-    const geometry = createFullscreenTriangleGeometry();
-    try {
-      const shader = this.getShader(context.device);
+    const shader = this.getShader(context.device);
+    // Phase 6: persistent fullscreen geometry + pipeline — steady state makes
+    // no RenderPipeline constructions and no buffer creates.
+    let cached = this.cachedDraw;
+    if (!cached || cached.device !== context.device || cached.shader !== shader) {
+      cached?.geometry.dispose();
+      const geometry = createFullscreenTriangleGeometry();
       const pipeline = new RenderPipeline({
         label: "environment-background",
         shader,
@@ -53,16 +70,16 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
         topology: geometry.topology,
         renderState: BACKGROUND_RENDER_STATE
       });
-      const command = pipeline.createDrawCommand({
-        label: "environment-background",
-        vertexBuffer: geometry.vertexBuffer.upload(context.device),
-        vertexCount: geometry.vertexBuffer.vertexCount,
-        uniforms: createEnvironmentBackgroundUniforms(this.options)
-      });
-      context.device.draw(command);
-    } finally {
-      geometry.dispose();
+      cached = { device: context.device, shader, geometry, pipeline };
+      this.cachedDraw = cached;
     }
+    const command = cached.pipeline.createDrawCommand({
+      label: "environment-background",
+      vertexBuffer: cached.geometry.vertexBuffer.upload(context.device),
+      vertexCount: cached.geometry.vertexBuffer.vertexCount,
+      uniforms: createEnvironmentBackgroundUniforms(this.options)
+    });
+    context.device.draw(command);
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {
@@ -101,6 +118,8 @@ export function createEnvironmentBackgroundUniforms(options: EnvironmentBackgrou
   uniforms.set("u_environmentBackgroundRotation", options.rotation ?? 0);
   uniforms.set("u_environmentBackgroundIntensity", options.intensity ?? 1);
   uniforms.set("u_environmentBackgroundEncoding", backgroundEncodingUniform(encoding));
+  const lod = backgroundLodUniform(options);
+  uniforms.set("u_environmentBackgroundLod", lod);
   uniforms.set("u_outputColorSpace", (options.outputColorSpace ?? "srgb") === "srgb" ? 1 : 0);
   uniforms.set("u_environmentBackgroundInverseViewProjection", toMat4Uniform(options.inverseViewProjectionMatrix, "inverseViewProjectionMatrix"));
   return uniforms;
@@ -159,8 +178,21 @@ function validateEnvironmentBackgroundOptions(options: EnvironmentBackgroundOpti
       outputColorSpace
     });
   }
+  backgroundLodUniform(options);
   backgroundEncodingUniform(options.encoding ?? "linear");
   toMat4Uniform(options.inverseViewProjectionMatrix, "inverseViewProjectionMatrix");
+}
+
+function backgroundLodUniform(options: EnvironmentBackgroundOptions): number {
+  const blurriness = options.blurriness ?? 0;
+  if (!Number.isFinite(blurriness) || blurriness < 0 || blurriness > 1) {
+    throw new RenderDeviceError("Environment background blurriness must be finite in [0, 1]", "ENVIRONMENT_BACKGROUND_CONTRACT", {
+      blurriness: options.blurriness
+    });
+  }
+  if (blurriness === 0) return 0;
+  const mipCount = options.mipCount ?? options.texture.texture?.mipLevels.length ?? 1;
+  return roughnessToLod(blurriness, Math.max(1, mipCount));
 }
 
 function backgroundEncodingUniform(encoding: EnvironmentBackgroundEncoding): number {

@@ -1,0 +1,14 @@
+/* §7.7 theme "motorsport" — mirror of HUD_THEMES["motorsport"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-motorsport {
+  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-fg: #f5f7fa;
+  --a3g-fg-dim: #aab4c0;
+  --a3g-accent: #ffcf3f;
+  --a3g-accent2: #2ec4ff;
+  --a3g-warn: #ff9f1c;
+  --a3g-danger: #ef233c;
+  --a3g-bg: rgba(10,12,16,0.78);
+  --a3g-edge: rgba(255,207,63,0.5);
+  --a3g-glow: none;
+  --a3g-radius: 2px;
+}

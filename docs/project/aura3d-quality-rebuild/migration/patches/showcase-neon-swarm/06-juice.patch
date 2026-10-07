@@ -1,0 +1,184 @@
+From 50c8520269665c7576b00cf690ba7612d4657a82 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 17:52:20 +0000
+Subject: [PATCH] [QR-09] neon-swarm: juice events + @aura3d/game dep
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-neon-swarm/package.json |  3 +-
+ apps/showcase-neon-swarm/src/main.ts  | 47 ++++++++++++++++++++++++++-
+ 2 files changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/apps/showcase-neon-swarm/package.json b/apps/showcase-neon-swarm/package.json
+index edde022a..6febe296 100644
+--- a/apps/showcase-neon-swarm/package.json
++++ b/apps/showcase-neon-swarm/package.json
+@@ -16,7 +16,8 @@
+     "preview": "vite preview --host 127.0.0.1"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-neon-swarm/src/main.ts b/apps/showcase-neon-swarm/src/main.ts
+index 38e55d09..b85a6149 100644
+--- a/apps/showcase-neon-swarm/src/main.ts
++++ b/apps/showcase-neon-swarm/src/main.ts
+@@ -13,7 +13,14 @@
+  *
+  * Evidence: window.__NEON_SWARM_EVIDENCE__ (schema in README).
+  */
+-import { createGame } from "@aura3d/game";
++import {
++  createFxParticlePass,
++  createGame,
++  createJuice,
++  createOverlayDriver,
++  createRumbleDriver,
++  createTweenEngine
++} from "@aura3d/game";
+ import { bindNeonEvidence } from "./evidence";
+ import { bindNeonDrive } from "./scenario-drive";
+ import { neonScenarios } from "./scenarios";
+@@ -960,6 +967,31 @@ const hud: HudController = setupHud(
+ );
+ 
+ const audio: SwarmAudioController = createSwarmAudio();
++const neonTween = createTweenEngine();
++const neonFx = createFxParticlePass(app.effects);
++const neonJuice = createJuice<
++  "pulse-fire" | "drone-hit" | "drone-die" | "graze" | "player-hurt" | "burst" | "dash" | "pickup" | "wave-start" | "wave-clear" | "death"
++>({
++  events: {
++    "pulse-fire": { fx: { kind: "muzzle", count: 3, color: "#7ef4ff" }, shake: 0.02 },
++    "drone-hit": { fx: { kind: "spark", count: 4, color: "#ffd166" } },
++    "drone-die": { fx: { kind: "debris", count: 8, color: "#ff8f5a" }, shake: 0.05 },
++    graze: { fx: { kind: "spark", count: 5, color: "#ffe08a" }, shake: 0.04 },
++    "player-hurt": { flash: { color: "#ff4d4d", peak: 0.16, ms: 160 }, shake: 0.18 },
++    burst: { fx: { kind: "ring", count: 24, color: "#66f0ff" }, shake: 0.3, punch: { fovDeg: 4, ms: 200 }, hitStop: 0.05 },
++    dash: { fx: { kind: "streak", count: 6, color: "#9fd8ff" }, shake: 0.05 },
++    pickup: { fx: { kind: "pickup", count: 10, color: "#a3ff9e" }, flash: { color: "#a3ff9e", peak: 0.1, ms: 140 } },
++    "wave-start": { punch: { fovDeg: 2, ms: 180 }, fx: { kind: "ring", count: 12, color: "#48e5ff" } },
++    "wave-clear": { fx: { kind: "pickup", count: 14, color: "#ffe866" }, punch: { fovDeg: 2.5, ms: 200 } },
++    death: { flash: { color: "#ff4d4d", peak: 0.24, ms: 320 }, vignette: { amount: 0.4, ms: 560, color: "#1c0508" }, hitStop: 0.07 }
++  },
++  camera: app.camera,
++  session: neonGame.session,
++  fx: neonFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: neonTween,
++  rumble: createRumbleDriver()
++});
+ const cameraDirector = game.cameraDirector({ baseFov: 41, distance: 19, reducedMotion });
+ const gameEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: reducedMotion });
+ 
+@@ -1037,6 +1069,7 @@ function beginIntermission(seconds: number): void {
+   if (wave > 0) {
+     hud.showDoors();
+     audio.cue("wave-clear").catch(() => undefined);
++    neonJuice.fire("wave-clear");
+     hud.showBanner("Wave " + wave + " clear", "Choose an upgrade door before the next wave");
+   } else {
+     hud.hideDoors();
+@@ -1061,6 +1094,7 @@ function startWave(next: number): void {
+   hud.hideDoors();
+   hud.hideBanner();
+   audio.cue("wave-start").catch(() => undefined);
++  neonJuice.fire("wave-start");
+   hud.showBanner(
+     wave === MAX_CAMPAIGN_WAVES
+       ? "Finale - vector panic"
+@@ -1129,6 +1163,7 @@ function chooseDoor(kind: string): void {
+   upgrades.shieldCharges = next.shieldCharges;
+   hud.markDoorChosen(kind);
+   audio.cue("pickup").catch(() => undefined);
++    neonJuice.fire("pickup");
+   gameEffects.spawn("ring-shockwave", [door.x, 0.6, door.z], { color: "#ffc857", intensity: 0.8, duration: 0.5, radius: 2.2 });
+   // An intermission choice can arrive from a HUD button click instead of the fixed
+   // simulation step. Evidence is normally republished at the end of update(), so without
+@@ -1151,6 +1186,7 @@ function collectRiskPickup(): void {
+   });
+   combatFeel.spawnSparks({ x: pickupPosition.x, z: pickupPosition.z, count: 14, strength: 0.8 });
+   audio.cue("pickup").catch(() => undefined);
++    neonJuice.fire("pickup");
+ }
+ 
+ function firePulse(): void {
+@@ -1161,6 +1197,7 @@ function firePulse(): void {
+   if (result.hits > 0) {
+     combatFeel.spawnSparks({ x: player.x + aim.x * 1.4, z: player.z + aim.z * 1.4, count: 4, strength: 0.55 });
+     audio.cue("drone-hit").catch(() => undefined);
++    neonJuice.fire("drone-hit");
+   }
+   gameEffects.spawn("shockwave", [player.x + aim.x * 2.2, 0.5, player.z + aim.z * 2.2], {
+     color: "#35e6ff",
+@@ -1204,6 +1241,7 @@ function firePulse(): void {
+   }
+   pulseFxRemaining =  0.3;
+   audio.cue("pulse-fire").catch(() => undefined);
++  neonJuice.fire("pulse-fire", { position: [player.x, 0.9, player.z] });
+ }
+ 
+ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): void {
+@@ -1215,6 +1253,7 @@ function handleDroneKilled(drone: { readonly x: number; readonly z: number }): v
+   burstCharge = Math.min(100, burstCharge + 10);
+   combatFeel.spawnSparks({ x: drone.x, z: drone.z, count: 10, strength: 1 });
+   audio.cue("drone-die").catch(() => undefined);
++    neonJuice.fire("drone-die");
+ }
+ 
+ function fireBurst(): void {
+@@ -1242,6 +1281,7 @@ function fireBurst(): void {
+   combatFeel.spawnSparks({ x: player.x, z: player.z, count: 24, strength: 1 });
+   cameraDirector.impact(1.2, 0.22);
+   audio.cue("burst").catch(() => undefined);
++  neonJuice.fire("burst", { position: [player.x, 0.9, player.z] });
+ }
+ 
+ function resolveAim(): { x: number; z: number } {
+@@ -1253,6 +1293,7 @@ function killPlayer(): void {
+   runState = "dead";
+   combo = 0;
+   audio.cue("death-sting").catch(() => undefined);
++  neonJuice.fire("death");
+   if (score > bestScore) {
+     bestScore = score;
+     writeBestScore(bestScore);
+@@ -1376,6 +1417,7 @@ bindTouchStick(touchLayout.controls[1]?.id ?? "fire-stick", (dx, dz, active) =>
+ 
+ function update(dt: number): void {
+   input.update(dt);
++  neonTween.tick(dt);
+   hud.tickBanner(dt);
+   if (input.pressed("pause") && runState !== "dead" && runState !== "complete") {
+     if (neonGame.session.paused) neonGame.session.resume();
+@@ -1474,6 +1516,7 @@ function update(dt: number): void {
+   }, dt, runRect);
+   if (stepResult.dashed) {
+     audio.cue("dash").catch(() => undefined);
++    neonJuice.fire("dash", { position: [player.x, 0.9, player.z] });
+     cameraDirector.impact(0.5, 0.14);
+     if (!reducedMotion) hud.flashVignette();
+     gameEffects.spawn("dash-trail", [player.x, 0.5, player.z], { color: "#35e6ff", duration: 0.3, ownerId: "courier" });
+@@ -1599,6 +1642,7 @@ function update(dt: number): void {
+           color: "#ffc857", intensity: 0.45, duration: 0.18, radius: 1.25
+         });
+         audio.cue("graze").catch(() => undefined);
++        neonJuice.fire("graze");
+       }
+     } else {
+       grazeAccumulator = 0;
+@@ -1609,6 +1653,7 @@ function update(dt: number): void {
+       if (dealt > 0) {
+         damageEvents += 1;
+         audio.cue("player-hurt").catch(() => undefined);
++        neonJuice.fire("player-hurt", { position: [player.x, 0.9, player.z] });
+         cameraDirector.impact(1, 0.2);
+         if (!reducedMotion) hud.flashVignette();
+         combatFeel.spawnSparks({ x: player.x, z: player.z, count: 6, strength: 0.6 });
+-- 
+2.34.1
+

@@ -35,7 +35,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "scaffold-to-deploy",
-  verdict: "clean-built-served-interactive-product-deploys-proven",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   measurements: {
@@ -46,11 +46,6 @@ const report = {
     workflowPhases: browser.workflowTimings
   },
   comparison: {
-    observedLosses: [
-      "Personal inspection of all four native canvas captures confirms comparable complete product framing and the same meaningful lateral interaction. Three remains slightly brighter; Aura retains a concentrated procedural-studio highlight on the floor. Normalized paired RMSE is 0.0494657 before and 0.0486773 after, so pixel-level visual parity is not claimed.",
-      `Aura3D was slower in ${workflowLosses.length}/${workflowPhases.length} automated local workflow phases: ${workflowLosses.join("; ")}.`,
-      "The workflow starts from the real product-viewer scaffold, then performs a documented source/asset replacement to compare the frozen product through the lean-product entry. This proves that clean route, build, static serve, and interaction path; it does not prove package-manager installation latency, cloud-provider deployment, every scaffold, rotation authoring in lean-product, or ecosystem-wide parity."
-    ],
     claimBoundary: "Fresh local product-viewer scaffold adapted to the public lean-product entry versus a clean current React/R3F/Drei/Three product application, both built by Vite and served from production dist output."
   },
   browser

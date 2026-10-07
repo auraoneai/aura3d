@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "sideEffects": ["*.css"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,10 +16,19 @@
     "./art": {
       "types": "./dist/art/index.d.ts",
       "import": "./dist/art/index.js"
-    }
+    },
+    "./util": {
+      "types": "./dist/util/index.d.ts",
+      "import": "./dist/util/index.js"
+    },
+    "./styles.css": "./src/styles.css"
   },
   "dependencies": {
+    "@aura3d/engine": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
+    "@aura3d/audio": "workspace:*",
+    "@aura3d/input": "workspace:*",
+    "@aura3d/math": "workspace:*",
     "@aura3d/rendering": "workspace:*"
   }
 }

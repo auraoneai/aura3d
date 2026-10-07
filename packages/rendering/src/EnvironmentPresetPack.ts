@@ -1,4 +1,6 @@
 import type { ExternalParityEnvironmentPreset } from "./ExternalParityRenderPreset";
+import type { QrFlags } from "./contracts/core";
+import { rendererQrFlags } from "./renderer/FrameGraph";
 
 export type EnvironmentPresetPackSlot = "indoor" | "outdoor" | "night";
 
@@ -46,6 +48,44 @@ export const AURA_INDOOR_OUTDOOR_NIGHT_PRESET_PACK: EnvironmentPresetPack = {
   ],
   pmremRowSsimFloor: 0.975
 };
+
+/**
+ * PRD-10 T6.5 (L9): with `A3D_QR_WORLD_BIOME` on, the night slot keeps its own
+ * exposure — multiplying an evening source by 2.11 to match daylight luma
+ * removes the night look the biome is supposed to produce. Flag off → the
+ * measured normalization factor (legacy behavior).
+ */
+export function presetPackExposureFactor(
+  entry: EnvironmentPresetPackEntry,
+  flags?: QrFlags
+): number {
+  const qr = flags ?? rendererQrFlags();
+  if (entry.slot === "night" && worldBiomeSubflagOn(qr)) return 1;
+  return entry.exposureFactor;
+}
+
+/**
+ * T6.5 second half: flag on → the SSIM gate compares per-preset frozen
+ * references (each slot against its own source's PMREM rows) instead of the
+ * shared daylight-normalized reference set. The owner-15 gate fixture adopts
+ * this selector when the per-preference references are regenerated.
+ */
+export type PresetPackSsimReference = "normalized-to-target" | "per-preset";
+export function presetPackSsimReference(flags?: QrFlags): PresetPackSsimReference {
+  const qr = flags ?? rendererQrFlags();
+  return worldBiomeSubflagOn(qr) ? "per-preset" : "normalized-to-target";
+}
+
+/**
+ * §13 default-on, rendering-side copy of `worldSubflagOn` (engine can't be
+ * imported from this package): `A3D_QR_WORLD_BIOME` follows `A3D_QR_WORLD`
+ * unless it was set explicitly.
+ */
+function worldBiomeSubflagOn(qr: QrFlags): boolean {
+  const v = qr.values["A3D_QR_WORLD_BIOME"];
+  if (v !== undefined) return v !== false && v !== "off" && v !== "0";
+  return qr.on("A3D_QR_WORLD");
+}
 
 /**
  * Applies a pack entry's measured exposure gain to generated HDR float

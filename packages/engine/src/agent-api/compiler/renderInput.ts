@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../index.js";
+import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraTransformSpec, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../index.js";
 import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createModelMatrix, createProductionRuntimeMetadata, createSceneLabelOcclusionTest, createViewProjection, geometry, groups, primitive, productionActorModelBounds, productionRenderErrorMessage, resolveCameraFrame, resolveProductionActorRuntimeState, shouldNormalizeModelNode } from "../index.js";
 import { composeModelInstanceMatrices, getRootPerformanceQuality, getRootRenderSource, includeRootSourceMetadata } from "../RootRuntimeSupport.js";
 import { resolveSdfTextFrameOpacity, resolveWrinkleMapStrength, warnOnInstancingFallback, type CameraLike, type CollectedLight, type EnvironmentLightingOptions, type ProductionRendererInput, type RenderItem, type RenderSource } from "@aura3d/rendering";
@@ -13,6 +13,93 @@ import { createProductionRuntimeShadowOptions } from "./shadows.js";
 import { camera } from "../nodes/camera.js";
 import { instances } from "../nodes/instances.js";
 import { material } from "../nodes/material.js";
+import type { AuraStaticModelMatrixCache } from "../sceneGraph.js";
+
+/*
+ * PRD-01 §15 Phase-6 seam: under `A3D_QR_CORE`, createAuraApp installs the
+ * Phase-1 fingerprinted model-matrix cache so static primitives skip the
+ * per-frame createModelMatrix recompose+alloc; the per-frame instance
+ * transform/color arrays are likewise retained per spec array. Flag-off
+ * keeps the verbatim calls (C-01).
+ */
+let prd01ModelMatrixCache: AuraStaticModelMatrixCache | null = null;
+
+/** createAuraApp installs the Phase-1 cache here when `A3D_QR_CORE` is on. */
+export function setPrd01ModelMatrixCache(cache: AuraStaticModelMatrixCache | null): void {
+  prd01ModelMatrixCache = cache;
+}
+
+/* Instance outputs depend on the spec array contents + `node.primitive`
+ * (createProductionInstanceTransforms builds {kind, primitive, ...transform}
+ * locals — node TRS is unused). Key on the spec array's identity and a
+ * numeric fold of its transform fields; spec arrays are mount-frozen. */
+const prd01InstanceTransformCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; primitive: unknown; result: Float32Array }>();
+const prd01InstanceColorCache = new WeakMap<readonly AuraColor[], { fp: number; count: number; result: Float32Array | undefined }>();
+const prd01ModelInstanceCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; node: object; bounds: Float64Array; result: Float32Array }>();
+
+function instanceTransformFp(transforms: readonly AuraTransformSpec[]): number {
+  let h = transforms.length;
+  for (const t of transforms) {
+    const p = t.position;
+    if (p) h += p[0] * 3 + p[1] * 5 + p[2] * 7;
+    const r = t.rotation;
+    if (r) h += r[0] * 19 + r[1] * 23 + r[2] * 29;
+    const s = t.scale;
+    if (typeof s === "number") h += s * 11;
+    else if (s) h += s[0] * 11 + s[1] * 13 + s[2] * 17;
+  }
+  return h;
+}
+
+function instanceColorFp(colors: readonly AuraColor[]): number {
+  let h = colors.length;
+  for (const c of colors) {
+    if (typeof c === "string") h = h * 31 + c.length + (c.length > 0 ? c.charCodeAt(0) + c.charCodeAt(c.length - 1) : 0);
+    else h = h * 31 + 1;
+  }
+  return h | 0;
+}
+
+function prd01InstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): Float32Array {
+  if (prd01ModelMatrixCache === null) return createProductionInstanceTransforms(transforms, node);
+  const fp = instanceTransformFp(transforms);
+  const hit = prd01InstanceTransformCache.get(transforms);
+  if (hit && hit.fp === fp && hit.primitive === node.primitive) return hit.result;
+  const result = createProductionInstanceTransforms(transforms, node);
+  prd01InstanceTransformCache.set(transforms, { fp, primitive: node.primitive, result });
+  return result;
+}
+
+function prd01InstanceColors(colors: readonly AuraColor[] | undefined, count: number): Float32Array | undefined {
+  if (colors === undefined || prd01ModelMatrixCache === null) return createProductionInstanceColors(colors, count);
+  const fp = instanceColorFp(colors);
+  const hit = prd01InstanceColorCache.get(colors);
+  if (hit && hit.fp === fp && hit.count === count) return hit.result;
+  const result = createProductionInstanceColors(colors, count);
+  prd01InstanceColorCache.set(colors, { fp, count, result });
+  return result;
+}
+
+function prd01ModelInstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraModelNode, bounds: { readonly min: AuraVec3; readonly max: AuraVec3 }, time: number): Float32Array {
+  if (prd01ModelMatrixCache === null || node.animation !== undefined) {
+    return createProductionModelInstanceTransforms(transforms, node, bounds, time);
+  }
+  const fp = instanceTransformFp(transforms);
+  const hit = prd01ModelInstanceCache.get(transforms);
+  if (hit && hit.fp === fp && hit.node === node
+    && hit.bounds[0] === bounds.min[0] && hit.bounds[1] === bounds.min[1] && hit.bounds[2] === bounds.min[2]
+    && hit.bounds[3] === bounds.max[0] && hit.bounds[4] === bounds.max[1] && hit.bounds[5] === bounds.max[2]) {
+    return hit.result;
+  }
+  const result = createProductionModelInstanceTransforms(transforms, node, bounds, time);
+  prd01ModelInstanceCache.set(transforms, {
+    fp,
+    node,
+    bounds: Float64Array.of(bounds.min[0], bounds.min[1], bounds.min[2], bounds.max[0], bounds.max[1], bounds.max[2]),
+    result
+  });
+  return result;
+}
 
 export function createProductionRuntimeRendererInput(
   snapshot: AuraSceneSnapshot,
@@ -28,18 +115,16 @@ export function createProductionRuntimeRendererInput(
   const compatibility = getRootRenderSource(canvas);
   const attachedItems: readonly RenderItem[] = compatibility ? [...(compatibility.source.collectRenderItems?.() ?? compatibility.source.renderItems ?? [])] : [];
   const items: RenderItem[] = [...attachedItems];
+  prd01ModelMatrixCache?.beginFrame();
   const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
   const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
   for (const [actorIndex, entry] of actorEntries.entries()) {
     let currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     let currentNode = currentState.node;
     if (currentNode.visible === false) continue;
-    let modelMatrix = [...createModelMatrix(
-      currentNode,
-      productionActorModelBounds(currentNode.asset, entry.actor),
-      shouldNormalizeModelNode(currentNode),
-      time
-    )];
+    const actorBounds = productionActorModelBounds(currentNode.asset, entry.actor);
+    const actorNormalize = shouldNormalizeModelNode(currentNode);
+    let modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBounds, actorNormalize, time) ?? createModelMatrix(currentNode, actorBounds, actorNormalize, time))];
     // The foot-planting post-pass solves in the same world space this matrix draws into;
     // refresh its matrix before the clip plays so the solve uses this frame, not the last.
     applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
@@ -53,7 +138,9 @@ export function createProductionRuntimeRendererInput(
     } else applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings, modelMatrix, () => {
       currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
       currentNode = currentState.node;
-      modelMatrix = [...createModelMatrix(currentNode, productionActorModelBounds(currentNode.asset, entry.actor), shouldNormalizeModelNode(currentNode), time)];
+      const actorBoundsRefresh = productionActorModelBounds(currentNode.asset, entry.actor);
+      const actorNormalizeRefresh = shouldNormalizeModelNode(currentNode);
+      modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time) ?? createModelMatrix(currentNode, actorBoundsRefresh, actorNormalizeRefresh, time))];
       applyProductionActorFootPlanting(entry, currentState.animationBinding, modelMatrix, runtimeWarnings);
     });
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
@@ -82,9 +169,9 @@ export function createProductionRuntimeRendererInput(
         });
       } else {
         modelInstanceAttach = {
-          instanceTransforms: createProductionModelInstanceTransforms(modelInstances, currentNode, productionActorModelBounds(currentNode.asset, entry.actor), time),
+          instanceTransforms: prd01ModelInstanceTransforms(modelInstances, currentNode, productionActorModelBounds(currentNode.asset, entry.actor), time),
           ...(currentNode.instanceColors
-            ? { instanceColors: createProductionInstanceColors(currentNode.instanceColors, modelInstances.length) }
+            ? { instanceColors: prd01InstanceColors(currentNode.instanceColors, modelInstances.length) }
             : {})
         };
       }
@@ -148,11 +235,11 @@ export function createProductionRuntimeRendererInput(
     items.push({
       geometry: resource.geometry,
       material: resource.texturedMaterial ?? resource.material,
-      modelMatrix: createModelMatrix(currentState.node, resource.bounds, false, time),
+      modelMatrix: prd01ModelMatrixCache?.modelMatrix(currentState.node, resource.bounds, false, time) ?? createModelMatrix(currentState.node, resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,
       includeInAutoFrame: false,
-      ...(currentState.node.instances ? { instanceTransforms: createProductionInstanceTransforms(currentState.node.instances, currentState.node), instanceColors: createProductionInstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
+      ...(currentState.node.instances ? { instanceTransforms: prd01InstanceTransforms(currentState.node.instances, currentState.node), instanceColors: prd01InstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });
   }
   const unsupportedTemporal = items.find(item => {
@@ -173,7 +260,9 @@ export function createProductionRuntimeRendererInput(
     // The production runtime owns the pixel-backed HDR target and pass chain for
     // routes that request effects. The diagnostics are device-observed, so a
     // compositor failure is reported as fallback rather than claimed as a pass.
-    postprocess: compatibility?.source.postprocess ?? createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal),
+    // CCR-03-1: `attach.canvas` keys the submitted record/context stores so a
+    // second app's compile never overwrites the first's post diagnostics.
+    postprocess: compatibility?.source.postprocess ?? createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, { canvas }),
     shadow: { ...createProductionRuntimeShadowOptions(snapshot, collectedLights), ...(getRootPerformanceQuality(canvas) ? { size: getRootPerformanceQuality(canvas)!.shadowSize } : {}) },
     environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { cameraPosition })

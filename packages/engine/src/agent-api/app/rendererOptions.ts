@@ -2,6 +2,20 @@
 
 import type { AuraCreateAppRendererOptions, AuraRendererQualityPreset, AuraRendererQualityProfile, AuraRendererQualityProfileId } from "../index.js";
 
+/**
+ * PRD 11 Phase 1 freeze (§6.2): thrown when a caller requests the frozen
+ * `experimental-webgpu` quality profile. The union member stays for CCR
+ * compatibility, but selecting it is a migration-time error, not a warning.
+ */
+export class AuraMigrationError extends Error {
+  readonly code = "A3D_PROFILE_FROZEN" as const;
+
+  constructor(message: string) {
+    super(message);
+    this.name = "AuraMigrationError";
+  }
+}
+
 export const rendererQualityPresets: Readonly<Record<"interactive" | "screenshot", AuraRendererQualityPreset>> = {
   interactive: {
     kind: "aura-renderer-quality",
@@ -89,6 +103,11 @@ export const rendererQualityProfiles: Readonly<Record<AuraRendererQualityProfile
 };
 
 export function resolveRendererQualityProfile(id: AuraRendererQualityProfileId | undefined): AuraRendererQualityProfile {
+  if (id === "experimental-webgpu") {
+    throw new AuraMigrationError(
+      "Renderer quality profile \"experimental-webgpu\" is frozen by PRD 11 (WebGPU is an experimental probe device; no game uses it). Use \"production\" or \"safe-basic\"."
+    );
+  }
   return rendererQualityProfiles[id ?? "safe-basic"] ?? rendererQualityProfiles["safe-basic"];
 }
 

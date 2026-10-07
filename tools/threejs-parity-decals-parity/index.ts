@@ -87,7 +87,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 interface DecalResources {
@@ -190,7 +189,7 @@ async function run(): Promise<void> {
         sideBySide
       },
       humanNotes: [
-        `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
+        `Mean RGB delta is ${diff.meanDelta}.`,
         `Projector max hit delta is ${projectorSemantics.maxHitPositionDelta}; minimum normal dot is ${projectorSemantics.minNormalDot}.`,
         "This artifact proves a bounded same-scene decals comparison and projector semantics. It is not a blanket visual equality claim."
       ]
@@ -562,8 +561,7 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return {
     meanDelta: Number(meanDelta.toFixed(4)),
     maxDelta: Number(maxDelta.toFixed(4)),
-    changedPixels,
-    structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4))
+    changedPixels, 1 - meanDelta / 255).toFixed(4))
   };
 }
 
@@ -583,7 +581,7 @@ async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, thr
   context.fillText("Three.js DecalGeometry baseline", SCENE.width + 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);
+  context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels}`, 20, SCENE.height + 50);
   return canvas.toDataURL("image/png");
 }
 

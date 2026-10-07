@@ -27,7 +27,8 @@ export interface WebGL2StateCacheSnapshot {
   readonly depthMask: boolean | null;
   readonly depthFunc: number | null;
   readonly cullFace: number | null;
-  readonly blendFunc: readonly [number, number] | null;
+  readonly blendFunc: readonly [number, number, number, number] | null;
+  readonly blendEquation: readonly [number, number] | null;
   readonly enabled: Readonly<Record<number, boolean>>;
   readonly textures: Readonly<Record<string, unknown>>;
   readonly samplers: Readonly<Record<number, unknown>>;
@@ -42,6 +43,7 @@ type Operation =
   | "bindTexture"
   | "bindVertexArray"
   | "blendFunc"
+  | "blendEquation"
   | "colorMask"
   | "cullFace"
   | "depthFunc"
@@ -79,7 +81,8 @@ export class WebGL2StateCache {
   private currentDepthMask: boolean | null = null;
   private currentDepthFunc: number | null = null;
   private currentCullFace: number | null = null;
-  private currentBlendFunc: readonly [number, number] | null = null;
+  private currentBlendFunc: readonly [number, number, number, number] | null = null;
+  private currentBlendEquation: readonly [number, number] | null = null;
   private readonly enabledCaps = new Map<number, boolean>();
   private readonly textureBindings = new Map<string, unknown>();
   private readonly samplerBindings = new Map<number, unknown>();
@@ -105,6 +108,7 @@ export class WebGL2StateCache {
     this.currentDepthFunc = null;
     this.currentCullFace = null;
     this.currentBlendFunc = null;
+    this.currentBlendEquation = null;
     this.enabledCaps.clear();
     this.textureBindings.clear();
     this.samplerBindings.clear();
@@ -227,12 +231,41 @@ export class WebGL2StateCache {
     return this.issue("cullFace", apply);
   }
 
+  /** gl.blendFunc(src, dst) — identical factors for color and alpha. */
   blendFunc(src: number, dst: number, apply: () => void): boolean {
-    const next = [src, dst] as const;
-    if (this.currentBlendFunc && this.currentBlendFunc[0] === src && this.currentBlendFunc[1] === dst) return this.skip("blendFunc");
+    const next = [src, dst, src, dst] as const;
+    if (this.currentBlendFunc && next.every((value, i) => this.currentBlendFunc![i] === value)) return this.skip("blendFunc");
     this.currentBlendFunc = next;
     return this.issue("blendFunc", apply);
   }
+
+  /** gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha) — C-04 dedupe. */
+  blendFuncSeparate(srcRgb: number, dstRgb: number, srcAlpha: number, dstAlpha: number, apply: () => void): boolean {
+    const next = [srcRgb, dstRgb, srcAlpha, dstAlpha] as const;
+    if (this.currentBlendFunc && next.every((value, i) => this.currentBlendFunc![i] === value)) return this.skip("blendFunc");
+    this.currentBlendFunc = next;
+    return this.issue("blendFunc", apply);
+  }
+
+  /** gl.blendEquationSeparate(modeRGB, modeAlpha) — C-04 dedupe. */
+  blendEquation(modeRgb: number, modeAlpha: number, apply: () => void): boolean {
+    const next = [modeRgb, modeAlpha] as const;
+    if (this.currentBlendEquation && this.currentBlendEquation[0] === modeRgb && this.currentBlendEquation[1] === modeAlpha) return this.skip("blendEquation");
+    this.currentBlendEquation = next;
+    return this.issue("blendEquation", apply);
+  }
+
+  /**
+   * C-04: true when the cache tracked a blend equation that differs from
+   * (modeRgb, modeAlpha). Unknown (never-applied) state reads as `false`, so
+   * the legacy blend path never emits blendEquationSeparate on a fresh context
+   * where the equation is already FUNC_ADD.
+   */
+  blendEquationDiffers(modeRgb: number, modeAlpha: number): boolean {
+    return this.currentBlendEquation !== null && (this.currentBlendEquation[0] !== modeRgb || this.currentBlendEquation[1] !== modeAlpha);
+  }
+
+
 
   activeTexture(unit: number, apply: () => void): boolean {
     if (this.currentActiveTextureUnit === unit) return this.skip("activeTexture");
@@ -272,6 +305,7 @@ export class WebGL2StateCache {
       depthFunc: this.currentDepthFunc,
       cullFace: this.currentCullFace,
       blendFunc: this.currentBlendFunc,
+      blendEquation: this.currentBlendEquation,
       enabled: Object.fromEntries(this.enabledCaps.entries()),
       textures: Object.fromEntries(this.textureBindings.entries()),
       samplers: Object.fromEntries(this.samplerBindings.entries()),

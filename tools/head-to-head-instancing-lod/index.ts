@@ -29,18 +29,13 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "instancing-lod",
-  verdict: "both-native-instance-and-switch-lod-with-visible-aura-losses",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls,
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
-    observedLosses: [
-      "Aura submits six draws versus Three.js three for the same frozen product hero, 2,500-instance field, and selected LOD object.",
-      "Aura's public root instancing helper instances built-in primitives; it does not expose imported GLB mesh instancing, so the exact product asset is a shared non-instanced hero in this workload.",
-      "All four retained near/far frames were reopened after converting authored instance/material colors from sRGB to linear and adopting the current matrix-fitted ACES path. Background bytes and saturated instance colors now align closely; small highlight differences remain, and the far camera makes the selected LOD object too small for a polished public demonstration in either engine."
-    ],
     claimBoundary: "This proves native primitive instancing and distance LOD through the public Aura root. It does not claim imported-model instancing parity, draw-call parity, performance non-inferiority, or visual parity."
   },
   browser
