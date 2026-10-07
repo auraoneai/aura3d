@@ -37,6 +37,48 @@ import {
   type AuraWaterNode,
   type AuraWaterOptions
 } from "../world/water.js";
+import {
+  applyBiomeOverrides,
+  describeBiome,
+  type AuraBiomeNode,
+  type AuraBiomeRigDetail
+} from "../world/biomes.js";
+import type { AuraTimeOfDayNode } from "../world/biomes.js";
+import { rigAtHour } from "../world/timeOfDay.js";
+import type { AuraWindNode } from "../world/wind.js";
+import type { AuraLightNode } from "../index.js";
+
+/** Sun spec → directional light position (direction points from origin toward the sun). */
+const sunPosition = (sun: { elevationDeg: number; azimuthDeg: number }): [number, number, number] => {
+  const el = (sun.elevationDeg * Math.PI) / 180;
+  const az = (sun.azimuthDeg * Math.PI) / 180;
+  const R = 200;
+  return [
+    Math.sin(az) * Math.cos(el) * R,
+    Math.sin(el) * R,
+    -Math.cos(az) * Math.cos(el) * R
+  ];
+};
+
+/** C-10 shadow options + sun → the AuraLightNode the biome contributes. */
+function sunLightFor(nodeId: string, rig: AuraBiomeRigDetail): AuraLightNode | null {
+  const sun = rig.sunDetail;
+  if (!sun || sun.intensity <= 0) return null;
+  return {
+    kind: "light",
+    light: "directional",
+    name: `${nodeId}-sun`,
+    intensity: sun.intensity,
+    position: sunPosition(sun),
+    target: [0, 0, 0],
+    // C-10 shadow options come straight from the rig's shadows block
+    shadow: sun.castShadow === false
+      ? false
+      : { cascades: rig.shadows.cascades, maxDistance: rig.shadows.maxDistance },
+    // practical-scale tags the light so Path G/S rescales it with time-of-day
+    tags: ["prd10.sun"]
+  } as AuraLightNode;
+}
 
 const LAYER_COLORS: Readonly<Record<string, readonly [number, number, number]>> = {
   "grass-meadow": [0.29, 0.42, 0.18],
@@ -258,11 +300,92 @@ export function registerWorldNodeHandlers(): () => void {
     }
   });
 
+  // T6.2 — `kind: "biome"` (flag A3D_QR_WORLD_BIOME): resolves the rig with the
+  // node's overrides, stores it for `prd10.timeOfDay`/runtime lookup, marks
+  // `world.biome`, and contributes the sun as a directional light carrying the
+  // rig's C-10 shadow options. The env-source resolution itself is
+  // `prd10.biome` (BiomeResolver.ts).
+  const unregisterBiome = registerNodeHandler({
+    kind: "biome",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD_BIOME",
+    compile(node, _ctx, out) {
+      const biomeNode = node as unknown as AuraBiomeNode;
+      const rig = applyBiomeOverrides(describeBiome(biomeNode.biome), biomeNode.overrides);
+      biomeRecords.set(biomeNode.id, { node: biomeNode, rig });
+      out.set("prd10.biome", { id: biomeNode.id, biome: biomeNode.biome, scope: biomeNode.scope ?? "all" });
+      // C-13: post preset + per-biome overrides ride the render source for the
+      // post stack (prereq C-13 contract; applies the PostPresetId verbatim).
+      out.set("prd10.post", { preset: rig.post, overrides: rig.postOverrides });
+      out.feature("world.biome");
+      const sun = sunLightFor(biomeNode.id, rig);
+      if (sun) out.addLights([sun]);
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      // re-resolve in case time-of-day rewrote the rig
+      const biomeNode = node as unknown as AuraBiomeNode;
+      biomeRecords.set(biomeNode.id, {
+        node: biomeNode,
+        rig: applyBiomeOverrides(describeBiome(biomeNode.biome), biomeNode.overrides)
+      });
+    },
+    dispose(node) {
+      biomeRecords.delete((node as unknown as AuraBiomeNode).id);
+    }
+  });
+
+  // T6.2/T6.4 — `kind: "time-of-day"` (flag A3D_QR_WORLD_BIOME): publishes the
+  // node's options + the rig at its declared hour for TimeOfDayRuntime.
+  const unregisterTimeOfDay = registerNodeHandler({
+    kind: "time-of-day",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD_BIOME",
+    compile(node, _ctx, out) {
+      const todNode = node as unknown as AuraTimeOfDayNode;
+      timeOfDayRecords.set(todNode.id, todNode);
+      const rig = rigAtHour(todNode.options, todNode.options.hour);
+      out.set("prd10.timeOfDay", { id: todNode.id, hour: todNode.options.hour, options: todNode.options });
+      out.feature("world.timeOfDay");
+      const sun = sunLightFor(todNode.id, rig);
+      if (sun) out.addLights([sun]);
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      void node; // hour animation is driven by TimeOfDayRuntime via app.world.timeOfDay
+    },
+    dispose(node) {
+      timeOfDayRecords.delete((node as unknown as AuraTimeOfDayNode).id);
+    }
+  });
+
+  // T6.2 — `kind: "wind"` (flag A3D_QR_WORLD): publishes the normalized wind
+  // spec; WindField consumers read it through `prd10.wind`.
+  const unregisterWind = registerNodeHandler({
+    kind: "wind",
+    owner: "prd10",
+    flag: "A3D_QR_WORLD",
+    compile(node, _ctx, out) {
+      const windNode = node as unknown as AuraWindNode;
+      windRecords.set(windNode.id, windNode);
+      out.set("prd10.wind", windNode.wind);
+      out.feature("world.wind");
+    },
+    update(node, _handle, _ctx, _out, _timeSeconds) {
+      const windNode = node as unknown as AuraWindNode;
+      windRecords.set(windNode.id, windNode);
+    },
+    dispose(node) {
+      windRecords.delete((node as unknown as AuraWindNode).id);
+    }
+  });
+
   return () => {
     unregisterTerrain();
     unregisterScatter();
     unregisterGrass();
     unregisterWater();
+    unregisterBiome();
+    unregisterTimeOfDay();
+    unregisterWind();
   };
 }
 
@@ -274,6 +397,11 @@ export interface ScatterCompileRecord {
 export const scatterRecords = new Map<string, ScatterCompileRecord>();
 export const grassRecords = new Map<string, AuraGrassNode>();
 export const waterRecords = new Map<string, import("../world/water.js").WaterRecord>();
+/** T6.2 records — resolved biome rig per node, for TimeOfDayRuntime/post lookup. */
+export interface BiomeCompileRecord { readonly node: AuraBiomeNode; readonly rig: AuraBiomeRigDetail }
+export const biomeRecords = new Map<string, BiomeCompileRecord>();
+export const timeOfDayRecords = new Map<string, AuraTimeOfDayNode>();
+export const windRecords = new Map<string, AuraWindNode>();
 
 /** Pack planned instances → row-major mat3x4 (same layout as placements). */
 function packScatterMatrices(instances: readonly ScatterInstance[]): Float32Array {

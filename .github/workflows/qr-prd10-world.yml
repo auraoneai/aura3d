@@ -70,9 +70,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # dist/ is required: specs import @aura3d/* package specifiers whose
+      # exports map to ./dist (package exports), not src. Without this the
+      # browser step collected 0 tests silently (browser.json expected:0).
+      - run: pnpm build:raw
       - run: pnpm exec playwright install chromium
-      - name: prd10 browser specs (ChunkHarness GLSL + WGSL, pass depth)
-        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts
+      - name: prd10 browser specs (ChunkHarness GLSL + WGSL, pass depth, time-of-day, flag-off identity)
+        run: pnpm exec playwright test --config playwright.config.ts tests/browser/qr-prd10-chunks.spec.ts tests/browser/qr-prd10-world-pass-depth.spec.ts tests/browser/qr-prd10-time-of-day.spec.ts tests/browser/qr-prd10-flag-off-identity.spec.ts
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         if: always()

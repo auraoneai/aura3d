@@ -12,6 +12,8 @@ import { waterRecordFor, waterRecordIds, createWaterHandle, type AuraWaterHandle
 import { terrainHeightBilinear } from "@aura3d/rendering/world";
 import type { AuraWindOptions } from "./wind.js";
 import { createWorldQueries, registerTerrainProvider, setWorldWind, worldStateFor } from "./queries.js";
+import { timeOfDayRecords } from "../compiler/world.js";
+import { timeOfDayDriverForNodes } from "../../production-runtime/world/TimeOfDayRuntime.js";
 
 export interface AuraWorldRuntime extends AuraWorldQueries {
   readonly timeOfDay: {
@@ -71,6 +73,8 @@ export interface AuraWorldDiagnostics {
     readonly iblCrossfade: "on" | "pending-CCR-10-1";
   };
   readonly pending: readonly string[]; // e.g. "C-11:shadows", "C-02:generator", "C-21:sky-real" while stubs are active
+  /** Builder-time `option-ignored` degradations queued by flag-off `environments.*` calls (drained once). */
+  readonly envDegradations: readonly string[];
   readonly memoryMB: number;
   readonly gpuMs: Readonly<Record<string, number>> | null; // only when EXT_disjoint_timer_query_webgl2 is available (C-28)
 }
@@ -90,6 +94,7 @@ export function emptyWorldDiagnostics(drawPath: AuraWorldDiagnostics["drawPath"]
       iblCrossfade: "pending-CCR-10-1"
     },
     pending: ["C-11:shadows", "C-02:generator", "C-21:sky-real"],
+    envDegradations: [],
     memoryMB: 0,
     gpuMs: null
   };
@@ -133,18 +138,24 @@ export function createWorldRuntime(
   return {
     ...queries,
     timeOfDay: {
+      // §6.7: set/animate/pause write driver + query state only — uniform
+      // updates, never a remount. When no time-of-day node compiled, the
+      // queries-state mirror still answers `get()` deterministically.
       set(hour: number) {
         state.timeOfDay.hour = ((hour % 24) + 24) % 24;
         state.timeOfDay.hoursPerSecond = null;
+        timeOfDayDriverForNodes(timeOfDayRecords.values())?.setHour(hour);
       },
       get() {
-        return state.timeOfDay.hour;
+        return timeOfDayDriverForNodes(timeOfDayRecords.values())?.currentHour ?? state.timeOfDay.hour;
       },
       animate({ hoursPerSecond }) {
         state.timeOfDay.hoursPerSecond = hoursPerSecond;
+        timeOfDayDriverForNodes(timeOfDayRecords.values())?.animate(hoursPerSecond);
       },
       pause() {
         state.timeOfDay.hoursPerSecond = null;
+        timeOfDayDriverForNodes(timeOfDayRecords.values())?.pause();
       }
     },
     setWind(options) {
