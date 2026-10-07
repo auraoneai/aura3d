@@ -468,6 +468,81 @@ export async function runDofMetricProbe() {
   return { schema: "dof-metric/v1", focusViolations, bokehDiameter, expectedBokeh: 12.3 };
 }
 
+
+/* -------------------------------- TAAU (§8.6) ---------------------------- */
+
+/**
+ * Per-column vertical centroid of the 1-px line band: the edge error is the
+ * RMS of (centroid − median centroid) across columns — sub-pixel wobble the
+ * TAA resolve leaves after stabilization. Run at renderScale 1 and 0.67;
+ * §8.6 bounds the upscaled error at ≤ 1.3× the full-res error.
+ */
+function lineEdgeError(pixels: Uint8Array, width: number, height: number): number {
+  const centroids: number[] = [];
+  for (let x = 0; x < width; x++) {
+    let num = 0, den = 0;
+    for (let y = 0; y < height; y++) {
+      const l = lumaAt(pixels, (y * width + x) * 4);
+      // Weight by contrast above the dark background.
+      const w = Math.max(0, l - 0.12);
+      num += y * w;
+      den += w;
+    }
+    if (den > 0.01) centroids.push(num / den);
+  }
+  if (centroids.length < 8) return -1;
+  const sorted = [...centroids].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const rms = Math.sqrt(centroids.reduce((a, c) => a + (c - median) ** 2, 0) / centroids.length);
+  return rms;
+}
+
+export async function runTaauProbe() {
+  const mount = async (scale: number) => {
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-2000px;top:0;width:320px;height:320px;";
+    document.body.appendChild(host);
+    const built = scene()
+      .background("#10141a")
+      .camera(camera.perspective({ position: [0, 1.5, 5], target: [0, 1.2, -1], fov: 40, near: 0.1, far: 80 }))
+      .add(lights.directional({ name: "sun", color: "#f4f6ff", intensity: 2, position: [3, 6, 4] }))
+      .add(lights.ambient({ name: "ambient", color: "#4a5568", intensity: 0.5 }))
+      .add(primitives.plane({ name: "ground", size: [20, 1, 20], material: material.pbr({ color: "#20262e", roughness: 0.9 }) }).position(0, 0, 0))
+      .add(primitives.box({ name: "1px line", size: [6, 0.012, 0.012], material: material.pbr({ color: "#e8e8e8", roughness: 0.6 }) }).position(0, 1.2, -1))
+      .add(effects.antiAlias({ mode: "taa" }));
+    const app = createAuraApp(host, {
+      scene: built,
+      renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+      pixelRatio: 1,
+      resize: false,
+      autoStart: false,
+      qualityRebuild: { flags: ["A3D_QR_POST"] }
+    });
+    await app.ready();
+    const quality = (app as { quality?: { set?: (t: string, o?: { minRenderScale?: number }) => Promise<void> } }).quality;
+    if (!quality?.set) { app.dispose(); host.remove(); return { untested: "no app.quality.set" } as const; }
+    await quality.set("ultra", { minRenderScale: scale });
+    for (let i = 0; i < 24; i++) {
+      app.step(1 / 60);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    const canvas = host.querySelector("canvas")!;
+    const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
+    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const err = lineEdgeError(pixels, canvas.width, canvas.height);
+    app.dispose();
+    host.remove();
+    return { err } as const;
+  };
+
+  const full = await mount(1);
+  if ("untested" in full) return { schema: "taau/v1", untested: full.untested };
+  const upscaled = await mount(0.67);
+  if ("untested" in upscaled) return { schema: "taau/v1", untested: upscaled.untested };
+  return { schema: "taau/v1", fullResError: full.err, upscaledError: upscaled.err };
+}
+
 export async function runQrPrd03Phase4() {
   const cameraVelocity = await runCameraVelocityProbe().catch((error) => ({ error: String(error?.message ?? error) }));
   const taaStatic = await runTaaStaticProbe().catch((error) => ({ error: String(error?.message ?? error) }));
@@ -475,7 +550,8 @@ export async function runQrPrd03Phase4() {
   const taaCut = await runTaaCutProbe().catch((error) => ({ error: String(error?.message ?? error) }));
   const motionBlur = await runMotionBlurProbe().catch((error) => ({ error: String(error?.message ?? error) }));
   const dofMetric = await runDofMetricProbe().catch((error) => ({ error: String(error?.message ?? error) }));
-  return { schema: "qr-prd03-phase4/v1", cameraVelocity, taaStatic, taaPan, taaCut, motionBlur, dofMetric };
+  const taau = await runTaauProbe().catch((error) => ({ error: String(error?.message ?? error) }));
+  return { schema: "qr-prd03-phase4/v1", cameraVelocity, taaStatic, taaPan, taaCut, motionBlur, dofMetric, taau };
 }
 
 (window as unknown as { runQrPrd03Phase4: typeof runQrPrd03Phase4 }).runQrPrd03Phase4 = runQrPrd03Phase4;

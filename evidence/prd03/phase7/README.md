@@ -75,6 +75,13 @@ byte-identical — the `.wgsl.ts` files are unreferenced twin sources; the
   module → `Validation successful`). Skips the naga leg when the binary is
   absent; the structural assertions (35 modules, `@fragment`/`fn fs_` per
   entry) always run.
+- `tests/browser/qr-prd03-phase6-{harness,spec}` + a `taauProbe` appended to
+  `qr-prd03-phase4-{harness,spec}` — backfills the unshipped browser-test
+  obligations of the Phase-4 TAAU row (§8.6, renderScale 0.67 edge error
+  ≤ 1.3× full-res) and the Phase-6 rows (§8.14 SMAA edge metric, §8.9
+  bright→dark EV convergence ≤ 1.5 s + zero engine `readPixels`, §6.12
+  `before-tonemap` HDR gate + `after-tonemap` invert readback). PRD
+  checklist items for Phases 4–7 are now all ticked.
 - `tests/unit/contracts/impl/prd03-post-webgpu-wgsl.test.ts` — 3 tests:
   flag-off byte-for-byte (`exp2`, `fs_fxaa`, `exposure ?? 0`); flag-on
   linear multiplier (`color * u_grade.exposure`, `?? 1`); flag-on deletion

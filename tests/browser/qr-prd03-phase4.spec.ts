@@ -28,6 +28,7 @@ interface Phase4Result {
   readonly taaCut: { pixelsOver2Lsb?: number; untested?: string; error?: string };
   readonly motionBlur: { relDiff?: number; untested?: boolean; error?: string };
   readonly dofMetric: { focusViolations?: number; bokehDiameter?: number; expectedBokeh?: number; error?: string };
+  readonly taau: { fullResError?: number; upscaledError?: number; untested?: string; error?: string };
 }
 
 test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
@@ -79,5 +80,16 @@ test.describe("PRD-03 Phase 4 — temporal/AA/cinematic", () => {
     expect(result.dofMetric.focusViolations!).toBe(0);
     expect(result.dofMetric.bokehDiameter!).toBeGreaterThanOrEqual(12.3 * 0.85);
     expect(result.dofMetric.bokehDiameter!).toBeLessThanOrEqual(12.3 * 1.15);
+  });
+
+  test("TAAU — renderScale 0.67 edge error ≤ 1.3× full-res TAA (§8.6)", () => {
+    const r = result.taau;
+    expect(r.error ?? null).toBeNull();
+    if (r.untested) test.info().annotations.push({ type: "untested", description: r.untested });
+    if (!r.untested) {
+      expect(r.fullResError!).toBeGreaterThanOrEqual(0);
+      expect(r.upscaledError!).toBeGreaterThanOrEqual(0);
+      expect(r.upscaledError!).toBeLessThanOrEqual(Math.max(1.3 * r.fullResError!, 0.05));
+    }
   });
 });
