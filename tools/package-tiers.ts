@@ -42,9 +42,9 @@ export const PACKAGE_TIERS: Record<string, number> = {
   apps: 4,
   workflows: 4,
   editor: 4,
-  lean: 4,
   // 5 — aggregates. Nothing may depend on these except other aggregates.
   engine: 5,
+  game: 5,
   react: 6,
   "three-compat": 6,
   "aura3d-cli": 6,
