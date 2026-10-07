@@ -163,3 +163,24 @@ Masked-out bound tracks contribute weight 0 through the per-bone mask array (sam
   ~0.9 rad) drawn through the real `a3d_prd06_skinning_common` chunk;
   spec asserts joints=191 and the same IoU bars (deformVsCpu ≥0.98,
   bindPoseGpuVsCpu ≥0.98, controls <0.8).
+
+## T1.13 — `animation-3.1` codemod
+
+- `tools/codemods/animation-3.1.mjs` — pure C-39 `transform(source, fileName)
+  → {code, rows}`; registered via `registerCodemod` in `commands/prd06/index.ts`
+  (lazy `createRequire` on the tools/ path, same pattern as prd04's
+  pin-emissive-defaults — packaged CLI doesn't ship `tools/`).
+- Reports: `.animate({clip})`/`node.play(clip)`/`resolveGLTFClipName` clip names
+  that don't resolve exactly against the nearest `aura-assets.ts`/`aura.assets.json`
+  `animations:` universe (nearest-name Levenshtein attached); every `speed:`
+  numeric property (3.1 applies it — previously ignored); `bindRuntimeNode({applyPose})`.
+- `--write` payload in `code`: nearest real clip name, or `fallback: "first"`,
+  plus a `// TODO(animation-3.1)` marker on the statement.
+- WorldWarXApp.ts:1071 shape proven in the unit fixture: `play({clip:"idle-ready",
+  speed:0.44})` → clip row (nearest `Idle`) + `speed: 0.44` row.
+- `animation-3-1-report.json` — full `--report` output over `apps/`, `templates/`,
+  `fixtures/`, `tests/` (246 rows; 16 `animate`, 18 `play`, 212 `speed:`) —
+  the attachment Q-13-4 and Q-14-7 reference. Real misses include
+  `templates/fighting-game/src/main.ts:202` `play "idle"` (universe has `IDLE`),
+  `showcase-rooftop-buckets` `animate "Release"/"Plant"`, and
+  `showcase-skyline-runner` `animate "Standing"`.

@@ -4,7 +4,8 @@
  */
 
 import { readFileSync } from "node:fs";
-import { registerCliCommand } from "../../contracts/commands.js";
+import { createRequire } from "node:module";
+import { registerCliCommand, registerCodemod, type AuraCodemod } from "../../contracts/commands.js";
 import { inspectAnimationClips, readGlbDocument } from "./inspectAnimationClips.js";
 
 /**
@@ -27,4 +28,40 @@ registerCliCommand({
     io.stdout(JSON.stringify(inspectAnimationClips(json, bin), null, 2));
     return 0;
   }
+});
+
+/**
+ * T1.13 — C-39 codemod `animation-3.1`. Implementation lives in
+ * tools/codemods/animation-3.1.mjs; resolved lazily so the packaged CLI (which
+ * does not ship `tools/`) does not crash at startup — same pattern as prd04's
+ * pin-emissive-defaults.
+ */
+type CodemodTransform = AuraCodemod["transform"];
+
+const requireFromHere = createRequire(import.meta.url);
+let codemodImpl: CodemodTransform | undefined;
+
+function loadCodemodTransform(): CodemodTransform {
+  if (codemodImpl === undefined) {
+    try {
+      codemodImpl = (requireFromHere("../../../../../tools/codemods/animation-3.1.mjs") as { transform: CodemodTransform }).transform;
+    } catch (error) {
+      throw new Error(
+        "aura3d codemod animation-3.1: implementation module " +
+        `tools/codemods/animation-3.1.mjs is not reachable (${(error as Error).message}). ` +
+        "This codemod is only available from the monorepo source tree."
+      );
+    }
+  }
+  return codemodImpl;
+}
+
+registerCodemod({
+  name: "animation-3.1",
+  owner: "prd06",
+  description:
+    "3.0 → 3.1 animation API drift: non-exact clip names at .animate/.play/resolveGLTFClipName call sites " +
+    "(vs the app's aura-assets clip universe), every `speed:` property (now applied), and " +
+    "bindRuntimeNode({applyPose}) bindings.",
+  transform: (source, fileName) => loadCodemodTransform()(source, fileName)
 });

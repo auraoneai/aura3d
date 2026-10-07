@@ -1,0 +1,1736 @@
+{
+  "codemod": "animation-3.1",
+  "generatedAt": "2026-10-07T06:04:46.911Z",
+  "scannedRoots": [
+    "apps",
+    "templates",
+    "fixtures",
+    "tests"
+  ],
+  "rows": [
+    {
+      "file": "apps/animation-keyframes/src/state.ts",
+      "line": 70,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/animation-multiple/src/agentSpawner.ts",
+      "line": 31,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/animation-walk/src/locomotion.ts",
+      "line": 21,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/animation-walk/src/main.ts",
+      "line": 68,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/jinFlux.ts",
+      "line": 28,
+      "construct": "speed: 74",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/kadeEmber.ts",
+      "line": 28,
+      "construct": "speed: 78",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/maraVolt.ts",
+      "line": 28,
+      "construct": "speed: 96",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/nyxVale.ts",
+      "line": 28,
+      "construct": "speed: 94",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/rookAtlas.ts",
+      "line": 28,
+      "construct": "speed: 48",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/sableIron.ts",
+      "line": 28,
+      "construct": "speed: 52",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 52,
+      "construct": "speed: 5.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 55,
+      "construct": "speed: 0.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 69,
+      "construct": "speed: 3.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 75,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 84,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "line": 87,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/common/src/runtime.ts",
+      "line": 523,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/common/src/runtime.ts",
+      "line": 629,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/editor/src/project/ProjectSerializer.ts",
+      "line": 301,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "line": 28,
+      "construct": "speed: 3.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "line": 29,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "line": 34,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "line": 37,
+      "construct": "speed: 1.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-aurora-lander/src/v2/scene/fx.ts",
+      "line": 40,
+      "construct": "speed: 3.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-bank-shot/src/v2/scene/fx.ts",
+      "line": 18,
+      "construct": "speed: 0.35",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-bank-shot/src/v2/scene/fx.ts",
+      "line": 22,
+      "construct": "speed: 0.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 29,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 34,
+      "construct": "speed: 0.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 39,
+      "construct": "speed: 3.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 41,
+      "construct": "speed: 4.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 45,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-blockfall-reactor/src/v2/scene/fx.ts",
+      "line": 48,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/gameplay/traffic.ts",
+      "line": 258,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/gameplay/traffic.ts",
+      "line": 449,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/legacy/main.ts",
+      "line": 232,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/legacy/main.ts",
+      "line": 660,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/legacy/main.ts",
+      "line": 742,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/boot.ts",
+      "line": 59,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/boot.ts",
+      "line": 280,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/boot.ts",
+      "line": 438,
+      "construct": "speed: 4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 0.7",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/scene/fx.ts",
+      "line": 40,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-courier-rush/src/v2/scene/fx.ts",
+      "line": 50,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 132,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 246,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 257,
+      "construct": "speed: 0.12",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/gameplay/sub.ts",
+      "line": 59,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 20,
+      "construct": "speed: 0.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 23,
+      "construct": "speed: 1.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 27,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 30,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 35,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 38,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 39,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-deep-recovery/src/v2/scene/fx.ts",
+      "line": 42,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 11,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 12,
+      "construct": "speed: 1.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 15,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 16,
+      "construct": "speed: 0.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 19,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 22,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 23,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 26,
+      "construct": "speed: 0.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 27,
+      "construct": "speed: 1.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gallery-shift/src/v2/scene/fx.ts",
+      "line": 30,
+      "construct": "speed: 0.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1525,
+      "construct": "play clip \"launch-whoosh\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1526,
+      "construct": "play clip \"assist-chime\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1527,
+      "construct": "play clip \"burn-loop\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1528,
+      "construct": "play clip \"pod-lost\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1529,
+      "construct": "play clip \"bounce-off\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1549,
+      "construct": "play clip \"dock-lock\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1550,
+      "construct": "play clip \"contract-clear\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1586,
+      "construct": "play clip \"ui-confirm\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1591,
+      "construct": "play clip \"ui-confirm\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 1616,
+      "construct": "play clip \"ui-confirm\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 2349,
+      "construct": "play clip \"warp-hum\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/legacy/main.ts",
+      "line": 2361,
+      "construct": "play clip \"ui-confirm\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 20,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 23,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 27,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 31,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-gravity-post/src/v2/scene/fx.ts",
+      "line": 40,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-material-asset-inspector/src/main.ts",
+      "line": 256,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-material-asset-inspector/src/main.ts",
+      "line": 260,
+      "construct": "speed: 0.18",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 62,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 63,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 64,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 65,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 68,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 69,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 70,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 71,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 74,
+      "construct": "speed: 4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 75,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 76,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 77,
+      "construct": "speed: 6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 80,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 81,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 82,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/gameplay/parts-catalog.ts",
+      "line": 83,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 11,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 14,
+      "construct": "speed: 3.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 15,
+      "construct": "speed: 0.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 18,
+      "construct": "speed: 0.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 21,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 22,
+      "construct": "speed: 0.7",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 25,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 26,
+      "construct": "speed: 5.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 29,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 32,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 35,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 3.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-mech-hangar/src/v2/scene/fx.ts",
+      "line": 37,
+      "construct": "speed: 0.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/gameplay/swarm.ts",
+      "line": 214,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 10,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 13,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 23,
+      "construct": "speed: 5.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 28,
+      "construct": "speed: 3.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 32,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 2.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-neon-swarm/src/v2/scene/fx.ts",
+      "line": 45,
+      "construct": "speed: 5.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/gameplay/waves.ts",
+      "line": 67,
+      "construct": "speed: 3.25",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 42,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 45,
+      "construct": "speed: 4.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 46,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 47,
+      "construct": "speed: 0.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 55,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-orbital-defense/src/v2/scene/fx.ts",
+      "line": 59,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
+      "line": 13,
+      "construct": "speed: 12",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
+      "line": 19,
+      "construct": "speed: 12",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/gameplay/ghost.ts",
+      "line": 73,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 797,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1015,
+      "construct": "speed: 13",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1053,
+      "construct": "speed: 14",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1163,
+      "construct": "speed: 12",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1169,
+      "construct": "speed: 11",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1177,
+      "construct": "speed: 4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/legacy/main.ts",
+      "line": 1182,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 22,
+      "construct": "speed: 0.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 25,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 28,
+      "construct": "speed: 4.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 29,
+      "construct": "speed: 3.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 33,
+      "construct": "speed: 3.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 1.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 41,
+      "construct": "speed: 5.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 46,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-patrol-wing/src/v2/scene/fx.ts",
+      "line": 50,
+      "construct": "speed: 2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 321,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-product-configurator/src/main.ts",
+      "line": 321,
+      "construct": "speed: 0.36",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 39,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 42,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 45,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 51,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 55,
+      "construct": "speed: 4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 56,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 61,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 67,
+      "construct": "speed: 1.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 71,
+      "construct": "speed: 5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-pulse-tunnel/src/v2/scene/fx.ts",
+      "line": 79,
+      "construct": "speed: 4.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 503,
+      "construct": "animate clip \"Release\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 518,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 523,
+      "construct": "animate clip \"Plant\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 534,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 1145,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/legacy/main.ts",
+      "line": 1288,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "line": 49,
+      "construct": "speed: 0.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "line": 53,
+      "construct": "speed: 1.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "line": 58,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "line": 62,
+      "construct": "speed: 0.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/fx.ts",
+      "line": 67,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/world.ts",
+      "line": 139,
+      "construct": "animate clip \"Ready\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/world.ts",
+      "line": 148,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/world.ts",
+      "line": 151,
+      "construct": "animate clip \"Plant\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-rooftop-buckets/src/v2/scene/world.ts",
+      "line": 160,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 39,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 44,
+      "construct": "speed: 2.2",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 47,
+      "construct": "speed: 2.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 50,
+      "construct": "speed: 2.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 54,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/v2/scene/fx.ts",
+      "line": 63,
+      "construct": "speed: 4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/legacy/main.ts",
+      "line": 221,
+      "construct": "animate clip \"Standing\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 11,
+      "construct": "speed: 0.7",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 14,
+      "construct": "speed: 0.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 17,
+      "construct": "speed: 1.6",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 20,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 23,
+      "construct": "speed: 1.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 26,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 29,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 32,
+      "construct": "speed: 0.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 35,
+      "construct": "speed: 1.9",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/fx.ts",
+      "line": 36,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-skyline-runner/src/v2/scene/world.ts",
+      "line": 187,
+      "construct": "animate clip \"Standing\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2626,
+      "construct": "speed: 0.42",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2655,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 2662,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 4492,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
+      "line": 4495,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 41,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 45,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 47,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 166,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/boot.ts",
+      "line": 167,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/fx.ts",
+      "line": 52,
+      "construct": "speed: 0.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/fx.ts",
+      "line": 63,
+      "construct": "speed: 1.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-turbo-drift-circuit/src/v2/scene/fx.ts",
+      "line": 76,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/fx.ts",
+      "line": 55,
+      "construct": "speed: 1.4",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/fx.ts",
+      "line": 60,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-vault-breakers/src/v2/scene/fx.ts",
+      "line": 67,
+      "construct": "speed: 0.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 149,
+      "construct": "speed: 0.52",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 160,
+      "construct": "speed: 0.16",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 170,
+      "construct": "speed: 0.28",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 181,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 192,
+      "construct": "speed: 0.1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 194,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 198,
+      "construct": "speed: 0.18",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/showcase-webgpu-particle-lab/src/main.ts",
+      "line": 199,
+      "construct": "animate clip \"turntable\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "apps/skinning-additive/src/main.ts",
+      "line": 72,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/skinning-blending/src/main.ts",
+      "line": 45,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "apps/skinning-morph/src/morphControls.ts",
+      "line": 23,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "templates/character-controller/src/main.ts",
+      "line": 79,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "templates/character-controller/src/main.ts",
+      "line": 91,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "templates/fighting-game/src/main.ts",
+      "line": 202,
+      "construct": "play clip \"idle\"",
+      "mapping": "none",
+      "target": "IDLE",
+      "note": "clip name does not resolve exactly against templates/fighting-game/src/aura-assets.ts; nearest: \"IDLE\""
+    },
+    {
+      "file": "templates/fighting-game/src/main.ts",
+      "line": 203,
+      "construct": "play clip \"idle\"",
+      "mapping": "none",
+      "target": "IDLE",
+      "note": "clip name does not resolve exactly against templates/fighting-game/src/aura-assets.ts; nearest: \"IDLE\""
+    },
+    {
+      "file": "templates/three-compat-character-viewer/src/main.ts",
+      "line": 13,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/animation-pointer-material-harness.ts",
+      "line": 90,
+      "construct": "animate clip \"pointerFade\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/animation-pointer-material-harness.ts",
+      "line": 92,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/animation-studio-preview-harness.ts",
+      "line": 126,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/animation-studio-preview-harness.ts",
+      "line": 127,
+      "construct": "speed: 5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/certified-hero-rigs-harness.ts",
+      "line": 144,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 113,
+      "construct": "animate clip \"IDLE\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 116,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 270,
+      "construct": "play clip \"RUN\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 270,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 281,
+      "construct": "speed: 0.7",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/createAuraApp-animation-bridge-harness.ts",
+      "line": 285,
+      "construct": "speed: 1.8",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/d3-atmosphere-water-harness.ts",
+      "line": 132,
+      "construct": "speed: 3",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/foot-planting-harness.ts",
+      "line": 96,
+      "construct": "animate clip \"Take 001\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/foot-planting-harness.ts",
+      "line": 100,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/rooftop-animation-debug.ts",
+      "line": 15,
+      "construct": "play clip \"Ready\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/root-motion-locomotion-301-harness.ts",
+      "line": 20,
+      "construct": "animate clip \"Aura301_Translated_Walk\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/browser/root-motion-locomotion-301-harness.ts",
+      "line": 20,
+      "construct": "speed: 1",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/browser/root-motion-locomotion-301-harness.ts",
+      "line": 52,
+      "construct": "play clip \"walk\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/performance/particles-baseline.ts",
+      "line": 159,
+      "construct": "speed: 0",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    },
+    {
+      "file": "tests/qr/prd06/browser/clip-samples-harness.ts",
+      "line": 51,
+      "construct": "play clip \"Walk\"",
+      "mapping": "none",
+      "note": "clip name does not resolve exactly against src/aura-assets.ts"
+    },
+    {
+      "file": "tests/unit/agent-api/animation-spec-types.test-d.ts",
+      "line": 15,
+      "construct": "speed: 0.5",
+      "mapping": "approximate",
+      "note": "speed is applied in 3.1 (was ignored) — verify timing"
+    }
+  ]
+}
