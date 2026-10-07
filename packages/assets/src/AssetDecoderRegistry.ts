@@ -14,7 +14,7 @@
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
 import { createMeshoptDecoder, createDracoDecoder, type GLTFMeshoptDecoderModule, type GLTFDracoDecoderModule } from "./GLTFCompressionDecoders.js";
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
-import { loadBasisTranscoderModule, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder.js";
+import { ktx2TargetToTextureFormat, loadBasisTranscoderModule, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder.js";
 import { decodeImageInBrowser, isKTX2BasisImage, readImageBytes } from "./gltf/ImageDecode.js";
 import { read as readKtx2Container, KHR_DF_MODEL_UASTC, KHR_DF_TRANSFER_SRGB } from "ktx-parse";
 import type { DecodedGLTFImage, GLTFImageDecoder } from "./GLTFRenderResources.js";
@@ -144,7 +144,7 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
         transcoderUrl,
         workerCount: options.workerCount
       });
-      return decoded;
+      return { ...decoded, format: ktx2TargetToTextureFormat(decoded.format) };
     };
   };
 

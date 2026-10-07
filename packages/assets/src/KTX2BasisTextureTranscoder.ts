@@ -1,9 +1,19 @@
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
+import type { TextureFormat } from "@aura3d/rendering";
 import { basisTranscoderFormat, transcodeKTX2Levels, type BasisModuleLike, type KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
 import { createKTX2TranscodeWorkerPool, type KTX2TranscodeWorkerPool } from "./KTX2TranscodeWorker.js";
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
 
 export type { KTX2BasisTargetFormat };
+
+/**
+ * Maps the transcode target to the render-side `TextureFormat` union
+ * (C-16). "bc1-rgb-unorm" shares DXT1's block layout with "bc1-rgba-unorm"
+ * — the renderer's opaque flag carries the distinction, so they alias here.
+ */
+export function ktx2TargetToTextureFormat(format: KTX2BasisTargetFormat): TextureFormat {
+  return format === "bc1-rgb-unorm" ? "bc1-rgba-unorm" : format;
+}
 
 export interface KTX2BasisTextureTranscoderOptions {
   /**
@@ -292,7 +302,7 @@ async function resolveProbe(
 }
 
 function capabilitiesFromTokens(tokens: readonly string[]): CompressedTextureCapabilities {
-  const caps: CompressedTextureCapabilities = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
+  const caps: { -readonly [K in keyof CompressedTextureCapabilities]: boolean } = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false };
   for (const raw of tokens) {
     const token = raw.toLowerCase();
     if (token === "astc" || token === "astc-4x4-rgba-unorm") caps.astc = true;
