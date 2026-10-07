@@ -517,61 +517,61 @@
     {
       "name": "./media-node",
       "target": ".",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/media-node.ts"
     },
     {
       "name": "./apps",
       "target": ".",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/apps.ts"
     },
     {
       "name": "./contracts",
       "target": ".",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/contracts.ts"
     },
     {
       "name": "./rendering",
       "target": "./renderer",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/rendering.ts"
     },
     {
       "name": "./rendering/production-runtime",
       "target": "./renderer",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/rendering-production-runtime.ts"
     },
     {
       "name": "./rendering/webgpu",
       "target": "./renderer",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/rendering-webgpu.ts"
     },
     {
       "name": "./production-runtime",
       "target": "./renderer",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/production-runtime.ts"
     },
     {
       "name": "./advanced-runtime",
       "target": "./renderer",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/advanced-runtime.ts"
     },
     {
       "name": "./assets/browser",
       "target": "./assets",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/assets-browser.ts"
     },
     {
       "name": "./workflows/production",
       "target": "./workflows",
-      "removeIn": "4.0.0",
+      "removeIn": "4.1.0",
       "stub": "packages/engine/src/deprecated/workflows-production.ts"
     }
   ]
