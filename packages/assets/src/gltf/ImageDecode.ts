@@ -7,7 +7,7 @@
 // `options.imageDecoder` path; the type edge back is import-type only.
 
 import type { GLTFAsset, GLTFImageAsset } from "../GLTFLoader";
-import { transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
+import { ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
 import type { DecodedGLTFImage, GLTFRenderResourceOptions } from "../GLTFRenderResources";
 
 export async function decodeImageInBrowser(
@@ -17,13 +17,16 @@ export async function decodeImageInBrowser(
   options: GLTFRenderResourceOptions = {}
 ): Promise<DecodedGLTFImage> {
   if (isKTX2BasisImage(image)) {
-    const bytes = await readImageBytes(asset, image);
-    return transcodeKTX2BasisTexture(bytes, {
+    const bytes = new Uint8Array(await readImageBytes(asset, image));
+    const decoded = await transcodeKTX2BasisTexture(bytes, {
       ...options.ktx2BasisTranscoderOptions,
-      targetFormat: options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat,
+      // Without capability input the only safe transcode target is the
+      // uncompressed path; registry-provided decoders always pass a target.
+      targetFormat: options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat ?? "rgba8",
       // C-16: skip mip levels above the C-27 texture-size ceiling when present.
       maxDimension: options.maxTextureSize ?? options.ktx2BasisTranscoderOptions?.maxDimension
     });
+    return { ...decoded, format: ktx2TargetToTextureFormat(decoded.format) };
   }
   if (typeof createImageBitmap === "function") {
     const blob = image.data
