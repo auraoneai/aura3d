@@ -2,8 +2,42 @@
 
 import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../index.js";
 import { AuraRuntimeError, clamp01, colorToLinearRgb, createProductionPrimitiveMaterial, primitive, resolveProductionPrimitiveScalars, rootSdfFontAtlas, text3D } from "../index.js";
-import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, layoutSdfText, rasterizeSdfTextLabelImage, resolveSamplerAnisotropy, type SdfTextOcclusionPolicy } from "@aura3d/rendering";
+import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, rasterizeSdfTextLabelImage, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextOcclusionPolicy, type TextureAddressMode } from "@aura3d/rendering";
+import type { AuraQualityTier, AuraTextureSampling, AuraTextureWrap } from "@aura3d/rendering/contracts";
+import type { AuraMaterialTextureSlot } from "../../contracts/materials.js";
+import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { material } from "../nodes/material.js";
+
+/**
+ * PRD-04 P2-7: sampler resolution context. The renderer (lane 15) supplies the C-27 quality
+ * tier and the device anisotropy cap; absent values fall back to the spec/default request.
+ */
+export interface ProductionTextureSamplingContext {
+  readonly tier?: AuraQualityTier;
+  readonly deviceMax?: number;
+}
+
+const prd04WrapMode = (wrap: AuraTextureWrap | undefined): TextureAddressMode =>
+  wrap === "clamp" ? "clamp-to-edge" : wrap === "mirror" ? "mirror-repeat" : "repeat";
+
+/** PRD-04 P2-7 flag-on material sampler: trilinear + spec.wrap + tier/deviceMax-clamped anisotropy. */
+function prd04MaterialSampler(spec: AuraMaterialSpec | undefined, sampling: AuraTextureSampling | undefined, context?: ProductionTextureSamplingContext): Sampler {
+  return Sampler.trilinear({
+    wrap: prd04WrapMode(sampling?.wrap ?? "repeat"),
+    anisotropy: resolveSamplerAnisotropy({
+      desired: sampling?.anisotropy ?? spec?.textureAnisotropy,
+      tier: context?.tier,
+      deviceMax: context?.deviceMax
+    }).applied
+  });
+}
+
+const PRD04_PROCEDURAL_FIELDS = ["normal", "roughnessMap", "metalnessMap", "occlusionMap", "emissiveMap"] as const;
+
+function prd04ProceduralSpec(spec: AuraMaterialSpec | undefined, field: (typeof PRD04_PROCEDURAL_FIELDS)[number]): AuraProceduralTextureSpec | undefined {
+  const input = spec?.[field];
+  return input && typeof input === "object" && (input as { kind?: string }).kind === "aura-procedural-texture" ? (input as AuraProceduralTextureSpec) : undefined;
+}
 
 export function createProductionPrimitiveTextureIntent(materialSpec: AuraMaterialSpec | undefined): {
   readonly baseColorUrl?: string;
@@ -123,13 +157,18 @@ export function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number;
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
-  maxTextureSize = 4096
+  maxTextureSize = 4096,
+  samplingContext?: ProductionTextureSamplingContext
 ): Promise<void> {
+  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
   for (const entry of entries) {
     for (const resource of entry.resources) {
       const spec = resource.materialSpec;
       const intent = createProductionPrimitiveTextureIntent(spec);
       for (const procedural of intent.proceduralInputs) {
+        // Flag-on (PRD-04 P2-9): procedural kinds rasterize via generateProceduralMaterialTexture
+        // inside upgradeProductionPrimitiveResource — no rasterizer warning.
+        if (qrMaterials) continue;
         // Static channel (collectGeneratedCodeWarnings) already warns; record
         // per-resource without duplicating into runtime warnings.
         resource.textureWarnings.push(
@@ -143,7 +182,7 @@ export async function upgradeProductionPrimitiveTextures(
       if (resource.textureStatus !== "none") continue;
       resource.textureStatus = "pending";
       try {
-        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize);
+        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext);
       } catch (error) {
         resource.textureStatus = "fallback";
         const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
@@ -159,8 +198,10 @@ export async function upgradeProductionPrimitiveResource(
   node: AuraPrimitiveNode,
   spec: AuraMaterialSpec | undefined,
   intent: ReturnType<typeof createProductionPrimitiveTextureIntent>,
-  maxTextureSize: number
+  maxTextureSize: number,
+  samplingContext?: ProductionTextureSamplingContext
 ): Promise<void> {
+  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
   const fail = (message: string): Error => new Error(message);
   if (!resource.geometry.vertexBuffer.format.hasAttribute("uv")) {
     throw fail(`"${resource.name}" geometry carries no uv set; textured upgrade needs generated uvs`);
@@ -230,7 +271,7 @@ export async function upgradeProductionPrimitiveResource(
       ? own(new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` }))
       : undefined;
     if (baseColorTexture) slots.push("baseColor");
-    const normalTexture = normalSource
+    let normalTexture = normalSource
       ? own(new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` }))
       : undefined;
     if (normalTexture) slots.push("normal");
@@ -262,14 +303,77 @@ export async function upgradeProductionPrimitiveResource(
       metallicRoughnessTexture = own(new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` }));
       slots.push("metallicRoughness");
     }
-    const occlusionTexture = occlusionSource
+    let occlusionTexture = occlusionSource
       ? own(new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` }))
       : undefined;
     if (occlusionTexture) slots.push("occlusion");
-    const emissiveTexture = emissiveSource
+    let emissiveTexture = emissiveSource
       ? own(new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` }))
       : undefined;
     if (emissiveTexture) slots.push("emissive");
+    // PRD-04 P2-9 (A3D_QR_MATERIALS on): authored procedural specs rasterize via
+    // generateProceduralMaterialTexture and bind into their declared slots. Flag-off keeps the
+    // "recorded only" warning path above — no rasterization.
+    if (qrMaterials) {
+      const proceduralApplied: string[] = [];
+      const proceduralSources: Partial<Record<(typeof PRD04_PROCEDURAL_FIELDS)[number], ProceduralMaterialTexture>> = {};
+      for (const field of PRD04_PROCEDURAL_FIELDS) {
+        const procSpec = prd04ProceduralSpec(spec, field);
+        if (!procSpec) continue;
+        try {
+          proceduralSources[field] = generateProceduralMaterialTexture(procSpec.texture, {
+            scale: procSpec.scale,
+            strength: procSpec.strength,
+            ...(procSpec.contrast !== undefined ? { contrast: procSpec.contrast } : {}),
+            ...(procSpec.direction !== undefined ? { direction: procSpec.direction } : {})
+          });
+        } catch (error) {
+          resource.textureWarnings.push(
+            `procedural texture ${field}:${procSpec.texture} on "${resource.name}" failed to rasterize (${error instanceof Error ? error.message : String(error)})`
+          );
+        }
+      }
+      const noteApplied = (field: string, slot: string): void => {
+        proceduralApplied.push(`${field}->${slot}`);
+      };
+      const proceduralNormal = proceduralSources.normal;
+      if (!normalTexture && proceduralNormal) {
+        normalTexture = own(new Texture({ width: proceduralNormal.width, height: proceduralNormal.height, data: proceduralNormal.data, colorSpace: "linear", label: `${resource.name}-procedural-normal` }));
+        slots.push("normal");
+        noteApplied("normal", "normal");
+      }
+      const proceduralRoughness = proceduralSources.roughnessMap;
+      const proceduralMetalness = proceduralSources.metalnessMap;
+      if (!metallicRoughnessTexture && (proceduralRoughness ?? proceduralMetalness)) {
+        const gen = proceduralRoughness ?? proceduralMetalness!;
+        const composited = compositeMetallicRoughnessPixels(
+          proceduralRoughness?.data,
+          proceduralMetalness?.data,
+          gen.width * gen.height,
+          spec?.roughness ?? 0.58,
+          spec?.metallic ?? spec?.metalness ?? 0
+        );
+        metallicRoughnessTexture = own(new Texture({ width: gen.width, height: gen.height, data: composited, colorSpace: "linear", label: `${resource.name}-procedural-metallicroughness` }));
+        slots.push("metallicRoughness");
+        if (proceduralRoughness) noteApplied("roughnessMap", "metallicRoughness");
+        if (proceduralMetalness) noteApplied("metalnessMap", "metallicRoughness");
+      }
+      const proceduralOcclusion = proceduralSources.occlusionMap;
+      if (!occlusionTexture && proceduralOcclusion) {
+        occlusionTexture = own(new Texture({ width: proceduralOcclusion.width, height: proceduralOcclusion.height, data: proceduralOcclusion.data, colorSpace: "linear", label: `${resource.name}-procedural-occlusion` }));
+        slots.push("occlusion");
+        noteApplied("occlusionMap", "occlusion");
+      }
+      const proceduralEmissive = proceduralSources.emissiveMap;
+      if (!emissiveTexture && proceduralEmissive) {
+        emissiveTexture = own(new Texture({ width: proceduralEmissive.width, height: proceduralEmissive.height, data: proceduralEmissive.data, colorSpace: "linear", label: `${resource.name}-procedural-emissive` }));
+        slots.push("emissive");
+        noteApplied("emissiveMap", "emissive");
+      }
+      for (const applied of proceduralApplied) {
+        resource.textureWarnings.push(`material-procedural-applied ${applied} on "${resource.name}"`);
+      }
+    }
     if (slots.length === 0) throw fail(`no texture resolved for "${resource.name}"`);
     // M2 streaming table: resident bytes from the decoded sources (base +
     // full mip-chain estimate) with the chain keyed off the largest source.
@@ -286,12 +390,21 @@ export async function upgradeProductionPrimitiveResource(
     const texCoords = spec?.texCoords;
     // C3: every root textured slot shares one capability-gated sampler request
     // (default 8x where supported; the renderer clamps to the device maximum).
-    const textureSampler = new Sampler({
-      maxAnisotropy: resolveSamplerAnisotropy({ desired: spec?.textureAnisotropy }).applied
-    });
-    for (const [slot] of extensionEntries) extensionOptions[`${slot}Sampler`] = textureSampler;
+    // PRD-04 P2-7 flag-on: trilinear samplers honour spec.sampling / spec.slotSampling
+    // (wrap/filter/anisotropy) with the quality tier + device cap from the context.
+    const textureSampler = qrMaterials
+      ? prd04MaterialSampler(spec, spec?.sampling, samplingContext)
+      : new Sampler({
+        maxAnisotropy: resolveSamplerAnisotropy({ desired: spec?.textureAnisotropy }).applied
+      });
+    const slotSamplerFor = (slot: AuraMaterialTextureSlot): Sampler =>
+      qrMaterials && spec?.slotSampling?.[slot]
+        ? prd04MaterialSampler(spec, spec.slotSampling[slot], samplingContext)
+        : textureSampler;
+    for (const [slot] of extensionEntries) extensionOptions[`${slot}Sampler`] = qrMaterials ? slotSamplerFor(slot) : textureSampler;
     resource.texturedMaterial = new TexturedPBRMaterial({
       name: `a3d-production-textured-primitive-${resource.name}`,
+      ...(qrMaterials ? { hardwareWrap: true } : {}),
       baseColor: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
       metallic: clamp01(spec?.metallic ?? spec?.metalness ?? 0),
       roughness: clamp01(spec?.roughness ?? 0.58),
@@ -323,11 +436,11 @@ export async function upgradeProductionPrimitiveResource(
         depthWrite: scalars.opacity >= 0.999,
         cullMode: node.primitive === "plane" || scalars.opacity < 0.999 ? "none" : "back"
       },
-      ...(baseColorTexture ? { baseColorTexture, baseColorSampler: textureSampler } : {}),
-      ...(normalTexture ? { normalTexture, normalSampler: textureSampler, normalScale: spec?.normalScale ?? 1 } : {}),
-      ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: textureSampler } : {}),
-      ...(occlusionTexture ? { occlusionTexture, occlusionSampler: textureSampler } : {}),
-      ...(emissiveTexture ? { emissiveTexture, emissiveSampler: textureSampler } : {}),
+      ...(baseColorTexture ? { baseColorTexture, baseColorSampler: slotSamplerFor("baseColor") } : {}),
+      ...(normalTexture ? { normalTexture, normalSampler: slotSamplerFor("normal"), normalScale: spec?.normalScale ?? 1 } : {}),
+      ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: slotSamplerFor("metallicRoughness") } : {}),
+      ...(occlusionTexture ? { occlusionTexture, occlusionSampler: slotSamplerFor("occlusion") } : {}),
+      ...(emissiveTexture ? { emissiveTexture, emissiveSampler: slotSamplerFor("emissive") } : {}),
       ...(spec?.texTransforms?.baseColor ? { baseColorTextureTransform: { ...spec.texTransforms.baseColor } } : {}),
       ...(spec?.texTransforms?.normal ? { normalTextureTransform: { ...spec.texTransforms.normal } } : {}),
       ...(spec?.texTransforms?.metallicRoughness ? { metallicRoughnessTextureTransform: { ...spec.texTransforms.metallicRoughness } } : {}),
@@ -430,9 +543,13 @@ export function createSdfTextPrimitiveResource(
       colorSpace: "srgb",
       label: `${node.name ?? "sdf-text"}-sdf-label`
     });
-    const sampler = new Sampler({ maxAnisotropy: resolveSamplerAnisotropy({ desired: node.material?.textureAnisotropy }).applied });
+    const sampler = typedGLBActorQrFlags().on("A3D_QR_MATERIALS")
+      // P2-7: SDF label textures clamp (no repeat-tiled glyphs).
+      ? Sampler.trilinear({ wrap: "clamp", anisotropy: resolveSamplerAnisotropy({ desired: node.material?.textureAnisotropy }).applied })
+      : new Sampler({ maxAnisotropy: resolveSamplerAnisotropy({ desired: node.material?.textureAnisotropy }).applied });
     const texturedMaterial = new TexturedPBRMaterial({
       name: `a3d-production-sdf-text-${node.name ?? "label"}`,
+      ...(typedGLBActorQrFlags().on("A3D_QR_MATERIALS") ? { hardwareWrap: true } : {}),
       baseColor: [1, 1, 1, opacity],
       metallic: 0,
       roughness: 0.9,

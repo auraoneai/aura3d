@@ -1,0 +1,156 @@
+From e772dc753e8fdff842d686bd42553f7c46de1c83 Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:19:54 +0000
+Subject: [PATCH] [QR-09] patrol-wing: juice events + deps
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-patrol-wing/package.json |  4 ++-
+ apps/showcase-patrol-wing/src/main.ts  | 36 ++++++++++++++++++++++++--
+ 2 files changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/apps/showcase-patrol-wing/package.json b/apps/showcase-patrol-wing/package.json
+index d559e080..b0483287 100644
+--- a/apps/showcase-patrol-wing/package.json
++++ b/apps/showcase-patrol-wing/package.json
+@@ -17,7 +17,9 @@
+     "write:route-health": "node scripts/write-route-health.mjs"
+   },
+   "dependencies": {
+-    "@aura3d/engine": "workspace:*"
++    "@aura3d/engine": "workspace:*",
++    "@aura3d/audio": "workspace:*",
++    "@aura3d/game": "workspace:*"
+   },
+   "devDependencies": {
+     "typescript": "^5.8.3",
+diff --git a/apps/showcase-patrol-wing/src/main.ts b/apps/showcase-patrol-wing/src/main.ts
+index 1c2e9285..0794f005 100644
+--- a/apps/showcase-patrol-wing/src/main.ts
++++ b/apps/showcase-patrol-wing/src/main.ts
+@@ -583,6 +583,27 @@ const app = patrolGame.runtime;
+ patrolGame.start();
+ const input = patrolGame.input!;
+ bindPatrolEvidence(() => collectPatrolEvidence());
++const patrolTween = createTweenEngine();
++const patrolFx = createFxParticlePass(app.effects);
++const patrolJuice = createJuice<"cannon" | "drone-hit" | "drone-down" | "hull-alarm" | "crash" | "shot-down" | "touchdown" | "clear" | "ring">({
++  events: {
++    cannon: { fx: { kind: "muzzle", count: 4, color: "#ffd166" } },
++    "drone-hit": { fx: { kind: "spark", count: 8, color: "#ff9d66" }, punch: { fovDeg: 1.6, ms: 150 } },
++    "drone-down": { fx: { kind: "burst", count: 16, color: "#ffc46b" }, shake: 0.14 },
++    "hull-alarm": { vignette: { amount: 0.26, ms: 420, color: "#1c0508" }, flash: { color: "#ff4d4d", peak: 0.14, ms: 220 } },
++    crash: { fx: { kind: "debris", count: 14, color: "#ff9d66" }, shake: 0.24, vignette: { amount: 0.3, ms: 500 } },
++    "shot-down": { flash: { color: "#ff4d4d", peak: 0.3, ms: 360 }, vignette: { amount: 0.42, ms: 700, color: "#160408" }, hitStop: 0.07, shake: 0.3 },
++    touchdown: { fx: { kind: "ring", count: 10, color: "#9ef2c1" }, punch: { fovDeg: 1.8, ms: 170 } },
++    clear: { fx: { kind: "pickup", count: 16, color: "#ffe866" }, flash: { color: "#ffe866", peak: 0.16, ms: 260 } },
++    ring: { fx: { kind: "ring", count: 8, color: "#7ef4ff" } }
++  },
++  camera: app.camera,
++  session: patrolGame.session,
++  fx: patrolFx,
++  overlay: createOverlayDriver({ app }),
++  tweens: patrolTween,
++  rumble: createRumbleDriver()
++});
+ bindPatrolDrive({
+   pumpFrames: (n) => {
+     const bounded = Math.max(0, Math.min(30000, Math.floor(n)));
+@@ -888,7 +909,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+   if (outcome === "none") return;
+   if (outcome === "pad-bounce") {
+     hullValue = Math.max(0, hullValue - 6);
+-    if (cueReady("hull-alarm", 60)) pushCue("hull-alarm");
++    if (cueReady("hull-alarm", 60)) { pushCue("hull-alarm"); patrolJuice.fire("hull-alarm"); }
+     if (hullValue <= 0) beginFail("shot-down");
+     return;
+   }
+@@ -898,6 +919,8 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+       lastGrade = breakdown.grade;
+       pushCue("touchdown");
+       pushCue("patrol-clear");
++      patrolJuice.fire("touchdown", { position: [...flight.position] });
++      patrolJuice.fire("clear");
+       const script = ghostRecorder.end();
+       if (!bestRun || gradeRank(breakdown.grade) > gradeRank(bestRun.grade)) {
+         bestRun = { grade: breakdown.grade, script, trajectoryHash: flight.trajectoryHash() };
+@@ -918,6 +941,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+   }
+   // Terrain or ocean impact.
+   pushCue("crash-thud");
++  patrolJuice.fire("crash", { position: [...flight.position] });
+   ghostRecorder.end();
+   stateValue = "crashed";
+   failTimer = 2;
+@@ -925,6 +949,7 @@ function handleFlightOutcome(frame: { readonly outcome: FlightOutcome }): void {
+ 
+ function beginFail(reason: "shot-down"): void {
+   pushCue("shot-down");
++  patrolJuice.fire("shot-down");
+   ghostRecorder.end();
+   stateValue = reason;
+   failTimer = 2.5;
+@@ -1052,6 +1077,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+   } else if (scenario === "ring-run") {
+     stateValue = "patrol";
+     flight = new FlightModel({ position: [-16, 10, 7], headingYaw: -2.35, grounded: "airborne", throttle: 0.78, speed: 13 });
++    patrolJuice.fire("ring", { position: [...flight.position] });
+     rings.registerEntry(0);
+     applyRingMaterials();
+   } else if (scenario === "drone-pass" || scenario === "drone-hit") {
+@@ -1147,11 +1173,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+       if (cannon.tryFire(true, 1)) {
+         swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
+         pushCue("cannon-fire");
++        patrolJuice.fire("cannon", { position: [...flight.position] });
+         for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+           for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+             if (event.type !== "cannon-hit") continue;
+             cannon.registerHit();
+             pushCue("drone-hit");
++            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+             stageCombatExchange(flight.position, lead);
+           }
+         }
+@@ -1171,11 +1199,13 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+         if (!cannon.tryFire(true, 1)) continue;
+         swarm.beginCannonAttack(targetOffset);
+         pushCue("cannon-fire");
++        patrolJuice.fire("cannon", { position: [...flight.position] });
+         for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+           for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+           if (event.type === "cannon-hit") {
+             cannon.registerHit();
+             pushCue("drone-hit");
++            patrolJuice.fire("drone-hit", { position: [...flight.position] });
+             // Keep impact feedback in the authored chase-camera volume while
+             // retaining the real combat event as its source of truth.
+             stageCombatExchange(flight.position, leadPosition);
+@@ -1191,6 +1221,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
+               freeDroneSlots.push(slot);
+             }
+             pushCue("drone-down");
++            patrolJuice.fire("drone-down", { position: [...flight.position] });
+             stageCombatExchange(flight.position, leadPosition);
+           }
+           }
+@@ -1488,6 +1519,7 @@ function syncOrbVisuals(): void {
+ 
+ // ------------------------------------------------------------- frame loop -----
+ patrolGame.runtime.onFrame(({ dt }) => {
++  patrolTween.tick(dt);
+   input.update(dt);
+   frameCount += 1;
+ 
+@@ -1613,7 +1645,7 @@ patrolGame.runtime.onFrame(({ dt }) => {
+   if (stateValue === "patrol" && cannon.tryFire(fireHeld, dt)) {
+     const forward = flight.forward;
+     swarm.beginCannonAttack([forward[0] * 3.2, forward[1] * 3.2, forward[2] * 3.2]);
+-    if (cueReady("cannon-fire", 12)) pushCue("cannon-fire");
++    if (cueReady("cannon-fire", 12)) { pushCue("cannon-fire"); patrolJuice.fire("cannon", { position: [...flight.position] }); }
+   }
+ 
+   // Hull regen out of combat (no live drone within 35 m for ~4 s).
+-- 
+2.34.1
+

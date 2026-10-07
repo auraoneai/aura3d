@@ -1,0 +1,10 @@
+{
+  "probe": "s9-budget",
+  "spec": "tests/qr/prd04/browser/texture-budget.spec.ts",
+  "control": {
+    "description": "forced budget at 0.8x the uncapped ledger: downscaled[] must be non-empty and the ledger fits — proves the budget path engages rather than the scene trivially fitting under 256 MiB",
+    "expected": "fail (downscaled == 0 or ledger over budget when forced)",
+    "asserts": ["forcedBudget.downscaled.length > 0", "forcedBytes <= forced budget"]
+  },
+  "status": "awaiting first flagged CI capture — values land here from tests/reports/prd04/probes/s9-budget-control.json"
+}

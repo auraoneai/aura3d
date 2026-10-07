@@ -1,2 +1,2 @@
-export interface WebGPUCapabilitiesDescriptor { readonly label: string; readonly backend?: 'webgpu'; readonly detail?: string; }
-export class WebGPUCapabilities { readonly backend = 'webgpu' as const; constructor(readonly descriptor: WebGPUCapabilitiesDescriptor) {} }
+/** @deprecated PRD 11 Phase 1 WebGPU freeze: placeholder removed; barrel export pending Q-15-5. */
+export {};

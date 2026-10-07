@@ -561,6 +561,17 @@ export class LeanWebGL2Device implements RenderDevice {
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
     this.assertAlive();
     if (
+      (descriptor.dimension !== undefined && descriptor.dimension !== "2d") ||
+      descriptor.layers !== undefined ||
+      descriptor.depthOnly === true ||
+      descriptor.depthCompare === true ||
+      (descriptor.colorAttachments?.length ?? 0) > 0
+    ) {
+      throw new RenderDeviceError("LeanWebGL2Device layered, depth-only, depth-compare and MRT render targets are not supported; use WebGL2Device", "UNSUPPORTED_RENDER_TARGET_FEATURE", {
+        label: descriptor.label
+      });
+    }
+    if (
       !Number.isInteger(descriptor.width) ||
       descriptor.width <= 0 ||
       !Number.isInteger(descriptor.height) ||

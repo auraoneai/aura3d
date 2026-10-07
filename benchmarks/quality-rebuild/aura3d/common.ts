@@ -128,11 +128,17 @@ function buildAuraScene(spec: SceneSpec, log: CapabilityLog) {
     far: spec.camera.far
   }));
 
-  // Tone mapping / exposure
-  log.add("tone-mapping:aces-filmic", "supported", "Production bridge submits operator \"aces\"; no public option to select an operator.");
-  log.add("tone-mapping:agx", "missing", "No public tone-mapping selector; AuraRendererDiagnosticReport.toneMapping is typed as the literal \"aces-filmic\".");
-  log.add("tone-mapping:neutral", "missing", "No public tone-mapping selector (Khronos PBR Neutral unavailable).");
-  log.add("exposure", spec.exposure === 1 ? "partial" : "missing", "createAuraApp has no exposure option; the production bridge hard-codes toneMapping.exposure = 1 while diagnostics report a name-inferred category exposure preset (see extra.reportedExposure). effects.colorGrade({ exposure }) is recorded but not executed.");
+  // Tone mapping / exposure. Under `A3D_QR_CORE_OUTPUT` the C-05 surface
+  // (`app.setOutput`) is the public selector and drives the real operator list;
+  // flag-off keeps the legacy production bridge (single "aces" present path).
+  const tmQuery = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const tmName = tmQuery.get("tm") ?? tmQuery.get("aura3d-tonemap");
+  const expParam = tmQuery.get("exp") ?? tmQuery.get("aura3d-exp");
+  const tmExposure = expParam === null ? NaN : Number(expParam);
+  log.add("tone-mapping:aces-filmic", "supported", "C-05 `app.setOutput` selects the operator under A3D_QR_CORE_OUTPUT (aces is the frozen default); flag-off keeps the single \"aces\" present path.");
+  log.add("tone-mapping:agx", tmName === "agx" ? "supported" : "partial", "A3D_QR_CORE_OUTPUT adds the r185 AgX operator via `app.setOutput`/?aura3d-tonemap; flag-off has no public selector.");
+  log.add("tone-mapping:neutral", tmName === "neutral" ? "supported" : "partial", "A3D_QR_CORE_OUTPUT adds the Khronos PBR Neutral operator via `app.setOutput`; flag-off has no public selector.");
+  log.add("exposure", "partial", "`app.setOutput({ exposure })` multiplies into u_exposure under A3D_QR_CORE_OUTPUT (spec.exposure stays un-wired: createAuraApp takes no exposure option).");
 
   // Environment
   if (spec.environment) {
@@ -295,6 +301,19 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
   });
   await app.ready();
 
+  // PRD-01 Phase 5: `tm`/`exp` (or `aura3d-tonemap`/`aura3d-exp`) select the
+  // output operator through the C-05 surface — the base-scene A/B wiring.
+  const runQuery = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const runTm = runQuery.get("tm") ?? runQuery.get("aura3d-tonemap");
+  const runExpParam = runQuery.get("exp") ?? runQuery.get("aura3d-exp");
+  const runExposure = runExpParam === null ? NaN : Number(runExpParam);
+  if (runTm !== null || Number.isFinite(runExposure)) {
+    app.setOutput?.({
+      ...(runTm !== null ? { toneMapping: runTm as "aces" | "agx" | "neutral" | "none" | "linear" | "reinhard" } : {}),
+      ...(Number.isFinite(runExposure) ? { exposure: runExposure } : {})
+    });
+  }
+
   // Wait for the first real draw (all typed GLBs are loaded by the mount).
   const drawDeadline = performance.now() + 90_000;
   while (performance.now() < drawDeadline) {
@@ -324,6 +343,20 @@ export async function runAuraScene(spec: SceneSpec, host: HTMLElement): Promise<
     app.step(0);
   }
   await nextFrame();
+
+  // PRD-01 Phase 6 (§15/I8): the flagged path must compile nothing after
+  // ready+settle — read the C-31 programs section before and after an extra
+  // window so a warmup straggler can't hide behind the settle loop.
+  const programsBefore = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  for (let frame = 0; frame < 30; frame += 1) {
+    app.step(0);
+    await nextFrame();
+  }
+  const programsAfter = (app.diagnostics() as unknown as { programs?: { deviceProgramCompiles?: number | null } }).programs?.deviceProgramCompiles ?? null;
+  if (programsBefore !== null || programsAfter !== null) {
+    const delta = (programsAfter ?? 0) - (programsBefore ?? 0);
+    log.add("zero-program-compiles", delta === 0 ? "supported" : "missing", `programCompiles delta ${delta} over 30 extra frames`);
+  }
 
   const diagnostics = app.diagnostics();
   const renderer = rendererDiagnostics(app);
