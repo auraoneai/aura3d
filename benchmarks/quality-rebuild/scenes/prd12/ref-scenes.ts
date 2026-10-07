@@ -30,7 +30,7 @@ export const ref01AutomotiveStudio: SceneSpec = {
   toneMapping: "agx",
   exposure: 1,
   lights: [
-    { kind: "directional", name: "key", color: "#ffffff", intensity: 3, position: [3, 4, 2], target: [0, 0.4, 0], castShadow: true },
+    { kind: "directional", name: "key", color: "#ffffff", intensity: 1.5, position: [3, 4, 2], target: [0, 0.4, 0], castShadow: true },
     { kind: "directional", name: "rim", color: "#cfe4ff", intensity: 1.6, position: [-3, 2.5, -2.5], target: [0, 0.4, 0], castShadow: false }
   ],
   objects: [

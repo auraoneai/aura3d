@@ -231,6 +231,8 @@ export interface SceneSpec {
   readonly owner?: import("./contracts").SceneOwner;
   readonly referenceProfile?: import("./contracts").ReferenceProfile;
   readonly dprs?: readonly (1 | 2)[];
+  /** Test-only public option (PRD-12 T3.6 injected regressions): scales renderer pixel ratio. */
+  readonly pixelRatioScale?: number;
   readonly masks?: readonly import("./contracts").MaskId[];
   readonly brokenControls?: readonly import("./contracts").BrokenControlId[];
   readonly strip?: import("./contracts").StripSpec;

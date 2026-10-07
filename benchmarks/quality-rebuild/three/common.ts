@@ -159,7 +159,9 @@ export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts:
   if (THREE.REVISION !== "185") errors.push(`Expected three r185 (0.185.1); loaded r${THREE.REVISION}.`);
 
   const { width, height } = spec.resolution;
-  const devicePixelRatio = variantDprScale(variant) * (opts.dpr ?? spec.resolution.devicePixelRatio);
+  // `pixelRatioScale` is a test-only public option (T3.6 injected regressions) —
+  // no production caller sets it.
+  const devicePixelRatio = variantDprScale(variant) * (spec.pixelRatioScale ?? 1) * (opts.dpr ?? spec.resolution.devicePixelRatio);
   const renderer = new THREE.WebGLRenderer({ antialias: variantAntialias(variant), preserveDrawingBuffer: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(devicePixelRatio);
   renderer.setSize(width, height);
