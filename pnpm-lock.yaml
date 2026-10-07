@@ -210,6 +210,9 @@ importers:
       '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
+      draco3d:
+        specifier: 1.5.7
+        version: 1.5.7
       ktx-parse:
         specifier: 1.0.1
         version: 1.0.1

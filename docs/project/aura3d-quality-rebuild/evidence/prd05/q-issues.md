@@ -197,3 +197,66 @@ Source of truth: `public/aura-decoders/` (lane 05, sha256-verified).
 
 Meanwhile: repo apps serve them from the root `public/` dir; scaffolds
 fall back to `AssetDecoderUnavailable` until the templates vendor them.
+
+## Q-15-5 → lane 15 (root manifest, pruned scripts still referenced by workflows)
+
+QR-15's T7 prune deleted `check:skills`, `check:agent-docs` and `skills:sync`
+from root `package.json`, but `.github/workflows/agent-skills.yml` still runs
+`pnpm check:skills` (and `check:release` still references `check:agent-docs`).
+Every PR's "Skills gate + agent docs" job now fails with
+`ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL Command "check:skills" not found`.
+
+Options: restore the three script entries, or delete the workflow/job. The
+tools (`tools/agent-skills/check.ts`, `sync.ts`) and canonical skills dir
+still exist on main.
+
+Meanwhile: verified 2026-10-07 — same failure reproduces on origin/main, so it
+is repo-wide, not lane-05. Lane 05 is not re-adding the scripts (root
+package.json is lane 15's).
+
+## Q-13-2 → lane 13 (skills content rot after T7 deletions)
+
+With `check:skills` runnable again, 11 real failures remain, all in
+lane-13-owned skills text: `manifest.templates` keys ≠ `CREATE_AURA3D_TEMPLATES`
+(`arena-shooter` removed from templates but still referenced); and stale
+GitHub links/API claims in `aura3d-materials-environments` (MaterialValidation.ts,
+HDRIEnvironment.ts) and `aura3d-threejs-migration` (three-compat sources +
+approximation-ledger exports deleted by T7). Also `pnpm skills:sync` rewrites
+`packages/create-aura3d/skills/manifest.json` (drops the `arena-shooter` row) —
+the committed copy is stale.
+
+Meanwhile: skills gate stays red on those rows until lane 13 repairs the
+skill text and regenerates the mirrors; lane 05 is not touching
+`packages/aura3d-cli/skills/**`.
+
+## Q-15-6 → lane 15 (pnpm workspace does not cover `tools/asset-optimize`)
+
+CONTRACTS §4.4 allows `tools/*` manifests, but `pnpm-workspace.yaml` only
+globs `packages/*` and `workers/*`. `tools/asset-optimize/package.json` needs
+`tools/asset-optimize` (or `tools/*`) added to the workspace packages so
+`pnpm install --frozen-lockfile` installs its pinned deps on CI. Until then
+the workflow installs them via `npm ci --prefix tools/asset-optimize`
+(committed package-lock.json); repo `tsc -p tsconfig.build.json` reports
+module-resolution errors for its files on runners that skipped that step.
+
+Meanwhile: `asset-optimize.yml` runs `npm ci` first; tool unit tests skip when
+`tools/asset-optimize/node_modules` is absent so shared lanes stay green.
+
+## Q-15-7 → lane 15 (`arch:check` fails repo-wide on drifted sibling files)
+
+`tools/arch-gates/index.ts` (fail mode) reports 38 enforced findings on the
+merged tree — layering `compiler/ → app/` + SCC-153 in
+`packages/engine/src/agent-api/**`, `single-renderer` hits in prd01
+`outputSurface.ts` + `renderer/PixelRatio.ts`, `glsl-location` in
+`terrain/PlanetMaterial.ts`, `vfx/ribbon.glsl.ts` and ~5 more, six
+`unique-ownership` export collisions (`slerpQuat`, `AudioBus`, `createGame`,
+`captureFromUrl`, `GameFxKind`, `TouchPreset`), and `deps-truth` on root
+(missing `@aura3d/game`). Zero findings touch lane-05 paths
+(`tools/asset-optimize`, `benchmarks/**/prd05`, `commands/prd05`,
+`packages/assets`). Reproduced on `qr-prd15-arch-gates` run
+37569303330 on `qr/prd05-optimize-toolchain` — identical findings exist on
+main because the gate scans the whole tree regardless of the diff.
+
+Meanwhile: lane 05 adds no GLSL strings, no package exports, and no
+`packages/*/src` value-imports across the banned boundaries; the failure is
+informational for this lane.

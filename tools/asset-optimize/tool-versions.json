@@ -1,0 +1,11 @@
+{
+  "schema": "a3d-asset-optimize-tool-versions/1.0",
+  "tools": {
+    "ktx": {
+      "version": "v4.4.2",
+      "url": "https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-x86_64.tar.bz2",
+      "sha256": "a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245",
+      "binary": "KTX-Software-4.4.2-Linux-x86_64/bin/ktx"
+    }
+  }
+}

@@ -9,6 +9,7 @@
 import { registerCliCommand } from "../../contracts/commands.js";
 import type { AuraCliAssetRole } from "../../asset-core-types.js";
 import { admitAsset } from "./admit.js";
+import { optimizeAssetsVerb } from "./optimize.js";
 import { reviewAsset } from "./review.js";
 
 function readFlag(argv: readonly string[], name: string): string | undefined {
@@ -108,7 +109,14 @@ function phaseStub(name: string, phase: string, summary: string, usage: string):
   });
 }
 
-phaseStub("assets optimize", "Phase 2 (tools/asset-optimize)", "Optimize assets through the §6.3 step pipeline (lands in Phase 2).", "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--textures ktx2|webp|source] [--dry-run]");
+registerCliCommand({
+  name: "assets optimize",
+  owner: "prd05",
+  summary: "Optimize assets through the §6.3 step pipeline (tools/asset-optimize).",
+  usage: "aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
+  run: async (argv, io) =>
+    optimizeAssetsVerb({ projectDir: io.cwd, argv, stdout: io.stdout, stderr: io.stderr }),
+});
 phaseStub("assets lookdev", "Phase 4 (apps/asset-lookdev)", "Dispatch the look-dev capture workflow for assets.", "aura3d assets lookdev <id...> [--group <route>]");
 phaseStub("assets budget", "Phase 2 (budget measurement)", "Report per-tier asset budgets (lands in Phase 2).", "aura3d assets budget [--route apps/<app>] [--tier low|medium|high|ultra] [--json]");
 phaseStub("assets library", "Phase 5 (curated library)", "List/add/sync the curated asset library (lands in Phase 5).", "aura3d assets library list|add|sync");
