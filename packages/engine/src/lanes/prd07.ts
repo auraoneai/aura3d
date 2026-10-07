@@ -10,7 +10,7 @@ import { registerDiagnosticsSection } from "../contracts/diagnostics";
 import { registerNodeHandler } from "../contracts/compiler";
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes";
 import type { AuraHeightFogSpec } from "../contracts/atmosphere";
-import { createEffectsExtension } from "../agent-api/vfx/effects-api";
+import { createEffectsExtension, prd07AppDisposed } from "../agent-api/vfx/effects-api";
 import { createAtmosphereExtension } from "../agent-api/vfx/atmosphere-api";
 import { collectEffectsSection, collectAtmosphereSection } from "../agent-api/vfx/diagnostics";
 import { registerPrd07LookLintRules } from "../agent-api/vfx/lookLint";
@@ -29,6 +29,7 @@ try {
     create: (app, ctx) => createEffectsExtension(app, ctx),
     dispose: (value) => {
       (value as { clear?: () => void }).clear?.();
+      prd07AppDisposed(value as object);
     }
   });
 } catch (error) {

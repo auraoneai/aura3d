@@ -12,6 +12,8 @@
 
 import { registerShaderChunk, registerShaderFeature } from "../../contracts/program";
 import type { RenderItem } from "../../contracts/renderItem";
+import { registerWgslTwin } from "../../program/chunks/manifest";
+import { PRD11_INSTANCE_EMISSIVE_VTX_WGSL, PRD11_INSTANCE_EMISSIVE_FRAG_WGSL } from "../../program/chunks/instanceEmissive.wgsl";
 
 export const PRD11_INSTANCE_EMISSIVE_VTX_CHUNK = "a3d_prd11_instance_emissive_vtx";
 export const PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK = "a3d_prd11_instance_emissive_frag";
@@ -39,14 +41,18 @@ export function registerPrd11InstanceEmissiveShader(): void {
     name: PRD11_INSTANCE_EMISSIVE_VTX_CHUNK,
     owner: "prd11",
     glsl: VTX_GLSL,
+    wgsl: PRD11_INSTANCE_EMISSIVE_VTX_WGSL,
     stage: "vertex"
   });
+  registerWgslTwin({ chunkName: PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, owner: "prd11", wgsl: PRD11_INSTANCE_EMISSIVE_VTX_WGSL });
   registerShaderChunk({
     name: PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK,
     owner: "prd11",
     glsl: FRAG_GLSL,
+    wgsl: PRD11_INSTANCE_EMISSIVE_FRAG_WGSL,
     stage: "fragment"
   });
+  registerWgslTwin({ chunkName: PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, owner: "prd11", wgsl: PRD11_INSTANCE_EMISSIVE_FRAG_WGSL });
   registerShaderFeature({
     id: PRD11_INSTANCE_EMISSIVE_FEATURE,
     owner: "prd11",

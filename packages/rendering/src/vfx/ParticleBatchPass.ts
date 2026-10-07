@@ -9,7 +9,7 @@ import { TextureBinding } from "../TextureBinding";
 import { ParticleInstanceRing, createParticleQuad, particleInstanceAttributes } from "./ParticleInstanceLayout";
 import { consumeBlendFallbackReport, resolveVfxBlend } from "./BlendFallback";
 import { ParticleSort } from "./ParticleSort";
-import { resolveSceneDepth } from "./SceneDepthAdapter";
+import { resolveOutputColorSpace, resolveSceneDepth } from "./SceneDepthAdapter";
 import {
   PARTICLE_SHADER_MARKER,
   particleFragmentSource,
@@ -24,6 +24,8 @@ export interface ParticlePassDiagnostics {
   drawCalls: number;
   instancesDrawn: number;
   readonly errors: { code: string; nodeId: string; message: string }[];
+  /** C-28 device counters snapshot at report time (e.g. `readbacks` must stay 0). */
+  readonly deviceCounters?: { readonly readbacks: number };
 }
 
 interface BatchState extends ParticleBatchHandle {
@@ -43,6 +45,8 @@ export class ParticleBatchPass {
   private readonly sorter = new ParticleSort();
   private programLimitWarned = false;
   private frameDiagnostics: ParticlePassDiagnostics = { drawCalls: 0, instancesDrawn: 0, errors: [] };
+  private frameDepth: ReturnType<typeof resolveSceneDepth> | null = null;
+  private frameOutputColorSpace: "linear" | "srgb" = "srgb";
   private honoursBlendMode: boolean | null = null;
 
   constructor(private readonly device: RenderDevice) {}
@@ -99,8 +103,9 @@ export class ParticleBatchPass {
 
   transparentItems(ctx: FrameContributorContext): TransparentQueueItem[] {
     this.frameDiagnostics = { drawCalls: 0, instancesDrawn: 0, errors: [] };
-    const depth = resolveSceneDepth(ctx);
-    if (depth.pendingNote) this.note("SOFT_DEPTH_PENDING", null, "scene depth is the C-01 stub; soft particles are off");
+    this.frameDepth = resolveSceneDepth(ctx);
+    this.frameOutputColorSpace = resolveOutputColorSpace(ctx);
+    if (this.frameDepth.pendingNote) this.note("SOFT_DEPTH_PENDING", null, "scene depth is the C-01 stub; soft particles are off");
 
     const live: BatchState[] = [];
     for (const batch of this.batches.values()) {
@@ -144,9 +149,13 @@ export class ParticleBatchPass {
     const vertexBuffer = quad.vertexBuffer.upload(this.device);
     const indexBuffer = quad.indexBuffer?.upload(this.device);
     const camera = ctx.camera;
+    const depth = this.frameDepth;
+    const softParticles = depth?.available === true && batch.desc.softDepth && depth.source.texture !== null;
     const defines: ParticleProgramDefines = {
       stretch: batch.desc.stretch,
       frameBlend: batch.desc.frameBlend,
+      softParticles,
+      blendAdditive: batch.desc.blend === "additive" && !res.additiveFallback,
       blendAdditiveFallback: res.additiveFallback,
       unpremultiplyOutput: res.unpremultiplyOutput,
       proceduralSoftDot: batch.desc.atlas.width <= 1,
@@ -159,11 +168,17 @@ export class ParticleBatchPass {
       ["u_atlasRect", [0, 0, 1, 1]],
       ["u_grid", [1, 1]],
       ["u_atlas", new TextureBinding({ name: "u_atlas", texture: batch.desc.atlas })],
-      ["u_nearFade", 0.5],
+      ["u_nearFade", batch.desc.nearFade ?? 0.5],
       ["u_cameraNear", camera?.near ?? 0.1],
+      ["u_softDistance", batch.desc.softDistance ?? 1],
+      ["u_outputColorSpace", this.frameOutputColorSpace === "srgb" ? 1 : 0],
       ["u_fogColor", [0, 0, 0]],
       ["u_fogDensity", 0]
     ]);
+    if (softParticles && depth) {
+      uniforms.set("u_sceneDepth", new TextureBinding({ name: "u_sceneDepth", texture: depth.source.texture! }));
+      uniforms.set("u_depthLinearize", [depth.source.linearize.near, depth.source.linearize.far, depth.source.linearize.orthographic ? 1 : 0, 0]);
+    }
     this.device.draw({
       label: `prd07.particles.${batch.key}`,
       topology: "triangles",
@@ -204,11 +219,12 @@ export class ParticleBatchPass {
 
   private deviceHonoursBlendMode(): boolean {
     if (this.honoursBlendMode === null) {
-      // There is no named-blend-mode capability in the device capability list;
-      // C-04's stub maps everything to alpha, so treat non-mock backends as
-      // honoring the resolved BlendMode while the mock device (which cannot
-      // blend) drives the additive fallback.
-      this.honoursBlendMode = this.device.info.backend !== "mock";
+      // C-04 is still a stub on every shipping backend: `blendMode` is ignored
+      // and `blend: true` lowers to alpha-over. "native-render-pipeline" is the
+      // probe for a backend where named blends are real — extend it when C-04
+      // lands an explicit capability. Until then the §6.2.7 fallback table
+      // applies everywhere (honest degradation, reported once per key).
+      this.honoursBlendMode = this.device.info.capabilities?.includes("native-render-pipeline") === true;
     }
     return this.honoursBlendMode;
   }
@@ -218,7 +234,10 @@ export class ParticleBatchPass {
   }
 
   get diagnostics(): ParticlePassDiagnostics {
-    return this.frameDiagnostics;
+    const counters = this.device.counters?.();
+    return counters === undefined
+      ? this.frameDiagnostics
+      : { ...this.frameDiagnostics, deviceCounters: { readbacks: counters.readbacks } };
   }
 
   get batchCount(): number {

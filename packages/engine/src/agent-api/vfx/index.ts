@@ -5,3 +5,12 @@ export { createAppEffects, createEffectsExtension, registerPrd07System, prd07Sys
 export { createAtmosphereExtension } from "./atmosphere-api";
 export { collectEffectsSection, collectAtmosphereSection } from "./diagnostics";
 export { registerPrd07LookLintRules } from "./lookLint";
+export {
+  AURA_VFX_BUILTIN_SEQUENCES,
+  validateVfxAtlasManifest,
+  vfxAtlasPageForTier,
+  type AuraVfxAtlasManifest,
+  type AuraVfxAtlasPage,
+  type AuraVfxAtlasSequenceEntry,
+  type AuraVfxBuiltinSequence
+} from "./atlas";

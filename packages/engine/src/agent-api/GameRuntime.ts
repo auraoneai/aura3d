@@ -8,7 +8,7 @@
 import { Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
 // Static, from the narrow entry: createGameCollisionWorld is synchronous public API. See world.ts.
 import { PhysicsWorld } from "@aura3d/physics/world";
-import type { GameEffectKind, MutableGameEffectInstance } from "./vfx/gameEffects.js";
+import type { GameEffectKind, GameEffectsOptions, MutableGameEffectInstance } from "./vfx/gameEffects.js";
 import { createGameEffects, publicGameEffectInstance, resolveEffectAttachmentPosition, defaultEffectColor, defaultEffectDuration, defaultEffectRadius, effectToSceneNode } from "./vfx/gameEffects.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraTimeController } from "../contracts/time.js";
@@ -1157,17 +1157,7 @@ export interface GameCameraDirector {
   snapshot(): GameCameraSnapshot;
 }
 
-export type { GameEffectKind } from "./vfx/gameEffects.js";
-
-export interface GameEffectsOptions {
-  readonly poolSize?: number;
-  readonly reducedMotion?: boolean;
-  readonly reducedFlash?: boolean;
-  readonly sparks?: GameEffectPreset;
-  readonly trails?: GameEffectPreset;
-  readonly superBurst?: GameEffectPreset;
-  readonly presets?: Record<string, GameEffectPreset>;
-}
+export type { GameEffectKind, GameEffectsOptions } from "./vfx/gameEffects.js";
 
 export interface GameEffectOptions {
   readonly color?: string;
