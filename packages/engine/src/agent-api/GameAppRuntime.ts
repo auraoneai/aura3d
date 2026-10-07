@@ -17,6 +17,7 @@ import {
   type FrameLoopOptions,
   type FrameLoopSnapshot
 } from "./FrameLoop";
+import { StubTimeController, type AuraTimeController } from "../contracts/time";
 import {
   createPerformanceGovernor,
   type GamePerFramePerfTelemetry,
@@ -103,6 +104,22 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
   offFrame(callback: AuraAppFrameCallback): void;
   inputController(options: GameInputOptions): GameInputController;
   screenshot(): AuraAppScreenshot;
+  /** Effective time scale — `app.time.scale` when a C-23 controller is mounted. */
+  readonly timeScale: number;
+  /**
+   * Clamps to [0, 4] (NaN throws `AURA_GAME_TIMESCALE_NAN`) and writes
+   * `app.time.scale`. Returns the post-write evidence snapshot.
+   */
+  setTimeScale(scale: number): GameAppRuntimeEvidence;
+  /**
+   * Resolves with the frame index of the next presented frame after
+   * `start()`, `step()` or `setScene()` (C-24 §9.3). Frame callbacks fire
+   * before submission, so `raf`-sourced callbacks resolve on the following
+   * `requestAnimationFrame` tick; `advance()` never resolves it (nothing is
+   * presented). Calling again after a resolve returns a promise for the
+   * frame after that — callers re-arm it per `setScene`.
+   */
+  firstPresentedFrame(): Promise<number>;
   dispose(): GameAppRuntimeEvidence;
 }
 
@@ -148,6 +165,21 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     return lastPerf;
   };
 
+  const fallbackTime = new StubTimeController();
+  const timeController = (): AuraTimeController =>
+    (app as { time?: AuraTimeController }).time ?? fallbackTime;
+
+  // firstPresentedFrame: each call registers a waiter resolved on the next
+  // presented frame. `raf`-sourced callbacks precede the submission in the
+  // same task, so they resolve on the following rAF (or a microtask when no
+  // rAF exists); `step()` resolves synchronously after its render.
+  const presentedWaiters = new Set<(frame: number) => void>();
+  const resolvePresented = (frameIndex: number) => {
+    const waiters = [...presentedWaiters];
+    presentedWaiters.clear();
+    for (const waiter of waiters) waiter(frameIndex);
+  };
+
   const loopFrameUnsubscribe = loop.onFrame((frame) => {
     app.step(frame.dt);
   });
@@ -161,6 +193,14 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
     };
     for (const callback of [...frameCallbacks]) {
       if (frameCallbacks.has(callback)) callback(normalizedFrame);
+    }
+    if (frame.source === "raf" && presentedWaiters.size > 0) {
+      const presentedIndex = frame.frame;
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(() => resolvePresented(presentedIndex));
+      } else {
+        queueMicrotask(() => resolvePresented(presentedIndex));
+      }
     }
   });
 
@@ -268,6 +308,7 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       stepCount += 1;
       loop.step(Math.max(0, dt));
       if (perfGovernorOptions?.sample) pollPerformance();
+      if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
       return snapshotEvidence();
     },
     pollPerformance(telemetry?: GamePerFramePerfTelemetry) {
@@ -311,6 +352,23 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       assertAlive("screenshot");
       return app.screenshot();
     },
+    get timeScale() {
+      return timeController().scale;
+    },
+    setTimeScale(scale) {
+      assertAlive("setTimeScale");
+      if (!Number.isFinite(scale)) {
+        throw new Error(`AURA_GAME_TIMESCALE_NAN: setTimeScale(${String(scale)}) requires a finite number.`);
+      }
+      timeController().scale = Math.min(4, Math.max(0, scale));
+      return snapshotEvidence();
+    },
+    firstPresentedFrame() {
+      assertAlive("firstPresentedFrame");
+      return new Promise<number>((resolve) => {
+        presentedWaiters.add(resolve);
+      });
+    },
     dispose() {
       if (disposed) return snapshotEvidence();
       disposeCount += 1;
@@ -319,6 +377,7 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       loopFrameUnsubscribe();
       internalFrameUnsubscribe();
       frameCallbacks.clear();
+      presentedWaiters.clear();
       for (const input of ownedInputs) input.dispose();
       loop.dispose();
       app.dispose();

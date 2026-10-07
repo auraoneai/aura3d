@@ -1,0 +1,67 @@
+{
+  "root": "apps/showcase-siege-golf",
+  "files": 15,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 855,
+      "construct": "lights.point({ intensity: 0.5 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 6 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 855,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 856,
+      "construct": "lights.point({ intensity: 0.7 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 9 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 856,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 857,
+      "construct": "lights.point({ intensity: 0.34 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 4 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 857,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 858,
+      "construct": "lights.point({ intensity: 0.8 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 10 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-siege-golf/src/main.ts",
+      "line": 858,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

@@ -1,0 +1,279 @@
+{
+  "schema": "a3d-quality-gate-root-manifest-pending/1.0",
+  "issue": "Q-15-1",
+  "githubIssue": 39,
+  "filed": "2026-10-06",
+  "note": "Script paths awaiting the root package.json batch (Q-15-1, issue #39): deleted/quarantined lane-12 tools and pre-existing missing paths. tests/unit/quality-gate/scripts.test.ts reports each as pending-root-manifest and fails on any missing path not listed here.",
+  "entries": [
+    {
+      "script": "audit:external-parity-unity-unreal-parity",
+      "path": "tools/external-parity-unity-unreal-parity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "editor-tools:unit:raw",
+      "path": "tests/editor-runtime.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "production-runtime:apps",
+      "path": "tests/browser/production-runtime-threejs-parity-lab.spec.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "production-runtime:compare-threejs",
+      "path": "tests/browser/production-runtime-threejs-parity.spec.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "production-runtime:compare-threejs",
+      "path": "tools/production-runtime-threejs-parity-readiness/index.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "production-runtime:compare-threejs",
+      "path": "tools/production-runtime-threejs-parity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "prompt-animation:browser:raw",
+      "path": "tests/route-health.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "prompt-animation:browser:raw",
+      "path": "tests/sample-episode-visual.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "prompt-animation:browser:raw",
+      "path": "tests/storyboard-playback.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:animation-fidelity",
+      "path": "tools/superiority-animation-fidelity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:audit",
+      "path": "tools/superiority-audit/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:claim-defense",
+      "path": "tools/superiority-claim-defense/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:developer-workflow",
+      "path": "tools/superiority-developer-workflow/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:feature-parity",
+      "path": "tools/superiority-feature-parity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:memory-lifecycle",
+      "path": "tools/superiority-memory-lifecycle/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:performance",
+      "path": "tools/superiority-performance/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:physics-fidelity",
+      "path": "tools/superiority-physics-fidelity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:resource-lifecycle",
+      "path": "tools/superiority-resource-lifecycle/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "superiority:visual-quality",
+      "path": "tools/superiority-visual-quality/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/assets.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/audio.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/ecs.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/editor-runtime.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/input.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/scene.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages",
+      "path": "tests/scripting.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/assets.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/audio.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/ecs.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/editor-runtime.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/input.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/scene.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "test:packages:dist",
+      "path": "tests/scripting.test.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-animation-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-asset-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-controls-lab.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-large-scene-lab.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-material-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-postprocess-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-product-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-scene-studio-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-shader-lab-pro.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:app-suite",
+      "path": "tests/browser/three-compat-threejs-migration-lab.spec.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:compare-threejs",
+      "path": "tests/browser/three-compat-threejs-runtime-parity.spec.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "three-compat:compare-threejs",
+      "path": "tests/browser/three-compat-threejs-visual-parity.spec.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "three-compat:compare-threejs",
+      "path": "tools/three-compat-threejs-runtime-parity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:compare-threejs",
+      "path": "tools/three-compat-threejs-visual-parity/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "three-compat:migration",
+      "path": "tests/browser/three-compat-threejs-migration.spec.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "three-compat:migration",
+      "path": "tests/integration/three-compat-threejs-migration.test.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "three-compat:threejs-inventory",
+      "path": "tests/unit/three-compat/three-compat-threejs-inventory.test.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "three-compat:threejs-inventory",
+      "path": "tools/three-compat-threejs-inventory/index.ts",
+      "reason": "deleted-lane12-tool"
+    },
+    {
+      "script": "threejs-parity:inventory",
+      "path": "tools/threejs-parity-threejs-inventory/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "threejs-parity:same-scene-render",
+      "path": "tools/threejs-parity-same-scene-render/index.ts",
+      "reason": "missing-path"
+    },
+    {
+      "script": "visual-scripting:unit:raw",
+      "path": "tests/scripting.test.ts",
+      "reason": "missing-path"
+    }
+  ]
+}

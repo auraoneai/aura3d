@@ -16,9 +16,55 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
-import { hdriAssets, modelAssets, type HdriAssetId } from "../shared/assets";
+import { hdriAssets, modelAssets, type HdriAssetId, type ModelAssetId } from "../shared/assets";
+import { fetchOnce } from "../shared/fetch-once";
 import { particlePositions } from "../shared/procedural";
+import type { BrokenControlId } from "../shared/contracts";
 import type { CapabilityEntry, CapabilityStatus, MaterialSpec, ReadyPayload, SceneSpec, TransformSpec } from "../shared/types";
+
+/**
+ * Per-run overrides from the page router (PRD-12 §7.1/§8.4):
+ *  - `variant`: default frame, `aura3d-tuned`, or a broken-control id.
+ *    On the three side every control is expressible and is rendered for
+ *    calibration; on the Aura side inexpressible controls are not captured.
+ *  - `dpr`: device pixel ratio override (&dpr=, scenes may declare `dprs`).
+ *  - `qrFlags`: resolved `a3d-qr` flag list (C-30) recorded in the payload.
+ */
+export interface RunOptions {
+  readonly variant?: "default" | "aura3d-tuned" | BrokenControlId;
+  readonly dpr?: 1 | 2;
+  readonly qrFlags?: readonly string[];
+}
+
+/** Graph stashed on the window so `three/lib/mask.ts` can render mask passes
+ * in the same page load as the READY frame (PRD-12 §6.3). */
+export interface ThreeGraph {
+  readonly scene: THREE.Scene;
+  readonly camera: THREE.PerspectiveCamera;
+  readonly renderer: THREE.WebGLRenderer;
+  readonly lights: readonly THREE.Light[];
+}
+
+declare global {
+  interface Window {
+    __QR_THREE_GRAPH__?: ThreeGraph;
+  }
+}
+
+function applyVariantSpec(spec: SceneSpec, variant: string | undefined): SceneSpec {
+  if (!variant || variant === "default" || variant === "aura3d-tuned") return spec;
+  if (variant === "no-shadows") {
+    return { ...spec, lights: spec.lights.map((light) => ("castShadow" in light ? { ...light, castShadow: false } : light)) };
+  }
+  if (variant === "no-ibl") {
+    return { ...spec, environment: spec.environment ? { ...spec.environment, intensity: 0 } : spec.environment };
+  }
+  if (variant === "flat-sky") {
+    if (spec.background.kind !== "hdri") return spec;
+    return { ...spec, background: { kind: "color", color: spec.background.fallbackColor } };
+  }
+  return spec;
+}
 
 declare const __THREE_VERSION__: string;
 
@@ -94,10 +140,11 @@ function createSpriteTexture(): THREE.Texture {
   return texture;
 }
 
-async function loadHdri(renderer: THREE.WebGLRenderer, id: HdriAssetId, cache: Map<HdriAssetId, { equirect: THREE.DataTexture; pmrem: THREE.Texture }>) {
+async function loadHdri(renderer: THREE.WebGLRenderer, id: HdriAssetId, cache: Map<HdriAssetId, { equirect: THREE.Texture; pmrem: THREE.Texture }>) {
   const cached = cache.get(id);
   if (cached) return cached;
-  const equirect = await new HDRLoader().loadAsync(hdriAssets[id].url);
+  // fetchOnce dedupes GLB/HDR fetches (research 22 ERR_ABORTED fix, §9.2).
+  const equirect = new HDRLoader().createDataTexture(await fetchOnce(hdriAssets[id].url));
   equirect.mapping = THREE.EquirectangularReflectionMapping;
   const generator = new THREE.PMREMGenerator(renderer);
   const pmrem = generator.fromEquirectangular(equirect).texture;
@@ -111,23 +158,29 @@ async function nextFrame(): Promise<void> {
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 }
 
-export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise<ReadyPayload> {
+export async function runThreeScene(rawSpec: SceneSpec, host: HTMLElement, opts: RunOptions = {}): Promise<ReadyPayload> {
   const started = performance.now();
   const log = new CapabilityLog();
   const warnings: string[] = [];
   const errors: string[] = [];
+  const variant = opts.variant ?? "default";
+  const spec = applyVariantSpec(rawSpec, variant);
+  if (variant === "aura3d-tuned") log.add("variant:aura3d-tuned", "not-applicable", "aura3d-tuned is an Aura-side preset; the three reference renders default.");
+  else if (variant !== "default") log.add(`variant:${variant}`, "supported", "Broken-control variant applied to the three reference (calibration source).");
 
   if (THREE.REVISION !== "185") errors.push(`Expected three r185 (0.185.1); loaded r${THREE.REVISION}.`);
 
-  const { width, height, devicePixelRatio } = spec.resolution;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+  const { width, height } = spec.resolution;
+  const devicePixelRatio = (variant === "dpr-half" ? 0.5 : 1) * (opts.dpr ?? spec.resolution.devicePixelRatio);
+  const renderer = new THREE.WebGLRenderer({ antialias: variant !== "no-aa", preserveDrawingBuffer: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(devicePixelRatio);
   renderer.setSize(width, height);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = variant === "no-tonemap" ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = spec.exposure;
-  renderer.shadowMap.enabled = Boolean(spec.shadows || spec.csm);
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled = Boolean(spec.shadows || spec.csm) && variant !== "no-shadows";
+  // Explicit PCFShadowMap (not PCFSoft): removes the r185 deprecation remap (§9.2).
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.info.autoReset = false;
   host.appendChild(renderer.domElement);
   renderer.domElement.style.display = "block";
@@ -143,7 +196,7 @@ export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise
   camera.lookAt(new THREE.Vector3(...spec.camera.target));
   camera.updateMatrixWorld();
 
-  const hdriCache = new Map<HdriAssetId, { equirect: THREE.DataTexture; pmrem: THREE.Texture }>();
+  const hdriCache = new Map<HdriAssetId, { equirect: THREE.Texture; pmrem: THREE.Texture }>();
   if (spec.environment) {
     const hdri = await loadHdri(renderer, spec.environment.hdri, hdriCache);
     scene.environment = hdri.pmrem;
@@ -243,7 +296,9 @@ export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise
   const loadGltf = (url: string): Promise<GLTF> => {
     let pending = gltfCache.get(url);
     if (!pending) {
-      pending = gltfLoader.loadAsync(url);
+      pending = fetchOnce(url).then(
+        (buffer) => new Promise<GLTF>((resolveGltf, rejectGltf) => gltfLoader.parse(buffer, "", resolveGltf, rejectGltf))
+      );
       gltfCache.set(url, pending);
     }
     return pending;
@@ -331,6 +386,23 @@ export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise
 
   if (csm) for (const material of new Set(csmMaterials)) csm.setupMaterial(material);
 
+  if (variant === "albedo-only") {
+    // Unlit override that keeps the authored albedo (map + color) — §6.4 variant.
+    scene.traverse((child) => {
+      if (!(child as THREE.Mesh).isMesh) return;
+      const mesh = child as THREE.Mesh;
+      const swap = (material: THREE.Material): THREE.Material => {
+        const standard = material as THREE.MeshStandardMaterial;
+        return new THREE.MeshBasicMaterial({
+          color: standard.color ? standard.color.clone() : new THREE.Color(0xffffff),
+          map: standard.map ?? null,
+          toneMapped: false
+        });
+      };
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(swap) : swap(mesh.material);
+    });
+  }
+
   // Post-processing (only when requested)
   let composer: EffectComposer | undefined;
   if (spec.bloom) {
@@ -361,6 +433,21 @@ export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise
   renderFrame();
   await nextFrame();
 
+  const shadowLights = spec.lights.filter((light) => (light.kind === "directional" || light.kind === "spot") && light.castShadow);
+  const assetHashes: Record<string, string> = {};
+  for (const object of spec.objects) {
+    if (object.kind === "model") assetHashes[object.asset] = modelAssets[object.asset as ModelAssetId].sha256;
+  }
+  if (spec.environment) assetHashes[spec.environment.hdri] = hdriAssets[spec.environment.hdri].sha256;
+  if (spec.background.kind === "hdri") assetHashes[spec.background.hdri] = hdriAssets[spec.background.hdri].sha256;
+
+  window.__QR_THREE_GRAPH__ = {
+    scene,
+    camera,
+    renderer,
+    lights: scene.children.filter((child) => (child as THREE.Light).isLight) as THREE.Light[]
+  };
+
   return {
     engine: "three",
     scene: spec.id,
@@ -371,6 +458,21 @@ export async function runThreeScene(spec: SceneSpec, host: HTMLElement): Promise
     warnings,
     errors,
     loadMs: Math.round(performance.now() - started),
+    variant,
+    dpr: opts.dpr ?? 1,
+    appliedExposure: renderer.toneMappingExposure,
+    appliedToneMapping: renderer.toneMapping === THREE.NoToneMapping ? "NoToneMapping" : "ACESFilmicToneMapping",
+    lightUnits: "three-physical",
+    shadows: {
+      mapRendered: renderer.shadowMap.enabled && shadowLights.length > 0,
+      mapSampled: renderer.shadowMap.enabled && shadowLights.length > 0,
+      mapSize: spec.shadows?.mapSize ?? null,
+      strength: null,
+      casterName: shadowLights[0]?.name ?? null
+    },
+    fallbackLightsActive: false,
+    assetHashes,
+    qrFlags: opts.qrFlags ?? spec.qrFlags ?? [],
     extra: {
       revision: THREE.REVISION,
       programs: renderer.info.programs?.length ?? 0,

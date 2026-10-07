@@ -27,18 +27,12 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   workload: "skinned-morph-animation",
-  verdict: "both-natively-skin-and-morph-the-frozen-assets",
+  verdict: failures.length ? "capture-failed" : "pass",
   checks,
   failures,
   comparison: {
     auraDrawCalls: browser.before?.aura?.drawCalls,
     threeDrawCalls: browser.before?.three?.drawCalls,
-    observedLosses: [
-      "The frozen context separates its representative skinned character and morph-expression fixtures, so this workload proves both capabilities side by side rather than claiming one production character contains both authoring features.",
-      "Aura submits 40 draws versus Three.js 20 for the same frozen skinned character and morph fixture.",
-      "After removing Aura's implicit studio environment/category grade, moving root tone mapping to an unclamped RGBA16F source, adopting the current matrix-fitted ACES transform, and preserving matrix-backed glTF nodes, both retained backgrounds are byte-identical and character/triangle color, hierarchy, and framing align closely. Small pose and highlight pixel differences remain.",
-      "The retained captures are correctness evidence only; this workload does not establish visual parity, animation-authoring parity, blending parity, or performance non-inferiority."
-    ],
     claimBoundary: "This proves deterministic skinned clip sampling and named morph-weight application through the public Aura root against real Three.js r185."
   },
   browser

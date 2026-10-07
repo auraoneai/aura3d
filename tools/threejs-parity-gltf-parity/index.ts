@@ -92,7 +92,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 const PARITY_ASSETS = {
@@ -212,7 +211,7 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
-        `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
+        `Mean RGB delta is ${diff.meanDelta}.`,
         `This artifact proves the bounded ${ASSET.name} GLB path against actual Three.js GLTFLoader and WebGLRenderer.`,
         "It is not a blanket claim for every glTF extension, texture compression format, animation path, or material extension."
       ]
@@ -467,8 +466,7 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return {
     meanDelta: round(meanDelta),
     maxDelta: round(maxDelta),
-    changedPixels,
-    structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255))
+    changedPixels, 1 - meanDelta / 255))
   };
 }
 
@@ -486,7 +484,7 @@ async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, thr
   context.fillText("Three.js GLTFLoader", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta}, similarity proxy ${diff.structuralSimilarityProxy}`, 18, ASSET.height + 48);
+  context.fillText(`mean delta ${diff.meanDelta}`, 18, ASSET.height + 48);
   return canvas.toDataURL("image/png");
 }
 

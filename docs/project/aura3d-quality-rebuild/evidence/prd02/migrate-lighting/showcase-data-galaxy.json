@@ -1,0 +1,37 @@
+{
+  "root": "apps/showcase-data-galaxy",
+  "files": 1,
+  "changed": 0,
+  "rows": [
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 259,
+      "construct": "lights.point({ intensity: 0.95 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 12 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 259,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 260,
+      "construct": "lights.point({ intensity: 1.15 })",
+      "mapping": "approximate",
+      "target": "lights.point({ power: 14 })",
+      "note": "physical units: cd=lm/4π; verify against a render"
+    },
+    {
+      "file": "apps/showcase-data-galaxy/src/main.ts",
+      "line": 260,
+      "construct": "lights.point(…)",
+      "mapping": "exact",
+      "note": "decay defaults to 2 (physical inverse-square); distance defaults to 0 (infinite)"
+    }
+  ]
+}

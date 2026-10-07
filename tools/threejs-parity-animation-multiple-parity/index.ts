@@ -101,7 +101,6 @@ interface DiffStats {
   readonly meanDelta: number;
   readonly maxDelta: number;
   readonly changedPixels: number;
-  readonly structuralSimilarityProxy: number;
 }
 
 const ASSET = {
@@ -190,7 +189,7 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
-        `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
+        `Mean RGB delta is ${diff.meanDelta}.`,
         "This is a bounded imported Soldier clone parity proof for Walk / Run / Idle using actual Three.js AnimationMixer and SkeletonUtils.clone.",
         "It is not a blanket claim for every animation-blending, IK, morph-target, retargeting, or crowd-behavior path."
       ]
@@ -562,8 +561,7 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return {
     meanDelta: round(meanDelta),
     maxDelta: round(maxDelta),
-    changedPixels,
-    structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255))
+    changedPixels, 1 - meanDelta / 255))
   };
 }
 
@@ -581,7 +579,7 @@ async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, thr
   context.fillText("Three.js AnimationMixer", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#46515f";
   context.font = "12px sans-serif";
-  context.fillText(`mean delta ${diff.meanDelta}, similarity proxy ${diff.structuralSimilarityProxy}`, 18, ASSET.height + 48);
+  context.fillText(`mean delta ${diff.meanDelta}`, 18, ASSET.height + 48);
   return canvas.toDataURL("image/png");
 }
 

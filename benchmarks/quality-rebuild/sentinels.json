@@ -1,11 +1,18 @@
 {
-  "$comment": "C-30 sentinel baseline (PR 0a custodian fill until lane 12 lands its own). The six base scenes captured flag-off twice from main for the IC-0 noise comparison.",
+  "$comment": "C-30 sentinel baseline (T1.16). Six base scenes spread across the corpus: primitives, glTF PBR, skinning, shadows, HDRI IBL and instancing — the highest-coverage canaries for flag-off identity checks (CONTRACTS §6.1). Captured flag-off twice from main for the IC-0 noise comparison.",
+  "$doc": "IC-0 tolerance: computed by metrics.py as deltaE2000 p99 across the pairwise flag-off repeat captures (same commit, fresh browser contexts, no spec edits). The tolerance lands with the first IC-0 run — it is measured, never assumed; until then `identityCheck.deltaE2000P99` stays null and the gate must not read it.",
+  "identityCheck": {
+    "metric": "delta_e2000",
+    "statistic": "p99",
+    "deltaE2000P99": null,
+    "source": "IC-0 pairwise repeat captures, flag-off"
+  },
   "scenes": [
-    { "id": "base-01-triangle" },
-    { "id": "base-02-lit-cube" },
-    { "id": "base-03-textured" },
-    { "id": "base-04-shadows" },
-    { "id": "base-05-environment" },
-    { "id": "base-06-post" }
+    { "id": "01-simple-geometry" },
+    { "id": "03-damaged-helmet" },
+    { "id": "08-skinned-character" },
+    { "id": "12-shadows" },
+    { "id": "13-ibl-only" },
+    { "id": "16-instancing" }
   ]
 }
