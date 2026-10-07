@@ -7,8 +7,10 @@
 import type { SkinningPaletteBinding, SkinningPaletteDecisionRecord, SkinningPaletteDiagnostics, SkinningPalettePath } from "../ForwardPass.js";
 import { MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS, MAX_UNIFORM_SKINNING_JOINTS } from "../ForwardPass.js";
 import { Geometry } from "../Geometry.js";
+import { IndexBuffer } from "../IndexBuffer.js";
 import { Material } from "../Material.js";
-import { applyMorphTargets } from "../MorphTarget.js";
+import { applyMorphTargets, computeMorphTargetEnvelopeBounds, type MorphTargetDelta } from "../MorphTarget.js";
+import { VertexBuffer } from "../VertexBuffer.js";
 import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type UniformValue } from "../RenderDevice.js";
 import { decideSkinningPalettePath } from "../WebGPUSkinningLimits.js";
 import type { RenderItem } from "../contracts/renderItem.js";
@@ -162,8 +164,160 @@ export function resolveRenderGeometry(item: RenderItem): Geometry {
       weightCount: item.morphWeights?.length ?? 0
     });
   }
-  return applyMorphTargets(item.geometry, item.morphTargets, item.morphWeights);
+  // T2.3: flag-on rewrites one persistent dynamic VBO per source geometry —
+  // `upload()` reissues only the dirty range (`bufferSubData`) instead of a
+  // fresh `Geometry` + `dispose` every frame. Flag-off stays byte-identical.
+  return prd06FlagsOn("A3D_QR_ANIMATION")
+    ? resolveRenderGeometryPersistent(item, item.morphTargets, item.morphWeights)
+    : applyMorphTargets(item.geometry, item.morphTargets, item.morphWeights);
 }
+
+// ---------------------------------------------------------------------------
+// T2.3 (PRD-06:1228) persistent CPU-morph scratch
+//
+// The legacy path allocates `new VertexBuffer` + `new IndexBuffer` +
+// `new Geometry` per morphed draw and ForwardPass's finally block disposes it,
+// so the GPU sees a fresh buffer upload every frame. The persistent path keeps
+// one VertexBuffer (+ one IndexBuffer) per *source* geometry: each call copies
+// the source attributes in, applies the morph blend, and the buffer's
+// dirty-range upload becomes a `bufferSubData` rewrite of the same VBO.
+//
+// `MorphTarget.ts`'s inner loop is not exported and that file is lane-01's, so
+// the vertex math is mirrored here — keep it in sync with
+// `applyMorphTargets`/`morphVec3`/`normalizeVec3`/`morphTangent`.
+//
+// Cache key is the source `Geometry` (a stable asset): `RenderItem`s are
+// rebuilt per frame by collectRenderItems, so an item-keyed map would miss
+// every frame. Draws submit immediately (`submitDraw` → `device.draw`), so
+// serial resolve→upload→draw order makes one buffer per geometry safe even
+// when two items morph it differently.
+// ---------------------------------------------------------------------------
+
+/**
+ * Returned to ForwardPass each frame — its `geometry.dispose()` is a no-op so
+ * the scratch buffers survive. `bounds` is the morph envelope
+ * (`computeMorphTargetEnvelopeBounds`), conservative for every weight set, so
+ * the wrapper can be cached for a fixed target set while weights animate.
+ */
+class MorphScratchGeometry extends Geometry {
+  dispose(): void {
+    // Persistent — see T2.3 block comment.
+  }
+}
+
+interface MorphScratch {
+  readonly vertexBuffer: VertexBuffer;
+  readonly indexBuffer: IndexBuffer | null;
+  targets: readonly MorphTargetDelta[];
+  geometry: Geometry;
+}
+
+// `var` + lazy init — `forward/Deform.ts` sits inside the lanes→Deform import
+// cycle (see forwardFeature.ts), so module-level `let`/`const` can be read
+// before initialization when the cycle enters this module early.
+var morphScratchCache: WeakMap<Geometry, MorphScratch> | undefined;
+
+function resolveRenderGeometryPersistent(
+  item: RenderItem,
+  targets: readonly MorphTargetDelta[],
+  weights: readonly number[]
+): Geometry {
+  if (targets.length !== weights.length) {
+    throw new Error("Morph target count must match morph weight count.");
+  }
+  const source = item.geometry;
+  morphScratchCache ??= new WeakMap();
+  let scratch = morphScratchCache.get(source);
+  if (!scratch || scratch.targets !== targets) {
+    // Rebuild the wrapper only when the target *set* changes (weights change
+    // per frame; the envelope bound covers every combination). The buffers
+    // are reused either way — only the `Geometry` wrapper + bounds refresh.
+    const vertexBuffer = scratch?.vertexBuffer
+      ?? new VertexBuffer(source.vertexBuffer.format, source.vertexBuffer.vertexCount);
+    const indexBuffer = scratch?.indexBuffer
+      ?? (source.indexBuffer ? new IndexBuffer(Array.from(source.indexBuffer.data), source.vertexBuffer.vertexCount) : null);
+    scratch = {
+      vertexBuffer,
+      indexBuffer,
+      targets,
+      geometry: new MorphScratchGeometry(
+        vertexBuffer,
+        indexBuffer,
+        source.topology,
+        computeMorphTargetEnvelopeBounds(source, targets)
+      )
+    };
+    morphScratchCache.set(source, scratch);
+  }
+  writeMorphedVertices(source.vertexBuffer, targets, weights, scratch.vertexBuffer);
+  return scratch.geometry;
+}
+
+/** Release seam mirroring `releasePalette`: callers that own the source
+ * geometry's lifecycle (actor teardown) may drop the scratch early; the
+ * WeakMap otherwise frees it when the source geometry is collected. */
+export function releaseMorphScratchGeometry(geometry: Geometry): void {
+  morphScratchCache?.delete(geometry);
+}
+
+function writeMorphedVertices(
+  source: VertexBuffer,
+  targets: readonly MorphTargetDelta[],
+  weights: readonly number[],
+  out: VertexBuffer
+): void {
+  for (let vertex = 0; vertex < source.vertexCount; vertex += 1) {
+    for (const attribute of source.format.attributes) {
+      if (attribute.semantic === "position" || attribute.semantic === "normal" || attribute.semantic === "tangent") continue;
+      out.setAttribute(vertex, attribute.semantic, source.getAttribute(vertex, attribute.semantic));
+    }
+    if (source.format.hasAttribute("position")) {
+      out.setAttribute(vertex, "position", morphScratchVec3(source.getAttribute(vertex, "position"), targets, weights, vertex, "positions"));
+    }
+    if (source.format.hasAttribute("normal")) {
+      out.setAttribute(vertex, "normal", normalizeScratchVec3(morphScratchVec3(source.getAttribute(vertex, "normal"), targets, weights, vertex, "normals")));
+    }
+    if (source.format.hasAttribute("tangent")) {
+      out.setAttribute(vertex, "tangent", morphScratchTangent(source.getAttribute(vertex, "tangent"), targets, weights, vertex));
+    }
+  }
+}
+
+function morphScratchVec3(
+  base: readonly number[],
+  targets: readonly MorphTargetDelta[],
+  weights: readonly number[],
+  vertex: number,
+  key: "positions" | "normals" | "tangents"
+): readonly [number, number, number] {
+  const result: [number, number, number] = [base[0] ?? 0, base[1] ?? 0, base[2] ?? 0];
+  for (let index = 0; index < targets.length; index += 1) {
+    const weight = weights[index] ?? 0;
+    if (weight === 0) continue;
+    const delta = targets[index]?.[key]?.[vertex];
+    if (!delta) continue;
+    result[0] += delta[0] * weight;
+    result[1] += delta[1] * weight;
+    result[2] += delta[2] * weight;
+  }
+  return result;
+}
+
+function normalizeScratchVec3(value: readonly [number, number, number]): readonly [number, number, number] {
+  const length = Math.hypot(value[0], value[1], value[2]);
+  return length > 1e-9 ? [value[0] / length, value[1] / length, value[2] / length] : [0, 0, 1];
+}
+
+function morphScratchTangent(
+  base: readonly number[],
+  targets: readonly MorphTargetDelta[],
+  weights: readonly number[],
+  vertex: number
+): readonly [number, number, number, number] {
+  const morphed = normalizeScratchVec3(morphScratchVec3(base, targets, weights, vertex, "tangents"));
+  return [morphed[0], morphed[1], morphed[2], base[3] ?? 1];
+}
+
 
 export function applyGpuMorphUniforms(
   item: RenderItem,

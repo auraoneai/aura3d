@@ -118,3 +118,36 @@ runtime render path, so T1.8 records them into a pending queue instead —
 `CompiledScene.degradations` when the compile→runtime degrade plumbing lands.
 Entries carry `{ code: "clip-apply-failed", nodeId?, message, cause? }`
 (AuraDegradation minus `frame`).
+
+## Q-01-6 — generated UBO `layout(binding = N)` is not valid WebGL2 GLSL
+
+`resources/UniformBlock.ts` `uniformBlockGlsl(name, fields, binding)` emits
+`layout(std140, binding = 0) uniform AuraFrame { … }` when a binding is passed.
+The `binding` layout qualifier on a uniform block is **not valid in WebGL2**
+(the WebGL2 spec removes it; blocks must be bound via `uniformBlockBinding`).
+ANGLE's translator rejects it on every backend — verified on headless chromium
+(SwiftShader) with
+
+    ERROR: 0:17: 'binding' : invalid layout qualifier: not supported
+    ERROR: 0:17: 'binding' : invalid layout qualifier: only valid when used with pixel local storage
+
+so every generated program (`generateProgramImpl` splices the AuraFrame decl
+into both stages) fails compile on a real browser — this bites the
+`tests/qr/prd01` program-compile spec and any PRD-06 generated-program path.
+Two options for lane 01: (a) emit `layout(std140)` without `binding` —
+un-linked blocks default to binding point 0, which already matches
+`bindUniformBuffer(…, 0)`; or (b) drop the qualifier AND call
+`getUniformBlockIndex`/`uniformBlockBinding` at link time in `WebGL2Device`
+for explicitness. Option (a) is a one-line emit change with no device work.
+Until it lands, the T2.4 parity harness strips `binding = N` from generated
+sources before `createShaderProgram` (documented in
+`tests/qr/prd06/browser/skinned-pbr-parity-harness.ts`).
+
+## Q-01-2 (restate) — `physicalFeatureSet` never stamps `features:{}`
+
+`SkinnedLitMaterial`/`physicalFeatureSet` produces a `ProgramFeatures` record
+with an empty `features` map, so even after Q-01-4's select consumer lands,
+the generated PBR program for a skinned PBR item has no `prd06.deform` key to
+select on. T2.4's unified path needs material features to carry the deform
+stamp (`skin4`/`skin8`/morph bucket) — the parity spec verifies the deform
+program against a static twin with the stamp applied manually.

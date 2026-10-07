@@ -251,11 +251,12 @@ export function createPrd06DeformFeature(cache: SkinningPaletteTextureCache, bui
     id: "prd06.deform",
     owner: "prd06",
     flag: "A3D_QR_ANIMATION",
-    // Chunk order is declaration order at the hook: skinning + morph declare the
-    // helpers `a3d_prd06_deform` calls (hookSplice lists the chunk itself first
-    // via `requires`, which would invert dependency order — declare all three).
-    chunks: ["a3d_prd06_skinning_common", "a3d_prd06_morph_texture", "a3d_prd06_deform"],
-    hooks: ["vertex:deform"],
+    // hookSplice pairs chunks[i] with hooks[i] (one chunk per hook index):
+    // skinning_common lands at `vertex:pars` (dragging morph_texture behind it
+    // via `requires`), a3d_prd06_deform lands at `vertex:deform` — helpers
+    // declared before the function that calls them.
+    chunks: ["a3d_prd06_skinning_common", "a3d_prd06_deform"],
+    hooks: ["vertex:pars", "vertex:deform"],
     select(input: ShaderFeatureSelectInput): string | undefined {
       return selectPrd06DeformValue(input.item, input.pass, input.tier, input.flags);
     },

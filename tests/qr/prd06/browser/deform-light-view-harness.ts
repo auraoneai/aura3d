@@ -9,11 +9,18 @@
 // DepthPass: the vertex stage here is exactly the `vertex:deform` splice the
 // feature composes (§8.4 reference program).
 
+// Buffer shim FIRST — a transitive module (`environment/HdrEquirect.ts`
+// `HDR_MAGIC`) evaluates `Buffer.from` at load, before this module's body.
+import "./buffer-shim.js";
 import { GLTFLoader, LoadContext, createGLTFSceneAnimationRuntime } from "@aura3d/assets";
 import type { GLTFAsset, GLTFMeshAsset } from "@aura3d/assets";
 import { shaderChunk } from "@aura3d/rendering/contracts";
 // Side-effect: registers the a3d_prd06_* chunks + provides the C-18 slot.
-import "@aura3d/rendering/lanes/prd06";
+// Relative path — `@aura3d/rendering/lanes/prd06` is not a published package
+// subpath, so the dev-server alias map does not rewrite it and the browser
+// fails with "Failed to resolve module specifier" (the spec then times out
+// waiting on a report that never publishes).
+import "../../../../packages/rendering/src/lanes/prd06.js";
 
 declare global {
   interface Window {
@@ -304,9 +311,11 @@ function syntheticRig(jointCount: number): SyntheticRig {
   const posePalette = new Float32Array(jointCount * 16);
   for (let j = 0; j < jointCount; j += 1) {
     bindPalette[j * 16 + 0] = 1; bindPalette[j * 16 + 5] = 1; bindPalette[j * 16 + 10] = 1; bindPalette[j * 16 + 15] = 1;
-    const y = -0.8 + (j / (jointCount - 1)) * 1.6;
     // ~0.9 rad of curl at the top joint — a large, unambiguous silhouette change.
-    const m = rotZAboutY((j / (jointCount - 1)) * 0.9, y);
+    // Pivot at the ribbon base (py = -0.8): pivoting at each row's own height
+    // only squeezes width (cosθ), which barely moves the silhouette and leaves
+    // the control-below-0.8 guard untested.
+    const m = rotZAboutY((j / (jointCount - 1)) * 0.9, -0.8);
     posePalette.set(m, j * 16);
   }
   return { jointCount, positions, joints, weights, indices, bindPalette, posePalette };
@@ -438,7 +447,10 @@ async function main(): Promise<void> {
       const width = uploadPalette(palette);
       gl.activeTexture(gl.TEXTURE0);
       gl.uniform1i(gl.getUniformLocation(program, "u_boneTexture"), 0);
-      gl.uniform1i(gl.getUniformLocation(program, "u_boneTextureWidth"), width);
+      // `u_boneTextureWidth` is declared `float` in the chunk (§8.1: no integer
+      // uploads yet) — uniform1i is a type mismatch that leaves it at 0.0 and
+      // sends a3dBone's texel math to /0.
+      gl.uniform1f(gl.getUniformLocation(program, "u_boneTextureWidth"), width);
     }
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
     return readMask(gl, target);

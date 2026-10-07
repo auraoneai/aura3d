@@ -204,7 +204,12 @@ registerShaderChunk({
   name: "a3d_prd06_skinning_common",
   owner: "prd06",
   glsl: A3D_PRD06_SKINNING_COMMON_GLSL,
-  stage: "vertex"
+  stage: "vertex",
+  // `requires` emits AFTER this chunk in hookSplice's per-hook BFS — this is the
+  // splice-order vehicle that lands `a3d_prd06_morph_texture` behind it at
+  // `vertex:pars` (the feature pairs chunks[i] with hooks[i], one per index).
+  // The morph chunk is `#ifdef A3D_MORPH`-guarded, so it costs nothing off.
+  requires: ["a3d_prd06_morph_texture"]
 });
 registerShaderChunk({
   name: "a3d_prd06_morph_texture",
@@ -216,8 +221,11 @@ registerShaderChunk({
   name: "a3d_prd06_deform",
   owner: "prd06",
   glsl: A3D_PRD06_DEFORM_GLSL,
-  stage: "vertex",
-  requires: ["a3d_prd06_skinning_common", "a3d_prd06_morph_texture"]
+  stage: "vertex"
+  // No `requires`: `hookSplice` dedupes per hook call, not across the program —
+  // a require here would re-emit skinning/morph decls already spliced at
+  // `vertex:pars` (duplicate attribute/uniform declarations). Helpers land via
+  // the feature's `chunks`/`hooks` pairing instead.
 });
 
 // `buildMorphTargetTexture` collides with the PR-0a contracts/deform stub export;
