@@ -1,0 +1,913 @@
+{
+  "codemod": "post-v2",
+  "files": 99,
+  "changed": 3,
+  "written": 0,
+  "rows": [
+    {
+      "file": "apps/aura-clash-showcase/src/v2/boot.ts",
+      "line": 43,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "arena-fight",
+      "note": "added output block"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/boot.ts",
+      "line": 174,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/boot.ts",
+      "line": 192,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/evidence/index.ts",
+      "line": 21,
+      "construct": "renderer.toneMapping",
+      "mapping": "exact",
+      "target": "output.toneMapping (ACES/AgX/Neutral/linear/reinhard/none)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 39,
+      "construct": "vignette",
+      "mapping": "approximate",
+      "target": "v2 cinematic vignette"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 99,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "target": "v2 S9-bloom (native HDR bloom)",
+      "note": "field names survive; intensity/threshold rescale under v2 definitions"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 99,
+      "construct": "effects.bloom",
+      "mapping": "exact",
+      "note": "removed softKnee/shoulder/quality"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 103,
+      "construct": "effects.antiAlias",
+      "mapping": "exact",
+      "note": "deleted — tier auto (never FXAA on MSAA)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 106,
+      "construct": "effects.colorGrade",
+      "mapping": "approximate",
+      "target": "v2 S10b-grade",
+      "note": "exposure real since Phase 1; shadows/highlights/lut land Phase 5"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 107,
+      "construct": "effects.antiAlias",
+      "mapping": "approximate",
+      "target": "v2 S11-aa tier",
+      "note": "mode maps to tier AA (never FXAA on MSAA); TAA behind A3D_QR_POST_TAA"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "line": 107,
+      "construct": "fxaa",
+      "mapping": "exact",
+      "target": "v2 S11-aa-fxaa (r185 port + dither)"
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+      "line": 711,
+      "construct": "output.preset",
+      "mapping": "exact",
+      "target": "arena-fight",
+      "note": "added output block"
+    }
+  ],
+  "reports": [
+    {
+      "file": "apps/aura-clash-showcase/src/aura-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/boot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/env-assets.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/camera.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/fx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/lighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/materials.ts",
+      "report": {
+        "emissive": [
+          {
+            "file": "apps/aura-clash-showcase/src/v2/scene/materials.ts",
+            "line": 27,
+            "emissive": "#ff2d78",
+            "emissiveIntensity": 5.2,
+            "lumaXstrength": 4.875
+          },
+          {
+            "file": "apps/aura-clash-showcase/src/v2/scene/materials.ts",
+            "line": 34,
+            "emissive": "#39d6ff",
+            "emissiveIntensity": 4.4,
+            "lumaXstrength": 2.351
+          },
+          {
+            "file": "apps/aura-clash-showcase/src/v2/scene/materials.ts",
+            "line": 43,
+            "emissive": "#fff3d0",
+            "emissiveIntensity": 6.4,
+            "lumaXstrength": 6.4
+          }
+        ],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scene/world.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/scenarios/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/v2/evidence/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/ui/FightHud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/seo/routeMetadata.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/GameLighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/GamePostProcess.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/rendering/HitSparkVfx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/training/ExchangeReplay.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/combat/AuraClashFighterController.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/combat/auraClashMoveData.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/combat/clashAiRoles.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/combat/clashFeel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/combat/clipEventBridge.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/audio/auraClashAudioManifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/arena/ArenaTweaksPanel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/arena/CrowdDrawEvidence.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/arena/SpringJointSigns.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/GameConfig.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/main.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/routeLinks.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/showcaseProofBoot.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/CharacterSelect.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/FightHud.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/LoadingShell.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/PauseMenu.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/ResultsPanel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/ui/TitleScreen.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/seo/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/seo/routeMetadata.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GameLighting.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/GamePostProcess.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/rendering/HitSparkVfx.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/evidence/auraClashArenaProof.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/audio/auraClashAudioManifest.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/arena/ArenaTweaksPanel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/arena/AuraClashArenaStage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/arena/CrowdDrawEvidence.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/arena/CrowdInstances.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/playable/arena/RenderedArenaStage.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/evidence/evidenceModel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/deploy/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/deploy/readinessChecklist.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/capture/PosterScenarios.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/animation/AnimationStateMachine.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/animation/AuraBurstCameraTimeline.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/animation/FallbackPose.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/animation/FighterAnimationMap.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/legacy/animation/PerFighterAnimationProfiles.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/training/ExchangeReplay.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/EventBus.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/FighterState.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/GameLoop.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/GameTypes.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/HitRegistry.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/MatchState.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/state/SaveState.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/input/GamepadInput.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/AuraBurstDirector.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/ComboSystem.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/FighterAnimator.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/FighterDefinition.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/FighterMoveProfile.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/FighterStats.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/FighterVisualProfile.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/GuardBreakSystem.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/HitboxSystem.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/KnockdownRecovery.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/index.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/originalRoster.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/jinFlux.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/kadeEmber.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/maraVolt.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/nyxVale.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/rookAtlas.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/fighters/definitions/sableIron.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/combat/AuraClashFighterController.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/combat/auraClashMoveData.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/combat/clashAiRoles.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/combat/clashFeel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/combat/clipEventBridge.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/arena/RoundCeremony.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/arena/SpringJointSigns.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/animation/auraClashClipMaps.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/gameplay/animation/fighterSecondaryMotion.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/fighters/originalRoster.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    },
+    {
+      "file": "apps/aura-clash-showcase/src/evidence/evidenceModel.ts",
+      "report": {
+        "emissive": [],
+        "preset": "arena-fight",
+        "notMigrated": false
+      }
+    }
+  ]
+}

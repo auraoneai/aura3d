@@ -7,7 +7,7 @@ import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
-import { QUALITY_TIERS, resolvePostAntiAlias, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { QUALITY_TIERS, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
 import {
   authoredPostContextFor,
@@ -249,7 +249,13 @@ export function createProductionRuntimePostprocess(
       throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", unsupported.message);
     }
     const tierSettings = QUALITY_TIERS[resolvedTier];
-    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights);
+    // §6.8 (Phase 5): the C-27 row for the resolved tier gates which authored
+    // or preset-contributed stages run (GTAO samples, DOF/MB enables, grain/CA).
+    const tierResolution = resolvePostTier(tierSettings, resolvedTier, {
+      taaResolved: resolvedAa?.mode === "taa" || authoredAntiAlias?.mode === "taa",
+      autoExposureAuthored: authoredPostContext?.output?.autoExposure !== undefined && authoredPostContext?.output?.autoExposure !== false
+    });
+    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution);
     fieldDiagnostics.push(...pipelineResult.diagnostics);
     // The fields are readonly, so the v2 additions come in as a rebuilt
     // object — flag-off keeps the legacy bag untouched (byte-equal).

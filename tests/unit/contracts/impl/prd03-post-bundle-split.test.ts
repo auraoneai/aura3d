@@ -74,7 +74,8 @@ function criticalPathChunks(metafile: Metafile, entryKey: string): Set<string> {
 describe("post v2 bundle split (§9 gate)", () => {
   it("structural: PostprocessExecution reaches post/ only via import(); the lane barrel re-exports no v2 GPU values", () => {
     const exec = readFileSync(resolve(root, "packages/rendering/src/renderer/PostprocessExecution.ts"), "utf8");
-    // The deferred edge exists.
+    // invariant: the §9 bundle gate requires v2 GPU code to load only via a
+    // dynamic import() edge — a static string keeps it splittable by esbuild.
     expect(exec).toContain('import("../post/v2Entry")');
     // No static `import { ... } from "<post module>"` of phase-2 GPU code.
     const staticPostImports = exec.match(/^import\s.*from\s+"[^"]*post\//gm) ?? [];

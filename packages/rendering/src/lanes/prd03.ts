@@ -37,6 +37,9 @@ export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type Veloci
 export { PostTimer } from "../post/PostTimer.js";
 export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneMapping, neutralToneMapping, reinhardToneMapping, linearToneMapping, cineonToneMapping, type AuraToneOperator, type Vec3 } from "../post/ToneOperators.js";
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";
+// Phase 5 (§6.8): C-27 → post tier mapping. Pure table data like
+// `resolvePostAntiAlias` — stays on the critical path.
+export { resolvePostTier, type PostTierContext, type PostTierResolution } from "../post/PostQualityTiers.js";
 // Phase 2: graph descriptors + concrete option types (the §6.1 table is the
 // contract real's own data — it stays on the critical path with PostGraph).
 export {
