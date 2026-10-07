@@ -1,4 +1,7 @@
 import type { ExtensionScalarAtlas } from "./ExtensionScalarAtlas";
+import type { MaterialFeatureContext } from "./contracts/materialLobes";
+import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { Sampler } from "./Sampler";
@@ -335,6 +338,7 @@ export function isTexturedPbrTextureSlotShaderActive(slot: TexturedPBRTextureSlo
 export class TexturedPBRMaterial extends Material {
   /** PRD-04 P2-8: `hardwareWrap` was requested but the legacy shader lacks the Q-01-2 passthrough. */
   public readonly hardwareWrapPending: boolean;
+  private readonly prd04Options: TexturedPBRMaterialOptions;
 
   constructor(options: TexturedPBRMaterialOptions = {}) {
     const baseColor = options.baseColor ?? [1, 1, 1, 1];
@@ -1011,6 +1015,16 @@ export class TexturedPBRMaterial extends Material {
       ]
     });
     this.hardwareWrapPending = hardwareWrapPending;
+    this.prd04Options = options;
+  }
+
+  /**
+   * C-03 `ProgramFeatureSource` (PRD-04 P3-1): the generated-path program
+   * features for this material, derived from the constructor options.
+   * Pure — the legacy shader path never reads it.
+   */
+  programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
+    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx);
   }
 }
 

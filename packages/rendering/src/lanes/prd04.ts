@@ -9,10 +9,24 @@
  * whether any chunk is ever selected into a program.
  */
 import { registerPrd04ShaderChunks } from "../shaders/physical/index.js";
+import { registerPrd04MaterialLobes } from "../materials/lobes.js";
+import { registerPrd04ShaderFeatures } from "../materials/features.js";
 
 registerPrd04ShaderChunks();
+registerPrd04MaterialLobes();
+registerPrd04ShaderFeatures();
 
 export { registerPrd04ShaderChunks };
+export { registerPrd04MaterialLobes } from "../materials/lobes.js";
+export { registerPrd04ShaderFeatures, uvTransformMatrix } from "../materials/features.js";
+export {
+  PhysicalMaterial,
+  type PhysicalMaterialDescriptor,
+  type PhysicalMapBinding,
+  type PhysicalMapSlot,
+  type PhysicalFeatureSet
+} from "../materials/PhysicalMaterial.js";
+export { physicalFeatureSet, physicalMaterialLobeInput, legacyPhysicalDescriptor } from "../materials/PhysicalFeatures.js";
 export {
   generateProceduralMaterialTexture,
   type ProceduralMaterialTexture,
