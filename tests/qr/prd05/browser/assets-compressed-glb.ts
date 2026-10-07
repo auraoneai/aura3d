@@ -21,6 +21,13 @@ import { attachAppAssetDecoders, getAppAssetDecoders } from "/packages/engine/sr
 import { selectKTX2TargetFormat } from "/packages/assets/src/KTX2TargetSelection.js";
 import { probeCompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
+import {
+  ProductionWebGL2Renderer,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance
+} from "/packages/rendering/src/production-runtime/index.js";
+import { createProductionProductionStageScene, type ProductionStagedScene } from "/tests/browser/production-runtime-production-scene-tools.js";
+import { canvasPixels, CLEAR, maskedDeltaE, subjectMask } from "/benchmarks/quality-rebuild/scenes/prd04/metrics.js";
 import type { CompressedTextureCapabilities } from "/packages/rendering/src/lanes/prd05.js";
 
 declare global {
@@ -36,10 +43,13 @@ interface VariantResult {
   readonly textureFormats: readonly string[];
   readonly textureMipLevels: readonly number[];
   readonly textureBytes: readonly number[];
+  readonly maskedDeltaE: number;
 }
 
 interface ReadyPayload {
   readonly caps: CompressedTextureCapabilities;
+  readonly maskedPixels: number;
+  readonly internalFormatsUploaded: readonly { readonly variant: string; readonly format: string }[];
   readonly webgpuKtx2Target: string;
   readonly variants: readonly VariantResult[];
   readonly registryLoaded: readonly string[];
@@ -74,7 +84,25 @@ async function run(): Promise<void> {
   attachAppAssetDecoders(canvas, registry);
   const weakMapRoundTrip = getAppAssetDecoders(canvas) === registry;
 
+  // Rendering stage: one shared studio HDR + one ProductionWebGL2Renderer so
+  // the per-variant captures are masked-ΔE2000 comparable (same recipe as the
+  // prd04 decoders/variants gate).
+  const hdrBytes = new Uint8Array(await (await fetch("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr")).arrayBuffer());
+  const hdr = createProductionPbrHdrPipelineFromRadiance(hdrBytes, {
+    id: "s", label: "s", intensity: 1.15, backgroundIntensity: 0.85, rotation: 0.15,
+    toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
+  });
+  const lighting = createProductionEnvironmentLightingResources(hdr);
+  const renderer = await ProductionWebGL2Renderer.create({
+    canvas, width: canvas.width, height: canvas.height,
+    preserveDrawingBuffer: true, clearColor: [CLEAR[0]!, CLEAR[1]!, CLEAR[2]!, 1]
+  });
+  const stageOptions = { includeFloor: false, includeSoftboxes: false, includeBackdrop: false } as const;
+
   const variants: VariantResult[] = [];
+  const internalFormatsUploaded: { readonly variant: string; readonly format: string }[] = [];
+  let baselinePx: Uint8ClampedArray | null = null;
+  let subjectMaskPx: Uint8Array | null = null;
   for (const { variant, url } of VARIANTS) {
     const sniffed = await sniffGLBRequiredDecoders(url, "glb");
     const set = await prepareModelDecoders({ url, format: "glb" }, registry);
@@ -83,10 +111,19 @@ async function run(): Promise<void> {
       assetId: `prd05-${variant}`,
       width: canvas.width,
       height: canvas.height,
-      rendererInput: { qualityPreset: "studio-preview" },
+      rendererInput: { environmentLighting: lighting.lighting, qualityPreset: "hdr-studio-preview", cameraPolicy: "require" },
       decoders: { basePath: "/aura-decoders/", workerCount: 2 }
     });
+    const staged: ProductionStagedScene = createProductionProductionStageScene(
+      pipeline.source, pipeline.resources.bounds, { width: canvas.width, height: canvas.height }, stageOptions);
+    renderer.renderImportedAsset({ source: staged.source, camera: staged.camera, metadata: {} as never });
+    const px = await canvasPixels(canvas);
+    if (variant === "plain") {
+      baselinePx = px;
+      subjectMaskPx = subjectMask(px);
+    }
     const textures = [...pipeline.resources.textureLibrary.values()];
+    for (const texture of textures) internalFormatsUploaded.push({ variant, format: texture.format });
     variants.push({
       variant,
       sniffedDecoders: sniffed,
@@ -95,7 +132,8 @@ async function run(): Promise<void> {
       textureCount: textures.length,
       textureFormats: textures.map((t) => t.format),
       textureMipLevels: textures.map((t) => t.textureLevels.length),
-      textureBytes: textures.map((t) => t.byteLength)
+      textureBytes: textures.map((t) => t.byteLength),
+      maskedDeltaE: baselinePx && subjectMaskPx ? maskedDeltaE(baselinePx, px, subjectMaskPx) : 0
     });
   }
 
@@ -123,6 +161,8 @@ async function run(): Promise<void> {
   const diagnostics = registry.diagnostics();
   window.__QR_READY__ = {
     caps,
+    maskedPixels: subjectMaskPx ? subjectMaskPx.reduce((n, m) => n + (m > 0 ? 1 : 0), 0) : 0,
+    internalFormatsUploaded,
     webgpuKtx2Target: selectKTX2TargetFormat(WEBGPU_COMPRESSED_CAPS, "uastc", true, "srgb"),
     variants,
     registryLoaded: diagnostics.loaded,

@@ -185,3 +185,15 @@ flag-off decode paths are byte-identical.
 
 Meanwhile: edits shipped in lane-05 Phase 1; lane 04 may reclaim the seam
 when their texture work moves in.
+
+## Q-13-1 → lane 13 (C-16, template vendoring)
+
+Templates under `packages/create-aura3d/templates/*/public/` ship
+`aura-assets/` but have no `aura-decoders/`. App-scaffolded consumers of the
+C-16 registry (`basePath "/aura-decoders/"`) need the vendored
+`basis/` + `draco/` + `meshopt/` files copied into each template's
+`public/aura-decoders/` (or the scaffold's template-public copy step).
+Source of truth: `public/aura-decoders/` (lane 05, sha256-verified).
+
+Meanwhile: repo apps serve them from the root `public/` dir; scaffolds
+fall back to `AssetDecoderUnavailable` until the templates vendor them.

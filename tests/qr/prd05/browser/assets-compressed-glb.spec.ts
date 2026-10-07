@@ -26,6 +26,8 @@ const COMPRESSED_FORMATS = new Set([
 
 interface ReadyPayload {
   readonly caps: { readonly astc: boolean; readonly bptc: boolean; readonly etc2: boolean; readonly s3tc: boolean; readonly s3tcSrgb: boolean };
+  readonly maskedPixels: number;
+  readonly internalFormatsUploaded: readonly { readonly variant: string; readonly format: string }[];
   readonly webgpuKtx2Target: string;
   readonly variants: readonly {
     readonly variant: string;
@@ -36,6 +38,7 @@ interface ReadyPayload {
     readonly textureFormats: readonly string[];
     readonly textureMipLevels: readonly number[];
     readonly textureBytes: readonly number[];
+    readonly maskedDeltaE: number;
   }[];
   readonly registryLoaded: readonly string[];
   readonly registryFailed: readonly { readonly id: string; readonly url: string }[];
@@ -79,6 +82,10 @@ test.describe("PRD-05 compressed GLB through decoder registry (P1)", () => {
     // Real capability probe: WebGL2 guarantees etc2 (core ETC2/EAC).
     expect(payload!.caps.etc2).toBe(true);
 
+    // Textures uploaded to a real format; a masked subject exists to compare.
+    expect(payload!.maskedPixels).toBeGreaterThan(1000);
+    expect(payload!.internalFormatsUploaded.length).toBeGreaterThan(0);
+
     // Registry loaded the demanded decoders — vendored, no failures.
     expect(payload!.registryFailed).toEqual([]);
     for (const id of ["meshopt", "draco", "ktx2"]) {
@@ -114,6 +121,13 @@ test.describe("PRD-05 compressed GLB through decoder registry (P1)", () => {
       for (const bytes of result.textureBytes) {
         expect(bytes).toBeGreaterThan(0);
       }
+    }
+
+    // Visual parity: every encoded variant renders within masked ΔE2000 ≤ 2.0
+    // of the uncompressed baseline on the same build/renderer.
+    for (const variant of ["meshopt", "draco", "uastc", "etc1s"] as const) {
+      const result = byVariant.get(variant)!;
+      expect(result.maskedDeltaE, `${variant} masked ΔE2000 ${result.maskedDeltaE}`).toBeLessThanOrEqual(2.0);
     }
 
     // Same-origin: every fetched resource is this origin — no CDN.
