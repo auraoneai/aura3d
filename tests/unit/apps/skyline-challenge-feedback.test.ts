@@ -18,6 +18,7 @@ describe("Skyline challenge state is rendered, not only written to the HUD", () 
 
   it("declares renderer-owned feedback nodes for flow, chain and objective", () => {
     for (const nodeId of ["skyline-flow-ribbon", "skyline-chain-pips", "skyline-objective-pulse"]) {
+      // invariant: source must keep `game.runtimeNode("${nodeId}"` — declares renderer-owned feedback nodes for flow, chain and objective
       expect(source, `${nodeId} should be a runtime node`).toContain(`game.runtimeNode("${nodeId}"`);
       expect(source, `${nodeId} should be required as a handle`).toContain(`app.nodes.require("${nodeId}")`);
     }

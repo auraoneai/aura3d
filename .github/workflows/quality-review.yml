@@ -1,0 +1,98 @@
+name: Quality Review
+
+# PRD-12 T4.6 / §15.3. Human-in-the-loop vision review. Operator action (recorded,
+# not performed by agents): a dedicated Prism key must be saved as the
+# `quality-review` environment secret PRISM_API_KEY, with required reviewers on
+# the environment. The job downloads a named quality-gate run's artifacts, runs
+# the blind vision judge, and opens a PR with the round record + human-judgement
+# stubs (tools/quality-gate/forms/index.html, validated by rubric.ts).
+
+on:
+  workflow_dispatch:
+    inputs:
+      gate_run_id:
+        description: "GitHub run id of the quality-gate run to review"
+        required: true
+        type: string
+      round:
+        description: "Round id to write under history/rounds/ (e.g. R-1)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  review:
+    name: Vision review round
+    runs-on: ubuntu-latest
+    environment: quality-review
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download gate artifacts for run ${{ inputs.gate_run_id }}
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-gate-metrics
+          path: review
+          run-id: ${{ inputs.gate_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Canary check
+        env:
+          PRISM_API_KEY: ${{ secrets.PRISM_API_KEY }}
+        run: |
+          if [ -z "$PRISM_API_KEY" ]; then
+            echo "PRISM_API_KEY is not set in the quality-review environment — create a dedicated Prism key as documented in this workflow's header." >&2
+            exit 1
+          fi
+      - name: Run vision judge
+        env:
+          PRISM_API_KEY: ${{ secrets.PRISM_API_KEY }}
+        run: |
+          pnpm --dir tools/quality-gate tsx --tsconfig ../../tsconfig.base.json src/judge-round.ts -- \
+            --items review/items.json --metrics review/metrics.json \
+            --captures artifacts \
+            --round "${{ inputs.round }}" \
+            --canary benchmarks/quality-rebuild/refs/canary-01.png \
+            --out review/round.json
+      - name: Emit human-judgement stubs
+        run: |
+          node -e '
+            const fs = require("fs");
+            const round = JSON.parse(fs.readFileSync("review/round.json", "utf8"));
+            const stubs = (round.aggregates ?? []).map((a) => ({
+              itemId: a.itemId, panelRole: "human", median: null, judgements: [], form: "tools/quality-gate/forms/index.html"
+            }));
+            fs.mkdirSync("benchmarks/quality-rebuild/history/rounds", { recursive: true });
+            fs.writeFileSync(`benchmarks/quality-rebuild/history/rounds/${process.env.ROUND_ID}.json`,
+              JSON.stringify({ ...round, panel: "vision+human", humanStubs: stubs }, null, 2) + "\n");
+          '
+        env:
+          ROUND_ID: ${{ inputs.round }}
+      - name: Open round PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "[QR-12] Round ${{ inputs.round }} judgements (gate run ${{ inputs.gate_run_id }})"
+          branch: qr/round-${{ inputs.round }}
+          commit-message: "Round ${{ inputs.round }}: vision judgements + human stubs"
+          add-paths: |
+            benchmarks/quality-rebuild/history/rounds/${{ inputs.round }}.json
+            benchmarks/quality-rebuild/history/index.jsonl
+          body: |
+            Vision-judge round from quality-gate run `${{ inputs.gate_run_id }}`.
+
+            Fill the human judgements through `tools/quality-gate/forms/index.html`
+            (schema `human-review.schema.json`, validated by `rubric.ts`) and amend
+            `history/rounds/${{ inputs.round }}.json`.

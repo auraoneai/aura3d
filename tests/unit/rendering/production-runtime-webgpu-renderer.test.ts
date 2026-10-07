@@ -67,6 +67,7 @@ describe("WebGPU report", () => {
     const backend = readFileSync(resolve("packages/rendering/src/RenderBackend.ts"), "utf8");
     const selection = readFileSync(resolve("packages/rendering/src/production-runtime/backendSelection.ts"), "utf8");
 
+    // invariant: source must keep `backend === "webgpu"` — publishes explicit unavailable status instead of fake parity when WebGPU is missing
     expect(backend).toContain('backend === "webgpu"');
     expect(resolveProductionRuntimeRendererBackend({ backend: "webgpu" })).toMatchObject({
       requestedBackend: "webgpu",

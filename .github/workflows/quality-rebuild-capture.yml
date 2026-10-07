@@ -27,6 +27,11 @@ on:
         description: "Suffix appended to uploaded artifact names (checkpoint rounds need distinct names)"
         required: false
         default: ""
+      bench:
+        description: "Also run the three.js benchmark job (quality-gate shards disable it on games-only calls)"
+        type: boolean
+        required: false
+        default: true
   workflow_call:
     inputs:
       games:
@@ -49,6 +54,10 @@ on:
         type: string
         required: false
         default: ""
+      bench:
+        type: boolean
+        required: false
+        default: true
   push:
     branches: ["aura3d-quality-rebuild/audit"]
     paths:
@@ -106,12 +115,10 @@ jobs:
 
       - name: Build local-source games (Orbital Defense; all games when local_build_all)
         id: build
-        continue-on-error: true
         run: node tools/quality-rebuild-capture/capture-games.mjs --build-only
 
       - name: Capture games
         id: capture
-        continue-on-error: true
         run: node tools/quality-rebuild-capture/capture-games.mjs --skip-build
 
       - name: Upload game captures
@@ -133,6 +140,7 @@ jobs:
 
   threejs-benchmark:
     name: three.js benchmark (macos-14, ANGLE Metal)
+    if: ${{ inputs.bench || github.event_name != 'workflow_call' && github.event_name != 'workflow_dispatch' }}
     runs-on: macos-14
     timeout-minutes: 90
     env:
@@ -165,7 +173,6 @@ jobs:
 
       - name: Run benchmark
         id: bench
-        continue-on-error: true
         run: |
           mkdir -p "$QR_BENCH_OUT"
           if [ -f benchmarks/quality-rebuild/ci.sh ]; then

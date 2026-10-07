@@ -152,6 +152,7 @@ describe("RuntimeParity production public SDK", () => {
       "packages/controls/src/index.ts"
     ].map((file) => readFileSync(resolve(file), "utf8")).join("\n");
 
+    // invariant: source must keep `@aura3d/three-compat` — exports the developer-facing renderer product API
     expect(controlsPackage).not.toContain("@aura3d/three-compat");
     expect(controlsSources).not.toMatch(/three-compat/);
     expect(controlsSources).not.toMatch(/Vector3Compat|Object3DCompat|RaycasterCompat/);

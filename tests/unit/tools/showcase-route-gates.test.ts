@@ -385,6 +385,7 @@ describe("showcase route gate registry", () => {
         "prototype-blocked",
         "index-route",
         "removed-from-public-showcase"
+      // invariant: source must keep `game-layer diagnostic route` — loads route gates through the shared route-gates module
       ], `${route.id} release class`).toContain(route.releaseClass);
       if (route.id === "showcase-index") {
         expect(route.releaseClass, "showcase index release class").toBe("index-route");

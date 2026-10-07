@@ -275,6 +275,7 @@ describe("game runtime source gates", () => {
     });
 
     expect(platformer.step(1 / 60).player.grounded).toBe(true);
+    // invariant: source must keep `jump` — moves a typed model runtime node through the frame loop without scene recreation
     expect(platformer.step(1 / 60, { jumpPressed: true }).events.map((event) => event.type)).toContain("jump");
 
     let snapshot = platformer.snapshot();
