@@ -1,0 +1,226 @@
+From 974146f63a5b927ef2177776a6de073bb2596e5d Mon Sep 17 00:00:00 2001
+From: Gurbaksh Chahal <gchahal@veerone.com>
+Date: Tue, 6 Oct 2026 18:55:37 +0000
+Subject: [PATCH] [QR-09] courier-rush: remove review corridor +
+ reviewCapture dressing arm
+
+Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+---
+ apps/showcase-courier-rush/src/city.ts | 186 ++-----------------------
+ 1 file changed, 9 insertions(+), 177 deletions(-)
+
+diff --git a/apps/showcase-courier-rush/src/city.ts b/apps/showcase-courier-rush/src/city.ts
+index 02630b68..713cf3b5 100644
+--- a/apps/showcase-courier-rush/src/city.ts
++++ b/apps/showcase-courier-rush/src/city.ts
+@@ -90,168 +90,6 @@ function roadGuidanceNodes(): AuraNodeInput[] {
+   return nodes;
+ }
+ 
+-/** Clean northbound review corridor on the same authored main-street axis. */
+-function reviewCorridorNodes(): AuraNodeInput[] {
+-  // Keep this presentation slice on the real east avenue, but give the road
+-  // and surrounding architecture separate authored responses. The prior
+-  // single dark asphalt slab made the van and traffic read as silhouettes;
+-  // wet road, raised curbs, and layered facade ribs now carry scale/contact
+-  // without changing the gameplay street graph or camera.
+-  const road = material.pbr({ name: "courier review wet asphalt", color: "#263c49", roughness: 0.24, metallic: 0.48, clearcoat: 0.56, clearcoatRoughness: 0.16, envMapIntensity: 0.82 });
+-  const sidewalk = material.pbr({ name: "courier review sidewalk", color: "#425d6b", roughness: 0.68, metallic: 0.16, clearcoat: 0.18, envMapIntensity: 0.7 });
+-  const curb = material.metal({ name: "courier review curb steel", color: "#6d8490", roughness: 0.36, metallic: 0.64, clearcoat: 0.42, clearcoatRoughness: 0.12, envMapIntensity: 1.12 });
+-  const facade = material.pbr({ name: "courier review facade", color: "#304b5c", roughness: 0.46, metallic: 0.36, clearcoat: 0.3, clearcoatRoughness: 0.18, emissive: "#102b3a", emissiveIntensity: 0.2, envMapIntensity: 0.72 });
+-  const rib = material.metal({ name: "courier review structural ribs", color: "#63808f", roughness: 0.3, metallic: 0.7, clearcoat: 0.5, clearcoatRoughness: 0.11, envMapIntensity: 1.16 });
+-  const facadeTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  const practicalTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  const practicalColors: string[] = [];
+-  for (let bay = 0; bay < 12; bay += 1) {
+-    const side = bay % 2 === 0 ? -1 : 1;
+-    const depthIndex = Math.floor(bay / 2);
+-    const z = 17 - depthIndex * 7.4;
+-    const height = 6.2 + (depthIndex % 3) * 1.15;
+-    facadeTransforms.push({ position: [side * 6.5, height / 2, z], scale: [1.7, height / 2, 3.55] });
+-
+-    // The inner faces use repeated window bays rather than unrelated neon
+-    // confetti. Their regular vertical/horizontal cadence carries real scale
+-    // through the chase lens and leaves the pressure gate as the single focal
+-    // interruption at the end of the street.
+-    for (let row = 0; row < 4; row += 1) {
+-      for (let column = 0; column < 3; column += 1) {
+-        practicalTransforms.push({
+-          position: [side * 4.78, 1.05 + row * 1.16, z - 2.05 + column * 2.05],
+-          scale: [0.055, 0.22, 0.66]
+-        });
+-        practicalColors.push((depthIndex + row + column + (side > 0 ? 1 : 0)) % 5 === 0 ? "#ff9aaa" : "#8af7ff");
+-      }
+-    }
+-  }
+-
+-  const ribTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  const ribGlowTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  const ribGlowColors: string[] = [];
+-  const laneTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  const laneColors: string[] = [];
+-  const curbTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+-  for (let portal = 0; portal < 6; portal += 1) {
+-    const z = 13 - portal * 7.5;
+-    ribTransforms.push(
+-      { position: [-4.55, 2.55, z], scale: [0.22, 2.55, 0.24] },
+-      { position: [4.55, 2.55, z], scale: [0.22, 2.55, 0.24] },
+-      { position: [0, 5.03, z], scale: [4.75, 0.2, 0.24] },
+-      { position: [-4.92, 1.15, z], scale: [0.34, 1.1, 1.45] },
+-      { position: [4.92, 1.15, z], scale: [0.34, 1.1, 1.45] }
+-    );
+-    ribGlowTransforms.push(
+-      { position: [-4.3, 2.72, z - 0.26], scale: [0.055, 1.85, 0.055] },
+-      { position: [4.3, 2.72, z - 0.26], scale: [0.055, 1.85, 0.055] },
+-      { position: [0, 4.78, z - 0.26], scale: [4.08, 0.055, 0.055] }
+-    );
+-    ribGlowColors.push("#8af7ff", "#ff9aaa", portal % 2 === 0 ? "#dffcff" : "#8af7ff");
+-  }
+-
+-  for (let marker = 0; marker < 10; marker += 1) {
+-    const z = 16 - marker * 5.2;
+-    practicalTransforms.push({ position: [0, 0.035, z], scale: [0.08, 0.018, 1.25] });
+-    practicalColors.push("#dffcff");
+-  }
+-  // The avenue has two lanes in the actual route graph. Use short, offset
+-  // reflective dashes rather than one uninterrupted stripe so the eye reads
+-  // forward motion and lane ownership around the live traffic car.
+-  for (let dash = 0; dash < 13; dash += 1) {
+-    const z = 16.4 - dash * 2.75;
+-    laneTransforms.push(
+-      { position: [-1.18, 0.026, z], scale: [0.075, 0.024, 0.82] },
+-      { position: [1.18, 0.027, z + 0.35], scale: [0.075, 0.024, 0.82] }
+-    );
+-    laneColors.push(dash % 3 === 0 ? "#ffd166" : "#a5f3fc", dash % 3 === 1 ? "#ff9aaa" : "#8af7ff");
+-    curbTransforms.push(
+-      { position: [-2.18, 0.08, z], scale: [0.14, 0.09, 1.1] },
+-      { position: [2.18, 0.08, z + 0.35], scale: [0.14, 0.09, 1.1] }
+-    );
+-  }
+-  return [
+-    instances.box({
+-      name: "courier review main road",
+-      size: [1, 1, 1],
+-      transforms: [{ position: [0, -0.08, -2], scale: [4.6, 0.08, 34] }],
+-      material: road
+-    }),
+-    instances.box({
+-      name: "courier review sidewalks",
+-      size: [1, 1, 1],
+-      transforms: [
+-        { position: [-6.1, 0.08, -2], scale: [1.45, 0.16, 34] },
+-        { position: [6.1, 0.08, -2], scale: [1.45, 0.16, 34] }
+-      ],
+-      material: sidewalk
+-    }),
+-    instances.box({
+-      name: "courier review raised lane curbs",
+-      size: [1, 1, 1],
+-      transforms: curbTransforms,
+-      material: curb
+-    }),
+-    instances.box({
+-      name: "courier review facades",
+-      size: [1, 1, 1],
+-      transforms: facadeTransforms,
+-      material: facade
+-    }),
+-    instances.box({
+-      name: "courier review structural ribs",
+-      size: [1, 1, 1],
+-      transforms: ribTransforms,
+-      material: rib
+-    }),
+-    instances.box({
+-      name: "courier review rib practicals",
+-      size: [1, 1, 1],
+-      transforms: ribGlowTransforms,
+-      colors: ribGlowColors,
+-      material: material.emissive({ name: "courier review rib glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
+-    }),
+-    instances.box({
+-      name: "courier review practical lights",
+-      size: [1, 1, 1],
+-      transforms: practicalTransforms,
+-      colors: practicalColors,
+-      material: material.emissive({ name: "courier review practical", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
+-    }),
+-    instances.box({
+-      name: "courier review lane dashes",
+-      size: [1, 1, 1],
+-      transforms: laneTransforms,
+-      colors: laneColors,
+-      material: material.emissive({ name: "courier review lane paint", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 0.85, opacity: 0.9 })
+-    }),
+-    instances.box({
+-      name: "courier review converging rails",
+-      size: [1, 1, 1],
+-      transforms: [
+-        { position: [-3.82, 0.055, -2], scale: [0.055, 0.028, 34] },
+-        { position: [3.82, 0.055, -2], scale: [0.055, 0.028, 34] }
+-      ],
+-      colors: ["#8af7ff", "#ff9aaa"],
+-      material: material.emissive({ name: "courier review rail glow", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 0.85 })
+-    }),
+-    instances.box({
+-      name: "courier review road reflections",
+-      size: [1, 1, 1],
+-      transforms: [
+-        { position: [-2.15, -0.006, -3], scale: [0.11, 0.012, 29] },
+-        { position: [2.15, -0.005, -3], scale: [0.11, 0.012, 29] },
+-        { position: [-0.78, -0.004, -10], scale: [0.065, 0.01, 18] },
+-        { position: [0.78, -0.003, -10], scale: [0.065, 0.01, 18] }
+-      ],
+-      colors: ["#42f59b", "#f24f7d", "#77f5ff", "#8dffbc"],
+-      material: material.emissive({ name: "courier review reflected color", color: "#22d3ee", emissive: "#22d3ee", emissiveIntensity: 0.72, opacity: 0.42 })
+-    }),
+-    lights.point({ name: "courier review cyan canyon light", color: "#22d3ee", intensity: 5.2 }).position(-4.8, 3.2, -1),
+-    lights.point({ name: "courier review coral canyon light", color: "#fb7185", intensity: 4.8 }).position(4.8, 3.0, -8),
+-    lights.point({ name: "courier review horizon light", color: "#fbbf24", intensity: 4.2 }).position(0, 3.4, -18)
+-  ];
+-}
+ 
+ /**
+  * A small authored skyline layer makes the chase frame read as a lived-in
+@@ -756,29 +594,23 @@ export interface CityZoneDressing {
+  * Every model comes from the generated typed map, so a catalog swap needs no
+  * edit in this file.
+  */
+-export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false): CityZoneDressing {
++export function buildCityDressing(assets: CityAssetRefs): CityZoneDressing {
+   const kitNodes = stripKitParkedCars(city.block({ timeOfDay: "night", blocks: 20 }));
+   const guidanceNodes = roadGuidanceNodes();
+-  const staticNodes: AuraNodeInput[] = reviewCapture
+-    // The cinematic capture is an east-avenue slice, not a separate stage:
+-    // its centre line is the physical x=15.3 avenue used by both seeded
+-    // traffic loops. The source test selects a live vertical-lane car here,
+-    // so van, traffic, wet road, and canyon share world coordinates.
+-    ? [group("courier review east-avenue canyon", reviewCorridorNodes(), {}).position(15.3, 0, 0)]
+-    : [
+-        group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
+-        ...guidanceNodes,
+-        ...skylineDressingNodes(),
+-        ...courierStreetSignatureNodes()
+-      ];
++  const staticNodes: AuraNodeInput[] = [
++    group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
++    ...guidanceNodes,
++    ...skylineDressingNodes(),
++    ...courierStreetSignatureNodes()
++  ];
+ 
+   // A typed traffic body and warning gate give the opening chase frame a
+   // readable pressure target. The frame is visual set dressing only; live
+   // traffic and the documented strike proxies remain the gameplay authority.
+-  staticNodes.push(...pressureMomentNodes(assets, reviewCapture ? 15.3 : 0, 10.6));
++  staticNodes.push(...pressureMomentNodes(assets, 0, 10.6));
+ 
+   let primitiveCount = 0;
+-  for (const site of reviewCapture ? [] : ZONE_SITES) {
++  for (const site of ZONE_SITES) {
+     for (let index = 0; index < 4; index += 1) {
+       const angle = Math.PI / 4 + index * (Math.PI / 2);
+       staticNodes.push(
+-- 
+2.34.1
+

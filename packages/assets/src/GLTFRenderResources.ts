@@ -42,10 +42,12 @@ import {
   type TexturedPBRMaterialOptions,
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
-  DEFAULT_TEXTURED_PBR_SHADER_NAME
+  DEFAULT_TEXTURED_PBR_SHADER_NAME,
+  applyTextureBudget
 } from "@aura3d/rendering";
 import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
+  gltfRuntimeMaterialKey,
   parseGLTFRuntimeMaterialKey,
   type GLTFAsset,
   type GLTFImageAsset,
@@ -108,8 +110,16 @@ export interface GLTFRenderResourceOptions {
   readonly tangents?: boolean | "auto" | "generate";
   /** Optional GPU-bytes texture budget applied during resource creation (declaration-only seam, C-17). */
   readonly textureBudget?: number;
+  /** Optional max texture dimension applied during resource creation (C-27 policy, PRD-04 P2-11). */
+  readonly maxTextureSize?: number;
   /** Optional sampler anisotropy ceiling override (declaration-only seam, C-18). */
   readonly anisotropy?: number;
+  /**
+   * PRD-04 flag channel: `A3D_QR_MATERIALS` state forwarded by `createTypedGLBActor`. The assets
+   * package has no flag resolver of its own; flag-on removes E23's cull override and uses the
+   * glTF-spec default material ([1,1,1,1] / metallic 1 / roughness 1); flag-off is unchanged.
+   */
+  readonly materialsR185?: boolean;
 }
 
 export interface GLTFMaterialRenderStateOverride {
@@ -131,6 +141,12 @@ export interface GLTFRenderResources {
   createCameraFrame(viewport: CameraFrameViewport, options?: PerspectiveCameraFrameOptions): PerspectiveCameraFrame;
   toRenderSource(options?: GLTFRenderSourceOptions): RenderSource;
   toRendererInput(viewport: CameraFrameViewport, options?: GLTFRendererInputOptions): GLTFRendererInput;
+  /**
+   * PRD-04 P2/R11: runtime `KHR_materials_variants` rebind — remaps each renderable's material key
+   * to the given variant's material (creating non-resident contract variants on demand); `null`
+   * restores the authored mapping. Resolves `"variant-unknown"` when no binding declares it.
+   */
+  setMaterialVariant(variant: string | null): Promise<"applied" | "variant-unknown">;
   dispose(): void;
 }
 
@@ -404,7 +420,7 @@ export async function createGLTFRenderResources(
     const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, options));
     const texturePromise = (async () => {
       const decoded = await decoder(image, info.image, asset);
-      return new Texture({
+      const texture = new Texture({
         width: decoded.width,
         height: decoded.height,
         ...(decoded.format ? { format: decoded.format } : {}),
@@ -414,6 +430,16 @@ export async function createGLTFRenderResources(
         ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
         ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
       });
+      // R16/P2-11: the C-27 policy arrives as `textureBudget`/`maxTextureSize` on
+      // GLTFRenderResourceOptions (forwarded by the actor/pipeline). No device exists at
+      // this layer — the shared ledger accounts these uploads.
+      if (options.textureBudget !== undefined || options.maxTextureSize !== undefined) {
+        return applyTextureBudget(texture, {
+          ...(options.textureBudget !== undefined ? { textureBudgetBytes: options.textureBudget } : {}),
+          ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {})
+        });
+      }
+      return texture;
     })();
     textureByImage.set(cacheKey, texturePromise);
     try {
@@ -433,6 +459,29 @@ export async function createGLTFRenderResources(
       setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, fallback);
       return fallback;
     }
+  };
+
+  // When deduplication is enabled, materials with identical definitions share one runtime instance
+  // so renderer static batching (which keys on material identity) can collapse them. Declared before
+  // the try block so `setMaterialVariant` (R11) can rebuild missing contract variants on rebind.
+  const sharedMaterials = options.deduplicateIdenticalMaterials
+    ? new Map<string, Promise<Material>>()
+    : null;
+  const buildMaterial = (
+    material: (typeof asset.materials)[number],
+    contract: Parameters<typeof createMaterial>[3]
+  ): Promise<Material> => {
+    if (!sharedMaterials) {
+      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+    }
+    // The contract participates in the key: the same glTF material under two different runtime
+    // contracts (skinned vs instanced, for example) must not collapse into one instance.
+    const key = identicalMaterialKey(material, contract);
+    const existing = sharedMaterials.get(key);
+    if (existing) return existing;
+    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185);
+    sharedMaterials.set(key, created);
+    return created;
   };
 
   try {
@@ -461,27 +510,6 @@ export async function createGLTFRenderResources(
       });
     }
     const materialTasks: Promise<void>[] = [];
-    // When deduplication is enabled, materials with identical definitions share one runtime instance
-    // so renderer static batching (which keys on material identity) can collapse them.
-    const sharedMaterials = options.deduplicateIdenticalMaterials
-      ? new Map<string, Promise<Material>>()
-      : null;
-    const buildMaterial = (
-      material: (typeof asset.materials)[number],
-      contract: Parameters<typeof createMaterial>[3]
-    ): Promise<Material> => {
-      if (!sharedMaterials) {
-        return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides);
-      }
-      // The contract participates in the key: the same glTF material under two different runtime
-      // contracts (skinned vs instanced, for example) must not collapse into one instance.
-      const key = identicalMaterialKey(material, contract);
-      const existing = sharedMaterials.get(key);
-      if (existing) return existing;
-      const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides);
-      sharedMaterials.set(key, created);
-      return created;
-    };
     for (const material of asset.materials) {
       const runtimeKeys = [...runtimeMaterialContracts.entries()].filter(([, runtime]) => runtime.material === material.name);
       if (runtimeKeys.length === 0) {
@@ -501,11 +529,11 @@ export async function createGLTFRenderResources(
     for (const mesh of asset.meshes) {
       for (const [key, runtime] of runtimeMaterialContracts) {
         if (runtime.material === mesh.material && !materialLibrary.has(key)) {
-          materialLibrary.set(key, createDefaultGLTFMaterial(mesh, runtime.contract));
+          materialLibrary.set(key, createDefaultGLTFMaterial(mesh, runtime.contract, options.materialsR185));
         }
       }
       if (!materialLibrary.has(mesh.material)) {
-        materialLibrary.set(mesh.material, createDefaultGLTFMaterial(mesh));
+        materialLibrary.set(mesh.material, createDefaultGLTFMaterial(mesh, {}, options.materialsR185));
       }
     }
   } catch (error) {
@@ -560,8 +588,65 @@ export async function createGLTFRenderResources(
         bounds
       };
     },
+    setMaterialVariant: (variant) =>
+      applyGLTFMaterialVariant({ asset, scene, materialLibrary, renderableBindings, buildMaterial, variant }),
     dispose: () => disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary)
   };
+}
+
+/**
+ * PRD-04 P2/R11: KHR_materials_variants rebinding without a pipeline rebuild — the actor's variant
+ * switch remaps each renderable's material key. Meshes lacking a mapping for the active variant
+ * keep their authored material per the glTF spec; `null` restores the authored mapping.
+ */
+async function applyGLTFMaterialVariant(options: {
+  readonly asset: GLTFAsset;
+  readonly scene: ReturnType<GLTFAsset["createScene"]>;
+  readonly materialLibrary: Map<string, Material>;
+  readonly renderableBindings: readonly GLTFRenderableBinding[];
+  readonly buildMaterial: (
+    material: GLTFMaterialAsset,
+    contract: { readonly skinned?: boolean; readonly instanced?: boolean }
+  ) => Promise<Material>;
+  readonly variant: string | null;
+}): Promise<"applied" | "variant-unknown"> {
+  const { asset, scene, materialLibrary, renderableBindings, buildMaterial, variant } = options;
+  if (variant !== null
+    && !renderableBindings.some((binding) => binding.materialVariants.some((entry) => entry.variant === variant))) {
+    return "variant-unknown";
+  }
+  const meshByGeometry = new Map(asset.meshes.map((mesh) => [mesh.name, mesh]));
+  const tasks: Promise<unknown>[] = [];
+  scene.collectRenderables().forEach(({ renderable }, index) => {
+    const binding = renderableBindings[index];
+    const mesh = meshByGeometry.get(renderable.geometry);
+    if (!binding || !mesh) return;
+    const parsed = parseGLTFRuntimeMaterialKey(renderable.material);
+    const contract = {
+      ...parsed.contract,
+      ...(renderable.skinning ? { skinned: true } : {}),
+      ...(renderable.instanceTransforms ? { instanced: true } : {})
+    };
+    const mapping = variant === null
+      ? undefined
+      : mesh.materialVariants.find((entry) => entry.variant === variant);
+    const targetName = mapping?.material ?? binding.sourceMaterialName;
+    const key = gltfRuntimeMaterialKey(targetName, contract);
+    if (key === renderable.material) return;
+    if (!materialLibrary.has(key)) {
+      const materialDef = asset.materials.find((entry) => entry.name === targetName);
+      tasks.push((materialDef
+        ? buildMaterial(materialDef, contract)
+        : Promise.resolve(createDefaultGLTFMaterial({ ...mesh, material: targetName }, contract))
+      ).then((runtimeMaterial) => {
+        materialLibrary.set(key, runtimeMaterial);
+      }));
+    }
+    // Renderable.material is readonly at the type level; the rebind mutates the key in place.
+    (renderable as { material: string }).material = key;
+  });
+  await Promise.all(tasks);
+  return "applied";
 }
 
 function createGLTFRenderableBindings(
@@ -1447,9 +1532,10 @@ async function createMaterial(
   material: GLTFMaterialAsset,
   getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
   options: { readonly skinned?: boolean; readonly instanced?: boolean } = {},
-  renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = []
+  renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = [],
+  materialsR185 = false
 ): Promise<Material> {
-  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides);
+  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185);
   if (options.skinned && !material.unlit) {
     const [
       baseColorTexture,
@@ -1660,10 +1746,21 @@ async function createMaterial(
   return runtimeMaterial;
 }
 
-function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly instanced?: boolean; readonly skinned?: boolean } = {}): Material {
+function createDefaultGLTFMaterial(
+  mesh: GLTFMeshAsset,
+  options: { readonly instanced?: boolean; readonly skinned?: boolean } = {},
+  materialsR185 = false
+): Material {
   // Use a neutral light-gray base color instead of glTF-spec white ([1,1,1,1])
   // so missing-material fallbacks do not blow out as bright white artifacts.
-  const defaults = {
+  // PRD-04 P2-12/E23: flag-on uses the glTF-spec default ([1,1,1,1], metallic 1, roughness 1).
+  const defaults = materialsR185 ? {
+    name: mesh.material,
+    baseColor: [1, 1, 1, 1] as const,
+    metallic: 1,
+    roughness: 1,
+    environmentIntensity: DEFAULT_PBR_ENVIRONMENT_INTENSITY
+  } as const : {
     name: mesh.material,
     baseColor: [0.76, 0.74, 0.72, 1] as const,
     metallic: 0,
@@ -1689,10 +1786,14 @@ const BLEND_OPAQUE_ALPHA_THRESHOLD = 0.996;
 
 export function renderStateForGLTFMaterial(
   material: GLTFMaterialAsset,
-  overrides: readonly GLTFMaterialRenderStateOverride[] = []
+  overrides: readonly GLTFMaterialRenderStateOverride[] = [],
+  materialsR185 = false
 ): Partial<RenderState> {
   const blend = requiresTransparentRenderState(material);
-  const cullBack = usesUnbackedScalarTransmission(material) || usesOpaqueDoubleSidedClearcoatShell(material);
+  // PRD-04 P2-12/E23: the double-sided + metallic + clearcoat back-face cull is a fudge;
+  // flag-on honours authored doubleSided.
+  const cullBack = usesUnbackedScalarTransmission(material)
+    || (!materialsR185 && usesOpaqueDoubleSidedClearcoatShell(material));
   const baseState: Partial<RenderState> = {
     cullMode: cullBack ? "back" : material.doubleSided ? "none" : "back",
     blend,

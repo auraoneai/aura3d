@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-10-06T12:30:00Z",
+  "purpose": "PRD-03 Phase 0 bundle baseline \u2014 gated targets in tests/reports/bundle-size.json",
+  "status": "targets-recorded/blocked-on-tool",
+  "blocker": "pnpm check:bundle-size fails on main (pre-existing since PR 0a 2fa08680): tools/bundle-size/index.ts aura3d-source-alias lacks @aura3d/rendering/contracts and /contracts/flags.state entries; esbuild cannot resolve imports in packages/engine/src/agent-api/app/createAuraApp.ts:15, agent-api/postBridge.ts:28, contracts/app.ts:7, contracts/diagnostics.ts:7, contracts/flags.ts:13. Owner: tools/bundle-size (lane 15 via default). qr-request filed in qr-requests.md.",
+  "gatedTargets": [
+    {
+      "id": "core-agent-api",
+      "label": "@aura3d/lean core primitive critical path",
+      "budgetBytes": 80000
+    },
+    {
+      "id": "compatibility-root-observation",
+      "label": "@aura3d/engine compatibility root (informational, not the new-app entry)",
+      "budgetBytes": 80000
+    },
+    {
+      "id": "react-adapter",
+      "label": "@aura3d/react adapter excluding React and core",
+      "budgetBytes": 15000
+    },
+    {
+      "id": "devtools",
+      "label": "opt-in devtools exports",
+      "budgetBytes": 20000
+    },
+    {
+      "id": "presets-effects",
+      "label": "cinematic presets/effects helpers",
+      "budgetBytes": 45000
+    },
+    {
+      "id": "template-product-viewer",
+      "label": "product-viewer starter app before user assets",
+      "budgetBytes": 250000
+    },
+    {
+      "id": "template-cinematic-scene",
+      "label": "cinematic-scene starter app before user assets",
+      "budgetBytes": 400000
+    },
+    {
+      "id": "template-mini-game",
+      "label": "mini-game starter app before user assets",
+      "budgetBytes": 250000
+    }
+  ]
+}
