@@ -3,7 +3,10 @@
  *
  * One registry per app. `require(ids)` lazy-loads the named decoders
  * same-origin from `options.basePath` ("aura-decoders/"):
- *   - meshopt → `import("meshoptimizer")` (npm package), `MeshoptDecoder.ready`
+ *   - meshopt → `${basePath}meshopt/` vendored ESM in browsers;
+ *     the `meshoptimizer` npm package in Node — both loaded lazily with
+ *     non-static specifiers so consumer bundlers never resolve them at
+ *     build time (the packages are optional peers of the engine pack).
  *   - draco   → `${basePath}draco/` vendored UMD, only on `require(["draco"])`
  *   - ktx2    → `${basePath}basis/` vendored Basis transcoder + a real
  *               `GLTFImageDecoder` that transcodes via `selectKTX2TargetFormat`
@@ -106,10 +109,10 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
   };
 
   const loadMeshopt = (): Promise<ReturnType<typeof createMeshoptDecoder>> =>
-    withRetry("meshopt", "meshoptimizer", async () => {
-      const mod = await import("meshoptimizer") as Record<string, unknown>;
+    withRetry("meshopt", `${basePath}meshopt/meshopt_decoder.mjs`, async () => {
+      const mod = await loadMeshoptModule(basePath);
       const decoder = (mod.MeshoptDecoder ?? (mod.default as Record<string, unknown> | undefined)?.MeshoptDecoder) as GLTFMeshoptDecoderModule | undefined;
-      if (!decoder) throw new Error("meshoptimizer package did not export MeshoptDecoder");
+      if (!decoder) throw new Error("meshopt decoder did not export MeshoptDecoder");
       if (decoder.ready) await decoder.ready;
       return createMeshoptDecoder(decoder);
     });
@@ -176,14 +179,49 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
   };
 }
 
+/**
+ * meshopt resolves to the same-origin vendored ESM in browsers and to the
+ * `meshoptimizer` npm package under Node/tests. Both specifiers are
+ * deliberately non-static: they are runtime-optional loads and consumer
+ * bundlers must not be forced to resolve them at build time (the engine
+ * pack does not declare `meshoptimizer` as a hard dependency).
+ */
+async function loadMeshoptModule(basePath: string): Promise<Record<string, unknown>> {
+  if (typeof document !== "undefined" || typeof (globalThis as { importScripts?: unknown }).importScripts === "function") {
+    return (await import(/* @vite-ignore */ `${basePath}meshopt/meshopt_decoder.mjs`)) as Record<string, unknown>;
+  }
+  const pkg = ["mesh", "optimizer"].join("");
+  return (await import(pkg)) as Record<string, unknown>;
+}
+
+/** Node builtins are loaded through a computed specifier for the same reason. */
+interface NodeBuiltins {
+  readonly fs: typeof import("node:fs");
+  readonly module: typeof import("node:module");
+  readonly url: typeof import("node:url");
+  readonly path: typeof import("node:path");
+}
+async function nodeBuiltins(): Promise<NodeBuiltins> {
+  const spec = (name: string) => `node:${name}`;
+  const [fs, mod, url, path] = await Promise.all([import(spec("fs")), import(spec("module")), import(spec("url")), import(spec("path"))]);
+  return {
+    fs: fs as NodeBuiltins["fs"],
+    module: mod as NodeBuiltins["module"],
+    url: url as NodeBuiltins["url"],
+    path: path as NodeBuiltins["path"]
+  };
+}
+
 /** UMD decoder bundles bind a global only under a classic `<script>` load. */
 async function loadUmdGlobal(id: AssetDecoderId, dirUrl: string, fileName: string, globalName: string): Promise<unknown> {
   const url = `${dirUrl}${fileName}`;
   if (typeof document === "undefined") {
     // Node/tests: evaluate the vendored UMD copy as CJS.
-    const [{ readFileSync, existsSync }, { createRequire }, { fileURLToPath }, { dirname }] = await Promise.all([
-      import("node:fs"), import("node:module"), import("node:url"), import("node:path")
-    ]);
+    const { fs, module: nodeModule, url: nodeUrl, path: nodePath } = await nodeBuiltins();
+    const { readFileSync, existsSync } = fs;
+    const { createRequire } = nodeModule;
+    const { fileURLToPath } = nodeUrl;
+    const { dirname } = nodePath;
     const require2 = createRequire(import.meta.url);
     const candidates = [
       new URL(`../vendor/${id === "draco" ? "draco" : "basis"}/${fileName}`, import.meta.url),
