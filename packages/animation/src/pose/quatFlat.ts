@@ -22,32 +22,32 @@ export function slerpQuatFlat(
   let bz = b[bOffset + 2]!;
   let bw = b[bOffset + 3]!;
 
-  let cosHalfTheta = aw * bw + ax * bx + ay * by + az * bz;
-  if (cosHalfTheta < 0) {
-    bw = -bw; bx = -bx; by = -by; bz = -bz;
-    cosHalfTheta = -cosHalfTheta;
-  }
-  if (cosHalfTheta >= 1.0) {
+  if (ax === bx && ay === by && az === bz && aw === bw) {
     dst[dstOffset] = ax; dst[dstOffset + 1] = ay; dst[dstOffset + 2] = az; dst[dstOffset + 3] = aw;
     return;
   }
-  const sqrSinHalfTheta = 1.0 - cosHalfTheta * cosHalfTheta;
-  if (sqrSinHalfTheta <= Number.EPSILON) {
-    const s = 1 - t;
-    dst[dstOffset] = s * ax + t * bx;
-    dst[dstOffset + 1] = s * ay + t * by;
-    dst[dstOffset + 2] = s * az + t * bz;
-    dst[dstOffset + 3] = s * aw + t * bw;
-    normalizeQuatFlat(dst, dstOffset);
+  let dot = ax * bx + ay * by + az * bz + aw * bw;
+  if (dot < 0) {
+    bx = -bx; by = -by; bz = -bz; bw = -bw;
+    dot = -dot;
+  }
+  let s = 1 - t;
+  if (dot < 0.9995) {
+    const theta = Math.acos(dot);
+    const sin = Math.sin(theta);
+    s = Math.sin(s * theta) / sin;
+    t = Math.sin(t * theta) / sin;
+    dst[dstOffset] = ax * s + bx * t;
+    dst[dstOffset + 1] = ay * s + by * t;
+    dst[dstOffset + 2] = az * s + bz * t;
+    dst[dstOffset + 3] = aw * s + bw * t;
     return;
   }
-  const sinHalfTheta = Math.sqrt(sqrSinHalfTheta);
-  const ratioA = Math.sin((1 - t) * Math.asin(sinHalfTheta)) / sinHalfTheta;
-  const ratioB = Math.sin(t * Math.asin(sinHalfTheta)) / sinHalfTheta;
-  dst[dstOffset] = ax * ratioA + bx * ratioB;
-  dst[dstOffset + 1] = ay * ratioA + by * ratioB;
-  dst[dstOffset + 2] = az * ratioA + bz * ratioB;
-  dst[dstOffset + 3] = aw * ratioA + bw * ratioB;
+  dst[dstOffset] = ax * s + bx * t;
+  dst[dstOffset + 1] = ay * s + by * t;
+  dst[dstOffset + 2] = az * s + bz * t;
+  dst[dstOffset + 3] = aw * s + bw * t;
+  normalizeQuatFlat(dst, dstOffset);
 }
 
 export function normalizeQuatFlat(q: Float32Array | number[], offset: number): void {
@@ -93,6 +93,6 @@ export function lerpVec3Flat(
   t: number
 ): void {
   dst[dstOffset] = a[aOffset]! + (b[bOffset]! - a[aOffset]!) * t;
-  dst[dstOffset + 1] = a[aOffset + 1]! + (b[aOffset + 1]! - a[aOffset + 1]!) * t;
-  dst[dstOffset + 2] = a[aOffset + 2]! + (b[aOffset + 2]! - a[aOffset + 2]!) * t;
+  dst[dstOffset + 1] = a[aOffset + 1]! + (b[bOffset + 1]! - a[aOffset + 1]!) * t;
+  dst[dstOffset + 2] = a[aOffset + 2]! + (b[bOffset + 2]! - a[aOffset + 2]!) * t;
 }

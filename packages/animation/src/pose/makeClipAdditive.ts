@@ -18,6 +18,13 @@ import type { AnimationValue, Keyframe, Quat } from "../Keyframe.js";
 
 export type AdditiveReference = number | { readonly clip: AnimationClip; readonly time?: number };
 
+const additiveClips = new WeakSet<AnimationClip>();
+
+/** Whether a clip was produced by `makeClipAdditive` (three r185 `clip.blendMode`). */
+export function isClipAdditive(clip: AnimationClip): boolean {
+  return additiveClips.has(clip);
+}
+
 export function makeClipAdditive(clip: AnimationClip, reference?: AdditiveReference): AnimationClip {
   const referenceClip = typeof reference === "object" && reference !== null ? reference.clip : clip;
   const referenceTime = typeof reference === "number"
@@ -41,12 +48,14 @@ export function makeClipAdditive(clip: AnimationClip, reference?: AdditiveRefere
     return new AnimationTrack({ target: track.target, valueType: track.valueType, keyframes });
   });
 
-  return new AnimationClip({
+  const additive = new AnimationClip({
     name: `${clip.name}.additive`,
     duration: clip.duration,
     tracks,
     events: clip.events
   });
+  additiveClips.add(additive);
+  return additive;
 }
 
 function subtractValue(valueType: string, value: AnimationValue, reference: AnimationValue): AnimationValue {
